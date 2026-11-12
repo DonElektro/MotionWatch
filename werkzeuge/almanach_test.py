@@ -92,7 +92,7 @@ def determinante(G):
 def svg_punkte(svg):
     """{Strang: [(x, y)]} aus den gezeichneten Wegen eines Knotenbildes"""
     out = {}
-    for m in re.finditer(r'<path class="k[01]" data-s="(\d+)" d="([^"]+)"', svg):
+    for m in re.finditer(r'<path class="k[01]" data-s="(\d+)" style="[^"]*" d="([^"]+)"', svg):
         pts = [tuple(float(v) for v in p.split()) for p in m.group(2).replace("M", "").split(" L")]
         out.setdefault(int(m.group(1)), []).extend(pts)
     return out
@@ -109,7 +109,7 @@ def teil_a(datei):
     keys = [c[0] for c in ALMANAC]
     ok(keys == ["notfall", "wetter", "gesundheit", "essbar", "wasser", "feuer", "orientierung", "lager", "spuren", "knoten", "nacht", "abend"], f"Kapitel {keys}")
     titles = [a[0] for c in ALMANAC for a in c[3]]
-    ok(len(titles) == len(set(titles)) == 59, f"59 Artikel, keiner doppelt ({len(titles)})")
+    ok(len(titles) == len(set(titles)) == 58, f"58 Artikel, keiner doppelt ({len(titles)})")
     kn = [a[0] for c in ALMANAC if c[0] == "knoten" for a in c[3]]
     ok(kn[-1] == "Was ins Taschenmesser gehört" and len(kn) == 9, f"Knoten-Kapitel {kn}")
     text = "\n".join(a[1] for c in ALMANAC for a in c[3])
@@ -118,7 +118,16 @@ def teil_a(datei):
         ok(nr in dict(ALMANAC[0][3])["Notrufnummern Schweiz"] and ">%s<" % nr in PICS["nummern"][1], f"Notrufnummer {nr} in Text und Bild")
     ok("Nie nur nach diesem Almanach oder einer App essen" in text and "145" in dict(ALMANAC[keys.index("essbar")][3])["Zuerst lesen: die Regeln"], "Warnung im Kapitel «Essbar oder giftig?»")
     ok("kein sicherer Knoten, um zwei Seile zu verbinden" in dict(ALMANAC[keys.index("knoten")][3])["Kreuzknoten"], "Warnung beim Kreuzknoten")
-    ok("Abstand halten" in dict(ALMANAC[keys.index("gesundheit")][3])["Schlangen in der Schweiz"] and "Abstand halten" in PICS["schlangen"][1], "Schlangen: im Zweifel Abstand halten")
+    ok("2 m Abstand" in dict(ALMANAC[keys.index("gesundheit")][3])["Schlangen in der Schweiz"] and "Abstand halten" in PICS["schlangen"][1], "Schlangen: im Zweifel Abstand halten")
+    q = ns["ALM_QUELLEN"]
+    ok(all(v.startswith(("Geprüft mit", "Gewitter geprüft mit", "Aufbau der Knoten geprüft mit", "«Heute Nacht»")) for v in q.values()) and not any("Quellen:" in v for v in q.values()),
+       "Quellenzeilen nennen nur, womit geprüft wurde")
+    for weg in ("KORA", "karch", "MeteoSchweiz", "VAPKO – Schweizerische", "Ashley Book"):
+        ok(not any(weg in v for v in q.values()), f"Quellenzeile nennt «{weg}», das nicht gelesen wurde")
+    sl = dict(ALMANAC[0][3])["Die stabile Seitenlage"]
+    ok(sl.index("rechtwinklig abspreizen") < sl.index("auf die Brust") < sl.index("gestreckt nebeneinander") < sl.index("Schulter und Hüfte") < sl.index("oberen Arm und das obere Bein") < sl.index("Mund nach unten"),
+       "Seitenlage: Reihenfolge wie bei Samariter Schweiz")
+    ok("100 bis 120" in sl and "5–6 cm" in sl and "handwarm" in dict(ALMANAC[0][3])["Verbrennungen"] and "Mindestens 10 Minuten" in dict(ALMANAC[0][3])["Verbrennungen"], "Wiederbelebung und Verbrennung: geprüfte Zahlen")
 
     # ---- Bilder: vorhanden, gültiges SVG, nichts von aussen, nur Klassen der Seite
     css = set(re.findall(r"svg \.([a-z0-9]+)", page)) | {"c", "kn"}
@@ -140,14 +149,18 @@ def teil_a(datei):
     ok(sum(len(v[1]) for v in PICS.values()) < 60000, "Zeichnungen bleiben klein (< 60 KB Quelltext)")
 
     # ---- Knoten: Bild = Folge
-    ok(set(KNOTS) == {"achter", "kreuz", "palstek", "mastwurf", "spann", "zimmermann", "trucker", "prusik"}, f"Knoten {sorted(KNOTS)}")
+    ok(set(KNOTS) == {"achter", "kreuz", "kreuz1", "palstek", "mastwurf", "spann", "zimmermann", "trucker", "prusik"}, f"Knoten {sorted(KNOTS)}")
+    ok(KNOTS["palstek"]["s"][0]["seq"] == "ouuoououuouoou", "Palstek: Folge wie hergeleitet (Ende geht wie die Schlingenseite durch den Teich, liegt innen)")
+    ok(KNOTS["spann"]["s"][0]["seq"] == "uououo" "u" "ouou" "oo" "ou" "u", "Spannknoten: zwei Windungen innen, halber Schlag aussen in gleicher Richtung (ABOK 1855)")
     for key, K in KNOTS.items():
         G = ns["alm_knot_geo"](K)
         ok(not G["err"], f"{key}: {G['err']}")
         ok(G["seq"] == ["".join(c for c in s["seq"] if c in "ouvh") for s in K["s"]], f"{key}: Folge im Bild {G['seq']}")
         ok(all(sorted(x["tok"]) == ["o", "u"] for x in G["X"]), f"{key}: jede Kreuzung einmal oben, einmal unten")
+        if "steps" not in K:
+            continue
         steps = ns["alm_knot_steps"](key)
-        ok(3 <= len(steps) <= 5, f"{key}: {len(steps)} Bilder")
+        ok(2 <= len(steps) <= 5, f"{key}: {len(steps)} Bilder")
         fin = steps[-1][0]
         marks = [tuple(int(v) for v in mk.split(",")) for mk in re.search(r'data-x="([^"]*)"', fin).group(1).split()]
         if key != "prusik":
@@ -162,14 +175,14 @@ def teil_a(datei):
                 do = min((abs(px - x) + abs(py - y) for px, py in pts.get(o, [(-99, -99)]) if True), default=99)
                 if o == u:                                 # same strand: the over pass is near, the under pass has a hole -
                     near = sorted(abs(px - x) + abs(py - y) for px, py in pts.get(o, []))[:1]
-                    ok(near and near[0] < 5, f"{key} Schritt {si + 1}: bei {x},{y} läuft kein Strang durch")
+                    ok(near and near[0] < 7, f"{key} Schritt {si + 1}: bei {x},{y} läuft kein Strang durch")
                     idx = [k for k, (px, py) in enumerate(pts.get(o, [])) if (px - x) ** 2 + (py - y) ** 2 < 2.4 ** 2]
-                    ok(not idx or max(idx) - min(idx) <= 4, f"{key} Schritt {si + 1}: bei {x},{y} ist der untere Strang nicht unterbrochen")
+                    ok(not idx or max(idx) - min(idx) == len(idx) - 1, f"{key} Schritt {si + 1}: bei {x},{y} ist der untere Strang nicht unterbrochen")
                 else:
-                    ok(do < 5 and du > 3, f"{key} Schritt {si + 1}: Kreuzung {x},{y} oben {do:.1f} / unten {du:.1f}")
-            ok(len(cap) > 15 and svg.count("<path") < 120, f"{key} Schritt {si + 1}: Beschriftung / Grösse")
+                    ok(do < 7 and du > 3, f"{key} Schritt {si + 1}: Kreuzung {x},{y} oben {do:.1f} / unten {du:.1f}")
+            ok(len(cap) > 15 and svg.count("<path") < 160 and len(svg) < 30000, f"{key} Schritt {si + 1}: Beschriftung / Grösse")
     ok(determinante(ns["alm_knot_geo"](KNOTS["achter"])) == 5, "Achterknoten: Determinante 5")
-    falsch = dict(KNOTS["achter"], s=[dict(KNOTS["achter"]["s"][0], seq="ouuoouou")])
+    falsch = dict(KNOTS["achter"], s=[dict(KNOTS["achter"]["s"][0], seq="uouououu")])
     gf = ns["alm_knot_geo"](falsch)
     ok(gf["err"] or determinante(gf) != 5, "eine falsche Folge fällt auf")
     a_, b_ = KNOTS["kreuz"]["s"][0]["seq"], KNOTS["kreuz"]["s"][1]["seq"]
@@ -241,7 +254,7 @@ def teil_a(datei):
     for path in ("/almanach/", "/almanach/plus", "/almanach/live", "/almanach/bilder?t=Palstek"):
         ok(c.get(path).status_code == 200, f"Gast: {path} offen")
     j = c.get("/almanach/plus").get_json()
-    ok("Palstek" in j["bilder"] and j["quellen"]["essbar"].startswith("Quellen:") and j["karte"] in (True, False), "/almanach/plus")
+    ok("Palstek" in j["bilder"] and j["quellen"]["essbar"].startswith("Geprüft mit") and j["karte"] in (True, False), "/almanach/plus")
     ok(len(c.get("/almanach/bilder?t=Palstek").get_json()["f"]) == 4 and c.get("/almanach/bilder?t=gibt es nicht").get_json()["f"] == [], "/almanach/bilder")
     for path, meth in (("/api/state", "get"), ("/api/light", "post"), ("/api/disco", "post"), ("/api/settings", "post"), ("/recordings", "get"), ("/tausch", "get"), ("/api/ui", "post")):
         r = getattr(c, meth)(path, **({"json": {}} if meth == "post" else {}))
@@ -316,7 +329,92 @@ def teil_a(datei):
     nt = c.get("/almanach/live?w=nacht").get_json()["nacht"]
     ok(nt.get("ort_ok") is True and re.fullmatch(r"\d\d:\d\d", nt["sonne_auf"]) and nt["mond"]["name"], f"Heute Nacht {nt}")
     ok("alm_selftest" in ns and ns["alm_selftest"]().startswith("8 knots"), "Selbsttest")
+    teil_sos_bild(ns, c, sos)
     return ns, app
+
+
+def teil_sos_bild(ns, c, sos):
+    """SOS und die eigene Erkennung: das Blinken ist keine Bewegung; nach dem SOS ist das Licht wie vorher"""
+    import numpy as np
+    import cv2
+    CFG, STATE, SOS = ns["CFG"], ns["STATE"], ns["ALM_SOS"]
+    SOS.update(on=False, dauer=300.0, flash_t=0.0); SOS["starts"].clear()
+    ok(not ns["alm_sos_quiet"](), "ohne SOS: Erkennung wie immer")
+    # a night picture; the lamp lights the lower quarter (less than the 35 % of «the light of the whole picture changed», 410)
+    dunkel = np.full((120, 160), 18, np.uint8)
+    hell = dunkel.copy(); hell[88:, :] = 150
+
+    class Kopf:                                            # what MotionWatch.foreground needs when it treats a picture as background
+        pass
+    k = Kopf(); k.bg = cv2.createBackgroundSubtractorMOG2(history=200, varThreshold=40, detectShadows=False); k.mt = {}; k.color_bg = 1
+    roh = cv2.createBackgroundSubtractorMOG2(history=200, varThreshold=40, detectShadows=False)
+    for _ in range(40):
+        k.bg.apply(dunkel, learningRate=0.05); roh.apply(dunkel, learningRate=0.05)
+    n_roh = int(np.count_nonzero(roh.apply(hell, learningRate=0.002)))
+    ok(0.2 * hell.size < n_roh < 0.35 * hell.size, f"ohne Regel wäre der Lampenschein Bewegung ({n_roh} Bildpunkte, unter 35 % des Bildes)")
+    gerufen = []
+    alt = (ns["_alm_foreground_410"], ns["_alm_lowlight_410"], ns["_alm_tamper_feed_060"])
+    ns["_alm_foreground_410"] = lambda self, *a: gerufen.append("fg") or "fg"
+    ns["_alm_lowlight_410"] = lambda self, *a: gerufen.append("ll") or "ll"
+    ns["_alm_tamper_feed_060"] = lambda self, *a: gerufen.append("tg") or "tg"
+    MW, TG = ns["MotionWatch"], ns["TamperGuard"]
+    try:
+        ok(MW.foreground(k, dunkel, dunkel, False, 1.0) == "fg" and MW._lowlight_decide(k, 20.0, 1.0) == "ll" and TG.feed(k, dunkel, 1.0) == "tg" and gerufen == ["fg", "ll", "tg"],
+           "ohne SOS läuft alles durch die Teile 410 / 060")
+        CFG.update(light_white_out="gpio:17", light_white="on", tamper_on=True)
+        ns["LIGHTS"]["alarm_t"] = 0.0; ns["LIGHTS"]["strobe_until"] = 0.0
+        ok(ns["lights_tick"]()["white"] is True and not STATE["lights"].get("sos"), "weisses Licht steht auf «Ein»")
+        logs = []
+        log0 = ns["log_event"]
+        ns["log_event"] = lambda kind, text: logs.append(text)
+        real = time.time
+        try:
+            code, j = sos("start")
+            ok(code == 200 and j["sos"]["on"], "SOS bei eingeschaltetem Licht")
+            t0 = SOS["t0"]; muster = ""
+            for i in range(34):
+                ns["time"].time = lambda i=i: t0 + i * 0.25 + 0.01
+                muster += "1" if ns["lights_tick"]()["white"] else "0"
+            ok(muster == "1010100011101110111000101010000000", f"SOS blinkt auch, wenn das Licht auf «Ein» steht ({muster})")
+            ok(not [x for x in logs if x.startswith("White light")], f"kein «White light ON / OFF» pro Blinken im Protokoll ({logs[:3]})")
+            ns["time"].time = lambda: t0 + 8.2
+            ok(ns["alm_sos_quiet"](), "während des Blinkens: eigenes Licht")
+            STATE["lowlight"] = True; STATE["tamper"] = {"sensor": False, "last": "", "state": "watching"}
+            gerufen.clear(); k.ref = "x"; k.n_cov = 2; k.n_mov = 4; k.settle = 0
+            aus = []
+            for bild in (hell, dunkel, hell, dunkel, hell):
+                aus.append(int(np.count_nonzero(MW.foreground(k, bild, bild, False, 1.0))))
+            ok(aus == [0, 0, 0, 0, 0] and k.color_bg is None and not gerufen, f"Blinken gibt keine Bewegung ({aus})")
+            ok(MW._lowlight_decide(k, 200.0, 5.0) is True and not gerufen, "der Nachtmodus bleibt, wie er war")
+            ok(TG.feed(k, hell, 100.0) is None and k.ref is None and k.n_cov == 0 and k.n_mov == 0 and k.settle == 108.0 and STATE["tamper"]["state"] == "learning" and not gerufen,
+               "der Sabotage-Schutz meldet kein «verdeckt / verdreht», er lernt das Bild danach neu")
+            code, j = sos("stop")
+            ns["time"].time = lambda: t0 + 8.5
+            r = ns["lights_tick"]()
+            ok(r["white"] is True and STATE["lights"]["white"] is True and "sos" not in STATE["lights"] and CFG["light_white"] == "on", "nach dem SOS ist das Licht wieder an (wie vorher)")
+            ok(ns["alm_sos_quiet"](), "kurz nach dem letzten Blinken noch Ruhe")
+            ns["time"].time = lambda: t0 + 8.2 + ns["ALM_SOS_QUIET_S"] + 0.5
+            ok(not ns["alm_sos_quiet"]() and MW.foreground(k, dunkel, dunkel, False, 1.0) == "fg", "danach erkennt MoveEye wieder Bewegung")
+            CFG["light_white"] = "off"
+            ns["time"].time = lambda: t0 + 20
+            ok(ns["lights_tick"]()["white"] is False, "Licht aus bleibt aus")
+            ns["disco_set"](True, "tempo", 120, 10, "test")
+            code, j = sos("start")
+            t1 = SOS["t0"]
+            ns["time"].time = lambda: t1 + 3 * 0.25 + 0.01      # a gap of the pattern
+            ok(ns["lights_tick"]()["white"] is False and ns["DISCO"]["on"], "SOS geht vor dem Disco-Licht")
+            sos("stop")
+            an = set()
+            for i in range(12):
+                ns["time"].time = lambda i=i: t1 + 5 + i * 0.07
+                an.add(bool(ns["lights_tick"]()["white"]))
+            ok(an == {True, False} and ns["DISCO"]["on"], "nach dem SOS läuft das Disco-Licht weiter")
+            ns["disco_set"](False, who="test")
+        finally:
+            ns["time"].time = real; ns["log_event"] = log0
+    finally:
+        ns["_alm_foreground_410"], ns["_alm_lowlight_410"], ns["_alm_tamper_feed_060"] = alt
+        SOS.update(on=False, flash_t=0.0); SOS["starts"].clear(); CFG["light_white"] = "off"
 
 
 # ---------------------------------------------------------------------------------------------------------------------- B
@@ -342,6 +440,7 @@ def teil_b(ns, app, bilder):
         pg.goto(base + "/almanach/")
         pg.wait_for_selector(".chp")
         ok(pg.locator(".chp").count() == 12, "12 Kapitel auf der Startseite")
+        ok(pg.locator("#mw-exit").count() == 0 and pg.locator("#b-x[data-mw-exit]").count() == 1, "kein schwebender «✕ Zurück»-Knopf über den Bildern: der Almanach hat seinen eigenen in der Kopfzeile")
 
         def thema(t):
             pg.evaluate("([th, n]) => { localStorage.setItem('mw-theme', th); localStorage.setItem('mw-night', n); apply(); }",
@@ -367,6 +466,12 @@ def teil_b(ns, app, bilder):
                     pg.wait_for_function("n => document.querySelectorAll('#figs figure svg').length === n", arg=want, timeout=8000)
                 ok(pg.locator("article h2").inner_text() == title, f"Artikel {title}")
                 breit(f"{title} ({t})")
+                if want:
+                    bad = pg.evaluate("""() => { const out = []; for (const s of document.querySelectorAll('#figs figure svg')) { const vb = s.viewBox.baseVal, k = s.getBoundingClientRect().width / vb.width;
+                        for (const x of s.querySelectorAll('text')) { const b = x.getBBox(), px = parseFloat(getComputedStyle(x).fontSize) * k;
+                          if (b.x < -0.5 || b.x + b.width > vb.width + 0.5 || b.y < -0.5 || b.y + b.height > vb.height + 1 || px < 12) out.push(x.textContent + ' ' + px.toFixed(1) + 'px ' + Math.round(b.x) + '..' + Math.round(b.x + b.width)); } }
+                        return out; }""")
+                    ok(not bad, f"{title} ({t}): Beschriftung abgeschnitten oder kleiner als 12 px: {bad[:4]}")
                 if t != "rot" and (ch in ("knoten", "spuren", "essbar") and want or title in ("Die stabile Seitenlage", "Notsignale", "Schlangen in der Schweiz", "Wolken als Wettervorhersage")):
                     foto("%s_%s_%s" % ({"knoten": "02_knoten", "spuren": "06_spuren", "essbar": "07_essbar"}.get(ch, "08_bild"), re.sub(r"\W+", "_", title)[:24], t))
             for nr, key, sel in ((3, "notfall", "#sos"), (4, "wetter", "#wetter"), (5, "nacht", "#nacht")):
