@@ -193,6 +193,8 @@ def alm_knot_svg(K, cut=None, new=None):
     out.append(K.get("over", ""))
     for lb in K.get("lab", ()):
         x, y, t = lb[:3]
+        if cut and ("Ende" in t or t in ("^Schlinge", "ziehen", "loses")):
+            continue                                        # what is not there yet in a step picture gets no label
         anchor = ""
         if len(lb) > 3:                                    # a thin line from the label to what it names
             out.append('<path class="kl" d="M%d %d L%d %d"/>' % (lb[3], lb[4], lb[5], lb[6]))
@@ -239,7 +241,7 @@ def _alm_zimmer():
     pts.append(P(a1 - 9, r + 15))
     return {"name": "Zimmermannsschlag", "vb": (240, 256), "s": [{"p": pts, "seq": "uo" + "ou" * turns + "uo" + "ou" * turns, "w": n_loop - 1}],
             "under": '<circle class="kp" cx="%d" cy="%d" r="50"/><circle class="kq" cx="%d" cy="%d" r="33"/><circle class="kq" cx="%d" cy="%d" r="15"/>' % (cx, cy, cx, cy, cx, cy),
-            "lab": ((4, 66, "feste Leine (Zug)"), (128, 156, "^Stamm"), (236, 250, ">loses Ende")), "n_loop": n_loop}
+            "lab": ((4, 64, "feste Leine"), (4, 96, "← Zug"), (128, 156, "^Stamm"), (236, 250, ">loses Ende")), "n_loop": n_loop}
 
 
 # ---- the knots: way (control points, laid out by hand in the usual textbook view) + crossing sequence along the rope ---------------
