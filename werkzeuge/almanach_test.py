@@ -604,6 +604,107 @@ def teil_sos_bild(ns, c, sos):
         SOS.update(on=False, flash_t=0.0); SOS["starts"].clear(); CFG["light_white"] = "off"
 
 
+def zurueck(pg, ns, base, ctx, arts):
+    """Der Weg zurück (Besitzer: «es fehlt noch eine Taste um zurückzukommen»): in jeder Ansicht des Almanachs eine sichtbare Taste
+    oben in der Kopfzeile, die zur übergeordneten Ansicht führt - auch ohne Verlauf (Seite direkt geöffnet, App vom Home-Bildschirm)."""
+    CFG = ns["CFG"]
+    pw0 = (CFG["web_password"], CFG["web_pw_hash"])
+    CFG["web_password"] = ""; CFG["web_pw_hash"] = ""         # zuerst wie der Besitzer am eigenen Gerät (kein Gast)
+    lage = """() => { const b = document.getElementById('b-back'), r = b.getBoundingClientRect(), h = document.querySelector('header').getBoundingClientRect();
+        const oben = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        const x = document.getElementById('b-x'), xr = x.getBoundingClientRect(), xo = document.elementFromPoint(xr.left + xr.width / 2, xr.top + xr.height / 2);
+        const knoepfe = [...document.querySelectorAll('header button:not([hidden]), header input, header h1')].map(e => e.getBoundingClientRect());
+        let ueber = 0; for (let i = 0; i < knoepfe.length; i++) for (let j = i + 1; j < knoepfe.length; j++) { const a = knoepfe[i], c = knoepfe[j];
+          if (Math.min(a.right, c.right) - Math.max(a.left, c.left) > 0.5 && Math.min(a.bottom, c.bottom) - Math.max(a.top, c.top) > 0.5) ueber++; }
+        const h1 = document.querySelector('header h1'), hb = h1.getBoundingClientRect(), rg = document.createRange(); rg.selectNodeContents(h1); const ht = rg.getBoundingClientRect();
+        return {titel: b.hidden || (hb.left >= r.right && Math.abs((hb.top + hb.bottom) / 2 - (r.top + r.bottom) / 2) < 12 && Math.min(ht.right, hb.right) > hb.left + 60 && hb.right <= innerWidth),
+                kopf: Math.round(h.height), x: xr.width >= 44 && xr.height >= 44 && xo === x && xr.left >= 0 && xr.right <= innerWidth && xr.top >= h.top - 1 && xr.bottom <= h.bottom + 1 && x.title === 'Almanach schliessen' && x.getAttribute('aria-label') === 'Almanach schliessen',
+                ueber: ueber, da: !b.hidden && r.width > 0, text: b.textContent, w: r.width, h: r.height, top: r.top, links: r.left, rechts: r.right, inKopf: r.top >= h.top - 1 && r.bottom <= h.bottom + 1,
+                frei: oben === b, breit: innerWidth, zoom: !!document.querySelector('figure.zoom'), hash: location.hash, art: (document.querySelector('article h2') || {}).textContent || '',
+                kap: !!document.querySelector('.ch'), start: !!document.querySelector('.chp')}; }"""
+
+    def pruefe(was, text="‹ Zurück", gescrollt=False):
+        if gescrollt:
+            pg.evaluate("window.scrollTo(0, 99999)"); pg.wait_for_timeout(80)
+        z = pg.evaluate(lage)
+        ok(z["x"] and z["ueber"] == 0, f"{was}: «✕» (Almanach schliessen) sichtbar in der Kopfzeile, mindestens 44 px, nichts überlappt {z}")
+        ok(z["titel"] and z["kopf"] <= 175, f"{was}: der Titel steht rechts neben «‹ Zurück» in derselben Zeile (sein Kasten beginnt erst nach der Taste), die Kopfzeile bleibt bei drei Zeilen {z}")
+        ok(z["da"] and z["text"] == text and z["h"] >= 44 and z["w"] >= 44 and z["inKopf"] and z["frei"] and 0 <= z["links"] and z["rechts"] <= z["breit"] and z["top"] < 120,
+           f"{was}: Taste «{text}» sichtbar oben in der Kopfzeile, mindestens 44 px, nichts liegt darüber {z}")
+        return z
+    i_pal = [a[1] for a in arts].index("Palstek"); ci = [c[0] for c in ns["ALMANAC"]].index("knoten")
+    # direkt auf einen Artikel geöffnet (kein Verlauf): Artikel -> Kapitel -> Inhalt -> «Mehr»
+    p2 = ctx.new_page()
+    global_pg = pg
+    for seite in (p2,):
+        pg = seite
+        pg.goto(base + "/almanach/#a%d" % i_pal); pg.wait_for_selector("#figs figure")
+        ok(pg.evaluate("history.length") <= 2, "Seite direkt geöffnet: kein Verlauf")
+        pruefe("Artikel"); pruefe("Artikel, ganz nach unten gescrollt", gescrollt=True)
+        pg.evaluate("window.scrollTo(0, 0)"); pg.click("#figs figure >> nth=0")
+        z = pg.evaluate("""() => { const f = document.querySelector('figure.zoom'), s = getComputedStyle(f, '::before'); return {zu: s.content, pos: s.position, h: parseFloat(s.minHeight)}; }""")
+        ok("Schliessen" in z["zu"] and "✕" in z["zu"] and z["pos"] == "fixed" and z["h"] >= 44, f"Bild gross: oben rechts steht «✕ Schliessen» {z}")
+        pg.mouse.click(340, 30); pg.wait_for_timeout(100)
+        ok(pg.locator("figure.zoom").count() == 0 and pg.evaluate(lage)["art"] == "Palstek", "ein Tipp auf «✕ Schliessen» schliesst das Bild, der Artikel bleibt")
+        pg.click("#b-back"); pg.wait_for_selector(".it")
+        z = pruefe("Kapitel"); ok(z["kap"] and z["hash"] == "#c%d" % ci and not z["art"], f"vom Artikel zurück ins Kapitel {z}")
+        pruefe("Kapitel, gescrollt", gescrollt=True)
+        pg.click("#b-back"); pg.wait_for_selector(".chp")
+        z = pruefe("Inhalt (angemeldet / ohne Passwort)", text="‹ Mehr"); ok(z["start"] and z["hash"] in ("", "#"), f"vom Kapitel zurück zum Inhalt {z}")
+        pg.fill("#q", "knoten"); pg.wait_for_selector(".it"); pruefe("Suchergebnisse")
+        pg.click("#b-back"); pg.wait_for_selector(".chp")
+        ok(pg.input_value("#q") == "" and pg.evaluate(lage)["start"], "von den Suchergebnissen zurück zum Inhalt, Suchfeld leer")
+        pg.evaluate("i => chap(i)", 0); pg.wait_for_selector("#sos"); pruefe("Kapitel Notfall mit SOS-Lampe")
+        for name, js, sel in (("Artikel", "i => show(i)", "#figs figure"), ("Kapitel", "i => chap(%d)" % ci, ".it"), ("Inhalt", "i => home('')", ".chp")):
+            pg.goto(base + "/almanach/#"); pg.reload(); pg.wait_for_selector(".chp")
+            pg.evaluate(js, i_pal); pg.wait_for_selector(sel)
+            pg.click("#b-x"); pg.wait_for_url("**/more", timeout=8000)
+            ok(pg.url.endswith("/more"), f"«✕» im {name}: ein Tipp, und man ist bei MoveEye «Mehr»")
+        pg.goto(base + "/almanach/#"); pg.reload(); pg.wait_for_selector(".chp")
+        pg.evaluate("i => chap(i)", 0); pg.wait_for_selector("#sos")
+        # die Zurück-Geste des Handys / Browsers geht durch dieselben Ansichten
+        pg.evaluate("i => show(i)", i_pal); pg.wait_for_selector("#figs figure")
+        pg.go_back(); pg.wait_for_selector("#sos")
+        ok(pg.evaluate(lage)["kap"] and not pg.evaluate(lage)["art"], "Zurück-Geste: die Seite zeigt wieder das Kapitel (vorher änderte sich nur die Adresse)")
+        pg.evaluate("home('')"); pg.wait_for_selector(".chp")
+        pg.click("#b-back"); pg.wait_for_url("**/more", timeout=8000)
+        ok(pg.url.endswith("/more"), "vom Inhalt zurück zu MoveEye «Mehr»")
+        pg.close()
+    pg = global_pg
+    # ein Gast hinter einem Passwort hat über dem Inhalt nichts: dort keine Taste, in den Unterseiten schon
+    CFG["web_password"], CFG["web_pw_hash"] = pw0
+    ok(bool(pw0[0] or pw0[1]), "Passwort gesetzt")
+    try:
+        pg.goto(base + "/almanach/#"); pg.reload(); pg.wait_for_selector(".chp")
+        ok(pg.evaluate("document.getElementById('b-back').hidden") and pg.evaluate("PLUS.heim") == "", "Gast (nicht angemeldet): im Inhalt kein «‹ Zurück» ins Leere")
+        z = pg.evaluate(lage); ok(z["x"] and z["ueber"] == 0, f"Gast im Inhalt: «✕» ist da {z}")
+        pg.click("#b-x"); pg.wait_for_selector("#x-tip:not([hidden])", timeout=4000)
+        ok("Tab schliessen" in pg.locator("#x-tip").inner_text() and "/almanach" in pg.url, "Gast: «✕» sagt, was zu tun ist (Tab schliessen), wenn sich der Tab nicht schliessen lässt")
+        r = pg.request.get(base + "/more"); ok(r.status == 401, f"für den Gast gibt es keine Seite von MoveEye, auf die «✕» führen könnte (/more: {r.status})")
+        pg.evaluate("i => chap(i)", ci); pg.wait_for_selector(".it"); pruefe("Gast im Kapitel")
+        pg.evaluate("i => show(i)", i_pal); pg.wait_for_selector("#figs figure"); pruefe("Gast im Artikel")
+    finally:
+        CFG["web_password"] = ""; CFG["web_pw_hash"] = ""
+    i_lang = max(range(len(arts)), key=lambda i: len(arts[i][1]))      # der längste Artikel-Titel
+    try:
+      for gast in (True, False):                           # Artikel-Ansicht: Gast und bekanntes Gerät, alle fünf Sprachen
+        CFG["web_password"], CFG["web_pw_hash"] = pw0 if gast else ("", "")
+        for lang, wort, mehr in (("en", "‹ Back", ""), ("fr", "‹ Retour", ""), ("it", "‹ Indietro", ""), ("rm", "‹ Enavos", ""), ("de", "‹ Zurück", "")):
+            CFG["lang"] = lang
+            pg.goto(base + "/almanach/#"); pg.reload(); pg.wait_for_selector(".chp")
+            ok(pg.evaluate("PLUS.heim") == ("" if gast else "/more"), f"{'Gast' if gast else 'bekanntes Gerät'} ({lang})")
+            pg.evaluate("i => show(i)", i_lang); pg.wait_for_selector("article h2")
+            pruefe(f"Artikel mit dem längsten Titel, {'Gast' if gast else 'bekanntes Gerät'} ({lang})", text=wort)
+      CFG["web_password"] = ""; CFG["web_pw_hash"] = ""
+      for lang, wort, mehr in (("en", "‹ Back", "‹ More"), ("fr", "‹ Retour", "‹ Plus"), ("it", "‹ Indietro", "‹ Altro"), ("rm", "‹ Enavos", "‹ Dapli"), ("de", "‹ Zurück", "‹ Mehr")):
+        CFG["lang"] = lang
+        pg.goto(base + "/almanach/#"); pg.reload(); pg.wait_for_selector(".chp"); pruefe(f"Inhalt ({lang})", text=mehr)
+        pg.evaluate("i => chap(i)", ci); pg.wait_for_selector(".it"); pruefe(f"Kapitel ({lang})", text=wort)
+    finally:
+        CFG["web_password"], CFG["web_pw_hash"] = pw0; CFG["lang"] = "de"
+    pg.goto(base + "/almanach/#"); pg.reload(); pg.wait_for_selector(".chp")
+
+
 # ---------------------------------------------------------------------------------------------------------------------- B
 def teil_b(ns, app, bilder):
     from playwright.sync_api import sync_playwright
@@ -627,7 +728,8 @@ def teil_b(ns, app, bilder):
         pg.goto(base + "/almanach/")
         pg.wait_for_selector(".chp")
         ok(pg.locator(".chp").count() == 12, "12 Kapitel auf der Startseite")
-        ok(pg.locator("#mw-exit").count() == 0 and pg.locator("#b-x[data-mw-exit]").count() == 1, "kein schwebender «✕ Zurück»-Knopf über den Bildern: der Almanach hat seinen eigenen in der Kopfzeile")
+        ok(pg.locator("#mw-exit").count() == 0 and pg.locator("[data-mw-exit]").count() == 0, "kein schwebender «✕ Zurück»-Knopf über den Bildern")
+        zurueck(pg, ns, base, ctx, arts)
 
         def thema(t):
             pg.evaluate("([th, n]) => { localStorage.setItem('mw-theme', th); localStorage.setItem('mw-night', n); apply(); }",

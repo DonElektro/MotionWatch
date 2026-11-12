@@ -194,12 +194,17 @@ res = {"ok": ns["ZD"]["ok"], "err": ns["ZD"]["err"], "de": ns["DE"].get("Tour of
        "fx_text": "moveeye_daten" in fx.get_data(as_text=True) or "Zusatz" in fx.get_data(as_text=True),
        "health": [x.get("id") for x in (lambda h: h.get("items") if isinstance(h, dict) else h)(ns["health_check"]("de"))
                   if isinstance(x, dict) and x.get("id") == "zusatz"],
-       "cfg": len(ns["CFG"]), "de_n": len(ns["DE"])}
+       "cfg": len(ns["CFG"]), "de_n": len(ns["DE"]), "alm": (lambda r: [r.status_code, r.get_data(as_text=True)])(c.get("/almanach"))}
 print("KERN " + json.dumps(res, ensure_ascii=False))
 '''
         rc, out = im_programm(prog, code, os.path.join(tmp, "h5"))
         r = zeile(out, "KERN") or {}
         ok(rc == 0 and r.get("ok") is False and r.get("err") == "missing", "lädt ohne ZIP, kein Absturz (%s)" % (r.get("err") if r else out[-1200:]))
+        alm = r.get("alm") or [0, ""]
+        ok(alm[0] == 200 and "Notrufnummern" in alm[1] and "Zusatzdaten fehlen" in alm[1] and "ALMANAC_WEITER" not in alm[1],
+           "/almanach ohne ZIP: das Kapitel «Notfall» als einfache Seite mit dem Hinweis (%s)" % alm[0])
+        ok(re.search(r'<body><a class="z" href="/more">‹ Mehr</a>', alm[1]) and "min-height:44px" in alm[1],
+           "/almanach ohne ZIP: ganz oben ein Weg zurück zu «Mehr» (44 px hoch, ein einfacher Link)")
         ok(r.get("de") == "Rundgang durch diese Seite", "Deutsch aus den Tabellen _HX… bleibt in der Hauptdatei")
         ok(r.get("fr") == "Tour of this page" and r.get("hx") == ["Rundgang durch diese Seite", "Tour of this page",
                                                                     "Tour of this page", "Rundgang durch diese Seite"],
