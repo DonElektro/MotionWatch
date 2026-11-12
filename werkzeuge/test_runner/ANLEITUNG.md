@@ -91,23 +91,43 @@ gh run list -R DonElektro/MotionWatch -w "Dauerrechnen (HP)" -L 5
 ## Controller (PS5 DualSense) am HP
 
 - **Per Kabel (geht immer):** Controller mit USB-C anstecken – Linux kennt ihn von selbst (Treiber `hid-playstation`).
-- **Per Bluetooth, ohne Tippen:** im Testbild den Knopf **«Controller koppeln»** (oder Taste **K**), im Kiosk (Simulator
-  läuft) **Ctrl+Alt+B**. Dann am Controller **PS-Taste und Create-Taste** gleichzeitig halten, bis das Licht schnell blinkt.
-  Ein Fenster zeigt den Fortschritt (Suche bis 60 s → gekoppelt → verbunden). Danach genügt die PS-Taste.
-  Ohne Bluetooth-Adapter steht dort «Kein Bluetooth – USB-Stick nötig oder Controller per USB-C-Kabel» (ein USB-Bluetooth-Stick
-  genügt, einstecken und noch einmal).
-- **Spielen:** jede Taste und jeder deutliche Stick-Ausschlag zählt als Spielen (`hp_wache.py` liest nur `/dev/input/js*`
-  bzw. die Joystick-Geräte, die die Kiosk-Sitzung ohnehin lesen darf); das Rechnen hält an, der Simulator startet. Der
-  Simulator kennt den DualSense über die eingebaute SDL-Liste von Godot 4.3 (USB und Bluetooth), Tasten wie beim Xbox-Controller
-  (Kreuz = A, Kreis = B, Viereck = X, Dreieck = Y, Create = Select, Options = Start).
-- **Sicherheit:** der Kiosk-Benutzer bekommt kein root, kein sudo, keine polkit-Regel. Er legt nur die leere Datei
-  `/run/moveeye-spiel/controller_koppeln` an; die Pfad-Einheit `moveeye-controller-koppeln.path` startet dann den Dienst
-  `moveeye-controller-koppeln.service` (root, `controller_koppeln.sh`), der immer dasselbe tut: Bluetooth an, 60 s suchen,
-  nur einen Sony-DualSense koppeln (Hersteller-Kennung 054C), vertrauen, verbinden, Kopplung wieder aus. Der HP selbst wird
-  nicht sichtbar gemacht. Fortschritt: `/run/moveeye-controller/status.json` (feste Texte, keine Adressen).
+- **Per Bluetooth, ohne Tippen:** Knopf **«Controller koppeln»** – im Testbild (oder Taste **K**), im Kiosk der kleine Knopf
+  mit dem Controller-Symbol in der Ecke unten rechts (nur sichtbar, solange kein Controller angeschlossen ist; Ecke oder
+  `aus` mit `CONTROLLER_KNOPF=…` in `/etc/moveeye-kiosk.conf`), mit Tastatur **Ctrl+Alt+B**. Das Fenster zeigt gross:
+  **«PS-Taste und Create-Taste gedrückt halten, bis die Leiste schnell blau blinkt»**, sucht 60 s und koppelt den ersten
+  Controller von selbst. Ergebnis: «Verbunden ✔», «Kein Controller gefunden» oder «Kein Bluetooth-Adapter gefunden –
+  USB-Bluetooth-Stick einstecken oder Controller per USB-C-Kabel anschliessen». Danach genügt die PS-Taste.
+- **Verwalten (HP_FASSUNG 7):** dasselbe Fenster zeigt die gekoppelten Controller mit **Akku**, dazu **«Trennen»** und
+  **«Vergessen»** (zweimal drücken). Bedienen mit Maus / Finger, Tastatur (Pfeile, Enter, Esc) oder dem Controller selbst
+  (Steuerkreuz, ✕ = wählen, ○ = zurück). Ist schon ein Controller verbunden, öffnet der Knopf zuerst diese Liste.
+  Gekoppelt werden nur Gamepads: DualSense, DualSense Edge, DualShock 4, Xbox-Controller (Hersteller-Kennung bzw. Name und
+  Geräteklasse) – nie Tastaturen, Kopfhörer, Handys.
+- **Kein Bluetooth im HP?** (Stand HP-Diagnose 11.11.2026: kein Adapter.) Einen **USB-Bluetooth-Stick** einstecken – mehr
+  braucht es nicht (der Dienst schaltet ihn von selbst ein, auch nach jedem Start). Geeignet: Sticks mit Bluetooth 5.0–5.3
+  und Chip **Realtek RTL8761B / RTL8761BU** (die meisten «BT 5.0 / 5.1»-Sticks für ~10–15 CHF) oder Intel; Treiber `btusb`
+  und Firmware (`linux-firmware`) sind in Linux dabei. Meiden: sehr billige «CSR 4.0»-Sticks (Nachbauten des CSR8510, oft
+  wacklig) und Sticks ganz ohne Angabe zum Chip. Vorne am HP einstecken (freie Sicht zum Controller), nicht direkt neben
+  einem USB-3-Gerät.
+- **Spielen:** jede Taste und jede deutliche Stick-Bewegung zählt als Spielen – per Kabel und per Bluetooth gleich
+  (`hp_wache.py` liest `/dev/input/js*`); das Rechnen hält an, der Simulator startet. Auch langsam geschobene und gehaltene
+  Sticks zählen (gehalten höchstens 10 Min. ohne andere Eingabe). **Koppeln ist kein Spielen:** solange das Fenster offen
+  ist, zählen Tasten am Controller nicht; ein verbundener, aber unbenutzter Controller zählt nie. Nach 20 Min. ohne Eingabe
+  werden Bluetooth-Controller getrennt (schont den Akku; die PS-Taste verbindet wieder). Das Touchpad des Controllers ist im
+  Kiosk keine Maus (udev-Regel). Der Simulator kennt den DualSense über die eingebaute SDL-Liste von Godot 4.3 (USB und
+  Bluetooth), Tasten wie beim Xbox-Controller (Kreuz = A, Kreis = B, Viereck = X, Dreieck = Y, Create = Select, Options = Start).
+- **Sicherheit:** der Kiosk-Benutzer bekommt kein root, kein sudo, keine polkit-Regel. Er legt nur **leere Dateien**
+  `/run/moveeye-spiel/controller_*` an (es zählt nur der Name: `koppeln`, `abbrechen`, `liste`, `trennen.<Kürzel>`,
+  `vergessen.<Kürzel>`, `ruhe`); die Pfad-Einheit `moveeye-controller-koppeln.path` startet dann den Dienst
+  `moveeye-controller-koppeln.service` (root, `controller_koppeln.sh`). Das Kürzel stammt aus der Liste des Dienstes und gilt
+  nur für Gamepads. Der HP selbst wird nicht sichtbar gemacht. Für den Bildschirm: `/run/moveeye-controller/status.json` und
+  `liste.json` (feste Texte, keine Adressen, keine Namen aus dem Funk).
 - **Von Hand / prüfen:** `sudo /usr/local/lib/moveeye-kiosk/controller_koppeln.sh`, Protokoll `journalctl -u
-  moveeye-controller-koppeln`; aus der Ferne Actions → «HP-Diagnose» (Zeile «Bluetooth: Adapter ja/nein, Controller verbunden …»).
-  Eingerichtet wird alles von `moveeye-hp-update` (bluez, rfkill, fehlt der Treiber: `linux-modules-extra` des Kerns).
+  moveeye-controller-koppeln`; aus der Ferne Actions → «HP-Diagnose» (Abschnitte «Bluetooth / Controller» und
+  «Bluetooth-Hardware»: rfkill, lsusb, lspci, Treiber, Eingabegeräte). Eingerichtet wird alles von `moveeye-hp-update`
+  (bluez, rfkill, usbutils, pciutils; fehlt der Treiber `hid-playstation` oder `btusb`: `linux-modules-extra` des Kerns;
+  udev-Regel `/etc/udev/rules.d/71-moveeye-controller.rules`).
+- **Test:** `bash werkzeuge/test_runner/controller_test.sh` (Ersatz-bluetoothctl, Ersatz-Controller, Ersatz-Tk). Das echte
+  Koppeln mit dem echten Controller kann nur am HP geprüft werden.
 
 ## 0. Automatisches Update (einmal eintippen)
 
@@ -123,7 +143,7 @@ neueste **signierte** Version; ist die letzte Prüfung über 20 Std. her, lässt
 ist (so mindestens einmal am Tag). Es spielt ein, was sich geändert hat:
 Kiosk (`kiosk_sitzung.sh`, Testbild), Haken und Dienst-Einstellungen des Runners, fehlende Pakete, den Simulator im
 Kiosk-Ordner und sich selbst (ab 3.55.0 auch `hp_wache.py` und den Ordner `/run/moveeye-spiel`, mit HP_FASSUNG 4 auch
-«Controller koppeln»: bluez, Dienst, Ctrl+Alt+B; mit HP_FASSUNG 5 den **Bildschirm für die Tests**, siehe unten). Die Anmeldung des Runners
+«Controller koppeln»: bluez, Dienst, Ctrl+Alt+B, mit HP_FASSUNG 7 die Liste mit Trennen / Vergessen, den Knopf in der Ecke und die udev-Regel; mit HP_FASSUNG 5 den **Bildschirm für die Tests**, siehe unten). Die Anmeldung des Runners
 (Token) fasst es nie an. Läuft ein Test oder wird gespielt, wird verschoben (nächster Blick in 15 Min.).
 **Ab HP_FASSUNG 6 (08.11.2026):** der Zeitplan schaut jedes Mal kurz in die signierte `versions.json`; nichts Neues: höchstens
 stündlich eine Zeile. Gibt es Neues und läuft ein Test, steht jedes Mal eine Zeile mit dem Grund im Protokoll und die Marke

@@ -121,8 +121,8 @@ printf 'SIM=%q\nSIM_ARGS=(--fullscreen)\n' "$SIMD/MoveEyeSim3D.x86_64" > "$X/etc
 sed -n "/^schreibe \"\$LIB\/openbox.xml\" 644 <<'EOF'\$/,/^EOF\$/p" "$R/simulator3d/beilagen_linux/kiosk_ein.sh" | sed '1d;$d' \
 	| grep -v 'kiosk_sitzung.sh koppeln' > "$X/usr/local/lib/moveeye-kiosk/openbox.xml"
 grep -q 'kiosk_sitzung.sh neustart' "$X/usr/local/lib/moveeye-kiosk/openbox.xml" || fehler "Testaufbau: openbox.xml"
-for b in systemctl apt-get apt-cache systemd-run systemd-tmpfiles modinfo; do
-	printf '#!/bin/sh\necho "%s $*" >> "%s/aufrufe.txt"\n[ "%s $1 $2" = "systemctl is-active -q" ] && exit 0\nexit 0\n' "$b" "$W" "$b" > "$B/$b"
+for b in systemctl apt-get apt-cache systemd-run systemd-tmpfiles modinfo udevadm; do
+	printf '#!/bin/sh\necho "%s $*" >> "%s/aufrufe.txt"\n[ "%s $1 $2" = "systemctl is-active -q" ] && exit 0\n[ "%s $1 $2 $3" = "systemctl is-enabled -q bluetooth.service" ] && exit 1\nexit 0\n' "$b" "$W" "$b" "$b" > "$B/$b"
 	chmod 755 "$B/$b"
 done
 # Bildschirm für Tests: Ersatz-xhost (läuft als Benutzer des Kiosks), Einstellung von runner_einrichten.sh, XAUTHORITY der Sitzung
@@ -221,7 +221,22 @@ ls "$X/etc/polkit-1" "$X/etc/sudoers.d" >/dev/null 2>&1 && fehler "polkit / sudo
 	&& ok "openbox.xml: Ctrl+Alt+B dazu (gültiges XML, root)" || { fehler "openbox.xml"; cat "$KL/openbox.xml"; }
 grep -q "apt-get install .*bluez" "$W/aufrufe.txt" && grep -q "apt-get install .*rfkill" "$W/aufrufe.txt" && ok "bluez, rfkill nachinstalliert" \
 	|| echo "  (bluez / rfkill waren schon da)"
-grep -q "modinfo hid_playstation" "$W/aufrufe.txt" && ok "Treiber hid-playstation geprüft" || fehler "hid-playstation nicht geprüft"
+grep -q "modinfo hid_playstation" "$W/aufrufe.txt" && grep -q "modinfo btusb" "$W/aufrufe.txt" && ok "Treiber hid-playstation und btusb geprüft" || fehler "hid-playstation / btusb nicht geprüft"
+# 4b. Controller verwalten (HP_FASSUNG 7)
+grep -qx "PathExistsGlob=$X/run/moveeye-spiel/controller_\*" "$KD.path" && grep -qx "StartLimitIntervalSec=0" "$KD.service" \
+	&& ok "Pfad-Einheit schaut auf alle Wünsche controller_* (Liste, Trennen, Vergessen); Dienst ohne Startlimit" || { fehler "Pfad-Einheit / Dienst (Fassung 7)"; cat "$KD.path" "$KD.service"; }
+UR="$X/etc/udev/rules.d/71-moveeye-controller.rules"
+[ "$(stat -c %U:%a "$UR" 2>/dev/null)" = root:644 ] && [ "$(grep -c '^ACTION' "$UR")" = 2 ] \
+	&& grep -q '^ACTION!="remove", SUBSYSTEM=="input", KERNEL=="event\*", ATTRS{name}=="\*Controller Touchpad", ENV{LIBINPUT_IGNORE_DEVICE}="1"$' "$UR" \
+	&& grep -q '^ACTION=="add", SUBSYSTEM=="bluetooth", KERNEL=="hci\[0-9\]\*", TAG+="systemd", ENV{SYSTEMD_WANTS}+="moveeye-controller-koppeln.service"$' "$UR" \
+	&& ! grep -q 'MODE=\|GROUP=\|RUN+=' "$UR" \
+	&& ok "udev-Regel: Touchpad des Controllers keine Maus; Adapter taucht auf -> Dienst (keine Rechte geändert, kein RUN)" || { fehler "udev-Regel"; cat "$UR"; }
+grep -q "udevadm control --reload" "$W/aufrufe.txt" && ok "udev neu geladen" || fehler "udev nicht neu geladen"
+grep -q "systemctl enable bluetooth.service" "$W/aufrufe.txt" && ! grep -q "systemctl start bluetooth.service\|systemctl restart bluetooth" "$W/aufrufe.txt" \
+	&& ok "bluetooth.service eingeschaltet, nicht gestartet (startet nur mit Adapter)" || fehler "bluetooth.service"
+if compgen -G '/sys/class/bluetooth/hci*' >/dev/null; then echo "  (dieser Rechner hat einen Bluetooth-Adapter: «ohne Adapter» hier nicht prüfbar)"
+else ! grep -q "systemctl start --no-block moveeye-controller-koppeln.service" "$W/aufrufe.txt" && ok "ohne Bluetooth-Adapter: der Dienst wird nicht gestartet (kein Fehler, keine Wartezeit)" || fehler "Dienst ohne Adapter gestartet"; fi
+grep -q "^HP_FASSUNG=7 " "$U" && [ "$(cat "$X/var/lib/moveeye-hp-update/fassung")" = 7 ] && ok "HP_FASSUNG 7 gemerkt" || fehler "HP_FASSUNG"
 # 5. Bildschirm für Tests
 KT="$X/etc/moveeye-kiosk-test.conf"
 [ "$(grep -c '^TEST_BENUTZER=' "$KT")" = 1 ] && grep -qx 'TEST_BENUTZER=daemon' "$KT" && grep -qx 'PAUSE_DATEI=/run/moveeye-test/kiosk_pause' "$KT" \
