@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Test «Akku bis Sonnenaufgang?» (Teil 280 night_warn_reason, Teil 100 BATT_N) - die Abend-Meldung nach einem Neustart.
+"""Test «Akku bis Sonnenaufgang?» (Teil 280 night_warn_reason, Teil 100 BATT_N) - die Abend-Meldung nach einem Neustart
+und die Anzeige dazu (Selbst-Check: am Netz «Netzbetrieb» / «lädt», in der Einschwingzeit noch nichts - gleiche Regel night_hold).
 
 Hintergrund (Besitzer 13.11.2026): nach jedem Update-Neustart kam «🪫 Akku bis Sonnenaufgang? – Noch 5.2 h, nötig 10.7 h»,
 am Netz und mit 99 % Akku. Ursachen: (1) die Prognose fragte nicht, ob das Gerät überhaupt vom Akku läuft, (2) am Netz ist
@@ -68,8 +69,13 @@ for i in range(fall["ticks"]):
     sol.tick()
     out.append(len([p for p in pushes if "sunrise" in p or "Sonnenaufgang" in p]))
 b = ns["STATE"]["battery"]; nf = ns["STATE"].get("night") or {}
+try:
+    hc = ns["health_check"]("de")
+    it = [x for x in (hc.get("items") if isinstance(hc, dict) else hc) if isinstance(x, dict) and x.get("id") == "batt"]
+except Exception as e:
+    it = [{"text": "health_check: %r" % e, "level": "?"}]
 print("ERG " + json.dumps({"n": out, "use_w": b.get("use_w"), "cap": b.get("cap_wh"), "on_batt": b.get("on_battery"), "have": nf.get("have_h"),
-                           "need": nf.get("need_h"), "enough": nf.get("enough"), "text": [p for p in pushes if "sunrise" in p or "Sonnenaufgang" in p][:1],
+                           "need": nf.get("need_h"), "enough": nf.get("enough"), "hold": nf.get("hold"), "batt": (it or [{}])[0].get("text"), "lvl": (it or [{}])[0].get("level"), "text": [p for p in pushes if "sunrise" in p or "Sonnenaufgang" in p][:1],
                            "datei": os.path.isfile(os.path.join(ns["DATA_DIR"], "night_warned.json"))}, ensure_ascii=False))
 os._exit(0)
 '''
@@ -111,6 +117,8 @@ def main():
         ok(r.get("enough") is False and r.get("on_batt") is False, "die Prognose selbst sagt «reicht nicht» (%s h von %s h bei %s W Augenblickswert) - am Netz"
            % (r.get("have"), r.get("need"), r.get("use_w")))
         ok(r.get("n") == [0] * 12 and r.get("datei") is False, "keine Meldung, auch nach der Einschwingzeit nicht (%s)" % r.get("n"))
+        ok(r.get("hold") == "mains" and "Sonnenaufgang" not in str(r.get("batt")) and "99 %" in str(r.get("batt")) and "Netzbetrieb" in str(r.get("batt"))
+           and r.get("lvl") == "ok", "Selbst-Check zeigt den Netzbetrieb statt «zu wenig bis Sonnenaufgang» (%s, %s)" % (r.get("batt"), r.get("lvl")))
         print("2  Neustart am Akku, genug Ladung")
         r = lauf(datei, h("b"), netz=False, pct=99, cap=60.0, w=3.0, ticks=12)
         ok(r.get("enough") is True and r.get("n") == [0] * 12, "keine Meldung (%s h von %s h)" % (r.get("have"), r.get("need")))
@@ -119,6 +127,11 @@ def main():
         ok(r.get("enough") is False and r.get("on_batt") is True, "Prognose: %s h von %s h" % (r.get("have"), r.get("need")))
         ok(r.get("n") == [0] * 5 + [1] * 5, "erst nach der Einschwingzeit (6 Messungen = 1 Minute bei der USV), dann genau einmal (%s)" % r.get("n"))
         ok(bool(r.get("text")) and str(r.get("have")) in r["text"][0] and r.get("datei") is True, "Text mit den Stunden, der Abend ist gemerkt")
+        ok(r.get("hold") == "" and "zu knapp bis Sonnenaufgang" in str(r.get("batt")) and r.get("lvl") == "warn",
+           "Selbst-Check sagt dasselbe wie die Meldung (%s, %s)" % (r.get("batt"), r.get("lvl")))
+        r = lauf(datei, h("c2"), netz=False, pct=50, cap=40.0, w=4.0, ticks=3)
+        ok(r.get("hold") == "settling" and r.get("n") == [0] * 3 and "Sonnenaufgang" not in str(r.get("batt")) and "50 %" in str(r.get("batt")),
+           "in der Einschwingzeit: weder Meldung noch «zu knapp» in der Anzeige (%s)" % r.get("batt"))
         r = lauf(datei, h("c"), netz=False, pct=48, cap=40.0, w=4.0, ticks=10)
         ok(r.get("n") == [0] * 10, "zweiter Neustart am selben Abend: keine zweite Meldung (%s)" % r.get("n"))
         r = lauf(datei, h("c"), netz=False, pct=48, cap=40.0, w=4.0, ticks=3, zeit=[2026, 11, 14, 1, 30])
@@ -127,7 +140,8 @@ def main():
         ok(r.get("n") == [0] * 5 + [1] * 3, "am nächsten Abend wieder (%s)" % r.get("n"))
         print("4  Neustart am Akku, kritisch (unter der Grenze «fast leer»)")
         r = lauf(datei, h("d"), netz=False, pct=15, cap=40.0, w=4.0, ticks=3)
-        ok(r.get("n") == [1, 1, 1], "sofort, ohne Einschwingzeit, einmal (%s)" % r.get("n"))
+        ok(r.get("n") == [1, 1, 1] and r.get("hold") == "" and "zu knapp bis Sonnenaufgang" in str(r.get("batt")),
+           "sofort, ohne Einschwingzeit, einmal; die Anzeige ebenso (%s · %s)" % (r.get("n"), r.get("batt")))
         print("5  Powerbank ohne USV (kein Netz-Signal)")
         r = lauf(datei, h("e"), bank=True, pct=50, cap=40.0, w=4.0, ticks=62)
         n = r.get("n") or []

@@ -834,6 +834,13 @@ def night_warn_reason(nf, b, day, hour, dark):
         return "not evening"
     if night_warned_get() == day:
         return "already warned"
+    return night_hold(b)
+
+
+def night_hold(b):
+    """why the night forecast does not count right now: "mains" (a UPS that is not running on its cells), "settling" (the
+    window of the consumption estimate is not full yet after the program start; never at or below «almost empty»), "" = it
+    counts. One rule for the push and for every display (self-check 120, web 530, window 570), so they never disagree."""
     b = b or {}
     ups = b.get("src") == "ups"
     if ups and (b.get("on_battery") is False or b.get("charging")):
@@ -897,7 +904,8 @@ def night_forecast():
         ss = datetime(now.year, now.month, now.day) + timedelta(minutes=st[1]) if not isinstance(st, str) else now
         need = max(0.0, (sr - max(ss, now)).total_seconds() / 3600.0)
     have = b["pct"] / 100.0 * float(b["cap_wh"]) / max(0.5, float(b["use_w"]))
-    return {"sunrise": sr.strftime("%H:%M"), "need_h": round(need, 1), "have_h": round(have, 1), "enough": have >= need * 1.1, "night": dark}
+    return {"sunrise": sr.strftime("%H:%M"), "need_h": round(need, 1), "have_h": round(have, 1), "enough": have >= need * 1.1, "night": dark,
+            "hold": night_hold(b), "charging": bool(b.get("charging"))}      # hold: the displays show mains / nothing instead
 
 
 class SolarMonitor:
