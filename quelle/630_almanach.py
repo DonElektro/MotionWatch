@@ -262,7 +262,9 @@ def alm_notfall_seite():
             'initial-scale=1"><title>Überlebens-Almanach – Notfall</title><style>body{margin:0 auto;max-width:640px;padding:16px;'
             'background:#0e1621;color:#e8eef6;font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}h1{font-size:24px}'
             'h2{font-size:19px;color:#e9a23b;margin:22px 0 4px}.n{color:#8ea0b6;font-size:14px;border:1px solid #24324a;'
-            'border-radius:10px;padding:10px 12px}a{color:#58a6ff}</style></head><body>' + "".join(out[:1])
+            'border-radius:10px;padding:10px 12px}a{color:#58a6ff}.z{display:inline-flex;align-items:center;min-height:44px;min-width:44px;'
+            'font-weight:600;text-decoration:none;color:#e9a23b}@media print{.z{display:none}}</style></head><body>'
+            '<a class="z" href="/more">‹ Mehr</a>' + "".join(out[:1])       # 3.84.1: the way back here too (a plain link, no script)
             + '<p class="n">Zusatzdaten fehlen – hier nur das Kapitel «Notfall». Die anderen Kapitel und Bilder kommen mit der '
             'Zusatzdatei zurück (Update / Reparatur: <a href="/hilfe/fehler/DATA_MISSING">Jetzt nachladen</a>).</p>'
             + "".join(out[1:]) + "</body></html>")

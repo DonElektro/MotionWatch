@@ -23,6 +23,9 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.84.1: Almanach: Neu oben links die Taste «‹ Zurück» – vom Artikel ins Kapitel, vom Kapitel zum Inhalt, vom Inhalt zu
+    «Mehr». Die Zurück-Geste des Handys geht durch dieselben Ansichten, ein vergrössertes Bild hat «✕ Schliessen». «✕» verlässt
+    den Almanach wie bisher mit einem Tipp. Offline-Karte: oben «‹ Mehr».
   * 3.84.0: Neu für den Besitzer: «Queen – iPhone-Test» (Mehr → Spielecke, im Kasten von «Flight of the Amazon Queen», nur
     Administrator). Zwei Test-Fassungen A und B für iPhone/iPad – Spieldaten in Stücken, kleineres Programm. Das Spiel selbst
     bleibt unverändert. Ob der Absturz auf dem iPhone weg ist, zeigt erst das Gerät.
@@ -108,8 +111,6 @@ Features
     lädt es sonst nicht über das eigene Zertifikat)
   * 3.69.0: Spielecke: «Flight of the Amazon Queen» (1995, CD-Fassung mit Sprachausgabe, Deutsch/Englisch) – ScummVM im Browser,
     Admin lädt es einmal (Sprache wählen, feste Prüfsumme, 2 GB bleiben frei)
-  * 3.68.1: Härtung: hochgeladene Bilder (Untersuchen, Datentausch-Vorschau, KI-Helfer) – Grösse aus dem Dateikopf
-    (JPEG/PNG/WebP), Pixelbomben über 60 MP oder 20 000 px je Seite werden ohne Dekodieren abgewiesen
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -118,10 +119,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_84_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_84_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_84_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_84_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_84_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_84_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -138,7 +139,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.84.0"
+APP_VERSION = "3.84.1"
 
 
 def default_data_dir():
@@ -265,8 +266,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_84_0.zip"
-ZD_SHA256 = "5c5634f63ca81b4094db0f1ef3767583ff5881cd2ddcd679d5508c0a67cb708b"
+ZD_FILE = "moveeye_daten_3_84_1.zip"
+ZD_SHA256 = "610ff96fc91c683d36d93f90b650d660137f17b0a50ab056ecc3b3c2694edb60"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -49602,7 +49603,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.84.0")
+		self.root.title("MoveEye 3.84.1")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49980,7 +49981,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.84.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.84.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -65007,7 +65008,9 @@ def alm_notfall_seite():
 			'initial-scale=1"><title>Überlebens-Almanach – Notfall</title><style>body{margin:0 auto;max-width:640px;padding:16px;'
 			'background:#0e1621;color:#e8eef6;font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}h1{font-size:24px}'
 			'h2{font-size:19px;color:#e9a23b;margin:22px 0 4px}.n{color:#8ea0b6;font-size:14px;border:1px solid #24324a;'
-			'border-radius:10px;padding:10px 12px}a{color:#58a6ff}</style></head><body>' + "".join(out[:1])
+			'border-radius:10px;padding:10px 12px}a{color:#58a6ff}.z{display:inline-flex;align-items:center;min-height:44px;min-width:44px;'
+			'font-weight:600;text-decoration:none;color:#e9a23b}@media print{.z{display:none}}</style></head><body>'
+			'<a class="z" href="/more">‹ Mehr</a>' + "".join(out[:1])
 			+ '<p class="n">Zusatzdaten fehlen – hier nur das Kapitel «Notfall». Die anderen Kapitel und Bilder kommen mit der '
 			'Zusatzdatei zurück (Update / Reparatur: <a href="/hilfe/fehler/DATA_MISSING">Jetzt nachladen</a>).</p>'
 			+ "".join(out[1:]) + "</body></html>")
@@ -93852,6 +93855,8 @@ _HX_ALM = {
 										  "La lampada SOS è stata attivata da {who}", "La lampa SOS è vegnida activada da {who}"),
 	"a guest ({ip})": ("einem Gast ({ip})", "un invité ({ip})", "un ospite ({ip})", "in giast ({ip})"),
 	"someone on the Wi-Fi ({ip})": ("jemandem im WLAN ({ip})", "quelqu’un sur le Wi-Fi ({ip})", "qualcuno nel Wi-Fi ({ip})", "insatgi en il WLAN ({ip})"),
+	"Close this tab or swipe the app away.": ("Diesen Tab schliessen oder die App wegwischen.", "Fermez cet onglet ou balayez l’app.",
+											  "Chiudi questa scheda o scorri via l’app.", "Serra quest tab u stritga davent l’app."),
 	"the administrator": ("dem Administrator", "l’administrateur", "l’amministratore", "l’administratur"),
 }
 for _k, _v in _HX_ALM.items():
@@ -94101,7 +94106,10 @@ def smalltv_routes(app, reply, body):
 	@app.route("/almanach/plus")
 	def alm_plus_route():
 		fig = globals().get("ALM_FIG") or {}
+		lg = norm_lang(request.args.get("lang") or CFG.get("lang"))
 		return reply({"ok": True, "bilder": sorted(fig), "quellen": globals().get("ALM_QUELLEN") or {},
+					  "heim": "" if alm_who(request)[1] and (CFG["web_password"] or CFG["web_pw_hash"]) else "/more",
+					  "t_zurueck": tr("Back", lg), "t_mehr": tr("More", lg), "t_zu": tr("Close", lg), "t_tab": tr("Close this tab or swipe the app away.", lg),
 					  "karte": any(r.rule.rstrip("/") == "/karte" for r in app.url_map.iter_rules())})
 
 	@app.route("/almanach/live")

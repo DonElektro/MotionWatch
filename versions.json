@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-12 17:22",
+ "generated": "2026-11-12 18:43",
  "versions": [
   {
-   "version": "3.84.0",
-   "file": "webcam_bewegung_3_84_0.py",
+   "version": "3.84.1",
+   "file": "webcam_bewegung_3_84_1.py",
    "url": "",
-   "sha256": "55a966f358a48983117c11e2c91fceeabfab400790e0fc34c53c47ef1d5cc3a1",
-   "date": "2026-11-12 17:22",
-   "notes": "Neu für den Besitzer: «Queen – iPhone-Test» (Mehr → Spielecke, im Kasten von «Flight of the Amazon Queen», nur Administrator). Zwei Test-Fassungen A und B für iPhone/iPad – Spieldaten in Stücken, kleineres Programm. Das Spiel selbst bleibt unverändert. Ob der Absturz auf dem iPhone weg ist, zeigt erst das Gerät.",
-   "size": 3824420,
-   "sig": "5f5877228772637ea55204cb0b9e7f8b7d11bc025fe8fc0807a0ab8ff783dbb6f2d0c2bf9862c8e8e0744a848d1a8b8355ed70fddca80ed88537b7269a66db0d",
+   "sha256": "0ea314eca465f276bcd18ac433305bb9da0d4628bcd8cac7b357074a77739e13",
+   "date": "2026-11-12 18:43",
+   "notes": "Almanach: Neu oben links die Taste «‹ Zurück» – vom Artikel ins Kapitel, vom Kapitel zum Inhalt, vom Inhalt zu «Mehr». Die Zurück-Geste des Handys geht durch dieselben Ansichten, ein vergrössertes Bild hat «✕ Schliessen». «✕» verlässt den Almanach wie bisher mit einem Tipp. Offline-Karte: oben «‹ Mehr».",
+   "size": 3825300,
+   "sig": "1e58d78c91844755f7074618419b73fe88e58957b5e6a3bc6649782de9a644cf5aaf4cf1db1dfe4ccab06247d49975aaba70a6b8e6249426e2ed37838776ea09",
    "data": {
-    "file": "moveeye_daten_3_84_0.zip",
+    "file": "moveeye_daten_3_84_1.zip",
     "url": "",
-    "sha256": "5c5634f63ca81b4094db0f1ef3767583ff5881cd2ddcd679d5508c0a67cb708b",
-    "size": 10900717,
-    "sig": "be5a862d8fce656d1cea698b7f9db9c476e71d497f09295ce6181e3ef9c7843900f8cdb24b65de5326de2b75ba2f6d57d537e8f03fa5bbbaebdb2b7d424eb004"
+    "sha256": "610ff96fc91c683d36d93f90b650d660137f17b0a50ab056ecc3b3c2694edb60",
+    "size": 10905012,
+    "sig": "2dfa4d200da782eba8a40c839d9d8970611f8ad88f5189ca86b86cac0f80bd5231bfaa6c22cf313d76ae9e52160c29a6e73cf25a5ee365c44c817ddb2c69100f"
    }
   },
   {
