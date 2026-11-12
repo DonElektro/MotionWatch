@@ -13,7 +13,11 @@
      der Tabelle und alle Prosigns.
   E) Feindliche Eingabe: zufällige Lichtmuster, Rauschen, springende Uhr, Bildgrösse wechselt, leere Bilder - kein Absturz,
      Speicher bleibt begrenzt, der Text enthält nur Zeichen der Tabelle und ist gekürzt.
-  F) (mit --datei, die gebaute MoveEye) Modus, Rechte, Adressen, Ausgänge - siehe teil_f.
+  F) MoveEye mit der Demo-Kamera: Rechte (Familie / Kind / ohne Anmeldung / fremde Webseite), PIN, Modus pausiert den Schutz und endet
+     von selbst (nie länger als 30 min), Senden mit Tempo-Grenze pro Ausgang (am GPIO gemessen), Stopp, eine Sendung auf einmal,
+     Empfang einer Lampe im Demo-Bild (Live, Verlauf, Push ohne Ort), «Strom weg» im Modus. G) --browser: Seite 390 px / PC, 4 Sprachen.
+  H) Nachgebaute Hardware (PCA9685 ohne Bus, GPIO): Status-LED und IR am PCA9685 getastet; Programm mitten in einem Strich
+     abgeschossen (kill -9) - die Ausgänge stehen an - nach dem Neustart sind alle wieder im Zustand der Regeln.
   --messen: die Tabelle Bildrate × Tempo × Fleckgrösse -> Zeichenfehler (dauert einige Minuten), --tabelle DATEI schreibt sie.
 
   python3 werkzeuge/morse_test.py [--datei X.py | --quelle] [--messen] [--tabelle DATEI] [--browser] [--bilder ORDNER]
@@ -800,6 +804,167 @@ def teil_g(base, bilder, blinken, sprache):
         br.close()
 
 
+# ---------------------------------------------------------------------------------------------------------------------- H
+WRAP_HW = r"""
+import json, os, sys
+D = sys.argv[1]
+src = open(D, encoding="utf-8").read()
+i = src.rfind('\nif __name__ == "__main__":')
+patch = '''
+def _mt_note(name_, lit_):                                # what the «hardware» holds now (the file survives kill -9, like a real chip)
+    try:
+        p_ = os.environ["MW_MORSE_PINS"]
+        try:
+            d_ = json.load(open(p_))
+        except (OSError, ValueError):
+            d_ = {}
+        if d_.get(name_) != lit_:
+            d_[name_] = lit_
+            open(p_ + ".tmp", "w").write(json.dumps(d_)); os.replace(p_ + ".tmp", p_)
+            open(os.environ["MW_MORSE_OUT"], "a").write(json.dumps([time.time(), name_, lit_]) + chr(10))
+    except Exception:
+        pass
+class _MtPca:                                             # a PCA9685 without a bus: the channels keep their state in the file
+    def __init__(self, addr, bus=1, freq=50.0):
+        self.addr, self.freq, self.pre = addr, float(freq), 121
+    def _w(self, reg, val):
+        pass
+    def _r(self, reg):
+        return 0
+    def healthy(self):
+        return True
+    def _set(self, ch, on, off):
+        _mt_note("pca:%d" % ch, bool(on & 0x1000) or (not (off & 0x1000) and off > 0))
+    def pulse_us(self, ch, us):
+        pass
+    def switch(self, ch, on):
+        self._set(ch, 0x1000, 0) if on else self._set(ch, 0, 0x1000)
+    def close(self):
+        pass
+PCA9685 = _MtPca
+pca_present = lambda addr, bus=1: True
+_mt_write = Hardware._write
+def _mt_hw_write(self, gpio, on, al):                     # a GPIO the hardware loop writes (relay, light on a GPIO)
+    _mt_write(self, gpio, on, al)
+    _mt_note("gpio:%d" % gpio, bool(on))
+Hardware._write = _mt_hw_write
+'''
+src = src[:i] + patch + src[i:]
+sys.argv = [D] + sys.argv[2:]
+g = {"__name__": "__main__", "__file__": D}
+exec(compile(src, D, "exec"), g)
+"""
+
+
+def teil_h(datei):
+    print("H) Nachgebaute Hardware (PCA9685 + GPIO): hartes Ende mitten in einem Strich, Neustart", flush=True)
+    tmp = tempfile.mkdtemp(prefix="mw_morse_h_")
+    cfg = os.path.join(tmp, "mw"); os.makedirs(cfg)
+    pins_f, out_f = os.path.join(tmp, "pins.json"), os.path.join(tmp, "out.txt")
+    st = {"source": "demo", "thermal_source": "", "thermal_on": False, "sim_on": False, "sim_url": "http://127.0.0.1:9", "sim_auto": False,
+          "sim_autostart": False, "sim_autostart_v2": False, "sim_autoupd": False, "update_url": "", "lang": "de", "desktop_notice": False,
+          "setup_done": True, "https_extra": False, "news_popup": False, "tours_auto": False, "notify_on": False,
+          "servo_driver": "pca9685", "mover_mode": "off", "light_white_out": "gpio:17", "light_ir_out": "pca:3", "led_on": True,
+          "armed": False, "ai_enabled": False, "eco_on": False, "record_dir": os.path.join(tmp, "aufnahmen")}
+    json.dump({"cfg": st, "relays": [{"name": "Scheinwerfer", "gpio": 22, "mode": "off", "trigger": "person", "hold": 5.0, "active_low": False}]},
+              open(os.path.join(cfg, "motionwatch_settings.json"), "w"))
+    wrap = os.path.join(tmp, "wrap.py"); open(wrap, "w").write(WRAP_HW)
+    with socket.socket() as sk:
+        sk.bind(("127.0.0.1", 0)); port = sk.getsockname()[1]
+    logf = open(os.path.join(tmp, "log.txt"), "w")
+    env = dict(os.environ, MW_MORSE_PINS=pins_f, MW_MORSE_OUT=out_f)
+    P = {"p": None, "t": 0.0}
+
+    def start():
+        P["t"] = time.time()
+        P["p"] = subprocess.Popen([sys.executable, wrap, datei, "--headless", "--demo", "--port", str(port), "--bind", "127.0.0.1", "--config", cfg,
+                                   "--web-password", PW], stdout=logf, stderr=subprocess.STDOUT, cwd=tmp, env=env)
+    base = f"http://127.0.0.1:{port}"
+    op = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
+    def req(path, data=None):
+        h = {"Authorization": "Basic " + base64.b64encode(f"admin:{PW}".encode()).decode(), "Content-Type": "application/json"}
+        r = urllib.request.Request(base + path, data=json.dumps(data).encode() if data is not None else None, headers=h)
+        try:
+            with op.open(r, timeout=60) as x:
+                return x.status, json.loads(x.read())
+        except urllib.error.HTTPError as e:
+            try:
+                return e.code, json.loads(e.read())
+            except ValueError:
+                return e.code, {}
+        except OSError:
+            return 0, {}
+
+    def pins():
+        try:
+            return json.load(open(pins_f))
+        except (OSError, ValueError):
+            return {}
+
+    def warte(was, s=30.0, schritt=0.3):
+        ende = time.time() + s
+        while time.time() < ende:
+            try:
+                if was():
+                    return True
+            except Exception:
+                pass
+            time.sleep(schritt)
+        return False
+
+    def kanten(name, ab=0.0):
+        return [(t, on) for t, n, on in (json.loads(ln) for ln in open(out_f)) if n == name and t >= ab] if os.path.exists(out_f) else []
+    AUS = ("gpio:17", "gpio:22", "pca:3", "pca:7")                    # weiss, Relais, IR-Licht, Status-LED (Kanal Blau: nur beim Morsen an)
+    try:
+        start()
+        ok(warte(lambda: req("/api/state")[0] == 200, 90), "MoveEye läuft mit nachgebautem PCA9685")
+        ok(warte(lambda: all(k in pins() for k in ("pca:3", "pca:5", "pca:6", "pca:7")), 20) and not pins().get("pca:3") and not pins().get("pca:7"),
+           f"Start: IR-Kanal aus, Status-LED in der Farbe des Zustands {dict((k, v) for k, v in pins().items() if k.startswith('pca'))}")
+        c, j = req("/api/morse", {"action": "start", "minutes": 5})
+        ok(c == 200 and j["state"]["on"], "Morse-Modus läuft")
+        outs = {o["id"]: o for o in j["state"]["outs"]}
+        ok(outs["led"]["ok"] and outs["ir"]["ok"], "Status-LED und IR-Licht (PCA9685) sind wählbar")
+        t1 = time.time()
+        c, j = req("/api/morse", {"action": "send", "text": "E T E T", "outs": ["led", "ir"], "wpm": 10})
+        ok(c == 200 and j["plan"]["wpm"] == 10, "Status-LED + IR: 10 WPM (die LED bremst)")
+        ok(warte(lambda: not req("/api/morse")[1]["state"]["tx"], 30), "Sendung fertig")
+        time.sleep(0.3)
+        for name, was in (("pca:7", "Status-LED"), ("pca:3", "IR-Licht am PCA9685")):
+            k = kanten(name, t1)
+            while k and not k[0][1]:
+                k.pop(0)
+            ons = [k[i + 1][0] - k[i][0] for i in range(0, len(k) - 1, 2)]
+            ok(len(ons) == 4 and ons[0] < 0.2 < ons[1] and ons[2] < 0.2 < ons[3] and k[-1][1] is False,
+               f"{was}: getastet kurz / lang / kurz / lang ({' '.join('%.0f' % (x * 1000) for x in ons)} ms), danach aus")
+        ok(pins().get("pca:5") or pins().get("pca:6"), "Status-LED nach der Sendung wieder in der Farbe des Zustands")
+        c, j = req("/api/morse", {"action": "send", "text": "TTTTTT", "outs": ["white", "ir", "relay:22", "led"], "wpm": 4})
+        ok(c == 200, "lange Striche auf allen vier Ausgängen")
+        ok(warte(lambda: all(pins().get(k) for k in AUS), 15, 0.02), "mitten im Strich: alle vier an")
+        P["p"].send_signal(signal.SIGKILL); P["p"].wait(timeout=10)
+        ok(all(pins().get(k) for k in AUS), f"«Programm abgestürzt» (kill -9): die Ausgänge stehen noch AN {[k for k in AUS if pins().get(k)]}")
+        start()
+        heil = warte(lambda: not any(pins().get(k) for k in AUS), 90, 0.05)
+        dt = time.time() - P["t"]
+        ok(heil, f"Neustart: alle vier wieder aus, {dt:.1f} s nach dem Programmstart {pins()}")
+        N["heil"] = dt
+        ok(warte(lambda: req("/api/state")[0] == 200, 90) and not req("/api/morse")[1]["state"]["on"], "nach dem Neustart: Modus aus")
+        time.sleep(2.0)
+        ok(not any(pins().get(k) for k in AUS) and (pins().get("pca:5") or pins().get("pca:6")), "und es bleibt so (Status-LED zeigt wieder den Zustand)")
+    finally:
+        try:
+            P["p"].send_signal(signal.SIGKILL); P["p"].wait(timeout=10)
+        except Exception:
+            pass
+        logf.close()
+        if FEHLER:
+            try:
+                print("  --- Ende von log.txt ---\n" + "".join(open(os.path.join(tmp, "log.txt"), errors="replace").readlines()[-25:]))
+            except OSError:
+                pass
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 # ---------------------------------------------------------------------------------------------------------------- messen
 FPS_LISTE = (5, 8, 10, 15, 20, 30)
 WPM_LISTE = (3, 4, 5, 6, 8, 10, 12, 15, 18, 20)
@@ -916,6 +1081,7 @@ def main():
     ap.add_argument("--laeufe", type=int, default=2)
     ap.add_argument("--browser", action="store_true")
     ap.add_argument("--bilder")
+    ap.add_argument("--nur-h", action="store_true", help="nur Teil H (nachgebaute Hardware)")
     a = ap.parse_args()
     datei = None if a.quelle else (a.datei or neueste())
     home = None
@@ -930,11 +1096,15 @@ def main():
         return 0 if messen(ns, a.tabelle, a.laeufe) else 1
     t0 = time.time()
     try:
+        if a.nur_h and home:
+            teil_h(datei)
+            return 1 if FEHLER else 0
         teil_a(ns); teil_b(ns); teil_c(ns); teil_d(ns); teil_e(ns)
         if home:
             ok(ns["morse_selftest"]().startswith("table"), "Selbsttest morse_selftest (Modus, Grenzen, Licht wie vorher, Text gereinigt)")
             ok(abs(ns["MORSE_LIMIT_K"] - GRENZE_K) < 1e-9, "die Grenze der Seite (MORSE_LIMIT_K) ist die der Messung")
             teil_f(datei, ns, a.browser, a.bilder)
+            teil_h(datei)
     finally:
         if home:
             shutil.rmtree(home, ignore_errors=True)

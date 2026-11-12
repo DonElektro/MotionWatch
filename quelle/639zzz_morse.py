@@ -1194,6 +1194,55 @@ def morse_prefs(d):
     return True
 
 
+# ---- ONE entry for the web API and the window: who may, the PIN, the actions ------------------------------------------------------------
+def morse_may(role="admin", appkey=None, change=True):
+    """only the administrator (never an app key); changing never in operator mode (390 - the web server says so as well)"""
+    return role == "admin" and not appkey and not (change and CFG.get("lock_on"))
+
+
+def morse_do(d, who, role="admin", appkey=None, pin=None, pin_checked=False, lang=None):
+    """an action of the page or of the window -> (HTTP code, answer). pin_checked: the web server has asked for the PIN
+    already (pin_guard 550 with web_disarms); the window hands the PIN over and it is checked here - the same rule:
+    starting / prolonging the mode while the protection is on needs the PIN for «Aus»."""
+    d = d if isinstance(d, dict) else {}
+    L = norm_lang(lang or d.get("lang") or CFG.get("lang"))
+    if not morse_may(role, appkey):
+        return 403, {"ok": False, "error": tr("Only for the administrator", L)}
+    a = str(d.get("action") or "")
+    who = str(who or tr("the administrator", "en"))[:40]
+
+    def out(ok, err="", code=None, **kw):
+        return code or (200 if ok else 400), dict({"ok": ok, "error": tr_err(err, L) if err else None, "state": morse_state(L)}, **kw)
+    if a in ("start", "more"):
+        if not pin_checked and web_disarms("/api/morse", d) and CFG.get("protect_pin"):
+            ok, err = protect_pin_check(pin, "window Morse")
+            if not ok:
+                return 403, {"ok": False, "error": tr(err, L), "need_pin": True}
+        ok, err = morse_start(d.get("minutes"), who, more=(a == "more"))
+        return out(ok, err, None if ok else 409)
+    if a == "stop":
+        morse_end("button", who)
+        return out(True)
+    if a == "prefs":
+        morse_prefs(d)
+        return out(True)
+    if a in ("send", "plan"):
+        text = d.get("text")
+        if not isinstance(text, str):
+            return out(False, "the text is empty")
+        if a == "plan":
+            plan, err = morse_plan(text, d.get("outs"), d.get("wpm"), d.get("fw"), L)
+        else:
+            ok, err, plan = morse_tx_start(text, d.get("outs"), d.get("wpm"), d.get("fw"), who)
+        if plan is None:
+            return out(False, err, 429 if err.startswith("too many") else (409 if "running" in err or "SOS" in err or "ends before" in err else 400))
+        return out(True, plan={k: plan[k] for k in ("shown", "skipped", "wpm", "asked", "slow", "fw", "secs", "flash_hz", "note", "vis")})
+    if a == "tx_stop":
+        morse_tx_stop("button")
+        return out(True)
+    return 400, {"ok": False, "error": "unknown action"}
+
+
 # ---- the web: /morse and /api/morse (only the administrator) ------------------------------------------------------------------------
 _smalltv_routes_morse = smalltv_routes
 
@@ -1204,7 +1253,7 @@ def smalltv_routes(app, reply, body):                        # + 639zzz: the Mor
     from flask import Response, request, g
 
     def nope():
-        if not qrk_admin_ok(g):
+        if not morse_may(getattr(g, "role", "admin"), getattr(g, "appkey", None), change=False):
             return reply({"ok": False, "error": tr("Only for the administrator", norm_lang(request.args.get("lang")))}, 403)
         return None
 
@@ -1215,37 +1264,8 @@ def smalltv_routes(app, reply, body):                        # + 639zzz: the Mor
             return n
         if request.method == "GET":
             return reply({"ok": True, "state": morse_state(request.args.get("lang"))})
-        d = body()
-        L = norm_lang(d.get("lang") or CFG.get("lang"))
-        a = str(d.get("action") or "")
-        who = (getattr(g, "user", "") or tr("the administrator", "en"))[:40]
-
-        def out(ok, err="", code=None, **kw):
-            return reply(dict({"ok": ok, "error": tr_err(err, L) if err else None, "state": morse_state(L)}, **kw), code or (200 if ok else 400))
-        if a in ("start", "more"):
-            ok, err = morse_start(d.get("minutes"), who, more=(a == "more"))
-            return out(ok, err, None if ok else 409)
-        if a == "stop":
-            morse_end("button", who)
-            return out(True)
-        if a == "prefs":
-            morse_prefs(d)
-            return out(True)
-        if a in ("send", "plan"):
-            text = d.get("text")
-            if not isinstance(text, str):
-                return out(False, "the text is empty")
-            if a == "plan":
-                plan, err = morse_plan(text, d.get("outs"), d.get("wpm"), d.get("fw"), L)
-            else:
-                ok, err, plan = morse_tx_start(text, d.get("outs"), d.get("wpm"), d.get("fw"), who)
-            if plan is None:
-                return out(False, err, 429 if err.startswith("too many") else (409 if "running" in err or "SOS" in err or "ends before" in err else 400))
-            return out(True, plan={k: plan[k] for k in ("shown", "skipped", "wpm", "asked", "slow", "fw", "secs", "flash_hz", "note", "vis")})
-        if a == "tx_stop":
-            morse_tx_stop("button")
-            return out(True)
-        return reply({"ok": False, "error": "unknown action"}, 400)
+        code, ans = morse_do(body(), getattr(g, "user", "") or "", getattr(g, "role", "admin"), getattr(g, "appkey", None), pin_checked=True)
+        return reply(ans, code)
 
     @app.route("/morse")
     def morse_page():
@@ -1253,6 +1273,82 @@ def smalltv_routes(app, reply, body):                        # + 639zzz: the Mor
         if n is not None:
             return n
         return Response(render_page(MORSE_PAGE, "more"), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+
+# ---- the window (Tk): Mehr -> «Morse-Modus» - start (with the PIN), end, the time left, send with the saved choices, the received text --
+if GUI_OK:
+    def _morse_tk_win(self):
+        w = getattr(self, "_morse_top", None)
+        if w is not None and w.winfo_exists():
+            w.lift(); return
+        w = self._morse_top = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Morse mode")); w.configure(bg=C["bg"]); w.geometry("560x520")
+        st = tk.Label(w, text="", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 11, "bold"), wraplength=520, justify="left", anchor="w")
+        st.pack(fill="x", padx=12, pady=(10, 2))
+        tk.Label(w, text=tr("Starting it pauses the protection for the chosen time. Nothing is watched meanwhile."), bg=C["bg"], fg=C["mut"],
+                 font=("DejaVu Sans", 9), wraplength=520, justify="left", anchor="w").pack(fill="x", padx=12)
+        bf = tk.Frame(w, bg=C["bg"]); bf.pack(fill="x", padx=12, pady=8)
+        msg = tk.Label(w, text="", bg=C["bg"], fg=C.get("yel", "#ffd60a"), font=("DejaVu Sans", 9), wraplength=520, justify="left", anchor="w")
+
+        def do(d, ask_pin=False):
+            pin = None
+            if ask_pin and CFG.get("protect_pin") and web_disarms("/api/morse", d):
+                from tkinter import simpledialog
+                pin = simpledialog.askstring("MoveEye", tr("PIN for switching off"), show="*", parent=w)
+                if pin is None:
+                    return
+            code, ans = morse_do(d, "window", pin=pin)      # the same entry as the web page: rights, PIN, limits
+            msg.config(text="" if ans.get("ok") else "⚠ " + str(ans.get("error") or ""))
+            if ans.get("ok") and ans.get("plan"):
+                p_ = ans["plan"]
+                msg.config(text=f"«{p_['shown']}» · {p_['wpm']:g} WPM · {int(p_['secs'])} s" + (" · " + tr("slowed down by:") + " " + p_["slow"] if p_["slow"] else ""))
+            tick(False)
+        b_go = self._fbtn(bf, "▶ " + tr("Start the Morse mode"), lambda: do({"action": "start", "minutes": CFG.get("morse_minutes", 10)}, True), primary=True)
+        b_go.pack(side="left", padx=(0, 6))
+        self._fbtn(bf, "+ 5 min", lambda: do({"action": "more", "minutes": 5}, True)).pack(side="left", padx=(0, 6))
+        self._fbtn(bf, "⏹ " + tr("End the Morse mode"), lambda: do({"action": "stop"})).pack(side="left")
+        sf = tk.Frame(w, bg=C["bg"]); sf.pack(fill="x", padx=12)
+        ent = tk.Entry(sf, font=("DejaVu Sans", 11)); ent.pack(side="left", fill="x", expand=True, padx=(0, 6))
+        self._fbtn(sf, "📡 " + tr("Send"), lambda: do({"action": "send", "text": ent.get()[:MORSE_TEXT_MAX], "outs": CFG.get("morse_outs"),
+                                                      "wpm": CFG.get("morse_wpm"), "fw": CFG.get("morse_fw")})).pack(side="left", padx=(0, 6))
+        self._fbtn(sf, "⏹ " + tr("Stop"), lambda: do({"action": "tx_stop"})).pack(side="left")
+        msg.pack(fill="x", padx=12, pady=(6, 0))
+        self._fbtn(w, "🌐 " + tr("Outputs, speed, what happens with received text (browser)"), lambda: self._open_page("/morse")).pack(anchor="w", padx=12, pady=8)
+        txt = tk.Text(w, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans Mono", 11), wrap="word", bd=0, padx=10, pady=8, height=8)
+        txt.pack(fill="both", expand=True, padx=12, pady=(0, 12))
+
+        def tick(again=True):
+            try:
+                if not w.winfo_exists():
+                    return
+                s = morse_state()
+                if s["on"]:
+                    st.config(text="⏸ " + tr("Morse mode is running – the protection is PAUSED") + f"  ·  {s['rest'] // 60}:{s['rest'] % 60:02d}", fg=C.get("org", "#ff9f0a"))
+                else:
+                    st.config(text=tr("The Morse mode is off.") + ("  ·  " + tr("Only for the administrator") if not morse_may() else ""), fg=C["txt"])
+                r = s["rx"]
+                body = ((r["live"] + "  (" + str(r["live_wpm"]) + " WPM)\n\n") if r["live"] else "") + "\n".join(f"{m['t']}  {m['text']}" for m in r["msgs"])
+                if s["tx"]:
+                    body = "📡 " + s["tx"]["shown"] + f"  {s['tx']['pos']:.0f} / {s['tx']['total']:.0f} s\n\n" + body
+                if body != getattr(txt, "_last", None):
+                    txt._last = body
+                    txt.config(state="normal"); txt.delete("1.0", "end"); txt.insert("end", body); txt.config(state="disabled")   # plain text only
+                if again:
+                    w.after(1000, tick)
+            except Exception:
+                pass
+        tick()
+
+    App._morse_win = _morse_tk_win
+    _morse_tk_more_base = App._tk_more_bar
+
+    def _morse_tk_more_bar(self, parent):
+        f = _morse_tk_more_base(self, parent)
+        row = max([int(x.grid_info().get("row", 0)) for x in f.grid_slaves()] + [-1]) + 1     # under everything that is there
+        self._fbtn(f, "📡 " + tr("Morse mode"), self._morse_win).grid(row=row, column=0, sticky="ew", padx=(0, 6), pady=(0, 6))
+        return f
+
+    # wraps: App._tk_more_bar (572, after 639w «Bauen» and 639zj)
+    App._tk_more_bar = _morse_tk_more_bar
 
 
 MORSE_PAGE = r"""<!doctype html>
@@ -1489,16 +1585,23 @@ _HX_MORSE = {
     "not connected": ("nicht angeschlossen", "non connecté", "non collegato", "betg collià"),
     "no loudspeaker selected": ("kein Lautsprecher gewählt", "aucun haut-parleur choisi", "nessun altoparlante scelto", "nagin autpledader tschernì"),
     "MORSE MODE – protection paused until": ("MORSE-MODUS – Schutz pausiert bis", "MODE MORSE – protection en pause jusqu’à", "MODALITÀ MORSE – protezione in pausa fino alle", "MODUS DA MORSE – protecziun en pausa fin"),
+    "Outputs, speed, what happens with received text (browser)": ("Ausgänge, Tempo, was mit empfangenem Text geschieht (Browser)", "Sorties, vitesse, que faire du texte reçu (navigateur)", "Uscite, velocità, cosa fare del testo ricevuto (browser)", "Sortidas, tempo, tge che capita cun il text retschavì (browser)"),
     "Morse received": ("Morse empfangen", "Morse reçu", "Morse ricevuto", "Morse retschavì"),
     "Only for the administrator": ("Nur für den Administrator", "Réservé à l’administrateur", "Solo per l’amministratore", "Mo per l’administratur"),
+    "Start the Morse mode": ("Morse-Modus starten", "Démarrer le mode morse", "Avviare la modalità Morse", "Aviar il modus da morse"),
+    "End the Morse mode": ("Morse-Modus beenden", "Terminer le mode morse", "Terminare la modalità Morse", "Finir il modus da morse"),
+    "The Morse mode is off.": ("Der Morse-Modus ist aus.", "Le mode morse est désactivé.", "La modalità Morse è spenta.", "Il modus da morse è ora."),
+    "Morse mode is running – the protection is PAUSED": ("Morse-Modus läuft – der Schutz ist PAUSIERT", "Le mode morse est actif – la protection est EN PAUSE", "La modalità Morse è attiva – la protezione è IN PAUSA", "Il modus da morse è activ – la protecziun è EN PAUSA"),
+    "Starting it pauses the protection for the chosen time. Nothing is watched meanwhile.": ("Beim Starten wird der Schutz für die gewählte Zeit pausiert. In dieser Zeit wird nichts bewacht.", "Au démarrage, la protection est mise en pause pour la durée choisie. Rien n’est surveillé pendant ce temps.", "All’avvio la protezione va in pausa per il tempo scelto. Nel frattempo non viene sorvegliato nulla.", "Cun aviar vegn la protecziun messa en pausa per il temp tschernì. En quel temp na vegn surveglià nagut."),
+    "slowed down by:": ("gebremst durch:", "ralenti par :", "rallentato da:", "franà da:"),
+    "Send": ("Senden", "Envoyer", "Inviare", "Trametter"),
+    "Stop": ("Stopp", "Stop", "Stop", "Stop"),
 }
 # the texts of the page /morse and the answers of /api/morse - with the page in the data file
 MORSE_PAGE_TEXTS = {
     "Send and read Morse code with light and sound": ("Morsezeichen senden und lesen, mit Licht und Ton", "Envoyer et lire du morse, avec lumière et son", "Inviare e leggere il Morse, con luce e suono", "Trametter e leger morse, cun glisch e tun"),
     "Send a text as Morse code with a light, a relay or the loudspeaker - and read a blinking light with the camera.": ("Einen Text als Morsezeichen senden, mit einem Licht, einem Relais oder dem Lautsprecher – und ein blinkendes Licht mit der Kamera lesen.", "Envoyer un texte en morse avec une lumière, un relais ou le haut-parleur – et lire une lumière clignotante avec la caméra.", "Inviare un testo in Morse con una luce, un relè o l’altoparlante – e leggere una luce lampeggiante con la telecamera.", "Trametter in text en morse cun ina glisch, in relais u l’autpledader – e leger ina glisch che traglischa cun la camera."),
-    "Send": ("Senden", "Envoyer", "Inviare", "Trametter"),
     "Receive": ("Empfangen", "Recevoir", "Ricevere", "Retschaiver"),
-    "Stop": ("Stopp", "Stop", "Stop", "Stop"),
     "More": ("Mehr", "Plus", "Altro", "Dapli"),
     "Minutes": ("Minuten", "Minutes", "Minuti", "Minutas"),
     "How it works": ("So funktioniert es", "Comment ça marche", "Come funziona", "Uschia funcziuni"),
@@ -1513,20 +1616,14 @@ MORSE_PAGE_TEXTS = {
     "Outputs (several at once are possible):": ("Ausgänge (mehrere zugleich sind möglich):", "Sorties (plusieurs à la fois possibles) :", "Uscite (anche più insieme):", "Sortidas (pliras a medem temp pussaivel):"),
     "Longer pauses between the signs (Farnsworth):": ("Längere Pausen zwischen den Zeichen (Farnsworth):", "Pauses plus longues entre les signes (Farnsworth) :", "Pause più lunghe tra i segni (Farnsworth):", "Pausas pli lungas tranter ils segns (Farnsworth):"),
     "Text to send, e.g. SOS or <SOS>": ("Text zum Senden, z. B. SOS oder <SOS>", "Texte à envoyer, p. ex. SOS ou <SOS>", "Testo da inviare, p. es. SOS o <SOS>", "Text per trametter, p. ex. SOS u <SOS>"),
-    "slowed down by:": ("gebremst durch:", "ralenti par :", "rallentato da:", "franà da:"),
     "left out (no Morse sign):": ("ausgelassen (kein Morsezeichen):", "omis (pas de signe morse) :", "omessi (nessun segno Morse):", "laschà ora (nagin segn da morse):"),
     "Flashing light, about 3 flashes a second: it can trigger seizures in people with photosensitive epilepsy. Do not aim it at people.": ("Blinklicht, rund 3 Blitze pro Sekunde: es kann bei Menschen mit lichtempfindlicher Epilepsie Anfälle auslösen. Nicht auf Menschen richten.", "Lumière clignotante, environ 3 éclairs par seconde : elle peut provoquer des crises chez les personnes épileptiques photosensibles. Ne pas la diriger vers des personnes.", "Luce lampeggiante, circa 3 lampi al secondo: può provocare crisi nelle persone con epilessia fotosensibile. Non puntarla sulle persone.", "Glisch che traglischa, circa 3 chametgs per secunda: ella po chaschunar attatgas tar persunas cun epilepsia fotosensibla. Betg drizzar sin persunas."),
     "Flashing light: do not aim it at people or at the road.": ("Blinklicht: nicht auf Menschen oder auf die Strasse richten.", "Lumière clignotante : ne pas la diriger vers des personnes ni vers la route.", "Luce lampeggiante: non puntarla sulle persone o sulla strada.", "Glisch che traglischa: betg drizzar sin persunas u sin la via."),
     "A mechanical relay wears: this text switches it about": ("Ein mechanisches Relais nützt sich ab: dieser Text schaltet es etwa", "Un relais mécanique s’use : ce texte le commute environ", "Un relè meccanico si consuma: questo testo lo commuta circa", "In relais mecanic sa disfa: quest text al commutescha circa"),
-    "Morse mode is running – the protection is PAUSED": ("Morse-Modus läuft – der Schutz ist PAUSIERT", "Le mode morse est actif – la protection est EN PAUSE", "La modalità Morse è attiva – la protezione è IN PAUSA", "Il modus da morse è activ – la protecziun è EN PAUSA"),
     "Ends by itself at": ("Endet von selbst um", "Se termine automatiquement à", "Termina da sola alle", "Finescha da sasez a las"),
     "then the protection is again:": ("danach ist der Schutz wieder:", "ensuite la protection est de nouveau :", "poi la protezione è di nuovo:", "suenter è la protecziun puspè:"),
-    "End the Morse mode": ("Morse-Modus beenden", "Terminer le mode morse", "Terminare la modalità Morse", "Finir il modus da morse"),
-    "Start the Morse mode": ("Morse-Modus starten", "Démarrer le mode morse", "Avviare la modalità Morse", "Aviar il modus da morse"),
     "Start the Morse mode first.": ("Zuerst den Morse-Modus starten.", "Démarrez d’abord le mode morse.", "Avvia prima la modalità Morse.", "Avia l’emprim il modus da morse."),
-    "The Morse mode is off.": ("Der Morse-Modus ist aus.", "Le mode morse est désactivé.", "La modalità Morse è spenta.", "Il modus da morse è ora."),
     "The longest time is reached.": ("Die längste Zeit ist erreicht.", "La durée maximale est atteinte.", "La durata massima è raggiunta.", "Il temp maximal è cuntanschì."),
-    "Starting it pauses the protection for the chosen time. Nothing is watched meanwhile.": ("Beim Starten wird der Schutz für die gewählte Zeit pausiert. In dieser Zeit wird nichts bewacht.", "Au démarrage, la protection est mise en pause pour la durée choisie. Rien n’est surveillé pendant ce temps.", "All’avvio la protezione va in pausa per il tempo scelto. Nel frattempo non viene sorvegliato nulla.", "Cun aviar vegn la protecziun messa en pausa per il temp tschernì. En quel temp na vegn surveglià nagut."),
     "Read a blinking light with the camera": ("Ein blinkendes Licht mit der Kamera lesen", "Lire une lumière clignotante avec la caméra", "Leggere una luce lampeggiante con la telecamera", "Leger ina glisch che traglischa cun la camera"),
     "Show in the live picture": ("Im Live-Bild zeigen", "Afficher dans l’image en direct", "Mostrare nell’immagine live", "Mussar en il maletg live"),
     "Save in the history with a picture": ("Im Verlauf speichern, mit Bild", "Enregistrer dans l’historique, avec image", "Salvare nella cronologia, con immagine", "Memorisar en la cronologia, cun maletg"),
@@ -1684,6 +1781,16 @@ def morse_selftest():
         r = lights_tick()
         assert r["white"] is False and "morse" not in STATE["lights"], "after the end the light is as the rules say"
         assert not any("White light O" in x for x in logs), "no «White light ON / OFF» per dit"
+        # the ONE entry of the web page and the window: rights, operator mode, PIN
+        assert morse_do({"action": "stop"}, "x", role="family")[0] == 403 and morse_do({"action": "send", "text": "E"}, "x", role="kid")[0] == 403
+        assert morse_do({"action": "stop"}, "x", appkey="k1")[0] == 403 and not morse_may("admin", "k1") and morse_may("admin")
+        lk = CFG.get("lock_on")
+        try:
+            CFG["lock_on"] = True
+            assert morse_do({"action": "start", "minutes": 5}, "x")[0] == 403 and morse_may("admin", None, change=False), "operator mode: no start"
+        finally:
+            CFG["lock_on"] = lk
+        assert morse_do({"action": "nonsense"}, "x")[0] == 400 and morse_do(None, "x")[0] == 400 and morse_do({"action": "send", "text": 5}, "x")[0] == 400
         MORSE["tx_starts"] = [time.time()] * MORSE_TX_PER_MIN
         assert morse_tx_start("E", ["white"], 7)[1].startswith("too many")
         assert set(morse_clean("a<b onclick=x>\x00\x1b[0m\nÄ<SOS> ok🙂")) <= _MORSE_RX_OK and "\n" not in morse_clean("A\nB") and len(morse_clean("E" * 999)) == MORSE_RX_TEXT_MAX
@@ -1692,12 +1799,22 @@ def morse_selftest():
         MORSE["until"] = time.time() - 1.0
         assert not morse_on() and is_armed() and MORSE["until"] == 0.0 and any("Morse mode off" in x for x in logs), "the mode ends by itself, the protection is back"
         assert not morse_rx_text("SOS", "camera"), "no text is taken while the mode is off"
+        pin0, fails0 = CFG.get("protect_pin"), list(PROTECT["pin_fails"])
+        try:                                                 # the window: start and «longer» need the PIN for «Aus», like the web page
+            CFG["protect_pin"] = _pin_hash("2468"); PROTECT["pin_fails"] = []
+            c_, a_ = morse_do({"action": "start", "minutes": 5}, "window")
+            assert c_ == 403 and a_.get("need_pin") and not morse_on(), "start without the PIN"
+            assert morse_do({"action": "start", "minutes": 5}, "window", pin="2468")[0] == 200 and morse_on(), "start with the PIN"
+            assert morse_do({"action": "more", "minutes": 5}, "window")[0] == 403 and morse_do({"action": "more", "minutes": 5}, "window", pin="2468")[0] == 200
+            assert morse_do({"action": "stop"}, "window")[0] == 200 and not morse_on() and is_armed(), "ending needs no PIN"
+        finally:
+            CFG["protect_pin"] = pin0; PROTECT["pin_fails"] = fails0
     finally:
         globals()["save_settings"], globals()["log_event"] = sv, lg
         CFG.update(keep); STATE["lights"] = ws
         MORSE.update(keepm); MORSE["until"] = 0.0; MORSE["tx"] = None; MORSE["relearn"] = False
     assert "/*MORSEDE*/" in MORSE_PAGE and 'href="/more"' in MORSE_PAGE and "innerHTML" not in MORSE_PAGE, "the page: way back, texts, no innerHTML"
-    return "table, timing, speed limits per output, mode pauses and ends by itself (never longer than the maximum), one transmission, light as before, received text cleaned"
+    return "table, timing, speed limits per output, one entry for web and window (rights, PIN), mode pauses and ends by itself (never longer than the maximum), one transmission, light as before, received text cleaned"
 
 
 SELFTEST_EXTRA.append(("Morse mode: send, read, pause of the protection (639zzz)", morse_selftest))
