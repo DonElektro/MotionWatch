@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-12 13:07",
+ "generated": "2026-11-12 14:21",
  "versions": [
   {
-   "version": "3.83.1",
-   "file": "webcam_bewegung_3_83_1.py",
+   "version": "3.83.2",
+   "file": "webcam_bewegung_3_83_2.py",
    "url": "",
-   "sha256": "c991fff894111296a393b81f86c7b122d7a0b004a2dbb1543a43a5e24233a178",
-   "date": "2026-11-12 13:07",
-   "notes": "Almanach: Beschriftungen in den Bildern werden auf keinem Gerät mehr abgeschnitten.",
-   "size": 4187770,
-   "sig": "cfa92682130225c3904e9b30e2dc41bd39a07a408bea784de398462f182502a806249e193d0506f50e02bfececab1ce66d5516e0ece36c78ac626fad4974ba0c",
+   "sha256": "e4a6e5a443e1c1b8b592054e822402fa9bfe0d123e9b99258194a73480000ff6",
+   "date": "2026-11-12 14:21",
+   "notes": "Packlisten: Import versteht jetzt auch Listen aus Apple Notizen und Markdown-Listen (Überschriften wie **KLEIDUNG**, Gewichte wie «550g» direkt am Wort); eigene Kategorien bleiben erhalten; Überschriften in eingefügtem Text werden als Kategorie erkannt; ähnliche Einträge werden beim Import markiert; die Tipp-Karte verdeckt die Eingabezeile nicht mehr. Sehr lange oder absichtlich verdrehte Zeilen in einer Import-Datei können MoveEye nicht mehr aufhalten.",
+   "size": 4192915,
+   "sig": "4541115f28e17bedaf886a7af11f7d50e5b3b744fd5323b88f631fb67d6bb9bbdad3576c1d97d2e30acaffecf825c691b8d5ba6f5d7362fc61ae59c2d01e980f",
    "data": {
-    "file": "moveeye_daten_3_83_1.zip",
+    "file": "moveeye_daten_3_83_2.zip",
     "url": "",
-    "sha256": "89b6d8a2c597a7d4e2e409a224914b303a276d68b384321642aa8b50645ec101",
-    "size": 10512325,
-    "sig": "5d2c8d544f49e85d47daa2bcc54e66d910e5b6df810b448510218c5ffd12dc10f3e24618ef0f12215ed701ff3609f87786658e9e26df83c4d14f31a552c6680e"
+    "sha256": "980b6e5f9ae37a96b48fb52ed57043239bc9ffd717f645626c90ca13eac1e3df",
+    "size": 10519472,
+    "sig": "36dd31e68ee1cfd99e782b82c5a777799ab26732e813f14075c4e543a1c3da4757470014e0b5ad90310dc027648d601fd58f51a96a1c3a6bf0e9cb510c341907"
    }
   },
   {
