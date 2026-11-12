@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-12 09:16",
+ "generated": "2026-11-12 09:55",
  "versions": [
+  {
+   "version": "3.83.0",
+   "file": "webcam_bewegung_3_83_0.py",
+   "url": "",
+   "sha256": "3aa7aa669a054f5b0cb5de369e609bc4a4d23414c5e9002e1d11f0688f2241bf",
+   "date": "2026-11-12 09:55",
+   "notes": "Überlebens-Almanach neu: Bilder in jedem Kapitel, acht Knoten Schritt für Schritt gezeichnet, neue Kapitel «Tierspuren» und «Essbar oder giftig?», dein Standort für den Notruf (Schweizer Koordinaten), Luftdruck-Trend, «Heute Nacht» mit Sonne und Mond, und eine SOS-Lampe, die auch Gäste im WLAN einschalten können. Erste-Hilfe-Texte mit Schweizer Quellen abgeglichen (Samariter, Rega, SAC, BAG, Tox Info).",
+   "size": 4187883,
+   "sig": "da75a50fa37bf17ef122eaf4c1a66737f2b6cb712c82ec03e0e488b5b6b7a83fe54bb754ffb8287b04194a2ee7a6e082ef8c9666c3b0746143105df907360800",
+   "data": {
+    "file": "moveeye_daten_3_83_0.zip",
+    "url": "",
+    "sha256": "d858ad071200674d86f627f86ff591bf01989d54bd1230f159f1b944fb4a5763",
+    "size": 10510458,
+    "sig": "62ca5e018596944fbd105555f38209a07b5a04321b8993f758b54efe3959d7a87a37b5c550a9515ac712b885740c17df8795dd97252969cd9d18f33434abb80a"
+   }
+  },
   {
    "version": "3.82.0",
    "file": "webcam_bewegung_3_82_0.py",
    "url": "",
    "sha256": "1e85e4f9c8f922007e7d4c19e64318cc75bfc2aba69dd7075014e61446b9cf41",
-   "date": "2026-11-12 09:16",
+   "date": "2026-11-12 09:52",
    "notes": "Neu im Datentausch: Packlisten. Listen anlegen oder aus Text, Excel und CSV übernehmen (immer mit Vorschau); pro Gegenstand Gewicht, Anzahl, Kategorie und Foto; Gesamtgewicht mit Ziel, Basisgewicht und Verbrauch getrennt; «Kaufen»-Ansicht; gemeinsam packen von mehreren Handys; Vorlagen, Kopieren, Drucken und Export.",
    "size": 4132013,
    "sig": "9b0a7d708b930e16c58daffe10a106f85e91ca5c11b90d5eb6d604839205e9a6cbdf6a206ca5ca58db569e394575d4ebd3cf7872448dac55f2dba6641eeccb06",
@@ -136,23 +153,6 @@
     "sha256": "179b8bd3e5115c3b2d2b8e0198bb85d67307b50eed7d43d45390f9331f06573c",
     "size": 4936966,
     "sig": "5ffaef69eebd1db7e60ff2790fb33cff0e00199544904953983e7eddfb3ec664fb674e27fcde45131b86bcae45bfb6b962c58968eeff93a310f7f05f09f7140f"
-   }
-  },
-  {
-   "version": "3.74.0",
-   "file": "webcam_bewegung_3_74_0.py",
-   "url": "",
-   "sha256": "b8a7ea39f2de49d557b7024b8e0a433947f41a13165c6b06b134d0d43c748b43",
-   "date": "2026-11-10 22:04",
-   "notes": "Spielecke: drei neue Spiele zum Nachladen unter Mehr → Spielen → Spielecke → «Weitere Spiele zum Nachladen»: «Abenteuer mit Angst» (interaktive Geschichte, ab ca. 12 Jahren), «Heroine Dusk» (Verlies-Rollenspiel, Englisch) und «HexGL» (3D-Rennspiel). Unter «Mehr» gibt es nur noch einen Eingang «Spielen»; die Spielecke ist dort die oberste Kachel, «Spiele freigeben» steht auf der Spielecke",
-   "size": 3897608,
-   "sig": "bd69d46159da771f17c3eaa1039fd7e30062fd991841120b239b0c66ed62126b9a5c3f900b8f0df289e91b17817648e2b99d76d4fe48456642a3ae82c9e7390d",
-   "data": {
-    "file": "moveeye_daten_3_74_0.zip",
-    "url": "",
-    "sha256": "ff546f6caee4a5386e01ce428ddd60f8bc688326245ce93bb3cfa0f5ab07c315",
-    "size": 4936880,
-    "sig": "14dc46f8b2e4bc8cbcc432dd7afe09e21758f259152c69492088a9eea258ffa6db8a402202e49c9fe68879e92eb7fab53b7b8274dbb83944a1a65481e0a7be09"
    }
   },
   {
