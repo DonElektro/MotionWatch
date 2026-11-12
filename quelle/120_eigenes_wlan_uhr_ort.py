@@ -451,12 +451,16 @@ def health_check(lang=None):
     else:
         pct = b.get("pct")
         nf = STATE.get("night")
+        hold = (nf or {}).get("hold")                      # 280 night_hold: on mains / still settling the forecast does not count
+        if hold:
+            nf = None
         lvl = "off" if pct is None else "bad" if pct < 20 else "warn" if pct < 40 else "ok"
         if nf and not nf["enough"] and nf.get("night") and lvl == "ok":
             lvl = "warn"
         add("batt", "🔋", "Battery", lvl,
             ("–" if pct is None else f"{pct} %") + (" · " + trf("lasts until sunrise ({sr})", L, sr=nf["sunrise"]) if nf and nf["enough"]
-                                                    else " · " + trf("too little until sunrise ({sr})", L, sr=nf["sunrise"]) if nf else ""),
+                                                    else " · " + trf("too little until sunrise ({sr})", L, sr=nf["sunrise"]) if nf
+                                                    else " · " + T("charging" if b.get("charging") else "mains power") if hold == "mains" else ""),
             "" if (pct is None or pct >= 40) and not (nf and not nf["enough"]) else "Charge the powerbank soon.")
     if web_pw_active():
         add("pw", "🔑", "Password", "ok", T("set"))

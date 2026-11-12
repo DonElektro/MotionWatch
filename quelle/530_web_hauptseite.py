@@ -2984,7 +2984,8 @@ function solarText(c, s) {
   if (!c.solar_on) L.push("☀️ " + t("off"));
   else if (!S.ok) L.push("☀️ " + t("no current meter found at this address"));
   else L.push("☀️ " + S.w + " W (" + S.v + " V · " + S.a + " A) · " + t("today") + " " + S.wh + " Wh · " + t("max.") + " " + S.max + " W");
-  if (n) L.push((n.enough ? "🌙 " + t("Battery lasts until sunrise") : "⚠ " + t("Battery probably too low until sunrise")) + " (" + n.sunrise + "): " + n.have_h + " h / " + n.need_h + " h");
+  if (n && n.hold === "mains") L.push("🔌 " + t(n.charging ? "charging" : "mains power"));
+  else if (n && !n.hold) L.push((n.enough ? "🌙 " + t("Battery lasts until sunrise") : "⚠ " + t("Battery probably too low until sunrise")) + " (" + n.sunrise + "): " + n.have_h + " h / " + n.need_h + " h");
   else L.push("🌙 " + t("Night forecast: needs a battery value (Settings → Battery)"));
   return L.join("\n");
 }
