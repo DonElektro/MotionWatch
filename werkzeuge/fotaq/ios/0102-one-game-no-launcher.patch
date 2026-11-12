@@ -1,0 +1,122 @@
+diff --git a/backends/platform/sdl/emscripten/emscripten-main.cpp b/backends/platform/sdl/emscripten/emscripten-main.cpp
+index 8727d364..a8b6990b 100644
+--- a/backends/platform/sdl/emscripten/emscripten-main.cpp
++++ b/backends/platform/sdl/emscripten/emscripten-main.cpp
+@@ -26,6 +26,8 @@
+ #include "backends/plugins/sdl/sdl-provider.h"
+ #include "base/main.h"
+ 
++extern "C" void moveeyeEnded(int code);
++
+ int main(int argc, char *argv[]) {
+ 
+ 	// Create our OSystem instance
+@@ -42,6 +44,9 @@ int main(int argc, char *argv[]) {
+ 	// Invoke the actual ScummVM main entry point:
+ 	int res = scummvm_main(argc, argv);
+ 
++	// MoveEye: tell the page that ScummVM has ended (before the window and the sound are closed)
++	moveeyeEnded(res);
++
+ 	// Free OSystem
+ 	g_system->destroy();
+ 
+diff --git a/backends/platform/sdl/emscripten/emscripten.cpp b/backends/platform/sdl/emscripten/emscripten.cpp
+index b6794c84..c4cedde3 100644
+--- a/backends/platform/sdl/emscripten/emscripten.cpp
++++ b/backends/platform/sdl/emscripten/emscripten.cpp
+@@ -101,6 +101,29 @@ void EMSCRIPTEN_KEEPALIVE cloud_connection_json_callback(char *str) {
+ #endif
+ }
+ 
++// MoveEye: a page that starts one game sets Module["quitAfterGame"]: when the game ends (quit, give up, end of the game,
++// «return to launcher», a game that cannot be started) ScummVM ends instead of opening its launcher, and tells the page.
++EM_JS(int, moveeyeQuitAfterGame, (), {
++	return Module["quitAfterGame"] ? 1 : 0;
++});
++
++EM_JS(void, moveeyeEnded, (int code), {
++	if (Module["onScummvmEnded"]) Module["onScummvmEnded"](code);
++});
++
++// MoveEye: an error message of ScummVM (error(): the game cannot go on) goes to the page, which shows it and keeps it;
++// without a page hook the message box of SDL comes as before.
++EM_JS(int, moveeyeMessage, (int isError, const char *message), {
++	if (!Module["onScummvmMessage"]) return 0;
++	return Module["onScummvmMessage"](isError, UTF8ToString(message)) ? 1 : 0;
++});
++
++void OSystem_Emscripten::messageBox(LogMessageType::Type type, const char *message) {
++	if (moveeyeMessage(type == LogMessageType::kError ? 1 : 0, message))
++		return;
++	OSystem_POSIX::messageBox(type, message);
++}
++
+ // Overridden functions
+ 
+ void OSystem_Emscripten::initBackend() {
+diff --git a/backends/platform/sdl/emscripten/emscripten.h b/backends/platform/sdl/emscripten/emscripten.h
+index ecd1c541..a9dc5509 100644
+--- a/backends/platform/sdl/emscripten/emscripten.h
++++ b/backends/platform/sdl/emscripten/emscripten.h
+@@ -55,6 +55,7 @@ public:
+ 	Common::MutexInternal *createMutex() override;
+ 	void exportFile(const Common::Path &filename);
+ 	void delayMillis(uint msecs) override;
++	void messageBox(LogMessageType::Type type, const char *message) override; // MoveEye: the page shows errors
+ 	void init() override;
+ 	void addSysArchivesToSearchSet(Common::SearchSet &s, int priority) override;
+ 
+diff --git a/base/main.cpp b/base/main.cpp
+index ef3997f1..a65d3c68 100644
+--- a/base/main.cpp
++++ b/base/main.cpp
+@@ -100,6 +100,10 @@
+ 
+ #include "gui/dump-all-dialogs.h"
+ 
++#ifdef __EMSCRIPTEN__
++extern "C" int moveeyeQuitAfterGame();
++#endif
++
+ static bool launcherDialog() {
+ 
+ 	// Discard any command line options. Those that affect the graphics
+@@ -756,6 +760,13 @@ extern "C" int scummvm_main(int argc, const char * const argv[]) {
+ 	}
+ 
+ 	// Unless a game was specified, show the launcher dialog
++#ifdef __EMSCRIPTEN__
++	// MoveEye: a page that starts one game never gets the launcher
++	if (nullptr == ConfMan.getActiveDomain() && moveeyeQuitAfterGame()) {
++		warning("MoveEye: the game could not be found - no launcher");
++		return 1;
++	}
++#endif
+ 	if (nullptr == ConfMan.getActiveDomain() && !ConfMan.hasKey("dump_all_dialogs"))
+ 		launcherDialog();
+ 
+@@ -870,6 +881,12 @@ extern "C" int scummvm_main(int argc, const char * const argv[]) {
+ 				GUI::displayErrorDialog(result, _("Error running game:"));
+ 			}
+ 
++#ifdef __EMSCRIPTEN__
++			// MoveEye: one game per page - also «return to launcher» ends ScummVM
++			if (moveeyeQuitAfterGame())
++				break;
++#endif
++
+ 			// Quit unless an error occurred, or Return to launcher was requested
+ 			if (result.getCode() == Common::kNoError && !g_system->getEventManager()->shouldReturnToLauncher() &&
+ 			    !g_system->hasFeature(OSystem::kFeatureNoQuit) && !ConfMan.getBool("gui_return_to_launcher_at_exit"))
+@@ -920,6 +937,10 @@ extern "C" int scummvm_main(int argc, const char * const argv[]) {
+ 
+ 			// Clear the active domain
+ 			ConfMan.setActiveDomain("");
++#ifdef __EMSCRIPTEN__
++			if (moveeyeQuitAfterGame())
++				break;
++#endif
+ 		}
+ 
+ 		// reset the graphics to default

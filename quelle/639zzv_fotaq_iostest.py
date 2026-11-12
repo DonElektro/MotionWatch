@@ -15,13 +15,19 @@
 #     Entpackt nach DATA_DIR/fotaqtest.
 #   * Keine Kachel: nur der Admin sieht den Eintrag und den Knopf «▶ Test öffnen» (Spiele-Port /g/fotaqtest/). Die Warnseite
 #     des Spiels (start.html, 639zzg) bleibt; der Test geht daran vorbei. Spielstände: dieselben wie im Spiel (gleicher Ursprung).
+#   * Zweite Runde (12.11.2026, erster Test des Besitzers am iPhone, iOS 18.7): Test A und B laufen beide; einziger Fehler:
+#     «Aufgeben» → «Ja» im Tagebuch öffnete den Launcher von ScummVM, der mit «Missing variable: 'Globals.ShowSearchPic'»
+#     abbrach (das Design lädt in diesem Bau ohne FreeType nicht, bei deutscher Browser-Sprache fehlt auch der Ersatz).
+#     Darum: Patch 0102 (nach dem Spielende endet ScummVM und meldet es der Seite: Tafel «Spiel beendet», Fehler bleiben als
+#     Tafel mit «Fehler kopieren» stehen), Wiederholung bei Daten-Abrufen (0101), Diagnose-Zeile nach dem Start versteckt
+#     (Knopf «ⓘ»), und die Seite meldet Start / Ende / Fehler an MoveEye («Meldungen vom Test» im Kasten, fqt_spieleport).
 #   * Rückbau: diese Datei löschen (und den «Range»-Abschnitt in 340 – der schadet aber nicht).
 # Selbsttest fqt_selftest; Tests werkzeuge/fotaq_iostest.py (--moveeye: Laden, Pins, Port, Stücke; --paket: die Varianten im Browser).
 # ----------------------------------------------------------------------------
-FQT_TAG = "fotaqios-9"                   # the probe release of the workflow «FOTAQ» (job «ios»); N of the file = N of the tag
+FQT_TAG = "fotaqios-10"                  # the probe release of the workflow «FOTAQ» (job «ios»); N of the file = N of the tag
 FQT_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + FQT_TAG + "/"}   # tests: local server
 # values from pins.txt of the probe release; size 0 = not released yet («comes with an update»)
-FQT_FILE = {"name": "fotaq-iostest-9.zip", "size": 13677512, "sha256": "3b1d414b266697c3c79478fd1681b7683210ea9d5e116ae45b5aa94ed10ce00b", "unpacked": 23222074}   # run 43254707460, 12.11.2026
+FQT_FILE = {"name": "fotaq-iostest-10.zip", "size": 13681322, "sha256": "500098f1bde7826f9b0092a6a0d841c0d03dd6f6b952ca33451854a3a425c69c", "unpacked": 23233585}   # run 43279409166, 12.11.2026
 FQT_MAX_BYTES = 80 * 1024 * 1024
 FQT_GAME = "fotaqtest"
 FQT_DL = {"running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
@@ -112,13 +118,129 @@ def fqt_delete():
         return False, "busy right now - try again in a moment"
     for p in (fqt_dir(), fqt_dir() + ".new"):
         shutil.rmtree(p, ignore_errors=True)
+    with FQT_REPORTS["lock"]:
+        FQT_REPORTS["list"] = []
+    try:
+        os.remove(fqt_reports_file())
+    except OSError:
+        pass
     log_event("sys", "Flight of the Amazon Queen: iPhone test deleted")
     return True, ""
 
 
+# ---- reports of the test page (second round, 12.11.2026): the page posts the numbers of its diagnostics line and an error text to
+# the games port (340: GAMESRV_API), so the administrator reads them in MoveEye instead of photographing the phone. Only fixed
+# fields, cleaned and cut; no address of the sender, no names, nothing from the network. Kept: the last 12 (file in DATA_DIR).
+FQT_REPORTS = {"list": None, "last": 0.0, "lock": threading.Lock()}
+FQT_REP_NUM = ("step", "sec", "wasm", "heap", "req", "bytes", "errors", "retries")
+FQT_REP_TXT = {"why": 12, "v": 2, "lang": 4, "dev": 40, "audio": 24, "tag": 16, "kind": 8, "err": 600}
+
+
+def fqt_reports_file():
+    return os.path.join(DATA_DIR, "fotaqtest_meldungen.json")
+
+
+def fqt_report_clean(d):
+    """one report of the page -> only the known fields (numbers, short printable texts, no host names); None = not a report"""
+    if not isinstance(d, dict) or not isinstance(d.get("v"), str):
+        return None
+    out = {"t": int(time.time())}
+    for k in FQT_REP_NUM:
+        try:
+            out[k] = max(0, min(int(d.get(k) or 0), 2 ** 40))
+        except (TypeError, ValueError):
+            out[k] = 0
+    for k, n in FQT_REP_TXT.items():
+        v = d.get(k)
+        v = "".join(c if c.isprintable() else " " for c in (v if isinstance(v, str) else ""))
+        v = re.sub(r"[a-z][a-z0-9+.-]*://[^\s/]*", "…", v, flags=re.I)                # no host of any address
+        v = re.sub(r"\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?\b", "…", v)                 # no IP address
+        out[k] = v[:n]
+    return out
+
+
+def fqt_reports():
+    with FQT_REPORTS["lock"]:
+        if FQT_REPORTS["list"] is None:
+            try:
+                with open(fqt_reports_file(), encoding="utf-8") as fh:
+                    l_ = json.load(fh)
+                FQT_REPORTS["list"] = [x for x in l_ if isinstance(x, dict)][-12:] if isinstance(l_, list) else []
+            except (OSError, ValueError):
+                FQT_REPORTS["list"] = []
+        return list(FQT_REPORTS["list"])
+
+
+def fqt_report_add(d):
+    r_ = fqt_report_clean(d)
+    if r_ is None:
+        return False
+    fqt_reports()
+    with FQT_REPORTS["lock"]:
+        if time.time() - FQT_REPORTS["last"] < 0.5:           # at most two a second
+            return False
+        FQT_REPORTS["last"] = time.time()
+        FQT_REPORTS["list"] = (FQT_REPORTS["list"] + [r_])[-12:]
+        try:
+            with open(fqt_reports_file() + ".new", "w", encoding="utf-8") as fh:
+                json.dump(FQT_REPORTS["list"], fh)
+            os.replace(fqt_reports_file() + ".new", fqt_reports_file())
+        except OSError:
+            pass
+    if r_["err"] and time.time() - FQT_REPORTS.get("logged", 0.0) >= 60:     # 3.84.2: at most one line a minute - everybody in the
+        FQT_REPORTS["logged"] = time.time()                                # Wi-Fi can post here, and the protocol is not a notice board
+        log_event("sys", "Flight of the Amazon Queen: iPhone test reports an error: " + r_["err"][:160])
+    return True
+
+
+def _fqt_admin():
+    """the reports are for the administrator only (3.84.2): /api/party answers every logged-in user, and a report names a
+    device and an error text. Outside a web request (self-test, tools) there is nobody to hide them from."""
+    try:
+        from flask import g, has_request_context
+        return (not has_request_context()) or getattr(g, "role", "admin") == "admin"
+    except Exception:
+        return False
+
+
+def fqt_spieleport(h, method, path):
+    """games port: POST /fotaqtest-diag/report (own Wi-Fi only - 340 checks that; only while the test is installed)"""
+    def antwort(st):
+        try:
+            h.send_response(st); h.send_header("Content-Length", "0"); h.send_header("Cache-Control", "no-store"); h.end_headers()
+        except OSError:
+            pass
+    if method != "POST" or path != "/fotaqtest-diag/report" or not fqt_installed():
+        return antwort(404)
+    o = h.headers.get("Origin")                              # a page of another web site may not post here
+    if o is not None:
+        from urllib.parse import urlsplit
+        try:
+            same = urlsplit(o).netloc.lower() == (h.headers.get("Host") or "").lower()
+        except ValueError:
+            same = False
+        if not same:
+            return antwort(403)
+    try:
+        n = int(h.headers.get("Content-Length") or 0)
+    except ValueError:
+        n = -1
+    if not 0 < n <= 4096:
+        return antwort(413)
+    try:
+        d = json.loads(h.rfile.read(n))
+    except (ValueError, OSError):
+        return antwort(400)
+    return antwort(204 if fqt_report_add(d) else 400)
+
+
+GAMESRV_API["/fotaqtest-diag/"] = fqt_spieleport
+
+
 def fqt_state():
     return {"tag": FQT_TAG, "pinned": fqt_pinned(), "installed": fqt_installed(), "game": fotaq_installed(), "size": FQT_FILE["size"],
-            "unpacked": FQT_FILE["unpacked"], "dl": {k: FQT_DL[k] for k in ("running", "got", "total", "msg", "done", "phase")}}
+            "unpacked": FQT_FILE["unpacked"], "dl": {k: FQT_DL[k] for k in ("running", "got", "total", "msg", "done", "phase")},
+            "reports": fqt_reports()[::-1] if _fqt_admin() else []}
 
 
 # ---- actions and state ride on those of 639zzg (field «iostest»), like the ready-made games (639zzn, field «fs») ------------------
@@ -168,6 +290,16 @@ def games_file(game, fn):                                   # + 639zzv: /g/fotaq
 
 # ---- texts ------------------------------------------------------------------------------------------------------------------------
 _HX_FQT = {
+    "Reports from the test": ("Meldungen vom Test", "Messages du test", "Messaggi della prova", "Communicaziuns dal test"),
+    "No report yet. The test page sends one when the game has started, has ended or shows an error.": (
+        "Noch keine Meldung. Die Testseite schickt eine, wenn das Spiel gestartet ist, beendet wurde oder einen Fehler zeigt.",
+        "Pas encore de message. La page de test en envoie un quand le jeu a démarré, s’est terminé ou affiche une erreur.",
+        "Ancora nessun messaggio. La pagina di prova ne invia uno quando il gioco è partito, è terminato o mostra un errore.",
+        "Anc nagina communicaziun. La pagina da test trametta ina cur ch’il gieu è partì, è terminà u mussa in sbagl."),
+    "started": ("gestartet", "démarré", "avviato", "partì"),
+    "ended": ("beendet", "terminé", "terminato", "terminà"),
+    "error": ("Fehler", "erreur", "errore", "sbagl"),
+    "Copy": ("Kopieren", "Copier", "Copia", "Copiar"),
     "iPhone test": ("iPhone-Test", "Test iPhone", "Test iPhone", "Test iPhone"),
     "Test versions of the game for iPhone/iPad (game data in pieces, smaller program). They do not replace the game. Open the test on the iPhone, try A and B, and send a picture of the line at the bottom.": (
         "Test-Fassungen des Spiels für iPhone/iPad (Spieldaten in Stücken, kleineres Programm). Sie ersetzen das Spiel nicht. Den Test am iPhone öffnen, A und B probieren und ein Bild der Zeile unten schicken.",
@@ -211,6 +343,20 @@ function fqtPaint(S) {
   }
   r.appendChild(row);
   if (D.msg && !D.running) r.appendChild(el("div", "mut", "⚠ " + t(D.msg)));
+  if (S.installed) {                                   // second round: what the test page reported (newest first)
+    const R = S.reports || [], rb = el("div", ""); rb.id = "fqt-reports"; rb.style.marginTop = "10px";
+    rb.appendChild(el("b", "", t("Reports from the test")));
+    if (!R.length) rb.appendChild(el("div", "mut", t("No report yet. The test page sends one when the game has started, has ended or shows an error.")));
+    const W = {start: t("started"), end: t("ended"), error: t("error")}, mmss = s => Math.floor(s / 60) + ":" + ("0" + s % 60).slice(-2);
+    const lines = R.map(x => new Date(x.t * 1000).toLocaleString(LANG, {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"}) + " · Test " + String(x.v).toUpperCase()
+      + " " + x.lang + " · " + x.dev + " · " + (W[x.why] || x.why) + " · " + mmss(x.sec) + " · " + Math.round(x.heap / 1048576) + " MB · " + (x.bytes / 1048576).toFixed(1) + " MB/" + x.req
+      + (x.retries ? " · " + x.retries + "×↻" : "") + " · " + x.audio + (x.err ? " · " + x.err : ""));
+    lines.forEach((l, i) => { const p = el("div", R[i].err ? "" : "mut", l); p.style.cssText = "font-size:12px;margin-top:4px;overflow-wrap:anywhere" + (R[i].err ? ";color:var(--warn,#e9a23b)" : ""); rb.appendChild(p); });
+    if (R.length) { const cb = el("button", "sec", "📋 " + t("Copy")); cb.type = "button"; cb.id = "fqt-copy"; cb.style.marginTop = "6px";
+      cb.onclick = () => { const x = lines.join("\n"); if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(x); else { const a = document.createElement("textarea"); a.value = x; document.body.appendChild(a); a.select(); try { document.execCommand("copy"); } catch (e) {} a.remove(); } cb.textContent = "✓"; };
+      rb.appendChild(cb); }
+    r.appendChild(rb);
+  }
   box.appendChild(r);
 }
 """
@@ -236,6 +382,12 @@ def fqt_selftest():
     assert "pinned" in s_ and "fs" in s_ and s_["iostest"]["tag"] == FQT_TAG
     assert "function fqtPaint" in TOOLS_PAGE and "fqtPaint((P.fotaq || {}).iostest);" in TOOLS_PAGE and '"fqt-ask"' in TOOLS_PAGE
     assert "Trotzdem starten" in fotaq_start_html(), "the warning page of the game stays"
+    c_ = fqt_report_clean({"v": "b", "why": "error", "dev": "iPhone iOS 18.7", "sec": "41", "heap": 67108864, "extra": "x", "audio": "running 48000",
+                           "err": "CRITICAL: Missing variable\x00 at http://192.168.1.75:5002/g/x and 10.0.0.7:5002 " + "y" * 900})
+    assert c_ and c_["sec"] == 41 and c_["heap"] == 67108864 and "extra" not in c_ and len(c_["err"]) == 600
+    assert "192.168" not in c_["err"] and "10.0.0.7" not in c_["err"] and "\x00" not in c_["err"] and c_["err"].startswith("CRITICAL: Missing variable")
+    assert fqt_report_clean({"why": "x"}) is None and fqt_report_clean([1]) is None
+    assert GAMESRV_API.get("/fotaqtest-diag/") is fqt_spieleport and "reports" in s_["iostest"] and 'id = "fqt-reports"' in TOOLS_PAGE
     return True
 
 

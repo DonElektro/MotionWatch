@@ -52,7 +52,8 @@ def moveeye(datei, fehler):
     ns = {"__name__": "mw_fqt_test", "__file__": os.path.abspath(datei)}
     exec(compile(open(datei, encoding="utf-8").read(), datei, "exec"), ns)
     ns["DATA_DIR"] = home
-    ns["log_event"] = lambda *a, **k: None
+    LOGZ = []                                               # the protocol lines of this run (nothing is written)
+    ns["log_event"] = lambda *a, **k: LOGZ.append(" ".join(str(x) for x in a))
     ns["lan_guest_ip"] = lambda ip, fwd="": not fwd
     CFG, F, T = ns["CFG"], ns["FOTAQ_FILES"], ns["FQT_FILE"]
 
@@ -153,17 +154,135 @@ def moveeye(datei, fehler):
         ok(get(bad)[0] in (301, 400, 404), f"Port: {bad} gibt es nicht")
     s_, h_, b_ = get("/g/fotaq/")
     ok(s_ == 200 and "Trotzdem starten".encode() in b_, "die Warnseite des Spiels bleibt")
+    # second round: the test page reports to MoveEye (games port), the administrator reads it in /api/party
+
+    def post(path, body, hdr=None):
+        try:
+            with op.open(urllib.request.Request(f"http://127.0.0.1:{gp}{path}", data=body, headers=dict({"Content-Type": "text/plain"}, **(hdr or {})), method="POST"), timeout=30) as x:
+                return x.status
+        except urllib.error.HTTPError as e:
+            return e.code
+    rep = {"why": "error", "v": "b", "lang": "de", "dev": "iPhone iOS 18.7", "step": 3, "sec": 41, "wasm": 5358441, "heap": 67108864, "req": 30, "bytes": 6920000,
+           "errors": 0, "retries": 0, "audio": "running 48000", "tag": ttag, "kind": "exit", "passwort": "geheim",
+           "err": "CRITICAL: Missing variable: 'Globals.ShowSearchPic'! http://192.168.1.75:5002/g/fotaqtest/ <b>"}
+    ok(post("/fotaqtest-diag/report", json.dumps(rep).encode()) == 204, "Port: Meldung der Testseite angenommen")
+    R = party()[1]["fotaq"]["iostest"]["reports"]
+    ok(len(R) == 1 and R[0]["v"] == "b" and R[0]["sec"] == 41 and R[0]["err"].startswith("CRITICAL: Missing variable: 'Globals.ShowSearchPic'!"), "/api/party: die Meldung steht beim Test")
+    ok("192.168" not in json.dumps(R) and "passwort" not in R[0] and "geheim" not in json.dumps(R), "Meldung: keine Adresse, keine fremden Felder")
+    cf, jf = party(h=HA)                                    # 3.84.2: /api/party answers every logged-in user - the reports only the administrator
+    ok(cf == 200 and jf["fotaq"]["iostest"]["reports"] == [] and "Missing variable" not in json.dumps(jf), f"Familie sieht die Meldungen nicht ({cf})")
+    n0 = sum("iPhone test reports an error" in x for x in LOGZ)
+    for _i in range(3):
+        time.sleep(0.6); post("/fotaqtest-diag/report", json.dumps(rep).encode())
+    n1 = sum("iPhone test reports an error" in x for x in LOGZ)
+    ok(n1 == n0 == 1, f"Protokoll: höchstens eine Zeile pro Minute über einen gemeldeten Fehler ({n0} -> {n1})")
+    R = party()[1]["fotaq"]["iostest"]["reports"][:1]
+    ok(os.path.isfile(ns["fqt_reports_file"]()) and "192.168" not in open(ns["fqt_reports_file"]()).read(), "Meldung bleibt in einer Datei (ohne Adresse)")
+    ok(post("/fotaqtest-diag/report", json.dumps(rep).encode(), {"Origin": "http://boese.example"}) == 403, "Port: Meldung von einer fremden Seite abgelehnt")
+    ok(post("/fotaqtest-diag/report", b"x" * 5000) == 413 and post("/fotaqtest-diag/report", b"kein json") == 400, "Port: zu grosse / kaputte Meldung abgelehnt")
+    ok(post("/fotaqtest-diag/anderes", b"{}") == 404 and get("/fotaqtest-diag/report")[0] == 404, "Port: nur POST /fotaqtest-diag/report")
+    time.sleep(0.6)
+    for i in range(14):
+        ns["FQT_REPORTS"]["last"] = 0
+        ns["fqt_report_add"](dict(rep, sec=i, err=""))
+    R = party()[1]["fotaq"]["iostest"]["reports"]
+    ok(len(R) == 12 and R[0]["sec"] == 13, "höchstens 12 Meldungen, die neueste zuerst")
     tp = ns["TOOLS_PAGE"]
     ok("fqtPaint((P.fotaq || {}).iostest);" in tp and 'pl.href = "/games/fotaqtest/"' in tp and "iostest: true" in tp, "Reiter Spielecke: Eintrag «Queen – iPhone-Test» mit «Test öffnen»")
+    ok('rb.id = "fqt-reports"' in tp and "Meldungen vom Test" in tp, "Reiter Spielecke: «Meldungen vom Test» mit «Kopieren»")
     party({"action": "fotaq_remove", "lang": "de"})
     ok(get("/g/fotaqtest/data/games/de/queen.1c")[0] == 404 and get("/g/fotaqtest/data/games/en/queen.1c")[0] == 200, "eine Sprache des Spiels entfernt: im Test auch weg")
     code, j = party({"action": "fotaq_delete", "iostest": True})
     ok(code == 200 and not ns["fqt_installed"]() and not os.path.exists(ns["fqt_dir"]()) and ns["fotaq_installed"](), "Test entfernt, das Spiel bleibt")
+    ok(party()[1]["fotaq"]["iostest"]["reports"] == [] and not os.path.exists(ns["fqt_reports_file"]()) and post("/fotaqtest-diag/report", json.dumps(rep).encode()) == 404,
+       "Test entfernt: Meldungen weg, keine neuen angenommen")
     party({"action": "fotaq_install", "iostest": True}); warten(ns["FQT_DL"])
     party({"action": "fotaq_delete"})
     ok(not ns["fotaq_installed"]() and not ns["fqt_installed"]() and get("/g/fotaqtest/")[0] == 404, "Spiel entfernt: der Test ist nicht mehr erreichbar")
     srv.stop() if hasattr(srv, "stop") else None
     shutil.rmtree(home, ignore_errors=True)
+
+
+def ende_pruefen(pw, br, base, v, fehler, bilder):
+    """second round (first test on the iPhone, 12.11.2026: «Aufgeben» → «Ja» opened ScummVM's launcher, which stopped with
+    «Missing variable: 'Globals.ShowSearchPic'»): giving up ends the game cleanly with «Spiel beendet», the quick save made
+    before is in the browser store; and when the game data stop coming, a message stays (after retries), no black screen"""
+    tag = f"iPhone-Test {v} Ende"
+
+    def start(ctx):
+        pg = ctx.new_page()
+        pg.goto(f"{base}/g/fotaqtest/index.html?v={v}", wait_until="load"); pg.wait_for_selector(f"#var-{v}.on", timeout=10000)
+        pg.locator("#btn-de").tap()
+        pg.wait_for_function("() => window.FOTAQ_DIAG && FOTAQ_DIAG().step === 3", timeout=150000)
+        return pg
+    geraet = dict(viewport={"width": 844, "height": 390}, is_mobile=True, has_touch=True, user_agent=pw.devices["iPhone 13"]["user_agent"], locale="de-CH")
+    ctx = br.new_context(**geraet)
+    try:
+        pg = start(ctx)
+        fe = []
+        pg.on("pageerror", lambda e: fe.append(str(e)[:200]))
+        for _ in range(8):
+            pg.locator("#kSkip").tap(); pg.wait_for_timeout(2500)
+        pg.keyboard.press("F11"); pg.wait_for_timeout(2500)          # quick save in the first room
+        pg.locator("#kMenu").tap(); pg.wait_for_timeout(2500)         # the journal: «Give Up» bottom left, then «Yes»
+        c = pg.locator("#canvas").bounding_box()
+        for fx, fy in ((0.27, 0.84), (0.27, 0.36)):
+            pg.touchscreen.tap(c["x"] + c["width"] * fx, c["y"] + c["height"] * fy); pg.wait_for_timeout(2500)
+        try:
+            pg.wait_for_selector("#fqEnd", timeout=15000)
+        except Exception:
+            pass
+        pg.wait_for_timeout(800)
+        if bilder:
+            pg.screenshot(path=os.path.join(bilder, f"test_ende_{v}.png"))
+        dg = pg.evaluate("() => FOTAQ_DIAG()")
+        tx = pg.locator("#fqEnd").inner_text() if pg.locator("#fqEnd").count() else ""
+        log = pg.evaluate("() => FOTAQ.log.join(' | ')")
+        if not dg.get("ended") or dg.get("err") or "Spiel beendet" not in tx or "gesichert" not in tx or "Missing variable" in log:
+            fehler.append(f"{tag}: «Aufgeben» → «Ja» endet nicht sauber mit «Spiel beendet» (Tafel: {tx[:120]!r}; {json.dumps(dg)[:260]}; Log: {log[-300:]})")
+        if pg.locator("#fqEnd.bad").count() or not pg.locator("#fqAgain").is_visible() or not pg.locator("#fqBack").is_visible():
+            fehler.append(f"{tag}: Tafel «Spiel beendet» ohne «Nochmal» / «‹ Spiele» oder als Fehler")
+        keys = pg.evaluate(ST.FOTAQ_IDB) or []
+        if not [k for k in keys if "/saves/de/" in k and not k.endswith("/de")]:
+            fehler.append(f"{tag}: der Spielstand von vorher ist nach dem Ende nicht im Browser-Speicher ({len(keys)} Einträge)")
+        pg.locator("#fqAgain").tap(); pg.wait_for_selector(f"#var-{v}", timeout=10000)
+        hist = pg.locator("#hist").inner_text()
+        if "sauber beendet" not in hist or "NICHT" in hist or "FEHLER" in hist:
+            fehler.append(f"{tag}: der Lauf steht nicht als sauber beendet in der Liste ({hist[:160]})")
+        for x in fe:
+            if "ExitStatus" not in x:
+                fehler.append(f"{tag}: JavaScript: {x}")
+        print(f"{tag}: Aufgeben ok ({tx.splitlines()[0] if tx else '-'})", flush=True)
+    except Exception as e:
+        fehler.append(f"{tag}: {e.__class__.__name__}: {str(e)[:200]}")
+    ctx.close()
+    ctx = br.new_context(**geraet)                          # the game data stop coming after the start
+    try:
+        aus = [False]
+        ctx.route("**/data/games/**", lambda r: r.abort() if aus[0] and "queen.1c" in r.request.url else r.continue_())
+        pg = start(ctx)
+        pg.evaluate("() => { localStorage.removeItem('x'); }")
+        aus[0] = True
+        t0 = time.time()
+        while time.time() - t0 < 60 and not pg.locator("#fqEnd.bad").count():
+            pg.locator("#kSkip").tap(); pg.wait_for_timeout(2000)
+        dg = pg.evaluate("() => FOTAQ_DIAG()")
+        tx = pg.locator("#fqEnd").inner_text() if pg.locator("#fqEnd").count() else ""
+        if bilder:
+            pg.screenshot(path=os.path.join(bilder, f"test_daten_weg_{v}.png"))
+        if dg.get("kind") != "data" or not dg.get("retries") or "Spieldaten konnten nicht geladen werden" not in tx or "queen.1c" not in pg.locator("#fqMsg").input_value():
+            fehler.append(f"{tag}: fehlende Spieldaten geben keine klare Meldung nach Wiederholungen (Tafel: {tx[:120]!r}; {json.dumps(dg)[:260]})")
+        elif not pg.locator("#fqCopy").is_visible():
+            fehler.append(f"{tag}: «Fehler kopieren» fehlt")
+        else:
+            print(f"{tag}: Daten weg -> Meldung nach {dg['retries']} Wiederholungen ok", flush=True)
+        pg.locator("#fqAgain").tap(); pg.wait_for_selector(f"#var-{v}", timeout=10000)
+        hist = pg.locator("#hist").inner_text()
+        if "FEHLER" not in hist or "queen.1c" not in hist:
+            fehler.append(f"{tag}: der Fehler steht nach dem Neuladen nicht in der Liste ({hist[:200]})")
+    except Exception as e:
+        fehler.append(f"{tag} (Daten weg): {e.__class__.__name__}: {str(e)[:200]}")
+    ctx.close()
 
 
 def paket(pfad, daten, bilder, fehler, warn):
@@ -222,6 +341,13 @@ def paket(pfad, daten, bilder, fehler, warn):
                 fehler.append("iPhone-Test (iPhone 13): Schritt 3 nicht erreicht: " + str(pg.evaluate("() => JSON.stringify(window.FOTAQ_DIAG && FOTAQ_DIAG())"))[:300])
             pg.wait_for_timeout(2500)
             dz = pg.locator("#dz").inner_text()
+            pg.wait_for_timeout(5500)                   # second round: the line hides itself after the start, «ⓘ» shows it again
+            if pg.locator("#dz").is_visible():
+                fehler.append("iPhone-Test: die Diagnose-Zeile bleibt über dem Spiel stehen")
+            pg.locator("#kDiag").tap(); pg.wait_for_timeout(1300)
+            if not pg.locator("#dz").is_visible():
+                fehler.append("iPhone-Test: «ⓘ» zeigt die Diagnose-Zeile nicht")
+            pg.locator("#kDiag").tap()
             if not all(x in dz for x in ("Test " + vs[-1].upper(), "iPhone iOS", "Schritt 3: gestartet", "Speicher", "Daten", "Ton")):
                 fehler.append(f"iPhone-Test: Diagnose-Zeile unvollständig ({dz})")
             print("Diagnose-Zeile (iPhone 13): " + dz, flush=True)
@@ -242,6 +368,8 @@ def paket(pfad, daten, bilder, fehler, warn):
             for x in fe:
                 fehler.append("iPhone-Test (iPhone 13): JavaScript: " + x)
             ctx.close()
+            for v in vs:
+                ende_pruefen(pw, br, base, v, fehler, bilder)
             br.close()
     finally:
         s.shutdown()
