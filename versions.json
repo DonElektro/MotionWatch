@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-12 09:11",
+ "generated": "2026-11-12 09:16",
  "versions": [
+  {
+   "version": "3.82.0",
+   "file": "webcam_bewegung_3_82_0.py",
+   "url": "",
+   "sha256": "1e85e4f9c8f922007e7d4c19e64318cc75bfc2aba69dd7075014e61446b9cf41",
+   "date": "2026-11-12 09:16",
+   "notes": "Neu im Datentausch: Packlisten. Listen anlegen oder aus Text, Excel und CSV übernehmen (immer mit Vorschau); pro Gegenstand Gewicht, Anzahl, Kategorie und Foto; Gesamtgewicht mit Ziel, Basisgewicht und Verbrauch getrennt; «Kaufen»-Ansicht; gemeinsam packen von mehreren Handys; Vorlagen, Kopieren, Drucken und Export.",
+   "size": 4132013,
+   "sig": "9b0a7d708b930e16c58daffe10a106f85e91ca5c11b90d5eb6d604839205e9a6cbdf6a206ca5ca58db569e394575d4ebd3cf7872448dac55f2dba6641eeccb06",
+   "data": {
+    "file": "moveeye_daten_3_82_0.zip",
+    "url": "",
+    "sha256": "622c4d9523254cf5dacd74a8073bbc699d725b728e0c673e33e1f27b55d47ab3",
+    "size": 10442208,
+    "sig": "9ab9cfe7445db4841b6fee3889932c2782d320dc20d95eaebe42434a964f579696ef209bdfe81adec87e9046ccd34eea61d25525fc16d38e3b7760577f621206"
+   }
+  },
   {
    "version": "3.81.3",
    "file": "webcam_bewegung_3_81_3.py",
@@ -136,23 +153,6 @@
     "sha256": "ff546f6caee4a5386e01ce428ddd60f8bc688326245ce93bb3cfa0f5ab07c315",
     "size": 4936880,
     "sig": "14dc46f8b2e4bc8cbcc432dd7afe09e21758f259152c69492088a9eea258ffa6db8a402202e49c9fe68879e92eb7fab53b7b8274dbb83944a1a65481e0a7be09"
-   }
-  },
-  {
-   "version": "3.73.0",
-   "file": "webcam_bewegung_3_73_0.py",
-   "url": "",
-   "sha256": "0c1ab2b560dd31abbc3b2a39275e45359b45c9ce0cd609edc7a17241ec6cd061",
-   "date": "2026-11-10 21:30",
-   "notes": "Spielecke: Wobbly Truck mit Nitro, Zeitlupe bei grossen Stunts, Effekten und Ton, grosser Combo-Anzeige, Geist-Fahrer (deine beste Fahrt fährt mit), fünf Welten (Wüste, Wald, Schnee, Vulkan, Nacht), neuen Elementen (Sprungfeder, Einsturzbrücke, Feuerringe, Felsen, Eis, Schlamm) und einer Verfolgungsjagd alle 1000 m – der Rekord der Stunt-Piste beginnt neu, der alte bleibt als «alte Strecke» sichtbar. Neues Spiel «Was nun?»: Bilder-Rätsel mit 5 Bildern, Sternen, Tipp-Knopf und Geheimnissen (Idee von Elektro). Spielesammlung einmal neu laden: Mehr → Spielecke → «Installieren / aktualisieren»",
-   "size": 3875011,
-   "sig": "ca392b01ac03c6ea637b33ff90f763eee39f5088f7c56f9de1fbf5dc2ee842ca2b0824876861deadc3917aaf5bdb479b82c5516dd5f92563cfad7146d2118307",
-   "data": {
-    "file": "moveeye_daten_3_73_0.zip",
-    "url": "",
-    "sha256": "e131b35cf806559a4bed106161bfe842150dca8b61599e245a52b7bae29b09f2",
-    "size": 4932588,
-    "sig": "dd9459d6f1f0c6faae2377273ddccd0eb07d2ece306c9e6a029affcce9a53ade59899f0ae140ca41f1324f0ba2e57c34f4211ea101053c722c62aa8273038e0e"
    }
   },
   {

@@ -23,6 +23,46 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.82.0: Neu im Datentausch: Packlisten. Listen anlegen oder aus Text, Excel und CSV übernehmen (immer mit Vorschau); pro
+    Gegenstand Gewicht, Anzahl, Kategorie und Foto; Gesamtgewicht mit Ziel, Basisgewicht und Verbrauch getrennt;
+    «Kaufen»-Ansicht; gemeinsam packen von mehreren Handys; Vorlagen, Kopieren, Drucken und Export.
+  * 3.81.3: Anleitung auf Italienisch: die Seite ist am Handy nicht mehr breiter als der Bildschirm (ein langer Eintrag im
+    Inhaltsverzeichnis wird jetzt gekürzt angezeigt).
+  * 3.81.2: Vorbereitung im Hintergrund: MoveEye kann neue Simulator-Versionen künftig auch als Anhang einer Veröffentlichung
+    holen und weitergeben (spart Platz im Projekt). Für dich ändert sich nichts.
+  * 3.81.1: Übersetzungen ergänzt: Französisch, Italienisch und Rätoromanisch sind jetzt vollständig (rund 950 Texte, vor allem
+    Werkzeuge, Simulator-Seite und Spielecke); nicht von Muttersprachlern gegengelesen.
+  * 3.81.0: Offline-Karte der Schweiz: Karte und Ortssuche ohne Internet, einmal als Verwalter nachladen unter Einstellungen →
+    Standort (ca. 670 MB, braucht freien Platz auf der SD-Karte); neue Seite «Karte»; Standort durch Antippen oder Suchen
+    setzen; Aufnahmen zeigen ihren Ort auf der Karte; im Simulator «Ort von der Karte» ohne Internet wählen. ©
+    OpenStreetMap-Mitwirkende. QR-Befehls-Karten: gesperrte QR-Karten bleiben auch nach einem Stromausfall gesperrt.
+  * 3.80.0: Neu (Versuch, ab Werk aus): QR-Befehls-Karten. Eine gedruckte Karte vor die Kamera halten löst einen Befehl aus:
+    Push mit eigenem Text (auch mit Foto), Text vorlesen, Notiz im Verlauf, Aufnahme starten, Licht/Relais, Kopf auf eine
+    Position, Profil wechseln. Karten erstellst du in der «Karten-Werkstatt» unter Mehr; es gelten nur Karten von deinem
+    MoveEye; Ausschalten per Karte geht nicht. Einschalten: Einstellungen → Kameras & Kopf → «QR-Befehls-Karten». Reichweite
+    etwa 80 cm bei Postkartengrösse, etwa 2 m bei A4 (geschätzt, nicht an der echten Kamera gemessen).
+  * 3.79.0: Datentausch: Fotos vom iPhone bleiben nicht mehr bei 0 % hängen (jedes Stück hat jetzt ein Zeitlimit, wird bei
+    Bedarf wiederholt und in kleineren Stücken gesendet; nach einem Fehler geht es mit «Nochmal versuchen» dort weiter, wo es
+    aufgehört hat). Erster Start ruhiger: Hinweise erscheinen nacheinander statt gleichzeitig; nach einer Neuinstallation keine
+    Versions-Neuigkeiten.
+  * 3.78.0: «Was nun?»: fünf neue Bilder (jetzt 15), noch schwieriger, mit der neuen Stufe «Meister+»; Bilder mit mehreren
+    Räumen und gegen die Zeit; ein Notizbuch sammelt gefundene Hinweise; Bestzeit pro Bild; bisherige Sterne bleiben erhalten.
+  * 3.77.0: Schach zu zweit mit je einem Handy: Ein Handy erstellt ein Spiel und zeigt einen kurzen Code (oder QR-Code), das
+    andere tritt bei. Die Partie läuft über dein MoveEye, auch für Gäste, solange «Spiele freigeben» an ist. Remis anbieten, Zug
+    zurück auf Anfrage, Revanche, Zuschauen mit dem Code; nach einer Verbindungspause geht es von selbst weiter. Spielesammlung
+    einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
+  * 3.76.1: Spiel «Was nun?»: Im Hochformat reagiert das Spiel jetzt genau dort, wo man tippt (das Bild verschob sich vorher
+    nach dem Antippen leicht). Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
+  * 3.76.0: Spielecke: neues Schach ersetzt das alte – letzter Zug markiert, mögliche Felder als Punkte, animierte Züge, alles
+    auf Deutsch, 8 Stärke-Stufen, Tipp-Knopf, Lern-Modus mit Warnung vor groben Fehlern, Zug zurück, zu zweit am selben Gerät,
+    die Partie wird gespeichert. Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
+  * 3.75.0: Spiel «Was nun?»: fünf neue Bilder (jetzt zehn) mit Schwierigkeitsgraden von leicht bis Meister. Ab Bild 6 kann man
+    Dinge mitnehmen und kombinieren; manche Bilder haben zwei Lösungswege und eine Meister-Lösung. Bisherige Sterne bleiben
+    erhalten. Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
+  * 3.74.0: Spielecke: drei neue Spiele zum Nachladen unter Mehr → Spielen → Spielecke → «Weitere Spiele zum Nachladen»:
+    «Abenteuer mit Angst» (interaktive Geschichte, ab ca. 12 Jahren), «Heroine Dusk» (Verlies-Rollenspiel, Englisch) und «HexGL»
+    (3D-Rennspiel). Unter «Mehr» gibt es nur noch einen Eingang «Spielen»; die Spielecke ist dort die oberste Kachel, «Spiele
+    freigeben» steht auf der Spielecke
   * 3.73.0: Spielecke: Wobbly Truck mit Nitro, Zeitlupe bei grossen Stunts, Effekten und Ton, grosser Combo-Anzeige,
     Geist-Fahrer (deine beste Fahrt fährt mit), fünf Welten (Wüste, Wald, Schnee, Vulkan, Nacht), neuen Elementen (Sprungfeder,
     Einsturzbrücke, Feuerringe, Felsen, Eis, Schlamm) und einer Verfolgungsjagd alle 1000 m – der Rekord der Stunt-Piste beginnt
@@ -72,48 +112,6 @@ Features
     dem Pi, über 10'000 Arten), Top 3 mit deutschem und lateinischem Namen; das Modell (etwa 350 MB, feste Prüfsumme) wird beim
     ersten Mal nach einer Rückfrage geladen. Fehlerkorrektur: Benutzer mit eigener Rolle (z. B. «Familie») bekamen auf jeder
     Seite eine Fehlermeldung für zwei Seiten-Skripte. Gehäuse-Daten 5.3.1 (Adapter 28 für das alte UPS HAT) auch in MoveEye.
-  * 3.63.2: Fehlerkorrektur: langes Drücken auf «Ansicht» – öffnet sich das Menü unter dem Finger, schliesst es das Loslassen
-    nicht mehr sofort. Dazu Sim 3.59.0: Besucher meiden deinen Platz, neue Einbruch-Abläufe (Nachts ums Zelt schleichen,
-    Velo-Diebstahl), Erkennungstest-Plan «real».
-  * 3.63.1: Fehlerkorrektur: Selbsttest «Fertig kaufen» (639zj) erkennt den Eintrag im Fenster «Mehr» auch, wenn der Datentausch
-    ihn umhüllt (nur im CI mit Fenster sichtbar).
-  * 3.63.0: 📁 Datentausch unter Mehr: Fotos, Videos und Dokumente teilen (Für alle / Meine Dateien, Ordner, Vorschaubilder,
-    Hochladen in Stücken), 📝 Texte im Browser bearbeiten mit Versionen, 💬 Chats; neue Rechte pro Benutzer, Gäste nur ansehen,
-    Grenzen und immer 2 GB frei, Push gebündelt.
-  * 3.62.1: Piper: «Piper installieren» richtet auch espeak-ng selbst ein, wenn es fehlt (apt, ohne Passwort-Abfrage, mit
-    Zeitlimit; als root direkt, sonst sudo -n), mit Fortschritt und klarer Meldung, wenn es nicht geht («espeak-ng konnte nicht
-    installiert werden – …»).
-  * 3.62.0: Piper-Stimme: MoveEye spricht Ansagen mit einer natürlichen Offline-Stimme (Thorsten; Stimme pro Sprache, Tempo,
-    Lautstärke, «Stimme testen»), einmal geladen mit fester Prüfsumme; Ansagen auch im Browser («🔊 Ton im Browser»), im
-    Pi-Fenster und im Simulator; ohne Piper die alte Stimme.
-  * 3.61.0: Simulator intern: MoveEye Sim läuft abgespeckt direkt auf dem Pi 5 (Reiter Simulator → «🧪 Simulator intern (auf
-    diesem Pi) ausprobieren»), Paket signiert geprüft, «Beenden» = zurück zur vorherigen Verbindung; alte Desktop-Symbole «MW
-    Sim · Basis» und x86-«MoveEye Sim» werden aufgeräumt. Dazu Sim 3.57.0: Gerät wie das echte (Gehäuse v5.3), Pflanzen
-    natürlicher, PS5-Controller am Simulator-PC.
-  * 3.60.0: Fehlalarme und Pushes: MoveEye merkt sich Fehlalarm-Stellen und fragt nach 3 Fehlalarmen in 7 Tagen einmal «künftig
-    ignorieren?», Windschutz für Pflanzen-Bereiche, Alarme in der Pause gebündelt («+N weitere in M Min.» mit Bildstreifen),
-    Zonen-Name im Push, kurzer Clip (ab Werk aus), «Bilder bleiben zu Hause» (ab Werk aus); doppelte Bestätigung im
-    Erkennungstest messbar · Objekte und Profile: Erkennungsprofile 🏕️ Nacht am Zelt · 🌳 Garten tagsüber · 🏠 Hausüberwachung · 🔋
-    Akku sparen (von Hand, per Zeitplan, vom Modus oder bei tiefem Akku; ohne Profil wie bisher), Wildtiere mit Namen («🦊 Fuchs
-    beim Zelt»), Fahrzeuge je Art melden / nur protokollieren / ignorieren, «📦 Paket vor der Tür», liegen gelassene und
-    verschwundene Gegenstände; im Akku- und Nachtprofil rechnet die KI weniger.
-  * 3.59.0: MoveEye-Datei schlank: Hauptdatei von 5,0 auf 3,4 MB (mehr in die Zusatzdatei: Übersetzungen, Anleitung, Web-Teile;
-    gebaute Datei ohne Kommentare, mit Tabs, gleiche Zeilennummern). Ohne Zusatzdatei startet MoveEye wieder im Kern, mit «Jetzt
-    nachladen». Grenze: Warnung ab 4 MiB, Abbruch ab 5 MiB.
-  * 3.58.0: Weitwinkel = Wache: leichte KI im Weitwinkelbild – nur Personen rufen den Kopf (Tiere / Fahrzeuge wählbar),
-    Auslösezonen im Weitwinkelbild (Zonen-Editor 🔭), nachts mit Wärmebild kein Personen-Alarm ohne Wärme (ab Werk an, ohne
-    Wärmebild wie bisher); Anleitung «Weitwinkel einrichten und testen».
-  * 3.57.0: Drei Kamera-Ansichten: Knopf «Ansicht» schaltet das Hauptbild 🎯 Kopf → 🌡 Wärmebild → 🔭 Weitwinkel (mit Rahmen, wohin
-    der Kopf schaut), lang drücken = Auswahl; kleines Übersichtsbild in der Ecke (antippen = tauschen, pro Gerät gemerkt) –
-    Live, Controller-Ansicht, Sim-Ansicht und Pi-Fenster.
-  * 3.56.0: Drei Spuren: MoveEye, Simulator und Gehäuse haben je eine eigene Nummer und erscheinen einzeln; MoveEye prüft den
-    Simulator für /sim über die signierte Liste (versions.json «sim»), der HP holt neue Simulatoren selbst, das Versions-Paar
-    warnt nur noch unter der Mindestversion.
-  * 3.55.2: Kamerabilder: Nur sichtbare Bilder halten eine Verbindung offen; die Vorschauen unter Einstellungen → Kameras kommen
-    als Einzelbilder (2 pro Sekunde); bleibt ein Bild 5 s ohne neues Bild, verbindet es sich selbst neu (kein «noch kein Bild»
-    mehr bis zum Neuladen); ↻ lädt den aktuellen Reiter neu, statt zu Live zu springen.
-  * 3.55.1: Simulator: kein Absturz mehr bei KI-Trainingsbildern «Vielfalt hoch» (Morgen im Bergtal in einer Welt); Tropfen und
-    Beschlag auf der Linse funktionieren jetzt auch im Kompatibilitäts-Modus (Linux/HP), Protokoll ohne Shader-Fehlerflut.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -122,10 +120,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_73_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_82_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_73_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_73_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_82_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_82_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -142,7 +140,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.73.0"
+APP_VERSION = "3.82.0"
 
 
 def default_data_dir():
@@ -267,8 +265,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_73_0.zip"
-ZD_SHA256 = "e131b35cf806559a4bed106161bfe842150dca8b61599e245a52b7bae29b09f2"
+ZD_FILE = "moveeye_daten_3_82_0.zip"
+ZD_SHA256 = "622c4d9523254cf5dacd74a8073bbc699d725b728e0c673e33e1f27b55d47ab3"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -11380,6 +11378,7 @@ def news_state(who="web", lang=None):
 		items = [{"v": v, "t": ent[v]} for v in vs]
 	items = [news_link_item(x, lang) for x in items]
 	return {"version": cur, "show": bool(items) and bool(CFG.get("news_popup", True)), "items": items, "next": news_next(),
+            "fresh": not seen,
             "done": len(MAKEOVER_DONE), "total": len(MAKEOVER_ALL), "links": news_links_on(),
             "lt": {"go": news_hint("neu_link", lang), "sim": news_hint("neu_in_sim", lang)}}
 
@@ -11626,6 +11625,8 @@ def sim_twin_info():
 		return r.get("twin") or {}
 	except Exception:
 		return {}
+
+
 
 
 
@@ -24903,13 +24904,13 @@ def tools_cfg(key, value, mac=None):
 
 
 
-SIM3D = {"version": "3.67.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 54423791,
-         "sha256": "56909729dc6367afe39ed5c7353fa13665878bf7fae830f77773d06067a8778e"}
+SIM3D = {"version": "3.67.2", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 54429040,
+         "sha256": "951424876f61691a5c558f09ddfd76452d2ce073a6a0e2613e5e229bb05da8b8"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 
 
-SIM3D_LINUX = {"version": "3.67.1", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 48453813,
-               "sha256": "6d79a12ef2c965f1aa5437d6fa46ad1988e3eb111991b3c1a71fc2d98752847b", "stem": "MoveEyeSim3D_Linux",
+SIM3D_LINUX = {"version": "3.67.2", "file": "simulator3d/MoveEyeSim3D_Linux.zip", "size": 48471196,
+               "sha256": "fa02a9c4733950a97c7ede0b6c86743118ee3461bd38b9545d6564ba2ac70b45", "stem": "MoveEyeSim3D_Linux",
                "label": "MoveEye Sim (Linux)"}
 SIM3D_LINUX_DL = {"running": False, "got": 0, "msg": ""}
 
@@ -24945,6 +24946,9 @@ def sim_latest_check(force=False):
 						d = json.loads(r.read(65536))
 
 					SIMLATEST[key] = {"version": str(d.get("ver") or d.get("version") or "")[:20], "notes": str(d.get("notes") or "")[:400]}
+					ah = d.get("anhang") if key == "3d" and isinstance(d.get("anhang"), dict) else None
+					if ah and VER_RE.match(str(ah.get("ver") or "")) and (sim_vkey(ah["ver"]) or (0,)) > (sim_vkey(SIMLATEST[key]["version"]) or (0,)):
+						SIMLATEST[key] = {"version": str(ah["ver"]), "notes": str(ah.get("notes") or "")[:400]}
 					SIMLATEST["err"] = ""
 				except Exception as e:
 					SIMLATEST["err"] = _upd_error(e)[:120] if "_upd_error" in globals() else str(e)[:120]
@@ -25031,6 +25035,7 @@ def sim_versions():
             "checked": int(time.time() - SIMLATEST["t"]) if SIMLATEST["t"] else None, "err": SIMLATEST["err"]}
 SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "MoveEye Sim · 3D" if "3D-" in SIM3D["version"] else "MoveEye Sim"
 SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
+SIM3D["url"] = ""; SIM3D_LINUX["url"] = ""
 
 
 
@@ -25040,35 +25045,77 @@ SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
 
 
 
-SIM3D_EMBED = {k: SIM3D[k] for k in ("version", "size", "sha256")}
-SIM3D_LINUX_EMBED = {k: SIM3D_LINUX[k] for k in ("version", "size", "sha256")}
+
+
+
+
+
+SIM3D_ANHANG_BASE = "https://github.com/DonElektro/MotionWatch/releases/download/"
+SIM3D_ANHANG = {"win": ("simulator3d/anhang/MotionWatch3D_Simulator.zip", "MotionWatch3D_Simulator.zip"),
+                "linux": ("simulator3d/anhang/MoveEyeSim3D_Linux.zip", "MoveEyeSim3D_Linux.zip")}
+
+
+def sim_anhang_url(key, ver):
+	""
+	return SIM3D_ANHANG_BASE + "sim-" + str(ver) + "/" + SIM3D_ANHANG[key][1]
+
+
+
+
+
+
+
+
+
+SIM3D_EMBED = {k: SIM3D[k] for k in ("version", "size", "sha256", "url")}
+SIM3D_LINUX_EMBED = {k: SIM3D_LINUX[k] for k in ("version", "size", "sha256", "url")}
 SIMMAN = {"t": 0.0, "src": "embedded", "loaded": False}
 SIMMAN_FILE = "sim_manifest.json"
 
 
+def _sim_entry_ok(e, want_file, url_ok):
+	"""
+"""
+	if not isinstance(e, dict):
+		return None
+	v, fn, sha = str(e.get("ver") or ""), str(e.get("file") or ""), str(e.get("sha256") or "").lower()
+	try:
+		size = int(e.get("size") or 0)
+	except (TypeError, ValueError):
+		return None
+	if not (VER_RE.match(v) and fn == want_file and re.fullmatch(r"[0-9a-f]{64}", sha) and 0 < size <= 2 * 1024 ** 3):
+		return None
+	url = str(e.get("url") or "")
+	if url_ok is not None and not url_ok(v, url):
+		return None
+	if not sig_ok(v, fn, sha, e.get("sig")):
+		return None
+	out = {"ver": v, "file": fn, "size": size, "sha256": sha, "sig": str(e.get("sig"))}
+	if url_ok is not None:
+		out["url"] = url
+	return out
+
+
 def sim_manifest_verify(blk):
-	""
+	"""
+"""
 	out = {}
 	if not isinstance(blk, dict):
 		return out
 	for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX), ("pi", SIM3D_PI)):
-		e = blk.get(key)
-		if not isinstance(e, dict):
-			continue
-		v, fn, sha = str(e.get("ver") or ""), str(e.get("file") or ""), str(e.get("sha256") or "").lower()
-		try:
-			size = int(e.get("size") or 0)
-		except (TypeError, ValueError):
-			continue
-		if not (VER_RE.match(v) and fn == pkg["file"] and re.fullmatch(r"[0-9a-f]{64}", sha) and 0 < size <= 2 * 1024 ** 3):
-			continue
-		url = str(e.get("url") or "")
-		if key == "pi" and not SIM3D_PI_URL_RE.match(url):
-			continue
-		if sig_ok(v, fn, sha, e.get("sig")):
-			out[key] = {"ver": v, "file": fn, "size": size, "sha256": sha, "sig": str(e.get("sig"))}
-			if key == "pi":
-				out[key]["url"] = url
+
+		e = _sim_entry_ok(blk.get(key), pkg["file"], (lambda v, u: bool(SIM3D_PI_URL_RE.match(u))) if key == "pi" else None)
+		if e:
+			out[key] = e
+	ah = blk.get("anhang")
+	if isinstance(ah, dict):
+		got = {}
+		for key in ("win", "linux"):
+			e = _sim_entry_ok(ah.get(key), SIM3D_ANHANG[key][0], lambda v, u, key=key: u == sim_anhang_url(key, v))
+			if e:
+				got[key] = e
+		if got:
+			out["anhang"] = got
 	return out
 
 
@@ -25078,12 +25125,14 @@ def sim_manifest_take(blk, save=True):
 	changed = []
 	for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX), ("pi", SIM3D_PI)):
 		e = ok.get(key)
+		a = (ok.get("anhang") or {}).get(key)
+		if a and sim_vkey(a["ver"]) and (not e or not sim_vkey(e["ver"]) or sim_vkey(a["ver"]) > sim_vkey(e["ver"])):
+			e = a
 		if not e or not sim_vkey(e["ver"]) or not sim_vkey(pkg["version"]) or sim_vkey(e["ver"]) < sim_vkey(pkg["version"]):
 			continue
-		if (pkg["version"], pkg["size"], pkg["sha256"]) != (e["ver"], e["size"], e["sha256"]):
-			pkg.update(version=e["ver"], size=e["size"], sha256=e["sha256"])
-			if key == "pi":
-				pkg["url"] = e["url"]
+		url = e.get("url", "")
+		if (pkg["version"], pkg["size"], pkg["sha256"], pkg.get("url", "")) != (e["ver"], e["size"], e["sha256"], url):
+			pkg.update(version=e["ver"], size=e["size"], sha256=e["sha256"], url=url)
 			changed.append(key)
 	if ok:
 		SIMMAN.update(t=time.time(), src="versions.json")
@@ -25155,13 +25204,14 @@ def sim3d_fetch(pkg=None, dl=None):
 				sim_manifest_refresh(base)
 				if sim3d_ready(SIM3D):
 					return
-			want = {"version": SIM3D["version"], "size": SIM3D["size"], "sha256": SIM3D["sha256"]}
+			want = {"version": SIM3D["version"], "size": SIM3D["size"], "sha256": SIM3D["sha256"],
+                    "url": SIM3D.get("url") or ""}
 			p = os.path.join(DATA_DIR, "sim3d", SIM3D["stem"] + "_" + want["version"] + ".zip"); tmp = p + ".part"
 			os.makedirs(os.path.dirname(p), exist_ok=True)
 			h = hashlib.sha256()
 			if not want["size"] or not want["sha256"]:
 				raise ValueError("no signed package known yet")
-			src_url = SIM3D.get("url") or (base + SIM3D["file"])
+			src_url = want["url"] or (base + SIM3D["file"])
 			with urllib.request.urlopen(_upd_request(src_url), timeout=30) as r, open(tmp, "wb") as f:
 				while True:
 					b = r.read(1 << 16)
@@ -27881,7 +27931,7 @@ threading.Thread(target=_extra_cams_boot, daemon=True, name="extracams-boot").st
 
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.11", "file": "games/MotionWatch_Spiele.zip", "size": 14702898, "sha256": "3391f47a58487973fe099da01f67d0109383c32dc1258cc7053e4abcc2362250"}
+GAMES_PKG = {"version": "GS-1.16", "file": "games/MotionWatch_Spiele.zip", "size": 15970759, "sha256": "fc1bca65a0615096eb5c99a5951cbcd29bf22ed797b9169806821fbbe9bc193a"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
@@ -28853,6 +28903,8 @@ SPIELE_PAGE = SPIELE_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
 
 GAMESRV = {"port": 0, "msg": ""}
+GAMESRV_API = {}
+GAMES_MOVED = {"chess": "schach"}
 STREAMS = {"n": 0, "ip": {}, "lock": threading.Lock()}
 
 
@@ -28873,8 +28925,13 @@ def games_server_start():
 				self.send_error(403, "only in the own Wi-Fi"); return
 			from urllib.parse import unquote, urlsplit
 			path = unquote(urlsplit(self.path).path)
+			for pre_, fn_ in GAMESRV_API.items():
+				if path.startswith(pre_):
+					return fn_(self, "GET", path)
 			m = re.fullmatch(r"/g/([A-Za-z0-9_\-]{1,40})/?(.*)", path)
 			p_ = games_file(m.group(1), m.group(2)) if m else None
+			if not p_ and m and m.group(1) in GAMES_MOVED and games_file(GAMES_MOVED[m.group(1)], ""):
+				self.send_response(301); self.send_header("Location", "/g/" + GAMES_MOVED[m.group(1)] + "/"); self.end_headers(); return
 			if not p_:
 				self.send_error(404); return
 			if m.group(2) == "" and not path.endswith("/"):
@@ -28916,6 +28973,16 @@ def games_server_start():
 				self.send_header(k_, v_)
 			self.send_header("Content-Length", str(len(data)))
 			self.end_headers(); self.wfile.write(data)
+
+		def do_POST(self):
+			if not lan_guest_ip(self.client_address[0], self.headers.get("X-Forwarded-For", "")):
+				self.send_error(403, "only in the own Wi-Fi"); return
+			from urllib.parse import unquote, urlsplit
+			path = unquote(urlsplit(self.path).path)
+			for pre_, fn_ in GAMESRV_API.items():
+				if path.startswith(pre_):
+					return fn_(self, "POST", path)
+			self.send_error(405)
 
 	class S(socketserver.ThreadingMixIn, http.server.HTTPServer):
 		daemon_threads = True
@@ -32361,14 +32428,35 @@ def sim_manifest_check(folder, m):
 				sha = h_.hexdigest()
 			if key not in ok_ or not sha or sha != ok_[key]["sha256"] or os.path.getsize(p_) != ok_[key]["size"]:
 				bad.append(f"simulator {key} {e.get('ver')}")
+		ah_ = sim.get("anhang") if isinstance(sim, dict) and isinstance(sim.get("anhang"), dict) else {}
+		for key in ("win", "linux"):
+			e = ah_.get(key)
+			if e is None:
+				continue
+			g_ = (ok_.get("anhang") or {}).get(key)
+			p_ = os.path.join(folder, SIM3D_ANHANG[key][0])
+			if not g_:
+				bad.append(f"simulator asset {key} {e.get('ver') if isinstance(e, dict) else '?'} (signature / url)")
+			elif os.path.isfile(p_):
+				h_ = hashlib.sha256()
+				with open(p_, "rb") as f:
+					for b_ in iter(lambda: f.read(1 << 20), b""):
+						h_.update(b_)
+				if h_.hexdigest() != g_["sha256"] or os.path.getsize(p_) != g_["size"]:
+					bad.append(f"simulator asset {key} {g_['ver']} (file here differs)")
 		try:
 			with open(os.path.join(folder, "simulator3d", "version.json"), encoding="utf-8") as f:
 				vj_ = json.load(f)
 			if str(vj_.get("ver")) != str(sim.get("ver")):
 				bad.append(f"simulator {sim.get('ver')} in versions.json, simulator3d/version.json has {vj_.get('ver')} - sign again")
+			va_ = vj_.get("anhang") if isinstance(vj_.get("anhang"), dict) else {}
+			if str(va_.get("ver") or "") != str(ah_.get("ver") or ""):
+				bad.append(f"simulator asset {ah_.get('ver') or '-'} in versions.json, simulator3d/version.json has {va_.get('ver') or '-'} - sign again")
 		except (OSError, ValueError, AttributeError):
 			pass
-		simtxt = f", simulator {sim.get('ver') if isinstance(sim, dict) else '?'} ({'+'.join(sorted(ok_))})"
+		simtxt = f", simulator {sim.get('ver') if isinstance(sim, dict) else '?'} ({'+'.join(sorted(k for k in ok_ if k != 'anhang'))})"
+		if ok_.get("anhang"):
+			simtxt += f", asset {ah_.get('ver')} ({'+'.join(sorted(ok_['anhang']))})"
 	return bad, simtxt
 
 
@@ -32459,7 +32547,52 @@ def sim_manifest_block(folder, seed=b""):
 			blk[key]["url"] = str(e["url"])
 		if seed:
 			blk[key]["sig"] = _ED[1](seed, _sig_msg(v, fn, sha)).hex()
+	ah = d.get("anhang") if isinstance(d.get("anhang"), dict) else None
+	av = str((ah or {}).get("ver") or "")
+	if ah and VER_RE.match(av):
+		old = {}
+		try:
+			with open(os.path.join(folder, "versions.json"), encoding="utf-8") as f:
+				old = (((json.load(f).get("sim") or {}).get("anhang")) or {})
+		except (OSError, ValueError, AttributeError):
+			pass
+		sub = {"ver": av, "version": str(ah.get("version") or ""), "notes": str(ah.get("notes") or "")[:400]}
+		if ah.get("mw_min") and VER_RE.match(str(ah.get("mw_min"))):
+			sub["mw_min"] = str(ah["mw_min"])
+		for key in ("win", "linux"):
+			e = ah.get(key) if isinstance(ah.get(key), dict) else {}
+			fn, v, url = SIM3D_ANHANG[key][0], str(e.get("ver") or ""), str(e.get("url") or "")
+			sha, size = str(e.get("sha256") or "").lower(), e.get("size")
+			if not e:
+				continue
+			if e.get("file") != fn or v != av or url != sim_anhang_url(key, v) or not re.fullmatch(r"[0-9a-f]{64}", sha) or not isinstance(size, int):
+				print(f"Note: simulator3d/version.json «anhang.{key}» incomplete (file / ver / url / sha256 / size) - left out")
+				continue
+			ent = {"ver": v, "file": fn, "size": size, "sha256": sha, "url": url}
+			fp = os.path.join(folder, fn)
+			if os.path.isfile(fp):
+				h = hashlib.sha256()
+				with open(fp, "rb") as f:
+					for b in iter(lambda: f.read(1 << 20), b""):
+						h.update(b)
+				if h.hexdigest() != sha or os.path.getsize(fp) != size:
+					print(f"Note: {fn} does not fit simulator3d/version.json «anhang.{key}» (size / checksum) - left out")
+					continue
+				if seed:
+					ent["sig"] = _ED[1](seed, _sig_msg(v, fn, sha)).hex()
+			else:
+				o = old.get(key) if isinstance(old, dict) and isinstance(old.get(key), dict) else {}
+				if all(o.get(k) == ent[k] for k in ent) and sig_ok(v, fn, sha, o.get("sig")):
+					ent["sig"] = str(o["sig"])
+				else:
+					print(f"Note: {fn} missing and «anhang.{key}» {v} not signed before - left out (fetch it: werkzeuge/sim_anhang.py holen {v})")
+					continue
+			sub[key] = ent
+		if "win" in sub or "linux" in sub:
+			blk["anhang"] = sub
 	return blk if ("win" in blk or "linux" in blk) else None
+
+
 
 
 
@@ -32476,6 +32609,10 @@ SELFTEST_EXTRA = []
 _I18N_PY = re.compile(r"""(?<![\w.])(?:tr|trf)\(\s*((?:"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'))\s*[,)]""")
 _I18N_JS = re.compile(r"""(?<![\w.$])t\(\s*((?:"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'))\s*[,)]""")
 _I18N_ATTR = re.compile(r"""data-i18n(?:-ph)?=\\?"([^"\\]+)\\?\"""")
+
+
+I18N_NOT_TEXTS = {"no such text 123"}
+_I18N_CODE = re.compile(r"""^['"] \+ \w+ \+ ['"]$""")
 
 
 def i18n_used_keys(src=None):
@@ -32498,7 +32635,8 @@ def i18n_used_keys(src=None):
 	for lst in (TOGGLES, SLIDERS, TEXTS):
 		keys.update(x[2] for x in lst)
 	keys.update(SECTIONS)
-	return {k for k in keys if re.search(r"[A-Za-z]{2}", k) and "{" not in k[:1]}
+	return {k for k in keys if re.search(r"[A-Za-z]{2}", k) and "{" not in k[:1] and k not in I18N_NOT_TEXTS
+            and not _I18N_CODE.search(k)}
 
 
 def i18n_missing(langs=("fr", "it", "rm"), src=None):
@@ -32508,14 +32646,18 @@ def i18n_missing(langs=("fr", "it", "rm"), src=None):
 
 
 def i18n_selftest():
+	""
 	miss = i18n_missing()
 	n = len(i18n_used_keys())
 	if not any(miss.values()):
 		return f"{n} texts, all translated"
-	out = [f"{n} texts; warning only - without translation:"]
+	out = [f"{n} texts; without translation:"]
 	for L, ks in miss.items():
-		out.append(f"   {L}: {len(ks)} – " + " · ".join(repr(k[:50]) for k in ks[:20]))
-	return "\n".join(out)
+		if ks:
+			out.append(f"   {L}: {len(ks)} – " + " · ".join(repr(k[:50]) for k in ks[:20]))
+	if ZD_FILE and not ZD["ok"]:
+		return "\n".join(out + ["   (not judged: the data file is missing)"])
+	raise AssertionError("\n".join(out + ["   add them in all five languages to the table _HX… of the part that shows the text"]))
 
 
 def migrate_only_selftest():
@@ -32678,6 +32820,9 @@ SELFTEST_EXTRA.append(("Deterrence turns light / siren to the person or the tent
 
 
 
+
+
+
 ZDL = {"state": "", "msg": "", "t": 0.0, "tries": 0}
 UPD_BRIDGE = "3.0.2"
 ZD_MAX_BYTES = 64 * 1024 * 1024
@@ -32805,6 +32950,28 @@ def zusatz_restart():
 	return True
 
 
+def _zd_entry_urls(src):
+	"""
+
+"""
+	out = []
+	try:
+		req = _upd_request(src + ("&" if "?" in src else "?") + "t=" + str(int(time.time())), {"Cache-Control": "no-cache"})
+		with urllib.request.urlopen(req, timeout=15) as r:
+			data = json.loads(r.read(1024 * 1024 + 1)[:1024 * 1024].decode("utf-8"))
+		for e in (data.get("versions") or [])[:200]:
+			if not isinstance(e, dict) or str(e.get("version", "")) != APP_VERSION:
+				continue
+			d = e.get("data") if isinstance(e.get("data"), dict) else {}
+			for u in (str(e.get("url") or ""), str(d.get("url") or "")):
+				if re.match(r"^https://[^\s]{4,400}$", u) and u.rsplit("/", 1)[0] != src.rsplit("/", 1)[0] and u not in out:
+					out.append(u)
+			break
+	except Exception:
+		pass
+	return out[:2]
+
+
 def zusatz_holen():
 	"""
 """
@@ -32820,20 +32987,28 @@ def zusatz_holen():
 	except NameError:
 		pass
 	err = "no update source set"
-	for url, folder in tries:
+	n_fest = len(tries)
+	i = 0
+	while i < len(tries):
+		url, folder = tries[i]
+		i += 1
 		try:
 			data = _zd_fetch_bytes(ZD_FILE, src_url=url, src_dir=folder)
 		except Exception as e:
 			err = f"not reachable: {_upd_error(e)}"[:200]
-			continue
-		err = _zd_check_bytes(data, ZD_SHA256, APP_VERSION)
-		if err:
-			continue
-		try:
-			_zd_save(HERE, ZD_FILE, data)
-		except OSError as e:
-			return f"cannot save: {e}"[:200]
-		return ""
+			data = None
+		if data is not None:
+			err = _zd_check_bytes(data, ZD_SHA256, APP_VERSION)
+			if not err:
+				try:
+					_zd_save(HERE, ZD_FILE, data)
+				except OSError as e:
+					return f"cannot save: {e}"[:200]
+				return ""
+		if i == n_fest and len(tries) == n_fest:
+			for lst, _f in list(tries):
+				if lst.startswith("https://"):
+					tries += [(u, "") for u in _zd_entry_urls(lst) if (u, "") not in tries]
 	return err
 
 
@@ -38320,7 +38495,7 @@ def list_recordings(args, watch=None):
                      "persons": meta.get("persons"), "schedules": [plans[i]["name"] for i in it["sched"]],
                      "playable": (codec in BROWSER_CODECS) if codec else None, "snap": it["snap"], "fav": bool(meta.get("fav")),
                      "recording": it["n"] in live_set, "timelapse": bool(it.get("tl")), "gps": it.get("gps"), "place": it.get("place"),
-                     "false": it["meta"].get("false")})
+                     "false": it["meta"].get("false"), "note": it["meta"].get("note")})
 	now = datetime.now()
 	points = None
 	if args.get("map") == "1":
@@ -39474,6 +39649,7 @@ G2_LOADER_JS = r"""
 (function () {                                     // 586: guide 2 (tours, tips, setup, factory reset) - one script for every page
   if (window._g2l) return; window._g2l = true;
   let L = "de"; try { L = (typeof LANG !== "undefined" && LANG) || localStorage.getItem("mw-lang") || "de"; } catch (e) {}
+  if (window.MWQ) MWQ.expect(["guide", "tour"]);       // 639zzs: one thing at a time - /g2/ui.js decides in startAll
   const s = document.createElement("script"); s.src = "/g2/ui.js?v=" + encodeURIComponent((window.MW_GUIDE || {}).ver || "") + "&lang=" + encodeURIComponent(L); s.defer = true;
   (document.head || document.documentElement).appendChild(s);
 })();
@@ -40353,7 +40529,9 @@ def versionen_selftest():
 		assert sim_vkey(a) < sim_vkey(b), f"simulator {a} < {b}"
 	assert sim_vkey("3D-5.0.0") == sim_vkey("3.0.0") == sim_vkey("MoveEye Sim 3.0.0") == (3, 0, 0), "bridge 3D-5.0.0 = 3.0.0"
 	assert sim_vlegacy("3.0.0") == "3D-5.0.0" and sim_vlegacy("3.10.2") == "3D-5.10.2" and sim_vlegacy("3D-4.82") == "3D-4.82"
-	assert VER_RE.match(SIM_MIN) and sim_vkey(SIM_MIN) <= sim_vkey(SIM3D_EMBED["version"]), f"SIM_MIN {SIM_MIN} newer than the own simulator"
+
+
+	assert VER_RE.match(SIM_MIN), f"SIM_MIN {SIM_MIN}"
 	p = os.path.join(HERE, "simulator3d", "version.json")
 	if not os.path.isfile(p):
 		return None
@@ -40366,11 +40544,19 @@ def versionen_selftest():
 
 
 		assert sim_vkey(SIM3D_EMBED["version"]) <= sim_vkey(ver), f"SIM3D {SIM3D_EMBED['version']} newer than version.json {ver}"
-		assert sim_vkey(SIM_MIN) <= sim_vkey(ver), f"MoveEye needs simulator {SIM_MIN}, version.json has {ver}"
-		mm = str(d.get("mw_min") or "")
-		assert not mm or (VER_RE.match(mm) and _vkey(mm) <= _vkey(APP_VERSION)), f"the simulator {ver} needs MoveEye {mm} (this is {APP_VERSION})"
+		ah = d.get("anhang") if isinstance(d.get("anhang"), dict) else {}
+		top = str(ah.get("ver") or ver)
+		if ah:
+			assert VER_RE.match(top) and sim_vkey(top) > sim_vkey(ver), f"version.json «anhang» {top} must be newer than the packages in the repository ({ver})"
+			assert str(ah.get("version") or "") == sim_vlegacy(top), f"version.json «anhang.version» must be {sim_vlegacy(top)}"
+		else:
+			assert sim_vkey(SIM_MIN) <= sim_vkey(SIM3D_EMBED["version"]), f"SIM_MIN {SIM_MIN} newer than the own simulator"
+		assert sim_vkey(SIM_MIN) <= sim_vkey(top), f"MoveEye needs simulator {SIM_MIN}, version.json has {top}"
+		mm = str(ah.get("mw_min") or d.get("mw_min") or "")
+		assert not mm or (VER_RE.match(mm) and _vkey(mm) <= _vkey(APP_VERSION)), f"the simulator {top} needs MoveEye {mm} (this is {APP_VERSION})"
 	return f"MoveEye {APP_VERSION} · Sim {ver or old} (old simulators read {old}) · needs Sim ≥ {SIM_MIN}" + (
-        f", Sim needs MoveEye ≥ {d.get('mw_min')}" if d.get("mw_min") else "")
+        f", Sim needs MoveEye ≥ {d.get('mw_min')}" if d.get("mw_min") else "") + (
+        f" · newest simulator {d['anhang'].get('ver')} as Release asset" if isinstance(d.get("anhang"), dict) else "")
 
 
 SELFTEST_EXTRA.append(("Version numbers: order, file names, bridge for old simulators, minimum of the other track (3 tracks)", versionen_selftest))
@@ -40419,12 +40605,44 @@ def sim_manifest_selftest():
 		for what, x in bad.items():
 			assert not sim_manifest_take(x, save=False), f"{what} taken"
 			assert SIM3D["sha256"] == SIM3D_EMBED["sha256"] and SIM3D["version"] == SIM3D_EMBED["version"], f"{what}: values changed"
+
+
+		nv2 = "%d.%d.%d" % (a, b, c + 2)
+		fa = SIM3D_ANHANG["win"][0]
+
+		def ah(v=nv2, fn=fa, key=seed, url=None, sig=True):
+			e = {"ver": v, "file": fn, "size": 20, "sha256": sha, "url": sim_anhang_url("win", v) if url is None else url}
+			if sig:
+				e["sig"] = _ED[1](key, _sig_msg(v, fn, sha)).hex()
+			return dict(blk(), anhang={"ver": v, "win": e})
+		back()
+		assert sim_manifest_take(ah(), save=False) == ["win"], "signed asset entry not taken"
+		assert SIM3D["version"] == nv2 and SIM3D["size"] == 20 and SIM3D["url"] == sim_anhang_url("win", nv2), "asset values"
+		assert SIM3D["url"].startswith(SIM3D_ANHANG_BASE + "sim-" + nv2 + "/") and SIM3D_LINUX["url"] == "", "asset address"
+		assert not sim_manifest_take(blk(), save=False) and SIM3D["version"] == nv2, "went back from the asset to an older package"
+		bad_a = {"other host": ah(url="https://example.org/sim-%s/%s" % (nv2, SIM3D_ANHANG["win"][1])),
+                 "address of an other number": ah(url=sim_anhang_url("win", nv)),
+                 "no address": ah(url=""),
+                 "repository file name": ah(fn=SIM3D["file"]),
+                 "unsigned": ah(sig=False),
+                 "other key": dict(blk(), anhang=ah(key=hashlib.sha256(b"another key").digest())["anhang"]),
+                 "not a dict": dict(blk(), anhang="x")}
+		for what, x in bad_a.items():
+			back()
+			assert sim_manifest_take(x, save=False) == ["win"] and SIM3D["version"] == nv and SIM3D["url"] == "", f"asset {what}: not the repository package"
+		back()
+		moved = dict(blk(), win=ah()["anhang"]["win"])
+		assert not sim_manifest_take(moved, save=False) and SIM3D["version"] == SIM3D_EMBED["version"], "asset entry taken as repository package"
+		back()
+		assert sim_manifest_take(ah(v=nv), save=False) == ["win"] and SIM3D["url"] == "", "same number: the repository package wins"
+		back()
 		g["UPDATE_PUBKEY"] = real
 		assert not sim_manifest_take(blk(), save=False), "test key accepted with the real public key"
+		assert not sim_manifest_take(ah(), save=False) and SIM3D["url"] == "", "asset with the test key accepted with the real public key"
 	finally:
 		g["UPDATE_PUBKEY"] = real
 		SIM3D.update(keep[0]); SIM3D_LINUX.update(keep[1]); SIMMAN.clear(); SIMMAN.update(keep[2])
-	return "signed «sim» entry taken; changed, unsigned, other key / file, older refused (test key)"
+	return "signed «sim» entry taken; changed, unsigned, other key / file, older refused; asset entry («anhang») only signed with its own address (test key)"
 
 
 SELFTEST_EXTRA.append(("Simulator checksums from the signed versions.json (3 tracks, 300)", sim_manifest_selftest))
@@ -49348,7 +49566,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.73.0")
+		self.root.title("MoveEye 3.82.0")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49726,7 +49944,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.73.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.82.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -56939,7 +57157,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 286
+INFO_PARTS = 294
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -83909,6 +84127,17 @@ SELFTEST_EXTRA.append(("Piper voice: pinned voices, fallback to the old voice, c
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 for _k, _v in {"tausch_on": True, "tausch_guest": True, "tausch_push": True, "tausch_block_exec": True, "tausch_total_gb": 5.0,
                "tausch_file_mb": 200.0, "tausch_user_gb": 1.0, "tausch_free_gb": 2.0}.items():
 	CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
@@ -83946,6 +84175,8 @@ def tausch_imply(perms):
 TZ_ID = re.compile(r"^[0-9a-f]{16}$")
 TZ_CHUNK = 2 * 1024 * 1024
 TZ_CHUNK_MAX = 8 * 1024 * 1024
+TZ_BODY_IDLE = 30.0
+
 TZ_MAX_FILES = 5000
 TZ_MAX_FOLDERS = 60
 TZ_MAX_OPEN_UPS = 6
@@ -85307,8 +85538,24 @@ def smalltv_routes(app, reply, body):
 			if n is None or n > TZ_CHUNK_MAX:
 				return Response(json.dumps({"ok": False, "error": "piece too big"}), 413, mimetype="application/json",
                                 headers={"Connection": "close"})
+			sock = request.environ.get("werkzeug.socket")
+			if sock is not None:
+				try:
+					sock.settimeout(TZ_BODY_IDLE)
+				except (OSError, AttributeError, ValueError):
+					pass
 		return None
 	app.before_request_funcs.setdefault(None, []).insert(0, size_guard)
+
+	from werkzeug.exceptions import ClientDisconnected
+
+	def piece_lost():
+		return Response(json.dumps({"ok": False, "error": tr("The piece did not arrive completely.", lang_())}), 408, mimetype="application/json",
+                        headers={"Connection": "close", "Cache-Control": "no-store"})
+
+	@app.errorhandler(ClientDisconnected)
+	def tausch_body_lost(e):
+		return piece_lost() if request.path == "/api/tausch/chunk" else e
 
 	def lang_():
 		return norm_lang(request.args.get("lang") or CFG.get("lang"))
@@ -85374,7 +85621,12 @@ def smalltv_routes(app, reply, body):
 			off = int(request.args.get("off", "-1"))
 		except ValueError:
 			off = -1
-		data = request.get_data(cache=False)
+		try:
+			data = request.get_data(cache=False)
+		except (ClientDisconnected, OSError):
+			return piece_lost()
+		if request.content_length is not None and len(data) != request.content_length:
+			return piece_lost()
 		ok, err, have, code = tausch_up_chunk(who, str(request.args.get("id") or ""), off, data, L)
 		return reply({"ok": ok, "error": err or None, "have": have}, code)
 
@@ -85656,6 +85908,11 @@ _HX_TAUSCH = _zd('639zzc_datentausch/HX_TAUSCH', _zd_hx({
     'continues where it stopped …': 'macht dort weiter, wo es aufgehört hat …',
     'Connection lost - trying again …': 'Verbindung weg – neuer Versuch …',
     'Connection lost. Choose the same file again later: the upload continues where it stopped.': 'Verbindung weg. Wähle später dieselbe Datei nochmals: das Hochladen macht dort weiter, wo es aufgehört hat.',
+    'No answer - trying again …': 'Keine Antwort – neuer Versuch …',
+    'Piece {n} of {m}': 'Stück {n} von {m}',
+    'Try once more': 'Nochmal versuchen',
+    'MoveEye did not answer - the upload stopped. «Try again» continues where it stopped.': 'MoveEye hat nicht geantwortet – das Hochladen ist stehen geblieben. «Nochmal versuchen» macht dort weiter, wo es aufgehört hat.',
+    'The file could not be read. A photo from iCloud: open it in the Photos app first (so it is loaded), then choose it again.': 'Die Datei konnte nicht gelesen werden. Ein Foto aus iCloud: bitte zuerst in der Fotos-App öffnen (damit es geladen ist), dann nochmals wählen.',
     'No connection to MoveEye.': 'Keine Verbindung zu MoveEye.',
     'error': 'Fehler',
     'Shared files': 'Geteilte Dateien',
@@ -85695,6 +85952,7 @@ _HX_TAUSCH = _zd('639zzc_datentausch/HX_TAUSCH', _zd_hx({
     'Too many changes in a short time - wait a few minutes.': 'Zu viele Änderungen in kurzer Zeit – warte ein paar Minuten.',
     'The storage cannot be written to.': 'Auf den Speicher kann nicht geschrieben werden.',
     'unknown upload': 'unbekannter Upload',
+    'The piece did not arrive completely.': 'Das Stück ist nicht ganz angekommen.',
     'piece too big': 'Stück zu gross',
     'busy - try again': 'beschäftigt – nochmals versuchen',
     'more data than announced': 'mehr Daten als angekündigt',
@@ -89431,6 +89689,5679 @@ def deutsch_luecken_selftest():
 
 
 SELFTEST_EXTRA.append(("German gaps of the web pages (639zzl)", deutsch_luecken_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_HX_LUECKEN = _zd('639zzm_uebersetzungen_luecken/HX_LUECKEN', _ZDDict())
+
+
+_RM_LUECKEN = _zd('639zzm_uebersetzungen_luecken/RM_LUECKEN', _ZDDict())
+
+for _k, _v in _HX_LUECKEN.items():
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		if not TRX[_L].get(_k):
+			TRX[_L][_k] = _v[_i]
+for _k, _v in _RM_LUECKEN.items():
+	if not TRX["rm"].get(_k):
+		TRX["rm"][_k] = _v
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FS_TAG = "fspiele-1"
+FS_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + FS_TAG + "/"}
+FS_MAX_BYTES = 150 * 1024 * 1024
+FS_LANGS5 = ("de", "en", "fr", "it", "rm")
+
+
+def _fs_tile(gid, start, inp, name, descs, notes=None):
+	""
+	g_ = {"dir": gid, "start": start, "icon": "thumb.png", "input": inp, "name": name, "desc": descs[0],
+          "names": {L: name for L in FS_LANGS5}, "descs": dict(zip(FS_LANGS5, descs))}
+	if notes:
+		g_["note"] = notes[0]
+		g_["notes"] = dict(zip(FS_LANGS5, notes))
+	return g_
+
+
+
+
+FS_GAMES = {
+    "fs-angst": {
+        "file": {"name": "fspiele-angst-1.zip", "size": 37087772, "sha256": "ddd557dde9326dc1e0ddb1e072cfd07950a716c3338ab164fe8e7dc103319d1c", "unpacked": 37063450},
+        "licence": "CC0 · Nicky Case, Monplaisir · Deutsch: Jonas Reich",
+        "tile": _fs_tile("fs-angst", "index.html", "touch", "Abenteuer mit Angst", (
+            "Interaktive Geschichte: Du spielst die Angst eines Menschen. Deutsch, etwa 30 Minuten, mit Ton.",
+            "Interactive story: you play a human’s anxiety. In German, about 30 minutes, with sound.",
+            "Histoire interactive : tu joues l’anxiété d’un humain. En allemand, env. 30 minutes, avec son.",
+            "Storia interattiva: interpreti l’ansia di una persona. In tedesco, circa 30 minuti, con audio.",
+            "Istorgia interactiva: ti giogas la tema d’in uman. Tudestg, var 30 minutas, cun tun."), (
+            "Ab ca. 12 Jahren, mit Kraftausdrücken", "From about age 12, with swearing", "Dès 12 ans env., avec des gros mots",
+            "Da circa 12 anni, con parolacce", "A partir da ca. 12 onns, cun pleds groppos"))},
+    "fs-heroine": {
+        "file": {"name": "fspiele-heroine-1.zip", "size": 41254926, "sha256": "c9163f574b9d575f774b857f5e8627a432f2f84abe784fe47deb2cb2a8d286ff", "unpacked": 41241720},
+        "licence": "GPL v3+ / CC-BY-SA 3.0 · Clint Bellanger · Musik: Yubatake (CC-BY 3.0)",
+        "tile": _fs_tile("fs-heroine", "start.html", "touch", "Heroine Dusk", (
+            "Verlies-Rollenspiel im Retro-Stil: tippen zum Gehen, Kämpfen, Zaubern. Englisch, wenig Text.",
+            "Retro dungeon crawl: tap to walk, fight and cast spells. English, little text.",
+            "Exploration de donjon rétro : toucher pour marcher, combattre, lancer des sorts. Anglais, peu de texte.",
+            "Dungeon crawl rétro: tocca per camminare, combattere, lanciare incantesimi. Inglese, poco testo.",
+            "Gieu da rollas retro en il tschaler: tutgar per ir, cumbatter e striunar. Englais, pauc text."))},
+    "fs-hexgl": {
+        "file": {"name": "fspiele-hexgl-1.zip", "size": 15373699, "sha256": "dc1d8058dae4f22b457ace5f37314ae99603e53b2c3581cc040461ac1c349e5b", "unpacked": 15352741},
+        "licence": "MIT / CC BY-NC 3.0 · Thibaut Despoulain (BKcore)",
+        "tile": _fs_tile("fs-hexgl", "index.html", "touch", "HexGL", (
+            "Futuristisches 3D-Rennen: links lenken, rechts Gas. Handy quer halten. Englisch, wenig Text.",
+            "Futuristic 3D racing: steer on the left, accelerate on the right. Hold the phone sideways. English, little text.",
+            "Course 3D futuriste : diriger à gauche, accélérer à droite. Tenir le téléphone à l’horizontale. Anglais, peu de texte.",
+            "Corsa 3D futuristica: sterza a sinistra, accelera a destra. Tieni il telefono in orizzontale. Inglese, poco testo.",
+            "Cursa 3D futuristica: manischar a sanestra, gas a dretga. Tegnair il telefonin a travers. Englais, pauc text."))},
+}
+FS_DL = {"running": False, "id": "", "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
+FS_HIDE = ("fspiel.ok", "fspiel.ok.new")
+
+
+def fs_root():
+	return os.path.join(DATA_DIR, "fspiele")
+
+
+def fs_dir(gid):
+	return os.path.join(fs_root(), gid)
+
+
+def fs_dl_dir():
+	return os.path.join(DATA_DIR, "fspiele_dl")
+
+
+def fs_pinned(gid):
+	""
+	f = (FS_GAMES.get(gid) or {}).get("file") or {}
+	return (isinstance(f.get("size"), int) and 0 < f["size"] <= FS_MAX_BYTES and bool(re.fullmatch(r"[0-9a-f]{64}", str(f.get("sha256") or "")))
+            and isinstance(f.get("unpacked"), int) and 0 < f["unpacked"] <= FS_MAX_BYTES
+            and bool(re.fullmatch(r"fspiele-[a-z0-9]+-\d{1,3}\.zip", f.get("name") or "")))
+
+
+def fs_installed(gid):
+	""
+	if not fs_pinned(gid):
+		return False
+	d_ = fs_dir(gid)
+	try:
+		with open(os.path.join(d_, "fspiel.ok"), encoding="utf-8") as fh:
+			ok_ = json.load(fh)
+	except (OSError, ValueError):
+		return False
+	g_ = FS_GAMES[gid]
+	return (isinstance(ok_, dict) and ok_.get("tag") == FS_TAG and ok_.get("sha256") == g_["file"]["sha256"]
+            and all(os.path.isfile(os.path.join(d_, f)) for f in (g_["tile"]["start"], g_["tile"]["icon"])))
+
+
+def _fs_unzip(zp, dest, limit):
+	""
+	tot = 0
+	with zipfile.ZipFile(zp) as z:
+		infos = z.infolist()
+		for i in infos:
+			n = i.filename
+			if n.startswith("/") or "\\" in n or ".." in n.split("/") or not re.fullmatch(r"[A-Za-z0-9._ /+-]{1,200}", n) or os.path.basename(n) in FS_HIDE:
+				raise ValueError("bad file name in the package")
+			if (i.external_attr >> 16) & 0o170000 == 0o120000:
+				raise ValueError("link in the package")
+			tot += i.file_size
+		if tot > limit + 1024:
+			raise ValueError("package larger than announced")
+		for i in infos:
+			if i.is_dir():
+				continue
+			p = os.path.join(dest, *i.filename.split("/"))
+			os.makedirs(os.path.dirname(p), exist_ok=True)
+			with z.open(i) as src, open(p, "wb") as out:
+				while True:
+					if FS_DL.get("stop"):
+						raise InterruptedError("cancelled")
+					b = src.read(1 << 20)
+					if not b:
+						break
+					out.write(b)
+	return tot
+
+
+def fs_download(gid, wait=False):
+	""
+	if gid not in FS_GAMES:
+		return False, "unknown action"
+	if not fs_pinned(gid):
+		return False, "comes with an update"
+	if FS_DL["running"]:
+		return (True, "") if FS_DL["id"] == gid else (False, "busy right now - try again in a moment")
+	if fs_installed(gid):
+		return True, ""
+	f = FS_GAMES[gid]["file"]
+	try:
+		free = shutil.disk_usage(DATA_DIR).free
+	except OSError:
+		free = 1 << 40
+	dd = fs_dl_dir()
+	dest = os.path.join(dd, f["name"])
+	have = sum(os.path.getsize(p) for p in (dest, dest + ".part") if os.path.isfile(p))
+	if free - (f["size"] - have + f["unpacked"]) < bio_free_need():
+		return False, "not enough free space on the memory card"
+	FS_DL.update(running=True, id=gid, got=0, total=f["size"], msg="", stop=False, done=False, phase="load")
+
+	def work():
+		tmp = fs_dir(gid) + ".new"
+		try:
+			os.makedirs(dd, exist_ok=True)
+			if os.path.isfile(dest) and piper_check_file(dest, f)[0]:
+				FS_DL["got"] = f["size"]
+			else:
+				bio_fetch(FS_BASE["url"] + f["name"], dest, f, FS_DL)
+			FS_DL["phase"] = "unpack"
+			shutil.rmtree(tmp, ignore_errors=True)
+			os.makedirs(tmp)
+			_fs_unzip(dest, tmp, f["unpacked"])
+			with open(os.path.join(tmp, "fspiel.json"), encoding="utf-8") as fh:
+				man = json.load(fh)
+			if man.get("tag") != FS_TAG or man.get("id") != gid:
+				raise ValueError("the package is not " + gid + " of " + FS_TAG)
+			with open(os.path.join(tmp, "fspiel.ok"), "w", encoding="utf-8") as fh:
+				json.dump({"tag": FS_TAG, "sha256": f["sha256"]}, fh)
+			shutil.rmtree(fs_dir(gid), ignore_errors=True)
+			os.replace(tmp, fs_dir(gid))
+			shutil.rmtree(dd, ignore_errors=True)
+			FS_DL["done"] = True
+			log_event("sys", f"Game «{FS_GAMES[gid]['tile']['name']}» installed ({FS_TAG})")
+		except InterruptedError:
+			FS_DL["msg"] = "cancelled"
+		except Exception as e:
+			FS_DL["msg"] = str(getattr(e, "reason", "") or e)[:160] or e.__class__.__name__
+			log_event("sys", f"Game «{FS_GAMES[gid]['tile']['name']}» not installed: {FS_DL['msg']}")
+		finally:
+			shutil.rmtree(tmp, ignore_errors=True)
+			FS_DL.update(running=False, phase="")
+	if wait:
+		work()
+		return (not FS_DL["msg"]), FS_DL["msg"]
+	threading.Thread(target=work, daemon=True, name="fspiele-dl").start()
+	return True, ""
+
+
+def fs_cancel():
+	if FS_DL["running"]:
+		FS_DL["stop"] = True
+	return True, ""
+
+
+def fs_delete(gid):
+	if gid not in FS_GAMES:
+		return False, "unknown action"
+	if FS_DL["running"]:
+		return False, "busy right now - try again in a moment"
+	for p in (fs_dir(gid), fs_dir(gid) + ".new", fs_dl_dir()):
+		shutil.rmtree(p, ignore_errors=True)
+	log_event("sys", f"Game «{FS_GAMES[gid]['tile']['name']}» deleted")
+	return True, ""
+
+
+def fs_state():
+	""
+	try:
+		free = shutil.disk_usage(DATA_DIR).free
+	except OSError:
+		free = 0
+	gl = []
+	for gid, g_ in FS_GAMES.items():
+		t_ = g_["tile"]
+		gl.append({"id": gid, "name": t_["name"], "names": t_["names"], "desc": t_["desc"], "descs": t_["descs"], "note": t_.get("note", ""),
+                   "notes": t_.get("notes", {}), "licence": g_["licence"], "pinned": fs_pinned(gid), "installed": fs_installed(gid),
+                   "size": g_["file"]["size"], "unpacked": g_["file"]["unpacked"]})
+	return {"tag": FS_TAG, "games": gl, "free": free, "free_need": bio_free_need(),
+            "dl": {k: FS_DL[k] for k in ("running", "id", "got", "total", "msg", "done", "phase")}}
+
+
+
+_fotaq_action_639zzn = fotaq_action
+
+
+
+def fotaq_action(a, d=None):
+	d = d or {}
+	gid = d.get("fs")
+	if gid is None:
+		return _fotaq_action_639zzn(a, d)
+	gid = str(gid)
+	if a == "fotaq_install":
+		return fs_download(gid)
+	if a == "fotaq_cancel":
+		return fs_cancel()
+	if a == "fotaq_delete":
+		return fs_delete(gid)
+	return False, "unknown action"
+
+
+_fotaq_state_639zzn = fotaq_state
+
+
+
+def fotaq_state():
+	s_ = _fotaq_state_639zzn()
+	s_["fs"] = fs_state()
+	return s_
+
+
+
+_games_list_639zzn = games_list
+
+
+
+def games_list(extra=True):
+	gl = _games_list_639zzn(extra)
+	if extra:
+		mine = [dict(g_["tile"]) for gid, g_ in FS_GAMES.items() if fs_installed(gid)]
+		if mine:
+			gl = [x for x in gl if x.get("dir") not in FS_GAMES] + mine
+	return gl
+
+
+_games_file_639zzn = games_file
+
+
+
+def games_file(game, fn):
+	if game not in FS_GAMES:
+		return _games_file_639zzn(game, fn)
+	if not fs_installed(game):
+		return None
+	base = os.path.realpath(fs_dir(game))
+	p_ = os.path.realpath(os.path.join(base, fn or FS_GAMES[game]["tile"]["start"]))
+	if not p_.startswith(base + os.sep) or not os.path.isfile(p_) or os.path.basename(p_) in FS_HIDE:
+		return None
+	return p_
+
+
+
+_HX_FS = _zd('639zzn_fertigspiele/HX_FS', _zd_hx({
+    'More games to load': 'Weitere Spiele zum Nachladen',
+    'Ready-made free games. Each one is loaded once from GitHub (fixed checksum), then it runs offline in the browser.': 'Fertige freie Spiele. Jedes wird einmal von GitHub geladen (feste Prüfsumme) und läuft danach offline im Browser.',
+    'busy right now - try again in a moment': 'gerade beschäftigt – gleich nochmals versuchen',
+    'fs-ask': '«%s» jetzt laden? %s MB von GitHub (danach %s MB auf der Speicherkarte, 2 GB bleiben frei).',
+    'fs-del': '«%s» entfernen? Die Spielstände bleiben in den Browsern.',
+}))
+for _k, _v in _HX_FS.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+FS_JS_DE = {_k: _v[0] for _k, _v in _HX_FS.items()}
+FS_JS_EN = {"fs-ask": "Load «%s» now? %s MB from GitHub (then %s MB on the memory card, 2 GB stay free).",
+            "fs-del": "Remove «%s»? The saved games stay in the browsers."}
+
+
+FS_TOOLS_JS = _zd('639zzn_fertigspiele/FS_TOOLS_JS', "")
+_FS_HOOK = "  fotaqPaint(box, P.fotaq);\n}\n"
+if TOOLS_PAGE.count(_FS_HOOK) == 1 and "function fsPaint" not in TOOLS_PAGE:
+	TOOLS_PAGE = TOOLS_PAGE.replace(_FS_HOOK, "  fotaqPaint(box, P.fotaq);\n  fsPaint(box, (P.fotaq || {}).fs);\n}\n" + FS_TOOLS_JS
+                                    + "Object.assign(I18N.de," + json.dumps(FS_JS_DE, ensure_ascii=False) + ");"
+                                    "I18N.en=I18N.en||{};Object.assign(I18N.en," + json.dumps(FS_JS_EN, ensure_ascii=False) + ");\n", 1)
+
+
+_HELP_FS = {
+    "de": ("🎁 Weitere Spiele zum Nachladen", "(Mehr → Spielecke, ganz unten): fertige freie Spiele, jedes einzeln mit «⬇ Installieren» von GitHub geladen (feste Prüfsumme, 2 GB bleiben frei) und mit «🗑 Entfernen» wieder gelöscht; danach eine Kachel der Sammlung, auch ohne Internet. Urheber, Lizenzen und Änderungen stehen in jedem Paket (LIZENZEN.txt)."),
+    "en": ("🎁 More games to load", "(More → Game corner, at the bottom): ready-made free games, each loaded on its own with “⬇ Install” from GitHub (fixed checksum, 2 GB stay free) and deleted again with “🗑 Remove”; then it is a tile of the collection, also without Internet. Authors, licences and changes are in every package (LIZENZEN.txt)."),
+    "fr": ("🎁 Autres jeux à charger", "(Plus → Coin jeux, tout en bas) : jeux libres tout prêts, chacun chargé séparément avec « ⬇ Installer » depuis GitHub (somme de contrôle fixe, 2 Go restent libres) et supprimé avec « 🗑 Supprimer » ; ensuite une tuile de la collection, aussi sans Internet. Auteurs, licences et modifications dans chaque paquet (LIZENZEN.txt)."),
+    "it": ("🎁 Altri giochi da caricare", "(Altro → Angolo giochi, in fondo): giochi liberi già pronti, ognuno caricato separatamente con «⬇ Installa» da GitHub (somma di controllo fissa, 2 GB restano liberi) e rimosso con «🗑 Rimuovi»; poi è una tessera della raccolta, anche senza Internet. Autori, licenze e modifiche in ogni pacchetto (LIZENZEN.txt)."),
+    "rm": ("🎁 Ulteriurs gieus per chargiar", "(Dapli → Chantun da gieus, giusut): gieus libers gia pronts, mintgin chargià separadamain cun «⬇ Installar» da GitHub (summa da controlla fixa, 2 GB restan libers) ed allontanà cun «🗑 Allontanar»; lura ina cachel da la collecziun, er senza internet. Auturs, licenzas e midadas en mintga pachet (LIZENZEN.txt)."),
+}
+
+
+def _help_fs_item(lang):
+	""
+	from html import escape as _e
+	h_, x_ = _HELP_FS[lang]
+	out = f"<li><b>{h_}</b> {_e(x_, quote=False)}"
+	for g_ in FS_GAMES.values():
+		t_ = g_["tile"]
+		mb = f" (~{max(1, round(g_['file']['size'] / 1e6))} MB)" if g_["file"]["size"] else ""
+		nt = " ⚠️ " + _e(t_["notes"][lang], quote=False) + "." if t_.get("notes") else ""
+		out += f" <b>{_e(t_['names'][lang])}</b>{mb}: {_e(t_['descs'][lang], quote=False)}{nt} © {_e(g_['licence'], quote=False)}."
+	return out + "</li>"
+
+
+def _help_fs(doc, lang):
+	i = doc.find('<section id="games"')
+	if i < 0 or _HELP_FS[lang][0] in doc[i:doc.find("</section>", i)]:
+		return doc
+	j = doc.find("</ul></section>", i)
+	return doc[:j] + _help_fs_item(lang) + doc[j:] if j > 0 else doc
+
+
+_hp_en_fs = HELP_PAGE.find('<div lang="en">')
+if _hp_en_fs > 0:
+	HELP_PAGE = _help_fs(HELP_PAGE[:_hp_en_fs], "de") + _help_fs(HELP_PAGE[_hp_en_fs:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_fs(HELP_X[_L], _L)
+
+
+
+def fs_selftest():
+	assert FS_BASE["url"] == "https://github.com/DonElektro/MotionWatch/releases/download/" + FS_TAG + "/"
+	assert re.fullmatch(r"fspiele-\d{1,3}", FS_TAG)
+	n = FS_TAG.split("-")[1]
+	for gid, g_ in FS_GAMES.items():
+		f, t_ = g_["file"], g_["tile"]
+		assert re.fullmatch(r"fs-[a-z0-9]{2,20}", gid) and t_["dir"] == gid and f["name"] == "fspiele-%s-%s.zip" % (gid[3:], n), gid
+		assert fs_pinned(gid) or (not f["size"] and not f["sha256"] and not f["unpacked"]), gid + ": either all pins or none"
+		assert t_["input"] in GAME_GROUPS and t_["icon"] in GAME_THUMBS and t_["start"].endswith(".html")
+		assert all(t_["names"].get(L) and t_["descs"].get(L) for L in FS_LANGS5) and t_["desc"] == t_["descs"]["de"]
+		assert "ß" not in json.dumps(t_, ensure_ascii=False) and g_["licence"]
+		assert not t_.get("note") or all(t_["notes"].get(L) for L in FS_LANGS5)
+		if not fs_installed(gid):
+			assert all(x.get("dir") != gid for x in games_list()) and games_file(gid, t_["start"]) is None
+		assert games_file(gid, "../settings.json") is None and games_file(gid, "/etc/passwd") is None and games_file(gid, "fspiel.ok") is None
+	assert "12 Jahren" in FS_GAMES["fs-angst"]["tile"]["note"]
+	assert fotaq_action("fotaq_install", {"fs": "nope"}) == (False, "unknown action") and fotaq_action("nope", {"fs": next(iter(FS_GAMES))}) == (False, "unknown action")
+	assert fotaq_action("nope") == (False, "unknown action"), "without «fs» the actions of FOTAQ stay as they are"
+	s_ = fotaq_state()
+	assert "pinned" in s_ and [x["id"] for x in s_["fs"]["games"]] == list(FS_GAMES)
+	assert all(x.get("dir") not in FS_GAMES for x in games_list(extra=False))
+	assert "function fsPaint" in TOOLS_PAGE and "fsPaint(box, (P.fotaq || {}).fs);" in TOOLS_PAGE and '"fs-ask"' in TOOLS_PAGE
+	assert _HELP_FS["de"][0] in HELP_PAGE and _HELP_FS["en"][0] in HELP_PAGE and all(_HELP_FS[L][0] in HELP_X.get(L, _HELP_FS[L][0]) for L in ("fr", "it", "rm"))
+	assert all(g_["tile"]["name"] in HELP_PAGE for g_ in FS_GAMES.values())
+	return True
+
+
+SELFTEST_EXTRA.append(("Ready-made free games in the game corner (639zzn)", fs_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+NAV_SUB["more"] = [x for x in NAV_SUB["more"] if x[0] != "party"]
+_nav_html_639zzo = nav_html
+
+
+
+def nav_html(active):
+	h_ = _nav_html_639zzo(active)
+	if active == "party":
+		h_ = h_.replace('<a href="/play" data-i18n=', '<a href="/play" class=on data-i18n=', 1)
+	return h_
+
+
+
+_SO_CARD = '  <div id="games"><div class="gt"><b>🎮 <span data-i18n="Games">Games</span></b><div class="mut" id="g-txt"></div><div id="g-btn"></div></div></div>\n'
+_SO_ENTRY = '<a class="mi" href="/party"><i>🎲</i>'
+_SO_LOAD = "(async () => { await initAppearance(); gmLoad(); })();"
+SO_MORE_OK = MORE_PAGE.count(_SO_CARD) == 1 and MORE_PAGE.count(_SO_ENTRY) == 1 and MORE_PAGE.count(_SO_LOAD) == 1
+if SO_MORE_OK:
+	MORE_PAGE = (MORE_PAGE.replace(_SO_CARD, "", 1)
+                 .replace(_SO_ENTRY, '<a class="mi" href="/party" id="m-party" hidden><i>🎲</i>', 1)
+                 .replace(_SO_LOAD, "(async () => { await initAppearance(); })();\n"
+                          "// 639zzo: the games live under «Spielen»; who may not open that page (users without the administrator role) keeps the entry «Spielecke»\n"
+                          'fetch("/play", {method: "HEAD"}).then(r => { if (!r.ok) document.getElementById("m-party").hidden = false; }).catch(() => {});', 1))
+
+
+SO_TILE_TXT = "Quiz, werewolf, connect four and the game collection – «Open all games» for the guests is there too"
+_HX_SO = {SO_TILE_TXT: ("Quiz, Werwolf, Vier gewinnt und die Spielesammlung – dort auch «Spiele freigeben» für die Gäste",
+                        "Quiz, loup-garou, puissance 4 et la collection de jeux – avec « Ouvrir tous les jeux » pour les invités",
+                        "Quiz, lupo mannaro, forza quattro e la raccolta di giochi – lì anche «Aprire tutti i giochi» per gli ospiti",
+                        "Quiz, luf-uman, quatter en lingia e la collecziun da gieus – là er «Avrir tut ils gieus» per ils giasts")}
+for _k, _v in _HX_SO.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+_SO_MAIN = '<main>\n  <div class="pl-card" id="pl-lv" hidden></div>'
+_SO_TILE = ('<main>\n  <a class="pl-party" id="pl-party" href="/party"><i>🎲</i><span><b data-i18n="Game corner">Game corner</b>'
+            '<small data-i18n="' + SO_TILE_TXT + '">' + SO_TILE_TXT + '</small></span><span class="ar">›</span></a>\n'
+            '  <div class="pl-card" id="pl-lv" hidden></div>')
+_SO_CSS = (".pl-party{display:flex;align-items:center;gap:12px;padding:14px;margin:0 0 12px;border:1px solid var(--acc);border-radius:14px;background:var(--panel);"
+           "color:var(--txt);text-decoration:none}.pl-party:hover{filter:brightness(1.08)}.pl-party i{font-style:normal;font-size:30px;width:40px;text-align:center}"
+           ".pl-party b{display:block;font-size:16px}.pl-party small{color:var(--mut);font-size:12px}.pl-party .ar{margin-left:auto;color:var(--mut);font-size:20px}\n")
+SO_PLAY_OK = PLAY_PAGE.count(_SO_MAIN) == 1 and PLAY_PAGE.count("</style></head><body>") == 1 and 'id="pl-party"' not in PLAY_PAGE
+if SO_PLAY_OK:
+	PLAY_PAGE = PLAY_PAGE.replace(_SO_MAIN, _SO_TILE, 1).replace("</style></head><body>", _SO_CSS + "</style></head><body>", 1)
+_play_page_639zzo = play_page
+
+
+
+def play_page():
+	js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in ("Game corner", SO_TILE_TXT)}, ensure_ascii=False) + ");"
+	return _play_page_639zzo().replace("const ST = ", js + "\nconst ST = ", 1)
+
+
+
+def _so_help(doc, lang):
+	m_, p_, g_, o_ = (tr(x, lang) for x in ("More", "Play area", "Game corner", "Open all games"))
+	if not doc or p_ in ("", "Play area") and lang != "en":
+		return doc
+	way = f"{m_} → {p_} → {g_}"
+	doc = doc.replace(way, "\x00").replace(f"{m_} → {g_}", way).replace("\x00", way)
+	for a_, b_ in (("«", "»"), ("“", "”"), ("« ", " »")):
+		doc = doc.replace(f"{m_} → {a_}{o_}{b_}", f"{way} → {a_}{o_}{b_}")
+	return doc
+
+
+_hp_en_so = HELP_PAGE.find('<div lang="en">')
+if _hp_en_so > 0:
+	HELP_PAGE = _so_help(HELP_PAGE[:_hp_en_so], "de") + _so_help(HELP_PAGE[_hp_en_so:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _so_help(HELP_X[_L], _L)
+
+
+def spiele_ordnen_selftest():
+	assert SO_MORE_OK and SO_PLAY_OK, "MORE_PAGE / PLAY_PAGE look different - adjust part 639zzo"
+	assert [k for k, *_r in NAV_SUB["more"]] == ["more", "play", "help", "tools"] and NAV_OF.get("party") == "more"
+	n_ = nav_html("party")
+	assert 'href="/party"' not in n_ and '<a href="/play" class=on' in n_ and n_.count("class=on") == 1
+	assert nav_html("play").count("class=on") == 1 and 'href="/party"' not in nav_html("more")
+	assert 'id="games"' not in MORE_PAGE and MORE_PAGE.count('href="/party"') == 1 and 'href="/party" id="m-party" hidden' in MORE_PAGE
+	assert "gmLoad(); })" not in MORE_PAGE
+	assert PLAY_PAGE.count('href="/party"') == 1 and PLAY_PAGE.index('id="pl-party"') < PLAY_PAGE.index('id="pl-lv"')
+	assert "Open all games" in TOOLS_PAGE and 'partyDo({action: "all"' in TOOLS_PAGE, "«Spiele freigeben» is on the page of the game corner"
+	assert "ß" not in _HX_SO[SO_TILE_TXT][0] and all(TRX[L].get(SO_TILE_TXT) for L in ("fr", "it", "rm"))
+	assert "Mehr → Spielen → Spielecke" in HELP_PAGE and "Mehr → Spielecke" not in HELP_PAGE and "Mehr → «Spiele freigeben»" not in HELP_PAGE
+	assert role_allows("kid", "/party", "GET", {}) and not role_allows("kid", "/play", "GET", {}) and not role_allows("family", "/api/party", "POST", {"action": "all"})
+	return True
+
+
+SELFTEST_EXTRA.append(("Games under «Mehr»: one entry point (639zzo)", spiele_ordnen_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+QRK_PREFIX = "M1"
+QRK_ID_LEN = 5
+QRK_MAC_LEN = 10
+QRK_HEAD = len(QRK_PREFIX) + QRK_ID_LEN + 1 + QRK_MAC_LEN
+QRK_ALPHA = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+QRK_TEXT_MAX = 100
+QRK_NAME_MAX = 40
+QRK_DESC_MAX = 120
+QRK_CARDS_MAX = 100
+QRK_SCAN_W = 1280
+QRK_GONE_S = 3.0
+QRK_SHOW_S = 4.0
+QRK_FOREIGN_LOG_S = 60.0
+QRK_REC_MAX = 600
+QRK_RANGE_K = 0.26
+QRK_SIZES = {"card": (100, 150, 80, "Postcard 10 × 15 cm"), "a5": (148, 210, 120, "A5"), "a4": (210, 297, 180, "A4")}
+QRK_CMDS = {
+    "P": ("push", "📲", "Push message"),
+    "S": ("say", "🔊", "Read aloud"),
+    "N": ("note", "📝", "Note with photo"),
+    "R": ("rec", "⏺", "Start a recording"),
+    "L": ("light", "💡", "Light on / off"),
+    "Y": ("relay", "⚡", "Relay on / off"),
+    "H": ("head", "🎯", "Head to a position"),
+    "F": ("profile", "🎛️", "Switch profile"),
+}
+QRK_CMD_ORDER = "PSNRLYHF"
+QRK_TEXT_CMDS = "PSN"
+QRK_SECTION = "QR command cards"
+QRK_DEF = {"qrk_on": False, "qrk_cam_head": True, "qrk_cam_wide": True, "qrk_rate": 1.0, "qrk_cooldown": 10, "qrk_feedback": "speak",
+           "qrk_photo": True, "qrk_cpu_max": 85, "qrk_cards": [], "qrk_secret": ""}
+for _k, _v in QRK_DEF.items():
+	CFG.setdefault(_k, json.loads(json.dumps(_v))); DEFAULTS.setdefault(_k, json.loads(json.dumps(_v)))
+	FACTORY_CFG.setdefault(_k, json.loads(json.dumps(_v)))
+
+USER_SETTINGS_DENY.update(QRK_DEF)
+APPKEY_DENY_KEYS.update(QRK_DEF)
+APPKEY_DENY_PATHS.update({"/api/qrk", "/karten"})
+LOCK_DENY_PATHS.add("/api/qrk")
+
+QRK = {"lock": threading.RLock(), "run_lock": threading.Lock(), "thread": None, "pause": "off", "dec": "", "ms": None, "scans": 0,
+       "seen": {}, "show": {}, "log_t": {}, "uses": deque(maxlen=30), "last": None, "cpu_hold": False, "err_t": 0.0}
+
+
+
+def _qrk_b32(b, n):
+	v, bits, out = 0, 0, []
+	for x in b:
+		v = (v << 8) | x; bits += 8
+		while bits >= 5 and len(out) < n:
+			bits -= 5; out.append(QRK_ALPHA[(v >> bits) & 31])
+	return "".join(out)[:n]
+
+
+def qrk_key(make=True):
+	""
+	k = str(CFG.get("qrk_secret") or "")
+	if not re.fullmatch(r"[0-9a-f]{64}", k):
+		if not make:
+			return ""
+		k = secrets.token_hex(32)
+		CFG["qrk_secret"] = k
+		save_settings()
+	return k
+
+
+def qrk_key_fp(k=None):
+	""
+	k = qrk_key(False) if k is None else k
+	return hashlib.sha256(("fp|" + k).encode()).hexdigest()[:8] if k else ""
+
+
+def qrk_mac(cid, cmd, param, key=None):
+	k = bytes.fromhex(key or qrk_key())
+	return _qrk_b32(hmac.new(k, (QRK_PREFIX + cid + cmd + param).encode("utf-8"), hashlib.sha256).digest(), QRK_MAC_LEN)
+
+
+def qrk_in_code(card):
+	"""
+"""
+	return bool(card.get("tc")) and card["cmd"] in QRK_TEXT_CMDS
+
+
+def qrk_payload(card, key=None):
+	""
+	p = card["p"] if qrk_in_code(card) else ""
+	return QRK_PREFIX + card["id"] + card["cmd"] + qrk_mac(card["id"], card["cmd"], p, key) + p
+
+
+def qrk_parse(text):
+	""
+	t = str(text or "")
+	if not t.startswith(QRK_PREFIX) or len(t) < QRK_HEAD:
+		return None
+	cid, cmd, mac, p = t[2:2 + QRK_ID_LEN], t[2 + QRK_ID_LEN], t[3 + QRK_ID_LEN:QRK_HEAD], t[QRK_HEAD:]
+	if cmd not in QRK_CMDS or any(c not in QRK_ALPHA for c in cid + mac):
+		return None
+	return cid, cmd, mac, p
+
+
+def qrk_cards():
+	""
+	out = []
+	for c in CFG.get("qrk_cards") or []:
+		if not isinstance(c, dict) or not isinstance(c.get("id"), str) or c.get("cmd") not in QRK_CMDS or not isinstance(c.get("p"), str):
+			continue
+		out.append(c)
+	return out
+
+
+def qrk_card(cid):
+	return next((c for c in qrk_cards() if c["id"] == cid), None)
+
+
+def qrk_check(text):
+	""
+	r = qrk_parse(text)
+	k = qrk_key(False)
+	if r is None or not k:
+		return "foreign", None
+	cid, cmd, mac, p = r
+	if not hmac.compare_digest(mac, qrk_mac(cid, cmd, p, k)):
+		return "foreign", None
+	c = qrk_card(cid)
+	if c is None or c["cmd"] != cmd or p != (c["p"] if qrk_in_code(c) else ""):
+		return "unknown", None
+	if c.get("off"):
+		return "revoked", c
+	return "ok", c
+
+
+def qrk_qr_size(payload):
+	""
+	n = len(qr_matrix(payload))
+	return (n - 17) // 4, n
+
+
+def qrk_range(modules, qr_mm):
+	""
+	return round(QRK_RANGE_K * qr_mm / max(1, modules), 1)
+
+
+
+_QRK_SECRET_WORDS = re.compile(r"WIFI:|://[^/\s:@]+:[^/\s@]+@|pass(?:wort|word)|kennwort|mot de passe|\bpin\s*[:=]", re.I)
+
+
+def qrk_secret_hit(text):
+	""
+	t = str(text or "")
+	if not t:
+		return False
+	if _QRK_SECRET_WORDS.search(t):
+		return True
+	low = t.lower()
+	vals = [CFG.get(k) for k in ("hotspot_password", "web_password", "protect_pin", "lock_pin", "telegram_token", "telegram_chat",
+                                 "pushover_token", "pushover_user", "email_password", "mqtt_password", "update_token", "guest_token",
+                                 "ext_token", "qrk_secret")]
+	url = str(CFG.get("notify_url") or "").strip().rstrip("/")
+	if url:
+		vals.append(url)
+		vals.append(url.rsplit("/", 1)[-1])
+	try:
+		vals += push_ssids()
+	except Exception:
+		pass
+	hs = str(CFG.get("hotspot_ssid") or "").strip()
+	if hs and hs.lower() != "moveeye":
+		vals.append(hs)
+	for v in vals:
+		v = str(v or "").strip()
+		if len(v) >= 4 and v.lower() in low:
+			return True
+	return False
+
+
+def qrk_points():
+	return [wp_name(w) for w in WAYPOINTS if wp_name(w)]
+
+
+def qrk_modes():
+	""
+	out = []
+	for m, ic, nm in MODES:
+		if m == "transport":
+			continue
+		out.append((m, ic, nm))
+	return out
+
+
+def qrk_make_param(cmd, d):
+	""
+	if cmd in "PSN":
+		txt = re.sub(r"[\x00-\x1f\x7f]", " ", str(d.get("text") or "")).strip()
+		if not txt:
+			return "", "the text is empty"
+		if len(txt.encode("utf-8")) > QRK_TEXT_MAX:
+			return "", "the text is too long"
+		if qrk_secret_hit(txt):
+			return "", "This text contains a password, an access code or a Wi-Fi name - not allowed on a card."
+		return (("1" if d.get("photo") else "0") + txt) if cmd == "P" else txt, ""
+	if cmd == "R":
+		try:
+			s = int(float(d.get("secs") or 60))
+		except (TypeError, ValueError):
+			return "", "invalid value"
+		return str(max(10, min(QRK_REC_MAX, s))), ""
+	if cmd == "L":
+		n = {"white": "w", "ir": "i"}.get(str(d.get("light") or ""))
+		if not n:
+			return "", "invalid value"
+		return n + ("1" if d.get("on") else "0"), ""
+	if cmd == "Y":
+		try:
+			i = int(d.get("relay"))
+		except (TypeError, ValueError):
+			return "", "unknown relay"
+		if not 0 <= i < len(RELAYS):
+			return "", "unknown relay"
+		return f"{i}:{'1' if d.get('on') else '0'}", ""
+	if cmd == "H":
+		nm = str(d.get("point") or "").strip()
+		if nm not in qrk_points():
+			return "", "no such point"
+		if len(nm.encode("utf-8")) > QRK_TEXT_MAX:
+			return "", "the text is too long"
+		return nm, ""
+	if cmd == "F":
+		v = str(d.get("profile") or "")
+		if v.startswith("p:") and (v[2:] == "" or v[2:] in PROFILES):
+			return v, ""
+		if v.startswith("m:") and v[2:] in [m for m, _i, _n in qrk_modes()] + [""]:
+			return v, ""
+		return "", "unknown profile"
+	return "", "unknown command"
+
+
+def qrk_what(card, lang=None, icon=True):
+	""
+	L = norm_lang(lang)
+	cmd, p = card["cmd"], card["p"]
+	ic = QRK_CMDS[cmd][1] if icon else ""
+	if cmd == "P":
+		return ic + " " + tr("Push", L) + (" + " + tr("photo", L) if p[:1] == "1" else "") + ": «" + p[1:] + "»"
+	if cmd in "SN":
+		return ic + " " + tr(QRK_CMDS[cmd][2], L) + ": «" + p + "»"
+	if cmd == "R":
+		return ic + " " + trf("Recording {s} s", L, s=p)
+	if cmd == "L":
+		return ic + " " + tr(LIGHT_NAMES.get("white" if p[:1] == "w" else "ir"), L) + " " + tr("on" if p[1:] == "1" else "off", L)
+	if cmd == "Y":
+		i, _s, on = p.partition(":")
+		nm = RELAYS[int(i)]["name"] if i.isdigit() and int(i) < len(RELAYS) else tr("Relay", L) + " " + str(int(i) + 1 if i.isdigit() else "?")
+		return ic + " " + nm + " " + tr("on" if on == "1" else "off", L)
+	if cmd == "H":
+		return ic + " " + tr("Head to", L) + " «" + p + "»"
+	if cmd == "F":
+		if p.startswith("p:"):
+			d = prof_def(p[2:])
+			return ic + " " + tr("Detection profile", L) + ": " + (d["icon"] + " " if icon else "") + tr(d["name"], L)
+		m = next(((ic_, nm) for mm, ic_, nm in MODES if mm == p[2:]), ("⚙️", "Own settings"))
+		return ic + " " + tr("Mode", L) + ": " + (m[0] + " " if icon else "") + tr(m[1], L)
+	return ic
+
+
+def qrk_create(d, who="admin"):
+	""
+	cmd = str(d.get("cmd") or "")
+	if cmd not in QRK_CMDS:
+		return None, "unknown command"
+	name = re.sub(r"[\x00-\x1f\x7f]", " ", str(d.get("name") or "")).strip()[:QRK_NAME_MAX]
+	desc = re.sub(r"[\x00-\x1f\x7f]", " ", str(d.get("desc") or "")).strip()[:QRK_DESC_MAX]
+	if not name:
+		return None, "the name is empty"
+	if qrk_secret_hit(name) or qrk_secret_hit(desc):
+		return None, "This text contains a password, an access code or a Wi-Fi name - not allowed on a card."
+	p, err = qrk_make_param(cmd, d)
+	if err:
+		return None, err
+	with QRK["lock"]:
+		lst = qrk_cards()
+		if len(lst) >= QRK_CARDS_MAX:
+			return None, "too many cards"
+		key = qrk_key()
+		ids = {c["id"] for c in lst}
+		cid = ""
+		while not cid or cid in ids:
+			cid = "".join(secrets.choice(QRK_ALPHA) for _ in range(QRK_ID_LEN))
+		card = {"id": cid, "name": name, "desc": desc, "cmd": cmd, "p": p, "made": datetime.now().isoformat(timespec="seconds"),
+                "used": "", "n": 0, "off": False, "fp": qrk_key_fp(key), "tc": bool(d.get("tc")) and cmd in QRK_TEXT_CMDS}
+		lst.append(card)
+		CFG["qrk_cards"] = lst
+	save_settings()
+	log_event("sys", f"QR card made ({who}): «{name}» - {QRK_CMDS[cmd][0]}")
+	return card, ""
+
+
+def qrk_save_now():
+	"""
+"""
+	save_settings_flush()
+
+
+def qrk_edit(action, cid, who="admin"):
+	""
+	with QRK["lock"]:
+		lst = qrk_cards()
+		c = next((x for x in lst if x["id"] == cid), None)
+		if c is None:
+			return False, "unknown card"
+		if action == "revoke":
+			c["off"] = True
+		elif action == "unrevoke":
+			c["off"] = False
+		elif action == "delete":
+			lst.remove(c)
+		else:
+			return False, "unknown action"
+		CFG["qrk_cards"] = lst
+	if action in ("revoke", "delete"):
+		qrk_save_now()
+	else:
+		save_settings()
+	log_event("sys", f"QR card {action} ({who}): «{c['name']}»")
+	return True, ""
+
+
+def qrk_set_text(cid, d, who="admin"):
+	"""
+"""
+	with QRK["lock"]:
+		lst = qrk_cards()
+		c = next((x for x in lst if x["id"] == cid), None)
+		if c is None:
+			return False, "unknown card"
+		if c["cmd"] not in QRK_TEXT_CMDS:
+			return False, "this card has no text"
+		if qrk_in_code(c):
+			return False, "the text is in the code - make a new card"
+		dd = dict(d)
+		if c["cmd"] == "P" and "photo" not in dd:
+			dd["photo"] = c["p"][:1] == "1"
+		p, err = qrk_make_param(c["cmd"], dd)
+		if err:
+			return False, err
+		c["p"] = p
+		c["edited"] = datetime.now().isoformat(timespec="seconds")
+		CFG["qrk_cards"] = lst
+	save_settings()
+	log_event("sys", f"QR card text changed ({who}): «{c['name']}»")
+	return True, ""
+
+
+def qrk_rotate(who="admin"):
+	""
+	with QRK["lock"]:
+		CFG["qrk_secret"] = ""
+		qrk_key()
+	qrk_save_now()
+	log_event("sys", f"QR cards: new key ({who}) - all printed cards are invalid")
+	return True, ""
+
+
+
+def qrk_decoder_name():
+	return "QRCodeDetectorAruco" if hasattr(cv2, "QRCodeDetectorAruco") else "QRCodeDetector"
+
+
+_QRK_TL = threading.local()
+
+
+def qrk_detector():
+	d = getattr(_QRK_TL, "det", None)
+	if d is None:
+		d = cv2.QRCodeDetectorAruco() if hasattr(cv2, "QRCodeDetectorAruco") else cv2.QRCodeDetector()
+		_QRK_TL.det = d
+	return d
+
+
+def qrk_decode(img):
+	""
+	if img is None or img.size == 0:
+		return "", None
+	H, W = img.shape[:2]
+	g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if img.ndim == 3 else img
+	if W > QRK_SCAN_W:
+		g = cv2.resize(g, (QRK_SCAN_W, max(1, int(H * QRK_SCAN_W / W))), interpolation=cv2.INTER_AREA)
+	h, w = g.shape[:2]
+	try:
+		txt, pts, _s = qrk_detector().detectAndDecode(g)
+	except cv2.error:
+		return "", None
+	if not txt or pts is None:
+		return "", None
+	try:
+		P = [[round(float(x) / w, 4), round(float(y) / h, 4)] for x, y in np.asarray(pts, np.float32).reshape(-1, 2)[:4]]
+	except (TypeError, ValueError):
+		P = None
+	return txt, P
+
+
+def qrk_cams():
+	out = []
+	if CFG.get("qrk_cam_head", True):
+		out.append("head")
+	if CFG.get("qrk_cam_wide", True):
+		out.append("wide")
+	return out
+
+
+def qrk_grab(cam):
+	""
+	now = time.time()
+	if cam == "head":
+		w = WATCH_REF.get("w")
+		if w is None:
+			return None, None
+		prev = getattr(w, "frame_raw", None)
+		w.raw_until = max(float(getattr(w, "raw_until", 0.0) or 0.0), now + 0.4)
+		end = now + 0.6
+		while time.time() < end:
+			f = getattr(w, "frame_raw", None)
+			if f is not None and f is not prev:
+				return f, w
+			time.sleep(0.03)
+		return None, w
+	c = view3_wide_cam()
+	if c is None or c.status != "connected":
+		return None, None
+	t_prev = float(getattr(c, "raw_t", 0.0) or 0.0)
+	c.raw_until = max(float(getattr(c, "raw_until", 0.0) or 0.0), now + 0.4)
+	end = now + 0.6
+	while time.time() < end:
+		if c.raw is not None and float(c.raw_t or 0.0) > t_prev:
+			return c.raw, c
+		time.sleep(0.03)
+	return None, c
+
+
+def qrk_pause_reason():
+	""
+	if not CFG.get("qrk_on"):
+		return "off"
+	if not qrk_cams():
+		return "no camera chosen"
+	if not qrk_cards():
+		return "no cards yet"
+	if CFG.get("sim_on"):
+		return "simulation"
+	try:
+		if toolmode_on():
+			return "tool mode"
+	except NameError:
+		pass
+	try:
+		if batt_save_active():
+			return "battery saver"
+	except NameError:
+		pass
+	cpu = STATE.get("cpu")
+	lim = float(CFG.get("qrk_cpu_max") or 85)
+	if cpu is not None:
+		if cpu > lim or (QRK["cpu_hold"] and cpu > lim - 10):
+			QRK["cpu_hold"] = True
+			return "CPU busy"
+		QRK["cpu_hold"] = False
+	w = WATCH_REF.get("w")
+	fps = STATE.get("fps")
+	if w is not None and CFG.get("detection_on") and fps is not None and STATE.get("frames", 0) > 30 and float(fps) < 2.0:
+		return "detection is slow"
+	return ""
+
+
+def qrk_tick():
+	""
+	why = qrk_pause_reason()
+	QRK["pause"] = why
+	if why:
+		return 1.0
+	busy = 0.0
+	for cam in qrk_cams():
+		img, src = qrk_grab(cam)
+		if img is None:
+			continue
+		t0 = time.time()
+		txt, pts = qrk_decode(img)
+		dt = time.time() - t0
+		busy += dt
+		QRK["ms"] = round(dt * 1000.0 if QRK["ms"] is None else 0.8 * QRK["ms"] + 200.0 * dt, 1)
+		QRK["scans"] += 1
+		if txt:
+			qrk_seen(cam, txt, pts, img, src)
+	rate = max(0.5, min(2.0, float(CFG.get("qrk_rate") or 1.0)))
+	return max(1.0 / rate, busy * 8.0)
+
+
+def qrk_loop():
+	try:
+		os.setpriority(os.PRIO_PROCESS, threading.get_native_id(), 10)
+	except (AttributeError, OSError):
+		pass
+	QRK["dec"] = qrk_decoder_name()
+	while True:
+		try:
+			gap = qrk_tick()
+		except Exception as e:
+			gap = 3.0
+			if time.time() - QRK["err_t"] > 300:
+				QRK["err_t"] = time.time()
+				log_event("sys", f"QR cards: {type(e).__name__}: {e}"[:160])
+		time.sleep(gap)
+
+
+def qrk_start():
+	""
+	if QRK["thread"] is not None:
+		return
+	with QRK["lock"]:
+		if QRK["thread"] is None:
+			QRK["thread"] = threading.Thread(target=qrk_loop, daemon=True, name="qr-cards")
+			QRK["thread"].start()
+
+
+
+def qrk_show(cam, pts, kind, label, src=None):
+	QRK["show"][cam] = {"t": time.time(), "pts": pts, "kind": kind, "label": label, "src": src, "img": None}
+
+
+def qrk_seen(cam, text, pts, img, src=None, now=None):
+	"""
+"""
+	now = time.time() if now is None else now
+	L = norm_lang(CFG.get("lang"))
+	st, card = qrk_check(text)
+	if st == "foreign":
+		qrk_show(cam, pts, "bad", "✕ " + tr("foreign card", L), src)
+		if now - QRK["log_t"].get("foreign", 0.0) >= QRK_FOREIGN_LOG_S:
+			QRK["log_t"]["foreign"] = now
+			log_event("sys", "QR card: foreign card ignored")
+		return "foreign"
+	if st in ("revoked", "unknown"):
+		nm = card["name"] if card else "?"
+		qrk_show(cam, pts, "off", "⛔ " + tr("card revoked", L) + (": " + nm if card else ""), src)
+		key = "rev|" + (card["id"] if card else text[2:7])
+		if now - QRK["log_t"].get(key, 0.0) >= QRK_FOREIGN_LOG_S:
+			QRK["log_t"][key] = now
+			log_event("sys", f"QR card «{nm}» is revoked - ignored" if card else "QR card: deleted card ignored")
+		return st
+	s = QRK["seen"].setdefault(card["id"], {"last": 0.0, "fired": 0.0})
+	gone = now - s["last"] >= QRK_GONE_S
+	s["last"] = now
+	cool = max(3.0, float(CFG.get("qrk_cooldown") or 10))
+	qrk_show(cam, pts, "ok", "✓ " + card["name"], src)
+	if not gone or now - s["fired"] < cool:
+		return "hold"
+	s["fired"] = now
+	qrk_spawn(card, img.copy() if img is not None else None, cam)
+	return "run"
+
+
+def qrk_spawn(card, img, cam):
+	""
+	threading.Thread(target=qrk_run, args=(card, img, cam), daemon=True, name="qr-card-run").start()
+
+
+def qrk_feedback(lang=None):
+	""
+	fb = str(CFG.get("qrk_feedback") or "speak")
+	if fb == "off":
+		return False, "off"
+	L = norm_lang(lang or CFG.get("lang"))
+	if fb == "speak":
+		ok, err = tts_say(tr("Understood", L), L)
+		if ok:
+			return True, ""
+	return sound_play("beep2", 0.46, CFG.get("clap_volume", 60), reason="test")
+
+
+def _qrk_jpg(img, q=85):
+	if img is None:
+		return None
+	ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, q])
+	return buf.tobytes() if ok else None
+
+
+def qrk_photo(card, img, note):
+	""
+	if img is None:
+		return "no camera picture yet"
+	if CFG.get("sim_on"):
+		return "Simulation: no recordings"
+	try:
+		d = rec_dir()
+		os.makedirs(d, exist_ok=True)
+		name = f"qrcard_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{card['id'].lower()}.jpg"
+		path = os.path.join(d, name)
+		if not cv2.imwrite(path, img, [cv2.IMWRITE_JPEG_QUALITY, 88]):
+			return "could not save the picture"
+		try:
+			gps_tag_jpg(path)
+		except Exception:
+			pass
+		_write_sidecar(name, {"source": "QR card", "note": str(note)[:240], "qrcard": card["id"]})
+		return ""
+	except OSError as e:
+		return str(e)[:120]
+
+
+def qrk_exec(card, img, who="QR card"):
+	""
+	cmd, p = card["cmd"], card["p"]
+	L = norm_lang(CFG.get("lang"))
+	nm = card["name"]
+	if cmd == "P":
+		w = WATCH_REF.get("w")
+		n = getattr(w, "notifier", None) if w is not None else None
+		if n is None:
+			return False, "no camera loop"
+		jpg = _qrk_jpg(img) if p[:1] == "1" and CFG.get("push_pics") != "text" else None
+		pub = str(CFG.get("public_url") or "").strip().rstrip("/")
+		msg = {"event": "info", "persons": 0, "time": datetime.now().isoformat(timespec="seconds"), "text": p[1:],
+               "info_title": "{name}: ▦ " + nm, "obj_ic": "▦", "obj_title": nm, "obj_ev": "qrcard", "snapshot": None,
+               "rain": bool(STATE.get("rain_mode")), "wind": STATE.get("wind_level", ""), "source": STATE.get("source_label", ""),
+               "link": pub + "/" if pub else ""}
+		threading.Thread(target=n._dispatch, args=(msg, jpg, "karte.jpg"), daemon=True).start()
+		return True, "" if n.configured() else "push messages are not set up - only in the message list"
+	if cmd == "S":
+		return tts_say(p, L)
+	if cmd == "N":
+		err = qrk_photo(card, img, "📝 " + p)
+		return (not err), err
+	if cmd == "R":
+		if CFG.get("sim_on"):
+			return False, "Simulation: no recordings"
+		secs = max(10, min(QRK_REC_MAX, int(p) if p.isdigit() else 60))
+		QUICK["rec_until"] = max(QUICK["rec_until"], time.time() + secs)
+		log_event("rec", f"Recording started by the QR card «{nm}» ({secs} s)")
+		return True, ""
+	if cmd == "L":
+		return light_set("white" if p[:1] == "w" else "ir", "on" if p[1:] == "1" else "off")
+	if cmd == "Y":
+		i, _s, on = p.partition(":")
+		if not i.isdigit():
+			return False, "unknown relay"
+		return relay_update(int(i), "mode", "on" if on == "1" else "off")
+	if cmd == "H":
+		i = next((j for j, w in enumerate(WAYPOINTS) if wp_name(w) == p), None)
+		if i is None:
+			return False, "no such point"
+		return teach_goto(i, who="qrcard")
+	if cmd == "F":
+		kind, _s, v = p.partition(":")
+		if kind == "p":
+			return prof_set(v, who)
+		if v == "transport" or mode_disarms(v):
+			return False, "this would switch the protection off - not by card"
+		return mode_set(v, who="qrcard")
+	return False, "unknown command"
+
+
+def qrk_run(card, img, cam, who="QR card", feedback=True):
+	""
+	if not QRK["run_lock"].acquire(timeout=20):
+		return False, "busy"
+	try:
+		L = norm_lang(CFG.get("lang"))
+		if feedback and card["cmd"] != "S":
+			try:
+				qrk_feedback(L)
+			except Exception:
+				pass
+		try:
+			ok, msg = qrk_exec(card, img, who)
+		except Exception as e:
+			ok, msg = False, f"{type(e).__name__}: {e}"[:160]
+		now = datetime.now()
+		with QRK["lock"]:
+			lst = qrk_cards()
+			c = next((x for x in lst if x["id"] == card["id"]), None)
+			if c is not None:
+				c["used"] = now.isoformat(timespec="seconds"); c["n"] = int(c.get("n") or 0) + 1
+				CFG["qrk_cards"] = lst
+		save_settings()
+		what = qrk_what(card, "en")
+		log_event("sys", f"QR card «{card['name']}» ({cam}): {QRK_CMDS[card['cmd']][0]} - " + ("done" if ok and not msg else (msg or "done") if ok else "not done: " + str(msg)))
+		pe = ""
+		if card["cmd"] != "N" and CFG.get("qrk_photo", True) and cam in ("head", "wide"):
+			pe = qrk_photo(card, img, "▦ " + card["name"] + " · " + what)
+		QRK["last"] = {"t": time.time(), "id": card["id"], "name": card["name"], "ok": bool(ok), "msg": str(msg or ""), "cam": cam}
+		QRK["uses"].appendleft({"t": now.strftime("%Y-%m-%d %H:%M:%S"), "id": card["id"], "name": card["name"], "cmd": card["cmd"],
+                                "ok": bool(ok), "msg": str(msg or ""), "cam": cam, "photo": not pe})
+		return ok, msg
+	finally:
+		QRK["run_lock"].release()
+
+
+
+_QRK_COL = {"ok": (80, 220, 90), "off": (40, 160, 245), "bad": (70, 70, 240)}
+
+
+def _qrk_label_img(text, color, hgt):
+	""
+	try:
+		from PIL import Image, ImageDraw
+		f = _font(int(hgt * 0.62))
+		tmp = ImageDraw.Draw(Image.new("RGB", (4, 4)))
+		tw = int(tmp.textlength(text, font=f)) + hgt
+		im = Image.new("RGBA", (tw, hgt), (0, 0, 0, 0))
+		d = ImageDraw.Draw(im)
+		d.rounded_rectangle((0, 0, tw - 1, hgt - 1), radius=hgt // 3, fill=(color[2], color[1], color[0], 235))
+		d.text((hgt // 2, int(hgt * 0.14)), text, font=f, fill=(0, 0, 0, 255))
+		a = np.asarray(im)
+		return cv2.cvtColor(a[:, :, :3], cv2.COLOR_RGB2BGR), a[:, :, 3:4].astype(np.float32) / 255.0
+	except Exception:
+		t = text.encode("ascii", "replace").decode()
+		(tw, th), _b = cv2.getTextSize(t, cv2.FONT_HERSHEY_SIMPLEX, hgt / 40.0, 2)
+		im = np.zeros((hgt, tw + hgt, 3), np.uint8); im[:] = color
+		cv2.putText(im, t, (hgt // 2, int(hgt * 0.72)), cv2.FONT_HERSHEY_SIMPLEX, hgt / 40.0, (0, 0, 0), 2, cv2.LINE_AA)
+		return im, np.ones((hgt, tw + hgt, 1), np.float32)
+
+
+def qrk_draw(frame, cam, src=None):
+	""
+	s = QRK["show"].get(cam)
+	if not s or time.time() - s["t"] > QRK_SHOW_S or frame is None:
+		return
+	if src is not None and s.get("src") is not None and s["src"] is not src:
+		return
+	try:
+		H, W = frame.shape[:2]
+		col = _QRK_COL.get(s["kind"], (255, 255, 255))
+		pts = s.get("pts")
+		if pts:
+			P = np.array([[int(x * W), int(y * H)] for x, y in pts], np.int32).reshape(-1, 1, 2)
+			cv2.polylines(frame, [P], True, (0, 0, 0), 7, cv2.LINE_AA)
+			cv2.polylines(frame, [P], True, col, 4, cv2.LINE_AA)
+			x0, y0, y1 = int(P[:, 0, 0].min()), int(P[:, 0, 1].min()), int(P[:, 0, 1].max())
+		else:
+			x0, y0, y1 = W // 3, H // 3, H // 3
+		hgt = max(24, H // 16)
+		if s["img"] is None or s["img"][2] != hgt:
+			b, a = _qrk_label_img(str(s["label"])[:48], col, hgt)
+			s["img"] = (b, a, hgt)
+		b, a, _h = s["img"]
+		lh, lw = b.shape[:2]
+		x, y = max(0, min(W - lw, x0)), y0 - lh - 6
+		if y < 40:
+			y = min(H - lh, y1 + 6)
+		if lw > W or lh > H:
+			return
+		roi = frame[y:y + lh, x:x + lw]
+		frame[y:y + lh, x:x + lw] = (roi * (1 - a) + b * a).astype(np.uint8)
+	except (cv2.error, ValueError, TypeError, IndexError):
+		pass
+
+
+_walktest_draw_qrk = walktest_draw
+
+
+
+def walktest_draw(frame):
+	_walktest_draw_qrk(frame)
+	if QRK["show"].get("head"):
+		qrk_draw(frame, "head")
+	if QRK["thread"] is None:
+		qrk_start()
+
+
+_weit_ki_frame_qrk = weit_ki_frame
+
+
+
+def weit_ki_frame(c, frame):
+	_weit_ki_frame_qrk(c, frame)
+	if QRK["show"].get("wide"):
+		qrk_draw(frame, "wide", c)
+
+
+
+def qrk_card_json(c, lang=None):
+	L = norm_lang(lang)
+	key = qrk_key(False)
+	pl = qrk_payload(c, key) if key else ""
+	ver, n = qrk_qr_size(pl) if pl else (0, 0)
+	txt = (c["p"][1:] if c["cmd"] == "P" else c["p"]) if c["cmd"] in QRK_TEXT_CMDS else ""
+	return {"id": c["id"], "name": c["name"], "desc": c.get("desc", ""), "cmd": c["cmd"], "icon": QRK_CMDS[c["cmd"]][1],
+            "tc": qrk_in_code(c), "text": txt, "editable": c["cmd"] in QRK_TEXT_CMDS and not qrk_in_code(c), "edited": c.get("edited", ""),
+            "kind": tr(QRK_CMDS[c["cmd"]][2], L), "what": qrk_what(c, L), "made": c.get("made", ""), "used": c.get("used", ""),
+            "n": int(c.get("n") or 0), "off": bool(c.get("off")), "reprint": bool(c.get("fp")) and c.get("fp") != qrk_key_fp(key),
+            "ver": ver, "modules": n, "range": {k: qrk_range(n, v[2]) for k, v in QRK_SIZES.items()}}
+
+
+def qrk_state(lang=None):
+	L = norm_lang(lang)
+	why = QRK["pause"] if CFG.get("qrk_on") else "off"
+	last = QRK["last"]
+	return {"on": bool(CFG.get("qrk_on")), "pause": why, "pause_t": tr(why, L) if why else "", "dec": QRK["dec"] or qrk_decoder_name(),
+            "ms": QRK["ms"], "scans": QRK["scans"], "cams": qrk_cams(), "rate": CFG.get("qrk_rate"), "cooldown": CFG.get("qrk_cooldown"),
+            "last": dict(last, ago=int(time.time() - last["t"]), msg_t=tr_err(last["msg"], L) if last.get("msg") else "") if last else None,
+            "uses": [dict(u, msg_t=tr_err(u["msg"], L) if u.get("msg") else "") for u in list(QRK["uses"])[:10]]}
+
+
+def qrk_choices(lang=None):
+	L = norm_lang(lang)
+	return {"cmds": [{"c": c, "icon": QRK_CMDS[c][1], "label": tr(QRK_CMDS[c][2], L)} for c in QRK_CMD_ORDER],
+            "points": qrk_points(),
+            "relays": [{"i": i, "name": r["name"]} for i, r in enumerate(RELAYS)],
+            "lights": [{"v": "white", "name": tr("White light", L)}, {"v": "ir", "name": tr("Infrared light", L)}],
+            "profiles": [{"v": "p:" + k, "name": PROFILES[k]["icon"] + " " + tr(PROFILES[k]["name"], L), "group": tr("Detection profile", L)} for k in PROF_ORDER]
+                        + [{"v": "p:", "name": PROF_NONE["icon"] + " " + tr(PROF_NONE["name"], L), "group": tr("Detection profile", L)}]
+                        + [{"v": "m:" + m, "name": ic + " " + tr(nm, L), "group": tr("Mode", L)} for m, ic, nm in qrk_modes()],
+            "text_max": QRK_TEXT_MAX, "name_max": QRK_NAME_MAX, "desc_max": QRK_DESC_MAX, "rec_max": QRK_REC_MAX,
+            "sizes": [{"v": k, "name": tr(v[3], L), "qr_cm": v[2] / 10} for k, v in QRK_SIZES.items()], "range_k": QRK_RANGE_K}
+
+
+
+def _qrk_wrap(text, n):
+	words, lines, cur = str(text or "").split(), [], ""
+	for w_ in words:
+		if len(cur) + len(w_) + 1 > n and cur:
+			lines.append(cur); cur = w_
+		else:
+			cur = (cur + " " + w_).strip()
+	if cur:
+		lines.append(cur)
+	return lines[:3]
+
+
+def qrk_card_svg(card, size="card", lang=None):
+	""
+	L = norm_lang(lang)
+	W, H, Q, _n = QRK_SIZES.get(size, QRK_SIZES["card"])
+	M = qr_matrix(qrk_payload(card))
+	n = len(M)
+	k = Q / 80.0
+	x0, y0 = (W - Q) / 2.0, (W - Q) / 2.0
+	path = "".join(f"M{x},{y}h1v1h-1z" for y in range(n) for x in range(n) if M[y][x])
+	nm = html_escape(card["name"])
+	fs = min(9.0, 150.0 / max(8, len(card["name"]))) * k
+	y = y0 + Q + 12 * k
+	parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}mm" height="{H}mm" viewBox="0 0 {W} {H}">',
+             f'<rect x="0.3" y="0.3" width="{W - 0.6}" height="{H - 0.6}" rx="{4 * k:.1f}" fill="#fff" stroke="#999" stroke-width="0.3" stroke-dasharray="2 1.5"/>',
+             f'<g transform="translate({x0:.2f},{y0:.2f}) scale({Q / n:.5f})"><path d="{path}" fill="#000" shape-rendering="crispEdges"/></g>',
+             f'<text x="{W / 2}" y="{y:.1f}" font-family="DejaVu Sans,Helvetica,Arial,sans-serif" font-size="{fs:.2f}" font-weight="700" text-anchor="middle" fill="#111">{nm}</text>']
+	y += 7 * k
+	for ln in _qrk_wrap(card.get("desc") or qrk_what(card, L, icon=False).strip(), 40):
+		parts.append(f'<text x="{W / 2}" y="{y:.1f}" font-family="DejaVu Sans,Helvetica,Arial,sans-serif" font-size="{4.2 * k:.2f}" text-anchor="middle" fill="#333">{html_escape(ln)}</text>')
+		y += 5.4 * k
+	foot = "▦ MoveEye · " + tr("QR card", L) + " · " + tr(QRK_CMDS[card["cmd"]][2], L) + " · " + card["id"]
+	parts.append(f'<text x="{W / 2}" y="{H - 6 * k:.1f}" font-family="DejaVu Sans,Helvetica,Arial,sans-serif" font-size="{3.1 * k:.2f}" text-anchor="middle" fill="#777">{html_escape(foot)}</text>')
+	parts.append("</svg>")
+	return "".join(parts)
+
+
+def qrk_card_png(card, size="card", lang=None, dpmm=12):
+	""
+	L = norm_lang(lang)
+	W, H, Q, _n = QRK_SIZES.get(size, QRK_SIZES["card"])
+	M = np.array(qr_matrix(qrk_payload(card)), bool)
+	n = M.shape[0]
+	qpx = int(Q * dpmm) // n * n
+	q = np.where(np.kron(M, np.ones((qpx // n, qpx // n), bool)), 0, 255).astype(np.uint8)
+	img = np.full((int(H * dpmm), int(W * dpmm)), 255, np.uint8)
+	x0 = (img.shape[1] - qpx) // 2; y0 = x0
+	img[y0:y0 + qpx, x0:x0 + qpx] = q
+	try:
+		from PIL import Image, ImageDraw
+		im = Image.fromarray(img).convert("RGB")
+		d = ImageDraw.Draw(im)
+		k = Q / 80.0
+		f1, f2, f3 = _font(int(min(9.0, 150.0 / max(8, len(card["name"]))) * k * dpmm)), _font(int(4.2 * k * dpmm), bold=False), _font(int(3.1 * k * dpmm), bold=False)
+		y = y0 + qpx + int(4 * k * dpmm)
+		d.text((im.width // 2, y), card["name"], font=f1, fill=(17, 17, 17), anchor="mt")
+		y += int(11 * k * dpmm)
+		for ln in _qrk_wrap(card.get("desc") or qrk_what(card, L, icon=False).strip(), 40):
+			d.text((im.width // 2, y), ln, font=f2, fill=(51, 51, 51), anchor="mt"); y += int(5.4 * k * dpmm)
+		d.text((im.width // 2, im.height - int(8 * k * dpmm)), "MoveEye · " + tr("QR card", L) + " · " + tr(QRK_CMDS[card["cmd"]][2], L) + " · " + card["id"],
+               font=f3, fill=(119, 119, 119), anchor="mt")
+		img = cv2.cvtColor(np.asarray(im), cv2.COLOR_RGB2BGR)
+	except Exception:
+		pass
+	ok, buf = cv2.imencode(".png", img)
+	return buf.tobytes() if ok else b""
+
+
+def qrk_print_page(card, size="card", lang=None, auto=False):
+	L = norm_lang(lang)
+	T = lambda s: html_escape(tr(s, L))
+	W, H, Q, _n = QRK_SIZES.get(size, QRK_SIZES["card"])
+	links = " ".join(f'<a href="/karten/print?id={card["id"]}&amp;size={k}&amp;lang={L}"{" class=on" if k == size else ""}>{T(v[3])}</a>'
+                     for k, v in QRK_SIZES.items())
+	page_size = "A4" if size in ("card", "a5") else "A4"
+	return ('<!doctype html><html lang="' + L + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<meta name="referrer" content="no-referrer"><title>MoveEye – ' + T("QR card") + ' – ' + html_escape(card["name"]) + '</title><style>'
+            '@page{size:' + page_size + ' portrait;margin:10mm}html,body{background:#fff;color:#111}'
+            'body{font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;margin:0;padding:12px 16px}'
+            '.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 10px}.bar button,.bar a{font:inherit;padding:8px 12px;border-radius:8px;'
+            'border:1px solid #999;background:#f4f4f4;color:#111;cursor:pointer;text-decoration:none;min-height:40px;box-sizing:border-box;display:inline-flex;align-items:center}'
+            '.bar a.on{background:#1f6feb;border-color:#1f6feb;color:#fff}.m{color:#555;margin:0 0 10px;font-size:13px}'
+            '.cv{display:flex;justify-content:center}.cv svg{max-width:100%;height:auto}'
+            '@media print{.bar,.m{display:none}body{padding:0}.cv svg{width:' + str(W) + 'mm;height:' + str(H) + 'mm;max-width:none}}'
+            '</style></head><body><div class="bar"><button type="button" onclick="print()">🖨 ' + T("Print") + '</button>' + links
+            + '<button type="button" onclick="history.length>1?history.back():close()">' + T("Close") + '</button></div>'
+            '<div class="m">' + T("Print at 100 % (no «fit to page»). Cut along the dashed line. Card and phone screen work the same.") + '</div>'
+            '<div class="cv">' + qrk_card_svg(card, size, L) + '</div>'
+            + ('<script>addEventListener("load",function(){setTimeout(function(){try{print();}catch(e){}},300);});</script>' if auto else "")
+            + '<script>window.__mwExit = true;</script></body></html>')
+
+
+
+def qrk_admin_ok(g_):
+	return getattr(g_, "role", "admin") == "admin" and not getattr(g_, "appkey", None)
+
+
+_smalltv_routes_qrk = smalltv_routes
+
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_qrk(app, reply, body)
+	from flask import Response, request, g
+	qrk_start()
+
+	def nope():
+		if not qrk_admin_ok(g):
+			return reply({"ok": False, "error": tr("Only for the administrator", norm_lang(request.args.get("lang")))}, 403)
+		return None
+
+	@app.route("/api/qrk", methods=["GET", "POST"])
+	def api_qrk():
+		n = nope()
+		if n is not None:
+			return n
+		if request.method == "GET":
+			L = norm_lang(request.args.get("lang") or CFG.get("lang"))
+			return reply({"ok": True, "state": qrk_state(L), "cards": [qrk_card_json(c, L) for c in qrk_cards()][::-1], "choices": qrk_choices(L),
+                          "fp": qrk_key_fp()})
+		d = body()
+		L = norm_lang(d.get("lang") or CFG.get("lang"))
+		a = str(d.get("action") or "")
+		if a == "create":
+			card, err = qrk_create(d, "web")
+			if card is None:
+				return reply({"ok": False, "error": tr_err(err, L)}, 400)
+			return reply({"ok": True, "card": qrk_card_json(card, L)})
+		if a in ("revoke", "unrevoke", "delete"):
+			ok, err = qrk_edit(a, str(d.get("id") or ""), "web")
+			return reply({"ok": ok, "error": tr_err(err, L) if err else None}, 200 if ok else 400)
+		if a == "rotate":
+			if not d.get("confirm"):
+				return reply({"ok": False, "error": tr("Please confirm.", L)}, 400)
+			qrk_rotate("web")
+			return reply({"ok": True})
+		if a == "try":
+			c = qrk_card(str(d.get("id") or ""))
+			if c is None:
+				return reply({"ok": False, "error": tr_err("unknown card", L)}, 400)
+			if c.get("off"):
+				return reply({"ok": False, "error": tr("This card is revoked.", L)}, 400)
+			img, _src = qrk_grab("head")
+			ok, msg = qrk_run(c, img.copy() if img is not None else None, "workshop", "QR card (workshop)", feedback=False)
+			return reply({"ok": ok, "msg": tr_err(msg, L) if msg else ""}, 200)
+		if a == "check":
+			cmd = str(d.get("cmd") or "")
+			if cmd not in QRK_CMDS:
+				return reply({"ok": False, "error": tr_err("unknown command", L)}, 400)
+			tc = bool(d.get("tc")) and cmd in QRK_TEXT_CMDS
+			p, err = qrk_make_param(cmd, d)
+			if err and tc:
+				return reply({"ok": False, "error": tr_err(err, L)})
+			p = p if tc else ""
+			ver, mods = qrk_qr_size(QRK_PREFIX + "A" * QRK_ID_LEN + cmd + "A" * QRK_MAC_LEN + p)
+			return reply({"ok": True, "ver": ver, "modules": mods, "bytes": QRK_HEAD + len(p.encode("utf-8")), "tc": tc,
+                          "warn": tr_err(err, L) if err and err != "the text is empty" else "",
+                          "range": {k: qrk_range(mods, v[2]) for k, v in QRK_SIZES.items()}})
+		if a == "text":
+			ok, err = qrk_set_text(str(d.get("id") or ""), d, "web")
+			return reply({"ok": ok, "error": tr_err(err, L) if err else None}, 200 if ok else 400)
+		return reply({"ok": False, "error": "unknown action"}, 400)
+
+	@app.route("/api/qrk/card/<cid>.<ext>")
+	def api_qrk_card(cid, ext):
+		n = nope()
+		if n is not None:
+			return n
+		c = qrk_card(cid)
+		if c is None or ext not in ("svg", "png"):
+			return Response("not found", 404)
+		size = request.args.get("size") if request.args.get("size") in QRK_SIZES else "card"
+		L = norm_lang(request.args.get("lang") or CFG.get("lang"))
+		fname = "moveeye_karte_" + re.sub(r"[^A-Za-z0-9_-]+", "_", c["name"])[:30] + "_" + c["id"] + "." + ext
+		h = {"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"}
+		if request.args.get("dl") == "1":
+			h["Content-Disposition"] = f'attachment; filename="{fname}"'
+		if ext == "svg":
+			return Response(qrk_card_svg(c, size, L), mimetype="image/svg+xml", headers=h)
+		return Response(qrk_card_png(c, size, L), mimetype="image/png", headers=h)
+
+	@app.route("/karten")
+	def qrk_page():
+		n = nope()
+		if n is not None:
+			return n
+		return Response(render_page(QRK_PAGE, "more"), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+	@app.route("/karten/print")
+	def qrk_print():
+		n = nope()
+		if n is not None:
+			return n
+		c = qrk_card(str(request.args.get("id") or ""))
+		if c is None:
+			return Response("not found", 404)
+		size = request.args.get("size") if request.args.get("size") in QRK_SIZES else "card"
+		return Response(qrk_print_page(c, size, request.args.get("lang") or CFG.get("lang"), request.args.get("p") == "1"),
+                        mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+
+QRK_PAGE = _zd('639zzp_qr_karten/QRK_PAGE', ZD_PAGE)
+
+QRK_MORE_ITEM = ('<a class="mi" href="/karten" id="m-qrk"><i>▦</i><span><b data-i18n="Card workshop">Card workshop</b>'
+                 '<small data-i18n="QR command cards: make, print, revoke">QR command cards: make, print, revoke</small></span><span class="ar">›</span></a>\n  ')
+
+_render_page_qrk = render_page
+
+
+
+def render_page(page, active):
+	out = _render_page_qrk(page, active)
+	if "/*QRKDE*/" in out:
+		out = out.replace("/*QRKDE*/", "Object.assign(I18N.de, " + json.dumps(_QRK_DE, ensure_ascii=False).replace("</", "<\\/") + ");", 1)
+	if active == "more" and 'href="/karten"' not in out and '<a class="mi" href="/tools">' in out:
+		try:
+			from flask import g as _g
+			admin = qrk_admin_ok(_g)
+		except Exception:
+			admin = False
+		if admin:
+			i = out.find('<a class="mi" href="/tools">')
+			out = (out[:i] + QRK_MORE_ITEM + out[i:]).replace("</body>", "<script>Object.assign(I18N.de, " + json.dumps(
+                {k: _QRK_DE[k] for k in ("Card workshop", "QR command cards: make, print, revoke")}, ensure_ascii=False) + ");</script></body>", 1)
+	return out
+
+
+
+TOGGLES.extend([
+    (QRK_SECTION, "qrk_on", "Read QR cards (experimental)"),
+    (QRK_SECTION, "qrk_cam_head", "with the head camera"),
+    (QRK_SECTION, "qrk_cam_wide", "with the wide-angle camera"),
+    (QRK_SECTION, "qrk_photo", "Photo of every use in the history"),
+])
+SLIDERS.extend([
+    (QRK_SECTION, "qrk_rate", "Looks per second", 0.5, 2.0, 0.5),
+    (QRK_SECTION, "qrk_cooldown", "Cooldown per card (s)", 3, 60, 1),
+    (QRK_SECTION, "qrk_cpu_max", "Pause above CPU (%)", 50, 95, 5),
+])
+TEXTS.extend([(QRK_SECTION, "qrk_feedback", "Feedback when a card is read", "enum", "qrk_feedback")])
+TEXT_SPECS.update({k: (kind, extra) for s, k, l, kind, extra in TEXTS if k == "qrk_feedback"})
+SECTIONS.append(QRK_SECTION)
+SIMPLE_SECTIONS.add(QRK_SECTION)
+SIMPLE_KEYS.add("qrk_on")
+MENU_TITLES.setdefault(QRK_SECTION, "QR command cards")
+TK_SUB_ICONS[QRK_SECTION] = "▦"
+for _g in TK_GROUPS:
+	if _g[0] == "camera" and QRK_SECTION not in _g[2]:
+		_g[2].append(QRK_SECTION)
+SET_HELP.update({
+    "qrk_on": ("Hold a card with a QR code from the card workshop (More → Card workshop) in front of the camera: MoveEye does what is on it "
+               "(push, announcement, note, recording, light, relay, head position, profile). Only cards of this MoveEye count. "
+               "Reading about once a second; it pauses by itself when the Pi is busy.", "off (experimental)"),
+    "qrk_cooldown": ("The same card works again only after it was out of view for 3 s and this time is over.", "10 s"),
+    "qrk_cpu_max": ("Above this CPU load reading pauses (back 10 % below) - the detection always comes first.", "85 %"),
+})
+_set_cfg_qrk = set_cfg
+
+
+
+def set_cfg(key, value):
+	was = bool(CFG.get("qrk_on"))
+	r = _set_cfg_qrk(key, value)
+	if key == "qrk_on" and was and not CFG.get("qrk_on"):
+		qrk_save_now()
+	return r
+
+
+_text_choice_pairs_qrk = text_choice_pairs
+
+
+
+def text_choice_pairs(key):
+	ex = (TEXT_SPECS.get(key) or (None, None))[1]
+	if ex == "qrk_feedback":
+		return [("speak", tr("spoken «Understood»")), ("beep", tr("short sound")), ("off", tr("nothing"))]
+	return _text_choice_pairs_qrk(key)
+
+
+
+_QRK_GRP = '{sec: "Timelapse", ic: "⏱️"}]},'
+if _QRK_GRP in WEB_PAGE and '{sec: "QR command cards"' not in WEB_PAGE:
+	WEB_PAGE = WEB_PAGE.replace(_QRK_GRP, '{sec: "Timelapse", ic: "⏱️"}, {sec: "QR command cards", title: "QR command cards", ic: "▦"}]},', 1)
+_QRK_SEC = 'if (sec.id === "Extra display" && window.stvPanel) stvPanel(d);'
+if _QRK_SEC in WEB_PAGE:
+	WEB_PAGE = WEB_PAGE.replace(_QRK_SEC, _QRK_SEC + '\n    if (sec.id === "QR command cards" && window.qrkPanel) qrkPanel(d);   // 639zzp: QR command cards', 1)
+
+QRK_PANEL_JS = _zd('639zzp_qr_karten/QRK_PANEL_JS', "")
+
+
+
+def _qrk_tk_build_section(self, sec, sbody, settings_parent=None):
+	_qrk_tk_build_section_before(self, sec, sbody, settings_parent)
+	if sec != QRK_SECTION:
+		return
+	try:
+		box = ttk.Frame(sbody); box.pack(fill="x", pady=(6, 0))
+		lab = ttk.Label(box, text="", wraplength=340, justify="left", style="Mut.TLabel"); lab.pack(anchor="w")
+		ttk.Button(box, text="▦ " + tr("Open the card workshop"), command=lambda: self._open_page("/karten")).pack(anchor="w", pady=(4, 0))
+
+		def tick():
+			try:
+				if not lab.winfo_exists():
+					return
+				s = qrk_state()
+				lab.config(text=(("⏸ " + tr("Pause") + ": " + s["pause_t"]) if s["on"] and s["pause"] else ("▶ " + tr("Looking for cards")) if s["on"]
+                                 else tr("Off – nothing is read.")) + f" · {len(qrk_cards())} " + tr("cards")
+                           + ((" · " + tr("Last card") + ": «" + s["last"]["name"] + "»") if s["last"] else ""))
+				self.root.after(4000, tick)
+			except Exception:
+				pass
+		tick()
+	except Exception as e:
+		log_event("sys", f"Window: QR cards: {e}"[:160])
+
+
+_qrk_tk_build_section_before = App._build_section
+
+App._build_section = _qrk_tk_build_section
+
+
+
+_HX_QRK = _zd('639zzp_qr_karten/HX_QRK', _zd_hx({
+    'QR command cards': 'QR-Befehls-Karten',
+    'Card workshop': 'Karten-Werkstatt',
+    'QR command cards: make, print, revoke': 'QR-Befehls-Karten: erstellen, drucken, sperren',
+    'experimental': 'experimentell',
+    'Make a card with a QR code: hold it in front of the camera and MoveEye does what is on it. Only cards of this MoveEye count.': 'Eine Karte mit QR-Code erstellen: vor die Kamera halten, und MoveEye macht, was darauf steht. Es gelten nur Karten dieses MoveEye.',
+    'New card': 'Neue Karte',
+    'My cards': 'Meine Karten',
+    'Name on the card': 'Name auf der Karte',
+    'Short description (under the code)': 'Kurze Beschreibung (unter dem Code)',
+    'Make the card': 'Karte erstellen',
+    'Make all cards invalid': 'Alle Karten ungültig machen',
+    'A new key makes every printed card invalid at once (lost or copied cards). You can print each card again afterwards.': 'Ein neuer Schlüssel macht jede gedruckte Karte sofort ungültig (verlorene oder kopierte Karten). Danach kannst du jede Karte neu drucken.',
+    'New key': 'Neuer Schlüssel',
+    'How it works': 'So geht es',
+    'Hold the card still, about an arm’s length in front of the head camera (wide angle: closer). Short texts read from further away.': 'Die Karte ruhig halten, etwa eine Armlänge vor der Kopf-Kamera (Weitwinkel: näher). Kurze Texte lassen sich von weiter weg lesen.',
+    'MoveEye says «Understood» and shows a green frame around the card in the live picture. The same card works again only after it was out of view for a moment (cooldown).': 'MoveEye sagt «Verstanden» und zeigt im Live-Bild einen grünen Rahmen um die Karte. Dieselbe Karte wirkt erst wieder, wenn sie kurz aus dem Bild war (Sperrzeit).',
+    'Every use is in the log and, with a photo, in History → Recordings (source «QR card»).': 'Jede Benutzung steht im Protokoll und mit Foto in Verlauf → Aufnahmen (Quelle «QR-Karte»).',
+    'A card cannot switch the protection off. No passwords or Wi-Fi names on a card.': 'Eine Karte kann den Schutz nicht ausschalten. Keine Passwörter und keine WLAN-Namen auf einer Karte.',
+    'Reading runs only when it is switched on, about once a second, and pauses by itself when the Pi is busy.': 'Gelesen wird nur, wenn es eingeschaltet ist, etwa einmal pro Sekunde, und es pausiert von selbst, wenn der Pi viel zu tun hat.',
+    'Read QR cards (experimental)': 'QR-Karten lesen (experimentell)',
+    'with the head camera': 'mit der Kopf-Kamera',
+    'with the wide-angle camera': 'mit der Weitwinkel-Kamera',
+    'Photo of every use in the history': 'Foto jeder Benutzung im Verlauf',
+    'Looks per second': 'Blicke pro Sekunde',
+    'Cooldown per card (s)': 'Sperrzeit pro Karte (s)',
+    'Pause above CPU (%)': 'Pause über CPU (%)',
+    'Feedback when a card is read': 'Rückmeldung, wenn eine Karte gelesen wird',
+    'spoken «Understood»': 'gesprochen «Verstanden»',
+    'short sound': 'kurzer Ton',
+    'nothing': 'nichts',
+    'Understood': 'Verstanden',
+    'Pause': 'Pause',
+    'Looking for cards': 'Sucht Karten',
+    'Off – nothing is read.': 'Aus – es wird nichts gelesen.',
+    'Decoder': 'Decoder',
+    'Last card': 'Letzte Karte',
+    'Last uses': 'Letzte Benutzungen',
+    'Settings → Cameras & head → QR command cards': 'Einstellungen → Kameras & Kopf → QR-Befehls-Karten',
+    'Open the card workshop': 'Karten-Werkstatt öffnen',
+    'cards': 'Karten',
+    'Push message': 'Push-Nachricht',
+    'Read aloud': 'Vorlesen',
+    'Note with photo': 'Notiz mit Foto',
+    'Start a recording': 'Aufnahme starten',
+    'Light on / off': 'Licht ein / aus',
+    'Relay on / off': 'Relais ein / aus',
+    'Head to a position': 'Kopf auf Position',
+    'Switch profile': 'Profil wechseln',
+    'Text of the push message': 'Text der Push-Nachricht',
+    'Text to read aloud': 'Text zum Vorlesen',
+    'Text of the note': 'Text der Notiz',
+    'with the photo of the camera': 'mit dem Foto der Kamera',
+    'Duration': 'Dauer',
+    'Which light': 'Welches Licht',
+    'On or off': 'Ein oder aus',
+    'Relay': 'Relais',
+    'Position': 'Position',
+    'Mode': 'Modus',
+    'No relay set up yet (Settings → Extra devices → Relays).': 'Noch kein Relais eingerichtet (Einstellungen → Zusatzgeräte → Relais).',
+    'No saved position yet (Teach-in under Head).': 'Noch keine gespeicherte Position (Teach-in beim Kopf).',
+    'A card never switches the protection off (no «Transport / rest»).': 'Eine Karte schaltet den Schutz nie aus (kein «Transport / Ruhe»).',
+    'QR code {m} × {m} modules · reads at about {a} cm (postcard) / {b} m (A4) – estimate from a simulation': 'QR-Code {m} × {m} Module · liest sich auf ca. {a} cm (Postkarte) / {b} m (A4) – Schätzung aus einer Simulation',
+    'Text in the code: shorter distance, a shorter text reads further.': 'Text im Code: kürzerer Abstand, ein kürzerer Text reicht weiter.',
+    'Where is the text?': 'Wo steht der Text?',
+    'Text on the MoveEye (recommended)': 'Text auf dem MoveEye (empfohlen)',
+    'Text in the code': 'Text im Code',
+    'The text is inside the QR code: the code gets bigger and reads only from closer; to change the text you print a new card.': 'Der Text steht im QR-Code: der Code wird grösser und lässt sich nur von näher lesen; für einen anderen Text druckst du eine neue Karte.',
+    'The code stays small and reads from further away; you can change the text later without printing again.': 'Der Code bleibt klein und lässt sich von weiter weg lesen; den Text kannst du später ändern, ohne neu zu drucken.',
+    'Change the text': 'Text ändern',
+    'New text (the printed card stays valid):': 'Neuer Text (die gedruckte Karte bleibt gültig):',
+    'Text changed – no new print needed.': 'Text geändert – kein neuer Druck nötig.',
+    'this card has no text': 'diese Karte hat keinen Text',
+    'the text is in the code - make a new card': 'der Text steht im Code – erstelle eine neue Karte',
+    'Print': 'Drucken',
+    'Close': 'Schliessen',
+    'Try out': 'Ausprobieren',
+    'Revoke card': 'Sperren',
+    'Allow again': 'Wieder freigeben',
+    'Delete': 'Löschen',
+    'Delete this card? Printed copies stop working.': 'Diese Karte löschen? Gedruckte Exemplare wirken dann nicht mehr.',
+    'No cards yet.': 'Noch keine Karten.',
+    'card revoked': 'gesperrt',
+    'print again (new key)': 'neu drucken (neuer Schlüssel)',
+    'made on': 'erstellt',
+    'last used': 'zuletzt benutzt',
+    'never used': 'noch nie benutzt',
+    'about {a} m': 'etwa {a} m',
+    'Really make ALL printed cards invalid? They stop working at once; you can print them again.': 'Wirklich ALLE gedruckten Karten ungültig machen? Sie wirken sofort nicht mehr; du kannst sie neu drucken.',
+    'New key – print the cards again.': 'Neuer Schlüssel – Karten neu drucken.',
+    'Please confirm.': 'Bitte bestätigen.',
+    'This card is revoked.': 'Diese Karte ist gesperrt.',
+    'QR card': 'QR-Karte',
+    'foreign card': 'fremde Karte',
+    'Postcard 10 × 15 cm': 'Postkarte 10 × 15 cm',
+    'Print at 100 % (no «fit to page»). Cut along the dashed line. Card and phone screen work the same.': 'Mit 100 % drucken (nicht «an Seite anpassen»). Entlang der gestrichelten Linie ausschneiden. Karte und Handy-Bildschirm wirken gleich.',
+    'Push': 'Push',
+    'photo': 'Foto',
+    'Recording {s} s': 'Aufnahme {s} s',
+    'Head to': 'Kopf zu',
+    'Head view': 'Kopf',
+    'Wide view': 'Weitwinkel',
+    'off': 'aus',
+    'on': 'ein',
+    'no camera chosen': 'keine Kamera gewählt',
+    'no cards yet': 'noch keine Karten',
+    'simulation': 'Simulation',
+    'tool mode': 'Werkzeug-Modus',
+    'battery saver': 'Akku sparen',
+    'CPU busy': 'CPU ausgelastet',
+    'detection is slow': 'Erkennung ist langsam',
+    'unknown command': 'unbekannter Befehl',
+    'unknown card': 'unbekannte Karte',
+    'the name is empty': 'der Name fehlt',
+    'the text is empty': 'der Text fehlt',
+    'the text is too long': 'der Text ist zu lang',
+    'too many cards': 'zu viele Karten',
+    'unknown profile': 'unbekanntes Profil',
+    'This text contains a password, an access code or a Wi-Fi name - not allowed on a card.': 'Dieser Text enthält ein Passwort, einen Zugangscode oder einen WLAN-Namen – auf einer Karte nicht erlaubt.',
+    'this would switch the protection off - not by card': 'das würde den Schutz ausschalten – nicht per Karte',
+    'push messages are not set up - only in the message list': 'Push-Nachrichten sind nicht eingerichtet – nur in der Liste «Nachrichten»',
+    'no camera loop': 'die Kamera läuft nicht',
+    'no camera picture yet': 'noch kein Kamerabild',
+    'could not save the picture': 'Bild konnte nicht gespeichert werden',
+    'busy': 'besetzt',
+    'QR card: foreign card ignored': 'QR-Karte: fremde Karte ignoriert',
+    'QR card: deleted card ignored': 'QR-Karte: gelöschte Karte ignoriert',
+}))
+for _k, _v in _HX_QRK.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+_QRK_DE = {_k: DE.get(_k, _v[0]) for _k, _v in _HX_QRK.items()}
+_QRK_DE.update({k: DE.get(k, k) for k in ("No connection to MoveEye.", "Only for the administrator", "Detection profile", "Profile")})
+WEB_PAGE = WEB_PAGE.replace("</body>", QRK_PANEL_JS.replace("/*QRKPDE*/{}", json.dumps(
+    {k: _QRK_DE[k] for k in ("Open the card workshop", "Pause", "Looking for cards", "Off – nothing is read.", "cards", "Last card", "QR command cards")},
+    ensure_ascii=False), 1) + "</body>", 1)
+
+
+_HELP_QRK = _zd('639zzp_qr_karten/HELP_QRK', _ZDDict())
+
+
+def _help_qrk(doc, lang):
+	if 'id="qrkarten"' in doc:
+		return doc
+	i = doc.find('<section id="tips"')
+	return doc[:i] + _HELP_QRK[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_qrk = HELP_PAGE.find('<div lang="en">')
+if _hp_en_qrk > 0:
+	HELP_PAGE = _help_qrk(HELP_PAGE[:_hp_en_qrk], "de") + _help_qrk(HELP_PAGE[_hp_en_qrk:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_qrk(HELP_X[_L], _L)
+
+
+
+def qrk_selftest():
+	keep = {k: json.loads(json.dumps(CFG.get(k))) for k in QRK_DEF}
+	sv, lg = save_settings, log_event
+	keep_q = {k: (dict(QRK[k]) if isinstance(QRK[k], dict) else QRK[k]) for k in ("seen", "show", "log_t", "last")}
+	try:
+		globals()["save_settings"] = lambda *a, **k: None
+		flushed = []
+		globals()["qrk_save_now"] = lambda: flushed.append(1)
+		globals()["log_event"] = lambda *a, **k: None
+		CFG.update(qrk_cards=[], qrk_secret="")
+		card, err = qrk_create({"cmd": "L", "name": "Licht an", "light": "white", "on": True}, "selftest")
+		assert card and not err and re.fullmatch(r"[0-9a-f]{64}", CFG["qrk_secret"]), err
+		pl = qrk_payload(card)
+		assert pl.startswith("M1" + card["id"] + "L") and len(pl) == QRK_HEAD and qrk_qr_size(pl)[1] == 25, pl
+		assert CFG["qrk_secret"] not in pl and CFG["qrk_secret"][:10] not in pl
+		assert qrk_check(pl) == ("ok", qrk_card(card["id"]))
+		bad = pl[:7] + "Y" + pl[8:]
+		assert qrk_check(bad)[0] == "foreign" and qrk_check("https://example.org/")[0] == "foreign" and qrk_check("")[0] == "foreign"
+		assert qrk_check(pl + "w0")[0] == "foreign", "values added to a short card"
+		other = QRK_PREFIX + card["id"] + "L" + qrk_mac(card["id"], "L", "", "ab" * 32)
+		assert qrk_check(other)[0] == "foreign", "a card of another MoveEye"
+		dev, _e = qrk_create({"cmd": "P", "name": "Essen", "text": "Essen ist fertig", "photo": True}, "selftest")
+		inc, _e = qrk_create({"cmd": "S", "name": "Ansage", "text": "Willkommen", "tc": True}, "selftest")
+		pd, pi = qrk_payload(dev), qrk_payload(inc)
+		assert len(pd) == QRK_HEAD and pi.endswith("Willkommen") and qrk_check(pd)[0] == "ok" and qrk_check(pi)[0] == "ok"
+		assert qrk_set_text(dev["id"], {"text": "Kaffee ist fertig"}) == (True, "") and qrk_payload(qrk_card(dev["id"])) == pd
+		assert qrk_check(pd)[1]["p"] == "1Kaffee ist fertig", "text changed on the device: the printed card stays valid"
+		assert qrk_set_text(inc["id"], {"text": "x"})[0] is False and qrk_set_text(card["id"], {"text": "x"})[0] is False
+		assert qrk_check(pi[:-1] + "m")[0] == "foreign", "text in the code changed"
+		assert qrk_check(pi[:QRK_HEAD])[0] == "foreign" and qrk_check(pd + "1Hallo")[0] == "foreign", "the other form of a card never counts"
+		for _c in (dev, inc):
+			qrk_edit("revoke", _c["id"], "selftest")
+		assert qrk_check(pd)[0] == "revoked" and qrk_check(pi)[0] == "revoked"
+		img = cv2.imdecode(np.frombuffer(qr_png(pl, 6), np.uint8), cv2.IMREAD_COLOR)
+		img = cv2.copyMakeBorder(img, 60, 60, 120, 120, cv2.BORDER_CONSTANT, value=(140, 140, 140))
+		txt, pts = qrk_decode(img)
+		assert txt == pl and pts and len(pts) == 4, (txt, pts)
+		ran = []
+		globals()["qrk_spawn"] = lambda c, im, cam: ran.append(c["id"])
+		try:
+			t0 = 1000.0
+			QRK["seen"].clear()
+			assert qrk_seen("head", pl, pts, img, now=t0) == "run"
+			assert qrk_seen("head", pl, pts, img, now=t0 + 1) == "hold", "held in view: once"
+			assert qrk_seen("head", pl, pts, img, now=t0 + 2.5) == "hold"
+			assert qrk_seen("head", pl, pts, img, now=t0 + 6) == "hold", "away for 3.5 s but the cooldown (10 s) is not over"
+			assert qrk_seen("head", pl, pts, img, now=t0 + 20) == "run", "away and cooldown over"
+			qrk_edit("revoke", card["id"], "selftest")
+			assert qrk_seen("head", pl, pts, img, now=t0 + 60) == "revoked"
+			qrk_edit("unrevoke", card["id"], "selftest")
+			assert qrk_check(pl)[0] == "ok"
+			qrk_rotate("selftest")
+			assert qrk_check(pl)[0] == "foreign" and qrk_card_json(qrk_card(card["id"]))["reprint"], "new key: all old cards invalid"
+			assert qrk_check(qrk_payload(qrk_card(card["id"])))[0] == "ok", "printed again with the new key"
+		finally:
+			globals()["qrk_spawn"] = _qrk_spawn_real
+		assert len(ran) == 2, ran
+		assert qrk_create({"cmd": "P", "name": "x", "text": "WIFI:T:WPA;S:Zelt;P:geheim123;;"})[0] is None
+		assert qrk_create({"cmd": "P", "name": "x", "text": "Das Passwort ist 1234"})[0] is None
+		assert qrk_create({"cmd": "S", "name": "x", "text": "ä" * 60})[1] == "the text is too long"
+		assert qrk_create({"cmd": "F", "name": "x", "profile": "m:transport"})[1] == "unknown profile", "never «Ruhe» by card"
+		assert qrk_make_param("R", {"secs": 99999})[0] == str(QRK_REC_MAX)
+		CFG["qrk_on"] = False
+		assert qrk_pause_reason() == "off"
+		assert "qrk_secret" in USER_SETTINGS_DENY and "qrk_on" in USER_SETTINGS_DENY and "/api/qrk" in APPKEY_DENY_PATHS
+		assert not role_allows("family", "/karten", "GET", {}) and not role_allows("family", "/api/qrk", "POST", {"action": "create"})
+		assert '{sec: "QR command cards"' in WEB_PAGE and "window.qrkPanel" in WEB_PAGE and 'id="qrkarten"' in HELP_PAGE
+		assert tr("Card workshop", "de") == "Karten-Werkstatt" and tr("Understood", "rm") == "Chapì" and tr("QR card: foreign card ignored", "de").endswith("ignoriert")
+		assert "<svg" in qrk_card_svg(qrk_card(card["id"])) and qrk_card_png(qrk_card(card["id"]))[:4] == b"\x89PNG"
+		assert len(flushed) >= 4, "revoke (3×) and the new key are saved at once: %d" % len(flushed)
+		n_ = len(flushed)
+		CFG["qrk_on"] = True
+		set_cfg("qrk_on", False)
+		assert len(flushed) == n_ + 1 and not CFG["qrk_on"], "switching off is saved at once"
+	finally:
+		globals()["save_settings"] = sv
+		globals()["qrk_save_now"] = _qrk_save_now_real
+		globals()["log_event"] = lg
+		CFG.update(keep)
+		for k, v in keep_q.items():
+			if isinstance(QRK[k], dict):
+				QRK[k].clear(); QRK[k].update(v)
+			else:
+				QRK[k] = v
+	return "check number (own / changed / other device), text on the device / in the code, read a code, cooldown, revoke, new key, no secrets on a card, rights, page hooks"
+
+
+_qrk_spawn_real = qrk_spawn
+_qrk_save_now_real = qrk_save_now
+SELFTEST_EXTRA.append(("QR command cards «▦ Karten-Werkstatt» (639zzp)", qrk_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import struct as _kq_struct
+from bisect import bisect_right as _kq_bisect
+from collections import OrderedDict as _KqOD
+
+KQ_TAG = "karten-1"
+KQ_MAXZOOM = 15
+KQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + KQ_TAG + "/"}
+
+KQ_FILES = {
+    "tiles": {"name": "karte-ch-1.pmtiles", "size": 655187450, "sha256": "ea71c54bcf1c91585106a6d3dcb7d5757f219761f3c0ebbbf54c5df487fde185", "unpacked": 0},
+    "web": {"name": "karte-web-1.zip", "size": 1434333, "sha256": "31f13e157ba0918d71df97b99f1cfdf70a1ad1a3560c91c16d83935e35cfdfa2", "unpacked": 2350250},
+    "orte": {"name": "orte-ch-1.sqlite.gz", "size": 11211798, "sha256": "1e9f1e574a92a324b789768fb18c1deff2bf3716942d725d0dc1d3999330eb00", "unpacked": 28307456},
+}
+KQ_MAX = {"tiles": 2000 * 1000 * 1000, "web": 60 * 1000 * 1000, "orte": 300 * 1000 * 1000}
+KQ_NAME_RE = {"tiles": r"karte-ch-\d{1,3}\.pmtiles", "web": r"karte-web-\d{1,3}\.zip", "orte": r"orte-ch-\d{1,3}\.sqlite\.gz"}
+KQ_LEAF_CACHE = 48
+KQ_DL = {"running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
+KQ_RT = {"pm": None, "db": None, "lock": threading.Lock(), "ok_t": 0.0, "ok": False}
+
+
+def kq_dir():
+	return os.path.join(DATA_DIR, "karte")
+
+
+def kq_dl_dir():
+	return os.path.join(DATA_DIR, "karte_dl")
+
+
+def kq_pinned():
+	""
+	for r_, f in KQ_FILES.items():
+		if not (isinstance(f.get("size"), int) and 0 < f["size"] <= KQ_MAX[r_] and re.fullmatch(r"[0-9a-f]{64}", str(f.get("sha256") or ""))
+                and isinstance(f.get("unpacked"), int) and 0 <= f["unpacked"] <= KQ_MAX[r_] and re.fullmatch(KQ_NAME_RE[r_], f.get("name") or "")):
+			return False
+	return KQ_FILES["web"]["unpacked"] > 0 and KQ_FILES["orte"]["unpacked"] > 0
+
+
+def kq_total():
+	return sum(f["size"] for f in KQ_FILES.values())
+
+
+def kq_need_disk():
+	""
+	return KQ_FILES["tiles"]["size"] + KQ_FILES["web"]["unpacked"] + KQ_FILES["orte"]["unpacked"]
+
+
+def kq_installed():
+	""
+	now = time.time()
+	if now - KQ_RT["ok_t"] < 2.0:
+		return KQ_RT["ok"]
+	ok = False
+	if kq_pinned():
+		d_ = kq_dir()
+		try:
+			with open(os.path.join(d_, "karte.ok"), encoding="utf-8") as fh:
+				m = json.load(fh)
+			ok = (isinstance(m, dict) and m.get("tag") == KQ_TAG and m.get("sha256") == {r_: f["sha256"] for r_, f in KQ_FILES.items()}
+                  and os.path.getsize(os.path.join(d_, "ch.pmtiles")) == KQ_FILES["tiles"]["size"]
+                  and os.path.getsize(os.path.join(d_, "orte.sqlite")) == KQ_FILES["orte"]["unpacked"]
+                  and all(os.path.isfile(os.path.join(d_, "web", f)) for f in ("maplibre-gl.js", "maplibre-gl.css", "style.json")))
+		except (OSError, ValueError):
+			ok = False
+	KQ_RT["ok"], KQ_RT["ok_t"] = ok, now
+	return ok
+
+
+def kq_close():
+	with KQ_RT["lock"]:
+		for k in ("pm", "db"):
+			o = KQ_RT[k]
+			KQ_RT[k] = None
+			try:
+				if o is not None:
+					o.close()
+			except Exception:
+				pass
+	KQ_RT["ok_t"] = 0.0
+
+
+
+def kq_tileid(z, x, y):
+	""
+	if z > 31 or x < 0 or y < 0 or x >= 1 << z or y >= 1 << z:
+		raise ValueError("tile outside the zoom level")
+	acc = ((1 << (z * 2)) - 1) // 3
+	a = z - 1
+	while a >= 0:
+		s = 1 << a
+		rx, ry = s & x, s & y
+		acc += ((3 * rx) ^ ry) << a
+		if ry == 0:
+			if rx != 0:
+				x, y = s - 1 - x, s - 1 - y
+			x, y = y, x
+		a -= 1
+	return acc
+
+
+class KqPMTiles:
+	"""
+"""
+
+	def __init__(self, path):
+		from array import array
+		self._array = array
+		self.fd = os.open(path, os.O_RDONLY)
+		try:
+			h = os.pread(self.fd, 127, 0)
+			if len(h) < 127 or h[:7] != b"PMTiles" or h[7] != 3:
+				raise ValueError("not a PMTiles v3 file")
+			(self.root_off, self.root_len, self.meta_off, self.meta_len, self.leaf_off, self.leaf_len, self.data_off,
+             self.data_len, self.n_addr, self.n_entries, self.n_contents) = _kq_struct.unpack_from("<11Q", h, 8)
+			self.clustered, self.icomp, self.tcomp, self.ttype, self.minz, self.maxz = _kq_struct.unpack_from("<6B", h, 96)
+			self.bounds = [v / 1e7 for v in _kq_struct.unpack_from("<4i", h, 102)]
+			if self.icomp not in (1, 2) or self.ttype != 1 or self.root_len > 1 << 20:
+				raise ValueError("unsupported PMTiles (compression %d, tile type %d)" % (self.icomp, self.ttype))
+			self.size = os.fstat(self.fd).st_size
+			self.leaves = _KqOD()
+			self.lock = threading.Lock()
+			self.reads = 0
+			self.root = self._dir(self.root_off, self.root_len)
+		except Exception:
+			os.close(self.fd)
+			raise
+
+	def close(self):
+		try:
+			os.close(self.fd)
+		except OSError:
+			pass
+
+	def _read(self, off, n):
+		if off < 0 or n < 0 or off + n > self.size or n > 64 << 20:
+			raise ValueError("outside the file")
+		self.reads += n
+		b = os.pread(self.fd, n, off)
+		if len(b) != n:
+			raise ValueError("short read")
+		return b
+
+	def _dir(self, off, n):
+		import gzip as _gz
+		b = self._read(off, n)
+		if self.icomp == 2:
+			b = _gz.decompress(b)
+		p = 0
+
+		def rv():
+			nonlocal p
+			v = sh = 0
+			while True:
+				c = b[p]; p += 1
+				v |= (c & 0x7F) << sh
+				if c < 0x80:
+					return v
+				sh += 7
+				if sh > 63:
+					raise ValueError("bad varint")
+		cnt = rv()
+		if cnt > 1 << 22:
+			raise ValueError("directory too big")
+		A = self._array
+		ids, runs, lens, offs = A("Q"), A("L"), A("L"), A("Q")
+		last = 0
+		for _ in range(cnt):
+			last += rv(); ids.append(last)
+		for _ in range(cnt):
+			runs.append(rv())
+		for _ in range(cnt):
+			lens.append(rv())
+		for i in range(cnt):
+			v = rv()
+			offs.append(offs[i - 1] + lens[i - 1] if v == 0 and i > 0 else v - 1)
+		return ids, runs, lens, offs
+
+	def _leaf(self, off, n):
+		k = (off, n)
+		with self.lock:
+			d = self.leaves.get(k)
+			if d is not None:
+				self.leaves.move_to_end(k)
+				return d
+		d = self._dir(self.leaf_off + off, n)
+		with self.lock:
+			self.leaves[k] = d
+			while len(self.leaves) > KQ_LEAF_CACHE:
+				self.leaves.popitem(last=False)
+		return d
+
+	def tile(self, z, x, y):
+		""
+		if z < self.minz or z > self.maxz:
+			return None
+		tid = kq_tileid(z, x, y)
+		ids, runs, lens, offs = self.root
+		for _ in range(4):
+			i = _kq_bisect(ids, tid) - 1
+			if i < 0:
+				return None
+			if runs[i] == 0:
+				ids, runs, lens, offs = self._leaf(offs[i], lens[i])
+				continue
+			if tid - ids[i] < runs[i]:
+				return self._read(self.data_off + offs[i], lens[i])
+			return None
+		return None
+
+
+def kq_pm():
+	with KQ_RT["lock"]:
+		if KQ_RT["pm"] is None:
+			KQ_RT["pm"] = KqPMTiles(os.path.join(kq_dir(), "ch.pmtiles"))
+		return KQ_RT["pm"]
+
+
+
+_KQ_FOLD = {"ß": "ss", "ẞ": "ss", "æ": "ae", "Æ": "ae", "œ": "oe", "Œ": "oe", "ø": "o", "Ø": "o", "ł": "l", "Ł": "l", "đ": "d", "ð": "d", "þ": "th"}
+
+
+def kq_norm(s, umlaut=False):
+	""
+	import unicodedata
+	s = str(s or "")
+	if umlaut:
+		s = re.sub("[äÄ]", "ae", s); s = re.sub("[öÖ]", "oe", s); s = re.sub("[üÜ]", "ue", s)
+	s = "".join(_KQ_FOLD.get(c, c) for c in s)
+	s = unicodedata.normalize("NFKD", s)
+	s = "".join(c for c in s if not unicodedata.combining(c)).lower()
+	s = re.sub(r"['’`´]", "", s)
+	s = re.sub(r"[^a-z0-9]+", " ", s)
+	return s.strip()
+
+
+KQ_ZOOM = {"city": 12, "town": 13, "village": 14, "suburb": 15, "quarter": 15, "neighbourhood": 16, "hamlet": 15, "locality": 15,
+           "isolated_dwelling": 16, "farm": 16, "island": 14, "islet": 15, "peak": 14, "volcano": 14, "saddle": 14, "pass": 14,
+           "lake": 12, "reservoir": 13, "glacier": 13, "street": 17}
+
+
+def kq_db():
+	import sqlite3
+	with KQ_RT["lock"]:
+		if KQ_RT["db"] is None:
+			KQ_RT["db"] = sqlite3.connect("file:" + os.path.join(kq_dir(), "orte.sqlite") + "?mode=ro", uri=True, check_same_thread=False)
+		return KQ_RT["db"]
+
+
+def kq_search(q, n=8):
+	"""
+"""
+	k = kq_norm(q)[:60]
+	if len(k) < 2 or not kq_installed():
+		return []
+	try:
+		n = max(1, min(20, int(n or 8)))
+	except (TypeError, ValueError):
+		n = 8
+	db = kq_db()
+	with KQ_RT["lock"]:
+		rows = db.execute("SELECT k, id, w, r FROM such WHERE k = ?", (k,)).fetchall()
+		rows += db.execute("SELECT k, id, w, r FROM such WHERE k >= ? AND k < ? ORDER BY r DESC LIMIT 400", (k, k + "{")).fetchall()
+	best = {}
+	for kk, i, w, r in rows:
+		s = r + (10000 if kk == k else 0) + (0 if w else 2000)
+		if s > best.get(i, -1):
+			best[i] = s
+	top = sorted(best, key=lambda i: -best[i])[:n]
+	if not top:
+		return []
+	with KQ_RT["lock"]:
+		got = {r[0]: r for r in db.execute("SELECT id, name, kind, lat, lon, gem, kt, ele, alt FROM ort WHERE id IN (%s)" % ",".join("?" * len(top)), top)}
+	out = []
+	for i in top:
+		r = got.get(i)
+		if not r:
+			continue
+		_, name, kind, lat, lon, gem, kt, ele, alt = r
+		also = ""
+		nk = kq_norm(name)
+		if not (nk.startswith(k) or (" " + k) in (" " + nk) or kq_norm(name, True).startswith(k)):
+			for a in (alt or "").split("|"):
+				ak = kq_norm(a)
+				if a and (ak.startswith(k) or (" " + k) in (" " + ak) or kq_norm(a, True).startswith(k)):
+					also = a
+					break
+		out.append({"name": name, "also": also, "kind": kind, "lat": lat, "lon": lon, "gem": gem or "", "kt": kt or "",
+                    "ele": ele, "z": KQ_ZOOM.get(kind, 14)})
+	return out
+
+
+
+def _kq_unzip(zp, dest, limit):
+	""
+	tot = 0
+	with zipfile.ZipFile(zp) as z:
+		infos = z.infolist()
+		for i in infos:
+			nm = i.filename
+			if nm.startswith("/") or "\\" in nm or ".." in nm.split("/") or not re.fullmatch(r"[A-Za-z0-9._ /@+-]{1,200}", nm):
+				raise ValueError("bad file name in the package")
+			if (i.external_attr >> 16) & 0o170000 == 0o120000:
+				raise ValueError("link in the package")
+			tot += i.file_size
+		if tot > limit:
+			raise ValueError("package larger than announced")
+		for i in infos:
+			if i.is_dir():
+				continue
+			p = os.path.join(dest, *i.filename.split("/"))
+			os.makedirs(os.path.dirname(p), exist_ok=True)
+			with z.open(i) as src, open(p, "wb") as out:
+				shutil.copyfileobj(src, out, 1 << 20)
+	return tot
+
+
+def _kq_gunzip(src, dst, want):
+	import gzip as _gz
+	n = 0
+	with _gz.open(src, "rb") as g_, open(dst, "wb") as out:
+		while True:
+			if KQ_DL.get("stop"):
+				raise InterruptedError("cancelled")
+			b = g_.read(1 << 20)
+			if not b:
+				break
+			n += len(b)
+			if n > want:
+				raise ValueError("place index larger than announced")
+			out.write(b)
+	if n != want:
+		raise ValueError("place index has the wrong size")
+
+
+def kq_free():
+	try:
+		return shutil.disk_usage(DATA_DIR).free
+	except OSError:
+		return 1 << 40
+
+
+def kq_space_ok():
+	""
+	dd = kq_dl_dir()
+	have = 0
+	for f in KQ_FILES.values():
+		for p in (os.path.join(dd, f["name"]), os.path.join(dd, f["name"]) + ".part"):
+			if os.path.isfile(p):
+				have += os.path.getsize(p)
+	return kq_free() - (kq_total() - have + KQ_FILES["web"]["unpacked"] + KQ_FILES["orte"]["unpacked"]) >= bio_free_need()
+
+
+def kq_download(wait=False):
+	""
+	if not kq_pinned():
+		return False, "comes with an update"
+	if KQ_DL["running"]:
+		return True, ""
+	if kq_installed():
+		return True, ""
+	if not kq_space_ok():
+		return False, "not enough free space on the memory card"
+	KQ_DL.update(running=True, got=0, total=kq_total(), msg="", stop=False, done=False, phase="load")
+
+	def work():
+		dd, tmp = kq_dl_dir(), kq_dir() + ".new"
+		try:
+			os.makedirs(dd, exist_ok=True)
+			for r_ in ("web", "orte", "tiles"):
+				f = KQ_FILES[r_]
+				dest = os.path.join(dd, f["name"])
+				if os.path.isfile(dest) and piper_check_file(dest, f)[0]:
+					KQ_DL["got"] += f["size"]
+				else:
+					bio_fetch(KQ_BASE["url"] + f["name"], dest, f, KQ_DL)
+			KQ_DL["phase"] = "unpack"
+			shutil.rmtree(tmp, ignore_errors=True)
+			os.makedirs(os.path.join(tmp, "web"))
+			_kq_unzip(os.path.join(dd, KQ_FILES["web"]["name"]), os.path.join(tmp, "web"), KQ_FILES["web"]["unpacked"])
+			with open(os.path.join(tmp, "web", "karte.json"), encoding="utf-8") as fh:
+				man = json.load(fh)
+			if man.get("tag") != KQ_TAG:
+				raise ValueError("the package is not " + KQ_TAG)
+			_kq_gunzip(os.path.join(dd, KQ_FILES["orte"]["name"]), os.path.join(tmp, "orte.sqlite"), KQ_FILES["orte"]["unpacked"])
+			import sqlite3
+			c_ = sqlite3.connect("file:" + os.path.join(tmp, "orte.sqlite") + "?mode=ro", uri=True)
+			try:
+				c_.execute("SELECT id, name, kind, lat, lon FROM ort LIMIT 1").fetchall()
+				c_.execute("SELECT k, id, w, r FROM such LIMIT 1").fetchall()
+			finally:
+				c_.close()
+			os.replace(os.path.join(dd, KQ_FILES["tiles"]["name"]), os.path.join(tmp, "ch.pmtiles"))
+			KqPMTiles(os.path.join(tmp, "ch.pmtiles")).close()
+			with open(os.path.join(tmp, "karte.ok"), "w", encoding="utf-8") as fh:
+				json.dump({"tag": KQ_TAG, "sha256": {r_: f["sha256"] for r_, f in KQ_FILES.items()}}, fh)
+			kq_close()
+			shutil.rmtree(kq_dir(), ignore_errors=True)
+			os.replace(tmp, kq_dir())
+			shutil.rmtree(dd, ignore_errors=True)
+			KQ_DL["done"] = True
+			KQ_RT["ok_t"] = 0.0
+			log_event("sys", f"Offline map of Switzerland installed ({KQ_TAG}, {round(kq_total() / 1e6)} MB)")
+		except InterruptedError:
+			KQ_DL["msg"] = "cancelled"
+		except Exception as e:
+			KQ_DL["msg"] = str(getattr(e, "reason", "") or e)[:160] or e.__class__.__name__
+			log_event("sys", f"Offline map not installed: {KQ_DL['msg']}")
+		finally:
+			shutil.rmtree(tmp, ignore_errors=True)
+			KQ_DL.update(running=False, phase="")
+	if wait:
+		work()
+		return (not KQ_DL["msg"]), KQ_DL["msg"]
+	threading.Thread(target=work, daemon=True, name="karte-dl").start()
+	return True, ""
+
+
+def kq_cancel():
+	if KQ_DL["running"]:
+		KQ_DL["stop"] = True
+	return True, ""
+
+
+def kq_delete():
+	if KQ_DL["running"]:
+		return False, "busy right now - try again in a moment"
+	kq_close()
+	for p in (kq_dir(), kq_dir() + ".new", kq_dl_dir()):
+		shutil.rmtree(p, ignore_errors=True)
+	KQ_RT["ok_t"] = 0.0
+	log_event("sys", "Offline map of Switzerland deleted")
+	return True, ""
+
+
+def kq_role():
+	try:
+		from flask import g as _g, has_request_context
+		return getattr(_g, "role", "admin") if has_request_context() else "admin"
+	except Exception:
+		return "admin"
+
+
+def kq_sim_ok():
+	try:
+		return bool(sim_live())
+	except Exception:
+		return False
+
+
+def kq_maxzoom():
+	""
+	try:
+		return int(kq_pm().maxz) if kq_installed() else KQ_MAXZOOM
+	except (OSError, ValueError):
+		return KQ_MAXZOOM
+
+
+def kq_state():
+	on = kq_installed()
+	return {"on": on, "tag": KQ_TAG, "maxzoom": kq_maxzoom(), "pinned": kq_pinned(), "admin": kq_role() == "admin", "sim": kq_sim_ok(),
+            "size": kq_total(), "disk": kq_need_disk(), "free": kq_free(), "free_need": bio_free_need(), "space_ok": True if on else kq_space_ok(),
+            "dl": {k: KQ_DL[k] for k in ("running", "got", "total", "msg", "done", "phase")}}
+
+
+
+_smalltv_routes_639zzq = smalltv_routes
+
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzq(app, reply, body)
+	from flask import request, Response
+
+	def nope(code=404):
+		return Response(b"", status=code, mimetype="text/plain")
+
+	@app.route("/karte")
+	def kq_page_():
+		return Response(kq_page(), mimetype="text/html")
+
+	@app.route("/karte/t/<tag>/<int:z>/<int:x>/<int:y>.mvt")
+	def kq_tile_(tag, z, x, y):
+		if tag != KQ_TAG or not kq_installed():
+			return nope()
+		try:
+			pm = kq_pm()
+			b_ = pm.tile(z, x, y)
+		except (ValueError, OSError):
+			return nope()
+		if b_ is None:
+			return Response(b"", status=204, headers={"Cache-Control": "public, max-age=2592000"})
+		h_ = {"Cache-Control": "public, max-age=2592000, immutable"}
+		if pm.tcomp == 2:
+			h_["Content-Encoding"] = "gzip"
+		return Response(b_, mimetype="application/x-protobuf", headers=h_)
+
+	@app.route("/karte/fonts/<path:fp>")
+	def kq_font_(fp):
+		""
+		h_ = {"Cache-Control": "public, max-age=2592000"}
+		if not kq_installed():
+			return nope()
+		m_ = re.fullmatch(r"([A-Za-z0-9 ,]{1,120})/(\d{1,5}-\d{1,5})\.pbf", fp)
+		if m_:
+			base = os.path.realpath(os.path.join(kq_dir(), "web", "fonts"))
+			for fo in m_.group(1).split(","):
+				p_ = os.path.realpath(os.path.join(base, fo.strip(), m_.group(2) + ".pbf"))
+				if p_.startswith(base + os.sep) and os.path.isfile(p_):
+					with open(p_, "rb") as fh:
+						return Response(fh.read(), mimetype="application/x-protobuf", headers=h_)
+		return Response(b"", mimetype="application/x-protobuf", headers=h_)
+
+	@app.route("/karte/web/<path:fp>")
+	def kq_web_(fp):
+		if not kq_installed() or not re.fullmatch(r"[A-Za-z0-9._@/-]{1,120}", fp) or fp.endswith(".gz") or fp == "karte.json":
+			return nope()
+		base = os.path.realpath(os.path.join(kq_dir(), "web"))
+		p_ = os.path.realpath(os.path.join(base, fp))
+		if not p_.startswith(base + os.sep) or not os.path.isfile(p_):
+			return nope()
+		mt = {".js": "application/javascript", ".css": "text/css", ".json": "application/json", ".png": "image/png", ".txt": "text/plain; charset=utf-8"}
+		ext = os.path.splitext(p_)[1]
+		if ext not in mt:
+			return nope()
+		h_ = {"Cache-Control": "public, max-age=86400"}
+		src = p_
+		if ext in (".js", ".css") and os.path.isfile(p_ + ".gz") and "gzip" in (request.headers.get("Accept-Encoding") or "").lower():
+			src = p_ + ".gz"; h_["Content-Encoding"] = "gzip"; h_["Vary"] = "Accept-Encoding"
+		with open(src, "rb") as fh:
+			return Response(fh.read(), mimetype=mt[ext], headers=h_)
+
+	@app.route("/api/karte/suche")
+	def kq_suche_():
+		try:
+			r_ = kq_search(request.args.get("q", ""), request.args.get("n", 8))
+		except Exception as e:
+			return reply({"ok": False, "error": str(e)[:80], "results": []}, 500)
+		return reply({"ok": True, "results": r_})
+
+	@app.route("/api/karte", methods=["GET", "POST"])
+	def kq_api_():
+		if request.method == "GET":
+			return reply(dict(kq_state(), ok=True))
+		d = body()
+		lang = norm_lang(d.get("lang") or request.args.get("lang") or CFG.get("lang"))
+		if kq_role() != "admin":
+			return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
+		a = str(d.get("action") or "")
+		if a == "install":
+			ok, err = kq_download()
+		elif a == "cancel":
+			ok, err = kq_cancel()
+		elif a == "delete":
+			ok, err = kq_delete()
+		else:
+			ok, err = False, "unknown action"
+		return reply(dict(kq_state(), ok=ok, error=tr(err, lang) if err else ""), 200 if ok else 400)
+
+
+
+VIEW_GET = tuple(VIEW_GET) + tuple(p for p in ("/karte", "/karte/", "/api/karte", "/api/karte/") if p not in VIEW_GET)
+
+
+
+_HX_KQ = _zd('639zzq_offline_karten/HX_KQ', _zd_hx({
+    'OpenStreetMap contributors': 'OpenStreetMap-Mitwirkende',
+    'Offline map of Switzerland': 'Offline-Karte Schweiz',
+    'Map and place search without internet: loaded once from GitHub (fixed checksum), then everything stays on MoveEye.': 'Karte und Ortssuche ohne Internet: einmal von GitHub laden (feste Prüfsumme), danach bleibt alles auf MoveEye.',
+    'Download offline map of Switzerland': 'Offline-Karte Schweiz herunterladen',
+    'kq-ask': 'Offline-Karte Schweiz jetzt laden? %s MB von GitHub (danach %s MB auf der Speicherkarte, %s GB bleiben frei).',
+    'kq-del': 'Offline-Karte entfernen? Danach kommen die Karten wieder aus dem Internet (wenn eingeschaltet).',
+    'installed': 'installiert',
+    'Remove': 'Entfernen',
+    'Cancel': 'Abbrechen',
+    'checking and unpacking …': 'prüfen und entpacken …',
+    'not enough free space on the memory card': 'zu wenig freier Platz auf der Speicherkarte',
+    'comes with an update': 'kommt mit einem Update',
+    'cancelled': 'abgebrochen',
+    'Search a place …': 'Ort suchen …',
+    'Nothing found': 'Nichts gefunden',
+    'Open in the simulator': 'Im Simulator öffnen',
+    'Set as location of MoveEye': 'Als Standort von MoveEye setzen',
+    'Big map': 'Grosse Karte',
+    'Map': 'Karte',
+    'Location of MoveEye': 'Standort von MoveEye',
+    'Tap on the map to choose a point. Two fingers or the wheel zoom.': 'Auf die Karte tippen, um einen Punkt zu wählen. Mit zwei Fingern oder dem Rad zoomen.',
+    'The offline map is not installed.': 'Die Offline-Karte ist nicht installiert.',
+    'Install it under Settings → Location.': 'Installieren unter Einstellungen → Standort.',
+    'Offline map not readable': 'Offline-Karte nicht lesbar',
+    'Sent to the simulator – it loads the place.': 'An den Simulator geschickt – er lädt den Ort.',
+    'Saved': 'Gespeichert',
+    'Only in Switzerland': 'Nur in der Schweiz',
+    'Sources and licences': 'Quellen und Lizenzen',
+    'kind-city': 'Stadt',
+    'kind-town': 'Stadt',
+    'kind-village': 'Dorf',
+    'kind-suburb': 'Quartier',
+    'kind-quarter': 'Quartier',
+    'kind-neighbourhood': 'Quartier',
+    'kind-hamlet': 'Weiler',
+    'kind-locality': 'Flurname',
+    'kind-isolated_dwelling': 'Einzelhof',
+    'kind-farm': 'Hof',
+    'kind-island': 'Insel',
+    'kind-islet': 'Insel',
+    'kind-peak': 'Gipfel',
+    'kind-volcano': 'Gipfel',
+    'kind-saddle': 'Sattel',
+    'kind-pass': 'Pass',
+    'kind-lake': 'See',
+    'kind-reservoir': 'Stausee',
+    'kind-glacier': 'Gletscher',
+    'kind-street': 'Strasse',
+}))
+_KQ_EN = {"kq-ask": "Load the offline map of Switzerland now? %s MB from GitHub (then %s MB on the memory card, %s GB stay free).",
+          "kq-del": "Remove the offline map? Then the maps come from the internet again (if switched on).",
+          "kind-city": "city", "kind-town": "town", "kind-village": "village", "kind-suburb": "quarter", "kind-quarter": "quarter",
+          "kind-neighbourhood": "quarter", "kind-hamlet": "hamlet", "kind-locality": "locality", "kind-isolated_dwelling": "farmstead",
+          "kind-farm": "farm", "kind-island": "island", "kind-islet": "islet", "kind-peak": "peak", "kind-volcano": "peak",
+          "kind-saddle": "saddle", "kind-pass": "pass", "kind-lake": "lake", "kind-reservoir": "reservoir", "kind-glacier": "glacier",
+          "kind-street": "street"}
+for _k, _v in _HX_KQ.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+
+
+def kq_tx():
+	""
+	out = {"en": dict(_KQ_EN)}
+	for i_, L_ in enumerate(("de", "fr", "it", "rm")):
+		out[L_] = {k: v[i_] for k, v in _HX_KQ.items()}
+	return out
+
+
+
+KQ_HEAD_JS = _zd('639zzq_offline_karten/KQ_HEAD_JS', "")
+
+
+def kq_head():
+	s_ = kq_state()
+	st = {k: s_[k] for k in ("on", "tag", "maxzoom", "pinned", "admin", "sim")}
+	return (KQ_HEAD_JS.replace("/*KQSTATE*/{}", json.dumps(st), 1)
+            .replace("/*KQTX*/{}", json.dumps(kq_tx(), ensure_ascii=False).replace("</", "<\\/"), 1))
+
+
+_KQ_MARKS = ("kqBg(", "kqSmall(", "kqLocExtra(", "kqSearchUI(", "openstreetmap.org/?mlat=", "/*KQPAGE*/")
+_render_page_639zzq = render_page
+
+
+
+def render_page(page, active):
+	html = _render_page_639zzq(page, active)
+	if "</head>" in html and any(m in page for m in _KQ_MARKS) and "window.KQ =" not in html:
+		try:
+			html = html.replace("</head>", kq_head() + "</head>", 1)
+		except Exception as e:
+			log_event("sys", f"Offline map: script not added ({e.__class__.__name__})")
+	return html
+
+
+
+KQ_HOOKS = {
+    "WEB_PAGE": [
+        ("    if (M.online) for (let ty = Math.floor(y0 / 256); ty <= Math.floor((y0 + h) / 256); ty++) {",
+         "    if (window.kqBg && kqBg(m, M.cx, M.cy, z)) {} else if (M.online) for (let ty = Math.floor(y0 / 256); ty <= Math.floor((y0 + h) / 256); ty++) {"),
+        ("    mp.M.online = G.map_online;", "    mp.M.online = G.map_online || !!(window.KQ && KQ.on);"),
+        ('  const search = async () => { const s = q.value.trim(); if (!s) return; err.textContent = "";',
+         '  const search = async () => { const s = q.value.trim(); if (!s) return; err.textContent = "";'
+         ' if (window.KQ && KQ.on) { kqSearchUI(q, (la, lo) => { mp.show(la, lo, 14); save(la, lo); }); return; }'),
+        ("  box.append(seg, info, tools, mp.el, hint, err);",
+         "  box.append(seg, info, tools, mp.el, hint, err); if (window.kqLocExtra) kqLocExtra(box, () => G);"
+         " if (window.KQ && KQ.on) setTimeout(() => kqSearchUI(q, (la, lo) => { mp.show(la, lo, 14); save(la, lo); }), 0);"),
+    ],
+    "REC_PAGE": [
+        ("  if (MAP.online) {\n    for (let ty = Math.floor(y0 / 256); ty <= Math.floor((y0 + h) / 256); ty++) {",
+         "  if (window.kqBg && kqBg(m, MAP.cx, MAP.cy, z)) {} else if (MAP.online) {\n    for (let ty = Math.floor(y0 / 256); ty <= Math.floor((y0 + h) / 256); ty++) {"),
+        ("MAP.pts = j.points || []; MAP.online = j.map_online !== false;",
+         "MAP.pts = j.points || []; MAP.online = j.map_online !== false || !!(window.KQ && KQ.on);"),
+        ('  if (it.kind === "image") { const im = el("img"); im.src = "/rec/file/" + encodeURIComponent(it.name); body.appendChild(im); }\n  else showVideo(it, token);',
+         '  if (window.kqSmall) kqSmall(note, it.gps);\n'
+         '  if (it.kind === "image") { const im = el("img"); im.src = "/rec/file/" + encodeURIComponent(it.name); body.appendChild(im); }\n  else showVideo(it, token);'),
+    ],
+}
+KQ_SIM_HOOKS = [
+    ("    for (let ty = Math.floor(tly / 256); ty <= Math.floor((tly + h) / 256); ty++) for (let tx = Math.floor(tlx / 256); tx <= Math.floor((tlx + w) / 256); tx++) {",
+     "    if (!(window.kqBg && kqBg(map, cx, cy, z))) for (let ty = Math.floor(tly / 256); ty <= Math.floor((tly + h) / 256); ty++) for (let tx = Math.floor(tlx / 256); tx <= Math.floor((tlx + w) / 256); tx++) {"),
+    ('  sr.append(q, sb, kb); box.appendChild(sr);', '  sr.append(q, sb, kb); box.appendChild(sr); if (window.KQ && KQ.on) kb.hidden = true;'),
+    ('const at = el("div", "", "© swisstopo");', 'const at = el("div", "kq-at", "© swisstopo");'),
+    ('    const s = q.value.trim(); if (!s) return; res.textContent = "";\n    try {\n      const r = await fetch("https://api3.geo.admin.ch',
+     '    const s = q.value.trim(); if (!s) return; res.textContent = "";\n'
+     '    if (window.KQ && KQ.on) { const L = await KQ.find(s); if (!L.length) { info.textContent = t("Nothing found"); return; }\n'
+     '      L.forEach(x => { const name = KQ.label(x), b = el("button", "sec", name + " · " + KQ.sub(x)); b.type = "button"; b.style.textAlign = "left";\n'
+     '        b.onclick = () => { if (!inCH(x.lat, x.lon)) { info.textContent = kqT("Only in Switzerland"); return; } sel = {la: x.lat, lo: x.lon, name: x.name}; z = 16; cx = lx(sel.lo, z); cy = ly(sel.la, z); res.textContent = ""; go.disabled = false; info.textContent = name; draw(); };\n'
+     '        res.appendChild(b); }); return; }\n'
+     '    try {\n      const r = await fetch("https://api3.geo.admin.ch'),
+]
+KQ_HOOKED = {}
+for _nm, _hooks in list(KQ_HOOKS.items()) + [("SIM_PAGE", KQ_SIM_HOOKS), ("WEB_PAGE", KQ_SIM_HOOKS)]:
+	_pg = globals().get(_nm) or ""
+	for _a, _b in _hooks:
+		if _pg.count(_a) == 1:
+			_pg = _pg.replace(_a, _b, 1)
+			KQ_HOOKED[(_nm, _a)] = True
+		else:
+			KQ_HOOKED[(_nm, _a)] = False
+	globals()[_nm] = _pg
+
+
+KQ_PAGE = _zd('639zzq_offline_karten/KQ_PAGE', ZD_PAGE)
+
+
+def kq_page():
+	return render_page(KQ_PAGE, "more").replace("/*KQPAGE*/", "", 1)
+
+
+
+_HELP_KQ = {
+    "de": ("🗺 Offline-Karte Schweiz", "(Einstellungen → Standort, nur der Admin): Karte und Ortssuche der ganzen Schweiz einmal von GitHub laden (feste Prüfsumme; vorher wird der freie Platz auf der Speicherkarte geprüft), danach ohne Internet: Standort auf der Karte antippen oder suchen («Zurich» findet Zürich), Orte der Aufnahmen, grosse Karte /karte, «🎮 Im Simulator öffnen» und «Ort von der Karte» im Simulator. «🗑 Entfernen» löscht sie wieder. Daten © OpenStreetMap-Mitwirkende (ODbL)."),
+    "en": ("🗺 Offline map of Switzerland", "(Settings → Location, administrator only): load the map and the place search of all of Switzerland once from GitHub (fixed checksum; the free space on the memory card is checked first), then without internet: tap or search the location (“Zurich” finds Zürich), the places of the recordings, the big map /karte, “🎮 Open in the simulator” and “Place from the map” in the simulator. “🗑 Remove” deletes it again. Data © OpenStreetMap contributors (ODbL)."),
+    "fr": ("🗺 Carte hors ligne de la Suisse", "(Réglages → Emplacement, administrateur seulement) : charger une fois depuis GitHub la carte et la recherche de lieux de toute la Suisse (somme de contrôle fixe ; l’espace libre sur la carte mémoire est vérifié d’abord), ensuite sans Internet : toucher ou chercher l’emplacement (« Zurich » trouve Zürich), les lieux des enregistrements, la grande carte /karte, « 🎮 Ouvrir dans le simulateur » et « Lieu sur la carte » dans le simulateur. « 🗑 Supprimer » l’efface. Données © contributeurs d’OpenStreetMap (ODbL)."),
+    "it": ("🗺 Mappa offline della Svizzera", "(Impostazioni → Posizione, solo l’amministratore): caricare una volta da GitHub la mappa e la ricerca di luoghi di tutta la Svizzera (somma di controllo fissa; prima viene controllato lo spazio libero sulla scheda di memoria), poi senza Internet: toccare o cercare la posizione («Zurich» trova Zürich), i luoghi delle registrazioni, la mappa grande /karte, «🎮 Apri nel simulatore» e «Luogo dalla mappa» nel simulatore. «🗑 Rimuovi» la cancella. Dati © contributori di OpenStreetMap (ODbL)."),
+    "rm": ("🗺 Charta offline da la Svizra", "(Parameters → Lieu, mo l’administratur): chargiar ina giada da GitHub la charta e la tschertga da lieus da tut la Svizra (summa da controlla fixa; avant vegn controllà il spazi liber sin la carta da memoria), lura senza internet: tutgar u tschertgar il lieu («Zurich» chatta Zürich), ils lieus da las registraziuns, la charta gronda /karte, «🎮 Avrir en il simulatur» e «Lieu da la charta» en il simulatur. «🗑 Allontanar» la stizza. Datas © contribuents d’OpenStreetMap (ODbL)."),
+}
+
+
+def _help_kq(doc, lang):
+	""
+	h_, x_ = _HELP_KQ[lang]
+	if h_ in doc:
+		return doc
+	from html import escape as _e
+	item = f"<li><b>{h_}</b> {_e(x_, quote=False)}</li>"
+	for sid in ("settings", "location", "setup", "start"):
+		i = doc.find(f'<section id="{sid}"')
+		if i >= 0:
+			j, k = doc.find("</ul>", i), doc.find("</section>", i)
+			if 0 < j < k:
+				return doc[:j] + item + doc[j:]
+	return doc
+
+
+_hp_en_kq = HELP_PAGE.find('<div lang="en">')
+if _hp_en_kq > 0:
+	HELP_PAGE = _help_kq(HELP_PAGE[:_hp_en_kq], "de") + _help_kq(HELP_PAGE[_hp_en_kq:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_kq(HELP_X[_L], _L)
+
+
+
+def kq_selftest():
+	assert KQ_BASE["url"] == "https://github.com/DonElektro/MotionWatch/releases/download/" + KQ_TAG + "/"
+	assert re.fullmatch(r"karten-\d{1,3}", KQ_TAG) and KQ_MAXZOOM in (14, 15)
+	n_ = KQ_TAG.split("-")[1]
+	assert KQ_FILES["tiles"]["name"] == "karte-ch-%s.pmtiles" % n_ and KQ_FILES["web"]["name"] == "karte-web-%s.zip" % n_
+	assert KQ_FILES["orte"]["name"] == "orte-ch-%s.sqlite.gz" % n_
+	pins = [bool(f["size"]) for f in KQ_FILES.values()]
+	assert all(pins) == kq_pinned() and (all(pins) or not any(pins)), "either all pins or none"
+	bad = [k for k, v in KQ_HOOKED.items() if not v]
+	assert not bad, "hooks not found: " + "; ".join(n + ": " + a[:50] for n, a in bad)
+	for nm in ("WEB_PAGE", "REC_PAGE", "SIM_PAGE"):
+		assert "kqBg(" in globals()[nm], nm
+	assert "kqSmall(note, it.gps)" in REC_PAGE and "kqLocExtra(box" in WEB_PAGE and "KQ.find(s)" in SIM_PAGE and "KQ.find(s)" in WEB_PAGE
+	assert kq_tileid(0, 0, 0) == 0 and kq_tileid(1, 0, 0) == 1 and kq_tileid(1, 0, 1) == 2 and kq_tileid(1, 1, 1) == 3 and kq_tileid(1, 1, 0) == 4
+	assert kq_tileid(2, 0, 0) == 5 and kq_tileid(14, 8580, 5745) > kq_tileid(13, 8191, 8191)
+	assert kq_norm("Zürich") == "zurich" and kq_norm("Zürich", True) == "zuerich" and kq_norm("La Chaux-de-Fonds") == "la chaux de fonds"
+	assert kq_norm("Grossmünster") == kq_norm("Großmünster") and kq_norm("Sant’Antonio") == "santantonio"
+	for p in ("/karte", "/karte/t/x/1/1/1.mvt", "/api/karte", "/api/karte/suche"):
+		assert role_allows("view", p, "GET", {}, []), p
+	assert not role_allows("view", "/api/karte", "POST", {"action": "install"}, list(USER_PERMS)), "only the administrator loads the map"
+	html = render_page(REC_PAGE, "rec")
+	assert html.count("window.KQ =") == 1 and html.find("window.KQ =") < html.find("<body"), "the map script stands in <head>"
+	assert "window.KQ =" not in render_page("<html><head></head><body><main>x</main></body></html>", "live")
+	if not kq_installed():
+		assert kq_search("Seon") == [] and '"on": false' in kq_head()
+	tx = kq_tx()
+	assert all(tx[L_]["OpenStreetMap contributors"] for L_ in ("de", "fr", "it", "rm")) and tx["de"]["OpenStreetMap contributors"] == "OpenStreetMap-Mitwirkende"
+	assert all("ß" not in v[0] for v in _HX_KQ.values()) and all(k in DE for k in _HX_KQ)
+	assert _HELP_KQ["de"][0] in HELP_PAGE and _HELP_KQ["en"][0] in HELP_PAGE
+	return True
+
+
+SELFTEST_EXTRA.append(("Offline map of Switzerland (639zzq)", kq_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SF_START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+SF_ABC = "ACDEFHJKMNPQRTUVWXY3479"
+SF_GRENZEN = {"spiele": 10, "frist": 24 * 3600, "nach_ende": 1800, "posts": (12, 10.0), "neu_ip": (8, 600.0),
+              "falsch_ip": (15, 300.0), "warten": 15.0, "warter": 40, "online": 25.0, "idle_weg": 600.0}
+SF = {"spiele": {}, "cond": threading.Condition(), "ip": {}, "geladen": False, "warter": 0}
+SF_DATEI = "schach_fern.json"
+SF_OPS_POST = ("neu", "beitreten", "zug", "aktion")
+SF_OPS_GET = ("info", "zustand", "qr")
+PERM_GET["games"] = tuple(PERM_GET.get("games", ())) + ("/schachfern/",)
+PERM_POST["games"] = set(PERM_POST.get("games", ())) | {"/schachfern/" + o for o in SF_OPS_POST}
+
+
+
+_SF_N = (33, 31, 18, 14, -14, -18, -31, -33)
+_SF_K = (1, -1, 16, -16, 15, 17, -15, -17)
+_SF_B = (15, 17, -15, -17)
+_SF_R = (1, -1, 16, -16)
+
+
+def _sf_sq(name):
+	return (int(name[1]) - 1) * 16 + "abcdefgh".index(name[0])
+
+
+def _sf_name(s):
+	return "abcdefgh"[s & 7] + str((s >> 4) + 1)
+
+
+def sf_fen_lesen(fen):
+	""
+	t = str(fen or "").split()
+	if len(t) != 6:
+		raise ValueError("fen")
+	rows = t[0].split("/")
+	if len(rows) != 8:
+		raise ValueError("fen rows")
+	b = [None] * 128
+	for i, row in enumerate(rows):
+		r, f = 7 - i, 0
+		for ch in row:
+			if ch.isdigit():
+				f += int(ch)
+			elif ch in "pnbrqkPNBRQK":
+				if f > 7:
+					raise ValueError("fen row")
+				b[r * 16 + f] = ch; f += 1
+			else:
+				raise ValueError("fen piece")
+		if f != 8:
+			raise ValueError("fen row")
+	if b.count("K") != 1 or b.count("k") != 1 or t[1] not in ("w", "b") or not re.fullmatch(r"-|K?Q?k?q?", t[2]) or not re.fullmatch(r"-|[a-h][36]", t[3]):
+		raise ValueError("fen fields")
+	return {"b": b, "w": t[1], "c": "" if t[2] == "-" else t[2], "ep": -1 if t[3] == "-" else _sf_sq(t[3]), "h": int(t[4]), "f": max(1, int(t[5]))}
+
+
+def sf_fen(p):
+	rows = []
+	for r in range(7, -1, -1):
+		s, n = "", 0
+		for f in range(8):
+			x = p["b"][r * 16 + f]
+			if x is None:
+				n += 1
+			else:
+				s += (str(n) if n else "") + x; n = 0
+		rows.append(s + (str(n) if n else ""))
+	return f"{'/'.join(rows)} {p['w']} {p['c'] or '-'} {_sf_name(p['ep']) if p['ep'] >= 0 else '-'} {p['h']} {p['f']}"
+
+
+def _sf_weiss(x):
+	return x is not None and x.isupper()
+
+
+def _sf_farbe(x):
+	return None if x is None else ("w" if x.isupper() else "b")
+
+
+def sf_angegriffen(b, s, von):
+	""
+	up = von == "w"
+	P, N, B, R, Q, K = ("PNBRQK" if up else "pnbrqk")
+	for d in ((-15, -17) if up else (15, 17)):
+		t = s + d
+		if not t & 0x88 and b[t] == P:
+			return True
+	for d in _SF_N:
+		t = s + d
+		if not t & 0x88 and b[t] == N:
+			return True
+	for d in _SF_K:
+		t = s + d
+		if not t & 0x88 and b[t] == K:
+			return True
+	for dirs, a in ((_SF_B, (B, Q)), (_SF_R, (R, Q))):
+		for d in dirs:
+			t = s + d
+			while not t & 0x88:
+				if b[t] is not None:
+					if b[t] in a:
+						return True
+					break
+				t += d
+	return False
+
+
+def _sf_koenig(b, c):
+	k = "K" if c == "w" else "k"
+	for s in range(128):
+		if not s & 0x88 and b[s] == k:
+			return s
+	return -1
+
+
+def sf_schach(p):
+	return sf_angegriffen(p["b"], _sf_koenig(p["b"], p["w"]), "b" if p["w"] == "w" else "w")
+
+
+def _sf_pseudo(p):
+	b, c = p["b"], p["w"]
+	them = "b" if c == "w" else "w"
+	out = []
+	for s in range(128):
+		if s & 0x88 or b[s] is None or _sf_farbe(b[s]) != c:
+			continue
+		x = b[s].lower()
+		if x == "p":
+			fw, start, last = (16, 1, 7) if c == "w" else (-16, 6, 0)
+			t = s + fw
+			if not t & 0x88 and b[t] is None:
+				if t >> 4 == last:
+					out += [(s, t, q) for q in "qrbn"]
+				else:
+					out.append((s, t, ""))
+					t2 = t + fw
+					if s >> 4 == start and b[t2] is None:
+						out.append((s, t2, ""))
+			for d in (fw - 1, fw + 1):
+				t = s + d
+				if t & 0x88:
+					continue
+				if b[t] is not None and _sf_farbe(b[t]) == them:
+					out += [(s, t, q) for q in "qrbn"] if t >> 4 == last else [(s, t, "")]
+				elif t == p["ep"]:
+					out.append((s, t, ""))
+		elif x in "nk":
+			for d in (_SF_N if x == "n" else _SF_K):
+				t = s + d
+				if not t & 0x88 and (b[t] is None or _sf_farbe(b[t]) == them):
+					out.append((s, t, ""))
+		else:
+			for d in ((_SF_B if x == "b" else _SF_R if x == "r" else _SF_K)):
+				t = s + d
+				while not t & 0x88:
+					if b[t] is None:
+						out.append((s, t, ""))
+					else:
+						if _sf_farbe(b[t]) == them:
+							out.append((s, t, ""))
+						break
+					t += d
+
+	ks, rank = (4, 0) if c == "w" else (116, 112)
+	if b[ks] == ("K" if c == "w" else "k") and not sf_angegriffen(b, ks, them):
+		R = "R" if c == "w" else "r"
+		if ("K" if c == "w" else "k") in p["c"] and b[rank + 7] == R and b[ks + 1] is None and b[ks + 2] is None \
+                and not sf_angegriffen(b, ks + 1, them) and not sf_angegriffen(b, ks + 2, them):
+			out.append((ks, ks + 2, ""))
+		if ("Q" if c == "w" else "q") in p["c"] and b[rank] == R and b[ks - 1] is None and b[ks - 2] is None and b[ks - 3] is None \
+                and not sf_angegriffen(b, ks - 1, them) and not sf_angegriffen(b, ks - 2, them):
+			out.append((ks, ks - 2, ""))
+	return out
+
+
+def sf_ziehe(p, m):
+	""
+	s, t, q = m
+	b = p["b"][:]; c = p["w"]; x = b[s]; them = "b" if c == "w" else "w"
+	cap = b[t] is not None
+	rights = p["c"]
+	if x.lower() == "p" and t == p["ep"] and not cap:
+		b[t - 16 if c == "w" else t + 16] = None; cap = True
+	b[t] = (q.upper() if c == "w" else q) if q else x; b[s] = None
+	if x.lower() == "k":
+		rights = rights.replace("K", "").replace("Q", "") if c == "w" else rights.replace("k", "").replace("q", "")
+		if t - s == 2:
+			b[s + 1] = b[s + 3]; b[s + 3] = None
+		elif s - t == 2:
+			b[s - 1] = b[s - 4]; b[s - 4] = None
+	for sq, r in ((0, "Q"), (7, "K"), (112, "q"), (119, "k")):
+		if s == sq or t == sq:
+			rights = rights.replace(r, "")
+	ep = -1
+	if x.lower() == "p" and abs(t - s) == 32:
+		P = "p" if c == "w" else "P"
+		if (not (t - 1) & 0x88 and b[t - 1] == P) or (not (t + 1) & 0x88 and b[t + 1] == P):
+			ep = (s + t) // 2
+	return {"b": b, "w": them, "c": rights, "ep": ep, "h": 0 if (x.lower() == "p" or cap) else p["h"] + 1,
+            "f": p["f"] + (1 if c == "b" else 0)}
+
+
+def sf_legal(p):
+	""
+	c = p["w"]; them = "b" if c == "w" else "w"; out = []
+	for m in _sf_pseudo(p):
+		n = sf_ziehe(p, m)
+		if not sf_angegriffen(n["b"], _sf_koenig(n["b"], c), them):
+			out.append(m)
+	return out
+
+
+def sf_uci(m):
+	return _sf_name(m[0]) + _sf_name(m[1]) + m[2]
+
+
+def sf_schluessel(p):
+	""
+	return "".join(x or "." for i, x in enumerate(p["b"]) if not i & 0x88) + p["w"] + p["c"] + str(p["ep"])
+
+
+def sf_material_fehlt(p):
+	""
+	n, cnt, farben = 0, {}, []
+	for s in range(128):
+		if s & 0x88 or p["b"][s] is None:
+			continue
+		x = p["b"][s].lower(); n += 1; cnt[x] = cnt.get(x, 0) + 1
+		if x == "b":
+			farben.append(((s >> 4) + (s & 7)) % 2)
+	if n == 2:
+		return True
+	if n == 3 and (cnt.get("b") == 1 or cnt.get("n") == 1):
+		return True
+	if n == cnt.get("b", 0) + 2 and (sum(farben) == 0 or sum(farben) == len(farben)):
+		return True
+	return False
+
+
+def sf_partie(start, zuege):
+	""
+	p = sf_fen_lesen(start)
+	keys = {sf_schluessel(p): 1}
+	leg = sf_legal(p)
+	for u in zuege:
+		m = next((m for m in leg if sf_uci(m) == u), None)
+		if m is None:
+			raise ValueError("illegal " + str(u)[:8])
+		p = sf_ziehe(p, m)
+		k = sf_schluessel(p); keys[k] = keys.get(k, 0) + 1
+		leg = sf_legal(p)
+	return p, keys, leg
+
+
+def sf_ende_regeln(p, keys, leg):
+	""
+	if not leg:
+		return {"art": "matt", "sieger": "b" if p["w"] == "w" else "w"} if sf_schach(p) else {"art": "patt", "sieger": None}
+	if sf_material_fehlt(p):
+		return {"art": "material", "sieger": None}
+	if keys.get(sf_schluessel(p), 0) >= 3:
+		return {"art": "wiederholung", "sieger": None}
+	if p["h"] >= 100:
+		return {"art": "50zuege", "sieger": None}
+	return None
+
+
+def sf_perft(p, d):
+	if d == 0:
+		return 1
+	return sum(sf_perft(sf_ziehe(p, m), d - 1) for m in sf_legal(p)) if d > 1 else len(sf_legal(p))
+
+
+
+def _sf_hash(t):
+	return hashlib.sha256(str(t).encode()).hexdigest()
+
+
+def _sf_datei():
+	return os.path.join(DATA_DIR, SF_DATEI)
+
+
+def _sf_speichern():
+	try:
+		keep = ("code", "nr", "erstellt", "t", "startFen", "zuege", "ende", "sitze", "anfrage", "hilfe", "t_ende")
+		d = {"v": 1, "spiele": {k: {x: G[x] for x in keep if x in G} for k, G in SF["spiele"].items()}}
+		tmp = _sf_datei() + ".tmp"
+		with open(tmp, "w", encoding="utf-8") as f:
+			json.dump(d, f)
+		os.replace(tmp, _sf_datei())
+	except (OSError, TypeError, ValueError):
+		pass
+
+
+def _sf_laden():
+	if SF["geladen"]:
+		return
+	SF["geladen"] = True
+	try:
+		with open(_sf_datei(), encoding="utf-8") as f:
+			d = json.load(f)
+		for k, G in (d.get("spiele") or {}).items():
+			if not (isinstance(G, dict) and re.fullmatch("[%s]{4}" % SF_ABC, str(k))):
+				continue
+			G["code"] = k
+			G["seq"] = secrets.randbelow(10 ** 9)
+			G["posts"] = {"w": [], "b": []}; G["zs"] = {}
+			if _sf_neu_rechnen(G):
+				SF["spiele"][k] = G
+	except (OSError, ValueError, TypeError, AttributeError):
+		pass
+
+
+def _sf_neu_rechnen(G):
+	""
+	try:
+		G["_p"], G["_k"], G["_l"] = sf_partie(G.get("startFen") or SF_START, list(G.get("zuege") or []))
+		return True
+	except (ValueError, TypeError, KeyError, IndexError):
+		return False
+
+
+def _sf_bump(G, speichern=True):
+	G["seq"] = (G.get("seq", 0) + 1) % 10 ** 9
+	G["t"] = time.time()
+	if speichern:
+		_sf_speichern()
+	SF["cond"].notify_all()
+
+
+def _sf_aufraeumen(now=None):
+	""
+	now = now or time.time(); weg = []
+	for k, G in SF["spiele"].items():
+		if now - G.get("t", 0) > SF_GRENZEN["frist"] or (G.get("ende") and now - G.get("t_ende", now) > SF_GRENZEN["nach_ende"]):
+			weg.append(k)
+	for k in weg:
+		SF["spiele"].pop(k, None)
+	if weg:
+		_sf_speichern(); SF["cond"].notify_all()
+	return weg
+
+
+def _sf_grenze(liste, n, s, now):
+	liste[:] = [x for x in liste if now - x < s]
+	if len(liste) >= n:
+		return False
+	liste.append(now)
+	return True
+
+
+def _sf_ip_ok(ip, art, now, zaehlen=True):
+	n, s = SF_GRENZEN[art]
+	L = SF["ip"].setdefault(art + "|" + str(ip), [])
+	L[:] = [x for x in L if now - x < s]
+	if len(L) >= n:
+		return False
+	if zaehlen:
+		L.append(now)
+	if len(SF["ip"]) > 2000:
+		SF["ip"] = {k: v for k, v in SF["ip"].items() if v and now - v[-1] < 900}
+	return True
+
+
+def _sf_sitz(G, token):
+	""
+	if not token:
+		return ""
+	h = _sf_hash(token)
+	import hmac
+	for c in ("w", "b"):
+		if G["sitze"][c].get("h") and hmac.compare_digest(G["sitze"][c]["h"], h):
+			return c
+	return None
+
+
+def _sf_status(G):
+	return "ende" if G.get("ende") else "laeuft" if G["sitze"]["w"].get("h") and G["sitze"]["b"].get("h") else "warte"
+
+
+def sf_sicht(G, sitz, now=None):
+	""
+	now = now or time.time()
+	p = G["_p"]
+	G["zs"] = {k: v for k, v in G.get("zs", {}).items() if now - v < SF_GRENZEN["online"]}
+	return {"ok": True, "code": G["code"], "nr": G["nr"], "seq": G["seq"], "startFen": G["startFen"], "zuege": list(G["zuege"]),
+            "fen": sf_fen(p), "amZug": p["w"], "ende": G.get("ende"), "sitz": sitz or "zuschauer", "status": _sf_status(G),
+            "sitze": {c: {"da": bool(G["sitze"][c].get("h")), "online": bool(G["sitze"][c].get("h")) and now - G["sitze"][c].get("t", 0) < SF_GRENZEN["online"]}
+                      for c in ("w", "b")},
+            "anfrage": G.get("anfrage"), "hilfe": G.get("hilfe"), "zuschauer": len(G["zs"])}
+
+
+def _sf_neues_spiel(farbe, now):
+	while True:
+		code = "".join(secrets.choice(SF_ABC) for _ in range(4))
+		if code not in SF["spiele"]:
+			break
+	if farbe not in ("w", "b"):
+		farbe = secrets.choice("wb")
+	tok = secrets.token_urlsafe(18)
+	G = {"code": code, "nr": 1, "erstellt": now, "t": now, "startFen": SF_START, "zuege": [], "ende": None,
+         "sitze": {"w": {}, "b": {}}, "anfrage": None, "hilfe": {"w": {}, "b": {}}, "seq": secrets.randbelow(10 ** 9),
+         "posts": {"w": [], "b": []}, "zs": {}}
+	G["sitze"][farbe] = {"h": _sf_hash(tok), "t": now}
+	_sf_neu_rechnen(G)
+	return G, tok, farbe
+
+
+def _sf_platz_machen(now):
+	""
+	if len(SF["spiele"]) < SF_GRENZEN["spiele"]:
+		return True
+	ende = sorted((G["t"], k) for k, G in SF["spiele"].items() if G.get("ende"))
+	idle = sorted((G["t"], k) for k, G in SF["spiele"].items() if now - G["t"] > SF_GRENZEN["idle_weg"])
+	for _t, k in ende + idle:
+		SF["spiele"].pop(k, None)
+		if len(SF["spiele"]) < SF_GRENZEN["spiele"]:
+			return True
+	return False
+
+
+def _sf_zurueck(G, von):
+	""
+	n = len(G["zuege"]); p = G["_p"]
+	k = 1 if p["w"] != von else 2
+	if n < k:
+		return False
+	G["zuege"] = G["zuege"][:n - k]
+	_sf_neu_rechnen(G)
+	return True
+
+
+def _sf_eigene_zuege(G, c):
+	start_w = G["startFen"].split()[1] == "w"
+	return sum(1 for i in range(len(G["zuege"])) if ("w" if (i % 2 == 0) == start_w else "b") == c)
+
+
+def _sf_ausfuehren(G, art, von, now):
+	""
+	if art == "remis":
+		G["ende"] = {"art": "einigung", "sieger": None}; G["t_ende"] = now
+	elif art == "zurueck":
+		_sf_zurueck(G, von)
+	elif art == "revanche":
+		G["sitze"] = {"w": G["sitze"]["b"], "b": G["sitze"]["w"]}
+		G["hilfe"] = {"w": dict(G["hilfe"].get("b") or {}, tipps=0), "b": dict(G["hilfe"].get("w") or {}, tipps=0)}
+		G["nr"] += 1; G["zuege"] = []; G["ende"] = None; G.pop("t_ende", None); G["startFen"] = SF_START
+		_sf_neu_rechnen(G)
+	G["anfrage"] = None
+
+
+def sf_api(op, method, args, d, ip="?", warten=True):
+	""
+	now = time.time()
+	args = args or {}; d = d if isinstance(d, dict) else {}
+	if (method == "POST") != (op in SF_OPS_POST) or op not in SF_OPS_POST + SF_OPS_GET:
+		return 404, {"ok": False, "fehler": "unbekannt"}
+	src = d if method == "POST" else args
+	code = re.sub(r"[^A-Z0-9]", "", str(src.get("code") or "").upper())[:8]
+	token = str(src.get("token") or "")[:64]
+	with SF["cond"]:
+		_sf_laden(); _sf_aufraeumen(now)
+		if op == "info":
+			return 200, {"ok": True, "offen": len(SF["spiele"]), "max": SF_GRENZEN["spiele"]}
+		if op == "neu":
+			if not _sf_ip_ok(ip, "neu_ip", now):
+				return 429, {"ok": False, "fehler": "zu_oft"}
+			if not _sf_platz_machen(now):
+				return 429, {"ok": False, "fehler": "voll"}
+			G, tok, farbe = _sf_neues_spiel(str(d.get("farbe") or ""), now)
+			SF["spiele"][G["code"]] = G
+			_sf_bump(G)
+			return 200, dict(sf_sicht(G, farbe, now), token=tok)
+		if not _sf_ip_ok(ip, "falsch_ip", now, zaehlen=False):
+			return 429, {"ok": False, "fehler": "zu_oft"}
+		G = SF["spiele"].get(code)
+		if G is None:
+			_sf_ip_ok(ip, "falsch_ip", now)
+			return 404, {"ok": False, "fehler": "weg"}
+		sitz = _sf_sitz(G, token)
+		if sitz is None:
+			_sf_ip_ok(ip, "falsch_ip", now)
+			return 403, {"ok": False, "fehler": "token"}
+		if op == "qr":
+			u = str(args.get("u") or "")
+			from urllib.parse import urlsplit
+			try:
+				x = urlsplit(u)
+			except ValueError:
+				x = None
+			if not (x and x.scheme in ("http", "https") and x.netloc and "@" not in x.netloc and not x.query and not x.fragment and len(u) < 300
+                    and re.fullmatch(r"(/p/[A-Za-z0-9_\-]{1,64}|/spiele)?/(g|games)/schach/(index\.html)?", x.path)):
+				return 400, {"ok": False, "fehler": "adresse"}
+			return 200, (qr_svg(sf_qr_text(u, G["code"])).encode("utf-8"), "image/svg+xml")
+		if op == "beitreten":
+			if not sitz:
+				frei = [c for c in ("w", "b") if not G["sitze"][c].get("h")]
+				if frei and not G.get("ende"):
+					tok = secrets.token_urlsafe(18)
+					G["sitze"][frei[0]] = {"h": _sf_hash(tok), "t": now}
+					_sf_bump(G)
+					return 200, dict(sf_sicht(G, frei[0], now), token=tok)
+				G.setdefault("zs", {})[_sf_hash(ip)[:12]] = now
+				return 200, dict(sf_sicht(G, "", now), token="")
+			G["sitze"][sitz]["t"] = now
+			return 200, dict(sf_sicht(G, sitz, now), token=token)
+		if op == "zustand":
+			if sitz:
+				G["sitze"][sitz]["t"] = now
+			else:
+				G.setdefault("zs", {})[_sf_hash(ip)[:12]] = now
+			try:
+				seq = int(args.get("seq", -1))
+			except (TypeError, ValueError):
+				seq = -1
+			if warten and str(args.get("warte") or "") == "1" and seq == G["seq"] and SF["warter"] < SF_GRENZEN["warter"]:
+				end = now + SF_GRENZEN["warten"]; SF["warter"] += 1
+				try:
+					while G["seq"] == seq and time.time() < end and SF["spiele"].get(code) is G:
+						SF["cond"].wait(min(1.0, end - time.time()))
+				finally:
+					SF["warter"] -= 1
+				if SF["spiele"].get(code) is not G:
+					return 404, {"ok": False, "fehler": "weg"}
+				sitz = _sf_sitz(G, token) or ""
+				if sitz:
+					G["sitze"][sitz]["t"] = time.time()
+			return 200, sf_sicht(G, sitz)
+
+		if not sitz:
+			return 403, {"ok": False, "fehler": "zuschauer"}
+		G["sitze"][sitz]["t"] = now
+		n_, s_ = SF_GRENZEN["posts"]
+		if not _sf_grenze(G.setdefault("posts", {}).setdefault(sitz, []), n_, s_, now):
+			return 429, {"ok": False, "fehler": "zu_oft", "v": sf_sicht(G, sitz, now)}
+		if op == "zug":
+			uci = str(d.get("uci") or "")
+			try:
+				n = int(d.get("n", -1))
+			except (TypeError, ValueError):
+				n = -1
+			if n == len(G["zuege"]) - 1 and n >= 0 and G["zuege"][n] == uci and G["_p"]["w"] != sitz:
+				return 200, sf_sicht(G, sitz, now)
+			fehler = ("ende" if G.get("ende") else "warte" if _sf_status(G) != "laeuft" else "nicht_dran" if G["_p"]["w"] != sitz
+                      else "nicht_synchron" if n != len(G["zuege"]) else "")
+			if not fehler:
+				m = next((m for m in G["_l"] if sf_uci(m) == uci), None) if re.fullmatch(r"[a-h][1-8][a-h][1-8][qrbn]?", uci) else None
+				if m is None:
+					fehler = "illegal"
+			if fehler:
+				return 409, {"ok": False, "fehler": fehler, "v": sf_sicht(G, sitz, now)}
+			G["_p"] = sf_ziehe(G["_p"], m); G["zuege"].append(uci)
+			k = sf_schluessel(G["_p"]); G["_k"][k] = G["_k"].get(k, 0) + 1
+			G["_l"] = sf_legal(G["_p"])
+			G["anfrage"] = None
+			e = sf_ende_regeln(G["_p"], G["_k"], G["_l"])
+			if e:
+				G["ende"] = e; G["t_ende"] = now
+			_sf_bump(G)
+			return 200, sf_sicht(G, sitz, now)
+		art = str(d.get("art") or "")
+		ander = "b" if sitz == "w" else "w"
+		A = G.get("anfrage")
+		fehler = ""
+		if art == "hilfe":
+			h = G["hilfe"].setdefault(sitz, {})
+			for k_ in ("lern", "balken"):
+				if isinstance(d.get(k_), bool):
+					h[k_] = d[k_]
+			if d.get("tipp") is True:
+				h["tipps"] = min(999, int(h.get("tipps") or 0) + 1)
+		elif art == "aufgeben":
+			if G.get("ende") or _sf_status(G) != "laeuft":
+				fehler = "ende" if G.get("ende") else "warte"
+			else:
+				G["ende"] = {"art": "aufgabe", "sieger": ander}; G["t_ende"] = now; G["anfrage"] = None
+		elif art == "abbrechen":
+			if G["sitze"][ander].get("h"):
+				fehler = "laeuft"
+			else:
+				SF["spiele"].pop(code, None); _sf_speichern(); SF["cond"].notify_all()
+				return 200, {"ok": True, "weg": True}
+		elif art in ("remis", "zurueck", "revanche"):
+			ok_ = (not G.get("ende") and _sf_status(G) == "laeuft") if art != "revanche" else bool(G.get("ende")) and G["sitze"][ander].get("h")
+			if art == "zurueck" and ok_:
+				ok_ = _sf_eigene_zuege(G, sitz) > 0
+			if not ok_:
+				fehler = "geht_nicht"
+			elif A and A.get("von") == ander and A.get("art") == art:
+				_sf_ausfuehren(G, art, ander, now)
+			elif A and A.get("von") == ander:
+				fehler = "offen"
+			else:
+				G["anfrage"] = {"art": art, "von": sitz, "nr": len(G["zuege"])}
+		elif art == "annehmen":
+			if not A or A.get("von") != ander or (A["art"] != "revanche" and (G.get("ende") or A.get("nr") != len(G["zuege"]))):
+				fehler = "keine"
+			else:
+				_sf_ausfuehren(G, A["art"], ander, now)
+		elif art in ("ablehnen", "zurueckziehen"):
+			if A and A.get("von") == (ander if art == "ablehnen" else sitz):
+				G["anfrage"] = None
+		else:
+			return 400, {"ok": False, "fehler": "unbekannt"}
+		if fehler:
+			return 409, {"ok": False, "fehler": fehler, "v": sf_sicht(G, sitz, now)}
+		_sf_bump(G)
+		return 200, sf_sicht(G, _sf_sitz(G, token) or "", now)
+
+
+def sf_qr_text(u, code):
+	""
+	return u + "?fern=" + code
+
+
+def sf_ip(remote, fwd=""):
+	ip = remote or "?"
+	if ip in ("127.0.0.1", "::1") and fwd:
+		ip = fwd.split(",")[0].strip()[:45] or ip
+	return ip
+
+
+
+def sf_spieleport(h, method, path):
+	from urllib.parse import urlsplit, parse_qs
+	op = path[len("/schachfern/"):]
+	hdr = {"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"}
+	if method == "POST":
+		o = h.headers.get("Origin")
+		if o is not None:
+			try:
+				ok_ = urlsplit(o).netloc.lower() == (h.headers.get("Host") or "").lower()
+			except ValueError:
+				ok_ = False
+			if not ok_:
+				return _sf_antwort(h, 403, {"ok": False, "fehler": "fremd"}, hdr)
+		try:
+			n = int(h.headers.get("Content-Length") or 0)
+		except ValueError:
+			n = -1
+		if not 0 <= n <= 4096:
+			return _sf_antwort(h, 413, {"ok": False, "fehler": "gross"}, hdr)
+		try:
+			d = json.loads(h.rfile.read(n) or b"{}")
+		except ValueError:
+			d = {}
+		args = {}
+	else:
+		d = {}
+		args = {k: v[0] for k, v in parse_qs(urlsplit(h.path).query).items()}
+	try:
+		st, out = sf_api(op, method, args, d, h.client_address[0])
+	except Exception as e:
+		log_event("web", f"Schach (zwei Handys): {e.__class__.__name__}")
+		st, out = 500, {"ok": False, "fehler": "fehler"}
+	return _sf_antwort(h, st, out, hdr)
+
+
+def _sf_antwort(h, st, out, hdr):
+	if isinstance(out, tuple):
+		data, ct = out
+		hdr = dict(hdr, **{"Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox"})
+	else:
+		data, ct = json.dumps(out).encode("utf-8"), "application/json"
+	try:
+		h.send_response(st)
+		h.send_header("Content-Type", ct + ("; charset=utf-8" if ct == "application/json" else ""))
+		for k, v in hdr.items():
+			h.send_header(k, v)
+		h.send_header("Content-Length", str(len(data)))
+		h.end_headers(); h.wfile.write(data)
+	except (BrokenPipeError, ConnectionResetError):
+		pass
+
+
+GAMESRV_API["/schachfern/"] = sf_spieleport
+
+
+
+_smalltv_routes_639zzr = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzr(app, reply, body)
+	from flask import Response, request
+	import hmac
+
+	def run(op):
+		if request.method == "POST" and not 0 <= (request.content_length if request.content_length is not None else -1) <= 4096:
+			return Response(json.dumps({"ok": False, "fehler": "gross"}), 413, mimetype="application/json")
+		d = (request.get_json(force=True, silent=True) or {}) if request.method == "POST" else {}
+		if not isinstance(d, dict):
+			d = {}
+		st, out = sf_api(op, request.method, request.args.to_dict(), d, sf_ip(request.remote_addr, request.headers.get("X-Forwarded-For", "")))
+		if isinstance(out, tuple):
+			return Response(out[0], st, mimetype=out[1], headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff",
+                                                                  "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox"})
+		return Response(json.dumps(out), st, mimetype="application/json", headers={"Cache-Control": "no-store"})
+
+	zu = lambda: Response(json.dumps({"ok": False, "fehler": "zu"}), 404, mimetype="application/json", headers={"Cache-Control": "no-store"})
+
+	@app.route("/schachfern/<op>", methods=["GET", "POST"])
+	def schachfern_login(op):
+		return run(op)
+
+	@app.route("/p/<key>/schachfern/<op>", methods=["GET", "POST"])
+	def schachfern_gast(key, op):
+		if not (party_on() and hmac.compare_digest(str(PARTY.get("key") or ""), key)):
+			return zu()
+		return run(op)
+
+	@app.route("/spiele/schachfern/<op>", methods=["GET", "POST"])
+	def schachfern_spiele(op):
+		if not lan_guest_ip(request.remote_addr, request.headers.get("X-Forwarded-For", "") or request.headers.get("Forwarded", "")):
+			return zu()
+		return run(op)
+
+
+
+def sf_selftest():
+	p = sf_fen_lesen(SF_START)
+	assert sf_fen(p) == SF_START and sf_perft(p, 2) == 400, "rules: start position"
+	kiwi = sf_fen_lesen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1")
+	assert len(sf_legal(kiwi)) == 48 and sf_perft(kiwi, 2) == 2039, "rules: castling, en passant, promotion (Kiwipete)"
+	pp, kk, ll = sf_partie(SF_START, ["f2f3", "e7e5", "g2g4", "d8h4"])
+	assert sf_ende_regeln(pp, kk, ll) == {"art": "matt", "sieger": "b"}, "rules: fool's mate"
+	try:
+		sf_partie(SF_START, ["e2e5"]); assert False, "illegal move accepted"
+	except ValueError:
+		pass
+	assert sf_material_fehlt(sf_fen_lesen("8/8/8/8/8/8/5k2/4KB2 w - - 0 1")) and not sf_material_fehlt(sf_fen_lesen("8/8/8/8/8/8/5k2/4KR2 w - - 0 1"))
+	assert "/schachfern/zug" in PERM_POST["games"] and role_allows("kid", "/schachfern/zustand", "GET", {}) and role_allows("kid", "/schachfern/zug", "POST", {})
+	assert not role_allows("custom", "/schachfern/zug", "POST", {}, set()) and not role_allows("custom", "/schachfern/zustand", "GET", {}, set())
+	assert sf_qr_text("http://pi:5003/g/schach/", "ACDE") == "http://pi:5003/g/schach/?fern=ACDE" and GAMESRV_API.get("/schachfern/") is sf_spieleport
+	return "chess for two phones: rules (perft start 400, Kiwipete 2039, mate), rights «games», games port address only /schachfern/"
+
+
+SELFTEST_EXTRA.append(("Chess for two phones: relay and rules (639zzr)", sf_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ERSTSTART_JS = _zd('639zzs_erststart/ERSTSTART_JS', "")
+
+_render_page_before_erststart = render_page
+
+
+def render_page(page, active):
+	""
+	out = _render_page_before_erststart(page, active)
+	if 'id="mw-queue"' in out:
+		return out
+	i = out.find("<body")
+	j = out.find(">", i) if i >= 0 else -1
+	return out[:j + 1] + ERSTSTART_JS + out[j + 1:] if j >= 0 else out
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import io as _pl_io
+import unicodedata as _pl_ud
+
+PL_MAX_LISTS = 100
+PL_MAX_ITEMS = 500
+PL_NAME_MAX = 120
+PL_NOTE_MAX = 300
+PL_CAT_MAX = 40
+PL_IMPORT_MAX = 5 * 1024 * 1024
+PL_TEXT_MAX = 200 * 1024
+PL_ROWS_MAX = 2000
+PL_COLS_MAX = 30
+PL_PHOTO_MAX = 25 * 1024 * 1024
+PL_PHOTO_TOTAL = 1024 ** 3
+PL_X_ENTRIES = 300
+PL_X_TOTAL = 40 * 1024 * 1024
+PL_X_RATIO = 250
+PL_GONE_MAX = 300
+PL_IID = re.compile(r"^[0-9a-f]{8}$")
+PL = {"lock": threading.RLock(), "root": None, "lists": None, "photo_bytes": 0}
+
+for _p in TZ_PERMS:
+	PERM_POST[_p] = set(PERM_POST.get(_p, ())) | {"/api/tausch/pack", "/api/tausch/pack/import"}
+
+
+PL_CATS = (
+    ("sleep", "Sleeping", "#8b9bff", "M2.5 20h19M12 5 3.5 20M12 5l8.5 15M12 12.5 9 20M12 12.5l3 7.5"),
+    ("clothes", "Clothes", "#f472b6", "M8.5 3.5 3 6.5l2 4.2 2.8-1.2V20.5h8.4V9.5l2.8 1.2 2-4.2-5.5-3c-.5 1.7-1.8 2.7-3.5 2.7S9 5.2 8.5 3.5z"),
+    ("kitchen", "Kitchen", "#f59a4a", "M5 10.5h14v5.5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4zM2.8 10.5h18.4M9.5 7c0-1.6 1.4-1.4 1.4-3M13.5 7c0-1.6 1.4-1.4 1.4-3"),
+    ("food", "Food", "#fb7185", "M12 7.6c-1.8-1.9-6.8-1.6-6.8 3.9 0 4.8 3.3 8.8 5.3 8.8.7 0 1-.5 1.5-.5s.8.5 1.5.5c2 0 5.3-4 5.3-8.8 0-5.5-5-5.8-6.8-3.9zM12 7.6c0-2 .9-3.4 2.8-4.1"),
+    ("water", "Water", "#38bdf8", "M12 3c3.9 4.9 6.3 7.9 6.3 11.4a6.3 6.3 0 0 1-12.6 0C5.7 10.9 8.1 7.9 12 3zM9.2 15.2a2.9 2.9 0 0 0 2.6 2.6"),
+    ("hygiene", "Hygiene", "#2dd4bf", "M8.5 10h7v9.5a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1zM11 10V6.5M9 6.5h4.5l2.5-1.8M10.5 14h3"),
+    ("firstaid", "First aid", "#f87171", "M4 7.5h16a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8.5a1 1 0 0 1 1-1zM9 7.5V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2.5M12 10.8v6M9 13.8h6"),
+    ("tools", "Tools & repair", "#a8b3c4", "M4 20.5 12.5 12M10 9.5l4.5-4.5 5 5-1.8 1.8-3.2-3.2-2.7 2.7zM14.5 5l2-1.5"),
+    ("electronics", "Electronics", "#facc15", "M3.5 8h14a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-14a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1zM21.3 10.5v3M11.5 9.8l-2.6 2.6h3.2l-2.6 2.6"),
+    ("navigation", "Navigation", "#34d399", "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.8 8.2l-2.2 5.4-5.4 2.2 2.2-5.4z"),
+    ("documents", "Documents & money", "#c084fc", "M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM14 3v4h4M9 12h6M9 16h6"),
+    ("other", "Miscellaneous", "#8a9bb0", "M3.5 8 12 3.5 20.5 8v8L12 20.5 3.5 16zM3.5 8l8.5 4.5L20.5 8M12 12.5v8"),
+)
+PL_CAT_KEYS = tuple(c[0] for c in PL_CATS)
+PL_KINDS = ("base", "cons", "worn")
+
+PL_CAT_WORDS = {
+    "sleep": ("schlaf", "zelt", "übernacht", "uebernacht", "biwak", "sleep", "shelter", "tent", "camp", "dormir", "couchage",
+              "tente", "tenda"),
+    "clothes": ("kleid", "bekleid", "klamott", "wäsche", "waesche", "schuh", "anzieh", "cloth", "wear", "apparel", "vêtement", "vetement", "habit",
+                "vestit", "abbigl"),
+    "kitchen": ("küche", "kueche", "koch", "geschirr", "kitchen", "cook", "cuisine", "cucina"),
+    "food": ("essen", "verpfleg", "proviant", "nahrung", "lebensmittel", "food", "snack", "nourrit", "repas", "cibo", "mangiare", "aliment"),
+    "water": ("wasser", "trinken", "getränk", "getraenk", "water", "drink", "hydrat", "eau", "boisson", "acqua", "bevand"),
+    "hygiene": ("hygien", "körperpfleg", "koerperpfleg", "pflege", "toilet", "wasch", "kosmetik", "bad", "igiene", "soin"),
+    "firstaid": ("erste hilfe", "erste-hilfe", "apothek", "medik", "medizin", "notfall", "sicherheit", "first aid", "first-aid", "emergency", "safety", "pharmac", "secours",
+                 "pronto soccorso", "farmac", "urgence"),
+    "tools": ("werkzeug", "reparatur", "flick", "tool", "repair", "outil", "attrezz", "utensil"),
+    "electronics": ("elektr", "technik", "strom", "akku", "foto", "kamera", "electr", "tech", "gadget", "power", "camera", "électr", "elettr"),
+    "navigation": ("navig", "orientier", "karte", "map", "carte", "orientation", "orientamento"),
+    "documents": ("dokument", "papier", "ausweis", "geld", "wertsachen", "document", "money", "paper", "argent", "soldi", "denaro"),
+    "other": ("sonstig", "divers", "anderes", "übrig", "uebrig", "kleinkram", "misc", "other", "various", "autre", "altro", "vari"),
+}
+
+PL_CAT_GUESS = (
+    ("firstaid", ("pflaster", "verband", "erste hilfe", "erste-hilfe", "first aid", "rettungsdecke", "blasen", "zeckenzange", "schmerz", "tablette",
+                  "medikament", "desinfekt", "notfall", "pfeife", "biwaksack")),
+    ("water", ("wasser", "trinkflasche", "trinkblase", "thermos", "wasserfilter", "water", "bottle", "bidon")),
+    ("food", ("riegel", "müesli", "muesli", "müsli", "brot", "käse", "kaese", "schokolade", "nüsse", "nuesse", "trockenfleisch", "landjäger", "tee",
+              "kaffee", "suppe", "pasta", "reis", "essen", "proviant", "snack", "frühstück", "abendessen", "mittagessen", "znüni", "zvieri",
+              "food", "meal", "salz", "zucker", "wurst", "apfel", "trockenfrüchte")),
+    ("kitchen", ("kocher", "gaskartusche", "gas", "brennstoff", "spiritus", "topf", "pfanne", "tasse", "becher", "löffel", "loeffel", "göffel", "gabel",
+                 "besteck", "teller", "feuerzeug", "zündh", "streichh", "schwamm", "abwasch", "stove", "pot", "spork", "lighter")),
+    ("sleep", ("zelt", "schlafsack", "isomatte", "matte", "kissen", "hering", "heringe", "zeltunterlage", "footprint", "tarp", "hängematte", "inlett",
+               "biwak", "tent", "sleeping", "pillow")),
+    ("clothes", ("jacke", "hose", "socken", "shirt", "pullover", "fleece", "mütze", "muetze", "kappe", "handschuh", "unterwäsche", "unterhose",
+                 "regenjacke", "regenhose", "daunen", "schuhe", "sandalen", "gamaschen", "buff", "schal", "hemd", "leggings", "badehose",
+                 "sonnenhut", "jacket", "socks", "gloves", "trousers", "pants")),
+    ("hygiene", ("zahnbürste", "zahnbuerste", "zahnpasta", "seife", "handtuch", "wc-papier", "toilettenpapier", "wc papier", "sonnencreme",
+                 "sonnenschutz", "deo", "taschentücher", "mückenschutz", "insektenschutz", "feuchttücher", "lippen", "toothbrush", "soap", "towel")),
+    ("electronics", ("stirnlampe", "lampe", "powerbank", "akku", "batterie", "ladekabel", "kabel", "handy", "telefon", "kamera", "kopfhörer",
+                     "ladegerät", "solarpanel", "moveeye", "headlamp", "charger", "phone", "camera")),
+    ("navigation", ("karte", "kompass", "gps", "höhenmesser", "wanderführer", "map", "compass")),
+    ("documents", ("ausweis", "pass", "identitätskarte", "geld", "bargeld", "kreditkarte", "bankkarte", "halbtax", "billett", "ticket", "schlüssel",
+                   "schluessel", "versicherung", "passport", "wallet", "portemonnaie", "money", "keys")),
+    ("tools", ("messer", "taschenmesser", "multitool", "klebeband", "panzertape", "tape", "schnur", "reepschnur", "kabelbinder", "nähzeug", "flickzeug",
+               "karabiner", "säge", "schaufel", "knife", "repair", "cord", "stöcke", "stoecke", "wanderstöcke")),
+)
+PL_WATER_GEAR = ("flasche", "filter", "bottle", "blase", "thermos", "bidon", "sack", "beutel", "becher", "gourde", "borraccia", "kanister")
+PL_CONS_WORDS = ("gaskartusche", "gas ", "brennstoff", "spiritus", "benzin", "sonnencreme", "wc-papier", "toilettenpapier", "zahnpasta", "fuel")
+
+PL_TEMPLATES = _zd('639zzw_packlisten/PL_TEMPLATES', ())
+
+
+PL_HEIC_MSG = "This photo is HEIC - MoveEye cannot read that format. Choose it from the photo library (Safari then sends JPEG) or set the camera to «Most compatible»."
+
+
+class PLError(Exception):
+	""
+
+
+
+def pl_text(s, n):
+	""
+	if not isinstance(s, str):
+		s = "" if s is None or isinstance(s, (dict, list, bool)) else str(s)
+	s = _TZ_CTRL.sub("", _pl_ud.normalize("NFC", s).replace("\t", " ").replace(" ", " ").replace("\n", " "))
+	return re.sub(r"\s{2,}", " ", s).strip()[:n].strip()
+
+
+def pl_num(s, thousands3=False):
+	""
+	s = str(s).strip().replace("'", "").replace("’", "").replace(" ", "").replace(" ", "")
+	if not re.fullmatch(r"\d+(?:[.,]\d+)*", s):
+		return None
+	seps = [i for i, ch in enumerate(s) if ch in ".,"]
+	if not seps:
+		return float(s)
+	last = seps[-1]
+	head, dec = re.sub(r"[.,]", "", s[:last]), s[last + 1:]
+	if len(seps) > 1 and len({s[i] for i in seps}) == 1 and all(len(p) == 3 for p in re.split(r"[.,]", s)[1:]):
+		return float(head + dec)
+	if thousands3 and len(seps) == 1 and len(dec) == 3 and head.strip("0"):
+		return float(head + dec)
+	return float((head or "0") + "." + dec)
+
+
+_PL_N = r"\d{1,6}(?:[.,'’]\d{1,3})*"
+_PL_W_RE = re.compile(r"(?<![\w.,'’])(" + _PL_N + r")\s*(kilogramm|kilogram|kilos?|kg|gramm|grams?|gr|g|oz|lbs?)(?![\w])\.?", re.I)
+_PL_L_RE = re.compile(r"(?<![\w.,'’])(" + _PL_N + r")\s*(ml|cl|dl|liter|litres?|lt|l)(?![\w])\.?", re.I)
+_PL_UNIT_G = {"kg": 1000.0, "kilo": 1000.0, "kilos": 1000.0, "kilogramm": 1000.0, "kilogram": 1000.0, "g": 1.0, "gr": 1.0, "gramm": 1.0,
+              "gram": 1.0, "grams": 1.0, "oz": 28.3495, "lb": 453.592, "lbs": 453.592}
+
+
+def _pl_grams(num, unit):
+	u = unit.lower()
+	v = pl_num(num, thousands3=u in ("g", "gr", "gramm", "gram", "grams"))
+	if v is None:
+		return None
+	g = int(round(v * _PL_UNIT_G[u]))
+	if v > 0 and g == 0:
+		g = 1
+	return g if 0 < g <= 500000 else None
+
+
+def pl_weight(text, unit="g"):
+	""
+	if isinstance(text, bool) or text is None:
+		return None
+	if isinstance(text, (int, float)):
+		text = repr(float(text))
+	s = str(text).strip()
+	if not s:
+		return None
+	m = _PL_W_RE.search(s)
+	if m:
+		return _pl_grams(m.group(1), m.group(2))
+	m = re.fullmatch(r"[~≈]?\s*(" + _PL_N + r")", s)
+	if m:
+		return _pl_grams(m.group(1), "kg" if unit == "kg" else "g")
+	return None
+
+
+def pl_fmt_g(g, lang=None):
+	""
+	if g is None:
+		return "–"
+	g = int(g)
+	if g < 1000:
+		return f"{g} g"
+	s = f"{g / 1000:.2f}".rstrip("0").rstrip(".")
+	return (s if cur_lang(lang) == "en" else s.replace(".", ",")) + " kg"
+
+
+def pl_cat_key(text):
+	""
+	s = pl_text(text, PL_CAT_MAX).strip(" :-–—#*=_")
+	if not s:
+		return "other"
+	low = s.lower()
+	if low in PL_CAT_KEYS:
+		return low
+	for key, en, _c, _p in PL_CATS:
+		if low == en.lower() or any(low == tr(en, L).lower() for L in ("de", "fr", "it", "rm")):
+			return key
+	for key, words in PL_CAT_WORDS.items():
+		if any(low.startswith(w) or (" " + w) in low or ("-" + w) in low or ("/" + w) in low or ("&" + w) in low.replace(" ", "") for w in words):
+			return key
+	return s[:1].upper() + s[1:]
+
+
+def pl_cat_clean(text):
+	""
+	s = pl_text(text, PL_CAT_MAX)
+	low = s.lower()
+	if not s or low in PL_CAT_KEYS:
+		return low or "other"
+	for key, en, _c, _p in PL_CATS:
+		if low == en.lower() or any(low == tr(en, L).lower() for L in ("de", "fr", "it", "rm")):
+			return key
+	return s
+
+
+
+PL_HEAD_EXACT = {"schlafen", "kleider", "kleidung", "bekleidung", "küche", "kochen", "essen", "verpflegung", "proviant", "trinken", "hygiene",
+                 "erste hilfe", "apotheke", "werkzeug", "elektronik", "technik", "navigation", "dokumente", "sonstiges", "diverses"}
+
+
+def pl_cat_guess(name):
+	low = " " + name.lower() + " "
+	for key, words in PL_CAT_GUESS:
+		if any(w in low for w in words):
+			return key
+	return "other"
+
+
+def pl_kind_auto(cat, name):
+	""
+	low = " " + name.lower() + " "
+	if cat == "food" or any(w in low for w in PL_CONS_WORDS):
+		return "cons"
+	if cat == "water" and not any(w in low for w in PL_WATER_GEAR):
+		return "cons"
+	return "base"
+
+
+
+_PL_BOX = re.compile(r"^\s*(?:[-*+•]\s*)?(?:\[\s?([xX✓✔]?)\s?\]|([☐☑☒✅✔✓]))\s*")
+_PL_BULLET = re.compile(r"^\s*(?:[-*+•‣◦⁃∙·–—▪▫●○◯■□➤►>]+\s*|\d{1,3}[.)]\s+)")
+_PL_BUY = re.compile(r"\s*(?:[(\[]\s*(?:noch\s+)?(?:kaufen|fehlt noch|fehlt|besorgen|einkaufen|to buy|buy|acheter|comprare)\s*!*\s*[)\]]"
+                     r"|(?:\s[-–—→>:,;!]+|!+)\s*(?:noch\s+)?(?:kaufen|fehlt noch|fehlt|besorgen|einkaufen)\s*!*)\s*$", re.I)
+_PL_QTY_A = re.compile(r"^(\d{1,3})\s*(?:[x×]\s+|×|x(?=[^a-zäöü\s]))(?=\S)")
+_PL_QTY_B = re.compile(r"^(\d{1,3})\s*(?:stk\.?|stück|stueck|st\.|pcs?\.?|pz\.?)\s+", re.I)
+_PL_QTY_Z = re.compile(r"(?:\s+|(?=[(\[]))[(\[]?\s*(?:(\d{1,3})\s*(?:[x×]|[sS]tk\.?|[sS]tück|[sS]tueck|pcs?\.?)|[x×]\s*(\d{1,3}))\s*[)\]]?\s*$")
+_PL_NOQTY = {"m", "cm", "mm", "km", "l", "ml", "dl", "cl", "w", "v", "a", "mah", "ah", "wh", "x", "in", "ft", "°c", "c", "h", "min", "tage", "tag",
+             "days", "day", "nächte", "nacht", "jahre", "uhr", "kg", "g", "gr", "prozent", "lumen", "lm", "fach", "mal", "er", "liter"}
+_PL_EDGE = " \t-–—:,;|=~/→·•"
+
+
+def _pl_tidy(s):
+	s = re.sub(r"[(\[]\s*(?:ca\.?|etwa|je|à|a|~|≈|each|per|pro stück|pro stk\.?)?\s*[)\]]", " ", s, flags=re.I)
+	s = re.sub(r"(?:\s|^)(?:ca\.?|etwa|je|à|~|≈|pro stück|pro stk\.?)\s*$", "", s, flags=re.I)
+	s = re.sub(r"\s{2,}", " ", s.replace("\t", " ")).strip(_PL_EDGE)
+	return re.sub(r"\s+([,;:])", r"\1", s)
+
+
+def pl_parse_line(raw):
+	""
+	s = _TZ_CTRL.sub("", _pl_ud.normalize("NFC", str(raw)).replace(" ", " ").replace(" ", " ")).rstrip()
+	if not s.strip():
+		return None
+	m = re.match(r"^\s*#{1,6}\s*(.+?)\s*#*\s*$", s) or re.match(r"^\s*([=*_~]{2,}|-{3,})\s*(?P<h>[^=*_~].*?)\s*\1\s*$", s)
+	if m:
+		h = pl_text(m.groupdict().get("h") or m.group(1), PL_CAT_MAX).strip(_PL_EDGE)
+		return ("cat", h) if h else None
+	if re.fullmatch(r"[\s\-=_*~#.·•]+", s):
+		return None
+	packed, marked = None, False
+	m = _PL_BOX.match(s)
+	if m:
+		packed, marked, s = bool(m.group(1)) or (m.group(2) or "") in "☑☒✅✔✓" and bool(m.group(2)), True, s[m.end():]
+	else:
+		m = _PL_BULLET.match(s)
+		if m:
+			marked, s = True, s[m.end():]
+	s = s.strip()
+	if not s:
+		return None
+	has_w = bool(_PL_W_RE.search(s))
+	if s.endswith(":") and not has_w and len(s) <= 60 and packed is None:
+		h = pl_text(s[:-1], PL_CAT_MAX).strip(_PL_EDGE)
+		return ("cat", h) if h else None
+	letters = [ch for ch in s if ch.isalpha()]
+	if (not marked and len(letters) >= 4 and s == s.upper() and s != s.lower() and not re.search(r"\d", s) and len(s) <= 40):
+		return ("caps", pl_text(s, PL_CAT_MAX).strip(_PL_EDGE))
+	buy = False
+	m = _PL_BUY.search(s)
+	if m and m.start() > 0:
+		buy, s = True, s[:m.start()]
+	g, note = None, ""
+	ms = list(_PL_W_RE.finditer(s))
+	if ms:
+		m = ms[-1]
+		g = _pl_grams(m.group(1), m.group(2))
+		s = s[:m.start()] + " " + s[m.end():]
+	else:
+		m = re.match(r"^(.*?[^\W\d].*?)(?:\t+\s*|\s+[-–—:|=]\s*|:\s+|\s{3,})[~≈]?(" + _PL_N + r")\s*$", s)
+		if m:
+			g, s = _pl_grams(m.group(2), "g"), m.group(1)
+	ml = list(_PL_L_RE.finditer(s))
+	if ml and _pl_tidy(s[:ml[-1].start()] + " " + s[ml[-1].end():]):
+		m = ml[-1]
+		note = m.group(1) + " " + m.group(2).lower().replace("liter", "l").replace("litres", "l").replace("litre", "l").replace("lt", "l")
+		s = s[:m.start()] + " " + s[m.end():]
+	s = _pl_tidy(s)
+	n = 1
+	m = _PL_QTY_A.match(s) or _PL_QTY_B.match(s)
+	if m:
+		n, s = int(m.group(1)), s[m.end():]
+	else:
+		m = _PL_QTY_Z.search(s)
+		if m and m.start() > 0 and ("(" in m.group(0) or "[" in m.group(0) or int(m.group(1) or m.group(2)) <= 20):
+			n, s = int(m.group(1) or m.group(2)), s[:m.start()]
+		else:
+			m = re.match(r"^(\d{1,2})\s+([^\W\d][^\s]*)", s)
+			if m and m.group(2).lower().strip(".") not in _PL_NOQTY:
+				n, s = int(m.group(1)), s[m.end(1):]
+	name = pl_text(_pl_tidy(s), PL_NAME_MAX)
+	if not name or not any(ch.isalnum() for ch in name):
+		return None
+	return ("item", {"name": name, "g": g, "n": max(1, min(999, n)), "note": note, "packed": bool(packed), "buy": buy})
+
+
+def pl_parse_text(text):
+	""
+	lines = str(text).replace("\r\n", "\n").replace("\r", "\n").split("\n")[:PL_ROWS_MAX * 2]
+	parsed = [pl_parse_line(ln) for ln in lines]
+	real = [p for p in parsed if p]
+	caps = sum(1 for p in real if p[0] == "caps")
+	caps_are_items = caps > 0 and caps * 2 > len(real)
+	items, skipped, cat, title = [], 0, None, ""
+	idx = [i for i, p in enumerate(parsed) if p]
+	if (len(idx) >= 3 and parsed[idx[0]][0] == "item" and idx[1] > idx[0] + 1 and parsed[idx[1]][0] in ("cat", "caps") and not caps_are_items
+            and parsed[idx[0]][1]["g"] is None and not re.match(r"\s*[-*+•\[☐☑\d]", lines[idx[0]])):
+		title = pl_text(lines[idx[0]], 80)
+		parsed[idx[0]] = None
+		lines[idx[0]] = ""
+	for ln, p in zip(lines, parsed):
+		if p is None:
+			skipped += 1 if ln.strip() and any(ch.isalnum() for ch in ln) else 0
+			continue
+		if p[0] == "caps":
+			if caps_are_items:
+				p = ("item", {"name": p[1][:1] + p[1][1:].lower(), "g": None, "n": 1, "note": "", "packed": False, "buy": False})
+			else:
+				p = ("cat", " ".join(w[:1] + w[1:].lower() for w in p[1].split(" ")))
+		if p[0] == "cat":
+			cat = pl_cat_key(p[1])
+			continue
+		it = p[1]
+		it["cat"] = cat or pl_cat_guess(it["name"])
+		it["kind"] = pl_kind_auto(it["cat"], it["name"])
+		items.append(it)
+		if len(items) >= PL_ROWS_MAX:
+			break
+	return {"items": items, "skipped": skipped, "title": title}
+
+
+
+def pl_decode(data):
+	""
+	if data[:3] == b"\xef\xbb\xbf":
+		return data[3:].decode("utf-8", "replace")
+	if data[:2] in (b"\xff\xfe", b"\xfe\xff"):
+		return data.decode("utf-16", "replace")
+	try:
+		return data.decode("utf-8")
+	except UnicodeDecodeError:
+		return data.decode("cp1252", "replace")
+
+
+def pl_sniff(text, csv_file=False):
+	""
+	lines = [ln for ln in text.replace("\r\n", "\n").replace("\r", "\n").split("\n") if ln.strip()][:80]
+	if len(lines) < 2:
+		return ""
+	best, best_n = "", 0.0
+	for d in ("\t", ";", "|") + ((",",) if csv_file else ()):
+		cnt = [ln.count(d) for ln in lines]
+		have = [c for c in cnt if c]
+		if len(have) < max(2, 0.6 * len(lines)):
+			continue
+		mode = max(set(have), key=have.count)
+		score = have.count(mode) / len(lines) + (0.2 if d == "\t" else 0.1 if d == ";" else 0)
+		if have.count(mode) >= 0.5 * len(lines) and score > best_n:
+			best, best_n = d, score
+	return best
+
+
+def pl_csv_rows(text, delim):
+	import csv as _csv
+	rows = []
+	try:
+		for r in _csv.reader(_pl_io.StringIO(text.replace("\r\n", "\n").replace("\r", "\n")), delimiter=delim, quotechar='"', skipinitialspace=True):
+			cells = [pl_text(c, 300) for c in r[:PL_COLS_MAX]]
+			if any(cells):
+				rows.append(cells)
+			if len(rows) >= PL_ROWS_MAX:
+				break
+	except _csv.Error:
+		raise PLError("This table could not be read.")
+	return rows
+
+
+def _pl_xml(data):
+	""
+	import xml.etree.ElementTree as _ET
+	if b"<!DOCTYPE" in data or b"<!ENTITY" in data or b"<!doctype" in data:
+		raise PLError("This Excel file is not accepted (unusual content).")
+
+
+
+	enc = re.match(rb"\s*<\?xml[^>]{0,200}?encoding\s*=\s*[\"']([A-Za-z0-9._-]{1,40})[\"']", data[:300])
+	if data[:2] in (b"\xff\xfe", b"\xfe\xff") or b"\x00" in data or (enc and enc.group(1).lower() not in (b"utf-8", b"utf8")):
+		raise PLError("This Excel file is not accepted (unusual content).")
+	try:
+		return _ET.fromstring(data)
+	except _ET.ParseError:
+		raise PLError("This Excel file could not be read.")
+
+
+def pl_xlsx_rows(data):
+	"""
+"""
+	import zipfile as _zf
+	if len(data) > PL_IMPORT_MAX:
+		raise PLError("The file is too big.")
+	try:
+		z = _zf.ZipFile(_pl_io.BytesIO(data))
+	except (_zf.BadZipFile, ValueError, OSError):
+		raise PLError("This Excel file could not be read.")
+	with z:
+		infos = z.infolist()
+		if len(infos) > PL_X_ENTRIES or sum(i.file_size for i in infos) > PL_X_TOTAL:
+			raise PLError("This Excel file is not accepted (too big when unpacked).")
+		for i in infos:
+			if i.file_size > 64 * 1024 and i.file_size > PL_X_RATIO * max(1, i.compress_size):
+				raise PLError("This Excel file is not accepted (too big when unpacked).")
+		names = {i.filename: i for i in infos}
+		budget = {"n": PL_X_TOTAL}
+
+		def read(name):
+			i = names.get(name)
+			if i is None:
+				return None
+			try:
+				with z.open(i) as f:
+					b = f.read(budget["n"] + 1)
+			except (_zf.BadZipFile, RuntimeError, OSError, ValueError, NotImplementedError):
+				raise PLError("This Excel file could not be read.")
+			budget["n"] -= len(b)
+			if budget["n"] < 0:
+				raise PLError("This Excel file is not accepted (too big when unpacked).")
+			return b
+
+		def local(tag):
+			return tag.rsplit("}", 1)[-1]
+		sheet = None
+		wb, rels = read("xl/workbook.xml"), read("xl/_rels/workbook.xml.rels")
+		if wb is not None and rels is not None:
+			rid = None
+			for e in _pl_xml(wb).iter():
+				if local(e.tag) == "sheet":
+					rid = next((v for k, v in e.attrib.items() if local(k) == "id"), None)
+					break
+			for e in _pl_xml(rels).iter():
+				if local(e.tag) == "Relationship" and rid and e.attrib.get("Id") == rid:
+					tgt = e.attrib.get("Target", "").replace("\\", "/")
+					tgt = tgt[1:] if tgt.startswith("/") else "xl/" + tgt
+					parts = []
+					for p in tgt.split("/"):
+						if p == "..":
+							parts = parts[:-1]
+						elif p and p != ".":
+							parts.append(p)
+					sheet = "/".join(parts)
+		if sheet not in names:
+			sheet = next((n for n in sorted(names) if re.fullmatch(r"xl/worksheets/sheet\d+\.xml", n)), None)
+		if sheet is None:
+			raise PLError("This Excel file has no table.")
+		shared = []
+		sst = read("xl/sharedStrings.xml")
+		if sst is not None:
+			for si in _pl_xml(sst):
+				if local(si.tag) == "si":
+					shared.append("".join(t.text or "" for r in si for t in ([r] if local(r.tag) == "t" else
+                                                                             [x for x in r if local(x.tag) == "t"] if local(r.tag) == "r" else [])))
+		rows = []
+		root = _pl_xml(read(sheet) or b"")
+		for row in root.iter():
+			if local(row.tag) != "row":
+				continue
+			cells, nxt = {}, 0
+			for c in row:
+				if local(c.tag) != "c":
+					continue
+				ref = re.match(r"([A-Z]{1,3})", c.attrib.get("r", ""))
+				if ref:
+					col = 0
+					for ch in ref.group(1):
+						col = col * 26 + ord(ch) - 64
+					col -= 1
+				else:
+					col = nxt
+				nxt = col + 1
+				if col >= PL_COLS_MAX:
+					continue
+				t_ = c.attrib.get("t", "n")
+				v = next((x for x in c if local(x.tag) == "v"), None)
+				val = ""
+				if t_ == "s":
+					try:
+						val = shared[int(v.text)] if v is not None else ""
+					except (ValueError, IndexError, TypeError):
+						val = ""
+				elif t_ == "inlineStr":
+					val = "".join(x.text or "" for x in c.iter() if local(x.tag) == "t")
+				elif t_ == "b":
+					val = "x" if v is not None and v.text == "1" else ""
+				elif t_ == "e":
+					val = ""
+				elif v is not None and v.text is not None:
+					val = v.text
+					if t_ == "n":
+						try:
+							f = float(val)
+							val = str(int(f)) if f == int(f) and abs(f) < 1e12 else repr(round(f, 4))
+						except (ValueError, OverflowError):
+							pass
+				cells[col] = pl_text(val, 300)
+			if any(cells.values()):
+				rows.append([cells.get(i, "") for i in range(max(cells) + 1)])
+			if len(rows) >= PL_ROWS_MAX:
+				break
+		return rows
+
+
+
+PL_HEAD = {
+    "name": ["name", "artikel", "gegenstand", "bezeichnung", "item", "was", "ausrüstung", "ausruestung", "produkt", "teil", "gear", "article", "nom",
+             "nome", "oggetto", "objet", "sache", "titel", "equipment", "material", "ding"],
+    "g": ["gewicht", "weight", "gramm", "gram", "grams", "g", "kg", "masse", "poids", "peso", "gew", "gew.", "einzelgewicht", "stückgewicht"],
+    "n": ["anzahl", "menge", "stk", "stk.", "stück", "stueck", "qty", "quantity", "anz", "anz.", "quantité", "quantità", "pcs", "#", "x", "nombre", "numero"],
+    "cat": ["kategorie", "category", "gruppe", "bereich", "rubrik", "catégorie", "categoria", "group", "kat", "kat.", "typ", "type", "abteilung"],
+    "note": ["notiz", "notizen", "bemerkung", "bemerkungen", "kommentar", "note", "notes", "comment", "comments", "hinweis", "beschreibung",
+             "description", "remarque", "nota", "info", "details"],
+    "kind": ["art"],
+    "packed": ["gepackt", "packed", "erledigt", "ok", "✓", "dabei", "eingepackt", "done"],
+    "buy": ["kaufen", "fehlt", "fehlt noch", "buy", "einkaufen", "besorgen"],
+}
+PL_FIELDS = ("name", "g", "n", "cat", "note", "kind", "packed", "buy")
+PL_CSV_HEAD = (("cat", "Category"), ("name", "Name"), ("n", "Quantity"), ("g", "Weight (g)"), ("kind", "Kind"), ("note", "Remark"),
+               ("packed", "Packed"), ("buy", "To buy"))
+PL_KIND_NAMES = (("base", "Base weight"), ("cons", "Consumable"), ("worn", "Worn"))
+_PL_TRUE = {"x", "ja", "yes", "y", "j", "1", "true", "wahr", "✓", "✔", "☑", "✅", "oui", "sì", "si", "gepackt", "ok", "kaufen"}
+
+
+def _pl_head_norm(cell):
+	low = cell.lower().strip()
+	unit = ""
+	m = re.search(r"[(\[]\s*(?:in\s+)?(kg|g|gramm|gr)\s*[)\]]|\s+(?:in\s+)?(kg|g|gramm|gr)$|/\s*(kg|g)$", low)
+	if m:
+		unit = "kg" if (m.group(1) or m.group(2) or m.group(3)) == "kg" else "g"
+		low = (low[:m.start()] + low[m.end():]).strip()
+	if low == "kg":
+		unit = "kg"
+	low = re.sub(r"[(\[].*?[)\]]", "", low).strip(" :.*#-_")
+	return low, unit
+
+
+def _pl_head_field(cell):
+	low, unit = _pl_head_norm(cell)
+	if not low:
+		return "", unit
+	for f in PL_FIELDS:
+		words = set(PL_HEAD[f])
+		en = dict(PL_CSV_HEAD)[f]
+		words.update(_pl_head_norm(tr(en, L))[0] for L in LANGS)
+		if low in words or low.rstrip(".") in words:
+			return f, unit
+	for f in ("g", "n", "cat", "note", "name"):
+		if any(low.startswith(w + " ") or low.startswith(w + "-") or low.startswith(w + "/") for w in PL_HEAD[f] if len(w) > 3):
+			return f, unit
+	return "", unit
+
+
+def pl_table_guess(rows):
+	""
+	mp = {f: -1 for f in PL_FIELDS}
+	unit, header = "", False
+	if not rows:
+		return {"header": False, "map": mp, "unit": "g"}
+	ncol = max(len(r) for r in rows)
+	first = rows[0]
+	hits = [_pl_head_field(c) for c in first]
+	if sum(1 for f, _u in hits if f) >= 1 and not any(pl_num(c) is not None or _PL_W_RE.fullmatch(c.strip()) for c in first if c):
+		header = True
+		for i, (f, u) in enumerate(hits):
+			if f and mp[f] < 0:
+				mp[f] = i
+				if f == "g" and u:
+					unit = u
+	data = rows[1:] if header else rows
+	data = data[:200]
+
+	def col(i):
+		return [r[i] for r in data if i < len(r) and r[i]]
+	stats = []
+	for i in range(ncol):
+		cs = col(i)
+		n = max(1, len(cs))
+		nums = [pl_num(c) for c in cs]
+		stats.append({"i": i, "fill": len(cs), "w": sum(1 for c in cs if _PL_W_RE.search(c)) / n, "num": sum(1 for v in nums if v is not None) / n,
+                      "txt": sum(1 for c, v in zip(cs, nums) if v is None and any(ch.isalpha() for ch in c)) / n,
+                      "vals": [v for v in nums if v is not None], "distinct": len({c.lower() for c in cs}), "len": sum(len(c) for c in cs) / n})
+	used = {v for v in mp.values() if v >= 0}
+	if mp["name"] < 0:
+		cand = [s for s in stats if s["i"] not in used and s["fill"] and s["txt"] >= 0.6 and s["w"] < 0.5]
+		if not header and len(cand) > 1:
+			cand.sort(key=lambda s: (s["distinct"] <= max(2, 0.4 * s["fill"]), s["i"]))
+		if cand:
+			mp["name"] = cand[0]["i"]
+			used.add(mp["name"])
+	if not header:
+		cw = [s for s in stats if s["i"] not in used and s["fill"] and s["w"] >= 0.3]
+		if cw:
+			mp["g"] = max(cw, key=lambda s: s["w"])["i"]
+		numc = [s for s in stats if s["i"] not in used and s["i"] != mp["g"] and s["fill"] and s["num"] >= 0.6]
+		small = [s for s in numc if s["vals"] and all(v == int(v) and 0 < v <= 12 for v in s["vals"])]
+		if mp["g"] < 0 and numc:
+			big = [s for s in numc if s not in small] or (numc if len(numc) > 1 else [])
+			if big:
+				mp["g"] = max(big, key=lambda s: sum(s["vals"]) / max(1, len(s["vals"])))["i"]
+		small = [s for s in small if s["i"] != mp["g"]]
+		if small:
+			mp["n"] = small[0]["i"]
+		used = {v for v in mp.values() if v >= 0}
+		txt = [s for s in stats if s["i"] not in used and s["fill"] and s["txt"] >= 0.6]
+		for s in txt:
+			if mp["cat"] < 0 and s["distinct"] <= max(2, 0.4 * s["fill"]) and s["len"] <= 25:
+				mp["cat"] = s["i"]
+			elif mp["note"] < 0:
+				mp["note"] = s["i"]
+	if not unit and mp["g"] >= 0:
+		vals = [v for c in col(mp["g"]) for v in [pl_num(c)] if v is not None]
+		if vals:
+			vals.sort()
+			unit = "kg" if vals[len(vals) // 2] < 30 and any(v != int(v) for v in vals) else "g"
+	return {"header": header, "map": mp, "unit": unit or "g"}
+
+
+def _pl_unquote(c):
+	""
+	return c[1:] if len(c) > 1 and c[0] == "'" and c[1] in "=+-@" else c
+
+
+def pl_table_items(rows, guess):
+	""
+	mp = {f: -1 for f in PL_FIELDS}
+	for f, v in (guess.get("map") or {}).items():
+		if f in mp and isinstance(v, int) and not isinstance(v, bool) and -1 <= v < PL_COLS_MAX:
+			mp[f] = v
+	unit = "kg" if guess.get("unit") == "kg" else "g"
+	data = rows[1:] if guess.get("header") else rows
+	kinds = {}
+	for k, en in PL_KIND_NAMES:
+		for L in LANGS:
+			kinds[tr(en, L).lower()] = k
+	kinds.update({"verbrauch": "cons", "consumable": "cons", "basis": "base", "base": "base", "getragen": "worn", "worn": "worn", "am körper": "worn"})
+	items, skipped, cat = [], 0, None
+
+	def cell(r, f):
+		i = mp[f]
+		return _pl_unquote(r[i]) if 0 <= i < len(r) else ""
+	for r in data:
+		full = [c for c in r if c]
+		if not full:
+			continue
+		if len(full) == 1 and mp["cat"] < 0 and max(len(x) for x in data) >= 2:
+			c = full[0]
+			p = pl_parse_line(c)
+			if c.endswith(":") or (p and p[0] in ("cat", "caps")) or c.lower() in PL_HEAD_EXACT or any(
+                    c.lower() == tr(en, L).lower() for _k, en, _c, _p in PL_CATS for L in LANGS):
+				cat = pl_cat_key(c.title() if c == c.upper() else c)
+				continue
+		raw = cell(r, "name") if mp["name"] >= 0 else ""
+		if not raw:
+			skipped += 1
+			continue
+		gw = pl_weight(cell(r, "g"), unit) if cell(r, "g") else None
+		p = pl_parse_line(raw) if mp["g"] < 0 else None
+		it = dict(p[1]) if p and p[0] == "item" else {"name": pl_text(raw, PL_NAME_MAX), "g": None, "n": 1, "note": "", "packed": False, "buy": False}
+		if not it["name"]:
+			skipped += 1
+			continue
+		if gw is not None:
+			it["g"] = gw
+		if cell(r, "n"):
+			v = pl_num(re.sub(r"\s*(?:x|×|stk\.?|stück)\s*$", "", cell(r, "n"), flags=re.I))
+			if v is not None and 1 <= v <= 999:
+				it["n"] = int(v)
+		if cell(r, "note"):
+			it["note"] = pl_text((it["note"] + " · " if it["note"] else "") + cell(r, "note"), PL_NOTE_MAX)
+		it["cat"] = pl_cat_key(cell(r, "cat")) if cell(r, "cat") else (cat or pl_cat_guess(it["name"]))
+		k = kinds.get(cell(r, "kind").lower())
+		it["kind"] = k or pl_kind_auto(it["cat"], it["name"])
+		if mp["packed"] >= 0:
+			it["packed"] = cell(r, "packed").lower() in _PL_TRUE
+		if mp["buy"] >= 0:
+			it["buy"] = cell(r, "buy").lower() in _PL_TRUE
+		items.append(it)
+	return {"items": items, "skipped": skipped}
+
+
+def pl_import_preview(data=None, text=None, name="", guess=None, rows=None, lang=None):
+	"""
+"""
+	ext = tausch_ext(name) if name else ""
+	title = pl_text(os.path.splitext(os.path.basename(str(name).replace("\\", "/")))[0], 80) if name else ""
+	if rows is None:
+		if data is not None:
+			if len(data) > PL_IMPORT_MAX:
+				raise PLError("The file is too big.")
+			if data[:4] == b"PK\x03\x04" or ext in ("xlsx", "xlsm"):
+				if ext in ("docx", "pptx", "odt", "ods", "numbers", "pages", "zip"):
+					raise PLError("This kind of file cannot be imported. Save the list as .xlsx, CSV or text.")
+				rows = pl_xlsx_rows(data)
+			elif data[:8] == b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" or ext == "xls":
+				raise PLError("Old Excel files (.xls) cannot be read. Save the table as .xlsx or CSV.")
+			elif data[:5] == b"%PDF-" or ext in ("pdf", "doc", "rtf", "jpg", "jpeg", "png", "heic"):
+				raise PLError("This kind of file cannot be imported. Save the list as .xlsx, CSV or text.")
+			else:
+				text = pl_decode(data)
+		if rows is None:
+			text = str(text or "")
+			if len(text.encode("utf-8", "replace")) > PL_IMPORT_MAX:
+				raise PLError("The text is too long.")
+			if "\x00" in text[:2000]:
+				raise PLError("This kind of file cannot be imported. Save the list as .xlsx, CSV or text.")
+			if ext == "json" or text.lstrip()[:1] == "{":
+				try:
+					j = json.loads(text)
+				except ValueError:
+					j = None
+				if isinstance(j, dict) and isinstance(j.get("items"), list):
+					its = []
+					for d in j["items"][:PL_ROWS_MAX]:
+						if isinstance(d, dict) and pl_text(d.get("name"), PL_NAME_MAX):
+							g = d.get("g")
+							its.append({"name": pl_text(d.get("name"), PL_NAME_MAX), "g": g if isinstance(g, int) and not isinstance(g, bool) and 0 < g <= 500000 else None,
+                                        "n": d.get("n") if isinstance(d.get("n"), int) and 1 <= d.get("n") <= 999 else 1, "note": pl_text(d.get("note"), PL_NOTE_MAX),
+                                        "cat": pl_cat_clean(d.get("cat") or "other"), "kind": d.get("kind") if d.get("kind") in PL_KINDS else "base",
+                                        "packed": d.get("packed") is True, "buy": d.get("buy") is True})
+					return {"kind": "lines", "items": its, "skipped": 0, "title": pl_text(j.get("name"), 80) or title, "goal_g": j.get("goal_g") if isinstance(j.get("goal_g"), int) else 0}
+				if ext == "json":
+					raise PLError("This JSON file is not a packing list of MoveEye.")
+			d = pl_sniff(text, csv_file=ext in ("csv", "tsv"))
+			if not d:
+				res = pl_parse_text(text)
+				return {"kind": "lines", "items": res["items"], "skipped": res["skipped"], "title": res["title"] or title}
+			rows = pl_csv_rows(text, d)
+	rows = [[pl_text(c, 300) for c in r[:PL_COLS_MAX]] for r in rows[:PL_ROWS_MAX] if isinstance(r, list)]
+	if not rows:
+		raise PLError("Nothing to import was found.")
+	g = pl_table_guess(rows)
+	if isinstance(guess, dict):
+		g = {"header": bool(guess.get("header")), "map": dict(g["map"], **{k: v for k, v in (guess.get("map") or {}).items() if k in g["map"] and isinstance(v, int)}),
+             "unit": "kg" if guess.get("unit") == "kg" else "g"}
+	res = pl_table_items(rows, g)
+	return {"kind": "table", "items": res["items"], "skipped": res["skipped"], "rows": rows, "map": g["map"], "header": g["header"], "unit": g["unit"],
+            "title": title}
+
+
+
+def _pl_write(path, obj):
+	""
+	tmp = f"{path}.{os.getpid()}.{threading.get_ident()}.tmp"
+	with open(tmp, "w", encoding="utf-8") as f:
+		json.dump(obj, f, ensure_ascii=False, indent=1)
+		f.flush()
+		try:
+			os.fsync(f.fileno())
+		except OSError:
+			pass
+	os.replace(tmp, path)
+
+
+def _pl_item_ok(d):
+	""
+	if not isinstance(d, dict) or not PL_IID.match(str(d.get("id", ""))):
+		return None
+	name = pl_text(d.get("name"), PL_NAME_MAX)
+	if not name:
+		return None
+	g, n = d.get("g"), d.get("n")
+	it = {"id": d["id"], "name": name, "g": g if isinstance(g, int) and not isinstance(g, bool) and 0 < g <= 500000 else None,
+          "n": n if isinstance(n, int) and not isinstance(n, bool) and 1 <= n <= 999 else 1,
+          "cat": pl_cat_clean(d.get("cat")) if isinstance(d.get("cat"), str) else "other", "note": pl_text(d.get("note"), PL_NOTE_MAX),
+          "photo": d.get("photo") if isinstance(d.get("photo"), int) and not isinstance(d.get("photo"), bool) and d.get("photo") > 0 else 0,
+          "packed": d.get("packed") is True, "buy": d.get("buy") is True, "kind": d.get("kind") if d.get("kind") in PL_KINDS else "base",
+          "rev": d.get("rev") if isinstance(d.get("rev"), int) and d.get("rev") >= 0 else 0, "by": pl_text(d.get("by"), 40),
+          "t": d.get("t") if isinstance(d.get("t"), int) else 0}
+	return it
+
+
+def _pl_list_ok(d, lid):
+	if not isinstance(d, dict) or d.get("id") != lid or not isinstance(d.get("items"), list):
+		return None
+	name = pl_text(d.get("name"), 80)
+	if not name or not isinstance(d.get("owner"), str):
+		return None
+	items, seen = [], set()
+	for x in d["items"][:PL_MAX_ITEMS]:
+		it = _pl_item_ok(x)
+		if it and it["id"] not in seen:
+			seen.add(it["id"])
+			items.append(it)
+	rev = d.get("rev") if isinstance(d.get("rev"), int) and d.get("rev") >= 0 else 0
+	rev = max([rev] + [it["rev"] for it in items])
+	gone = [[g[0], g[1]] for g in (d.get("gone") if isinstance(d.get("gone"), list) else [])
+            if isinstance(g, list) and len(g) == 2 and PL_IID.match(str(g[0])) and isinstance(g[1], int)][-PL_GONE_MAX:]
+	goal = d.get("goal_g")
+	last = d.get("last") if isinstance(d.get("last"), dict) else {}
+	return {"moveeye_packliste": 1, "id": lid, "name": name, "area": "mine" if d.get("area") == "mine" else "all", "owner": d["owner"][:60],
+            "owner_name": pl_text(d.get("owner_name"), 40) or d["owner"][:40], "t": d.get("t") if isinstance(d.get("t"), int) else 0, "rev": rev,
+            "meta_rev": d.get("meta_rev") if isinstance(d.get("meta_rev"), int) else 0,
+            "goal_g": goal if isinstance(goal, int) and not isinstance(goal, bool) and 0 < goal <= 500000 else 0, "note": pl_text(d.get("note"), PL_NOTE_MAX),
+            "last": {"by": pl_text(last.get("by"), 40), "t": last.get("t") if isinstance(last.get("t"), int) else 0},
+            "gone": gone, "gone_floor": d.get("gone_floor") if isinstance(d.get("gone_floor"), int) else 0, "items": items}
+
+
+def pl_load():
+	""
+	root = _tz_load()
+	if root is None:
+		return None
+	with PL["lock"]:
+		if PL["root"] == root and PL["lists"] is not None:
+			return root
+		d = os.path.join(root, "pack")
+		try:
+			os.makedirs(os.path.join(d, "b"), exist_ok=True)
+			names = sorted(os.listdir(d))
+		except OSError as e:
+			log_event("sys", f"Packing lists: folder {d} cannot be made: {e}"[:180])
+			return None
+		lists = {}
+		for nm in names:
+			p = os.path.join(d, nm)
+			if nm.endswith(".tmp"):
+				try:
+					os.remove(p)
+				except OSError:
+					pass
+				continue
+			if not nm.endswith(".json") or not TZ_ID.match(nm[:-5]) or len(lists) >= PL_MAX_LISTS:
+				continue
+			try:
+				if os.path.getsize(p) > 8 * 1024 * 1024:
+					continue
+				with open(p, encoding="utf-8") as f:
+					L = _pl_list_ok(json.load(f), nm[:-5])
+			except (OSError, ValueError, RecursionError):
+				L = None
+			if L:
+				lists[L["id"]] = L
+		total = 0
+		try:
+			for dp, _dn, fns in os.walk(os.path.join(d, "b")):
+				total += sum(os.path.getsize(os.path.join(dp, fn)) for fn in fns if fn.endswith(".jpg"))
+		except OSError:
+			pass
+		PL.update(root=root, lists=lists, photo_bytes=total)
+	return root
+
+
+def _pl_save(L):
+	_pl_write(os.path.join(PL["root"], "pack", L["id"] + ".json"), L)
+
+
+def _pl_photo_paths(lid, iid):
+	""
+	if not TZ_ID.match(str(lid or "")) or not PL_IID.match(str(iid or "")):
+		return None
+	d = os.path.join(PL["root"], "pack", "b", lid)
+	return os.path.join(d, iid + ".jpg"), os.path.join(d, iid + "_p.jpg")
+
+
+def _pl_photo_rm(lid, iid):
+	pp = _pl_photo_paths(lid, iid)
+	for p in pp or ():
+		try:
+			n = os.path.getsize(p)
+			os.remove(p)
+			PL["photo_bytes"] = max(0, PL["photo_bytes"] - n)
+		except OSError:
+			pass
+
+
+
+def pl_can_see(L, who):
+	return "files_view" in who["perms"] and (L["area"] == "all" or L["owner"] == who["key"] or who["admin"])
+
+
+def pl_can_edit(L, who):
+	return pl_can_see(L, who) and "files_up" in who["perms"]
+
+
+def pl_can_del(L, who):
+	return pl_can_see(L, who) and (who["admin"] or (L["owner"] == who["key"] and "files_up" in who["perms"]))
+
+
+def pl_can_export(L, who):
+	return pl_can_see(L, who) and ("files_down" in who["perms"] or L["owner"] == who["key"])
+
+
+def pl_totals(items):
+	""
+	t = {"n": len(items), "pieces": 0, "packed": 0, "buy": 0, "total": 0, "base": 0, "cons": 0, "worn": 0, "packed_g": 0, "unknown": 0, "cats": {}}
+	for it in items:
+		w = (it["g"] or 0) * it["n"]
+		t["pieces"] += it["n"]
+		t["packed"] += 1 if it["packed"] else 0
+		t["buy"] += 1 if it["buy"] else 0
+		t["unknown"] += 1 if it["g"] is None else 0
+		t["total"] += w
+		t[it["kind"]] += w
+		t["packed_g"] += w if it["packed"] else 0
+		c = t["cats"].setdefault(it["cat"], {"g": 0, "n": 0, "packed": 0})
+		c["g"] += w
+		c["n"] += 1
+		c["packed"] += 1 if it["packed"] else 0
+	t["pack"] = t["base"] + t["cons"]
+	return t
+
+
+def _pl_pub_item(it, guest=False):
+	d = {k: it[k] for k in ("id", "name", "g", "n", "cat", "note", "photo", "packed", "buy", "kind", "rev", "t")}
+	if not guest:
+		d["by"] = it["by"]
+	return d
+
+
+def _pl_pub_head(L, who):
+	t = pl_totals(L["items"])
+	return {"id": L["id"], "name": L["name"], "area": L["area"], "by": L["owner_name"], "mine": L["owner"] == who["key"], "t": L["t"], "rev": L["rev"],
+            "goal_g": L["goal_g"], "note": L["note"], "n": t["n"], "packed": t["packed"], "buy": t["buy"], "total": t["total"], "pack": t["pack"],
+            "edit": pl_can_edit(L, who) and bool(CFG.get("tausch_on", True)), "rm": pl_can_del(L, who), "dl": pl_can_export(L, who)}
+
+
+def pl_overview(who, lang=None):
+	root = pl_load()
+	r0, kind, prob = tausch_root()
+	out = {"ok": True, "on": bool(CFG.get("tausch_on", True)), "perms": sorted(who["perms"]),
+           "me": {"name": who["name"], "admin": who["admin"]}, "store": {"problem": prob or ("missing" if root is None else "")}, "lists": [],
+           "templates": [{"key": k, "name": nm[_pl_tl(lang)], "n": len(its)} for k, nm, its in PL_TEMPLATES],
+           "caps": {"lists": PL_MAX_LISTS, "items": PL_MAX_ITEMS, "import": PL_IMPORT_MAX, "text": PL_TEXT_MAX, "photo": PL_PHOTO_MAX}, "now": int(time.time())}
+	if root is None or "files_view" not in who["perms"]:
+		return out
+	with PL["lock"]:
+		out["lists"] = sorted((_pl_pub_head(L, who) for L in PL["lists"].values() if pl_can_see(L, who)), key=lambda x: -x["t"])
+	return out
+
+
+def _pl_tl(lang):
+	return {"de": 0, "en": 1, "fr": 2, "it": 3, "rm": 0}.get(cur_lang(lang), 1)
+
+
+def pl_get(who, lid, since=0, lang=None):
+	""
+	if pl_load() is None or not TZ_ID.match(str(lid or "")):
+		return False, tr("unknown list", lang), {}
+	with PL["lock"]:
+		L = PL["lists"].get(lid)
+		if L is None or not pl_can_see(L, who):
+			return False, tr("unknown list", lang), {}
+		out = {"rev": L["rev"], "now": int(time.time()), "last": dict(L["last"]), "head": _pl_pub_head(L, who)}
+		if since and since == L["rev"]:
+			out["same"] = True
+			del out["head"]
+		elif since and since >= L["gone_floor"] and since < L["rev"]:
+			out["items"] = [_pl_pub_item(it) for it in L["items"] if it["rev"] > since]
+			out["gone"] = [g[0] for g in L["gone"] if g[1] > since]
+			out["order"] = [it["id"] for it in L["items"]]
+		else:
+			out["full"] = True
+			out["items"] = [_pl_pub_item(it) for it in L["items"]]
+	return True, "", out
+
+
+
+def _pl_ready(who, lang, write=True):
+	""
+	if not CFG.get("tausch_on", True):
+		return tr("The file exchange is switched off.", lang)
+	if write and "files_up" not in who["perms"]:
+		return tr("You may look at the packing lists, but not change them.", lang)
+	root = pl_load()
+	r0, kind, prob = tausch_root()
+	if root is None:
+		return tr("The storage (USB stick / SSD) is not there - plug it in again.", lang)
+	if prob == "ro":
+		return tr("The memory card is write-protected (overlay) - files would be lost at the next restart. Use a USB stick.", lang)
+	if write and tausch_disk_free(root) < 8 * TZ_MB:
+		return tr("The storage is full.", lang)
+	if write and not tausch_rate(who["key"], "pl", 4000):
+		return tr("Too many changes in a short time - wait a few minutes.", lang)
+	return ""
+
+
+def _pl_bump(L, who, meta=False):
+	L["rev"] += 1
+	L["last"] = {"by": who["name"], "t": int(time.time())}
+	if meta:
+		L["meta_rev"] = L["rev"]
+	return L["rev"]
+
+
+def _pl_new_item(L, who, d):
+	""
+	name = pl_text(d.get("name"), PL_NAME_MAX)
+	if not name:
+		return None
+	g = d.get("g")
+	if not (isinstance(g, int) and not isinstance(g, bool) and 0 < g <= 500000):
+		g = pl_weight(d.get("w")) if isinstance(d.get("w"), (str, int, float)) and not isinstance(d.get("w"), bool) else None
+	n = d.get("n")
+	try:
+		n = int(n) if not isinstance(n, bool) else 1
+	except (TypeError, ValueError):
+		n = 1
+	cat = pl_cat_clean(d.get("cat")) if isinstance(d.get("cat"), str) and d.get("cat").strip() else pl_cat_guess(name)
+	iid = secrets.token_hex(4)
+	have = {x["id"] for x in L["items"]} | {x[0] for x in L["gone"]}
+	while iid in have:
+		iid = secrets.token_hex(4)
+	return {"id": iid, "name": name, "g": g, "n": max(1, min(999, n)), "cat": cat, "note": pl_text(d.get("note"), PL_NOTE_MAX), "photo": 0,
+            "packed": d.get("packed") is True, "buy": d.get("buy") is True, "kind": d.get("kind") if d.get("kind") in PL_KINDS else pl_kind_auto(cat, name),
+            "rev": L["rev"], "by": who["name"], "t": int(time.time())}
+
+
+def pl_dups(items, L=None):
+	""
+	have = {it["name"].casefold() for it in (L["items"] if L else ())}
+	seen = set()
+	for it in items:
+		k = it["name"].casefold()
+		it["dup"] = "list" if k in have else "import" if k in seen else ""
+		seen.add(k)
+	return items
+
+
+def pl_action(who, d, lang=None):
+	""
+	a = d.get("action")
+	if a == "preview":
+		err = _pl_ready(who, lang)
+		if err:
+			return False, err, {}, 403 if "files_up" not in who["perms"] else 409
+		try:
+			if isinstance(d.get("rows"), list):
+				res = pl_import_preview(rows=d["rows"], guess=d.get("guess") if isinstance(d.get("guess"), dict) else None, lang=lang)
+			else:
+				text = d.get("text")
+				if not isinstance(text, str) or not text.strip():
+					return False, tr("Nothing to import was found.", lang), {}, 400
+				if len(text.encode("utf-8", "replace")) > PL_TEXT_MAX:
+					return False, tr("The text is too long.", lang), {}, 413
+				res = pl_import_preview(text=text, lang=lang)
+		except PLError as e:
+			return False, tr(str(e), lang), {}, 400
+		return True, "", pl_preview_out(who, res, str(d.get("list") or "")), 200
+	err = _pl_ready(who, lang)
+	if err:
+		return False, err, {}, 403 if "files_up" not in who["perms"] else 409
+	now = int(time.time())
+	with PL["lock"]:
+		lists = PL["lists"]
+		if a in ("new", "copy") or (a == "import" and not d.get("list")):
+			if len(lists) >= PL_MAX_LISTS:
+				return False, trf("At most {n} packing lists - delete an old one first.", lang, n=PL_MAX_LISTS), {}, 400
+			src = None
+			if a == "copy":
+				src = lists.get(str(d.get("id") or ""))
+				if src is None or not pl_can_see(src, who):
+					return False, tr("unknown list", lang), {}, 404
+			name = pl_text(d.get("name"), 80) or (trf("{name} (copy)", lang, name=src["name"])[:80] if src else "")
+			if not name:
+				return False, tr("The list needs a name.", lang), {}, 400
+			taken = {x["name"].casefold() for x in lists.values()}
+			base_name, i = name, 2
+			while name.casefold() in taken and i < 500:
+				name = f"{base_name[:74]} ({i})"
+				i += 1
+			lid = secrets.token_hex(8)
+			while lid in lists:
+				lid = secrets.token_hex(8)
+			goal = pl_weight(d.get("goal"), "kg") if isinstance(d.get("goal"), (str, int, float)) and not isinstance(d.get("goal"), bool) else None
+			L = {"moveeye_packliste": 1, "id": lid, "name": name, "area": "mine" if d.get("area") == "mine" else "all", "owner": who["key"],
+                 "owner_name": who["name"], "t": now, "rev": 1, "meta_rev": 1, "goal_g": goal or (src["goal_g"] if src else 0), "note": src["note"] if src else "",
+                 "last": {"by": who["name"], "t": now}, "gone": [], "gone_floor": 0, "items": []}
+			if src:
+				for it in src["items"]:
+					L["items"].append(dict(it, packed=False, rev=1, by=who["name"], t=now))
+			tpl = next((x for x in PL_TEMPLATES if x[0] == d.get("template")), None) if a == "new" else None
+			if tpl:
+				li = _pl_tl(lang)
+				for cat, g, n, kind, names in tpl[2]:
+					it = _pl_new_item(L, who, {"name": names[li], "g": g, "n": n, "cat": cat, "kind": kind})
+					L["items"].append(it)
+				L["note"] = tr("Weights are typical values - weigh your own things.", lang)
+			added = dups = 0
+			if a == "import":
+				added, dups = _pl_import_into(L, who, d.get("items"))
+				if not added:
+					return False, tr("Nothing to import was found.", lang), {}, 400
+			try:
+				if src:
+					for it in L["items"]:
+						pp, qq = _pl_photo_paths(src["id"], it["id"]), _pl_photo_paths(lid, it["id"])
+						if it["photo"] and pp and all(os.path.isfile(p) for p in pp) and PL["photo_bytes"] < PL_PHOTO_TOTAL:
+							os.makedirs(os.path.dirname(qq[0]), exist_ok=True)
+							for p, q in zip(pp, qq):
+								shutil.copyfile(p, q)
+								PL["photo_bytes"] += os.path.getsize(q)
+						else:
+							it["photo"] = 0
+				_pl_save(L)
+			except OSError as e:
+				shutil.rmtree(os.path.join(PL["root"], "pack", "b", lid), ignore_errors=True)
+				return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", {}, 507
+			lists[lid] = L
+			log_event("web", f"Packing lists: {who['name']} " + ("copied a list" if src else "imported a list" if a == "import" else "created a list")
+                      + f" ({len(L['items'])} items)")
+			return True, "", {"id": lid, "added": added, "dups": dups, "head": _pl_pub_head(L, who)}, 200
+		lid = str(d.get("list") or d.get("id") or "")
+		L = lists.get(lid) if TZ_ID.match(lid) else None
+		if L is None or not pl_can_see(L, who):
+			return False, tr("unknown list", lang), {}, 404
+		if a == "del":
+			if not pl_can_del(L, who):
+				return False, tr("Only the person who created this list (or the administrator) may delete it.", lang), {}, 403
+			lists.pop(lid, None)
+			try:
+				os.remove(os.path.join(PL["root"], "pack", lid + ".json"))
+			except OSError:
+				pass
+			bd = os.path.join(PL["root"], "pack", "b", lid)
+			try:
+				for fn in os.listdir(bd):
+					PL["photo_bytes"] = max(0, PL["photo_bytes"] - os.path.getsize(os.path.join(bd, fn)))
+			except OSError:
+				pass
+			shutil.rmtree(bd, ignore_errors=True)
+			log_event("web", f"Packing lists: {who['name']} deleted a list ({len(L['items'])} items, from {L['owner_name']})")
+			return True, "", {}, 200
+		if not pl_can_edit(L, who):
+			return False, tr("You may look at the packing lists, but not change them.", lang), {}, 403
+		res = {}
+		dirty = True
+		if a == "meta":
+			if "name" in d:
+				nm = pl_text(d.get("name"), 80)
+				if not nm:
+					return False, tr("The list needs a name.", lang), {}, 400
+				L["name"] = nm
+			if "goal" in d:
+				gv = d.get("goal")
+				L["goal_g"] = (pl_weight(gv, "kg") or 0) if isinstance(gv, (str, int, float)) and not isinstance(gv, bool) else 0
+			if "note" in d:
+				L["note"] = pl_text(d.get("note"), PL_NOTE_MAX)
+			if d.get("area") in ("all", "mine") and (L["owner"] == who["key"] or who["admin"]):
+				L["area"] = d["area"]
+			_pl_bump(L, who, meta=True)
+		elif a == "add":
+			if len(L["items"]) >= PL_MAX_ITEMS:
+				return False, trf("At most {n} items per list.", lang, n=PL_MAX_ITEMS), {}, 400
+			f = d
+			if isinstance(d.get("text"), str):
+				p = pl_parse_line(d["text"][:400].replace("\n", " "))
+				if not p or p[0] != "item":
+					p = ("item", {"name": pl_text(d["text"], PL_NAME_MAX)})
+				f = dict(p[1])
+				if isinstance(d.get("cat"), str) and d["cat"].strip():
+					f["cat"] = d["cat"]
+				if d.get("buy") is True:
+					f["buy"] = True
+			_pl_bump(L, who)
+			it = _pl_new_item(L, who, f)
+			if it is None:
+				L["rev"] -= 1
+				return False, tr("The item needs a name.", lang), {}, 400
+			L["items"].append(it)
+			res = {"item": _pl_pub_item(it), "dup": sum(1 for x in L["items"] if x["name"].casefold() == it["name"].casefold()) > 1}
+		elif a == "import":
+			room = PL_MAX_ITEMS - len(L["items"])
+			if room <= 0:
+				return False, trf("At most {n} items per list.", lang, n=PL_MAX_ITEMS), {}, 400
+			_pl_bump(L, who)
+			added, dups = _pl_import_into(L, who, d.get("items"))
+			if not added:
+				L["rev"] -= 1
+				return False, tr("Nothing to import was found.", lang), {}, 400
+			res = {"added": added, "dups": dups}
+			log_event("web", f"Packing lists: {who['name']} imported {added} items into a list")
+		elif a == "reset":
+			r = _pl_bump(L, who)
+			n = 0
+			for it in L["items"]:
+				if it["packed"]:
+					it.update(packed=False, rev=r, by=who["name"], t=now)
+					n += 1
+			res = {"n": n}
+		elif a in ("item", "rm", "photo_rm"):
+			iid = str(d.get("id") or "")
+			it = next((x for x in L["items"] if x["id"] == iid), None)
+			if it is None:
+				return False, tr("This item does not exist (any more).", lang), {"gone": True}, 404
+			if a == "rm":
+				r = _pl_bump(L, who)
+				L["items"] = [x for x in L["items"] if x is not it]
+				L["gone"].append([iid, r])
+				if len(L["gone"]) > PL_GONE_MAX:
+					L["gone_floor"] = L["gone"][-PL_GONE_MAX][1]
+					L["gone"] = L["gone"][-PL_GONE_MAX:]
+				_pl_photo_rm(lid, iid)
+			elif a == "photo_rm":
+				it.update(photo=0, rev=_pl_bump(L, who), by=who["name"], t=now)
+				_pl_photo_rm(lid, iid)
+				res = {"item": _pl_pub_item(it)}
+			else:
+				st = d.get("set") if isinstance(d.get("set"), dict) else {}
+				new = {}
+				if "name" in st:
+					nm = pl_text(st.get("name"), PL_NAME_MAX)
+					if not nm:
+						return False, tr("The item needs a name.", lang), {}, 400
+					new["name"] = nm
+				if "w" in st:
+					w = st.get("w")
+					if isinstance(w, str) and w.strip() and pl_weight(w) is None:
+						return False, tr("This weight is not understood. Examples: 350 g, 1.2 kg, 0,5 kg.", lang), {}, 400
+					new["g"] = pl_weight(w) if isinstance(w, (str, int, float)) and not isinstance(w, bool) else None
+				if "n" in st:
+					try:
+						new["n"] = max(1, min(999, int(st.get("n")))) if not isinstance(st.get("n"), bool) else 1
+					except (TypeError, ValueError):
+						new["n"] = 1
+				if "cat" in st and isinstance(st.get("cat"), str):
+					new["cat"] = pl_cat_clean(st["cat"])
+				if "note" in st:
+					new["note"] = pl_text(st.get("note"), PL_NOTE_MAX)
+				if st.get("kind") in PL_KINDS:
+					new["kind"] = st["kind"]
+				for k in ("packed", "buy"):
+					if isinstance(st.get(k), bool):
+						new[k] = st[k]
+				base = d.get("base") if isinstance(d.get("base"), int) else None
+				res = {"stale": base is not None and base < it["rev"]}
+				dirty = any(it[k] != v for k, v in new.items())
+				if dirty:
+					it.update(new, rev=_pl_bump(L, who), by=who["name"], t=now)
+				res["item"] = _pl_pub_item(it)
+		else:
+			return False, tr("unknown action", lang), {}, 400
+		try:
+			if dirty:
+				_pl_save(L)
+		except OSError as e:
+			PL["lists"] = None
+			return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", {}, 507
+		res.update(rev=L["rev"], head=_pl_pub_head(L, who))
+		return True, "", res, 200
+
+
+def _pl_import_into(L, who, items):
+	""
+	added = dups = 0
+	have = {x["name"].casefold() for x in L["items"]}
+	for d in (items if isinstance(items, list) else [])[:PL_ROWS_MAX]:
+		if len(L["items"]) >= PL_MAX_ITEMS:
+			break
+		it = _pl_new_item(L, who, d) if isinstance(d, dict) else None
+		if it is None:
+			continue
+		if it["name"].casefold() in have:
+			dups += 1
+		have.add(it["name"].casefold())
+		L["items"].append(it)
+		added += 1
+	return added, dups
+
+
+def pl_preview_out(who, res, lid=""):
+	with PL["lock"]:
+		L = (PL["lists"] or {}).get(lid) if TZ_ID.match(lid or "") else None
+		if L is not None and not pl_can_see(L, who):
+			L = None
+		pl_dups(res["items"], L)
+		room = PL_MAX_ITEMS - (len(L["items"]) if L else 0)
+	res["room"] = room
+	res["rows"] = (res.get("rows") or [])[:PL_ROWS_MAX]
+	return res
+
+
+
+_pl_up_start_base = tausch_up_start
+
+
+
+def tausch_up_start(who, d, lang=None):
+	pk = d.get("pack") if isinstance(d, dict) else None
+	if not pk:
+		return _pl_up_start_base(who, d, lang)
+	err = _pl_ready(who, lang)
+	if err:
+		return False, err, {}
+	lid, iid = (str(pk.get("list") or ""), str(pk.get("item") or "")) if isinstance(pk, dict) else ("", "")
+	with PL["lock"]:
+		L = PL["lists"].get(lid) if TZ_ID.match(lid) else None
+		if L is None or not pl_can_edit(L, who) or not PL_IID.match(iid) or not any(x["id"] == iid for x in L["items"]):
+			return False, tr("This item does not exist (any more).", lang), {}
+		if PL["photo_bytes"] >= PL_PHOTO_TOTAL:
+			return False, tr("The space for photos of the packing lists is full - remove some photos first.", lang), {}
+	try:
+		size = int(d.get("size"))
+	except (TypeError, ValueError):
+		size = -1
+	if size > PL_PHOTO_MAX:
+		return False, trf("Too big: at most {n} per file.", lang, n=tausch_fmt(PL_PHOTO_MAX, lang)), {}
+	nm = tausch_clean_name(d.get("name"))[0] or "foto.jpg"
+	if tausch_type(nm)[1] != "image" or tausch_type(nm)[2]:
+		return False, tr("Please choose a photo (JPEG, PNG or WebP).", lang), {}
+	ok, err, res = _pl_up_start_base(who, dict(d, area="mine", folder="", name=f"pl-{lid}-{iid}-{nm[-60:]}"), lang)
+	if ok:
+		with TZ["lock"]:
+			u = TZ["ups"].get(res["id"])
+			if u is not None:
+				u["pack"] = {"list": lid, "item": iid}
+				try:
+					_tz_write_json(os.path.join(TZ["root"], "up", res["id"] + ".json"), {k: v for k, v in u.items() if k not in ("lock", "have")})
+				except OSError:
+					pass
+	return ok, err, res
+
+
+_pl_up_finish_base = tausch_up_finish
+
+
+
+def tausch_up_finish(who, uid, lang=None):
+	with TZ["lock"]:
+		u = TZ["ups"].get(uid) if TZ_ID.match(str(uid or "")) else None
+	if u is None or not isinstance(u.get("pack"), dict) or u["owner"] != who["key"]:
+		return _pl_up_finish_base(who, uid, lang)
+	return pl_photo_finish(who, uid, u, lang)
+
+
+def pl_photo_finish(who, uid, u, lang=None):
+	root = pl_load()
+	if root is None:
+		return False, tr("The storage (USB stick / SSD) is not there - plug it in again.", lang), {}
+	lid, iid = str(u["pack"].get("list") or ""), str(u["pack"].get("item") or "")
+	part = os.path.join(root, "up", uid + ".part")
+	with u["lock"]:
+		if u.get("have", 0) != u["size"]:
+			return False, tr("The upload is not complete yet.", lang), {"have": u.get("have", 0)}
+		img, heic = None, False
+		try:
+			with open(part, "rb") as f:
+				data = f.read(PL_PHOTO_MAX + 1)
+		except OSError:
+			data = b""
+		if data and len(data) <= PL_PHOTO_MAX:
+			heic = data[4:8] == b"ftyp" and data[8:12] in (b"heic", b"heix", b"hevc", b"mif1", b"msf1", b"heim", b"heis", b"avif")
+			head = img_head(data)
+			flag = cv2.IMREAD_REDUCED_COLOR_4 if head and head[0] == "jpeg" and head[1] * head[2] > 16_000_000 else None
+			img = img_decode_checked(data, flag)
+		data = None
+		tausch_up_abort(who, uid, lang)
+	if img is None or img.size == 0:
+		if heic:
+			return False, tr(PL_HEIC_MSG, lang), {}
+		return False, tr("This picture could not be read. Please choose a photo (JPEG, PNG or WebP).", lang), {}
+	if img.ndim == 2:
+		img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+	with PL["lock"]:
+		L = PL["lists"].get(lid) if PL["lists"] is not None else None
+		it = next((x for x in L["items"] if x["id"] == iid), None) if L is not None and pl_can_edit(L, who) else None
+		if it is None:
+			return False, tr("This item does not exist (any more).", lang), {}
+		pp = _pl_photo_paths(lid, iid)
+		try:
+			os.makedirs(os.path.dirname(pp[0]), exist_ok=True)
+			_pl_photo_rm(lid, iid)
+			if not (_tz_jpg_write(img, pp[0], 320, 80) and _tz_jpg_write(img, pp[1], 1280, 84)):
+				raise OSError("encode")
+			PL["photo_bytes"] += os.path.getsize(pp[0]) + os.path.getsize(pp[1])
+			it.update(photo=max(int(time.time()), it["photo"] + 1), rev=_pl_bump(L, who), by=who["name"], t=int(time.time()))
+			_pl_save(L)
+		except OSError as e:
+			_pl_photo_rm(lid, iid)
+			return False, tr("The storage cannot be written to.", lang) + f" ({e.__class__.__name__})", {}
+		return True, "", {"item": _pl_pub_item(it), "rev": L["rev"], "pack": True}
+
+
+
+def pl_csv_cell(v):
+	""
+	s = "" if v is None else str(v)
+	s = s.replace("\r", " ").replace("\n", " ")
+	if s[:1] in ("\t",) or s.lstrip()[:1] in ("=", "+", "-", "@"):
+		s = "'" + s.lstrip()
+	return s
+
+
+def _pl_sorted(L, lang=None):
+	""
+	def key(c):
+		return (PL_CAT_KEYS.index(c), "") if c in PL_CAT_KEYS[:-1] else (len(PL_CAT_KEYS) + 1, "") if c == "other" else (len(PL_CAT_KEYS), c.lower())
+	groups = {}
+	for it in L["items"]:
+		groups.setdefault(it["cat"], []).append(it)
+	return [(c, groups[c]) for c in sorted(groups, key=key)]
+
+
+def pl_cat_name(cat, lang=None):
+	en = next((c[1] for c in PL_CATS if c[0] == cat), None)
+	return tr(en, lang) if en else cat
+
+
+def pl_export_csv(L, lang=None):
+	import csv as _csv
+	buf = _pl_io.StringIO()
+	w = _csv.writer(buf, delimiter=";", quotechar='"', lineterminator="\r\n")
+	w.writerow([tr(en, lang) for _f, en in PL_CSV_HEAD])
+	kn = {k: tr(en, lang) for k, en in PL_KIND_NAMES}
+	for cat, items in _pl_sorted(L, lang):
+		for it in items:
+			w.writerow([pl_csv_cell(x) for x in (pl_cat_name(cat, lang), it["name"], it["n"], "" if it["g"] is None else it["g"], kn[it["kind"]],
+                                                 it["note"], "x" if it["packed"] else "", "x" if it["buy"] else "")])
+	return ("﻿" + buf.getvalue()).encode("utf-8")
+
+
+def pl_export_json(L):
+	d = {k: L[k] for k in ("moveeye_packliste", "id", "name", "goal_g", "note", "t")}
+	d["items"] = [dict({k: it[k] for k in ("id", "name", "g", "n", "cat", "kind", "note", "packed", "buy")},
+                       **({"photo_file": f"fotos/{it['id']}.jpg"} if it["photo"] else {})) for it in L["items"]]
+	return json.dumps(d, ensure_ascii=False, indent=1).encode("utf-8")
+
+
+def pl_export_zip(L, lang=None):
+	import zipfile as _zf
+	buf = _pl_io.BytesIO()
+	with _zf.ZipFile(buf, "w", _zf.ZIP_DEFLATED) as z:
+		z.writestr("packliste.json", pl_export_json(L))
+		z.writestr("packliste.csv", pl_export_csv(L, lang))
+		for it in L["items"]:
+			pp = _pl_photo_paths(L["id"], it["id"])
+			if it["photo"] and pp and os.path.isfile(pp[1]):
+				z.write(pp[1], f"fotos/{it['id']}.jpg", _zf.ZIP_STORED)
+	return buf.getvalue()
+
+
+def pl_file_name(L, ext):
+	n = tausch_clean_name(re.sub(r"\s+", "_", L["name"]) + "." + ext)[0]
+	return n or "packliste." + ext
+
+
+def pl_icon_svg(cat, size=22):
+	c = next((x for x in PL_CATS if x[0] == cat), PL_CATS[-1])
+	return (f'<svg viewBox="0 0 24 24" width="{size}" height="{size}" fill="none" stroke="{c[2]}" stroke-width="1.7" stroke-linecap="round" '
+            f'stroke-linejoin="round" aria-hidden="true"><path d="{c[3]}"/></svg>')
+
+
+def _pl_rows_html(L, lang, img_base, esc):
+	""
+	out = []
+	t = pl_totals(L["items"])
+	for cat, items in _pl_sorted(L, lang):
+		c = t["cats"][cat]
+		out.append(f'<tr class="cat"><td colspan="2">{pl_icon_svg(cat, 18)} {esc(pl_cat_name(cat, lang))}</td><td class="w">{esc(pl_fmt_g(c["g"], lang))}</td></tr>')
+		for it in items:
+			pic = (f'<img src="{img_base}/{L["id"]}/{it["id"]}.jpg?v={it["photo"]}" alt="" loading="lazy">' if it["photo"] and img_base else "")
+			sub = " · ".join(x for x in (trf("{n} each", lang, n=pl_fmt_g(it["g"], lang)) if it["n"] > 1 and it["g"] else "",
+                                         tr("Consumable", lang) if it["kind"] == "cons" else tr("Worn", lang) if it["kind"] == "worn" else "",
+                                         "🛒 " + tr("To buy", lang) if it["buy"] else "", it["note"]) if x)
+			out.append(f'<tr class="{"done" if it["packed"] else ""}"><td class="bx">{"☑" if it["packed"] else "☐"}</td><td><div class="c">{pic}<span><b>'
+                       f'{esc((str(it["n"]) + "× " if it["n"] > 1 else "") + it["name"])}</b>' + (f'<small>{esc(sub)}</small>' if sub else "")
+                       + f'</span></div></td><td class="w">{esc(pl_fmt_g(it["g"] * it["n"], lang) if it["g"] else "–")}</td></tr>')
+	return "".join(out), t
+
+
+def _pl_sum_html(L, t, lang, esc):
+	parts = [f'<b>{esc(tr("Rucksack", lang))} {esc(pl_fmt_g(t["pack"], lang))}</b>', f'{esc(tr("Base weight", lang))} {esc(pl_fmt_g(t["base"], lang))}',
+             f'{esc(tr("Consumable", lang))} {esc(pl_fmt_g(t["cons"], lang))}', f'{esc(tr("Worn", lang))} {esc(pl_fmt_g(t["worn"], lang))}',
+             esc(trf("{a} of {b} packed", lang, a=t["packed"], b=t["n"]))]
+	if L["goal_g"]:
+		diff = t["pack"] - L["goal_g"]
+		parts.insert(1, esc(trf("Goal {n}", lang, n=pl_fmt_g(L["goal_g"], lang)) + ": " + (trf("{n} over", lang, n=pl_fmt_g(diff, lang)) if diff > 0
+                                                                                           else trf("{n} under", lang, n=pl_fmt_g(-diff, lang)))))
+	if t["unknown"]:
+		parts.append(esc(trf("{n} without a weight", lang, n=t["unknown"])))
+	return " · ".join(parts)
+
+
+PL_PRINT_HTML = _zd('639zzw_packlisten/PL_PRINT_HTML', ZD_PAGE)
+
+
+def pl_print_html(L, lang=None):
+	import html as _h
+	rows, t = _pl_rows_html(L, lang, "/tausch/pack/b", _h.escape)
+	bar = ('<div class="bar"><button type="button" onclick="window.print()">🖨 ' + _h.escape(tr("Print", lang)) + '</button><a data-mw-exit href="/tausch/packlisten#l='
+           + L["id"] + '">‹ ' + _h.escape(tr("Back to the list", lang)) + "</a></div>")
+	return PL_PRINT_HTML % {"lang": cur_lang(lang), "title": _h.escape(L["name"]) + " – MoveEye", "name": _h.escape(L["name"]),
+                            "sum": _pl_sum_html(L, t, lang, _h.escape), "note": f'<p class="nt">{_h.escape(L["note"])}</p>' if L["note"] else "",
+                            "rows": rows, "bar": bar, "date": time.strftime("%d.%m.%Y")}
+
+
+PL_GUEST_HTML = _zd('639zzw_packlisten/PL_GUEST_HTML', ZD_PAGE)
+
+
+def pl_guest_html(token, lid="", lang=None):
+	""
+	import html as _h
+	esc = _h.escape
+	base = "/g/" + token
+	if pl_load() is None:
+		lists = []
+	else:
+		with PL["lock"]:
+			lists = [L for L in PL["lists"].values() if L["area"] == "all"]
+	common = {"lang": cur_lang(lang), "foot": esc(tr("Only to look at - changing the lists needs a login.", lang))}
+	if lid:
+		L = next((x for x in lists if x["id"] == lid), None)
+		if L is None:
+			return None
+		with PL["lock"]:
+			rows, t = _pl_rows_html(L, lang, base + "/tausch/pack/b", esc)
+			return PL_GUEST_HTML % dict(common, refresh='<meta http-equiv="refresh" content="20">', title=esc(L["name"]), name=esc(L["name"]),
+                                        back=base + "/tausch/pack", backtx=esc(tr("Packing lists", lang)), sum=_pl_sum_html(L, t, lang, esc),
+                                        body="<table>" + rows + "</table>")
+	body = []
+	with PL["lock"]:
+		for L in sorted(lists, key=lambda x: -x["t"]):
+			t = pl_totals(L["items"])
+			body.append(f'<a class="li" href="{base}/tausch/pack?l={L["id"]}"><b>{esc(L["name"])}</b><span class="mut">'
+                        + esc(trf("{a} of {b} packed", lang, a=t["packed"], b=t["n"]) + " · " + pl_fmt_g(t["pack"], lang)) + "</span></a>")
+	return PL_GUEST_HTML % dict(common, refresh="", title=esc(tr("Packing lists", lang)), name=esc(tr("Packing lists", lang)), back=base + "/tausch",
+                                backtx=esc(tr("Shared files", lang)), sum="", body="".join(body) or '<p class="mut">' + esc(tr("No packing lists yet.", lang)) + "</p>")
+
+
+
+_smalltv_routes_639zzw = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzw(app, reply, body)
+	from flask import Response, request, g
+
+	def lang_():
+		return norm_lang(request.args.get("lang") or CFG.get("lang"))
+
+	def too_big():
+		if request.path == "/api/tausch/pack/import" and request.method == "POST":
+			n = request.content_length
+			if n is None or n > PL_IMPORT_MAX:
+				return Response(json.dumps({"ok": False, "error": tr("The file is too big.", lang_())}), 413, mimetype="application/json",
+                                headers={"Connection": "close"})
+		return None
+	app.before_request_funcs.setdefault(None, []).insert(0, too_big)
+
+	@app.route("/tausch/packlisten")
+	def pl_page():
+		who = tausch_who(g)
+		if "files_view" not in who["perms"]:
+			return sx_err(403, "error")
+		return Response(pl_page_html(), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+	@app.route("/api/tausch/pack", methods=["GET", "POST"])
+	def api_pl():
+		who = tausch_who(g)
+		if request.method == "GET":
+			L = lang_()
+			if "files_view" not in who["perms"]:
+				return reply({"ok": False, "error": tr("not allowed for your user", L)}, 403)
+			lid = str(request.args.get("id") or "")
+			if not lid:
+				return reply(pl_overview(who, L))
+			ok, err, res = pl_get(who, lid, _tz_int(request.args.get("since")), L)
+			return reply(dict(res, ok=ok, error=err or None), 200 if ok else 404)
+		d = body()
+		L = norm_lang(d.get("lang") or CFG.get("lang"))
+		if "files_view" not in who["perms"]:
+			return reply({"ok": False, "error": tr("not allowed for your user", L)}, 403)
+		ok, err, res, code = pl_action(who, d, L)
+		return reply(dict(res, ok=ok, error=err or None), code)
+
+	@app.route("/api/tausch/pack/import", methods=["POST"])
+	def api_pl_import():
+		who = tausch_who(g)
+		L = lang_()
+		err = _pl_ready(who, L)
+		if err:
+			return reply({"ok": False, "error": err}, 403 if "files_up" not in who["perms"] else 409)
+		data = request.get_data(cache=False)
+		if len(data) > PL_IMPORT_MAX:
+			return reply({"ok": False, "error": tr("The file is too big.", L)}, 413)
+		try:
+			res = pl_import_preview(data=data, name=str(request.args.get("name") or "")[:200], lang=L)
+		except PLError as e:
+			return reply({"ok": False, "error": tr(str(e), L)}, 400)
+		except Exception as e:
+			log_event("sys", f"Packing lists: import failed ({e.__class__.__name__})")
+			return reply({"ok": False, "error": tr("This file could not be read.", L)}, 400)
+		return reply(dict(pl_preview_out(who, res, str(request.args.get("list") or "")), ok=True))
+
+	def list_of(lid, who):
+		if not TZ_ID.match(lid or "") or pl_load() is None:
+			return None
+		with PL["lock"]:
+			L = PL["lists"].get(lid)
+		return L if L is not None and (who is None and L["area"] == "all" or who is not None and pl_can_see(L, who)) else None
+
+	def photo(lid, iid, who):
+		L = list_of(lid, who)
+		pp = _pl_photo_paths(lid, iid) if L is not None else None
+		if pp is None or not any(x["id"] == iid and x["photo"] for x in L["items"]):
+			return Response("not found", 404)
+		p = pp[1] if request.args.get("p") == "1" else pp[0]
+		if not os.path.isfile(p):
+			return Response("not found", 404)
+		return _tz_send(p, "image/jpeg", False, cache="private, max-age=86400")
+
+	@app.route("/tausch/pack/b/<lid>/<iid>.jpg")
+	def pl_photo(lid, iid):
+		return photo(lid, iid, tausch_who(g))
+
+	@app.route("/tausch/pack/x/<lid>.<ext>")
+	def pl_export(lid, ext):
+		who = tausch_who(g)
+		L = list_of(lid, who)
+		if L is None or ext not in ("csv", "json", "zip"):
+			return reply({"ok": False, "error": tr("unknown list", lang_())}, 404)
+		if not pl_can_export(L, who):
+			return reply({"ok": False, "error": tr("You may not download files.", lang_())}, 403)
+		if not tausch_rate(who["key"], "dl", 400):
+			return reply({"ok": False, "error": tr("Too many downloads in a short time - wait a few minutes.", lang_())}, 429)
+		with PL["lock"]:
+			data = pl_export_csv(L, lang_()) if ext == "csv" else pl_export_json(L) if ext == "json" else pl_export_zip(L, lang_())
+		from urllib.parse import quote
+		return Response(data, mimetype={"csv": "text/csv; charset=utf-8", "json": "application/json", "zip": "application/zip"}[ext],
+                        headers={"Content-Disposition": "attachment; filename*=UTF-8''" + quote(pl_file_name(L, ext)), "X-Content-Type-Options": "nosniff",
+                                 "Cache-Control": "no-store", "Content-Security-Policy": "sandbox; default-src 'none'"})
+
+	@app.route("/tausch/pack/druck/<lid>")
+	def pl_print(lid):
+		who = tausch_who(g)
+		L = list_of(lid, who)
+		if L is None:
+			return sx_err(404, "notfound")
+		with PL["lock"]:
+			html_ = pl_print_html(L, lang_())
+		return Response(html_, mimetype="text/html", headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff",
+                                                              "Content-Security-Policy": "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'"})
+
+	def guest_gate(token):
+		return tausch_guest_ok(token) and tausch_rate("guest|" + (request.remote_addr or "?"), "g", 2000)
+
+	@app.route("/g/<token>/tausch/pack")
+	def pl_guest(token):
+		if not guest_gate(token):
+			return sx_err(404, "guest")
+		html_ = pl_guest_html(token, str(request.args.get("l") or ""), sx_req_lang())
+		if html_ is None:
+			return sx_err(404, "guest")
+		return Response(html_, mimetype="text/html", headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer",
+                                                              "Content-Security-Policy": "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"})
+
+	@app.route("/g/<token>/tausch/pack/b/<lid>/<iid>.jpg")
+	def pl_guest_photo(token, lid, iid):
+		if not guest_gate(token):
+			return Response("not found", 404)
+		return photo(lid, iid, None)
+
+
+
+PL_PAGE = _zd('639zzw_packlisten/PL_PAGE', ZD_PAGE)
+
+
+def _pl_upload_js():
+	"""
+"""
+	a = TAUSCH_PAGE.find("  const UP = Object.assign(")
+	b = TAUSCH_PAGE.find("  // a JSON request that cannot wait for ever")
+	c = TAUSCH_PAGE.find('  $("#tz-upb").onclick')
+	if a < 0 or b < 0 or c < b:
+		return ""
+	js = TAUSCH_PAGE[a:TAUSCH_PAGE.find("\n", a) + 1] + TAUSCH_PAGE[b:c]
+	out = js.replace("folder: jb.folder, lang: LANG}", "folder: jb.folder, pack: jb.pack, lang: LANG}", 1)
+	return out if out != js and "async function upOne(jb)" in out else ""
+
+
+def pl_page_html():
+	cats = json.dumps([list(c) for c in PL_CATS], ensure_ascii=False)
+	return (render_page(PL_PAGE, "more").replace("/*PLDE*/{}", json.dumps(_PL_DE, ensure_ascii=False).replace("</", "<\\/"), 1)
+            .replace("/*PLCATS*/[]", cats, 1).replace("/*PLUP*/", _pl_upload_js(), 1))
+
+
+
+PL_TILE = ('  <a class="tz-card" id="tz-pack" href="/tausch/packlisten" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;min-height:56px">'
+           '<span style="font-size:28px">🎒</span><span style="flex:1;min-width:0"><b data-i18n="Packing lists">Packing lists</b><br>'
+           '<small class="mut" data-i18n="Lists with weight, photos and ticks - pack together">Lists with weight, photos and ticks - pack together</small></span>'
+           '<span class="mut" style="font-size:20px">›</span></a>\n')
+_pl_anchor = '  <div class="tz-msg" id="tz-msg" hidden></div>\n'
+if 'id="tz-pack"' not in TAUSCH_PAGE and _pl_anchor in TAUSCH_PAGE:
+	TAUSCH_PAGE = TAUSCH_PAGE.replace(_pl_anchor, PL_TILE + _pl_anchor, 1)
+_pl_gtop = '<a href="__BASE__">← __LIVE__</a>'
+if "__PACK__" not in TAUSCH_GUEST_HTML and _pl_gtop in TAUSCH_GUEST_HTML:
+	TAUSCH_GUEST_HTML = TAUSCH_GUEST_HTML.replace(_pl_gtop, '<a href="__BASE__/tausch/pack">🎒 __PACK__</a><a href="__BASE__" style="margin-left:14px">← __LIVE__</a>', 1)
+
+_pl_guest_html_base = tausch_guest_html
+
+
+
+def tausch_guest_html(token):
+	import html as _h
+	return _pl_guest_html_base(token).replace("__PACK__", _h.escape(tr("Packing lists", sx_req_lang())))
+
+
+
+_HX_PACK = {
+    "Packing lists": ("Packlisten", "Listes de bagages", "Liste di cose da portare", "Glistas da pachetar"),
+    "Lists with weight, photos and ticks - pack together": (
+        "Listen mit Gewicht, Fotos und Häkchen – gemeinsam packen", "Listes avec poids, photos et coches – préparer ensemble",
+        "Liste con peso, foto e spunte – preparare insieme", "Glistas cun paisa, fotos e crutschs – pachetar ensemen"),
+    "New list": ("Neue Liste", "Nouvelle liste", "Nuova lista", "Nova glista"),
+    "Import": ("Importieren", "Importer", "Importa", "Importar"),
+    "To buy": ("Kaufen", "À acheter", "Da comprare", "Da cumprar"),
+    "All items": ("Alle", "Tout", "Tutti", "Tuts"),
+    "Not packed yet": ("Noch nicht gepackt", "Pas encore emballé", "Non ancora preparato", "Betg anc pachetà"),
+    "Without a weight": ("Ohne Gewicht", "Sans poids", "Senza peso", "Senza paisa"),
+    "By category": ("Nach Kategorie", "Par catégorie", "Per categoria", "Tenor categoria"),
+    "By name": ("Nach Name", "Par nom", "Per nome", "Tenor num"),
+    "Heaviest first": ("Schwerstes zuerst", "Le plus lourd d’abord", "Prima il più pesante", "Il pli grev l’emprim"),
+    "Not packed first": ("Nicht Gepacktes zuerst", "Non emballé d’abord", "Prima il non preparato", "Betg pachetà l’emprim"),
+    "Name, weight – e.g. Headlamp 85 g": ("Name, Gewicht – z. B. Stirnlampe 85 g", "Nom, poids – p. ex. Lampe frontale 85 g",
+                                          "Nome, peso – p. es. Lampada frontale 85 g", "Num, paisa – p.ex. Lampa frontala 85 g"),
+    "Still missing – e.g. Gas canister": ("Fehlt noch – z. B. Gaskartusche", "Manque encore – p. ex. Cartouche de gaz", "Manca ancora – p. es. Cartuccia di gas",
+                                          "Manca anc – p.ex. Cartuscha da gas"),
+    "Sleeping": ("Schlafen", "Dormir", "Dormire", "Durmir"),
+    "Clothes": ("Kleider", "Vêtements", "Vestiti", "Vestgadira"),
+    "Kitchen": ("Küche", "Cuisine", "Cucina", "Cuschina"),
+    "Food": ("Essen", "Nourriture", "Cibo", "Mangiar"),
+    "Water": ("Wasser", "Eau", "Acqua", "Aua"),
+    "Hygiene": ("Hygiene", "Hygiène", "Igiene", "Igiena"),
+    "First aid": ("Erste Hilfe", "Premiers secours", "Pronto soccorso", "Emprim agid"),
+    "Tools & repair": ("Werkzeug", "Outils", "Attrezzi", "Utensils"),
+    "Electronics": ("Elektronik", "Électronique", "Elettronica", "Electronica"),
+    "Navigation": ("Navigation", "Navigation", "Navigazione", "Navigaziun"),
+    "Documents & money": ("Dokumente", "Documents", "Documenti", "Documents"),
+    "Miscellaneous": ("Sonstiges", "Divers", "Varie", "Divers"),
+    "Base weight": ("Basisgewicht", "Poids de base", "Peso base", "Paisa da basa"),
+    "Consumable": ("Verbrauch", "Consommable", "Consumabile", "Consum"),
+    "Worn": ("Am Körper", "Porté", "Indossato", "Vi dal corp"),
+    "Rucksack": ("Rucksack", "Sac à dos", "Zaino", "Satgados"),
+    "Category": ("Kategorie", "Catégorie", "Categoria", "Categoria"),
+    "Quantity": ("Anzahl", "Quantité", "Quantità", "Quantitad"),
+    "Weight (g)": ("Gewicht (g)", "Poids (g)", "Peso (g)", "Paisa (g)"),
+    "Kind": ("Art", "Type", "Tipo", "Tip"),
+    "Remark": ("Notiz", "Remarque", "Nota", "Remartga"),
+    "Packed": ("Gepackt", "Emballé", "Preparato", "Pachetà"),
+    "Bought": ("Gekauft", "Acheté", "Comprato", "Cumprà"),
+    "Still missing / to buy": ("Fehlt noch / kaufen", "Manque encore / à acheter", "Manca ancora / da comprare", "Manca anc / da cumprar"),
+    "Goal {n}": ("Ziel {n}", "Objectif {n}", "Obiettivo {n}", "Finamira {n}"),
+    "{n} over": ("{n} darüber", "{n} de trop", "{n} in più", "{n} da memia"),
+    "{n} under": ("{n} darunter", "{n} en dessous", "{n} in meno", "{n} sutvart"),
+    "{a} of {b} packed": ("{a} von {b} gepackt", "{a} sur {b} emballés", "{a} di {b} preparati", "{a} da {b} pachetads"),
+    "{n} without a weight": ("{n} ohne Gewicht", "{n} sans poids", "{n} senza peso", "{n} senza paisa"),
+    "{n} each": ("je {n}", "{n} pièce", "{n} cad.", "{n} per toc"),
+    "changed by {who} {n} s ago": ("geändert von {who} vor {n} s", "modifié par {who} il y a {n} s", "modificato da {who} {n} s fa", "midà da {who} avant {n} s"),
+    "changed by {who} {n} min ago": ("geändert von {who} vor {n} Min.", "modifié par {who} il y a {n} min", "modificato da {who} {n} min fa", "midà da {who} avant {n} min"),
+    "No packing lists yet.": ("Noch keine Packlisten.", "Pas encore de listes.", "Ancora nessuna lista.", "Anc naginas glistas."),
+    "Start with «New list» (also from a template) or import a list you already have.": (
+        "Beginne mit «Neue Liste» (auch aus einer Vorlage) oder importiere eine Liste, die du schon hast.",
+        "Commence avec «Nouvelle liste» (aussi depuis un modèle) ou importe une liste que tu as déjà.",
+        "Inizia con «Nuova lista» (anche da un modello) o importa una lista che hai già.",
+        "Cumenza cun «Nova glista» (er or d’in model) u importa ina glista che ti has gia."),
+    "This list is still empty.": ("Diese Liste ist noch leer.", "Cette liste est encore vide.", "Questa lista è ancora vuota.", "Questa glista è anc vida."),
+    "Add the first item below or import a list.": ("Füge unten den ersten Gegenstand hinzu oder importiere eine Liste.", "Ajoute le premier objet en bas ou importe une liste.",
+                                                   "Aggiungi il primo oggetto qui sotto o importa una lista.", "Agiunta sutvart l’emprim object u importa ina glista."),
+    "Nothing is missing.": ("Es fehlt nichts.", "Il ne manque rien.", "Non manca niente.", "I na manca nagut."),
+    "Mark an item with 🛒 or add what is missing below.": ("Markiere einen Gegenstand mit 🛒 oder trage unten ein, was fehlt.", "Marque un objet avec 🛒 ou ajoute en bas ce qui manque.",
+                                                          "Segna un oggetto con 🛒 o aggiungi sotto ciò che manca.", "Marca in object cun 🛒 u agiunta sutvart quai che manca."),
+    "You may look at the packing lists, but not change them.": (
+        "Du darfst die Packlisten ansehen, aber nicht ändern.", "Tu peux regarder les listes, mais pas les modifier.",
+        "Puoi guardare le liste, ma non modificarle.", "Ti dastgas guardar las glistas, ma betg midar ellas."),
+    "Empty list": ("Leere Liste", "Liste vide", "Lista vuota", "Glista vida"),
+    "Template «{name}» ({n} items)": ("Vorlage «{name}» ({n} Sachen)", "Modèle «{name}» ({n} objets)", "Modello «{name}» ({n} oggetti)", "Model «{name}» ({n} objects)"),
+    "Only for me (private)": ("Nur für mich (privat)", "Seulement pour moi (privé)", "Solo per me (privato)", "Mo per mai (privat)"),
+    "Name of the list": ("Name der Liste", "Nom de la liste", "Nome della lista", "Num da la glista"),
+    "Name of the new list": ("Name der neuen Liste", "Nom de la nouvelle liste", "Nome della nuova lista", "Num da la nova glista"),
+    "Name of the copy": ("Name der Kopie", "Nom de la copie", "Nome della copia", "Num da la copia"),
+    "Name of the own category": ("Name der eigenen Kategorie", "Nom de ta catégorie", "Nome della tua categoria", "Num da l’atgna categoria"),
+    "Own category …": ("Eigene Kategorie …", "Ma catégorie …", "Categoria propria …", "Atgna categoria …"),
+    "Category: automatic": ("Kategorie: automatisch", "Catégorie : automatique", "Categoria: automatica", "Categoria: automatic"),
+    "Start from": ("Beginnen mit", "Commencer avec", "Inizia da", "Cumenzar cun"),
+    "Weight goal for the rucksack (optional)": ("Gewichtsziel für den Rucksack (freiwillig)", "Objectif de poids pour le sac (facultatif)",
+                                                "Obiettivo di peso per lo zaino (facoltativo)", "Finamira da paisa per il satgados (facultativ)"),
+    "The goal counts base weight and consumables - not what you wear.": (
+        "Das Ziel zählt Basisgewicht und Verbrauch – nicht, was du am Körper trägst.", "L’objectif compte le poids de base et les consommables – pas ce que tu portes sur toi.",
+        "L’obiettivo conta peso base e consumabili – non ciò che indossi.", "La finamira dumbra paisa da basa e consum – betg quai che ti portas vi dal corp."),
+    "e.g. 8 kg": ("z. B. 8 kg", "p. ex. 8 kg", "p. es. 8 kg", "p.ex. 8 kg"),
+    "e.g. 350 g or 1.2 kg": ("z. B. 350 g oder 1,2 kg", "p. ex. 350 g ou 1,2 kg", "p. es. 350 g o 1,2 kg", "p.ex. 350 g u 1,2 kg"),
+    "e.g. Weekend in the Jura": ("z. B. Wochenende im Jura", "p. ex. Week-end dans le Jura", "p. es. Fine settimana nel Giura", "p.ex. Fin d’emna en il Giura"),
+    "Create": ("Anlegen", "Créer", "Crea", "Crear"),
+    "Weight per piece": ("Gewicht pro Stück", "Poids par pièce", "Peso per pezzo", "Paisa per toc"),
+    "Counts as": ("Zählt als", "Compte comme", "Conta come", "Dumbra sco"),
+    "Take or choose a photo": ("Foto aufnehmen oder wählen", "Prendre ou choisir une photo", "Scatta o scegli una foto", "Far u tscherner ina foto"),
+    "Change the photo": ("Foto ändern", "Changer la photo", "Cambia la foto", "Midar la foto"),
+    "Remove the photo": ("Foto entfernen", "Retirer la photo", "Rimuovi la foto", "Allontanar la foto"),
+    "Show the photo": ("Foto zeigen", "Afficher la photo", "Mostra la foto", "Mussar la foto"),
+    "Preparing the photo": ("Foto wird vorbereitet", "Préparation de la photo", "Preparazione della foto", "La foto vegn preparada"),
+    "Delete this item?": ("Diesen Gegenstand löschen?", "Supprimer cet objet ?", "Eliminare questo oggetto?", "Stizzar quest object?"),
+    "Name, weight goal, note": ("Name, Gewichtsziel, Notiz", "Nom, objectif de poids, remarque", "Nome, obiettivo di peso, nota", "Num, finamira da paisa, remartga"),
+    "Import into this list": ("In diese Liste importieren", "Importer dans cette liste", "Importa in questa lista", "Importar en questa glista"),
+    "Reset all ticks (next trip)": ("Alle Häkchen zurücksetzen (nächste Tour)", "Enlever toutes les coches (prochaine sortie)", "Togli tutte le spunte (prossima gita)",
+                                    "Allontanar tut ils crutschs (proxima tura)"),
+    "Remove all ticks of this list?": ("Alle Häkchen dieser Liste entfernen?", "Enlever toutes les coches de cette liste ?", "Togliere tutte le spunte di questa lista?",
+                                       "Allontanar tut ils crutschs da questa glista?"),
+    "{n} ticks removed": ("{n} Häkchen entfernt", "{n} coches enlevées", "{n} spunte tolte", "{n} crutschs allontanads"),
+    "Copy this list": ("Liste kopieren", "Copier cette liste", "Copia questa lista", "Copiar questa glista"),
+    "{name} (copy)": ("{name} (Kopie)", "{name} (copie)", "{name} (copia)", "{name} (copia)"),
+    "table for Excel / Numbers": ("Tabelle für Excel / Numbers", "tableau pour Excel / Numbers", "tabella per Excel / Numbers", "tabella per Excel / Numbers"),
+    "the list as MoveEye stores it": ("die Liste, wie MoveEye sie speichert", "la liste telle que MoveEye l’enregistre", "la lista come la salva MoveEye",
+                                      "la glista sco che MoveEye la memorisescha"),
+    "list and photos, as a backup": ("Liste und Fotos, als Sicherung", "liste et photos, comme sauvegarde", "lista e foto, come backup", "glista e fotos, sco copia da segirezza"),
+    "Delete this list": ("Liste löschen", "Supprimer cette liste", "Elimina questa lista", "Stizzar questa glista"),
+    "Delete this list with all its photos? It cannot be undone.": (
+        "Diese Liste mit allen Fotos löschen? Das lässt sich nicht rückgängig machen.", "Supprimer cette liste avec toutes ses photos ? C’est définitif.",
+        "Eliminare questa lista con tutte le foto? Non si può annullare.", "Stizzar questa glista cun tut las fotos? Quai na sa lascha betg revocar."),
+    "This list was deleted.": ("Diese Liste wurde gelöscht.", "Cette liste a été supprimée.", "Questa lista è stata eliminata.", "Questa glista è vegnida stizzada."),
+    "Back to the list": ("Zurück zur Liste", "Retour à la liste", "Torna alla lista", "Enavos a la glista"),
+    "Choose a file": ("Datei wählen", "Choisir un fichier", "Scegli un file", "Tscherner ina datoteca"),
+    "Paste the text here – one item per line. Example:": ("Text hier einfügen – ein Gegenstand pro Zeile. Beispiel:", "Colle le texte ici – un objet par ligne. Exemple :",
+                                                          "Incolla qui il testo – un oggetto per riga. Esempio:", "Encollar qua il text – in object per lingia. Exempel:"),
+    "… or paste text (e.g. from the Notes app)": ("… oder Text einfügen (z. B. aus der Notizen-App)", "… ou coller du texte (p. ex. depuis Notes)",
+                                                 "… o incolla del testo (p. es. dall’app Note)", "… u encollar text (p.ex. da l’app Notizias)"),
+    "Text file (one item per line), Excel (.xlsx) or CSV. You always see a preview first and can correct everything.": (
+        "Textdatei (ein Gegenstand pro Zeile), Excel (.xlsx) oder CSV. Du siehst immer zuerst eine Vorschau und kannst alles korrigieren.",
+        "Fichier texte (un objet par ligne), Excel (.xlsx) ou CSV. Tu vois toujours d’abord un aperçu et tu peux tout corriger.",
+        "File di testo (un oggetto per riga), Excel (.xlsx) o CSV. Vedi sempre prima un’anteprima e puoi correggere tutto.",
+        "Datoteca da text (in object per lingia), Excel (.xlsx) u CSV. Ti vesas adina l’emprim ina prevista e pos curreger tut."),
+    "Reading": ("Wird gelesen", "Lecture", "Lettura", "Vegn legì"),
+    "Add to «{name}»": ("An «{name}» anhängen", "Ajouter à «{name}»", "Aggiungi a «{name}»", "Agiuntar a «{name}»"),
+    "Make a new list from it": ("Neue Liste daraus machen", "En faire une nouvelle liste", "Farne una nuova lista", "Far ina nova glista londeror"),
+    "Which column is what? MoveEye guessed - please check.": ("Welche Spalte ist was? MoveEye hat geraten – bitte prüfen.", "Quelle colonne est quoi ? MoveEye a deviné – vérifie.",
+                                                              "Quale colonna è cosa? MoveEye ha indovinato – controlla.", "Tge colonna è tge? MoveEye ha engiavinà – controllescha p.pl."),
+    "Numbers without a unit are": ("Zahlen ohne Einheit sind", "Les nombres sans unité sont", "I numeri senza unità sono", "Cifras senza unitad èn"),
+    "grams (g)": ("Gramm (g)", "grammes (g)", "grammi (g)", "grams (g)"),
+    "kilograms (kg)": ("Kilogramm (kg)", "kilogrammes (kg)", "chilogrammi (kg)", "kilograms (kg)"),
+    "The first row is the heading": ("Die erste Zeile sind Überschriften", "La première ligne contient les titres", "La prima riga contiene i titoli", "L’emprima lingia èn ils titels"),
+    "{n} items": ("{n} Sachen", "{n} objets", "{n} oggetti", "{n} objects"),
+    "{n} doubles": ("{n} doppelt", "{n} doublons", "{n} doppi", "{n} dubels"),
+    "{n} lines not understood": ("{n} Zeilen nicht verstanden", "{n} lignes non comprises", "{n} righe non capite", "{n} lingias betg chapidas"),
+    "only {n} more fit into this list": ("nur noch {n} haben in dieser Liste Platz", "seulement {n} de plus entrent dans cette liste", "solo altri {n} entrano in questa lista",
+                                         "mo anc {n} han plaz en questa glista"),
+    "Import {n} items": ("{n} Sachen importieren", "Importer {n} objets", "Importa {n} oggetti", "Importar {n} objects"),
+    "{n} items imported": ("{n} Sachen importiert", "{n} objets importés", "{n} oggetti importati", "{n} objects importads"),
+    "Double: already in the list": ("Doppelt: schon in der Liste", "Doublon : déjà dans la liste", "Doppio: già nella lista", "Dubel: gia en la glista"),
+    "Double: twice in this import": ("Doppelt: zweimal in diesem Import", "Doublon : deux fois dans cet import", "Doppio: due volte in questa importazione",
+                                     "Dubel: duas giadas en quest import"),
+    "«{name}» is in the list twice now": ("«{name}» steht jetzt zweimal in der Liste", "«{name}» est maintenant deux fois dans la liste", "«{name}» ora è due volte nella lista",
+                                          "«{name}» stat ussa duas giadas en la glista"),
+    "unknown list": ("unbekannte Liste", "liste inconnue", "lista sconosciuta", "glista nunenconuschenta"),
+    "The list needs a name.": ("Die Liste braucht einen Namen.", "La liste a besoin d’un nom.", "La lista ha bisogno di un nome.", "La glista dovra in num."),
+    "The item needs a name.": ("Der Gegenstand braucht einen Namen.", "L’objet a besoin d’un nom.", "L’oggetto ha bisogno di un nome.", "L’object dovra in num."),
+    "This item does not exist (any more).": ("Diesen Gegenstand gibt es nicht (mehr).", "Cet objet n’existe pas (plus).", "Questo oggetto non esiste (più).", "Quest object n’exista betg (pli)."),
+    "At most {n} items per list.": ("Höchstens {n} Gegenstände pro Liste.", "Au plus {n} objets par liste.", "Al massimo {n} oggetti per lista.", "Maximalmain {n} objects per glista."),
+    "At most {n} packing lists - delete an old one first.": ("Höchstens {n} Packlisten – lösche zuerst eine alte.", "Au plus {n} listes – supprime d’abord une ancienne.",
+                                                             "Al massimo {n} liste – elimina prima una vecchia.", "Maximalmain {n} glistas – stizza l’emprim ina veglia."),
+    "Only the person who created this list (or the administrator) may delete it.": (
+        "Nur wer die Liste angelegt hat (oder der Administrator), darf sie löschen.", "Seule la personne qui a créé la liste (ou l’administrateur) peut la supprimer.",
+        "Solo chi ha creato la lista (o l’amministratore) può eliminarla.", "Mo tgi che ha creà la glista (u l’administratur) dastga stizzar ella."),
+    "This weight is not understood. Examples: 350 g, 1.2 kg, 0,5 kg.": ("Dieses Gewicht verstehe ich nicht. Beispiele: 350 g, 1.2 kg, 0,5 kg.",
+                                                                        "Ce poids n’est pas compris. Exemples : 350 g, 1.2 kg, 0,5 kg.",
+                                                                        "Questo peso non è chiaro. Esempi: 350 g, 1.2 kg, 0,5 kg.", "Questa paisa na vegn betg chapida. Exempels: 350 g, 1.2 kg, 0,5 kg."),
+    "Nothing to import was found.": ("Nichts zum Importieren gefunden.", "Rien à importer.", "Niente da importare.", "Chattà nagut per importar."),
+    "The file is too big.": ("Die Datei ist zu gross.", "Le fichier est trop grand.", "Il file è troppo grande.", "La datoteca è memia gronda."),
+    "The text is too long.": ("Der Text ist zu lang.", "Le texte est trop long.", "Il testo è troppo lungo.", "Il text è memia lung."),
+    "The storage is full.": ("Der Speicher ist voll.", "Le stockage est plein.", "La memoria è piena.", "La memoria è plaina."),
+    "This file could not be read.": ("Diese Datei konnte nicht gelesen werden.", "Ce fichier n’a pas pu être lu.", "Impossibile leggere questo file.", "Questa datoteca n’ha betg pudì vegnir legida."),
+    "This table could not be read.": ("Diese Tabelle konnte nicht gelesen werden.", "Ce tableau n’a pas pu être lu.", "Impossibile leggere questa tabella.", "Questa tabella n’ha betg pudì vegnir legida."),
+    "This Excel file could not be read.": ("Diese Excel-Datei konnte nicht gelesen werden.", "Ce fichier Excel n’a pas pu être lu.", "Impossibile leggere questo file Excel.",
+                                           "Questa datoteca Excel n’ha betg pudì vegnir legida."),
+    "This Excel file has no table.": ("Diese Excel-Datei hat keine Tabelle.", "Ce fichier Excel n’a pas de tableau.", "Questo file Excel non ha una tabella.", "Questa datoteca Excel n’ha nagina tabella."),
+    "This Excel file is not accepted (too big when unpacked).": ("Diese Excel-Datei wird nicht angenommen (entpackt zu gross).", "Ce fichier Excel est refusé (trop grand une fois décompressé).",
+                                                                "Questo file Excel non è accettato (troppo grande una volta estratto).", "Questa datoteca Excel na vegn betg acceptada (memia gronda extratga)."),
+    "This Excel file is not accepted (unusual content).": ("Diese Excel-Datei wird nicht angenommen (ungewöhnlicher Inhalt).", "Ce fichier Excel est refusé (contenu inhabituel).",
+                                                          "Questo file Excel non è accettato (contenuto insolito).", "Questa datoteca Excel na vegn betg acceptada (cuntegn nunusità)."),
+    "This JSON file is not a packing list of MoveEye.": ("Diese JSON-Datei ist keine Packliste von MoveEye.", "Ce fichier JSON n’est pas une liste de MoveEye.",
+                                                        "Questo file JSON non è una lista di MoveEye.", "Questa datoteca JSON n’è betg ina glista da MoveEye."),
+    "This kind of file cannot be imported. Save the list as .xlsx, CSV or text.": (
+        "Diese Art Datei kann nicht importiert werden. Speichere die Liste als .xlsx, CSV oder Text.", "Ce type de fichier ne peut pas être importé. Enregistre la liste en .xlsx, CSV ou texte.",
+        "Questo tipo di file non può essere importato. Salva la lista come .xlsx, CSV o testo.", "Questa sort datoteca na po betg vegnir importada. Memorisescha la glista sco .xlsx, CSV u text."),
+    "Old Excel files (.xls) cannot be read. Save the table as .xlsx or CSV.": (
+        "Alte Excel-Dateien (.xls) können nicht gelesen werden. Speichere die Tabelle als .xlsx oder CSV.", "Les anciens fichiers Excel (.xls) ne peuvent pas être lus. Enregistre le tableau en .xlsx ou CSV.",
+        "I vecchi file Excel (.xls) non possono essere letti. Salva la tabella come .xlsx o CSV.", "Veglias datotecas Excel (.xls) na pon betg vegnir legidas. Memorisescha la tabella sco .xlsx u CSV."),
+    "Please choose a photo (JPEG, PNG or WebP).": ("Bitte ein Foto wählen (JPEG, PNG oder WebP).", "Choisis une photo (JPEG, PNG ou WebP).", "Scegli una foto (JPEG, PNG o WebP).",
+                                                   "Tscherna p.pl. ina foto (JPEG, PNG u WebP)."),
+    "This picture could not be read. Please choose a photo (JPEG, PNG or WebP).": (
+        "Dieses Bild konnte nicht gelesen werden. Bitte ein Foto wählen (JPEG, PNG oder WebP).", "Cette image n’a pas pu être lue. Choisis une photo (JPEG, PNG ou WebP).",
+        "Impossibile leggere questa immagine. Scegli una foto (JPEG, PNG o WebP).", "Quest maletg n’ha betg pudì vegnir legì. Tscherna p.pl. ina foto (JPEG, PNG u WebP)."),
+    PL_HEIC_MSG: ("Dieses Foto ist HEIC – dieses Format kann MoveEye nicht lesen. Wähle es aus der Fotomediathek (Safari schickt dann JPEG) oder stelle die Kamera auf «Maximale Kompatibilität».",
+                  "Cette photo est en HEIC – MoveEye ne lit pas ce format. Choisis-la dans la photothèque (Safari envoie alors du JPEG) ou règle l’appareil photo sur «Le plus compatible».",
+                  "Questa foto è HEIC – MoveEye non legge questo formato. Sceglila dalla libreria foto (Safari invia allora JPEG) o imposta la fotocamera su «Più compatibile».",
+                  "Questa foto è HEIC – quest format na po MoveEye betg leger. Tscherna ella or da la fototeca (Safari trametta lura JPEG) u metta la camera sin «Maximala cumpatibilitad»."),
+    "The space for photos of the packing lists is full - remove some photos first.": (
+        "Der Platz für Fotos der Packlisten ist voll – entferne zuerst einige Fotos.", "L’espace pour les photos des listes est plein – retire d’abord quelques photos.",
+        "Lo spazio per le foto delle liste è pieno – rimuovi prima alcune foto.", "Il plaz per fotos da las glistas è plain – allontanescha l’emprim intginas fotos."),
+    "Weights are typical values - weigh your own things.": ("Die Gewichte sind Richtwerte – wiege deine eigenen Sachen.", "Les poids sont indicatifs – pèse tes propres affaires.",
+                                                            "I pesi sono indicativi – pesa le tue cose.", "Las paisas èn valurs approximativas – paisa tias atgnas chaussas."),
+    "Only to look at - changing the lists needs a login.": ("Nur zum Ansehen – zum Ändern der Listen braucht es eine Anmeldung.", "Seulement pour regarder – modifier les listes demande une connexion.",
+                                                            "Solo da guardare – per modificare le liste serve un accesso.", "Mo per guardar – per midar las glistas dovri in’annunzia."),
+}
+for _k, _v in _HX_PACK.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+MORE_DE.update({"Packing lists": "Packlisten"})
+
+_PL_DE = {_k: DE[_k] for _k in set(re.findall(r'\bt[f]?\(\s*"((?:[^"\\]|\\.)+)"', PL_PAGE)) | set(re.findall(r'data-i18n(?:-ph)?="([^"]+)"', PL_PAGE))
+          | {"Change the photo", "Take or choose a photo", "Consumable", "Worn", "Double: already in the list", "Double: twice in this import"}
+          | {_c[1] for _c in PL_CATS} if _k in DE}
+
+
+_HELP_PL = _zd('639zzw_packlisten/HELP_PL', _ZDDict())
+
+
+def _help_pl(doc, lang):
+	if 'id="packlisten"' in doc:
+		return doc
+	i = doc.find('<section id="tips"')
+	return doc[:i] + _HELP_PL[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en_pl = HELP_PAGE.find('<div lang="en">')
+if _hp_en_pl > 0:
+	HELP_PAGE = _help_pl(HELP_PAGE[:_hp_en_pl], "de") + _help_pl(HELP_PAGE[_hp_en_pl:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_pl(HELP_X[_L], _L)
+
+
+
+def _pl_test_xlsx(rows, extra=None, doctype="", sst=None):
+	""
+	import zipfile as _zf
+	from xml.sax.saxutils import escape as _x
+	strs, cells = [], []
+	for r, row in enumerate(rows, 1):
+		cs = []
+		for c, v in enumerate(row):
+			ref = chr(65 + c) + str(r)
+			if v is None or v == "":
+				continue
+			if isinstance(v, tuple):
+				cs.append(f'<c r="{ref}"><f>{_x(v[0][1:])}</f><v>{v[1]}</v></c>')
+			elif isinstance(v, (int, float)):
+				cs.append(f'<c r="{ref}"><v>{v}</v></c>')
+			else:
+				if v not in strs:
+					strs.append(v)
+				cs.append(f'<c r="{ref}" t="s"><v>{strs.index(v)}</v></c>')
+		cells.append(f'<row r="{r}">' + "".join(cs) + "</row>")
+	ns = 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"'
+	buf = _pl_io.BytesIO()
+	with _zf.ZipFile(buf, "w", _zf.ZIP_DEFLATED) as z:
+		z.writestr("[Content_Types].xml", '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>')
+		z.writestr("xl/workbook.xml", f'<?xml version="1.0"?><workbook {ns} xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+                                      '<sheets><sheet name="Liste" sheetId="1" r:id="rId1"/></sheets></workbook>')
+		z.writestr("xl/_rels/workbook.xml.rels", '<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                                                 '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>')
+		z.writestr("xl/sharedStrings.xml", sst if sst is not None else
+                   f'<?xml version="1.0"?>{doctype}<sst {ns}>' + "".join(f"<si><t>{_x(s)}</t></si>" for s in strs) + "</sst>")
+		z.writestr("xl/worksheets/sheet1.xml", f'<?xml version="1.0"?><worksheet {ns}><sheetData>' + "".join(cells) + "</sheetData></worksheet>")
+		for nm, data in (extra or {}).items():
+			z.writestr(nm, data)
+	return buf.getvalue()
+
+
+def pl_selftest():
+	keep = {k: CFG.get(k) for k in ("tausch_on", "lang", "tausch_free_gb", "tausch_total_gb", "tausch_file_mb", "tausch_user_gb")}
+	keepTZ = {k: TZ.get(k) for k in ("root", "files", "folders", "ups", "rate", "root_test", "chats")}
+	keepPL = {k: PL.get(k) for k in ("root", "lists", "photo_bytes")}
+	g = globals()
+	sv = {k: g[k] for k in ("tausch_disk_free", "log_event", "tausch_thumb_queue")}
+	tmp = tempfile.mkdtemp(prefix="mw_pl_")
+	try:
+		g["log_event"] = lambda *a, **k: None
+		g["tausch_thumb_queue"] = lambda fid: None
+		g["tausch_disk_free"] = lambda p: 50 * TZ_GB
+		CFG.update(tausch_on=True, lang="de", tausch_free_gb=2.0, tausch_total_gb=5.0, tausch_file_mb=200.0, tausch_user_gb=1.0)
+		TZ.update(root=None, files=None, folders=None, ups={}, rate={}, root_test=tmp, chats={})
+		PL.update(root=None, lists=None, photo_bytes=0)
+
+		for txt, want in (("350 g", 350), ("1.2 kg", 1200), ("0,5kg", 500), ("1'200 g", 1200), ("1.200 g", 1200), ("2 KG", 2000), ("85", 85), ("12 oz", 340),
+                          ("ca. 90 Gramm", 90), ("", None), ("viel", None), ("1,25 kg", 1250)):
+			assert pl_weight(txt) == want, (txt, pl_weight(txt))
+		assert pl_weight("1,5", "kg") == 1500 and pl_fmt_g(1250, "de") == "1,25 kg" and pl_fmt_g(350, "de") == "350 g" and pl_fmt_g(1200, "en") == "1.2 kg"
+		L = lambda s: pl_parse_line(s)
+		assert L("- [x] Zelt (1.8 kg)") == ("item", {"name": "Zelt", "g": 1800, "n": 1, "note": "", "packed": True, "buy": False})
+		assert L("2x Socken – 80 g")[1] == {"name": "Socken", "g": 80, "n": 2, "note": "", "packed": False, "buy": False}
+		assert L("3. Stirnlampe\t85")[1]["g"] == 85 and L("• Wasser 1,5 l")[1] == {"name": "Wasser", "g": None, "n": 1, "note": "1,5 l", "packed": False, "buy": False}
+		assert L("Küche:") == ("cat", "Küche") and L("ERSTE HILFE") == ("caps", "ERSTE HILFE") and L("## Kleider") == ("cat", "Kleider") and L("---") is None
+		assert L("Gaskartusche 230g (kaufen)")[1]["buy"] and L("3 XL Shirts")[1]["name"] == "XL Shirts" and L("Garmin 64x")[1]["n"] == 1
+		r = pl_parse_text("SCHLAFEN\nZelt 1,8kg\n\nEssen:\n[ ] 4 Riegel à 45 g\n<img src=x onerror=alert(1)> 5 g\n???\n")
+		assert [(i["name"], i["g"], i["n"], i["cat"], i["kind"]) for i in r["items"]] == [("Zelt", 1800, 1, "sleep", "base"), ("Riegel", 45, 4, "food", "cons"),
+                                                                                         ("<img src=x onerror=alert(1)>", 5, 1, "food", "cons")], r
+
+		csvb = "Gegenstand;Gewicht (kg);Anzahl;Kategorie\r\nKäse;0,25;2;Essen\r\nZelt;1,8;1;Schlafen\r\n=SUM(A1);1;1;x\r\n".encode("cp1252")
+		p = pl_import_preview(data=csvb, name="Liste.csv")
+		assert p["kind"] == "table" and p["header"] and p["unit"] == "kg" and p["map"]["name"] == 0 and p["map"]["g"] == 1 and p["map"]["n"] == 2 and p["map"]["cat"] == 3, p
+		assert [(i["name"], i["g"], i["n"], i["cat"]) for i in p["items"]] == [("Käse", 250, 2, "food"), ("Zelt", 1800, 1, "sleep"), ("=SUM(A1)", 1000, 1, "X")], p["items"]
+		x = _pl_test_xlsx([["Name", "Gewicht", "Stk"], ["Schlafsack", 950, 1], ["Müesli", ("=B2/2", 475), 2]])
+		p = pl_import_preview(data=x, name="Tour.xlsx")
+		assert [(i["name"], i["g"], i["n"]) for i in p["items"]] == [("Schlafsack", 950, 1), ("Müesli", 475, 2)] and p["title"] == "Tour", p
+		for bad in (_pl_test_xlsx([["a"]], {"xl/media/bombe.bin": b"\0" * (PL_X_TOTAL + 1024)}), _pl_test_xlsx([["a"]], {f"x/{i}.xml": b"<a/>" for i in range(PL_X_ENTRIES + 5)}),
+                    _pl_test_xlsx([["a"]], doctype='<!DOCTYPE s [<!ENTITY a "aaaa">]>'), b"PK\x03\x04kaputt",
+                    _pl_test_xlsx([["a"]], sst=('<?xml version="1.0" encoding="UTF-16"?><!DOCTYPE s [<!ENTITY a "aaaa">]>'
+                                                '<sst><si><t>&a;</t></si></sst>').encode("utf-16")),
+                    _pl_test_xlsx([["a"]], sst=b'<?xml version="1.0" encoding="ISO-8859-1"?><sst><si><t>a</t></si></sst>')):
+			try:
+				pl_import_preview(data=bad, name="b.xlsx")
+				raise AssertionError("an unsafe xlsx was read")
+			except PLError:
+				pass
+		assert pl_csv_cell("=1+1") == "'=1+1" and pl_csv_cell("@x") == "'@x" and pl_csv_cell("-5") == "'-5" and pl_csv_cell(" +x") == "'+x" and pl_csv_cell("Zelt") == "Zelt"
+
+		P = lambda r: tausch_imply(ROLE_PERMS.get(r, ()))
+		anna = {"key": "anna", "name": "Anna", "admin": False, "perms": P("family"), "is_admin": False}
+		carl = dict(anna, key="carl", name="Carl")
+		bob = {"key": "bob", "name": "Bob", "admin": False, "perms": P("friend"), "is_admin": False}
+		kim = {"key": "kim", "name": "Kim", "admin": False, "perms": P("kid"), "is_admin": False}
+		ok, err, res, code = pl_action(anna, {"action": "new", "name": "Jura", "template": "camp", "goal": "9 kg"})
+		assert ok and code == 200, err
+		lid = res["id"]
+		Lx = PL["lists"][lid]
+		assert Lx["goal_g"] == 9000 and len(Lx["items"]) == len(PL_TEMPLATES[1][2]) and os.path.isfile(os.path.join(tmp, "pack", lid + ".json"))
+		a, b = Lx["items"][0], Lx["items"][1]
+		r0 = Lx["rev"]
+		assert pl_action(anna, {"action": "item", "list": lid, "id": a["id"], "set": {"packed": True}, "base": a["rev"]})[0]
+		ok, err, res, code = pl_action(carl, {"action": "item", "list": lid, "id": b["id"], "set": {"packed": True}, "base": r0})
+		assert ok and a["packed"] and b["packed"] and Lx["rev"] == r0 + 2 and not res["stale"], "two phones, two items: both stay"
+		ok, err, res, code = pl_action(carl, {"action": "item", "list": lid, "id": a["id"], "set": {"buy": True}, "base": r0})
+		assert ok and res["stale"] and a["packed"] and a["buy"] and a["by"] == "Carl", "the same item: fields are merged, the last change wins"
+		d = pl_get(carl, lid, r0)[2]
+		assert {x["id"] for x in d["items"]} == {a["id"], b["id"]} and pl_get(carl, lid, Lx["rev"])[2].get("same")
+		assert pl_action(bob, {"action": "item", "list": lid, "id": a["id"], "set": {"packed": False}})[3] == 403 and pl_get(bob, lid)[0], "friend: look, not change"
+		assert not pl_get(kim, lid)[0] and pl_action(kim, {"action": "new", "name": "x"})[3] == 403
+		assert pl_action(carl, {"action": "del", "id": lid})[3] == 403 and pl_action(anna, {"action": "add", "list": lid, "name": "=HYPERLINK(\"x\")", "w": "5 g"})[0]
+		t = pl_totals(Lx["items"])
+		assert t["pack"] == t["base"] + t["cons"] and t["worn"] > 0 and t["cons"] > 0 and t["total"] == t["pack"] + t["worn"]
+		csvx = pl_export_csv(Lx, "de")
+		assert b"'=HYPERLINK" in csvx and b";=HYPERLINK" not in csvx and b';"=HYPERLINK' not in csvx and csvx[:3] == b"\xef\xbb\xbf"
+		back = pl_import_preview(data=csvx, name="Jura.csv")
+		assert back["kind"] == "table" and len(back["items"]) == len(Lx["items"]), (back["map"], len(back["items"]))
+		key = lambda i: (i["name"], i["g"], i["n"], i["cat"], i["kind"], i["packed"], i["buy"])
+		assert sorted(map(key, back["items"])) == sorted(map(key, Lx["items"])), "CSV out and in again: the same items"
+		PL.update(root=None, lists=None)
+		assert pl_load() and PL["lists"][lid]["items"][0]["packed"], "read again from the file"
+		assert "pack: jb.pack" in _pl_upload_js() and 'id="tz-pack"' in TAUSCH_PAGE and "/tausch/pack" in TAUSCH_GUEST_HTML, "hooks in the file exchange pages"
+		assert role_allows("family", "/api/tausch/pack", "POST", {}) and role_allows("friend", "/tausch/packlisten", "GET", {}) and not role_allows("kid", "/tausch/packlisten", "GET", {})
+		import html as _h
+		hp = pl_print_html(PL["lists"][lid], "de")
+		assert "&lt;" not in hp or "<img src=x" not in hp
+		assert pl_action(anna, {"action": "add", "list": lid, "text": "<img src=x onerror=alert(1)>"})[0] and "<img src=x" not in pl_print_html(PL["lists"][lid], "de")
+		assert "<img src=x" not in (pl_guest_html("tok", lid, "de") or "") and _h.escape("<img src=x onerror=alert(1)>") in pl_guest_html("tok", lid, "de")
+		assert pl_action(anna, {"action": "del", "id": lid})[0] and not os.path.exists(os.path.join(tmp, "pack", lid + ".json"))
+	finally:
+		CFG.update(keep); TZ.update(keepTZ); PL.update(keepPL); g.update(sv)
+		shutil.rmtree(tmp, ignore_errors=True)
+	return "weights, lines, CSV (cp1252, decimal comma), xlsx + bombs refused, two phones merged, rights, CSV out and in, escaping"
+
+
+SELFTEST_EXTRA.append(("Packing lists: import, merge, rights, export (639zzw)", pl_selftest))
 if __name__ == "__main__":
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")
