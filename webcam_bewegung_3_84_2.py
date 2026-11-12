@@ -23,6 +23,10 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.84.2: Queen – iPhone-Test, zweite Runde (Test fotaqios-10): «Aufgeben» → «Ja» endet neu mit der Tafel «Spiel beendet» und
+    «Nochmal» statt mit einer Fehlermeldung. Fehler bleiben als Tafel mit «Fehler kopieren» stehen. Die Testseite meldet Start,
+    Ende und Fehler an MoveEye: «Meldungen vom Test» im Kasten des Spiels (nur Administrator). Daten-Abrufe werden wiederholt.
+    Den Test einmal neu installieren.
   * 3.84.1: Almanach: Neu oben links die Taste «‹ Zurück» – vom Artikel ins Kapitel, vom Kapitel zum Inhalt, vom Inhalt zu
     «Mehr». Die Zurück-Geste des Handys geht durch dieselben Ansichten, ein vergrössertes Bild hat «✕ Schliessen». «✕» verlässt
     den Almanach wie bisher mit einem Tipp. Offline-Karte: oben «‹ Mehr».
@@ -109,8 +113,6 @@ Features
     gleichen Server wie die Seite
   * 3.69.1: iPhone «Zum Home-Bildschirm»: MoveEye-Symbol statt schwarzem «M» – das Symbol steckt jetzt direkt in der Seite (iOS
     lädt es sonst nicht über das eigene Zertifikat)
-  * 3.69.0: Spielecke: «Flight of the Amazon Queen» (1995, CD-Fassung mit Sprachausgabe, Deutsch/Englisch) – ScummVM im Browser,
-    Admin lädt es einmal (Sprache wählen, feste Prüfsumme, 2 GB bleiben frei)
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -119,10 +121,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_84_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_84_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_84_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_84_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_84_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_84_2.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -139,7 +141,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.84.1"
+APP_VERSION = "3.84.2"
 
 
 def default_data_dir():
@@ -266,8 +268,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_84_1.zip"
-ZD_SHA256 = "610ff96fc91c683d36d93f90b650d660137f17b0a50ab056ecc3b3c2694edb60"
+ZD_FILE = "moveeye_daten_3_84_2.zip"
+ZD_SHA256 = "ba197cdf32f175d84b7082d81409192549896cfbc27aba8fe569100deefcaa35"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -49603,7 +49605,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.84.1")
+		self.root.title("MoveEye 3.84.2")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49981,7 +49983,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.84.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.84.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -94299,10 +94301,16 @@ alm_merge()
 
 
 
-FQT_TAG = "fotaqios-9"
+
+
+
+
+
+
+FQT_TAG = "fotaqios-10"
 FQT_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + FQT_TAG + "/"}
 
-FQT_FILE = {"name": "fotaq-iostest-9.zip", "size": 13677512, "sha256": "3b1d414b266697c3c79478fd1681b7683210ea9d5e116ae45b5aa94ed10ce00b", "unpacked": 23222074}
+FQT_FILE = {"name": "fotaq-iostest-10.zip", "size": 13681322, "sha256": "500098f1bde7826f9b0092a6a0d841c0d03dd6f6b952ca33451854a3a425c69c", "unpacked": 23233585}
 FQT_MAX_BYTES = 80 * 1024 * 1024
 FQT_GAME = "fotaqtest"
 FQT_DL = {"running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
@@ -94393,13 +94401,129 @@ def fqt_delete():
 		return False, "busy right now - try again in a moment"
 	for p in (fqt_dir(), fqt_dir() + ".new"):
 		shutil.rmtree(p, ignore_errors=True)
+	with FQT_REPORTS["lock"]:
+		FQT_REPORTS["list"] = []
+	try:
+		os.remove(fqt_reports_file())
+	except OSError:
+		pass
 	log_event("sys", "Flight of the Amazon Queen: iPhone test deleted")
 	return True, ""
 
 
+
+
+
+FQT_REPORTS = {"list": None, "last": 0.0, "lock": threading.Lock()}
+FQT_REP_NUM = ("step", "sec", "wasm", "heap", "req", "bytes", "errors", "retries")
+FQT_REP_TXT = {"why": 12, "v": 2, "lang": 4, "dev": 40, "audio": 24, "tag": 16, "kind": 8, "err": 600}
+
+
+def fqt_reports_file():
+	return os.path.join(DATA_DIR, "fotaqtest_meldungen.json")
+
+
+def fqt_report_clean(d):
+	""
+	if not isinstance(d, dict) or not isinstance(d.get("v"), str):
+		return None
+	out = {"t": int(time.time())}
+	for k in FQT_REP_NUM:
+		try:
+			out[k] = max(0, min(int(d.get(k) or 0), 2 ** 40))
+		except (TypeError, ValueError):
+			out[k] = 0
+	for k, n in FQT_REP_TXT.items():
+		v = d.get(k)
+		v = "".join(c if c.isprintable() else " " for c in (v if isinstance(v, str) else ""))
+		v = re.sub(r"[a-z][a-z0-9+.-]*://[^\s/]*", "…", v, flags=re.I)
+		v = re.sub(r"\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?\b", "…", v)
+		out[k] = v[:n]
+	return out
+
+
+def fqt_reports():
+	with FQT_REPORTS["lock"]:
+		if FQT_REPORTS["list"] is None:
+			try:
+				with open(fqt_reports_file(), encoding="utf-8") as fh:
+					l_ = json.load(fh)
+				FQT_REPORTS["list"] = [x for x in l_ if isinstance(x, dict)][-12:] if isinstance(l_, list) else []
+			except (OSError, ValueError):
+				FQT_REPORTS["list"] = []
+		return list(FQT_REPORTS["list"])
+
+
+def fqt_report_add(d):
+	r_ = fqt_report_clean(d)
+	if r_ is None:
+		return False
+	fqt_reports()
+	with FQT_REPORTS["lock"]:
+		if time.time() - FQT_REPORTS["last"] < 0.5:
+			return False
+		FQT_REPORTS["last"] = time.time()
+		FQT_REPORTS["list"] = (FQT_REPORTS["list"] + [r_])[-12:]
+		try:
+			with open(fqt_reports_file() + ".new", "w", encoding="utf-8") as fh:
+				json.dump(FQT_REPORTS["list"], fh)
+			os.replace(fqt_reports_file() + ".new", fqt_reports_file())
+		except OSError:
+			pass
+	if r_["err"] and time.time() - FQT_REPORTS.get("logged", 0.0) >= 60:
+		FQT_REPORTS["logged"] = time.time()
+		log_event("sys", "Flight of the Amazon Queen: iPhone test reports an error: " + r_["err"][:160])
+	return True
+
+
+def _fqt_admin():
+	"""
+"""
+	try:
+		from flask import g, has_request_context
+		return (not has_request_context()) or getattr(g, "role", "admin") == "admin"
+	except Exception:
+		return False
+
+
+def fqt_spieleport(h, method, path):
+	""
+	def antwort(st):
+		try:
+			h.send_response(st); h.send_header("Content-Length", "0"); h.send_header("Cache-Control", "no-store"); h.end_headers()
+		except OSError:
+			pass
+	if method != "POST" or path != "/fotaqtest-diag/report" or not fqt_installed():
+		return antwort(404)
+	o = h.headers.get("Origin")
+	if o is not None:
+		from urllib.parse import urlsplit
+		try:
+			same = urlsplit(o).netloc.lower() == (h.headers.get("Host") or "").lower()
+		except ValueError:
+			same = False
+		if not same:
+			return antwort(403)
+	try:
+		n = int(h.headers.get("Content-Length") or 0)
+	except ValueError:
+		n = -1
+	if not 0 < n <= 4096:
+		return antwort(413)
+	try:
+		d = json.loads(h.rfile.read(n))
+	except (ValueError, OSError):
+		return antwort(400)
+	return antwort(204 if fqt_report_add(d) else 400)
+
+
+GAMESRV_API["/fotaqtest-diag/"] = fqt_spieleport
+
+
 def fqt_state():
 	return {"tag": FQT_TAG, "pinned": fqt_pinned(), "installed": fqt_installed(), "game": fotaq_installed(), "size": FQT_FILE["size"],
-			"unpacked": FQT_FILE["unpacked"], "dl": {k: FQT_DL[k] for k in ("running", "got", "total", "msg", "done", "phase")}}
+			"unpacked": FQT_FILE["unpacked"], "dl": {k: FQT_DL[k] for k in ("running", "got", "total", "msg", "done", "phase")},
+			"reports": fqt_reports()[::-1] if _fqt_admin() else []}
 
 
 
@@ -94449,6 +94573,12 @@ def games_file(game, fn):
 
 
 _HX_FQT = _zd('639zzv_fotaq_iostest/HX_FQT', _zd_hx({
+	'Reports from the test': 'Meldungen vom Test',
+	'No report yet. The test page sends one when the game has started, has ended or shows an error.': 'Noch keine Meldung. Die Testseite schickt eine, wenn das Spiel gestartet ist, beendet wurde oder einen Fehler zeigt.',
+	'started': 'gestartet',
+	'ended': 'beendet',
+	'error': 'Fehler',
+	'Copy': 'Kopieren',
 	'iPhone test': 'iPhone-Test',
 	'Test versions of the game for iPhone/iPad (game data in pieces, smaller program). They do not replace the game. Open the test on the iPhone, try A and B, and send a picture of the line at the bottom.': 'Test-Fassungen des Spiels für iPhone/iPad (Spieldaten in Stücken, kleineres Programm). Sie ersetzen das Spiel nicht. Den Test am iPhone öffnen, A und B probieren und ein Bild der Zeile unten schicken.',
 	'Open the test': 'Test öffnen',
@@ -94474,6 +94604,12 @@ if TOOLS_PAGE.count(_FQT_HOOK) == 1 and "function fqtPaint" not in TOOLS_PAGE:
 
 
 fqt_selftest = _zd_fn('639zzv_fotaq_iostest/fqt_selftest()')
+
+
+
+
+
+
 
 
 

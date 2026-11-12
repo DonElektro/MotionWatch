@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-12 18:43",
+ "generated": "2026-11-12 19:51",
  "versions": [
   {
-   "version": "3.84.1",
-   "file": "webcam_bewegung_3_84_1.py",
+   "version": "3.84.2",
+   "file": "webcam_bewegung_3_84_2.py",
    "url": "",
-   "sha256": "0ea314eca465f276bcd18ac433305bb9da0d4628bcd8cac7b357074a77739e13",
-   "date": "2026-11-12 18:43",
-   "notes": "Almanach: Neu oben links die Taste «‹ Zurück» – vom Artikel ins Kapitel, vom Kapitel zum Inhalt, vom Inhalt zu «Mehr». Die Zurück-Geste des Handys geht durch dieselben Ansichten, ein vergrössertes Bild hat «✕ Schliessen». «✕» verlässt den Almanach wie bisher mit einem Tipp. Offline-Karte: oben «‹ Mehr».",
-   "size": 3825300,
-   "sig": "1e58d78c91844755f7074618419b73fe88e58957b5e6a3bc6649782de9a644cf5aaf4cf1db1dfe4ccab06247d49975aaba70a6b8e6249426e2ed37838776ea09",
+   "sha256": "02bac0c628917e29e0f12b45d0fb9e8350e50607ad8729b391e55b5b7e306ecd",
+   "date": "2026-11-12 19:51",
+   "notes": "Queen – iPhone-Test, zweite Runde (Test fotaqios-10): «Aufgeben» → «Ja» endet neu mit der Tafel «Spiel beendet» und «Nochmal» statt mit einer Fehlermeldung. Fehler bleiben als Tafel mit «Fehler kopieren» stehen. Die Testseite meldet Start, Ende und Fehler an MoveEye: «Meldungen vom Test» im Kasten des Spiels (nur Administrator). Daten-Abrufe werden wiederholt. Den Test einmal neu installieren.",
+   "size": 3829136,
+   "sig": "e87dae3457a2c7b9bd0c0683428bf6cb278d2eeb0a77857ebc9638570d77e9cfaeee8114cefcf2cb9b0ab298f3b305dc00f6c33dbd984d91c20eb1be558d1100",
    "data": {
-    "file": "moveeye_daten_3_84_1.zip",
+    "file": "moveeye_daten_3_84_2.zip",
     "url": "",
-    "sha256": "610ff96fc91c683d36d93f90b650d660137f17b0a50ab056ecc3b3c2694edb60",
-    "size": 10905012,
-    "sig": "2dfa4d200da782eba8a40c839d9d8970611f8ad88f5189ca86b86cac0f80bd5231bfaa6c22cf313d76ae9e52160c29a6e73cf25a5ee365c44c817ddb2c69100f"
+    "sha256": "ba197cdf32f175d84b7082d81409192549896cfbc27aba8fe569100deefcaa35",
+    "size": 10912494,
+    "sig": "b5d7e326eb7744b0512cade19695bc4e97f90cb3aa70e145e3cb0d19c6996c78b630ef69d0669d5b0e1c8066584e1e838233054e0cf8ecf3dcdbbea96e236b08"
    }
   },
   {

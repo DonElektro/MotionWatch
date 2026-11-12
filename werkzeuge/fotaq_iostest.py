@@ -52,7 +52,8 @@ def moveeye(datei, fehler):
     ns = {"__name__": "mw_fqt_test", "__file__": os.path.abspath(datei)}
     exec(compile(open(datei, encoding="utf-8").read(), datei, "exec"), ns)
     ns["DATA_DIR"] = home
-    ns["log_event"] = lambda *a, **k: None
+    LOGZ = []                                               # the protocol lines of this run (nothing is written)
+    ns["log_event"] = lambda *a, **k: LOGZ.append(" ".join(str(x) for x in a))
     ns["lan_guest_ip"] = lambda ip, fwd="": not fwd
     CFG, F, T = ns["CFG"], ns["FOTAQ_FILES"], ns["FQT_FILE"]
 
@@ -170,10 +171,10 @@ def moveeye(datei, fehler):
     ok("192.168" not in json.dumps(R) and "passwort" not in R[0] and "geheim" not in json.dumps(R), "Meldung: keine Adresse, keine fremden Felder")
     cf, jf = party(h=HA)                                    # 3.84.2: /api/party answers every logged-in user - the reports only the administrator
     ok(cf == 200 and jf["fotaq"]["iostest"]["reports"] == [] and "Missing variable" not in json.dumps(jf), f"Familie sieht die Meldungen nicht ({cf})")
-    n0 = sum("iPhone test reports an error" in x["text"] for x in ns["STATE"]["events"])
+    n0 = sum("iPhone test reports an error" in x for x in LOGZ)
     for _i in range(3):
         time.sleep(0.6); post("/fotaqtest-diag/report", json.dumps(rep).encode())
-    n1 = sum("iPhone test reports an error" in x["text"] for x in ns["STATE"]["events"])
+    n1 = sum("iPhone test reports an error" in x for x in LOGZ)
     ok(n1 == n0 == 1, f"Protokoll: höchstens eine Zeile pro Minute über einen gemeldeten Fehler ({n0} -> {n1})")
     R = party()[1]["fotaq"]["iostest"]["reports"][:1]
     ok(os.path.isfile(ns["fqt_reports_file"]()) and "192.168" not in open(ns["fqt_reports_file"]()).read(), "Meldung bleibt in einer Datei (ohne Adresse)")
