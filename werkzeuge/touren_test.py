@@ -72,13 +72,13 @@ def beispiel_kml(pts, name="Seon – Probetour"):
     folder «Tracks» with ONE LineString «lon,lat,height»"""
     wp = [("Startpunkt", pts[0])] + [("Wegpunkt", pts[len(pts) * k // 7]) for k in range(1, 7)] + [("Ziel", pts[-1])]
     o = ['<?xml version="1.0" encoding="UTF-8"?>', '<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">',
-         "<Document>", "<name>%s</name>" % name, '<Style id="track"><LineStyle><color>ff0000ff</color><width>4</width></LineStyle></Style>',
+         "<Document>", '<Style id="track"><LineStyle><color>ff0000ff</color><width>4</width></LineStyle></Style>',
          "<Folder>", "<name>Waypoints</name>"]
     for nm, p in wp:
         o.append('<Placemark><name>%s</name><ExtendedData><Data name="type"><value>swisstopo</value></Data></ExtendedData>'
                  "<Point><coordinates>%.6f,%.6f,%.1f</coordinates></Point></Placemark>" % (nm, p[1], p[0], p[2]))
-    o += ["</Folder>", "<Folder>", "<name>Tracks</name>", "<Placemark><name>%s</name><styleUrl>#track</styleUrl><LineString><tessellate>1</tessellate><coordinates>" % name,
-          " ".join("%.6f,%.6f,%.1f" % (p[1], p[0], p[2]) for p in pts), "</coordinates></LineString></Placemark>", "</Folder>", "</Document>", "</kml>"]
+    o += ["</Folder>", "<Folder>", "<name>Tracks</name>", "<Placemark><name>Swisstopo Route</name><styleUrl>#track</styleUrl><LineString><tessellate>1</tessellate><coordinates>",
+          " ".join("%.6f,%.6f,%.1f" % (p[1], p[0], p[2]) for p in pts), "</coordinates></LineString></Placemark>", "</Folder>"] + (["<name>%s</name>" % name] if name else []) + ["</Document>", "</kml>"]   # the name of the document stands AFTER the folders
     return "\n".join(o).encode("utf-8")
 
 
@@ -159,6 +159,17 @@ def teil_a(datei):
     ok(p["src"] == "kml" and len(p["pts"]) == 2204 and len(p["wps"]) == 8 and p["name"] == "Seon – Probetour" and not p["thinned"]
        and [w["name"] for w in p["wps"]][:2] == ["Startpunkt", "Wegpunkt"] and p["wps"][-1]["name"] == "Ziel",
        f"KML im Aufbau der swisstopo-App: 2204 Punkte, 8 Wegpunkte, Name, in {dt * 1000:.0f} ms")
+    kurz = beispiel_punkte(20)
+    n1 = ns["kt_parse"](beispiel_kml(kurz, ""), "Meine Wanderung.kml")["name"]
+    n2 = ns["kt_parse"](beispiel_kml(kurz, ""), "")["name"]
+    n3 = ns["kt_parse"](beispiel_kml(kurz, "").replace(b"Swisstopo Route", b"Rundweg Hallwilersee"), "x.kml")["name"]
+    ok(p["name"] != "Swisstopo Route" and n1 == "Meine Wanderung" and re.fullmatch(r"Tour \d\d\.\d\d\.\d{4}", n2) and n3 == "Rundweg Hallwilersee",
+       f"Name: Dokument (steht nach den Ordnern) vor «Swisstopo Route»; ohne: Dateiname «{n1}», sonst «{n2}»; eigener Spurname «{n3}»")
+    gn = lambda meta, trk, f="": ns["kt_parse"](('<gpx>%s<trk>%s<trkseg><trkpt lat="47" lon="8"/><trkpt lat="47.01" lon="8"/></trkseg></trk></gpx>'
+                                                 % ("<metadata><name>%s</name></metadata>" % meta if meta else "", "<name>%s</name>" % trk if trk else "")).encode(), f)["name"]
+    ok(gn("Meta", "Spur") == "Meta" and gn("", "Spur") == "Spur" and gn("", "", "abc.gpx") == "abc" and ns["kt_parse"](
+        b'<gpx><trk><name>Spur</name><trkseg><trkpt lat="47" lon="8"/><trkpt lat="47.01" lon="8"/></trkseg></trk><metadata><name>Meta</name></metadata></gpx>')["name"] == "Meta",
+       "GPX-Name: metadata vor trk (auch wenn es danach steht), sonst Dateiname")
     s = ns["kt_stats"](p["pts"])
     dist = sum(hav(pts[i - 1], pts[i]) for i in range(1, len(pts)))
     up = sum(max(0.0, pts[i][2] - pts[i - 1][2]) for i in range(1, len(pts)))
@@ -439,6 +450,9 @@ def teil_b(datei, web, bilder, tour=""):
                 txt = pg.inner_text("#kt-detail")
                 ok(all(w in txt for w in ("Distanz", "Aufstieg", "Abstieg", "Wanderzeit", "km", "↑", "↓")) and pg.locator("#kt-detail svg.kt-prof").is_visible(), f"{name}: Tour importiert: Zahlen und Höhenprofil")
                 ok(pg.locator("#kt-back").is_visible() and pg.evaluate(breit), f"{name}: sichtbarer Weg zurück («‹ Touren»), nichts ragt hinaus")
+                frei = pg.evaluate("() => { const h = document.querySelector('header').getBoundingClientRect(), b = document.getElementById('kt-back').getBoundingClientRect(), n = document.getElementById('kt-name').getBoundingClientRect(); return [Math.round(h.bottom), Math.round(b.top), Math.round(n.top), Math.round(n.bottom), innerHeight]; }")
+                ok(frei[1] >= frei[0] and frei[2] >= frei[0] and frei[3] <= frei[4], f"{name}: beim Öffnen stehen «‹ Touren» und der Titel frei unter dem festen Kopf (Kopf bis {frei[0]}, Titel ab {frei[2]})")
+                pg.screenshot(path=os.path.join(bilder, f"tour_offen_{name}.png"))
                 if not tour:
                     ok("Seon – Probetour" in pg.inner_text("#kt-name") and "+535" not in txt and pg.locator(".kt-wp").count() == 8, f"{name}: Name aus der Datei, 8 Wegpunkte auf der Karte")
                     ok("geglättet" not in txt, f"{name}: glatte Höhen aus der Datei: nicht «geglättet»")

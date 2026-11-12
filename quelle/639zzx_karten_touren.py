@@ -49,6 +49,7 @@ KT_PROFILE_PTS = 240
 KT_NOISE = 0.5                                            # m: median |second difference| of the heights above this = a GPS recording
 KT_SMOOTH_M = (50.0, 2.0)                                 # recorded tracks: mean over 50 m of way, count from 2 m
 KT_SMOOTH_DRAWN = (30.0, 2.0)                             # drawn routes on the height package
+KT_GENERIC = ("swisstopo route", "swisstopo-route", "route", "track", "untitled", "unbenannt")   # track names that say nothing
 KT_ID = re.compile(r"^[0-9a-f]{12}$")
 KT = {"lock": threading.RLock(), "tours": None, "stats": {}}
 
@@ -217,7 +218,7 @@ def kt_parse(data, fname=""):
     import xml.etree.ElementTree as _ET
     par = _ET.XMLPullParser(events=("start", "end"))
     stack, n_el = [], 0
-    name, pm_name, pm_pt, wp = "", "", None, None
+    doc_name, trk_name, pm_name, pm_pt, wp = "", "", "", None, None
     segs, rte, wps, kind, gx = [], [], [], "", None
     try:
         for i in range(0, len(data), 1 << 16):
@@ -251,8 +252,8 @@ def kt_parse(data, fname=""):
                     if tag == "name":
                         if up == "Placemark":
                             pm_name = _kt_name(tx)
-                        elif up == "Document" and not name:
-                            name = _kt_name(tx)
+                        elif up == "Document" and not doc_name:
+                            doc_name = _kt_name(tx)
                     elif tag == "coordinates":
                         if "Point" in stack:
                             c = _kt_coords(tx, ",")
@@ -268,16 +269,18 @@ def kt_parse(data, fname=""):
                     elif tag == "Placemark":
                         if pm_pt is not None and len(wps) < KT_MAX_WPS:
                             wps.append({"name": pm_name, "lat": pm_pt[0], "lon": pm_pt[1], "ele": pm_pt[2]})
-                        elif pm_pt is None and pm_name and not name:
-                            name = pm_name
+                        elif pm_pt is None and pm_name and not trk_name and pm_name.lower() not in KT_GENERIC:
+                            trk_name = pm_name
                 else:
                     if tag == "ele" and wp is not None and up in ("trkpt", "rtept", "wpt"):
                         wp["ele"] = _kt_num(tx.strip(), -500.0, 9000.0)
                     elif tag == "name":
                         if up == "wpt" and wp is not None:
                             wp["name"] = _kt_name(tx)
-                        elif up in ("trk", "rte", "metadata") and not name:
-                            name = _kt_name(tx)
+                        elif up == "metadata" and not doc_name:
+                            doc_name = _kt_name(tx)
+                        elif up in ("trk", "rte") and not trk_name:
+                            trk_name = _kt_name(tx)
                     elif tag == "trkpt" and wp is not None:
                         if not segs:
                             segs.append([])
@@ -300,8 +303,10 @@ def kt_parse(data, fname=""):
         step = (len(pts) + KT_MAX_PTS - 1) // KT_MAX_PTS
         pts = pts[::step] + ([pts[-1]] if (len(pts) - 1) % step else [])
         thinned = True
-    if not name:
-        name = _kt_name(os.path.splitext(os.path.basename(str(fname or "").replace("\\", "/")))[0])
+    # the name: of the document (KML: it may stand after the folders; GPX: metadata), then of the track (not the «Swisstopo
+    # Route» every export of the swisstopo app carries), then the file name, then «Tour <date>»
+    name = (doc_name or trk_name or _kt_name(os.path.splitext(os.path.basename(str(fname or "").replace("\\", "/")))[0])
+            or "Tour " + time.strftime("%d.%m.%Y"))
     return {"name": name, "pts": pts, "wps": wps, "thinned": thinned, "src": kind}
 
 
@@ -1292,7 +1297,7 @@ KT_JS = r"""
   }
   // ---- one tour ----
   function open(id) { fetch("/api/touren?lang=" + L() + "&id=" + id, {cache: "no-store"}).then(r => r.json()).then(j => { if (j.ok) show(j.tour); else { msg(j.error); load(); } }); }
-  function show(t) {
+  function show(t, keep) {
     S.cur = t; view("detail"); const D = $("#kt-detail"); D.textContent = "";
     const back = btn("‹ " + T("Tours"), "sec", () => { clearMarks(S.wmarks); line([]); S.cur = null; view("list"); load(); }); back.id = "kt-back";
     const title = el("div", "kt-title", t.name); title.id = "kt-name";
@@ -1308,15 +1313,17 @@ KT_JS = r"""
     if (t.edit) {
       if (t.kind === "drawn" && hasMap()) row.appendChild(btn("✏️ " + T("Edit"), "sec", () => draw(t)));
       const rn = btn("✎ " + T("Rename"), "sec", () => { const inp = el("input"); inp.type = "text"; inp.maxLength = 120; inp.value = t.name; inp.id = "kt-rn";
-        const r2 = el("div", "kt-row"); r2.append(inp, btn(T("Save"), "", () => api({action: "rename", id: t.id, name: inp.value}).then(r => { if (!r.ok) { msg(r.error, er); return; } t.name = r.tour.name; show(t); })), btn(T("Cancel"), "sec", () => show(t)));
+        const r2 = el("div", "kt-row"); r2.append(inp, btn(T("Save"), "", () => api({action: "rename", id: t.id, name: inp.value}).then(r => { if (!r.ok) { msg(r.error, er); return; } t.name = r.tour.name; show(t, true); })), btn(T("Cancel"), "sec", () => show(t, true)));
         title.replaceWith(r2); inp.focus(); }); rn.id = "kt-ren"; row.appendChild(rn);
       if (t.mine || S.me.admin) row.appendChild(btn(t.area === "mine" ? "👤 " + T("Only me") : "👥 " + T("For everyone (guests too)"), "sec",
-        () => api({action: "area", id: t.id, area: t.area === "mine" ? "all" : "mine"}).then(r => { if (r.ok) { t.area = r.tour.area; show(t); } else msg(r.error, er); })));
+        () => api({action: "area", id: t.id, area: t.area === "mine" ? "all" : "mine"}).then(r => { if (r.ok) { t.area = r.tour.area; show(t, true); } else msg(r.error, er); })));
     }
     if (t.rm) { const del = btn("🗑 " + T("Delete"), "sec", () => { const q = el("div", "kt-row"); q.id = "kt-delq";
-        q.append(el("b", "", T("Really delete?")), btn(T("Yes, delete"), "red", () => api({action: "delete", id: t.id}).then(r => { if (!r.ok) { msg(r.error, er); return; } back.click(); })), btn(T("No"), "sec", () => show(t)));
+        q.append(el("b", "", T("Really delete?")), btn(T("Yes, delete"), "red", () => api({action: "delete", id: t.id}).then(r => { if (!r.ok) { msg(r.error, er); return; } back.click(); })), btn(T("No"), "sec", () => show(t, true)));
         row.replaceWith(q); }); del.id = "kt-del"; row.appendChild(del); }
     D.append(row, er);
+    const hd = document.querySelector("header"); back.style.scrollMarginTop = ((hd ? hd.getBoundingClientRect().bottom : 0) + 10) + "px";   // not under the fixed head of the page
+    if (!keep) back.scrollIntoView({block: "start"});
     line(t.line || []); clearMarks(S.wmarks);
     if (hasMap()) map().then(m => { if (S.cur !== t) return;
       const mark = (p, txt, cls) => { const e = el("div", "kt-wp" + (cls || ""), txt); S.wmarks.push(new maplibregl.Marker({element: e, anchor: "bottom"}).setLngLat([p[1], p[0]]).addTo(m)); };
