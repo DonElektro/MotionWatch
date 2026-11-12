@@ -923,6 +923,7 @@ main{padding:12px;max-width:980px;margin:0 auto}
 #kq-c{position:absolute;inset:0}
 .kq-info{margin:8px 2px;font-size:14px}.kq-btns{display:flex;gap:8px;flex-wrap:wrap}
 .kq-none{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--panel)}
+.kq-back{color:var(--acc2);text-decoration:none;font-weight:600;min-height:44px;min-width:44px;display:inline-flex;align-items:center;white-space:nowrap}
 .kq-lic{display:inline-block;margin-top:10px;font-size:12px}
 </style></head><body>
 <header>
@@ -934,6 +935,7 @@ main{padding:12px;max-width:980px;margin:0 auto}
   </span>
 </header>
 <main>
+<a class="kq-back" href="/more">‹ <span data-i18n="More">More</span></a>
   <div id="kq-none" class="kq-none" hidden></div>
   <div id="kq-wrap" hidden>
     <div class="kq-top"><input id="kq-q" type="search" enterkeyhint="search" autocomplete="off"><button class="sec" type="button" id="kq-go">🔍</button></div>

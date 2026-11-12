@@ -728,6 +728,8 @@ _HX_ALM = {
                                           "La lampada SOS è stata attivata da {who}", "La lampa SOS è vegnida activada da {who}"),
     "a guest ({ip})": ("einem Gast ({ip})", "un invité ({ip})", "un ospite ({ip})", "in giast ({ip})"),
     "someone on the Wi-Fi ({ip})": ("jemandem im WLAN ({ip})", "quelqu’un sur le Wi-Fi ({ip})", "qualcuno nel Wi-Fi ({ip})", "insatgi en il WLAN ({ip})"),
+    "Close this tab or swipe the app away.": ("Diesen Tab schliessen oder die App wegwischen.", "Fermez cet onglet ou balayez l’app.",
+                                              "Chiudi questa scheda o scorri via l’app.", "Serra quest tab u stritga davent l’app."),
     "the administrator": ("dem Administrator", "l’administrateur", "l’amministratore", "l’administratur"),
 }
 for _k, _v in _HX_ALM.items():
@@ -977,7 +979,10 @@ def smalltv_routes(app, reply, body):                     # + 639zzt: /almanach/
     @app.route("/almanach/plus")
     def alm_plus_route():
         fig = globals().get("ALM_FIG") or {}
+        lg = norm_lang(request.args.get("lang") or CFG.get("lang"))
         return reply({"ok": True, "bilder": sorted(fig), "quellen": globals().get("ALM_QUELLEN") or {},
+                      "heim": "" if alm_who(request)[1] and (CFG["web_password"] or CFG["web_pw_hash"]) else "/more",    # a guest behind a login has nowhere to go back to
+                      "t_zurueck": tr("Back", lg), "t_mehr": tr("More", lg), "t_zu": tr("Close", lg), "t_tab": tr("Close this tab or swipe the app away.", lg),
                       "karte": any(r.rule.rstrip("/") == "/karte" for r in app.url_map.iter_rules())})
 
     @app.route("/almanach/live")
