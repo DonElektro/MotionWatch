@@ -186,9 +186,10 @@ for k in keys:
 st = ns["zusatz_selftest"]
 before = [st.__name__, type(st).__name__, "zusatz_selftest" in "".join(own[i] for i in range(len(own)) if own[i].startswith("def "))]
 res = st()
-real = ns["zusatz_selftest"]
+real = getattr(st, "__wrapped__", None)
+same = ns["zusatz_selftest"] is st and any(fn is st for _n, fn in ns["SELFTEST_EXTRA"])
 row = [i for i, ln in enumerate(own) if ln.startswith("zusatz_selftest = _zd_fn(")][0] + 1
-print("PC " + json.dumps({"n": len(keys), "bad": bad[:5], "before": before, "res": str(res)[:60], "real": real is not st,
+print("PC " + json.dumps({"n": len(keys), "bad": bad[:5], "before": before, "res": str(res)[:60], "real": real is not None and real is not st and same,
                           "line": real.__code__.co_firstlineno == row, "file": os.path.basename(real.__code__.co_filename),
                           "again": str(st())[:20] == str(res)[:20], "miss": ns["ZD"]["miss"][:3],
                           "alm": [c[0] for c in ns["ALMANAC"]], "tip": bool(ns["almanac_tip"]()["title"])}))
@@ -199,8 +200,8 @@ print("PC " + json.dumps({"n": len(keys), "bad": bad[:5], "before": before, "res
            "%s Prüfungen in der ZIP; jeder Platzhalter steht auf der Zeile seines «def», darunter leere Zeilen (%s)" % (r.get("n"), r.get("bad") if r else out[-800:]))
         ok(r.get("before") == ["zusatz_selftest", "function", False], "in der Hauptdatei steht nur der Platzhalter")
         ok(r.get("real") is True and r.get("line") is True and r.get("file") == os.path.basename(datei) and "literals" in str(r.get("res")),
-           "erster Aufruf lädt die echte Funktion (Zeilennummer und Dateiname der Hauptdatei): %s" % r.get("res"))
-        ok(r.get("again") is True and r.get("miss") == [], "der alte Platzhalter ruft weiter die echte Funktion, nichts fehlt")
+           "erster Aufruf lädt die echte Funktion (Zeilennummer und Dateiname der Hauptdatei; der Name bleibt derselbe Platzhalter wie in SELFTEST_EXTRA): %s" % r.get("res"))
+        ok(r.get("again") is True and r.get("miss") == [], "der Platzhalter ruft weiter die echte Funktion, nichts fehlt")
         alm_mit = r.get("alm") or []
 
         zbytes = open(zpfad, "rb").read()

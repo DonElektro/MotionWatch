@@ -91,8 +91,9 @@ def _zd(key, fallback):
 def _zd_fn(key):
     """Prüf-Code (Hauptdatei kleiner, Nov. 2026): the stand-in for a function «…_selftest» whose source bauen.py moved into
     the data zip (entry «part/name()»). Only «--self-test» calls these. The first call compiles the source with the line
-    numbers of this file (the lines below the stand-in are empty) and defines the function in this program; later calls
-    go straight to it. The zip is only ever used when its SHA-256 is the one written into this signed program (ZD_SHA256).
+    numbers of this file (the lines below the stand-in are empty), as a function of this program; the name keeps pointing
+    to the stand-in (the same object as in SELFTEST_EXTRA), the function itself is stand_in.__wrapped__. The zip is only
+    ever used when its SHA-256 is the one written into this signed program (ZD_SHA256).
     Without the zip the call fails with a clear text - the self-test then shows this check as failed."""
     name = key.rsplit("/", 1)[-1][:-2]
     line = sys._getframe(1).f_lineno
@@ -107,8 +108,11 @@ def _zd_fn(key):
                 raise RuntimeError("Zusatzdaten fehlen – additional data missing: the check %s() is in %s (update / repair)"
                                    % (name, ZD_FILE or "moveeye_daten_….zip"))
             g = stand_in.__globals__
+            keep = g.get(name)
             exec(compile("\n" * (line - 1) + data.pop(key), os.path.abspath(__file__), "exec"), g)
             box.append(g[name])                            # (ZD["used"] counts the literals only)
+            g[name] = keep                                 # the name stays the stand-in: one object everywhere
+            stand_in.__wrapped__ = box[0]
         return box[0](*a, **k)
     stand_in.__name__ = stand_in.__qualname__ = name
     return stand_in
