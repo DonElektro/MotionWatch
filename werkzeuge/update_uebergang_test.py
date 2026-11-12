@@ -1,24 +1,48 @@
 #!/usr/bin/env python3
-"""Übergangs-Test: ein Gerät mit der alten MoveEye (Standard 3.58.0 aus origin/main) holt die neue Version über eine
-lokale HTTPS-Update-Quelle (Test-Server mit eigenem Zertifikat) - Programmdatei UND Zusatzdatei, signiert wie echt.
+"""Übergangs-Test: ein Gerät mit einer alten MoveEye holt die neue Version über eine lokale HTTPS-Update-Quelle
+(Test-Server mit eigenem Zertifikat) - Programmdatei UND Zusatzdatei, signiert wie echt. Läuft im CI (Job «moveeye»).
 
-  python3 werkzeuge/update_uebergang_test.py                       # alt = origin/main:webcam_bewegung_3_58_0.py
-  python3 werkzeuge/update_uebergang_test.py --alt DATEI.py [--neu-version 3.59.0]
+  python3 werkzeuge/update_uebergang_test.py                 # beide Teile: «uebergang» und «stand»
+  python3 werkzeuge/update_uebergang_test.py --nur uebergang [--alt DATEI.py] [--neu-version X.Y.Z]
+  python3 werkzeuge/update_uebergang_test.py --nur stand [--streng] [--ordner ORDNER] [--ohne-netz]
 
-Ablauf (ohne Netz, ohne den echten Schlüssel):
-  * baut quelle/ in einem Test-Ordner als --neu-version (bauen.py --neue-version), erzeugt einen Test-Schlüssel und setzt
-    dessen öffentlichen Teil in die alte UND die neue Programmdatei (sonst nehmen die Geräte nur den echten Schlüssel);
-    versions.json mit make_manifest + Test-Schlüssel (Signatur über Programm und Zusatzdatei «data»).
+«Alt» wird berechnet, nichts ist fest eingetragen: die älteste Version mit Zusatzdatei, die noch im Repository liegt
+(volle Fälle A-D), und die Brücke (Datei des Eintrags «bridge» in versions.json, heute 3.0.2 - eine Datei ohne Zusatzdatei,
+eigener Fall Br). «Neu» ist die Nummer nach der neuesten Datei im Repository.
+
+Teil «uebergang» (ohne Netz, ohne den echten Schlüssel - der Test erzeugt einen Wegwerf-Schlüssel):
+  * baut quelle/ in einem Test-Ordner als --neu-version (bauen.py --neue-version), setzt den öffentlichen Teil des
+    Wegwerf-Schlüssels in die alte UND die neue Programmdatei (sonst nehmen die Geräte nur den echten Schlüssel);
+    versions.json mit make_manifest + Wegwerf-Schlüssel (Signatur über Programm und Zusatzdatei «data»).
   A  normal: update_check + update_install der ALTEN Version -> neue .py und ihre ZIP liegen beim Gerät; die neue
      Version lädt, alle Literale aus der ZIP, ihr Daten-Selbsttest (zusatz_selftest) ist grün.
   B  ZIP fehlt zuerst auf dem Server: das Update gelingt trotzdem, die neue Version startet im Kern (kein Absturz),
      holt die ZIP mit zusatz_holen(), sobald sie da ist; eine veränderte ZIP wird nie gespeichert.
   C  Update über einen Ordner (USB): Programm und ZIP kommen aus dem Ordner.
   D  nicht signiert / falsch signiert: die alte Version installiert nicht.
+  Br Brücke: sie holt nur die Programmdatei (kennt keine Zusatzdatei); die neue Version startet im Kern und holt ihre
+     ZIP selbst neben versions.json; falsche Signatur: nicht installiert.
+
+Teil «stand» (der veröffentlichte Stand, mit dem ECHTEN öffentlichen Schlüssel - der geheime wird nie gebraucht):
+  S1 jeder Eintrag in versions.json: Programmdatei da (im Ordner, sonst über «url»), Grösse, SHA-256, Signatur gültig;
+     ebenso die Zusatzdatei («data») und sie ist die, die in der signierten Programmdatei steht (ZD_FILE / ZD_SHA256);
+     die Zusatzdatei liegt dort, wo die Geräte sie suchen (neben der Programmdatei UND neben versions.json); der
+     Brücken-Eintrag ist da; jede Programmdatei trägt den echten öffentlichen Schlüssel.
+  S2 das älteste Gerät und die Brücke (unverändert, echter Schlüssel) holen die neueste Version aus genau diesem Stand.
+  Ohne --streng (Arbeitszweige): ist die neueste Programmdatei nach dem letzten Release neu gebaut (anderer Inhalt als in
+  versions.json), wird NUR dieser eine Eintrag übersprungen und das laut gemeldet. Mit --streng (CI auf main) ist das ein
+  Fehler - auf main gibt es kein «grün durch Überspringen».
+  Eine Ausnahme, laut und befristet: «vorstufe.json» neben versions.json ({"version": "X.Y.Z", "grund": "…", "bis":
+  "JJJJ-MM-TT"}, höchstens 3 Tage voraus) erlaubt GENAU den Fall «die neueste Programmdatei X.Y.Z steht noch nicht in
+  versions.json» - für Releases in zwei Stufen (erst Quelle + Workflow auf main, der Workflow baut Release-Dateien, deren
+  Prüfsummen dann in die signierte Fassung kommen). Geräte sehen die Vorstufe nicht (sie folgen versions.json); alle
+  Einträge dort werden weiter ganz geprüft. Passt vorstufe.json nicht (abgelaufen, andere Nummer, Release schon fertig),
+  ist das ein Fehler - die Datei bleibt nie liegen.
 """
 import argparse
 import datetime
 import functools
+import hashlib
 import http.server
 import json
 import os
@@ -29,6 +53,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import urllib.request
 
 HIER = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HIER)
@@ -92,9 +117,9 @@ class Leise(http.server.SimpleHTTPRequestHandler):
         Leise.log.append(self.path.split("?")[0] + " " + str(a[1] if len(a) > 1 else ""))
 
 
-def server(ordner, cp, kp):
+def server(ordner, cp, kp, port=0):
     h = functools.partial(Leise, directory=ordner)
-    s = http.server.ThreadingHTTPServer(("127.0.0.1", 0), h)
+    s = http.server.ThreadingHTTPServer(("127.0.0.1", port), h)
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     ctx.load_cert_chain(cp, kp)
     s.socket = ctx.wrap_socket(s.socket, server_side=True)
@@ -139,143 +164,527 @@ print("RES " + json.dumps(res))
 '''
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--alt", default="", help="alte Programmdatei (Standard: origin/main:webcam_bewegung_3_58_0.py)")
-    ap.add_argument("--neu-version", default="3.59.0")
-    ap.add_argument("--behalten", action="store_true", help="Test-Ordner nicht löschen")
-    a = ap.parse_args()
-    tmp = tempfile.mkdtemp(prefix="mw_uebergang_")
+SIGS = r'''
+rows = json.load(open(sys.argv[2], encoding="utf-8"))
+print("RES " + json.dumps({"pub": ns["UPDATE_PUBKEY"], "ok": [bool(ns["sig_ok"](*r)) for r in rows]}))
+'''
+
+VFILE = re.compile(r"^webcam_bewegung_(\d{1,3})_(\d{1,3})_(\d{1,3})\.py$")
+ZFILE = re.compile(r"^moveeye_daten_\d{1,3}_\d{1,3}_\d{1,3}\.zip$")
+MAX_BYTES = 64 * 1024 * 1024
+
+
+def vkey(v):
+    return tuple(int(x) for x in str(v).split("."))
+
+
+def lesen(pfad):
+    with open(pfad, "rb") as f:
+        return f.read()
+
+
+def sha(b):
+    return hashlib.sha256(b).hexdigest()
+
+
+def hinweis(text):
+    """a skipped / weaker check is never silent: line in the log and a warning in the GitHub summary"""
+    print("  HINWEIS " + text)
+    if os.environ.get("GITHUB_ACTIONS"):
+        print("::warning title=Update-Test::" + text)
+
+
+def programme(ordner):
+    """{version: file name} of the program files in a folder"""
+    out = {}
+    for n in os.listdir(ordner):
+        m = VFILE.match(n)
+        if m:
+            out[".".join(str(int(x)) for x in m.groups())] = n
+    return out
+
+
+def zd_von(text):
+    """(ZD_FILE, ZD_SHA256) written into a program text - ("", "") for a file without data zip (as _zd_name_of, part 397)"""
+    m = re.search(r'^ZD_FILE = "(moveeye_daten_\d{1,3}_\d{1,3}_\d{1,3}\.zip)"\s*\nZD_SHA256 = "([0-9a-f]{64})"', text, re.M)
+    return (m.group(1), m.group(2)) if m else ("", "")
+
+
+def alte_geraete(ordner, ausser=""):
+    """(oldest program file with a data zip, bridge file) of a folder - computed, nothing is written down here.
+    The bridge is the entry «bridge» of versions.json; without such an entry: the oldest file without data zip."""
+    progs = programme(ordner)
+    mit, ohne = [], []
+    for v in sorted(progs, key=vkey):
+        if v == ausser:
+            continue
+        name = zd_von(lesen(os.path.join(ordner, progs[v])).decode("utf-8", "replace"))[0]
+        (mit if name and os.path.isfile(os.path.join(ordner, name)) else ohne if not name else []).append(v)
+    br = ""
     try:
-        # ---- old program (+ its zip) ---------------------------------------------------------------------------------
-        alt_dir = os.path.join(tmp, "alt")
-        os.makedirs(alt_dir)
-        if a.alt:
-            alt = os.path.abspath(a.alt)
-            shutil.copy(alt, alt_dir)
-            z = re.search(r'^ZD_FILE = "([^"]+)"', open(alt, encoding="utf-8").read(), re.M)
-            if z and os.path.isfile(os.path.join(os.path.dirname(alt), z.group(1))):
-                shutil.copy(os.path.join(os.path.dirname(alt), z.group(1)), alt_dir)
-        else:
-            for fn in ("webcam_bewegung_3_58_0.py", "moveeye_daten_3_58_0.zip"):
-                with open(os.path.join(alt_dir, fn), "wb") as f:
-                    f.write(subprocess.run(["git", "show", "origin/main:" + fn], cwd=REPO, capture_output=True, check=True).stdout)
-        alt_py = sorted(x for x in os.listdir(alt_dir) if x.endswith(".py"))[0]
-        alt_v = re.search(r'^APP_VERSION = "([0-9.]+)"', open(os.path.join(alt_dir, alt_py), encoding="utf-8").read(), re.M).group(1)
-        print("Alt: %s (%s), neu: %s" % (alt_py, alt_v, a.neu_version))
+        man = json.load(open(os.path.join(ordner, "versions.json"), encoding="utf-8"))
+        br = next((str(e.get("version")) for e in man.get("versions", []) if e.get("bridge") and str(e.get("version")) in ohne), "")
+    except (OSError, ValueError):
+        pass
+    br = br or (ohne[0] if ohne else "")
+    return (os.path.join(ordner, progs[mit[0]]) if mit else ""), (os.path.join(ordner, progs[br]) if br else "")
 
-        # ---- new program: quelle/ built as --neu-version in a copy ----------------------------------------------------
-        bau = os.path.join(tmp, "bau")
-        shutil.copytree(os.path.join(REPO, "quelle"), os.path.join(bau, "quelle"))
-        os.makedirs(os.path.join(bau, "werkzeuge"))
-        os.makedirs(os.path.join(bau, "simulator3d"))
-        shutil.copy(os.path.join(HIER, "bauen.py"), os.path.join(bau, "werkzeuge"))
-        for fn in ("ui_gemeinsam.json", "fehler_katalog.json", "version.json"):
-            shutil.copy(os.path.join(REPO, "simulator3d", fn), os.path.join(bau, "simulator3d"))
-        r = subprocess.run([sys.executable, os.path.join(bau, "werkzeuge", "bauen.py"), "--neue-version", "Test Übergang",
-                            "--version", a.neu_version], capture_output=True, text=True, cwd=bau)
-        print("  " + " · ".join(x.strip() for x in r.stdout.strip().splitlines()[-3:]))
-        u = a.neu_version.replace(".", "_")
-        neu_py, neu_zip = "webcam_bewegung_%s.py" % u, "moveeye_daten_%s.zip" % u
-        if r.returncode != 0 or not os.path.isfile(os.path.join(bau, neu_py)):
-            print(r.stdout[-2000:] + r.stderr[-2000:])
-            sys.exit("Bau der neuen Version fehlgeschlagen")
-        shutil.rmtree(os.path.join(bau, "quelle"))
 
-        # ---- test key, server folder, versions.json -------------------------------------------------------------------
-        key = os.path.join(tmp, "test_schluessel.txt")
-        open(key, "w").write(os.urandom(32).hex())
-        home = os.path.join(tmp, "home")
-        res = py(os.path.join(bau, neu_py), 'ns["_ED"].extend(ns["_ed25519_impl"]())\n'
-                 'print("RES " + json.dumps(ns["_ED"][0](bytes.fromhex(open(sys.argv[2]).read().strip())).hex()))',
-                 home + "0", {}, key)
-        pub = res if isinstance(res, str) else ""
-        ok(len(pub) == 64 and pub != ECHT_PUB, "Test-Schlüssel erzeugt (nicht der echte)")
-        srv_dir = os.path.join(tmp, "server")
-        os.makedirs(srv_dir)
-        shutil.copy(os.path.join(bau, neu_py), srv_dir)
-        shutil.copy(os.path.join(bau, neu_zip), srv_dir)
-        pub_setzen(os.path.join(srv_dir, neu_py), pub)
-        cp, kp = zertifikat(tmp)
-        srv, base = server(srv_dir, cp, kp)
-        env = {"SSL_CERT_FILE": cp}
+def geraet_anlegen(ziel, alt_pfad, pub=""):
+    """a device folder: the old program file and its data zip (if it has one); pub = throwaway key instead of the real one"""
+    os.makedirs(ziel)
+    shutil.copy(alt_pfad, ziel)
+    name = zd_von(lesen(alt_pfad).decode("utf-8", "replace"))[0]
+    if name and os.path.isfile(os.path.join(os.path.dirname(alt_pfad), name)):
+        shutil.copy(os.path.join(os.path.dirname(alt_pfad), name), ziel)
+    p = os.path.join(ziel, os.path.basename(alt_pfad))
+    if pub:
+        pub_setzen(p, pub)
+    return p
+
+
+def version_von(pfad):
+    return re.search(r'^APP_VERSION = "([0-9.]+)"', lesen(pfad).decode("utf-8", "replace"), re.M).group(1)
+
+
+def kennt_zusatz(pfad):
+    """does this old program fetch the data zip together with the program (part 397)? The bridge does not."""
+    return "def zusatz_mitholen" in lesen(pfad).decode("utf-8", "replace")
+
+
+def ca_buendel(tmp, cp):
+    """the test certificate plus the CAs of the system (only needed when versions.json names an outside «url»)"""
+    ziel = os.path.join(tmp, "ca.pem")
+    teile = [lesen(cp)]
+    for kand in (ssl.get_default_verify_paths().cafile, "/etc/ssl/certs/ca-certificates.crt"):
+        if kand and os.path.isfile(kand):
+            teile.append(lesen(kand))
+            break
+    open(ziel, "wb").write(b"\n".join(teile))
+    return ziel
+
+
+# ======================================================================================================================
+# part «uebergang»: old device -> freshly built new version, throwaway key
+# ======================================================================================================================
+def uebergang(a, tmp):
+    progs = programme(REPO)
+    if a.alt:
+        alte = [os.path.abspath(a.alt)]
+    else:
+        voll, br = alte_geraete(REPO)
+        alte = [x for x in (voll, br) if x]
+        ok(bool(voll), "älteste Version mit Zusatzdatei im Repository gefunden")
+        ok(bool(br), "Brücke im Repository gefunden")
+    if not alte:
+        return
+    neu_v = a.neu_version
+    if not neu_v:                                           # the number after the newest file in the repository
+        x, y, _z = max((vkey(v) for v in progs), default=(3, 0, 0))
+        neu_v = "%d.%d.0" % ((x, y + 1) if y < 999 else (x + 1, 0))
+    print("Alt: %s · neu: %s (aus quelle/ gebaut)" % (", ".join("%s (%s)" % (os.path.basename(p), version_von(p)) for p in alte), neu_v))
+
+    # ---- new program: quelle/ built as neu_v in a copy ------------------------------------------------------------------
+    bau = os.path.join(tmp, "bau")
+    shutil.copytree(os.path.join(REPO, "quelle"), os.path.join(bau, "quelle"))
+    os.makedirs(os.path.join(bau, "werkzeuge"))
+    os.makedirs(os.path.join(bau, "simulator3d"))
+    shutil.copy(os.path.join(HIER, "bauen.py"), os.path.join(bau, "werkzeuge"))
+    for fn in ("ui_gemeinsam.json", "fehler_katalog.json", "version.json"):
+        shutil.copy(os.path.join(REPO, "simulator3d", fn), os.path.join(bau, "simulator3d"))
+    r = subprocess.run([sys.executable, os.path.join(bau, "werkzeuge", "bauen.py"), "--neue-version", "Test Übergang",
+                        "--version", neu_v], capture_output=True, text=True, cwd=bau)
+    print("  " + " · ".join(x.strip() for x in r.stdout.strip().splitlines()[-3:]))
+    u = neu_v.replace(".", "_")
+    neu_py, neu_zip = "webcam_bewegung_%s.py" % u, "moveeye_daten_%s.zip" % u
+    if r.returncode != 0 or not os.path.isfile(os.path.join(bau, neu_py)) or not os.path.isfile(os.path.join(bau, neu_zip)):
+        print(r.stdout[-2000:] + r.stderr[-2000:])
+        ok(False, "Bau der neuen Version %s (bauen.py --neue-version)" % neu_v)
+        return
+    shutil.rmtree(os.path.join(bau, "quelle"))
+
+    # ---- throwaway key, server folder, versions.json --------------------------------------------------------------------
+    key = os.path.join(tmp, "test_schluessel.txt")
+    open(key, "w").write(os.urandom(32).hex())
+    home = os.path.join(tmp, "home")
+    res = py(os.path.join(bau, neu_py), 'ns["_ED"].extend(ns["_ed25519_impl"]())\n'
+             'print("RES " + json.dumps(ns["_ED"][0](bytes.fromhex(open(sys.argv[2]).read().strip())).hex()))',
+             home + "0", {}, key)
+    pub = res if isinstance(res, str) else ""
+    ok(len(pub) == 64 and pub != ECHT_PUB, "Wegwerf-Schlüssel erzeugt (nicht der echte)")
+    if len(pub) != 64:
+        return
+    srv_dir = os.path.join(tmp, "server")
+    os.makedirs(srv_dir)
+    shutil.copy(os.path.join(bau, neu_py), srv_dir)
+    shutil.copy(os.path.join(bau, neu_zip), srv_dir)
+    pub_setzen(os.path.join(srv_dir, neu_py), pub)
+    cp, kp = zertifikat(tmp)
+    srv, base = server(srv_dir, cp, kp)
+    env = {"SSL_CERT_FILE": cp}
+    try:
         r = subprocess.run([sys.executable, os.path.join(srv_dir, neu_py), "--make-manifest", srv_dir, "--sign-key", key,
                             "--base-url", base], capture_output=True, text=True, cwd=srv_dir,
                            env=dict(os.environ, MOTIONWATCH_HOME=home + "m"))
-        man = json.load(open(os.path.join(srv_dir, "versions.json")))
-        e = man["versions"][0]
-        ok(e["version"] == a.neu_version and e.get("sig") and (e.get("data") or {}).get("sig"),
+        try:
+            man = json.load(open(os.path.join(srv_dir, "versions.json")))
+            e = man["versions"][0]
+        except (OSError, ValueError, LookupError):
+            print(r.stdout[-1500:] + r.stderr[-1500:])
+            ok(False, "versions.json mit --make-manifest und dem Wegwerf-Schlüssel")
+            return
+        ok(e["version"] == neu_v and e.get("sig") and (e.get("data") or {}).get("sig"),
            "versions.json: %s signiert, Zusatzdatei %s mit Grösse %s und Signatur" % (e["version"], (e.get("data") or {}).get("file"),
                                                                                     (e.get("data") or {}).get("size")))
-        sz_alt = os.path.getsize(os.path.join(alt_dir, alt_py))
-        print("  Programmdatei alt %d Bytes -> neu %d Bytes" % (sz_alt, os.path.getsize(os.path.join(srv_dir, neu_py))))
+        man_txt = json.dumps(man)
+        zip_gut = lesen(os.path.join(srv_dir, neu_zip))
+        nr = [0]
 
-        def geraet(name):
-            d = os.path.join(tmp, name)
-            shutil.copytree(alt_dir, d)
-            pub_setzen(os.path.join(d, alt_py), pub)
-            return d
+        def geraet(alt_pfad):
+            nr[0] += 1
+            d = os.path.join(tmp, "geraet_%d" % nr[0])
+            return d, geraet_anlegen(d, alt_pfad, pub), "%s%d" % (home, nr[0])
 
-        # ---- A: normal ------------------------------------------------------------------------------------------------
-        print("A  Update %s -> %s über HTTPS (Programm + Zusatzdatei)" % (alt_v, a.neu_version))
-        d = geraet("geraet_a")
-        Leise.log.clear()
-        r = py(os.path.join(d, alt_py), UPDATE, home + "a", env, base + "/versions.json", a.neu_version)
-        ok(r.get("found") and r.get("signed") and r.get("new") == a.neu_version, "alte Version sieht %s, signiert (%s)" % (a.neu_version, r.get("msg") or "ok"))
-        ok(r.get("install") == [True, ""] and r.get("restart", {}).get("version") == a.neu_version, "installiert, Neustart in die neue Version (%s)" % r.get("install"))
-        ok(open(os.path.join(d, neu_py), "rb").read() == open(os.path.join(srv_dir, neu_py), "rb").read(), "neue Programmdatei beim Gerät")
-        ok(os.path.isfile(os.path.join(d, neu_zip)) and open(os.path.join(d, neu_zip), "rb").read() == open(os.path.join(srv_dir, neu_zip), "rb").read(),
-           "Zusatzdatei gleich mitgeholt (Teil 397 der alten Version)")
-        print("     Server: " + ", ".join(sorted(set(x.split(" ")[0] for x in Leise.log))))
-        r = py(os.path.join(d, neu_py), NEU_LADEN, home + "a2", env)
-        ok(r.get("app") == a.neu_version and r.get("ok") is True and r.get("miss") == 0, "neue Version lädt alle Literale aus der ZIP (%s)" % r.get("used"))
-        ok(str(r.get("selftest", "")).startswith(str(r.get("used"))), "Daten-Selbsttest: %s" % r.get("selftest"))
+        def zuruecksetzen():                                # every case starts from the same server
+            open(os.path.join(srv_dir, "versions.json"), "w").write(man_txt)
+            open(os.path.join(srv_dir, neu_zip), "wb").write(zip_gut)
 
-        # ---- B: zip missing first --------------------------------------------------------------------------------------
-        print("B  Zusatzdatei fehlt zuerst auf dem Server")
-        d = geraet("geraet_b")
-        os.rename(os.path.join(srv_dir, neu_zip), os.path.join(tmp, neu_zip))
-        r = py(os.path.join(d, alt_py), UPDATE, home + "b", env, base + "/versions.json", a.neu_version)
-        ok(r.get("install") == [True, ""], "Update gelingt ohne Zusatzdatei (%s)" % r.get("install"))
-        ok(not os.path.isfile(os.path.join(d, neu_zip)), "keine Zusatzdatei beim Gerät")
-        r = py(os.path.join(d, neu_py), NEU_LADEN, home + "b2", env, base + "/versions.json")
-        ok(r.get("app") == a.neu_version and r.get("ok") is False and r.get("err") == "missing" and r.get("de", 0) > 1000,
-           "neue Version startet im Kern, kein Absturz, Deutsch da (%s Texte)" % r.get("de"))
-        ok(r.get("holen") and r.get("da") is False, "Nachladen solange sie fehlt: Meldung «%s», nichts gespeichert" % r.get("holen"))
-        kap = bytearray(open(os.path.join(tmp, neu_zip), "rb").read())
-        kap[1000] ^= 1
-        open(os.path.join(srv_dir, neu_zip), "wb").write(bytes(kap))
-        r = py(os.path.join(d, neu_py), NEU_LADEN, home + "b3", env, base + "/versions.json")
-        ok("checksum" in str(r.get("holen")) and r.get("da") is False, "veränderte ZIP auf dem Server: abgelehnt (%s)" % r.get("holen"))
-        shutil.copy(os.path.join(tmp, neu_zip), os.path.join(srv_dir, neu_zip))
-        r = py(os.path.join(d, neu_py), NEU_LADEN, home + "b4", env, base + "/versions.json")
-        ok(r.get("holen") == "" and r.get("da") is True, "richtige ZIP nachgeladen und gespeichert")
-        r = py(os.path.join(d, neu_py), NEU_LADEN, home + "b5", env)
-        ok(r.get("ok") is True and r.get("miss") == 0, "nach dem Neustart: alles da")
+        def falsche_signatur(alt_pfad, alt_v):
+            d, p, h = geraet(alt_pfad)
+            man2 = json.loads(man_txt)
+            s = man2["versions"][0]["sig"]
+            man2["versions"][0]["sig"] = s[:-2] + ("00" if not s.endswith("00") else "11")
+            json.dump(man2, open(os.path.join(srv_dir, "versions.json"), "w"))
+            r = py(p, UPDATE, h, env, base + "/versions.json", neu_v)
+            ok(bool(r.get("found") and not r.get("signed") and r.get("install") and r["install"][0] is False
+                    and not os.path.isfile(os.path.join(d, neu_py))),
+               "%s: falsche Signatur -> nicht installiert: %s" % (alt_v, (r.get("install") or [None, None])[1]))
+            zuruecksetzen()
 
-        # ---- C: USB folder ---------------------------------------------------------------------------------------------
-        print("C  Update über einen Ordner (USB)")
-        d = geraet("geraet_c")
-        r = py(os.path.join(d, alt_py), UPDATE, home + "c", env, srv_dir, a.neu_version)
-        ok(r.get("signed") and r.get("install") == [True, ""], "aus dem Ordner installiert (%s)" % r.get("install"))
-        ok(os.path.isfile(os.path.join(d, neu_zip)), "Zusatzdatei aus dem Ordner mitgeholt")
+        for alt_pfad in alte:
+            alt_v = version_von(alt_pfad)
+            ok(vkey(alt_v) < vkey(neu_v), "%s ist älter als %s" % (alt_v, neu_v))
+            print("  Programmdatei %s %d Bytes -> neu %d Bytes" % (alt_v, os.path.getsize(alt_pfad), os.path.getsize(os.path.join(srv_dir, neu_py))))
+            zuruecksetzen()
+            if not kennt_zusatz(alt_pfad):
+                # ---- Br: bridge - one file, knows no data zip --------------------------------------------------------
+                print("Br Brücke %s -> %s über HTTPS (holt nur das Programm, die neue Version holt ihre Zusatzdatei selbst)" % (alt_v, neu_v))
+                d, p, h = geraet(alt_pfad)
+                Leise.log.clear()
+                r = py(p, UPDATE, h, env, base + "/versions.json", neu_v)
+                ok(bool(r.get("found") and r.get("signed") and r.get("new") == neu_v), "Brücke sieht %s, signiert (%s)" % (neu_v, r.get("msg") or "ok"))
+                ok(r.get("install") == [True, ""] and r.get("restart", {}).get("version") == neu_v, "installiert, Neustart in die neue Version (%s)" % r.get("install"))
+                ok(os.path.isfile(os.path.join(d, neu_py)) and lesen(os.path.join(d, neu_py)) == lesen(os.path.join(srv_dir, neu_py)), "neue Programmdatei beim Gerät")
+                ok(not os.path.isfile(os.path.join(d, neu_zip)), "Zusatzdatei kommt nicht mit (die Brücke kennt sie nicht)")
+                print("     Server: " + ", ".join(sorted(set(x.split(" ")[0] for x in Leise.log))))
+                r = py(os.path.join(d, neu_py), NEU_LADEN, h + "b", env, base + "/versions.json")
+                ok(r.get("app") == neu_v and r.get("ok") is False and r.get("de", 0) > 1000, "neue Version startet im Kern, kein Absturz (%s Texte)" % r.get("de"))
+                ok(r.get("holen") == "" and r.get("da") is True, "sie holt ihre Zusatzdatei selbst neben versions.json (%s)" % (r.get("holen") or "ok"))
+                r = py(os.path.join(d, neu_py), NEU_LADEN, h + "c", env)
+                ok(r.get("ok") is True and r.get("miss") == 0, "nach dem Neustart: alles da")
+                falsche_signatur(alt_pfad, alt_v)
+                continue
 
-        # ---- D: wrong signature ----------------------------------------------------------------------------------------
-        print("D  falsche Signatur")
-        d = geraet("geraet_d")
-        man2 = json.loads(json.dumps(man))
-        man2["versions"][0]["sig"] = man2["versions"][0]["sig"][:-2] + ("00" if not man2["versions"][0]["sig"].endswith("00") else "11")
-        json.dump(man2, open(os.path.join(srv_dir, "versions.json"), "w"))
-        r = py(os.path.join(d, alt_py), UPDATE, home + "d", env, base + "/versions.json", a.neu_version)
-        ok(r.get("found") and not r.get("signed") and r.get("install") and r["install"][0] is False and not os.path.isfile(os.path.join(d, neu_py)),
-           "nicht installiert: %s" % (r.get("install") or [None, None])[1])
+            # ---- A: normal ----------------------------------------------------------------------------------------------
+            print("A  Update %s -> %s über HTTPS (Programm + Zusatzdatei)" % (alt_v, neu_v))
+            d, p, h = geraet(alt_pfad)
+            Leise.log.clear()
+            r = py(p, UPDATE, h, env, base + "/versions.json", neu_v)
+            ok(bool(r.get("found") and r.get("signed") and r.get("new") == neu_v), "alte Version sieht %s, signiert (%s)" % (neu_v, r.get("msg") or "ok"))
+            ok(r.get("install") == [True, ""] and r.get("restart", {}).get("version") == neu_v, "installiert, Neustart in die neue Version (%s)" % r.get("install"))
+            ok(os.path.isfile(os.path.join(d, neu_py)) and lesen(os.path.join(d, neu_py)) == lesen(os.path.join(srv_dir, neu_py)), "neue Programmdatei beim Gerät")
+            ok(os.path.isfile(os.path.join(d, neu_zip)) and lesen(os.path.join(d, neu_zip)) == zip_gut,
+               "Zusatzdatei gleich mitgeholt (Teil 397 der alten Version)")
+            print("     Server: " + ", ".join(sorted(set(x.split(" ")[0] for x in Leise.log))))
+            r = py(os.path.join(d, neu_py), NEU_LADEN, h + "n", env)
+            ok(r.get("app") == neu_v and r.get("ok") is True and r.get("miss") == 0, "neue Version lädt alle Literale aus der ZIP (%s)" % r.get("used"))
+            ok(str(r.get("selftest", "")).startswith(str(r.get("used"))), "Daten-Selbsttest: %s" % r.get("selftest"))
+
+            # ---- B: zip missing first ---------------------------------------------------------------------------------
+            print("B  Zusatzdatei fehlt zuerst auf dem Server")
+            d, p, h = geraet(alt_pfad)
+            os.remove(os.path.join(srv_dir, neu_zip))
+            r = py(p, UPDATE, h, env, base + "/versions.json", neu_v)
+            ok(r.get("install") == [True, ""], "Update gelingt ohne Zusatzdatei (%s)" % r.get("install"))
+            ok(not os.path.isfile(os.path.join(d, neu_zip)), "keine Zusatzdatei beim Gerät")
+            r = py(os.path.join(d, neu_py), NEU_LADEN, h + "b2", env, base + "/versions.json")
+            ok(r.get("app") == neu_v and r.get("ok") is False and r.get("err") == "missing" and r.get("de", 0) > 1000,
+               "neue Version startet im Kern, kein Absturz, Deutsch da (%s Texte)" % r.get("de"))
+            ok(bool(r.get("holen")) and r.get("da") is False, "Nachladen solange sie fehlt: Meldung «%s», nichts gespeichert" % r.get("holen"))
+            kap = bytearray(zip_gut)
+            kap[1000] ^= 1
+            open(os.path.join(srv_dir, neu_zip), "wb").write(bytes(kap))
+            r = py(os.path.join(d, neu_py), NEU_LADEN, h + "b3", env, base + "/versions.json")
+            ok("checksum" in str(r.get("holen")) and r.get("da") is False, "veränderte ZIP auf dem Server: abgelehnt (%s)" % r.get("holen"))
+            zuruecksetzen()
+            r = py(os.path.join(d, neu_py), NEU_LADEN, h + "b4", env, base + "/versions.json")
+            ok(r.get("holen") == "" and r.get("da") is True, "richtige ZIP nachgeladen und gespeichert")
+            r = py(os.path.join(d, neu_py), NEU_LADEN, h + "b5", env)
+            ok(r.get("ok") is True and r.get("miss") == 0, "nach dem Neustart: alles da")
+
+            # ---- C: USB folder ----------------------------------------------------------------------------------------
+            print("C  Update über einen Ordner (USB)")
+            d, p, h = geraet(alt_pfad)
+            r = py(p, UPDATE, h, env, srv_dir, neu_v)
+            ok(bool(r.get("signed")) and r.get("install") == [True, ""], "aus dem Ordner installiert (%s)" % r.get("install"))
+            ok(os.path.isfile(os.path.join(d, neu_zip)), "Zusatzdatei aus dem Ordner mitgeholt")
+
+            # ---- D: wrong signature -----------------------------------------------------------------------------------
+            print("D  falsche Signatur")
+            falsche_signatur(alt_pfad, alt_v)
+    finally:
         srv.shutdown()
+
+
+# ======================================================================================================================
+# part «stand»: the published state (versions.json + files as they lie in the repository), real public key
+# ======================================================================================================================
+def stand(a, tmp):
+    ordner = os.path.abspath(a.ordner or REPO)
+    print("Stand: %s%s" % (ordner, " (streng)" if a.streng else ""))
+    try:
+        man = json.load(open(os.path.join(ordner, "versions.json"), encoding="utf-8"))
+        ents = [e for e in man["versions"] if isinstance(e, dict)]
+    except (OSError, ValueError, LookupError, TypeError) as e:
+        ok(False, "versions.json lesbar (%s)" % e)
+        return
+    ok(len(ents) > 0, "versions.json: %d Einträge" % len(ents))
+    if not ents:
+        return
+    progs = programme(ordner)
+    cp, kp = zertifikat(tmp)
+    ca = ca_buendel(tmp, cp)
+    ctx = ssl.create_default_context(cafile=ca)
+    srv_dir = os.path.join(tmp, "stand_server")
+    os.makedirs(srv_dir)
+    for n in os.listdir(ordner):                           # what raw.githubusercontent would serve; folders only of a throwaway copy
+        p = os.path.join(ordner, n)
+        if n == "versions.json" or VFILE.match(n) or ZFILE.match(n) or (a.ordner and os.path.isdir(p) and not n.startswith(".")):
+            os.symlink(p, os.path.join(srv_dir, n))
+    srv, base = server(srv_dir, cp, kp, a.port)
+    try:
+        stand_pruefen(a, tmp, ordner, ents, progs, ca, ctx, base)
+    finally:
+        srv.shutdown()
+
+
+VORSTUFE_TAGE = 3
+
+
+def vorstufe_lesen(ordner):
+    """vorstufe.json next to versions.json: an explicitly marked first stage of a release in two stages (the program file
+    is built, but its signed entry follows after a workflow has made the release assets it pins). -> (dict | None, error).
+    Valid only for exactly one version number, with a reason, and for at most VORSTUFE_TAGE days."""
+    p = os.path.join(ordner, "vorstufe.json")
+    if not os.path.isfile(p):
+        return None, ""
+    try:
+        d = json.loads(lesen(p).decode("utf-8"))
+        v, g, bis = str(d["version"]), str(d["grund"]).strip(), datetime.date.fromisoformat(str(d["bis"]))
+    except (ValueError, KeyError, TypeError) as e:
+        return {}, "vorstufe.json ist nicht lesbar (%s) - nötig: version, grund, bis (JJJJ-MM-TT)" % e.__class__.__name__
+    heute = datetime.datetime.now(datetime.timezone.utc).date()
+    if not re.fullmatch(r"\d+\.\d+\.\d+", v) or len(g) < 10:
+        return d, "vorstufe.json: version X.Y.Z und ein Grund (ein Satz) sind nötig"
+    if bis < heute:
+        return d, "vorstufe.json ist abgelaufen (bis %s) - Release fertig machen oder zurücknehmen" % bis
+    if (bis - heute).days > VORSTUFE_TAGE:
+        return d, "vorstufe.json: «bis» liegt mehr als %d Tage voraus (%s)" % (VORSTUFE_TAGE, bis)
+    return d, ""
+
+
+def stand_pruefen(a, tmp, ordner, ents, progs, ca, ctx, base):
+    def holen(url):
+        if a.ohne_netz and not url.startswith("https://127.0.0.1"):
+            raise OSError("--ohne-netz")
+        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "MoveEye-Update-Test"}), timeout=90, context=ctx) as r:
+            return r.read(MAX_BYTES + 1)
+
+    # ---- released state or work in progress? ------------------------------------------------------------------------------
+    top = max(ents, key=lambda e: vkey(e.get("version", "0")))
+    tv, tf = str(top.get("version")), str(top.get("file"))
+    neueste_datei = max(progs, key=vkey) if progs else ""
+    lokal = os.path.join(ordner, tf)
+    grund = ""
+    if neueste_datei and vkey(neueste_datei) > vkey(tv):
+        grund = "die neueste Programmdatei %s steht nicht in versions.json (neuester Eintrag: %s)" % (progs[neueste_datei], tv)
+    elif not top.get("url") and not os.path.isfile(lokal):
+        grund = "die Datei %s des neuesten Eintrags fehlt" % tf
+    elif os.path.isfile(lokal) and sha(lesen(lokal)) != str(top.get("sha256")):
+        grund = "%s hat einen anderen Inhalt als in versions.json (nach dem Release neu gebaut)" % tf
+    aus = set()
+    vor, vor_fehler = vorstufe_lesen(ordner)
+    vor_gilt = bool(vor and not vor_fehler and neueste_datei and vkey(neueste_datei) > vkey(tv) and vor.get("version") == neueste_datei
+                    and os.path.isfile(lokal) and sha(lesen(lokal)) == str(top.get("sha256")))
+    if vor is not None and not vor_gilt:
+        # a marker that no longer fits (expired, other number, or the release is done) must go - it never lingers
+        ok(False, "vorstufe.json passt zu diesem Stand: " + (vor_fehler or ("neueste Programmdatei %s, veröffentlicht %s - die Vorstufe "
+           "ist vorbei oder eine andere, vorstufe.json löschen" % (progs.get(neueste_datei, "-"), tv))))
+    if grund and vor_gilt:
+        hinweis("VORSTUFE auf main (vorstufe.json, bis %s): %s. Geräte sehen davon nichts - versions.json nennt weiter %s, und "
+                "jeder Eintrag dort wird unten ganz geprüft. Grund: %s" % (vor.get("bis"), grund, tv, vor.get("grund")))
+    elif grund and a.streng:
+        ok(False, "veröffentlichter Stand stimmt: " + grund)
+    elif grund:
+        if not (neueste_datei and vkey(neueste_datei) > vkey(tv) and os.path.isfile(lokal) and sha(lesen(lokal)) == str(top.get("sha256"))):
+            aus.add(tv)
+        hinweis("Arbeitsstand, nicht veröffentlicht: %s. Übersprungen, weil dieser Stand noch nicht signiert sein kann: "
+                "%s - auf main (--streng) ist das ein Fehler." % (grund, ("Eintrag " + tv) if aus else "nichts (nur der Hinweis)"))
+    else:
+        print("  ok   veröffentlichter Stand: %s ist die neueste Datei und passt zu versions.json" % tf)
+
+    # ---- S1: every entry ----------------------------------------------------------------------------------------------------
+    print("S1 jeder Eintrag in versions.json (Datei, Grösse, Prüfsumme, Signatur mit dem echten Schlüssel)")
+    sigs, sig_text, nicht_neben = [], [], []
+    for e in ents:
+        v, fn, url = str(e.get("version")), str(e.get("file")), str(e.get("url") or "")
+        if v in aus:
+            print("  ----  %s: übersprungen (Arbeitsstand, siehe Hinweis)" % v)
+            continue
+        m = VFILE.match(fn)
+        if not (m and ".".join(str(int(x)) for x in m.groups()) == v):
+            ok(False, "%s: Dateiname %s passt zur Version" % (v, fn))
+            continue
+        fehl = []
+        try:
+            data = lesen(os.path.join(ordner, fn)) if os.path.isfile(os.path.join(ordner, fn)) else holen(url) if url else None
+        except Exception as ex:
+            data = None
+            fehl.append("nicht erreichbar über «url» (%s)" % str(ex)[:80])
+        if data is None:
+            ok(False, "%s: Programmdatei %s da%s" % (v, fn, " - " + fehl[0] if fehl else " (fehlt im Ordner, keine «url»)"))
+            continue
+        text = data.decode("utf-8", "replace")
+        if e.get("size") is not None and int(e["size"]) != len(data):
+            fehl.append("Grösse %d statt %s" % (len(data), e["size"]))
+        if sha(data) != str(e.get("sha256")):
+            fehl.append("SHA-256 anders als in versions.json")
+        if ('UPDATE_PUBKEY = "%s"' % ECHT_PUB) not in text:
+            fehl.append("trägt nicht den echten öffentlichen Schlüssel")
+        sigs.append([v, fn, str(e.get("sha256")), str(e.get("sig") or "")])
+        sig_text.append("%s: Signatur der Programmdatei" % v)
+        zn, zsha = zd_von(text)
+        dz = e.get("data") or {}
+        wo = ""
+        if zn:
+            if str(dz.get("file")) != zn or str(dz.get("sha256")) != zsha:
+                fehl.append("«data» (%s) ist nicht die Zusatzdatei aus der signierten Programmdatei (%s)" % (dz.get("file"), zn))
+            neben_liste = os.path.isfile(os.path.join(ordner, zn))
+            zb = None
+            try:                                           # devices look next to the program file (397 _zd_fetch_bytes), never at data.url
+                zb = holen(url.rsplit("/", 1)[0] + "/" + zn) if url else lesen(os.path.join(ordner, zn)) if neben_liste else None
+            except Exception as ex:
+                fehl.append("Zusatzdatei nicht neben der Programmdatei (%s)" % str(ex)[:80])
+            if zb is None and not url:
+                fehl.append("Zusatzdatei %s fehlt" % zn)
+            if zb is not None:
+                if sha(zb) != zsha:
+                    fehl.append("Zusatzdatei: SHA-256 anders als in der Programmdatei")
+                if dz.get("size") is not None and int(dz["size"]) != len(zb):
+                    fehl.append("Zusatzdatei: Grösse %d statt %s" % (len(zb), dz["size"]))
+                sigs.append([v, zn, zsha, str(dz.get("sig") or "")])
+                sig_text.append("%s: Signatur der Zusatzdatei" % v)
+            if not neben_liste:
+                nicht_neben.append(v)
+            wo = ", Zusatzdatei %s" % zn
+        elif dz:
+            fehl.append("«data» eingetragen, aber die Programmdatei kennt keine Zusatzdatei")
+        ok(not fehl, "%s: %s%s%s%s" % (v, fn, wo, " über «url»" if url else "", " -> " + "; ".join(fehl) if fehl else ""))
+    if nicht_neben:                                        # S2 judges it for the newest version (real behaviour of the devices)
+        hinweis("Zusatzdatei nicht neben versions.json bei %s - dort sucht eine neue Version ihre fehlende Zusatzdatei "
+                "(zusatz_holen, Teil 397; nach einem Update von der Brücke aus geht es nur so)" % ", ".join(nicht_neben))
+    br = [e for e in ents if e.get("bridge")]
+    ok(len(br) >= 1 and all(os.path.isfile(os.path.join(ordner, str(e.get("file")))) for e in br),
+       "Brücken-Eintrag da und ihre Datei liegt im Ordner (%s)" % ", ".join(str(e.get("version")) for e in br))
+    fremd = sorted(n for v, n in progs.items() if v not in {str(e.get("version")) for e in ents} and v != neueste_datei)
+    if fremd:
+        hinweis("Programmdateien ohne Eintrag in versions.json: " + ", ".join(fremd))
+
+    voll, bruecke = alte_geraete(ordner)
+    pruefer = bruecke or voll                              # any untouched program file checks the signatures (real public key)
+    if sigs and pruefer:
+        lst = os.path.join(tmp, "sigs.json")
+        json.dump(sigs, open(lst, "w"))
+        r = py(geraet_anlegen(os.path.join(tmp, "pruefer"), pruefer), SIGS, os.path.join(tmp, "home_s"), {}, lst)   # a copy: nothing is ever written into the repository
+        ok(isinstance(r, dict) and r.get("pub") == ECHT_PUB, "Prüfer %s trägt den echten öffentlichen Schlüssel" % os.path.basename(pruefer))
+        res = (r.get("ok") if isinstance(r, dict) else None) or [False] * len(sigs)
+        schlecht = [t for t, g in zip(sig_text, res) if not g]
+        ok(not schlecht, "%d Signaturen gültig (Ed25519, echter öffentlicher Schlüssel)%s" % (len(sigs), " -> UNGÜLTIG: " + "; ".join(schlecht) if schlecht else ""))
+    else:
+        ok(False, "Signaturen prüfbar (keine Programmdatei im Ordner)")
+
+    # ---- S2: real devices fetch the newest version from exactly this state --------------------------------------------------
+    ziele = [e for e in ents if str(e.get("version")) not in aus]
+    if not ziele:
+        return
+    ziel = max(ziele, key=lambda e: vkey(e.get("version", "0")))
+    zv, zf = str(ziel.get("version")), str(ziel.get("file"))
+    print("S2 alte Geräte (unverändert, echter Schlüssel) holen %s aus diesem Stand" % zv)
+    env = {"SSL_CERT_FILE": ca}
+    if True:
+        voll, bruecke = alte_geraete(ordner, ausser=zv)
+        geraete = [x for x in (voll, bruecke) if x and vkey(version_von(x)) < vkey(zv)]
+        ok(len(geraete) >= 1, "mindestens ein älteres Gerät im Ordner (%s)" % ", ".join(os.path.basename(x) for x in geraete))
+        ziel_bytes = lesen(os.path.join(ordner, zf)) if os.path.isfile(os.path.join(ordner, zf)) else None
+        zzip = zd_von((ziel_bytes or b"").decode("utf-8", "replace"))[0] if ziel_bytes else str((ziel.get("data") or {}).get("file") or "")
+        for i, alt_pfad in enumerate(geraete):
+            alt_v = version_von(alt_pfad)
+            d = os.path.join(tmp, "stand_geraet_%d" % i)
+            p = geraet_anlegen(d, alt_pfad)
+            h = os.path.join(tmp, "stand_home_%d" % i)
+            Leise.log.clear()
+            r = py(p, UPDATE, h, env, base + "/versions.json", zv)
+            ok(bool(r.get("found") and r.get("signed")), "%s sieht %s, signiert mit dem echten Schlüssel (%s)" % (alt_v, zv, r.get("msg") or "ok"))
+            if not aus:
+                ok(r.get("new") == zv, "%s bekommt %s angeboten (angeboten: %s)" % (alt_v, zv, r.get("new")))
+            ok(r.get("install") == [True, ""] and r.get("restart", {}).get("version") == zv, "%s: installiert, Neustart in %s (%s)" % (alt_v, zv, r.get("install")))
+            neu = os.path.join(d, zf)
+            ok(os.path.isfile(neu) and sha(lesen(neu)) == str(ziel.get("sha256")), "%s: Programmdatei %s beim Gerät, Prüfsumme wie signiert" % (alt_v, zf))
+            if not os.path.isfile(neu):
+                continue
+            if zzip and kennt_zusatz(alt_pfad):
+                ok(os.path.isfile(os.path.join(d, zzip)), "%s: Zusatzdatei %s gleich mitgeholt" % (alt_v, zzip))
+            r = py(neu, NEU_LADEN, h + "n", env, base + "/versions.json")
+            if zzip and r.get("ok") is False:               # bridge (or the zip did not come along): the new version fetches it itself
+                ok(r.get("holen") == "" and r.get("da") is True, "%s -> %s holt ihre Zusatzdatei selbst neben versions.json (%s)" % (alt_v, zv, r.get("holen") or "ok"))
+                r = py(neu, NEU_LADEN, h + "n2", env)
+            ok(r.get("app") == zv and (r.get("ok") is True and r.get("miss") == 0 if zzip else True),
+               "%s -> %s: die neue Version lädt, alle Literale da (%s)" % (alt_v, zv, r.get("used")))
+            print("     Server: " + ", ".join(sorted(set(x.split(" ")[0] for x in Leise.log))))
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--nur", choices=["uebergang", "stand"], default="", help="nur einen Teil (Standard: beide)")
+    ap.add_argument("--alt", default="", help="uebergang: diese alte Programmdatei (Standard: die älteste mit Zusatzdatei im Repository + die Brücke)")
+    ap.add_argument("--neu-version", default="", help="uebergang: Nummer der gebauten neuen Version (Standard: nach der neuesten Datei)")
+    ap.add_argument("--streng", action="store_true", help="stand: ein Arbeitsstand (neueste Datei passt nicht zu versions.json) ist ein Fehler - CI auf main")
+    ap.add_argument("--ordner", default="", help="stand: dieser Ordner statt des Repositorys (Wegwerf-Kopie zum Nachstellen)")
+    ap.add_argument("--ohne-netz", action="store_true", help="stand: Dateien mit «url» nicht aus dem Internet holen (dann Fehler)")
+    ap.add_argument("--port", type=int, default=0, help="stand: fester Port des Test-Servers (zum Nachstellen von «url» in einer Wegwerf-Kopie)")
+    ap.add_argument("--behalten", action="store_true", help="Test-Ordner nicht löschen")
+    a = ap.parse_args()
+    tmp = tempfile.mkdtemp(prefix="mw_uebergang_")
+    teile = []
+    try:
+        for name, fn in (("uebergang", uebergang), ("stand", stand)):
+            if a.nur in ("", name):
+                n0 = len(FEHLER)
+                print("=== Teil «%s»" % name)
+                try:
+                    os.makedirs(os.path.join(tmp, name))
+                    fn(a, os.path.join(tmp, name))
+                except Exception as e:                      # a crash of the test is red, never green
+                    import traceback
+                    traceback.print_exc()
+                    ok(False, "Teil «%s» läuft durch (%s: %s)" % (name, type(e).__name__, str(e)[:200]))
+                teile.append((name, len(FEHLER) - n0))
     finally:
         if not a.behalten:
             shutil.rmtree(tmp, ignore_errors=True)
         else:
             print("Test-Ordner: " + tmp)
-    print("\n" + ("Übergangs-Test OK" if not FEHLER else "%d FEHLER" % len(FEHLER)))
+    print("\n" + ("Übergangs-Test OK (%s)" % ", ".join(n for n, _f in teile) if not FEHLER else "%d FEHLER:\n  - %s" % (len(FEHLER), "\n  - ".join(FEHLER))))
     return 1 if FEHLER else 0
 
 

@@ -23,6 +23,34 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.78.0: «Was nun?»: fünf neue Bilder (jetzt 15), noch schwieriger, mit der neuen Stufe «Meister+»; Bilder mit mehreren
+    Räumen und gegen die Zeit; ein Notizbuch sammelt gefundene Hinweise; Bestzeit pro Bild; bisherige Sterne bleiben erhalten.
+  * 3.77.0: Schach zu zweit mit je einem Handy: Ein Handy erstellt ein Spiel und zeigt einen kurzen Code (oder QR-Code), das
+    andere tritt bei. Die Partie läuft über dein MoveEye, auch für Gäste, solange «Spiele freigeben» an ist. Remis anbieten, Zug
+    zurück auf Anfrage, Revanche, Zuschauen mit dem Code; nach einer Verbindungspause geht es von selbst weiter. Spielesammlung
+    einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
+  * 3.76.1: Spiel «Was nun?»: Im Hochformat reagiert das Spiel jetzt genau dort, wo man tippt (das Bild verschob sich vorher
+    nach dem Antippen leicht). Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
+  * 3.76.0: Spielecke: neues Schach ersetzt das alte – letzter Zug markiert, mögliche Felder als Punkte, animierte Züge, alles
+    auf Deutsch, 8 Stärke-Stufen, Tipp-Knopf, Lern-Modus mit Warnung vor groben Fehlern, Zug zurück, zu zweit am selben Gerät,
+    die Partie wird gespeichert. Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
+  * 3.75.0: Spiel «Was nun?»: fünf neue Bilder (jetzt zehn) mit Schwierigkeitsgraden von leicht bis Meister. Ab Bild 6 kann man
+    Dinge mitnehmen und kombinieren; manche Bilder haben zwei Lösungswege und eine Meister-Lösung. Bisherige Sterne bleiben
+    erhalten. Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
+  * 3.74.0: Spielecke: drei neue Spiele zum Nachladen unter Mehr → Spielen → Spielecke → «Weitere Spiele zum Nachladen»:
+    «Abenteuer mit Angst» (interaktive Geschichte, ab ca. 12 Jahren), «Heroine Dusk» (Verlies-Rollenspiel, Englisch) und «HexGL»
+    (3D-Rennspiel). Unter «Mehr» gibt es nur noch einen Eingang «Spielen»; die Spielecke ist dort die oberste Kachel, «Spiele
+    freigeben» steht auf der Spielecke
+  * 3.73.0: Spielecke: Wobbly Truck mit Nitro, Zeitlupe bei grossen Stunts, Effekten und Ton, grosser Combo-Anzeige,
+    Geist-Fahrer (deine beste Fahrt fährt mit), fünf Welten (Wüste, Wald, Schnee, Vulkan, Nacht), neuen Elementen (Sprungfeder,
+    Einsturzbrücke, Feuerringe, Felsen, Eis, Schlamm) und einer Verfolgungsjagd alle 1000 m – der Rekord der Stunt-Piste beginnt
+    neu, der alte bleibt als «alte Strecke» sichtbar. Neues Spiel «Was nun?»: Bilder-Rätsel mit 5 Bildern, Sternen, Tipp-Knopf
+    und Geheimnissen (Idee von Elektro). Spielesammlung einmal neu laden: Mehr → Spielecke → «Installieren / aktualisieren»
+  * 3.72.0: Sicherheit und Anzeige nachgebessert: Die PIN fürs Ausschalten gilt jetzt überall im Browser (auch Modus
+    «Transport», «Camping aus» und der Kurzbefehl). Benutzer ohne Admin-Rechte kommen nicht mehr an alte Einstellungs-Kopien und
+    schalten den Fernzugriff nicht. «Wachsam» lässt die Sirene von «Voll» nicht mehr an, Ein / Aus wird sofort gespeichert. Die
+    Karte «Sicherheit» ist wieder da, oben steht «N Hinweise» statt «alles ok», wenn etwas gemeldet wird, deutsche Seiten sind
+    durchgehend deutsch, und das Protokoll ist ruhiger
   * 3.71.1: Live-Bild aufgeräumt: Die Knöpfe oben im Bild und die kleinen Kamera-Bilder erscheinen erst, wenn du das Bild
     antippst (am PC: Maus darüber), und verschwinden nach 4 Sekunden wieder. Immer zeigen: Einstellungen → Netzwerk & Zugang →
     Web-Stream → «Knöpfe im Live-Bild immer zeigen» (Experte, gilt nur auf diesem Gerät). Kameras heissen jetzt auch auf Deutsch
@@ -87,29 +115,6 @@ Features
     Akku sparen (von Hand, per Zeitplan, vom Modus oder bei tiefem Akku; ohne Profil wie bisher), Wildtiere mit Namen («🦊 Fuchs
     beim Zelt»), Fahrzeuge je Art melden / nur protokollieren / ignorieren, «📦 Paket vor der Tür», liegen gelassene und
     verschwundene Gegenstände; im Akku- und Nachtprofil rechnet die KI weniger.
-  * 3.59.0: MoveEye-Datei schlank: Hauptdatei von 5,0 auf 3,4 MB (mehr in die Zusatzdatei: Übersetzungen, Anleitung, Web-Teile;
-    gebaute Datei ohne Kommentare, mit Tabs, gleiche Zeilennummern). Ohne Zusatzdatei startet MoveEye wieder im Kern, mit «Jetzt
-    nachladen». Grenze: Warnung ab 4 MiB, Abbruch ab 5 MiB.
-  * 3.58.0: Weitwinkel = Wache: leichte KI im Weitwinkelbild – nur Personen rufen den Kopf (Tiere / Fahrzeuge wählbar),
-    Auslösezonen im Weitwinkelbild (Zonen-Editor 🔭), nachts mit Wärmebild kein Personen-Alarm ohne Wärme (ab Werk an, ohne
-    Wärmebild wie bisher); Anleitung «Weitwinkel einrichten und testen».
-  * 3.57.0: Drei Kamera-Ansichten: Knopf «Ansicht» schaltet das Hauptbild 🎯 Kopf → 🌡 Wärmebild → 🔭 Weitwinkel (mit Rahmen, wohin
-    der Kopf schaut), lang drücken = Auswahl; kleines Übersichtsbild in der Ecke (antippen = tauschen, pro Gerät gemerkt) –
-    Live, Controller-Ansicht, Sim-Ansicht und Pi-Fenster.
-  * 3.56.0: Drei Spuren: MoveEye, Simulator und Gehäuse haben je eine eigene Nummer und erscheinen einzeln; MoveEye prüft den
-    Simulator für /sim über die signierte Liste (versions.json «sim»), der HP holt neue Simulatoren selbst, das Versions-Paar
-    warnt nur noch unter der Mindestversion.
-  * 3.55.2: Kamerabilder: Nur sichtbare Bilder halten eine Verbindung offen; die Vorschauen unter Einstellungen → Kameras kommen
-    als Einzelbilder (2 pro Sekunde); bleibt ein Bild 5 s ohne neues Bild, verbindet es sich selbst neu (kein «noch kein Bild»
-    mehr bis zum Neuladen); ↻ lädt den aktuellen Reiter neu, statt zu Live zu springen.
-  * 3.55.1: Simulator: kein Absturz mehr bei KI-Trainingsbildern «Vielfalt hoch» (Morgen im Bergtal in einer Welt); Tropfen und
-    Beschlag auf der Linse funktionieren jetzt auch im Kompatibilitäts-Modus (Linux/HP), Protokoll ohne Shader-Fehlerflut.
-  * 3.55.0: HP rechnet rund um die Uhr (Erkennung messen, KI-Trainingsbilder, Langzeittest); Spielen am HP oder Zuschauen in
-    MoveEye Live hält das Rechnen sofort an, nach 15 Min. ohne Zuschauer geht es dort weiter; «HP rechnet» im Reiter Simulator
-    zum Zuschauen; Bildschirm schläft nach 10 Min.; HP-Update nur in Pausen.
-  * 3.54.0: Sim-Ansicht: im Simulator-Betrieb zeigt die Live-Seite auf Handy und Tablet ein grosses Simulator-Bild mit grossen
-    Knöpfen (Kopf, Folgen, IR, Licht, Sirene, Aufnahme), «⋯ Mehr» und «▦ Klassisch»; «🎮 Spielen» startet ein Spiel mit einem
-    Tipp, gespielt wird mit Knöpfen im Browser; das Simulator-Bild wird nicht mehr abgeschnitten (auch der Spiel-Assistent).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -118,10 +123,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_71_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_78_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_71_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_71_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_78_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_78_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -138,7 +143,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.71.1"
+APP_VERSION = "3.78.0"
 
 
 def default_data_dir():
@@ -263,8 +268,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_71_1.zip"
-ZD_SHA256 = "cda301fb5e4eb31112e412e0f8ce6b595ae1053925d6d28e065221a9624a2d42"
+ZD_FILE = "moveeye_daten_3_78_0.zip"
+ZD_SHA256 = "669826493471521449028bcac21f27d548eaa645d0954293b2b31b7c958f4aed"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -606,6 +611,8 @@ CFG = {
     "refscan_photos": 2, "refscan_settle": 1.5, "refscan_sens": 50, "refscan_min_area": 0.6,
     "refscan_on_arm": False, "refscan_every": 0, "refscan_push": True, "refscan_push_all": False, "refscan_pano_on": False, "refscan_pano_day": "",
     "protect_level": "off", "protect_pin": "", "escalate_on": False, "escalate_siren_s": 30,
+    "protect_auto": ["?"],
+    "sched_manual": {},
     "tamper_on": True,
     "tamper_motion": True,
     "tamper_power": True,
@@ -1536,6 +1543,8 @@ def set_text(key, value):
 		if key == "use_case":
 			return use_case_set(value, "settings")
 		CFG[key] = value
+		if key == "siren_on":
+			protect_auto_user("siren_on")
 		if key == "ai_model":
 			own_ai_switched()
 		if key == "net_mode":
@@ -1814,11 +1823,68 @@ def days_text(days, names=("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")):
 	return ", ".join(names[d] for d in days) or "–"
 
 
+def _sched_forced(plans, now):
+	forced = {}
+	for s in plans:
+		if schedule_active(s, now):
+			forced.update(s["actions"])
+	return forced
+
+
+def sched_manual_restore(plans, now=None):
+	"""
+
+"""
+	SCHED["restored"] = True
+	notes = CFG.get("sched_manual") if isinstance(CFG.get("sched_manual"), dict) else {}
+	if not notes:
+		return
+	now = now or datetime.now()
+	keep = {}
+	for k, n in notes.items():
+		try:
+			v, t0 = n["v"], datetime.fromtimestamp(float(n["t"]))
+		except (TypeError, KeyError, ValueError, OSError, OverflowError):
+			continue
+		if k not in SCHED_KEYS or k not in CFG or t0 > now + timedelta(minutes=5):
+			continue
+		span = max(0.0, (now - t0).total_seconds())
+		step = max(60.0, span / 3000.0)
+		ok, i = True, 0
+		while ok and i * step <= span:
+			ok = _sched_forced(plans, t0 + timedelta(seconds=i * step)).get(k, None) == v
+			i += 1
+		if ok and _sched_forced(plans, now).get(k, None) == v:
+			keep[k] = n
+	for k, n in keep.items():
+		SCHED["manual"].add(k); SCHED["last"][k] = n["v"]; SCHED["base"][k] = CFG[k]
+	if keep:
+		log_event("sched", "Schedule: switched by hand before the restart - stays: " + ", ".join(sorted(keep)))
+	if keep != notes:
+		CFG["sched_manual"] = keep; save_settings()
+
+
+def _sched_manual_note(forced):
+	""
+	old = CFG.get("sched_manual") if isinstance(CFG.get("sched_manual"), dict) else {}
+	new = {}
+	for k in sorted(SCHED["manual"]):
+		if k in forced:
+			o = old.get(k) if isinstance(old.get(k), dict) else None
+			new[k] = o if o and o.get("v") == forced[k] else {"v": forced[k], "t": time.time()}
+	if new != old:
+		CFG["sched_manual"] = new
+		return True
+	return False
+
+
 def schedule_tick():
 	""
 	with LOCK:
 		plans = [dict(s) for s in SCHEDULES]
 	now = sim_now()
+	if not SCHED.get("restored"):
+		sched_manual_restore(plans)
 	forced, active, active_idx = {}, [], []
 	for i, s in enumerate(plans):
 		if schedule_active(s, now):
@@ -1856,6 +1922,8 @@ def schedule_tick():
 				CFG[k] = v0
 			log_event("sched", f"Schedule: {labels.get(k, k)} back to {'ON' if CFG[k] else 'OFF'}")
 	SCHED["last"] = dict(forced)
+	if _sched_manual_note(forced):
+		save_settings()
 	STATE["sched_active"] = list(active); STATE["sched_active_idx"] = active_idx
 	STATE["sched_forced"] = dict(forced); STATE["sched_manual"] = sorted(manual)
 
@@ -1865,6 +1933,7 @@ def sched_user_changed(key):
 	if key in SCHED["last"]:
 		SCHED["manual"].add(key)
 		SCHED["base"][key] = CFG[key]
+		_sched_manual_note(SCHED["last"])
 
 
 def schedule_add():
@@ -2158,26 +2227,47 @@ def users_action(d, who="admin"):
 
 
 
+
+
+
+
 VIEW_GET_PAGES = {"/", "/help", "/quick", "/more"}
 VIEW_GET = ("/api/tunnel", "/api/helper", "/api/info", "/api/nettest", "/api/state", "/api/alerts", "/api/appearance", "/api/version",
             "/api/health", "/api/gps", "/api/zones", "/api/webpush", "/api/ui", "/api/battery", "/api/sensors", "/api/qs", "/api/schedule",
-            "/api/schema", "/api/triggers", "/api/fa", "/api/appicon", "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/api/simbar", "/api/news")
+            "/api/schema", "/api/triggers", "/api/fa", "/api/appicon", "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/api/simbar", "/api/news",
+            "/api/ui_simple", "/api/ui_sync")
 PERM_GET = {"live": ("/cams", "/preview", "/api/cams", "/api/frame.jpg", "/video_feed", "/cam_feed/", "/cam_snap/", "/snapshot.jpg", "/api/audio/live",
                      "/sim/view.jpg", "/sim/view.mjpg"),
             "rec": ("/recordings", "/diary", "/kino", "/api/kino", "/api/dataset.zip", "/api/recordings", "/api/places", "/rec/file/", "/rec/play/",
                     "/rec/thumb/", "/rec/share/", "/rec/report/", "/api/day", "/api/diary", "/diary/img/", "/api/timelapse", "/timelapse/",
                     "/api/species", "/api/loop", "/api/report"),
-            "arm": ("/protect", "/zones"),
+            "arm": ("/protect", "/zones", "/api/protect"),
             "games": ("/party", "/api/party"),
             "settings": ("/settings",)}
 VIEW_POST = {"/api/webpush", "/api/time", "/api/gps"}
 PERM_POST = {"rec": {"/api/rec/prepare", "/rec/zip", "/api/rec/fav", "/api/rec/false"},
-             "arm": {"/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/mode", "/api/tunnel", "/api/helper", "/api/info", "/api/nettest", "/api/tv"},
+             "arm": {"/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/mode", "/api/helper", "/api/info", "/api/nettest", "/api/tv"},
              "light": {"/api/light", "/api/disco"},
              "talk": {"/api/talk", "/api/talk/stop", "/api/tts"},
              "head": {"/api/follow", "/api/mover", "/api/move", "/api/stick"},
              "settings": {"/api/zones", "/api/schedule"}}
+
+
+
+PERM_PROTECT_ACTIONS = ("level", "test")
 PERM_SET_KEYS = {"arm": {"thermal_on", "nightvision", "show_objects", "show_mask"}, "head": {"track_person", "track_motion"}}
+
+
+def view_get_ok(path, table=None):
+	""
+	return any(path == x or (x.endswith("/") and path.startswith(x)) for x in (VIEW_GET if table is None else table))
+
+
+def perm_get_ok(path, table):
+	"""
+"""
+	return any(path == x or (x.endswith("/") and path.startswith(x)) or (x.startswith("/api/") and path.startswith(x + "/"))
+               for x in table)
 
 
 def role_allows(role, path, method, d, perms=None):
@@ -2190,10 +2280,9 @@ def role_allows(role, path, method, d, perms=None):
 			return True
 		if path.startswith(ADMIN_GET):
 			return False
-		if path in VIEW_GET_PAGES or path.startswith(VIEW_GET):
+		if path in VIEW_GET_PAGES or view_get_ok(path):
 			return True
-		return any(path == x or (x.endswith("/") and path.startswith(x)) or (x.startswith("/api/") and path.startswith(x))
-                   for p in P for x in PERM_GET.get(p, ()))
+		return any(perm_get_ok(path, PERM_GET.get(p, ())) for p in P)
 	if path == "/api/servo":
 		return d.get("op") == "estop"
 	if path == "/api/webpush":
@@ -2209,6 +2298,8 @@ def role_allows(role, path, method, d, perms=None):
 		return "settings" in P and isinstance(d.get("key"), str) and d.get("key") not in USER_SETTINGS_DENY
 	if path == "/api/audio":
 		return ("siren" in P and d.get("action") in ("test", "siren", "stop")) or ("talk" in P and d.get("action") == "stop")
+	if path == "/api/protect":
+		return "arm" in P and d.get("action") in PERM_PROTECT_ACTIONS
 	if path == "/api/action":
 		return "head" in P and d.get("action") in ("center", "patrol")
 	return any(path in PERM_POST.get(p, ()) for p in P)
@@ -2461,6 +2552,11 @@ def _settings_migrations(cfg_in):
 			log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
 	except Exception as e:
 		log_event("sys", f"Settings migration (232): {e}"[:150])
+	try:
+		if CFG.get("armed"):
+			protect_siren_sync()
+	except Exception as e:
+		log_event("sys", f"Settings migration (135): {e}"[:150])
 	for _f, _n in ((lambda: shortcut_migrate(cfg_in), "573"), (place_report_migrate, "317")):
 		try:
 			did = _f()
@@ -2518,6 +2614,16 @@ def save_settings():
 		_SAVE_T["last"] = time.monotonic()
 		save_settings_now()
 	_save_timer = threading.Timer(wait, go); _save_timer.daemon = True; _save_timer.start()
+
+
+def save_settings_flush():
+	"""
+"""
+	global _save_timer
+	if _save_timer:
+		_save_timer.cancel(); _save_timer = None
+	_SAVE_T["last"] = time.monotonic()
+	save_settings_now()
 
 
 
@@ -4828,6 +4934,10 @@ def alx_do(act, e, who="push"):
 		except NameError:
 			pass
 		CFG["protect_level"] = "off"
+		try:
+			protect_siren_sync()
+		except NameError:
+			pass
 		disarm()
 		sound_stop()
 		ALX["hold_until"] = 0.0
@@ -10166,9 +10276,20 @@ def arm(delay=None):
 		d = 60.0
 	d = max(0.0, min(600.0, d))
 	CFG["armed"] = True; ARM["at"] = time.time() + d; ARM["announced"] = d <= 0
-	sched_user_changed("armed"); save_settings()
+	arm_level_sync()
+	sched_user_changed("armed"); save_settings_flush()
 	log_event("sys", f"Armed in {d:.0f} s" if d else "Armed")
 	arm_tick()
+
+
+def arm_level_sync():
+	"""
+"""
+	try:
+		return protect_siren_sync()
+	except Exception as e:
+		log_event("sys", f"Protection level: {e}"[:150])
+		return False
 
 
 def arm_by_schedule(on, name=""):
@@ -10182,6 +10303,8 @@ def arm_by_schedule(on, name=""):
 		except (TypeError, ValueError):
 			d = 60.0
 		CFG["armed"] = True; ARM["at"] = time.time() + d; ARM["announced"] = d <= 0
+		if arm_level_sync():
+			save_settings()
 		log_event("sys", f"Armed in {d:.0f} s (schedule {name})" if d else f"Armed (schedule {name})")
 	else:
 		CFG["armed"] = False; ARM["at"] = 0.0; ARM["announced"] = True
@@ -10194,8 +10317,9 @@ def arm_by_schedule(on, name=""):
 
 
 def disarm():
+	""
 	CFG["armed"] = False; ARM["at"] = 0.0; ARM["announced"] = True
-	sched_user_changed("armed"); save_settings()
+	sched_user_changed("armed"); save_settings_flush()
 	log_event("sys", "Disarmed - no alarms")
 	arm_tick()
 
@@ -10651,7 +10775,7 @@ def _camping_overlay(on, hotspot_delay=2.0):
 		CFG["camping"] = False; CFG["camping_prev"] = {}
 		log_event("sys", "Camping profile OFF - previous settings restored")
 		if prev.get("armed", True):
-			CFG["armed"] = True; ARM["at"] = 0.0; ARM["announced"] = True; arm_tick()
+			CFG["armed"] = True; ARM["at"] = 0.0; ARM["announced"] = True; arm_level_sync(); arm_tick()
 		else:
 			disarm()
 		if not prev.get("hotspot_on", False) and STATE["hotspot"].get("on"):
@@ -10752,6 +10876,7 @@ def protect_set(level, who="web", answers=None):
 	A = answers or {}
 	if level == "off":
 		CFG["protect_level"] = "off"
+		protect_siren_sync()
 		disarm()
 		return True, ""
 	CFG["protect_level"] = level
@@ -10763,11 +10888,9 @@ def protect_set(level, who="web", answers=None):
 	if level == "full" or A.get("things"):
 		CFG["refscan_on_arm"] = True
 	react = A.get("react") or ("siren" if level == "full" else "push")
-	CFG["escalate_on"] = react == "siren"
 	if react in ("light", "siren"):
 		CFG["light_white_auto"] = "alarm_dark" if CFG.get("light_white_auto") in ("", "dark") else CFG["light_white_auto"]
-	if react == "siren" and CFG.get("siren_on") == "off":
-		CFG["siren_on"] = "person"
+	protect_siren_sync(level, react)
 	for k in ("protect_level", "notify_on", "tamper_on", "gps_theft", "refscan_on_arm", "escalate_on", "siren_on"):
 		sched_user_changed(k)
 	save_settings()
@@ -10780,6 +10903,69 @@ def protect_set(level, who="web", answers=None):
 		refscan_start("scan", "protection assistant")
 	log_event("sys", f"Protection: {level} ({who})")
 	return True, ""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PROTECT_AUTO_KEYS = ("escalate_on", "siren_on")
+
+
+def _protect_auto():
+	a = CFG.get("protect_auto")
+	if not isinstance(a, list) or "?" in a:
+		a = ["escalate_on"] + (["siren_on"] if CFG.get("siren_on") == "person" else []) if CFG.get("escalate_on") else []
+	return [k for k in PROTECT_AUTO_KEYS if k in a]
+
+
+def protect_auto_user(key):
+	""
+	a = _protect_auto()
+	CFG["protect_auto"] = [k for k in a if k != key]
+
+
+def protect_siren_sync(level=None, react=None):
+	"""
+
+"""
+	auto = _protect_auto()
+	was = (CFG.get("escalate_on"), CFG.get("siren_on"), CFG.get("protect_auto"))
+	if level is None:
+
+
+		if (CFG.get("protect_level") or "off") == "off":
+			if "escalate_on" in auto:
+				CFG["escalate_on"] = False
+			if "siren_on" in auto and CFG.get("siren_on") == "person":
+				CFG["siren_on"] = "off"
+			auto = []
+	elif (react or ("siren" if level == "full" else "push")) == "siren":
+		if not CFG.get("escalate_on"):
+			CFG["escalate_on"] = True; auto.append("escalate_on")
+		if CFG.get("siren_on") == "off":
+			CFG["siren_on"] = "person"; auto.append("siren_on")
+	else:
+		CFG["escalate_on"] = False
+		if "siren_on" in auto and CFG.get("siren_on") == "person":
+			CFG["siren_on"] = "off"
+		auto = []
+	CFG["protect_auto"] = [k for k in PROTECT_AUTO_KEYS if k in auto]
+	changed = was != (CFG.get("escalate_on"), CFG.get("siren_on"), CFG.get("protect_auto"))
+	if was[:2] != (CFG.get("escalate_on"), CFG.get("siren_on")):
+		if not CFG.get("escalate_on"):
+			protect_cancel_escalation()
+		log_event("sys", "Protection: siren " + ("on" if CFG.get("siren_on") != "off" else "off") + ", siren after the wait "
+                  + ("on" if CFG.get("escalate_on") else "off") + (" (follows the level)" if level is None else f" (level {level})"))
+	return changed
 
 
 
@@ -10924,12 +11110,17 @@ def protect_pin_ok(pin):
 		return False
 
 
-def protect_disarm(pin, source="web"):
-	""
+def protect_pin_check(pin, source="web"):
+	"""
+"""
+	if not CFG.get("protect_pin"):
+		return True, ""
 	now = time.time()
 	PROTECT["pin_fails"] = [t for t in PROTECT["pin_fails"] if now - t < 600]
 	if len(PROTECT["pin_fails"]) >= 5:
 		return False, "too many wrong PINs - try again in 10 minutes"
+	if not str(pin or "").strip():
+		return False, "PIN needed"
 	if not protect_pin_ok(pin):
 		PROTECT["pin_fails"].append(now)
 		log_event("sys", f"Protection: wrong PIN for disarming ({source})")
@@ -10943,9 +11134,82 @@ def protect_disarm(pin, source="web"):
 			siren_alarm("tamper")
 		return False, "wrong PIN"
 	PROTECT["pin_fails"] = []
+	return True, ""
+
+
+def protect_disarm(pin, source="web"):
+	""
+	ok, err = protect_pin_check(pin, source)
+	if not ok:
+		return False, err
 	protect_cancel_escalation()
 	protect_set("off", source)
 	return True, ""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def mode_disarms(m, gamer_watch=None):
+	""
+	m = str(m or ""); old = CFG.get("mode") or ""
+	if m == old or not CFG.get("armed"):
+		return False
+	if m == "transport":
+		return True
+	prev = CFG.get("mode_prev") if isinstance(CFG.get("mode_prev"), dict) else {}
+	cprev = CFG.get("camping_prev") if isinstance(CFG.get("camping_prev"), dict) else {}
+	if m == "":
+		return not prev.get("armed", True)
+	if m == "gamer" and old == "camping" and CFG.get("camping"):
+		watch = CFG.get("mode_gamer_watch") if gamer_watch is None else gamer_watch
+		return not watch and not cprev.get("armed", True)
+	return False
+
+
+def web_disarms(path, d):
+	""
+	if not CFG.get("armed") or not isinstance(d, dict):
+		return False
+	if path == "/api/mode":
+		return "mode" in d and mode_disarms(d.get("mode"), bool(d["mode_gamer_watch"]) if "mode_gamer_watch" in d else None)
+	if path == "/api/camping":
+		if d.get("on"):
+			return False
+		if (CFG.get("mode") or "") == "camping":
+			return mode_disarms("")
+		cprev = CFG.get("camping_prev") if isinstance(CFG.get("camping_prev"), dict) else {}
+		return bool(CFG.get("camping")) and not cprev.get("armed", True)
+	if path == "/api/set":
+		return d.get("key") == "armed" and not d.get("value")
+	if path == "/api/fleet":
+		return d.get("action") == "disarm" and d.get("id") in ("all", "me")
+	if path == "/api/sim":
+		return bool(d.get("on")) and bool(d.get("confirm")) and not CFG.get("sim_on")
+	if path == "/api/simintern":
+		return d.get("action") == "start" and bool(d.get("confirm")) and not CFG.get("sim_on")
+	return False
+
+
+def web_pin_guard(path, method, d, pin):
+	""
+	if method != "POST" or not CFG.get("protect_pin") or not web_disarms(path, d):
+		return None
+	ok, err = protect_pin_check(pin, "web " + path)
+	if ok:
+		protect_cancel_escalation()
+		return None
+	return err
 
 
 
@@ -17622,6 +17886,7 @@ class WeatherAnalyzer:
 		self.prev_gray = None
 		self.rain_hist = deque(maxlen=30)
 		self.wind_hist = deque(maxlen=45)
+		self.wind_log = LogHold(WIND_LOG_HOLD_S, WIND_LOG_GAP_S, "calm")
 
 	def rain(self, gray):
 		if self.prev_gray is None:
@@ -17665,6 +17930,72 @@ class WeatherAnalyzer:
 
 
 
+
+
+
+
+
+
+
+
+WALK_DEADBAND = 0.75
+WALK_HOLD_S = 10.0
+WALK_JUMP = 2.0
+WALK_JUMP_HOLD_S = 2.0
+
+
+
+
+
+WIND_LEVELS = ("calm", "breezy", "strong", "storm")
+WIND_DEADBAND = 0.03
+WIND_LOG_HOLD_S = 20.0
+WIND_LOG_GAP_S = 120.0
+
+
+def walk_frames_step(cur, ideal, since, now):
+	""
+	ideal = max(4.0, min(24.0, float(ideal)))
+	want = int(max(4, min(24, round(ideal))))
+	diff = abs(ideal - cur)
+	if want == cur or diff <= WALK_DEADBAND:
+		return None, None
+	if since is None:
+		return None, now
+	if now - since >= (WALK_JUMP_HOLD_S if diff >= WALK_JUMP else WALK_HOLD_S):
+		return want, None
+	return None, since
+
+
+def wind_level_of(ws, thr, prev=None):
+	""
+	def lv(x):
+		return "calm" if x < thr else ("breezy" if x < 0.55 else ("strong" if x < 0.8 else "storm"))
+	raw = lv(ws)
+	if prev in WIND_LEVELS and WIND_LEVELS.index(raw) < WIND_LEVELS.index(prev):
+		return WIND_LEVELS[min(WIND_LEVELS.index(prev), WIND_LEVELS.index(lv(ws + WIND_DEADBAND)))]
+	return raw
+
+
+class LogHold:
+	""
+	def __init__(self, hold, gap, first=None):
+		self.hold, self.gap = float(hold), float(gap)
+		self.logged, self.cand, self.t_cand, self.t_log = first, first, 0.0, None
+
+	def feed(self, value, now):
+		""
+		if value != self.cand:
+			self.cand, self.t_cand = value, now
+		if value == self.logged or now - self.t_cand < self.hold or (self.t_log is not None and now - self.t_log < self.gap):
+			return False
+		self.logged, self.t_log = value, now
+		return True
+
+
+
+
+
 class AutoTuner:
 	def __init__(self):
 		self.reset()
@@ -17674,6 +18005,7 @@ class AutoTuner:
 		autotune_start_values()
 		self.noise_areas, self.noise_frac = [], []
 		self.last_eval = time.time()
+		self.wf_since = None
 		self.new_candidates = self.became_person = self.near_miss = self.walkers = 0
 		self.seen_ids = set()
 		self.base_min_area = None
@@ -17699,7 +18031,9 @@ class AutoTuner:
 		if CFG["min_area"] > autotune_area_cap(fg.size):
 			self._set("min_area", autotune_area_cap(fg.size), "at most %.1f %% of the picture" % (AUTOTUNE_AREA_MAX * 100))
 		if fps > 1:
-			self._set("walk_frames", max(4, min(24, round(fps * CFG["walk_seconds"]))), "fps")
+			wf, self.wf_since = walk_frames_step(CFG["walk_frames"], fps * CFG["walk_seconds"], getattr(self, "wf_since", None), now)
+			if wf is not None:
+				self._set("walk_frames", wf, "fps")
 		if not self.calibrated:
 			n, _, stats, _ = cv2.connectedComponentsWithStats(fg, 8)
 			if n > 1:
@@ -27548,7 +27882,7 @@ threading.Thread(target=_extra_cams_boot, daemon=True, name="extracams-boot").st
 
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.7", "file": "games/MotionWatch_Spiele.zip", "size": 14640699, "sha256": "d495c905e6395a01a89ec61e939cf9cb4133e4bc88d12e5a11dee760733bf720"}
+GAMES_PKG = {"version": "GS-1.16", "file": "games/MotionWatch_Spiele.zip", "size": 15970759, "sha256": "fc1bca65a0615096eb5c99a5951cbcd29bf22ed797b9169806821fbbe9bc193a"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
@@ -28520,6 +28854,8 @@ SPIELE_PAGE = SPIELE_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
 
 GAMESRV = {"port": 0, "msg": ""}
+GAMESRV_API = {}
+GAMES_MOVED = {"chess": "schach"}
 STREAMS = {"n": 0, "ip": {}, "lock": threading.Lock()}
 
 
@@ -28540,8 +28876,13 @@ def games_server_start():
 				self.send_error(403, "only in the own Wi-Fi"); return
 			from urllib.parse import unquote, urlsplit
 			path = unquote(urlsplit(self.path).path)
+			for pre_, fn_ in GAMESRV_API.items():
+				if path.startswith(pre_):
+					return fn_(self, "GET", path)
 			m = re.fullmatch(r"/g/([A-Za-z0-9_\-]{1,40})/?(.*)", path)
 			p_ = games_file(m.group(1), m.group(2)) if m else None
+			if not p_ and m and m.group(1) in GAMES_MOVED and games_file(GAMES_MOVED[m.group(1)], ""):
+				self.send_response(301); self.send_header("Location", "/g/" + GAMES_MOVED[m.group(1)] + "/"); self.end_headers(); return
 			if not p_:
 				self.send_error(404); return
 			if m.group(2) == "" and not path.endswith("/"):
@@ -28583,6 +28924,16 @@ def games_server_start():
 				self.send_header(k_, v_)
 			self.send_header("Content-Length", str(len(data)))
 			self.end_headers(); self.wfile.write(data)
+
+		def do_POST(self):
+			if not lan_guest_ip(self.client_address[0], self.headers.get("X-Forwarded-For", "")):
+				self.send_error(403, "only in the own Wi-Fi"); return
+			from urllib.parse import unquote, urlsplit
+			path = unquote(urlsplit(self.path).path)
+			for pre_, fn_ in GAMESRV_API.items():
+				if path.startswith(pre_):
+					return fn_(self, "POST", path)
+			self.send_error(405)
 
 	class S(socketserver.ThreadingMixIn, http.server.HTTPServer):
 		daemon_threads = True
@@ -33645,8 +33996,8 @@ class MotionWatch:
 					STATE["wind_score"] = ws
 					boost = 1.0 + max(0.0, ws - CFG["wind_threshold"]) / (1 - CFG["wind_threshold"]) * (CFG["wind_boost_max"] - 1)
 					STATE["wind_boost"] = round(min(CFG["wind_boost_max"], boost), 2)
-					lvl = "calm" if ws < CFG["wind_threshold"] else ("breezy" if ws < 0.55 else ("strong" if ws < 0.8 else "storm"))
-					if lvl != STATE["wind_level"]:
+					lvl = wind_level_of(ws, CFG["wind_threshold"], STATE["wind_level"])
+					if self.weather.wind_log.feed(lvl, t0):
 						log_event("wind", f"Wind: {lvl} (score {ws:.2f}, threshold x{STATE['wind_boost']})")
 					STATE["wind_level"] = lvl
 				else:
@@ -38799,7 +39150,7 @@ SW_JS = _zd('510_web_kopf_alarm/SW_JS', "")
 def i18n_loader(help_=False):
 	""
 	return ("<script>" + LANG_JS.replace("</", "<\\/") + "\n(function(){var l='';try{l=localStorage.getItem('mw-lang')||'';}catch(e){}if(!l)l=" + json.dumps(CFG["lang"]) + ";"
-            "window.LX=function(s){var d=window.I18NX;return (d&&d[s])||'';};"
+            "window.LX=function(s){var d=window.I18NX,x=(l==='de'||l==='rm')&&window.I18NDX;return (d&&d[s])||(x&&x[s])||'';};"
             "if(['fr','it','rm'].indexOf(l)>=0)document.write('<script src=\"/i18n/'+l+'.js?v=" + APP_VERSION + ("&h=1" if help_ else "")
             + "\"><\\/script>');})();</script>")
 
@@ -39609,6 +39960,18 @@ def web_specs():
 
 
 SECTIONS_ON_SIM_PAGE = ("Simulator",)
+SECTIONS_OWN_CONTENT = {"Security"}
+
+
+
+
+def schema_for_admin():
+	""
+	try:
+		from flask import g, has_request_context
+		return (not has_request_context()) or getattr(g, "role", "admin") == "admin"
+	except Exception:
+		return True
 
 
 def web_schema(lang=None, only=None):
@@ -39628,7 +39991,7 @@ def web_schema(lang=None, only=None):
 		toggles = [{"key": k, "label": tr(l, lang), "value": bool(CFG.get(k))} for s, k, l in TOGGLES if s == sec and k != "web_stream" and not hid(k)]
 		sliders = [{"key": k, "label": tr(l, lang), "min": lo, "max": hi, "step": st, "value": CFG.get(k)} for s, k, l, lo, hi, st in SLIDERS if s == sec and not hid(k)]
 		texts = [x for x in web_texts(lang) if x["section"] == sec and not hid(x["key"])]
-		if toggles or sliders or texts:
+		if toggles or sliders or texts or (sec in SECTIONS_OWN_CONTENT and schema_for_admin()):
 			out.append({"id": sec, "name": tr(sec, lang), "toggles": toggles, "sliders": sliders, "texts": texts})
 	return out
 
@@ -40558,6 +40921,23 @@ class WebStream:
 				return None
 			lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or request.args.get("lang") or CFG["lang"])
 			return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
+
+		def web_pin(d=None):
+			"""
+"""
+			v = (d or {}).get("pin") if isinstance(d, dict) else None
+			return v if str(v or "").strip() else (request.headers.get("X-MW-PIN") or "")
+
+		@app.before_request
+		def pin_guard():
+			if request.method != "POST" or not CFG.get("protect_pin") or not CFG.get("armed"):
+				return None
+			d = request.get_json(force=True, silent=True)
+			err = web_pin_guard(request.path, request.method, d, web_pin(d))
+			if err is None:
+				return None
+			lang = norm_lang((d.get("lang") if isinstance(d, dict) else None) or request.args.get("lang") or CFG["lang"])
+			return reply({"ok": False, "error": tr(err, lang), "need_pin": True}, 403)
 
 		@app.after_request
 		def gzip_text(resp):
@@ -41851,6 +42231,12 @@ class WebStream:
 			if action == "arm":
 				arm(); txt = "armed" if is_armed() else "arming (delay " + str(CFG.get("arm_delay", "")) + " s)"
 			elif action == "disarm":
+				if CFG.get("protect_pin") and CFG.get("armed"):
+					ok_, err_ = protect_pin_check(request.args.get("pin"), "shortcut")
+					if not ok_:
+						log_event("web", f"Shortcut from {ip}: disarm refused ({err_})")
+						return Response(err_ + " - a PIN for switching off is set: add ?pin=… to the address of the shortcut", 403)
+					protect_cancel_escalation()
 				disarm(); txt = "disarmed"
 			elif action == "siren_off":
 				sound_stop(); txt = "siren off"
@@ -41974,6 +42360,7 @@ class WebStream:
                                      "address": page_address("10.42.0.1")}
 				if getattr(g, "role", "admin") != "admin":
 					st["guest"] = {}
+					st["tunnel"] = dict(st["tunnel"], code="")
 			cfg = {k: CFG[k] for k in web_specs()}
 			cfg.update({k: CFG[k] for k in ("thermal_source", "deter_person_act", "deter_big_act", "deter_small_act", "deter_warm_act", "backup_type", "audio_in", "patrol_mode",
                                             "siren_on", "web_stream", "sensors", "qs_layout")})
@@ -42088,12 +42475,13 @@ class WebStream:
 				arm(0)
 			elif a == "disarm":
 				if CFG.get("protect_pin"):
-					ok_, err_ = protect_disarm(body().get("pin"), "web")
+					ok_, err_ = protect_disarm(web_pin(body()), "web")
 					if not ok_:
 						return reply({"ok": False, "error": tr(err_, norm_lang(body().get("lang"))), "need_pin": True}, 403)
 				else:
 					protect_cancel_escalation()
 					CFG["protect_level"] = "off"
+					protect_siren_sync()
 					disarm()
 			else:
 				return reply({"ok": False, "error": "unknown action"}, 400)
@@ -42240,7 +42628,9 @@ class WebStream:
 			if a == "level":
 				lv = str(d.get("level") or "")
 				if lv == "off" and CFG.get("protect_pin"):
-					ok, err = protect_disarm(d.get("pin"), "web")
+					ok, err = protect_disarm(web_pin(d), "web")
+					if not ok:
+						return reply(dict(protect_status(lang, True), ok=False, error=tr(err, lang), need_pin=True), 403)
 				else:
 					ok, err = protect_set(lv, "web", d.get("answers") if isinstance(d.get("answers"), dict) else None)
 			elif a == "pin":
@@ -42249,6 +42639,7 @@ class WebStream:
 				ok, err = protect_test(lang)
 			elif a == "escalate":
 				CFG["escalate_on"] = bool(d.get("on", CFG.get("escalate_on")))
+				protect_auto_user("escalate_on")
 				try:
 					CFG["escalate_siren_s"] = max(0, min(600, int(d.get("s", CFG.get("escalate_siren_s", 30)))))
 				except (TypeError, ValueError):
@@ -42507,12 +42898,17 @@ class WebStream:
 		@app.route("/api/tunnel", methods=["GET", "POST"])
 		def api_tunnel():
 			if request.method == "POST":
+				if getattr(g, "role", "admin") != "admin":
+					return reply({"ok": False, "error": tr("not allowed for your user", norm_lang(body().get("lang") or CFG["lang"]))}, 403)
 				d = body()
 				if "on" in d:
 					CFG["tunnel_on"] = bool(d["on"]); save_settings()
 				if d.get("new_code"):
 					CFG["tunnel_code"] = ""; tunnel_code()
-			return reply({"ok": True, "tunnel": tunnel_state(), "address": page_address() or request.host_url})
+			ts_ = tunnel_state()
+			if getattr(g, "role", "admin") != "admin":
+				ts_["code"] = ""
+			return reply({"ok": True, "tunnel": ts_, "address": page_address() or request.host_url})
 
 		@app.route("/api/disco", methods=["POST"])
 		def api_disco():
@@ -48970,7 +49366,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.71.1")
+		self.root.title("MoveEye 3.78.0")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -49348,7 +49744,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.71.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.78.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -55007,7 +55403,7 @@ NACHT_BUSY = ("ruhig", "normal", "viel")
 NACHT_TEMPO = {"echt": 1.0, "schnell": 8.0}
 
 NACHT_KEYS = ("armed", "protect_level", "notify_on", "tamper_on", "gps_theft", "refscan_on_arm", "escalate_on", "siren_on",
-              "light_white_auto", "relays_on")
+              "light_white_auto", "relays_on", "protect_auto")
 NACHT_ALARM_EVS = ("person", "warm", "prealarm", "noise", "tamper")
 NACHT_PRIO = {"incident": 0, "people": 1, "animal": 2, "vehicle": 3, "weather": 4}
 
@@ -55353,7 +55749,7 @@ def nacht_stop(role="admin", locked=None):
 
 
 def _nacht_thread(opts, auto):
-	snap = {k: CFG.get(k) for k in NACHT_KEYS}
+	snap = {k: (list(CFG[k]) if isinstance(CFG.get(k), list) else CFG.get(k)) for k in NACHT_KEYS}
 	run, stopped, err = None, False, ""
 	L = None
 	SANDBOX["force"] += 1
@@ -56561,7 +56957,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 284
+INFO_PARTS = 289
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -57833,12 +58229,24 @@ FACTORY_KEEP = {
 FACTORY_WORD = "ZURÜCKSETZEN"
 FACTORY_WORDS = {"ZURÜCKSETZEN", "ZURUECKSETZEN", "RESET", "RÉINITIALISER", "REINITIALISER", "RIPRISTINA", "RESETTAR"}
 FACTORY_DATA = ["sightings.json", "sim_diary.jsonl", "alarm_tracks.json", "places.json", "place", "refscan", "gehtest", "logs", "motionwatch.log"]
-_BACKUP_RE = re.compile(r"^motionwatch_settings\.before_reset_\d{8}-\d{6}\.json$")
+_BACKUP_RE = re.compile(r"^motionwatch_settings\.before_reset_(\d{8}-\d{6})\.json$")
 
 
 def factory_word(lang=None):
 	""
 	return FACTORY_WORD if cur_lang(lang) == "de" else "RESET"
+
+
+def factory_backup_when(name):
+	"""
+"""
+	m = _BACKUP_RE.match(str(name or ""))
+	if not m:
+		return None
+	try:
+		return datetime.strptime(m.group(1), "%Y%m%d-%H%M%S").strftime("%d.%m.%Y %H:%M")
+	except ValueError:
+		return None
 
 
 def factory_backups():
@@ -57847,13 +58255,27 @@ def factory_backups():
 	except OSError:
 		names = []
 	out = []
-	for n in names[:10]:
+	for n in names:
+		if len(out) >= 10:
+			break
+		when = factory_backup_when(n)
+		if when is None:
+			continue
 		try:
-			out.append({"name": n, "kb": max(1, os.path.getsize(os.path.join(DATA_DIR, n)) // 1024),
-                        "when": datetime.strptime(n[33:48], "%Y%m%d-%H%M%S").strftime("%d.%m.%Y %H:%M")})
-		except (OSError, ValueError):
+			out.append({"name": n, "kb": max(1, os.path.getsize(os.path.join(DATA_DIR, n)) // 1024), "when": when})
+		except OSError:
 			pass
 	return out
+
+
+def factory_admin():
+	"""
+"""
+	try:
+		from flask import g
+		return getattr(g, "role", "admin") == "admin" and not getattr(g, "appkey", None)
+	except (ImportError, RuntimeError):
+		return True
 
 
 def factory_backup_path(name):
@@ -58001,6 +58423,8 @@ def g2_routes(app, watch, reply, body):
 	@app.route("/api/factory", methods=["GET", "POST"])
 	def api_factory():
 		lang = norm_lang(request.args.get("lang") or CFG["lang"])
+		if not factory_admin():
+			return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
 		if request.method == "GET":
 			return reply(dict(factory_info(lang), ok=True))
 		d = body(); lang = norm_lang(d.get("lang") or lang)
@@ -58012,6 +58436,8 @@ def g2_routes(app, watch, reply, body):
 
 	@app.route("/api/factory/backup/<name>")
 	def api_factory_backup(name):
+		if not factory_admin():
+			return Response("not allowed", 403)
 		p = factory_backup_path(name)
 		if not p:
 			return Response("not found", 404)
@@ -64581,6 +65007,7 @@ _HX_AUFR = _zd('632_uebersetzungen_aufr/HX_AUFR', _zd_hx({
     'only the shortcut addresses /k/': 'nur die Kurzbefehl-Adressen /k/',
     'Copy the addresses now - the key is shown only this one time.': 'Adressen jetzt kopieren – der Schlüssel wird nur dieses eine Mal gezeigt.',
     'app key': 'App-Schlüssel',
+    'sc-pin-note': 'Ist eine PIN fürs Ausschalten gesetzt, braucht «Ausschalten» sie auch: im Kurzbefehl selbst ?pin=… an die Adresse hängen. Die PIN steht nie in einem QR-Code oder kopierten Link.',
     'sc-key-note2': 'Der Schlüssel ist ein App-Schlüssel, der nur diese Adressen öffnet (nicht den Rest von MoveEye). MoveEye speichert nur seinen Fingerabdruck – darum steht er nur direkt nach dem Erstellen hier. Jeder App-Schlüssel (Einstellungen → Sicherheit) geht hier auch. Von unterwegs über die Tailscale-Adresse.',
     'These app keys work here too:': 'Diese App-Schlüssel gehen hier auch:',
     'One more shortcut key': 'Noch ein Kurzbefehl-Schlüssel',
@@ -64608,9 +65035,10 @@ for _k, _v in _HX_AUFR.items():
 
 
 _AUFR_MAIN = ["Positions, test, diagnosis, Not-Aus", "only the shortcut addresses /k/", "Copy the addresses now - the key is shown only this one time.", "app key",
-              "sc-key-note2", "These app keys work here too:", "One more shortcut key", "Make a shortcut key", "All app keys", "vm-device", "Animal species"]
+              "sc-key-note2", "sc-pin-note", "These app keys work here too:", "One more shortcut key", "Make a shortcut key", "All app keys", "vm-device", "Animal species"]
 _AUFR_EN = {k: k for k in _AUFR_MAIN}
 _AUFR_EN.update({"sc-key-note2": "The key is an app key that opens only these addresses (not the rest of MoveEye). MoveEye keeps only its fingerprint - so it stands here only right after it is made. Every app key (Settings → Security) works here too. On the road: through the Tailscale address.",
+                 "sc-pin-note": "If a PIN for switching off is set, «Disarm» needs it too: add ?pin=… to the address in the shortcut yourself. The PIN is never in a QR code or a copied link.",
                  "vm-device": "Showing and hiding is for this device only - like «◫ View» of the live page."})
 WEB_PAGE = WEB_PAGE.replace("/*AUFRDE*/{}", json.dumps({k: DE[k] for k in _AUFR_MAIN}, ensure_ascii=False), 1).replace(
     "/*AUFREN*/{}", json.dumps({k: v for k, v in _AUFR_EN.items() if v != k}, ensure_ascii=False), 1)
@@ -88760,6 +89188,1509 @@ def live_sauber_selftest():
 
 
 SELFTEST_EXTRA.append(("Live picture clean: buttons and tiles after a tap (639zzj)", live_sauber_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_HX_PIN = {
+    "PIN needed": ("PIN nötig", "PIN requis", "PIN necessario", "PIN necessari"),
+    "This switches the protection off. Enter the PIN.": (
+        "Das schaltet den Schutz aus. Gib die PIN ein.", "Cela désactive la protection. Saisis le PIN.",
+        "Questo spegne la protezione. Inserisci il PIN.", "Quai stizza la protecziun. Endatescha il PIN."),
+    "Switch off": ("Ausschalten", "Désactiver", "Spegni", "Stizzar"),
+    "Cancel": ("Abbrechen", "Annuler", "Annulla", "Interrumper"),
+}
+for _k, _v in _HX_PIN.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+
+PIN_ASK_JS = _zd('639zzk_pin_ueberall/PIN_ASK_JS', "")
+PIN_ASK_JS = PIN_ASK_JS.replace("/*PINTX*/{}", json.dumps({_k: list(_v) for _k, _v in _HX_PIN.items()}, ensure_ascii=False), 1)
+
+_render_page_before_pin = render_page
+
+
+def render_page(page, active):
+	""
+	out = _render_page_before_pin(page, active)
+	if 'id="mw-pin-ask"' in out:
+		return out
+	i = out.find("<body")
+	j = out.find(">", i) if i >= 0 else -1
+	return out[:j + 1] + PIN_ASK_JS + out[j + 1:] if j >= 0 else out + PIN_ASK_JS
+
+
+
+def rechte_schutz_selftest():
+	""
+
+	for r_ in ("kid", "friend", "family", "view"):
+		for p_ in ("/api/factory", "/api/factory/backup/motionwatch_settings.before_reset_20260101-000000.json", "/api/fax", "/api/statex",
+                   "/api/settings/export", "/api/users"):
+			assert not role_allows(r_, p_, "GET", {}), (r_, p_)
+		assert role_allows(r_, "/api/fa", "GET", {}) and role_allows(r_, "/api/state", "GET", {}) and role_allows(r_, "/i18n/de.js", "GET", {}), r_
+		assert role_allows(r_, "/api/ui", "GET", {}) and role_allows(r_, "/api/ui_simple", "GET", {}) and role_allows(r_, "/api/ui_sync", "GET", {}), r_
+		assert not role_allows(r_, "/api/tunnel", "POST", {"on": True}) and role_allows(r_, "/api/tunnel", "GET", {}), r_
+		assert not role_allows(r_, "/api/factory", "POST", {}), r_
+	assert not role_allows("custom", "/api/audio/live", "GET", {}, set()) and role_allows("custom", "/api/audio/live", "GET", {}, {"live"})
+	assert role_allows("custom", "/api/audio", "GET", {}, set()), "the state of the sound stays for everybody"
+	assert role_allows("view", "/api/recordings/stats", "GET", {}) and not role_allows("view", "/api/recordingsx", "GET", {})
+	assert role_allows("family", "/api/protect", "GET", {}) and role_allows("family", "/api/protect", "POST", {"action": "level", "level": "watch"})
+	assert role_allows("family", "/api/protect", "POST", {"action": "test"})
+	for a_ in ("pin", "escalate", "presence", "fix_push", None):
+		assert not role_allows("family", "/api/protect", "POST", {"action": a_}), a_
+	assert not role_allows("kid", "/api/protect", "GET", {}) and not role_allows("kid", "/api/protect", "POST", {"action": "level"})
+	assert not role_allows("custom", "/api/protect", "GET", {}, set())
+	assert role_allows("admin", "/api/factory/backup/x", "GET", {}) and role_allows("admin", "/api/tunnel", "POST", {})
+	import copy
+	keys = ("armed", "protect_pin", "protect_level", "protect_auto", "escalate_on", "siren_on", "mode", "mode_prev", "camping", "camping_prev",
+            "sim_on", "mode_gamer_watch", "sched_manual")
+	keep = {k: copy.deepcopy(CFG.get(k)) for k in keys}
+	fails = list(PROTECT["pin_fails"]); esc = (PROTECT["esc_t"], PROTECT["esc_id"])
+	sched = {k: copy.deepcopy(v) for k, v in SCHED.items()}
+	with LOCK:
+		plans0 = [dict(s) for s in SCHEDULES]
+	names = ("log_event", "save_settings")
+	keep_f = {n: globals()[n] for n in names}
+	try:
+		for n in names:
+			globals()[n] = lambda *a, **k: None
+
+		CFG.update(armed=True, mode="", mode_prev={}, camping=False, camping_prev={}, sim_on=False, protect_pin="")
+		assert web_disarms("/api/mode", {"mode": "transport"}) and not web_disarms("/api/mode", {"mode": "home"})
+		assert not web_disarms("/api/mode", {"mode_fire_hours": 2}) and not web_disarms("/api/mode", {"mode": ""})
+		assert web_disarms("/api/fleet", {"action": "disarm", "id": "all"}) and web_disarms("/api/fleet", {"action": "disarm", "id": "me"})
+		assert not web_disarms("/api/fleet", {"action": "arm", "id": "all"}) and not web_disarms("/api/fleet", {"action": "disarm", "id": "x1"})
+		assert web_disarms("/api/sim", {"on": True, "confirm": True}) and not web_disarms("/api/sim", {"on": True})
+		assert web_disarms("/api/simintern", {"action": "start", "confirm": True}) and web_disarms("/api/set", {"key": "armed", "value": False})
+		assert not web_disarms("/api/set", {"key": "record", "value": False}) and not web_disarms("/api/arm", {"action": "arm"})
+		CFG.update(mode="home", mode_prev={"armed": False})
+		assert web_disarms("/api/mode", {"mode": ""}), "back to the own settings that were «off»"
+		CFG.update(mode="camping", camping=True, mode_prev={"armed": False}, camping_prev={"armed": False})
+		assert web_disarms("/api/camping", {"on": False}) and not web_disarms("/api/camping", {"on": True})
+		assert web_disarms("/api/mode", {"mode": "gamer", "mode_gamer_watch": False}) and not web_disarms("/api/mode", {"mode": "gamer", "mode_gamer_watch": True})
+		CFG.update(mode="", mode_prev={}, camping=False, camping_prev={})
+		CFG["armed"] = False
+		assert not web_disarms("/api/mode", {"mode": "transport"}), "already off: nothing to protect"
+		CFG["armed"] = True
+		assert web_pin_guard("/api/mode", "POST", {"mode": "transport"}, "") is None, "no PIN set: as before"
+		CFG["protect_pin"] = _pin_hash("4711"); PROTECT["pin_fails"] = []
+		assert web_pin_guard("/api/mode", "POST", {"mode": "transport"}, "") == "PIN needed" and not PROTECT["pin_fails"], "asking is not a wrong PIN"
+		assert web_pin_guard("/api/mode", "POST", {"mode": "transport"}, "0000") == "wrong PIN" and len(PROTECT["pin_fails"]) == 1
+		assert web_pin_guard("/api/mode", "POST", {"mode": "transport"}, "4711") is None and not PROTECT["pin_fails"]
+		assert web_pin_guard("/api/mode", "POST", {"mode": "home"}, "") is None and web_pin_guard("/api/mode", "GET", {"mode": "transport"}, "") is None
+		assert web_pin_guard("/api/light", "POST", {"on": True}, "") is None
+		assert protect_pin_check("4711")[0] and protect_pin_check("")[1] == "PIN needed"
+		PROTECT["pin_fails"] = [time.time()] * 5
+		assert protect_pin_check("4711")[1].startswith("too many"); PROTECT["pin_fails"] = []
+		assert tr("PIN needed", "de") == "PIN nötig"
+
+		CFG.update(protect_pin="", protect_level="full", protect_auto=[], escalate_on=False, siren_on="off")
+		assert protect_siren_sync("full") and CFG["escalate_on"] and CFG["siren_on"] == "person" and CFG["protect_auto"] == ["escalate_on", "siren_on"]
+		assert not protect_siren_sync() and CFG["escalate_on"], "armed again in «Voll»: stays"
+		CFG["protect_level"] = "watch"
+		assert protect_siren_sync("watch") and not CFG["escalate_on"] and CFG["siren_on"] == "off" and CFG["protect_auto"] == [], "Voll -> Wachsam"
+		protect_siren_sync("full"); CFG["protect_level"] = "off"
+		assert CFG["escalate_on"] and protect_siren_sync() and not CFG["escalate_on"] and CFG["siren_on"] == "off", "Voll -> Aus -> an = Wachsam without siren"
+		CFG.update(siren_on="alarm", escalate_on=False, protect_auto=[])
+		protect_siren_sync("full"); assert CFG["siren_on"] == "alarm" and CFG["protect_auto"] == ["escalate_on"]
+		protect_siren_sync("watch"); assert CFG["siren_on"] == "alarm" and not CFG["escalate_on"]
+		protect_siren_sync("full"); protect_auto_user("escalate_on"); CFG["protect_level"] = "off"
+		assert not protect_siren_sync() and CFG["escalate_on"], "the switch «Sirene nach … s» set by hand stays"
+		CFG.update(protect_auto=["?"], escalate_on=True, siren_on="person", protect_level="off")
+		assert protect_siren_sync() and not CFG["escalate_on"] and CFG["siren_on"] == "off" and CFG["protect_auto"] == []
+		CFG.update(protect_auto=["?"], escalate_on=False, siren_on="person", protect_level="off")
+		assert protect_siren_sync() and CFG["siren_on"] == "person" and CFG["protect_auto"] == [], "older file, own siren: stays (only the list is written)"
+		CFG.update(protect_auto=[], siren_on="off", escalate_on=False, protect_level="watch")
+		protect_siren_sync("watch", "siren"); assert CFG["escalate_on"] and CFG["siren_on"] == "person", "assistant: Wachsam with siren"
+
+		now = datetime.now().replace(second=0, microsecond=0)
+		hm = lambda dt: dt.strftime("%H:%M")
+		plan = _clean_schedule({"name": "Nacht", "enabled": True, "start": hm(now - timedelta(minutes=30)), "end": hm(now + timedelta(minutes=30)),
+                                "days": list(range(7)), "actions": {"armed": True}}, 0)
+		if plan and schedule_active(plan, now) and schedule_active(plan, now - timedelta(minutes=20)) and (now - timedelta(minutes=30)).date() == (now + timedelta(minutes=30)).date():
+			CFG["armed"] = False
+			for note, want in (({"armed": {"v": True, "t": time.time() - 600}}, True),
+                               ({"armed": {"v": True, "t": time.time() - 3 * 3600}}, False),
+                               ({"armed": {"v": False, "t": time.time() - 600}}, False),
+                               ({"armed": {"v": True, "t": time.time() + 3600}}, False),
+                               ({"nonsense": {"v": True, "t": time.time()}}, False)):
+				SCHED.update(base={}, manual=set(), last={}, restored=False); CFG["sched_manual"] = copy.deepcopy(note)
+				sched_manual_restore([plan], now)
+				assert ("armed" in SCHED["manual"]) == want and (CFG["sched_manual"] == note) == want, (note, SCHED, CFG["sched_manual"])
+				assert not want or (SCHED["last"] == {"armed": True} and SCHED["base"] == {"armed": False})
+			SCHED.update(base={}, manual=set(), last={"armed": True}); CFG["sched_manual"] = {}
+			sched_user_changed("armed")
+			assert CFG["sched_manual"]["armed"]["v"] is True and abs(CFG["sched_manual"]["armed"]["t"] - time.time()) < 5, "written with the switch"
+			SCHED["manual"].discard("armed"); assert _sched_manual_note({"armed": True}) and CFG["sched_manual"] == {}, "the schedule took over: note gone"
+		assert "save_settings_flush" in globals() and '"mw-pin-ask"' in render_page("<html><head></head><body><p>x</p></body></html>", "live")
+		assert render_page("<html><head></head><body></body></html>", "live").count('id="mw-pin-ask"') == 1 and "/*PINTX*/" not in PIN_ASK_JS
+	finally:
+		globals().update(keep_f)
+		CFG.update(keep); PROTECT["pin_fails"] = fails; PROTECT["esc_t"], PROTECT["esc_id"] = esc
+		SCHED.clear(); SCHED.update(sched)
+	return "rights exact (factory, audio/live, tunnel, protect), PIN for everything the web switches off, level -> siren, schedule note"
+
+
+SELFTEST_EXTRA.append(("Rights and protection: check of 10.11.2026 (639zzk)", rechte_schutz_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DE.setdefault("missed pictures from the game (hard cases)", "verpasste Bilder aus dem Spiel (schwierige Fälle)")
+_I18N_DE_GAPS = {}
+
+
+_I18N_STR_RE = re.compile(r'"(?=((?:[^"\\\n]|\\.){2,240})")')
+_I18N_ATTR_RE = re.compile(r'data-i18n(?:-title|-ph|-placeholder)?="([^"\n]{2,400})"')
+_I18N_PAIR_RE = re.compile(r'"(?=((?:[^"\\\n]|\\.){2,240})"\s*:\s*"((?:[^"\\\n]|\\.){1,400})")')
+
+
+def _i18n_js_str(k):
+	if "\\" not in k:
+		return k
+	try:
+		return json.loads('"' + k + '"')
+	except ValueError:
+		return None
+
+
+def i18n_de_gaps(text):
+	"""
+
+
+
+
+"""
+	import html as _h
+	attr = {_h.unescape(k) for k in _I18N_ATTR_RE.findall(text)}
+	cand = set(attr)
+	for m in _I18N_STR_RE.finditer(text):
+		k = _i18n_js_str(m.group(1))
+		if k and " " in k.strip() and len(k) >= 8:
+			cand.add(k)
+	cand = {k for k in cand if isinstance(DE.get(k), str) and DE[k] != k}
+	for m in _I18N_PAIR_RE.finditer(text):
+		k = _i18n_js_str(m.group(1))
+		if k in cand and _i18n_js_str(m.group(2)) == DE[k]:
+			cand.discard(k)
+	return {k: DE[k] for k in cand}
+
+
+def i18n_de_fill(page, key):
+	""
+	if "</head>" not in page:
+		return page
+	d = _I18N_DE_GAPS.get(key)
+	if d is None:
+		try:
+			d = i18n_de_gaps(page)
+		except Exception as e:
+			d = {}
+			log_event("sys", f"Web: German texts of the page «{key[0]}»: {type(e).__name__}: {e}"[:160])
+		if len(_I18N_DE_GAPS) > 120:
+			_I18N_DE_GAPS.clear()
+		_I18N_DE_GAPS[key] = d
+	if not d:
+		return page
+	return page.replace("</head>", "<script>window.I18NDX=" + json.dumps(d, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+                        + ";</script></head>", 1)
+
+
+_render_page_639zzl = render_page
+
+
+
+def render_page(page, active):
+	return i18n_de_fill(_render_page_639zzl(page, active), (active, len(page), hash(page)))
+
+
+
+def deutsch_luecken_selftest():
+	g = i18n_de_gaps('<a data-i18n="Play area">Play area</a><script>const I18N = {de: {"Tools": "Werkzeuge"}}; t("Tools"); t("Status LED & buttons"); t("no such text 123"); t("left");</script>')
+	assert g.get("Play area") == "Spielen" and g.get("Status LED & buttons") == "Status-LED & Tasten", g
+	assert "Tools" not in g and "no such text 123" not in g, "what the page has itself and unknown texts stay out"
+	assert "left" in DE and "left" not in g, "a single word in the script is not taken (one German, many meanings)"
+	assert i18n_de_gaps('<script>const IC = {"Play area": "🎮"}; t("Play area");</script>').get("Play area") == "Spielen", "a key of another table is no German"
+	assert i18n_de_gaps('<b data-i18n="Status LED &amp; buttons"></b>').get("Status LED & buttons"), "HTML attribute with &amp;"
+	for nm, tab, need in (("WEB_PAGE", "settings", ("Status LED & buttons", "File exchange")), ("TOOLS_PAGE", "tools", ("Play area",)),
+                          ("REC_PAGE", "rec", ("Night timeline",))):
+		html = render_page(globals()[nm], tab)
+		assert html.count("window.I18NDX=") == 1, nm
+		dx = json.loads(html.split("window.I18NDX=", 1)[1].split(";</script>", 1)[0].replace("<\\/", "</"))
+		for k in need:
+			assert dx.get(k) == DE[k] != k, (nm, k)
+	for _k, _h, lb in [x for v in NAV_SUB.values() for x in v] + [(k, h, lb) for k, h, lb, _s in NAV_ITEMS]:
+		assert lb in DE, "tab without German: " + lb
+	assert "window.I18NDX" in i18n_loader(), "LX asks the German gaps"
+	return "German gaps: every page gets the German it lacks (tabs, menu «Mehr», group titles)"
+
+
+SELFTEST_EXTRA.append(("German gaps of the web pages (639zzl)", deutsch_luecken_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FS_TAG = "fspiele-1"
+FS_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + FS_TAG + "/"}
+FS_MAX_BYTES = 150 * 1024 * 1024
+FS_LANGS5 = ("de", "en", "fr", "it", "rm")
+
+
+def _fs_tile(gid, start, inp, name, descs, notes=None):
+	""
+	g_ = {"dir": gid, "start": start, "icon": "thumb.png", "input": inp, "name": name, "desc": descs[0],
+          "names": {L: name for L in FS_LANGS5}, "descs": dict(zip(FS_LANGS5, descs))}
+	if notes:
+		g_["note"] = notes[0]
+		g_["notes"] = dict(zip(FS_LANGS5, notes))
+	return g_
+
+
+
+
+FS_GAMES = {
+    "fs-angst": {
+        "file": {"name": "fspiele-angst-1.zip", "size": 37087772, "sha256": "ddd557dde9326dc1e0ddb1e072cfd07950a716c3338ab164fe8e7dc103319d1c", "unpacked": 37063450},
+        "licence": "CC0 · Nicky Case, Monplaisir · Deutsch: Jonas Reich",
+        "tile": _fs_tile("fs-angst", "index.html", "touch", "Abenteuer mit Angst", (
+            "Interaktive Geschichte: Du spielst die Angst eines Menschen. Deutsch, etwa 30 Minuten, mit Ton.",
+            "Interactive story: you play a human’s anxiety. In German, about 30 minutes, with sound.",
+            "Histoire interactive : tu joues l’anxiété d’un humain. En allemand, env. 30 minutes, avec son.",
+            "Storia interattiva: interpreti l’ansia di una persona. In tedesco, circa 30 minuti, con audio.",
+            "Istorgia interactiva: ti giogas la tema d’in uman. Tudestg, var 30 minutas, cun tun."), (
+            "Ab ca. 12 Jahren, mit Kraftausdrücken", "From about age 12, with swearing", "Dès 12 ans env., avec des gros mots",
+            "Da circa 12 anni, con parolacce", "A partir da ca. 12 onns, cun pleds groppos"))},
+    "fs-heroine": {
+        "file": {"name": "fspiele-heroine-1.zip", "size": 41254926, "sha256": "c9163f574b9d575f774b857f5e8627a432f2f84abe784fe47deb2cb2a8d286ff", "unpacked": 41241720},
+        "licence": "GPL v3+ / CC-BY-SA 3.0 · Clint Bellanger · Musik: Yubatake (CC-BY 3.0)",
+        "tile": _fs_tile("fs-heroine", "start.html", "touch", "Heroine Dusk", (
+            "Verlies-Rollenspiel im Retro-Stil: tippen zum Gehen, Kämpfen, Zaubern. Englisch, wenig Text.",
+            "Retro dungeon crawl: tap to walk, fight and cast spells. English, little text.",
+            "Exploration de donjon rétro : toucher pour marcher, combattre, lancer des sorts. Anglais, peu de texte.",
+            "Dungeon crawl rétro: tocca per camminare, combattere, lanciare incantesimi. Inglese, poco testo.",
+            "Gieu da rollas retro en il tschaler: tutgar per ir, cumbatter e striunar. Englais, pauc text."))},
+    "fs-hexgl": {
+        "file": {"name": "fspiele-hexgl-1.zip", "size": 15373699, "sha256": "dc1d8058dae4f22b457ace5f37314ae99603e53b2c3581cc040461ac1c349e5b", "unpacked": 15352741},
+        "licence": "MIT / CC BY-NC 3.0 · Thibaut Despoulain (BKcore)",
+        "tile": _fs_tile("fs-hexgl", "index.html", "touch", "HexGL", (
+            "Futuristisches 3D-Rennen: links lenken, rechts Gas. Handy quer halten. Englisch, wenig Text.",
+            "Futuristic 3D racing: steer on the left, accelerate on the right. Hold the phone sideways. English, little text.",
+            "Course 3D futuriste : diriger à gauche, accélérer à droite. Tenir le téléphone à l’horizontale. Anglais, peu de texte.",
+            "Corsa 3D futuristica: sterza a sinistra, accelera a destra. Tieni il telefono in orizzontale. Inglese, poco testo.",
+            "Cursa 3D futuristica: manischar a sanestra, gas a dretga. Tegnair il telefonin a travers. Englais, pauc text."))},
+}
+FS_DL = {"running": False, "id": "", "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
+FS_HIDE = ("fspiel.ok", "fspiel.ok.new")
+
+
+def fs_root():
+	return os.path.join(DATA_DIR, "fspiele")
+
+
+def fs_dir(gid):
+	return os.path.join(fs_root(), gid)
+
+
+def fs_dl_dir():
+	return os.path.join(DATA_DIR, "fspiele_dl")
+
+
+def fs_pinned(gid):
+	""
+	f = (FS_GAMES.get(gid) or {}).get("file") or {}
+	return (isinstance(f.get("size"), int) and 0 < f["size"] <= FS_MAX_BYTES and bool(re.fullmatch(r"[0-9a-f]{64}", str(f.get("sha256") or "")))
+            and isinstance(f.get("unpacked"), int) and 0 < f["unpacked"] <= FS_MAX_BYTES
+            and bool(re.fullmatch(r"fspiele-[a-z0-9]+-\d{1,3}\.zip", f.get("name") or "")))
+
+
+def fs_installed(gid):
+	""
+	if not fs_pinned(gid):
+		return False
+	d_ = fs_dir(gid)
+	try:
+		with open(os.path.join(d_, "fspiel.ok"), encoding="utf-8") as fh:
+			ok_ = json.load(fh)
+	except (OSError, ValueError):
+		return False
+	g_ = FS_GAMES[gid]
+	return (isinstance(ok_, dict) and ok_.get("tag") == FS_TAG and ok_.get("sha256") == g_["file"]["sha256"]
+            and all(os.path.isfile(os.path.join(d_, f)) for f in (g_["tile"]["start"], g_["tile"]["icon"])))
+
+
+def _fs_unzip(zp, dest, limit):
+	""
+	tot = 0
+	with zipfile.ZipFile(zp) as z:
+		infos = z.infolist()
+		for i in infos:
+			n = i.filename
+			if n.startswith("/") or "\\" in n or ".." in n.split("/") or not re.fullmatch(r"[A-Za-z0-9._ /+-]{1,200}", n) or os.path.basename(n) in FS_HIDE:
+				raise ValueError("bad file name in the package")
+			if (i.external_attr >> 16) & 0o170000 == 0o120000:
+				raise ValueError("link in the package")
+			tot += i.file_size
+		if tot > limit + 1024:
+			raise ValueError("package larger than announced")
+		for i in infos:
+			if i.is_dir():
+				continue
+			p = os.path.join(dest, *i.filename.split("/"))
+			os.makedirs(os.path.dirname(p), exist_ok=True)
+			with z.open(i) as src, open(p, "wb") as out:
+				while True:
+					if FS_DL.get("stop"):
+						raise InterruptedError("cancelled")
+					b = src.read(1 << 20)
+					if not b:
+						break
+					out.write(b)
+	return tot
+
+
+def fs_download(gid, wait=False):
+	""
+	if gid not in FS_GAMES:
+		return False, "unknown action"
+	if not fs_pinned(gid):
+		return False, "comes with an update"
+	if FS_DL["running"]:
+		return (True, "") if FS_DL["id"] == gid else (False, "busy right now - try again in a moment")
+	if fs_installed(gid):
+		return True, ""
+	f = FS_GAMES[gid]["file"]
+	try:
+		free = shutil.disk_usage(DATA_DIR).free
+	except OSError:
+		free = 1 << 40
+	dd = fs_dl_dir()
+	dest = os.path.join(dd, f["name"])
+	have = sum(os.path.getsize(p) for p in (dest, dest + ".part") if os.path.isfile(p))
+	if free - (f["size"] - have + f["unpacked"]) < bio_free_need():
+		return False, "not enough free space on the memory card"
+	FS_DL.update(running=True, id=gid, got=0, total=f["size"], msg="", stop=False, done=False, phase="load")
+
+	def work():
+		tmp = fs_dir(gid) + ".new"
+		try:
+			os.makedirs(dd, exist_ok=True)
+			if os.path.isfile(dest) and piper_check_file(dest, f)[0]:
+				FS_DL["got"] = f["size"]
+			else:
+				bio_fetch(FS_BASE["url"] + f["name"], dest, f, FS_DL)
+			FS_DL["phase"] = "unpack"
+			shutil.rmtree(tmp, ignore_errors=True)
+			os.makedirs(tmp)
+			_fs_unzip(dest, tmp, f["unpacked"])
+			with open(os.path.join(tmp, "fspiel.json"), encoding="utf-8") as fh:
+				man = json.load(fh)
+			if man.get("tag") != FS_TAG or man.get("id") != gid:
+				raise ValueError("the package is not " + gid + " of " + FS_TAG)
+			with open(os.path.join(tmp, "fspiel.ok"), "w", encoding="utf-8") as fh:
+				json.dump({"tag": FS_TAG, "sha256": f["sha256"]}, fh)
+			shutil.rmtree(fs_dir(gid), ignore_errors=True)
+			os.replace(tmp, fs_dir(gid))
+			shutil.rmtree(dd, ignore_errors=True)
+			FS_DL["done"] = True
+			log_event("sys", f"Game «{FS_GAMES[gid]['tile']['name']}» installed ({FS_TAG})")
+		except InterruptedError:
+			FS_DL["msg"] = "cancelled"
+		except Exception as e:
+			FS_DL["msg"] = str(getattr(e, "reason", "") or e)[:160] or e.__class__.__name__
+			log_event("sys", f"Game «{FS_GAMES[gid]['tile']['name']}» not installed: {FS_DL['msg']}")
+		finally:
+			shutil.rmtree(tmp, ignore_errors=True)
+			FS_DL.update(running=False, phase="")
+	if wait:
+		work()
+		return (not FS_DL["msg"]), FS_DL["msg"]
+	threading.Thread(target=work, daemon=True, name="fspiele-dl").start()
+	return True, ""
+
+
+def fs_cancel():
+	if FS_DL["running"]:
+		FS_DL["stop"] = True
+	return True, ""
+
+
+def fs_delete(gid):
+	if gid not in FS_GAMES:
+		return False, "unknown action"
+	if FS_DL["running"]:
+		return False, "busy right now - try again in a moment"
+	for p in (fs_dir(gid), fs_dir(gid) + ".new", fs_dl_dir()):
+		shutil.rmtree(p, ignore_errors=True)
+	log_event("sys", f"Game «{FS_GAMES[gid]['tile']['name']}» deleted")
+	return True, ""
+
+
+def fs_state():
+	""
+	try:
+		free = shutil.disk_usage(DATA_DIR).free
+	except OSError:
+		free = 0
+	gl = []
+	for gid, g_ in FS_GAMES.items():
+		t_ = g_["tile"]
+		gl.append({"id": gid, "name": t_["name"], "names": t_["names"], "desc": t_["desc"], "descs": t_["descs"], "note": t_.get("note", ""),
+                   "notes": t_.get("notes", {}), "licence": g_["licence"], "pinned": fs_pinned(gid), "installed": fs_installed(gid),
+                   "size": g_["file"]["size"], "unpacked": g_["file"]["unpacked"]})
+	return {"tag": FS_TAG, "games": gl, "free": free, "free_need": bio_free_need(),
+            "dl": {k: FS_DL[k] for k in ("running", "id", "got", "total", "msg", "done", "phase")}}
+
+
+
+_fotaq_action_639zzn = fotaq_action
+
+
+
+def fotaq_action(a, d=None):
+	d = d or {}
+	gid = d.get("fs")
+	if gid is None:
+		return _fotaq_action_639zzn(a, d)
+	gid = str(gid)
+	if a == "fotaq_install":
+		return fs_download(gid)
+	if a == "fotaq_cancel":
+		return fs_cancel()
+	if a == "fotaq_delete":
+		return fs_delete(gid)
+	return False, "unknown action"
+
+
+_fotaq_state_639zzn = fotaq_state
+
+
+
+def fotaq_state():
+	s_ = _fotaq_state_639zzn()
+	s_["fs"] = fs_state()
+	return s_
+
+
+
+_games_list_639zzn = games_list
+
+
+
+def games_list(extra=True):
+	gl = _games_list_639zzn(extra)
+	if extra:
+		mine = [dict(g_["tile"]) for gid, g_ in FS_GAMES.items() if fs_installed(gid)]
+		if mine:
+			gl = [x for x in gl if x.get("dir") not in FS_GAMES] + mine
+	return gl
+
+
+_games_file_639zzn = games_file
+
+
+
+def games_file(game, fn):
+	if game not in FS_GAMES:
+		return _games_file_639zzn(game, fn)
+	if not fs_installed(game):
+		return None
+	base = os.path.realpath(fs_dir(game))
+	p_ = os.path.realpath(os.path.join(base, fn or FS_GAMES[game]["tile"]["start"]))
+	if not p_.startswith(base + os.sep) or not os.path.isfile(p_) or os.path.basename(p_) in FS_HIDE:
+		return None
+	return p_
+
+
+
+_HX_FS = _zd('639zzn_fertigspiele/HX_FS', _zd_hx({
+    'More games to load': 'Weitere Spiele zum Nachladen',
+    'Ready-made free games. Each one is loaded once from GitHub (fixed checksum), then it runs offline in the browser.': 'Fertige freie Spiele. Jedes wird einmal von GitHub geladen (feste Prüfsumme) und läuft danach offline im Browser.',
+    'busy right now - try again in a moment': 'gerade beschäftigt – gleich nochmals versuchen',
+    'fs-ask': '«%s» jetzt laden? %s MB von GitHub (danach %s MB auf der Speicherkarte, 2 GB bleiben frei).',
+    'fs-del': '«%s» entfernen? Die Spielstände bleiben in den Browsern.',
+}))
+for _k, _v in _HX_FS.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+FS_JS_DE = {_k: _v[0] for _k, _v in _HX_FS.items()}
+FS_JS_EN = {"fs-ask": "Load «%s» now? %s MB from GitHub (then %s MB on the memory card, 2 GB stay free).",
+            "fs-del": "Remove «%s»? The saved games stay in the browsers."}
+
+
+FS_TOOLS_JS = _zd('639zzn_fertigspiele/FS_TOOLS_JS', "")
+_FS_HOOK = "  fotaqPaint(box, P.fotaq);\n}\n"
+if TOOLS_PAGE.count(_FS_HOOK) == 1 and "function fsPaint" not in TOOLS_PAGE:
+	TOOLS_PAGE = TOOLS_PAGE.replace(_FS_HOOK, "  fotaqPaint(box, P.fotaq);\n  fsPaint(box, (P.fotaq || {}).fs);\n}\n" + FS_TOOLS_JS
+                                    + "Object.assign(I18N.de," + json.dumps(FS_JS_DE, ensure_ascii=False) + ");"
+                                    "I18N.en=I18N.en||{};Object.assign(I18N.en," + json.dumps(FS_JS_EN, ensure_ascii=False) + ");\n", 1)
+
+
+_HELP_FS = {
+    "de": ("🎁 Weitere Spiele zum Nachladen", "(Mehr → Spielecke, ganz unten): fertige freie Spiele, jedes einzeln mit «⬇ Installieren» von GitHub geladen (feste Prüfsumme, 2 GB bleiben frei) und mit «🗑 Entfernen» wieder gelöscht; danach eine Kachel der Sammlung, auch ohne Internet. Urheber, Lizenzen und Änderungen stehen in jedem Paket (LIZENZEN.txt)."),
+    "en": ("🎁 More games to load", "(More → Game corner, at the bottom): ready-made free games, each loaded on its own with “⬇ Install” from GitHub (fixed checksum, 2 GB stay free) and deleted again with “🗑 Remove”; then it is a tile of the collection, also without Internet. Authors, licences and changes are in every package (LIZENZEN.txt)."),
+    "fr": ("🎁 Autres jeux à charger", "(Plus → Coin jeux, tout en bas) : jeux libres tout prêts, chacun chargé séparément avec « ⬇ Installer » depuis GitHub (somme de contrôle fixe, 2 Go restent libres) et supprimé avec « 🗑 Supprimer » ; ensuite une tuile de la collection, aussi sans Internet. Auteurs, licences et modifications dans chaque paquet (LIZENZEN.txt)."),
+    "it": ("🎁 Altri giochi da caricare", "(Altro → Angolo giochi, in fondo): giochi liberi già pronti, ognuno caricato separatamente con «⬇ Installa» da GitHub (somma di controllo fissa, 2 GB restano liberi) e rimosso con «🗑 Rimuovi»; poi è una tessera della raccolta, anche senza Internet. Autori, licenze e modifiche in ogni pacchetto (LIZENZEN.txt)."),
+    "rm": ("🎁 Ulteriurs gieus per chargiar", "(Dapli → Chantun da gieus, giusut): gieus libers gia pronts, mintgin chargià separadamain cun «⬇ Installar» da GitHub (summa da controlla fixa, 2 GB restan libers) ed allontanà cun «🗑 Allontanar»; lura ina cachel da la collecziun, er senza internet. Auturs, licenzas e midadas en mintga pachet (LIZENZEN.txt)."),
+}
+
+
+def _help_fs_item(lang):
+	""
+	from html import escape as _e
+	h_, x_ = _HELP_FS[lang]
+	out = f"<li><b>{h_}</b> {_e(x_, quote=False)}"
+	for g_ in FS_GAMES.values():
+		t_ = g_["tile"]
+		mb = f" (~{max(1, round(g_['file']['size'] / 1e6))} MB)" if g_["file"]["size"] else ""
+		nt = " ⚠️ " + _e(t_["notes"][lang], quote=False) + "." if t_.get("notes") else ""
+		out += f" <b>{_e(t_['names'][lang])}</b>{mb}: {_e(t_['descs'][lang], quote=False)}{nt} © {_e(g_['licence'], quote=False)}."
+	return out + "</li>"
+
+
+def _help_fs(doc, lang):
+	i = doc.find('<section id="games"')
+	if i < 0 or _HELP_FS[lang][0] in doc[i:doc.find("</section>", i)]:
+		return doc
+	j = doc.find("</ul></section>", i)
+	return doc[:j] + _help_fs_item(lang) + doc[j:] if j > 0 else doc
+
+
+_hp_en_fs = HELP_PAGE.find('<div lang="en">')
+if _hp_en_fs > 0:
+	HELP_PAGE = _help_fs(HELP_PAGE[:_hp_en_fs], "de") + _help_fs(HELP_PAGE[_hp_en_fs:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _help_fs(HELP_X[_L], _L)
+
+
+
+def fs_selftest():
+	assert FS_BASE["url"] == "https://github.com/DonElektro/MotionWatch/releases/download/" + FS_TAG + "/"
+	assert re.fullmatch(r"fspiele-\d{1,3}", FS_TAG)
+	n = FS_TAG.split("-")[1]
+	for gid, g_ in FS_GAMES.items():
+		f, t_ = g_["file"], g_["tile"]
+		assert re.fullmatch(r"fs-[a-z0-9]{2,20}", gid) and t_["dir"] == gid and f["name"] == "fspiele-%s-%s.zip" % (gid[3:], n), gid
+		assert fs_pinned(gid) or (not f["size"] and not f["sha256"] and not f["unpacked"]), gid + ": either all pins or none"
+		assert t_["input"] in GAME_GROUPS and t_["icon"] in GAME_THUMBS and t_["start"].endswith(".html")
+		assert all(t_["names"].get(L) and t_["descs"].get(L) for L in FS_LANGS5) and t_["desc"] == t_["descs"]["de"]
+		assert "ß" not in json.dumps(t_, ensure_ascii=False) and g_["licence"]
+		assert not t_.get("note") or all(t_["notes"].get(L) for L in FS_LANGS5)
+		if not fs_installed(gid):
+			assert all(x.get("dir") != gid for x in games_list()) and games_file(gid, t_["start"]) is None
+		assert games_file(gid, "../settings.json") is None and games_file(gid, "/etc/passwd") is None and games_file(gid, "fspiel.ok") is None
+	assert "12 Jahren" in FS_GAMES["fs-angst"]["tile"]["note"]
+	assert fotaq_action("fotaq_install", {"fs": "nope"}) == (False, "unknown action") and fotaq_action("nope", {"fs": next(iter(FS_GAMES))}) == (False, "unknown action")
+	assert fotaq_action("nope") == (False, "unknown action"), "without «fs» the actions of FOTAQ stay as they are"
+	s_ = fotaq_state()
+	assert "pinned" in s_ and [x["id"] for x in s_["fs"]["games"]] == list(FS_GAMES)
+	assert all(x.get("dir") not in FS_GAMES for x in games_list(extra=False))
+	assert "function fsPaint" in TOOLS_PAGE and "fsPaint(box, (P.fotaq || {}).fs);" in TOOLS_PAGE and '"fs-ask"' in TOOLS_PAGE
+	assert _HELP_FS["de"][0] in HELP_PAGE and _HELP_FS["en"][0] in HELP_PAGE and all(_HELP_FS[L][0] in HELP_X.get(L, _HELP_FS[L][0]) for L in ("fr", "it", "rm"))
+	assert all(g_["tile"]["name"] in HELP_PAGE for g_ in FS_GAMES.values())
+	return True
+
+
+SELFTEST_EXTRA.append(("Ready-made free games in the game corner (639zzn)", fs_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+NAV_SUB["more"] = [x for x in NAV_SUB["more"] if x[0] != "party"]
+_nav_html_639zzo = nav_html
+
+
+
+def nav_html(active):
+	h_ = _nav_html_639zzo(active)
+	if active == "party":
+		h_ = h_.replace('<a href="/play" data-i18n=', '<a href="/play" class=on data-i18n=', 1)
+	return h_
+
+
+
+_SO_CARD = '  <div id="games"><div class="gt"><b>🎮 <span data-i18n="Games">Games</span></b><div class="mut" id="g-txt"></div><div id="g-btn"></div></div></div>\n'
+_SO_ENTRY = '<a class="mi" href="/party"><i>🎲</i>'
+_SO_LOAD = "(async () => { await initAppearance(); gmLoad(); })();"
+SO_MORE_OK = MORE_PAGE.count(_SO_CARD) == 1 and MORE_PAGE.count(_SO_ENTRY) == 1 and MORE_PAGE.count(_SO_LOAD) == 1
+if SO_MORE_OK:
+	MORE_PAGE = (MORE_PAGE.replace(_SO_CARD, "", 1)
+                 .replace(_SO_ENTRY, '<a class="mi" href="/party" id="m-party" hidden><i>🎲</i>', 1)
+                 .replace(_SO_LOAD, "(async () => { await initAppearance(); })();\n"
+                          "// 639zzo: the games live under «Spielen»; who may not open that page (users without the administrator role) keeps the entry «Spielecke»\n"
+                          'fetch("/play", {method: "HEAD"}).then(r => { if (!r.ok) document.getElementById("m-party").hidden = false; }).catch(() => {});', 1))
+
+
+SO_TILE_TXT = "Quiz, werewolf, connect four and the game collection – «Open all games» for the guests is there too"
+_HX_SO = {SO_TILE_TXT: ("Quiz, Werwolf, Vier gewinnt und die Spielesammlung – dort auch «Spiele freigeben» für die Gäste",
+                        "Quiz, loup-garou, puissance 4 et la collection de jeux – avec « Ouvrir tous les jeux » pour les invités",
+                        "Quiz, lupo mannaro, forza quattro e la raccolta di giochi – lì anche «Aprire tutti i giochi» per gli ospiti",
+                        "Quiz, luf-uman, quatter en lingia e la collecziun da gieus – là er «Avrir tut ils gieus» per ils giasts")}
+for _k, _v in _HX_SO.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+_SO_MAIN = '<main>\n  <div class="pl-card" id="pl-lv" hidden></div>'
+_SO_TILE = ('<main>\n  <a class="pl-party" id="pl-party" href="/party"><i>🎲</i><span><b data-i18n="Game corner">Game corner</b>'
+            '<small data-i18n="' + SO_TILE_TXT + '">' + SO_TILE_TXT + '</small></span><span class="ar">›</span></a>\n'
+            '  <div class="pl-card" id="pl-lv" hidden></div>')
+_SO_CSS = (".pl-party{display:flex;align-items:center;gap:12px;padding:14px;margin:0 0 12px;border:1px solid var(--acc);border-radius:14px;background:var(--panel);"
+           "color:var(--txt);text-decoration:none}.pl-party:hover{filter:brightness(1.08)}.pl-party i{font-style:normal;font-size:30px;width:40px;text-align:center}"
+           ".pl-party b{display:block;font-size:16px}.pl-party small{color:var(--mut);font-size:12px}.pl-party .ar{margin-left:auto;color:var(--mut);font-size:20px}\n")
+SO_PLAY_OK = PLAY_PAGE.count(_SO_MAIN) == 1 and PLAY_PAGE.count("</style></head><body>") == 1 and 'id="pl-party"' not in PLAY_PAGE
+if SO_PLAY_OK:
+	PLAY_PAGE = PLAY_PAGE.replace(_SO_MAIN, _SO_TILE, 1).replace("</style></head><body>", _SO_CSS + "</style></head><body>", 1)
+_play_page_639zzo = play_page
+
+
+
+def play_page():
+	js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in ("Game corner", SO_TILE_TXT)}, ensure_ascii=False) + ");"
+	return _play_page_639zzo().replace("const ST = ", js + "\nconst ST = ", 1)
+
+
+
+def _so_help(doc, lang):
+	m_, p_, g_, o_ = (tr(x, lang) for x in ("More", "Play area", "Game corner", "Open all games"))
+	if not doc or p_ in ("", "Play area") and lang != "en":
+		return doc
+	way = f"{m_} → {p_} → {g_}"
+	doc = doc.replace(way, "\x00").replace(f"{m_} → {g_}", way).replace("\x00", way)
+	for a_, b_ in (("«", "»"), ("“", "”"), ("« ", " »")):
+		doc = doc.replace(f"{m_} → {a_}{o_}{b_}", f"{way} → {a_}{o_}{b_}")
+	return doc
+
+
+_hp_en_so = HELP_PAGE.find('<div lang="en">')
+if _hp_en_so > 0:
+	HELP_PAGE = _so_help(HELP_PAGE[:_hp_en_so], "de") + _so_help(HELP_PAGE[_hp_en_so:], "en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L] = _so_help(HELP_X[_L], _L)
+
+
+def spiele_ordnen_selftest():
+	assert SO_MORE_OK and SO_PLAY_OK, "MORE_PAGE / PLAY_PAGE look different - adjust part 639zzo"
+	assert [k for k, *_r in NAV_SUB["more"]] == ["more", "play", "help", "tools"] and NAV_OF.get("party") == "more"
+	n_ = nav_html("party")
+	assert 'href="/party"' not in n_ and '<a href="/play" class=on' in n_ and n_.count("class=on") == 1
+	assert nav_html("play").count("class=on") == 1 and 'href="/party"' not in nav_html("more")
+	assert 'id="games"' not in MORE_PAGE and MORE_PAGE.count('href="/party"') == 1 and 'href="/party" id="m-party" hidden' in MORE_PAGE
+	assert "gmLoad(); })" not in MORE_PAGE
+	assert PLAY_PAGE.count('href="/party"') == 1 and PLAY_PAGE.index('id="pl-party"') < PLAY_PAGE.index('id="pl-lv"')
+	assert "Open all games" in TOOLS_PAGE and 'partyDo({action: "all"' in TOOLS_PAGE, "«Spiele freigeben» is on the page of the game corner"
+	assert "ß" not in _HX_SO[SO_TILE_TXT][0] and all(TRX[L].get(SO_TILE_TXT) for L in ("fr", "it", "rm"))
+	assert "Mehr → Spielen → Spielecke" in HELP_PAGE and "Mehr → Spielecke" not in HELP_PAGE and "Mehr → «Spiele freigeben»" not in HELP_PAGE
+	assert role_allows("kid", "/party", "GET", {}) and not role_allows("kid", "/play", "GET", {}) and not role_allows("family", "/api/party", "POST", {"action": "all"})
+	return True
+
+
+SELFTEST_EXTRA.append(("Games under «Mehr»: one entry point (639zzo)", spiele_ordnen_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SF_START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+SF_ABC = "ACDEFHJKMNPQRTUVWXY3479"
+SF_GRENZEN = {"spiele": 10, "frist": 24 * 3600, "nach_ende": 1800, "posts": (12, 10.0), "neu_ip": (8, 600.0),
+              "falsch_ip": (15, 300.0), "warten": 15.0, "warter": 40, "online": 25.0, "idle_weg": 600.0}
+SF = {"spiele": {}, "cond": threading.Condition(), "ip": {}, "geladen": False, "warter": 0}
+SF_DATEI = "schach_fern.json"
+SF_OPS_POST = ("neu", "beitreten", "zug", "aktion")
+SF_OPS_GET = ("info", "zustand", "qr")
+PERM_GET["games"] = tuple(PERM_GET.get("games", ())) + ("/schachfern/",)
+PERM_POST["games"] = set(PERM_POST.get("games", ())) | {"/schachfern/" + o for o in SF_OPS_POST}
+
+
+
+_SF_N = (33, 31, 18, 14, -14, -18, -31, -33)
+_SF_K = (1, -1, 16, -16, 15, 17, -15, -17)
+_SF_B = (15, 17, -15, -17)
+_SF_R = (1, -1, 16, -16)
+
+
+def _sf_sq(name):
+	return (int(name[1]) - 1) * 16 + "abcdefgh".index(name[0])
+
+
+def _sf_name(s):
+	return "abcdefgh"[s & 7] + str((s >> 4) + 1)
+
+
+def sf_fen_lesen(fen):
+	""
+	t = str(fen or "").split()
+	if len(t) != 6:
+		raise ValueError("fen")
+	rows = t[0].split("/")
+	if len(rows) != 8:
+		raise ValueError("fen rows")
+	b = [None] * 128
+	for i, row in enumerate(rows):
+		r, f = 7 - i, 0
+		for ch in row:
+			if ch.isdigit():
+				f += int(ch)
+			elif ch in "pnbrqkPNBRQK":
+				if f > 7:
+					raise ValueError("fen row")
+				b[r * 16 + f] = ch; f += 1
+			else:
+				raise ValueError("fen piece")
+		if f != 8:
+			raise ValueError("fen row")
+	if b.count("K") != 1 or b.count("k") != 1 or t[1] not in ("w", "b") or not re.fullmatch(r"-|K?Q?k?q?", t[2]) or not re.fullmatch(r"-|[a-h][36]", t[3]):
+		raise ValueError("fen fields")
+	return {"b": b, "w": t[1], "c": "" if t[2] == "-" else t[2], "ep": -1 if t[3] == "-" else _sf_sq(t[3]), "h": int(t[4]), "f": max(1, int(t[5]))}
+
+
+def sf_fen(p):
+	rows = []
+	for r in range(7, -1, -1):
+		s, n = "", 0
+		for f in range(8):
+			x = p["b"][r * 16 + f]
+			if x is None:
+				n += 1
+			else:
+				s += (str(n) if n else "") + x; n = 0
+		rows.append(s + (str(n) if n else ""))
+	return f"{'/'.join(rows)} {p['w']} {p['c'] or '-'} {_sf_name(p['ep']) if p['ep'] >= 0 else '-'} {p['h']} {p['f']}"
+
+
+def _sf_weiss(x):
+	return x is not None and x.isupper()
+
+
+def _sf_farbe(x):
+	return None if x is None else ("w" if x.isupper() else "b")
+
+
+def sf_angegriffen(b, s, von):
+	""
+	up = von == "w"
+	P, N, B, R, Q, K = ("PNBRQK" if up else "pnbrqk")
+	for d in ((-15, -17) if up else (15, 17)):
+		t = s + d
+		if not t & 0x88 and b[t] == P:
+			return True
+	for d in _SF_N:
+		t = s + d
+		if not t & 0x88 and b[t] == N:
+			return True
+	for d in _SF_K:
+		t = s + d
+		if not t & 0x88 and b[t] == K:
+			return True
+	for dirs, a in ((_SF_B, (B, Q)), (_SF_R, (R, Q))):
+		for d in dirs:
+			t = s + d
+			while not t & 0x88:
+				if b[t] is not None:
+					if b[t] in a:
+						return True
+					break
+				t += d
+	return False
+
+
+def _sf_koenig(b, c):
+	k = "K" if c == "w" else "k"
+	for s in range(128):
+		if not s & 0x88 and b[s] == k:
+			return s
+	return -1
+
+
+def sf_schach(p):
+	return sf_angegriffen(p["b"], _sf_koenig(p["b"], p["w"]), "b" if p["w"] == "w" else "w")
+
+
+def _sf_pseudo(p):
+	b, c = p["b"], p["w"]
+	them = "b" if c == "w" else "w"
+	out = []
+	for s in range(128):
+		if s & 0x88 or b[s] is None or _sf_farbe(b[s]) != c:
+			continue
+		x = b[s].lower()
+		if x == "p":
+			fw, start, last = (16, 1, 7) if c == "w" else (-16, 6, 0)
+			t = s + fw
+			if not t & 0x88 and b[t] is None:
+				if t >> 4 == last:
+					out += [(s, t, q) for q in "qrbn"]
+				else:
+					out.append((s, t, ""))
+					t2 = t + fw
+					if s >> 4 == start and b[t2] is None:
+						out.append((s, t2, ""))
+			for d in (fw - 1, fw + 1):
+				t = s + d
+				if t & 0x88:
+					continue
+				if b[t] is not None and _sf_farbe(b[t]) == them:
+					out += [(s, t, q) for q in "qrbn"] if t >> 4 == last else [(s, t, "")]
+				elif t == p["ep"]:
+					out.append((s, t, ""))
+		elif x in "nk":
+			for d in (_SF_N if x == "n" else _SF_K):
+				t = s + d
+				if not t & 0x88 and (b[t] is None or _sf_farbe(b[t]) == them):
+					out.append((s, t, ""))
+		else:
+			for d in ((_SF_B if x == "b" else _SF_R if x == "r" else _SF_K)):
+				t = s + d
+				while not t & 0x88:
+					if b[t] is None:
+						out.append((s, t, ""))
+					else:
+						if _sf_farbe(b[t]) == them:
+							out.append((s, t, ""))
+						break
+					t += d
+
+	ks, rank = (4, 0) if c == "w" else (116, 112)
+	if b[ks] == ("K" if c == "w" else "k") and not sf_angegriffen(b, ks, them):
+		R = "R" if c == "w" else "r"
+		if ("K" if c == "w" else "k") in p["c"] and b[rank + 7] == R and b[ks + 1] is None and b[ks + 2] is None \
+                and not sf_angegriffen(b, ks + 1, them) and not sf_angegriffen(b, ks + 2, them):
+			out.append((ks, ks + 2, ""))
+		if ("Q" if c == "w" else "q") in p["c"] and b[rank] == R and b[ks - 1] is None and b[ks - 2] is None and b[ks - 3] is None \
+                and not sf_angegriffen(b, ks - 1, them) and not sf_angegriffen(b, ks - 2, them):
+			out.append((ks, ks - 2, ""))
+	return out
+
+
+def sf_ziehe(p, m):
+	""
+	s, t, q = m
+	b = p["b"][:]; c = p["w"]; x = b[s]; them = "b" if c == "w" else "w"
+	cap = b[t] is not None
+	rights = p["c"]
+	if x.lower() == "p" and t == p["ep"] and not cap:
+		b[t - 16 if c == "w" else t + 16] = None; cap = True
+	b[t] = (q.upper() if c == "w" else q) if q else x; b[s] = None
+	if x.lower() == "k":
+		rights = rights.replace("K", "").replace("Q", "") if c == "w" else rights.replace("k", "").replace("q", "")
+		if t - s == 2:
+			b[s + 1] = b[s + 3]; b[s + 3] = None
+		elif s - t == 2:
+			b[s - 1] = b[s - 4]; b[s - 4] = None
+	for sq, r in ((0, "Q"), (7, "K"), (112, "q"), (119, "k")):
+		if s == sq or t == sq:
+			rights = rights.replace(r, "")
+	ep = -1
+	if x.lower() == "p" and abs(t - s) == 32:
+		P = "p" if c == "w" else "P"
+		if (not (t - 1) & 0x88 and b[t - 1] == P) or (not (t + 1) & 0x88 and b[t + 1] == P):
+			ep = (s + t) // 2
+	return {"b": b, "w": them, "c": rights, "ep": ep, "h": 0 if (x.lower() == "p" or cap) else p["h"] + 1,
+            "f": p["f"] + (1 if c == "b" else 0)}
+
+
+def sf_legal(p):
+	""
+	c = p["w"]; them = "b" if c == "w" else "w"; out = []
+	for m in _sf_pseudo(p):
+		n = sf_ziehe(p, m)
+		if not sf_angegriffen(n["b"], _sf_koenig(n["b"], c), them):
+			out.append(m)
+	return out
+
+
+def sf_uci(m):
+	return _sf_name(m[0]) + _sf_name(m[1]) + m[2]
+
+
+def sf_schluessel(p):
+	""
+	return "".join(x or "." for i, x in enumerate(p["b"]) if not i & 0x88) + p["w"] + p["c"] + str(p["ep"])
+
+
+def sf_material_fehlt(p):
+	""
+	n, cnt, farben = 0, {}, []
+	for s in range(128):
+		if s & 0x88 or p["b"][s] is None:
+			continue
+		x = p["b"][s].lower(); n += 1; cnt[x] = cnt.get(x, 0) + 1
+		if x == "b":
+			farben.append(((s >> 4) + (s & 7)) % 2)
+	if n == 2:
+		return True
+	if n == 3 and (cnt.get("b") == 1 or cnt.get("n") == 1):
+		return True
+	if n == cnt.get("b", 0) + 2 and (sum(farben) == 0 or sum(farben) == len(farben)):
+		return True
+	return False
+
+
+def sf_partie(start, zuege):
+	""
+	p = sf_fen_lesen(start)
+	keys = {sf_schluessel(p): 1}
+	leg = sf_legal(p)
+	for u in zuege:
+		m = next((m for m in leg if sf_uci(m) == u), None)
+		if m is None:
+			raise ValueError("illegal " + str(u)[:8])
+		p = sf_ziehe(p, m)
+		k = sf_schluessel(p); keys[k] = keys.get(k, 0) + 1
+		leg = sf_legal(p)
+	return p, keys, leg
+
+
+def sf_ende_regeln(p, keys, leg):
+	""
+	if not leg:
+		return {"art": "matt", "sieger": "b" if p["w"] == "w" else "w"} if sf_schach(p) else {"art": "patt", "sieger": None}
+	if sf_material_fehlt(p):
+		return {"art": "material", "sieger": None}
+	if keys.get(sf_schluessel(p), 0) >= 3:
+		return {"art": "wiederholung", "sieger": None}
+	if p["h"] >= 100:
+		return {"art": "50zuege", "sieger": None}
+	return None
+
+
+def sf_perft(p, d):
+	if d == 0:
+		return 1
+	return sum(sf_perft(sf_ziehe(p, m), d - 1) for m in sf_legal(p)) if d > 1 else len(sf_legal(p))
+
+
+
+def _sf_hash(t):
+	return hashlib.sha256(str(t).encode()).hexdigest()
+
+
+def _sf_datei():
+	return os.path.join(DATA_DIR, SF_DATEI)
+
+
+def _sf_speichern():
+	try:
+		keep = ("code", "nr", "erstellt", "t", "startFen", "zuege", "ende", "sitze", "anfrage", "hilfe", "t_ende")
+		d = {"v": 1, "spiele": {k: {x: G[x] for x in keep if x in G} for k, G in SF["spiele"].items()}}
+		tmp = _sf_datei() + ".tmp"
+		with open(tmp, "w", encoding="utf-8") as f:
+			json.dump(d, f)
+		os.replace(tmp, _sf_datei())
+	except (OSError, TypeError, ValueError):
+		pass
+
+
+def _sf_laden():
+	if SF["geladen"]:
+		return
+	SF["geladen"] = True
+	try:
+		with open(_sf_datei(), encoding="utf-8") as f:
+			d = json.load(f)
+		for k, G in (d.get("spiele") or {}).items():
+			if not (isinstance(G, dict) and re.fullmatch("[%s]{4}" % SF_ABC, str(k))):
+				continue
+			G["code"] = k
+			G["seq"] = secrets.randbelow(10 ** 9)
+			G["posts"] = {"w": [], "b": []}; G["zs"] = {}
+			if _sf_neu_rechnen(G):
+				SF["spiele"][k] = G
+	except (OSError, ValueError, TypeError, AttributeError):
+		pass
+
+
+def _sf_neu_rechnen(G):
+	""
+	try:
+		G["_p"], G["_k"], G["_l"] = sf_partie(G.get("startFen") or SF_START, list(G.get("zuege") or []))
+		return True
+	except (ValueError, TypeError, KeyError, IndexError):
+		return False
+
+
+def _sf_bump(G, speichern=True):
+	G["seq"] = (G.get("seq", 0) + 1) % 10 ** 9
+	G["t"] = time.time()
+	if speichern:
+		_sf_speichern()
+	SF["cond"].notify_all()
+
+
+def _sf_aufraeumen(now=None):
+	""
+	now = now or time.time(); weg = []
+	for k, G in SF["spiele"].items():
+		if now - G.get("t", 0) > SF_GRENZEN["frist"] or (G.get("ende") and now - G.get("t_ende", now) > SF_GRENZEN["nach_ende"]):
+			weg.append(k)
+	for k in weg:
+		SF["spiele"].pop(k, None)
+	if weg:
+		_sf_speichern(); SF["cond"].notify_all()
+	return weg
+
+
+def _sf_grenze(liste, n, s, now):
+	liste[:] = [x for x in liste if now - x < s]
+	if len(liste) >= n:
+		return False
+	liste.append(now)
+	return True
+
+
+def _sf_ip_ok(ip, art, now, zaehlen=True):
+	n, s = SF_GRENZEN[art]
+	L = SF["ip"].setdefault(art + "|" + str(ip), [])
+	L[:] = [x for x in L if now - x < s]
+	if len(L) >= n:
+		return False
+	if zaehlen:
+		L.append(now)
+	if len(SF["ip"]) > 2000:
+		SF["ip"] = {k: v for k, v in SF["ip"].items() if v and now - v[-1] < 900}
+	return True
+
+
+def _sf_sitz(G, token):
+	""
+	if not token:
+		return ""
+	h = _sf_hash(token)
+	import hmac
+	for c in ("w", "b"):
+		if G["sitze"][c].get("h") and hmac.compare_digest(G["sitze"][c]["h"], h):
+			return c
+	return None
+
+
+def _sf_status(G):
+	return "ende" if G.get("ende") else "laeuft" if G["sitze"]["w"].get("h") and G["sitze"]["b"].get("h") else "warte"
+
+
+def sf_sicht(G, sitz, now=None):
+	""
+	now = now or time.time()
+	p = G["_p"]
+	G["zs"] = {k: v for k, v in G.get("zs", {}).items() if now - v < SF_GRENZEN["online"]}
+	return {"ok": True, "code": G["code"], "nr": G["nr"], "seq": G["seq"], "startFen": G["startFen"], "zuege": list(G["zuege"]),
+            "fen": sf_fen(p), "amZug": p["w"], "ende": G.get("ende"), "sitz": sitz or "zuschauer", "status": _sf_status(G),
+            "sitze": {c: {"da": bool(G["sitze"][c].get("h")), "online": bool(G["sitze"][c].get("h")) and now - G["sitze"][c].get("t", 0) < SF_GRENZEN["online"]}
+                      for c in ("w", "b")},
+            "anfrage": G.get("anfrage"), "hilfe": G.get("hilfe"), "zuschauer": len(G["zs"])}
+
+
+def _sf_neues_spiel(farbe, now):
+	while True:
+		code = "".join(secrets.choice(SF_ABC) for _ in range(4))
+		if code not in SF["spiele"]:
+			break
+	if farbe not in ("w", "b"):
+		farbe = secrets.choice("wb")
+	tok = secrets.token_urlsafe(18)
+	G = {"code": code, "nr": 1, "erstellt": now, "t": now, "startFen": SF_START, "zuege": [], "ende": None,
+         "sitze": {"w": {}, "b": {}}, "anfrage": None, "hilfe": {"w": {}, "b": {}}, "seq": secrets.randbelow(10 ** 9),
+         "posts": {"w": [], "b": []}, "zs": {}}
+	G["sitze"][farbe] = {"h": _sf_hash(tok), "t": now}
+	_sf_neu_rechnen(G)
+	return G, tok, farbe
+
+
+def _sf_platz_machen(now):
+	""
+	if len(SF["spiele"]) < SF_GRENZEN["spiele"]:
+		return True
+	ende = sorted((G["t"], k) for k, G in SF["spiele"].items() if G.get("ende"))
+	idle = sorted((G["t"], k) for k, G in SF["spiele"].items() if now - G["t"] > SF_GRENZEN["idle_weg"])
+	for _t, k in ende + idle:
+		SF["spiele"].pop(k, None)
+		if len(SF["spiele"]) < SF_GRENZEN["spiele"]:
+			return True
+	return False
+
+
+def _sf_zurueck(G, von):
+	""
+	n = len(G["zuege"]); p = G["_p"]
+	k = 1 if p["w"] != von else 2
+	if n < k:
+		return False
+	G["zuege"] = G["zuege"][:n - k]
+	_sf_neu_rechnen(G)
+	return True
+
+
+def _sf_eigene_zuege(G, c):
+	start_w = G["startFen"].split()[1] == "w"
+	return sum(1 for i in range(len(G["zuege"])) if ("w" if (i % 2 == 0) == start_w else "b") == c)
+
+
+def _sf_ausfuehren(G, art, von, now):
+	""
+	if art == "remis":
+		G["ende"] = {"art": "einigung", "sieger": None}; G["t_ende"] = now
+	elif art == "zurueck":
+		_sf_zurueck(G, von)
+	elif art == "revanche":
+		G["sitze"] = {"w": G["sitze"]["b"], "b": G["sitze"]["w"]}
+		G["hilfe"] = {"w": dict(G["hilfe"].get("b") or {}, tipps=0), "b": dict(G["hilfe"].get("w") or {}, tipps=0)}
+		G["nr"] += 1; G["zuege"] = []; G["ende"] = None; G.pop("t_ende", None); G["startFen"] = SF_START
+		_sf_neu_rechnen(G)
+	G["anfrage"] = None
+
+
+def sf_api(op, method, args, d, ip="?", warten=True):
+	""
+	now = time.time()
+	args = args or {}; d = d if isinstance(d, dict) else {}
+	if (method == "POST") != (op in SF_OPS_POST) or op not in SF_OPS_POST + SF_OPS_GET:
+		return 404, {"ok": False, "fehler": "unbekannt"}
+	src = d if method == "POST" else args
+	code = re.sub(r"[^A-Z0-9]", "", str(src.get("code") or "").upper())[:8]
+	token = str(src.get("token") or "")[:64]
+	with SF["cond"]:
+		_sf_laden(); _sf_aufraeumen(now)
+		if op == "info":
+			return 200, {"ok": True, "offen": len(SF["spiele"]), "max": SF_GRENZEN["spiele"]}
+		if op == "neu":
+			if not _sf_ip_ok(ip, "neu_ip", now):
+				return 429, {"ok": False, "fehler": "zu_oft"}
+			if not _sf_platz_machen(now):
+				return 429, {"ok": False, "fehler": "voll"}
+			G, tok, farbe = _sf_neues_spiel(str(d.get("farbe") or ""), now)
+			SF["spiele"][G["code"]] = G
+			_sf_bump(G)
+			return 200, dict(sf_sicht(G, farbe, now), token=tok)
+		if not _sf_ip_ok(ip, "falsch_ip", now, zaehlen=False):
+			return 429, {"ok": False, "fehler": "zu_oft"}
+		G = SF["spiele"].get(code)
+		if G is None:
+			_sf_ip_ok(ip, "falsch_ip", now)
+			return 404, {"ok": False, "fehler": "weg"}
+		sitz = _sf_sitz(G, token)
+		if sitz is None:
+			_sf_ip_ok(ip, "falsch_ip", now)
+			return 403, {"ok": False, "fehler": "token"}
+		if op == "qr":
+			u = str(args.get("u") or "")
+			from urllib.parse import urlsplit
+			try:
+				x = urlsplit(u)
+			except ValueError:
+				x = None
+			if not (x and x.scheme in ("http", "https") and x.netloc and "@" not in x.netloc and not x.query and not x.fragment and len(u) < 300
+                    and re.fullmatch(r"(/p/[A-Za-z0-9_\-]{1,64}|/spiele)?/(g|games)/schach/(index\.html)?", x.path)):
+				return 400, {"ok": False, "fehler": "adresse"}
+			return 200, (qr_svg(sf_qr_text(u, G["code"])).encode("utf-8"), "image/svg+xml")
+		if op == "beitreten":
+			if not sitz:
+				frei = [c for c in ("w", "b") if not G["sitze"][c].get("h")]
+				if frei and not G.get("ende"):
+					tok = secrets.token_urlsafe(18)
+					G["sitze"][frei[0]] = {"h": _sf_hash(tok), "t": now}
+					_sf_bump(G)
+					return 200, dict(sf_sicht(G, frei[0], now), token=tok)
+				G.setdefault("zs", {})[_sf_hash(ip)[:12]] = now
+				return 200, dict(sf_sicht(G, "", now), token="")
+			G["sitze"][sitz]["t"] = now
+			return 200, dict(sf_sicht(G, sitz, now), token=token)
+		if op == "zustand":
+			if sitz:
+				G["sitze"][sitz]["t"] = now
+			else:
+				G.setdefault("zs", {})[_sf_hash(ip)[:12]] = now
+			try:
+				seq = int(args.get("seq", -1))
+			except (TypeError, ValueError):
+				seq = -1
+			if warten and str(args.get("warte") or "") == "1" and seq == G["seq"] and SF["warter"] < SF_GRENZEN["warter"]:
+				end = now + SF_GRENZEN["warten"]; SF["warter"] += 1
+				try:
+					while G["seq"] == seq and time.time() < end and SF["spiele"].get(code) is G:
+						SF["cond"].wait(min(1.0, end - time.time()))
+				finally:
+					SF["warter"] -= 1
+				if SF["spiele"].get(code) is not G:
+					return 404, {"ok": False, "fehler": "weg"}
+				sitz = _sf_sitz(G, token) or ""
+				if sitz:
+					G["sitze"][sitz]["t"] = time.time()
+			return 200, sf_sicht(G, sitz)
+
+		if not sitz:
+			return 403, {"ok": False, "fehler": "zuschauer"}
+		G["sitze"][sitz]["t"] = now
+		n_, s_ = SF_GRENZEN["posts"]
+		if not _sf_grenze(G.setdefault("posts", {}).setdefault(sitz, []), n_, s_, now):
+			return 429, {"ok": False, "fehler": "zu_oft", "v": sf_sicht(G, sitz, now)}
+		if op == "zug":
+			uci = str(d.get("uci") or "")
+			try:
+				n = int(d.get("n", -1))
+			except (TypeError, ValueError):
+				n = -1
+			if n == len(G["zuege"]) - 1 and n >= 0 and G["zuege"][n] == uci and G["_p"]["w"] != sitz:
+				return 200, sf_sicht(G, sitz, now)
+			fehler = ("ende" if G.get("ende") else "warte" if _sf_status(G) != "laeuft" else "nicht_dran" if G["_p"]["w"] != sitz
+                      else "nicht_synchron" if n != len(G["zuege"]) else "")
+			if not fehler:
+				m = next((m for m in G["_l"] if sf_uci(m) == uci), None) if re.fullmatch(r"[a-h][1-8][a-h][1-8][qrbn]?", uci) else None
+				if m is None:
+					fehler = "illegal"
+			if fehler:
+				return 409, {"ok": False, "fehler": fehler, "v": sf_sicht(G, sitz, now)}
+			G["_p"] = sf_ziehe(G["_p"], m); G["zuege"].append(uci)
+			k = sf_schluessel(G["_p"]); G["_k"][k] = G["_k"].get(k, 0) + 1
+			G["_l"] = sf_legal(G["_p"])
+			G["anfrage"] = None
+			e = sf_ende_regeln(G["_p"], G["_k"], G["_l"])
+			if e:
+				G["ende"] = e; G["t_ende"] = now
+			_sf_bump(G)
+			return 200, sf_sicht(G, sitz, now)
+		art = str(d.get("art") or "")
+		ander = "b" if sitz == "w" else "w"
+		A = G.get("anfrage")
+		fehler = ""
+		if art == "hilfe":
+			h = G["hilfe"].setdefault(sitz, {})
+			for k_ in ("lern", "balken"):
+				if isinstance(d.get(k_), bool):
+					h[k_] = d[k_]
+			if d.get("tipp") is True:
+				h["tipps"] = min(999, int(h.get("tipps") or 0) + 1)
+		elif art == "aufgeben":
+			if G.get("ende") or _sf_status(G) != "laeuft":
+				fehler = "ende" if G.get("ende") else "warte"
+			else:
+				G["ende"] = {"art": "aufgabe", "sieger": ander}; G["t_ende"] = now; G["anfrage"] = None
+		elif art == "abbrechen":
+			if G["sitze"][ander].get("h"):
+				fehler = "laeuft"
+			else:
+				SF["spiele"].pop(code, None); _sf_speichern(); SF["cond"].notify_all()
+				return 200, {"ok": True, "weg": True}
+		elif art in ("remis", "zurueck", "revanche"):
+			ok_ = (not G.get("ende") and _sf_status(G) == "laeuft") if art != "revanche" else bool(G.get("ende")) and G["sitze"][ander].get("h")
+			if art == "zurueck" and ok_:
+				ok_ = _sf_eigene_zuege(G, sitz) > 0
+			if not ok_:
+				fehler = "geht_nicht"
+			elif A and A.get("von") == ander and A.get("art") == art:
+				_sf_ausfuehren(G, art, ander, now)
+			elif A and A.get("von") == ander:
+				fehler = "offen"
+			else:
+				G["anfrage"] = {"art": art, "von": sitz, "nr": len(G["zuege"])}
+		elif art == "annehmen":
+			if not A or A.get("von") != ander or (A["art"] != "revanche" and (G.get("ende") or A.get("nr") != len(G["zuege"]))):
+				fehler = "keine"
+			else:
+				_sf_ausfuehren(G, A["art"], ander, now)
+		elif art in ("ablehnen", "zurueckziehen"):
+			if A and A.get("von") == (ander if art == "ablehnen" else sitz):
+				G["anfrage"] = None
+		else:
+			return 400, {"ok": False, "fehler": "unbekannt"}
+		if fehler:
+			return 409, {"ok": False, "fehler": fehler, "v": sf_sicht(G, sitz, now)}
+		_sf_bump(G)
+		return 200, sf_sicht(G, _sf_sitz(G, token) or "", now)
+
+
+def sf_qr_text(u, code):
+	""
+	return u + "?fern=" + code
+
+
+def sf_ip(remote, fwd=""):
+	ip = remote or "?"
+	if ip in ("127.0.0.1", "::1") and fwd:
+		ip = fwd.split(",")[0].strip()[:45] or ip
+	return ip
+
+
+
+def sf_spieleport(h, method, path):
+	from urllib.parse import urlsplit, parse_qs
+	op = path[len("/schachfern/"):]
+	hdr = {"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"}
+	if method == "POST":
+		o = h.headers.get("Origin")
+		if o is not None:
+			try:
+				ok_ = urlsplit(o).netloc.lower() == (h.headers.get("Host") or "").lower()
+			except ValueError:
+				ok_ = False
+			if not ok_:
+				return _sf_antwort(h, 403, {"ok": False, "fehler": "fremd"}, hdr)
+		try:
+			n = int(h.headers.get("Content-Length") or 0)
+		except ValueError:
+			n = -1
+		if not 0 <= n <= 4096:
+			return _sf_antwort(h, 413, {"ok": False, "fehler": "gross"}, hdr)
+		try:
+			d = json.loads(h.rfile.read(n) or b"{}")
+		except ValueError:
+			d = {}
+		args = {}
+	else:
+		d = {}
+		args = {k: v[0] for k, v in parse_qs(urlsplit(h.path).query).items()}
+	try:
+		st, out = sf_api(op, method, args, d, h.client_address[0])
+	except Exception as e:
+		log_event("web", f"Schach (zwei Handys): {e.__class__.__name__}")
+		st, out = 500, {"ok": False, "fehler": "fehler"}
+	return _sf_antwort(h, st, out, hdr)
+
+
+def _sf_antwort(h, st, out, hdr):
+	if isinstance(out, tuple):
+		data, ct = out
+		hdr = dict(hdr, **{"Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox"})
+	else:
+		data, ct = json.dumps(out).encode("utf-8"), "application/json"
+	try:
+		h.send_response(st)
+		h.send_header("Content-Type", ct + ("; charset=utf-8" if ct == "application/json" else ""))
+		for k, v in hdr.items():
+			h.send_header(k, v)
+		h.send_header("Content-Length", str(len(data)))
+		h.end_headers(); h.wfile.write(data)
+	except (BrokenPipeError, ConnectionResetError):
+		pass
+
+
+GAMESRV_API["/schachfern/"] = sf_spieleport
+
+
+
+_smalltv_routes_639zzr = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzr(app, reply, body)
+	from flask import Response, request
+	import hmac
+
+	def run(op):
+		if request.method == "POST" and not 0 <= (request.content_length if request.content_length is not None else -1) <= 4096:
+			return Response(json.dumps({"ok": False, "fehler": "gross"}), 413, mimetype="application/json")
+		d = (request.get_json(force=True, silent=True) or {}) if request.method == "POST" else {}
+		if not isinstance(d, dict):
+			d = {}
+		st, out = sf_api(op, request.method, request.args.to_dict(), d, sf_ip(request.remote_addr, request.headers.get("X-Forwarded-For", "")))
+		if isinstance(out, tuple):
+			return Response(out[0], st, mimetype=out[1], headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff",
+                                                                  "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox"})
+		return Response(json.dumps(out), st, mimetype="application/json", headers={"Cache-Control": "no-store"})
+
+	zu = lambda: Response(json.dumps({"ok": False, "fehler": "zu"}), 404, mimetype="application/json", headers={"Cache-Control": "no-store"})
+
+	@app.route("/schachfern/<op>", methods=["GET", "POST"])
+	def schachfern_login(op):
+		return run(op)
+
+	@app.route("/p/<key>/schachfern/<op>", methods=["GET", "POST"])
+	def schachfern_gast(key, op):
+		if not (party_on() and hmac.compare_digest(str(PARTY.get("key") or ""), key)):
+			return zu()
+		return run(op)
+
+	@app.route("/spiele/schachfern/<op>", methods=["GET", "POST"])
+	def schachfern_spiele(op):
+		if not lan_guest_ip(request.remote_addr, request.headers.get("X-Forwarded-For", "") or request.headers.get("Forwarded", "")):
+			return zu()
+		return run(op)
+
+
+
+def sf_selftest():
+	p = sf_fen_lesen(SF_START)
+	assert sf_fen(p) == SF_START and sf_perft(p, 2) == 400, "rules: start position"
+	kiwi = sf_fen_lesen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1")
+	assert len(sf_legal(kiwi)) == 48 and sf_perft(kiwi, 2) == 2039, "rules: castling, en passant, promotion (Kiwipete)"
+	pp, kk, ll = sf_partie(SF_START, ["f2f3", "e7e5", "g2g4", "d8h4"])
+	assert sf_ende_regeln(pp, kk, ll) == {"art": "matt", "sieger": "b"}, "rules: fool's mate"
+	try:
+		sf_partie(SF_START, ["e2e5"]); assert False, "illegal move accepted"
+	except ValueError:
+		pass
+	assert sf_material_fehlt(sf_fen_lesen("8/8/8/8/8/8/5k2/4KB2 w - - 0 1")) and not sf_material_fehlt(sf_fen_lesen("8/8/8/8/8/8/5k2/4KR2 w - - 0 1"))
+	assert "/schachfern/zug" in PERM_POST["games"] and role_allows("kid", "/schachfern/zustand", "GET", {}) and role_allows("kid", "/schachfern/zug", "POST", {})
+	assert not role_allows("custom", "/schachfern/zug", "POST", {}, set()) and not role_allows("custom", "/schachfern/zustand", "GET", {}, set())
+	assert sf_qr_text("http://pi:5003/g/schach/", "ACDE") == "http://pi:5003/g/schach/?fern=ACDE" and GAMESRV_API.get("/schachfern/") is sf_spieleport
+	return "chess for two phones: rules (perft start 400, Kiwipete 2039, mate), rights «games», games port address only /schachfern/"
+
+
+SELFTEST_EXTRA.append(("Chess for two phones: relay and rules (639zzr)", sf_selftest))
 if __name__ == "__main__":
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

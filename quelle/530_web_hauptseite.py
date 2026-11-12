@@ -3920,9 +3920,12 @@ async function protectPin(has) {
   const r = await post("/api/protect", {action: "pin", new: nw, old: old, lang: LANG});
   toast(r.ok ? "✓ " + (nw ? t("PIN saved") : t("PIN removed")) : "⚠ " + (r.error || t("error"))); PRT.key = "";
 }
-async function newsCheck(force) {                    // 2.96.3: after an update - what is new, what comes next
-  let r; try { r = await (await fetch("/api/news?lang=" + LANG)).json(); } catch (e) { return; }
-  if (!r || !(r.show || force) || document.querySelector(".nws")) return;
+async function newsCheck(force, have) {              // 2.96.3: after an update - what is new, what comes next
+  const Q = force ? null : window.MWQ;                 // 639zzs: one thing at a time - the news wait for their turn
+  let r = have; if (!r) try { r = await (await fetch("/api/news?lang=" + LANG)).json(); } catch (e) { if (Q) Q.skip("news"); return; }
+  if (!r || !(r.show || force) || document.querySelector(".nws")) { if (Q) Q.skip("news"); return; }
+  if (r.fresh && !force) { post("/api/news", {seen: true}); if (Q) Q.skip("news"); return; }   // a brand-new MoveEye: the setup / tour first, no news of a version
+  if (Q && !Q.is("news")) { Q.add("news", ".nws", () => newsCheck(false, r)); return; }
   const ov = el("div", "prt-wiz nws"), c = el("div", "prt-card nws-card"); ov.appendChild(c); document.body.appendChild(ov);
   c.append(el("div", "nws-tag", "MoveEye " + r.version), el("h3", "", "✨ " + t("New in this version")));
   const its = r.items.length ? r.items : [{v: r.version, t: t("No changes noted.")}];
@@ -3939,7 +3942,8 @@ async function newsCheck(force) {                    // 2.96.3: after an update 
   ok.onclick = () => close(false); off.onclick = () => close(true); ov.onclick = e => { if (e.target === ov) close(false); };
   c.append(ok, off);
 }
-setTimeout(newsCheck, 2500);
+if (window.MWQ) MWQ.expect("news");
+setTimeout(newsCheck, window.MWQ ? 700 : 2500);
 // Links zu Neuerungen: the same page = open in place (tab, group / topic, setting marked), otherwise go there
 function newsGo(href) {
   const u = new URL(href, location.href), here = u.pathname === location.pathname || (u.pathname === "/settings" && document.body.dataset.tab === "settings");

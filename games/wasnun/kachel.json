@@ -1,7 +1,7 @@
 {
  "dir": "wasnun",
  "name": "Was nun?",
- "desc": "Bilder-Rätsel: antippen, was als Nächstes passieren muss. 10 Bilder von leicht bis Meister – ab Bild 6 Dinge mitnehmen und kombinieren. Mit Sternen und Geheimnissen.",
+ "desc": "Bilder-Rätsel: antippen, was als Nächstes passieren muss. 15 Bilder von leicht bis Meister+ – Dinge mitnehmen und kombinieren, Räume, Notizbuch, Bestzeit, Sterne und Geheimnisse.",
  "icon": "thumb.svg",
  "start": "index.html",
  "input": "touch",
@@ -13,11 +13,11 @@
   "rm": "E ussa?"
  },
  "descs": {
-  "de": "Bilder-Rätsel: antippen, was als Nächstes passieren muss. 10 Bilder von leicht bis Meister – ab Bild 6 Dinge mitnehmen und kombinieren. Mit Sternen und Geheimnissen.",
-  "en": "Picture puzzles: tap what has to happen next. 10 scenes from easy to master – from scene 6 on, pick up and combine items. With stars and secrets (game texts in German).",
-  "fr": "Énigmes en images : touche ce qui doit se passer ensuite. 10 scènes, de facile à maître – dès la scène 6, ramasse et combine des objets. Avec étoiles et secrets (textes en allemand).",
-  "it": "Enigmi a immagini: tocca ciò che deve succedere dopo. 10 scene, da facile a maestro – dalla scena 6 raccogli e combina oggetti. Con stelle e segreti (testi in tedesco).",
-  "rm": "Legns cun maletgs: tutga quai che sto capitar sco proxim. 10 scenas, da simpel fin maister – a partir da la scena 6 prender cun sai e cumbinar chaussas. Cun stailas e secrets (texts en tudestg)."
+  "de": "Bilder-Rätsel: antippen, was als Nächstes passieren muss. 15 Bilder von leicht bis Meister+ – Dinge mitnehmen und kombinieren, Räume, Notizbuch, Bestzeit, Sterne und Geheimnisse.",
+  "en": "Picture puzzles: tap what has to happen next. 15 scenes from easy to master+ – pick up and combine items, several rooms, notebook, best time, stars and secrets (game texts in German).",
+  "fr": "Énigmes en images : touche ce qui doit se passer ensuite. 15 scènes, de facile à maître+ – ramasse et combine des objets, plusieurs pièces, carnet, meilleur temps, étoiles et secrets (textes en allemand).",
+  "it": "Enigmi a immagini: tocca ciò che deve succedere dopo. 15 scene, da facile a maestro+ – raccogli e combina oggetti, più stanze, taccuino, miglior tempo, stelle e segreti (testi in tedesco).",
+  "rm": "Legns cun maletgs: tutga quai che sto capitar sco proxim. 15 scenas, da simpel fin maister+ – prender cun sai e cumbinar chaussas, plirs locals, cudeschet, temp record, stailas e secrets (texts en tudestg)."
  },
  "lizenz": [
   "Was nun?  (wasnun/)",
