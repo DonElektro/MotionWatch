@@ -1,5 +1,0 @@
-{
- "version": "3.81.0",
- "grund": "Offline-Karte Schweiz: der Workflow «Offline-Karten» muss von main laufen und legt das Release karten-1 an; dessen Prüfsummen kommen danach in die signierte Fassung 3.81.0.",
- "bis": "2026-11-13"
-}

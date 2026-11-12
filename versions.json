@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-11 23:57",
+ "generated": "2026-11-12 06:50",
  "versions": [
+  {
+   "version": "3.81.0",
+   "file": "webcam_bewegung_3_81_0.py",
+   "url": "",
+   "sha256": "c7eb3b44c316b2052c5b2d78c52088be12c5c8b51805365b502da47e23fcba45",
+   "date": "2026-11-12 06:49",
+   "notes": "Offline-Karte der Schweiz: Karte und Ortssuche ohne Internet, einmal als Verwalter nachladen unter Einstellungen → Standort (ca. 670 MB, braucht freien Platz auf der SD-Karte); neue Seite «Karte»; Standort durch Antippen oder Suchen setzen; Aufnahmen zeigen ihren Ort auf der Karte; im Simulator «Ort von der Karte» ohne Internet wählen. © OpenStreetMap-Mitwirkende. QR-Befehls-Karten: gesperrte QR-Karten bleiben auch nach einem Stromausfall gesperrt.",
+   "size": 4014178,
+   "sig": "b49dc4b9cbb2953ccd746b1497ab8d22f4772e6a8a2d38366af65dc96c3202d9714b6bfc4f6dd11c70c8cd8f09744e0d2d2aced7d7b30158515e9473204de80b",
+   "data": {
+    "file": "moveeye_daten_3_81_0.zip",
+    "url": "",
+    "sha256": "b309bda054f91c00eb0733b96ca7cff69cce4a638aa1a71323f9cf4ee7d3a3c1",
+    "size": 4984646,
+    "sig": "692e02582181414a94f0b56c5b075552f3a4c41a7443a3322a00d7cb241f100b4ee9971871bb5a86907168390abda68531364c5af0c7f679750344cfbe29a20e"
+   }
+  },
   {
    "version": "3.80.0",
    "file": "webcam_bewegung_3_80_0.py",
    "url": "",
    "sha256": "0166b09d68dc1b67a93cab448a57935c572e83be3cc97f27e06a7b4555a3a0fb",
-   "date": "2026-11-11 23:57",
+   "date": "2026-11-12 00:16",
    "notes": "Neu (Versuch, ab Werk aus): QR-Befehls-Karten. Eine gedruckte Karte vor die Kamera halten löst einen Befehl aus: Push mit eigenem Text (auch mit Foto), Text vorlesen, Notiz im Verlauf, Aufnahme starten, Licht/Relais, Kopf auf eine Position, Profil wechseln. Karten erstellst du in der «Karten-Werkstatt» unter Mehr; es gelten nur Karten von deinem MoveEye; Ausschalten per Karte geht nicht. Einschalten: Einstellungen → Kameras & Kopf → «QR-Befehls-Karten». Reichweite etwa 80 cm bei Postkartengrösse, etwa 2 m bei A4 (geschätzt, nicht an der echten Kamera gemessen).",
    "size": 3980994,
    "sig": "4b7a17f6283e7d701b7e9c1f723de2eba0e193a6c4d28dc7d9f3138a76c0a5d259f02cbbba42d64fcb43f1d6de26f80fad19f30dbd2e2ca2a50a7e6baf799c0c",
@@ -136,23 +153,6 @@
     "sha256": "e131b35cf806559a4bed106161bfe842150dca8b61599e245a52b7bae29b09f2",
     "size": 4932588,
     "sig": "dd9459d6f1f0c6faae2377273ddccd0eb07d2ece306c9e6a029affcce9a53ade59899f0ae140ca41f1324f0ba2e57c34f4211ea101053c722c62aa8273038e0e"
-   }
-  },
-  {
-   "version": "3.72.0",
-   "file": "webcam_bewegung_3_72_0.py",
-   "url": "",
-   "sha256": "aa31a5e3cf0eb4accf676ba23cd981efd698957bb2b07eef7920fd0adcbd5cec",
-   "date": "2026-11-10 20:47",
-   "notes": "Sicherheit und Anzeige nachgebessert: Die PIN fürs Ausschalten gilt jetzt überall im Browser (auch Modus «Transport», «Camping aus» und der Kurzbefehl). Benutzer ohne Admin-Rechte kommen nicht mehr an alte Einstellungs-Kopien und schalten den Fernzugriff nicht. «Wachsam» lässt die Sirene von «Voll» nicht mehr an, Ein / Aus wird sofort gespeichert. Die Karte «Sicherheit» ist wieder da, oben steht «N Hinweise» statt «alles ok», wenn etwas gemeldet wird, deutsche Seiten sind durchgehend deutsch, und das Protokoll ist ruhiger",
-   "size": 3874701,
-   "sig": "08148f332e51c1b3ae67d05ff6e5a048d34d54a62ea74d2abcd108f4de0db980bc1f9481d5d906534207e2e52f01b663e693e531b9b610a448f3e38b8c912d06",
-   "data": {
-    "file": "moveeye_daten_3_72_0.zip",
-    "url": "",
-    "sha256": "b2b9bf0f7d98009b683f767f430adc414f9450718b65d964aceeb4534fc954d7",
-    "size": 4932329,
-    "sig": "232b546026a1f8c77f0e2aeee9939e2339214b9ce5ff982e1e3cd945be5a81b6c1e4f4c90be4ab23a639197d505e8f249396eeaba2fdc8e174f12d8df2c9e10d"
    }
   },
   {

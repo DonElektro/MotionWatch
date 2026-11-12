@@ -309,7 +309,7 @@ def teil_a(datei, P, rel, pins, tiles):
     ns["log_event"] = lambda *x, **k: None
     CFG, KF, DL = ns["CFG"], ns["KQ_FILES"], ns["KQ_DL"]
     print("A) MoveEye-Teil 639zzq (Testkarte Seon)", flush=True)
-    ok(ns["kq_selftest"](), "Selbsttest 639zzq (ohne Pins)")
+    ok(ns["kq_selftest"](), "Selbsttest 639zzq")
     ok(all(ns["kq_norm"](s) == P.kq_norm(s) and ns["kq_norm"](s, True) == P.kq_norm(s, True) for s in NORM_PROBEN),
        "Suchschlüssel: gleiche Regeln in paket.py und MoveEye (%s …)" % ", ".join(P.kq_norm(s) for s in NORM_PROBEN[:4]))
     kt = ns["kq_tileid"]
@@ -347,8 +347,14 @@ def teil_a(datei, P, rel, pins, tiles):
     for r_, f in pins.items():
         srv.files["/" + ns["KQ_TAG"] + "/" + f["name"]] = open(os.path.join(rel, f["name"]), "rb").read()
     ns["KQ_BASE"]["url"] = srv.url + ns["KQ_TAG"] + "/"
+    echt = {r_: dict(f) for r_, f in KF.items()}                 # ab 3.81.0 stehen die echten Pins (Release karten-1) in der Datei
+    ok(ns["kq_pinned"]() or not any(f["size"] for f in echt.values()),
+       "Pins in der gebauten Datei: %s" % ("echt, %.1f MB" % (sum(f["size"] for f in echt.values()) / 1e6) if ns["kq_pinned"]() else "noch keine"))
+    for f in KF.values():
+        f.update(size=0, sha256="", unpacked=0)
+    ns["KQ_RT"]["ok_t"] = 0
     st0 = ns["kq_state"]()
-    ok(not st0["pinned"] and not st0["on"], "ohne Pins: «kommt mit einem Update», nichts installiert")
+    ok(not st0["pinned"] and not st0["on"] and ns["kq_download"]()[0] is False, "ohne Pins: «kommt mit einem Update», nichts installiert, kein Laden")
     for r_, f in pins.items():
         KF[r_].update(f)
     ns["KQ_RT"]["ok_t"] = 0

@@ -42,9 +42,9 @@ KQ_MAXZOOM = 15
 KQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + KQ_TAG + "/"}   # Tests: lokaler Server
 # Werte aus werkzeuge/karten/paket.py (pins.txt des Workflows «Offline-Karten»); size 0 = noch nicht freigegeben
 KQ_FILES = {
-    "tiles": {"name": "karte-ch-1.pmtiles", "size": 0, "sha256": "", "unpacked": 0},
-    "web": {"name": "karte-web-1.zip", "size": 0, "sha256": "", "unpacked": 0},
-    "orte": {"name": "orte-ch-1.sqlite.gz", "size": 0, "sha256": "", "unpacked": 0},
+    "tiles": {"name": "karte-ch-1.pmtiles", "size": 655187450, "sha256": "ea71c54bcf1c91585106a6d3dcb7d5757f219761f3c0ebbbf54c5df487fde185", "unpacked": 0},
+    "web": {"name": "karte-web-1.zip", "size": 1434333, "sha256": "31f13e157ba0918d71df97b99f1cfdf70a1ad1a3560c91c16d83935e35cfdfa2", "unpacked": 2350250},
+    "orte": {"name": "orte-ch-1.sqlite.gz", "size": 11211798, "sha256": "1e9f1e574a92a324b789768fb18c1deff2bf3716942d725d0dc1d3999330eb00", "unpacked": 28307456},
 }
 KQ_MAX = {"tiles": 2000 * 1000 * 1000, "web": 60 * 1000 * 1000, "orte": 300 * 1000 * 1000}   # harte Obergrenzen (auch entpackt)
 KQ_NAME_RE = {"tiles": r"karte-ch-\d{1,3}\.pmtiles", "web": r"karte-web-\d{1,3}\.zip", "orte": r"orte-ch-\d{1,3}\.sqlite\.gz"}

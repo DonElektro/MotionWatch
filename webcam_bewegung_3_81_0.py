@@ -24,9 +24,9 @@ Features
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
   * 3.81.0: Offline-Karte der Schweiz: Karte und Ortssuche ohne Internet, einmal als Verwalter nachladen unter Einstellungen →
-    Standort (ca. 660 MB, braucht freien Platz auf der SD-Karte); neue Seite «Karte»; Standort durch Antippen oder Suchen
+    Standort (ca. 670 MB, braucht freien Platz auf der SD-Karte); neue Seite «Karte»; Standort durch Antippen oder Suchen
     setzen; Aufnahmen zeigen ihren Ort auf der Karte; im Simulator «Ort von der Karte» ohne Internet wählen. ©
-    OpenStreetMap-Mitwirkende.
+    OpenStreetMap-Mitwirkende. QR-Befehls-Karten: gesperrte QR-Karten bleiben auch nach einem Stromausfall gesperrt.
   * 3.80.0: Neu (Versuch, ab Werk aus): QR-Befehls-Karten. Eine gedruckte Karte vor die Kamera halten löst einen Befehl aus:
     Push mit eigenem Text (auch mit Foto), Text vorlesen, Notiz im Verlauf, Aufnahme starten, Licht/Relais, Kopf auf eine
     Position, Profil wechseln. Karten erstellst du in der «Karten-Werkstatt» unter Mehr; es gelten nur Karten von deinem
@@ -268,7 +268,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_3_81_0.zip"
-ZD_SHA256 = "31c3a337a828b494dcd295bd1f0c8309adb5fab316e28940f3af12fc099226dc"
+ZD_SHA256 = "b309bda054f91c00eb0733b96ca7cff69cce4a638aa1a71323f9cf4ee7d3a3c1"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -90320,6 +90320,12 @@ def qrk_create(d, who="admin"):
 	return card, ""
 
 
+def qrk_save_now():
+	"""
+"""
+	save_settings_flush()
+
+
 def qrk_edit(action, cid, who="admin"):
 	""
 	with QRK["lock"]:
@@ -90336,7 +90342,10 @@ def qrk_edit(action, cid, who="admin"):
 		else:
 			return False, "unknown action"
 		CFG["qrk_cards"] = lst
-	save_settings()
+	if action in ("revoke", "delete"):
+		qrk_save_now()
+	else:
+		save_settings()
 	log_event("sys", f"QR card {action} ({who}): «{c['name']}»")
 	return True, ""
 
@@ -90372,6 +90381,7 @@ def qrk_rotate(who="admin"):
 	with QRK["lock"]:
 		CFG["qrk_secret"] = ""
 		qrk_key()
+	qrk_save_now()
 	log_event("sys", f"QR cards: new key ({who}) - all printed cards are invalid")
 	return True, ""
 
@@ -91086,6 +91096,18 @@ SET_HELP.update({
     "qrk_cooldown": ("The same card works again only after it was out of view for 3 s and this time is over.", "10 s"),
     "qrk_cpu_max": ("Above this CPU load reading pauses (back 10 % below) - the detection always comes first.", "85 %"),
 })
+_set_cfg_qrk = set_cfg
+
+
+
+def set_cfg(key, value):
+	was = bool(CFG.get("qrk_on"))
+	r = _set_cfg_qrk(key, value)
+	if key == "qrk_on" and was and not CFG.get("qrk_on"):
+		qrk_save_now()
+	return r
+
+
 _text_choice_pairs_qrk = text_choice_pairs
 
 
@@ -91304,6 +91326,8 @@ def qrk_selftest():
 	keep_q = {k: (dict(QRK[k]) if isinstance(QRK[k], dict) else QRK[k]) for k in ("seen", "show", "log_t", "last")}
 	try:
 		globals()["save_settings"] = lambda *a, **k: None
+		flushed = []
+		globals()["qrk_save_now"] = lambda: flushed.append(1)
 		globals()["log_event"] = lambda *a, **k: None
 		CFG.update(qrk_cards=[], qrk_secret="")
 		card, err = qrk_create({"cmd": "L", "name": "Licht an", "light": "white", "on": True}, "selftest")
@@ -91365,8 +91389,14 @@ def qrk_selftest():
 		assert '{sec: "QR command cards"' in WEB_PAGE and "window.qrkPanel" in WEB_PAGE and 'id="qrkarten"' in HELP_PAGE
 		assert tr("Card workshop", "de") == "Karten-Werkstatt" and tr("Understood", "rm") == "Chapì" and tr("QR card: foreign card ignored", "de").endswith("ignoriert")
 		assert "<svg" in qrk_card_svg(qrk_card(card["id"])) and qrk_card_png(qrk_card(card["id"]))[:4] == b"\x89PNG"
+		assert len(flushed) >= 4, "revoke (3×) and the new key are saved at once: %d" % len(flushed)
+		n_ = len(flushed)
+		CFG["qrk_on"] = True
+		set_cfg("qrk_on", False)
+		assert len(flushed) == n_ + 1 and not CFG["qrk_on"], "switching off is saved at once"
 	finally:
 		globals()["save_settings"] = sv
+		globals()["qrk_save_now"] = _qrk_save_now_real
 		globals()["log_event"] = lg
 		CFG.update(keep)
 		for k, v in keep_q.items():
@@ -91378,6 +91408,7 @@ def qrk_selftest():
 
 
 _qrk_spawn_real = qrk_spawn
+_qrk_save_now_real = qrk_save_now
 SELFTEST_EXTRA.append(("QR command cards «▦ Karten-Werkstatt» (639zzp)", qrk_selftest))
 
 
@@ -91422,9 +91453,9 @@ KQ_MAXZOOM = 15
 KQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + KQ_TAG + "/"}
 
 KQ_FILES = {
-    "tiles": {"name": "karte-ch-1.pmtiles", "size": 0, "sha256": "", "unpacked": 0},
-    "web": {"name": "karte-web-1.zip", "size": 0, "sha256": "", "unpacked": 0},
-    "orte": {"name": "orte-ch-1.sqlite.gz", "size": 0, "sha256": "", "unpacked": 0},
+    "tiles": {"name": "karte-ch-1.pmtiles", "size": 655187450, "sha256": "ea71c54bcf1c91585106a6d3dcb7d5757f219761f3c0ebbbf54c5df487fde185", "unpacked": 0},
+    "web": {"name": "karte-web-1.zip", "size": 1434333, "sha256": "31f13e157ba0918d71df97b99f1cfdf70a1ad1a3560c91c16d83935e35cfdfa2", "unpacked": 2350250},
+    "orte": {"name": "orte-ch-1.sqlite.gz", "size": 11211798, "sha256": "1e9f1e574a92a324b789768fb18c1deff2bf3716942d725d0dc1d3999330eb00", "unpacked": 28307456},
 }
 KQ_MAX = {"tiles": 2000 * 1000 * 1000, "web": 60 * 1000 * 1000, "orte": 300 * 1000 * 1000}
 KQ_NAME_RE = {"tiles": r"karte-ch-\d{1,3}\.pmtiles", "web": r"karte-web-\d{1,3}\.zip", "orte": r"orte-ch-\d{1,3}\.sqlite\.gz"}
