@@ -176,6 +176,16 @@ def server(root):
                 if not f.startswith(os.path.realpath(root) + os.sep) or not os.path.isfile(f):
                     self.send_error(404); return
                 if not f.endswith((".html", ".htm")):
+                    m = re.fullmatch(r"bytes=(\d+)-(\d*)", self.headers.get("Range") or "")
+                    if m:                               # one piece of a file (FOTAQ iPhone test: the game data in pieces), like the games port
+                        n = os.path.getsize(f); a = int(m.group(1)); e = min(int(m.group(2)) if m.group(2) else n - 1, n - 1)
+                        if a > e:
+                            self.send_response(416); self.send_header("Content-Range", f"bytes */{n}"); self.end_headers(); return
+                        self.send_response(206); self.send_header("Content-Type", self.guess_type(f))
+                        self.send_header("Content-Range", f"bytes {a}-{e}/{n}"); self.send_header("Content-Length", str(e - a + 1)); self.end_headers()
+                        with open(f, "rb") as fh:
+                            fh.seek(a); self.wfile.write(fh.read(e - a + 1))
+                        return
                     self.path = "/" + os.path.relpath(f, root); return super().do_GET()
                 t = open(f, encoding="utf-8", errors="replace").read()
                 i = t.lower().rfind("</body>")
@@ -1815,7 +1825,28 @@ def _ueber(a, b):
     return a["x"] < b["x"] + b["width"] - 1 and a["x"] + a["width"] > b["x"] + 1 and a["y"] < b["y"] + b["height"] - 1 and a["y"] + a["height"] > b["y"] + 1
 
 
-def fotaq_pruefen(br, base, fehler, warn, bilder, nur=None):
+def _renderer_mb():
+    """the biggest renderer process of Chromium right now (resident memory in MB; Linux only, else 0)"""
+    best = 0
+    try:
+        for d in os.listdir("/proc"):
+            if d.isdigit():
+                try:
+                    with open(f"/proc/{d}/cmdline", "rb") as fh:
+                        if b"--type=renderer" not in fh.read():
+                            continue
+                    with open(f"/proc/{d}/statm") as fh:
+                        best = max(best, int(fh.read().split()[1]) * os.sysconf("SC_PAGE_SIZE") // (1 << 20))
+                except (OSError, ValueError, IndexError):
+                    pass
+    except OSError:
+        pass
+    return best
+
+
+def fotaq_pruefen(br, base, fehler, warn, bilder, nur=None, seite="/g/fotaq/index.html", marke="", mess=None):
+    """seite / marke / mess: the iPhone test page (werkzeuge/fotaq_iostest.py) runs the same checks on its variants;
+    mess (a dict) gets «<device> <language>»: {start_s, mb (peak memory of the page's process), ...}"""
     import time
 
     def bild(pg, name):
@@ -1834,12 +1865,13 @@ def fotaq_pruefen(br, base, fehler, warn, bilder, nur=None):
             fe = []
             pg.on("pageerror", lambda e, fe=fe: fe.append(str(e)[:300]))
             pg.on("console", lambda m, fe=fe: fe.append("console.error: " + m.text[:200]) if m.type == "error" and "Failed to load resource" not in m.text else None)
-            tag = f"FOTAQ {gname} {L}"
+            tag = f"FOTAQ{marke} {gname} {L}"
             info = []
+            mb = [0]
             try:
                 if L == "de" and touch:                 # the language choice upright (as it opens on the phone / iPad)
                     pg.set_viewport_size({"width": min(vp["width"], vp["height"]), "height": max(vp["width"], vp["height"])})
-                pg.goto(f"{base}/g/fotaq/index.html", wait_until="load", timeout=30000)
+                pg.goto(f"{base}{seite}", wait_until="load", timeout=30000)
                 pg.wait_for_timeout(500)
                 for s in ("#btn-de", "#btn-en", "#backPick", "a[href='LIZENZEN.txt']"):
                     if not pg.locator(s).is_visible():
@@ -1859,6 +1891,7 @@ def fotaq_pruefen(br, base, fehler, warn, bilder, nur=None):
                 ok = False
                 while time.time() - t0 < 150:
                     pg.wait_for_timeout(2000)
+                    mb[0] = max(mb[0], _renderer_mb())
                     log = pg.evaluate("() => (window.FOTAQ && FOTAQ.log || []).join('\\n')")
                     if any(x in log for x in FOTAQ_SCHLECHT) or any("ExitStatus" in x for x in fe):
                         fehler.append(f"{tag}: ScummVM meldet einen Fehler: " + " | ".join(z for z in log.splitlines() if any(x in z for x in FOTAQ_SCHLECHT))[:300])
@@ -1874,6 +1907,7 @@ def fotaq_pruefen(br, base, fehler, warn, bilder, nur=None):
                 else:
                     info.append(f"läuft nach {dt} s")
                     pg.wait_for_timeout(9000 if L == "de" else 6000)       # into the intro (pictures, speech)
+                    mb[0] = max(mb[0], _renderer_mb())
                     bild(pg, f"{L}_{gname}")
                     if not pg.evaluate("() => { const r = document.querySelector('#canvas').getBoundingClientRect(); return r.width > 200 && r.height > 120; }"):
                         fehler.append(f"{tag}: Spielfläche zu klein")
@@ -1923,6 +1957,11 @@ def fotaq_pruefen(br, base, fehler, warn, bilder, nur=None):
                         info.append("Menü ok")
                     sk.tap() if touch else sk.click()                       # Esc closes the journal again
                     pg.wait_for_timeout(1500)
+                    mb[0] = max(mb[0], _renderer_mb())
+                    if mb[0]:
+                        info.append(f"Speicher der Seite bis {mb[0]} MB")
+                    if mess is not None:
+                        mess[f"{gname} {L}"] = {"start_s": dt, "mb": mb[0], "diag": pg.evaluate("() => window.FOTAQ_DIAG ? FOTAQ_DIAG() : null")}
                     if gname == "pc" and L == "de":     # quick save (F11) in the room, then it must be in IndexedDB, also after reload
                         pg.keyboard.press("F11"); pg.wait_for_timeout(3000)
                         bild(pg, f"{L}_gespeichert_{gname}")
@@ -1968,7 +2007,8 @@ def fotaq_lauf(pfad, fehler, warn, bilder):
             os.makedirs(bilder, exist_ok=True)
         with sync_playwright() as pw:
             br = pw.chromium.launch(args=FOTAQ_ARGS)
-            fotaq_pruefen(br, base, fehler, warn, bilder)
+            nur = [x for x in os.environ.get("MW_FOTAQ_NUR", "").split(",") if x] or None      # e.g. «handy»: only this device
+            fotaq_pruefen(br, base, fehler, warn, bilder, nur=nur)
             br.close()
     finally:
         s.shutdown()

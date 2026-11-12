@@ -70,10 +70,31 @@ def games_server_start():
                     if same:
                         self.send_response(304); self.send_header("Last-Modified", lm); self.send_header("Cache-Control", hdr["Cache-Control"])
                         self.end_headers(); return
+                    rg_ = re.fullmatch(r"bytes=(\d{1,12})-(\d{0,12})", self.headers.get("Range") or "")
+                    if rg_:                             # 639zzv: one piece of a file (FOTAQ iPhone test reads the game data in pieces)
+                        a_ = int(rg_.group(1)); e_ = min(int(rg_.group(2)) if rg_.group(2) else st_.st_size - 1, st_.st_size - 1)
+                        if a_ > e_:
+                            self.send_response(416); self.send_header("Content-Range", "bytes */%d" % st_.st_size); self.end_headers(); return
+                        with open(p_, "rb") as f:
+                            f.seek(a_)
+                            self.send_response(206)
+                            for k_, v_ in hdr.items():
+                                self.send_header(k_, v_)
+                            self.send_header("Content-Range", "bytes %d-%d/%d" % (a_, e_, st_.st_size))
+                            self.send_header("Content-Length", str(e_ - a_ + 1)); self.send_header("Last-Modified", lm)
+                            self.end_headers()
+                            n_ = e_ - a_ + 1
+                            while n_ > 0:
+                                b_ = f.read(min(n_, 1 << 18))
+                                if not b_:
+                                    break
+                                self.wfile.write(b_); n_ -= len(b_)
+                        return
                     with open(p_, "rb") as f:
                         self.send_response(200)
                         for k_, v_ in hdr.items():
                             self.send_header(k_, v_)
+                        self.send_header("Accept-Ranges", "bytes")
                         self.send_header("Content-Length", str(st_.st_size)); self.send_header("Last-Modified", lm)
                         self.end_headers()
                         shutil.copyfileobj(f, self.wfile, 1 << 18)
