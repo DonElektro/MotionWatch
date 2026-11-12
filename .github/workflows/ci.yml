@@ -275,6 +275,8 @@ jobs:
               set -e
               if [ $rc -eq 0 ] && ! grep -q "SCRIPT ERROR" "$log"; then ok=1; break; fi
               echo "::warning::$TEST: Versuch $try fehlgeschlagen (Exit-Code $rc)"
+              # was der Test selbst meldet (die letzten 40 Zeilen sind beim Beenden oft nur Meldungen von Godot)
+              grep -aE "FEHLER|SCRIPT ERROR" "$log" | head -40 || true
               tail -40 "$log"
             done
             tail -40 "$log"
