@@ -1613,7 +1613,7 @@ class App:
             dict(id="therm", ic="♨", lb=tr("Thermal"), tip=tr("Thermal picture over the live picture"), on=lambda: CFG["thermal_on"],
                  ok=lambda: bool(CFG["thermal_source"]), go=lambda: self._set("thermal_on", not CFG["thermal_on"])),
             dict(id="nv", ic="☾", lb=tr("Night vision"), tip=tr("Night vision: green picture, thermal outlines and temperatures"),
-                 on=lambda: bool(STATE.get("nightvision")), go=lambda: self._set("nightvision", not CFG["nightvision"])),
+                 on=lambda: bool(STATE.get("nightvision")), go=lambda: nightvision_tile(self._set)),   # 13.11.2026: off also when automatic (230)
             dict(id="marks", ic="▣", lb=tr("Marks"), tip=tr("Mark detected objects (animals, cars ...)"), on=lambda: CFG["show_objects"],
                  go=lambda: self._set("show_objects", not CFG["show_objects"])),
             dict(id="mask", ic="▒", lb=tr("Mask"), tip=tr("Motion mask over the picture: red = what the detection sees as movement"),
