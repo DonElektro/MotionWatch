@@ -1987,7 +1987,10 @@ const QS = [
   {id: "therm", ic: "🌡", lb: "Thermal", tip: "Thermal picture over the live picture", on: (c, s) => c.thermal_on, ok: (c, s) => !!c.thermal_source,
    go: c => post("/api/set", {key: "thermal_on", value: !c.thermal_on})},
   {id: "nv", ic: "🌙", lb: "Night vision", tip: "Night vision: green picture, thermal outlines and temperatures", on: (c, s) => !!s.nightvision,
-   go: c => post("/api/set", {key: "nightvision", value: !c.nightvision})},
+   go: async (c, s) => {   // 13.11.2026: off = off, also when «automatically at night» had it on (230 nightvision_tile)
+     if (!s.nightvision) return post("/api/set", {key: "nightvision", value: true});
+     if (c.nightvision_auto) { const r = await post("/api/set", {key: "nightvision_auto", value: false}); if (!r.ok) return r; }
+     return post("/api/set", {key: "nightvision", value: false}); }},
   {id: "marks", ic: "🏷", lb: "Marks", tip: "Mark detected objects (animals, cars ...)", on: c => c.show_objects, go: c => post("/api/set", {key: "show_objects", value: !c.show_objects})},
   {id: "mask", ic: "▒", lb: "Mask", tip: "Motion mask over the picture: red = what the detection sees as movement", on: c => c.show_mask,
    ok: c => c.detection_on !== false, go: c => post("/api/set", {key: "show_mask", value: !c.show_mask})},

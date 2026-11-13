@@ -438,3 +438,21 @@ class NightVision:
 NIGHTVISION = NightVision()
 
 
+def nightvision_tile(set_):
+    """The quick switch «🌙 Nachtsicht» (window 570; the web page 530 does the same with two /api/set): a tap changes what
+    the tile shows. It shows the look as it is (NIGHTVISION.active()), but before 13.11.2026 a tap only flipped the manual
+    «nightvision» - with «nightvision_auto» on (switched on by «Heute Nacht bewachen», NIGHT_SET in 130, saved, so also
+    after a restart and after «Aus») the look stayed on in the dark, whatever the Besitzer tapped. Now: on -> off
+    switches the automatic off too (it stays off until he switches it on or chooses «automatically» in the settings or
+    «Heute Nacht bewachen» again); off -> on is the manual look. set_(key, value) saves the setting (window: App._set)."""
+    if NIGHTVISION.active():
+        if CFG.get("nightvision_auto"):
+            set_("nightvision_auto", False)
+        set_("nightvision", False)
+    else:
+        set_("nightvision", True)
+    on = NIGHTVISION.active()
+    STATE["nightvision"] = on                              # the tile shows the new state at once (the camera loop agrees)
+    return on
+
+

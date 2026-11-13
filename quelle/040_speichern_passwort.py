@@ -268,7 +268,8 @@ PERM_POST = {"rec": {"/api/rec/prepare", "/rec/zip", "/api/rec/fav", "/api/rec/f
 # (USER_SETTINGS_DENY) that is for the administrator. /api/protect: only the level and «Schutz testen» (PERM_PROTECT_ACTIONS);
 # the PIN, the escalation and the presence stay with the administrator.
 PERM_PROTECT_ACTIONS = ("level", "test")
-PERM_SET_KEYS = {"arm": {"thermal_on", "nightvision", "show_objects", "show_mask"}, "head": {"track_person", "track_motion"}}
+PERM_SET_KEYS = {"arm": {"thermal_on", "nightvision", "nightvision_auto", "show_objects", "show_mask"},   # 13.11.2026: the tile 🌙 (530)
+                 "head": {"track_person", "track_motion"}}
 
 
 def view_get_ok(path, table=None):
