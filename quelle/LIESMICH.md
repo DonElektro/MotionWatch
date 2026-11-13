@@ -34,7 +34,9 @@ Funktionen `…_selftest`, die nur «--self-test» benutzt, stehen als Quelltext
 Kapitel «Notfall» in der Datei (`ALMANAC`), die anderen Kapitel sind `ALMANAC_WEITER`. Grosse Daten immer als ein Literal auf
 oberster Ebene schreiben. Jeder Bau zeigt die Luft bis zur Warnung; `werkzeuge/hauptdatei_groesse_test.py` verlangt 150 KiB.
 Tests: `werkzeuge/zusatzdaten_test.py` (ZIP gültig / verändert / fehlt, Signatur, Kern ohne ZIP),
-`werkzeuge/update_uebergang_test.py` (altes Gerät → neue Version über einen lokalen HTTPS-Server).
+`werkzeuge/update_uebergang_test.py` (altes Gerät → neue Version über einen lokalen HTTPS-Server),
+`werkzeuge/update_neustart_test.py` (nach dem Update kommt die Webseite wieder: os.execv, belegter Port, der eigene Dienst wird
+nie gestoppt, Start-Wächter 140 `start_watchdog_arm`).
 
 ## Ablauf
 

@@ -524,15 +524,27 @@ def _close_fds_on_exec():
             RUNGUARD["clean"]()                         # a planned restart (update, pause) is a clean end
     except Exception:
         pass
+    import socket as _sk
     try:
-        for fd in os.listdir("/proc/self/fd"):
-            if int(fd) > 2:
-                try:
-                    os.set_inheritable(int(fd), False)
-                except OSError:
-                    pass
+        fds = [int(x) for x in os.listdir("/proc/self/fd")]
     except OSError:
-        pass
+        fds = []
+    for fd in fds:
+        if fd <= 2:
+            continue
+        try:                                            # 3.87.1: a listening socket stops listening for every process that has
+            s_ = _sk.socket(fileno=os.dup(fd))          # a copy of it (shutdown, not only close) - also a child process that
+            try:                                        # got it by mistake: the new program finds the port free at once
+                if s_.getsockopt(_sk.SOL_SOCKET, _sk.SO_ACCEPTCONN):
+                    s_.shutdown(_sk.SHUT_RDWR)
+            finally:
+                s_.close()
+        except OSError:
+            pass
+        try:
+            os.set_inheritable(fd, False)
+        except OSError:
+            pass
 
 
 def _base_args():
