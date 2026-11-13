@@ -23,6 +23,13 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.87.1: Wichtig: Nach einem Update kommt die Webseite wieder. Bisher konnte MoveEye direkt nach dem Neustart seinen eigenen
+    Autostart-Dienst anhalten – die Seite blieb weg, bis der Pi neu gestartet wurde. Jetzt nie mehr; hängt ein Start trotzdem
+    länger als 90 Sekunden, startet MoveEye sich von selbst neu und schreibt auf, wo es hing (das zählt nicht als Stromausfall).
+    Belegt ein anderes Programm den Port der Webseite, bewacht MoveEye weiter und meldet es einmal. Teilen mit verpixelten
+    Gesichtern stürzt auf dem Pi nicht mehr ab. Höhenprofil nur noch für Routen bis 300 km. Schach: «Vorziehen» wie auf
+    Lichess – während der Gegner überlegt, kannst du deinen nächsten Zug schon setzen; er wird ausgeführt, sobald du dran bist
+    (gegen den Computer und auf zwei Handys). Spielesammlung GS-1.18.
   * 3.87.0: Nachtsicht: Die Kachel «🌙 Nachtsicht» schaltet jetzt wirklich aus, auch wenn «Heute Nacht bewachen» die automatische
     Nachtsicht eingeschaltet hatte (sie bleibt dann aus, bis du sie wieder einschaltest). Spiele: «A Dark Room» läuft jetzt auch
     am iPhone, mit Pfeiltasten am Bildschirm auf der Karte und im Weltraum (Spielesammlung GS-1.17).
@@ -120,8 +127,6 @@ Features
   * 3.71.0: Live-Bild am echten Gerät: kleine Bilder aller Kameras (Kopf, Weitwinkel, Wärmebild, USB-, Pi- und Netzwerk-Kameras)
     oben links – antippen zeigt diese Kamera gross (nur die Anzeige, Erkennung und Einstellungen bleiben); fehlt Kopf,
     Weitwinkel oder Wärmebild, eine graue Kachel «nicht angeschlossen»; bei vielen Kameras «⋯ Kameras»
-  * 3.70.2: Flight of the Amazon Queen: Hinweis «Am PC spielen – auf iPad/iPhone stürzt es ab» auf der Kachel (jetzt in der
-    Gruppe «⌨️ Am PC mit Tastatur und Maus»); auf iPad/iPhone kommt vor dem Start eine Warnung mit «Trotzdem starten»
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -130,10 +135,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_87_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_87_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_87_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_87_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_87_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_87_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -150,7 +155,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.87.0"
+APP_VERSION = "3.87.1"
 
 
 def default_data_dir():
@@ -277,8 +282,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_87_0.zip"
-ZD_SHA256 = "c1d47db466fb393788e949011f035848557f093aa24ce98534c67a315affed5c"
+ZD_FILE = "moveeye_daten_3_87_1.zip"
+ZD_SHA256 = "a220b4b3b99ae17243a58aa790882b4fa5272016fd97ca23185b8038db71fe6c"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -11927,6 +11932,179 @@ def watchdog_loop():
 		if time.time() - HEART["t"] < 60:
 			sd_notify("WATCHDOG=1")
 		time.sleep(20)
+
+
+
+
+
+
+
+
+START_WD = {"on": False, "f": None, "last_hung": False}
+START_WD_S = 90
+
+
+def start_watchdog_arm():
+	import faulthandler
+	try:
+		faulthandler.register(signal.SIGUSR1, all_threads=True)
+	except (AttributeError, ValueError, RuntimeError, OSError):
+		pass
+	p = os.path.join(DATA_DIR, "start_hang.txt")
+	try:
+		if os.path.getsize(p) > 0:
+			with open(p, encoding="utf-8", errors="replace") as f:
+				kopf = f.readline()
+				txt = f.read()[-4000:]
+			os.replace(p, p + ".old")
+			START_WD["last_hung"] = True
+			m_ = re.search(r"^# start watchdog limit (\d+) s", kopf)
+			lim_ = int(m_.group(1)) if m_ else START_WD_S
+			print("The last start hung (web page not up after %d s) - where it was:\n%s" % (lim_, txt), flush=True)
+			main = [ln.strip() for ln in txt.splitlines() if ln.strip().startswith("File ")][:3]
+			log_event("sys", ("The last start hung (web page not up after %d s, started again by itself): %s"
+							  % (lim_, " · ".join(main) or "?"))[:240])
+	except OSError:
+		pass
+	if not (os.environ.get("NOTIFY_SOCKET") or os.environ.get("MW_START_WD")):
+		return
+	try:
+		lim = float(os.environ.get("MW_START_WD") or START_WD_S)
+	except ValueError:
+		lim = START_WD_S
+	try:
+		START_WD["f"] = open(p, "w", encoding="utf-8")
+		START_WD["f"].write("# start watchdog limit %d s\n" % round(max(5.0, lim))); START_WD["f"].flush()
+		faulthandler.dump_traceback_later(max(5.0, lim), exit=True, file=START_WD["f"])
+		START_WD["on"] = True
+	except (OSError, ValueError, RuntimeError):
+		pass
+
+
+def start_watchdog_done(why=""):
+	""
+	if not START_WD["on"]:
+		return
+	START_WD["on"] = False
+	try:
+		import faulthandler
+		faulthandler.cancel_dump_traceback_later()
+	except Exception:
+		pass
+	try:
+		f = START_WD["f"]; START_WD["f"] = None
+		if f is not None:
+			f.close(); os.remove(f.name)
+	except (OSError, AttributeError):
+		pass
+
+
+def start_watchdog_wait_web(port):
+	""
+	import socket
+
+	def work():
+		host = "127.0.0.1" if WEB_OPTS.get("bind") in ("", "0.0.0.0", "::") else WEB_OPTS.get("bind")
+		while START_WD["on"]:
+			try:
+				with socket.create_connection((host, int(port)), timeout=2):
+					start_watchdog_done("web up")
+					return
+			except OSError:
+				time.sleep(0.5)
+	threading.Thread(target=work, daemon=True, name="startwd").start()
+
+
+def own_service(mode=None):
+	"""
+
+"""
+	try:
+		with open("/proc/self/cgroup") as f:
+			if re.search(r"/" + re.escape(SERVICE_NAME) + r"(/|$)", f.read(), re.M):
+				return True
+	except OSError:
+		pass
+	if shutil.which("systemctl") is None:
+		return False
+	for m in ([mode] if mode else ["system", "user"]):
+		rc, out, _e = _systemctl(m, "show", "-p", "MainPID", "--value", SERVICE_NAME, timeout=10)
+		if rc == 0 and out.strip().isdigit() and int(out.strip()) == os.getpid():
+			return True
+	return False
+
+
+def port_holders(port):
+	"""
+"""
+	inodes = set()
+	for fn in ("/proc/net/tcp", "/proc/net/tcp6"):
+		try:
+			with open(fn) as f:
+				for ln in f.readlines()[1:]:
+					p = ln.split()
+					if len(p) > 9 and p[3] == "0A" and int(p[1].rsplit(":", 1)[1], 16) == int(port):
+						inodes.add("socket:[" + p[9] + "]")
+		except (OSError, ValueError, IndexError):
+			pass
+	out = []
+	if not inodes:
+		return out
+	try:
+		pids = [x for x in os.listdir("/proc") if x.isdigit()]
+	except OSError:
+		return out
+	for pid in pids:
+		try:
+			fds = os.listdir(f"/proc/{pid}/fd")
+		except OSError:
+			continue
+		for fd in fds:
+			try:
+				if os.readlink(f"/proc/{pid}/fd/{fd}") in inodes:
+					with open(f"/proc/{pid}/stat") as f:
+						ppid = int(f.read().rsplit(")", 1)[1].split()[1])
+					with open(f"/proc/{pid}/cmdline", "rb") as f:
+						cmd = f.read().replace(b"\0", b" ").decode(errors="replace").strip()
+					out.append((int(pid), ppid, cmd[:200]))
+					break
+			except (OSError, ValueError, IndexError):
+				continue
+	return out
+
+
+def port_free_children(port):
+	"""
+"""
+	found = [h for h in port_holders(port) if h[0] != os.getpid()]
+	for pid, ppid, cmd in found:
+		if ppid == os.getpid():
+			try:
+				os.kill(pid, signal.SIGTERM)
+			except OSError:
+				pass
+			for _ in range(20):
+				try:
+					if os.waitpid(pid, os.WNOHANG)[0] == pid:
+						break
+				except ChildProcessError:
+					break
+				time.sleep(0.1)
+	return found
+
+
+def port_foreign(held):
+	"""
+
+"""
+	def moveeye(cmd):
+		parts = str(cmd).split()
+		script = next((x for x in parts[1:] if x.endswith(".py")), parts[0] if parts else "")
+		return re.fullmatch(r"webcam_bewegung_\d{1,3}_\d{1,3}_\d{1,3}\.py", os.path.basename(script)) is not None
+	if not any(h[0] for h in held):
+		return [(0, 0, "")]
+	return [(p, pp, c) for p, pp, c in held if p and p != os.getpid() and pp != os.getpid() and not moveeye(c)]
+
 
 
 def autostart_unit(mode):
@@ -28063,7 +28241,7 @@ threading.Thread(target=_extra_cams_boot, daemon=True, name="extracams-boot").st
 
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.17", "file": "games/MotionWatch_Spiele.zip", "size": 15957854, "sha256": "ac8c438f134c1a0da340c2335b215ac08635edfb9953abb3abb2b4e1dbf2a433"}
+GAMES_PKG = {"version": "GS-1.18", "file": "games/MotionWatch_Spiele.zip", "size": 15960226, "sha256": "d797682a6c00ebe2b00e5b832bdbae97eefbf3bc3b5a0dcb264581bc6c0e641b"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
@@ -30986,8 +31164,12 @@ def _persons_find(img):
 		try:
 			s = min(1.0, 800.0 / max(1, w))
 			small = cv2.resize(img, (int(w * s), int(h * s))) if s < 1 else img
-			rects, _ = FACEBLUR["hog"].detectMultiScale(small, winStride=(8, 8), padding=(8, 8), scale=1.05)
-			out = [(int(x / s), int(y / s), int(rw / s), int(rh / s)) for (x, y, rw, rh) in rects]
+
+
+
+			if small.shape[0] >= 128 and small.shape[1] >= 64:
+				rects, _ = FACEBLUR["hog"].detectMultiScale(small, winStride=(8, 8), padding=(8, 8), scale=1.05)
+				out = [(int(x / s), int(y / s), int(rw / s), int(rh / s)) for (x, y, rw, rh) in rects]
 		except cv2.error:
 			pass
 	return out
@@ -31154,6 +31336,7 @@ def faces_blur_video(src):
 
 
 faceblur_selftest = _zd_fn('375_gesichter_verpixeln/faceblur_selftest()')
+
 
 
 
@@ -31929,15 +32112,27 @@ def _close_fds_on_exec():
 			RUNGUARD["clean"]()
 	except Exception:
 		pass
+	import socket as _sk
 	try:
-		for fd in os.listdir("/proc/self/fd"):
-			if int(fd) > 2:
-				try:
-					os.set_inheritable(int(fd), False)
-				except OSError:
-					pass
+		fds = [int(x) for x in os.listdir("/proc/self/fd")]
 	except OSError:
-		pass
+		fds = []
+	for fd in fds:
+		if fd <= 2:
+			continue
+		try:
+			s_ = _sk.socket(fileno=os.dup(fd))
+			try:
+				if s_.getsockopt(_sk.SOL_SOCKET, _sk.SO_ACCEPTCONN):
+					s_.shutdown(_sk.SHUT_RDWR)
+			finally:
+				s_.close()
+		except OSError:
+			pass
+		try:
+			os.set_inheritable(fd, False)
+		except OSError:
+			pass
 
 
 def _base_args():
@@ -32160,7 +32355,10 @@ def run_guard_start():
 	except (OSError, ValueError):
 		prev = None
 	streak = 0
-	if isinstance(prev, dict) and not prev.get("clean"):
+	if isinstance(prev, dict) and not prev.get("clean") and START_WD.get("last_hung"):
+		streak = int(prev.get("streak", 0))
+		log_event("sys", "The last run ended through the start watchdog (web page did not come up) - not counted as a power problem")
+	elif isinstance(prev, dict) and not prev.get("clean"):
 		ran = int(prev.get("up", 0))
 		RUNGUARD["last"] = {"ran_s": ran, "cpu_temp": prev.get("cpu_temp"), "uv": prev.get("uv"), "throttled": prev.get("throttled"),
 							"cpu": prev.get("cpu"), "ai": prev.get("ai"), "ver": prev.get("ver"), "when": prev.get("beat_txt", "")}
@@ -41067,19 +41265,47 @@ class WebStream:
 	@staticmethod
 	def _port_free(port):
 		import socket
-		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sk:
+		addr = "0.0.0.0" if WEB_OPTS["bind"] in ("", "0.0.0.0") else WEB_OPTS["bind"]
+		fam = socket.AF_INET6 if ":" in addr else socket.AF_INET
+		try:
+			sk = socket.socket(fam, socket.SOCK_STREAM)
+		except OSError:
+			return False
+		with sk:
 			sk.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			try:
-				sk.bind(("0.0.0.0" if WEB_OPTS["bind"] in ("", "0.0.0.0") else WEB_OPTS["bind"], port)); return True
+				sk.bind((addr, port)); return True
 			except OSError:
 				return False
 
 	def _serve(self, app, ctx):
 		"""
 """
-		port = int(CFG["web_port"]); took = False; warned = False
+		port = int(CFG["web_port"]); took = False; warned = False; me = None; t0 = time.monotonic()
 		while not self._port_free(port):
-			if not took and shutil.which("systemctl"):
+			if me is None:
+				me = own_service()
+				try:
+					held = port_free_children(port)
+				except Exception as e:
+					held = [(0, 0, f"? {type(e).__name__}")]
+				log_event("web", (f"Port {port} busy at the start" + (" (this program is the autostart service)" if me else "") + ": "
+								  + ("; ".join(f"PID {p}{' (own child, stopped)' if pp == os.getpid() else ''}: {c}" for p, pp, c in held)
+									 or "no process found (other user?)"))[:400])
+				fremd = port_foreign(held)
+				if fremd:
+					start_watchdog_done("port used by another program")
+					prog = (os.path.basename(fremd[0][2].split(" ")[0])[:40] if fremd[0][0] else "") or tr("a program of another user")
+					log_event("web", f"Port {port} is used by another program ("
+									 + (f"PID {fremd[0][0]}: {fremd[0][2][:80]}" if fremd[0][0] else "not visible to this user")
+									 + ") - MoveEye keeps guarding without the web page and tries again")
+					try:
+						self.watch.notifier.info(trf("The web page could not start: port {port} is used by another program ({prog}). "
+													 "MoveEye keeps guarding and tries again; the page comes as soon as the port is free.",
+													 port=port, prog=prog), title="{name}: " + tr("Web page"))
+					except Exception:
+						pass
+			if not took and shutil.which("systemctl") and not me:
 				took = True
 				for mode in ("user", "system"):
 					rc, out, _e = _systemctl(mode, "is-active", SERVICE_NAME, timeout=10)
@@ -41096,11 +41322,14 @@ class WebStream:
 				log_event("web", f"Web page NOT started: port {port} is used by another program (an older MoveEye still running?). "
 								 f"Stop it, e.g.: systemctl --user stop motionwatch  -  trying again every 10 s")
 				print(f"   Web page: port {port} is busy (another MoveEye?) - trying again every 10 s")
-			time.sleep(10)
+				if not me:
+					start_watchdog_done("port busy")
+			time.sleep(1.0 if time.monotonic() - t0 < 30 else 10)
 		if warned:
 			log_event("web", f"Port {port} is free again - web page started")
 			STATE["web_status"] = getattr(self, "status_ok", f"on · port {port}")
 		self.serving = True
+		start_watchdog_wait_web(port)
 		app.run(host=WEB_OPTS["bind"], port=port, threaded=True, use_reloader=False, ssl_context=ctx)
 
 	def _start_https_extra(self, app):
@@ -48642,6 +48871,21 @@ for _k, _v in _HX_AUFR2.items():
 		TRX[_L].setdefault(_k, _v[_i + 1])
 
 
+_HX_PORT = {
+	"The web page could not start: port {port} is used by another program ({prog}). MoveEye keeps guarding and tries again; the page comes as soon as the port is free.": (
+		"Die Webseite konnte nicht starten: Port {port} ist belegt durch ein anderes Programm ({prog}). MoveEye bewacht weiter und versucht es wieder; die Seite kommt, sobald der Port frei ist.",
+		"La page web n’a pas pu démarrer : le port {port} est utilisé par un autre programme ({prog}). MoveEye continue de surveiller et réessaie ; la page revient dès que le port est libre.",
+		"La pagina web non è partita: la porta {port} è usata da un altro programma ({prog}). MoveEye continua a sorvegliare e riprova; la pagina torna appena la porta è libera.",
+		"La pagina web n’ha betg pudì cumenzar: il port {port} è occupà d’in auter program ({prog}). MoveEye surveglia vinavant e emprova danovamain; la pagina vegn uschespert ch’il port è liber."),
+}
+_HX_PORT["a program of another user"] = ("ein Programm eines anderen Benutzers", "un programme d’un autre utilisateur",
+										 "un programma di un altro utente", "in program d’in auter utilisader")
+for _k, _v in _HX_PORT.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+
+
 _AUFR2_HELP = {
 	"de": "<p><b>🧪 Simulator: ein Weg für jeden Wert (Aufräumen 2):</b> Die Übungen «Akku leer» und «WLAN / Internet weg» stellen bei "
 		  "verbundenem Simulator nur noch dessen Regler (Ladung, Netzteil, «Internet weg») – MoveEye liest die Werte wie sonst; ohne diese "
@@ -49705,7 +49949,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.87.0")
+		self.root.title("MoveEye 3.87.1")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -50083,7 +50327,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.87.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.87.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -97382,6 +97626,7 @@ def kt_tour_stats(t):
 		line, cov = kh_line(t["pts"])
 		s = kt_stats(line, drawn=True)
 		s["nodata"] = cov is False
+		s["lang"] = cov == "lang"
 		s["need"] = cov is None
 		s["n"], s["m"] = len(t["pts"]), kt_stats([(p[0], p[1], None) for p in t["pts"]])["m"]
 	else:
@@ -97401,7 +97646,7 @@ def _kt_thin(pts, n):
 
 def kt_row(t, who):
 	s = kt_tour_stats(t)
-	r = {k: s.get(k) for k in ("m", "ele", "smooth", "model", "up", "down", "lo", "hi", "min", "nodata", "need")}
+	r = {k: s.get(k) for k in ("m", "ele", "smooth", "model", "up", "down", "lo", "hi", "min", "nodata", "need", "lang")}
 	r.update(id=t["id"], name=t["name"], kind=t["kind"], n=len(t["pts"]), area=t["area"], t=t["t"], thinned=t["thinned"], wps=len(t["wps"]),
 			 mine=bool(who) and t["owner"] == who["key"], by=t["by"] if who else "",
 			 edit=bool(who) and "files_up" in who["perms"] and kt_can_see(t, who), rm=bool(who) and kt_can_del(t, who))
@@ -97528,6 +97773,8 @@ KH_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"
 
 KH_FILE = {"name": "hoehe-ch-1.bin", "size": 60515168, "sha256": "8b26a5072db7f5ef5e3887313a756396b945434d177d73ea71d924678e0b2c29"}
 KH_MAX = 1500 * 1000 * 1000
+KH_LINE_MAX_M = 300000.0
+KH_LINE_MAX_BLOCKS = 200
 KH_MAGIC = b"MEHOEHE1"
 KH_BLOCKS = 16
 KH_DL = {"running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
@@ -97611,6 +97858,7 @@ class KhFile:
 			import zlib
 			raw = zlib.decompress(os.pread(self.fd, ln, self.base + off))
 			self.reads += ln
+			self.loads = getattr(self, "loads", 0) + 1
 			n = self.block * self.block
 			if len(raw) != 2 * n:
 				raise ValueError("bad block")
@@ -97688,12 +97936,17 @@ def kh_line(pts):
 	if not kh_installed():
 		return flat, None
 	tot = sum(kt_dist(pts[i - 1], pts[i]) for i in range(1, len(pts)))
+	if tot > KH_LINE_MAX_M:
+		return flat, "lang"
 	step = max(10.0, tot / (KT_MAX_PTS - len(pts) - 1)) if tot > 0 else 10.0
 	out = []
 	try:
 		f = kh_file()
+		n0 = getattr(f, "loads", 0)
 		for i in range(len(pts)):
 			a = pts[i]
+			if getattr(f, "loads", 0) - n0 > KH_LINE_MAX_BLOCKS:
+				return flat, "lang"
 			if i:
 				b0 = pts[i - 1]
 				k = int(kt_dist(b0, a) // step)
@@ -97844,13 +98097,15 @@ def smalltv_routes(app, reply, body):
 		L = norm_lang(d.get("lang") or CFG.get("lang"))
 		if "files_view" not in who["perms"]:
 			return reply({"ok": False, "error": tr("not allowed for your user", L)}, 403)
+		if not tausch_rate(who["key"], "ktp", 300):
+			return reply({"ok": False, "error": tr("Too many uploads in a short time - wait a few minutes.", L)}, 429)
 		try:
 			t = kt_clean({"pts": (d.get("pts") or [])[:KT_MAX_DRAW] if isinstance(d.get("pts"), list) else []}, "0" * 12)
 		except KTError:
 			return reply({"ok": True, "m": 0})
 		line, cov = kh_line(t["pts"])
 		s = kt_stats(line, drawn=True)
-		s.update(nodata=cov is False, need=cov is None, m=kt_stats([(p[0], p[1], None) for p in t["pts"]])["m"])
+		s.update(nodata=cov is False, need=cov is None, lang=cov == "lang", m=kt_stats([(p[0], p[1], None) for p in t["pts"]])["m"])
 		return reply(dict(s, ok=True))
 
 	@app.route("/api/touren/import", methods=["POST"])
@@ -98043,6 +98298,7 @@ _HX_KT = _zd('639zzx_karten_touren/HX_KT', _zd_hx({
 	'Ascent and descent from the height model, smoothed.': 'Auf- und Abstieg aus dem Höhenmodell, geglättet.',
 	'smoothed': 'geglättet',
 	'No height data for this route.': 'Keine Höhendaten für diese Route.',
+	'Too long for ascent, descent and profile (over 300 km).': 'Zu lang für Aufstieg, Abstieg und Profil (über 300 km).',
 	'No height data here (outside the height data of Switzerland).': 'Keine Höhendaten (ausserhalb der Höhendaten Schweiz).',
 	'Ascent, descent and profile need the height data of Switzerland.': 'Aufstieg, Abstieg und Profil brauchen die Höhendaten Schweiz.',
 	'Height data of Switzerland': 'Höhendaten Schweiz',
@@ -99888,6 +100144,8 @@ if __name__ == "__main__":
 		set_data_dir(a.config or os.path.join(tempfile.gettempdir(), "motionwatch-demo"))
 	else:
 		set_data_dir(a.config or DATA_DIR)
+	if not a.demo:
+		start_watchdog_arm()
 	took = prepare_settings_file() if not a.demo else ""
 	threading.Thread(target=clock_guard_loop, daemon=True, name="clockguard").start()
 	threading.Thread(target=outbox_loop, daemon=True, name="outbox").start()
@@ -99931,6 +100189,7 @@ if __name__ == "__main__":
 	zusatz_start()
 	run_guard_start()
 	if a.paused_until and a.paused_until > time.time():
+		start_watchdog_done("paused")
 		run_paused(a.paused_until, _base_args())
 	if not a.headless and not GUI_OK:
 		print(f"Desktop window not available ({GUI_ERR}) - running headless with the web page instead.")
@@ -99978,6 +100237,10 @@ if __name__ == "__main__":
 	if not a.no_web or a.headless:
 		CFG["web_stream"] = True
 		WEB.start()
+		if not WEB.started:
+			start_watchdog_done("no web page")
+	else:
+		start_watchdog_done("no web page")
 	threading.Thread(target=WATCH.run, daemon=True).start()
 	apply_theme()
 	ip = local_ip()

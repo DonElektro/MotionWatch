@@ -16,7 +16,9 @@ Web-Gruppen keine feinen Pfad-Filter. Übersprungen wird nur, was sicher unbetei
   nur Ergebnisse / Notizen        -> nur die Grundprüfungen          (NICHTS: Prüfstand-Verlauf, feedback/, ki_training/ …)
   nur der USB-Installer           -> nur dessen Prüfungen            (er wird mit nichts anderem zusammen gebaut)
   nur Spiele-Dateien (games/ …)   -> Grundprüfungen + Spiele-Tests
-  alles andere                    -> alles ausser: Spiele-Tests (nur wenn Spiele-Dateien dabei sind) und USB-Installer
+  nur der Pi-Dienst-Test          -> Grundprüfungen + Pi-Dienst (werkzeuge/pi_dienst_test.py, pakete_bookworm.txt)
+  alles andere                    -> alles ausser: Spiele-Tests (nur wenn Spiele-Dateien dabei sind), USB-Installer und
+                                     Pi-Dienst (nur bei Start, Update, Web-Server, Dienst: PIDIENST_QUELLE)
   derselbe Commit läuft auf main  -> auf integration nur die Grundprüfungen (der Lauf auf main prüft alles)
 
 Verglichen wird der ganze Zweig mit main (nicht nur der letzte Push): ein Zweig mit einer Spiele-Änderung prüft die Spiele
@@ -34,9 +36,10 @@ import urllib.request
 
 WEB = ["kern", "rechte", "live", "daten"]                   # groups of werkzeuge/ci_tests.txt, one job each
 SPIELE = ["spiele-1", "spiele-2"]
-EINHEITEN = ["web", "spiele", "sim", "hp", "usb"]            # what can be skipped (the basic checks never)
+EINHEITEN = ["web", "spiele", "sim", "hp", "usb", "pidienst"]   # what can be skipped (the basic checks never)
 NAME = {"web": "Web-Gruppen (%s)" % ", ".join(WEB), "spiele": "Spiele-Tests (%s)" % ", ".join(SPIELE),
-        "sim": "Simulator (Godot-Tests, Simulator läuft)", "hp": "HP-Update", "usb": "USB-Installer"}
+        "sim": "Simulator (Godot-Tests, Simulator läuft)", "hp": "HP-Update", "usb": "USB-Installer",
+        "pidienst": "Pi-Dienst (echtes systemd, Bookworm-Pakete)"}
 
 # ---- path classes (fnmatch, «*» also crosses «/») -----------------------------------------------------------------------
 CI_DATEIEN = [".github/workflows/ci.yml", "werkzeuge/ci_*"]
@@ -47,6 +50,10 @@ SPIELE_REIN = ["games/*", "werkzeuge/spiele_test.py", "werkzeuge/spiele_ordnen_t
                "werkzeuge/schach_fern_test.py", "werkzeuge/fertigspiele*", ".github/workflows/fertigspiele.yml",
                ".github/workflows/fotaq.yml", "werkzeuge/fotaq*"]
 # parts of the program that belong to the games (a change runs the games tests AND everything else: it is program code)
+# Pi-Dienst (MoveEye unter echtem systemd wie auf dem Pi): its own test files alone -> only it (+ basic checks); the parts
+# for start, settings file, autostart / service, self-healing restarts, update, power, web server, run guard -> it runs too
+PIDIENST_REIN = ["werkzeuge/pi_dienst_test.py", "werkzeuge/pakete_bookworm.txt"]
+PIDIENST_QUELLE = [r"quelle/(010|012|040|140|145|380|390|397|400|550|578|640)_"]
 SPIELE_QUELLE = [r"quelle/(32\d|33\d|34[0-3])[a-z]*_", r"quelle/639zz[ghnor]_", r"quelle/[^/]*(spiele|fertigspiele|fotaq|schach|wasnun)[^/]*$"]
 
 
@@ -59,6 +66,8 @@ def klasse(pfad):
         return "ci"
     if passt(pfad, SPIELE_REIN):
         return "spiele_rein"
+    if passt(pfad, PIDIENST_REIN):
+        return "pidienst_rein"
     if any(re.match(m, pfad) for m in SPIELE_QUELLE):
         return "spiele_quelle"
     if passt(pfad, USB):
@@ -90,16 +99,19 @@ def entscheiden(ref, ereignis="push", alles=False, dateien=None, doppelt=""):
     sonst = "sonst" in kl or "spiele_quelle" in kl           # program, simulator, tools, docs … : everything but games / usb
     spiele = "spiele_rein" in kl or "spiele_quelle" in kl
     usb = "usb" in kl
-    laeuft = {"web": sonst, "sim": sonst, "hp": sonst, "spiele": spiele, "usb": usb}
+    pidienst = "pidienst_rein" in kl or any(re.match(m, d) for d in dateien for m in PIDIENST_QUELLE)
+    laeuft = {"web": sonst, "sim": sonst, "hp": sonst, "spiele": spiele, "usb": usb, "pidienst": pidienst}
     n = len(dateien)
     if not dateien:
         warum = "keine Datei gegenüber main geändert"
-    elif not (sonst or spiele or usb):
+    elif not (sonst or spiele or usb or pidienst):
         warum = "nur Ergebnisse / Notizen geändert (%s)" % bsp("nichts")
     else:
         warum = "%d Dateien gegenüber main geändert, keine davon betrifft diesen Teil" % n
     fest = {"spiele": "keine Spiele-Datei geändert (games/, Spiele-Teile in quelle/, Spiele-Tests) – läuft auf main immer",
-            "usb": "werkzeuge/usb_installer/ nicht geändert – läuft auf main immer"}
+            "usb": "werkzeuge/usb_installer/ nicht geändert – läuft auf main immer",
+            "pidienst": "weder Start, Update, Web-Server noch Dienst geändert (quelle/010 012 040 140 145 380 390 397 400 550 578 640, "
+                        "werkzeuge/pi_dienst_test.py) – läuft auf main immer"}
     grund = {e: fest.get(e, warum + " – läuft auf main immer") for e in EINHEITEN if not laeuft[e]}
     kurz = "%d Dateien gegenüber main" % n + (": " + ", ".join("%d× %s" % (len(v), k) for k, v in sorted(kl.items())) if kl else "")
     return {"laeuft": laeuft, "grund": grund, "kurz": kurz}
@@ -157,7 +169,7 @@ def ausgeben(e):
     l = e["laeuft"]
     gruppen = (WEB if l["web"] else []) + (SPIELE if l["spiele"] else [])
     aus = {"web": "true" if gruppen else "false", "gruppen": json.dumps(gruppen or ["keine"]), "sim": str(l["sim"]).lower(),
-           "hp": str(l["hp"]).lower(), "usb": str(l["usb"]).lower(), "laeuft": json.dumps(l), "grund": json.dumps(e["grund"], ensure_ascii=False)}
+           "hp": str(l["hp"]).lower(), "usb": str(l["usb"]).lower(), "pidienst": str(l["pidienst"]).lower(), "laeuft": json.dumps(l), "grund": json.dumps(e["grund"], ensure_ascii=False)}
     if os.environ.get("GITHUB_OUTPUT"):
         with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
             for k, v in aus.items():
@@ -203,7 +215,7 @@ def auswahl():
 
 # ---- gate ------------------------------------------------------------------------------------------------------------------
 JOB_EINHEIT = {"moveeye": "", "sim-texte": "", "web": "web+spiele", "sim-liste": "sim", "sim": "sim", "sim-live": "sim",
-               "hp-update": "hp", "usb-installer": "usb", "export": "export"}
+               "hp-update": "hp", "usb-installer": "usb", "pi-dienst": "pidienst", "export": "export"}
 
 
 def ergebnis():
@@ -328,7 +340,7 @@ def selbsttest():
         ist = e["laeuft"]
         if any(ist[k] != v for k, v in soll.items()):
             f.append("%s: %s statt %s" % (was, ist, soll))
-    alle = dict(web=True, spiele=True, sim=True, hp=True, usb=True)
+    alle = dict(web=True, spiele=True, sim=True, hp=True, usb=True, pidienst=True)
     keins = {k: False for k in alle}
     R = "refs/heads/real-x"
     t("main", entscheiden("refs/heads/main", "push", False, ["README.md"]), **alle)
@@ -338,7 +350,7 @@ def selbsttest():
     t("von Hand ohne alles", entscheiden(R, "workflow_dispatch", False, ["README.md"]), **keins)
     t("unbekannt", entscheiden(R, "push", False, None), **alle)
     t("Text in einem Teil", entscheiden(R, "push", False, ["quelle/560_uebersetzungen_de.py", "webcam_bewegung_3_77_0.py", "moveeye_daten_3_77_0.zip"]),
-      web=True, spiele=False, sim=True, hp=True, usb=False)
+      web=True, spiele=False, sim=True, hp=True, usb=False, pidienst=False)
     t("Spiel", entscheiden(R, "push", False, ["games/wasnun/spiel.js", "games/MotionWatch_Spiele.zip"]), web=False, spiele=True, sim=False, hp=False, usb=False)
     t("Spiele-Teil", entscheiden(R, "push", False, ["quelle/320_spielecke.py"]), web=True, spiele=True, sim=True, hp=True, usb=False)
     for q in ("quelle/340_spiele_seiten.py", "quelle/343_spiel_vergleich_online.py", "quelle/639zzn_fertigspiele.py", "quelle/639zzo_spiele_ordnen.py",
@@ -347,6 +359,13 @@ def selbsttest():
     for q in ("werkzeuge/spiele_test.py", "werkzeuge/spiel_einbauen.py", "werkzeuge/schach_fern_test.py", "werkzeuge/fertigspiele/paket.py",
               "werkzeuge/fertigspiele_test.py", "games/schach/kachel.json"):
         t(q, entscheiden(R, "push", False, [q]), web=False, spiele=True, sim=False)
+    for q in ("quelle/550_web_server.py", "quelle/140_autostart.py", "quelle/390_protokoll_bedienermodus.py", "quelle/640_start.py",
+              "quelle/397_zusatzdaten_nachladen.py", "quelle/145_selbstheilung.py"):
+        t(q, entscheiden(R, "push", False, [q]), web=True, sim=True, pidienst=True, spiele=False)
+    for q in ("werkzeuge/pi_dienst_test.py", "werkzeuge/pakete_bookworm.txt"):
+        t(q, entscheiden(R, "push", False, [q]), web=False, sim=False, hp=False, spiele=False, usb=False, pidienst=True)
+    t("Spiel ohne Pi-Dienst", entscheiden(R, "push", False, ["games/wasnun/spiel.js"]), pidienst=False)
+    t("Simulator ohne Pi-Dienst", entscheiden(R, "push", False, ["simulator3d/scripts/main.gd"]), pidienst=False)
     t("Prüfstand-Ergebnis", entscheiden("refs/heads/integration", "push", False, ["pruefstand/VERLAUF.md", "pruefstand/ergebnisse/a.json"]), **keins)
     t("Prüfstand-Programm", entscheiden(R, "push", False, ["pruefstand/pruefstand.py"]), web=True, sim=True, spiele=False)
     t("USB", entscheiden(R, "push", False, ["werkzeuge/usb_installer/pruefen.sh"]), web=False, usb=True, sim=False, hp=False, spiele=False)

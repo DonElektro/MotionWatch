@@ -9,19 +9,47 @@ class WebStream:
     @staticmethod
     def _port_free(port):
         import socket
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sk:
+        addr = "0.0.0.0" if WEB_OPTS["bind"] in ("", "0.0.0.0") else WEB_OPTS["bind"]
+        fam = socket.AF_INET6 if ":" in addr else socket.AF_INET        # 3.87.1: «--bind ::» (IPv6) was always «busy»
+        try:
+            sk = socket.socket(fam, socket.SOCK_STREAM)
+        except OSError:
+            return False
+        with sk:
             sk.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             try:
-                sk.bind(("0.0.0.0" if WEB_OPTS["bind"] in ("", "0.0.0.0") else WEB_OPTS["bind"], port)); return True
+                sk.bind((addr, port)); return True
             except OSError:
                 return False
 
     def _serve(self, app, ctx):
         """Start the web server. If the port is taken by the autostart copy of MoveEye (e.g. an older version that runs as
         service), that copy is stopped: the program started by hand takes over (the next boot starts the service again)."""
-        port = int(CFG["web_port"]); took = False; warned = False
+        port = int(CFG["web_port"]); took = False; warned = False; me = None; t0 = time.monotonic()
         while not self._port_free(port):
-            if not took and shutil.which("systemctl"):
+            if me is None:
+                me = own_service()                        # 3.87.1: after an update (execv, same PID) the service is this program
+                try:
+                    held = port_free_children(port)       # who holds it? a left-over child of ours is stopped
+                except Exception as e:
+                    held = [(0, 0, f"? {type(e).__name__}")]
+                log_event("web", (f"Port {port} busy at the start" + (" (this program is the autostart service)" if me else "") + ": "
+                                  + ("; ".join(f"PID {p}{' (own child, stopped)' if pp == os.getpid() else ''}: {c}" for p, pp, c in held)
+                                     or "no process found (other user?)"))[:400])
+                fremd = port_foreign(held)
+                if fremd:                                 # 3.87.1: another program holds it - a new start would not help: keep guarding
+                    start_watchdog_done("port used by another program")
+                    prog = (os.path.basename(fremd[0][2].split(" ")[0])[:40] if fremd[0][0] else "") or tr("a program of another user")
+                    log_event("web", f"Port {port} is used by another program ("
+                                     + (f"PID {fremd[0][0]}: {fremd[0][2][:80]}" if fremd[0][0] else "not visible to this user")
+                                     + ") - MoveEye keeps guarding without the web page and tries again")
+                    try:                                  # once: without the web page a push is the only way to say it
+                        self.watch.notifier.info(trf("The web page could not start: port {port} is used by another program ({prog}). "
+                                                     "MoveEye keeps guarding and tries again; the page comes as soon as the port is free.",
+                                                     port=port, prog=prog), title="{name}: " + tr("Web page"))
+                    except Exception:
+                        pass
+            if not took and shutil.which("systemctl") and not me:
                 took = True
                 for mode in ("user", "system"):
                     rc, out, _e = _systemctl(mode, "is-active", SERVICE_NAME, timeout=10)
@@ -38,11 +66,14 @@ class WebStream:
                 log_event("web", f"Web page NOT started: port {port} is used by another program (an older MoveEye still running?). "
                                  f"Stop it, e.g.: systemctl --user stop motionwatch  -  trying again every 10 s")
                 print(f"   Web page: port {port} is busy (another MoveEye?) - trying again every 10 s")
-            time.sleep(10)
+                if not me:
+                    start_watchdog_done("port busy")      # a known wait; as the service the start watchdog stays: it starts afresh
+            time.sleep(1.0 if time.monotonic() - t0 < 30 else 10)
         if warned:
             log_event("web", f"Port {port} is free again - web page started")
             STATE["web_status"] = getattr(self, "status_ok", f"on · port {port}")
         self.serving = True
+        start_watchdog_wait_web(port)
         app.run(host=WEB_OPTS["bind"], port=port, threaded=True, use_reloader=False, ssl_context=ctx)
 
     def _start_https_extra(self, app):

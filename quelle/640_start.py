@@ -44,6 +44,8 @@ if __name__ == "__main__":
         set_data_dir(a.config or os.path.join(tempfile.gettempdir(), "motionwatch-demo"))
     else:
         set_data_dir(a.config or DATA_DIR)
+    if not a.demo:
+        start_watchdog_arm()                                       # 3.87.1: the web page must come up (140, under systemd)
     took = prepare_settings_file() if not a.demo else ""
     threading.Thread(target=clock_guard_loop, daemon=True, name="clockguard").start()
     threading.Thread(target=outbox_loop, daemon=True, name="outbox").start()
@@ -87,6 +89,7 @@ if __name__ == "__main__":
     zusatz_start()                                    # data zip (012 / 397): there, or fetch it while the core runs
     run_guard_start()                                 # did the whole Pi go off last time? two short runs -> safe start
     if a.paused_until and a.paused_until > time.time():
+        start_watchdog_done("paused")                              # the waiting page has its own loop (390)
         run_paused(a.paused_until, _base_args())          # comes back by itself (execv), never returns
     if not a.headless and not GUI_OK:
         print(f"Desktop window not available ({GUI_ERR}) - running headless with the web page instead.")
@@ -134,6 +137,10 @@ if __name__ == "__main__":
     if not a.no_web or a.headless:                                 # the web page is on from the start (1.6.3)
         CFG["web_stream"] = True
         WEB.start()
+        if not WEB.started:
+            start_watchdog_done("no web page")                     # flask missing / no certificate: nothing to wait for
+    else:
+        start_watchdog_done("no web page")
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()

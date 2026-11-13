@@ -393,6 +393,7 @@ def kt_tour_stats(t):
         line, cov = kh_line(t["pts"])
         s = kt_stats(line, drawn=True)
         s["nodata"] = cov is False                          # the package is there but the route leaves its area
+        s["lang"] = cov == "lang"                           # 3.87.1: too long for heights (KH_LINE_MAX_M / _BLOCKS)
         s["need"] = cov is None                             # no package
         s["n"], s["m"] = len(t["pts"]), kt_stats([(p[0], p[1], None) for p in t["pts"]])["m"]
     else:
@@ -412,7 +413,7 @@ def _kt_thin(pts, n):
 
 def kt_row(t, who):
     s = kt_tour_stats(t)
-    r = {k: s.get(k) for k in ("m", "ele", "smooth", "model", "up", "down", "lo", "hi", "min", "nodata", "need")}
+    r = {k: s.get(k) for k in ("m", "ele", "smooth", "model", "up", "down", "lo", "hi", "min", "nodata", "need", "lang")}
     r.update(id=t["id"], name=t["name"], kind=t["kind"], n=len(t["pts"]), area=t["area"], t=t["t"], thinned=t["thinned"], wps=len(t["wps"]),
              mine=bool(who) and t["owner"] == who["key"], by=t["by"] if who else "",
              edit=bool(who) and "files_up" in who["perms"] and kt_can_see(t, who), rm=bool(who) and kt_can_del(t, who))
@@ -539,6 +540,8 @@ KH_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"
 # Werte aus werkzeuge/karten/hoehe.py (pins.txt des Workflows «Höhendaten»); size 0 = noch nicht freigegeben
 KH_FILE = {"name": "hoehe-ch-1.bin", "size": 60515168, "sha256": "8b26a5072db7f5ef5e3887313a756396b945434d177d73ea71d924678e0b2c29"}
 KH_MAX = 1500 * 1000 * 1000
+KH_LINE_MAX_M = 300000.0                                   # 3.87.1: heights only for routes up to 300 km (kh_line)
+KH_LINE_MAX_BLOCKS = 200                                   # 3.87.1: at most so many unpacked blocks for one route (~1.4 ms each)
 KH_MAGIC = b"MEHOEHE1"
 KH_BLOCKS = 16
 KH_DL = {"running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
@@ -622,6 +625,7 @@ class KhFile:
             import zlib
             raw = zlib.decompress(os.pread(self.fd, ln, self.base + off))
             self.reads += ln
+            self.loads = getattr(self, "loads", 0) + 1           # 3.87.1: kh_line counts how many blocks one route unpacks
             n = self.block * self.block
             if len(raw) != 2 * n:
                 raise ValueError("bad block")
@@ -699,12 +703,17 @@ def kh_line(pts):
     if not kh_installed():
         return flat, None
     tot = sum(kt_dist(pts[i - 1], pts[i]) for i in range(1, len(pts)))
+    if tot > KH_LINE_MAX_M:                                 # 3.87.1: a zig-zag across the whole country cost 20'000 unpacked
+        return flat, "lang"                                 # blocks (28 s CPU) - a hike / tour is never that long
     step = max(10.0, tot / (KT_MAX_PTS - len(pts) - 1)) if tot > 0 else 10.0
     out = []
     try:
         f = kh_file()
+        n0 = getattr(f, "loads", 0)
         for i in range(len(pts)):
             a = pts[i]
+            if getattr(f, "loads", 0) - n0 > KH_LINE_MAX_BLOCKS:     # and never more unpacked blocks for one route than this
+                return flat, "lang"
             if i:
                 b0 = pts[i - 1]
                 k = int(kt_dist(b0, a) // step)
@@ -855,13 +864,15 @@ def smalltv_routes(app, reply, body):                     # + 639zzx: /api/toure
         L = norm_lang(d.get("lang") or CFG.get("lang"))
         if "files_view" not in who["perms"]:
             return reply({"ok": False, "error": tr("not allowed for your user", L)}, 403)
+        if not tausch_rate(who["key"], "ktp", 300):          # 3.87.1: the numbers while drawing - plenty for drawing, not for a flood
+            return reply({"ok": False, "error": tr("Too many uploads in a short time - wait a few minutes.", L)}, 429)
         try:
             t = kt_clean({"pts": (d.get("pts") or [])[:KT_MAX_DRAW] if isinstance(d.get("pts"), list) else []}, "0" * 12)
         except KTError:
             return reply({"ok": True, "m": 0})
         line, cov = kh_line(t["pts"])
         s = kt_stats(line, drawn=True)
-        s.update(nodata=cov is False, need=cov is None, m=kt_stats([(p[0], p[1], None) for p in t["pts"]])["m"])
+        s.update(nodata=cov is False, need=cov is None, lang=cov == "lang", m=kt_stats([(p[0], p[1], None) for p in t["pts"]])["m"])
         return reply(dict(s, ok=True))
 
     @app.route("/api/touren/import", methods=["POST"])
@@ -1071,6 +1082,9 @@ _HX_KT = {
     "smoothed": ("geglättet", "lissé", "livellato", "glischà"),
     "No height data for this route.": ("Keine Höhendaten für diese Route.", "Pas de données d’altitude pour cet itinéraire.", "Nessun dato di quota per questo percorso.",
                                        "Naginas datas d’autezza per questa ruta."),
+    "Too long for ascent, descent and profile (over 300 km).": ("Zu lang für Aufstieg, Abstieg und Profil (über 300 km).",
+        "Trop long pour la montée, la descente et le profil (plus de 300 km).", "Troppo lungo per salita, discesa e profilo (oltre 300 km).",
+        "Memia lung per ascensiun, descensiun e profil (sur 300 km)."),   # rm: unsicher
     "No height data here (outside the height data of Switzerland).": ("Keine Höhendaten (ausserhalb der Höhendaten Schweiz).", "Pas de données d’altitude (hors des données de la Suisse).",
                                                                       "Nessun dato di quota (fuori dai dati della Svizzera).", "Naginas datas d’autezza (ordaifer las datas da la Svizra)."),
     "Ascent, descent and profile need the height data of Switzerland.": ("Aufstieg, Abstieg und Profil brauchen die Höhendaten Schweiz.", "Montée, descente et profil nécessitent les données d’altitude de la Suisse.",
@@ -1235,7 +1249,7 @@ KT_JS = r"""
   }
   function notes(s, into) {
     if (s.ele && s.smooth) into.appendChild(el("div", "kt-note kt-smooth", "* " + T(s.model ? "Ascent and descent from the height model, smoothed." : "Ascent and descent smoothed (uneven heights).")));
-    if (!s.ele) into.appendChild(el("div", "kt-note kt-noele", s.nodata ? T("No height data here (outside the height data of Switzerland).")
+    if (!s.ele) into.appendChild(el("div", "kt-note kt-noele", s.lang ? T("Too long for ascent, descent and profile (over 300 km).") : s.nodata ? T("No height data here (outside the height data of Switzerland).")
       : s.need ? T("Ascent, descent and profile need the height data of Switzerland.") : T("No height data for this route.")));
     if (s.thinned) into.appendChild(el("div", "kt-note", T("The track had very many points and was thinned out.")));
     if (s.min != null && s.ele) into.appendChild(el("div", "kt-note", T("Time formula: swisstopo / SchweizMobil (as on map.geo.admin.ch), without breaks.")));

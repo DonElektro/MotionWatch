@@ -13,7 +13,10 @@
    Zwei Handys («Zwei Handys», ab GS-1.15): der Netz-Teil liegt in fern.js (Verbindung zu MoveEye); hier nur der Ablauf
    (Abschnitt «Zwei Handys» unten): eigene Seite = MenschSpieler, Gegenseite = FernSpieler. Der Pi prüft jeden Zug und ist
    massgebend; weicht die eigene Partie ab (Zug zurück angenommen, Revanche, verlorener Zug), wird sie aus seiner Zugliste
-   neu aufgebaut. Tipps und Lern-Modus rechnen nur auf diesem Handy; der Pi erfährt nur, DASS sie an sind (Hinweis für beide). */
+   neu aufgebaut. Tipps und Lern-Modus rechnen nur auf diesem Handy; der Pi erfährt nur, DASS sie an sind (Hinweis für beide).
+   Vorziehen (Premove, ab GS-1.18, Abschnitt «Vorziehen» unten): Eingabe und Markierung macht Chessground (premovable),
+   gespielt wird der Vorzug hier über spiel.ziehe – erst nachdem der Gegenzug ganz verarbeitet ist und nur, wenn genau ein
+   Halbzug dazugekommen ist. Er bleibt auf diesem Handy; zum Pi geht nur der gespielte Zug (mit seiner Zugnummer). */
 (function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
@@ -40,7 +43,7 @@
 
   /* ---------- Einstellungen und Speichern (läuft auch ohne Speicher) ---------- */
   var K_EINST = "moveeye-schach-einst", K_PARTIE = "moveeye-schach-partie";
-  var einst = { stufe: 3, farbe: "w", gegner: "motor", lern: true, ton: true, balken: true, zeit: 1000, autodrehen: false, fernLern: false, fernBalken: false };
+  var einst = { stufe: 3, farbe: "w", gegner: "motor", lern: true, ton: true, balken: true, zeit: 1000, autodrehen: false, fernLern: false, fernBalken: false, vorzug: true };
   function lies(k) { try { var t = localStorage.getItem(k); return t ? JSON.parse(t) : null; } catch (e) { return null; } }
   function schreib(k, o) { try { localStorage.setItem(k, JSON.stringify(o)); return true; } catch (e) { return false; } }
   function weg(k) { try { localStorage.removeItem(k); } catch (e) {} }
@@ -50,7 +53,7 @@
     if (e.stufe >= 1 && e.stufe <= STUFEN.length) einst.stufe = e.stufe | 0;
     if (["w", "b", "zufall"].indexOf(e.farbe) >= 0) einst.farbe = e.farbe;
     if (e.gegner === "motor" || e.gegner === "mensch" || e.gegner === "fern") einst.gegner = e.gegner;
-    ["lern", "ton", "balken", "autodrehen", "fernLern", "fernBalken"].forEach(function (k) { if (typeof e[k] === "boolean") einst[k] = e[k]; });
+    ["lern", "ton", "balken", "autodrehen", "fernLern", "fernBalken", "vorzug"].forEach(function (k) { if (typeof e[k] === "boolean") einst[k] = e[k]; });
     if ([300, 500, 1000, 2000, 3000].indexOf(e.zeit) >= 0) einst.zeit = e.zeit;
   })();
   function einstSpeichern() { schreib(K_EINST, einst); }
@@ -58,7 +61,8 @@
   /* ---------- Zustand des Spiels ---------- */
   var spiel = {
     partie: new P(), spieler: { w: new MenschSpieler(), b: new MotorSpieler() }, gegner: "motor", mensch: "w", stufe: 3,
-    drehung: "w", nr: 0, prueft: false, denkt: false, analyse: null, tippPfeil: null, tipps: 0, fern: null
+    drehung: "w", nr: 0, prueft: false, denkt: false, analyse: null, tippPfeil: null, tipps: 0, fern: null,
+    vorzug: null, vorzugZahl: { gesetzt: 0, gespielt: 0, verworfen: 0, abgebrochen: 0 }, zugZeiten: []
   };
   /* Lern-Modus und Bewertungsbalken: bei «Zwei Handys» eigene Schalter (aus, bis man sie selbst einschaltet - Fairness) */
   function lernAn(modus) { return (modus || spiel.gegner) === "fern" ? einst.fernLern : einst.lern; }
@@ -67,7 +71,7 @@
 
   /* ---------- Spieler ---------- */
   function MenschSpieler() { this.art = "mensch"; }
-  MenschSpieler.prototype.amZug = function () { zeichne(); analysiere(); };
+  MenschSpieler.prototype.amZug = function () { zeichne(); if (spiel.vorzug) vorzugSpielen(); else analysiere(); };
 
   function MotorSpieler() { this.art = "motor"; }
   MotorSpieler.prototype.amZug = function (s) {
@@ -110,6 +114,7 @@
     var vorher = spiel.partie.amZug(), z = spiel.partie.zug(uci);
     if (!z) return false;
     spiel.nr++; spiel.denkt = false; spiel.prueft = false; spiel.tippPfeil = null;
+    if (TEST) spiel.zugZeiten[z.zugNr - 1] = { t: performance.now(), quelle: quelle };
     if (spiel.analyse && spiel.analyse.zugNr !== z.zugNr) spiel.analyse = null;
     ton(z.ende ? (z.ende.art === "matt" ? "matt" : "remis") : z.schach ? "schach" : z.zug.geschlagen ? "schlag" : "zug");
     if (spiel.gegner === "mensch" && einst.autodrehen && !z.ende) {
@@ -133,7 +138,7 @@
 
   /** neues Spiel. o: {gegner, farbe (w/b), stufe, fen, partie (geladen), drehung} */
   function starte(o) {
-    abbrechen();
+    abbrechen(); vorzugAus("neu"); spiel.zugZeiten = [];
     spiel.nr++; spiel.denkt = false; spiel.prueft = false; spiel.analyse = null; spiel.tippPfeil = null; spiel.tipps = 0; letzteWarnung = null;
     if (Motor.name) infoZeile();
     spiel.gegner = o.gegner === "mensch" || o.gegner === "fern" ? o.gegner : "motor";
@@ -172,9 +177,12 @@
     z = z || spiel.partie.zustand();
     var frei = !z.ende && menschDran() && !spiel.prueft && fernFrei(), d = new Map();
     if (frei) Object.keys(z.ziele).forEach(function (k) { d.set(k, z.ziele[k]); });
+    if (spiel.vorzug && !vorzugMoeglich()) vorzugAus("aus");
+    var vor = !z.ende && !menschDran() && vorzugMoeglich();      // Gegner ist dran: eigene Figuren dürfen vorziehen
     cg.set({
       fen: z.fen, orientation: farbe(spiel.drehung), turnColor: farbe(z.amZug), lastMove: z.letzter || [],
-      check: z.schach, movable: { color: frei ? farbe(z.amZug) : undefined, dests: d }
+      check: z.schach, movable: { color: frei ? farbe(z.amZug) : vor ? farbe(spiel.mensch) : undefined, dests: d },
+      premovable: { enabled: vor }
     });
     cg.setAutoShapes(spiel.tippPfeil ? [{ orig: spiel.tippPfeil[0], dest: spiel.tippPfeil[1], brush: "green" }] : []);
     leisten(z); zugliste(z); statusZeile(z); knoepfe(z);
@@ -247,6 +255,7 @@
     var el = $("status"), t, kl = "";
     if (z.ende) { t = endeTexte(z.ende)[0]; kl = "ende"; }
     else if (spiel.prueft) t = "Ich schaue mir den Zug kurz an …";
+    else if (spiel.vorzug && !menschDran()) { t = "Vorzug " + spiel.vorzug.von + "–" + spiel.vorzug.nach + " ist gemerkt."; kl = "tipp"; }
     else if (statusFest && statusFest.nr === spiel.nr) { t = statusFest.text; kl = "tipp"; }
     else {
       var wer = z.amZug === "w" ? "Weiss" : "Schwarz";
@@ -277,6 +286,7 @@
       $("bTipp").disabled = !!z.ende || !menschDran() || spiel.prueft;
       $("bAufgeben").disabled = !!z.ende || !z.zugNr;
     }
+    $("bTipp").hidden = !!spiel.vorzug; $("bVorzug").hidden = !spiel.vorzug;
     $("bLern").classList.toggle("an", lernAn()); $("bLern").setAttribute("aria-pressed", lernAn() ? "true" : "false");
     $("balken").hidden = !balkenAn();
   }
@@ -397,6 +407,63 @@
     });
   }
 
+  /* ---------- Vorziehen (Premove) ----------
+     Chessground nimmt den Vorzug an (premovable: Ziehen oder Tippen, eigene Markierung «current-premove», ein Vorzug; ein
+     neuer ersetzt den alten; Tippen auf ein leeres Feld hebt ihn auf). Die Rückrufe von Chessground kommen etwas später
+     (setTimeout), darum gilt immer cg.state.premovable.current; ply = Zahl der Halbzüge, als der Vorzug gesetzt wurde.
+     Gespielt wird er nur, wenn danach genau ein Halbzug (der des Gegners) dazukam, als Zug dieses Spielers über spiel.ziehe
+     (bei zwei Handys geht er mit seiner Zugnummer an den Pi, der eine veraltete Nummer ablehnt). Nicht erlaubt -> still weg.
+     Umwandlung: immer zur Dame (wie Lichess). Aus: im Lern-Modus (er soll vor jedem Zug warnen können), zu zweit an einem
+     Gerät, als Zuschauer, mit dem Schalter «Vorziehen». Weg bei: neuem Aufbau aus dem Stand des Pi, Verbindung weg, Seite
+     verdeckt (Handy schläft), Zug zurück, neues Spiel, Tippen neben das Brett, Knopf «✕ Vorzug». */
+  function vorzugMoeglich() {
+    if (!einst.vorzug || lernAn() || spiel.partie.ende()) return false;
+    if (spiel.gegner === "motor") return true;
+    if (spiel.gegner !== "fern" || !spiel.fern) return false;
+    var s = fernSitz();
+    return (s === "w" || s === "b") && !!spiel.fern.v && spiel.fern.v.status === "laeuft" && !spiel.fern.v.ende;
+  }
+  function vorzugAnzeigen() { if (!cg) return; var z = spiel.partie.zustand(); statusZeile(z); knoepfe(z); }
+  /** Rückruf von Chessground (gesetzt / aufgehoben): den eigenen Stand nach cg.state richten */
+  function vorzugAbgleich() {
+    var c = cg && cg.state.premovable.current, v = spiel.vorzug;
+    if (!c) { if (v) { spiel.vorzug = null; vorzugAnzeigen(); } return; }
+    if (v && v.von === c[0] && v.nach === c[1]) return;
+    if (!vorzugMoeglich()) { cg.cancelPremove(); spiel.vorzug = null; vorzugAnzeigen(); return; }
+    var n = spiel.partie.zuege.length, dran = menschDran();
+    spiel.vorzug = { von: c[0], nach: c[1], ply: dran ? n - 1 : n, partie: spiel.partie };   // dran: der Gegenzug kam in der Lücke
+    spiel.vorzugZahl.gesetzt++;
+    vorzugAnzeigen();
+    if (dran) vorzugSpielen();
+  }
+  function vorzugAus(grund) {
+    var hatte = !!spiel.vorzug || !!(cg && cg.state.premovable.current);
+    spiel.vorzug = null;
+    if (!hatte) return;
+    if (grund && grund !== "gespielt" && grund !== "verworfen") spiel.vorzugZahl.abgebrochen++;
+    spiel.vorzugGrund = grund || "";
+    if (cg) cg.cancelPremove();
+    vorzugAnzeigen();
+  }
+  /** der Gegner hat gezogen: den Vorzug spielen, sobald der Gegenzug fertig verarbeitet ist (eigene Runde, kein Wettlauf) */
+  function vorzugSpielen() {
+    var v = spiel.vorzug;
+    if (!v) return;
+    Promise.resolve().then(function () {
+      if (spiel.vorzug !== v) return;
+      var p = spiel.partie, f = p.figur(v.von), nach = v.nach;
+      var gut = p === v.partie && p.zuege.length === v.ply + 1 && menschDran() && !p.ende() && vorzugMoeglich() && fernFrei() && !spiel.prueft;
+      if (gut && f && f.type === "k" && v.von[1] === nach[1] && Math.abs(v.von.charCodeAt(0) - nach.charCodeAt(0)) >= 2)
+        nach = (nach[0] > v.von[0] ? "g" : "c") + nach[1];                        // Rochade auf den Turm gezogen -> Königsfeld
+      var uci = v.von + nach + (gut && p.istUmwandlung(v.von, nach) ? "q" : "");
+      var legal = gut && p.alleZuege().indexOf(uci) >= 0;
+      vorzugAus(legal ? "gespielt" : "verworfen");
+      if (legal && spiel.ziehe(uci, "vorzug")) { spiel.vorzugZahl.gespielt++; return; }
+      spiel.vorzugZahl.verworfen++;
+      zeichne(); analysiere();
+    });
+  }
+
   /* ---------- Fenster ---------- */
   var FENSTER = ["dNeu", "dWeiter", "dUmw", "dWarn", "dEnde", "dFrage", "dEinst", "dUeber", "dFernWarte", "dAnfrage"], wartend = {};
   function auf(id) { $(id).hidden = false; }
@@ -455,6 +522,7 @@
     $("selStufe2").value = String(spiel.stufe); $("selZeit").value = String(einst.zeit);
     $("einstMotor").hidden = spiel.gegner !== "motor";
     schalter($("schLern"), lernAn()); schalter($("schTon"), einst.ton); schalter($("schBalken"), balkenAn()); schalter($("schDrehen"), einst.autodrehen);
+    schalter($("schVorzug"), einst.vorzug); $("schVorzug").hidden = spiel.gegner === "mensch";
     auf("dEinst");
   }
   function lernSetzen(an, modus) {
@@ -462,7 +530,7 @@
     if (modus === "fern") einst.fernLern = !!an; else einst.lern = !!an;
     einstSpeichern();
     schalter($("schLern"), lernAn()); schalter($("schLernNeu"), lernAn(modus));
-    knoepfe(spiel.partie.zustand());
+    zeichne();
     if (lernAn() && menschDran()) analysiere();
     if (spiel.gegner === "fern" && modus === "fern") fernHilfeMelden();
   }
@@ -478,6 +546,7 @@
   /* ---------- Knöpfe ---------- */
   function zugZurueck() {
     if (spiel.gegner === "fern") { fernAnfrage("zurueck"); return; }
+    vorzugAus("zurueck");
     var p = spiel.partie;
     if (!p.zuege.length || spiel.prueft) return;
     abbrechen(); alleZu();
@@ -576,7 +645,7 @@
     }
     if (vorher !== el.hidden + "|" + hl.hidden + "|" + el.offsetHeight + "|" + hl.offsetHeight) ordnen();
   }
-  function fernStatus(st) { if (spiel.fern) { spiel.fern.verb = st; fernZeile(); statusZeile(spiel.partie.zustand()); } }
+  function fernStatus(st) { if (st === "weg") vorzugAus("weg"); if (spiel.fern) { spiel.fern.verb = st; fernZeile(); statusZeile(spiel.partie.zustand()); } }
 
   /** die Partie aus dem Stand des Pi neu aufbauen (Start, Wiederaufnahme, Revanche, Zug zurück, Abweichung) */
   function fernAufbauen(v) {
@@ -814,19 +883,25 @@
       animation: { enabled: true, duration: 240 },
       highlight: { lastMove: true, check: true },
       movable: { free: false, color: undefined, showDests: true, events: { after: eingabe } },
-      premovable: { enabled: false }, draggable: { enabled: true, showGhost: true }, selectable: { enabled: true },
+      premovable: { enabled: false, showDests: true, castle: true, events: { set: vorzugAbgleich, unset: vorzugAbgleich } }, draggable: { enabled: true, showGhost: true }, selectable: { enabled: true },
       drawable: { enabled: false, visible: true }
     });
     addEventListener("resize", function () { ordnen(); setTimeout(ordnen, 300); });
     addEventListener("orientationchange", function () { setTimeout(ordnen, 350); });
     document.addEventListener("pointerdown", tonStart, true);
     document.addEventListener("keydown", tonStart, true);
+    document.addEventListener("pointerdown", function (e) {           // neben das Brett getippt: Vorzug weg
+      if (spiel.vorzug && !(e.target.closest && e.target.closest("#brettRahmen, #bVorzug"))) vorzugAus("daneben");
+    }, true);
+    document.addEventListener("visibilitychange", function () { if (document.hidden) vorzugAus("verdeckt"); });
+    addEventListener("pagehide", function () { vorzugAus("verdeckt"); });
 
     Motor.onStatus = function () { infoZeile(); if (Motor.bereit && menschDran() && !spiel.partie.ende()) analysiere(); };
     Motor.start({ nurJs: URLP.get("motor") === "js" });
     infoZeile();
 
     $("bTipp").onclick = function () { tipp(); };
+    $("bVorzug").onclick = function () { vorzugAus("knopf"); };
     $("bZurueck").onclick = zugZurueck;
     $("bDrehen").onclick = function () {
       var fs = spiel.gegner === "fern" ? fernSitz() : "";
@@ -873,6 +948,7 @@
       einstSpeichern(); schalter(this, balkenAn()); ordnen(); zeichne(); infoZeile(); if (balkenAn() && menschDran()) analysiere();
       if (spiel.gegner === "fern") fernHilfeMelden();
     };
+    $("schVorzug").onclick = function () { einst.vorzug = !einst.vorzug; einstSpeichern(); schalter(this, einst.vorzug); if (!einst.vorzug) vorzugAus("aus"); zeichne(); };
     $("schDrehen").onclick = function () { einst.autodrehen = !einst.autodrehen; einstSpeichern(); schalter(this, einst.autodrehen); };
 
     // zwei Handys: ein Spiel dieses Handys (Code + Sitz) läuft noch, oder der Link/QR-Code nennt einen Code (?fern=)
@@ -903,7 +979,9 @@
                  fen: z.fen, amZug: z.amZug, schach: z.schach, ende: z.ende, zuege: z.zuege, san: z.san, zugNr: z.zugNr, gegner: spiel.gegner, mensch: spiel.mensch,
                  stufe: spiel.stufe, drehung: spiel.drehung, denkt: spiel.denkt, prueft: spiel.prueft, menschDran: menschDran(), tippPfeil: spiel.tippPfeil,
                  analyse: spiel.analyse, motor: Motor.art, motorName: Motor.name, bereit: Motor.bereit, statistik: Motor.statistik, toene: tonZaehler,
-                 warnung: letzteWarnung, einst: einst, tonLaeuft: !!ac && ac.state, material: z.material };
+                 warnung: letzteWarnung, einst: einst, tonLaeuft: !!ac && ac.state, material: z.material,
+                 vorzug: spiel.vorzug ? { von: spiel.vorzug.von, nach: spiel.vorzug.nach, ply: spiel.vorzug.ply } : null, cgVorzug: cg.state.premovable.current || null,
+                 vorzugAn: !!cg.state.premovable.enabled, vorzugZahl: spiel.vorzugZahl, vorzugGrund: spiel.vorzugGrund || "", zugZeiten: spiel.zugZeiten };
       },
       /** Feldmitte in Seiten-Koordinaten */
       feld: function (f) {
@@ -912,6 +990,8 @@
       },
       stelle: function (fen, o) { o = o || {}; spiel.gestartet = true; if (typeof o.lern === "boolean") { einst.lern = o.lern; } starte({ fen: fen, gegner: o.gegner || "motor", farbe: o.farbe || "w", stufe: o.stufe || 1 }); },
       ziehe: function (uci) { return spiel.ziehe(uci, "test"); },
+      fernNeuAufbau: function () { if (spiel.fern && spiel.fern.v) fernAufbauen(spiel.fern.v); },
+      verdecken: function (an) { Object.defineProperty(document, "hidden", { configurable: true, get: function () { return !!an; } }); document.dispatchEvent(new Event("visibilitychange")); },
       setze: function (k, v) { einst[k] = v; einstSpeichern(); ordnen(); zeichne(); },
       stufen: STUFEN.map(function (s) { return s.name; }),
       /** Motor gegen Motor über die Regeln (partie.js): jeder Zug muss erlaubt sein, kein Hängen */

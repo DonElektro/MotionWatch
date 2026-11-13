@@ -76,3 +76,10 @@ stellung + Zugliste und prüft jeden Zug selbst (eigene kleine Regel-Prüfung in
 werkzeuge/schach_fern_test.py). Remis, «Zug zurück» und Revanche (Farben getauscht) brauchen das Ja des Gegners. Tipps,
 Lern-Modus und Balken rechnen nur auf dem eigenen Handy (bei zwei Handys zuerst aus); beide sehen «Tipps sind an», wenn
 einer sie nutzt. In diesem Ordner liegt kein Server-Code.
+
+Vorziehen (Premove, ab GS-1.18): während der Gegner (Computer oder das andere Handy) dran ist, darf man einen Zug
+vorziehen (Ziehen oder Tippen, blau markiert). Kommt der Gegenzug, wird er sofort gespielt, wenn er dann erlaubt ist,
+sonst still verworfen. Einer zur Zeit; Tippen auf ein leeres Feld, neben das Brett oder «✕ Vorzug» hebt ihn auf.
+Umwandlung immer zur Dame. Aus im Lern-Modus und zu zweit an einem Gerät; Schalter «Vorziehen (Premove)» in den
+Einstellungen. Bei zwei Handys bleibt er auf dem Handy, zum Pi geht nur der gespielte Zug mit seiner Zugnummer.
+

@@ -19,6 +19,21 @@ for _k, _v in _HX_AUFR2.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 
+# 3.87.1: the push when another program holds the web port (550 _serve, 140 port_foreign)
+_HX_PORT = {
+    "The web page could not start: port {port} is used by another program ({prog}). MoveEye keeps guarding and tries again; the page comes as soon as the port is free.": (
+        "Die Webseite konnte nicht starten: Port {port} ist belegt durch ein anderes Programm ({prog}). MoveEye bewacht weiter und versucht es wieder; die Seite kommt, sobald der Port frei ist.",
+        "La page web n’a pas pu démarrer : le port {port} est utilisé par un autre programme ({prog}). MoveEye continue de surveiller et réessaie ; la page revient dès que le port est libre.",
+        "La pagina web non è partita: la porta {port} è usata da un altro programma ({prog}). MoveEye continua a sorvegliare e riprova; la pagina torna appena la porta è libera.",
+        "La pagina web n’ha betg pudì cumenzar: il port {port} è occupà d’in auter program ({prog}). MoveEye surveglia vinavant e emprova danovamain; la pagina vegn uschespert ch’il port è liber."),   # rm: unsicher
+}
+_HX_PORT["a program of another user"] = ("ein Programm eines anderen Benutzers", "un programme d’un autre utilisateur",
+                                         "un programma di un altro utente", "in program d’in auter utilisader")   # rm: unsicher
+for _k, _v in _HX_PORT.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
 # ---- the manual (HELP_PAGE of 540): one paragraph in «System & network» (after the one of 598), German and English ----
 _AUFR2_HELP = {
     "de": "<p><b>🧪 Simulator: ein Weg für jeden Wert (Aufräumen 2):</b> Die Übungen «Akku leer» und «WLAN / Internet weg» stellen bei "
