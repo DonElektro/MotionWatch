@@ -1,5 +1,6 @@
 # Höhendaten (MoveEye, Teil 639zzx): baut das Paket «Höhendaten Schweiz» mit werkzeuge/karten/hoehe.py – swisstopo DHM25
-# (25 m, 0,5-m-Stufen; Entscheid des Besitzers 12.11.2026), eine Datei hoehe-ch-N.bin –, prüft es mit bekannten Höhen
+# (25 m, 0,5-m-Stufen; Entscheid des Besitzers 12.11.2026; Quelle: «Matrixmodell, ESRI ASCII GRID» der Produktseite, DHM25_URL
+# in hoehe.py), eine Datei hoehe-ch-N.bin –, prüft es mit bekannten Höhen
 # (werkzeuge/touren_test.py --hoehe-echt, sagt auch, was ausserhalb der Schweiz und in Liechtenstein da ist) und legt es auf
 # Wunsch als Release an. Asset an «hoehen-N» (nie «latest»), Probe an «hoehenprobe-<Lauf>».
 #   Nur bauen + prüfen + messen:  gh api -X POST repos/DonElektro/MotionWatch/actions/workflows/hoehen.yml/dispatches -f ref=main
@@ -27,7 +28,7 @@ on:
         description: "Gitter in Metern (25 = DHM25 wie es ist; 50 / 100 = gemittelt; 10 nur mit eigener Quelle)"
         default: "25"
       quelle_url:
-        description: "leer = DHM25 von swisstopo suchen (STAC) · sonst Adresse eines ESRI-ASCII-Gitters / XYZ / ZIP"
+        description: "leer = DHM25-Matrixmodell von swisstopo (DHM25_URL in hoehe.py) · sonst https-Adresse eines ESRI-ASCII-Gitters / ZIP davon"
         default: ""
       loeschen:
         description: "Statt bauen: Probe-Release + Tag löschen (nur hoehenprobe-N, nur Vorabversion)"
@@ -58,7 +59,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.tag || 'hoehen-1' }}
         run: |
-          set -e
+          set -euo pipefail
           sha=$(git rev-parse HEAD)
           ptag=$(sed -n 's/^TAG = "\(hoehen-[0-9]*\)"$/\1/p' werkzeuge/karten/hoehe.py)
           qtag=$(sed -n 's/^KH_TAG = "\(hoehen-[0-9]*\)"$/\1/p' quelle/639zzx_karten_touren.py)
@@ -75,32 +76,56 @@ jobs:
             echo "::error::Release $tag gibt es schon - nie überschreiben"; exit 1
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"; echo "sha=$sha" >> "$GITHUB_OUTPUT"
-      - name: Quelle holen und Paket bauen (hoehe.py)
+      - name: Quelle holen (Adresse, HTTP-Status, Grösse)
         env:
           QURL: ${{ inputs.quelle_url }}
           GITTER: ${{ inputs.gitter || '25' }}
         run: |
-          set -e
+          set -euo pipefail
           pip install -q numpy
           echo "$GITTER" | grep -Eq '^[0-9]{1,4}$' || { echo "::error::Gitter «$GITTER» ist keine Zahl"; exit 1; }
           mkdir -p "$RUNNER_TEMP/q" "$RUNNER_TEMP/out"
           if [ -n "$QURL" ]; then
             echo "$QURL" | grep -Eq '^https://[A-Za-z0-9._~:/?#@!$&()*+,;=%-]+$' || { echo "::error::quelle_url ist keine https-Adresse"; exit 1; }
-            f="$RUNNER_TEMP/q/$(basename "${QURL%%\?*}")"
-            curl -sSfL -o "$f" "$QURL"
-            python3 -I werkzeuge/karten/hoehe.py --quelle "$f" --herkunft "$QURL" --gitter "$GITTER" --aus "$RUNNER_TEMP/out" --pins | tee "$RUNNER_TEMP/bau.txt"
+            python3 -I werkzeuge/karten/hoehe.py --holen "$RUNNER_TEMP/q" --url "$QURL" | tee "$RUNNER_TEMP/bau.txt"
           else
-            python3 -I werkzeuge/karten/hoehe.py --holen "$RUNNER_TEMP/q" --gitter "$GITTER" --aus "$RUNNER_TEMP/out" --pins | tee "$RUNNER_TEMP/bau.txt"
+            python3 -I werkzeuge/karten/hoehe.py --holen "$RUNNER_TEMP/q" | tee "$RUNNER_TEMP/bau.txt"
           fi
-          grep -E '^(STAC:|QUELLE |im ZIP:|Höhendaten:|PIN |INFO )' "$RUNNER_TEMP/bau.txt" | cut -c1-900 | while read -r l; do echo "::notice title=Höhendaten::$l"; done
-          ls -la "$RUNNER_TEMP/out"
-      - name: MoveEye bauen und das Paket prüfen (touren_test.py --hoehe-echt, Abdeckung Liechtenstein / Ausland)
+          n=$(find "$RUNNER_TEMP/q" -type f | wc -l)
+          [ "$n" = "1" ] || { echo "::error::nach dem Holen liegen $n Dateien da statt einer"; exit 1; }
+          f=$(find "$RUNNER_TEMP/q" -type f); [ -s "$f" ] || { echo "::error::die Quelle ist leer"; exit 1; }
+          echo "QF=$f" >> "$GITHUB_ENV"
+          echo "QU=$(sed -n 's/^QUELLE-ADRESSE //p' "$RUNNER_TEMP/bau.txt" | head -1)" >> "$GITHUB_ENV"
+          { grep -E '^QUELLE-' "$RUNNER_TEMP/bau.txt" || true; } | cut -c1-900 | while read -r l; do echo "::notice title=Höhendaten Quelle::$l"; done
+      - name: Quelle erkunden (Inhalt des Archivs, Gitter, Ausdehnung, Schätzung) – ein falsches Gitter bricht hier ab
+        env:
+          GITTER: ${{ inputs.gitter || '25' }}
         run: |
-          set -e
+          set -euo pipefail
+          python3 -I werkzeuge/karten/hoehe.py --erkunden "$QF" --gitter "$GITTER" | tee "$RUNNER_TEMP/erkunden.txt" || {
+            { grep -E '^(ARCHIV|QUELLE-)' "$RUNNER_TEMP/erkunden.txt" || true; } | cut -c1-900 | while read -r l; do echo "::error title=Höhendaten Quelle passt nicht::$l"; done; exit 1; }
+          grep -q '^QUELLE-GITTER ' "$RUNNER_TEMP/erkunden.txt" || { echo "::error::das Gitter der Quelle wurde nicht erkannt"; exit 1; }
+          { grep -E '^(ARCHIV|QUELLE-|SCHAETZUNG)' "$RUNNER_TEMP/erkunden.txt" || true; } | head -40 | cut -c1-900 | while read -r l; do echo "::notice title=Höhendaten Quelle::$l"; done
+      - name: Paket bauen (hoehe.py) – ohne Paket ist der Schritt rot
+        env:
+          GITTER: ${{ inputs.gitter || '25' }}
+        run: |
+          set -euo pipefail
+          python3 -I werkzeuge/karten/hoehe.py --quelle "$QF" --herkunft "$QU" --gitter "$GITTER" --aus "$RUNNER_TEMP/out" | tee -a "$RUNNER_TEMP/bau.txt"
+          python3 -I werkzeuge/karten/hoehe.py --pruefen "$RUNNER_TEMP/out" --aus "$RUNNER_TEMP/out" --pins | tee -a "$RUNNER_TEMP/bau.txt"
+          [ -s "$RUNNER_TEMP/out/hoehe-ch-1.bin" ] && [ -s "$RUNNER_TEMP/out/pins_hoehe.txt" ] && [ -s "$RUNNER_TEMP/out/hoehe.json" ] || { echo "::error::Paket, Pins oder Messung fehlen"; exit 1; }
+          g=$(python3 -c 'import json,sys; print("%g" % json.load(open(sys.argv[1]))["gitter"])' "$RUNNER_TEMP/out/hoehe.json")
+          [ "$g" = "$GITTER" ] || { echo "::error::gebaut wurde ein $g-m-Gitter, verlangt waren $GITTER m"; exit 1; }
+          { grep -E '^(Höhendaten:|PAKET |LAGE |PIN |INFO )' "$RUNNER_TEMP/bau.txt" || true; } | cut -c1-900 | while read -r l; do echo "::notice title=Höhendaten::$l"; done
+          ls -la "$RUNNER_TEMP/out"
+      - name: MoveEye bauen und das Paket prüfen (touren_test.py --hoehe-echt, Abdeckung Liechtenstein / Ecken der Schweiz / Ausland)
+        run: |
+          set -euo pipefail
           pip install -q opencv-python-headless flask pillow cryptography
           python3 werkzeuge/bauen.py | tail -2
           python3 -W ignore werkzeuge/touren_test.py --hoehe-echt "$RUNNER_TEMP/out" | tee "$RUNNER_TEMP/test.txt"
-          grep -E 'ABDECKUNG|Kopf:|✗' "$RUNNER_TEMP/test.txt" | while read -r l; do echo "::notice title=Höhendaten Prüfung::$l"; done
+          grep -q 'ABDECKUNG' "$RUNNER_TEMP/test.txt" || { echo "::error::die Prüfung hat keine Abdeckung gemeldet"; exit 1; }
+          { grep -E 'ABDECKUNG|Kopf:|✗' "$RUNNER_TEMP/test.txt" || true; } | while read -r l; do echo "::notice title=Höhendaten Prüfung::$l"; done
       - name: Messung als Artefakt
         if: always()
         uses: actions/upload-artifact@v4
@@ -110,13 +135,17 @@ jobs:
             ${{ runner.temp }}/out/pins_hoehe.txt
             ${{ runner.temp }}/out/hoehe.json
             ${{ runner.temp }}/bau.txt
+            ${{ runner.temp }}/erkunden.txt
             ${{ runner.temp }}/test.txt
           retention-days: 14
           if-no-files-found: ignore
       - name: Zusammenfassung
         if: always()
         run: |
-          { echo "### Höhendaten"; echo '```'; cat "$RUNNER_TEMP/out/pins_hoehe.txt" "$RUNNER_TEMP/out/hoehe.json" "$RUNNER_TEMP/test.txt" 2>/dev/null; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          set -euo pipefail
+          # only a summary: it shows what is there and never decides about green or red (the steps above do)
+          { echo "### Höhendaten"; echo '```'; for f in "$RUNNER_TEMP/bau.txt" "$RUNNER_TEMP/erkunden.txt" "$RUNNER_TEMP/out/pins_hoehe.txt" "$RUNNER_TEMP/test.txt"; do
+              if [ -f "$f" ]; then grep -vE '^ARCHIV ' "$f" | head -60 || true; else echo "(fehlt: $(basename "$f"))"; fi; done; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - name: Release anlegen, Asset hochladen, zurücklesen
         if: env.REL == 'probe' || env.REL == 'echt'
         env:
@@ -124,7 +153,7 @@ jobs:
           TAG: ${{ steps.v.outputs.tag }}
           SHA: ${{ steps.v.outputs.sha }}
         run: |
-          set -e
+          set -euo pipefail
           O="$RUNNER_TEMP/out"
           {
             if [ "$REL" = "probe" ]; then echo "PROBELAUF (Vorabversion) - nicht für Geräte, wird wieder gelöscht."; echo; fi
@@ -160,7 +189,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.loeschen }}
         run: |
-          set -e
+          set -euo pipefail
           echo "$TAG" | grep -Eq '^hoehenprobe-[0-9]+$' || { echo "::error::nur hoehenprobe-N, nicht $TAG"; exit 1; }
           pre=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .prerelease)
           [ "$pre" = "true" ] || { echo "::error::$TAG ist keine Vorabversion - nicht gelöscht"; exit 1; }
