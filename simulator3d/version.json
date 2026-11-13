@@ -5,7 +5,7 @@
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
  "size": 54429040,
  "sha256": "951424876f61691a5c558f09ddfd76452d2ce073a6a0e2613e5e229bb05da8b8",
- "notes": "HP: Controller koppeln ohne Tippen (Knopf «Controller koppeln», Liste mit Akkustand, Trennen, Vergessen); Steuerknüppel zählen jetzt als «Spielen»; mit USB-C-Kabel sofort, mit Bluetooth sobald ein USB-Bluetooth-Stick steckt. Der Simulator holt künftige Versionen als Anhang (spart Platz im Projekt); am Simulator selbst ändert sich nichts.",
+ "notes": "HP: Controller koppeln ohne Tippen (Knopf «Controller koppeln», Liste mit Akkustand, Trennen, Vergessen); Steuerknüppel zählen jetzt als «Spielen»; mit USB-C-Kabel sofort, mit Bluetooth sobald ein USB-Bluetooth-Stick steckt. Der Simulator holt künftige Versionen als Anhang (spart Platz im Projekt); am Simulator selbst ändert sich nichts. · Neuere Versionen holt sich der Simulator nach dem Start selbst (zweites Update). Für den Download der neusten Version direkt aus MoveEye: bitte zuerst MoveEye aktualisieren.",
  "mw_min": "3.55.0",
  "linux": {
   "file": "simulator3d/MoveEyeSim3D_Linux.zip",
@@ -15,9 +15,30 @@
  },
  "pi": {
   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.67.2",
-  "size": 37962857,
-  "sha256": "0a44914d33d3f53e3a983c47716a3c35fe4810b59b9e3af2b83d5dea5c1b6bf3",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.67.2/MoveEyeSim3D_Pi.zip"
+  "ver": "3.68.0",
+  "size": 37978967,
+  "sha256": "42c408cf85e959e54c2cac9cb07dceb1f87d117694db6f06ad043b3deeba1cc6",
+  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.68.0/MoveEyeSim3D_Pi.zip"
+ },
+ "anhang": {
+  "ver": "3.68.0",
+  "version": "3D-5.68.0",
+  "name": "MoveEye Sim 3.68.0",
+  "notes": "Karte «Simulator-PC» (Ausschalten, Browser), Kopf steuern ohne MoveEye",
+  "mw_min": "3.55.0",
+  "win": {
+   "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
+   "ver": "3.68.0",
+   "size": 54443573,
+   "sha256": "cd95de05cea6279737fb3cac7238380991028c6fb1958f967294a4b9236d3adc",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.68.0/MotionWatch3D_Simulator.zip"
+  },
+  "linux": {
+   "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
+   "ver": "3.68.0",
+   "size": 48493318,
+   "sha256": "c2e19a7a0122e9bb81059e30f764e3ba225b6e9988097186aea322f045e3f721",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.68.0/MoveEyeSim3D_Linux.zip"
+  }
  }
 }
