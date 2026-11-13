@@ -26,6 +26,9 @@ extends PanelContainer
 ## «Teil 2» auf der letzten Seite nach Kapitel 5, Blinki als Helfer (abenteuer_blinki.gd), ein Level für alles (spielbereich.gd
 ## level() zählt die Abenteuer-Erfahrung mit), Kinder-Modus (main.kids_on: immer Leicht, kein Eis / keine Felsstufe /
 ## kein Steinschlag / kein Gewitter, kein Hunger, kurze Texte).
+## Als Person (Besitzer 13.11.2026, explore_person.gd): unterwegs und am Nachtlager der Knopf «🚶 Person» / «🚜 Mover» -
+## man geht als Person mit der Gruppe mit (bis 110 m weg, wie zu zweit) und findet selbst, was zu zweit die Wanderer finden
+## (abenteuer_geheim.gd walkers()); solange Erkunden läuft, fliegt die Fensteransicht nicht mit der Tour (_fly_view, _intro).
 
 const D = preload("res://scripts/bergtal_abenteuer_daten.gd")
 const T = preload("res://scripts/i18n.gd")
@@ -429,7 +432,7 @@ func start_run(seed_v := 0) -> Dictionary:
 # =======================================================================================================================
 func _intro() -> void:
 	var b = bt()
-	if fast or replaying or b == null or not bool(SS.setting("szenen", true)) or main.view_cam == null:
+	if fast or replaying or b == null or not bool(SS.setting("szenen", true)) or main.view_cam == null or _own_view():
 		_advance()
 		return
 	var ch := chapter()
@@ -711,8 +714,35 @@ func _along(pts: Array, f: float) -> Vector2:
 	return pts[-1]
 
 
+func _own_view() -> bool:
+	"""13.11.2026: exploring (as a person or with the mover) steers the view itself - the tour does not fly it"""
+	return main.explore != null and bool(main.explore.on)
+
+
+func _person_btn(parent: Control) -> void:
+	"""13.11.2026: «🚶 Person» / «🚜 Mover» (explore_person.gd) - unterwegs und am Nachtlager; weg, wo es nicht geht"""
+	var ex = main.explore
+	if ex == null or not ex.person_ok():
+		return
+	var p_on: bool = ex.person_on()
+	var b := Button.new()
+	b.text = ("🚜 " + T.t("Mover")) if p_on else ("🚶 " + T.t("Person"))
+	b.tooltip_text = T.t("U · zurück in den Mover (MoveEye fährt mit)") if p_on else T.t("U · selbst als Person mitgehen: Steinmännchen, Aussichtspunkte, Funde (bis 110 m von der Gruppe)")
+	b.name = "person_btn"
+	b.pressed.connect(func():
+		ex.set_person(not ex.person_on())
+		_changed())
+	parent.add_child(b)
+	preload("res://scripts/symbole.gd").deco_button(b)
+
+
+var _person_seen := false
+
+
 func _fly_view(wp: Vector3, ahead: Vector3) -> void:
 	"""the window view walks along: a bit behind and above the walker, looking ahead"""
+	if _own_view():
+		return                                           # 13.11.2026: Erkunden / als Person: the view is theirs
 	var d := ahead - wp
 	d.y = 0.0
 	if d.length() < 0.5:
@@ -1864,6 +1894,10 @@ func _unhandled_key_input(ev: InputEvent) -> void:
 
 
 func _process(dt: float) -> void:
+	var pon: bool = main.explore != null and main.explore.person_on()
+	if pon != _person_seen:                              # 13.11.2026: switched with U / Select: the button shows it
+		_person_seen = pon
+		_changed()
 	if not leg.is_empty():
 		_tick_leg(dt)
 	Ruck.tick(self, dt)                                  # A4: Stirnlampe als echtes Licht
@@ -2571,6 +2605,7 @@ func _paint_hud() -> void:
 	if bool(R.get("bach", false)):
 		_btn(acts, T.t("Wasser auffüllen (Bach)"), func(): op({"do": "refill"}), false, not idle)
 	_btn(acts, T.t("Hier übernachten"), func(): op({"do": "camp_here"}), false, not idle or not pe.is_empty())
+	_person_btn(acts)                                    # 13.11.2026: als Person gehen
 	Ruck.hud_buttons(self, acts, idle and pe.is_empty())   # A4: Essen, Quelle, Kochen, Tauschen
 	if _last_read != "" and Stimme.an() and Stimme.moeglich():   # A6: Erzählerstimme
 		_btn(acts, T.t("Seite nochmals vorlesen"), func(): op({"do": "vorlesen"}))
@@ -2606,6 +2641,7 @@ func _paint_camp() -> void:
 		g.add_child(_card(T.t(str(Bt.MOUNTS[k][0])), T.t("Höhe %.1f m") % float(Bt.MOUNTS[k][1]), cur == k, func(): R["mount_pick"] = k; _changed(), not mm[1],
 				"" if mm[1] else T.t({"zelt": "braucht ein Zelt", "stativ": "braucht das Mini-Stativ", "baum": "kein Baum in der Nähe"}.get(k, ""))))
 	var gg := _group(T.t("Lager"))
+	_person_btn(gg)                                      # 13.11.2026: als Person rund ums Lager gehen
 	var row := HBoxContainer.new()
 	gg.add_child(row)
 	var l := _lab(T.t("Windschutzmauer aus Steinen bauen (20 Min., weniger Wind)"), 14)

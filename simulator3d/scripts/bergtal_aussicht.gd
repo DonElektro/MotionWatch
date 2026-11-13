@@ -330,8 +330,9 @@ func observer() -> Dictionary:
 	var cands := []
 	if m.view_mode == 0 and _zoom.is_empty():
 		cands.append(["view", m.view_cam.global_position])
-	if (m.mover_on or (m.explore != null and m.explore.on)) and m.rig.global_position.length() > 2.0:
-		cands.append(["rover", m.rig.global_position + Vector3(0, 1.5, 0)])
+	var wk = m.walker_pos()                                     # 13.11.2026: the person walking counts like the rover
+	if wk is Vector3 and (m.walker_kind() == "person" or (wk as Vector3).length() > 2.0):
+		cands.append([m.walker_kind(), wk + Vector3(0, 1.5, 0)])
 	for c in cands:
 		var q: Vector3 = b.V(c[1])
 		for v in vps:

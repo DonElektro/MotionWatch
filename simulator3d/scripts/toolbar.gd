@@ -38,7 +38,7 @@ const DOCK := [["explore", "compass", "Erkunden", "Start (Controller) · mit dem
 		["place", "move", "Versetzen", "Strg + Klick beim Erkunden · den Mover an eine andere Stelle setzen", []],
 		["mast", "ruler", "Höhe der Kamera", "Bild ↑ / ↓ beim Erkunden · Höhe der Kamera über dem Boden (Stange)", ["mast_up", "mast_dn"]],
 		["invite", "people", "Mitspieler", "J beim Erkunden · QR-Code: Mitspieler mit dem Handy, frei bewegen", []],
-		["view", "lens", "Ansicht", "0 – 3, M, L · Kameras, Karte, Livebild und was angezeigt wird", ["v0", "v1", "v2", "v3", "map", "live", "to_head", "to_top", "exview", "spectate", "cams", "info", "laser", "zones3d", "det3d"]],
+		["view", "lens", "Ansicht", "0 – 3, M, L · Kameras, Karte, Livebild und was angezeigt wird", ["v0", "v1", "v2", "v3", "map", "live", "to_head", "to_top", "exview", "person", "spectate", "cams", "info", "laser", "zones3d", "det3d"]],
 		["windows", "windows", "Fenster", "Karte, Kompass, Livebild … ein / aus und «Anordnung zurücksetzen» (fenster.gd)", []],
 		["panel", "menu", "Menü", "H · das Bedienfeld rechts ein / aus", []],
 		["theme", "theme", "Hell / Dunkel / Rotlicht", "Farben des Bedienfelds wie in MoveEye: Hell → Rotlicht → Dunkel (Rotlicht für die Nacht im Zelt)", []],
@@ -56,6 +56,7 @@ const NAMES := {"patrol": ["Patrouille starten", "Der Mover fährt MoveEye die R
 		"map": ["Karte (M)", "Übersichtskarte oben links"], "live": ["Livebild (L)", "Livebild einer Kamera unter der Karte"],
 		"to_head": ["Zum Kopf", "Zurück zu MoveEye"], "to_top": ["Von oben", "Von oben auf den Platz schauen"],
 		"exview": ["Mover-Ansicht (V)", "Erkunden: hinterher, Fahrersicht, von oben"],
+		"person": ["Als Person gehen (U)", "Erkunden: statt mit dem Mover als Person gehen – nochmals = zurück in den Mover"],
 		"spectate": ["Beobachter (C)", "Wechselnde Kamera-Einstellungen von Mover und Spielern"],
 		"cams": ["Kamerabilder", "Was MoveEye sieht (im Bedienfeld)"], "info": ["Info oben", "Anzeige oben (Steuerung, Tempo, Höhe der Kamera)"],
 		"laser": ["Blickrichtung", "Roter Strahl: wohin die Kamera von MoveEye schaut (nur für dich sichtbar)"],
@@ -376,6 +377,8 @@ func _press(id: String) -> void:
 			main._view_preset("head" if id == "to_head" else "top")
 		"live":
 			main.set_live(not main.live_on)
+		"person":                                    # 13.11.2026: «🚶 Person» / «🚜 Mover» (explore_person.gd)
+			ex.set_person(not ex.person_on())
 		"spectate":
 			ex.spectator(not main.spectate)
 		"invite":
@@ -412,7 +415,7 @@ func _paint() -> void:
 	var st := {"explore": ex.on, "patrol": pt.active, "points": pt.edit == "points", "area": pt.edit == "area" or (pt.mode == "area" and pt.area.size.x > 0.5),
 			"follow": main.mw_follow_on() if main.now() - main.mw_t < 3.0 else pt.follow, "place": main.place_kind == "rover", "spectate": main.spectate, "invite": ex.invite != null and ex.invite.visible,
 			"route": pt.show_route, "map": main.map_on, "cams": main.cam_card != null and main.cam_card.visible, "info": not ex.info_hidden, "laser": main.show_laser, "zones3d": main.show_zones3d, "det3d": main.show_det3d,
-			"panel": main.ui_root.visible, "exview": ex.on, "head": main.headpad != null and main.headpad.visible,
+			"panel": main.ui_root.visible, "exview": ex.on, "person": ex.person_on(), "head": main.headpad != null and main.headpad.visible,
 			"v0": vm == 0 and not ex.on, "v1": vm == 1, "v2": vm == 2, "v3": vm == 3, "live": main.live_on,
 			"templates": main.templates != null and main.templates.visible, "inventar": main.inventar != null and main.inventar.visible,
 			"windows": main.fenster != null and main.fenster.list_open()}

@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.68.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.69.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,15 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.69.0
+3.69.0: Als Person gehen: in «Erkunden» und in «Die Karte des Grossvaters» mit dem Knopf «🚶 Person» (zurück: «🚜 Mover»),
+der Taste U oder Select am Controller 1 Sekunde halten. Gesteuert wie der Mover; Ansicht hinterher, aus den Augen oder von
+oben. In der Geschichte zählt die Person wie ein Wanderer (Steinmännchen, Aussicht, «Hier übernachten»).
+Schnellerer Mover beim Erkunden: Tempo 1,8 / 3 / 5 / 7,5 / 10 m/s (Knopf «Tempo» oben, bleibt gespeichert); Shift schneller,
+aber nie über 10 m/s, und höchstens 5 m/s, solange MoveEye etwas folgt. Auch schnell fährt der Mover nie durch eine Wand.
+So testest du: Erkunden starten, oben «Tempo» bis 10 m/s antippen und losfahren; dann «🚶 Person» (oder U) und zu Fuss
+weitergehen; mit «🚜 Mover» zurück – die Person bleibt stehen, die Ansicht geht zum Mover.
 
 NEU IN 3.68.0
 3.68.0: «Kopf steuern» geht jetzt auch ohne MoveEye: die Pfeile, ⌂, das Ziehen im Bild und der Controller drehen dann den
