@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-13 15:15",
+ "generated": "2026-11-13 18:11",
  "versions": [
+  {
+   "version": "3.87.0",
+   "file": "webcam_bewegung_3_87_0.py",
+   "url": "",
+   "sha256": "3fb9aa489d8946570582ac74c63991439ba1ea5b87101f26737886865ac7791a",
+   "date": "2026-11-13 18:11",
+   "notes": "Nachtsicht: Die Kachel «🌙 Nachtsicht» schaltet jetzt wirklich aus, auch wenn «Heute Nacht bewachen» die automatische Nachtsicht eingeschaltet hatte (sie bleibt dann aus, bis du sie wieder einschaltest). Spiele: «A Dark Room» läuft jetzt auch am iPhone, mit Pfeiltasten am Bildschirm auf der Karte und im Weltraum (Spielesammlung GS-1.17).",
+   "size": 3931138,
+   "sig": "23b02950e394a0fc985856fd20676bb4a23d3b3479bf6b8ff01751858f2ff73da8af52dcd7d4ddba2113bc516580edb87e6aa1513fac9eac057f9a28d6980c00",
+   "data": {
+    "file": "moveeye_daten_3_87_0.zip",
+    "url": "",
+    "sha256": "c1d47db466fb393788e949011f035848557f093aa24ce98534c67a315affed5c",
+    "size": 11068286,
+    "sig": "9ce46544b2f4f28cce5e2896dca232500e04868135ff6f80233c7495344db73662effbfa8a17dcb34a8c8735e6e29d8f2e386345a9f37866b99b95e7349b230e"
+   }
+  },
   {
    "version": "3.86.1",
    "file": "webcam_bewegung_3_86_1.py",
@@ -136,23 +153,6 @@
     "sha256": "d7d7b9179b40406c23485e51059d4f45e4002facdb2ab8a08b9d0aa19cffae75",
     "size": 4948336,
     "sig": "1a9f3eb6ad388f2a48de79219c5e9d1491154e788eff742738d51eea6413166d5fd398ca38985ed0a183c327bc2e90c06fdbcf1143c961aea295cbc3f4508408"
-   }
-  },
-  {
-   "version": "3.78.0",
-   "file": "webcam_bewegung_3_78_0.py",
-   "url": "",
-   "sha256": "06c88eac19fbafc28d1f76705bd355aba191648777fe4a525cf5f6891c7c01ea",
-   "date": "2026-11-11 23:11",
-   "notes": "«Was nun?»: fünf neue Bilder (jetzt 15), noch schwieriger, mit der neuen Stufe «Meister+»; Bilder mit mehreren Räumen und gegen die Zeit; ein Notizbuch sammelt gefundene Hinweise; Bestzeit pro Bild; bisherige Sterne bleiben erhalten.",
-   "size": 3923006,
-   "sig": "50fc93ca827d37a803d098d5ca56598da80646ec0a7e0f42297862cbfff2d8e443f04caf2c0dc937f237f73c29cfef3f2e99a7958e739133f5d26b9e3b8ef505",
-   "data": {
-    "file": "moveeye_daten_3_78_0.zip",
-    "url": "",
-    "sha256": "669826493471521449028bcac21f27d548eaa645d0954293b2b31b7c958f4aed",
-    "size": 4940128,
-    "sig": "4fc8de9fbca33bd339beaca5ff3385d5d09e9577981fa7122f1fe435dee08b113478833d39f27651e5f0f66e3e1be02425392596b632b44accb0c5dd9be8480b"
    }
   },
   {
