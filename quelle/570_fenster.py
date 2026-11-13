@@ -777,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.86.1")
+        self.root.title("MoveEye 3.87.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1155,7 +1155,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.86.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.87.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1613,7 +1613,7 @@ class App:
             dict(id="therm", ic="♨", lb=tr("Thermal"), tip=tr("Thermal picture over the live picture"), on=lambda: CFG["thermal_on"],
                  ok=lambda: bool(CFG["thermal_source"]), go=lambda: self._set("thermal_on", not CFG["thermal_on"])),
             dict(id="nv", ic="☾", lb=tr("Night vision"), tip=tr("Night vision: green picture, thermal outlines and temperatures"),
-                 on=lambda: bool(STATE.get("nightvision")), go=lambda: self._set("nightvision", not CFG["nightvision"])),
+                 on=lambda: bool(STATE.get("nightvision")), go=lambda: nightvision_tile(self._set)),   # 13.11.2026: off also when automatic (230)
             dict(id="marks", ic="▣", lb=tr("Marks"), tip=tr("Mark detected objects (animals, cars ...)"), on=lambda: CFG["show_objects"],
                  go=lambda: self._set("show_objects", not CFG["show_objects"])),
             dict(id="mask", ic="▒", lb=tr("Mask"), tip=tr("Motion mask over the picture: red = what the detection sees as movement"),

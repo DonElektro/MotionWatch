@@ -1,4 +1,4 @@
-Motion Watch Spielesammlung GS-1.16
+Motion Watch Spielesammlung GS-1.17
 Die Spiele bis GS-1.3 sind Open Source (unten), dazu die Kevlaschef- und Quantum-Spiele (ganz unten). Angepasst nur für den Offline-Betrieb:
 Werbung, Statistik (Google Analytics), externe Schriften und nicht lizenzierte Musik/Töne entfernt.
 
@@ -67,6 +67,9 @@ A Dark Room  (adarkroom/)
   Autor: Doublespeak Games
   Quelle: https://github.com/doublespeakgames/adarkroom
   Lizenztext: Lizenzdatei im Ordner
+  Geändert von MoveEye (GS-1.17, weiterhin MPL-2.0): script/engine.js – isMobile() gibt false zurück (am Handy keine
+    Seite mobileWarning.html mehr, Original als Kommentar daneben); index.html – lädt script/mw_pad.js; neu
+    script/mw_pad.js (MPL-2.0): Pfeiltasten am Bildschirm auf Touch-Geräten, nur auf der Karte und im Weltraum.
 
 Schach  (schach/)
   Lizenz: GPL-3.0-or-later (als Ganzes; die Bausteine einzeln wie unten)
