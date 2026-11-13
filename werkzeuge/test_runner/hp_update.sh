@@ -41,6 +41,12 @@
 # sich dann mit der PS-Taste von selbst. Ohne Adapter läuft nichts davon (kein Fehler, keine Verzögerung beim Start).
 # bluetooth.service wird eingeschaltet (startet nur mit Adapter), der Treiber btusb wie hid-playstation geprüft; dazu
 # usbutils / pciutils (HP-Diagnose: lsusb, lspci).
+# Knöpfe des Simulator-PCs (HP_FASSUNG 8, Besitzer 12.11.2026): hp_knoepfe.sh (Benutzer des Kiosks, ohne Rechte), hp_aus.sh
+# mit moveeye-aus.path / .service (Wunsch-Dateien aus_herunterfahren / aus_neustart / aus_bios im Ordner des Kiosks -> der
+# Dienst schaltet als root aus; drei feste Befehle, kein sudo, keine polkit-Regel), browser_leiste.py und in openbox.xml
+# Ctrl+Alt+Z, der Rand oben für die Leiste und «Browser maximiert». Ein Browser wird NICHT installiert (der Knopf nimmt den,
+# der da ist, und sagt sonst «kein Browser»). Dazu eine Prüfung (nur lesen, nur eine Zeile im Protokoll): der Ordner des
+# Test-Runners darf für andere Benutzer nicht lesbar sein - der Browser läuft als Benutzer des Kiosks.
 # Simulator-Anhang (Besitzer 12.11.2026, «Ablage entlasten»; kommt mit Sim 3.67.2 zusammen mit HP_FASSUNG 7 auf den HP): ab der
 # Version NACH Sim 3.67.2 liegt das Linux-Paket nicht mehr im Repository, sondern als Asset am GitHub-Release «sim-X.Y.Z».
 # Es steht dann signiert unter «sim» -> «anhang» -> «linux» in versions.json: «file» = simulator3d/anhang/MoveEyeSim3D_Linux.zip
@@ -70,13 +76,15 @@ PAUSE="/run/moveeye-test/kiosk_pause"
 SPIEL="/run/moveeye-spiel/spielen"
 SPIEL_TMPFILES="/etc/tmpfiles.d/moveeye-spiel.conf"
 KIOSK_TEST="/etc/moveeye-kiosk-test.conf"   # von runner_einrichten.sh (Pause-Datei, TEST_BENUTZER); runner_entfernen.sh nimmt sie weg
-HP_FASSUNG=7                     # 7 = Controller verwalten (Liste, Trennen, Vergessen, udev-Regel, Adapter einstecken genügt); 6 = Zeitplan prüft jedes Mal kurz, Neues wartet höchstens 6 Std. auf eine Pause (Marke «wartet»); 5 = Bildschirm für die Testläufe (TEST_BENUTZER, xhost), 4 = Controller koppeln (Bluetooth), 3 = drei Spuren (Sim aus versions.json «sim»); erhöhen, wenn dieses Skript bei gleicher Version mehr einspielt als die Fassung davor
+HP_FASSUNG=8                     # 8 = Knöpfe des Simulator-PCs (Ausschalten, Browser; moveeye-aus, openbox.xml); 7 = Controller verwalten (Liste, Trennen, Vergessen, udev-Regel, Adapter einstecken genügt); 6 = Zeitplan prüft jedes Mal kurz, Neues wartet höchstens 6 Std. auf eine Pause (Marke «wartet»); 5 = Bildschirm für die Testläufe (TEST_BENUTZER, xhost), 4 = Controller koppeln (Bluetooth), 3 = drei Spuren (Sim aus versions.json «sim»); erhöhen, wenn dieses Skript bei gleicher Version mehr einspielt als die Fassung davor
 STATUS_PORT=8761
 # Pakete, die Kiosk und Testbild brauchen (nur fehlende werden installiert, nichts wird entfernt)
 PAKETE="python3-tk x11-xserver-utils libxss1 unzip curl bluez rfkill usbutils pciutils"   # bluez, rfkill: Controller per Bluetooth koppeln; usbutils, pciutils: HP-Diagnose (lsusb, lspci)
 KOPPELN_DIENST="/etc/systemd/system/moveeye-controller-koppeln.service"
 KOPPELN_PFAD="/etc/systemd/system/moveeye-controller-koppeln.path"
 UDEV_REGEL="/etc/udev/rules.d/71-moveeye-controller.rules"
+AUS_DIENST="/etc/systemd/system/moveeye-aus.service"
+AUS_PFAD="/etc/systemd/system/moveeye-aus.path"
 MUSTER='^([^ ]*/)?MoveEyeSim3D\.x86_64( |$)'
 
 MODUS=lauf OHNE_LAUF=0 IMMER=0 PLANLAUF=0
@@ -394,10 +402,16 @@ kiosk() {   # kiosk ORDNER -> setzt KIOSK_NEU
 	einspielen "$d/moveeye-sim.png" "$KIOSK_LIB/moveeye.png" 644
 	einspielen "$d/controller_koppeln.sh" "$KIOSK_LIB/controller_koppeln.sh" 755
 	einspielen "$d/controller_fenster.py" "$KIOSK_LIB/controller_fenster.py" 644
+	einspielen "$d/hp_knoepfe.sh" "$KIOSK_LIB/hp_knoepfe.sh" 755
+	einspielen "$d/hp_aus.sh" "$KIOSK_LIB/hp_aus.sh" 755
+	einspielen "$d/browser_leiste.py" "$KIOSK_LIB/browser_leiste.py" 644
 	spiel_ordner
 	koppeln_dienst
 	controller_udev
+	aus_dienst
 	openbox_taste && KIOSK_NEU=1
+	openbox_browser && KIOSK_NEU=1
+	browser_schutz
 	status_firewall
 	test_bildschirm
 	return 0
@@ -537,6 +551,110 @@ EOF
 		if systemctl enable bluetooth.service >/dev/null 2>&1; then log "bluetooth.service eingeschaltet (startet nur mit Adapter)"
 		else log "Hinweis: bluetooth.service nicht eingeschaltet"; fi
 	fi
+	return 0
+}
+
+aus_dienst() {   # HP_FASSUNG 8: «Ausschalten» im Simulator - Pfad-Einheit (Wunsch-Datei des Kiosks) startet den Dienst (root)
+	local tmp neu=0
+	[ -f "$KIOSK_LIB/hp_aus.sh" ] || return 0
+	tmp="$(mktemp)"
+	cat > "$tmp" <<EOF
+# MoveEye: Simulator-PC ausschalten / neu starten / neu starten ins BIOS (moveeye-hp-update). Startet nur über
+# moveeye-aus.path (leere Wunsch-Datei des Kiosks: es zählt nur der Dateiname) oder von Hand; nimmt keine Angaben an und
+# führt nur drei feste Befehle aus (hp_aus.sh). Kein Startlimit: das Skript bremst selbst (1 s pro Lauf).
+[Unit]
+Description=MoveEye: Simulator-PC ausschalten (Knopf im Simulator)
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+ExecStart=$KIOSK_LIB/hp_aus.sh
+TimeoutStartSec=60
+RuntimeDirectory=moveeye-aus
+RuntimeDirectoryMode=0755
+RuntimeDirectoryPreserve=yes
+NoNewPrivileges=yes
+ProtectHome=yes
+ProtectSystem=full
+PrivateTmp=yes
+EOF
+	neu_ist "$tmp" "$AUS_DIENST" && install -D -m 644 "$tmp" "$AUS_DIENST" && neu=1
+	cat > "$tmp" <<EOF
+# MoveEye: Wunsch «Ausschalten» vom Kiosk (leere Dateien aus_herunterfahren / aus_neustart / aus_bios) -> moveeye-aus.service
+[Unit]
+Description=MoveEye: Wunsch «Ausschalten» vom Kiosk
+
+[Path]
+PathExistsGlob=$(dirname "$SPIEL")/aus_*
+Unit=moveeye-aus.service
+
+[Install]
+WantedBy=paths.target
+EOF
+	neu_ist "$tmp" "$AUS_PFAD" && install -D -m 644 "$tmp" "$AUS_PFAD" && neu=1
+	rm -f "$tmp"
+	rm -f -- "$(dirname "$SPIEL")"/aus_herunterfahren "$(dirname "$SPIEL")"/aus_neustart "$(dirname "$SPIEL")"/aus_bios 2>/dev/null   # nie mit einem alten Wunsch einschalten
+	if [ $neu -eq 1 ]; then
+		log "neu: Ausschalten aus dem Simulator ($AUS_PFAD, $AUS_DIENST)"
+		GEAENDERT=$((GEAENDERT + 1))
+		systemctl daemon-reload
+		systemctl enable moveeye-aus.path >/dev/null 2>&1 || log "FEHLER: moveeye-aus.path nicht eingeschaltet"
+		systemctl restart moveeye-aus.path >/dev/null 2>&1
+	elif ! systemctl is-enabled -q moveeye-aus.path 2>/dev/null; then
+		systemctl enable --now moveeye-aus.path >/dev/null 2>&1 || log "FEHLER: moveeye-aus.path nicht eingeschaltet"
+	fi
+	return 0
+}
+
+openbox_browser() {   # HP_FASSUNG 8: Ctrl+Alt+Z (zurück vom Browser), Rand oben für die Leiste, Browser maximiert; Exit 0 = geändert
+	local ob="$KIOSK_LIB/openbox.xml" tmp
+	[ -f "$ob" ] && [ ! -L "$ob" ] || return 1
+	[ -f "$KIOSK_LIB/hp_knoepfe.sh" ] || return 1
+	grep -q 'hp_knoepfe.sh zurueck' "$ob" && return 1
+	tmp="$(mktemp)"
+	if ! python3 -I -c 'import sys, xml.dom.minidom
+z = open(sys.argv[1], encoding="utf-8").read().splitlines(keepends=True)
+def vor(marke, neu):
+    for i, ln in enumerate(z):
+        if marke in ln:
+            z[i:i] = [x + "\n" for x in neu]
+            return
+    sys.exit(1)
+vor("</keyboard>", [chr(32) * 4 + "<keybind key=\"C-A-z\"><action name=\"Execute\"><command>/usr/local/lib/moveeye-kiosk/hp_knoepfe.sh zurueck</command></action></keybind>"])
+if not any("<margins>" in ln for ln in z):
+    vor("<applications>", ["  <margins><top>40</top><bottom>0</bottom><left>0</left><right>0</right></margins>"])
+vor("</applications>", [chr(32) * 4 + "<application class=\"?irefox*\" type=\"normal\"><decor>no</decor><maximized>yes</maximized><focus>yes</focus></application>",
+                        chr(32) * 4 + "<application class=\"?hromium*\" type=\"normal\"><decor>no</decor><maximized>yes</maximized><focus>yes</focus></application>"])
+t = "".join(z)
+xml.dom.minidom.parseString(t.encode("utf-8"))
+open(sys.argv[2], "w", encoding="utf-8").write(t)' "$ob" "$tmp" 2>/dev/null; then
+		rm -f "$tmp"; log "Hinweis: openbox.xml sieht anders aus als erwartet - Ctrl+Alt+Z und die Browser-Regeln nicht eingetragen"; return 1
+	fi
+	if grep -q 'hp_knoepfe.sh zurueck' "$tmp" && einspielen "$tmp" "$ob" 644 "Ctrl+Alt+Z: vom Browser zurück; Rand für die Leiste"; then
+		rm -f "$tmp"; return 0
+	fi
+	rm -f "$tmp"
+	return 1
+}
+
+browser_schutz() {   # HP_FASSUNG 8, nur lesen: der Browser läuft als Benutzer des Kiosks - an die Dateien des Runners darf er nicht
+	local d m u b
+	[ -f "$KIOSK_LIB/hp_knoepfe.sh" ] || return 0
+	for d in "$(dirname "$RD")" "$RD"; do
+		[ -d "$d" ] || continue
+		m="$(stat -c %a "$d")"
+		(( 8#$m & 007 )) && log "WARNUNG: $d ist für alle Benutzer zugänglich (Rechte $m) - sollte 750 sein (runner_einrichten.sh); der Browser des Kiosks könnte die Anmeldung des Runners lesen"
+	done
+	u="$(kiosk_benutzer)" || return 0
+	if id -nG "$u" 2>/dev/null | tr ' ' '\n' | grep -qx "$RU"; then
+		log "WARNUNG: der Benutzer des Kiosks ist in der Gruppe $RU - damit kann der Browser Dateien des Runners lesen"
+	fi
+	b=""
+	for d in firefox firefox-esr chromium chromium-browser; do command -v "$d" >/dev/null 2>&1 && { b="$d"; break; }; done
+	[ -f "$ZUSTAND/browser_gemeldet" ] && [ "$(cat "$ZUSTAND/browser_gemeldet" 2>/dev/null)" = "${b:-keiner}" ] && return 0
+	mkdir -p "$ZUSTAND" && echo "${b:-keiner}" > "$ZUSTAND/browser_gemeldet"
+	if [ -n "$b" ]; then log "Browser für den Knopf im Simulator: $b (nichts installiert)"
+	else log "Hinweis: kein Browser installiert (firefox / chromium) - der Knopf «Browser» im Simulator sagt das; installieren: sudo apt install firefox"; fi
 	return 0
 }
 

@@ -70,6 +70,12 @@ CONTROLLER_KNOPF="${CONTROLLER_KNOPF:-aus}"   # kleiner Knopf «Controller koppe
 TESTBILD="$LIB/testbild.py"
 WACHE="$LIB/hp_wache.py"
 KOPPELN="$LIB/controller_fenster.py"
+# Knöpfe des Simulator-PCs (HP_FASSUNG 8): der Simulator zeigt die Karte «Simulator-PC» (Controller koppeln, Browser,
+# Ausschalten) nur, wenn diese Variable auf hp_knoepfe.sh zeigt - also nur in diesem Kiosk. Ctrl+Alt+Z = zurück vom Browser.
+KNOEPFE="$LIB/hp_knoepfe.sh"
+[ -x "$KNOEPFE" ] && export MOVEEYE_HP_KIOSK="$KNOEPFE"
+BROWSER_MARKE=""
+[ -n "$SPIEL_DATEI" ] && BROWSER_MARKE="$(dirname "$SPIEL_DATEI")/browser_offen"
 LOGO="$LIB/moveeye.png"
 mkdir -p "$LOGDIR" "$RUN"
 
@@ -143,7 +149,15 @@ testbild_aus() {
 	return 0
 }
 
+browser_offen() {   # ist der Browser offen (Marke von hp_knoepfe.sh, Puls alle 5 s)? Dann ist der Simulator angehalten.
+	[ -n "$BROWSER_MARKE" ] && [ -f "$BROWSER_MARKE" ] || return 1
+	local m
+	m=$(stat -c %Y "$BROWSER_MARKE" 2>/dev/null) || return 1
+	[ $(( $(date +%s) - m )) -lt 30 ]
+}
+
 sim_stoppen() {
+	sim_signal CONT                                 # war er für den Browser angehalten: weiterlaufen lassen, damit er sauber endet
 	sim_signal TERM
 	local i
 	for i in 1 2 3 4 5 6 7 8 9 10; do
@@ -201,6 +215,7 @@ schleife() {
 		if [ -n "$PAUSE_DATEI" ]; then                   # alle 3 s schauen, ob ein Testlauf den Bildschirm braucht
 			while kill -0 "$kind" 2>/dev/null; do
 				if pausiert; then sim_stoppen; break; fi
+				browser_offen || sim_signal CONT        # Sicherung: ohne offenen Browser bleibt der Simulator nie angehalten
 				sleep 3 & warte=$!; wait "$warte"
 			done
 		fi

@@ -589,6 +589,11 @@ func _build_ui() -> void:
 	main.mehr.main = main
 	main.add_child(main.mehr)
 	main.mehr.build(box_)
+	if preload("res://scripts/hp_kiosk.gd").helper_path() != "":   # only in the kiosk of the simulator PC (kiosk_sitzung.sh): Controller koppeln, Browser, Ausschalten
+		main.hp_kiosk = preload("res://scripts/hp_kiosk.gd").new()
+		main.hp_kiosk.main = main
+		main.add_child(main.hp_kiosk)
+		main.hp_kiosk.build(box_)
 	# Kinder | Erwachsene: on top (3D-3.90); Einfach | Experte is in the bar (leiste)
 	var se: Control = main.simple_seg
 	main.kids_seg = main.UI.segment("Kinder", "Erwachsene", not main.kids_on, func(adult): main._kids_switch(adult), true)   # 3D-3.69
@@ -768,6 +773,9 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	main.toolbar = preload("res://scripts/toolbar.gd").new()       # 3D-3.61: everything with the mouse
 	main.toolbar.main = main
 	layer.add_child(main.toolbar)
+	main.kopf_selbst = preload("res://scripts/kopf_selbst.gd").new()   # without MoveEye: «Kopf steuern» turns the head here
+	main.kopf_selbst.main = main
+	main.add_child(main.kopf_selbst)
 	main.headpad = preload("res://scripts/headpad.gd").new()       # 3D-3.77: steer the head of MoveEye
 	main.headpad.main = main
 	main.headpad.theme = th

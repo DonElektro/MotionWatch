@@ -47,7 +47,8 @@ if [ "$PI" = 1 ]; then
 	exit 0
 fi
 cp "$BIN" "$W/MoveEyeSim3D/MoveEyeSim3D.x86_64"
-for f in installieren.sh kiosk_ein.sh kiosk_aus.sh kiosk_sitzung.sh testbild.py hp_wache.py controller_koppeln.sh controller_fenster.py; do
+for f in installieren.sh kiosk_ein.sh kiosk_aus.sh kiosk_sitzung.sh testbild.py hp_wache.py controller_koppeln.sh controller_fenster.py \
+	hp_knoepfe.sh hp_aus.sh browser_leiste.py; do   # HP_FASSUNG 8: Knöpfe des Simulator-PCs (Ausschalten, Browser)
 	cp "$R/simulator3d/beilagen_linux/$f" "$W/MoveEyeSim3D/"
 done
 mkdir -p "$W/MoveEyeSim3D/hp"
@@ -57,9 +58,10 @@ done
 cp "$R/simulator3d/icon_sim3d.png" "$W/MoveEyeSim3D/moveeye-sim.png"
 cp "$R/simulator3d/Lies mich.txt" "$W/MoveEyeSim3D/"
 chmod 755 "$W/MoveEyeSim3D/MoveEyeSim3D.x86_64" "$W/MoveEyeSim3D/installieren.sh" "$W/MoveEyeSim3D/kiosk_ein.sh" \
-	"$W/MoveEyeSim3D/kiosk_aus.sh" "$W/MoveEyeSim3D/kiosk_sitzung.sh" "$W/MoveEyeSim3D/controller_koppeln.sh"
+	"$W/MoveEyeSim3D/kiosk_aus.sh" "$W/MoveEyeSim3D/kiosk_sitzung.sh" "$W/MoveEyeSim3D/controller_koppeln.sh" \
+	"$W/MoveEyeSim3D/hp_knoepfe.sh" "$W/MoveEyeSim3D/hp_aus.sh"
 chmod 644 "$W/MoveEyeSim3D/moveeye-sim.png" "$W/MoveEyeSim3D/Lies mich.txt" "$W/MoveEyeSim3D/testbild.py" "$W/MoveEyeSim3D/hp_wache.py" "$W/MoveEyeSim3D/controller_fenster.py" \
-	"$W/MoveEyeSim3D/hp/runner_dienst.conf"
+	"$W/MoveEyeSim3D/browser_leiste.py" "$W/MoveEyeSim3D/hp/runner_dienst.conf"
 chmod 755 "$W/MoveEyeSim3D/hp" "$W/MoveEyeSim3D/hp/"*.sh
 rm -f "$OUT.tmp"
 (cd "$W" && zip -q -9 -r "$OUT.tmp" MoveEyeSim3D)
