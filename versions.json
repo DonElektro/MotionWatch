@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-12 22:46",
+ "generated": "2026-11-13 12:28",
  "versions": [
   {
-   "version": "3.86.0",
-   "file": "webcam_bewegung_3_86_0.py",
+   "version": "3.86.1",
+   "file": "webcam_bewegung_3_86_1.py",
    "url": "",
-   "sha256": "ac776ed460f139c34026af929d322adbdcdf6e4221761511e35ff17f53c8ea53",
-   "date": "2026-11-12 22:45",
-   "notes": "Neu: Morse-Modus (Mehr → «📡 Morse-Modus», nur Administrator, mit PIN wenn der Schutz an ist). Solange er läuft, ist der Schutz PAUSIERT – 10 Minuten, höchstens 30, danach ist alles wie vorher. Senden mit weissem Licht, Infrarot, Relais, Status-LED oder Lautsprecher (sichtbares Licht blinkt nie schneller als 3-mal pro Sekunde); Lesen mit der Kamera, der Text erscheint im Live-Bild, im Verlauf und als eine Push-Meldung. Ein empfangener Text ist nie ein Befehl.",
-   "size": 3930216,
-   "sig": "8b27d8283e99863e5fa2e1d2abf51ab8730cb22b059125121653fcd786696a3966f3376cdb1c04aaeefcd28d5262d2331faef510c1b2a96f59bef1850fc83c02",
+   "sha256": "11daa40d6ed7167ade7e2a1a22453fa9bead410e14e89abd79a75e2af7be350e",
+   "date": "2026-11-13 12:28",
+   "notes": "Touren: Die «Höhendaten Schweiz» sind da (60 MB, swisstopo DHM25, 25 m). Der Administrator lädt sie auf der Karte unter «Touren»; danach bekommen auch gezeichnete Routen Auf- und Abstieg, Höhenprofil und Wanderzeit. Ausserhalb der Daten steht «keine Höhendaten». Bei gezeichneten Routen heisst der Hinweis neu «aus dem Höhenmodell, geglättet».",
+   "size": 3930680,
+   "sig": "9a89710ae3e20062db61edc8d582410831d9173e328745c86908d275f30dc667f9ea72a8ca56d8fc813705afaf0612e628b3739f55a7e366c20b403e0fd7e00b",
    "data": {
-    "file": "moveeye_daten_3_86_0.zip",
+    "file": "moveeye_daten_3_86_1.zip",
     "url": "",
-    "sha256": "5a4f070a3844f8720b74dd25927f1ac59054de1f797595909185ddb789dec9a4",
-    "size": 11064794,
-    "sig": "31d98c5ff07c929090884531a171a4a799d07f315c0dee09ecd9f39af9efc54f8ae125b95ce48171d156a91c02e433d7e46ff41277cf10f6b14ff035a98e1305"
+    "sha256": "e9d2342116805b526dc26dda7e55cb8abb149d08cdbc13020943cd0d738e91d4",
+    "size": 11066088,
+    "sig": "2f487b68475be4f5c8e68cf4404dbf2f3e624620b00fbde0dbf486dca268b8e51dcd7e6914db561d9a3a635b282faf326296109553aa0c660b4ca5013c7adc0d"
    }
   },
   {

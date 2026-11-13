@@ -228,7 +228,7 @@ def teil_a(datei):
         c.post("/api/touren/import?name=" + urllib.request.quote(name), data=data, headers=dict(h, **{"Content-Type": "application/octet-stream"})))
     ok(lst(HK)[0] == 403 and imp(kml, HK)[0] == 403 and api({"action": "save", "name": "x", "pts": [[47, 8], [47.1, 8]]}, HK)[0] == 403, "Kind (ohne Datei-Rechte): sieht und ändert nichts")
     code, j = lst(HA)
-    ok(code == 200 and j["tours"] == [] and j["me"]["edit"] and not j["me"]["admin"] and not j["hoehe"]["pinned"], "Familie: leere Liste, darf bearbeiten; Höhenpaket «kommt mit einem Update»")
+    ok(code == 200 and j["tours"] == [] and j["me"]["edit"] and not j["me"]["admin"] and j["hoehe"]["pinned"] == ns["kh_pinned"](), "Familie: leere Liste, darf bearbeiten; Höhenpaket wie im Programm gepinnt (ab 3.86.1: hoehen-1)")
     code, j = imp(kml, HA, "Seon – Probe.kml")
     T1 = (j.get("tour") or {}).get("id", "")
     ok(code == 200 and j["tour"]["name"] == "Seon – Probetour" and j["tour"]["kind"] == "import" and j["tour"]["up"] == round(up) and len(j["tour"]["line"]) <= 1500
@@ -364,6 +364,9 @@ def teil_a(datei):
     wahr_up = sum(max(0.0, prof[i] - prof[i - 1]) for i in range(1, 401)); wahr_dn = sum(max(0.0, prof[i - 1] - prof[i]) for i in range(1, 401))
     ok(code == 200 and t["ele"] and t["smooth"] and abs(t["up"] - wahr_up) <= 6 and abs(t["down"] - wahr_dn) <= 6 and len(t["profile"]) > 50 and t["min"] > 0,
        f"gezeichnete Route mit Höhen aus dem Paket: +{t['up']} / −{t['down']} m (Vorlage +{wahr_up:.0f} / −{wahr_dn:.0f}), als «geglättet» gemeldet, Profil, {t['min']} min")
+    ok(t.get("model") is True and "aus dem Höhenmodell" in ns["DE"].get("Ascent and descent from the height model, smoothed.", "")
+       and ns["kt_stats"]([(47.0, 8.0, 500.0), (47.01, 8.0, 510.0)]).get("model") is False,
+       "gezeichnete Route: Hinweis «aus dem Höhenmodell, geglättet» (nicht «unruhige Höhen»); eine Datei bleibt «unruhige Höhen»")   # 3.86.1
     r = ns["kt_parse"](c.get(f"/touren/x/{t['id']}.gpx", headers=HA).data)
     ok(r["pts"][0][2] is not None and abs(r["pts"][0][2] - ea) < 1.5 and abs(r["pts"][1][2] - eb) < 1.5, "Export einer gezeichneten Route: mit den Höhen aus dem Paket")
     code, j = api({"action": "save", "name": "Hinaus", "pts": [list(A), [47.345, 8.60]]}, HA)
