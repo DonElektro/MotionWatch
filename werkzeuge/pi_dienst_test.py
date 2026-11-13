@@ -606,13 +606,15 @@ def fall_f2(L, v):
     L.d.sctl("set-environment", "MW_START_WD=12")
     h = socket.socket(); h.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     h.bind(("0.0.0.0", L.port)); h.listen(5)                    # this test runs as root: the service's user cannot see the holder
-    n0 = L.d.zeig()["NRestarts"]
     try:
-        L.d.sctl("start", UNIT)
+        L.d.sctl("start", UNIT)                                 # («start» after «stop» sets NRestarts to 0 - measured from here)
+        time.sleep(2)
+        z0 = L.d.zeig()
         time.sleep(40)                                          # more than three times the start watchdog (12 s)
         z = L.d.zeig()
-        ok(z["NRestarts"] == n0 and z.get("ActiveState") == "active",
-           "nach 40 s (Wächter 12 s): kein Neustart, Dienst active (Neustarts %s -> %s, %s)" % (n0, z["NRestarts"], z.get("ActiveState")))
+        ok(z["NRestarts"] == z0["NRestarts"] and z.get("MainPID") == z0.get("MainPID") and z.get("ActiveState") == "active",
+           "nach 40 s (Wächter 12 s): kein Neustart, derselbe Prozess, Dienst active (Neustarts %s -> %s, PID %s -> %s, %s)"
+           % (z0["NRestarts"], z["NRestarts"], z0.get("MainPID"), z.get("MainPID"), z.get("ActiveState")))
         lg = L.log()
         ok("used by another program" in lg and "keeps guarding" in lg, "Protokoll: «… used by another program (not visible to this user) … keeps guarding»")
     finally:
