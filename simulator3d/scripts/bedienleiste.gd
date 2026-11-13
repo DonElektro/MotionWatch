@@ -1,7 +1,7 @@
 extends HFlowContainer
 ## Bedienleiste (Paket real-layout-leiste, Besitzer 31.10.2026): dieselbe Leiste wie oben auf jeder Seite von MoveEye
-## (Web 639o #mwbar, Pi-Fenster App._mwbar): «Einfach | Experte» · «Symbole farbig | schlicht» ·
-## «Alle zuklappen · Meine Ansicht · Alle aufklappen» (639r: die Mitte = Meine Ansicht, lange drücken / Rechtsklick = «Nur Gruppen»).
+## (Web 639o #mwbar, Pi-Fenster App._mwbar): «Einfach | Experte» und rechts das Menü «Darstellung» (MoveEye 3.88) mit
+## «Symbole farbig | schlicht» und «Alle zuklappen · Meine Ansicht · Nur Gruppen · Alle aufklappen».
 ## Ein Baustein für jedes Menü-Fenster des Simulators: build(main) mit
 ## einem Objekt, das die drei Wechsel kennt (je EINE Funktion, Review P0):
 ##   set_simple(on: bool)        ui_simple   (true = einfach)
@@ -14,7 +14,8 @@ const T := preload("res://scripts/i18n.gd")
 
 var host: Object
 var simple_seg: HBoxContainer
-var icons_seg: HBoxContainer
+var icons_seg: HBoxContainer              # (before MoveEye 3.88; now in the menu «Darstellung» - stays null)
+var view_btn: MenuButton
 var sg_cb: CheckButton
 var fold_btns := {}
 
@@ -29,27 +30,40 @@ func build(h: Object, fold := true) -> void:
 	simple_seg.custom_minimum_size = Vector2(150, 0)
 	simple_seg.tooltip_text = T.t("Einfach: nur das Wichtigste. «Experte» zeigt alle Einstellungen.")
 	add_child(simple_seg)
-	icons_seg = UI.segment(T.t("Symbole farbig"), T.t("schlicht"), str(h.get("ui_icons")) == "plain",
-		func(plain): h.set_icons("plain" if plain else "color"), true)
-	icons_seg.custom_minimum_size = Vector2(230, 0)
-	icons_seg.tooltip_text = T.t("Symbole: grüner Punkt oder grünes Symbol = eingeschaltet")
-	add_child(icons_seg)
-	# 3.23 (Besitzer 01.11.2026): the switch «Beim Start: Nur Gruppen» is gone - the start is «Meine Ansicht»; «Nur Gruppen» = long press on the middle
-	var fb := HBoxContainer.new()
-	fb.add_theme_constant_override("separation", 6)
-	for k in ["close", "mine", "open"]:
-		var tip: String = {"close": T.t("Alle zuklappen"), "open": T.t("Alle aufklappen"),
-			"mine": T.t("Meine Ansicht") + "\n" + T.t("Meine Ansicht: Die Menüs sind auf- und zugeklappt, wie du sie selbst eingestellt hast. Lange drücken oder Rechtsklick: Nur Gruppen.")}[k]
-		var b := UI.icon_button(k, tip if fold else T.t("Auf dieser Seite gibt es nichts zum Klappen"))
-		b.custom_minimum_size = Vector2(34, 32)
-		b.disabled = not fold
-		if fold and k == "mine":
-			_mine_button(b, h)
-		elif fold:
-			b.pressed.connect(func(): h._fold_all(k, true))
-		fb.add_child(b)
-		fold_btns[k] = b
-	add_child(fb)
+	# MoveEye 3.88 (Design «Klar» Etappe 1, Besitzer 13.11.2026): «Symbole» and the fold buttons are in ONE menu «Darstellung»
+	# at the right end of the bar (like the web bar 639o and the Pi window); «Einfach | Experte» stays visible.
+	# «Nur Gruppen» is its own line (before only a long press on «Meine Ansicht»).
+	var sp := Control.new()
+	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	add_child(sp)
+	view_btn = MenuButton.new()
+	view_btn.text = T.t("Darstellung") + " ▾"
+	view_btn.flat = false
+	view_btn.custom_minimum_size = Vector2(0, 36)
+	view_btn.tooltip_text = T.t("Symbole: grüner Punkt oder grünes Symbol = eingeschaltet")
+	var pm: PopupMenu = view_btn.get_popup()
+	pm.add_separator(T.t("Symbole"))
+	pm.add_radio_check_item(T.t("Symbole farbig"), 1)
+	pm.add_radio_check_item(T.t("schlicht"), 2)
+	pm.add_separator(T.t("Menüs auf- und zuklappen"))
+	for it in [["close", T.t("Alle zuklappen"), 10], ["mine", T.t("Meine Ansicht"), 11], ["groups", T.t("Nur Gruppen"), 12], ["open", T.t("Alle aufklappen"), 13]]:
+		pm.add_item(it[1], it[2])
+		pm.set_item_disabled(pm.get_item_index(it[2]), not fold)
+	if not fold:
+		pm.set_item_tooltip(pm.get_item_index(10), T.t("Auf dieser Seite gibt es nichts zum Klappen"))
+	_paint_icons(str(h.get("ui_icons")))
+	pm.id_pressed.connect(_on_view)
+	add_child(view_btn)
+
+
+func _on_view(id: int) -> void:
+	"""a line of the menu «Darstellung»"""
+	if id == 1 or id == 2:
+		var v := "color" if id == 1 else "plain"
+		host.set_icons(v)
+		_paint_icons(v)
+	elif id >= 10 and id <= 13:
+		host._fold_all(["close", "mine", "groups", "open"][id - 10], true)
 
 
 func paint(simple: bool, icons: String, start_groups: bool) -> void:
@@ -58,8 +72,17 @@ func paint(simple: bool, icons: String, start_groups: bool) -> void:
 		simple_seg.get_meta("paint").call(not simple)
 	if icons_seg != null and icons_seg.has_meta("paint"):
 		icons_seg.get_meta("paint").call(icons == "plain")
+	_paint_icons(icons)
 	if sg_cb != null and sg_cb.button_pressed != start_groups:
 		sg_cb.set_pressed_no_signal(start_groups)
+
+
+func _paint_icons(icons: String) -> void:
+	if view_btn == null:
+		return
+	var pm: PopupMenu = view_btn.get_popup()
+	pm.set_item_checked(pm.get_item_index(1), icons != "plain")
+	pm.set_item_checked(pm.get_item_index(2), icons == "plain")
 
 
 var _hold_t := -1.0
