@@ -20,8 +20,9 @@ Update-Quelle: lokaler HTTPS-Server mit eigenem Zertifikat und Wegwerf-Schlüsse
   d  kill -9 des Hauptprozesses: systemd startet neu (neue PID, Seite kommt) - «systemctl stop» (SIGTERM): bleibt aus
   e  Stromausfall: alles hart beendet (SIGKILL), alte Sperr-Datei, halb geschriebene Einstellungen / Update-Datei liegen
      herum -> sauberer Start, Einstellungen aus der Sicherung, kein Neustart-Kreis
-  f  Start-Wächter (140): Start hängt (Port von einem fremden Programm belegt) -> Ende mit Code 1, systemd startet neu,
+  f  Start-Wächter (140): Start hängt (Port von einer hängenden alten MoveEye desselben Benutzers belegt) -> Ende mit Code 1, systemd startet neu,
      start_hang.txt mit den Threads; Port frei -> Seite kommt
+  f2 ein Programm eines anderen Benutzers hält den Port (3.87.1): kein Ende, der Dienst bewacht weiter, die Seite kommt danach
   b  Update in der App (ALT -> NEU, /api/update «install» wie die Taste «Update»), dabei hält ein Hilfsprogramm, das das alte
      Programm gestartet hat, eine Kopie der Web-Steckdose (werkzeug macht sie vererbbar - ein Hilfsprogramm, das ohne
      close_fds gestartet wird, behält sie): beim Start des neuen Programms ist der Port kurz belegt, wie am 13.11. auf dem Pi.
@@ -42,6 +43,7 @@ import os
 import pwd
 import re
 import shutil
+import signal
 import socket
 import subprocess
 import sys
@@ -551,8 +553,18 @@ def fall_f(L, v):
             os.remove(x)
     L.d.sctl("stop", UNIT)
     L.d.sctl("set-environment", "MW_START_WD=12")              # 12 s instead of 90 s (the same code path)
-    h = socket.socket(); h.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    h.bind(("0.0.0.0", L.port)); h.listen(5)                    # a foreign program holds the web port
+    # 3.87.1: a genuinely hung start = a stuck OLD MoveEye of the same user holds the web port (a foreign program would not
+    # end the guard - case f2). Its command line names a MoveEye file, so the service knows: a fresh start helps here.
+    os.makedirs(L.b.ci, exist_ok=True); L.b.gehoert(L.b.ci)
+    alt_py, marke = os.path.join(L.b.ci, "webcam_bewegung_9_9_8.py"), os.path.join(L.b.ci, "alt_bereit")
+    open(alt_py, "w").write("import socket, sys, time\ns = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)\n"
+                            "s.bind(('0.0.0.0', int(sys.argv[1]))); s.listen(5); open(sys.argv[2], 'w').write('ok'); time.sleep(900)\n")
+    L.b.gehoert(alt_py)
+    if os.path.exists(marke):
+        os.remove(marke)
+    hp = subprocess.Popen(L.b.cmd([L.b.py, alt_py, str(L.port), marke]), cwd=L.b.home, start_new_session=True)
+    warte(lambda: os.path.exists(marke), 20, 0.2)
+    h = None
     n0 = L.d.zeig()["NRestarts"]
     try:
         L.d.sctl("start", UNIT)
@@ -571,7 +583,11 @@ def fall_f(L, v):
                 txt += open(x, errors="replace").read()
         ok(tw is not None and ("File" in txt or "Thread" in txt), "start_hang.txt mit den Threads (%d Zeichen)" % len(txt))
     finally:
-        h.close()
+        try:
+            os.killpg(hp.pid, signal.SIGKILL)
+        except OSError:
+            pass
+        hp.wait(10)
     t = warte(lambda: version_da(L.port) == v, L.a.limit + 30)
     ok(t is not None, "Port frei -> Seite antwortet (%s s)" % t)
     ok("The last start hung" in L.log(), "Protokoll: «The last start hung …»")
@@ -581,6 +597,30 @@ def fall_f(L, v):
         L.zeigen("f")
     L.d.sctl("unset-environment", "MW_START_WD")
     L.schritt("f Start-Wächter", t0)
+
+
+def fall_f2(L, v):
+    print("f2 ein Programm eines anderen Benutzers (root) hält den Web-Port: der Dienst bewacht weiter, kein Neustart (3.87.1)")
+    t0 = time.time()
+    L.d.sctl("stop", UNIT)
+    L.d.sctl("set-environment", "MW_START_WD=12")
+    h = socket.socket(); h.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    h.bind(("0.0.0.0", L.port)); h.listen(5)                    # this test runs as root: the service's user cannot see the holder
+    n0 = L.d.zeig()["NRestarts"]
+    try:
+        L.d.sctl("start", UNIT)
+        time.sleep(40)                                          # more than three times the start watchdog (12 s)
+        z = L.d.zeig()
+        ok(z["NRestarts"] == n0 and z.get("ActiveState") == "active",
+           "nach 40 s (Wächter 12 s): kein Neustart, Dienst active (Neustarts %s -> %s, %s)" % (n0, z["NRestarts"], z.get("ActiveState")))
+        lg = L.log()
+        ok("used by another program" in lg and "keeps guarding" in lg, "Protokoll: «… used by another program (not visible to this user) … keeps guarding»")
+    finally:
+        h.close()
+    t = warte(lambda: version_da(L.port) == v, L.a.limit + 30)
+    ok(t is not None, "Port frei -> Seite antwortet ohne Neustart (%s s)" % t)
+    L.d.sctl("unset-environment", "MW_START_WD")
+    L.schritt("f2 fremder Halter", t0)
 
 
 def update(L, von, nach, titel, live=False):
@@ -785,6 +825,7 @@ def main():
                 fall_e(L, L.ver["neu"])
             if "f" in nur:
                 fall_f(L, L.ver["neu"])
+                fall_f2(L, L.ver["neu"])
         # ---- b, c: ALT started by hand (the service follows the version started by hand), then two updates
         if nur & {"b", "c"}:
             t0 = time.time()
