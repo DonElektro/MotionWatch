@@ -136,7 +136,7 @@ def kt_stats(pts, drawn=False):
     D = [0.0] * n
     for i in range(1, n):
         D[i] = D[i - 1] + kt_dist(pts[i - 1], pts[i])
-    out = {"n": n, "m": round(D[-1], 1) if n else 0.0, "ele": False, "smooth": False}
+    out = {"n": n, "m": round(D[-1], 1) if n else 0.0, "ele": False, "smooth": False, "model": bool(drawn)}   # model: heights from the package
     e = [p[2] for p in pts]
     have = sum(1 for v in e if v is not None)
     if n >= 2 and have >= 2 and have >= 0.8 * n:
@@ -412,7 +412,7 @@ def _kt_thin(pts, n):
 
 def kt_row(t, who):
     s = kt_tour_stats(t)
-    r = {k: s.get(k) for k in ("m", "ele", "smooth", "up", "down", "lo", "hi", "min", "nodata", "need")}
+    r = {k: s.get(k) for k in ("m", "ele", "smooth", "model", "up", "down", "lo", "hi", "min", "nodata", "need")}
     r.update(id=t["id"], name=t["name"], kind=t["kind"], n=len(t["pts"]), area=t["area"], t=t["t"], thinned=t["thinned"], wps=len(t["wps"]),
              mine=bool(who) and t["owner"] == who["key"], by=t["by"] if who else "",
              edit=bool(who) and "files_up" in who["perms"] and kt_can_see(t, who), rm=bool(who) and kt_can_del(t, who))
@@ -537,7 +537,7 @@ def kt_file_name(t, ext):
 KH_TAG = "hoehen-1"
 KH_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + KH_TAG + "/"}   # Tests: lokaler Server
 # Werte aus werkzeuge/karten/hoehe.py (pins.txt des Workflows «Höhendaten»); size 0 = noch nicht freigegeben
-KH_FILE = {"name": "hoehe-ch-1.bin", "size": 0, "sha256": ""}
+KH_FILE = {"name": "hoehe-ch-1.bin", "size": 60515168, "sha256": "8b26a5072db7f5ef5e3887313a756396b945434d177d73ea71d924678e0b2c29"}
 KH_MAX = 1500 * 1000 * 1000
 KH_MAGIC = b"MEHOEHE1"
 KH_BLOCKS = 16
@@ -1007,7 +1007,7 @@ def kt_guest_html(token, tid="", lang=None):
         s = kt_tour_stats(t)
         body = '<div class="nums">' + "".join("<div><span class=\"mut\">%s</span><b>%s</b></div>" % (esc(a), esc(b)) for a, b in kt_numbers(s, lang)) + "</div>"
         if s.get("ele") and s.get("smooth"):
-            body += '<p class="mut">%s</p>' % esc(tr("Ascent and descent smoothed (uneven heights).", lang))
+            body += '<p class="mut">%s</p>' % esc(tr("Ascent and descent from the height model, smoothed." if s.get("model") else "Ascent and descent smoothed (uneven heights).", lang))
         elif not s.get("ele"):
             body += '<p class="mut">%s</p>' % esc(tr("No height data for this route.", lang))
         body += _kt_svg_sketch(t) + _kt_svg_profile(s.get("profile") or [])
@@ -1066,6 +1066,8 @@ _HX_KT = {
                                                "Temp da viandar senza autezzas (4,2 km/h)"),
     "Ascent and descent smoothed (uneven heights).": ("Auf- und Abstieg geglättet (unruhige Höhen).", "Montée et descente lissées (altitudes irrégulières).",
                                                       "Salita e discesa livellate (quote irregolari).", "Ascensiun e descensiun glischadas (autezzas malruassaivlas)."),
+    "Ascent and descent from the height model, smoothed.": ("Auf- und Abstieg aus dem Höhenmodell, geglättet.", "Montée et descente tirées du modèle d’altitude, lissées.",
+                                                            "Salita e discesa dal modello altimetrico, livellate.", "Ascensiun e descensiun dal model d’autezza, glischadas."),   # rm: unsicher
     "smoothed": ("geglättet", "lissé", "livellato", "glischà"),
     "No height data for this route.": ("Keine Höhendaten für diese Route.", "Pas de données d’altitude pour cet itinéraire.", "Nessun dato di quota per questo percorso.",
                                        "Naginas datas d’autezza per questa ruta."),
@@ -1232,7 +1234,7 @@ KT_JS = r"""
     return box;
   }
   function notes(s, into) {
-    if (s.ele && s.smooth) into.appendChild(el("div", "kt-note kt-smooth", "* " + T("Ascent and descent smoothed (uneven heights).")));
+    if (s.ele && s.smooth) into.appendChild(el("div", "kt-note kt-smooth", "* " + T(s.model ? "Ascent and descent from the height model, smoothed." : "Ascent and descent smoothed (uneven heights).")));
     if (!s.ele) into.appendChild(el("div", "kt-note kt-noele", s.nodata ? T("No height data here (outside the height data of Switzerland).")
       : s.need ? T("Ascent, descent and profile need the height data of Switzerland.") : T("No height data for this route.")));
     if (s.thinned) into.appendChild(el("div", "kt-note", T("The track had very many points and was thinned out.")));

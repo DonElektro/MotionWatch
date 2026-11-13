@@ -23,6 +23,9 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.86.1: Touren: Die «Höhendaten Schweiz» sind da (60 MB, swisstopo DHM25, 25 m). Der Administrator lädt sie auf der Karte
+    unter «Touren»; danach bekommen auch gezeichnete Routen Auf- und Abstieg, Höhenprofil und Wanderzeit. Ausserhalb der Daten
+    steht «keine Höhendaten». Bei gezeichneten Routen heisst der Hinweis neu «aus dem Höhenmodell, geglättet».
   * 3.86.0: Neu: Morse-Modus (Mehr → «📡 Morse-Modus», nur Administrator, mit PIN wenn der Schutz an ist). Solange er läuft, ist
     der Schutz PAUSIERT – 10 Minuten, höchstens 30, danach ist alles wie vorher. Senden mit weissem Licht, Infrarot, Relais,
     Status-LED oder Lautsprecher (sichtbares Licht blinkt nie schneller als 3-mal pro Sekunde); Lesen mit der Kamera, der Text
@@ -118,8 +121,6 @@ Features
     Gruppe «⌨️ Am PC mit Tastatur und Maus»); auf iPad/iPhone kommt vor dem Start eine Warnung mit «Trotzdem starten»
   * 3.70.1: Simulator-Betrieb: Hinweis «💧 Linse verschmutzt», wenn im Simulator viel Wasser oder Beschlag auf der Linse ist, mit
     Knopf «🧽 Linse putzen» (ab Sim 3.67.1)
-  * 3.70.0: Spielecke: Wobbly Truck mit neuer Stunt-Piste – 14 wechselnde Abschnitte (Half-Pipe, Tunnel, Lücken, Trampolin …),
-    Supersprünge, neue Stunts, eigener Rekord (Spielesammlung GS-1.7)
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -128,10 +129,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_86_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_86_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_86_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_86_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_86_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_86_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -148,7 +149,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.86.0"
+APP_VERSION = "3.86.1"
 
 
 def default_data_dir():
@@ -275,8 +276,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_86_0.zip"
-ZD_SHA256 = "5a4f070a3844f8720b74dd25927f1ac59054de1f797595909185ddb789dec9a4"
+ZD_FILE = "moveeye_daten_3_86_1.zip"
+ZD_SHA256 = "e9d2342116805b526dc26dda7e55cb8abb149d08cdbc13020943cd0d738e91d4"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -49684,7 +49685,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.86.0")
+		self.root.title("MoveEye 3.86.1")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -50062,7 +50063,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.86.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.86.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -97104,7 +97105,7 @@ def kt_stats(pts, drawn=False):
 	D = [0.0] * n
 	for i in range(1, n):
 		D[i] = D[i - 1] + kt_dist(pts[i - 1], pts[i])
-	out = {"n": n, "m": round(D[-1], 1) if n else 0.0, "ele": False, "smooth": False}
+	out = {"n": n, "m": round(D[-1], 1) if n else 0.0, "ele": False, "smooth": False, "model": bool(drawn)}
 	e = [p[2] for p in pts]
 	have = sum(1 for v in e if v is not None)
 	if n >= 2 and have >= 2 and have >= 0.8 * n:
@@ -97380,7 +97381,7 @@ def _kt_thin(pts, n):
 
 def kt_row(t, who):
 	s = kt_tour_stats(t)
-	r = {k: s.get(k) for k in ("m", "ele", "smooth", "up", "down", "lo", "hi", "min", "nodata", "need")}
+	r = {k: s.get(k) for k in ("m", "ele", "smooth", "model", "up", "down", "lo", "hi", "min", "nodata", "need")}
 	r.update(id=t["id"], name=t["name"], kind=t["kind"], n=len(t["pts"]), area=t["area"], t=t["t"], thinned=t["thinned"], wps=len(t["wps"]),
 			 mine=bool(who) and t["owner"] == who["key"], by=t["by"] if who else "",
 			 edit=bool(who) and "files_up" in who["perms"] and kt_can_see(t, who), rm=bool(who) and kt_can_del(t, who))
@@ -97505,7 +97506,7 @@ def kt_file_name(t, ext):
 KH_TAG = "hoehen-1"
 KH_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + KH_TAG + "/"}
 
-KH_FILE = {"name": "hoehe-ch-1.bin", "size": 0, "sha256": ""}
+KH_FILE = {"name": "hoehe-ch-1.bin", "size": 60515168, "sha256": "8b26a5072db7f5ef5e3887313a756396b945434d177d73ea71d924678e0b2c29"}
 KH_MAX = 1500 * 1000 * 1000
 KH_MAGIC = b"MEHOEHE1"
 KH_BLOCKS = 16
@@ -97964,7 +97965,7 @@ def kt_guest_html(token, tid="", lang=None):
 		s = kt_tour_stats(t)
 		body = '<div class="nums">' + "".join("<div><span class=\"mut\">%s</span><b>%s</b></div>" % (esc(a), esc(b)) for a, b in kt_numbers(s, lang)) + "</div>"
 		if s.get("ele") and s.get("smooth"):
-			body += '<p class="mut">%s</p>' % esc(tr("Ascent and descent smoothed (uneven heights).", lang))
+			body += '<p class="mut">%s</p>' % esc(tr("Ascent and descent from the height model, smoothed." if s.get("model") else "Ascent and descent smoothed (uneven heights).", lang))
 		elif not s.get("ele"):
 			body += '<p class="mut">%s</p>' % esc(tr("No height data for this route.", lang))
 		body += _kt_svg_sketch(t) + _kt_svg_profile(s.get("profile") or [])
@@ -98019,6 +98020,7 @@ _HX_KT = _zd('639zzx_karten_touren/HX_KT', _zd_hx({
 	'Hiking time': 'Wanderzeit',
 	'Hiking time without heights (4.2 km/h)': 'Wanderzeit ohne Höhen (4,2 km/h)',
 	'Ascent and descent smoothed (uneven heights).': 'Auf- und Abstieg geglättet (unruhige Höhen).',
+	'Ascent and descent from the height model, smoothed.': 'Auf- und Abstieg aus dem Höhenmodell, geglättet.',
 	'smoothed': 'geglättet',
 	'No height data for this route.': 'Keine Höhendaten für diese Route.',
 	'No height data here (outside the height data of Switzerland).': 'Keine Höhendaten (ausserhalb der Höhendaten Schweiz).',
