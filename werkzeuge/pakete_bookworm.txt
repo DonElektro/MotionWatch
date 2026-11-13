@@ -1,0 +1,11 @@
+# Python-Pakete wie auf dem Pi (Raspberry Pi OS Bookworm, apt: python3-flask, python3-werkzeug, python3-numpy, python3-opencv,
+# python3-pil, python3-cryptography, python3-psutil - Versionen von Debian 12 «bookworm»). Für den CI-Job «Pi-Dienst»
+# (werkzeuge/pi_dienst_test.py, Gruppe «pidienst»): die anderen Jobs nehmen die neuesten Pakete, der Pi nicht.
+# OpenCV: das Pip-Paket derselben Hauptversion (Debian baut 4.6.0 selbst, ohne Bildschirm-Teil ist es dasselbe Programm).
+flask==2.2.2
+werkzeug==2.2.2
+numpy==1.24.2
+opencv-python-headless==4.6.0.66
+pillow==9.4.0
+cryptography==38.0.4
+psutil==5.9.4

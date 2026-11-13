@@ -22,7 +22,7 @@ import time
 HIER = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HIER)
 LISTE = os.path.join(HIER, "ci_tests.txt")
-GRUPPEN = ["basis", "kern", "rechte", "live", "daten", "spiele-1", "spiele-2", "simlive", "hand"]
+GRUPPEN = ["basis", "kern", "rechte", "live", "daten", "spiele-1", "spiele-2", "simlive", "pidienst", "hand"]
 
 
 def lesen(pfad=LISTE):
