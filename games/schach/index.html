@@ -64,6 +64,7 @@ button,select{font:inherit;color:inherit;border:0;cursor:pointer;-webkit-appeara
 #brett coords.files{left:0;bottom:2px;width:100%;height:auto;text-transform:lowercase;text-align:right}
 #brett coords.files coord{flex:1 1 0;padding-right:3px}
 #brett .cg-shapes{opacity:.85}
+#brett cg-board square.current-premove{background-color:rgba(46,120,235,.55)}
 #balken{position:relative;height:6px;background:#3a3f48;overflow:hidden}
 #balken i{position:absolute;left:0;top:0;bottom:0;width:50%;background:#f1f1ee;transition:width .5s ease}
 #balken b{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--amber);opacity:.8}
@@ -175,6 +176,7 @@ select.w option{background:#16212f;color:#e8eef6}
     <div id="zuege" aria-label="Züge"></div>
     <div id="knoepfe">
       <button class="kn haupt" id="bTipp" type="button">Tipp</button>
+      <button class="kn gelb" id="bVorzug" type="button" hidden aria-label="Vorzug aufheben">✕ Vorzug</button>
       <button class="kn" id="bZurueck" type="button">Zug zurück</button>
       <button class="kn" id="bDrehen" type="button">Brett drehen</button>
       <button class="kn" id="bNeu" type="button">Neues Spiel</button>
@@ -275,6 +277,7 @@ select.w option{background:#16212f;color:#e8eef6}
   <button class="sch" id="schLern" type="button"><span class="t">Lern-Modus<small>warnt vor groben Fehlern, bevor der Zug gilt</small></span><span class="s"></span></button>
   <button class="sch" id="schTon" type="button"><span class="t">Töne</span><span class="s"></span></button>
   <button class="sch" id="schBalken" type="button"><span class="t">Bewertungsbalken<small>zeigt über dem Brett, wer besser steht</small></span><span class="s"></span></button>
+  <button class="sch" id="schVorzug" type="button"><span class="t">Vorziehen (Premove)<small>gegen den Computer und auf zwei Handys schon ziehen, während der Gegner überlegt – gilt sofort nach seinem Zug (nicht im Lern-Modus)</small></span><span class="s"></span></button>
   <button class="sch" id="schDrehen" type="button"><span class="t">Brett automatisch drehen<small>zu zweit: nach jedem Zug zur Seite, die dran ist</small></span><span class="s"></span></button>
   <div class="zl"><button class="kn haupt" id="bEinstZu" type="button">Fertig</button></div>
 </div></div>
