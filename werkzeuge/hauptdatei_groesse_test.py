@@ -14,6 +14,9 @@ Prüft (ohne Netz, ohne Schlüssel):
   4. Almanach: mit ZIP alle Kapitel in der alten Reihenfolge; ohne ZIP bleibt das Kapitel «Notfall» (Liste, Tipp des
      Abends, Seite /almanach mit Notrufnummern und dem Hinweis «Zusatzdaten fehlen»).
   5. Folgezeilen mit Tabs: keine Zeile ausserhalb von Texten beginnt noch mit vier Leerzeichen.
+  6. Zweite Runde (13.11.2026): Hilfsfunktionen nur des Prüf-Codes in der ZIP (nicht, wenn ein Werkzeug oder ein Text sie
+     nennt oder der Betrieb sie braucht); Tabellen _HX… mit Namen als Schlüssel (_zd_hxk: mit ZIP fr / it / rm, ohne ZIP
+     Deutsch, eine veränderte ZIP wird nie benutzt); kleine Übersetzungen fr / it / rm; Ergänzungen der Anleitung.
 """
 import argparse
 import ast
@@ -160,6 +163,59 @@ def main():
             bauen.ZD_PRUEFCODE = alt
     finally:
         zurueck()
+    # zweite Runde: Hilfsfunktionen nur des Prüf-Codes (die Werkzeuge hier aussen vor: dieser Test nennt die Namen selbst)
+    kunst2 = {
+        "100_a.py": ("SELFTEST_EXTRA = []\n\n\ndef h1(x=2):\n    return h2() + x\n\n\ndef h2():\n    return 1\n\n\n"
+                     "def a_selftest():\n    return h1() + h_text() + h_betrieb() + h_rek(1)\n\n\ndef h_text():\n    return 0\n\n\n"
+                     "ROUTE = {'f': 'h_text'}\n\n\ndef h_betrieb():\n    return 0\n\n\ndef betrieb():\n    return h_betrieb()\n\n\n"
+                     "def h_rek(n):\n    return h_rek(n - 1) if n else 0\n\n\nSELFTEST_EXTRA.append(('a', a_selftest))\n"),
+    }
+    zurueck = kunst_quelle(kunst2)
+    alt_w = bauen.ZD_WERKZEUG_ORDNER
+    try:
+        bauen.ZD_WERKZEUG_ORDNER = ()
+        namen = bauen.pruefcode_namen(neu=True)
+        ok(namen == {"a_selftest", "h1", "h2", "h_rek"},
+           "Hilfsfunktionen nur des Prüf-Codes kommen mit (auch über zwei Stufen); im Betrieb benutzt oder in einem Text genannt: bleibt – %s" % sorted(namen))
+        neu, ents = bauen.auslagern("100_a.py", kunst2["100_a.py"])
+        ok(neu.count("\n") == kunst2["100_a.py"].count("\n") and "h1 = _zd_fn('100_a/h1()')" in neu and "def h_betrieb" in neu,
+           "Platzhalter auch für die Hilfsfunktionen, gleiche Zeilenzahl")
+        bauen.ZD_WERKZEUG_ORDNER = alt_w
+        ok("h1" not in bauen.pruefcode_namen(neu=True), "ein Name, den ein Werkzeug nennt (hier dieser Test), bleibt in der Hauptdatei")
+    finally:
+        bauen.ZD_WERKZEUG_ORDNER = alt_w
+        zurueck()
+    echt = bauen.pruefcode_namen(neu=True)
+    ok("sim_manifest_check" not in echt and "geh_offline_html" not in echt and "ui_gem_check" in echt,
+       "echte Teile: was Werkzeuge rufen (sim_manifest_check, geh_offline_html) bleibt, ui_gem_check (nur ui_gem_selftest) kommt mit")
+    kunst3 = {
+        "100_a.py": ("NAME = 'Packing'\nHELP_PAGE = 'x' * 5000 + 'A'\nTRX = {'fr': {}, 'it': {}, 'rm': {}}\n"
+                     "_HX_T = {\n    NAME: ('Packen', 'Bagages', 'Bagagli', 'Pachetar'),\n    'Plain key': ('Deutsch', 'Français long text here', 'Italiano', 'Rumantsch'),\n"
+                     "    'Third key with a longer English text': ('Dritter Schlüssel', 'Troisième clé avec un texte', 'Terza chiave con un testo', 'Terza clav cun in text'),\n}\n"
+                     "TRX['fr'].update({'Some text that is a bit longer': 'Un texte un peu plus long', 'Another one': 'Un autre texte encore plus long ' * 5})\n"
+                     "TRX['fr'].update({'Some text that is a bit longer than before': 'Un texte un peu plus long que avant', 'Another one again': 'Un autre texte encore plus long, et encore plus long, et encore plus long, et encore plus long, et encore plus long, et encore plus', 'A third text': 'Un troisième texte'})\n"
+                     "for _a, _b in (('A', '" + "B" * 1100 + "'),):\n    if _a in HELP_PAGE:\n        HELP_PAGE = HELP_PAGE.replace(_a, _b)\n"
+                     "for _a, _b in (('A', '" + "C" * 1100 + "'),):\n    print(_a)\n"
+                     "_PAARE = (('A', '" + "D" * 1100 + "'),)\nfor _a, _b in _PAARE:\n    HELP_PAGE = HELP_PAGE.replace(_a, _b)\n"),
+    }
+    zurueck = kunst_quelle(kunst3)
+    try:
+        bauen.anleitung_namen(neu=True)
+        neu, ents = bauen.auslagern("100_a.py", kunst3["100_a.py"])
+        keys = [e[0] for e in ents]
+        ok("_zd_hxk('100_a/HX_T', [\n    (NAME, 'Packen'),\n    ('Plain key', 'Deutsch'),\n    ('Third key with a longer English text', 'Dritter Schlüssel'),\n])" in neu and "Bagages" not in neu,
+           "_HX… mit Namen als Schlüssel: Schlüssel und Deutsch bleiben, fr / it / rm in die ZIP")
+        ok("100_a/TRX_fr_update" in keys and "' * 5})" in neu, "kleine Tabelle TRX['fr'].update ab %d Bytes in die ZIP (nur fr / it / rm), mit Ausdruck: bleibt" % bauen.ZD_MIN_TR)
+        ok("100_a/anleitung_HELP_PAGE" in keys and "C" * 1100 in neu and "100_a/PAARE" in keys and "D" * 1100 not in neu,
+           "Ergänzungen der Anleitung (Schleife, benannte Paare) in die ZIP; eine Schleife, die mehr tut, bleibt")
+        pos, back = 0, []
+        for _k, ph, seg in ents:
+            i = neu.find(ph, pos)
+            back.append(neu[pos:i]); back.append(seg); pos = i + len(ph)
+        ok("".join(back) + neu[pos:] == kunst3["100_a.py"], "zurück eingesetzt = Quelle Byte für Byte (auch _zd_hxk)")
+    finally:
+        zurueck()
+        bauen.anleitung_namen(neu=True)
 
     tmp = tempfile.mkdtemp(prefix="mw_gr_test_")
     try:
@@ -183,6 +239,8 @@ for k in keys:
     if (len(row) != 1 or not seg.startswith("def " + nm + "(") or any(own[row[0] + 1:row[0] + n]) or seg not in "\n".join(src)
             or own[row[0] + n].strip().startswith(("return", "assert"))):
         bad.append(nm)
+k_ = ns["PL_HEIC_MSG"]
+hk = ns["_HX_PACK"][k_]
 st = ns["zusatz_selftest"]
 before = [st.__name__, type(st).__name__, "zusatz_selftest" in "".join(own[i] for i in range(len(own)) if own[i].startswith("def "))]
 res = st()
@@ -192,7 +250,10 @@ row = [i for i, ln in enumerate(own) if ln.startswith("zusatz_selftest = _zd_fn(
 print("PC " + json.dumps({"n": len(keys), "bad": bad[:5], "before": before, "res": str(res)[:60], "real": real is not None and real is not st and same,
                           "line": real.__code__.co_firstlineno == row, "file": os.path.basename(real.__code__.co_filename),
                           "again": str(st())[:20] == str(res)[:20], "miss": ns["ZD"]["miss"][:3],
-                          "alm": [c[0] for c in ns["ALMANAC"]], "tip": bool(ns["almanac_tip"]()["title"])}))
+                          "alm": [c[0] for c in ns["ALMANAC"]], "tip": bool(ns["almanac_tip"]()["title"]),
+                          "hxk": [len(hk), hk[0][:12], hk[1] != k_, hk[3] != hk[0]], "trx": "Zermatt" in ns["TRX"]["fr"].get("Search a place (e.g. Zermatt)", ""),
+                          "anl": "KI-Hilfe am Auslöser" in ns["HELP_PAGE"], "helfer": type(ns["ui_gem_check"]).__name__ == "function"
+                                 and "_zd_fn('639p_ui_gemeinsam/ui_gem_check()')" in "".join(own)}))
 '''
         rc, out = im_programm(prog, code, os.path.join(tmp, "h1"))
         r = zeile(out, "PC") or {}
@@ -202,6 +263,11 @@ print("PC " + json.dumps({"n": len(keys), "bad": bad[:5], "before": before, "res
         ok(r.get("real") is True and r.get("line") is True and r.get("file") == os.path.basename(datei) and "literals" in str(r.get("res")),
            "erster Aufruf lädt die echte Funktion (Zeilennummer und Dateiname der Hauptdatei; der Name bleibt derselbe Platzhalter wie in SELFTEST_EXTRA): %s" % r.get("res"))
         ok(r.get("again") is True and r.get("miss") == [], "der Platzhalter ruft weiter die echte Funktion, nichts fehlt")
+        print("6. Zweite Runde (mit ZIP)")
+        ok(r.get("hxk") == [4, "Dieses Foto ", True, True], "_HX_PACK[PL_HEIC_MSG]: Deutsch aus der Datei, fr / it / rm aus der ZIP (%s)" % r.get("hxk"))
+        ok(r.get("trx") is True, "kleine Übersetzung (TRX['fr'], Ortssuche) kommt aus der ZIP")
+        ok(r.get("anl") is True, "Ergänzung der Anleitung (KI-Hilfe am Auslöser) steht in HELP_PAGE")
+        ok(r.get("helfer") is True, "Hilfsfunktion ui_gem_check: in der Hauptdatei nur der Platzhalter")
         alm_mit = r.get("alm") or []
 
         zbytes = open(zpfad, "rb").read()
@@ -225,6 +291,17 @@ t = p.get_data(as_text=True)
 res.update(alm=[c_[0] for c_ in ns["ALMANAC"]], arts=[a[0] for a in ns["ALMANAC"][0][3]], tip=ns["almanac_tip"]()["chapter"],
            page=p.status_code, p144="144" in t and "Notrufnummern Schweiz" in t and "Seitenlage" in t,
            note="Zusatzdaten fehlen" in t and "/hilfe/fehler/DATA_MISSING" in t, n=len(t))
+k_ = ns["PL_HEIC_MSG"]
+hk = ns["_HX_PACK"][k_]
+try:
+    ns["ui_gem_check"]()
+    res["helfer"] = "kein Fehler"
+except RuntimeError as e:
+    res["helfer"] = str(e)[:60]
+except Exception as e:
+    res["helfer"] = "anderer Fehler " + type(e).__name__
+res.update(hxk=list(hk) == [hk[0], k_, k_, hk[0]] and hk[0].startswith("Dieses Foto"), de=ns["DE"].get(k_, "")[:12],
+           trx=ns["TRX"]["fr"].get("Search a place (e.g. Zermatt)", ""), anl="KI-Hilfe am Auslöser" in ns["HELP_PAGE"])
 print("OZ " + json.dumps(res, ensure_ascii=False))
 '''
         for was, vorbereiten in (("ohne ZIP", lambda: os.remove(zpfad)), ("veränderte ZIP", lambda: open(zpfad, "wb").write(bytes(kaputt)))):
@@ -233,6 +310,9 @@ print("OZ " + json.dumps(res, ensure_ascii=False))
             r = zeile(out, "OZ") or {}
             ok(rc == 0 and r.get("ok") is False and "Zusatzdaten fehlen" in str(r.get("call")) and "zusatz_selftest()" in str(r.get("call")),
                "%s: das Programm lädt, eine Prüfung meldet klar «Zusatzdaten fehlen» (%s)" % (was, (r.get("call") or out[-600:])[:90]))
+            ok(str(r.get("helfer")).startswith("Zusatzdaten fehlen"), "%s: Hilfsfunktion des Prüf-Codes meldet «Zusatzdaten fehlen», führt nichts aus (%s)" % (was, r.get("helfer")))
+            ok(r.get("hxk") is True and r.get("de") == "Dieses Foto " and r.get("trx") == "" and r.get("anl") is False,
+               "%s: _zd_hxk gibt Deutsch (fr / it = Englisch), DE hat den Text; keine kleine Übersetzung, keine Ergänzung der Anleitung aus der ZIP" % was)
             if was == "ohne ZIP":
                 print("4. Almanach")
                 ok(len(alm_mit) >= 10 and alm_mit[0] == "notfall" and alm_mit[1] == "wetter", "mit ZIP: alle Kapitel, «Notfall» zuerst (%s)" % ", ".join(alm_mit))

@@ -32,6 +32,9 @@ Hauptdatei kleiner (12.11.2026): Folgezeilen mit Tabs (ZD_FOLGEZEILEN), der Prü
 (ZD_PRUEFCODE, _zd_fn in Teil 012), kleine Anleitungs-Texte (ZD_KLEIN_NAMEN). Jeder Bau zeigt die Grösse und die Luft bis zur
 Warnung; werkzeuge/hauptdatei_groesse_test.py (CI «basis») wird rot, wenn weniger als GROESSE_LUFT (150 KiB) bleiben.
 
+Zweite Runde (13.11.2026): Hilfsfunktionen nur des Prüf-Codes (pruefhelfer_namen), fr / it / rm ab ZD_MIN_TR, Tabellen _HX…
+mit Namen als Schlüssel (_zd_hxk in Teil 012), Ergänzungen der Anleitung (ZD_ANLEITUNG, anleitung_namen). Deutsch bleibt.
+
 Den Schlüssel nie ins Repository legen.
 """
 import argparse
@@ -245,6 +248,15 @@ ZD_KEEP_NAMES = {"CFG", "TOGGLES", "SLIDERS", "TEXTS", "SECTIONS", "DE", "QUICK_
 # Laden des Programms ausgepackt oder indiziert werden (dann stürzt der Start ohne ZIP ab).
 ZD_KLEIN_NAMEN = {"_HELP_FOTAQ", "_HELP_VERLAUF", "_HELP_FUNNEL", "_HELP_LVK", "_HELP_SIMPI", "_HELP_KW", "_HELP_BLINKI"}
 ZD_KEEP_PREFIX = ("_HX",)          # the translation tables _HX… also carry the German texts (DE) that the start needs
+# Hauptdatei kleiner, zweite Runde (13.11.2026): Übersetzungen fr / it / rm schon ab ZD_MIN_TR in die ZIP - Tabellen _HX…
+# {Englisch: (de, fr, it, rm)} (das Deutsch bleibt wie bisher in der Datei, _zd_hx) und TRX[…].update({…}) (nur fr / it / rm).
+# Auch Tabellen _HX…, deren Schlüssel Namen sind (PL_HEIC_MSG: …, SET_HELP['x'][0]: …): Schlüssel und Deutsch bleiben in der
+# Datei, fr / it / rm kommen aus der ZIP (_zd_hxk, Teil 012; ohne ZIP wie _zd_hx). Deutsche Texte bleiben immer in der Datei.
+ZD_MIN_TR = 256
+# Ergänzungen der Anleitung per Ersetzen («for _a, _b in ((alt, neu), …): HELP_PAGE = HELP_PAGE.replace(…)»): die Anleitung
+# selbst steckt in der ZIP (ohne ZIP ist HELP_PAGE die Seite «Zusatzdaten fehlen»), also auch die Paare. Nur Schleifen auf
+# oberster Ebene, die nichts anderes tun, als diese Namen neu zu setzen; ohne ZIP läuft die Schleife nicht (Ersatz «()»).
+ZD_ANLEITUNG = ("HELP_PAGE", "HELP_X")
 # Schlank (3.59.0): a table _HX… {English: (de, fr, it, rm)} keeps only {English: de} in the file (fallback _zd_hx, 012);
 # the whole table with fr / it / rm goes to the zip. Tables {English: (fr, it, rm)} (no German) go to the zip as a whole.
 ZD_DATE = (2026, 1, 1, 0, 0, 0)     # fixed time stamp in the zip
@@ -313,8 +325,85 @@ def pruefcode_namen(neu=False):
                 refs(st, top and ast.unparse(st).startswith(ZD_PRUEF_LISTE))
     for tree in trees:
         stmts(tree.body, True)
-    _PRUEF["namen"] = frozenset(set(cand) - bad)
+    namen = set(cand) - bad
+    namen |= pruefhelfer_namen(trees, namen)
+    _PRUEF["namen"] = frozenset(namen)
     return _PRUEF["namen"]
+
+
+# Hauptdatei kleiner, zweite Runde (13.11.2026): auch die Hilfsfunktionen, die NUR der Prüf-Code benutzt (Vergleiche mit der
+# Schnittstelle, ein nachgebauter Server für den Test …), kommen als Quelltext in die ZIP. Streng: eine Funktion auf oberster
+# Ebene, nur einmal definiert, ohne Dekorator, nur Konstanten als Vorgabewerte, nicht in ZD_KEEP_PARTS; jeder Name, der sie
+# nennt (auch als Attribut), steht in einer Prüf-Funktion, in self_test() oder in «SELFTEST_EXTRA…»; ihr Name steht in keinem
+# Text des Programms (getattr / globals() / Tabellen von Adressen) und in keinem Werkzeug ausserhalb von quelle/ (die Werkzeuge
+# laden die Hauptdatei und rufen Funktionen beim Namen).
+ZD_PRUEF_HELFER = True
+ZD_WERKZEUG_ORDNER = ("werkzeuge", ".github", "pruefstand", "simulator", "simulator_python", "games", "hp")
+ZD_WERKZEUG_NICHT = ("bauen.py", "hauptdatei_groesse_test.py")   # the build and its test only name them, they never call them
+
+
+def _werkzeug_woerter():
+    """all words in the tools outside quelle/ (Python, shell, workflows): a function named there stays in the program file"""
+    w = set()
+    for d in ZD_WERKZEUG_ORDNER:
+        for root, _dirs, files in os.walk(os.path.join(REPO, d)):
+            for f in files:
+                if f.endswith((".py", ".sh", ".yml", ".yaml", ".txt", ".js", ".gd")) and f not in ZD_WERKZEUG_NICHT:
+                    try:
+                        with open(os.path.join(root, f), encoding="utf-8", errors="replace") as fh:
+                            w.update(re.findall(r"[A-Za-z_]\w+", fh.read()))
+                    except OSError:
+                        pass
+    return w
+
+
+def pruefhelfer_namen(trees, pruef):
+    if not (ZD_PRUEFCODE and ZD_PRUEF_HELFER):
+        return set()
+    defs, nodes = {}, {}
+    for n, tree in zip(teile(), trees):
+        for st in tree.body:
+            if isinstance(st, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                defs.setdefault(st.name, []).append((n, st))
+    wer, woerter = {}, set()                              # name -> {who mentions it}; words inside texts
+
+    def sammeln(nd, who):
+        for x in ast.walk(nd):
+            if isinstance(x, ast.Name):
+                wer.setdefault(x.id, set()).add(who)
+            elif isinstance(x, ast.Attribute):
+                wer.setdefault(x.attr, set()).add(who)
+            elif isinstance(x, ast.Constant) and isinstance(x.value, str):
+                woerter.update(re.findall(r"[A-Za-z_]\w+", x.value))
+    for tree in trees:
+        for st in tree.body:
+            if isinstance(st, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                for d in st.decorator_list + st.args.defaults + [x for x in st.args.kw_defaults if x is not None]:
+                    sammeln(d, "<oben>")
+                for b in st.body:
+                    sammeln(b, st.name)
+            else:
+                sammeln(st, "<prüf>" if ast.unparse(st).startswith(ZD_PRUEF_LISTE) else "<oben>")
+    aussen = _werkzeug_woerter()
+    test = set(pruef) | set(ZD_PRUEF_VON)
+    neu, weiter = set(), True
+    while weiter:
+        weiter = False
+        for name, dl in defs.items():
+            if name in test or name in neu or len(dl) != 1:
+                continue
+            n, st = dl[0]
+            if not isinstance(st, ast.FunctionDef):
+                continue
+            dflt = [d for d in st.args.defaults + st.args.kw_defaults if d is not None]
+            if (n.startswith(ZD_KEEP_PARTS) or st.decorator_list or st.col_offset
+                    or not all(isinstance(d, ast.Constant) for d in dflt) or name in woerter or name in aussen):
+                continue
+            von = wer.get(name, set()) - {name}
+            if von and all(x in test or x in neu or x == "<prüf>" for x in von):
+                neu.add(name)
+                weiter = True
+    return neu
 
 
 def zd_name(v):
@@ -376,6 +465,99 @@ def _zd_hx_fallback(seg):
     d = ast.literal_eval("(" + seg + "\n)")
     rows = "".join("    %r: %r,\n" % (k, v[0]) for k, v in d.items())
     return "_zd_hx({\n%s}%s)" % (rows, ", True" if isinstance(next(iter(d.values())), list) else "")
+
+
+def _zd_trx_fremd(ctx):
+    """TRX['fr'|'it'|'rm'].update / TRX['fr'] …: a table of French / Italian / Romansh only (never German)"""
+    return bool(re.match(r"""TRX\[['"](fr|it|rm)['"]\]""", ctx))
+
+
+def _zd_schluessel_einfach(k):
+    """a key of a table that is safe to evaluate in the program file: a text, a name, NAME.attr, NAME[text / number]"""
+    if isinstance(k, ast.Constant):
+        return isinstance(k.value, str)
+    if isinstance(k, ast.Name):
+        return True
+    if isinstance(k, ast.Attribute):
+        return _zd_schluessel_einfach(k.value) and not isinstance(k.value, ast.Constant)
+    if isinstance(k, ast.Subscript):
+        return (_zd_schluessel_einfach(k.value) and not isinstance(k.value, ast.Constant)
+                and isinstance(k.slice, ast.Constant) and isinstance(k.slice.value, (str, int)))
+    return False
+
+
+def _zd_hx_schluessel(nd):
+    """a table _HX… {key: (de, fr, it, rm)} whose keys are (partly) names - True when every key is simple (_zd_schluessel_einfach),
+    at least one key is not a text and every value is a tuple (or every value a list) of four texts"""
+    if not nd.values or not all(k is not None and _zd_schluessel_einfach(k) for k in nd.keys):
+        return False
+    if all(isinstance(k, ast.Constant) for k in nd.keys):
+        return False                                       # a plain table: _zd_hx_art / _zd_hx_fallback
+    arten = {type(v) for v in nd.values}
+    return arten in ({ast.Tuple}, {ast.List}) and all(
+        len(v.elts) == 4 and all(isinstance(x, ast.Constant) and isinstance(x.value, str) for x in v.elts) for v in nd.values)
+
+
+def _zd_hxk_platzhalter(key, nd):
+    """_zd_hxk(key, [(key source, German), …], list?) - keys and German stay in the file (012)"""
+    rows = "".join("    (%s, %r),\n" % (ast.unparse(k), v.elts[0].value) for k, v in zip(nd.keys, nd.values))
+    return "_zd_hxk(%r, [\n%s]%s)" % (key, rows, ", True" if isinstance(nd.values[0], ast.List) else "")
+
+
+def _zd_anleitung_for(st):
+    """a loop on the top level that only sets the pages of the manual (ZD_ANLEITUNG) again: the name it sets, else "" """
+    if not isinstance(st, ast.For) or st.orelse:
+        return ""
+    gesetzt = set()
+    for x in ast.walk(ast.Module(body=st.body, type_ignores=[])):
+        if isinstance(x, (ast.Assign, ast.AugAssign, ast.AnnAssign)):
+            for t in (x.targets if isinstance(x, ast.Assign) else [x.target]):
+                if isinstance(t, ast.Name):
+                    gesetzt.add(t.id)
+                elif isinstance(t, ast.Subscript) and isinstance(t.value, ast.Name):
+                    gesetzt.add(t.value.id)
+                else:
+                    return ""
+        elif isinstance(x, (ast.Expr, ast.Delete, ast.Global, ast.Nonlocal, ast.FunctionDef, ast.ClassDef, ast.Lambda,
+                            ast.Import, ast.ImportFrom, ast.Return, ast.Yield, ast.NamedExpr, ast.With, ast.Try, ast.Raise)):
+            return ""                                      # anything with an effect of its own stays as it is
+        elif isinstance(x, ast.Call) and not (isinstance(x.func, ast.Attribute) and x.func.attr in
+                                             ("replace", "find", "rfind", "count", "index", "get", "strip", "startswith")):
+            return ""
+    for t in ast.walk(st.target):
+        if isinstance(t, ast.Name) and t.id in ZD_ANLEITUNG:
+            return ""
+    return "_".join(sorted(gesetzt)) if gesetzt and gesetzt <= set(ZD_ANLEITUNG) else ""
+
+
+_ANL = {"namen": None}
+
+
+def anleitung_namen(neu=False):
+    """names NAME = ((old, new), …) on the top level that the program uses ONLY as «for … in NAME:» of a supplement of the
+    manual (_zd_anleitung_for) - their pairs go into the zip like the manual itself"""
+    if _ANL["namen"] is not None and not neu:
+        return _ANL["namen"]
+    zuw, nutz, schl = {}, {}, set()
+    for n in teile():
+        if n.startswith(ZD_KEEP_PARTS):
+            continue
+        tree = ast.parse(lesen(n), n)
+        for st in tree.body:
+            if isinstance(st, ast.Assign) and len(st.targets) == 1 and isinstance(st.targets[0], ast.Name):
+                zuw[st.targets[0].id] = zuw.get(st.targets[0].id, 0) + 1
+            if isinstance(st, ast.For) and isinstance(st.iter, ast.Name) and _zd_anleitung_for(st):
+                schl.add(id(st.iter))
+        for x in ast.walk(tree):
+            if isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load):
+                nutz.setdefault(x.id, []).append(id(x) in schl)
+            elif isinstance(x, ast.Attribute):
+                nutz.setdefault(x.attr, []).append(False)
+            elif isinstance(x, ast.Constant) and isinstance(x.value, str):
+                for w in re.findall(r"[A-Za-z_]\w+", x.value):
+                    nutz.setdefault(w, []).append(False)
+    _ANL["namen"] = frozenset(k for k, c in zuw.items() if c == 1 and nutz.get(k) and all(nutz[k]))
+    return _ANL["namen"]
 
 
 def _zd_fallback(nd, ctx):
@@ -448,13 +630,22 @@ def auslagern(name, text):
     def walk(nd, ctx):
         if isinstance(nd, stop):
             return
+        base = re.split(r"[.\[]", ctx, maxsplit=1)[0]
+        if (isinstance(nd, ast.Dict) and base.startswith(ZD_KEEP_PREFIX) and base not in ZD_KEEP_NAMES
+                and _zd_hx_schluessel(nd)):                # _HX… with names as keys: keys and German stay (_zd_hxk)
+            a = off[nd.lineno - 1] + nd.col_offset
+            e = off[nd.end_lineno - 1] + nd.end_col_offset
+            if e - a >= ZD_MIN_TR:
+                found.append((a, e, nd, ctx, 5))
+                return
         if isinstance(nd, ast.expr) and _zd_lit(nd) and not isinstance(nd, ast.UnaryOp):
             a = off[nd.lineno - 1] + nd.col_offset
             e = off[nd.end_lineno - 1] + nd.end_col_offset
-            base = re.split(r"[.\[]", ctx, maxsplit=1)[0]
             hx = _zd_hx_art(nd) if base.startswith(ZD_KEEP_PREFIX) else 0
-            if e - a >= (ZD_MIN_KLEIN if _zd_statisch(nd, base, hx) else ZD_MIN) and base not in ZD_KEEP_NAMES and (
-                    hx or not base.startswith(ZD_KEEP_PREFIX)):
+            stat = _zd_statisch(nd, base, hx)
+            grenze = ZD_MIN_TR if stat and (hx in (3, 4) or (base == "TRX" and _zd_trx_fremd(ctx))) else (
+                ZD_MIN_KLEIN if stat else ZD_MIN)
+            if e - a >= grenze and base not in ZD_KEEP_NAMES and (hx or not base.startswith(ZD_KEEP_PREFIX)):
                 found.append((a, e, nd, ctx, hx))
             return
         js = isinstance(nd, ast.Call) and ast.unparse(nd.func) == "json.loads"
@@ -463,7 +654,9 @@ def auslagern(name, text):
                 c._zd_json = True                          # json.loads(<text>): without the zip an empty JSON, never ""
             walk(c, ctx)
 
-    def body(stmts):
+    anl = anleitung_namen()
+
+    def body(stmts, oben=False):
         for st in stmts:
             if isinstance(st, (ast.If, ast.Try, ast.With)):
                 if isinstance(st, ast.If):
@@ -472,9 +665,22 @@ def auslagern(name, text):
                 for h in getattr(st, "handlers", []):
                     body(h.body)
                 body(getattr(st, "finalbody", []))
+            elif oben and isinstance(st, ast.For) and _zd_anleitung_for(st) and _zd_lit(st.iter):
+                a = off[st.iter.lineno - 1] + st.iter.col_offset          # the pairs of a supplement of the manual
+                e = off[st.iter.end_lineno - 1] + st.iter.end_col_offset
+                if e - a >= ZD_MIN_KLEIN and isinstance(st.iter, (ast.Tuple, ast.List)):
+                    found.append((a, e, st.iter, "anleitung_" + _zd_anleitung_for(st), 0))
+            elif (oben and isinstance(st, ast.Assign) and len(st.targets) == 1 and isinstance(st.targets[0], ast.Name)
+                  and st.targets[0].id in anl and _zd_lit(st.value) and isinstance(st.value, (ast.Tuple, ast.List))):
+                a = off[st.value.lineno - 1] + st.value.col_offset        # a named list of such pairs (_KIH_HELP …)
+                e = off[st.value.end_lineno - 1] + st.value.end_col_offset
+                if e - a >= ZD_MIN_KLEIN:
+                    found.append((a, e, st.value, st.targets[0].id, 0))
+                else:
+                    walk(st, _zd_ctx(st))
             else:
                 walk(st, _zd_ctx(st))
-    body(tree.body)
+    body(tree.body, True)
     pruef = pruefcode_namen()
     for st in tree.body:                                   # Prüf-Code: the whole function «…_selftest» (see ZD_PRUEFCODE)
         if isinstance(st, ast.FunctionDef) and st.name in pruef:
@@ -493,8 +699,11 @@ def auslagern(name, text):
         k = re.sub(r"[^A-Za-z0-9_]+", "_", ctx).strip("_") or "x"
         used[k] = used.get(k, 0) + 1
         key = "%s/%s" % (stem, k) + ("~%d" % used[k] if used[k] > 1 else "")
-        fb = _zd_hx_fallback(b[a:e].decode()) if hx == 4 else _zd_fallback(nd, ctx)
-        ph = "_zd(%r, %s)" % (key, fb)
+        if hx == 5:
+            ph = _zd_hxk_platzhalter(key, nd)
+        else:
+            fb = _zd_hx_fallback(b[a:e].decode()) if hx == 4 else _zd_fallback(nd, ctx)
+            ph = "_zd(%r, %s)" % (key, fb)
         out.append(b[pos:a]); out.append(ph.encode()); pos = e
         ents.append((key, ph, b[a:e].decode()))
     out.append(b[pos:])
@@ -820,7 +1029,7 @@ def bleibt_literale(n=5):
                         why = "kleiner als %d Bytes" % (ZD_MIN_KLEIN if _zd_statisch(nd, base, 0) else ZD_MIN)
                     rows.append((sz, name, ctx, why))
                 return
-            if isinstance(nd, ast.Call) and isinstance(nd.func, ast.Name) and nd.func.id == "_zd_hx" and not wo:
+            if isinstance(nd, ast.Call) and isinstance(nd.func, ast.Name) and nd.func.id in ("_zd_hx", "_zd_hxk") and not wo:
                 wo = "_zd_hx"
             elif isinstance(nd, stop) and not wo:
                 wo = "Funktion / Klasse %s" % getattr(nd, "name", "")

@@ -153,10 +153,37 @@ def lauf(br, a, pruef, geheim):
             pg.wait_for_timeout(250)
         return v
 
+    # Die Seite meldet sich beim ersten Besuch von selbst (639zzs «eins nach dem anderen»: Rundgang mit Blinki, Tipp des
+    # Tages …). Die Schlange wartet bis 6 s auf «Neu» / «Einrichtung» – auf einem langsamen Rechner kam der Rundgang so erst,
+    # als der Test schon im Passwort-Fenster war: seine durchsichtige Ebene (#g2-ov, über #pwd-ov) nahm den Klick auf
+    # «Speichern», es ging nie ein Passwort an MoveEye (CI 3.84.2, Gruppe «rechte», 20 s ohne 401). Darum wartet der Test, bis
+    # die Schlange still ist (nichts offen, nichts mehr angemeldet), und räumt weg, was kommt – statt fester Zeiten.
+    RUHIG = """() => { const Q = window.MWQ; if (!Q) return true;
+        const vis = s => [...document.querySelectorAll(s)].some(e => e.getClientRects().length);
+        return !Q.now() && !Q.busy() && !vis('#g2-ov, #g2-bub, #g2-tip, .g2m') && performance.now() > 6500; }"""
+
+    def ruhig(pg, ms=30000):
+        """bis die Seite nichts mehr von selbst zeigt (zweimal hintereinander still, 0.5 s auseinander); True = still"""
+        t_ = time.time() + ms / 1000.0
+        while time.time() < t_:
+            if pg.evaluate(RUHIG):
+                pg.wait_for_timeout(500)
+                if pg.evaluate(RUHIG):
+                    return True
+            weg(pg)
+        return False
+
+    def schlange(pg):
+        return pg.evaluate("""() => JSON.stringify({q: window.MWQ ? MWQ.log.slice(-12) : null, jetzt: window.MWQ ? MWQ.now() : '',
+            ebenen: ['g2-ov', 'g2-bub', 'g2-tip', 'pwd-ov'].filter(i => document.getElementById(i)),
+            fehler: (document.querySelector('#pwd-ov .err') || {}).textContent || ''})""")
+
     def oeffnen(pg):
         """Einstellungen laden, die Karte Sicherheit aufklappen; True = die Karte ist da"""
         pg.goto(base + "/settings?open=grp:security", wait_until="domcontentloaded")
         warte(pg, lambda: pg.evaluate("() => document.querySelectorAll('#settings details[data-view^=\"sec:\"]').length > 5"))
+        if not ruhig(pg):
+            print("  (Hinweis: die Seite wurde in 30 s nicht still: %s)" % schlange(pg), flush=True)
         weg(pg)
         da = pg.evaluate("s => !!document.querySelector(s)", KARTE)
         if da:
@@ -196,9 +223,26 @@ def lauf(br, a, pruef, geheim):
     ein = pg.locator("#pwd-ov input[type=password]")
     ein.nth(0).fill(ADMIN_PW); ein.nth(1).fill(ADMIN_PW)
     weg(pg)
-    pg.locator("#pwd-ov button", has_text="Speichern").first.click()
-    ok = warte(pg, lambda: holen(a.port, "/api/state")[0] == 401, 20000)   # 8 s reichten auf einem langsamen CI-Rechner einmal nicht (3.73.0)
-    pruef(bool(ok), "Passwort gesetzt: ohne Anmeldung kommt 401")
+    # Bedingung statt fester Zeit: die Antwort von MoveEye auf POST /api/password. MoveEye setzt das Passwort im selben
+    # Aufruf, bevor es antwortet (040 web_pw_set: Prüfsumme, Speichern mit fsync) – danach kommt ohne Anmeldung sofort 401.
+    antwort, info = None, ""
+    try:
+        with pg.expect_response(lambda r: r.url.endswith("/api/password") and r.request.method == "POST", timeout=30000) as ri:
+            pg.locator("#pwd-ov button", has_text="Speichern").first.click()
+        antwort = ri.value
+    except Exception as e:                                   # kein POST: was lag auf der Seite? (für die nächste Fehlersuche)
+        info = "%s · %s" % (type(e).__name__, schlange(pg))
+    pruef(antwort is not None, "Klick auf «Speichern» schickt das Passwort an MoveEye %s" % (info or ""))
+    j = {}
+    if antwort is not None:
+        try:
+            j = antwort.json()
+        except Exception:
+            j = {}
+    pruef(antwort is not None and antwort.status == 200 and j.get("ok") is True,
+          "MoveEye nimmt das Passwort an (%s %s)" % (antwort and antwort.status, j or schlange(pg)))
+    ok = warte(pg, lambda: holen(a.port, "/api/state")[0] == 401, 5000)
+    pruef(bool(ok), "Passwort gesetzt: ohne Anmeldung kommt 401 (gleich nach der Antwort)")
     ctx.close()
     pruef(holen(a.port, "/api/state", "admin", ADMIN_PW)[0] == 200, "Anmeldung mit dem neuen Passwort geht")
 
@@ -215,8 +259,9 @@ def lauf(br, a, pruef, geheim):
     pruef(holen(a.port, "/api/state", "Testkind", USER_PW1)[0] == 200, "Benutzer meldet sich mit seinem Passwort an")
     pg.once("dialog", lambda d: d.accept(USER_PW2))
     weg(pg)
-    pg.locator("#users-box .us-card[data-u='Testkind'] button[title='Neues Passwort']").click()
-    ok = warte(pg, lambda: holen(a.port, "/api/state", "Testkind", USER_PW2)[0] == 200, 8000)
+    with pg.expect_response(lambda r: r.url.endswith("/api/users") and r.request.method == "POST", timeout=30000):
+        pg.locator("#users-box .us-card[data-u='Testkind'] button[title='Neues Passwort']").click()
+    ok = warte(pg, lambda: holen(a.port, "/api/state", "Testkind", USER_PW2)[0] == 200, 5000)   # gesetzt, bevor MoveEye antwortet
     pruef(bool(ok), "Passwort des Benutzers geändert: das neue geht")
     pruef(holen(a.port, "/api/state", "Testkind", USER_PW1)[0] == 401, "… und das alte nicht mehr")
     foto(pg, "2_benutzer", "#users-box")
