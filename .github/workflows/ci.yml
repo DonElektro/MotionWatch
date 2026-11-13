@@ -5,7 +5,7 @@
 #  - Push auf main: IMMER ALLES, dazu Export Linux + Windows + Pi (ohne Signatur) als Artefakt
 #  - von Hand (Actions -> CI -> Run workflow): alles (Haken «alles» weg: nur was die Änderung betrifft), Export abwählbar;
 #    «[export]» in der Commit-Nachricht: Export auch auf real-*
-# Aufbau: Auswahl -> parallel [MoveEye · Grundprüfungen | MoveEye · Web · <Gruppe> | Simulator … | HP-Update | USB-Installer | Export]
+# Aufbau: Auswahl -> parallel [MoveEye · Grundprüfungen | MoveEye · Web · <Gruppe> | Simulator … | HP-Update | USB-Installer | Pi-Dienst | Export]
 #         -> Ergebnis (Torwächter: rot, wenn etwas rot ist oder fehlt; auf main auch, wenn irgendetwas übersprungen wurde).
 # NEUER TEST: eine Zeile in werkzeuge/ci_tests.txt (Gruppe | Limit | Nochmal | Befehl | Name) - diese Datei hier bleibt wie sie ist.
 #   Godot-Tests (werkzeuge/*_test.gd) kommen von selbst dazu (Job «Simulator · Testliste»).
@@ -54,6 +54,7 @@ jobs:
       sim: ${{ steps.a.outputs.sim }}
       hp: ${{ steps.a.outputs.hp }}
       usb: ${{ steps.a.outputs.usb }}
+      pidienst: ${{ steps.a.outputs.pidienst }}
       laeuft: ${{ steps.a.outputs.laeuft }}
       grund: ${{ steps.a.outputs.grund }}
     steps:
@@ -169,6 +170,43 @@ jobs:
         env:
           P: ${{ matrix.pruefung }}
         run: bash werkzeuge/usb_installer/pruefen.sh $P
+
+  # ---------------------------------------------------------------- Pi-Dienst: MoveEye unter echtem systemd wie auf dem Pi
+  # GitHubs Ubuntu-Runner ist eine VM mit systemd als PID 1: «loginctl enable-linger» gibt einem Test-Benutzer seinen eigenen
+  # systemd --user (wie der Benutzer auf dem Pi), sudo ist ohne Passwort. Python 3.11 und die Paket-Versionen von Bookworm.
+  # Läuft nur auf GitHubs Runnern (nie auf dem HP: der rechnet anderes). Tests: Gruppe «pidienst» in werkzeuge/ci_tests.txt.
+  pi-dienst:
+    name: Pi-Dienst · echtes systemd (Benutzer- und System-Dienst), Bookworm-Pakete
+    needs: auswahl
+    if: ${{ !cancelled() && needs.auswahl.outputs.pidienst != 'false' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: werkzeuge/pakete_bookworm.txt
+      - name: Pakete wie auf Raspberry Pi OS Bookworm (werkzeuge/pakete_bookworm.txt)
+        run: pip install -q -r werkzeuge/pakete_bookworm.txt
+      - name: systemd auf dem Runner
+        run: |
+          ps -o pid,comm -p 1; systemctl --version | head -1; systemctl is-system-running || true
+          # the test user runs this Python (tool cache of setup-python): readable for everybody
+          ls -ld /opt/hostedtoolcache /opt/hostedtoolcache/Python; command -v python3
+      - name: Tests der Gruppe «pidienst» (werkzeuge/ci_tests.txt)
+        run: python3 werkzeuge/ci_lauf.py --gruppe pidienst
+      - name: Journal aufbewahren
+        if: failure()
+        run: sudo journalctl --no-pager -o short-precise --since "-40 min" > "$RUNNER_TEMP/journal.log" 2>&1 || true
+      - name: Protokoll aufbewahren
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: log-pi-dienst
+          path: ${{ runner.temp }}/*.log
+          retention-days: 7
 
   # ---------------------------------------------------------------- Simulator-PC (HP): signiertes Update, Haken, Testbild
   hp-update:
@@ -439,7 +477,7 @@ jobs:
   # ---------------------------------------------------------------- Ergebnis: der eine Haken, auf den ein Release wartet
   ergebnis:
     name: Ergebnis · alles Nötige grün, nichts still übersprungen
-    needs: [auswahl, moveeye, web, sim-texte, usb-installer, hp-update, sim-liste, sim, sim-live, export]
+    needs: [auswahl, moveeye, web, sim-texte, usb-installer, hp-update, pi-dienst, sim-liste, sim, sim-live, export]
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5

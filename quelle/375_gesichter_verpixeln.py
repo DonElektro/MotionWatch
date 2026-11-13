@@ -88,8 +88,12 @@ def _persons_find(img):
         try:
             s = min(1.0, 800.0 / max(1, w))
             small = cv2.resize(img, (int(w * s), int(h * s))) if s < 1 else img
-            rects, _ = FACEBLUR["hog"].detectMultiScale(small, winStride=(8, 8), padding=(8, 8), scale=1.05)
-            out = [(int(x / s), int(y / s), int(rw / s), int(rh / s)) for (x, y, rw, rh) in rects]
+            # smaller than the HOG window (64 x 128, e.g. a wide picture strip after the resize or a small crop): no person
+            # fits - and OpenCV 4.6 (Raspberry Pi OS Bookworm) corrupts its memory there and ends the whole program
+            # («corrupted size vs. prev_size», found with the Bookworm packages, werkzeuge/pi_dienst_test.py)
+            if small.shape[0] >= 128 and small.shape[1] >= 64:
+                rects, _ = FACEBLUR["hog"].detectMultiScale(small, winStride=(8, 8), padding=(8, 8), scale=1.05)
+                out = [(int(x / s), int(y / s), int(rw / s), int(rh / s)) for (x, y, rw, rh) in rects]
         except cv2.error:
             pass
     return out
@@ -269,4 +273,5 @@ def faceblur_selftest():
     faces_blur_jpg(data)
     assert data == copy
     _faceblur_init()
+    assert _persons_find(np.zeros((200, 3000, 3), np.uint8)) == [], "a wide strip (800 x 53 after the resize) has no person"
     return "detector: " + (FACEBLUR["how"] or "none in this OpenCV")
