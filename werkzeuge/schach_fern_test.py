@@ -18,6 +18,9 @@
      (eigenes WLAN), Handy B über die Hauptadresse mit Anmeldung (wie Fernzugriff). Erstellen, Beitreten mit dem Code,
      Narrenmatt durch Antippen, Verbindung weg und wieder da, beide Seiten schliessen und öffnen (Handy schläft), Revanche mit
      getauschten Farben, Remis abgelehnt, Zuschauer, Hinweis «Tipps sind an». Bildschirmfotos mit --bilder ORDNER.
+     GS-1.18 Vorziehen (Premove): im Lern-Modus aus; ein Vorzug bleibt auf dem Handy, wird nach dem Gegenzug sofort gespielt und
+     vom Pi angenommen; unerlaubt -> still weg; aufheben (leeres Feld, «✕ Vorzug»); weg bei Neuaufbau, Verbindung weg und
+     verdeckter Seite; Schalter aus -> kein Vorziehen.
 
   python3 werkzeuge/schach_fern_test.py [--datei webcam_bewegung_X.py] [--ohne-browser] [--bilder ORDNER] [--partien 60]
 """
@@ -517,7 +520,8 @@ def browser_pruefen(datei, bilder):
             ok(z(pb)["drehung"] == "b" and z(pa)["drehung"] == "w", "jeder sieht seine Farbe unten")
             ok("Du bist am Zug" in pa.inner_text("#status") or "beginnt" in pa.inner_text("#status") or "am Zug" in pa.inner_text("#status"), f"A Status: {pa.inner_text('#status')}")
             tippe(pb, "e7")
-            ok(pb.locator("#brett square.move-dest").count() == 0, "B (nicht dran) kann keine Figur ziehen")
+            ok(pb.locator("#brett square.move-dest:visible").count() == 0 and not z(pb)["vorzug"], "B (nicht dran) kann keine Figur ziehen (nur auswählen zum Vorziehen)")
+            tippe(pb, "a5")                                   # GS-1.18: die Auswahl (für einen Vorzug) wieder aufheben
             zug(pa, "f2", "f3")
             warte(pb, "() => __schach.zustand().zugNr === 1")
             ok(z(pb)["toene"].get("zug", 0) >= 1, "B hört den Zug des Gegners (Ton)")
@@ -595,10 +599,101 @@ def browser_pruefen(datei, bilder):
             warte(pa, "() => !__schach.zustand().fern.anfrage")
             ok(not z(pa)["ende"], "Remis abgelehnt: es geht weiter")
             cc.close()
+            vorziehen_pruefen(pa, pb, ca, z, warte, tippe, zug, bild)
             ok(not fehl, "keine JavaScript-Fehler" + ("" if not fehl else ": " + "; ".join(fehl[:4])))
             ca.close(); cb.close(); br.close()
     finally:
         g.stop()
+
+
+def vorziehen_pruefen(pa, pb, ca, z, warte, tippe, zug, bild):
+    """GS-1.18 Vorziehen (Premove) auf zwei Handys: A spielt Schwarz, B Weiss, 1. e4 ist gespielt, A ist dran (Lern-Modus an)"""
+    def dran(pg, n):
+        warte(pg, f"() => __schach.zustand().zugNr === {n} && __schach.zustand().menschDran && !__schach.zustand().fern.ausstehend")
+
+    def vor(a_, b_):
+        warte(pa, "() => __schach.zustand().vorzugAn && !__schach.zustand().menschDran", 8000)
+        tippe(pa, a_); tippe(pa, b_)
+        warte(pa, "() => !!__schach.zustand().vorzug", 4000)
+
+    def sichtbar(pg):
+        return pg.locator("#brett square.current-premove:visible").count()
+    dran(pa, 1)
+    zug(pa, "e7", "e5")
+    dran(pb, 2)
+    ok(not z(pa)["vorzugAn"], "Vorziehen: im Lern-Modus aus (A hat den Lern-Modus an)")
+    pa.locator("#bLern").tap()
+    warte(pa, "() => __schach.zustand().vorzugAn", 6000)
+    # erlaubt: sofort nach dem Gegenzug gespielt, der Pi nimmt ihn an
+    vor("g8", "f6")
+    ok(sichtbar(pa) == 2 and pa.locator("#bVorzug").is_visible() and "Vorzug g8–f6" in pa.inner_text("#status") and z(pb)["zugNr"] == 2,
+       f"A zieht vor (g8–f6): blau markiert, «✕ Vorzug», nur auf A (B: {z(pb)['zugNr']} Züge)")
+    bild(pa, pb, "09_vorzug")
+    zug(pb, "g1", "f3")
+    warte(pa, "() => __schach.zustand().zugNr === 4", 15000)
+    st = z(pa)
+    zt = st["zugZeiten"]
+    ms = round(zt[3]["t"] - zt[2]["t"]) if len(zt) >= 4 and zt[2] and zt[3] else None
+    ok(st["zuege"][2:4] == ["g1f3", "g8f6"] and zt[3]["quelle"] == "vorzug" and ms is not None and ms < 500,
+       f"Vorzug sofort nach dem Gegenzug gespielt ({ms} ms nach seinem Eintreffen)")
+    warte(pb, "() => __schach.zustand().zugNr === 4 && __schach.zustand().zuege[3] === 'g8f6'", 15000)
+    warte(pa, "() => !__schach.zustand().fern.ausstehend", 15000)
+    ok(not z(pa)["vorzug"] and sichtbar(pa) == 0 and z(pa)["fern"]["verb"] == "ok", "… der Pi nahm ihn an (B hat ihn), Markierung weg")
+    # nicht mehr erlaubt: still weg (e5–e4 ist durch den Bauern e4 versperrt)
+    vor("e5", "e4")
+    dran(pb, 4)
+    zug(pb, "d2", "d3")
+    dran(pa, 5)
+    pa.wait_for_timeout(800)
+    st = z(pa)
+    ok(st["zugNr"] == 5 and not st["vorzug"] and st["vorzugZahl"]["verworfen"] >= 1 and sichtbar(pa) == 0 and z(pb)["zugNr"] == 5,
+       f"unerlaubter Vorzug still verworfen ({st['zuege'][-1]}, {st['vorzugZahl']})")
+    # aufheben: leeres Feld, «✕ Vorzug»
+    zug(pa, "d7", "d6")
+    dran(pb, 6)
+    vor("b8", "c6"); tippe(pa, "a5"); pa.wait_for_timeout(300)
+    weg1 = not z(pa)["vorzug"] and sichtbar(pa) == 0
+    vor("b8", "c6"); pa.locator("#bVorzug").tap(); pa.wait_for_timeout(300)
+    weg2 = not z(pa)["vorzug"] and sichtbar(pa) == 0
+    zug(pb, "b1", "c3")
+    dran(pa, 7)
+    pa.wait_for_timeout(800)
+    ok(weg1 and weg2 and z(pa)["zugNr"] == 7, f"Vorzug aufheben: leeres Feld {weg1}, «✕ Vorzug» {weg2}, danach kein eigener Zug")
+    # Neuaufbau, Verbindung weg, Handy schläft: der Vorzug fällt weg
+    zug(pa, "c8", "g4")
+    dran(pb, 8)
+    vor("b8", "c6"); pa.evaluate("() => __schach.fernNeuAufbau()"); pa.wait_for_timeout(300)
+    r1 = not z(pa)["vorzug"] and sichtbar(pa) == 0
+    vor("b8", "c6")
+    ca.route("**/schachfern/**", lambda r: r.abort())
+    pa.evaluate("() => window.dispatchEvent(new Event('focus'))")
+    warte(pa, "() => __schach.zustand().fern.verb === 'weg'", 10000)
+    r2 = not z(pa)["vorzug"] and sichtbar(pa) == 0
+    ca.unroute("**/schachfern/**")
+    pa.evaluate("() => window.dispatchEvent(new Event('focus'))")
+    warte(pa, "() => __schach.zustand().fern.verb === 'ok'", 15000)
+    vor("b8", "c6")
+    pa.evaluate("() => __schach.verdecken(true)"); pa.wait_for_timeout(300)
+    r3 = not z(pa)["vorzug"] and sichtbar(pa) == 0
+    pa.evaluate("() => __schach.verdecken(false)")
+    zug(pb, "h2", "h3")
+    dran(pa, 9)
+    pa.wait_for_timeout(800)
+    ok(r1 and r2 and r3 and z(pa)["zugNr"] == 9, f"Vorzug fällt weg bei Neuaufbau {r1}, Verbindung weg {r2}, Seite verdeckt {r3}; danach kein eigener Zug")
+    # Schalter aus: kein Vorziehen
+    zug(pa, "g4", "f3")
+    dran(pb, 10)
+    pa.locator("#bEinst").tap(); pa.wait_for_timeout(200)
+    sch = pa.locator("#schVorzug").is_visible()
+    pa.locator("#schVorzug").tap(); pa.locator("#bEinstZu").tap(); pa.wait_for_timeout(200)
+    tippe(pa, "b8"); n = pa.locator("#brett square.premove-dest:visible").count(); tippe(pa, "c6")
+    pa.wait_for_timeout(300)
+    aus = not z(pa)["vorzugAn"] and not z(pa)["vorzug"] and n == 0
+    zug(pb, "d1", "f3")
+    dran(pa, 11)
+    pa.wait_for_timeout(800)
+    ok(sch and aus and z(pa)["zugNr"] == 11 and not z(pa)["einst"]["vorzug"], f"Schalter «Vorziehen» aus: kein Vorzug ({n} Felder)")
+    pa.locator("#bEinst").tap(); pa.locator("#schVorzug").tap(); pa.locator("#bEinstZu").tap()
 
 
 def main():

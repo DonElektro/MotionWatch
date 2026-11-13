@@ -1303,6 +1303,8 @@ SCHACH_FEN = {
     "50": "8/8/4k3/8/8/4K3/8/R7 w - - 99 80",
     "material": "8/8/4k3/8/8/8/4Kp2/8 w - - 0 1",                               # Kxf2: nur noch zwei Könige
     "mitte": "r1bq1rk1/pp2bppp/2n1pn2/2pp4/3P1B2/2PBPN2/PP1N1PPP/R2QK2R w KQ - 0 8",
+    "vor_weg": "7k/7p/8/8/8/8/8/K5R1 w - - 0 1",                               # Tg8+ Kxg8 erzwungen: Vorzug Tg8-g1 geht nicht mehr
+    "vor_umw": "7k/P7/8/8/8/8/8/K7 w - - 0 1",                                  # Vorzug a7-a8 -> Dame
 }
 
 
@@ -1456,6 +1458,111 @@ def schach_pruefen(br, pw, base, fehler, bilder):
         mess["Stufe 8 Antwort ms (Bedenkzeit 300)"] = ms["ms"]
         if not ms["zug"] or ms["ms"] > 900:
             f(name, f"Stufe 8 mit 0,3 s: {ms}")
+        # GS-1.18 Vorziehen (Premove) gegen den Computer: der Computer überlegt hier künstlich 1,5 s länger (Zeit zum Vorziehen)
+        pg.evaluate("() => { __schach.setze('balken', false); __schach.setze('zeit', 1000); window.__verz = 1500; window.__suche0 = Motor.suche; Motor.suche = a => new Promise(r => setTimeout(r, __verz)).then(() => __suche0(a)); }")
+
+        def vorziehen(a_, b_, wo):
+            try:
+                warte(pg, "() => __schach.zustand().vorzugAn && !__schach.zustand().menschDran", 6000)
+            except Exception:
+                st = z(pg)
+                f(name, f"Vorziehen ({wo}) geht nicht: am Zug {st['amZug']}, {st['zuege']}, Ende {st['ende']}, vorzugAn {st['vorzugAn']}"); return False
+            tippe(pg, a_); tippe(pg, b_)
+            try:
+                warte(pg, "() => !!__schach.zustand().vorzug", 3000)
+            except Exception:
+                f(name, f"Vorzug {a_}-{b_} ({wo}) wurde nicht angenommen ({z(pg)['cgVorzug']})"); return False
+            return True
+        stelle(pg, None, stufe=8, lern=False)
+        tippe(pg, "e2"); tippe(pg, "e4")
+        if vorziehen("g1", "f3", "erlaubt"):
+            if pg.locator("#brett square.current-premove:visible").count() != 2 or not pg.locator("#bVorzug").is_visible() or pg.locator("#bTipp").is_visible() \
+                    or "Vorzug g1–f3" not in pg.inner_text("#status"):
+                f(name, f"Vorzug: Markierung / «✕ Vorzug» / Status fehlen ({pg.inner_text('#status')!r})")
+            klein(pg, name, "Vorzug")
+            bild(pg, "13_vorzug")
+            warte(pg, "() => __schach.zustand().zugNr >= 3", 12000)
+            st = z(pg)
+            zt = st["zugZeiten"]
+            ms = round(zt[2]["t"] - zt[1]["t"]) if len(zt) >= 3 and zt[1] and zt[2] else None
+            mess["Vorzug gespielt nach dem Computerzug ms"] = ms
+            if st["zuege"][2] != "g1f3" or zt[2]["quelle"] != "vorzug" or ms is None or ms > 400:
+                f(name, f"erlaubter Vorzug nicht sofort gespielt: {st['zuege']} / {ms} ms")
+            pg.wait_for_timeout(300)
+            st = z(pg)
+            if st["vorzug"] or st["cgVorzug"] or pg.locator("#brett square.current-premove:visible").count():
+                f(name, f"nach dem gespielten Vorzug ist die Markierung noch da ({st['vorzug']}, {st['cgVorzug']}, {pg.locator('#brett square.current-premove:visible').count()})")
+        # nicht mehr erlaubt -> still weg
+        stelle(pg, "vor_weg", stufe=8, lern=False)
+        tippe(pg, "g1"); tippe(pg, "g8")
+        if vorziehen("g8", "g1", "verworfen"):
+            warte(pg, "() => __schach.zustand().zugNr >= 2 && __schach.zustand().menschDran && !__schach.zustand().vorzug", 12000)
+            pg.wait_for_timeout(400)
+            st = z(pg)
+            if st["zugNr"] != 2 or st["zuege"][1] != "h8g8" or st["vorzugZahl"]["verworfen"] < 1 or pg.locator("#brett square.current-premove:visible").count() \
+                    or pg.locator("#dUmw").is_visible() or pg.locator("#dWarn").is_visible():
+                f(name, f"unerlaubter Vorzug: {st['zuege']} {st['vorzugZahl']}")
+        # Umwandlung im Vorzug: immer Dame, kein Fenster
+        stelle(pg, "vor_umw", stufe=8, lern=False)
+        tippe(pg, "a1"); tippe(pg, "b1")
+        if vorziehen("a7", "a8", "Umwandlung"):
+            warte(pg, "() => __schach.zustand().zugNr >= 3", 12000)
+            st = z(pg)
+            if st["zuege"][2] != "a7a8q" or pg.locator("#dUmw").is_visible():
+                f(name, f"Vorzug mit Umwandlung: {st['zuege']}")
+        # aufheben: leeres Feld, «✕ Vorzug», neben das Brett; ein neuer ersetzt den alten (der Computer überlegt hier 8 s)
+        pg.evaluate("() => { window.__verz = 8000; }")
+        stelle(pg, None, stufe=8, lern=False)
+        tippe(pg, "e2"); tippe(pg, "e4")
+        for wie in ("Feld", "Knopf", "daneben", "ersetzt"):
+            if not vorziehen("g1", "f3", wie):
+                break
+            if wie == "Feld":
+                tippe(pg, "a5")
+            elif wie == "Knopf":
+                druecke(pg, "#bVorzug")
+            elif wie == "daneben":
+                druecke(pg, "#zuege")
+            else:
+                tippe(pg, "b1"); tippe(pg, "c3"); pg.wait_for_timeout(250)
+                v = z(pg)["vorzug"]
+                if not v or v["von"] != "b1" or pg.locator("#brett square.current-premove:visible").count() != 2:
+                    f(name, f"neuer Vorzug ersetzt den alten nicht: {v}")
+                tippe(pg, "h5")
+            pg.wait_for_timeout(250)
+            if z(pg)["vorzug"] or z(pg)["cgVorzug"] or pg.locator("#brett square.current-premove:visible").count():
+                f(name, f"Vorzug aufheben ({wie}): bleibt stehen")
+        warte(pg, "() => __schach.zustand().zugNr >= 2 && __schach.zustand().menschDran", 15000)
+        pg.evaluate("() => { window.__verz = 1500; }")
+        pg.wait_for_timeout(500)
+        if z(pg)["zugNr"] != 2:
+            f(name, f"aufgehobener Vorzug wurde trotzdem gespielt: {z(pg)['zuege']}")
+        # Lern-Modus an bzw. Schalter aus: kein Vorziehen
+        for wie in ("Lern-Modus", "Schalter"):
+            pg.evaluate("w => w === 'Lern-Modus' ? __schach.setze('lern', true) : (__schach.setze('lern', false), __schach.setze('vorzug', false))", wie)
+            stelle(pg, None, stufe=8, lern=wie == "Lern-Modus")
+            tippe(pg, "e2"); tippe(pg, "e4")
+            warte(pg, "() => __schach.zustand().zugNr >= 1 && !__schach.zustand().menschDran", 6000)
+            tippe(pg, "g1")
+            n = pg.locator("#brett square.premove-dest:visible").count()
+            tippe(pg, "f3")
+            pg.wait_for_timeout(300)
+            if z(pg)["vorzugAn"] or z(pg)["cgVorzug"] or n:
+                f(name, f"{wie}: Vorziehen geht trotzdem ({n} Felder)")
+            warte(pg, "() => __schach.zustand().zugNr >= 2", 12000)
+            pg.wait_for_timeout(300)
+            if z(pg)["zugNr"] != 2:
+                f(name, f"{wie}: es wurde trotzdem vorgezogen")
+            if wie == "Lern-Modus" and pg.locator("#dWarn").is_visible():
+                druecke(pg, "#bNochmal")
+        pg.evaluate("() => { __schach.setze('vorzug', true); __schach.setze('lern', true); __schach.setze('balken', true); Motor.suche = __suche0; }")
+        druecke(pg, "#bEinst")
+        if not pg.locator("#schVorzug").is_visible() or "Vorziehen (Premove)" not in pg.inner_text("#schVorzug") or pg.get_attribute("#schVorzug", "aria-pressed") != "true":
+            f(name, "Einstellungen: Schalter «Vorziehen (Premove)» fehlt oder ist nicht an")
+        druecke(pg, "#schVorzug")
+        if z(pg)["einst"]["vorzug"]:
+            f(name, "Schalter «Vorziehen» schaltet nicht aus")
+        druecke(pg, "#schVorzug"); druecke(pg, "#bEinstZu")
         # Lern-Modus: Dame einstellen
         stelle(pg, "dame", stufe=3, lern=True)
         tippe(pg, "d1"); tippe(pg, "d7")
