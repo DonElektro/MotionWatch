@@ -86,7 +86,16 @@ EOF
 	fi
 	quelle zip; python3 -c 'import sys; f=open(sys.argv[1], "r+b"); f.seek(-100, 2); b=f.read(1); f.seek(-100, 2); f.write(bytes([b[0] ^ 255]))' \
 		"$W/zip/main/simulator3d/MoveEyeSim3D_Linux.zip"
-	pruefe zip 1 "Linux-ZIP verändert (1 Byte)"
+	# Sim 3.68.0: steht ein neueres Paket als Release-Asset im signierten Block «sim.anhang», nimmt der HP zu Recht DAS und
+	# schaut die (eingefrorene) ZIP im Repository gar nicht an. Damit diese Prüfung die Repository-ZIP prüft, lässt die
+	# Kopie hier den Block «anhang» weg (jeder Paket-Eintrag ist einzeln signiert); ein verändertes Asset prüft Teil 6.
+	json "$W/zip/main/versions.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1]))
+(d.get("sim") or {}).pop("anhang", None)
+json.dump(d, open(sys.argv[1], "w"))
+EOF
+	pruefe zip 1 "Linux-ZIP im Repository verändert (1 Byte)"
 	if python3 -c 'import json, sys; sys.exit(0 if (json.load(open("'"$R"'/versions.json")).get("sim") or {}).get("linux", {}).get("sig") else 1)'; then
 		quelle simsig; json "$W/simsig/main/versions.json" <<'EOF'
 import json, sys
