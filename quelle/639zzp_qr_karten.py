@@ -1296,8 +1296,10 @@ def render_page(page, active):                               # + 639zzp: the Ger
             admin = False
         if admin:
             i = out.find('<a class="mi" href="/tools">')
-            out = (out[:i] + QRK_MORE_ITEM + out[i:]).replace("</body>", "<script>Object.assign(I18N.de, " + json.dumps(
-                {k: _QRK_DE[k] for k in ("Card workshop", "QR command cards: make, print, revoke")}, ensure_ascii=False) + ");</script></body>", 1)
+            de_ = "Object.assign(I18N.de, " + json.dumps({k: _QRK_DE[k] for k in ("Card workshop", "QR command cards: make, print, revoke")},
+                                                         ensure_ascii=False) + ");"
+            out = out[:i] + QRK_MORE_ITEM + out[i:]       # 3.88: the German into the page's own list (before: a script at the end - too late, English)
+            out = out.replace("/*MOREDE*/", de_ + "/*MOREDE*/", 1) if "/*MOREDE*/" in out else out.replace("</body>", "<script>" + de_ + "</script></body>", 1)
     return out
 
 

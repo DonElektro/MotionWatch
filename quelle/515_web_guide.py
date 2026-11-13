@@ -174,8 +174,18 @@ GUIDE_JS = r"""
     + "width:min(440px,calc(100vw - 24px));background:var(--panel,#111822);color:var(--txt,#e8eef5);border:1px solid var(--line,#1f2b3a);border-left:4px solid var(--acc,#3d8bff);border-radius:14px;padding:12px 14px;box-shadow:0 12px 40px rgba(0,0,0,.45)}"
     + "#gd-card.on{transform:translate(-50%,0);opacity:1}#gd-card b{display:block;font-size:15px;margin-bottom:4px}#gd-card p{margin:0 0 10px;font-size:14px;line-height:1.4;color:var(--mut,#9fb0c3)}"
     + "#gd-card .gb{display:flex;gap:8px;flex-wrap:wrap}#gd-card button{font:inherit;font-size:13px;padding:7px 12px;border-radius:10px;cursor:pointer;border:1px solid var(--line,#1f2b3a);background:transparent;color:var(--txt,#e8eef5)}"
-    + "#gd-card button.ok{background:var(--acc,#3d8bff);border-color:var(--acc,#3d8bff);color:#fff}@media (prefers-reduced-motion:reduce){#gd-card{transition:none}}";
+    + "#gd-card button.ok{background:var(--acc,#3d8bff);border-color:var(--acc,#3d8bff);color:#fff}@media (prefers-reduced-motion:reduce){#gd-card{transition:none}}"
+    // 3.88 (Klar stage 1): the explanation and the tip of the day stand in the page (under the bar), not over its content
+    + ".mw-inl{position:relative!important;left:auto!important;bottom:auto!important;transform:none!important;margin:10px auto 4px!important;"
+    + "width:min(720px,calc(100% - 24px))!important;box-sizing:border-box;box-shadow:none!important;z-index:auto!important;transition:opacity .25s ease!important}"
+    + ".mw-inl button,.mw-inl .btn{min-height:44px}";
   document.head.appendChild(css);
+  window.mwInline = function (c) {                         // one place for the small cards: right under the bar (else top of the page)
+    c.classList.add("mw-inl"); const bar = document.getElementById("mwbar"), m = document.querySelector("main"), vc = document.getElementById("vcard");
+    if (vc && vc.parentNode) vc.after(c);                // Live: under the picture - the picture never jumps down
+    else if (bar && bar.parentNode && getComputedStyle(bar).display !== "none") bar.after(c);
+    else if (m) m.insertBefore(c, m.firstChild); else document.body.insertBefore(c, document.body.firstChild);
+  };
   const queue = []; let busy = false;
   function setLevel(v) { fetch("/api/text", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({key: "tips_level", value: v})}).catch(() => {}); }
   function showNext() {
@@ -195,7 +205,7 @@ GUIDE_JS = r"""
       p.textContent = tx("Now only the most important explanations."); setTimeout(done, 1200); };
     const off = document.createElement("button"); off.type = "button"; off.textContent = tx("Tips off");
     off.onclick = () => { setLevel("off"); G.level = 0; queue.length = 0; p.textContent = tx("Explanations are off. Switch them on again under Settings → Setup."); setTimeout(() => { done(); paintDots(); }, 1800); };
-    bt.append(ok, less, off); c.append(b, p, bt); document.body.appendChild(c);
+    bt.append(ok, less, off); c.append(b, p, bt); window.mwInline(c);
     requestAnimationFrame(() => requestAnimationFrame(() => c.classList.add("on")));
   }
   function want(k) { const x = tip[k]; if (!x || seen.has(k) || !G.level || queue.some(q => q.k === k)) return; queue.push(x); setTimeout(showNext, 600); }
@@ -206,6 +216,7 @@ GUIDE_JS = r"""
   function mark(el, key) {
     if (!el) return; el.querySelectorAll(":scope > .gd-dot, :scope > .gd-new").forEach(e => e.remove());
     const x = tip[key]; if (!G.level || !x || seen.has(key)) return;
+    if (!recent(x.v)) return;                               // 3.88 (Klar stage 1): no blue dot without a word - only «NEU» stays
     const s = document.createElement("span"); s.className = recent(x.v) ? "gd-new" : "gd-dot"; if (recent(x.v)) s.textContent = tx("NEW");
     s.title = titleOf(x); el.appendChild(s);
   }

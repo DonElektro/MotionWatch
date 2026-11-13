@@ -1063,6 +1063,10 @@ UI_GEMEINSAM = json.loads(r"""{
   "about",
   "werk"
  ],
+ "more_mw_elsewhere": {
+  "werk": "settings:sys"
+ },
+ "more_mw_elsewhere_note": "3.88 (Klar Etappe 1, Besitzer 13.11.2026): in MoveEye stehen «Einrichtung» und «Auf Werkseinstellungen zurücksetzen» unter Einstellungen → System (nicht mehr unter «Mehr»); der Simulator behält «werk» in «Mehr» - Abweichung gemeldet.",
  "shared": {
   "simple": {
    "mw": "CFG ui_simple",

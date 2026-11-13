@@ -611,8 +611,16 @@ def ui_more_selftest():
     items = {m["id"]: m for m in U.get("more") or []}
     assert order and all(i in items for i in order), "639zb: more_order / more"
     marks = {"help": 'href="/help"', "case": 'href="/case"', "build": 'href="/build"', "feedback": 'id="m-fb"', "about": 'id="m-about"', "werk": 'id="g2-sys"'}
-    pos = [MORE_PAGE.find(marks.get(i, "\0")) for i in order]
-    assert all(p >= 0 for p in pos) and pos == sorted(pos), f"639zb: «Mehr» of MoveEye not in the order {order}: {pos}"
+    # 3.88 (Klar stage 1, owner 13.11.2026): in MoveEye «⚠ Auf Werkseinstellungen zurücksetzen …» is in Einstellungen → System
+    # (ui_gemeinsam.json «more_mw_elsewhere»); the simulator keeps it in «Mehr» - the other entries keep the same order
+    away = U.get("more_mw_elsewhere") or {}
+    order_mw = [i for i in order if i not in away]
+    pos = [MORE_PAGE.find(marks.get(i, "\0")) for i in order_mw]
+    assert all(p >= 0 for p in pos) and pos == sorted(pos), f"639zb: «Mehr» of MoveEye not in the order {order_mw}: {pos}"
+    assert 'id="g2-sys"' not in MORE_PAGE and 'b.id = "g2-sys"' in WEB_PAGE and away.get("werk") == "settings:sys", "639zb: factory reset in Einstellungen → System"
+    html_ = more_grouped(MORE_PAGE)
+    pos = [html_.find(marks.get(i, "\0")) for i in order_mw]
+    assert all(p >= 0 for p in pos) and pos == sorted(pos), f"639zb: grouped «Mehr» of MoveEye not in the order {order_mw}: {pos}"
     for i in order:
         mw = items[i].get("mw") or {}
         for lg in UI_GEM_LANGS:

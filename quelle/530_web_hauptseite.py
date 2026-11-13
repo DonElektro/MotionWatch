@@ -30,7 +30,7 @@ main>section,main>aside{min-width:0}
 .sl{margin-top:9px}
 .val{color:var(--mut);font-size:12px}
 .pad{display:grid;grid-template-columns:repeat(3,58px);grid-template-rows:repeat(3,58px);gap:6px;touch-action:none;user-select:none}
-details.grp>summary{font-size:12px;letter-spacing:.07em}
+details.grp>summary{font-size:15px;letter-spacing:0;text-transform:none;color:var(--txt);font-weight:700;min-height:44px}
 details.grp>summary .gi{font-size:16px;margin-right:9px;letter-spacing:0;filter:saturate(.9)}
 details.grp>summary .gn{flex:1}
 /* 2.95.70: symbols of the settings - coloured emoji with a green dot while on, or plain line symbols that turn green (switch «Symbols») */
@@ -38,11 +38,16 @@ details.grp>summary .gn{flex:1}
 .gi .is{display:none;width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--mut)}
 body.icplain .gi .ie{display:none}body.icplain .gi .is{display:inline-block}
 .gi .gdot{display:none;position:absolute;right:-4px;bottom:-2px;width:8px;height:8px;border-radius:50%;background:var(--grn);box-shadow:0 0 0 2px var(--panel),0 0 7px var(--grn)}
-body:not(.icplain) .mon>summary>.gi .gdot{display:block}body.icplain .mon>summary>.gi .is{color:var(--grn)}
+body:not(.icplain) .mon>summary>.gi .gdot{display:none}body.icplain .mon>summary>.gi .is{color:var(--grn)}
+/* 3.88 (Klar stage 1): the state as a word at the right («an» / «aus») instead of a green dot and a green arrow */
+.mst{margin-left:auto;padding:0 8px 0 10px;font-size:12.5px;font-weight:600;letter-spacing:0;text-transform:none;white-space:nowrap}
+.mst.on{color:var(--grn)}.mst.off{color:var(--mut)}
+@media(min-width:1100px){body[data-tab="settings"] main{max-width:1400px!important}
+  body[data-tab="settings"] #settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;align-items:start}}
 details.sub>summary>.gi{margin-right:8px;font-size:13px;letter-spacing:0}details.sub>summary>.sn{flex:1}
 .icseg{margin-top:8px}.icseg .mut{font-size:12px;margin:0 0 4px}.simplebar .sgrow{margin-top:8px;font-size:13px;gap:10px}
 details.sub{border-top:1px solid var(--line);margin-top:12px;padding-top:9px}
-details.sub>summary{font-size:10.5px;letter-spacing:.09em;color:var(--mut);font-weight:700;text-transform:uppercase;cursor:pointer;list-style:none;
+details.sub>summary{font-size:14px;letter-spacing:0;color:var(--txt);font-weight:600;text-transform:none;cursor:pointer;list-style:none;min-height:40px;
   display:flex;justify-content:space-between;align-items:center;user-select:none}
 details.sub>summary::-webkit-details-marker,details.adv>summary::-webkit-details-marker{display:none}
 body.role-operate aside[data-view="sidebar"],body.role-view aside[data-view="sidebar"],body.role-operate #side-open,body.role-view #side-open,
@@ -52,7 +57,7 @@ body.role-view details[data-view="controls"],body.role-view #b-arm{display:none!
 .sens-row select{width:100%}#sens-add,#sens-seen{flex-wrap:wrap}#sens-seen button{margin:4px 4px 0 0;font-size:13px}
 details.sub>summary::after{content:"▾";font-size:12px;transition:transform .15s}details.sub:not([open])>summary::after{transform:rotate(-90deg)}
 /* overview: the arrow of a topic / group is green while its main function is switched on */
-details.sub.mon>summary::after,details.grp.mon>summary::after{color:var(--grn);font-size:15px;text-shadow:0 0 8px rgba(63,207,107,.55)}
+details.sub.mon>summary::after,details.grp.mon>summary::after{color:var(--mut);font-size:15px}
 details.sub.moff>summary::after,details.grp.moff>summary::after{color:var(--mut);opacity:.7}
 details.sub[open]>summary{margin-bottom:7px}
 details.sub.inline{border-top:0;margin-top:0;padding-top:0}details.sub.inline>summary{display:none}
@@ -120,10 +125,10 @@ body.locked .l-hide,body.locked .l-off,body.locked #srch,body.locked #view-menu-
 .s-hit{box-shadow:0 0 0 2px var(--acc);border-radius:8px;padding:4px 6px}
 .blk>h4{margin:0 0 2px;font-size:10.5px;letter-spacing:.09em;color:var(--mut);text-transform:uppercase;font-weight:700}
 details.sub>.blk,details.grp>.blk{border-top:0;margin-top:0;padding-top:0}
-.fine{margin:16px 0 0;padding-top:8px;border-top:1px dashed var(--line);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--acc2);font-weight:700}
+.fine{margin:16px 0 0;padding-top:8px;border-top:1px dashed var(--line);font-size:13px;letter-spacing:0;text-transform:none;color:var(--acc2);font-weight:700}
 .fine+details.sub{border-top:0;margin-top:4px}
-details.sub.ffold{border-top:1px dashed var(--line)}details.sub.ffold>summary{color:var(--acc2);font-size:10px}
-.mblk{margin-top:12px}.mblk .mtitle{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:4px 0 2px}
+details.sub.ffold{border-top:1px dashed var(--line)}details.sub.ffold>summary{color:var(--acc2);font-size:13px}
+.mblk{margin-top:12px}.mblk .mtitle{font-size:13px;letter-spacing:0;text-transform:none;color:var(--mut);font-weight:700;margin:4px 0 2px}
 .dtab{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px 8px;align-items:center;margin:8px 0}.dtab select{width:100%;min-width:0}.dtab b{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
 details.adv{margin-top:12px;border-top:1px dashed var(--line);padding-top:8px}
 details.adv>summary{cursor:pointer;color:var(--acc2);font-size:12.5px;font-weight:600;list-style:none;user-select:none}
@@ -134,7 +139,7 @@ details.sblk>summary{display:flex;justify-content:space-between;align-items:cent
 details.sblk>summary::before,details.sblk[open]>summary::before{content:none!important;display:none}details.sblk>summary::after{content:"▸";color:var(--mut);transition:transform .15s}details.sblk[open]>summary::after{transform:rotate(90deg)}
 .mbar{margin-top:12px}.mbar .row{margin-bottom:3px}.mbar b{font-size:14px}
 #settings .tg{padding:4px 0}#settings .tg.subtg{padding-left:18px}#settings .tg.subtg>span::before{content:"↳ ";color:var(--mut)}#settings .sl{margin-top:7px}
-@media(max-width:760px){.card{padding:12px}details.card>summary{font-size:11.5px}}
+@media(max-width:760px){.card{padding:12px}details.card>summary{font-size:15px}}
 .pr-sw{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);align-items:flex-start;cursor:pointer}
 .pr-sw input.sw{margin-top:2px}#b-arm{user-select:none}
 .wf-item{border:1px solid var(--line);border-radius:10px;margin-top:6px;background:var(--field);overflow:hidden}
@@ -413,7 +418,7 @@ body[data-tab="live"] #set-foot{display:block!important}
 body[data-tab="live"] .qsw,body[data-tab="live"] #ctl-left .qsw,body.mobctl[data-tab="live"] #ctl-left .qsw{grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px 5px;max-width:none;width:100%}
 body[data-tab="live"] .qsw button{padding:4px 1px 3px;border-radius:10px;gap:1px;font-size:16px}
 body[data-tab="live"] .qsw button span{font-size:17px;line-height:1.1}
-body[data-tab="live"] .qsw button small{font-size:9px}
+body[data-tab="live"] .qsw button small{font-size:10.5px}
 body[data-tab="live"] #set-foot{padding:6px;font-size:13px;margin-top:4px}
 body[data-tab="live"] #spos-txt{font-size:11px}
 /* 639o: Einfach / Experte, Symbole, «Beim Start: Nur Gruppen» and the three fold buttons are in the bar under the tabs (#mwbar) */
@@ -1584,7 +1589,7 @@ function mnMark(e, x) {
 }
 function mnFold(d, view) {                                   // the closed «Feineinstellungen (n)» at the end of a part
   const rows = [...d.children].filter(c => c.classList && c.classList.contains("finerow"));
-  if (!rows.length) return null;
+  if (rows.length <= 2) return null;                         // 3.88 (owner): one or two settings stay in their part - no extra fold level
   const F = el("details", "sub ffold"); if (view) F.dataset.fold = view;
   F.appendChild(el("summary", "", t("Fine-tuning") + " (" + rows.length + ")")); rows.forEach(r => F.appendChild(r)); d.appendChild(F);
   return F;
@@ -1940,6 +1945,14 @@ function tabsArrange() {
   into("power", [row("#pr-eco"), row("#pr-turbo")]);
   into("net", [row("#pr-hs"), $("#pr-teth") ? $("#pr-teth").closest(".pr-sw") : null, $("#pr-net") ? $("#pr-net").closest(".pr-sw") : null]);
   into("sys", [row("#pr-as")]);
+  // 3.88 (Klar stage 1, owner): «Einrichtung · Hilfe» and «System» (factory settings) moved here from the page «Mehr»
+  const sysg = document.querySelector('#settings [data-view="grp:sys"]');
+  if (sysg && !$("#g2-more")) {
+    const S = el("details", "sub"); S.dataset.view = "g2:setup"; S.id = "g2-setup";
+    const sm = el("summary"); sm.appendChild(icSpan("🧭")); sm.appendChild(el("span", "sn", t("Setup & factory settings"))); S.appendChild(sm);
+    const a = el("div"); a.id = "g2-more"; const b = el("div"); b.id = "g2-sys"; S.append(a, b); sysg.appendChild(S);
+    if (window.g2MoreCards) window.g2MoreCards();
+  }
   const sc = document.querySelector('#settings [data-view="grp:sched"]');
   if (sc) { const a = el("a", "btn sec", "🗺 " + t("Draw the zones") + " ›"); a.href = "/zones"; a.style.cssText = "display:block;margin:6px 0 10px";
     const sm = sc.querySelector(":scope > summary"); sc.insertBefore(a, sm ? sm.nextSibling : sc.firstChild); }
@@ -2121,6 +2134,10 @@ function mainPaint(j) {
     else if (d.dataset.main) on = val(d.dataset.main);
     else { const subs = [...d.querySelectorAll(":scope > details.sub")].map(x => val(x.dataset.view)).filter(x => x !== null); on = subs.length ? subs.some(Boolean) : null; }
     try { d.classList.toggle("mon", on === true); d.classList.toggle("moff", on === false); } catch (e) {}
+    const sm = d.querySelector(":scope > summary");       // 3.88 (Klar stage 1): the state as a word («an» / «aus»), not as a dot
+    if (sm) { let w = sm.querySelector(":scope > .mst");
+      if (on === null) { if (w) w.remove(); }
+      else { if (!w) { w = el("span", "mst"); sm.appendChild(w); } const tx = t(on ? "on" : "off"); if (w.textContent !== tx) w.textContent = tx; w.className = "mst " + (on ? "on" : "off"); } }
   });
 }
 

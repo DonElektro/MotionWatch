@@ -23,6 +23,15 @@ _HX_MWB = {
                                      'Nagut da zuppentar sin questa pagina'),
     'Symbols coloured': ('Symbole farbig', 'Symboles en couleur', 'Simboli a colori', 'Simbols colurads'),
     'plain': ('schlicht', 'simples', 'semplici', 'simpels'),
+    # 3.88 (Klar stage 1): the menu «Display» of the bar and the one status line of the phone
+    'Display': ('Darstellung', 'Affichage', 'Visualizzazione', 'Preschentaziun'),
+    'Symbols': ('Symbole', 'Symboles', 'Simboli', 'Simbols'),
+    'Fold the menus': ('Menüs auf- und zuklappen', 'Ouvrir et fermer les menus', 'Aprire e chiudere i menu', 'Avrir e serrar ils menus'),
+    'Groups only': ('Nur Gruppen', 'Ouvrir seulement les groupes', 'Aprire solo i gruppi', 'Avrir mo las gruppas'),
+    '1 problem': ('1 Problem', '1 problème', '1 problema', '1 problem'),
+    '{n} problems': ('{n} Probleme', '{n} problèmes', '{n} problemi', '{n} problems'),
+    'Status – tap: show all values': ('Status – antippen: alle Werte zeigen', 'État – toucher : afficher toutes les valeurs',
+                                      'Stato – tocca: mostra tutti i valori', 'Status – tutgar: mussar tut las valurs'),
 }
 for _k, _v in _HX_MWB.items():
     DE.setdefault(_k, _v[0])
@@ -87,18 +96,51 @@ body.mwb-chips-off header>.chips{flex:0 0 auto!important;overflow:visible!import
 #mwbar .dis{opacity:.45;pointer-events:none}
 #mwbar .mwb-sg{display:inline-flex;align-items:center;gap:.5rem;flex:none;cursor:pointer;white-space:nowrap;color:var(--txt);margin:0}
 #mwbar .mwb-sg input.sw{transform:scale(.85)}
-#mwbar .mwb-fold{display:inline-flex;gap:.35rem;margin-left:auto;flex:none}
-#mwbar .mwb-fold button{width:2.3rem;height:2.1rem;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:.6rem}
-#mwbar .mwb-fold button svg{width:1.15rem;height:1.15rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+/* 3.88 (Klar stage 1): symbols and the fold buttons are in ONE menu «Display» at the right end of the bar; Simple / Expert stays in the bar */
+#mwbar .mwb-vw{position:relative;margin-left:auto;flex:none}
+#mwbar .mwb-vbtn{display:inline-flex;align-items:center;gap:.45rem;min-height:2.4rem;padding:0 .8rem;border-radius:.6rem;font-size:.8rem;font-weight:600;white-space:nowrap}
+#mwbar .mwb-vbtn svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#mwbar .mwb-vbtn .mwb-cv{font-style:normal;font-size:.7rem;color:var(--mut)}
+#mwbar .mwb-vbtn[aria-expanded="true"]{border-color:var(--acc)}
+#mwbar .mwb-vpop{position:absolute;right:0;top:calc(100% + 6px);z-index:60;width:min(19rem,calc(100vw - 1.5rem));box-sizing:border-box;background:var(--panel);
+  border:1px solid var(--line);border-radius:12px;padding:.7rem .8rem .8rem;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:.5rem}
+#mwbar .mwb-vpop[hidden]{display:none}
+#mwbar .mwb-vh{font-size:.78rem;color:var(--mut);font-weight:600;margin-top:.2rem}
+#mwbar .mwb-vpop .mwb-seg{align-self:stretch;display:flex}#mwbar .mwb-vpop .mwb-seg button{flex:1;min-height:2.6rem;white-space:normal}
+#mwbar .mwb-fold{display:flex;flex-direction:column;gap:.35rem}
+#mwbar .mwb-fold button{width:100%;min-height:2.75rem;padding:0 .8rem;display:flex;align-items:center;justify-content:flex-start;gap:.7rem;border-radius:.6rem;
+  font-size:.88rem;font-weight:600;text-align:left;line-height:1.2}
+#mwbar .mwb-fold button .l{flex:1;min-width:0;overflow-wrap:anywhere}
+#mwbar .mwb-fold button svg{flex:none;width:1.15rem;height:1.15rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 #mwbar .mwb-fold button.cur{background:var(--acc);color:#fff;border-color:transparent}
 #mwbar .mwb-fold button:disabled{opacity:.4;cursor:default}
 #mwbar .s{display:none}
 @media(max-width:520px){
   #mwbar{padding:.35rem .6rem;gap:.35rem .45rem}
-  #mwbar .mwb-seg button{padding:.3rem .55rem;font-size:.75rem}
-  #mwbar .mwb-ic .l{display:none}#mwbar .mwb-ic .s{display:inline}
+  #mwbar .mwb-seg button{padding:.3rem .7rem;font-size:.8rem}
   #mwbar .mwb-sg{font-size:.75rem;gap:.35rem}
-  #mwbar .mwb-fold button{width:2.1rem;height:1.95rem}
+}
+/* touch screens: every button of the bar and the header grips at least 44 px high (Klar stage 1) */
+@media(pointer:coarse),(max-width:760px){
+  #mwbar .mwb-mode button,#mwbar .mwb-vbtn{min-height:44px}
+  .mwb-grip{min-height:44px;min-width:40px;justify-content:center}
+}
+/* the phone: the tabs 44 px high, text in the middle */
+@media(max-width:760px){header>nav.nav{align-items:stretch}header>nav.nav>a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;box-sizing:border-box}
+  header>nav.nav>.mwb-grip{min-width:28px;padding:0 .3rem}}
+/* the phone: the status chips as ONE line - state, the worst thing, battery; a tap shows all chips (as before) */
+.mwb-sum{display:none}
+@media(max-width:760px){
+  body:not(.mwb-sum-open) header:not(.hx)>.chips:has(>.mwb-sum)>.badge{display:none!important}   /* «alle Werte» (b-ok, hx) shows them too */
+  .mwb-sum{display:flex;align-items:center;gap:.55rem;flex:1 1 0;min-width:0;min-height:44px;margin:0;padding:0 .8rem;border-radius:14px;
+    border:1px solid var(--line);background:var(--panel);color:var(--txt);font-size:.85rem;line-height:1.2;text-align:left;cursor:pointer;box-shadow:none}
+  body.mwb-sum-open .mwb-sum{flex:1 1 100%}
+  .mwb-sum .mws-st{font-weight:700;white-space:nowrap}.mwb-sum .mws-st.grn{color:var(--grn)}.mwb-sum .mws-st.red,.mwb-sum .mws-st.alarm{color:var(--red)}
+  .mwb-sum .mws-st.yel,.mwb-sum .mws-st.org{color:var(--yel)}
+  .mwb-sum .mws-msg{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--mut)}
+  .mwb-sum .mws-msg.red{color:var(--red)}.mwb-sum .mws-msg.yel{color:var(--yel)}
+  .mwb-sum .mws-bat{white-space:nowrap;color:var(--mut)}
+  .mwb-sum .mws-ch{font-style:normal;color:var(--mut);font-size:.75rem}.mwb-sum .mws-ch::before{content:"▾"}body.mwb-sum-open .mwb-sum .mws-ch::before{content:"▴"}
 }
 body.videoonly #mwbar,body.lv-mini #mwbar,body.hdrhidden #mwbar,body.mwb-nobar #mwbar{display:none!important}
 </style>"""
@@ -155,6 +197,42 @@ MWB_JS = r"""<script>
     G[k].onclick = e => { e.stopPropagation(); setFold(k, !B.classList.contains("mwb-" + k + "-off"), true); };
     B.classList.toggle("mwb-" + k + "-off", lsg("mw-hdr-" + k, "1") === "0"); });
   setInterval(() => { if (B.classList.contains("mwb-chips-off")) alerts(); }, 1000);
+  // ---- 3.88 (Klar stage 1): the phone shows the status chips as ONE line - state · the worst thing · battery; a tap shows all
+  // chips as before (remembered per device: mw-hdr-sum). Only where the status line has the protection state (b-arm).
+  const SUM = chips && chips.querySelector("#b-arm") ? E("button", "mwb-sum") : null;
+  let sumT = 0;
+  function paintSum() {
+    sumT = 0; if (!SUM) return;
+    const T = b => (b.textContent || "").replace(/\s+/g, " ").trim(), shown = b => !!b && !b.hidden && !b.classList.contains("vh");
+    const q = id => chips.querySelector("#" + id), arm = q("b-arm"), ok = q("b-ok");
+    const bat = [q("b-batt"), q("b-pwr")].find(b => shown(b) && T(b));
+    const st = SUM.querySelector(".mws-st"); st.textContent = shown(arm) ? T(arm) : "";
+    st.className = "mws-st " + (arm ? [...arm.classList].filter(c => /^(grn|red|yel|org|blu|alarm)$/.test(c)).join(" ") : "");
+    const red = [], yel = [], skip = ["b-arm", "b-ok", "b-led", "b-sim", "b-person", "b-view", "b-count", bat ? bat.id : ""];
+    chips.querySelectorAll(".badge").forEach(b => { if (!shown(b) || skip.includes(b.id)) return;
+      let t = T(b); if (b.id === "b-health") { const n = parseInt(t.replace(/\D+/g, ""), 10) || 1; t = n === 1 ? tr("1 problem") : tr("{n} problems").replace("{n}", n); }
+      if (!t) return;
+      if (b.classList.contains("red") || b.classList.contains("alarm")) red.push(t); else if (b.classList.contains("yel") || b.classList.contains("org")) yel.push(t); });
+    const parts = red.concat(yel); if (!parts.length && shown(ok) && T(ok)) parts.push(T(ok));
+    const m = SUM.querySelector(".mws-msg"), mt = parts.join(" · ");
+    if (m.textContent !== mt) m.textContent = mt;
+    m.className = "mws-msg" + (red.length ? " red" : yel.length ? " yel" : "");
+    const bt = SUM.querySelector(".mws-bat"), btt = bat ? T(bat) : ""; if (bt.textContent !== btt) bt.textContent = btt;
+    SUM.title = tr("Status – tap: show all values");
+    SUM.setAttribute("aria-label", [st.textContent, mt, btt].filter(Boolean).join(", ") + " – " + SUM.title);
+  }
+  if (SUM) {
+    SUM.type = "button"; SUM.id = "mwb-sum";
+    SUM.append(E("span", "mws-st"), E("span", "mws-msg"), E("span", "mws-bat"), E("i", "mws-ch"));
+    chips.insertBefore(SUM, G.chips ? G.chips.nextSibling : chips.firstChild);
+    const setOpen = (v, store) => { B.classList.toggle("mwb-sum-open", v); SUM.setAttribute("aria-expanded", v ? "true" : "false");
+      if (store) { lss("mw-hdr-sum", v ? "1" : "0"); window.dispatchEvent(new Event("resize")); } };
+    SUM.onclick = e => { e.stopPropagation(); setOpen(!B.classList.contains("mwb-sum-open"), true); };
+    setOpen(lsg("mw-hdr-sum", "0") === "1", false);
+    new MutationObserver(ms => { if (!sumT && ms.some(x => !SUM.contains(x.target))) sumT = setTimeout(paintSum, 250); })
+      .observe(chips, {subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class", "hidden"]});
+    paintSum();
+  }
   // ---- 2. the bar under the tabs ----
   const bar = E("div"); bar.id = "mwbar"; bar.setAttribute("role", "toolbar");
   const seg = (cls, a, b) => { const s = E("div", "mwb-seg " + cls), x = E("button"), y = E("button"); x.type = y.type = "button";
@@ -162,20 +240,33 @@ MWB_JS = r"""<script>
   const [sm, bS, bE] = seg("mwb-mode", "", "");
   const [si, bC, bP] = seg("mwb-ic", '🎨 <span class="l"></span>', '◯ <span class="l"></span>');
   const fd = E("div", "mwb-fold");
-  // 639r: the middle is «My view» (two bars + a small star); «Groups only» stays: long press / right click on the middle
+  // 639r: the middle is «My view» (two bars + a small star); «Groups only» stays: long press / right click on «My view»,
+  // and since 3.88 (Klar stage 1) also its own line in the menu «Display»
   const SV = {close: "M7 4l5 5 5-5M7 20l5-5 5 5", mine: "M4 5h16v5H4zM4 14h8v5H4zM18 12.6l1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.4z",
-              open: "M7 15l5 5 5-5M7 9l5-5 5 5"};
+              groups: "M4 5h16v5H4zM8 14h12v5H8z", open: "M7 15l5 5 5-5M7 9l5-5 5 5"};
   const FB = {};
-  [["close", "Collapse all"], ["mine", "My view"], ["open", "Expand all"]].forEach(([k, lb]) => {
-    const b = E("button", "sec"); b.type = "button"; b.id = "all-" + k; b.dataset.k = lb;
-    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + SV[k] + '"/></svg>'; b.onclick = () => { if (b._long) { b._long = false; return; } fold(k); };
+  [["close", "Collapse all"], ["mine", "My view"], ["groups", "Groups only"], ["open", "Expand all"]].forEach(([k, lb]) => {
+    const b = E("button", "sec"); b.type = "button"; b.id = "all-" + k; b.dataset.k = lb; b.setAttribute("role", "menuitem");
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + SV[k] + '"/></svg><span class="l"></span>';
+    b.onclick = () => { if (b._long) { b._long = false; return; } fold(k); closeView(); };
     FB[k] = b; fd.appendChild(b); });
+  // 3.88 (Klar stage 1, owner): «Symbols» and the fold buttons are in ONE menu «Display»; Simple / Expert stays visible in the bar
+  const vb = E("button", "sec mwb-vbtn"); vb.type = "button"; vb.id = "mwb-view"; vb.setAttribute("aria-haspopup", "true"); vb.setAttribute("aria-expanded", "false");
+  vb.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span class="l"></span><i class="mwb-cv">▾</i>';
+  const vp = E("div", "mwb-vpop"); vp.id = "mwb-vpop"; vp.hidden = true; vp.setAttribute("role", "menu");
+  const vh1 = E("div", "mwb-vh"), vh2 = E("div", "mwb-vh");
+  vp.append(vh1, si, vh2, fd);
+  function closeView() { vp.hidden = true; vb.setAttribute("aria-expanded", "false"); }
+  vb.onclick = e => { e.stopPropagation(); const open = vp.hidden; vp.hidden = !open; vb.setAttribute("aria-expanded", open ? "true" : "false"); if (open) state(); };
+  document.addEventListener("click", e => { if (!vp.hidden && !vp.contains(e.target) && !vb.contains(e.target)) closeView(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !vp.hidden) { closeView(); vb.focus(); } });
   (function () { const b = FB.mine; let tm = 0;                     // long press (touch / mouse) or right click: «Groups only»
     const go = () => { b._long = true; fold("groups"); };
     b.addEventListener("contextmenu", e => { e.preventDefault(); clearTimeout(tm); go(); setTimeout(() => { b._long = false; }, 400); });
     b.addEventListener("pointerdown", e => { if (e.button) return; clearTimeout(tm); b._long = false; tm = setTimeout(go, 600); });
     ["pointerup", "pointerleave", "pointercancel"].forEach(n => b.addEventListener(n, () => clearTimeout(tm))); })();
-  bar.append(sm, si, fd);
+  const vw = E("div", "mwb-vw"); vw.append(vb, vp);
+  bar.append(sm, vw);
   H.after(bar);
   // Simple / Expert of this page (586: /api/ui_simple per page); a page without two views shows it grey
   let SIMPLE = true;
@@ -297,6 +388,9 @@ MWB_JS = r"""<script>
   function labels() {
     if (pageKey() !== keySeen) { keySeen = pageKey(); loadSimple(); }   // the page told its key later (guide 516 loads its data first)
     bS.textContent = tr("Simple"); bE.textContent = tr("Expert");
+    vb.querySelector(".l").textContent = tr("Display"); vb.title = tr("Display"); vh1.textContent = tr("Symbols"); vh2.textContent = tr("Fold the menus");
+    Object.keys(FB).forEach(k => { FB[k].querySelector(".l").textContent = tr(FB[k].dataset.k); });
+    paintSum();
     bC.querySelector(".l").textContent = tr("Symbols coloured"); bP.querySelector(".l").textContent = tr("plain");
     bC.title = tr("Symbols coloured"); bP.title = tr("plain"); si.setAttribute("aria-label", tr("Symbols: green dot or green symbol = switched on"));
     paintGrips(); paintSimple(); state();
@@ -315,14 +409,16 @@ for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp
                 "<p><b>▴ Kopf einklappen und Bedienleiste:</b> Die Reiterzeile und die Statuszeile oben klappst du je mit dem kleinen Pfeil "
                 "▴ ein und mit dem Griff ▾ wieder aus. Jedes Gerät merkt sich das selbst. Ist die Statuszeile eingeklappt und gibt es einen "
                 "Alarm, einen Fehler oder zu wenige Bilder pro Sekunde, zeigt der Griff einen roten Punkt und eine Kurzinfo. Unter den Reitern "
-                "steht auf jeder Seite dieselbe Leiste: Einfach / Experte, Symbole farbig / schlicht, «Beim Start: Nur Gruppen» und die drei "
-                "Knöpfe Alle zuklappen · Meine Ansicht · Alle aufklappen. Was auf einer Seite nichts bewirkt, ist grau.</p>"),
+                "steht auf jeder Seite dieselbe Leiste: links Einfach / Experte, rechts das Menü «Darstellung» mit Symbole farbig / schlicht und "
+                "Alle zuklappen · Meine Ansicht · Nur Gruppen · Alle aufklappen. Was auf einer Seite nichts bewirkt, ist grau. Auf dem Handy "
+                "stehen die Status-Chips in einer Zeile: Schutz-Zustand, das Wichtigste und der Akku – antippen zeigt alle Werte.</p>"),
                ('<section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>',
                 "<p><b>▴ Fold the header and the bar:</b> fold the tabs and the status line at the top one by one with the small arrow ▴ "
                 "and open them again with the grip ▾. Every device remembers it by itself. With the status line folded, an alarm, an error "
                 "or too few pictures per second show a red dot and a short note on the grip. Under the tabs every page has the same bar: "
-                "Simple / Expert, symbols coloured / plain, «On start: groups only» and the three buttons Collapse all · My view · "
-                "Expand all. What does nothing on a page is grey.</p>")):
+                "Simple / Expert on the left, on the right the menu «Display» with symbols coloured / plain and Collapse all · My view · "
+                "Groups only · Expand all. What does nothing on a page is grey. On a phone the status chips are one line: the protection "
+                "state, the most important thing and the battery - a tap shows all values.</p>")):
     if _a in HELP_PAGE:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 
@@ -349,7 +445,9 @@ def _mwb_selftest():
     tx = mwb_tx()
     for L in ("de", "fr", "it", "rm"):
         assert all(tx[L].get(k) for k in _HX_MWB), "639o: text missing in " + L
-    assert {"mw-hdr-tabs", "mw-hdr-chips"} <= WEB_UI_LOCAL, "639o: header folds must stay per device"
+    assert {"mw-hdr-tabs", "mw-hdr-chips", "mw-hdr-sum"} <= WEB_UI_LOCAL, "639o: header folds must stay per device"
+    for k in ('id = "mwb-view"', 'id = "mwb-vpop"', '"groups", "Groups only"', 'SUM.id = "mwb-sum"', "mw-hdr-sum"):
+        assert k in MWB_JS, "639o (Klar): menu «Display» / status line: " + k
 
 
 SELFTEST_EXTRA.append(("Header folds and bar (639o)", _mwb_selftest))

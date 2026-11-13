@@ -20,7 +20,7 @@ TK_G2_TOURS = {   # tab -> [(attribute or callable(self) -> widget, English titl
     "sim": [(lambda s: getattr(s, "right_f", None), "Simulator", "The 3D simulator on the PC: connection, «Improve detection», settings of the simulation."),
             (lambda s: s.tab_btns.get("sim"), "Simulator centre", "Tests, «Improve detection», training night - MoveEye learns without the real place.")],
     "more": [(lambda s: getattr(s, "h_text", None), "Self-check", "What works and what is missing - with a hint what to do."),
-             (lambda s: getattr(s, "_g2_more_bar", None), "Setup and help", "Start or continue the setup, show the tours again, reset to factory settings.")],
+             (lambda s: getattr(s, "_g2_more_bar", None), "Manual", "Everything explained, with a search - and a quick guide to print.")],   # 3.88: setup / factory reset: Settings → System
 }
 
 
@@ -248,7 +248,7 @@ def _g2_tk_wizard(self, force=False):
         if c == "choose":
             if not blinki_tk_say(body, "normal", "👋 " + tr("Welcome to MoveEye"), tr("Hello, I am Blinki!") + " " + tr("I am the eye of MoveEye. I show you everything step by step - and when I blink, all is well.")):
                 lab("👋 " + tr("Welcome to MoveEye"), False, True)
-            lab(tr("Every step can be skipped. You can stop at any time and continue later (More → Setup)."))
+            lab(tr("Every step can be skipped. You can stop at any time and continue later (Settings → System → Setup & factory settings)."))
             lab(tr("Quick (about 5 min.) or thorough?"), False)
             for mode, ic, n, dur, txt in (("quick", "⚡", "Quick", "about 5 minutes", "Basics, push messages to the phone, camera test and place, protection and walk test."),
                                           ("full", "🔬", "In depth", "about 20 to 30 minutes", "Everything of «Quick» plus zones, night time, light and siren, head, AI model, thermal camera, battery, simulator - each step can be skipped.")):
