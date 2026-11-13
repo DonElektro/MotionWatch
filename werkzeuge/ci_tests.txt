@@ -34,6 +34,7 @@ basis | 8  | -  | python3 werkzeuge/sim_anhang_test.py | Simulator-Anhang – Pa
 basis | 3  | -  | python3 werkzeuge/versionen.py --test > /dev/null && python3 werkzeuge/versionen_spuren_test.py | Drei Spuren – Versionsprüfung je Spur
 basis | 12 | -  | python3 werkzeuge/update_uebergang_test.py --nur uebergang | Update-Übergang: ältestes Gerät und Brücke holen die neu gebaute Version (HTTPS, ZIP fehlt, USB, falsche Signatur; Wegwerf-Schlüssel; Teil U: Ablage «url» mit Asset-Server und Umleitung)
 basis | 10 | -  | python3 werkzeuge/update_uebergang_test.py --nur stand $CI_STRENG | Veröffentlichter Stand: jede Datei in versions.json da, Prüfsumme, echte Signatur; alte Geräte holen die neueste Version
+basis | 10 | 1x | python3 werkzeuge/update_neustart_test.py --datei "$MW" --limit 90 | Update und Neustart: Webseite kommt nach dem Update wieder (Web-«Update» alt -> neu mit os.execv, Port kurz belegt durch ein übrig gebliebenes Kind, kein «systemctl stop» des eigenen Dienstes, Start-Wächter, geteilte Steckdose vor execv)
 
 # ---------------------------------------------------------------------------------------------------- kern (Web)
 kern | 15 | -  | python3 werkzeuge/web_rauchtest.py --browser | Web-Rauchtest (alle Adressen ohne / mit Anmeldung, jede Seite im Browser)

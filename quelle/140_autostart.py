@@ -241,6 +241,153 @@ def watchdog_loop():
         time.sleep(20)
 
 
+# Start watchdog (3.87.1, Besitzer 13.11.2026: «after the last two updates the page did not come back until I restarted the
+# Pi» - ping worked, no port of MoveEye was open). Under systemd the web page must answer within START_WD_S after a start; if
+# not, the threads are written to start_hang.txt (data folder) and the program ends with code 1: systemd starts it fresh
+# (Restart=always: new process, its leftover child processes stopped - what the reboot did by hand). A known wait (the port is
+# used by another program, 550 _serve) or no web page at all switches it off. «kill -USR1 <pid>» writes the threads into the
+# journal at any time (also without systemd).
+START_WD = {"on": False, "f": None}
+START_WD_S = 90                 # before the systemd watchdog (WatchdogSec=120, counted from the last «alive» of the old program)
+
+
+def start_watchdog_arm():
+    import faulthandler
+    try:
+        faulthandler.register(signal.SIGUSR1, all_threads=True)
+    except (AttributeError, ValueError, RuntimeError, OSError):
+        pass
+    p = os.path.join(DATA_DIR, "start_hang.txt")
+    try:                                                   # the last start hung: tell it now (journal and log)
+        if os.path.getsize(p) > 0:
+            with open(p, encoding="utf-8", errors="replace") as f:
+                txt = f.read()[-4000:]
+            os.replace(p, p + ".old")
+            print("The last start hung (web page not up after %d s) - where it was:\n%s" % (START_WD_S, txt), flush=True)
+            main = [ln.strip() for ln in txt.splitlines() if ln.strip().startswith("File ")][:3]
+            log_event("sys", ("The last start hung (web page not up after %d s, started again by itself): %s"
+                              % (START_WD_S, " · ".join(main) or "?"))[:240])
+    except OSError:
+        pass
+    if not (os.environ.get("NOTIFY_SOCKET") or os.environ.get("MW_START_WD")):
+        return
+    try:
+        lim = float(os.environ.get("MW_START_WD") or START_WD_S)
+    except ValueError:
+        lim = START_WD_S
+    try:
+        START_WD["f"] = open(p, "w", encoding="utf-8")
+        faulthandler.dump_traceback_later(max(5.0, lim), exit=True, file=START_WD["f"])
+        START_WD["on"] = True
+    except (OSError, ValueError, RuntimeError):
+        pass
+
+
+def start_watchdog_done(why=""):
+    """the web page answers (or is not wanted / waits for a known reason): the start watchdog is not needed any more"""
+    if not START_WD["on"]:
+        return
+    START_WD["on"] = False
+    try:
+        import faulthandler
+        faulthandler.cancel_dump_traceback_later()
+    except Exception:
+        pass
+    try:
+        f = START_WD["f"]; START_WD["f"] = None
+        if f is not None:
+            f.close(); os.remove(f.name)
+    except (OSError, AttributeError):
+        pass
+
+
+def start_watchdog_wait_web(port):
+    """a thread: as soon as something answers on the web port, the start watchdog stops"""
+    import socket
+
+    def work():
+        host = "127.0.0.1" if WEB_OPTS.get("bind") in ("", "0.0.0.0", "::") else WEB_OPTS.get("bind")
+        while START_WD["on"]:
+            try:
+                with socket.create_connection((host, int(port)), timeout=2):
+                    start_watchdog_done("web up")
+                    return
+            except OSError:
+                time.sleep(0.5)
+    threading.Thread(target=work, daemon=True, name="startwd").start()
+
+
+def own_service(mode=None):
+    """True when this process is the main process of the autostart service: then 550 never stops «the autostart copy» -
+    after an update (os.execv, same PID) that copy is this program itself, and a stopped service is not started again
+    (Besitzer 13.11.2026, user service: «Stopping motionwatch.service» in the same second as «MoveEye 3.87.0 started»)"""
+    try:                                                   # the control group names the unit (system and user service)
+        with open("/proc/self/cgroup") as f:
+            if re.search(r"/" + re.escape(SERVICE_NAME) + r"(/|$)", f.read(), re.M):
+                return True
+    except OSError:
+        pass
+    if shutil.which("systemctl") is None:
+        return False
+    for m in ([mode] if mode else ["system", "user"]):
+        rc, out, _e = _systemctl(m, "show", "-p", "MainPID", "--value", SERVICE_NAME, timeout=10)
+        if rc == 0 and out.strip().isdigit() and int(out.strip()) == os.getpid():
+            return True
+    return False
+
+
+def port_holders(port):
+    """[(pid, parent pid, command line)] of the processes that hold a listening socket on this TCP port (Linux /proc;
+    only the processes this user may look into). For the log when the web port is busy, and to stop a left-over child."""
+    inodes = set()
+    for fn in ("/proc/net/tcp", "/proc/net/tcp6"):
+        try:
+            with open(fn) as f:
+                for ln in f.readlines()[1:]:
+                    p = ln.split()
+                    if len(p) > 9 and p[3] == "0A" and int(p[1].rsplit(":", 1)[1], 16) == int(port):
+                        inodes.add("socket:[" + p[9] + "]")
+        except (OSError, ValueError, IndexError):
+            pass
+    out = []
+    if not inodes:
+        return out
+    try:
+        pids = [x for x in os.listdir("/proc") if x.isdigit()]
+    except OSError:
+        return out
+    for pid in pids:
+        try:
+            fds = os.listdir(f"/proc/{pid}/fd")
+        except OSError:
+            continue
+        for fd in fds:
+            try:
+                if os.readlink(f"/proc/{pid}/fd/{fd}") in inodes:
+                    with open(f"/proc/{pid}/stat") as f:
+                        ppid = int(f.read().rsplit(")", 1)[1].split()[1])
+                    with open(f"/proc/{pid}/cmdline", "rb") as f:
+                        cmd = f.read().replace(b"\0", b" ").decode(errors="replace").strip()
+                    out.append((int(pid), ppid, cmd[:200]))
+                    break
+            except (OSError, ValueError, IndexError):
+                continue
+    return out
+
+
+def port_free_children(port):
+    """the web port is busy: a child process of this program holds it (left over from before the update / pause -
+    os.execv keeps the PID, so the children stay ours)? It is stopped. Returns what was found, for the log."""
+    found = [h for h in port_holders(port) if h[0] != os.getpid()]
+    for pid, ppid, cmd in found:
+        if ppid == os.getpid():
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except OSError:
+                pass
+    return found
+
+
 def autostart_unit(mode):
     import shlex
     exe = " ".join(shlex.quote(x) for x in [sys.executable, os.path.abspath(__file__)] + autostart_args())
