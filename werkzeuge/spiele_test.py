@@ -69,6 +69,14 @@ aussen, keine Fehler in der Konsole, alle Knöpfe mindestens 44 px; «Zwei Handy
 (das Zusammenspiel zweier Handys über MoveEye prüft werkzeuge/schach_fern_test.py). Solange es nicht in der ZIP ist:
 python3 werkzeuge/spiel_einbauen.py games/schach --nach /tmp/t.zip && python3 werkzeuge/spiele_test.py --zip /tmp/t.zip --nur schach
 
+«A Dark Room» (ab GS-1.17, auch ohne --alle): am iPhone (hoch und quer; WebKit, wenn installiert, sonst Chromium mit
+iPhone-Kennung und Touch) kommt das Spiel statt der Seite mobileWarning.html, die Pfeiltasten am Bildschirm (script/mw_pad.js)
+fehlen im Zimmer und auf dem Pfad, erscheinen auf der Karte und im Weltraum, sind mindestens 44 px gross, ganz im Bild und
+überdecken keinen Knopf; Antippen macht genau einen Schritt, Halten läuft weiter, Loslassen hält an, während eines Ereignisses
+ist der Pad weg; im Weltraum gilt ▶ als gehaltene Taste; das Feuer bleibt nach dem Neuladen (localStorage); am PC ohne Touch
+keine Pfeiltasten.
+python3 werkzeuge/spiele_test.py --nur adarkroom
+
 Die Spiele laufen hier wie am Spiele-Port von MoveEye unter /g/<ordner>/ und bekommen einen «✕ Zurück»-Knopf (#mw-back).
 """
 import argparse
@@ -1780,6 +1788,171 @@ def schach_pruefen(br, pw, base, fehler, bilder):
     print(f"{d}: Brett, Zielfelder, Tipp, Lern-Modus, Matt / Patt / Remis, Umwandlung, zu zweit, Speichern, Ersatz-Motor, Selbstspiele geprüft", flush=True)
 
 
+# ---- «A Dark Room» am iPhone (GS-1.17): keine Seite mobileWarning.html, Pfeiltasten am Bildschirm (script/mw_pad.js) --------------
+# Pad: sichtbar? Lage und Grösse in Bildschirm-Pixeln (die Seite hat kein viewport-meta, iOS zeigt sie verkleinert), und was
+# darunter liegt (nur Knöpfe / Links des Spiels und «✕ Zurück» zählen)
+DR_PAD = """() => { const p = document.getElementById('mw-dpad'); if (!p) return {da: false};
+  const vv = visualViewport, s = vv ? vv.scale : 1, r = p.getBoundingClientRect(), vis = getComputedStyle(p).display !== 'none' && r.width > 0;
+  const out = new Set(), bt = [...p.querySelectorAll('button')].map(b => { const q = b.getBoundingClientRect(); return [q.width * s, q.height * s]; });
+  if (vis) for (let i = 0; i <= 6; i++) for (let j = 0; j <= 6; j++) {
+    const x = r.left + 1 + (r.width - 2) * i / 6, y = r.top + 1 + (r.height - 2) * j / 6;
+    for (const e of document.elementsFromPoint(x, y)) { if (p.contains(e) || e === document.body || e === document.documentElement) continue;
+      const c = e.closest('a,button,input,select,textarea,[role=button],[onclick],.button,.menuBtn,.headerButton,#mw-back,.upBtn,.dnBtn');
+      if (c) out.add((c.id ? '#' + c.id : c.className || c.tagName) + ' ' + (c.textContent || '').trim().slice(0, 14)); } }
+  const ox = vv ? vv.offsetLeft : 0, oy = vv ? vv.offsetTop : 0, w = vv ? vv.width : innerWidth, h = vv ? vv.height : innerHeight;
+  return {da: true, vis, bt, unter: [...out], drin: r.left >= ox - 1 && r.top >= oy - 1 && r.right <= ox + w + 1 && r.bottom <= oy + h + 1}; }"""
+DR_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1"
+DR_HALTEN = """([x, y, ms]) => new Promise(res => { const e = document.elementFromPoint(x, y);   // der Finger bleibt liegen
+  const o = {bubbles: true, cancelable: true, pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: x, clientY: y};
+  e.dispatchEvent(new PointerEvent('pointerdown', o)); setTimeout(() => { if (ms > 0) e.dispatchEvent(new PointerEvent('pointerup', o)); res(); }, Math.abs(ms)); })"""
+
+
+def adarkroom_pruefen(pw, base, fehler, bilder):
+    """GS-1.17: am iPhone startet das Spiel (keine Warnseite), Pfeiltasten nur auf der Karte und im Weltraum, Schritte kommen an,
+    nichts wird überdeckt, Spielstand bleibt nach dem Neuladen; am PC ohne Touch keine Pfeiltasten"""
+    d = "adarkroom"
+    url = f"{base}/g/{d}/index.html"
+    try:                                        # WebKit = Safari, wenn installiert; sonst Chromium mit iPhone-Kennung und Touch
+        br, motor = pw.webkit.launch(), "WebKit"
+    except Exception:
+        br, motor = pw.chromium.launch(), "Chromium"
+    print(f"  {d}: Browser {motor} mit iPhone-Kennung", flush=True)
+
+    def f(name, text):
+        fehler.append(f"{d} {name}: {text}")
+
+    def mitte(pg, sel):
+        b = pg.locator(sel).bounding_box()
+        return b["x"] + b["width"] / 2, b["y"] + b["height"] / 2
+
+    def ruhe(pg):                               # «Sound Available!» kommt 3 s nach dem Start (bis es einmal gezeigt wurde): wegtippen
+        pg.wait_for_function("() => window.$SM && $SM.get('playStats.audioAlertShown')", timeout=20000)
+        for _ in range(3):
+            if not pg.evaluate("() => !!Events.activeEvent()"):
+                break
+            pg.wait_for_timeout(400)
+            tippen(pg, "#event #buttons .button >> nth=0")
+            pg.wait_for_function("() => !Events.activeEvent()", timeout=15000)
+
+    def tippen(pg, sel, halten=0):
+        x, y = mitte(pg, sel)
+        if halten:
+            pg.evaluate(DR_HALTEN, [x, y, halten])
+        else:
+            pg.touchscreen.tap(x, y)
+
+    for name, geraet in (("iPhone hoch", "iPhone 13"), ("iPhone quer", "iPhone 13 landscape")):
+        dev = dict(pw.devices[geraet]); dev.pop("default_browser_type", None); dev["user_agent"] = DR_UA
+        ctx = br.new_context(**dev)
+        ctx.route("**/*", lambda r, _rq=None, n=name: r.continue_() if r.request.url.startswith(base) or r.request.url.startswith(("data:", "blob:"))
+                  else (f(n, "Anfrage nach aussen " + r.request.url[:90]), r.abort()))
+        pg = ctx.new_page()
+        pg.on("pageerror", lambda e, n=name: f(n, f"JavaScript: {str(e)[:300]}"))
+        pos = lambda pg=pg: pg.evaluate("() => World.curPos.slice()")
+        try:
+            pg.goto(url, wait_until="load", timeout=45000)
+            pg.wait_for_function("() => (window.Engine && Engine.activeModule && document.querySelector('#lightButton')) || /Warning/.test(location.href)", timeout=30000)
+            if "Warning" in pg.url:
+                f(name, f"Warnseite statt Spiel: {pg.url}")
+                ctx.close(); continue
+            p = pg.evaluate(DR_PAD)
+            if not p["da"]:
+                f(name, "Pfeiltasten fehlen auf dem Touch-Gerät")
+            elif p["vis"]:
+                f(name, "Pfeiltasten schon im Zimmer sichtbar (nur auf der Karte / im Weltraum)")
+            ruhe(pg)
+            # Spielstand: Feuer anzünden, gespeichert in localStorage, nach dem Neuladen noch da
+            tippen(pg, "#lightButton")
+            pg.wait_for_function("() => { try { return JSON.parse(localStorage.gameState).game.fire.value > 0; } catch (e) { return false; } }", timeout=15000)
+            pg.reload(wait_until="load", timeout=45000)
+            pg.wait_for_function("() => (window.Engine && Engine.activeModule && window.$SM) || /Warning/.test(location.href)", timeout=30000)
+            if "Warning" in pg.url:
+                f(name, "nach dem Neuladen die Warnseite")
+                ctx.close(); continue
+            if not pg.evaluate("() => $SM.get('game.fire.value') > 0 && $('#stokeButton').length > 0"):
+                f(name, "Spielstand (Feuer) nach dem Neuladen verloren")
+            ruhe(pg)
+            # auf die Karte (Abkürzung über die Funktionen des Spiels: Pfad öffnen, aufbrechen); ohne Kämpfe und Orte nahe
+            # beim Dorf, damit kein Ereignis die Schritte unterbricht
+            pg.evaluate("() => { $SM.set('stores[\"cured meat\"]', 30); Path.openPath(); Engine.travelTo(Path); }")
+            pg.wait_for_function("() => Engine.activeModule === Path", timeout=15000)
+            pg.wait_for_timeout(500)
+            if pg.evaluate(DR_PAD).get("vis"):
+                f(name, "Pfeiltasten auf «A Dusty Path» sichtbar")
+            pg.evaluate("""() => { Path.embark(); World.FIGHT_CHANCE = 0;
+              for (let x = 26; x <= 34; x++) for (let y = 20; y <= 34; y++) if (x !== 30 || y !== 30) World.state.map[x][y] = World.TILE.FOREST; }""")
+            pg.wait_for_function("() => document.getElementById('mw-dpad').classList.contains('on')", timeout=10000)
+            pg.wait_for_timeout(500)
+            p = pg.evaluate(DR_PAD)
+            if not p["vis"]:
+                f(name, "Pfeiltasten auf der Karte nicht sichtbar")
+            if not p["drin"]:
+                f(name, "Pfeiltasten ragen aus dem sichtbaren Bereich")
+            if p["unter"]:
+                f(name, f"Pfeiltasten überdecken {p['unter']}")
+            if any(w < 44 or h < 44 for w, h in p["bt"]):
+                f(name, f"Pfeil-Knopf kleiner als 44 px: {p['bt']}")
+            if bilder:
+                pg.screenshot(path=os.path.join(bilder, f"{d}_{name.replace(' ', '_')}.png"))
+            a = pos()
+            tippen(pg, "#mw-dpad .u"); pg.wait_for_timeout(300)
+            b = pos()
+            tippen(pg, "#mw-dpad .r"); pg.wait_for_timeout(300)
+            c = pos()
+            if b != [a[0], a[1] - 1] or c != [b[0] + 1, b[1]]:
+                f(name, f"Schritt mit ▲ / ▶ stimmt nicht: {a} -> {b} -> {c}")
+            tippen(pg, "#mw-dpad .u", halten=1300); pg.wait_for_timeout(400)
+            e = pos()
+            if not (e[0] == c[0] and c[1] - e[1] >= 3):
+                f(name, f"gedrückt halten geht nicht weiter: {c} -> {e}")
+            pg.wait_for_timeout(700)
+            if pos() != e:
+                f(name, "läuft nach dem Loslassen weiter")
+            tippen(pg, "#mw-dpad .l"); pg.wait_for_timeout(250); tippen(pg, "#mw-dpad .d"); pg.wait_for_timeout(300)
+            g = pos()
+            if g != [e[0] - 1, e[1] + 1]:
+                f(name, f"Schritt mit ◀ / ▼ stimmt nicht: {e} -> {g}")
+            # ein Ereignis auf der Karte: der Pad verschwindet (überdeckt keine Knöpfe), danach kommt er wieder
+            pg.evaluate("() => Events.startEvent(Events.Setpieces.cave)")
+            pg.wait_for_timeout(700)
+            if pg.evaluate(DR_PAD)["vis"]:
+                f(name, "Pfeiltasten während eines Ereignisses sichtbar")
+            pg.evaluate("() => Events.endEvent()")
+            pg.wait_for_function("() => document.getElementById('mw-dpad').classList.contains('on')", timeout=10000)
+            # Weltraum (gehaltene Tasten wie am PC): ▶ halten setzt Space.right, Loslassen nimmt es zurück
+            pg.evaluate("() => { $SM.set('game.spaceShip.hull', 30); $SM.set('game.spaceShip.thrusters', 1); Ship.init(); Ship.liftOff(); }")
+            pg.wait_for_function("() => Engine.activeModule === Space && document.getElementById('mw-dpad').classList.contains('on')", timeout=10000)
+            pg.wait_for_timeout(500)
+            p = pg.evaluate(DR_PAD)
+            if p["unter"] or not p["drin"]:
+                f(name, f"Pfeiltasten im Weltraum: überdecken {p['unter']}, im Bild {p['drin']}")
+            x, y = mitte(pg, "#mw-dpad .r")
+            pg.evaluate(DR_HALTEN, [x, y, -300])           # nur drücken
+            an = pg.evaluate("() => Space.right")
+            pg.evaluate("""([x, y]) => document.elementFromPoint(x, y).dispatchEvent(new PointerEvent('pointerup',
+              {bubbles: true, cancelable: true, pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: x, clientY: y}))""", [x, y])
+            pg.wait_for_timeout(200)
+            aus = pg.evaluate("() => Space.right")
+            if not an or aus:
+                f(name, f"Weltraum: ▶ halten / loslassen kommt nicht an (Space.right {an} -> {aus})")
+        except Exception as e:
+            f(name, f"{e.__class__.__name__}: {str(e)[:300]}")
+        ctx.close()
+    # am PC (ohne Touch): keine Pfeiltasten, das Spiel startet wie bisher
+    ctx = br.new_context(viewport={"width": 1280, "height": 800})
+    pg = ctx.new_page()
+    try:
+        pg.goto(url, wait_until="load", timeout=45000)
+        pg.wait_for_function("() => window.Engine && Engine.activeModule", timeout=30000)
+        if pg.evaluate("() => !!document.getElementById('mw-dpad')"):
+            f("PC", "Pfeiltasten am PC ohne Touch")
+    except Exception as e:
+        f("PC", f"{e.__class__.__name__}: {str(e)[:300]}")
+    ctx.close()
+    br.close()
+    print(f"{d}: Start am iPhone (hoch / quer), Pfeiltasten auf der Karte und im Weltraum, Ereignis, Spielstand nach dem Neuladen geprüft", flush=True)
+
+
 # ---- «Flight of the Amazon Queen» (ScummVM, WebAssembly; MoveEye 639zzg): only when the package is there ------------------------
 FOTAQ_GERAETE = (("handy", {"width": 844, "height": 390}, True),        # the phone sideways (the page asks for it)
                  ("ipad", {"width": 1180, "height": 820}, True),
@@ -2527,6 +2700,8 @@ def main():
                     wasnun_pruefen(br, pw, base, fehler, a.bilder)
                 if any(g["dir"] == "schach" for g in spiele):
                     schach_pruefen(br, pw, base, fehler, a.bilder)
+                if any(g["dir"] == "adarkroom" for g in gj["games"]) and (not nur or "adarkroom" in nur) and "adarkroom" not in ohne:
+                    adarkroom_pruefen(pw, base, fehler, a.bilder)      # GS-1.17: am iPhone mit Pfeiltasten (eigener Browser: WebKit, wenn da)
                 br.close()
             s.shutdown()
         finally:
