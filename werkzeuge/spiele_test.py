@@ -77,6 +77,16 @@ ist der Pad weg; im Weltraum gilt ▶ als gehaltene Taste; das Feuer bleibt nach
 keine Pfeiltasten.
 python3 werkzeuge/spiele_test.py --nur adarkroom
 
+«Verschollen im Bergtal» (ab GS-1.19, Quelle games/verschollen/, mit ?test=1 -> window.__vb, siehe Kopf von ui.js): am iPhone
+(390 × 844, Touch) beginnt es in der dunklen Nacht mit nur «In die Glut blasen»; Feuer, Umhertasten (Holz, Hund, Rucksack),
+Nachlegen, Kamera und die erste wiederhergestellte Aufnahme werden wirklich angetippt; Spielstand {v: 1, s: …} bleibt nach dem
+Neuladen; draussen Holz / Wasser / Beeren / Hund; jeder Reiter und die Orte der Karte; ein Ausflug hin und zurück; der
+Test-Spieler (K.bot: liest, denkt, wartet wie ein vernünftiger Mensch) spielt bis «Ende Kapitel 1 – Fortsetzung folgt», das
+Ende bleibt nach dem Neuladen, «Im Tal bleiben» wird gemerkt; alle Knöpfe ≥ 44 px und nichts breiter als der Bildschirm
+(hoch, quer); PC mit Maus; ohne Speicher und mit «Bewegung reduzieren»; keine Anfrage nach aussen, keine Fehler. Balance:
+8 Läufe des Test-Spielers, die Mitte soll bei 60–120 min Spielzeit liegen (die Zahlen stehen in der Ausgabe).
+python3 werkzeuge/spiel_einbauen.py games/verschollen --nach /tmp/t.zip && python3 werkzeuge/spiele_test.py --zip /tmp/t.zip --nur verschollen
+
 Die Spiele laufen hier wie am Spiele-Port von MoveEye unter /g/<ordner>/ und bekommen einen «✕ Zurück»-Knopf (#mw-back).
 """
 import argparse
@@ -1304,6 +1314,230 @@ SCHACH_FEN = {
     "material": "8/8/4k3/8/8/8/4Kp2/8 w - - 0 1",                               # Kxf2: nur noch zwei Könige
     "mitte": "r1bq1rk1/pp2bppp/2n1pn2/2pp4/3P1B2/2PBPN2/PP1N1PPP/R2QK2R w KQ - 0 8",
 }
+
+
+# «Verschollen im Bergtal» (GS-1.19, Quelle games/verschollen/, Test-Haken ?test=1 -> window.__vb, siehe Kopf von ui.js)
+VB_KNOEPFE = """() => { const out = __vb.knoepfe(), W = innerWidth, H = innerHeight;
+  return {k: out, W, H, sw: document.documentElement.scrollWidth, bw: document.body.scrollWidth}; }"""
+
+
+def verschollen_pruefen(br, pw, base, fehler, bilder, balance=None):
+    """am iPhone (hoch / quer, Touch) und am PC: Start im Dunkeln, die ersten Schritte wirklich antippen, erste Aufnahme,
+    Spielstand nach dem Neuladen, Reiter und Karte, Tipp-Flächen ≥ 44 px und nichts ausserhalb von 390 px, der Test-Spieler
+    spielt bis «Ende Kapitel 1 – Fortsetzung folgt», das Ende bleibt nach dem Neuladen; ohne Speicher, «Bewegung reduzieren»,
+    keine Anfrage nach aussen, keine JavaScript-Fehler; Balance: der vernünftige Test-Spieler braucht 1–2 h (Spielzeit)"""
+    d = "verschollen"
+    url = f"{base}/g/{d}/index.html?test=1"
+
+    def f(name, text):
+        fehler.append(f"{d} {name}: {text}")
+
+    def seite(name, vp, mobil, extra=None, init=None):
+        ctx = br.new_context(viewport=vp, is_mobile=mobil, has_touch=mobil, device_scale_factor=2 if mobil else 1, **(extra or {}))
+        aussen = []
+        ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(base) or r.request.url.startswith(("data:", "blob:"))
+                  else (aussen.append(r.request.url[:100]), r.abort()))
+        if init:
+            ctx.add_init_script(init)
+        pg = ctx.new_page()
+        pg.on("pageerror", lambda e: f(name, f"JavaScript: {str(e)[:300]}"))
+        pg.on("console", lambda m: f(name, f"console.error: {m.text[:200]}") if m.type == "error" else None)
+        pg.goto(url, wait_until="load", timeout=30000)
+        pg.wait_for_function("() => window.__vb && document.querySelector('#szene svg')", timeout=10000)
+        pg.aussen = aussen
+        return ctx, pg
+
+    def bild(pg, n):
+        if bilder:
+            pg.wait_for_timeout(700)
+            pg.screenshot(path=os.path.join(bilder, f"verschollen_{n}.png"))
+
+    def tippe(pg, touch, sel, name):
+        loc = pg.locator(sel)
+        if not loc.count() or not loc.first.is_visible():
+            f(name, f"«{sel}» ist nicht zu sehen"); return False
+        b = loc.first.bounding_box()
+        (pg.touchscreen.tap if touch else pg.mouse.click)(b["x"] + b["width"] / 2, b["y"] + b["height"] / 2)
+        pg.wait_for_timeout(60)
+        return True
+
+    def akt(pg, touch, aid, name, warte=True):
+        if warte:       # cooldowns run on game time: wind the clock forward instead of waiting
+            pg.evaluate("id => { const e = __vb.K.eintrag(__vb.S(), id); if (e && e.bereit < 1) __vb.step(e.cd + 0.1); }", aid)
+        return tippe(pg, touch, f'#inhalt [data-id="{aid}"]', name)
+
+    def zu(pg):
+        pg.evaluate("() => { let n = 0; while (__vb.S().karten.length && n++ < 50) __vb.zu(0); }")
+
+    def masse(pg, name, breite):
+        m = pg.evaluate(VB_KNOEPFE)
+        if m["sw"] > m["W"] + 1 or m["bw"] > m["W"] + 1:
+            f(name, f"Seite breiter als der Bildschirm ({m['sw']} > {m['W']})")
+        for k in m["k"]:
+            if k["w"] < 43.9 or k["h"] < 43.9:
+                f(name, f"Knopf «{k['t'] or k['id']}» nur {k['w']:.0f} × {k['h']:.0f} px")
+            if k["x"] < -0.5 or k["rechts"] > m["W"] + 0.5:
+                f(name, f"Knopf «{k['t'] or k['id']}» ragt seitlich aus dem Bild ({k['x']:.0f}..{k['rechts']:.0f})")
+        return len(m["k"])
+
+    S = lambda pg, ausdr: pg.evaluate("() => { const S = __vb.S(); return " + ausdr + "; }")
+
+    # ---- iPhone hochkant ----
+    name = "iPhone"
+    ctx, pg = seite(name, {"width": 390, "height": 844}, True)
+    ids = [e["id"] for e in pg.evaluate("() => __vb.liste()")]
+    if ids != ["anblasen"]:
+        f(name, f"am Anfang soll es nur «In die Glut blasen» geben, nicht {ids}")
+    if S(pg, "S.feuer") != 0 or not S(pg, "__vb.K.zeit(S) === 'nacht'"):
+        f(name, "Start nicht in der dunklen Nacht ohne Feuer")
+    bild(pg, "1_start_dunkel")
+    masse(pg, name + " Start", 390)
+    akt(pg, True, "anblasen", name); akt(pg, True, "anblasen", name)
+    if not S(pg, "S.f.feuerAn && S.feuer === 1"):
+        f(name, "zweimal in die Glut blasen macht kein Feuer")
+    for _ in range(3):
+        akt(pg, True, "tasten", name)
+    if not S(pg, "S.r.holz === 5 && S.f.hund && S.f.rucksack"):
+        f(name, "Umhertasten findet nicht Holz, Hund und Rucksack")
+    h0 = S(pg, "S.r.holz")
+    akt(pg, True, "nachlegen", name)
+    if S(pg, "S.r.holz") != h0 - 1 or S(pg, "S.feuer") != 2:
+        f(name, "Holz nachlegen kostet nicht 1 Holz oder macht das Feuer nicht grösser")
+    akt(pg, True, "rucksack", name); akt(pg, True, "kamera", name)
+    pg.wait_for_timeout(300)
+    if not pg.locator("#karte .kk.clip").is_visible():
+        f(name, "nach dem Einschalten der Kamera kommt keine wiederhergestellte Aufnahme")
+    else:
+        bild(pg, "2_erste_aufnahme")
+        kb = pg.locator("#karte [data-zu]").first.bounding_box()
+        if kb["y"] + kb["height"] > 844 or kb["height"] < 44:
+            f(name, "«Weiter» der Aufnahme nicht ganz im Bild oder zu klein")
+        tippe(pg, True, "#karte [data-zu]", name)
+        if not pg.locator("#karte").is_hidden():
+            f(name, "die Aufnahme geht mit «Weiter» nicht zu")
+    if S(pg, "S.clips.length") != 1 or S(pg, "S.log.filter(e => e.k === 'me').length") < 2:
+        f(name, "MoveEye spricht nicht oder die erste Aufnahme fehlt")
+    # Spielstand nach dem Neuladen
+    pg.wait_for_timeout(200)
+    raw = pg.evaluate("() => localStorage.getItem('mw-verschollen-v1')")
+    try:
+        sv = json.loads(raw or "null")
+        if not sv or sv.get("v") != 1 or "s" not in sv:
+            f(name, "Spielstand nicht im Format {v: 1, s: …}")
+    except ValueError:
+        f(name, "Spielstand ist kein JSON")
+    pg.reload(); pg.wait_for_function("() => window.__vb", timeout=10000)
+    if not S(pg, "S.f.me && S.clips.length === 1 && S.f.hund"):
+        f(name, "nach dem Neuladen ist der Spielstand weg")
+    # erster Morgen, hinaus, ein paar echte Schritte draussen
+    pg.evaluate("() => { const S = __vb.S(); while (__vb.K.zeit(S) === 'nacht') __vb.K.step(S, 1); if (S.feuer < 2) { S.feuer = 2; } __vb.step(0.1); }")
+    akt(pg, True, "hinaus", name)
+    zu(pg)
+    if not S(pg, "S.f.draussen"):
+        f(name, "«Die Tür aufdrücken» bringt dich nicht hinaus")
+    for aid in ("holz", "wasser", "beeren", "hund"):
+        pg.evaluate("() => __vb.tab('" + ("leute" if aid == "hund" else "lager") + "')")
+        n0 = S(pg, "S.logN")
+        akt(pg, True, aid, name)
+        if S(pg, "S.logN") == n0:
+            f(name, f"«{aid}» tut nichts")
+    # bis ins Mittelspiel, dann jeden Reiter wirklich antippen
+    pg.evaluate("() => __vb.bot({max: 1800})"); zu(pg)
+    pg.wait_for_timeout(300)
+    for t in ("huette", "lager", "tal", "leute", "moveeye"):
+        if not tippe(pg, True, f'#tabs [data-tab="{t}"]', name):
+            continue
+        pg.wait_for_timeout(250)
+        masse(pg, f"{name} Reiter {t}", 390)
+        if t == "tal":
+            ok = pg.locator("#ortknoepfe .ok")
+            if ok.count() < 3:
+                f(name, f"auf der Karte nur {ok.count()} Orte")
+            else:
+                tippe(pg, True, "#ortknoepfe .ok", name)
+                if not pg.locator(".ort.gew").count():
+                    f(name, "Antippen eines Orts auf der Karte wählt ihn nicht aus")
+            bild(pg, "4_karte")
+        if t == "lager":
+            bild(pg, "3_lager")
+    # Ausflug: aufbrechen, unterwegs, zurück
+    pg.evaluate("() => __vb.tab('tal')")
+    e = pg.evaluate("() => __vb.liste().find(e => e.art === 'ort' && !e.sperre)")
+    if e:
+        akt(pg, True, e["id"], name, warte=False)
+        if not S(pg, "!!S.trip") or not pg.locator("#reise").is_visible():
+            f(name, f"Aufbrechen zu {e['id']} startet keinen Ausflug")
+        pg.evaluate("() => __vb.step(200)")
+        if S(pg, "!!S.trip"):
+            f(name, "der Ausflug kommt nicht zurück")
+        zu(pg)
+    # bis zum Ende von Kapitel 1
+    r = pg.evaluate("() => __vb.bot()")
+    pg.wait_for_timeout(500)
+    if not r.get("ende"):
+        f(name, f"der Test-Spieler erreicht das Ende von Kapitel 1 nicht ({r})")
+    el = pg.locator("#ende")
+    if not el.is_visible() or "Ende Kapitel 1" not in el.inner_text() or "Fortsetzung folgt" not in el.inner_text():
+        f(name, "kein Schlussbild «Ende Kapitel 1 – Fortsetzung folgt»")
+    else:
+        bild(pg, "5_ende")
+        masse(pg, name + " Ende", 390)
+    if S(pg, "S.clips.length") != 14 or S(pg, "S.station") != 5:
+        f(name, f"am Ende nicht alle Aufnahmen / Station nicht fertig ({S(pg, 'S.clips.length')}, {S(pg, 'S.station')})")
+    pg.reload(); pg.wait_for_function("() => window.__vb", timeout=10000); pg.wait_for_timeout(400)
+    if not S(pg, "S.ende") or not pg.locator("#ende").is_visible():
+        f(name, "nach dem Neuladen ist das Ende von Kapitel 1 weg")
+    tippe(pg, True, "#bWeiter", name)
+    pg.reload(); pg.wait_for_function("() => window.__vb", timeout=10000); pg.wait_for_timeout(400)
+    if pg.locator("#ende").is_visible() or not S(pg, "S.ende"):
+        f(name, "«Im Tal bleiben» wird nicht gemerkt")
+    pg.evaluate("() => __vb.tab('moveeye')"); pg.wait_for_timeout(200)
+    if not pg.locator("#bEndeZeig").is_visible():
+        f(name, "im Reiter MoveEye fehlt «Ende Kapitel 1 ansehen»")
+    for u in sorted(set(pg.aussen)):
+        f(name, f"Anfrage nach aussen {u}")
+    # Balance (in der Seite gerechnet, ohne Warten)
+    m = pg.evaluate("() => [1, 2, 3, 4, 5, 6, 7, 8].map(s => { const S = __vb.K.neu(s), r = __vb.K.bot(S); return [r.echt / 60, r.ende, r.tage, r.aktionen]; })")
+    ms = sorted(x[0] for x in m)
+    if not all(x[1] for x in m):
+        f(name, f"Balance: nicht jeder Lauf erreicht das Ende ({m})")
+    if not (60 <= ms[len(ms) // 2] <= 120) or ms[0] < 45 or ms[-1] > 150:
+        f(name, f"Balance: der vernünftige Spieler braucht {ms[0]:.0f}–{ms[-1]:.0f} min (Mitte {ms[len(ms) // 2]:.0f}, soll etwa 60–120)")
+    print(f"  {d}: Balance – der Test-Spieler braucht {ms[0]:.0f}–{ms[-1]:.0f} min Spielzeit (Mitte {ms[len(ms) // 2]:.0f} min), "
+          f"{min(x[2] for x in m)}–{max(x[2] for x in m)} Spieltage, {min(x[3] for x in m)}–{max(x[3] for x in m)} Aktionen", flush=True)
+    if balance is not None:
+        balance.extend(ms)
+    ctx.close()
+
+    # ---- iPhone quer ----
+    name = "iPhone quer"
+    ctx, pg = seite(name, {"width": 844, "height": 390}, True)
+    pg.evaluate("() => __vb.bot({max: 2200})"); zu(pg); pg.wait_for_timeout(300)
+    for t in ("lager", "tal", "leute"):
+        tippe(pg, True, f'#tabs [data-tab="{t}"]', name); pg.wait_for_timeout(200)
+        masse(pg, f"{name} Reiter {t}", 844)
+    bild(pg, "6_quer")
+    ctx.close()
+
+    # ---- PC mit Maus ----
+    name = "PC"
+    ctx, pg = seite(name, {"width": 1280, "height": 800}, False)
+    akt(pg, False, "anblasen", name); akt(pg, False, "anblasen", name)
+    if not S(pg, "S.f.feuerAn"):
+        f(name, "mit der Maus lässt sich das Feuer nicht anblasen")
+    ctx.close()
+
+    # ---- ohne Speicher, Bewegung reduziert ----
+    name = "ohne Speicher"
+    ctx, pg = seite(name, {"width": 390, "height": 844}, True, {"reduced_motion": "reduce"},
+                    "Object.defineProperty(window, 'localStorage', {get() { throw new Error('gesperrt'); }});")
+    akt(pg, True, "anblasen", name); akt(pg, True, "anblasen", name)
+    if not S(pg, "S.f.feuerAn"):
+        f(name, "ohne Speicher läuft das Spiel nicht")
+    an = pg.evaluate("() => { const e = document.querySelector('#szene .a-flack'); return e ? getComputedStyle(e).animationName : 'kein Feuer'; }")
+    if an not in ("none", "kein Feuer"):
+        f(name, f"«Bewegung reduzieren»: das Feuer flackert trotzdem ({an})")
+    ctx.close()
 
 
 def schach_pruefen(br, pw, base, fehler, bilder):
@@ -2664,6 +2898,8 @@ def main():
     print(f"Paket {gj.get('version')}: {len(gj['games'])} Spiele", flush=True)
     if os.path.isfile(os.path.join(REPO, "games", "wasnun", "kachel.json")) and not any(g.get("dir") == "wasnun" for g in gj["games"]):
         warn.append("«Was nun?» liegt in games/wasnun/, ist aber noch nicht in dieser ZIP (python3 werkzeuge/spiel_einbauen.py games/wasnun)")
+    if os.path.isfile(os.path.join(REPO, "games", "verschollen", "kachel.json")) and not any(g.get("dir") == "verschollen" for g in gj["games"]):
+        warn.append("«Verschollen im Bergtal» liegt in games/verschollen/, ist aber noch nicht in dieser ZIP (python3 werkzeuge/spiel_einbauen.py games/verschollen --hinter adarkroom)")
     if os.path.isfile(os.path.join(REPO, "games", "schach", "kachel.json")) and not any(g.get("dir") == "schach" for g in gj["games"]):
         warn.append("Das neue Schach liegt in games/schach/, ist aber noch nicht in dieser ZIP (python3 werkzeuge/spiel_einbauen.py games/schach --hinter adarkroom --entfernen chess)")
     if not a.ohne_browser:
@@ -2698,6 +2934,8 @@ def main():
                     wobbly_pruefen(br, base, fehler, a.bilder)
                 if any(g["dir"] == "wasnun" for g in spiele):
                     wasnun_pruefen(br, pw, base, fehler, a.bilder)
+                if any(g["dir"] == "verschollen" for g in spiele):
+                    verschollen_pruefen(br, pw, base, fehler, a.bilder)     # GS-1.19: eigenes Aufbau-Abenteuer, Kapitel 1
                 if any(g["dir"] == "schach" for g in spiele):
                     schach_pruefen(br, pw, base, fehler, a.bilder)
                 if any(g["dir"] == "adarkroom" for g in gj["games"]) and (not nur or "adarkroom" in nur) and "adarkroom" not in ohne:

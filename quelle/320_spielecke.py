@@ -4,7 +4,7 @@
 # The phones join with a QR code (a room key in the address, no password); the room closes by itself after some hours.
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.17", "file": "games/MotionWatch_Spiele.zip", "size": 15957854, "sha256": "ac8c438f134c1a0da340c2335b215ac08635edfb9953abb3abb2b4e1dbf2a433"}
+GAMES_PKG = {"version": "GS-1.19", "file": "games/MotionWatch_Spiele.zip", "size": 16011793, "sha256": "538c0012af77dc4923ae64c61bebd846d2c7c85985914766c5ab1b9024f09ba1"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),

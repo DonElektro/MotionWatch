@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0f141b">
+<title>Verschollen im Bergtal</title>
+<!-- «Verschollen im Bergtal» – Kapitel 1. Eigenes Spiel für MoveEye (MIT), Geschichte: der Besitzer.
+     Aufbau: index.html (Seite, Aussehen) · kern.js (Regeln, Geschichte, Speicherformat, Test-Spieler) ·
+     bilder.js (alle Bilder als SVG, selbst gezeichnet) · ui.js (Bildschirm, Antippen, Speichern, Test-Haken ?test=1).
+     Keine Anfrage nach aussen: keine Schriften, Bilder oder Skripte von anderswo. -->
+<style>
+:root{--bg:#0f141b;--panel:#17202b;--panel2:#1d2834;--line:#283646;--txt:#e9edf2;--mut:#93a1b3;--acc:#f0a24a;--me:#62cde9;--p:#9ad59a;--rot:#ff8a7a}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:16px/1.38 system-ui,-apple-system,"Segoe UI",sans-serif;
+  overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-text-size-adjust:100%}
+body{position:fixed;inset:0;display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) 0 env(safe-area-inset-left,0px)}
+button{font:inherit;color:inherit;border:0;cursor:pointer;-webkit-appearance:none;appearance:none;background:none;touch-action:manipulation}
+[hidden]{display:none!important}
+/* MoveEye setzt einen schwebenden «✕ Zurück» (#mw-back) auf jede Spielseite. Dieses Spiel hat oben links einen eigenen
+   Link «‹ Spiele», der denselben Knopf auslöst – der schwebende wird darum hier ausgeblendet (wie bei «Was nun?»). */
+#mw-back{display:none!important}
+
+.bar{flex:0 0 46px;display:flex;align-items:center;gap:4px;padding:0 4px;background:var(--panel);border-bottom:1px solid var(--line);min-width:0}
+.back,.ib{display:inline-flex;align-items:center;justify-content:center;gap:3px;min-width:44px;min-height:44px;padding:0 8px;border-radius:10px;
+  color:var(--mut);text-decoration:none;font-size:14px;font-weight:600;flex:0 0 auto;white-space:nowrap}
+.back:hover,.ib:hover{color:var(--txt);background:#223042}
+.title{flex:1 1 auto;min-width:0;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+#uhr{flex:0 0 auto;display:flex;align-items:center;gap:5px;font-size:13px;font-weight:700;color:var(--mut);padding:0 4px;white-space:nowrap}
+#uhr svg{width:18px;height:18px;display:block}
+
+#app{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;min-width:0}
+#links{flex:0 0 auto;display:flex;flex-direction:column;min-width:0}
+#rechts{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;min-width:0}
+#buehne{position:relative;flex:0 0 auto;width:100%;aspect-ratio:16/9;max-height:40vh;background:#05070a;overflow:hidden}
+#szene,#szene svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+#szene.wechsel{animation:einblend .5s ease-out}
+@keyframes einblend{from{opacity:.35}}
+#ortknoepfe{position:absolute;inset:0;pointer-events:none}
+.ok{position:absolute;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:50%;pointer-events:auto;border:2px dashed rgba(244,236,216,.7)}
+.ok::after{content:attr(data-z);position:absolute;right:-6px;top:-6px;min-width:20px;height:20px;border-radius:10px;background:#1a2230;border:2px solid #f4ecd8;color:#f4ecd8;
+  font-size:11px;font-weight:800;line-height:16px;text-align:center}
+.ok.neu{border-color:var(--acc);animation:puls 1.4s ease-in-out infinite}
+.ok.neu::after{border-color:var(--acc);color:var(--acc)}
+.ok.gew{border-style:solid;border-color:#fff;background:rgba(240,162,74,.25)}
+.ok.gew::after{background:var(--acc);color:#1a1206}
+@keyframes puls{50%{box-shadow:0 0 0 7px rgba(240,162,74,.35)}}
+#hinweis{position:absolute;left:8px;right:8px;bottom:8px;background:rgba(10,14,20,.9);border:1px solid var(--line);border-radius:12px;padding:7px 11px;font-size:14px;
+  pointer-events:none;opacity:0;transition:opacity .25s}
+#hinweis.an{opacity:1}
+#reise{position:absolute;left:8px;right:8px;top:8px;background:rgba(10,14,20,.82);border-radius:12px;padding:6px 10px;font-size:13.5px;font-weight:700;pointer-events:none}
+#reise .bal{height:5px;border-radius:3px;background:#2a3646;margin-top:5px;overflow:hidden}
+#reise .bal i{display:block;height:100%;background:var(--acc);transform-origin:left;width:100%}
+
+#tagebuch{flex:0 0 auto;display:block;width:100%;text-align:left;background:var(--panel);border-bottom:1px solid var(--line);padding:6px 12px 7px;min-height:62px;font-size:14px;line-height:1.32}
+#tagebuch .e{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#tagebuch .e+.e{opacity:.55;margin-top:3px;-webkit-line-clamp:1}
+.k-me{color:var(--me)}.k-p{color:var(--p)}.k-w{color:var(--mut);font-style:italic}
+.k-me::before{content:"";display:inline-block;width:15px;height:10px;margin-right:5px;border-radius:2px;background:var(--me);vertical-align:-1px;
+  -webkit-mask:none;box-shadow:inset 0 0 0 3px #0f141b,inset 0 0 0 6px var(--me)}
+#tagebuch .e.neu{animation:texth .4s ease-out}
+@keyframes texth{from{opacity:.1;transform:translateY(4px)}}
+
+#vorrat{flex:0 0 auto;display:flex;flex-wrap:wrap;gap:5px;padding:7px 10px;background:var(--bg);border-bottom:1px solid var(--line)}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:13.5px;font-weight:700;white-space:nowrap}
+.chip small{color:var(--mut);font-weight:600}
+.chip.voll{border-color:#5a6a3a}.chip.leer{border-color:#7a3a3a}
+.chip.ding{background:transparent;color:var(--mut);font-weight:600;font-size:12.5px;white-space:normal}
+.pips{display:inline-flex;gap:2px}.pips i{width:7px;height:12px;border-radius:2px;background:#33404f}.pips i.an{background:var(--acc)}
+#vorrat .feuer{color:var(--acc)}
+#vorrat .feuer.aus{color:#7aa0c8}
+
+#tabs{flex:0 0 auto;display:flex;background:var(--panel);border-bottom:1px solid var(--line)}
+#tabs button{flex:1 1 0;min-width:0;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:12px;font-weight:700;color:var(--mut);position:relative;border-bottom:3px solid transparent}
+#tabs button svg{width:20px;height:20px}
+#tabs button.an{color:var(--txt);border-bottom-color:var(--acc)}
+#tabs button .pkt{position:absolute;top:6px;right:calc(50% - 18px);width:9px;height:9px;border-radius:50%;background:var(--acc)}
+#tabs button:not(.neu) .pkt{display:none}
+
+#inhalt{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 10px calc(16px + env(safe-area-inset-bottom,0px))}
+#inhalt h3{margin:12px 2px 6px;font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+#inhalt h3:first-child{margin-top:2px}
+.gitter{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.akt{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;text-align:left;min-height:56px;padding:8px 12px;border-radius:12px;
+  background:#263444;border:1px solid #33465c}
+.akt .n{font-weight:700;font-size:15px;line-height:1.2;position:relative}
+.akt .i{font-size:12.5px;color:#b5c2d2;position:relative;line-height:1.25}
+.akt .cd{position:absolute;inset:0;background:rgba(5,8,12,.55);transform-origin:right;transform:scaleX(0)}
+.akt.zu{background:#1b2531;border-color:#253242;color:#8a98aa}
+.akt.zu .i{color:#7d8b9c;font-style:italic}
+.akt.bau{border-color:#5a4a32;background:#2c2a26}.akt.bau.zu{background:#1f1d1b;border-color:#3a3428}
+.akt.bau .n::after{content:"";}
+.akt .film{display:inline-block;width:14px;height:11px;margin-left:6px;border-radius:2px;background:var(--me);vertical-align:0;box-shadow:inset 0 0 0 2px #2c2a26,inset 0 0 0 4px var(--me)}
+.akt.ziel{box-shadow:0 0 0 2px var(--acc)}
+.akt:active:not(.zu){transform:scale(.97)}
+.akt.blitz{animation:blitz .45s ease-out}
+@keyframes blitz{from{background:#3d5672}}
+.k .f{color:var(--rot);font-weight:700}
+.ort{display:flex;flex-direction:column;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.ort.gew{border-color:var(--acc)}
+.ort .kopfz{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ort b{font-size:16px}.ort .b{font-size:12px;color:var(--mut);white-space:nowrap}
+.ort p{margin:0;color:#b5c2d2;font-size:14px}
+.ort .akt{width:100%}
+.person{display:flex;gap:10px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:8px}
+.person svg{width:56px;height:56px;flex:0 0 56px;border-radius:50%}
+.person .r{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:6px}
+.person b{font-size:16px}.person p{margin:0;font-size:13.5px;color:#b5c2d2}
+.person .gitter{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+.person.leer{opacity:.6;font-style:italic;align-items:center}
+.stufe{display:inline-flex;gap:3px;vertical-align:middle;margin-left:6px}.stufe i{width:9px;height:9px;border-radius:50%;background:#33404f}.stufe i.an{background:var(--me)}
+.clips{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.clipk{display:block;padding:0;border-radius:10px;overflow:hidden;background:#0b0f14;border:1px solid var(--line);text-align:left}
+.clipk svg{display:block;width:100%;aspect-ratio:16/9;height:auto}
+.clipk span{display:block;font-size:12px;font-weight:700;padding:4px 7px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clipk.zu{display:flex;align-items:center;justify-content:center;aspect-ratio:16/12;color:#4a5a6c;font-weight:800;font-size:20px;cursor:default}
+.leise{color:var(--mut);font-size:13.5px;margin:4px 2px 8px}
+.knopf{min-height:48px;padding:0 16px;border-radius:12px;background:#263444;border:1px solid #33465c;font-weight:700}
+.knopf.haupt{background:var(--acc);color:#1a1206;border-color:var(--acc)}
+
+/* ---- Karte (Ereignis, Aufnahme, Entscheidung) ---- */
+.decke{position:fixed;inset:0;z-index:20;background:rgba(4,6,10,.78);display:flex;align-items:center;justify-content:center;
+  padding:calc(10px + env(safe-area-inset-top,0px)) calc(10px + env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) calc(10px + env(safe-area-inset-left,0px))}
+.kk{width:100%;max-width:560px;max-height:100%;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.6);animation:auf .3s ease-out}
+@keyframes auf{from{transform:translateY(14px) scale(.98);opacity:0}}
+.kk .bild{flex:0 0 auto;position:relative;width:100%;aspect-ratio:16/9;background:#000}
+.kk .bild svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.kk .txt{flex:1 1 auto;overflow-y:auto;padding:10px 16px 4px;min-height:0}
+.kk h2{margin:0 0 2px;font-size:19px}
+.kk .ueber{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:2px 0 4px}
+.kk.clip .ueber{color:var(--me)}
+.kk p{margin:6px 0;font-size:15.5px;line-height:1.42}
+.kk.clip p{font-style:italic}
+.kk p.z{animation:zeile .5s ease-out both}
+@keyframes zeile{from{opacity:0;transform:translateY(5px)}}
+.kk .kn{flex:0 0 auto;display:flex;flex-direction:column;gap:8px;padding:8px 16px calc(14px);}
+.kk .kn button{min-height:50px;border-radius:12px;background:#263444;border:1px solid #33465c;font-weight:700;padding:6px 14px;text-align:center}
+.kk .kn button.haupt{background:var(--acc);color:#1a1206;border-color:var(--acc)}
+.kk.clip{border-color:#24506a}
+#ende .kk{text-align:center}
+#ende h1{margin:4px 0 0;font-size:26px;letter-spacing:.02em}
+#ende .fs{font-size:18px;color:var(--acc);font-weight:800;margin:2px 0 8px}
+#ende .stat{color:var(--mut);font-size:14px}
+.blatt .kk{max-width:520px}
+.blatt .log{font-size:14px}
+.blatt .log div{padding:5px 0;border-bottom:1px solid #222d3a}
+
+@media (orientation:landscape) and (max-height:560px){
+  .bar{flex-basis:42px}
+  #app{flex-direction:row}
+  #links{flex:0 0 52%;max-width:52%;border-right:1px solid var(--line)}
+  #buehne{max-height:none}
+  #tagebuch{flex:1 1 auto;min-height:0;overflow:hidden}
+  #tagebuch .e+.e{-webkit-line-clamp:2}
+  .kk{max-width:820px;flex-direction:row;flex-wrap:wrap}
+  .kk .bild{flex:0 0 46%;aspect-ratio:auto;min-height:150px}
+  .kk .txt{flex:1 1 50%;padding-top:10px}
+  .kk .kn{flex:1 1 100%;flex-direction:row;flex-wrap:wrap;padding-top:4px}
+  .kk .kn button{flex:1 1 auto}
+}
+@media (min-width:900px) and (min-height:561px){
+  #app{flex-direction:row;max-width:1200px;width:100%;margin:0 auto}
+  #links{flex:0 0 56%;max-width:56%;border-right:1px solid var(--line)}
+  #buehne{max-height:none}
+  #tagebuch{flex:1 1 auto;min-height:0;overflow:auto}
+  #tagebuch .e+.e{-webkit-line-clamp:3}
+}
+
+/* ---- Bewegung in den Bildern ---- */
+@keyframes flack{0%,100%{transform:scale(1,1)}30%{transform:scale(.9,1.1)}60%{transform:scale(1.07,.93)}}
+@keyframes rauch{from{transform:translate(0,6px);opacity:.2}to{transform:translate(8px,-14px);opacity:1}}
+@keyframes regen{from{transform:translate(0,-26px)}to{transform:translate(-6px,0)}}
+@keyframes blink{0%,8%,16%,24%,48%{opacity:1}4%,12%,20%,30%,100%{opacity:.08}}
+@keyframes blink2{50%{opacity:.35}}
+@keyframes wedel{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(12deg)}}
+@keyframes nebel{50%{transform:translateX(30px)}}
+@keyframes wolke{50%{transform:translateX(18px)}}
+@keyframes dreh{to{transform:rotate(360deg)}}
+@keyframes fall{50%{opacity:.78}}
+.a-flack{animation:flack .8s ease-in-out infinite}.a-flack2{animation-duration:1.1s;animation-delay:-.4s}
+.a-rauch{animation:rauch 3.5s ease-in-out infinite alternate}
+.a-regen{animation:regen .45s linear infinite}
+.a-blink{animation:blink 3.2s linear infinite}
+.a-blink2{animation:blink2 1.6s ease-in-out infinite}
+.a-wedel{animation:wedel 1.3s ease-in-out infinite}
+.a-nebel{animation:nebel 14s ease-in-out infinite}
+.a-wolke{animation:wolke 20s ease-in-out infinite}
+.a-dreh{animation:dreh 2.4s linear infinite}
+.a-fall{animation:fall 1.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){
+  .a-flack,.a-rauch,.a-regen,.a-blink,.a-blink2,.a-wedel,.a-nebel,.a-wolke,.a-dreh,.a-fall,.ok.neu{animation:none!important}
+  #szene.wechsel,.kk,.kk p.z,#tagebuch .e.neu,.akt.blitz{animation:none!important}
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="back" href="../" id="backLink"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Spiele</span></a>
+  <div class="title" id="titel">Verschollen im Bergtal</div>
+  <div id="uhr" aria-live="polite"></div>
+  <button class="ib" id="bMenu" type="button" aria-label="Menü"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+</header>
+<div id="app">
+  <div id="links">
+    <div id="buehne"><div id="szene"></div><div id="ortknoepfe"></div><div id="reise" hidden></div><div id="hinweis"></div></div>
+    <button id="tagebuch" type="button" aria-label="Tagebuch öffnen"></button>
+  </div>
+  <div id="rechts">
+    <div id="vorrat"></div>
+    <nav id="tabs"></nav>
+    <main id="inhalt"></main>
+  </div>
+</div>
+<div id="karte" class="decke" hidden></div>
+<div id="ende" class="decke" hidden></div>
+<div id="blatt" class="decke blatt" hidden></div>
+<script src="kern.js"></script>
+<script src="bilder.js"></script>
+<script src="ui.js"></script>
+<script>/* MoveEye: der eigene Zurück-Link («../») führt zur Spielesammlung von MoveEye (löst den Knopf «✕ Zurück» aus) */
+document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a");if(!a||a.closest("#mw-back"))return;var h=a.getAttribute("href");if(h!=="../"&&h!=="index.html")return;var b=document.querySelector("#mw-back a");if(b){e.preventDefault();e.stopPropagation();b.click()}},true)
+</script>
+</body>
+</html>
