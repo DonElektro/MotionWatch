@@ -6,7 +6,8 @@ extends Node
 ## Geheim (kein Pfeil, kein Tipp, auch nicht auf «Leicht»; Blinki und das Entdeckungsbuch sagen vorher nichts):
 ##   4 Steinmännchen: in jedem Kapitel steht abseits des Weges (18–40 m neben einem Wegstück, vom Weg aus sichtbar) ein
 ##     kleines Steinmännchen mit einem eingeritzten Zeichen. Gefunden: in der Fensteransicht anklicken (bis 90 m, mit dem
-##     Feldstecher weiter) oder zu zweit mit der eigenen Figur hingehen (3,5 m). Alle fünf = geheimes Abzeichen
+##     Feldstecher weiter) oder zu zweit mit der eigenen Figur hingehen (3,5 m) - ab 13.11.2026 auch allein als Person
+##     (explore_person.gd, walkers()). Alle fünf = geheimes Abzeichen
 ##     (main.entdecken: erst beim Verdienen angemeldet, «active» nie) und in der Überraschung eine Zeile mit dem Wort.
 ##   5 Doppelter Boden im Biwak: mit «Feldstecher: hier durchschauen» im Biwak ganz nah auf den Boden schauen.
 ##   6 Licht auf der MoveEye-Aufnahme: in einer Nacht (Kapitel 2–4) leuchtet an einem Ort, der auf keiner Karte steht, ein
@@ -199,6 +200,18 @@ func players() -> Array:
 	for i in range(1 if str(z.mode) == "rollen" else 2):
 		var inp: Dictionary = z._input_of(i)
 		out.append({"i": i, "name": str(z.names[i]), "pos": z.pl[i]["pos"], "run": bool(inp.get("run", false))})
+	return out
+
+
+func walkers() -> Array:
+	"""13.11.2026: who walks to the stone men and to the light: the players zu zweit (players()) and the person walking
+	alone (explore_person.gd, i = -1) - the same distances for both"""
+	var out := players()
+	var ex = main.explore if main != null else null
+	if ex != null and ex.person_on() and ex.person.story() != null:
+		var q = ex.person.valley_pos()
+		if q is Vector2:
+			out.append({"i": -1, "name": "", "pos": q, "run": bool(ex.person.run), "person": true})
 	return out
 
 
@@ -1220,8 +1233,8 @@ func _process(dt: float) -> void:
 			_build_stein(_root, ch())
 		_build_refl(_root)
 		_call("build", [_root, ch()])
-	# zu zweit: walking to the stone man / to the light
-	for p in players():
+	# zu zweit: walking to the stone man / to the light (13.11.2026: also the person walking alone)
+	for p in walkers():
 		var q: Vector2 = p["pos"]
 		if _stein != null and is_instance_valid(_stein) and q.distance_to(stein_xz(ch())) < STEIN_NAH_M:
 			found_stein(ch(), "zweit", str(p["name"]))

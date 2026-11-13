@@ -1,17 +1,17 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7742 (Stellen: 10764)
-Übersetzt: en 7742, fr 7742, it 7742, rm 7742
+Texte gesamt: 7769 (Stellen: 10799)
+Übersetzt: en 7769, fr 7769, it 7769, rm 7769
 Unsicher markiert: 50
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 523 Stellen
-Nicht mehr im Code (noch in texte.json): 353
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 525 Stellen
+Nicht mehr im Code (noch in texte.json): 354
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 27805, schlüssel 21130, keine Wörter 13082, index 9974, technisch 3664, doc 2427, einheit 339, log 175, englisch 143, pfad 125, stringname 103, html 68, klasse 36, shader 6
+Übersprungen (Grund: Anzahl): kennung 27835, schlüssel 21160, keine Wörter 13112, index 9983, technisch 3666, doc 2439, einheit 341, log 175, englisch 143, pfad 125, stringname 103, html 68, klasse 36, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       533     4
   main_einstellungen.gd    400    25
-  bergtal_abenteuer.gd     272     7
+  bergtal_abenteuer.gd     276     7
   gamewiz.gd               252    15
   abenteuer_figuren_daten.gd   238     0
   main.gd                  212    10
@@ -31,8 +31,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_aussicht.gd       94     4
   testrun.gd                94     3
   templates.gd              93     6
+  toolbar.gd                89     3
   ferienpark.gd             89     0
-  toolbar.gd                87     3
   maggie_hund.gd            85     0
   abenteuer_action.gd       83     1
   gameplus.gd               83     5
@@ -61,6 +61,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_erleben_b.gd      55     0
   karte.gd                  49    10
   abenteuer_rucksack.gd     48     3
+  explore.gd                48     4
   draco.gd                  47     0
   scenes.gd                 47     0
   maggie_zwei_team.gd       46     0
@@ -101,7 +102,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamemission.gd            29     0
   news.gd                   29     1
   padmap.gd                 28    19
-  explore.gd                28     2
   power.gd                  28    10
   main_status.gd            27    12
   devtool_spieltest.gd      27     0
@@ -180,6 +180,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   kopf.gd                    6     2
   devtool_extra.gd           6     0
   devtool_schalter.gd        6     0
+  explore_person.gd          6     0
   gamewatch.gd               6     0
   autostart.gd               5     0
   visitlog.gd                5     0
@@ -429,7 +430,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main_einstellungen.gd:541  'ohne'
   main_einstellungen.gd:558  'aus'
   main_einstellungen.gd:562  'aus'
-  main_einstellungen.gd:724  'Karte öffnen: '
+  main_einstellungen.gd:725  'Karte öffnen: '
   mehr.gd:258  ' · Leistung: %d Bilder/s, Lite %s'
   mehr.gd:258  'an'
   mehr.gd:258  'aus'
@@ -450,13 +451,13 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   schnittstelle.gd:117  'AN'
   schnittstelle.gd:117  'aus'
   schnittstelle.gd:119  ' · Relais '
-  bergtal_abenteuer.gd:416  'Start: '
-  bergtal_abenteuer.gd:1000  ' auf der Bank mit Aussicht'
-  bergtal_abenteuer.gd:2193  'Wird frei: '
-  bergtal_abenteuer.gd:2418  'aus'
-  bergtal_abenteuer.gd:2419  'keine'
-  bergtal_abenteuer.gd:2474  '  · %.1f kg'
-  bergtal_abenteuer.gd:2570  ' - Bank'
+  bergtal_abenteuer.gd:419  'Start: '
+  bergtal_abenteuer.gd:1030  ' auf der Bank mit Aussicht'
+  bergtal_abenteuer.gd:2227  'Wird frei: '
+  bergtal_abenteuer.gd:2452  'aus'
+  bergtal_abenteuer.gd:2453  'keine'
+  bergtal_abenteuer.gd:2508  '  · %.1f kg'
+  bergtal_abenteuer.gd:2604  ' - Bank'
   gamekiwaechter.gd:100  ' · 🤖 gegen die KI – eigene Liste, zählt nicht für die Rangliste'
   gamekiwaechter.gd:147  'aus'
   gamekiwaechter.gd:147  'ein'
@@ -466,16 +467,16 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   hp_kiosk.gd:157  'aus'
   hp_kiosk.gd:197  'aus'
   licht.gd:42  'aus'
-  main.gd:756  ' (Port %d)'
-  main.gd:1660  '  %.0f Mbit/s'
-  main.gd:2288  ' (von MoveEye)'
-  main.gd:2321  'Der Simulator ist belegt: '
-  main.gd:3159  'aus'
-  main.gd:3159  'ein'
-  main.gd:3236  'Sabotage-Test: '
-  main.gd:3236  'aus'
-  main.gd:3290  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3293  '\n🚨 Bewacht und weg: '
+  main.gd:759  ' (Port %d)'
+  main.gd:1663  '  %.0f Mbit/s'
+  main.gd:2321  ' (von MoveEye)'
+  main.gd:2354  'Der Simulator ist belegt: '
+  main.gd:3192  'aus'
+  main.gd:3192  'ein'
+  main.gd:3269  'Sabotage-Test: '
+  main.gd:3269  'aus'
+  main.gd:3323  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3326  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
@@ -545,10 +546,10 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   werkstatt_einzel.gd:478  'keine'
   werkstatt_einzel.gd:478  'keine'
   werkstatt_einzel.gd:666  '&lang='
-  bergtal_aussicht.gd:357  'von'
-  bergtal_aussicht.gd:536  'von'
-  bergtal_aussicht.gd:1159  'Abzeichen: '
-  bergtal_aussicht.gd:1160  'von'
+  bergtal_aussicht.gd:358  'von'
+  bergtal_aussicht.gd:537  'von'
+  bergtal_aussicht.gd:1160  'Abzeichen: '
+  bergtal_aussicht.gd:1161  'von'
   camphys.gd:153  ' · %.1f Blenden zu dunkel'
   dataset.gd:54  'Spiel: '
   dataset.gd:319  ' · Vielfalt hoch'
@@ -556,8 +557,10 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   device.gd:95  ' (Port belegt!)'
   device.gd:298  ' · Gerät 2'
   devtool_notizen.gd:220  'Notizen aus dem MoveEye-Simulator (Entwickler → Notizen an Claude)\n%d Notizen, davon %d offen. Version %s.\n\n'
-  explore.gd:580  ' (automatisch von oben)'
-  explore.gd:580  ' · schnell'
+  explore.gd:733  ' (automatisch von oben)'
+  explore.gd:740  ' (automatisch von oben)'
+  explore.gd:740  ' · schnell'
+  explore.gd:794  'W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc'
   fahrzeuge.gd:90  'nie'
   jahreszeiten.gd:52  'nie'
   feedback.gd:386  ' · TESTMODUS: geht nur an '
@@ -659,9 +662,9 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   grafik_hoch.gd:310  'Hoch gewählt, aber aus: '
   headpad.gd:117  '\nAuslöser: Bildmitte (Kreis) auf einen Spieler, dann der runde Knopf im Bild oder R2 am Controller.'
   headpad.gd:119  '\nController: '
-  toolbar.gd:179  '\nController: '
-  toolbar.gd:432  'Ansicht: '
-  toolbar.gd:434  'Patrouille: '
+  toolbar.gd:180  '\nController: '
+  toolbar.gd:435  'Ansicht: '
+  toolbar.gd:437  'Patrouille: '
   home_editor.gd:103  ' – Anfang'
   home_editor.gd:103  ' – Ende'
   home_editor.gd:103  '. Rechtsklick auf ein Ding = weg. Nochmals drücken = nichts setzen.'

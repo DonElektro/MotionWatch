@@ -3424,7 +3424,8 @@ func _tick_headlamp() -> void:
 
 func _tick_edges() -> void:
 	"""cliff edges near the player / the rover: a warning (you do not fall: an invisible guard - the rover stops there)"""
-	var who: Vector3 = m.rig.global_position if m.mover_on or (m.explore != null and m.explore.on) else m.view_cam.global_position
+	var wk = m.walker_pos()                                     # 13.11.2026: the person walking, the mover, else the view
+	var who: Vector3 = wk if wk is Vector3 else m.view_cam.global_position
 	var q := V(who)
 	if q.y - H(q.x, q.z) > 4.0:
 		return
@@ -3650,9 +3651,10 @@ func _residents_spawn() -> void:
 func pick_here() -> Dictionary:
 	var wp := Vector3.ZERO
 	var from := "view"
-	if (m.mover_on or (m.explore != null and m.explore.on)) and m.rig.global_position.length() > 2.0:
-		wp = m.rig.global_position
-		from = "rover"
+	var wk = m.walker_pos()                                     # 13.11.2026: where the person stands (or the rover)
+	if wk is Vector3 and (m.walker_kind() == "person" or (wk as Vector3).length() > 2.0):
+		wp = wk
+		from = m.walker_kind()
 	else:
 		var cam: Camera3D = m.view_cam
 		var o := cam.global_position

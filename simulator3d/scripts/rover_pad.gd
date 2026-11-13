@@ -107,13 +107,20 @@ func _process(dt: float) -> void:
 		knob = Vector2.ZERO
 		queue_redraw()
 	var c := command()
-	main.pad_on = c != Vector2.ZERO or dragging
-	if c != Vector2.ZERO or dragging:
-		main.pad_drive = c
-		main.pad_t = main.now()
-		if not dragging:
-			knob = knob.lerp(Vector2(c.y, -c.x).limit_length(1.0), clampf(dt * 12.0, 0.0, 1.0))
-			queue_redraw()
+	var ex = main.explore
+	if ex != null and ex.person_on():                     # 13.11.2026: als Person - the same keys and sticks walk the person
+		var pd: Vector2 = main.padmap.drive_cmd() if main.padmap != null else Vector2.ZERO
+		ex.person.cmd = c
+		ex.person.run = Input.is_key_pressed(KEY_SHIFT) or (dragging and knob.length() > ex.person.FULL) or pd.length() > ex.person.FULL
+		main.pad_on = false                               # the mover stands (MoveEye may still drive it itself)
+	else:
+		main.pad_on = c != Vector2.ZERO or dragging
+		if c != Vector2.ZERO or dragging:
+			main.pad_drive = c
+			main.pad_t = main.now()
+	if c != Vector2.ZERO and not dragging:
+		knob = knob.lerp(Vector2(c.y, -c.x).limit_length(1.0), clampf(dt * 12.0, 0.0, 1.0))
+		queue_redraw()
 	elif knob != Vector2.ZERO and not dragging:
 		knob = Vector2.ZERO
 		queue_redraw()
