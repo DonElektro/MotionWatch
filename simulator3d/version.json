@@ -15,30 +15,30 @@
  },
  "pi": {
   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.68.0",
-  "size": 37978967,
-  "sha256": "42c408cf85e959e54c2cac9cb07dceb1f87d117694db6f06ad043b3deeba1cc6",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.68.0/MoveEyeSim3D_Pi.zip"
+  "ver": "3.69.0",
+  "size": 37994237,
+  "sha256": "8244b6850a8c66d59c1d341f738ce107173802d90a13c89fb864f673b34566de",
+  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.69.0/MoveEyeSim3D_Pi.zip"
  },
  "anhang": {
-  "ver": "3.68.0",
-  "version": "3D-5.68.0",
-  "name": "MoveEye Sim 3.68.0",
-  "notes": "Karte «Simulator-PC» (Ausschalten, Browser), Kopf steuern ohne MoveEye",
+  "ver": "3.69.0",
+  "version": "3D-5.69.0",
+  "name": "MoveEye Sim 3.69.0",
+  "notes": "Als Person gehen, Mover beim Erkunden bis 10 m/s",
   "mw_min": "3.55.0",
   "win": {
    "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
-   "ver": "3.68.0",
-   "size": 54443573,
-   "sha256": "cd95de05cea6279737fb3cac7238380991028c6fb1958f967294a4b9236d3adc",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.68.0/MotionWatch3D_Simulator.zip"
+   "ver": "3.69.0",
+   "size": 54463954,
+   "sha256": "e49ebe4292b7f94eb854f5c9b93f1492b0c2d2abef1fc1718c3f4dec09e0a47b",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.69.0/MotionWatch3D_Simulator.zip"
   },
   "linux": {
    "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
-   "ver": "3.68.0",
-   "size": 48493318,
-   "sha256": "c2e19a7a0122e9bb81059e30f764e3ba225b6e9988097186aea322f045e3f721",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.68.0/MoveEyeSim3D_Linux.zip"
+   "ver": "3.69.0",
+   "size": 48516932,
+   "sha256": "1cc5461b2b5dd56cf4f5e63420beb8259a092c3c01fdf8e11951cb37586583a3",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.69.0/MoveEyeSim3D_Linux.zip"
   }
  }
 }

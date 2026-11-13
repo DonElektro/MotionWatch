@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-13 18:11",
+ "generated": "2026-11-13 20:28",
  "versions": [
   {
    "version": "3.87.0",
    "file": "webcam_bewegung_3_87_0.py",
    "url": "",
    "sha256": "3fb9aa489d8946570582ac74c63991439ba1ea5b87101f26737886865ac7791a",
-   "date": "2026-11-13 18:11",
+   "date": "2026-11-13 19:20",
    "notes": "Nachtsicht: Die Kachel «🌙 Nachtsicht» schaltet jetzt wirklich aus, auch wenn «Heute Nacht bewachen» die automatische Nachtsicht eingeschaltet hatte (sie bleibt dann aus, bis du sie wieder einschaltest). Spiele: «A Dark Room» läuft jetzt auch am iPhone, mit Pfeiltasten am Bildschirm auf der Karte und im Weltraum (Spielesammlung GS-1.17).",
    "size": 3931138,
    "sig": "23b02950e394a0fc985856fd20676bb4a23d3b3479bf6b8ff01751858f2ff73da8af52dcd7d4ddba2113bc516580edb87e6aa1513fac9eac057f9a28d6980c00",
@@ -187,33 +187,33 @@
    "sig": "3c0d6ad76326d81ce324c8914ca35b61596ef189eb0e83e04238c5088ad5e2954914805461e7194f7648bb37117d49454eb7d207ff54d89893e10667b26ea80a"
   },
   "pi": {
-   "ver": "3.68.0",
+   "ver": "3.69.0",
    "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 37978967,
-   "sha256": "42c408cf85e959e54c2cac9cb07dceb1f87d117694db6f06ad043b3deeba1cc6",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.68.0/MoveEyeSim3D_Pi.zip",
-   "sig": "4de9318cafc23a27a2e2e90f6e88d765aa8897f89e56c5880b0d196167fab9e8b46a5a48cb2529d0e4824591d4e65f66c15ed17df14b04e48c81487a30bdf101"
+   "size": 37994237,
+   "sha256": "8244b6850a8c66d59c1d341f738ce107173802d90a13c89fb864f673b34566de",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.69.0/MoveEyeSim3D_Pi.zip",
+   "sig": "884c9c9f34bedb45681d4bec25337c1512d0e7c91a02e0ae33700cba0483404fc28856e64e6888f18bc8cebc05fdf2b29815426ff127e607faa4120acbaee006"
   },
   "anhang": {
-   "ver": "3.68.0",
-   "version": "3D-5.68.0",
-   "notes": "Karte «Simulator-PC» (Ausschalten, Browser), Kopf steuern ohne MoveEye",
+   "ver": "3.69.0",
+   "version": "3D-5.69.0",
+   "notes": "Als Person gehen, Mover beim Erkunden bis 10 m/s",
    "mw_min": "3.55.0",
    "win": {
-    "ver": "3.68.0",
+    "ver": "3.69.0",
     "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
-    "size": 54443573,
-    "sha256": "cd95de05cea6279737fb3cac7238380991028c6fb1958f967294a4b9236d3adc",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.68.0/MotionWatch3D_Simulator.zip",
-    "sig": "8a62a0623eded96f232a41a47da11b17c2384304deacb1aa3bb7a0346eec6652cff0b332f72c69d63f09b021da7654100419882589ae50fe316b7df68c577f04"
+    "size": 54463954,
+    "sha256": "e49ebe4292b7f94eb854f5c9b93f1492b0c2d2abef1fc1718c3f4dec09e0a47b",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.69.0/MotionWatch3D_Simulator.zip",
+    "sig": "928f4c64bf7ca32202f23a8d50345e6274f95bad7a29fa8e4a2126f91eacb600534357621e12ed2743736faa5848dec393a738954c7c94fc7c7cd2c48ea3e102"
    },
    "linux": {
-    "ver": "3.68.0",
+    "ver": "3.69.0",
     "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
-    "size": 48493318,
-    "sha256": "c2e19a7a0122e9bb81059e30f764e3ba225b6e9988097186aea322f045e3f721",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.68.0/MoveEyeSim3D_Linux.zip",
-    "sig": "792e86593a91df164a8326feee52a9dea40dc308ead8936de110f3af3464b5edaea6174065e246448ef79965b2c90d33057619f170dd5bfb58e6f51e2fa03c00"
+    "size": 48516932,
+    "sha256": "1cc5461b2b5dd56cf4f5e63420beb8259a092c3c01fdf8e11951cb37586583a3",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.69.0/MoveEyeSim3D_Linux.zip",
+    "sig": "09fd057485bcbe380c5f5711f4796492dcccf57507850ff58a1562321cc9b1d1b308312f0d40e542c29e912ac574d380e7c5595f603f2813e3e99c0127b59d00"
    }
   }
  }
