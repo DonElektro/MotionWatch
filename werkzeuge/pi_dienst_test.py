@@ -376,12 +376,12 @@ class Lauf:
             shutil.copy(f, dst); self.b.gehoert(dst)
         return os.path.join(self.b.app, self.prog[name])
 
-    def hand_start(self, prog):
+    def hand_start(self, prog, warten_web=True):
         """MoveEye von Hand starten (wie der Besitzer im Terminal) - ohne Fenster, Web auf allen Adressen wie auf dem Pi"""
         out = open(os.path.join(self.tmp, "hand_%d.txt" % int(time.time())), "w")
         self.hand = subprocess.Popen(self.b.cmd([self.b.py, prog, "--headless", "--port", str(self.port), "--web-password", PW],
                                                 {"SSL_CERT_FILE": self.cert}), stdout=out, stderr=subprocess.STDOUT, cwd=self.b.app)
-        return warte(lambda: version_da(self.port), self.a.limit)
+        return warte(lambda: version_da(self.port), self.a.limit) if warten_web else None
 
     def hand_ende(self):
         if self.hand and self.hand.poll() is None:
@@ -456,8 +456,21 @@ def fall_a(L, v):
         cmd, env = "", []
     ok("webcam_bewegung_" in cmd and "--boot" in cmd, "Hauptprozess des Dienstes ist MoveEye (PID %d: %s)" % (pid, cmd[-90:]))
     ok(any(e.startswith(b"NOTIFY_SOCKET=") for e in env), "NOTIFY_SOCKET gesetzt (Watchdog / Start-Wächter aktiv)")
+    keys = [e.decode(errors="replace") for e in env if e.split(b"=")[0] in (b"XDG_RUNTIME_DIR", b"DBUS_SESSION_BUS_ADDRESS", b"PATH", b"USER", b"HOME")]
+    print("  (Umgebung des Dienstes: %s)" % " · ".join(keys))
+    if L.d.modus == "user":                                      # what MoveEye sees when it asks systemctl from inside a unit
+        rc, out, err = L.b.als(["systemd-run", "--user", "--wait", "--pipe", "--quiet", "systemctl", "--user", "is-active", UNIT], timeout=60)
+        ok(out.strip() == "active", "systemctl --user aus einem Dienst heraus (wie MoveEye): «%s» %s" % (out.strip(), err[:160]))
     tw = warte(lambda: int(L.d.zeig().get("WatchdogTimestampMonotonic") or 0) > 0, 45, 1.0)
     ok(tw is not None, "systemd bekommt «WATCHDOG=1» von MoveEye (nach %s s; WatchdogSec=120)" % tw)
+    # a second MoveEye started by hand (without a window) while the service runs: ends by itself, the service stays (140)
+    L.hand_start(os.path.join(L.b.app, L.prog["neu"]), warten_web=False)
+    te = warte(lambda: L.hand.poll() is not None, 40)
+    rc2 = L.hand.poll()
+    L.hand_ende()
+    z2 = L.d.zeig()
+    ok(te is not None and rc2 == 0 and z2["MainPID"] == pid and z2.get("ActiveState") == "active",
+       "zweites MoveEye von Hand: endet von selbst (Code %s, %s s), der Dienst bleibt (PID %d -> %d, %s)" % (rc2, te, pid, z2["MainPID"], z2.get("ActiveState")))
     if t is None:
         L.zeigen("a")
     L.schritt("a kalter Start", t0)
@@ -608,7 +621,9 @@ def update(L, von, nach, titel, live=False):
         print("  (Protokoll: %s)" % busy[-1][-200:])
     rc, out, _e = L.d.sctl("show", UNIT, "-p", "ExecStart", "-p", "NeedDaemonReload")
     nd = os.path.basename(L.prog["plus1" if nach == L.ver["plus1"] else "neu"])
-    ok(nd in out and "NeedDaemonReload=no" in out, "die Unit startet jetzt %s (autostart_follow_version, daemon-reload)" % nd)
+    if not ok(nd in out and "NeedDaemonReload=no" in out, "die Unit startet jetzt %s (autostart_follow_version, daemon-reload)" % nd):
+        print("  (systemctl show: %s)" % out.replace("\n", " · ")[:400])
+        print("  (Protokoll Autostart: %s)" % " / ".join(x[-160:] for x in lg.splitlines() if "utostart" in x)[-600:])
     if lb:
         te = warte(lambda: lb.ende is not None, 30)
         ok(te is not None, "das offene Live-Bild endet beim Update (das Handy verbindet neu; %s Bytes vorher)" % lb.n)
