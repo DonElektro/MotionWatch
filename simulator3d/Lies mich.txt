@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.67.2 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.68.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,16 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.68.0
+3.68.0: «Kopf steuern» geht jetzt auch ohne MoveEye: die Pfeile, ⌂, das Ziehen im Bild und der Controller drehen dann den
+Kopf des Simulators selbst (nie während einer Messung; ist MoveEye verbunden, steuert wie bisher MoveEye).
+HP (Simulator-PC): neue Karte «Simulator-PC» mit «⏻ Ausschalten …» (Herunterfahren, Neu starten, Neu starten ins BIOS),
+«🌐 Browser» (der installierte Firefox über dem Simulator, oben «‹ Zurück zum Simulator», Ctrl+Alt+Z) und «Controller koppeln».
+Der HP braucht dafür zwei Update-Runden: in der ersten kommt der neue Simulator, in der zweiten die Knöpfe.
+Erste Simulator-Version, deren Pakete als Anhang einer Veröffentlichung kommen (nicht mehr im Projekt).
+So testest du (HP): nach zwei Update-Runden im Simulator die Karte «Simulator-PC» öffnen; «🌐 Browser» öffnet Firefox,
+«‹ Zurück zum Simulator» bringt dich genau dorthin zurück; «⏻ Ausschalten …» → «Neu starten» startet den PC neu.
 
 NEU IN 3.67.2
 3.67.2: Am Simulator selbst (Szenen, Verhalten) ändert sich nichts.

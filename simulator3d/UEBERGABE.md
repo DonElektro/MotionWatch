@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 12.11.2026 · Version **3.67.2** · MoveEye **3.81.3** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 13.11.2026 · Version **3.68.0** · MoveEye **3.86.1** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -31,6 +31,14 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
   (Ziegelreihen / Kies). Wärmezwillinge und Hindernisse unverändert. Luftbild wird jetzt vor den 3D-Gebäuden gesetzt.
 - Seon ohne OSM (Overpass war aus): 117 Häuser, 44 Wohnblöcke, 24 Bauernhäuser, 3 Scheunen, 2 Chalets, 2 Garagen;
   Dachfarbe aus dem Luftbild 130, Palette 62 (Häuser ausserhalb des nahen Luftbilds).
+
+## NEU in 3.68.0 (MoveEye 3.86.1): Sim 3.68.0: Karte «Simulator-PC» (HP_FASSUNG 8), Kopf steuern ohne MoveEye, erste Pakete als Release-Asset
+
+- hp_kiosk.gd: Karte «Simulator-PC» nur im Kiosk des HP (MOVEEYE_HP_KIOSK): Controller koppeln, Browser, Ausschalten (Herunterfahren / Neu starten / ins BIOS, nur wenn der PC es kann); jede Aktion mit Rückfrage.
+- beilagen_linux: hp_knoepfe.sh (Benutzer des Kiosks, ohne Rechte), hp_aus.sh (root über moveeye-aus.path / .service, nur drei feste Befehle, es zählt nur der Dateiname), browser_leiste.py; hp_update.sh HP_FASSUNG 8.
+- kopf_selbst.gd: ohne MoveEye dreht «Kopf steuern» den Kopf selbst (Werte wie MoveEyes Standard), nie während einer Messung oder wenn etwas anderes den Kopf hat; beim Verbinden gewinnt MoveEyes Stellung.
+- Pakete: zum ersten Mal als Assets am Release sim-3.68.0 (sim_pi.yml), signiert unter «sim.anhang» / «sim.pi» in versions.json; «sim.win» / «sim.linux» bleiben 3.67.2 (Zwischenschritt für ältere Geräte).
+- HP: zwei Update-Runden (Runde 1 mit dem alten Skript: Simulator + neues Skript; Runde 2: «neue Fassung» -> Knöpfe, moveeye-aus, openbox.xml).
 
 ## NEU in 3.67.2 (MoveEye 3.81.3): Simulator-Anhang + HP_FASSUNG 7 (mw-sim-anhang, hp-bluetooth-controller)
 
