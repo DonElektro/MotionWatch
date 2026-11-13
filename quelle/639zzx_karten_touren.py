@@ -537,7 +537,7 @@ def kt_file_name(t, ext):
 KH_TAG = "hoehen-1"
 KH_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + KH_TAG + "/"}   # Tests: lokaler Server
 # Werte aus werkzeuge/karten/hoehe.py (pins.txt des Workflows «Höhendaten»); size 0 = noch nicht freigegeben
-KH_FILE = {"name": "hoehe-ch-1.bin", "size": 0, "sha256": ""}
+KH_FILE = {"name": "hoehe-ch-1.bin", "size": 60515168, "sha256": "8b26a5072db7f5ef5e3887313a756396b945434d177d73ea71d924678e0b2c29"}
 KH_MAX = 1500 * 1000 * 1000
 KH_MAGIC = b"MEHOEHE1"
 KH_BLOCKS = 16
