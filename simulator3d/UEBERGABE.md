@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 13.11.2026 · Version **3.68.0** · MoveEye **3.86.1** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 13.11.2026 · Version **3.69.0** · MoveEye **3.87.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -31,6 +31,14 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
   (Ziegelreihen / Kies). Wärmezwillinge und Hindernisse unverändert. Luftbild wird jetzt vor den 3D-Gebäuden gesetzt.
 - Seon ohne OSM (Overpass war aus): 117 Häuser, 44 Wohnblöcke, 24 Bauernhäuser, 3 Scheunen, 2 Chalets, 2 Garagen;
   Dachfarbe aus dem Luftbild 130, Palette 62 (Häuser ausserhalb des nahen Luftbilds).
+
+## NEU in 3.69.0 (MoveEye 3.87.0): Sim 3.69.0: als Person gehen, Mover beim Erkunden bis 10 m/s (sim-person-schneller)
+
+- explore_person.gd: Knopf «🚶 Person» / «🚜 Mover» (Erkunden-Leiste, Menü Ansicht, Abenteuer-Spalte), Taste U, Controller Select 1 s (nur im Modus «sim», dort frei); Figur = actor.gd; nie bei Messung, Spiel am PC, Spielrunde (ausser frei), zu zweit, Maggie.
+- main.walker_pos() / walker_kind(): Aussicht, Kanten, Grat, «Hier übernachten» messen an der Person, sonst am Mover, sonst an der freien Ansicht.
+- Tempo beim Erkunden main.ex_speed (1,8 … 10 m/s, gespeichert); main.mover_max bleibt das Tempo, wenn MoveEye fährt (Erkunden ändert es nicht mehr). Shift × 2,2 höchstens 10 m/s; folgt MoveEye: höchstens 5 m/s.
+- main._drive in Schritten ≤ 0,2 m (keine Wand durchfahren), Drehen wie bei 2 m/s, sanftere Rampe ab 3 m/s; beim Standardtempo 0,8 m/s dieselbe Rechnung wie bisher (ein Schritt, gleiche Drehung, Rampe 1).
+- Test werkzeuge/person_tempo_test.gd (51 Prüfungen). padmap.gd unverändert.
 
 ## NEU in 3.68.0 (MoveEye 3.86.1): Sim 3.68.0: Karte «Simulator-PC» (HP_FASSUNG 8), Kopf steuern ohne MoveEye, erste Pakete als Release-Asset
 
