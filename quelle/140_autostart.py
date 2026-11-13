@@ -247,7 +247,7 @@ def watchdog_loop():
 # (Restart=always: new process, its leftover child processes stopped - what the reboot did by hand). A known wait (the port is
 # used by another program, 550 _serve) or no web page at all switches it off. «kill -USR1 <pid>» writes the threads into the
 # journal at any time (also without systemd).
-START_WD = {"on": False, "f": None}
+START_WD = {"on": False, "f": None, "last_hung": False}   # last_hung: the last start ended by this watchdog (390 run_guard)
 START_WD_S = 90                 # before the systemd watchdog (WatchdogSec=120, counted from the last «alive» of the old program)
 
 
@@ -261,12 +261,16 @@ def start_watchdog_arm():
     try:                                                   # the last start hung: tell it now (journal and log)
         if os.path.getsize(p) > 0:
             with open(p, encoding="utf-8", errors="replace") as f:
+                kopf = f.readline()                        # «# start watchdog limit N s» (the dump follows)
                 txt = f.read()[-4000:]
             os.replace(p, p + ".old")
-            print("The last start hung (web page not up after %d s) - where it was:\n%s" % (START_WD_S, txt), flush=True)
+            START_WD["last_hung"] = True                   # 3.87.1: no power loss - run_guard_start (390) must not count it
+            m_ = re.search(r"^# start watchdog limit (\d+) s", kopf)
+            lim_ = int(m_.group(1)) if m_ else START_WD_S
+            print("The last start hung (web page not up after %d s) - where it was:\n%s" % (lim_, txt), flush=True)
             main = [ln.strip() for ln in txt.splitlines() if ln.strip().startswith("File ")][:3]
             log_event("sys", ("The last start hung (web page not up after %d s, started again by itself): %s"
-                              % (START_WD_S, " · ".join(main) or "?"))[:240])
+                              % (lim_, " · ".join(main) or "?"))[:240])
     except OSError:
         pass
     if not (os.environ.get("NOTIFY_SOCKET") or os.environ.get("MW_START_WD")):
@@ -277,6 +281,7 @@ def start_watchdog_arm():
         lim = START_WD_S
     try:
         START_WD["f"] = open(p, "w", encoding="utf-8")
+        START_WD["f"].write("# start watchdog limit %d s\n" % round(max(5.0, lim))); START_WD["f"].flush()   # for the next start
         faulthandler.dump_traceback_later(max(5.0, lim), exit=True, file=START_WD["f"])
         START_WD["on"] = True
     except (OSError, ValueError, RuntimeError):
@@ -385,7 +390,28 @@ def port_free_children(port):
                 os.kill(pid, signal.SIGTERM)
             except OSError:
                 pass
+            for _ in range(20):                              # 3.87.1: and collect it (no zombie left behind) - at most 2 s
+                try:
+                    if os.waitpid(pid, os.WNOHANG)[0] == pid:
+                        break
+                except ChildProcessError:
+                    break
+                time.sleep(0.1)
     return found
+
+
+def port_foreign(held):
+    """3.87.1 (Besitzer: «guarding without a web page is better than no guarding»): the holders of the web port that are a
+    program other than MoveEye - not this process, not a child of it, not a MoveEye file (webcam_bewegung_X_Y_Z.py). Such a
+    port does not get free by starting again: the start watchdog (above) must not end the guard for it."""
+    def moveeye(cmd):                                        # the script it runs (first «….py»), not just any word of the line
+        parts = str(cmd).split()
+        script = next((x for x in parts[1:] if x.endswith(".py")), parts[0] if parts else "")
+        return re.fullmatch(r"webcam_bewegung_\d{1,3}_\d{1,3}_\d{1,3}\.py", os.path.basename(script)) is not None
+    if not any(h[0] for h in held):                          # 3.87.1: busy, but no holder we may look into (e.g. a program of root
+        return [(0, 0, "")]                                  # while MoveEye runs as a user): a new start would not free it either
+    return [(p, pp, c) for p, pp, c in held if p and p != os.getpid() and pp != os.getpid() and not moveeye(c)]
+
 
 
 def autostart_unit(mode):

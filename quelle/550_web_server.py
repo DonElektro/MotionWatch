@@ -9,10 +9,16 @@ class WebStream:
     @staticmethod
     def _port_free(port):
         import socket
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sk:
+        addr = "0.0.0.0" if WEB_OPTS["bind"] in ("", "0.0.0.0") else WEB_OPTS["bind"]
+        fam = socket.AF_INET6 if ":" in addr else socket.AF_INET        # 3.87.1: «--bind ::» (IPv6) was always «busy»
+        try:
+            sk = socket.socket(fam, socket.SOCK_STREAM)
+        except OSError:
+            return False
+        with sk:
             sk.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             try:
-                sk.bind(("0.0.0.0" if WEB_OPTS["bind"] in ("", "0.0.0.0") else WEB_OPTS["bind"], port)); return True
+                sk.bind((addr, port)); return True
             except OSError:
                 return False
 
@@ -30,6 +36,19 @@ class WebStream:
                 log_event("web", (f"Port {port} busy at the start" + (" (this program is the autostart service)" if me else "") + ": "
                                   + ("; ".join(f"PID {p}{' (own child, stopped)' if pp == os.getpid() else ''}: {c}" for p, pp, c in held)
                                      or "no process found (other user?)"))[:400])
+                fremd = port_foreign(held)
+                if fremd:                                 # 3.87.1: another program holds it - a new start would not help: keep guarding
+                    start_watchdog_done("port used by another program")
+                    prog = (os.path.basename(fremd[0][2].split(" ")[0])[:40] if fremd[0][0] else "") or tr("a program of another user")
+                    log_event("web", f"Port {port} is used by another program ("
+                                     + (f"PID {fremd[0][0]}: {fremd[0][2][:80]}" if fremd[0][0] else "not visible to this user")
+                                     + ") - MoveEye keeps guarding without the web page and tries again")
+                    try:                                  # once: without the web page a push is the only way to say it
+                        self.watch.notifier.info(trf("The web page could not start: port {port} is used by another program ({prog}). "
+                                                     "MoveEye keeps guarding and tries again; the page comes as soon as the port is free.",
+                                                     port=port, prog=prog), title="{name}: " + tr("Web page"))
+                    except Exception:
+                        pass
             if not took and shutil.which("systemctl") and not me:
                 took = True
                 for mode in ("user", "system"):

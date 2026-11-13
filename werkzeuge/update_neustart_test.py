@@ -18,6 +18,10 @@ Ein kleiner «Aufpasser» startet MoveEye nach jedem Ende neu wie systemd (Resta
   D  Start-Wächter: die Seite kommt nicht (Port bleibt belegt) - MoveEye schreibt start_hang.txt und endet mit Code 1, der
      Aufpasser startet neu, der nächste Start meldet «The last start hung» im Protokoll; Port frei -> Seite kommt.
   E  vor os.execv hört eine geteilte Steckdose (auch in einem Kind-Programm) auf zu lauschen (_close_fds_on_exec, 390).
+  F  ein fremdes Programm (nicht MoveEye, kein Kind) hält den Port: der Start-Wächter ist aus, MoveEye bewacht weiter ohne
+     Webseite und versucht es wieder (Besitzer: «lieber bewachen ohne Webseite als gar nicht»); D dagegen: eine hängende
+     alte MoveEye - dort hilft ein neuer Start; drei Wächter-Enden machen keinen «Sicheren Start».
+  G  Port belegt, Halter nicht sichtbar (Programm eines anderen Benutzers) = fremd; «--bind ::» mit IPv6-Steckdose.
 """
 import argparse
 import base64
@@ -183,6 +187,27 @@ def halter(port):
     return s
 
 
+HAENGT = r'''
+import socket, sys, time
+s = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1); s.bind(("127.0.0.1", int(sys.argv[1]))); s.listen(5)
+open(sys.argv[2], "w").write("ok")
+time.sleep(900)
+'''
+
+
+def alte_kopie(ordner, port):
+    """3.87.1: eine «hängende alte MoveEye» hält den Port - ein Programm, dessen Befehlszeile eine MoveEye-Datei nennt
+    (webcam_bewegung_9_9_8.py). Gegen sie hilft ein neuer Start (systemd beendet beim Neustart des Dienstes alles)."""
+    f = os.path.join(ordner, "webcam_bewegung_9_9_8.py"); open(f, "w").write(HAENGT)
+    marke = os.path.join(ordner, "bereit")
+    p = subprocess.Popen([sys.executable, f, str(port), marke], start_new_session=True)
+    for _ in range(100):
+        if os.path.isfile(marke):
+            break
+        time.sleep(0.1)
+    return p
+
+
 def fake_systemctl(ordner):
     """systemctl zum Nachbauen: der Dienst läuft («active») und sein Hauptprogramm ist der Aufrufer (= MoveEye); jeder Aufruf
     landet in systemctl.log, nichts wird wirklich gestartet oder gestoppt"""
@@ -310,25 +335,63 @@ def fall_c(neu, limit):
 
 
 def fall_d(neu, limit):
-    print("D  Start-Wächter: die Seite kommt nicht -> start_hang.txt, Ende mit Code 1, neuer Start")
+    print("D  Start-Wächter: eine hängende alte MoveEye hält den Port -> start_hang.txt, Ende mit Code 1, neuer Start (drei Runden, kein «Sicherer Start»)")
     tmpb = tempfile.mkdtemp(prefix="mw_neustart_d_")
     b, slog = fake_systemctl(tmpb)
-    f_ = Fall("d", neu, env={"PATH": b + os.pathsep + os.environ.get("PATH", ""), "MW_START_WD": "8"})
-    h = halter(f_.port)
+    f_ = Fall("d", neu, env={"PATH": b + os.pathsep + os.environ.get("PATH", ""), "MW_START_WD": "8"}, cfg_extra={"ai_enabled": True})
+    alt_ = alte_kopie(tmpb, f_.port)
+    h = None
     f_.start()
     try:
         t0 = time.time()
-        while time.time() - t0 < limit and not f_.ends:
+        while time.time() - t0 < limit and len(f_.ends) < 3:     # 3.87.1: three cycles - two used to make a «Safe start»
             time.sleep(0.5)
-        rc = f_.ends[0][1] if f_.ends else None
-        ok(rc == 1, "MoveEye endet von selbst mit Code 1 (nach %.0f s, Wächter 8 s; Code %s)" % (time.time() - t0, rc))
+        rcs = [e[1] for e in f_.ends]
+        ok(rcs[:3] == [1, 1, 1], "MoveEye endet dreimal von selbst mit Code 1 (nach %.0f s, Wächter 8 s; Codes %s)" % (time.time() - t0, rcs))
         hang = os.path.join(f_.cfg, "start_hang.txt")
         txt = open(hang, errors="replace").read() if os.path.isfile(hang) else ""
         ok("Thread" in txt or "File" in txt, "start_hang.txt mit den Threads geschrieben (%d Zeichen)" % len(txt))
-        h.close()
+        alt_.kill(); alt_.wait(10)                            # systemd ends the old copy with the service; here by hand
         t = warten(f_.port, limit)
         ok(t is not None, "nach dem neuen Start antwortet die Seite (%s s)" % t)
-        ok("The last start hung" in f_.log(), "Protokoll: «The last start hung …»")
+        lg = f_.log()
+        ok("The last start hung (web page not up after 8 s" in lg, "Protokoll: «The last start hung (web page not up after 8 s …» - die echte Grenze")
+        try:
+            ai = json.load(open(os.path.join(f_.cfg, "motionwatch_settings.json"))).get("cfg", {}).get("ai_enabled")
+        except (OSError, ValueError):
+            ai = "?"
+        if "Safe start" in lg or "not counted as a power problem" not in lg:
+            print("    ---- Protokoll (Ausschnitt)\n    " + "\n    ".join(x for x in lg.splitlines() if any(w in x for w in ("unexpectedly", "Safe start", "start hung", "not counted", "AI")))[-2500:])
+        ok("Safe start" not in lg and "not counted as a power problem" in lg,
+           "kein «Sicherer Start» nach drei Wächter-Enden («not counted as a power problem» im Protokoll; KI %s - ohne Modell-Datei ohnehin aus)" % ai)
+        if t is None:
+            f_.ende(zeigen=True)
+    finally:
+        if alt_.poll() is None:
+            alt_.kill()
+        if not f_.stop:
+            f_.ende()
+        shutil.rmtree(tmpb, ignore_errors=True)
+
+
+def fall_f(neu, limit):
+    print("F  ein fremdes Programm hält den Port: kein Ende, MoveEye bewacht weiter, ein Hinweis, die Seite kommt, sobald er frei ist")
+    tmpb = tempfile.mkdtemp(prefix="mw_neustart_f_")
+    b, slog = fake_systemctl(tmpb)
+    f_ = Fall("f", neu, env={"PATH": b + os.pathsep + os.environ.get("PATH", ""), "MW_START_WD": "8"})
+    h = halter(f_.port)                                       # this test (a Python program, not MoveEye) holds the port
+    f_.start()
+    try:
+        time.sleep(30)                                        # more than three times the start watchdog (8 s)
+        ok(not f_.ends and len(f_.procs) == 1 and f_.procs[0].poll() is None,
+           "MoveEye läuft nach 30 s noch (Wächter 8 s): kein Ende, kein Neustart (%d Starts, Enden %s)" % (len(f_.procs), f_.ends))
+        ok(not os.path.isfile(os.path.join(f_.cfg, "start_hang.txt")), "kein start_hang.txt")
+        lg = f_.log()
+        ok("used by another program" in lg and "keeps guarding" in lg, "Protokoll: «Port … is used by another program … keeps guarding»")
+        ok(" stop " not in (open(slog).read() if os.path.isfile(slog) else "") + " ", "kein «systemctl stop»")
+        h.close()
+        t = warten(f_.port, limit)
+        ok(t is not None, "Port frei: die Seite kommt (%s s, Grenze %d s)" % (t, limit))
         if t is None:
             f_.ende(zeigen=True)
     finally:
@@ -339,6 +402,75 @@ def fall_d(neu, limit):
         if not f_.stop:
             f_.ende()
         shutil.rmtree(tmpb, ignore_errors=True)
+
+
+PRUEF_G = r'''
+import json, os, socket, sys
+ns = {"__name__": "mw_neustart", "__file__": os.path.abspath(sys.argv[1])}
+exec(compile(open(sys.argv[1], encoding="utf-8").read(), sys.argv[1], "exec"), ns)
+import subprocess, time
+hp = subprocess.Popen([sys.executable, "-c", "import socket, sys, time; s = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1); "
+                       "s.bind(('127.0.0.1', 0)); s.listen(5); print(s.getsockname()[1], flush=True); time.sleep(120)"], stdout=subprocess.PIPE, text=True,
+                      start_new_session=True)
+p_fremd = int(hp.stdout.readline())                                  # another program (not a child of «MoveEye» here: own session)
+hh = ns["port_holders"](p_fremd)
+res = {"sichtbar": any(h[0] == hp.pid for h in hh), "fremd_sichtbar": any(h[0] == hp.pid for h in ns["port_foreign"](hh))}
+hp.kill()
+s = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1); s.bind(("127.0.0.1", 0)); s.listen(5)
+port = s.getsockname()[1]
+res["leer"] = ns["port_foreign"]([])                               # busy, nobody visible (a program of another user)
+res["eigen"] = ns["port_foreign"]([(os.getpid() + 999999, os.getpid(), "x")])  # own child: never foreign
+if os.getuid() == 0:                                                # as another user (nobody): the holder of root is invisible
+    r_, w_ = os.pipe()
+    pid = os.fork()
+    if pid == 0:
+        os.close(r_); s.close()                                    # the child must not hold the socket itself
+        try:
+            os.setgid(65534); os.setuid(65534)
+            h = ns["port_holders"](port)
+            os.write(w_, json.dumps({"h": h, "f": ns["port_foreign"](h)}).encode())
+        except Exception as e:
+            os.write(w_, json.dumps({"err": str(e)}).encode())
+        os._exit(0)
+    os.close(w_); os.waitpid(pid, 0)
+    res["nobody"] = json.loads(os.read(r_, 65536) or b"{}")
+v6 = True
+try:
+    socket.socket(socket.AF_INET6).close()
+except OSError:
+    v6 = False
+res["v6"] = v6
+if v6:                                                              # 3.87.1: «--bind ::» is checked with an IPv6 socket
+    ns["WEB_OPTS"]["bind"] = "::"
+    t = socket.socket(socket.AF_INET6); t.bind(("::", 0)); p6 = t.getsockname()[1]
+    res["frei6"] = ns["WebStream"]._port_free(p6 + 1)
+    t.listen(1); res["belegt6"] = ns["WebStream"]._port_free(p6); t.close()
+print("RES " + json.dumps(res))
+'''
+
+
+def fall_g(neu):
+    print("G  Port belegt, aber der Halter ist nicht sichtbar (anderer Benutzer) = fremd; «--bind ::»")
+    home = tempfile.mkdtemp(prefix="mw_neustart_g_")
+    env = {k: v for k, v in os.environ.items() if "proxy" not in k.lower()}
+    env["MOTIONWATCH_HOME"] = home
+    r = subprocess.run([sys.executable, "-c", PRUEF_G, neu], capture_output=True, text=True, env=env, timeout=180, cwd=home)
+    res = next((json.loads(l[4:]) for l in r.stdout.splitlines() if l.startswith("RES ")), None)
+    shutil.rmtree(home, ignore_errors=True)
+    if res is None:
+        ok(False, "Prüfprogramm G lief nicht: %s" % (r.stdout + r.stderr)[-600:]); return
+    ok(res["sichtbar"] and res["fremd_sichtbar"], "ein sichtbarer fremder Halter wird erkannt (dieser Test)")
+    ok(res["leer"] == [[0, 0, ""]], "kein sichtbarer Halter -> gilt als fremd (%s)" % res["leer"])
+    ok(res["eigen"] == [], "ein eigenes Kind ist nie fremd")
+    if "nobody" in res:
+        nb = res["nobody"]
+        ok(nb.get("h") == [] and nb.get("f") == [[0, 0, ""]], "als Benutzer «nobody»: der Halter von root ist unsichtbar und gilt als fremd (%s)" % nb)
+    else:
+        print("  (nicht als root: der Fall «anderer Benutzer» ist nur über den leeren Halter geprüft)")
+    if res["v6"]:
+        ok(res["frei6"] is True and res["belegt6"] is False, "«--bind ::»: freier Port frei, belegter belegt (%s / %s)" % (res["frei6"], res["belegt6"]))
+    else:
+        print("  (kein IPv6 auf diesem Rechner: «--bind ::» übersprungen)")
 
 
 PRUEF_E = r'''
@@ -380,7 +512,7 @@ def main():
     ap.add_argument("--datei", default="", help="neue Version (Standard: neueste webcam_bewegung_*.py im Repository)")
     ap.add_argument("--alt", default="", help="alte Version für A (Standard: die Datei davor im Repository)")
     ap.add_argument("--limit", type=int, default=90, help="Sekunden, bis die Seite antworten muss (Spielraum für langsame Rechner)")
-    ap.add_argument("--nur", default="A,B,C,D,E")
+    ap.add_argument("--nur", default="A,B,C,D,E,F,G")
     a = ap.parse_args()
     if not sys.platform.startswith("linux"):
         print("nur unter Linux (/proc, wie der Pi)"); return 0
@@ -393,6 +525,8 @@ def main():
     print("Neu: %s · alt: %s · Grenze %d s" % (os.path.basename(neu), os.path.basename(alt) or "-", a.limit))
     if "E" in nur:
         fall_e(neu)
+    if "G" in nur:
+        fall_g(neu)
     if "A" in nur:
         if alt:
             fall_a(neu, alt, a.limit)
@@ -404,6 +538,8 @@ def main():
         fall_c(neu, a.limit)
     if "D" in nur:
         fall_d(neu, a.limit)
+    if "F" in nur:
+        fall_f(neu, a.limit)
     print("FEHLER: %d" % len(FEHLER) if FEHLER else "Alles gut.")
     return 1 if FEHLER else 0
 

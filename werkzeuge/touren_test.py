@@ -373,6 +373,21 @@ def teil_a(datei):
     ok(code == 200 and not j["tour"]["ele"] and j["tour"]["nodata"] and j["tour"].get("up") is None and j["tour"]["m"] > 30000, "Route über den Rand der Daten: «keine Höhendaten», keine 0")
     r = c.post("/api/touren/profil", json={"pts": [list(A), list(B)]}, headers=HA).get_json()
     ok(r["ok"] and r["ele"] and r["up"] == t["up"] and c.post("/api/touren/profil", json={"pts": [list(A), list(B)]}, headers=HK).status_code == 403, "Zahlen beim Zeichnen (/api/touren/profil); Kind 403")
+    # 3.87.1: a zig-zag of 500 points across the whole country unpacked ~20'000 blocks (28 s CPU) - now: over 300 km no heights,
+    # and never more than KH_LINE_MAX_BLOCKS unpacked blocks for one route
+    zz = [[45.9 + 1.8 * (i % 2), 6.0 + 4.4 * i / 499] for i in range(500)]
+    t0 = time.time(); r = c.post("/api/touren/profil", json={"pts": zz}, headers=HA).get_json(); dt = time.time() - t0
+    ok(r["ok"] and not r["ele"] and r.get("lang") and dt < 2.0, f"Zickzack über die ganze Schweiz (500 Punkte): «zu lang», keine Höhen, in {dt:.2f} s")
+    f_ = ns["kh_file"](); n0 = getattr(f_, "loads", 0); mb = ns["KH_LINE_MAX_BLOCKS"]; ns["KH_LINE_MAX_BLOCKS"] = 0
+    try:
+        f_.cache.clear(); line, cov = ns["kh_line"]([list(A), list(B)])
+    finally:
+        ns["KH_LINE_MAX_BLOCKS"] = mb
+    ok(cov == "lang" and getattr(f_, "loads", 0) - n0 <= 2, f"Grenze der entpackten Blöcke pro Route greift ({cov}, {getattr(f_, 'loads', 0) - n0} entpackt)")
+    ok("Too long for ascent, descent and profile (over 300 km)." in ns["DE"] and "über 300 km" in ns["DE"]["Too long for ascent, descent and profile (over 300 km)."],
+       "Hinweis «Zu lang für Aufstieg, Abstieg und Profil (über 300 km)»")
+    codes = [c.post("/api/touren/profil", json={"pts": [list(A), list(B)]}, headers=HB).status_code for _ in range(305)]
+    ok(codes.count(200) == 300 and codes[-1] == 429, f"Zahlen beim Zeichnen: höchstens 300 Anfragen in 10 Minuten pro Benutzer ({codes.count(200)} × 200, dann {codes[-1]})")
     tx = c.get(f"/g/{tok}/touren?t={j['tour']['id']}").get_data(as_text=True)
     ok("Keine Höhendaten" in tx and "↑" not in tx, "Gast-Seite: «Keine Höhendaten» statt Zahlen")
     ok(api({"action": "hoehe_delete"}, H)[0] == 200 and not ns["kh_installed"]() and not os.path.exists(os.path.dirname(ns["kh_path"]())), "Entfernen löscht das Paket")

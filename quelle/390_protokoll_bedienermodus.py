@@ -767,7 +767,10 @@ def run_guard_start():
     except (OSError, ValueError):
         prev = None
     streak = 0
-    if isinstance(prev, dict) and not prev.get("clean"):
+    if isinstance(prev, dict) and not prev.get("clean") and START_WD.get("last_hung"):
+        streak = int(prev.get("streak", 0))                  # 3.87.1: ended by the start watchdog (140) - no power loss, not counted
+        log_event("sys", "The last run ended through the start watchdog (web page did not come up) - not counted as a power problem")
+    elif isinstance(prev, dict) and not prev.get("clean"):
         ran = int(prev.get("up", 0))
         RUNGUARD["last"] = {"ran_s": ran, "cpu_temp": prev.get("cpu_temp"), "uv": prev.get("uv"), "throttled": prev.get("throttled"),
                             "cpu": prev.get("cpu"), "ai": prev.get("ai"), "ver": prev.get("ver"), "when": prev.get("beat_txt", "")}
