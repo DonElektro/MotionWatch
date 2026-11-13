@@ -33,6 +33,11 @@ Funktionen `…_selftest`, die nur «--self-test» benutzt, stehen als Quelltext
 `name = _zd_fn("<teil>/name()")` und leere Zeilen, Teil 012) – sie darum nie im Betrieb aufrufen; vom Almanach bleibt nur das
 Kapitel «Notfall» in der Datei (`ALMANAC`), die anderen Kapitel sind `ALMANAC_WEITER`. Grosse Daten immer als ein Literal auf
 oberster Ebene schreiben. Jeder Bau zeigt die Luft bis zur Warnung; `werkzeuge/hauptdatei_groesse_test.py` verlangt 150 KiB.
+**Zweite Runde** (13.11.2026): auch Hilfsfunktionen, die nur der Prüf-Code benutzt (nicht, wenn ein Werkzeug in `werkzeuge/`
+oder ein Text sie beim Namen nennt); Französisch / Italienisch / Romanisch schon ab 256 Bytes (`ZD_MIN_TR`: Tabellen `_HX…`,
+`TRX['fr'|'it'|'rm'].update`), auch Tabellen `_HX…` mit Namen als Schlüssel (`_zd_hxk`, Teil 012: Schlüssel und Deutsch
+bleiben); Ergänzungen der Anleitung per Ersetzen (`for _a, _b in ((alt, neu), …): HELP_PAGE = …`, `ZD_ANLEITUNG`). Deutsch
+bleibt immer in der Datei.
 Tests: `werkzeuge/zusatzdaten_test.py` (ZIP gültig / verändert / fehlt, Signatur, Kern ohne ZIP),
 `werkzeuge/update_uebergang_test.py` (altes Gerät → neue Version über einen lokalen HTTPS-Server).
 

@@ -14,6 +14,8 @@
 #     it is indented with tabs (same line numbers); the zip keeps the original lines ("zeilen"), zd_source() puts them back.
 #   * Prüf-Code (Nov. 2026): the functions «…_selftest» that only «--self-test» uses are in the zip as source (_zd_fn below);
 #     the file keeps one line per function and empty lines (same line numbers). The running device never needs them.
+#     Second round (13.11.2026): also the helpers that only these checks use; French / Italian / Romansh from 256 bytes
+#     on (German stays), tables _HX… with names as keys (_zd_hxk below), the pairs of the supplements of the manual.
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = ""
@@ -122,6 +124,35 @@ def _zd_hx(de, as_list=False):
     """Schlank: the stand-in for a moved-out table {English: (de, fr, it, rm)} while the zip is missing: German stays,
     French / Italian show English, Romansh German (the same as for a missing translation)"""
     return {k: ([v, k, k, v] if as_list else (v, k, k, v)) for k, v in de.items()}
+
+
+def _zd_hxk(key, rows, as_list=False):
+    """Hauptdatei kleiner, zweite Runde (13.11.2026): a table _HX… whose keys are names (PL_HEIC_MSG: (de, fr, it, rm), …).
+    The file keeps the keys (evaluated here, in the program) and the German texts: rows = [(key, de), …] in the order of the
+    source. The zip keeps the whole table as source; only its VALUES are read (ast.literal_eval of each value - the keys in
+    the zip are never evaluated, nothing in the zip runs). They must match the rows (same number, same German), else - and
+    without the zip - the table is the same as from _zd_hx (German, French / Italian English, Romansh German)."""
+    data = ZD["data"]
+    if data and key in data:
+        import ast as _ast
+        seg = data.pop(key)
+        try:
+            nd = _ast.parse("(" + seg + "\n)", mode="eval").body
+            vals = [_ast.literal_eval(v) for v in nd.values] if isinstance(nd, _ast.Dict) else []
+            if len(vals) == len(rows) and all(isinstance(v, (tuple, list)) and len(v) == 4 and v[0] == de
+                                              for v, (_k, de) in zip(vals, rows)):
+                ZD["used"] += 1
+                out = {}
+                for (k, _de), v in zip(rows, vals):
+                    out[k] = list(v) if as_list else tuple(v)
+                return out
+        except (ValueError, SyntaxError, MemoryError, TypeError, RecursionError):
+            pass
+    ZD["miss"].append(key)
+    out = {}
+    for k, de in rows:
+        out[k] = [de, k, k, de] if as_list else (de, k, k, de)
+    return out
 
 
 def zd_source():
