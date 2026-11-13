@@ -408,14 +408,19 @@ PRUEF_G = r'''
 import json, os, socket, sys
 ns = {"__name__": "mw_neustart", "__file__": os.path.abspath(sys.argv[1])}
 exec(compile(open(sys.argv[1], encoding="utf-8").read(), sys.argv[1], "exec"), ns)
-import subprocess, time
-hp = subprocess.Popen([sys.executable, "-c", "import socket, sys, time; s = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1); "
-                       "s.bind(('127.0.0.1', 0)); s.listen(5); print(s.getsockname()[1], flush=True); time.sleep(120)"], stdout=subprocess.PIPE, text=True,
-                      start_new_session=True)
-p_fremd = int(hp.stdout.readline())                                  # another program (not a child of «MoveEye» here: own session)
+import subprocess, tempfile, time
+pf = tempfile.mktemp(prefix="mw_fremd_")
+prog = ("import os, socket, sys, time; s = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1); "
+        "s.bind(('127.0.0.1', 0)); s.listen(5); open(sys.argv[1], 'w').write('%d %d' % (s.getsockname()[1], os.getpid())); time.sleep(120)")
+subprocess.run(["sh", "-c", '"$0" -c "$1" "$2" >/dev/null 2>&1 &', sys.executable, prog, pf], check=True)   # detached: not our child
+for _ in range(100):
+    if os.path.isfile(pf) and os.path.getsize(pf):
+        break
+    time.sleep(0.1)
+p_fremd, hpid = (int(x) for x in open(pf).read().split())
 hh = ns["port_holders"](p_fremd)
-res = {"sichtbar": any(h[0] == hp.pid for h in hh), "fremd_sichtbar": any(h[0] == hp.pid for h in ns["port_foreign"](hh))}
-hp.kill()
+res = {"sichtbar": any(h[0] == hpid for h in hh), "fremd_sichtbar": any(h[0] == hpid for h in ns["port_foreign"](hh))}
+os.kill(hpid, 9); os.remove(pf)
 s = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1); s.bind(("127.0.0.1", 0)); s.listen(5)
 port = s.getsockname()[1]
 res["leer"] = ns["port_foreign"]([])                               # busy, nobody visible (a program of another user)

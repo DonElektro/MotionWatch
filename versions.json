@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-13 20:28",
+ "generated": "2026-11-13 22:34",
  "versions": [
   {
-   "version": "3.87.0",
-   "file": "webcam_bewegung_3_87_0.py",
+   "version": "3.87.1",
+   "file": "webcam_bewegung_3_87_1.py",
    "url": "",
-   "sha256": "3fb9aa489d8946570582ac74c63991439ba1ea5b87101f26737886865ac7791a",
-   "date": "2026-11-13 19:20",
-   "notes": "Nachtsicht: Die Kachel «🌙 Nachtsicht» schaltet jetzt wirklich aus, auch wenn «Heute Nacht bewachen» die automatische Nachtsicht eingeschaltet hatte (sie bleibt dann aus, bis du sie wieder einschaltest). Spiele: «A Dark Room» läuft jetzt auch am iPhone, mit Pfeiltasten am Bildschirm auf der Karte und im Weltraum (Spielesammlung GS-1.17).",
-   "size": 3931138,
-   "sig": "23b02950e394a0fc985856fd20676bb4a23d3b3479bf6b8ff01751858f2ff73da8af52dcd7d4ddba2113bc516580edb87e6aa1513fac9eac057f9a28d6980c00",
+   "sha256": "c07238bfe901edf70ef3d13d2490f219c24145e249f7bd23d0ba38e1d3a0ca3e",
+   "date": "2026-11-13 22:34",
+   "notes": "Wichtig: Nach einem Update kommt die Webseite wieder. Bisher konnte MoveEye direkt nach dem Neustart seinen eigenen Autostart-Dienst anhalten – die Seite blieb weg, bis der Pi neu gestartet wurde. Jetzt nie mehr; hängt ein Start trotzdem länger als 90 Sekunden, startet MoveEye sich von selbst neu und schreibt auf, wo es hing (das zählt nicht als Stromausfall). Belegt ein anderes Programm den Port der Webseite, bewacht MoveEye weiter und meldet es einmal. Teilen mit verpixelten Gesichtern stürzt auf dem Pi nicht mehr ab. Höhenprofil nur noch für Routen bis 300 km. Schach: «Vorziehen» wie auf Li",
+   "size": 3940479,
+   "sig": "2024f8e11da93457766390d3d2ce117b08310dd3115218b04b1882d3e1f2982383bb23e7c8033e0f8ec63fb87ea2403c96c44eaf582b0584612289cfbe4aed07",
    "data": {
-    "file": "moveeye_daten_3_87_0.zip",
+    "file": "moveeye_daten_3_87_1.zip",
     "url": "",
-    "sha256": "c1d47db466fb393788e949011f035848557f093aa24ce98534c67a315affed5c",
-    "size": 11068286,
-    "sig": "9ce46544b2f4f28cce5e2896dca232500e04868135ff6f80233c7495344db73662effbfa8a17dcb34a8c8735e6e29d8f2e386345a9f37866b99b95e7349b230e"
+    "sha256": "a220b4b3b99ae17243a58aa790882b4fa5272016fd97ca23185b8038db71fe6c",
+    "size": 11078156,
+    "sig": "a0251cbfdd979c6b797d3b12b0c6c8d47720ffaf6ab5b5713c859c0fdb2502969ffaa7446a73d77764c121c4cbddf758387b7243d95a2ca04f9cef2457c17105"
    }
   },
   {
