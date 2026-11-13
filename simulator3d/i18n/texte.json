@@ -4345,6 +4345,18 @@
   "it": "Pascoli alpini e pietraie",
   "rm": "Pastgiras e champs da crappa"
  },
+ "Als Person gehen (U)": {
+  "en": "Walk as a person (U)",
+  "fr": "Marcher en personne (U)",
+  "it": "Camminare come persona (U)",
+  "rm": "Ir sco persuna (U)"
+ },
+ "Als Person gehen geht gerade nicht: %s": {
+  "en": "Walking as a person is not possible right now: %s",
+  "fr": "Impossible de marcher en personne pour l’instant : %s",
+  "it": "Al momento non si può camminare come persona: %s",
+  "rm": "Ir sco persuna na va ussa betg: %s"
+ },
  "als Quader gezeigt (kein eigenes 3D-Modell)": {
   "en": "shown as a box (no own 3D model)",
   "fr": "montrée en bloc (pas de modèle 3D propre)",
@@ -12593,6 +12605,12 @@
   "it": "Guidi tu il rover! Frecce, mouse o controller.",
   "rm": "Ti manischeschas il rover! Tastas da frizza, mieur u controller."
  },
+ "Du gehst jetzt als Person – der Mover mit MoveEye bleibt stehen": {
+  "en": "You are walking as a person now – the mover with MoveEye stays where it is",
+  "fr": "Tu marches maintenant en personne – le Mover avec MoveEye reste sur place",
+  "it": "Ora cammini come persona – il Mover con MoveEye resta fermo",
+  "rm": "Ti vas ussa sco persuna – il Mover cun MoveEye resta airi"
+ },
  "Du gibst:": {
   "en": "You give:",
   "fr": "Tu donnes :",
@@ -14928,6 +14946,12 @@
   "it": "Esplorare",
   "rm": "Explorar"
  },
+ "Erkunden als Person": {
+  "en": "Exploring as a person",
+  "fr": "Explorer en personne",
+  "it": "Esplorare come persona",
+  "rm": "Explorar sco persuna"
+ },
  "Erkunden beendet": {
   "en": "Exploring ended",
   "fr": "Exploration terminée",
@@ -14946,6 +14970,12 @@
   "it": "Esplorazione · %s · %s · %.1f km/h · altezza della telecamera %.1f m%s\n%s",
   "rm": "Explorar · %s · %s · %.1f km/h · autezza da la camera %.1f m%s\n%s"
  },
+ "Erkunden · %s · %s · %.1f km/h · Höhe der Kamera %.1f m%s%s\n%s": {
+  "en": "Explore · %s · %s · %.1f km/h · camera height %.1f m%s%s\n%s",
+  "fr": "Explorer · %s · %s · %.1f km/h · hauteur de la caméra %.1f m%s%s\n%s",
+  "it": "Esplora · %s · %s · %.1f km/h · altezza della telecamera %.1f m%s%s\n%s",
+  "rm": "Explorar · %s · %s · %.1f km/h · autezza da la camera %.1f m%s%s\n%s"
+ },
  "Erkunden · %s · %s · %.1f km/h · Stange %.1f m%s\n%s": {
   "en": "Exploring · %s · %s · %.1f km/h · pole %.1f m%s\n%s",
   "fr": "Exploration · %s · %s · %.1f km/h · mât %.1f m%s\n%s",
@@ -14963,6 +14993,12 @@
   "fr": "Exploration : derrière, vue conducteur, d’en haut",
   "it": "Esplorazione: dietro, vista del conducente, dall’alto",
   "rm": "Explorar: davos, vista dal manischader, da survart"
+ },
+ "Erkunden: statt mit dem Mover als Person gehen – nochmals = zurück in den Mover": {
+  "en": "Explore: walk as a person instead of driving the mover – again = back into the mover",
+  "fr": "Explorer : marcher en personne au lieu de conduire le Mover – encore une fois = retour dans le Mover",
+  "it": "Esplora: camminare come persona invece di guidare il Mover – di nuovo = di nuovo nel Mover",
+  "rm": "Explorar: ir sco persuna empè da manar il Mover – anc ina giada = enavos en il Mover"
  },
  "Erlaubt dem Simulator eingehende Verbindungen im privaten Netz. Danach braucht es keinen Tunnel und keinen Code mehr.": {
   "en": "Allows incoming connections to the simulator in the private network. After that no tunnel and no code are needed.",
@@ -19190,6 +19226,12 @@
   "it": "Verde: ciò che vede la telecamera della testa (con rotazione) · blu: la telecamera grandangolare · rosso: punti ciechi nell’area importante (cerchio intorno a tenda e roulotte). Trascinare il punto di MoveEye sulla mappa per provare altri posti; il clic destro gira la direzione dello sguardo.",
   "rm": "Verd: quai che la camera dal chau vesa (cun volver) · blau: la camera da grond angul · cotschen: angul mort en il champ impurtant (rintg enturn tenda e rulotta). Trair il punct da MoveEye sin la charta per empruvar auters plazs; clic dretg volva la direcziun da la vista."
  },
+ "Grünen Stick ziehen (am Rand = rennen) · rechte Taste = umschauen · Rad = Abstand · Strg+Klick = Person hierhin · Esc": {
+  "en": "Drag the green stick (at the edge = run) · right button = look round · wheel = distance · Ctrl+click = person here · Esc",
+  "fr": "Tirer le stick vert (au bord = courir) · bouton droit = regarder autour · molette = distance · Ctrl+clic = la personne ici · Échap",
+  "it": "Trascinare la levetta verde (al bordo = correre) · tasto destro = guardarsi intorno · rotella = distanza · Ctrl+clic = persona qui · Esc",
+  "rm": "Trair il stick verd (a l’ur = currer) · tasta dretga = guardar enturn · rodella = distanza · Ctrl+clic = persuna qua · Esc"
+ },
  "Grünen Stick ziehen · rechte Taste = umschauen · Rad = Abstand · Strg+Klick = Mover hierhin · C Beobachter · Esc": {
   "en": "Drag the green stick · right button = look around · wheel = distance · Ctrl+click = mover here · C observer · Esc",
   "fr": "Tirer le stick vert · bouton droit = regarder autour · molette = distance · Ctrl+clic = mover ici · C observateur · Esc",
@@ -19207,6 +19249,12 @@
   "fr": "Conduire avec le stick vert en bas à droite · vue et fin en haut",
   "it": "Guidare con lo stick verde in basso a destra · vista e fine in alto",
   "rm": "Manischar cun il stick verd giu a dretga · vista e fin si sura"
+ },
+ "Grüner Stick unten rechts gehen (am Rand = rennen) · Ansicht und Ende oben im Feld": {
+  "en": "Green stick at the bottom right to walk (at the edge = run) · view and end at the top of the box",
+  "fr": "Stick vert en bas à droite pour marcher (au bord = courir) · vue et fin en haut du cadre",
+  "it": "Levetta verde in basso a destra per camminare (al bordo = correre) · vista e fine in alto nel riquadro",
+  "rm": "Stick verd giudim a dretga per ir (a l’ur = currer) · vista e fin survart en il champ"
  },
  "Gummistiefel": {
   "en": "Rubber boot",
@@ -21226,6 +21274,12 @@
   "fr": "Je compte les marmottes. Installe MoveEye à ton camp et rapporte-moi une image de marmotte.",
   "it": "Conto le marmotte. Piazza MoveEye al tuo campo e portami una ripresa di una marmotta.",
   "rm": "Jau dumbrel las muntanellas. Metta si MoveEye tar tes champ e portà ina registraziun d'ina muntanella."
+ },
+ "Ich-Sicht": {
+  "en": "First person",
+  "fr": "Vue à la première personne",
+  "it": "Vista in prima persona",
+  "rm": "Vista en emprima persuna"
  },
  "id: grossvater | maggie": {
   "en": "id: grossvater | maggie",
@@ -24398,6 +24452,12 @@
   "it": "Via ferrata Gumpizahn (K4)\nSolo con set da ferrata e casco",
   "rm": "Via ferrata Gumpizahn (K4)\nMo cun equipament da via ferrata e chapitsch"
  },
+ "Klick: schneller (1,8 / 3 / 5 / 7,5 / 10 m/s) · Rechtsklick: langsamer · Shift fährt × 2,2, höchstens 10 m/s": {
+  "en": "Click: faster (1.8 / 3 / 5 / 7.5 / 10 m/s) · right click: slower · Shift drives × 2.2, at most 10 m/s",
+  "fr": "Clic : plus vite (1,8 / 3 / 5 / 7,5 / 10 m/s) · clic droit : plus lent · Maj roule × 2,2, au plus 10 m/s",
+  "it": "Clic: più veloce (1,8 / 3 / 5 / 7,5 / 10 m/s) · clic destro: più lento · Maiusc va × 2,2, al massimo 10 m/s",
+  "rm": "Clic: pli spert (1,8 / 3 / 5 / 7,5 / 10 m/s) · clic dretg: pli plaun · Shift fa × 2,2, maximalmain 10 m/s"
+ },
  "Klicken = Ort wählen (dort steht MoveEye) · Ziehen = verschieben · Mausrad = zoomen": {
   "en": "Click = choose place (MoveEye stands there) · drag = move · mouse wheel = zoom",
   "fr": "Clic = choisir le lieu (MoveEye s’y trouve) · glisser = déplacer · molette = zoomer",
@@ -26728,6 +26788,12 @@
   "it": "Maggie passa sotto e spinge su il gancio. Aperto!",
   "rm": "Maggie striscla sutvart e stumpla il crutsch ensi. Avert!"
  },
+ "Maggie läuft": {
+  "en": "Maggie is running",
+  "fr": "Maggie est en cours",
+  "it": "Maggie è in corso",
+  "rm": "Maggie è en funcziun"
+ },
  "Maggie passt durch enge Stellen!": {
   "en": "Maggie fits through narrow spots!",
   "fr": "Maggie passe par les endroits étroits !",
@@ -27279,6 +27345,12 @@
   "fr": "Mesure terminée",
   "it": "Misurazione finita",
   "rm": "Mesiraziun finida"
+ },
+ "Messung läuft": {
+  "en": "a measurement is running",
+  "fr": "une mesure est en cours",
+  "it": "è in corso una misurazione",
+  "rm": "ina mesiraziun è en funcziun"
  },
  "MG90S": {
   "en": "MG90S",
@@ -28275,6 +28347,12 @@
   "fr": "MoveEye détecte une personne",
   "it": "MoveEye rileva una persona",
   "rm": "MoveEye renconuscha ina persuna"
+ },
+ "MoveEye folgt: höchstens %d m/s": {
+  "en": "MoveEye is following: at most %d m/s",
+  "fr": "MoveEye suit : au plus %d m/s",
+  "it": "MoveEye segue: al massimo %d m/s",
+  "rm": "MoveEye suonda: maximalmain %d m/s"
  },
  "MoveEye frei aufstellen (Höhe und Richtung frei).": {
   "en": "Set up MoveEye freely (height and direction free).",
@@ -30523,6 +30601,12 @@
   "fr": "non connecté",
   "it": "non collegato",
   "rm": "betg collià"
+ },
+ "Nicht weiter weg von der Gruppe (%d m)": {
+  "en": "Not further away from the group (%d m)",
+  "fr": "Pas plus loin du groupe (%d m)",
+  "it": "Non più lontano dal gruppo (%d m)",
+  "rm": "Betg pli lunsch davent da la gruppa (%d m)"
  },
  "Nichts": {
   "en": "Nothing",
@@ -33232,6 +33316,12 @@
   "it": "stick destro volare · stick sinistro guardarsi intorno · R2 / L2 su / giù · ✚ ↑↓ velocità · tenere Start = indietro",
   "rm": "stick dretg sgular · stick sanester guardar enturn · R2 / L2 ensi / engiu · ✚ ↑↓ tempo · tegnair Start = enavos"
  },
+ "rechter Stick gehen (ganz aussen = rennen) · R1 + rechter Stick umschauen · R3 Ansicht · Select ⏱ Mover · Start ⏱ Ende": {
+  "en": "right stick walk (all the way out = run) · R1 + right stick look round · R3 view · Select ⏱ mover · Start ⏱ end",
+  "fr": "stick droit marcher (tout au bord = courir) · R1 + stick droit regarder autour · R3 vue · Select ⏱ Mover · Start ⏱ fin",
+  "it": "levetta destra camminare (tutta fuori = correre) · R1 + levetta destra guardarsi intorno · R3 vista · Select ⏱ Mover · Start ⏱ fine",
+  "rm": "stick dretg ir (dal tut ordaifer = currer) · R1 + stick dretg guardar enturn · R3 vista · Select ⏱ Mover · Start ⏱ fin"
+ },
  "rechts an jeder Liste: mit der Maus ziehen": {
   "en": "on the right of every list: drag with the mouse",
   "fr": "à droite de chaque liste : glisser avec la souris",
@@ -35613,6 +35703,12 @@
   "it": "Capanna autogestita Alp Tschuggen",
   "rm": "Tegia senza survegliader Alp Tschuggen"
  },
+ "Select ⏱ Person": {
+  "en": "Select ⏱ person",
+  "fr": "Select ⏱ personne",
+  "it": "Select ⏱ persona",
+  "rm": "Select ⏱ persuna"
+ },
  "Selfie mit Kuh": {
   "en": "Selfie with a cow",
   "fr": "Selfie avec une vache",
@@ -36477,6 +36573,12 @@
   "it": "Gioco (guardiano, classifica)",
   "rm": "Gieu (guardian, classament)"
  },
+ "Spiel am PC": {
+  "en": "game at the PC",
+  "fr": "jeu sur le PC",
+  "it": "gioco al PC",
+  "rm": "gieu al PC"
+ },
  "Spiel am PC – ": {
   "en": "Game on the PC – ",
   "fr": "Jeu sur le PC – ",
@@ -36752,6 +36854,12 @@
   "fr": "Manche",
   "it": "Turno di gioco",
   "rm": "Runda da gieu"
+ },
+ "Spielrunde läuft": {
+  "en": "a game round is running",
+  "fr": "une manche est en cours",
+  "it": "è in corso una partita",
+  "rm": "ina runda da gieu è en funcziun"
  },
  "Spielrunde wartet: zuerst %s beenden": {
   "en": "Game round waiting: first end %s",
@@ -38752,6 +38860,18 @@
   "it": "Velocità della pattuglia",
   "rm": "Tempo da la patrulla"
  },
+ "Tempo des Movers: %s m/s": {
+  "en": "Speed of the mover: %s m/s",
+  "fr": "Vitesse du Mover : %s m/s",
+  "it": "Velocità del Mover: %s m/s",
+  "rm": "Tempo dal Mover: %s m/s"
+ },
+ "Tempo: %s m/s ›": {
+  "en": "Speed: %s m/s ›",
+  "fr": "Vitesse : %s m/s ›",
+  "it": "Velocità: %s m/s ›",
+  "rm": "Tempo: %s m/s ›"
+ },
  "Tennisball": {
   "en": "Tennis ball",
   "fr": "Balle de tennis",
@@ -39670,6 +39790,30 @@
   "fr": "Turquoise",
   "it": "Turchese",
   "rm": "Turchis"
+ },
+ "U Person": {
+  "en": "U person",
+  "fr": "U personne",
+  "it": "U persona",
+  "rm": "U persuna"
+ },
+ "U · als Person gehen (der Mover bleibt stehen)": {
+  "en": "U · walk as a person (the mover stays where it is)",
+  "fr": "U · marcher en personne (le Mover reste sur place)",
+  "it": "U · camminare come persona (il Mover resta fermo)",
+  "rm": "U · ir sco persuna (il Mover resta airi)"
+ },
+ "U · selbst als Person mitgehen: Steinmännchen, Aussichtspunkte, Funde (bis 110 m von der Gruppe)": {
+  "en": "U · walk along yourself as a person: cairns, view points, finds (up to 110 m from the group)",
+  "fr": "U · accompagner toi-même en personne : cairns, points de vue, trouvailles (jusqu’à 110 m du groupe)",
+  "it": "U · andare tu stesso come persona: ometti di pietra, punti panoramici, ritrovamenti (fino a 110 m dal gruppo)",
+  "rm": "U · ir sez sco persuna: um da crap, puncts da vista, chats (fin 110 m davent da la gruppa)"
+ },
+ "U · zurück in den Mover (MoveEye fährt mit)": {
+  "en": "U · back into the mover (MoveEye rides along)",
+  "fr": "U · retour dans le Mover (MoveEye roule avec)",
+  "it": "U · di nuovo nel Mover (MoveEye viaggia con lui)",
+  "rm": "U · enavos en il Mover (MoveEye va cun)"
  },
  "Uferschleicher": {
   "en": "Lakeside sneaker",
@@ -41434,6 +41578,12 @@
   "fr": "W A S D / flèches conduire · Shift rapide · V vue · Page ↑↓ mât · C observateur · J joueurs · Esc",
   "it": "W A S D / frecce guidare · Shift veloce · V vista · Pag ↑↓ palo · C osservatore · J giocatori · Esc",
   "rm": "W A S D / frizzas manischar · Shift svelt · V vista · Pagina ↑↓ pal · C observatur · J giugaders · Esc"
+ },
+ "W A S D / Pfeile gehen · Shift rennen · V Ansicht · U Mover · J Mitspieler · Esc": {
+  "en": "W A S D / arrows walk · Shift run · V view · U mover · J co-players · Esc",
+  "fr": "W A S D / flèches marcher · Maj courir · V vue · U Mover · J joueurs · Échap",
+  "it": "W A S D / frecce camminare · Maiusc correre · V vista · U Mover · J giocatori · Esc",
+  "rm": "W A S D / flizzas ir · Shift currer · V vista · U Mover · J cunglieders · Esc"
  },
  "W A S D fliegen · Q / E runter / hoch · Shift schneller · rechte Maustaste umschauen · Rad oder + / − Tempo · Esc zurück": {
   "en": "W A S D fly · Q / E down / up · Shift faster · right mouse button look around · wheel or + / − speed · Esc back",
@@ -44453,6 +44603,12 @@
   "it": "troppo poche immagini reali %s (%d)",
   "rm": "memia paucs maletgs vairs %s (%d)"
  },
+ "zu zweit unterwegs": {
+  "en": "two players on the way",
+  "fr": "à deux en route",
+  "it": "in due in cammino",
+  "rm": "en dus en viadi"
+ },
  "Zu zweit: %s kurbelt (H bzw. R2 gedrückt halten), %s fährt.": {
   "en": "Together: %s turns the wheel (hold H or R2), %s rides.",
   "fr": "À deux : %s tourne la roue (maintenir H ou R2), %s voyage.",
@@ -44698,6 +44854,18 @@
   "fr": "Retour aux réglages d’usine :",
   "it": "Ritorno alle impostazioni di fabbrica:",
   "rm": "Enavos als parameters da fabrica:"
+ },
+ "Zurück im Mover – als Person gehen geht gerade nicht": {
+  "en": "Back in the mover – walking as a person is not possible right now",
+  "fr": "De retour dans le Mover – impossible de marcher en personne pour l’instant",
+  "it": "Di nuovo nel Mover – al momento non si può camminare come persona",
+  "rm": "Enavos en il Mover – ir sco persuna na va ussa betg"
+ },
+ "Zurück im Mover – die Person bleibt stehen, wo sie ist": {
+  "en": "Back in the mover – the person stays where it is",
+  "fr": "De retour dans le Mover – la personne reste où elle est",
+  "it": "Di nuovo nel Mover – la persona resta dov’è",
+  "rm": "Enavos en il Mover – la persuna resta nua ch’ella è"
  },
  "Zurück in die Hütte bringen": {
   "en": "Bring it back to the hut",

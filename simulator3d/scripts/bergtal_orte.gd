@@ -1797,7 +1797,8 @@ func _tick(dt: float, _t: float) -> bool:
 		if is_instance_valid(ol):
 			ol.visible = cam.distance_to(f[2]) < 45.0
 	# the narrow ridge: a warning when you walk on it (view near the ground or the rover)
-	var who: Vector3 = m.rig.global_position if m.mover_on or (m.explore != null and m.explore.on) else m.view_cam.global_position
+	var wk = m.walker_pos()                                     # 13.11.2026: the person walking, the mover, else the view
+	var who: Vector3 = wk if wk is Vector3 else m.view_cam.global_position
 	var q: Vector3 = bt.V(who)
 	if absf(q.x - RIDGE_X) < 3.0 and q.z > RIDGE_Z0 and q.z < RIDGE_Z1 and q.y - bt.H(q.x, q.z) < 4.0 and m.now() - _warn_t > 9.0:
 		_warn_t = m.now()

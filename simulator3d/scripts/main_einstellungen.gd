@@ -315,7 +315,7 @@ func _register_controls() -> void:
 	main.add_control("toggle", "pad_inv_y", "Y umkehren (Stick hoch = Kopf / Blick runter)", func(): return main.pad_inv_y, func(v): main.pad_inv_y = bool(v), "Mover", {"sub": "Controller"})
 	main.add_control("toggle", "pad_swap", "Sticks tauschen (links Mover / gehen, rechts Kopf / schauen)", func(): return main.pad_swap, func(v): main.pad_swap = bool(v), "Mover", {"sub": "Controller"})
 	main.add_control("toggle", "pad_rumble", "Vibration (erwischt, Treffer, Alarm, die Kamera sieht dich)", func(): return main.pad_rumble, func(v): main.pad_rumble = bool(v), "Mover", {"sub": "Controller"})
-	main.add_control("slider", "explore_speed", "Tempo beim Erkunden (Shift / A = schneller)", func(): return main.explore.speed if main.explore != null else 1.6, func(v): if main.explore != null: main.explore.speed = v, "Mover", {"min": 0.5, "max": 6.0, "step": 0.1, "unit": "m/s"})
+	main.add_control("slider", "explore_speed", "Tempo beim Erkunden (Shift / A = schneller)", func(): return main.ex_speed, func(v): if main.explore != null: main.explore.set_speed(v), "Mover", {"min": 0.5, "max": 10.0, "step": 0.1, "unit": "m/s"})   # 13.11.2026: bis 10 m/s, bleibt gespeichert (main.ex_speed)
 	main.add_control("slider", "mover_max", "Höchstgeschwindigkeit des Movers", func(): return main.mover_max, func(v): main.mover_max = v, "Mover", {"min": 0.2, "max": 2.0, "step": 0.1, "unit": "m/s"})
 	main.add_control("button", "mover_home", "Mover zurück an den Startplatz", null, func(): main.mover_home(), "Mover")
 	main.add_control("toggle", "door", "Wohnwagentür offen", func(): return main.door_open, func(v): main.set_door(v), "Sensoren")
@@ -613,6 +613,7 @@ func _load_settings() -> void:
 	main.grafik_mode = Quality.mode_id(main.grafik_mode)            # 3D-4.25: unknown / older names -> «Automatisch»
 	if main.game_mode == "teamguard":                          # Balance 30.10.2026: «Team gegen Team» is gone
 		main.game_mode = "guard"
+	main.ex_speed = clampf(float(main.ex_speed), 0.5, 10.0)      # 13.11.2026: the speed of exploring (explore.gd SPEEDS)
 	if d.has("hour_now") and not "--hour" in OS.get_cmdline_user_args() and not "--hour" in OS.get_cmdline_args() and not main.real_time:
 		# 3D-3.76: the time as it was set; a short break (update, restart) - the clock went on meanwhile, like outside
 		main.speed = clampf(float(d.get("speed_now", 1.0)), 1.0, 120.0)

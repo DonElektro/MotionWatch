@@ -270,7 +270,10 @@ const MAST_MAX := 4.0
 var mast_h := HEAD_H                  # 3D-3.57: length of the pole with the camera head (m), adjustable (Mover, Erkunden)
 var mast_pole: MeshInstance3D
 var mover_on := false                 # «Mover simulieren»: a tracked vehicle under MoveEye, driven by its second stick
-var mover_max := 0.8                  # top speed (m/s)
+var mover_max := 0.8                  # top speed (m/s) when MoveEye drives (setting «Höchstgeschwindigkeit des Movers»)
+var ex_speed := 1.8                   # 13.11.2026: top speed while exploring (explore.gd SPEEDS 1.8 … 10 m/s), kept between sessions
+const MOVER_STEP := 0.2               # m: the mover moves in steps of at most this (fast: never through a wall)
+const MOVER_TURN_V := 2.0             # m/s: the turning rate stays that of this speed (fast mover: the head of MoveEye keeps up)
 var mover_wheels: Array = []
 var mover_dist := 0.0
 var _drive_t := 0.0
@@ -1682,6 +1685,31 @@ func mover_home() -> void:
 	rig.rotation = Vector3(0, home_yaw, 0)
 
 
+func mover_speed() -> float:
+	"""the top speed of the mover now: exploring = the chosen speed (explore.drive_speed), otherwise mover_max"""
+	if explore != null and explore.on and not explore.fly:
+		return float(explore.drive_speed())
+	return mover_max
+
+
+func walker_pos():
+	"""13.11.2026: where «the player» is in the world for the things that measure it (view points, cliff edges, «Hier
+	übernachten» …): the person walking (explore_person.gd), else the mover (exploring / «Mover simulieren»), else null
+	(then the free view counts, as before)"""
+	if explore != null and explore.person_on() and explore.person.actor != null and is_instance_valid(explore.person.actor):
+		return explore.person.actor.global_position
+	if mover_on or (explore != null and explore.on):
+		return rig.global_position
+	return null
+
+
+func walker_kind() -> String:
+	"""«person», «rover» or «view» (see walker_pos)"""
+	if explore != null and explore.person_on():
+		return "person"
+	return "rover" if mover_on or (explore != null and explore.on) else "view"
+
+
 func set_mover(on: bool) -> void:
 	mover_on = on
 	if chassis != null:
@@ -1706,36 +1734,41 @@ func _drive(dt: float) -> void:
 	var d: Dictionary = mw.get("drive", {})
 	var l := float(d.get("l", 0.0)) if now() - mw_t < 2.5 else 0.0
 	var r := float(d.get("r", 0.0)) if now() - mw_t < 2.5 else 0.0
+	var vmax := mover_speed()                              # 13.11.2026: exploring up to 10 m/s (explore.gd), else mover_max
 	if pad_on:                                             # driven here in the simulator (stick at the bottom right, arrow keys)
 		var tl := pad_drive.x + pad_drive.y * 0.7
 		var trr := pad_drive.x - pad_drive.y * 0.7
 		var mx: float = max(1.0, max(abs(tl), abs(trr)))
-		_pad_l = move_toward(_pad_l, tl / mx, dt * 3.0)
-		_pad_r = move_toward(_pad_r, trr / mx, dt * 3.0)
+		var ramp := clampf(3.0 / maxf(vmax, 0.1), 0.4, 1.0)    # fast: speeds up and brakes a bit more gently (10 m/s: 0.8 s)
+		_pad_l = move_toward(_pad_l, tl / mx, dt * 3.0 * ramp)
+		_pad_r = move_toward(_pad_r, trr / mx, dt * 3.0 * ramp)
 		l = _pad_l
 		r = _pad_r
 	else:
 		_pad_l = 0.0
 		_pad_r = 0.0
-	var v := (l + r) / 2.0 * mover_max
-	var om := (l - r) / 0.74 * mover_max                    # track distance 0.74 m: left faster = turns right
-	rig.rotation.y -= om * dt
-	var fwd := Vector3(-sin(rig.rotation.y), 0, -cos(rig.rotation.y))
-	var np := rig.position + fwd * v * dt
-	if avoid_on:                                           # never into a house, a tree, the caravan
-		var cur := Vector2(rig.position.x, rig.position.z)
-		var q := Vector2(np.x, np.z)
-		for o in _ob_near(q):
-			var rr: Array = _ob_closest(o, q)
-			if float(rr[1]) < 0.55 and float(_ob_closest(o, cur)[1]) >= 0.5:   # (something it already stands in may be left)
-				q = (rr[0] as Vector2) + (rr[2] as Vector2) * 0.55
-		np.x = q.x
-		np.z = q.y
-	np.x = clampf(np.x, -180.0, 180.0)
-	np.z = clampf(np.z, -180.0, 180.0)
-	np.y = ground_y(np.x, np.z)
-	rig.position = np
-	mover_dist += (abs(l) + abs(r)) * mover_max * dt
+	var v := (l + r) / 2.0 * vmax
+	var om := (l - r) / 0.74 * minf(vmax, MOVER_TURN_V)    # track distance 0.74 m: left faster = turns right (fast: turns as at 2 m/s)
+	var n := maxi(1, int(ceil(absf(v) * dt / MOVER_STEP)))   # 13.11.2026: in steps of ≤ 0.2 m - at 10 m/s never through a wall
+	var sdt := dt / float(n)
+	for k in range(n):
+		rig.rotation.y -= om * sdt
+		var fwd := Vector3(-sin(rig.rotation.y), 0, -cos(rig.rotation.y))
+		var np := rig.position + fwd * v * sdt
+		if avoid_on:                                           # never into a house, a tree, the caravan
+			var cur := Vector2(rig.position.x, rig.position.z)
+			var q := Vector2(np.x, np.z)
+			for o in _ob_near(q):
+				var rr: Array = _ob_closest(o, q)
+				if float(rr[1]) < 0.55 and float(_ob_closest(o, cur)[1]) >= 0.5:   # (something it already stands in may be left)
+					q = (rr[0] as Vector2) + (rr[2] as Vector2) * 0.55
+			np.x = q.x
+			np.z = q.y
+		np.x = clampf(np.x, -180.0, 180.0)
+		np.z = clampf(np.z, -180.0, 180.0)
+		np.y = ground_y(np.x, np.z)
+		rig.position = np
+	mover_dist += (abs(l) + abs(r)) * vmax * dt
 	for w in mover_wheels:
 		w.rotation.x = mover_dist * 4.0
 
@@ -4339,7 +4372,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "ui_icons_pick", "start_groups", "mine_mig", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound", "privat_on",
-		"avoid_on", "grafik_mode", "cam_wippen", "foto_tex", "reduce_motion", "tour_auto", "blinki_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area", "news_links"]
+		"avoid_on", "grafik_mode", "cam_wippen", "foto_tex", "reduce_motion", "tour_auto", "blinki_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "ex_speed", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area", "news_links"]
 var _settings_dirty := false
 
 
@@ -5763,6 +5796,8 @@ func _spec_free(pos: Vector3, at: Vector3) -> Vector3:
 func _spec_targets() -> Array:
 	"""what the spectator can show while exploring: the rover and the players moving freely - [name, node, moving]"""
 	var out := [["Mover", rig, abs(_pad_l) + abs(_pad_r) > 0.05]]
+	if explore != null and explore.person != null and explore.person.actor != null and is_instance_valid(explore.person.actor):
+		out.append(["Person", explore.person.actor, float(explore.person.speed_now()) > 0.2])   # 13.11.2026: als Person
 	if game != null:
 		for p in game.players:
 			if p != null and p["state"] == "play":
