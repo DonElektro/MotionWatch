@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-13 12:28",
+ "generated": "2026-11-13 15:15",
  "versions": [
   {
    "version": "3.86.1",
    "file": "webcam_bewegung_3_86_1.py",
    "url": "",
    "sha256": "11daa40d6ed7167ade7e2a1a22453fa9bead410e14e89abd79a75e2af7be350e",
-   "date": "2026-11-13 12:28",
+   "date": "2026-11-13 13:33",
    "notes": "Touren: Die «Höhendaten Schweiz» sind da (60 MB, swisstopo DHM25, 25 m). Der Administrator lädt sie auf der Karte unter «Touren»; danach bekommen auch gezeichnete Routen Auf- und Abstieg, Höhenprofil und Wanderzeit. Ausserhalb der Daten steht «keine Höhendaten». Bei gezeichneten Routen heisst der Hinweis neu «aus dem Höhenmodell, geglättet».",
    "size": 3930680,
    "sig": "9a89710ae3e20062db61edc8d582410831d9173e328745c86908d275f30dc667f9ea72a8ca56d8fc813705afaf0612e628b3739f55a7e366c20b403e0fd7e00b",
@@ -170,7 +170,7 @@
  "sim": {
   "ver": "3.67.2",
   "version": "3D-5.67.2",
-  "notes": "HP: Controller koppeln ohne Tippen (Knopf «Controller koppeln», Liste mit Akkustand, Trennen, Vergessen); Steuerknüppel zählen jetzt als «Spielen»; mit USB-C-Kabel sofort, mit Bluetooth sobald ein USB-Bluetooth-Stick steckt. Der Simulator holt künftige Versionen als Anhang (spart Platz im Projekt); am Simulator selbst ändert sich nichts.",
+  "notes": "HP: Controller koppeln ohne Tippen (Knopf «Controller koppeln», Liste mit Akkustand, Trennen, Vergessen); Steuerknüppel zählen jetzt als «Spielen»; mit USB-C-Kabel sofort, mit Bluetooth sobald ein USB-Bluetooth-Stick steckt. Der Simulator holt künftige Versionen als Anhang (spart Platz im Projekt); am Simulator selbst ändert sich nichts. · Neuere Versionen holt sich der Simulator nach dem Start se",
   "mw_min": "3.55.0",
   "win": {
    "ver": "3.67.2",
@@ -187,12 +187,34 @@
    "sig": "3c0d6ad76326d81ce324c8914ca35b61596ef189eb0e83e04238c5088ad5e2954914805461e7194f7648bb37117d49454eb7d207ff54d89893e10667b26ea80a"
   },
   "pi": {
-   "ver": "3.67.2",
+   "ver": "3.68.0",
    "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 37962857,
-   "sha256": "0a44914d33d3f53e3a983c47716a3c35fe4810b59b9e3af2b83d5dea5c1b6bf3",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.67.2/MoveEyeSim3D_Pi.zip",
-   "sig": "895c23c10738d1a27b68105194f2db09a8a317206635bf37f50814559ba23371d7d30b0e27d73b35c325ff062beab40b1cdd315a85e6730ec32129f36f62340f"
+   "size": 37978967,
+   "sha256": "42c408cf85e959e54c2cac9cb07dceb1f87d117694db6f06ad043b3deeba1cc6",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.68.0/MoveEyeSim3D_Pi.zip",
+   "sig": "4de9318cafc23a27a2e2e90f6e88d765aa8897f89e56c5880b0d196167fab9e8b46a5a48cb2529d0e4824591d4e65f66c15ed17df14b04e48c81487a30bdf101"
+  },
+  "anhang": {
+   "ver": "3.68.0",
+   "version": "3D-5.68.0",
+   "notes": "Karte «Simulator-PC» (Ausschalten, Browser), Kopf steuern ohne MoveEye",
+   "mw_min": "3.55.0",
+   "win": {
+    "ver": "3.68.0",
+    "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
+    "size": 54443573,
+    "sha256": "cd95de05cea6279737fb3cac7238380991028c6fb1958f967294a4b9236d3adc",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.68.0/MotionWatch3D_Simulator.zip",
+    "sig": "8a62a0623eded96f232a41a47da11b17c2384304deacb1aa3bb7a0346eec6652cff0b332f72c69d63f09b021da7654100419882589ae50fe316b7df68c577f04"
+   },
+   "linux": {
+    "ver": "3.68.0",
+    "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
+    "size": 48493318,
+    "sha256": "c2e19a7a0122e9bb81059e30f764e3ba225b6e9988097186aea322f045e3f721",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.68.0/MoveEyeSim3D_Linux.zip",
+    "sig": "792e86593a91df164a8326feee52a9dea40dc308ead8936de110f3af3464b5edaea6174065e246448ef79965b2c90d33057619f170dd5bfb58e6f51e2fa03c00"
+   }
   }
  }
 }
