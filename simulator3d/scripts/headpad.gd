@@ -3,6 +3,7 @@ extends PanelContainer
 ## centre, the white light, and the picture of the head camera (drag in it = turn). MoveEye does it (2.95.103,
 ## request «look» / «light» through mw_cmd) - like the arrows on its own page. In a game with a PC guard the game turns
 ## the head (localplay.gd). A game controller turns the head too (padmap.gd: left stick or the D-pad, L3 = middle).
+## Without MoveEye (Besitzer 12.11.2026) the same arrows turn the head of the simulator itself: kopf_selbst.gd (main.mw_look).
 
 var main
 var img: TextureRect
@@ -15,6 +16,7 @@ var _acc := Vector2.ZERO
 var head_row: Control                 # title + ✕ (hidden in the window frame of fenster.gd)
 
 const UI = preload("res://scripts/ui_style.gd")
+const T = preload("res://scripts/i18n.gd")
 
 
 func _ready() -> void:
@@ -70,6 +72,15 @@ func _ready() -> void:
 	v.add_child(info)
 
 
+func note_ohne(own: String) -> String:
+	"""the note while MoveEye is not connected: the simulator turns the head itself (kopf_selbst.gd) - unless something else has it"""
+	if main.measuring() or main.busy_with() == "Nacht-Testlauf":
+		return T.t("MoveEye ist nicht verbunden – während einer Messung steht der Kopf still.")
+	if own != "":
+		return T.t("MoveEye ist nicht verbunden. Den Kopf steuert gerade: %s.", [own])
+	return T.t("MoveEye ist nicht verbunden – du steuerst den Kopf selbst.")
+
+
 func toggle() -> void:
 	visible = not visible
 	if visible:
@@ -101,7 +112,7 @@ func _process(dt: float) -> void:
 	var own: String = main.head_owner()
 	info.text = ("Den Kopf steuert gerade: %s – deine Befehle wirken erst danach." % own if con and own != ""
 			else ("MoveEye dreht den Kopf (auch Tracking und Patrouille pausieren kurz)." if con
-			else "MoveEye ist nicht verbunden – zuerst «An MoveEye senden» und MoveEye verbinden."))
+			else note_ohne(own)))
 	if main.game != null and main.game.shut != null and main.game.shut.human_mode() == "mw":   # 3D-4.x: «Auslöser»
 		info.text += "\nAuslöser: Bildmitte (Kreis) auf einen Spieler, dann der runde Knopf im Bild oder R2 am Controller."
 	if main.padmap != null and main.padmap.any():         # 3D-4.13: the controller turns the head too (padmap.gd, the one mapping)

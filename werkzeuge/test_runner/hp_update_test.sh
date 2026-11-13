@@ -124,7 +124,7 @@ chown -R nobody "$X/home/kiosk"
 printf 'SIM=%q\nSIM_ARGS=(--fullscreen)\n' "$SIMD/MoveEyeSim3D.x86_64" > "$X/etc/moveeye-kiosk.conf"; chmod 644 "$X/etc/moveeye-kiosk.conf"
 # Openbox-Einstellung wie von kiosk_ein.sh vor der Controller-Taste (Ctrl+Alt+B fehlt noch)
 sed -n "/^schreibe \"\$LIB\/openbox.xml\" 644 <<'EOF'\$/,/^EOF\$/p" "$R/simulator3d/beilagen_linux/kiosk_ein.sh" | sed '1d;$d' \
-	| grep -v 'kiosk_sitzung.sh koppeln' > "$X/usr/local/lib/moveeye-kiosk/openbox.xml"
+	| grep -v 'kiosk_sitzung.sh koppeln\|hp_knoepfe.sh zurueck\|<margins>\|irefox\|hromium' > "$X/usr/local/lib/moveeye-kiosk/openbox.xml"   # … und vor HP_FASSUNG 8
 grep -q 'kiosk_sitzung.sh neustart' "$X/usr/local/lib/moveeye-kiosk/openbox.xml" || fehler "Testaufbau: openbox.xml"
 for b in systemctl apt-get apt-cache systemd-run systemd-tmpfiles modinfo udevadm; do
 	printf '#!/bin/sh\necho "%s $*" >> "%s/aufrufe.txt"\n[ "%s $1 $2" = "systemctl is-active -q" ] && exit 0\n[ "%s $1 $2 $3" = "systemctl is-enabled -q bluetooth.service" ] && exit 1\nexit 0\n' "$b" "$W" "$b" "$b" > "$B/$b"
@@ -241,7 +241,37 @@ grep -q "systemctl enable bluetooth.service" "$W/aufrufe.txt" && ! grep -q "syst
 	&& ok "bluetooth.service eingeschaltet, nicht gestartet (startet nur mit Adapter)" || fehler "bluetooth.service"
 if compgen -G '/sys/class/bluetooth/hci*' >/dev/null; then echo "  (dieser Rechner hat einen Bluetooth-Adapter: «ohne Adapter» hier nicht prüfbar)"
 else ! grep -q "systemctl start --no-block moveeye-controller-koppeln.service" "$W/aufrufe.txt" && ok "ohne Bluetooth-Adapter: der Dienst wird nicht gestartet (kein Fehler, keine Wartezeit)" || fehler "Dienst ohne Adapter gestartet"; fi
-grep -q "^HP_FASSUNG=7 " "$U" && [ "$(cat "$X/var/lib/moveeye-hp-update/fassung")" = 7 ] && ok "HP_FASSUNG 7 gemerkt" || fehler "HP_FASSUNG"
+grep -q "^HP_FASSUNG=8 " "$U" && [ "$(cat "$X/var/lib/moveeye-hp-update/fassung")" = 8 ] && ok "HP_FASSUNG 8 gemerkt" || fehler "HP_FASSUNG"
+# 4c. Knöpfe des Simulator-PCs (HP_FASSUNG 8): Ausschalten, Browser
+[ "$(stat -c %U:%a "$KL/hp_knoepfe.sh")" = root:755 ] && [ "$(stat -c %U:%a "$KL/hp_aus.sh")" = root:755 ] && [ "$(stat -c %U:%a "$KL/browser_leiste.py")" = root:644 ] \
+	&& cmp -s "$KL/hp_aus.sh" "$R/simulator3d/beilagen_linux/hp_aus.sh" && cmp -s "$KL/hp_knoepfe.sh" "$R/simulator3d/beilagen_linux/hp_knoepfe.sh" \
+	&& ok "hp_knoepfe.sh / hp_aus.sh (root, 755) / browser_leiste.py eingespielt (der Kiosk kann sie nicht ändern)" || fehler "Dateien der Knöpfe"
+AD="$X/etc/systemd/system/moveeye-aus"
+grep -qx "ExecStart=$KL/hp_aus.sh" "$AD.service" && grep -qx "Type=oneshot" "$AD.service" && grep -qx "NoNewPrivileges=yes" "$AD.service" && grep -qx "StartLimitIntervalSec=0" "$AD.service" \
+	&& ! grep -q '%\|\$' "$AD.service" && ok "Dienst moveeye-aus: feste Aufgabe ohne Angaben (oneshot, NoNewPrivileges)" || { fehler "Dienst moveeye-aus"; cat "$AD.service"; }
+grep -qx "PathExistsGlob=$X/run/moveeye-spiel/aus_\*" "$AD.path" && grep -qx "Unit=moveeye-aus.service" "$AD.path" && [ "$(grep -c '^Path' "$AD.path")" = 1 ] \
+	&& grep -q "systemctl enable moveeye-aus.path" "$W/aufrufe.txt" && ok "Pfad-Einheit moveeye-aus: nur die Wünsche aus_* im Ordner des Kiosks; eingeschaltet" || { fehler "Pfad-Einheit moveeye-aus"; cat "$AD.path"; }
+! grep -q "poweroff\|reboot\|shutdown" "$W/aufrufe.txt" && ok "das Update selbst schaltet nie aus und startet nie neu" || fehler "Update ruft poweroff / reboot"
+ls "$X/etc/polkit-1" "$X/etc/sudoers.d" >/dev/null 2>&1 && fehler "polkit / sudoers angefasst (Fassung 8)" || ok "weiterhin kein sudo, keine polkit-Regel"
+[ "$(grep -c 'hp_knoepfe.sh zurueck' "$KL/openbox.xml")" = 1 ] && grep -q 'key="C-A-z"' "$KL/openbox.xml" && [ "$(grep -c '<margins><top>40</top>' "$KL/openbox.xml")" = 1 ] \
+	&& grep -q 'class="?irefox\*".*<maximized>yes</maximized>' "$KL/openbox.xml" && [ "$(grep -c 'kiosk_sitzung.sh koppeln' "$KL/openbox.xml")" = 1 ] \
+	&& python3 -c 'import sys, xml.dom.minidom; xml.dom.minidom.parse(sys.argv[1])' "$KL/openbox.xml" && [ "$(stat -c %U:%a "$KL/openbox.xml")" = root:644 ] \
+	&& ok "openbox.xml: Ctrl+Alt+Z, Rand für die Leiste, Browser maximiert dazu (gültiges XML, einmal, Ctrl+Alt+B bleibt)" || { fehler "openbox.xml (Fassung 8)"; cat "$KL/openbox.xml"; }
+sed -n "/^schreibe \"\$LIB\/openbox.xml\" 644 <<'EOF'\$/,/^EOF\$/p" "$R/simulator3d/beilagen_linux/kiosk_ein.sh" | sed '1d;$d' > "$W/openbox_neu.xml"
+python3 - "$KL/openbox.xml" "$W/openbox_neu.xml" <<'EOF' && ok "nachgetragene openbox.xml = die von kiosk_ein.sh (gleiche Tasten, Ränder, Regeln)" || fehler "openbox.xml weicht von kiosk_ein.sh ab"
+import sys, xml.dom.minidom
+def norm(p):
+    d = xml.dom.minidom.parse(p)
+    for c in list(d.childNodes):
+        if c.nodeType == c.COMMENT_NODE:
+            d.removeChild(c)
+    return "".join(ln.strip() for ln in d.documentElement.toxml().splitlines())
+a, b = norm(sys.argv[1]), norm(sys.argv[2])
+assert a == b, (a, b)
+EOF
+grep -q "Browser für den Knopf im Simulator\|kein Browser installiert" "$X/var/log/moveeye-hp-update.log" && ! grep -q "apt-get install .*firefox\|apt-get install .*chromium" "$W/aufrufe.txt" \
+	&& ok "Browser: nur gemeldet, was da ist - nichts installiert" || fehler "Browser-Meldung / Installation"
+[ "$(cat "$X/var/lib/mwrunner/runner/.credentials")" = '{"geheim": "bleibt"}' ] && ok "Anmeldung des Runners weiterhin unberührt" || fehler ".credentials verändert (Fassung 8)"
 # 5. Bildschirm für Tests
 KT="$X/etc/moveeye-kiosk-test.conf"
 [ "$(grep -c '^TEST_BENUTZER=' "$KT")" = 1 ] && grep -qx 'TEST_BENUTZER=daemon' "$KT" && grep -qx 'PAUSE_DATEI=/run/moveeye-test/kiosk_pause' "$KT" \

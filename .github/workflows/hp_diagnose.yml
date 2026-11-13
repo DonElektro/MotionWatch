@@ -92,6 +92,18 @@ jobs:
           grep -E "Treiber|hid-playstation|Bluetooth|Controller" /var/log/moveeye-hp-update.log 2>/dev/null | tail -n 6 | cut -c1-200
           for f in /etc/udev/rules.d/*moveeye* /etc/bluetooth/main.conf.d/*moveeye*; do [ -e "$f" ] && echo "  da: $f"; done
           echo "-- Eingabegeräte (nur Namen)"; grep '^N: Name=' /proc/bus/input/devices 2>&1 | cut -c1-100
+          echo "== Ausschalten / Browser (HP_FASSUNG 8; nur lesen)"
+          L1="org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager"
+          echo "Einschaltknopf kurz gedrückt (logind HandlePowerKey): $(busctl get-property $L1 HandlePowerKey 2>&1 | cut -c1-60)"
+          grep -hE '^[[:space:]]*HandlePowerKey' /etc/systemd/logind.conf /etc/systemd/logind.conf.d/*.conf /usr/lib/systemd/logind.conf.d/*.conf 2>/dev/null | cut -c1-80
+          echo "Programme, die den Einschaltknopf selbst behandeln (inhibit handle-power-key): $(systemd-inhibit --list --no-legend 2>/dev/null | grep -c handle-power-key)"
+          echo "UEFI-Start: $([ -d /sys/firmware/efi ] && echo ja || echo nein) · «ins BIOS neu starten» (logind): $(busctl call $L1 CanRebootToFirmwareSetup 2>&1 | cut -c1-40)"
+          echo "moveeye-aus.path: $(systemctl is-enabled moveeye-aus.path 2>/dev/null | head -n 1) / $(systemctl is-active moveeye-aus.path 2>/dev/null | head -n 1)"
+          B=""; for b in firefox firefox-esr chromium chromium-browser; do command -v "$b" >/dev/null 2>&1 && { B="$b"; break; }; done
+          echo "Browser: ${B:-keiner} $(dpkg-query -W -f='${db:Status-Abbrev}${Version}' "${B:-firefox}" 2>/dev/null | cut -c1-50) $(readlink -f "$(command -v "${B:-firefox}" 2>/dev/null)" 2>/dev/null | cut -c1-60)"
+          echo "Ordner des Runners (Rechte, sollte 750 sein): $(stat -c '%a' "$MW_RUNNER_HOME" "$MW_RUNNER_HOME/runner" 2>&1 | tr '\n' ' ')· Anmeldung (.credentials, .env): $(stat -c '%a' "$MW_RUNNER_HOME/runner/.credentials" "$MW_RUNNER_HOME/runner/.env" 2>&1 | tr '\n' ' ' | cut -c1-80)"
+          echo "Weitere Mitglieder der Gruppe des Runners: $(getent group "$(id -gn)" | cut -d: -f4 | tr ',' '\n' | grep -c .)"
+          echo "Speicher: $(free -m | awk '/^Mem/ {print $2 " MB, frei " $7}') · Auslagerung: $(free -m | awk '/^Swap/ {print $2 " MB"}')"
           echo "== Dienst-Schutz"
           U="$(systemctl list-units --type=service --no-legend 'actions.runner.*' | awk '{print $1}' | head -1)"
           systemctl show "$U" -p ProtectSystem -p ProtectHome -p SystemCallFilter -p SystemCallErrorNumber -p RestrictFileSystems -p ReadOnlyPaths -p ReadWritePaths -p PrivateTmp -p RestrictNamespaces 2>&1 | cut -c1-200

@@ -129,6 +129,43 @@ gh run list -R DonElektro/MotionWatch -w "Dauerrechnen (HP)" -L 5
 - **Test:** `bash werkzeuge/test_runner/controller_test.sh` (Ersatz-bluetoothctl, Ersatz-Controller, Ersatz-Tk). Das echte
   Koppeln mit dem echten Controller kann nur am HP geprüft werden.
 
+## Ausschalten und Browser am HP (HP_FASSUNG 8)
+
+Im Simulator am HP gibt es unten im Bedienfeld die Karte **«Simulator-PC»** (nur im Kiosk des HP – `kiosk_sitzung.sh` setzt
+dafür `MOVEEYE_HP_KIOSK`): **«🎮 Controller koppeln»**, **«🌐 Browser»**, **«⏻ Ausschalten …»**.
+
+- **Ausschalten:** Herunterfahren · Neu starten · Neu starten ins BIOS – jedes mit Rückfrage im Simulator. «Ins BIOS»
+  erscheint nur, wenn der HP mit UEFI gestartet ist und die Firmware es kann; sonst steht dort «beim Einschalten Esc, dann
+  F10». **Läuft ein Test**, steht «Test läuft – trotzdem ausschalten?»: der Job des Runners wird dann wie jeder Dienst
+  beendet (auf GitHub «abgebrochen»), das Dauerrechnen hat nach jedem ganzen Fall gesichert und rechnet beim nächsten Lauf
+  dort weiter. Während ein Test rechnet, zeigt der HP das Testbild: zuerst «Spielen» drücken (der Test hält sauber an), dann
+  im Simulator ausschalten.
+- **Wie (Rechte):** wie beim Koppeln. Der Simulator ruft `hp_knoepfe.sh aus …` (Benutzer des Kiosks, ohne Rechte); das legt
+  nur die leere Datei `/run/moveeye-spiel/aus_herunterfahren` (`aus_neustart`, `aus_bios`) an. Die Pfad-Einheit
+  `moveeye-aus.path` startet `moveeye-aus.service` (root, `hp_aus.sh`): drei feste Befehle, es zählt nur der Dateiname. Kein
+  sudo, keine polkit-Regel, kein Passwort. `/run` ist nach jedem Start leer, ein Wunsch älter als 2 Min. zählt nicht.
+  Protokoll: `journalctl -u moveeye-aus`.
+- **Einschaltknopf am Gehäuse:** kurz drücken fährt im Kiosk normalerweise sauber herunter (logind `HandlePowerKey=poweroff`,
+  im Kiosk fängt kein Desktop den Knopf ab) – am HP noch nicht nachgeprüft; die HP-Diagnose zeigt die Einstellung
+  («Einschaltknopf kurz gedrückt»). Lang drücken (4 s) schaltet hart aus – nur im Notfall.
+- **Browser:** öffnet den Browser, der schon installiert ist (Firefox, sonst Chromium; es wird nichts installiert), maximiert
+  über dem Kiosk. Oben bleibt die Leiste **«‹ Zurück zum Simulator»**; **Ctrl+Alt+Z** tut dasselbe. Wird der Browser
+  geschlossen oder stürzt er ab, ist der Simulator von selbst wieder da. Solange der Browser offen ist, ist der Simulator
+  angehalten (kein Ton, keine Rechenlast; der HP hat nur 4 GB) und läuft danach genau dort weiter; der HP gilt als
+  «Spielen» (es wird nicht gerechnet). Läuft ein Test, öffnet der Browser nicht. Nicht im Kinder-Modus.
+- **Browser und Sicherheit:** eigenes Profil und eigener Download-Ordner in `~/MoveEye-Browser` (nur für den Benutzer des
+  Kiosks), Passwörter werden nicht gespeichert, kein Firefox-Konto, nichts wird aus einem anderen Profil übernommen. Der
+  Browser läuft als Benutzer des Kiosks: an die Dateien des Test-Runners (`/var/lib/mwrunner`, Rechte 750, Anmeldung des
+  Runners) kommt er nicht – das Update prüft das und warnt im Protokoll, falls doch. **Restrisiko:** der Benutzer des Kiosks
+  ist das normale Konto des HP. Eine Lücke im Browser oder eine heruntergeladene Datei, die man startet, läuft mit dessen
+  Rechten (eigene Dateien, Simulator-Ordner, Knöpfe dieses Kiosks) – nicht als root und nicht als Runner, aber mit dem
+  Passwort des Kontos wäre `sudo` möglich. Darum: im Browser des HP keine Passwörter für wichtige Konten (GitHub, Mail, Bank)
+  eintippen, nichts Heruntergeladenes starten. ssh und Firewall bleiben unverändert.
+- **Kommt der Simulator nicht zurück:** Ctrl+Alt+Z · dann Ctrl+Alt+R (Simulator neu) · dann Ctrl+Alt+D und wieder abmelden ·
+  zuletzt den Einschaltknopf kurz drücken (fährt sauber herunter).
+- **Test:** `bash werkzeuge/test_runner/hp_knoepfe_test.sh` (Ersatz-systemctl, Ersatz-Browser), Godot:
+  `werkzeuge/hp_kiosk_test.gd`. Echtes Ausschalten, BIOS-Start, Firefox über Openbox: nur am HP prüfbar.
+
 ## 0. Automatisches Update (einmal eintippen)
 
 Am HP (Text-Konsole **Ctrl+Alt+F3** oder SSH), eine Zeile:
@@ -143,7 +180,7 @@ neueste **signierte** Version; ist die letzte Prüfung über 20 Std. her, lässt
 ist (so mindestens einmal am Tag). Es spielt ein, was sich geändert hat:
 Kiosk (`kiosk_sitzung.sh`, Testbild), Haken und Dienst-Einstellungen des Runners, fehlende Pakete, den Simulator im
 Kiosk-Ordner und sich selbst (ab 3.55.0 auch `hp_wache.py` und den Ordner `/run/moveeye-spiel`, mit HP_FASSUNG 4 auch
-«Controller koppeln»: bluez, Dienst, Ctrl+Alt+B, mit HP_FASSUNG 7 die Liste mit Trennen / Vergessen, den Knopf in der Ecke und die udev-Regel; mit HP_FASSUNG 5 den **Bildschirm für die Tests**, siehe unten). Die Anmeldung des Runners
+«Controller koppeln»: bluez, Dienst, Ctrl+Alt+B, mit HP_FASSUNG 7 die Liste mit Trennen / Vergessen, den Knopf in der Ecke und die udev-Regel; mit HP_FASSUNG 8 «Ausschalten» und «Browser» (hp_knoepfe.sh, moveeye-aus, Ctrl+Alt+Z); mit HP_FASSUNG 5 den **Bildschirm für die Tests**, siehe unten). Die Anmeldung des Runners
 (Token) fasst es nie an. Läuft ein Test oder wird gespielt, wird verschoben (nächster Blick in 15 Min.).
 **Ab HP_FASSUNG 6 (08.11.2026):** der Zeitplan schaut jedes Mal kurz in die signierte `versions.json`; nichts Neues: höchstens
 stündlich eine Zeile. Gibt es Neues und läuft ein Test, steht jedes Mal eine Zeile mit dem Grund im Protokoll und die Marke
