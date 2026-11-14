@@ -138,8 +138,9 @@ class Hardware:
             self.io = "gpiozero"
             if self.pca is None and drv != "pca9685":
                 mn, mx = CFG["servo_min_us"] / 1e6, CFG["servo_max_us"] / 1e6
-                self.pan = Servo(GPIO_PAN, min_pulse_width=mn, max_pulse_width=mx)
-                self.tilt = Servo(GPIO_TILT, min_pulse_width=mn, max_pulse_width=mx)
+                iv = None if CFG.get("kopf_transport") else 0.0     # 639zzzt: no pulse at the start in the transport mode
+                self.pan = Servo(GPIO_PAN, initial_value=iv, min_pulse_width=mn, max_pulse_width=mx)
+                self.tilt = Servo(GPIO_TILT, initial_value=iv, min_pulse_width=mn, max_pulse_width=mx)
                 self.backend = "gpiozero"
         except Exception as e1:
             try:
@@ -190,6 +191,23 @@ class Hardware:
         elif self.backend == "pigpio":
             self.pi.set_servo_pulsewidth(GPIO_PAN, self._us(pan))
             self.pi.set_servo_pulsewidth(GPIO_TILT, self._us(tilt))
+
+    def _servos_off(self):
+        """639zzzt transport mode: cut the servo pulses (PCA9685 channel fully off, gpiozero detach, pigpio 0) - the head is
+        held by the cap only, the servos get no current and do not jitter. The next normal write switches them on again."""
+        try:
+            if self.pca is not None:
+                self.pca.switch(int(CFG["pca_pan_ch"]), False); self.pca.switch(int(CFG["pca_tilt_ch"]), False)
+            elif self.backend == "gpiozero":
+                self.pan.detach(); self.tilt.detach()
+            elif self.backend == "pigpio":
+                self.pi.set_servo_pulsewidth(GPIO_PAN, 0); self.pi.set_servo_pulsewidth(GPIO_TILT, 0)
+            SRV["tp_off_n"] = int(SRV.get("tp_off_n", 0)) + 1
+            log_event("servo", "Transport mode: servo outputs off (" + self.backend + ")")
+        except Exception as e:
+            log_event("servo", f"Servo outputs off: {e}"[:160])
+            if self.pca is not None:
+                servo_io_error(e)
 
     def _write(self, gpio, on, al):
         ent = self.outs.get(gpio)
@@ -328,9 +346,23 @@ class Hardware:
                 log_event("servo", f"Motion planner: {type(e).__name__}: {e}"[:160])
             pan = self._cont_pan(pan)                      # 2.98.30: continuous rotation servo: speed instead of position (162)
             cur = (round(pan, 2), round(tilt, 2))
-            if servo_outputs_off():
+            if servo_detached():                           # 639zzzt transport mode: no pulse at all (limp, no holding torque)
+                if not getattr(self, "_detached", False) and cur != self._last_servo:
+                    # 3.94.0: the planner arrives in the same tick in which it reports «home» - first send that home pulse
+                    # and hold it for one tick, only then cut the outputs (before, the head stopped one step short)
+                    try:
+                        self._servos(pan, tilt, cont=CFG.get("servo_kind") == "continuous" and not CFG.get("sim_on"))
+                    except Exception as e:
+                        log_event("servo", f"Servo error: {e}")
+                    self._last_servo = cur
+                else:
+                    if not getattr(self, "_detached", False):
+                        self._detached = True; self._servos_off()
+                    self._last_servo = None
+            elif servo_outputs_off():
                 self._last_servo = None                    # 2.98.35: latched driver fault: outputs stay off until «Freigeben»
             elif cur != self._last_servo:
+                self._detached = False
                 try:
                     self._servos(pan, tilt, cont=CFG.get("servo_kind") == "continuous" and not CFG.get("sim_on"))
                     if self.pca is not None:

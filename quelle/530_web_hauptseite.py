@@ -4120,7 +4120,7 @@ async function modePick(id) {
 function updateProtect(s) {
   window.__lastState = s;
   const [txt, cls] = prText(s);
-  const b = $("#b-arm"); if (b) { badge("#b-arm", txt, cls); b.title = t("tap: arm / disarm"); }
+  const b = $("#b-arm"); if (b) { badge("#b-arm", txt, cls); b.title = t("tap: arm / disarm"); b.classList.toggle("guard", s.arm_state === "armed"); }   // 639zzze: breathing dot
   const st = $("#pr-state"); if (!st) return;
   st.textContent = txt; st.style.color = cls === "grn" ? "var(--grn)" : (cls === "yel" ? "var(--yel)" : "var(--mut)");
   $("#pr-left").textContent = s.arm_state === "disarmed" ? t("no alarms, no recordings") : (s.arm_state === "arming" ? t("leave the area now") : t("alarms active"));
@@ -4352,6 +4352,7 @@ async function refresh() {
   applyRole(s.me);
   if (s.me && s.me.role === "admin" && !window.USERS_DONE && $("#users-box")) { window.USERS_DONE = true; usersLoad(); }
   try { mainPaint(j); } catch (e) {}
+  try { if (window.mwAnim) window.mwAnim(j); } catch (e) {}          // 639zzze: CPU chip and head compass in the live picture
   try { if (window.servoPaint) window.servoPaint(j); } catch (e) {}      // 2.98.35: Not-Aus, who steers the head (539)
   try { qsPaint(j); } catch (e) {}
   try { chainPaint(c, s); } catch (e) {}

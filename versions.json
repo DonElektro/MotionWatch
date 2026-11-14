@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-14 17:16",
+ "generated": "2026-11-14 20:42",
  "versions": [
+  {
+   "version": "3.94.0",
+   "file": "webcam_bewegung_3_94_0.py",
+   "url": "",
+   "sha256": "37b53236d6a197929dfd7953f033887dd2e6982f482dfe53972c5c2c7ba1f5cb",
+   "date": "2026-11-14 20:42",
+   "notes": "Drei Teile. (1) Live-Bild: ruhige Animationen und ein CPU-Chip im Bild. (2) «🧳 Transportmodus» für die Transportkappe: der Kopf fährt in die Transport-Lage und bleibt dort. (3) Digitaler Rucksack im Netzwerk: auf Wunsch eine Freigabe «rucksack» über SMB (ab Werk aus), damit PC und Handy im eigenen Netz direkt darauf zugreifen.",
+   "size": 3981716,
+   "sig": "47cf98147f6eb701c98b3da5373529802f089f6c32c7eb643002e3784f73db5e4d5240616a4f4727f8aa7a28d301a7602b1af4b64ad5815c66d64295bca9a60e",
+   "data": {
+    "file": "moveeye_daten_3_94_0.zip",
+    "url": "",
+    "sha256": "e89345c671def5e3d66dd6349e7b5ce0f98128a0e76e9cb23b7334f79d31bec1",
+    "size": 11662000,
+    "sig": "834581d828f93fbf48bcbbbc44d787e89a7248927b00107788ecfa4d8a95dde2a73dbef1eabf1d86415eaa862e4f4786e4bfe7922ca707f29eb3909213eccd08"
+   }
+  },
   {
    "version": "3.93.0",
    "file": "webcam_bewegung_3_93_0.py",
@@ -136,23 +153,6 @@
     "sha256": "e9d2342116805b526dc26dda7e55cb8abb149d08cdbc13020943cd0d738e91d4",
     "size": 11066088,
     "sig": "2f487b68475be4f5c8e68cf4404dbf2f3e624620b00fbde0dbf486dca268b8e51dcd7e6914db561d9a3a635b282faf326296109553aa0c660b4ca5013c7adc0d"
-   }
-  },
-  {
-   "version": "3.85.0",
-   "file": "webcam_bewegung_3_85_0.py",
-   "url": "",
-   "sha256": "07d1ab054c8b10f4fc54c575d698df553c72d22fea7e6782c9107cd5ba85f80e",
-   "date": "2026-11-12 22:26",
-   "notes": "Vier Teile. (1) Touren auf der Karte: neue Kachel «🗺 Karte» unter «Mehr»; auf der Karte Touren zeichnen, speichern, als GPX/KML oder alle als ZIP mitnehmen; KML/GPX einlesen (auch aus der swisstopo-App) mit Auf-/Abstieg, Höhenprofil und Wanderzeit; Gäste sehen freigegebene Touren nur zum Ansehen. Höhendaten Schweiz für gezeichnete Routen: kommt mit einem Update. (2) Akku: Die Meldung «Akku bis Sonnenaufgang?» kommt nicht mehr nach jedem Neustart – am Netz nie, nach dem Start erst wenn die Schätzung steht, pro Abend einmal (auch über einen Neustart); fast leer meldet weiter sofort. Anzeige am N",
-   "size": 3880947,
-   "sig": "2f446bfb4ebd044cf07232678286737b0ec8400cd85a0e15a9368517a32d1ddf213ec6f2f99232ddb4baeba121079bb8ef3d304704ef848155685e885dd95504",
-   "data": {
-    "file": "moveeye_daten_3_85_0.zip",
-    "url": "",
-    "sha256": "1c2623563a6b00072efa5b3bf4cf54b58babfa723f3ddf0a97d4ce2be81cb799",
-    "size": 10985546,
-    "sig": "8116ba6adfdf09c0cfdb878983fe27dfa75cc6582acc6b4641e3461299ca94ae1b8232519c63ee775515e5d5df1308e157b637039155e713fca861c8f9511508"
    }
   },
   {

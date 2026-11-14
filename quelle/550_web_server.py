@@ -2923,7 +2923,8 @@ class WebStream:
         def guest_state(token):
             if not guest_ok(token):
                 return reply({"ok": False}, 404)
-            return reply({"armed": is_armed(), "persons": STATE["persons"], "until": CFG["guest_until"] or 0})
+            return reply({"armed": is_armed(), "persons": STATE["persons"], "until": CFG["guest_until"] or 0,
+                          "cpu": STATE.get("cpu"), "cpu_temp": STATE.get("cpu_temp")})          # 639zzze: the CPU chip (owner: nothing secret)
 
         @app.route("/g/<token>/video")
         def guest_video(token):
