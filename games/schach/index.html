@@ -9,11 +9,18 @@
      Aufbau: index.html (Seite, Aussehen) · partie.js (Regeln und Partie, ohne Bildschirm) · motor.js (Rechner im Hintergrund)
      · motor-js-worker.js (Ersatz-Rechner ohne WebAssembly) · fern.js (zwei Handys über MoveEye) · schach.js (Ablauf, Spieler, Bedienung, Ton, Speichern)
      · lib/ (unveränderte Bausteine: Brett, Regeln, Motoren, Figuren). Alles liegt im Ordner, nichts kommt aus dem Internet. -->
+<script>try{if(localStorage.getItem("mw-night")==="1")document.documentElement.classList.add("sxnight")}catch(e){}</script>
 <link rel="stylesheet" href="lib/chessground.base.css">
 <link rel="stylesheet" href="lib/chessground.brown.css">
 <link rel="stylesheet" href="lib/chessground.cburnett.css">
 <style>
-:root{--bg:#0e1621;--panel:#16212f;--line:#24324a;--txt:#e8eef6;--mut:#8ea0b6;--acc:#3b8cff;--amber:#e9a23b;--grn:#3fcf6b;--rot:#e2574c;--b:320px}
+:root{--bg:#0e1621;--panel:#16212f;--line:#24324a;--txt:#e8eef6;--mut:#8ea0b6;--acc:#3b8cff;--amber:#e9a23b;--grn:#3fcf6b;--rot:#e2574c;--b:320px;
+  --bl:0px;--evW:#f1f0ea;--evS:#3d3a36;--evRand:rgba(255,255,255,.22);--evMitte:rgba(233,162,59,.75)}
+/* Rotlicht von MoveEye (☰ → Allgemein → Rotlicht; gemerkt in «mw-night», lesbar, wenn das Spiel über die Hauptadresse läuft):
+   wie die Seiten von MoveEye alles dunkel und rot, damit die Augen in der Nacht dunkel-angepasst bleiben */
+html.sxnight{--bg:#000;--panel:#070000;--line:#2a0606;--txt:#c0392b;--mut:#7d1f1a;--acc:#7a160e;--amber:#9a3010;--grn:#8a2a12;
+  --evW:#d89a8a;--evS:#120202;--evRand:rgba(192,57,43,.45);--evMitte:rgba(192,57,43,.6)}
+html.sxnight::after{content:"";position:fixed;inset:0;background:#b81400;mix-blend-mode:multiply;pointer-events:none;z-index:2147483646}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:16px/1.3 system-ui,-apple-system,"Segoe UI",sans-serif;
   overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
@@ -35,12 +42,12 @@ button,select{font:inherit;color:inherit;border:0;cursor:pointer;-webkit-appeara
 #bLern.an{color:var(--txt)}#bLern.an .p{background:var(--grn)}
 
 #haupt{flex:1 1 auto;min-height:0;min-width:0;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
-#links{flex:0 0 auto;width:var(--b)}
+#links{flex:0 0 auto;width:calc(var(--b) + var(--bl))}
 #rechts{flex:1 1 auto;width:100%;max-width:560px;min-width:0;display:flex;flex-direction:column;padding:0 8px 4px}
 .quer #haupt{flex-direction:row;align-items:flex-start;justify-content:center;gap:12px;padding:0 8px}
 .quer #rechts{flex:0 1 380px;width:auto;align-self:stretch;min-height:0;padding:6px 0 4px}
 
-.sp{display:flex;align-items:center;gap:6px;height:24px;padding:0 6px;font-size:13px;font-weight:600;min-width:0;white-space:nowrap}
+.sp{display:flex;align-items:center;gap:6px;height:24px;padding:0 6px 0 calc(6px + var(--bl));font-size:13px;font-weight:600;min-width:0;white-space:nowrap}
 .sp .nm{overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0}
 .sp .gs{display:flex;align-items:center;flex:0 1 auto;min-width:0;overflow:hidden;height:20px}
 .sp .gs .cg-wrap{display:block;flex:0 0 auto;width:16px;height:18px;margin-right:-5px}
@@ -65,9 +72,19 @@ button,select{font:inherit;color:inherit;border:0;cursor:pointer;-webkit-appeara
 #brett coords.files coord{flex:1 1 0;padding-right:3px}
 #brett .cg-shapes{opacity:.85}
 #brett cg-board square.current-premove{background-color:rgba(46,120,235,.55)}
-#balken{position:relative;height:6px;background:#3a3f48;overflow:hidden}
-#balken i{position:absolute;left:0;top:0;bottom:0;width:50%;background:#f1f1ee;transition:width .5s ease}
-#balken b{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--amber);opacity:.8}
+/* Bewertungsbalken links neben dem Brett (wie Lichess): Weiss von unten, dreht mit dem Brett; Zahl am Ende der Seite, die
+   besser steht (+1.3 / −0.8 / M3 / −M3, aus Sicht von Weiss). Breite = --bl (in schach.js, BALKEN_BAHN) minus 4 px Abstand. */
+#brettZeile{display:flex;align-items:stretch}
+#balken{position:relative;flex:0 0 auto;width:calc(var(--bl) - 4px);height:var(--b);margin-right:4px;border-radius:4px;overflow:hidden;
+  background:var(--evS);box-shadow:inset 0 0 0 1px var(--evRand)}
+#balken i{position:absolute;left:0;right:0;bottom:0;height:50%;background:var(--evW);transition:height .7s cubic-bezier(.25,.8,.25,1)}
+#balken.dreh i{bottom:auto;top:0}
+#balken b{position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:var(--evMitte)}
+#balkenZahl{position:absolute;left:0;right:0;bottom:0;padding:4px 0;text-align:center;font:800 10px/1 system-ui,-apple-system,"Segoe UI",sans-serif;
+  letter-spacing:-.5px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;color:var(--evS);z-index:1}
+#balkenZahl.s{bottom:auto;top:0;color:var(--evW)}
+#balken.dreh #balkenZahl{bottom:auto;top:0}#balken.dreh #balkenZahl.s{top:auto;bottom:0}
+@media (prefers-reduced-motion:reduce){#balken i{transition:none}}
 
 #status{flex:0 0 auto;min-height:30px;display:flex;align-items:center;padding:3px 4px;font-weight:700;font-size:15px;line-height:1.2}
 #status.schach{color:#ffb4ad}#status.ende{color:var(--amber)}#status.tipp{color:#9fe3b3}
@@ -165,8 +182,7 @@ select.w option{background:#16212f;color:#e8eef6}
 <div id="haupt">
   <div id="links">
     <div class="sp" id="spOben"><span class="nm"></span><span class="gs"></span><span class="pl"></span><span class="dk" hidden>überlegt <i></i><i></i><i></i></span></div>
-    <div id="balken" title="Bewertung: links Weiss, rechts Schwarz"><i></i><b></b></div>
-    <div id="brettRahmen"><div id="brett"></div></div>
+    <div id="brettZeile"><div id="balken" role="img" aria-label="Bewertung: ausgeglichen" title="Bewertung aus Sicht von Weiss"><i></i><b></b><span id="balkenZahl">0.0</span></div><div id="brettRahmen"><div id="brett"></div></div></div>
     <div class="sp" id="spUnten"><span class="nm"></span><span class="gs"></span><span class="pl"></span><span class="dk" hidden>überlegt <i></i><i></i><i></i></span></div>
   </div>
   <div id="rechts">
@@ -276,7 +292,7 @@ select.w option{background:#16212f;color:#e8eef6}
   <select class="w" id="selZeit"><option value="300">0,3 Sekunden</option><option value="500">0,5 Sekunden</option><option value="1000">1 Sekunde</option><option value="2000">2 Sekunden</option><option value="3000">3 Sekunden</option></select>
   <button class="sch" id="schLern" type="button"><span class="t">Lern-Modus<small>warnt vor groben Fehlern, bevor der Zug gilt</small></span><span class="s"></span></button>
   <button class="sch" id="schTon" type="button"><span class="t">Töne</span><span class="s"></span></button>
-  <button class="sch" id="schBalken" type="button"><span class="t">Bewertungsbalken<small>zeigt über dem Brett, wer besser steht</small></span><span class="s"></span></button>
+  <button class="sch" id="schBalken" type="button"><span class="t">Bewertungsbalken<small>links neben dem Brett: wer besser steht (+1.3 = Weiss besser, M3 = Matt in 3)</small></span><span class="s"></span></button>
   <button class="sch" id="schVorzug" type="button"><span class="t">Vorziehen (Premove)<small>gegen den Computer und auf zwei Handys schon ziehen, während der Gegner überlegt – gilt sofort nach seinem Zug (nicht im Lern-Modus)</small></span><span class="s"></span></button>
   <button class="sch" id="schDrehen" type="button"><span class="t">Brett automatisch drehen<small>zu zweit: nach jedem Zug zur Seite, die dran ist</small></span><span class="s"></span></button>
   <div class="zl"><button class="kn haupt" id="bEinstZu" type="button">Fertig</button></div>
