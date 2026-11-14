@@ -152,15 +152,17 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
   prüfen im Ordner `Quellcode/`: `check531.py`, `printcheck531.py`, `druckcheck531.py`, Bilder `prev531.py`.
 
 - **5.4.0** (14.11.2026, neues Druckteil, kein Teil von v5.3 geändert; passt auch auf v5.1 / v5.2): **29 Transportsicherung**,
-  eine Kappe, die von oben über Kopf und Gabel geschoben wird (Kopf in Grundstellung). Sie sperrt Schwenken und Neigen, lässt
-  Kamera (auch Weitwinkel), Wärmebild und beide Lampen vorne ganz frei, drückt nicht auf Servos, Kabel oder Flachkabel und rastet
-  mit 2 Zungen unter dem Dach des Kabelkamins am Deckel ein; lösen ohne Werkzeug (Drücker zum Kopf hin drücken). Quelle
-  `Quellcode/kappe540.py`, Druck
+  eine kleine Haube (28 × 131 × 55 mm, ca. 16 g), die von oben über Kopf und Lampen gedrückt wird (Kopf in Grundstellung) und an
+  den beiden Lampenbechern einrastet. Sie sperrt das **Neigen** (Spiel ± 0,5°), lässt Kamera (auch Weitwinkel), Wärmebild und
+  beide Lampen vorne ganz frei und drückt nicht auf Servos oder Kabel. Das **Schwenken sperrt sie nicht** (der Servo hält den
+  Kopf); eine Variante mit Beinen an den Deckel-Seiten ist im Quellcode vorbereitet (`PAN_BEINE`), aber nicht als Druckdatei.
+  Abnehmen: gerade nach oben ziehen. Quelle `Quellcode/kappe540.py`, Druck
   [Druckdateien/v5-3/MoveEye_v5-3_29_Transportsicherung.3mf](Druckdateien/v5-3/MoveEye_v5-3_29_Transportsicherung.3mf)
   (umgedreht, Dach unten, ohne Stützen), Anleitung mit Abständen und «Nicht getestet»
   [Dokumente/LIESMICH_Montage_v5-4-0.md](Dokumente/LIESMICH_Montage_v5-4-0.md); in `bau.json` Teil «kappe», Drucken und
-  Montage «Transportsicherung aufsetzen / abnehmen». Prüfen im Ordner `Quellcode/`: `check540.py`, `printcheck540.py`,
-  `druckcheck540.py`, Bilder `prev540.py`, neu erzeugen `export540.py` (STL ausserhalb des Repositorys).
+  Montage «Transportsicherung aufsetzen / abnehmen». Prüfen im Ordner `Quellcode/`: `check540.py [--beine]`,
+  `printcheck540.py [--beine]`, `druckcheck540.py`, Bilder `prev540.py`, neu erzeugen `export540.py` (STL ausserhalb des
+  Repositorys).
 
 - **Archiv «PanTilt v6» (22.10.2026):** `PanTilt_v6_X2D_alle_Teile.3mf`, 7 Teile mit der alten Nummerierung
   (1_Gehaeuse_Unterteil … 7_Rueckdeckel), Unterteil 122 × 87 × 48 mm. Das ist die **ältere** PanTilt-Linie (v4, geschlossener

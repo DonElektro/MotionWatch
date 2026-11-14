@@ -1,11 +1,14 @@
 """5.4.0: Schicht-Prüfung (schwebende Inseln, Überhänge) der Transportsicherung 29 in Druckrichtung (umgedreht, Dach unten;
-Methode wie printcheck531.py).   python3 printcheck540.py [h]   (h = seitliches Raster, Standard 0,4 mm; ca. 5 min)"""
+Methode wie printcheck531.py).   python3 printcheck540.py [h] [--beine]   (h = seitliches Raster, Standard 0,4 mm)"""
 import numpy as np, sys
 from scipy import ndimage
 import kappe540
 from csg import R, T
 
-h = float(sys.argv[1]) if len(sys.argv) > 1 else 0.4
+args = [a for a in sys.argv[1:] if not a.startswith("--")]
+h = float(args[0]) if args else 0.4
+if "--beine" in sys.argv:
+    kappe540.PAN_BEINE = True                         # Variante mit Pan-Beinen
 lh = 0.2
 for name, fn, rot in [("K_Transportsicherung_29", kappe540.part_kappe, [180, 0, 0])]:
     n = R(rot, fn()); lo, hi = n.bbox(); n = T(-lo, n); lo, hi = n.bbox()
