@@ -1,7 +1,7 @@
 {
  "_hinweis": "Eine Quelle für die Texte zum Gehäuse v5.1: Teile, Materialliste (Menge, Bezeichnung) und Montageschritte, in de / en / fr / it / rm (ein einzelner Text = in allen Sprachen gleich). werkzeuge/gehaeuse_bauen.py macht daraus simulator3d/scripts/werkstatt_daten.gd, die Übersetzungen in simulator3d/i18n/texte.json und quelle/639v_daten_gehaeuse.py. Ausführlich (mit Hinweisen und Bestellliste): Dokumente/Materialliste.md und Dokumente/LIESMICH_Montage_v5-1.md.",
- "version": "5.3.1",
- "stand": "08.11.2026",
+ "version": "5.4.0",
+ "stand": "14.11.2026",
  "masse": {
   "de": "Unterteil 183 × 97 × 71,5 mm (mit Füssen 77,5 mm), Gesamthöhe ca. 161 mm, Kopf 58 × 58 mm",
   "en": "Lower part 183 × 97 × 71.5 mm (77.5 mm with feet), total height about 161 mm, head 58 × 58 mm",
@@ -2404,6 +2404,21 @@
     "it": "Cavo fotocamera CAM0 (v5.3: camino → sopra il condotto → pettine)",
     "rm": "Cabel da camera CAM0 (v5.3: chamin → sur il canal → pettan)"
    }
+  },
+  {
+   "id": "kappe",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 14,
+   "datei": "29_Transportsicherung",
+   "ohne": "betrieb",
+   "name": {
+    "de": "29 Transportsicherung (Kappe über Kopf und Gabel, rastet am Kabelkamin)",
+    "en": "29 Transport lock (cap over head and yoke, snaps onto the cable chimney)",
+    "fr": "29 Sécurité de transport (capot sur la tête et la fourche, s'encliquette sur la cheminée)",
+    "it": "29 Blocco di trasporto (cappuccio su testa e forcella, si aggancia al camino)",
+    "rm": "29 Segirezza da transport (chapitscha sur il chau e la furtga, s'encliquetescha vi dal chamin)"
+   }
   }
  ],
  "schritte": [
@@ -4023,6 +4038,23 @@
     "brim": 0,
     "zeit_h": 0.8,
     "wenn": "v53",
+    "liegt": {
+     "de": "Dach unten (umgedreht)",
+     "en": "roof down (upside down)",
+     "fr": "toit en bas (retourné)",
+     "it": "tetto in basso (capovolto)",
+     "rm": "tetg sut (volvì)"
+    }
+   },
+   {
+    "datei": "29_Transportsicherung",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 5,
+    "zeit_h": 2.0,
     "liegt": {
      "de": "Dach unten (umgedreht)",
      "en": "roof down (upside down)",
@@ -5862,6 +5894,22 @@
     "it": "L'aria fresca entra dalle 3 fessure con tettuccio sopra la finestra di servizio nel condotto 27 e direttamente nell'aspirazione dell'Active Cooler; l'aria calda delle alette esce come prima dalle fessure di aerazione accanto. Non coprire l'ingresso; i cavi delle fotocamere stanno sul condotto, non davanti.",
     "rm": "Aria frestga entra tras las 3 fessas cun tetg da plievgia sur la fanestra da servetsch en il canal 27 e directamain en l'aspiraziun da l'Active Cooler; l'aria chauda da las alas sorta sco fin ussa tras las fessas da ventilaziun daspera. Betg cuvrir l'entrada; ils cabels da las cameras èn sin il canal, betg davant."
    }
+  },
+  {
+   "titel": {
+    "de": "Transportsicherung aufsetzen / abnehmen",
+    "en": "Fit / remove the transport lock",
+    "fr": "Poser / retirer la sécurité de transport",
+    "it": "Montare / togliere il blocco di trasporto",
+    "rm": "Metter / prender davent la segirezza da transport"
+   },
+   "text": {
+    "de": "Für den Transport: MoveEye herunterfahren und den Strom trennen (Servos ohne Strom). Den Kopf von Hand in die Grundstellung drehen: er schaut nach vorne zu PIR und Mikrofon und steht waagrecht. Die Kappe 29 von oben über Kopf und Lampen schieben (Status-LED durch das Loch im Dach) und hinten über den Kabelkamin, bis beide Rastzungen unter dem Kamin-Dach einrasten und die Kappe auf dem Deckel steht. Kamera, Wärmebild und Lampen bleiben vorne frei; die Kabelschlaufe hinter dem Kopf nicht einklemmen, das Flachkabel liegt mittig auf der Öse im Kamin. Abnehmen: die beiden Drücker oben an den Zungen (über dem Kamin, von der Seite) zum Kopf hin drücken, die Kappe hinten anheben und nach oben abziehen. Vor dem Einschalten abnehmen.",
+    "en": "For transport: shut MoveEye down and disconnect the power (servos without power). Turn the head by hand into the home position: it looks to the front towards PIR and microphone and is level. Slide cap 29 from above over head and lamps (status LED through the hole in the roof) and at the back over the cable chimney until both snap tongues click in under the chimney roof and the cap stands on the lid. Camera, thermal camera and lamps stay free at the front; do not pinch the cable loop behind the head, the ribbon cable lies centred on the tie mount in the chimney. To remove: press the two pads at the top of the tongues (above the chimney, from the side) towards the head, lift the cap at the back and pull it off upwards. Remove it before switching on.",
+    "fr": "Pour le transport : arrêter MoveEye et couper le courant (servos sans courant). Tourner la tête à la main en position de base : elle regarde vers l'avant, vers le PIR et le micro, et se tient à l'horizontale. Glisser le capot 29 par le haut sur la tête et les lampes (LED d'état dans le trou du toit) et à l'arrière sur la cheminée, jusqu'à ce que les deux languettes s'encliquettent sous le toit de la cheminée et que le capot repose sur le couvercle. Caméra, caméra thermique et lampes restent libres à l'avant ; ne pas coincer la boucle de câbles derrière la tête, la nappe passe au milieu de l'œillet de la cheminée. Retirer : pousser vers la tête les deux poussoirs en haut des languettes (au-dessus de la cheminée, par le côté), soulever le capot à l'arrière et le retirer vers le haut. Le retirer avant la mise sous tension.",
+    "it": "Per il trasporto: spegnere MoveEye e staccare la corrente (servo senza corrente). Girare a mano la testa nella posizione di base: guarda in avanti verso PIR e microfono ed è orizzontale. Infilare dall'alto il cappuccio 29 su testa e lampade (LED di stato nel foro del tetto) e dietro sul camino, finché le due linguette scattano sotto il tetto del camino e il cappuccio poggia sul coperchio. Fotocamera, termocamera e lampade restano libere davanti; non schiacciare l'ansa dei cavi dietro la testa, il cavo piatto passa al centro dell'occhiello nel camino. Per togliere: premere verso la testa i due pulsanti in cima alle linguette (sopra il camino, di lato), sollevare il cappuccio dietro e sfilarlo verso l'alto. Toglierlo prima di accendere.",
+    "rm": "Per il transport: stizzar MoveEye e separar il current (servos senza current). Volver il chau a maun en la posiziun da basa: el guarda enavant vers il PIR ed il microfon ed è orizontal. Stuschar la chapitscha 29 dad sura sur il chau e las lampas (LED da status tras la foura en il tetg) e davos sur il chamin, fin che las duas linguettas s'encliquetteschan sut il tetg dal chamin e la chapitscha stat sin il viertgel. Camera, camera termica e lampas restan libras davant; betg smatgar la bucla da cabels davos il chau, il cabel plat è en il center da l'ögl en il chamin. Prender davent: smatgar ils dus buttuns sisum las linguettas (sur il chamin, da la vart) vers il chau, auzar la chapitscha davos e la trair ensi. Prender davent avant che metter en funcziun."
+   }
   }
  ],
  "druckdateien_einzeln": [
@@ -5925,7 +5973,8 @@
   "v5-3/MoveEye_v5-3_25_Halter_Wand_Baum.3mf",
   "v5-3/MoveEye_v5-3_26_Akkuklappe.3mf",
   "v5-3/MoveEye_v5-3_27_Luftkanal.3mf",
-  "v5-3/MoveEye_v5-3_28_Adapter_UPS_HAT_alt.3mf"
+  "v5-3/MoveEye_v5-3_28_Adapter_UPS_HAT_alt.3mf",
+  "v5-3/MoveEye_v5-3_29_Transportsicherung.3mf"
  ],
  "ui_bauen": [
   {
@@ -6737,7 +6786,8 @@
    "feet53",
    "feet53_2",
    "feet53_3",
-   "feet53_4"
+   "feet53_4",
+   "kappe"
   ],
   "turntable": "#f59a4a",
   "yoke": "#f59a4a",
