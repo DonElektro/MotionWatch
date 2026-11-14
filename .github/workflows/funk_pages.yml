@@ -2,7 +2,8 @@
 # das Internet hat. https -> das Mikrofon geht; nach dem ersten Laden geht die Seite ohne Internet (Service Worker).
 # Adresse: https://donelektro.github.io/MotionWatch/funk/
 # EINMAL von Hand (Besitzer): Settings -> Pages -> Build and deployment -> Source: «GitHub Actions». Vorher bricht der Schritt
-# «configure-pages» ab (Pages ist aus) - das ist kein Fehler der Seite.
+# «configure-pages» ab (Pages ist aus) - darum prüft der Schritt «Ist GitHub Pages an?» das zuerst: ist Pages aus, bleibt der
+# Lauf grün mit einem Hinweis und veröffentlicht nichts (main wird nie rot).
 # Veröffentlicht wird nur von main (die Umgebung «github-pages» lässt ab Werk nur den Standard-Zweig zu); von Hand: Actions ->
 # «Funk-Seite (GitHub Pages)» -> Run workflow. Keine Geheimnisse, keine Schlüssel: die Seite ist dieselbe Datei für alle.
 name: Funk-Seite (GitHub Pages)
@@ -39,9 +40,23 @@ jobs:
           ! grep -q "window.MW_FUNK=" _site/funk/index.html
           ! grep -Eo "(src|href)=\"https?://" _site/funk/index.html
           ls -l _site/funk
+      - name: Ist GitHub Pages an?
+        # solange der Besitzer Pages nicht eingeschaltet hat: nur ein Hinweis, der Lauf bleibt grün (main wird nie rot)
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type 2>/dev/null | grep -qx workflow; then
+            echo "an=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::GitHub Pages ist aus (oder nicht auf «GitHub Actions») – die Funk-Seite wird nicht veröffentlicht. Einmal: Settings → Pages → Source: GitHub Actions."
+          fi
       - uses: actions/configure-pages@v5
+        if: steps.pages.outputs.an == '1'
       - uses: actions/upload-pages-artifact@v3
+        if: steps.pages.outputs.an == '1'
         with:
           path: _site
       - id: deployment
+        if: steps.pages.outputs.an == '1'
         uses: actions/deploy-pages@v4
