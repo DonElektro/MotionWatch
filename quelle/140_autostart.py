@@ -414,20 +414,176 @@ def port_foreign(held):
 
 
 
+# One unit for both ways (Besitzer 14.11.2026, «system unit and user unit the same»): the user unit of the web page / window
+# (~/.config/systemd/user, normal user + linger - the usual way) and the system unit of «sudo … --install-service»
+# (/etc/systemd/system, einrichten.sh) come from autostart_unit() with the same options; they differ only in User=, After=
+# and WantedBy=. ExecStart never names a version: it starts the small fixed starter START_FILE next to the program files,
+# which starts the file named in START_PTR (written by the program that runs as the service, or by a version started by
+# hand while autostart is on). An update therefore never has to touch the unit - the system unit (root) used to keep the
+# old file and the old version came back at the next start of the Pi. An old unit (a file name in ExecStart, no watchdog)
+# is rewritten once: by the service itself, as root or with «sudo -n» (Raspberry Pi OS: the first user may, as for 400
+# power off), never with a stop of itself; without sudo a clear hint.
+START_FILE = "moveeye_start.py"
+START_PTR = "moveeye_start.json"
+START_CODE = r"""#!/usr/bin/env python3
+# MoveEye starter (written by MoveEye, the autostart service starts it - do not change): starts the program file named in
+# moveeye_start.json next to it (set by MoveEye: the version that runs as the service, or the one started by hand while
+# autostart is on). Without that note: the newest webcam_bewegung_X_Y_Z.py of this folder. Same process (exec): systemd sees
+# MoveEye itself (watchdog, stop).
+import json, os, re, sys
+here = os.path.dirname(os.path.abspath(__file__))
+name_re = re.compile(r"^webcam_bewegung_(\d{1,3})_(\d{1,3})_(\d{1,3})\.py$")
+name = ""
+try:
+    with open(os.path.join(here, "moveeye_start.json"), encoding="utf-8") as f:
+        name = os.path.basename(str(json.load(f).get("file") or ""))
+except (OSError, ValueError, AttributeError):
+    pass
+if not (name_re.match(name) and os.path.isfile(os.path.join(here, name))):
+    found = sorted((tuple(int(x) for x in m.groups()), n) for n in os.listdir(here) for m in [name_re.match(n)] if m)
+    name = found[-1][1] if found else ""
+if not name:
+    sys.exit("MoveEye: no program file webcam_bewegung_X_Y_Z.py in " + here)
+os.execv(sys.executable, [sys.executable, os.path.join(here, name)] + sys.argv[1:])
+"""
+
+
+def _owner_like_here(p):
+    """written as root (sudo … --install-service): the file belongs to the owner of the program folder, like the program"""
+    if _is_root():
+        try:
+            st = os.stat(HERE)
+            os.chown(p, st.st_uid, st.st_gid)
+        except OSError:
+            pass
+
+
+def start_launcher_ensure():
+    """the fixed starter next to the program files (the unit starts it, never a file of one version) -> its path"""
+    p = os.path.join(HERE, START_FILE)
+    try:
+        with open(p, encoding="utf-8") as f:
+            if f.read() == START_CODE:
+                return p
+    except OSError:
+        pass
+    tmp = p + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(START_CODE)
+    os.chmod(tmp, 0o644)
+    _owner_like_here(tmp)
+    os.replace(tmp, p)
+    return p
+
+
+def start_pointer_set():
+    """from now on the starter starts THIS program file. True when the note changed."""
+    p = os.path.join(HERE, START_PTR)
+    me = os.path.basename(os.path.abspath(__file__))
+    try:
+        with open(p, encoding="utf-8") as f:
+            if json.load(f).get("file") == me:
+                return False
+    except (OSError, ValueError, AttributeError):
+        pass
+    tmp = p + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump({"file": me, "version": APP_VERSION, "set": datetime.now().isoformat(timespec="seconds")}, f)
+    os.chmod(tmp, 0o644)
+    _owner_like_here(tmp)
+    os.replace(tmp, p)
+    return True
+
+
 def autostart_unit(mode):
+    """the unit text for «user» (~/.config/systemd/user) or «system» (/etc/systemd/system) - one generator for both"""
     import shlex
-    exe = " ".join(shlex.quote(x) for x in [sys.executable, os.path.abspath(__file__)] + autostart_args())
+    exe = " ".join(shlex.quote(x) for x in [sys.executable, os.path.join(HERE, START_FILE)] + autostart_args())
+    user = _run_user() if mode == "system" else ""
     # StartLimitIntervalSec=0: never give up (e.g. after a power cut the camera / network may need a while)
-    if mode == "system":
-        head = ("[Unit]\nDescription=MoveEye (camera surveillance)\nAfter=network.target NetworkManager.service\n"
-                "Wants=NetworkManager.service\nStartLimitIntervalSec=0\n\n")
-        install = "WantedBy=multi-user.target"
-    else:
-        head = "[Unit]\nDescription=MoveEye (camera surveillance)\nStartLimitIntervalSec=0\n\n"
-        install = "WantedBy=default.target"
-    return (head + "[Service]\nType=simple\n" + f"WorkingDirectory={HERE}\nExecStart={exe}\n"
+    return ("[Unit]\nDescription=MoveEye (camera surveillance)\n"
+            + ("After=network.target NetworkManager.service\nWants=NetworkManager.service\n" if mode == "system" else "")
+            + "StartLimitIntervalSec=0\n\n[Service]\nType=simple\n"
+            + (f"User={user}\n" if user and user != "root" else "")
+            + f"WorkingDirectory={HERE}\nExecStart={exe}\n"
             + f"Environment=PYTHONUNBUFFERED=1\nEnvironment=MOTIONWATCH_HOME={DATA_DIR}\n"
-            + "Restart=always\nRestartSec=5\nWatchdogSec=120\nNotifyAccess=main\n\n[Install]\n" + install + "\n")
+            + "Restart=always\nRestartSec=5\nWatchdogSec=120\nNotifyAccess=main\n\n[Install]\n"
+            + ("WantedBy=multi-user.target" if mode == "system" else "WantedBy=default.target") + "\n")
+
+
+def _systemctl_log(mode, *args, timeout=30):
+    """systemctl, and a line in the log when it fails (an unseen failed daemon-reload kept the old unit, Nov. 2026)"""
+    code, out, err = _systemctl(mode, *args, timeout=timeout)
+    if code != 0:
+        log_event("sys", f"systemctl {'--user ' if mode == 'user' else ''}{' '.join(args)} failed ({code}): {(err or out).strip()[:160]}")
+    return code, out, err
+
+
+def _unit_write(mode, path, text):
+    """write the unit and daemon-reload (never a stop / restart: this program may be the service itself). The system
+    unit as a user: with «sudo -n» (no password question). -> "" or the reason it did not work"""
+    if mode == "user" or _is_root():
+        try:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path + ".tmp", "w") as f:
+                f.write(text)
+            os.chmod(path + ".tmp", 0o600)                 # the web password may be in the command line
+            os.replace(path + ".tmp", path)
+        except OSError as e:
+            return f"could not write {path}: {e}"
+        code, _o, err = _systemctl_log(mode, "daemon-reload")
+        return "" if code == 0 else f"systemctl daemon-reload failed: {err[:120]}"
+    if shutil.which("sudo") is None:
+        return "no sudo"
+    fd, tmp = tempfile.mkstemp(prefix="motionwatch-unit-", suffix=".service")
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write(text)
+        code, _o, err = _run(["sudo", "-n", "install", "-m", "600", "-o", "root", "-g", "root", tmp, path], 20)
+    finally:
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+    if code != 0:
+        return f"sudo -n install: {err.strip()[:120] or code}"
+    code, _o, err = _run(["sudo", "-n", "systemctl", "daemon-reload"], 30)
+    return "" if code == 0 else f"sudo -n systemctl daemon-reload: {err.strip()[:120] or code}"
+
+
+def dienst_selftest():
+    """one unit generator for the user and the system service (same options, never a file of one version in ExecStart) and
+    the starter picks the noted program file, else the newest (only for --self-test)"""
+    u, sy = autostart_unit("user"), autostart_unit("system")
+    for k in ("Restart=always", "RestartSec=5", "WatchdogSec=120", "NotifyAccess=main", "StartLimitIntervalSec=0", "Type=simple",
+              "Environment=PYTHONUNBUFFERED=1", "Environment=MOTIONWATCH_HOME=", "--boot", "--headless", START_FILE):
+        assert k in u and k in sy, "unit option missing: " + k
+    assert "WantedBy=default.target" in u and "WantedBy=multi-user.target" in sy and "User=" not in u
+    import shlex
+    for t in (u, sy):
+        ex = shlex.split(next(x for x in t.splitlines() if x.startswith("ExecStart="))[len("ExecStart="):])
+        assert ex[1] == os.path.join(HERE, START_FILE), "the unit starts the starter, never the file of one version"
+    d = tempfile.mkdtemp(prefix="mw_starter_")
+    try:
+        with open(os.path.join(d, START_FILE), "w") as f:
+            f.write(START_CODE)
+        for v in ("3_9_0", "3_10_0"):
+            with open(os.path.join(d, f"webcam_bewegung_{v}.py"), "w") as f:
+                f.write("import sys; print('RUN', __file__.rsplit('_', 3)[1:], sys.argv[1:])\n")
+
+        def run():
+            r = subprocess.run([sys.executable, os.path.join(d, START_FILE), "--boot"], capture_output=True, text=True, timeout=30)
+            return r.stdout.strip()
+        assert run() == "RUN ['3', '10', '0.py'] ['--boot']", "without a note: the newest file (by number), options passed on"
+        with open(os.path.join(d, START_PTR), "w") as f:
+            json.dump({"file": "webcam_bewegung_3_9_0.py"}, f)
+        assert run().startswith("RUN ['3', '9', '0.py']"), "the noted file"
+        with open(os.path.join(d, START_PTR), "w") as f:
+            json.dump({"file": "../webcam_bewegung_9_9_9.py"}, f)
+        assert run().startswith("RUN ['3', '10', '0.py']"), "a note to a missing / outside file: the newest"
+    finally:
+        shutil.rmtree(d, ignore_errors=True)
+    return "user + system unit alike, starter ok"
 
 
 def desktop_notice(title, text, wait=300):
@@ -511,14 +667,13 @@ def autostart_set(on):
         msg = "" if ok else "the system service can only be switched off with sudo: sudo systemctl disable motionwatch"
     elif on:
         try:
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            with open(path, "w") as f:
-                f.write(autostart_unit(mode))
-            os.chmod(path, 0o600)                         # the web password may be in the command line
+            start_launcher_ensure(); start_pointer_set()  # the unit starts the starter, the starter this file
         except OSError as e:
-            return False, f"could not write {path}: {e}"
-        _systemctl(mode, "daemon-reload")
-        code, out, err = _systemctl(mode, "enable", SERVICE_NAME)
+            return False, f"could not write {START_FILE} next to the program: {e}"
+        err = _unit_write(mode, path, autostart_unit(mode))
+        if err.startswith("could not write"):
+            return False, err
+        code, out, err = _systemctl_log(mode, "enable", SERVICE_NAME)
         ok, msg = code == 0, "" if code == 0 else (err or "systemctl enable failed")[:200]
         if ok and mode == "user":                         # start at boot even when nobody logs in
             c2, o2, e2 = _run(["loginctl", "enable-linger", _run_user()], 15)
@@ -526,7 +681,7 @@ def autostart_set(on):
                 msg = ("autostart is on, but it only starts after a login until you run once: "
                        f"sudo loginctl enable-linger {_run_user()}   (or: sudo python3 {os.path.basename(__file__)} --allow-wifi)")
     else:
-        code, out, err = _systemctl(mode, "disable", SERVICE_NAME)
+        code, out, err = _systemctl_log(mode, "disable", SERVICE_NAME)
         ok, msg = code == 0, "" if code == 0 else (err or "systemctl disable failed")[:200]
     if ok:
         CFG["autostart"] = on; save_settings()
@@ -556,27 +711,41 @@ def autostart_check_boot():
 
 
 def autostart_follow_version():
-    """A new version was started by hand while autostart is on: let the service start this file from now on."""
-    if not CFG["autostart"]:
-        return
+    """At every start: the service starts THIS file from now on, when this program is the service itself (e.g. after an
+    update: os.execv, same PID) or was started by hand while autostart is on. Only the note START_PTR changes; the unit is
+    rewritten only when its text is not the one of this version (an older unit: a file name in ExecStart, no watchdog) -
+    a system unit as the user with «sudo -n», without it a hint (the next start of the Pi would bring the old version)."""
     mode = _autostart_mode()
     path = _unit_path(mode)
-    if mode == "system" and not _is_root():
+    if not os.path.isfile(path):
         return
+    if not (CFG["autostart"] or own_service(mode)):
+        return
+    try:
+        start_launcher_ensure()
+        if start_pointer_set():
+            log_event("sys", f"Autostart now starts this version: {os.path.basename(__file__)}")
+    except OSError as e:
+        log_event("sys", f"Autostart: {START_FILE} / {START_PTR} not written: {e}"[:200]); return
     try:
         with open(path) as f:
             old = f.read()
     except OSError:
+        old = None                                       # a system unit the user may not read (sudo … chmod 600)
+    new = autostart_unit(mode)
+    if old == new:
         return
-    if old != autostart_unit(mode):                 # new file or new unit content (e.g. the watchdog of 1.8.2)
-        try:
-            with open(path, "w") as f:
-                f.write(autostart_unit(mode))
-            os.chmod(path, 0o600)
-            _systemctl(mode, "daemon-reload")
-            log_event("sys", f"Autostart now starts this version: {os.path.basename(__file__)}")
-        except OSError:
-            pass
+    if old is None and mode == "system" and not _is_root():
+        code, out, _e = _systemctl(mode, "show", "-p", "ExecStart", "--value", SERVICE_NAME, timeout=10)
+        if code == 0 and START_FILE in out and "--boot" in out:
+            return                                       # already the starter (the text itself is root's)
+    err = _unit_write(mode, path, new)
+    if err:
+        AUTOSTART["msg"] = (f"the autostart service still has an older unit file ({err}) - the next start of the Pi may bring an "
+                            f"older version. Run once: sudo {sys.executable} {os.path.abspath(__file__)} --install-service")
+        log_event("sys", "Autostart: " + AUTOSTART["msg"][:300])
+    else:
+        log_event("sys", f"Autostart: unit {path} updated (starter {START_FILE}, watchdog) - the service keeps running")
 
 
 def boot_hotspot():

@@ -90,7 +90,7 @@ simlive | 5 | -  | python3 werkzeuge/hospiz_test.py --sim "$SIM" --datei "$SIM_H
 
 # ---------------------------------------------------------------------------------------------------- pidienst (echtes systemd, Bookworm-Pakete)
 pidienst | 10 | - | echo "Teste $MW mit den Paketen von Bookworm" && python3 -m py_compile "$MW" && MW_SELFTEST_NO_SIG=1 python3 "$MW" --self-test . | Selbsttest mit Python 3.11 und den Paketen von Raspberry Pi OS Bookworm (Flask / werkzeug 2.2.2, OpenCV 4.6, numpy 1.24 - werkzeuge/pakete_bookworm.txt)
-pidienst | 12 | - | sudo -E env "PATH=$PATH" python3 werkzeuge/pi_dienst_test.py --ci --datei "$MW" | Pi-Dienst: MoveEye als echter systemd-Benutzerdienst (Test-Benutzer mit linger) - kalter Start, kill -9 / stop, Stromausfall, Start-Wächter, Update mit belegtem Port (13.11.2026), zweites Update bei offenem Live-Bild; System-Dienst von --install-service
+pidienst | 15 | - | sudo -E env "PATH=$PATH" python3 werkzeuge/pi_dienst_test.py --ci | Pi-Dienst: quelle/ gebaut (ALT+1, ALT+2) als echter systemd-Dienst (Test-Benutzer mit linger) - kalter Start, kill -9 / stop, Stromausfall, Start-Wächter, ohne Zusatzdatei, Update mit belegtem Port (13.11.2026), zweites Update bei offenem Live-Bild, Neustart des Pi; System-Dienst (--install-service): alte Unit wird beim Update einmal umgestellt, Neustart bringt die neue Version, Start-Wächter, gleiche Unit wie neu eingerichtet
 
 # ---------------------------------------------------------------------------------------------------- hand (nicht im CI)
 # (zurzeit leer - Beispiel:  hand | - | - | python3 werkzeuge/xyz_test.py | braucht ein echtes Gerät am USB)
