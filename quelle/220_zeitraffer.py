@@ -53,7 +53,7 @@ def tl_path(name):
 
 
 def tl_cleanup():
-    limit = CFG["timelapse_max_gb"] * 1024 ** 3
+    limit = CFG["timelapse_max_gb"] * 1024 ** 3 * (0.9 if CFG.get("timelapse_daily") else 1.0)   # 639zzzv: room for the daily videos
     try:
         files = [(n, os.path.getsize(os.path.join(tl_dir(), n))) for n in os.listdir(tl_dir()) if TL_PHOTO_RE.match(n)
                  and not _read_sidecar("timelapse/" + n).get("fav")]          # starred photos stay

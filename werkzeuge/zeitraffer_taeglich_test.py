@@ -201,6 +201,23 @@ C["timelapse_max_gb"] = 2.0
 # 10. setting off with waiting days
 fotos("20261207", 3); C["timelapse_daily"] = False; nacht(2026, 12, 8, 0, 30)
 ok(ns["tld_tick"]() == "off" and not os.path.exists(os.path.join(tld(), "tlv_20261207_auto.mp4")), "Schalter aus: wartende Tage bleiben ohne Video")
+# 10b. photo cleanup leaves room for the daily videos: photos at most ~90 % of the max. folder, oldest first, videos never
+shutil.rmtree(tld()); fotos("20261210", 20)
+open(os.path.join(tld(), "tlv_20261209_auto.mp4"), "wb").write(b"v" * 1000)
+open(os.path.join(tld(), "tlv_20261209_101010.mp4"), "wb").write(b"v" * 1000)
+ph = lambda: sorted(ns["tl_photos"]())
+psum = lambda: sum(os.path.getsize(os.path.join(tld(), n)) for n in ph())
+alle, tot = ph(), psum()
+C["timelapse_max_gb"] = tot * 1.02 / 1024 ** 3
+C["timelapse_daily"] = False; ns["tl_cleanup"]()
+ok(ph() == alle, "Schalter aus: Fotos bis 100 %% wie bisher (%d Fotos bleiben)" % len(alle))
+C["timelapse_daily"] = True; ns["tl_cleanup"]()
+rest = ph()
+ok(rest and len(rest) < len(alle) and rest == alle[len(alle) - len(rest):] and psum() <= 0.9 * tot * 1.02,
+   "Schalter an: Fotos höchstens 90 %% (%d von %d bleiben, die ältesten gelöscht)" % (len(rest), len(alle)))
+ok(videos() == ["tlv_20261209_101010.mp4", "tlv_20261209_auto.mp4"], "Videos nie gelöscht (%s)" % videos())
+ok(any("old photo(s) deleted" in x for x in logs), "Protokoll-Zeile der Aufräumung")
+C["timelapse_max_gb"] = 2.0
 # 11. settings of an older version: on once + notice; own choice «off» later stays
 C.update(timelapse_daily=False, tld_mig=False, tld_note="", tld_seen=[])
 ns["apply_settings"]({"cfg": {"timelapse_on": True, "timelapse_daily": False}})

@@ -11,7 +11,8 @@
 #     Nie während Alarm, Aufnahme, Folgen (gleiche Regel wie das Zeitraffer-Foto, Wrapper um Timelapse.update) - wartet und
 #     versucht es jede Minute wieder bis 06:00; beginnt ein Alarm mitten im Video, wird ffmpeg abgebrochen und später neu
 #     gemacht. Akku schwach (Akku-Sparen, Teil 105 batt_save_active) = diese Nacht nichts, nächste Nacht nachholen.
-#   * Die Fotos bleiben (tl_cleanup / timelapse_max_gb wie bisher). Wäre der Zeitraffer-Ordner mit dem Video grösser als
+#   * Die Fotos bleiben; ist der Schalter an, räumt tl_cleanup (220) die Fotos schon bei 90 % von timelapse_max_gb auf
+#     (älteste zuerst, Videos nie) - Platz für die Videos. Wäre der Zeitraffer-Ordner mit dem Video grösser als
 #     timelapse_max_gb, kommt das Video nicht dazu (eine Zeile im Protokoll, der Tag in tld_skip, kein neuer Versuch); ebenso
 #     ein Tag, an dem ffmpeg scheitert.
 # Test: werkzeuge/zeitraffer_taeglich_test.py (falsche Uhr, falsche Fotos, echtes ffmpeg falls da).
