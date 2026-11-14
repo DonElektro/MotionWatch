@@ -77,6 +77,14 @@ werkzeuge/schach_fern_test.py). Remis, «Zug zurück» und Revanche (Farben geta
 Lern-Modus und Balken rechnen nur auf dem eigenen Handy (bei zwei Handys zuerst aus); beide sehen «Tipps sind an», wenn
 einer sie nutzt. In diesem Ordner liegt kein Server-Code.
 
+Bewertungsbalken (ab GS-1.22, wie Lichess): senkrecht links neben dem Brett, Weiss von unten (dreht mit dem Brett), mit
+Zahl aus Sicht von Weiss: «+1.3», «−0.8», «M3» / «−M3» bei Matt, am Ende «1–0» / «0–1» / «½–½». Füllung über die Gewinn-
+Chance (bei ±10 Bauern fast voll), weich animiert. Gerechnet wird im Web Worker (motor.js) mit voller Stärke, höchstens
+0,35 s und Tiefe 16 je Stellung, nur wenn ein Mensch am Zug ist (gegen den Computer und zu zweit an einem Gerät nach
+jedem Zug); ein Zug des Computers bricht die Rechnung sofort ab, das Brett wartet nie. Schalter «Bewertungsbalken» in den
+Einstellungen (Standard an, gemerkt in «moveeye-schach-einst»; bei zwei Handys eigener Schalter, Standard aus). Rotlicht
+von MoveEye («mw-night», nur lesbar, wenn das Spiel über die Hauptadresse läuft): Seite und Balken rot.
+
 Vorziehen (Premove, ab GS-1.18): während der Gegner (Computer oder das andere Handy) dran ist, darf man einen Zug
 vorziehen (Ziehen oder Tippen, blau markiert). Kommt der Gegenzug, wird er sofort gespielt, wenn er dann erlaubt ist,
 sonst still verworfen. Einer zur Zeit; Tippen auf ein leeres Feld, neben das Brett oder «✕ Vorzug» hebt ihn auf.
