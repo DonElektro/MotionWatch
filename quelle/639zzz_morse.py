@@ -666,7 +666,8 @@ _IMP["sys"] = re.compile(_IMP["sys"].pattern + r"|Morse mode")       # «Morse-M
 
 MORSE = {"until": 0.0, "t0": 0.0, "by": "", "tx": None, "rx": None, "arx": None, "alive": None, "a_t": 0.0, "own_light": 0.0, "own_sound": 0.0,
          "own_rst": [False, False], "peer": None, "msgs": deque(maxlen=20), "live": None, "last": None, "relearn": False,
-         "lock": threading.RLock(), "tx_starts": [], "push_t": [], "push_held": 0, "say_t": 0.0, "out_n": 0, "lab": {}, "err_t": 0.0, "seq": 0}
+         "lock": threading.RLock(), "tx_starts": [], "push_t": [], "push_held": 0, "say_t": 0.0, "out_n": 0, "lab": {}, "err_t": 0.0, "seq": 0,
+         "selftest": False}             # selftest: morse_selftest runs - no thread for picture / push / reading aloud / tone
 
 
 def morse_on():
@@ -1165,6 +1166,8 @@ def morse_beep_chunks(tl, rate, lead=0.6):
 
 def morse_beep_play(tx):
     """the tone on the loudspeaker in the background (the way of sound_play, 250: «sound_stop» ends it)"""
+    if MORSE["selftest"]:
+        return True                                          # the self-test plays nothing (no thread that outlives it)
     try:
         vol = max(0.0, min(100.0, float(CFG.get("clap_volume", 60)))) / 100.0
         sound_stop(); talk_stop()
@@ -1249,6 +1252,8 @@ def morse_rx_text(text, source="camera", info=None):
         m["test"] = True                                     # «Gegenstelle testen»: shown on the page, no push, nothing read aloud
         MORSE["peer"] = {"t": m["t"], "ts": now, "wpm": m["wpm"], "src": source, "full": MORSE_TEST_TEXT in txt}
         return True
+    if MORSE["selftest"]:
+        return True                                          # the self-test: no picture, push, reading aloud (a thread would outlive it)
     if MORSE["out_n"] >= 3:
         return True                                          # the outputs are busy: the text is in the list and in the log
     MORSE["out_n"] += 1
@@ -2051,6 +2056,8 @@ def morse_selftest():
     keepm = dict(MORSE, msgs=deque(MORSE["msgs"], maxlen=20), tx_starts=list(MORSE["tx_starts"]))
     sv, lg, ws = save_settings, log_event, STATE.get("lights")
     logs = []
+    n_thr = sum(1 for t_ in threading.enumerate() if t_.name in ("morse-rx", "morse-tone"))
+    MORSE["selftest"] = True                                 # (MORSE.update(keepm) below sets it back)
     try:
         globals()["save_settings"] = lambda *a, **k: None
         globals()["log_event"] = lambda k, t: logs.append(t)
@@ -2109,9 +2116,7 @@ def morse_selftest():
         assert morse_rx_text("V TEST", "camera") and not MORSE["peer"]["full"] and MORSE["msgs"][0]["test"], "the test signal read in part"
         assert morse_rx_text("T UVV TEST", "camera") and not MORSE["peer"]["full"] and MORSE["msgs"][0]["test"], "garbled at the start: in part"
         assert morse_rx_text("TESTE DAS", "camera") and not MORSE["msgs"][0]["test"], "another text is no test signal"
-        on_ = MORSE["out_n"]; MORSE["out_n"] = 3              # «outputs busy»: no output thread from the self-test (it would outlive it)
         assert morse_rx_text("CQ TEST DE HB9", "camera") and not MORSE["msgs"][0]["test"], "a message with the word TEST is no test signal"
-        MORSE["out_n"] = on_
         assert all(morse_is_test(x) for x in ("VVV TE", "UVV TEST", "VVIA TEST", "V TEST", "VVV")), "the test signal, also garbled"
         assert not any(morse_is_test(x) for x in ("T", "TEST ME", "VIELEN DANK", "CQ TEST DE HB9", "VICTOR")), "messages stay messages"
         MORSE["tx_starts"] = []; CFG["light_ir_out"] = "gpio:27"
@@ -2140,7 +2145,8 @@ def morse_selftest():
     finally:
         globals()["save_settings"], globals()["log_event"] = sv, lg
         CFG.update(keep); STATE["lights"] = ws
-        MORSE.update(keepm); MORSE["until"] = 0.0; MORSE["tx"] = None; MORSE["relearn"] = False
+        MORSE.update(keepm); MORSE["until"] = 0.0; MORSE["tx"] = None; MORSE["relearn"] = False; MORSE["selftest"] = False
+    assert sum(1 for t_ in threading.enumerate() if t_.name in ("morse-rx", "morse-tone")) <= n_thr, "the self-test started an output thread"
     assert "No sound is stored" in MORSE_PAGE and "mo-peer-go" in MORSE_PAGE, "the page: privacy sentence, test of the other MoveEye"
     assert "/*MORSEDE*/" in MORSE_PAGE and 'href="/more"' in MORSE_PAGE and "innerHTML" not in MORSE_PAGE, "the page: way back, texts, no innerHTML"
     return "table, timing, speed limits per output, one entry for web and window (rights, PIN), mode pauses and ends by itself (never longer than the maximum), one transmission, light as before, received text cleaned, by sound, test signal of the other MoveEye"

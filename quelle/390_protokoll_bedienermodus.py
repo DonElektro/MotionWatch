@@ -1021,6 +1021,9 @@ class UpdateWatcher:
 
 def self_test(folder=""):
     """--self-test [FOLDER]: quick checks without camera / hardware (also run on GitHub for every version). Returns 0 = all ok."""
+    if WATCH_REF.get("w") is not None:                       # never inside a running program: the checks change settings and state
+        print("self-test refused: MoveEye runs in this process - start it on its own: python3 <file> --self-test", flush=True)
+        return 2
     res = []
 
     def chk(name, fn):

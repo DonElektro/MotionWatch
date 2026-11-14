@@ -1457,7 +1457,22 @@ def main():
             return 1 if FEHLER else 0
         teil_a(ns); teil_b(ns); teil_c(ns); teil_d(ns); teil_e(ns); teil_i(ns)
         if home:
-            ok(ns["morse_selftest"]().startswith("table"), "Selbsttest morse_selftest (Modus, Grenzen, Licht wie vorher, Text gereinigt)")
+            # der Selbsttest in einem eigenen Prozess - nie neben einem laufenden Programm (seine Fäden fänden dessen Zustand vor)
+            env_ = dict(os.environ, MW_SELFTEST_NO_SIG="1", MOTIONWATCH_HOME=tempfile.mkdtemp(prefix="mw_morse_s_"))
+            t_s = time.time()
+            try:
+                r_ = subprocess.run([sys.executable, datei, "--self-test"], env=env_, capture_output=True, text=True, timeout=900)
+                aus_, rc_ = r_.stdout + r_.stderr, r_.returncode
+            except subprocess.TimeoutExpired:
+                aus_, rc_ = "timeout", -1
+            shutil.rmtree(env_["MOTIONWATCH_HOME"], ignore_errors=True)
+            zeile = [z for z in aus_.splitlines() if "(639zzz)" in z]
+            ok(rc_ == 0 and zeile and zeile[0].startswith("✓"), f"Selbsttest (eigener Prozess, {time.time() - t_s:.0f} s): {(zeile or [aus_[-200:]])[0][:120]}")
+            ns["WATCH_REF"]["w"] = object()                          # wie in einem laufenden Programm
+            try:
+                ok(ns["self_test"]() == 2, "Selbsttest verweigert, wenn im selben Prozess MoveEye läuft")
+            finally:
+                ns["WATCH_REF"]["w"] = None
             ok(abs(ns["MORSE_LIMIT_K"] - GRENZE_K) < 1e-9, "die Grenze der Seite (MORSE_LIMIT_K) ist die der Messung")
             teil_f(datei, ns, a.browser, a.bilder)
             teil_h(datei)
