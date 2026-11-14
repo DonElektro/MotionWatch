@@ -8,6 +8,8 @@
      Grenzen (keine Zahl, NaN, ausserhalb, zu breit), Eimer (429), Privatsphäre-Zone bleibt schwarz im Ausschnitt, schärfer als
      derselbe Ausschnitt aus dem Live-Strom (Laplace-Varianz), Scharfbild pausiert bei Person im Bild, Kopf zielen erlaubt / nicht
      (Kind 403, Not-Aus 409), der Ausschnitt folgt dem Ort, wenn der Kopf dreht, Gast nie den Kopf.
+  D) Fenster (Tk) mit einem Ersatz-tkinter (hier gibt es kein tkinter, kein echtes Fenster): Knopf «🔍 Lupe», Rahmen ziehen, Mausrad,
+     verschieben, Doppelklick, Esc; Scharfbild über dieselbe lupe_crop() und denselben Eimer lupe_rate(), Kopf über lupe_aim() (Not-Aus).
   C) --browser (Playwright, Chromium): Handy 390 × 844 mit Berührung (echte Touch-Ereignisse über CDP): Knopf «Lupe», Rahmen
      ziehen, scharfes Bild, zwei Finger zoomen (die Seite zoomt nicht, scrollt nicht), ein Finger verschiebt, Doppeltipp = 1:1,
      nochmals = zu; zwei Finger auf dem normalen Bild öffnen die Lupe; quer 844 × 390; Vollbild (#vo-lupe); PC: Maus ziehen,
@@ -588,6 +590,168 @@ def teil_c(base, gp, bilder, users):
         br.close()
 
 
+
+# ---------------------------------------------------------------------------------------------------------------------- D
+FAKE_TK = r"""
+import sys, types
+class W:
+    made = []
+    def __init__(self, master=None, *a, **k):
+        self.master = master; self.k = dict(k); self.binds = {}; self.placed = None; self.dead = False; W.made.append(self)
+    def pack(self, *a, **k): pass
+    def grid(self, *a, **k): pass
+    def place(self, *a, **k): self.placed = k
+    def place_forget(self): self.placed = None
+    def config(self, **k): self.k.update(k)
+    configure = config
+    def cget(self, n): return self.k.get(n, "")
+    def bind(self, seq, fn=None, add=None):
+        if add and seq in self.binds: self.binds[seq].append(fn)
+        else: self.binds[seq] = [fn]
+    def unbind(self, seq): self.binds.pop(seq, None)
+    def destroy(self): self.dead = True
+    def winfo_exists(self): return not self.dead
+    def winfo_width(self): return self.k.get("_w", 640)
+    def winfo_height(self): return self.k.get("_h", 400)
+    def after(self, ms, fn=None, *a): return "id"
+    def __getattr__(self, n):
+        if n.startswith("__"): raise AttributeError(n)
+        return lambda *a, **k: None
+tk = types.ModuleType("tkinter")
+for n in ("Frame", "Button", "Label", "Toplevel", "Canvas", "Entry", "Text", "Tk", "Checkbutton", "Scale", "Menu", "Scrollbar", "Listbox", "PhotoImage", "Radiobutton", "Spinbox", "LabelFrame", "Message", "OptionMenu", "PanedWindow", "Event", "Misc", "Widget"):
+    setattr(tk, n, type(n, (W,), {}))
+class Var:
+    def __init__(self, *a, value=None, **k): self.v = value
+    def get(self): return self.v
+    def set(self, v): self.v = v
+    def trace_add(self, *a, **k): pass
+tk.StringVar = tk.IntVar = tk.BooleanVar = tk.DoubleVar = Var
+tk.TclError = Exception
+for n in ("END", "LEFT", "RIGHT", "BOTH", "X", "Y", "W", "E", "N", "S", "NW", "NE", "HORIZONTAL", "VERTICAL", "DISABLED", "NORMAL"):
+    setattr(tk, n, n.lower())
+def _mod(name):
+    m = types.ModuleType(name); m.__getattr__ = lambda n: (lambda *a, **k: None) if n[:1].islower() else type(n, (W,), {}); sys.modules[name] = m; return m
+ttk = _mod("tkinter.ttk"); tk.ttk = ttk
+for n in ("messagebox", "filedialog", "simpledialog", "colorchooser", "font"):
+    setattr(tk, n, _mod("tkinter." + n))
+sys.modules["tkinter"] = tk
+pt = types.ModuleType("PIL.ImageTk")
+class PhotoImage:
+    def __init__(self, im, *a, **k): self.im = im
+pt.PhotoImage = PhotoImage
+sys.modules["PIL.ImageTk"] = pt
+import PIL; PIL.ImageTk = pt
+"""
+
+
+def teil_d(datei):
+    """the window (Tk) with a fake tkinter (no tkinter here): the same server functions, the mouse, the picture"""
+    print("D) Fenster (Tk) mit Ersatz-tkinter – kein echtes Fenster", flush=True)
+    import numpy as np
+    exec(FAKE_TK, {})
+    home = tempfile.mkdtemp(prefix="mw_lupe_tk_")
+    os.environ["MOTIONWATCH_HOME"] = home
+    ns = {"__name__": "mw_lupe_tk", "__file__": os.path.abspath(datei)}
+    exec(compile(open(datei, encoding="utf-8").read(), datei, "exec"), ns)
+    ok(ns["GUI_OK"], "Ersatz-tkinter geladen: GUI_OK, die Fenster-Teile sind gebaut")
+    ns["log_event"] = lambda *a, **k: None
+    App, CFG, tkm = ns["App"], ns["CFG"], sys.modules["tkinter"]
+    ok(App._update_video is ns["_lupe_tk_update_video"] and App._build_left is ns["_lupe_tk_build_left"], "Fenster: Lupe hängt an _build_left / _update_video")
+    ns["live_has_head"] = lambda: True
+    ns["v3_cur"] = lambda: "head"
+    CFG.update(pan=50.0, tilt=50.0, tk_night=False, servo_estop=False)
+    calls = {"crop": [], "rate": [], "aim": []}
+    frame = np.zeros((360, 640, 3), np.uint8); frame[:, 320:] = (0, 200, 0)          # the live picture: left black, right green
+    sharp = np.full((200, 200, 3), (255, 0, 0), np.uint8)                         # the sharp part: blue
+    rate0, aim0 = ns["lupe_rate"], ns["lupe_aim"]
+
+    def crop_spy(cam, box, ref, ow):
+        calls["crop"].append((cam, list(box), ref, ow))
+        import cv2
+        return cv2.imencode(".png", sharp)[1].tobytes(), {"X-Lupe-Box": ",".join("%.5f" % v for v in box), "X-Lupe-Src": "sensor",
+                                                          "X-Lupe-Note": "", "X-Lupe-Age": "0.2", "X-Lupe-Pose": "%.3f,%.3f" % tuple(ns["servo_pos_deg"]())}
+    ns["lupe_crop"] = crop_spy
+    ns["lupe_rate"] = lambda key: (calls["rate"].append(key), rate0(key))[1]
+    ns["lupe_aim"] = lambda box, who, lang=None: (calls["aim"].append((list(box), who)), aim0(box, who, lang))[1]
+
+    class Watch:
+        frame_out = frame
+    a = object.__new__(App)
+    a.root = tkm.Frame(); a.watch = Watch(); a.tab = "live"; a.video = None
+
+    def base(self, left):
+        vh = tkm.Frame(left); self.video = tkm.Label(vh); self.video.k.update(_w=640, _h=400)
+    ns["_lupe_tk_build_left_base"] = base
+    a.toggle_video_only = lambda: calls.setdefault("fs", []).append(1)
+    a._build_left(tkm.Frame())
+    ok(a.b_lupe is not None and "Lupe" in a.b_lupe.cget("text") and a.b_lupe.placed, f"Fenster: Knopf «{a.b_lupe.cget('text')}» oben rechts im Live-Bild")
+    ok("<Escape>" in a.root.binds, "Fenster: Esc ist gebunden")
+    a.b_lupe.cget("command")()
+    L = a._lupe
+    bar, st = a._lupe_w
+    texts = [w.cget("text") for w in tkm.Button.__mro__[1].made if isinstance(w, tkm.Button) and w.master is bar]
+    ok(L["on"] and "✕ Lupe" in texts and "1:1" in texts and "🎯 Kopf folgt" in texts and "◐ Scharf" in texts and a.b_lupe.placed is None,
+       f"Fenster: Lupe offen, Leiste {texts}")
+    a._update_video()
+    g = L["geo"]
+    ok(g == (0.0, 20.0, 640.0, 360.0) and a.photo.im.size == (640, 360), f"Fenster: Bild eingepasst ({g}, {a.photo.im.size})")
+
+    class Ev:
+        def __init__(self, x, y, **k): self.x = x; self.y = y; self.__dict__.update(k)
+    fire = lambda seq, e: [fn(e) for fn in a.video.binds.get(seq, [])]
+    # drag a box over the right half (green) -> zoom, the head turns there (the window = the administrator at the device)
+    fire("<ButtonPress-1>", Ev(400, 120)); fire("<B1-Motion>", Ev(480, 200)); fire("<B1-Motion>", Ev(560, 260))
+    ok(L["sel"] is not None, "Fenster: Rahmen wird gezeigt, während die Maus zieht")
+    a._update_video()
+    fire("<ButtonRelease-1>", Ev(560, 260))
+    v = L["v"]
+    ok(v[2] < 0.45 and calls["aim"] and calls["aim"][-1][1] == "window" and CFG["pan"] > 50.0,
+       f"Fenster: Rahmen = Zoom ×{1 / v[2]:.1f}, Kopf dreht über lupe_aim (wer: Fenster), Schwenk {CFG['pan']:.1f} %")
+    # the sharp part: same function (lupe_crop) and the same bucket (lupe_rate) as /api/lupe/crop.jpg
+    L["next"] = 0.0
+    a._update_video()
+    for _i in range(50):
+        if L["hi"] is not None:
+            break
+        time.sleep(0.05)
+    ok(calls["crop"] and calls["crop"][-1][0] == "head" and calls["rate"][-1] == "tk|window" and calls["crop"][-1][2] is not None,
+       f"Fenster: Scharfbild über lupe_crop (Kopf, mit Richtung) und den Eimer «tk|window» ({calls['crop'][-1] if calls['crop'] else '-'})")
+    a._update_video()
+    im = np.array(a.photo.im)
+    ok(im[180, 320].tolist() == [0, 0, 255], f"Fenster: das Scharfbild liegt über dem Bereich (Mitte {im[180, 320].tolist()})")
+    ok("scharf: voller Kamera-Sensor" in st.cget("text"), f"Fenster: Anzeige «{st.cget('text')[:50]}»")
+    # «Sharp» off: only the live picture
+    L["sharp"] = False; a._update_video()
+    ok(np.array(a.photo.im)[180, 320].tolist() != [0, 0, 255] and "Live-Bild, vergrössert" in st.cget("text"), "Fenster: «◐ Scharf» aus = nur das Live-Bild")
+    L["sharp"] = True
+    # wheel, drag = move, rate limit
+    s0 = L["v"][2]
+    fire("<Button-4>", Ev(320, 200, num=4)); ok(L["v"][2] < s0, "Fenster: Mausrad (Linux Button-4) zoomt hinein")
+    fire("<MouseWheel>", Ev(320, 200, delta=-120)); ok(abs(L["v"][2] - s0) < 1e-9, "Fenster: Mausrad zurück")
+    x0 = ns["lupe_tk_view"](L)[0][0]
+    fire("<ButtonPress-1>", Ev(300, 200)); fire("<B1-Motion>", Ev(400, 200)); fire("<ButtonRelease-1>", Ev(400, 200))
+    ok(ns["lupe_tk_view"](L)[0][0] < x0, "Fenster: Ziehen verschiebt (vergrössert)")
+    ns["LUPE_RL"]["tk|window"] = (0.0, time.time())
+    n = len(calls["crop"]); L["next"] = 0.0; L["busy"] = True; ns["lupe_tk_fetch"](L)
+    ok(len(calls["crop"]) == n, "Fenster: Eimer leer = kein Ausschnitt (dieselbe Grenze wie im Web)")
+    # head conflict: emergency stop -> no turning, the reason
+    CFG["servo_estop"] = True
+    ns["lupe_tk_box_done"](L, [0.1, 0.1, 0.2, 0.2], "de")
+    ok("Not-Aus" in L["msg"], f"Fenster: Not-Aus – der Kopf folgt nicht ({L['msg']})")
+    CFG["servo_estop"] = False
+    L["follow"] = False; n = len(calls["aim"])
+    ns["lupe_tk_box_done"](L, [0.1, 0.1, 0.2, 0.2], "de")
+    ok(len(calls["aim"]) == n, "Fenster: «🎯 Kopf folgt» aus = nur zoomen")
+    # double click: 1:1, again: closed; afterwards double click = full screen as before
+    fire("<Double-Button-1>", Ev(320, 200)); ok(L["on"] and L["v"][2] == 1.0, "Fenster: Doppelklick = ganzes Bild")
+    fire("<Double-Button-1>", Ev(320, 200)); ok(not L["on"] and bar.dead and a.b_lupe.placed, "Fenster: nochmals Doppelklick = Lupe zu, Knopf wieder da")
+    fire("<Double-Button-1>", Ev(320, 200)); ok(calls.get("fs"), "Fenster: danach Doppelklick = Vollbild wie bisher")
+    a._lupe_open(); [fn(None) for fn in a.root.binds["<Escape>"]]
+    ok(not L["on"], "Fenster: Esc schliesst die Lupe")
+    a._lupe_open(); a._update_video(); a._build_left(tkm.Frame())
+    ok(not L["on"], "Fenster: Live-Bereich neu gebaut (Reiter, Ansicht) = ohne Lupe, kein altes Fenster-Element")
+    shutil.rmtree(home, ignore_errors=True)
+
 def main():
     ap = argparse.ArgumentParser(description="Test «🔍 Lupe» (639zzzl)")
     ap.add_argument("--datei", default="")
@@ -598,6 +762,7 @@ def main():
     t0 = time.time()
     teil_a(datei)
     teil_b(datei, a.browser, a.bilder)
+    teil_d(datei)
     print(f"{N['ok']} Prüfungen ok, {len(FEHLER)} Fehler ({time.time() - t0:.0f} s)")
     for f in FEHLER:
         print("  ✗ " + f)

@@ -79,14 +79,21 @@ def lupe_box(x, y, w, h):
     return [x, y, w, h]
 
 
-def lupe_shift(box, ref, pose, fov):
-    """the region chosen while the head looked at ref (pan, tilt °) - where it is in a picture taken at pose (°): the place in
-    the world stays, the picture moved. -> (box clamped, how much of it was outside 0..1)"""
-    x, y, w, h = box
+def lupe_world_xy(box, ref, pose, fov):
+    """(x, y) of a region chosen at head direction ref (pan, tilt °) in a picture taken at pose (°) - not clamped"""
+    x, y = box[0], box[1]
     if ref is not None and pose is not None and fov:
         dp = (ref[0] - pose[0] + 180.0) % 360.0 - 180.0
         x += dp / max(1e-6, float(fov[0]))
         y -= (ref[1] - pose[1]) / max(1e-6, float(fov[1]))
+    return x, y
+
+
+def lupe_shift(box, ref, pose, fov):
+    """the region chosen while the head looked at ref (pan, tilt °) - where it is in a picture taken at pose (°): the place in
+    the world stays, the picture moved. -> (box clamped, how much of it was outside 0..1)"""
+    w, h = box[2], box[3]
+    x, y = lupe_world_xy(box, ref, pose, fov)
     cx, cy = min(1.0 - w, max(0.0, x)), min(1.0 - h, max(0.0, y))
     return [cx, cy, w, h], max(abs(cx - x) / w, abs(cy - y) / h)
 
@@ -868,6 +875,355 @@ LUPE_JS = r"""
 """
 
 
+
+# ---- the window (Tk, Besitzer: «Web und Fenster immer beide»): «🔍 Lupe» on the live picture ------------------------------------
+# The same source and rules as the web: the sharp part comes from lupe_crop() (Pi: full-sensor still in the camera loop, privacy
+# zones black, pauses), the bucket lupe_rate("tk|window"), turning the head lupe_aim() / lupe_head_block() (the window is the
+# administrator at the device, like «Untersuchen» 639zze), the place in the world lupe_shift() / lupe_world_xy(). Only drawing and the
+# mouse are here: drag = box (whole picture) or move (zoomed), wheel = zoom at the pointer, double click = 1:1 / close, Esc / «✕ Lupe».
+# The touch screen of the Pi gives Tk mouse events (one finger: drag / double tap; no pinch in Tk - the wheel or a box instead).
+LUPE_TK_KEY = "tk|window"
+
+
+def lupe_tk_cam():
+    """which camera the big picture of the window shows (639zv): head / wide / thermal"""
+    try:
+        return v3_cur()
+    except Exception:
+        return "thermal" if CFG.get("thermal_on") else "head"
+
+
+def lupe_tk_new():
+    return {"on": False, "v": [0.0, 0.0, 1.0], "R": None, "hi": None, "busy": False, "next": 0.0, "g": None, "sel": None,
+            "follow": True, "sharp": True, "msg": "", "msg_t": 0.0, "geo": None, "click": 0.0, "n": 0}
+
+
+def lupe_tk_follow():
+    """the place in the world can be followed in the window: a head and the head camera"""
+    return lupe_tk_cam() == "head" and lupe_follow_ok()
+
+
+def lupe_tk_view(L):
+    """the view in the coordinates of the picture now -> ([x, y, s], how far out)"""
+    x, y, s = L["v"]
+    f = lupe_tk_follow()
+    b, out = lupe_shift([x, y, s, s], L["R"] if f else None, servo_pos_deg() if f else None, cam_fov() if f else None)
+    return [b[0], b[1], s], out
+
+
+def lupe_tk_set(L, x, y, s):
+    """a new view from the mouse: relative to the head direction of now"""
+    s = min(1.0, max(1.0 / LUPE_ZMAX, s))
+    L["v"] = [min(1.0 - s, max(0.0, x)), min(1.0 - s, max(0.0, y)), s]
+    L["R"] = list(servo_pos_deg()) if lupe_tk_follow() else None
+
+
+def lupe_tk_render(L, frame, w, h):
+    """the picture for the window: the live picture of the view, enlarged, and over it the sharp part where it is -> BGR"""
+    fh, fw = frame.shape[:2]
+    k = min(w / fw, h / fh)
+    ow, oh = max(1, int(fw * k)), max(1, int(fh * k))
+    (x, y, s), _out = lupe_tk_view(L)
+    x0, y0 = int(x * fw), int(y * fh)
+    x1, y1 = max(x0 + 1, int(round((x + s) * fw))), max(y0 + 1, int(round((y + s) * fh)))
+    out = cv2.resize(frame[y0:y1, x0:x1], (ow, oh), interpolation=cv2.INTER_LINEAR if s < 1.0 else cv2.INTER_AREA)
+    hi = L["hi"]
+    if hi is not None and L["sharp"] and s < 0.95 and hi["img"] is not None:
+        f = lupe_tk_follow()
+        hx, hy = lupe_world_xy(hi["box"], hi["pose"] if f else None, servo_pos_deg() if f else None, cam_fov() if f else None)
+        tx, ty = int(round((hx - x) / s * ow)), int(round((hy - y) / s * oh))
+        tw, th = max(1, int(round(hi["box"][2] / s * ow))), max(1, int(round(hi["box"][3] / s * oh)))
+        if tw * th < 25_000_000:
+            part = cv2.resize(hi["img"], (tw, th), interpolation=cv2.INTER_AREA if tw < hi["img"].shape[1] else cv2.INTER_LINEAR)
+            a0, b0, a1, b1 = max(0, tx), max(0, ty), min(ow, tx + tw), min(oh, ty + th)
+            if a1 > a0 and b1 > b0:
+                out = out.copy()
+                out[b0:b1, a0:a1] = part[b0 - ty:b1 - ty, a0 - tx:a1 - tx]
+    if L["sel"]:
+        sx, sy, sw, sh = L["sel"]
+        cv2.rectangle(out, (int(sx * ow), int(sy * oh)), (int((sx + sw) * ow), int((sy + sh) * oh)), (77, 211, 255), 2)
+    return out
+
+
+def lupe_tk_fetch(L):
+    """one sharp part (in a thread): the same function, bucket and rules as /api/lupe/crop.jpg"""
+    try:
+        (x, y, s), _out = lupe_tk_view(L)
+        f = lupe_tk_follow()
+        if not lupe_rate(LUPE_TK_KEY):
+            return
+        jpg, hd = lupe_crop(lupe_tk_cam(), [x, y, s, s], list(servo_pos_deg()) if f else None, 1600)
+        if jpg is None:
+            L.update(hi=None, msg=tr_err(hd), msg_t=time.time() + 5)
+            return
+        img = cv2.imdecode(np.frombuffer(jpg, np.uint8), cv2.IMREAD_COLOR)
+        box = [float(v) for v in hd["X-Lupe-Box"].split(",")]
+        pose = [float(v) for v in hd["X-Lupe-Pose"].split(",")] if hd.get("X-Lupe-Pose") else None
+        L["hi"] = {"img": img, "box": box, "pose": pose, "src": hd.get("X-Lupe-Src"), "note": hd.get("X-Lupe-Note") or "",
+                   "age": float(hd.get("X-Lupe-Age") or 0)}
+    except Exception as e:
+        L.update(hi=None, msg=str(e)[:80], msg_t=time.time() + 5)
+    finally:
+        L["busy"] = False
+        L["next"] = time.time() + LUPE_REFRESH_MS / 1000.0
+
+
+def lupe_tk_status(L):
+    """the line under the buttons (the same texts as the web page)"""
+    (x, y, s), out = lupe_tk_view(L)
+    z = 1.0 / s
+    parts = ["×%.1f" % z if z < 9.95 else "×%d" % round(z)]
+    hi = L["hi"]
+    cam = lupe_tk_cam()
+    if z > 1.001:
+        if cam == "thermal":
+            parts.append(tr("only enlarged - no sharper source"))
+        elif not L["sharp"]:
+            parts.append(tr("live picture, enlarged"))
+        elif hi:
+            parts.append(tr({"sensor": "sharp: full camera sensor", "frame": "sharp: full camera picture", "wide": "sharp: full wide-angle picture"}
+                            .get(hi["src"], "only enlarged - no sharper source")))
+            note = {"alarm": "Sharp picture paused: alarm or person in view", "moving": "Sharp picture paused while the head moves",
+                    "eco": "Sharp picture paused: battery saving", "error": "No sharp picture from the camera - the live picture is used"}.get(hi["note"])
+            if note:
+                parts.append(tr(note))
+        if out > 0.5 and lupe_tk_follow():
+            parts.append(tr("The area is no longer in the picture"))
+    else:
+        parts.append(tr("Drag a box over the area or zoom with two fingers (PC: mouse wheel). Double tap = whole picture."))
+    if L["msg"] and time.time() < L["msg_t"]:
+        parts.append(L["msg"])
+    return " · ".join(p for p in parts if p)
+
+
+def lupe_tk_box_done(L, box, lang=None):
+    """a box was drawn (picture coordinates of now): zoom to it, and the head turns it to the middle (when allowed)"""
+    s = min(1.0, max(1.0 / LUPE_ZMAX, max(box[2], box[3])))
+    lupe_tk_set(L, box[0] + box[2] / 2 - s / 2, box[1] + box[3] / 2 - s / 2, s)
+    L["next"] = 0.0
+    if L["follow"] and lupe_tk_cam() == "head" and lupe_follow_ok():
+        ok, _code, res = lupe_aim(box, "window", lang)
+        if ok:
+            L["R"] = list(res["from"])
+            L["msg"], L["msg_t"] = "🎯 " + tr("The head turns to the area …", lang), time.time() + 4
+        else:
+            L["msg"], L["msg_t"] = res.get("msg", ""), time.time() + 7
+    return L
+
+
+def lupe_tk_wheel(L, nx, ny, up):
+    """the wheel at (nx, ny) of the shown view: zoom in (up) / out, the point under the pointer stays"""
+    (x, y, s), _o = lupe_tk_view(L)
+    ns = min(1.0, max(1.0 / LUPE_ZMAX, s * (0.8 if up else 1.25)))
+    lupe_tk_set(L, x + nx * s - nx * ns, y + ny * s - ny * ns, ns)
+    L["next"] = time.time() + 0.25
+
+
+if GUI_OK:
+    def _lupe_tk_xy(self, e):
+        """a mouse position on the picture -> 0..1 of the shown view (None outside)"""
+        g = self._lupe.get("geo")
+        if not g:
+            return None
+        ox, oy, ow, oh = g
+        return min(1.0, max(0.0, (e.x - ox) / ow)), min(1.0, max(0.0, (e.y - oy) / oh))
+
+    def _lupe_tk_down(self, e):
+        L = self._lupe
+        if not L["on"]:
+            return
+        p = _lupe_tk_xy(self, e)
+        if p is None:
+            return "break"
+        (x, y, s), _o = lupe_tk_view(L)
+        L["g"] = {"k": "pan" if s < 0.999 else "box", "a": p, "last": p, "v0": [x, y, s], "moved": False}
+        return "break"
+
+    def _lupe_tk_move(self, e):
+        L = self._lupe
+        g = L.get("g")
+        if not L["on"] or not g:
+            return
+        p = _lupe_tk_xy(self, e)
+        if p is None:
+            return "break"
+        if abs(p[0] - g["a"][0]) + abs(p[1] - g["a"][1]) > 0.01:
+            g["moved"] = True
+        if g["k"] == "pan":
+            (x, y, s), _o = lupe_tk_view(L)
+            lupe_tk_set(L, x - (p[0] - g["last"][0]) * s, y - (p[1] - g["last"][1]) * s, s)
+            g["last"] = p
+        elif g["moved"]:
+            L["sel"] = [min(p[0], g["a"][0]), min(p[1], g["a"][1]), abs(p[0] - g["a"][0]), abs(p[1] - g["a"][1])]
+        return "break"
+
+    def _lupe_tk_up(self, e):
+        L = self._lupe
+        g, L["g"] = L.get("g"), None
+        sel, L["sel"] = L.get("sel"), None
+        if not L["on"] or not g:
+            return
+        if g["k"] == "box" and sel and sel[2] > 0.02 and sel[3] > 0.02:
+            vx, vy, vs = g["v0"]
+            lupe_tk_box_done(L, [vx + sel[0] * vs, vy + sel[1] * vs, sel[2] * vs, sel[3] * vs])
+        else:
+            L["next"] = time.time() + 0.25
+        return "break"
+
+    def _lupe_tk_wheel_ev(self, e):
+        L = self._lupe
+        if not L["on"]:
+            return
+        p = _lupe_tk_xy(self, e) or (0.5, 0.5)
+        up = getattr(e, "num", 0) == 4 or getattr(e, "delta", 0) > 0
+        lupe_tk_wheel(L, p[0], p[1], up)
+        return "break"
+
+    def _lupe_tk_dbl(self, e):
+        L = self._lupe
+        if not L["on"]:
+            return self.toggle_video_only()
+        if L["v"][2] < 0.999:
+            L.update(v=[0.0, 0.0, 1.0], R=None, hi=None)
+        else:
+            self._lupe_close()
+        return "break"
+
+    def _lupe_tk_open(self):
+        L = self._lupe
+        if L["on"] or self.video is None:
+            return
+        L.update(on=True, v=[0.0, 0.0, 1.0], R=None, hi=None, sel=None, g=None, msg="")
+        vh = self.video.master
+        bar = tk.Frame(vh, bg="#0b0f14")
+        bk = dict(bg="#1a2433", fg="#ffffff", activebackground="#2f81f7", activeforeground="#ffffff", relief="flat", bd=0, padx=8, pady=4,
+                  font=("DejaVu Sans", 10, "bold"), cursor="hand2")
+
+        def tog(key, b):
+            L[key] = not L[key]
+            b.config(bg="#2f81f7" if L[key] else "#1a2433")
+            if key == "sharp":
+                L["next"] = 0.0
+        tk.Button(bar, text="✕ " + tr("Magnifier"), command=self._lupe_close, **bk).pack(side="left", padx=(0, 4))
+        tk.Button(bar, text="1:1", command=lambda: L.update(v=[0.0, 0.0, 1.0], R=None, hi=None), **bk).pack(side="left", padx=(0, 4))
+        if lupe_follow_ok():
+            bh = tk.Button(bar, text="🎯 " + tr("Head follows"), **bk)
+            bh.config(command=lambda: tog("follow", bh), bg="#2f81f7" if L["follow"] else "#1a2433"); bh.pack(side="left", padx=(0, 4))
+        bs = tk.Button(bar, text="◐ " + tr("Sharp"), **bk)
+        bs.config(command=lambda: tog("sharp", bs), bg="#2f81f7" if L["sharp"] else "#1a2433"); bs.pack(side="left")
+        bar.place(x=8, y=8)
+        st = tk.Label(vh, text="", bg="#0b0f14", fg="#ffffff", font=("DejaVu Sans", 9), justify="left", anchor="w", padx=6, pady=2)
+        st.place(x=8, y=48)
+        self._lupe_w = (bar, st)
+        v = self.video
+        for seq, fn in (("<ButtonPress-1>", self._lupe_down), ("<B1-Motion>", self._lupe_move), ("<ButtonRelease-1>", self._lupe_up),
+                        ("<MouseWheel>", self._lupe_wheel), ("<Button-4>", self._lupe_wheel), ("<Button-5>", self._lupe_wheel)):
+            v.bind(seq, fn, add="+")
+        v.bind("<Double-Button-1>", self._lupe_dbl)               # instead of «full screen» while the magnifier is open
+        v.config(cursor="crosshair")
+        if getattr(self, "b_lupe", None) is not None:
+            self.b_lupe.place_forget()
+
+    def _lupe_tk_close(self):
+        L = self._lupe
+        L.update(on=False, g=None, sel=None, hi=None)
+        for w_ in getattr(self, "_lupe_w", ()) or ():
+            try:
+                w_.destroy()
+            except Exception:
+                pass
+        self._lupe_w = ()
+        v = self.video
+        if v is not None:
+            try:
+                for seq in ("<ButtonPress-1>", "<B1-Motion>", "<MouseWheel>", "<Button-4>", "<Button-5>"):
+                    v.unbind(seq)
+                v.bind("<Double-Button-1>", lambda e: self.toggle_video_only())
+                v.config(cursor="hand2")
+                if getattr(self, "b_lupe", None) is not None:
+                    self.b_lupe.place(relx=1.0, x=-8, y=8, anchor="ne")
+            except Exception:
+                pass
+
+    def _lupe_tk_esc(self, e=None):
+        if self._lupe["on"]:
+            self._lupe_close()
+            return "break"
+
+    _lupe_tk_build_left_base = App._build_left
+
+    def _lupe_tk_build_left(self, left):
+        if not hasattr(self, "_lupe"):
+            self._lupe = lupe_tk_new()
+        if self._lupe["on"]:                                     # the live area is built again: start without magnifier
+            self._lupe_close()
+        self.b_lupe = None
+        _lupe_tk_build_left_base(self, left)
+        if self.tab == "live" and self.video is not None:
+            b = tk.Button(self.video.master, text="🔍 " + tr("Magnifier"), command=self._lupe_open, bg="#1a2433", fg="#ffffff",
+                          activebackground="#2f81f7", activeforeground="#ffffff", relief="flat", bd=0, padx=8, pady=4,
+                          font=("DejaVu Sans", 10, "bold"), cursor="hand2")
+            b.place(relx=1.0, x=-8, y=8, anchor="ne")
+            self.b_lupe = b
+            try:
+                Tip(b, tr("Magnifier: drag a box, zoom with two fingers"))
+            except Exception:
+                pass
+            if not getattr(self, "_lupe_esc", False):
+                self._lupe_esc = True
+                self.root.bind("<Escape>", self._lupe_esc_ev, add="+")
+
+    _lupe_tk_update_video_base = App._update_video
+
+    def _lupe_tk_update_video(self):
+        L = getattr(self, "_lupe", None)
+        if not L or not L["on"]:
+            return _lupe_tk_update_video_base(self)
+        try:
+            v = self.video
+            frame = None
+            if lupe_tk_cam() == "wide" and getattr(self, "_v3_cam", None) is not None:
+                frame = _v3_wide_img(self, self._v3_cam)
+            if frame is None:
+                frame = self.watch.frame_out                      # the shown picture (privacy zones already black, 410)
+            if frame is not None and v is not None and v.winfo_exists():
+                w = max(160, v.winfo_width()); h = max(90, v.winfo_height())
+                out = lupe_tk_render(L, frame, w, h)
+                oh, ow = out.shape[:2]
+                L["geo"] = ((w - ow) / 2.0, (h - oh) / 2.0, float(ow), float(oh))
+                self._v3_pip = None                               # no «tap = swap» on the small picture while the magnifier is open
+                if CFG.get("tk_night"):
+                    gy = cv2.cvtColor(out, cv2.COLOR_BGR2GRAY)
+                    img = np.zeros((gy.shape[0], gy.shape[1], 3), dtype=np.uint8); img[:, :, 0] = (gy * 0.42).astype(np.uint8)
+                else:
+                    img = cv2.cvtColor(out, cv2.COLOR_BGR2RGB)
+                self.photo = ImageTk.PhotoImage(Image.fromarray(img)); v.config(image=self.photo)
+                (_x, _y, s), _o = lupe_tk_view(L)
+                if (L["sharp"] and s < 0.95 and not L["busy"] and not L.get("g") and time.time() >= L["next"]
+                        and lupe_tk_cam() in ("head", "wide")):
+                    L["busy"] = True
+                    threading.Thread(target=lupe_tk_fetch, args=(L,), daemon=True, name="lupe-tk").start()
+                st = (getattr(self, "_lupe_w", None) or (None, None))[1]
+                if st is not None:
+                    t_ = lupe_tk_status(L)
+                    if st.cget("text") != t_:
+                        st.config(text=t_, wraplength=max(200, int(w) - 30))
+        except Exception as e:
+            if time.time() - getattr(self, "_lupe_err_t", 0) > 30:
+                self._lupe_err_t = time.time()
+                log_event("sys", f"Window magnifier: {str(e)[:120]}")
+        finally:
+            self.root.after(33, self._update_video)
+
+    for _n, _f in (("_lupe_down", _lupe_tk_down), ("_lupe_move", _lupe_tk_move), ("_lupe_up", _lupe_tk_up), ("_lupe_wheel", _lupe_tk_wheel_ev),
+                   ("_lupe_dbl", _lupe_tk_dbl), ("_lupe_open", _lupe_tk_open), ("_lupe_close", _lupe_tk_close), ("_lupe_esc_ev", _lupe_tk_esc)):
+        setattr(App, _n, _f)
+    # wraps: App._build_left (570): the button «🔍 Lupe» on the live picture
+    App._build_left = _lupe_tk_build_left
+    # wraps: App._update_video (570 / 578 / 639zv): the view of the magnifier while it is open
+    App._update_video = _lupe_tk_update_video
+
+
 # ---- texts (English key: Deutsch, français, italiano, rumantsch) -------------------------------------------------------------------
 _HX_LUPE = {
     "Magnifier": ("Lupe", "Loupe", "Lente", "Lupa"),
@@ -967,8 +1323,8 @@ def lupe_guest_js(lang, token):
 
 # ---- the manual: one point in «Ansichten» (views) ------------------------------------------------------------------------------
 HELP_LUPE = {
-    "de": '<li id="lupe-help"><b>🔍 Lupe – nur das Live-Bild vergrössern:</b> Knopf mit der Lupe auf dem Bild (im Vollbild oben rechts) oder einfach mit zwei Fingern auf dem Bild zoomen (PC: Strg + Mausrad). In der Lupe: Rahmen ziehen = dieser Bereich gross, ein Finger verschiebt, zwei Finger zoomen, Doppeltipp = ganzes Bild, nochmals = Lupe zu; «✕ Lupe» / Esc. Die Seite selbst zoomt dabei nicht. Der Ausschnitt kommt <b>scharf</b> aus der vollen Auflösung der Kamera (Pi-Kamera: Standbild vom ganzen Sensor, etwa alle 2–3 s; während Alarm, Person im Bild oder Akku sparen nur das volle Kamerabild), Privatsphäre-Zonen bleiben schwarz. Mit dem Recht «Kopf steuern» dreht der Kopf den Bereich in die Mitte («🎯 Kopf folgt»), nicht aber bei Alarm / Folgen, Gehtest, «Aus» oder Not-Aus; der Ausschnitt bleibt dabei auf dem Ort. Wärmebild und andere Kameras: nur vergrössert.</li>',
-    "en": '<li id="lupe-help"><b>🔍 Magnifier – enlarge only the live picture:</b> the magnifier button on the picture (full screen: top right) or simply zoom with two fingers on the picture (PC: Ctrl + mouse wheel). In the magnifier: drag a box = this area big, one finger moves, two fingers zoom, double tap = whole picture, again = close; «✕ Magnifier» / Esc. The page itself does not zoom. The area comes <b>sharp</b> from the full resolution of the camera (Pi camera: a still of the whole sensor, about every 2–3 s; during an alarm, a person in view or battery saving only the full camera frame); privacy zones stay black. With the right «steer the head» the head turns the area to the middle («🎯 Head follows»), but not during an alarm / following, a walk test, «Off» or the emergency stop; the area stays on its place. Thermal picture and other cameras: only enlarged.</li>',
+    "de": '<li id="lupe-help"><b>🔍 Lupe – nur das Live-Bild vergrössern:</b> Knopf mit der Lupe auf dem Bild (im Vollbild oben rechts) oder einfach mit zwei Fingern auf dem Bild zoomen (PC: Strg + Mausrad). In der Lupe: Rahmen ziehen = dieser Bereich gross, ein Finger verschiebt, zwei Finger zoomen, Doppeltipp = ganzes Bild, nochmals = Lupe zu; «✕ Lupe» / Esc. Die Seite selbst zoomt dabei nicht. Der Ausschnitt kommt <b>scharf</b> aus der vollen Auflösung der Kamera (Pi-Kamera: Standbild vom ganzen Sensor, etwa alle 2–3 s; während Alarm, Person im Bild oder Akku sparen nur das volle Kamerabild), Privatsphäre-Zonen bleiben schwarz. Mit dem Recht «Kopf steuern» dreht der Kopf den Bereich in die Mitte («🎯 Kopf folgt»), nicht aber bei Alarm / Folgen, Gehtest, «Aus» oder Not-Aus; der Ausschnitt bleibt dabei auf dem Ort. Wärmebild und andere Kameras: nur vergrössert. Im Fenster am Pi: Knopf «🔍 Lupe» oben rechts auf dem Live-Bild – Rahmen ziehen, Mausrad, Ziehen verschiebt, Doppelklick, Esc.</li>',
+    "en": '<li id="lupe-help"><b>🔍 Magnifier – enlarge only the live picture:</b> the magnifier button on the picture (full screen: top right) or simply zoom with two fingers on the picture (PC: Ctrl + mouse wheel). In the magnifier: drag a box = this area big, one finger moves, two fingers zoom, double tap = whole picture, again = close; «✕ Magnifier» / Esc. The page itself does not zoom. The area comes <b>sharp</b> from the full resolution of the camera (Pi camera: a still of the whole sensor, about every 2–3 s; during an alarm, a person in view or battery saving only the full camera frame); privacy zones stay black. With the right «steer the head» the head turns the area to the middle («🎯 Head follows»), but not during an alarm / following, a walk test, «Off» or the emergency stop; the area stays on its place. Thermal picture and other cameras: only enlarged. In the window on the Pi: button «🔍 Magnifier» top right on the live picture – drag a box, mouse wheel, drag moves, double click, Esc.</li>',
     "fr": '<li id="lupe-help"><b>🔍 Loupe – agrandir seulement l’image en direct :</b> bouton loupe sur l’image (plein écran : en haut à droite) ou zoomer à deux doigts sur l’image (PC : Ctrl + molette). Dans la loupe : tracer un cadre = cette zone en grand, un doigt déplace, deux doigts zooment, double toucher = image entière, encore = fermer. La page ne zoome pas. La zone vient <b>nette</b> de la pleine résolution de la caméra ; les zones de confidentialité restent noires. Avec le droit «tête», la tête amène la zone au centre (pas pendant une alarme, un test de marche, «Arrêt» ou l’arrêt d’urgence). Image thermique et autres caméras : seulement agrandies.</li>',
     "it": '<li id="lupe-help"><b>🔍 Lente – ingrandire solo l’immagine dal vivo:</b> pulsante lente sull’immagine (schermo intero: in alto a destra) o zoomare con due dita sull’immagine (PC: Ctrl + rotella). Nella lente: tracciare un riquadro = quest’area grande, un dito sposta, due dita zoomano, doppio tocco = immagine intera, ancora = chiudere. La pagina non zooma. L’area arriva <b>nitida</b> dalla piena risoluzione della telecamera; le zone di privacy restano nere. Con il diritto «testa» la testa porta l’area al centro (non durante un allarme, un test di camminata, «Spento» o l’arresto d’emergenza). Immagine termica e altre telecamere: solo ingrandite.</li>',
     "rm": '<li id="lupe-help"><b>🔍 Lupa – engrondir mo il maletg live:</b> buttun lupa sin il maletg (entir visur: sura a dretga) u zoomar cun dus dets sin il maletg (PC: Ctrl + rodella). En la lupa: trair in rom = quest sectur grond, in det spusta, dus dets zoomeschan, tutgar duas giadas = entir maletg, anc ina giada = serrar. La pagina na zoomescha betg. Il sectur vegn <b>precis</b> da la resoluziun cumplaina da la camera; las zonas da privatezza restan naira. Cun il dretg «chau» volva il chau il sectur en il center (betg durant in alarm, in test da chaminar, «Ora» u il stop d’urgenza). Maletg termic ed autras cameras: mo engrondì.</li>',
@@ -1010,6 +1366,7 @@ def lupe_selftest():
     assert role_allows("family", "/api/lupe", "POST", {}) and not role_allows("custom", "/api/lupe/crop.jpg", "GET", {}, set())
     assert 'id="lupe-css"' in WEB_PAGE and "/*LUPEG*/" in GUEST_PAGE and HELP_PAGE.count('id="lupe-help"') == 2
     assert PiCamSource.read is _lupe_pi_read and callable(PiCamSource.lupe_hires) and DemoSource.lupe_gap == LUPE_GAP_CHEAP
+    assert not GUI_OK or (App._update_video is _lupe_tk_update_video and App._build_left is _lupe_tk_build_left), "window magnifier"
     for k, v in _HX_LUPE.items():
         assert len(v) == 4 and all(v) and "ß" not in "".join(v), k
     assert tr("Magnifier", "de") == "Lupe" and tr("Head follows", "rm") == "Il chau suonda"
