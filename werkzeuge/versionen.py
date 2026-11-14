@@ -255,7 +255,7 @@ def pruefen():
     if not any(e.get("version") == app for e in man.get("versions") or []):
         warn.append("MoveEye %s steht noch nicht in versions.json (rel_mw.sh signiert)" % app)
     for r in REFERENZ:                                   # die Referenz-Version bleibt signiert in versions.json (rel_mw.sh signiert)
-        if not any(e.get("version") == r for e in man.get("versions") or []):
+        if os.path.isfile(os.path.join(REPO, "webcam_bewegung_%s.py" % r.replace(".", "_"))) and not any(e.get("version") == r for e in man.get("versions") or []):
             warn.append("Referenz-Version %s steht nicht in versions.json (rel_mw.sh signiert)" % r)
     else:                                                    # schon veröffentlicht: quelle/ seither geändert?
         q = geaendert_seit((git_text("log", "-1", "-m", "--format=%H", "-G", '"version": "%s"' % re.escape(app), "--", "versions.json") or "").strip(),
@@ -370,8 +370,9 @@ def groesse_bruecke(app):
         vs = json.load(open(os.path.join(REPO, "versions.json"), encoding="utf-8")).get("versions") or []
         if not any(e.get("version") == BRUECKE for e in vs):
             out.append("Brücke %s fehlt in versions.json" % BRUECKE)
-        for r in REFERENZ:
-            if not os.path.isfile(os.path.join(REPO, "webcam_bewegung_%s.py" % r.replace(".", "_"))):
+        hoechste = max((tuple(int(x) for x in m.groups()) for n in os.listdir(REPO) for m in [VFILE.match(n)] if m), default=())
+        for r in REFERENZ:                               # nur wo es schon neuere Versionen gibt (nicht in Wegwerf-Repositories der Tests)
+            if hoechste > tuple(int(x) for x in r.split(".")) and not os.path.isfile(os.path.join(REPO, "webcam_bewegung_%s.py" % r.replace(".", "_"))):
                 out.append("Referenz-Version %s fehlt im Repository (darf nie gelöscht werden)" % r)
     except (OSError, ValueError):
         out.append("versions.json nicht lesbar")
