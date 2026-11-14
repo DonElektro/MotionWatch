@@ -31,6 +31,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.error
 import urllib.request
 import zipfile
 
@@ -119,6 +120,10 @@ class Prozesse:
         pr = subprocess.Popen(cmd, env=env, stdout=out, stderr=subprocess.STDOUT, start_new_session=True)
         self.p.append((name, pr))
         return pr
+
+    def tot(self, name):
+        """ist dieses Programm schon beendet (z. B. der Simulator abgestürzt)?"""
+        return any(n == name and pr.poll() is not None for n, pr in self.p)
 
     def stop(self):
         for name, pr in reversed(self.p):
@@ -254,86 +259,106 @@ def run(a):
         info.update(aussehen_aus_umgebung(env))          # 10.11.2026: Aussehen und Tiere (Spalte «Simulator», Vergleich)
         laeufe = [(p, m) for m in a.realismus for p in a.plaene
                   if not (m == "aus" and (p in FIX_PLAENE or (a.roh_plaene and p not in a.roh_plaene)))]
-        for plan0, modus in laeufe:
-          try:                                                   # 2.98.13: camera effects of the simulator on / off
-              http_json(sim + "/control", {"action": "set", "id": "real_fx", "value": modus == "an"}, timeout=6)
-              http_json(sim + "/control", {"action": "set", "id": "real_look", "value": False}, timeout=6)
-          except Exception:
-              pass
-          plan = plan0 + ("" if modus == "an" else ROH)
-          for seed_n, rep in [(sd, rp) for sd in range(1, a.seeds + 1) for rp in range(a.wiederholungen)]:
-                log("Testlauf «%s» (Zufall %d, %d/%d) …" % (plan_name(plan), seed_n, rep + 1, a.wiederholungen))
-                try:
-                    st_ = http_json(sim + "/control", {"action": "test_report"}, timeout=6)
-                    if st_.get("running"):
-                        log("  (es lief schon ein Testlauf: %s – gestoppt)" % st_.get("info"))
-                        http_json(sim + "/control", {"action": "test_stop"}, timeout=6)
-                except Exception:
-                    pass
-                r = http_json(sim + "/control", {"action": "test_start", "plan": plan0, "cams": a.kameras, "mult": a.mal, "seed": seed_n}, timeout=10)
-                if not r.get("ok"):
-                    log("  startet nicht:", r.get("error") or r.get("info"))
-                    rc = 2
-                    continue
-                t0 = time.time()
-                fps = []
-                rep_ = None
-                soll = float(r.get("total_s") or PLAN_DAUER.get(plan0, 400) * a.mal)       # the simulator knows how long it takes
-                log("  dauert etwa %d Min." % round(soll / 60.0))
-                while time.time() - t0 < soll * 2.5 + 180:
-                    time.sleep(5)
+        abbruch = ""                                             # Simulator weg: das Teilergebnis bleibt (G5, 14.11.2026)
+        try:
+            for plan0, modus in laeufe:
+              try:                                                   # 2.98.13: camera effects of the simulator on / off
+                  http_json(sim + "/control", {"action": "set", "id": "real_fx", "value": modus == "an"}, timeout=6)
+                  http_json(sim + "/control", {"action": "set", "id": "real_look", "value": False}, timeout=6)
+              except Exception:
+                  pass
+              plan = plan0 + ("" if modus == "an" else ROH)
+              for seed_n, rep in [(sd, rp) for sd in range(1, a.seeds + 1) for rp in range(a.wiederholungen)]:
+                    log("Testlauf «%s» (Zufall %d, %d/%d) …" % (plan_name(plan), seed_n, rep + 1, a.wiederholungen))
                     try:
-                        fps.append(float(http_json(web + "/api/state", timeout=4)["state"].get("fps") or 0))
-                        r = http_json(sim + "/control", {"action": "test_report"}, timeout=6)
-                    except Exception:
-                        continue
-                    if not r.get("running"):
-                        rep_ = r.get("report") or None
-                        break
-                if not rep_ or not rep_.get("phases") or rep_.get("plan") != plan0:      # (0 visible persons is a valid result)
-                    log("%s: kein Bericht – %s" % (plan_name(plan), (r.get("info") if isinstance(r, dict) else "") or "Zeit abgelaufen"), wichtig=True)
-                    rep_ = None
-                    rc = 2
-                    try:
-                        http_json(sim + "/control", {"action": "test_stop"}, timeout=6)
+                        st_ = http_json(sim + "/control", {"action": "test_report"}, timeout=6)
+                        if st_.get("running"):
+                            log("  (es lief schon ein Testlauf: %s – gestoppt)" % st_.get("info"))
+                            http_json(sim + "/control", {"action": "test_stop"}, timeout=6)
                     except Exception:
                         pass
-                    continue
-                rep_["dauer_s"] = round(time.time() - t0)
-                rep_["mw_fps"] = round(sum(fps) / len(fps), 1) if fps else 0
-                rep_.setdefault("seed", seed_n)
-                info["plaene"].setdefault(plan, []).append(rep_)
-                gb = kennzahlen([rep_])["groessen"]
-                if gb:
-                    log("  nach Grösse: " + ", ".join("%s %d/%d" % (b, gb[b][1], gb[b][0]) for b in ("nah", "mittel", "weit") if b in gb))
-                pu = rep_.get("pushes") or {}
-                log("%s: Pushes %s, Personen %d/%d (%.0f %%, davon nur Wärmebild %d/%d), Reaktion %s s, Tiere %d/%d, Flackern %d, %.1f Bilder/s" % (
-                    plan_name(plan), ("richtig %d / falsch %d" % (pu.get("ok", 0), pu.get("false", 0))) if pu else "unbekannt",
-                    rep_["persons_detected"], rep_["persons"], rep_["rate"], rep_.get("persons_thermal_detected", 0), rep_.get("persons_thermal", 0),
-                    rep_.get("latency_s", "–"),
-                    sum(p.get("animals_reported", 0) for p in rep_.get("phases", [])), sum(p.get("animals", 0) for p in rep_.get("phases", [])),
-                    rep_.get("flicker", rep_.get("false_alarms", 0)), rep_["mw_fps"]), wichtig=True)
-                sz = rep_.get("szene") or {}                     # the numbers of the new scenes (reaction from the pitch / the grab)
-                if sz.get("art") == "camping_voll":
-                    log("  Voller Platz: an deinem Platz %d, mit Push %d, ohne %d, Reaktion ab Platz %s s, falsche Pushes wegen Nachbarn %d" % (
-                        sz.get("auf_platz", 0), sz.get("push", 0), sz.get("ohne_push", 0), sz.get("reaktion_platz_s", "–"), sz.get("push_falsch_nachbar", 0)), wichtig=True)
-                elif sz.get("art") == "velodieb":
-                    log("  Velodieb: Griffe %d, Push vor dem Griff %d, danach %d, ohne %d, Reaktion ab Griff %s s" % (
-                        sz.get("griffe", 0), sz.get("push_vor_griff", 0), sz.get("push_nach_griff", 0), sz.get("ohne_push", 0), sz.get("reaktion_griff_s", "–")), wichtig=True)
-                elif sz.get("art") == "gegenstaende":
-                    log("  Gegenstände: %d Dinge (KI kennt %d, kennt nicht %d), Tiere zum Lockmittel %d (angekommen %d), Pushes falsch %d / richtig %d" % (
-                        sz.get("dinge", 0), sz.get("ki_kennt", 0), sz.get("ki_kennt_nicht", 0), sz.get("lockmittel_tiere", 0),
-                        sz.get("lockmittel_angekommen", 0), sz.get("push_falsch", 0), sz.get("push_richtig", 0)), wichtig=True)
-                elif sz.get("art") == "fahrzeuge":
-                    log("  Fahrzeuge: %d (Fernlicht %d), ausgestiegen %d, zurück %d, Blendung bis %.2f, Velos ohne Licht %d, Pushes falsch %d (wegen Fahrzeug %d) / richtig %d" % (
-                        sz.get("fahrzeuge", 0), sz.get("fernlicht", 0), sz.get("ausgestiegen", 0), sz.get("zurueck", 0), sz.get("blendung_max", 0.0),
-                        sz.get("velos_ohne_licht", 0), sz.get("push_falsch", 0), sz.get("push_falsch_fahrzeug", 0), sz.get("push_richtig", 0)), wichtig=True)
-                elif sz.get("art") == "tarnen":
-                    log("  Tarnen: " + ", ".join("%s %d/%d erkannt, %d Push" % (k[5:], v.get("erkannt", 0), v.get("sichtbar", 0), v.get("push", 0))
-                                                for k, v in sorted((sz.get("arten") or {}).items())), wichtig=True)
-                for q in rep_.get("push_list", []):
-                    log("    Push %5.0f s  %-8s %s%s" % (q.get("t", 0), q.get("ev", ""), ("richtig: " if q.get("ok") else "FALSCH: ") + str(q.get("who", "")),
-                                                     "  (gleicher Besuch innert 10 s)" if q.get("dup") else ""))
+                    kopf_heim(web)                                   # jeder Fall beginnt mit dem Kopf in der Grundstellung
+                    r = http_json(sim + "/control", {"action": "test_start", "plan": plan0, "cams": a.kameras, "mult": a.mal, "seed": seed_n}, timeout=10)
+                    if not r.get("ok"):
+                        log("  startet nicht:", r.get("error") or r.get("info"))
+                        rc = 2
+                        continue
+                    t0 = time.time()
+                    fps = []
+                    rep_ = None
+                    schnapp = Schnappschuesse(web, t0) if os.environ.get("MW_PRUEFSTAND_BILDER") == "1" else None
+                    soll = float(r.get("total_s") or PLAN_DAUER.get(plan0, 400) * a.mal)       # the simulator knows how long it takes
+                    log("  dauert etwa %d Min." % round(soll / 60.0))
+                    while time.time() - t0 < soll * 2.5 + 180:
+                        time.sleep(5)
+                        if P.tot("Simulator"):
+                            raise ConnectionError("Simulator beendet (Code %s)" % next(pr.poll() for n, pr in P.p if n == "Simulator"))
+                        try:
+                            fps.append(float(http_json(web + "/api/state", timeout=4)["state"].get("fps") or 0))
+                            r = http_json(sim + "/control", {"action": "test_report"}, timeout=6)
+                        except Exception:
+                            continue
+                        if not r.get("running"):
+                            rep_ = r.get("report") or None
+                            break
+                    if schnapp is not None and (not rep_ or not rep_.get("phases") or rep_.get("plan") != plan0):
+                        schnapp.stopp()
+                    if not rep_ or not rep_.get("phases") or rep_.get("plan") != plan0:      # (0 visible persons is a valid result)
+                        log("%s: kein Bericht – %s" % (plan_name(plan), (r.get("info") if isinstance(r, dict) else "") or "Zeit abgelaufen"), wichtig=True)
+                        rep_ = None
+                        rc = 2
+                        try:
+                            http_json(sim + "/control", {"action": "test_stop"}, timeout=6)
+                        except Exception:
+                            pass
+                        continue
+                    if schnapp is not None:
+                        schnapp.stopp()
+                        schnapp.ausgeben(rep_, plan, seed_n, os.path.join(tmp, "bilder"))
+                    rep_["dauer_s"] = round(time.time() - t0)
+                    rep_["mw_fps"] = round(sum(fps) / len(fps), 1) if fps else 0
+                    rep_.setdefault("seed", seed_n)
+                    info["plaene"].setdefault(plan, []).append(rep_)
+                    gb = kennzahlen([rep_])["groessen"]
+                    if gb:
+                        log("  nach Grösse: " + ", ".join("%s %d/%d" % (b, gb[b][1], gb[b][0]) for b in ("nah", "mittel", "weit") if b in gb))
+                    pu = rep_.get("pushes") or {}
+                    log("%s: Pushes %s, Personen %d/%d (%.0f %%, davon nur Wärmebild %d/%d), Reaktion %s s, Tiere %d/%d, Flackern %d, %.1f Bilder/s" % (
+                        plan_name(plan), ("richtig %d / falsch %d" % (pu.get("ok", 0), pu.get("false", 0))) if pu else "unbekannt",
+                        rep_["persons_detected"], rep_["persons"], rep_["rate"], rep_.get("persons_thermal_detected", 0), rep_.get("persons_thermal", 0),
+                        rep_.get("latency_s", "–"),
+                        sum(p.get("animals_reported", 0) for p in rep_.get("phases", [])), sum(p.get("animals", 0) for p in rep_.get("phases", [])),
+                        rep_.get("flicker", rep_.get("false_alarms", 0)), rep_["mw_fps"]), wichtig=True)
+                    sz = rep_.get("szene") or {}                     # the numbers of the new scenes (reaction from the pitch / the grab)
+                    if sz.get("art") == "camping_voll":
+                        log("  Voller Platz: an deinem Platz %d, mit Push %d, ohne %d, Reaktion ab Platz %s s, falsche Pushes wegen Nachbarn %d" % (
+                            sz.get("auf_platz", 0), sz.get("push", 0), sz.get("ohne_push", 0), sz.get("reaktion_platz_s", "–"), sz.get("push_falsch_nachbar", 0)), wichtig=True)
+                    elif sz.get("art") == "velodieb":
+                        log("  Velodieb: Griffe %d, Push vor dem Griff %d, danach %d, ohne %d, Reaktion ab Griff %s s" % (
+                            sz.get("griffe", 0), sz.get("push_vor_griff", 0), sz.get("push_nach_griff", 0), sz.get("ohne_push", 0), sz.get("reaktion_griff_s", "–")), wichtig=True)
+                    elif sz.get("art") == "gegenstaende":
+                        log("  Gegenstände: %d Dinge (KI kennt %d, kennt nicht %d), Tiere zum Lockmittel %d (angekommen %d), Pushes falsch %d / richtig %d" % (
+                            sz.get("dinge", 0), sz.get("ki_kennt", 0), sz.get("ki_kennt_nicht", 0), sz.get("lockmittel_tiere", 0),
+                            sz.get("lockmittel_angekommen", 0), sz.get("push_falsch", 0), sz.get("push_richtig", 0)), wichtig=True)
+                    elif sz.get("art") == "fahrzeuge":
+                        log("  Fahrzeuge: %d (Fernlicht %d), ausgestiegen %d, zurück %d, Blendung bis %.2f, Velos ohne Licht %d, Pushes falsch %d (wegen Fahrzeug %d) / richtig %d" % (
+                            sz.get("fahrzeuge", 0), sz.get("fernlicht", 0), sz.get("ausgestiegen", 0), sz.get("zurueck", 0), sz.get("blendung_max", 0.0),
+                            sz.get("velos_ohne_licht", 0), sz.get("push_falsch", 0), sz.get("push_falsch_fahrzeug", 0), sz.get("push_richtig", 0)), wichtig=True)
+                    elif sz.get("art") == "tarnen":
+                        log("  Tarnen: " + ", ".join("%s %d/%d erkannt, %d Push" % (k[5:], v.get("erkannt", 0), v.get("sichtbar", 0), v.get("push", 0))
+                                                    for k, v in sorted((sz.get("arten") or {}).items())), wichtig=True)
+                    for q in rep_.get("push_list", []):
+                        log("    Push %5.0f s  %-8s %s%s" % (q.get("t", 0), q.get("ev", ""), ("richtig: " if q.get("ok") else "FALSCH: ") + str(q.get("who", "")),
+                                                         "  (gleicher Besuch innert 10 s)" if q.get("dup") else ""))
+        except (urllib.error.URLError, ConnectionError, OSError) as e:
+            abbruch = "Simulator antwortet nicht mehr (%s)" % (getattr(e, "reason", None) or e)
+            log(abbruch + " – gespeichert wird, was fertig ist", wichtig=True)
+            log_tail(os.path.join(tmp, "simulator.log"), "Ende von simulator.log")
+            rc = 2
+        if abbruch:
+            info["abgebrochen"] = abbruch
+            a.weitwinkel = ""
+            a.folgen = []
         try:                                                     # 3D-4.19: the virtual SmallTV (MoveEye 552) - pictures sent during the run
             st_ = http_json(sim + "/control", {"action": "smalltv"}, timeout=4)
             if st_.get("ok"):
@@ -377,6 +402,128 @@ def run(a):
             shutil.rmtree(tmp, ignore_errors=True)
         else:
             log("Protokolle und Einstellungen:", tmp)
+
+
+def kopf_heim(web):
+    """MoveEyes Kopf vor jedem Fall in die Grundstellung (Mitte; frische Einstellungen = Grundstellung 50 / 50): sonst erbt ein
+    Fall die Richtung vom Ende des vorherigen - in einer langen Sitzung sah der Kopf manchmal ganz zur Seite und die Besucher
+    galten als «nicht sichtbar» (Velodieb / Campingplatz, 13.11.2026). Danach 6 s: der Kopf ist dort und MoveEyes kurze
+    Handsteuerung (manual_hold 5 s) ist vorbei, bevor der Fall beginnt."""
+    try:
+        r = http_json(web + "/api/move", {"dir": "center", "step": 3}, timeout=6)
+        if not r.get("ok"):
+            log("  Kopf: Grundstellung ging nicht (%s)" % (r.get("error") or r))
+    except Exception as e:
+        log("  Kopf: Grundstellung ging nicht (%s)" % e)
+    time.sleep(6)
+
+
+class Schnappschuesse:
+    """Diagnose (MW_PRUEFSTAND_BILDER=1): holt alle 1.5 s MoveEyes ausgewertetes Bild (/snapshot.jpg, mit Rahmen) und gibt
+    nach dem Testlauf zu jeder verpassten Person das Bild vom «besten Moment» (missed_list t) klein ins Job-Protokoll aus:
+    Zeile «BILD <name> <base64-JPEG>» - so lässt es sich auch ohne Artefakt ansehen. Braucht OpenCV (sonst still aus)."""
+
+    def __init__(self, web, t0):
+        import threading
+        self.web, self.t0, self.bilder, self.halt = web, t0, [], threading.Event()
+        try:
+            import cv2                                   # noqa: F401 (only to see that it is there)
+            import numpy                                 # noqa: F401
+        except Exception:
+            self.halt.set()
+            return
+        threading.Thread(target=self._holen, daemon=True).start()
+
+    def _holen(self):
+        import cv2
+        import numpy as np
+        while not self.halt.is_set():
+            try:
+                with urllib.request.urlopen(self.web + "/snapshot.jpg", timeout=4) as r:
+                    b = r.read()
+                im = cv2.imdecode(np.frombuffer(b, np.uint8), cv2.IMREAD_COLOR)
+                if im is not None:
+                    h, w = im.shape[:2]
+                    k = 320.0 / max(1, w)
+                    ok, buf = cv2.imencode(".jpg", cv2.resize(im, (320, max(1, int(h * k)))), [cv2.IMWRITE_JPEG_QUALITY, 70])
+                    if ok:
+                        self.bilder.append((time.time() - self.t0, buf.tobytes(), float(im.mean())))
+                        del self.bilder[:-400]                   # at most ~10 min back
+            except Exception:
+                pass
+            self.halt.wait(1.5)
+
+    def stopp(self):
+        self.halt.set()
+
+    def ausgeben(self, rep_, plan, seed_n, ordner):
+        import base64
+        if not self.bilder:
+            return
+        os.makedirs(ordner, exist_ok=True)
+        for i, m in enumerate((rep_.get("missed_list") or [])[:12]):
+            t = float(m.get("t", 0))
+            dt, b, hell = min(self.bilder, key=lambda x: abs(x[0] - t))
+            if abs(dt - t) > 4:
+                continue
+            name = "%s_z%d_v%02d.jpg" % (plan.replace("~", "-"), seed_n, i)
+            with open(os.path.join(ordner, name), "wb") as f:
+                f.write(b)
+            log("  verpasst: %s · Phase %s · %s · Bild bei %.0f s (Helligkeit %.0f/255) → %s" % (
+                m.get("kind", "?"), m.get("phase", "?"), ", ".join(m.get("why") or []) or "ohne Grund", dt, hell, name))
+            print("BILD %s %s" % (name, base64.b64encode(b).decode("ascii")), flush=True)
+        # dazu alle 30 s ein Blick (Richtung des Kopfs steht oben im Bild: «Pan … Tilt …») - auch wenn niemand sichtbar war
+        naechst = 0.0
+        for dt, b, hell in self.bilder:
+            if dt >= naechst:
+                print("BLICK %s_z%d_t%03d.jpg %s" % (plan.replace("~", "-"), seed_n, int(dt), base64.b64encode(b).decode("ascii")), flush=True)
+                naechst = dt + 30.0
+
+
+def zeigen(dateien):
+    """Ergebnis eines Laufs, der nicht in VERLAUF.md kommt (Vergleich: Aussehen alt / standard, Grundformen, Grafik lite):
+    Zusammenfassung pro Testlauf und die Sichtbarkeit jeder Person (Wahrheit des Simulators) in die Zusammenfassung des Jobs,
+    dazu das ganze JSON ins Job-Protokoll (Zeilen «ERGEBNIS-JSON <plan> <seed> {…}»). Artefakte braucht es dafür nicht."""
+    md = []
+    for fn in dateien:
+        try:
+            with open(fn, encoding="utf-8") as f:
+                d = json.load(f)
+        except (OSError, ValueError) as e:
+            log("nicht lesbar:", fn, e)
+            continue
+        md.append("## Ergebnis %s · %s · Aussehen %s · Tiere %s · Grafik %s%s\n" % (
+            os.path.basename(fn), d.get("mw_version", "?"), d.get("aussehen") or "alt", d.get("tiere") or "?", d.get("grafik") or "?",
+            ""))
+        md.append("| Testlauf | Zufall | Pushes richtig / falsch | Personen | nicht sichtbar | Reaktion | Flackern | Bilder/s |")
+        md.append("|---|---|---|---|---|---|---|---|")
+        zeilen = []
+        for plan, reps in (d.get("plaene") or {}).items():
+            for r in reps:
+                pu = r.get("pushes") or {}
+                nv = sum(int(p.get("not_visible", 0)) for p in r.get("phases", []))
+                md.append("| %s | %s | %s / %s | %s / %s | %d | %s s | %s | %s |" % (
+                    plan_name(plan), r.get("seed", 1), pu.get("ok", "–"), pu.get("false", "–"), r.get("persons_detected", 0),
+                    r.get("persons", 0), nv, r.get("latency_s", "–"), r.get("flicker", r.get("false_alarms", 0)), r.get("mw_fps", "–")))
+                for v in r.get("visitors", []):
+                    if v.get("person"):
+                        zeilen.append("| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |" % (
+                            plan, r.get("seed", 1), v.get("phase"), v.get("kind"), "Wärmebild" if v.get("thermal_only") else "Kamera",
+                            v.get("light"), int(v.get("px", 0)), v.get("th_px", 0), v.get("vis_s"), v.get("det_s")))
+                print("ERGEBNIS-JSON %s %s %s" % (plan, r.get("seed", 1), json.dumps(r, ensure_ascii=False, separators=(",", ":"))), flush=True)
+        md.append("\n<details><summary>Sichtbarkeit pro Person (Wahrheit des Simulators)</summary>\n")
+        md.append("| Testlauf | Zufall | Phase | Art | gesehen von | Licht | px | px Wärme | sichtbar s | erkannt nach s |")
+        md.append("|---|---|---|---|---|---|---|---|---|---|")
+        md += zeilen
+        md.append("\n</details>\n")
+    text = "\n".join(md) + "\n"
+    summ = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summ:
+        with open(summ, "a", encoding="utf-8") as f:
+            f.write(text)
+    else:
+        print(text)
+    return 0
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -843,6 +990,7 @@ def main():
     ap.add_argument("--behalten", action="store_true", help="Protokolle und Einstellungen nicht löschen")
     ap.add_argument("--streng", action="store_true", help="Rückgabewert 3, wenn die Erkennung schlechter geworden ist")
     ap.add_argument("--nur-verlauf", action="store_true", help="nur VERLAUF.md aus den gespeicherten Ergebnissen schreiben")
+    ap.add_argument("--zeigen", nargs="+", default=None, help="nur diese Ergebnis-Dateien in die Zusammenfassung des Jobs und ins Protokoll schreiben (Vergleichsläufe)")
     ap.add_argument("--wege-einlesen", action="store_true", help="nur die Schleichwege aus feedback/ nach simulator3d/spielwege/ übernehmen")
     ap.add_argument("--ohne-extras", action="store_true", help="Schleichwege und echte Nächte nicht automatisch mitlaufen lassen")
     ap.add_argument("--fall-aus-spur", default="", help="eine Alarm-Spur von MoveEye (alarm_tracks.json) als echte Nacht speichern")
@@ -866,6 +1014,8 @@ def main():
     if a.folgen_weitwinkel and not a.folgen:
         a.folgen = [1]
     a.seeds = max(1, min(9, a.seeds))
+    if a.zeigen is not None:
+        return zeigen(a.zeigen)
     if a.fall_aus_spur:
         fall_aus_spur(a.fall_aus_spur, a.spur_id, a.spur_wetter)
         return 0
@@ -886,6 +1036,9 @@ def main():
         verlauf_schreiben()
         log("VERLAUF.md geschrieben")
         return 0
+    # «dauer.py halten» (HP, Spielen) beendet mit SIGTERM: wie Ctrl+C aufhören, damit run() im finally Simulator, MoveEye und
+    # Xvfb beendet (sie laufen in eigenen Sitzungen und blieben sonst neben dem Kiosk-Simulator stehen)
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
     rc, info = run(a)
     if info:
         zeilen, schlechter = vergleich(info)

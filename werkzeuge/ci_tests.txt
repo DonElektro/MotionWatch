@@ -54,7 +54,8 @@ kern | 8  | 1x | python3 werkzeuge/erststart_test.py | Erster Start ruhiger (Tei
 rechte | 8 | -  | python3 werkzeuge/rechte_schutz_test.py --browser | Rechte und Schutz (Kind / Familie / ohne Rechte, PIN für alles im Browser, Stufe → Sirene, Zeitplan nach hartem Neustart)
 rechte | 5 | -  | python3 werkzeuge/sicherheit_karte_test.py | Karte «Sicherheit» wieder da (Administrator sieht sie, andere Benutzer nicht)
 rechte | 12 | 1x | python3 werkzeuge/qr_karten_test.py --browser | QR-Befehls-Karten (Teil 639zzp - Prüfnummer, fremd / verändert / gesperrt, Sperrzeit, aus = kein Lesen, Rechte, Werkstatt im Browser)
-rechte | 12 | 1x | python3 werkzeuge/morse_test.py --browser | Morse-Modus (Teil 639zzz - Zeichen, Zeitplan, Tempo-Grenzen pro Ausgang, Empfänger mit synthetischer Kamera, Rundlauf aller Zeichen, feindliche Eingabe, Modus pausiert den Schutz und endet von selbst, Rechte, PIN, Strom weg, nachgebaute Hardware: Absturz mitten im Strich und Neustart, Seite bei 390 px in 4 Sprachen)
+rechte | 12 | 1x | python3 werkzeuge/morse_test.py --browser | Morse-Modus (Teil 639zzz - Zeichen, Zeitplan, Tempo-Grenzen pro Ausgang, Empfänger mit synthetischer Kamera, Rundlauf aller Zeichen, feindliche Eingabe, Modus pausiert den Schutz und endet von selbst, Rechte, PIN, Strom weg, nachgebaute Hardware: Absturz mitten im Strich und Neustart, Seite bei 390 px in 5 Sprachen; Schritt 2: Ton über das Mikrofon mit synthetischem Ton und Funkkanal, Testsignal der Gegenstelle, kein eigenes Echo, Selbsttest im eigenen Prozess; gemessen 5-6 min auf einem vollen Rechner mit 2 Kernen)
+rechte | 5 | 1x | python3 werkzeuge/morse_fenster_test.py | Morse-Modus im Pi-Fenster (Teil 639zzz Schritt 2, nachgebautes tkinter: Schalter Mikrofon, Testsignal per Infrarot, Text mit Ton, Gegenstelle, Schliessen; 5 Sprachen; gemessen 25 s)
 
 # ---------------------------------------------------------------------------------------------------- live (Web)
 live | 8  | 1x | python3 werkzeuge/bildstrom_test.py | Kamerabilder im Browser (Verbindungen, Selbstheilung, Neu laden bleibt im Reiter)
@@ -62,6 +63,7 @@ live | 8  | 1x | python3 werkzeuge/ansichten_test.py | Drei Kamera-Ansichten (Ko
 live | 6  | -  | python3 werkzeuge/untersuchen_test.py --browser | «🔍 Untersuchen» im Live-Bild (Ausschnitt, Kopf, Weitwinkel, Wärmebild, Hochladen, Rechte, Gäste, Funde, Zeitlimit, Browser)
 live | 8  | 1x | python3 werkzeuge/kamerawahl_test.py | Kamerawahl (kleine Bilder aller Videoquellen, Antippen wechselt nur das grosse Bild, Passwort nie im Browser)
 live | 8  | 1x | python3 werkzeuge/live_sauber_test.py | Live-Bild sauber (Knöpfe und Kacheln erst nach einem Tipp, 4 s, Vollbild, Maus, Schalter)
+live | 10 | 1x | python3 werkzeuge/lupe_test.py --browser | «🔍 Lupe» im Live-Bild (Rechte, Grenzen, Rate, Privatsphäre-Zone schwarz, schärfer als der Strom, Kopf erlaubt / nicht, Ort folgt; Handy Touch: Rahmen, zwei Finger, verschieben, Doppeltipp, keine Seiten-Zoom; quer, Vollbild, PC, 5 Sprachen, Gast) – lokal ~2.5 min
 live | 8  | 1x | python3 werkzeuge/nachtsicht_test.py | Kachel «🌙 Nachtsicht» (aus = aus, auch nach «Heute Nacht bewachen» / automatisch, bleibt aus im Dunkeln über viele Bilder und nach Neustart; JavaScript der Seite mit node; Hüllen Morse / Almanach um _lowlight_decide ohne Modus durchsichtig)
 
 # ---------------------------------------------------------------------------------------------------- daten (Web)
