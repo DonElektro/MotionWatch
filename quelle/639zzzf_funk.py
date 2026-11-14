@@ -481,7 +481,8 @@ input[type=range]{width:100%;accent-color:var(--a)}
   <div class="track">
     <canvas id="cv" aria-hidden="true"></canvas>
     <div class="meta">
-      <span><span class="dot" style="background:var(--a)"></span>A <span id="fAl">800</span> Hz &nbsp;<span class="dot" style="background:var(--b)"></span>B <span id="fBl">1400</span> Hz</span>
+      <span id="legTwo"><span class="dot" style="background:var(--a)"></span>A <span id="fAl">800</span> Hz &nbsp;<span class="dot" style="background:var(--b)"></span>B <span id="fBl">1400</span> Hz</span>
+      <span id="legMf" hidden><span class="dot" style="background:var(--a)"></span><span id="mfLeg"></span></span>
       <span id="wpm">– WPM</span>
     </div>
   </div>
@@ -1047,6 +1048,9 @@ function renderTop(){
   else{$('keyTxt').textContent=T('noKey');k.classList.remove('on');k.style.color='var(--text)';}
   $('modeLbl').textContent=T('recv')+' · '+(cfg.mode==='prot'?T('prot'):cfg.mode==='mfsk'?T('mf'):T('morse'));
   $('fAl').textContent=cfg.fA;$('fBl').textContent=cfg.fB;
+  // Mehrton: its own legend (tones, band, symbol rate) instead of tone A / B
+  const mfm=cfg.mode==='mfsk';$('legTwo').hidden=mfm;$('legMf').hidden=!mfm;
+  if(mfm){const m=mfSet(),t=mfTones(m.s),bd=1000/m.s.T;$('mfLeg').textContent=t.length+' '+T('mfTones')+' · '+Math.round(t[0])+'–'+Math.round(t[t.length-1])+' Hz · '+(Number.isInteger(bd)?bd:bd.toFixed(1))+' Bd';}
 }
 
 function render(){
@@ -1058,7 +1062,7 @@ function render(){
     if(lv){L.textContent='📶 '+T('mfRecv')+' · '+lv.n+' '+T('mfTones')+(lv.of?' · '+Math.round(100*lv.got/lv.of)+' %':'');L.classList.remove('empty');}
     else if(mfShown){L.textContent=mfShown;L.classList.remove('empty');}
     else{L.textContent=listening?T('mfWait'):T('tap');L.classList.add('empty');}
-    $('sym').textContent='';const m=mfSet();$('wpm').textContent=mfTones(m.s).length+' '+T('mfTones')+' · '+T('fec'+m.fec);
+    $('sym').textContent='';$('wpm').textContent=T('fec')+': '+T('fec'+mfSet().fec);
     drawTrack();return;
   }
   if(dec&&dec.live&&cfg.mode==='prot'&&V2L.v2){L.textContent=dec.ended?(V2L.shown||'🔒'):'🔒 '+T('v2recv')+' ('+Math.max(0,dec.live.length-1)+')';L.classList.remove('empty');}
