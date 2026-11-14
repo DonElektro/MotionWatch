@@ -93,6 +93,7 @@ var game_kiguard := false            # 3D-4.x: «MoveEye als KI-Wächter» (game
 var localplay                         # 3D-3.77: localplay.gd - play here at the PC
 var headpad                           # 3D-3.77: headpad.gd - steer the head of MoveEye
 var kopf_selbst = null                # kopf_selbst.gd: without MoveEye «Kopf steuern» turns the head of the simulator itself
+var web_demo = null                    # web_demo.gd: nur im Browser - das kleine eingebaute MoveEye der Demo (web.gd)
 var templates                         # 3D-3.82: templates.gd - «Vorlagen»: scenes, places, kits, own 3D files
 var game_tasks := true                # a task for every round of the game (bonus) - 3D-3.27
 var daily_life := true                # visitors at their own times, the postman and the neighbour every day

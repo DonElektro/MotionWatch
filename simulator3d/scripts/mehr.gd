@@ -96,8 +96,8 @@ func _ready() -> void:
 			farben.register(c, "all")
 	farben.set_mode(theme_name)
 	var a := OS.get_cmdline_args() + OS.get_cmdline_user_args()
-	if "--no-update" in a or "--no-tour" in a or main.autostart_lock:
-		_auto_t = -1.0                                # automatic runs (test bench, tests, autostart): no tour by itself
+	if "--no-update" in a or "--no-tour" in a or main.autostart_lock or OS.has_feature("web"):
+		_auto_t = -1.0                                # automatic runs (test bench, tests, autostart): no tour by itself; Browser-Demo: der Hinweis von web_demo.gd statt dessen (Rundgang unter Mehr)
 	if "--tour" in a:
 		_auto_t = 3.0                                 # tests: the tour by itself all the same
 	call_deferred("_late_register")

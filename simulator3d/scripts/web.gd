@@ -1,11 +1,14 @@
 extends RefCounted
 ## «Simulator im Browser» (Machbarkeit, Besitzer 14.11.2026): die Web-Ausgabe (Godot 4.3 Web, ohne Threads) für
 ## kevlaschef.com/moveeye/sim/. Im Browser gibt es keine Startoptionen; die Adresse ersetzt sie:
-##   index.html?szene=wald&grafik=normal&stunde=21
-## Ohne Angaben: Grafik-Modus Lite und die Demo-Szene DEMO_SCENE. MoveEye ist im Browser nie verbunden (der Simulator
-## ist sonst der Server für MoveEye – ein Browser kann keinen Server öffnen); der Kopf bewacht dann selbst (Spiel-Wache).
+##   index.html?szene=wald&grafik=normal&stunde=21&sprache=fr
+## Ohne Angaben: Grafik-Modus Lite, die Demo-Szene DEMO_SCENE, Mittag (DEMO_HOUR) und die Sprache des Browsers. MoveEye ist
+## im Browser nie verbunden (der Simulator ist sonst der Server für MoveEye – ein Browser kann keinen Server öffnen); dafür
+## gibt es das kleine eingebaute MoveEye der Demo (web_demo.gd).
 
 const DEMO_SCENE := "garten"
+const DEMO_HOUR := "12"                 # Tageslicht, auch wenn es beim Besucher Nacht ist (?stunde=… wählt die Uhrzeit)
+const T = preload("res://scripts/i18n.gd")
 
 
 static func on() -> bool:
@@ -31,17 +34,30 @@ static func args() -> PackedStringArray:
 		return PackedStringArray()
 	var q := _query()
 	var a := PackedStringArray(["--grafik", str(q.get("grafik", "lite")), "--scene", str(q.get("szene", DEMO_SCENE))])
-	if q.has("stunde"):
-		a.append_array(PackedStringArray(["--hour", str(q["stunde"])]))
+	a.append_array(PackedStringArray(["--hour", str(q.get("stunde", DEMO_HOUR))]))
 	if q.has("qualitaet"):
 		a.append_array(PackedStringArray(["--quality", str(q["qualitaet"])]))
 	return a
 
 
 static func start(main: Node) -> void:
-	"""im Browser: alle 10 s Bilder pro Sekunde und Speicher in die Konsole des Browsers (F12) – für Tests am Handy/PC"""
+	"""im Browser: Sprache, die Demo (web_demo.gd) und alle 10 s Bilder pro Sekunde und Speicher in die Konsole des Browsers
+	(F12) – für Tests am Handy/PC"""
 	if not on():
 		return
+	var q := _query()
+	var sp := str(q.get("sprache", "")).to_lower()
+	if sp in T.codes():
+		T.set_lang(sp)
+	elif T.choice() in ["", "auto"]:
+		var nav = JavaScriptBridge.eval("(navigator.language || 'de').slice(0, 2).toLowerCase()", true)
+		if typeof(nav) == TYPE_STRING and str(nav) in T.codes():
+			T.set_moveeye_lang(str(nav))             # wie die Sprache, die MoveEye meldet: eine eigene Wahl gilt vor
+	var demo = preload("res://scripts/web_demo.gd").new()
+	demo.name = "WebDemo"
+	demo.main = main
+	main.web_demo = demo
+	main.add_child(demo)
 	var t := Timer.new()
 	t.wait_time = 10.0
 	t.autostart = true
