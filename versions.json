@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-14 09:22",
+ "generated": "2026-11-14 11:41",
  "versions": [
   {
-   "version": "3.92.0",
-   "file": "webcam_bewegung_3_92_0.py",
+   "version": "3.92.1",
+   "file": "webcam_bewegung_3_92_1.py",
    "url": "",
-   "sha256": "b820e74eff3be08ce626e81b4320c8e296515281f88a6478c91f8fdc83f1152b",
-   "date": "2026-11-14 09:22",
-   "notes": "Design «Klar», Etappe 1: ruhigere Kopfzeile mit aufklappbarer Statuszeile, klarere Gast-Seiten (ein Knopf «Digitaler Rucksack»), aufgeräumte Menüs in Web und Fenster; «Mehr» in vier Gruppen (Unterwegs · Spielen · Hilfe & Drucken · Gerät). «Einrichtung» und «Werkseinstellungen» stehen jetzt unter Einstellungen → System.",
-   "size": 3889868,
-   "sig": "a71ffcdb070730ca0d7bc8445c12dcdf0434fbbbe62f3bf175ed75819cbc39ccf0fb287d7746534f4566ccbee9123c6ee21933175ebd3be4b689763eb6016302",
+   "sha256": "72d84b051c62e0ec9c9d930cc93f991bc7994a09a29fd6122882fa6ec92e92c1",
+   "date": "2026-11-14 11:40",
+   "notes": "«Verschollen im Bergtal»: Spieltempo ⏩ 1× / 2× / 4× und ⏸ Pause (Spielesammlung GS-1.20).",
+   "size": 3889584,
+   "sig": "7f2378f45144c78d312027b9d847eda11c0379e008f8d4bcba54121baf01f0f002bc83f9c5164cbcf74c0fa1274ea3f193700c00a7e01bb0c386ff62d280b10d",
    "data": {
-    "file": "moveeye_daten_3_92_0.zip",
+    "file": "moveeye_daten_3_92_1.zip",
     "url": "",
-    "sha256": "9e4610402272b685b4cf107aefacd17caf68061958878d9d036f4faf159f593e",
-    "size": 11470431,
-    "sig": "bf5d3bac0aae286c1c98b5d57927e90789ae1a44960e14f3ef924d73d1fe5eb8930208f3603af1468038679d903d42a4ea1c06d011b9e70ad26813640940b808"
+    "sha256": "3f5417683b3bce42723b613be6c3bf327f5d4718efc8d1648b4361e2f8d1313c",
+    "size": 11470256,
+    "sig": "b904ffac17094dcb3fb938a9999e741a8648f11de7f8768438f4a4dbcb86bc783f7b920a1de043549a63323a7d5b88c41fee210168d77a4c6ba5f0d6b38cc908"
    }
   },
   {
