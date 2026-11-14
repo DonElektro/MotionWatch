@@ -19,6 +19,7 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 | Datum | Motion Watch | Simulator | Testlauf | Pushes richtig / falsch | Personen erkannt | Wärmebild | nah / mittel / weit | Reaktion | Tiere gemeldet | Flackern | Bilder/s | KI | Rechner |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-11-14 00:06 | 3.87.1 | 3.69.0 · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **3** / **0** | 9 / 9 (**100 %**) | 1 / 1 | 6/6 / 2/2 / – | 2.3 s | 3 / 3 | 2 | 2.3 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 9V45 |
 | 2026-11-13 22:00 | 3.87.0 | ? · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **3** / **0** | 8 / 10 (**80 %**) | 2 / 2 | 4/5 / 2/3 / – | 4.2 s | 3 / 3 | 2 | 1.0 | mit KI | HP EliteDesk 800 G1 (4 Kerne) · Intel(R) Core(TM) i5-4590T CPU @ 2.00GHz |
 | 2026-11-13 22:00 | 3.87.0 | ? · Aussehen neu · Tiere Modelle | Nacht | **4** / **1** | 7 / 7 (**100 %**) | 5 / 5 | 2/2 / – / – | 3.2 s | 3 / 4 | 3 | 1.1 | mit KI | HP EliteDesk 800 G1 (4 Kerne) · Intel(R) Core(TM) i5-4590T CPU @ 2.00GHz |
 | 2026-11-13 22:00 | 3.87.0 | ? · Aussehen neu · Tiere Modelle | Standard (Tag, Wind, Nacht, Regen) | **7** / **0** | 17 / 19 (**90 %**) | 5 / 5 | 5/5 / 4/6 / 3/3 | 3.3 s | 8 / 8 | 4 | 1.1 | mit KI | HP EliteDesk 800 G1 (4 Kerne) · Intel(R) Core(TM) i5-4590T CPU @ 2.00GHz |
@@ -305,89 +306,10 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 ## Einzelheiten pro Phase (letzter Lauf)
 
-**Kurz (Tag + Nacht)** – 2026-11-13 22:00, Motion Watch 3.87.0
+**Kurz (Tag + Nacht)** – 2026-11-14 00:06, Motion Watch 3.87.1
 
 | Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
 |---|---|---|---|---|---|---|---|
-| Tag, Wind | 2 / 0 | 4 / 6 | – | 4.2 s | 2 / 2 | 2 | – |
-| Nacht mit Infrarot | 1 / 0 | 4 / 4 | 2 / 2 | 4.2 s | 1 / 1 | 0 | – |
-
-**Nacht** – 2026-11-13 22:00, Motion Watch 3.87.0
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Nacht, ohne Licht | 2 / 0 | 3 / 3 | 3 / 3 | 2.8 s | 0 / 0 | 0 | – |
-| Nacht, Infrarot an | 1 / 1 | 2 / 2 | – | 3.5 s | 3 / 4 | 3 | – |
-| Nacht, Regen | 1 / 0 | 2 / 2 | 2 / 2 | 3.4 s | 0 / 0 | 0 | – |
-
-**Standard (Tag, Wind, Nacht, Regen)** – 2026-11-13 22:00, Motion Watch 3.87.0
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Tag, klar | 3 / 0 | 7 / 8 | – | 3.4 s | 4 / 4 | 1 | – |
-| Tag, Wind und Wolken | 1 / 0 | 5 / 6 | – | 3.6 s | 2 / 2 | 0 | 1× zu schnell |
-| Nacht, klar (Insekten am Licht) | 2 / 0 | 3 / 3 | 3 / 3 | 2.8 s | 2 / 2 | 3 | – |
-| Nacht, Regen | 1 / 0 | 2 / 2 | 2 / 2 | 3.3 s | 0 / 0 | 0 | – |
-
-**Ganze Nacht (20–6 Uhr, Zeitraffer)** – 2026-11-13 22:00, Motion Watch 3.87.0
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Abend, Dämmerung | 1 / 0 | 1 / 1 | 1 / 1 | 4.0 s | 0 / 0 | 0 | – |
-| Nacht, Windböen | 0 / 0 | 0 / 0 | – | – | 0 / 0 | 0 | – |
-| Nacht, Regenschauer | 0 / 0 | 0 / 0 | – | – | 0 / 0 | 0 | – |
-| Mitternacht, nach dem Regen | 0 / 1 | 0 / 0 | – | – | 1 / 1 | 1 | – |
-| Tiefe Nacht | 0 / 0 | 0 / 0 | – | – | 0 / 0 | 0 | – |
-| Morgendämmerung | 0 / 0 | 0 / 0 | – | – | 0 / 2 | 0 | – |
-
-**Schwierige Bedingungen** – 2026-11-13 22:00, Motion Watch 3.87.0
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Gegenlicht am Morgen | 1 / 0 | 3 / 4 | – | 5.0 s | 2 / 2 | 3 | – |
-| Nebel | 1 / 0 | 2 / 4 | – | 4.4 s | 2 / 2 | 0 | – |
-| Schnee | 1 / 0 | 2 / 4 | – | 3.7 s | 1 / 1 | 0 | 1× zu klein / weit weg |
-| Tropfen auf der Linse | 1 / 1 | 3 / 4 | – | 5.1 s | 1 / 1 | 0 | – |
-| Spinnennetz, Nacht mit Infrarot | 0 / 1 | 3 / 4 | 1 / 2 | 2.1 s | 1 / 1 | 6 | 1× zu dunkel, 1× zu klein / weit weg |
-| Scheinwerfer in der Nacht | 1 / 0 | 2 / 2 | 2 / 2 | 5.3 s | 0 / 0 | 0 | – |
-| Wolkenschatten und Wind | 0 / 1 | 1 / 1 | – | 0.0 s | 1 / 1 | 1 | – |
-
-**Voller Campingplatz** – 2026-11-13 22:00, Motion Watch 3.87.0
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Nachmittag, Nachbarn kochen, Kinder spielen | 0 / 1 | 0 / 0 | – | – | 0 / 0 | 1 | – |
-| Nacht mit Infrarot, Nachbarn gehen zum WC | 0 / 1 | 0 / 2 | 0 / 1 | – | 0 / 0 | 4 | 1× geduckt, 2× zu dunkel, 1× zu klein / weit weg |
-
-**Tarnen und Kriechen** – 2026-11-13 22:00, Motion Watch 3.87.0
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Tag, Tarnkleidung und Robben | 2 / 0 | 4 / 7 | – | 6.6 s | 0 / 0 | 0 | 3× geduckt |
-| Dämmerung | 1 / 0 | 4 / 4 | 4 / 4 | 21.9 s | 0 / 0 | 0 | – |
-| Nacht mit Infrarot | 2 / 0 | 5 / 5 | 1 / 1 | 4.3 s | 0 / 0 | 0 | – |
-
-**Velodieb** – 2026-11-13 22:00, Motion Watch 3.87.0
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Tag | 0 / 0 | 0 / 0 | – | – | 0 / 0 | 0 | – |
-| Dämmerung | 0 / 0 | 0 / 2 | 0 / 2 | – | 0 / 0 | 0 | 2× zu dunkel, 2× zu klein / weit weg |
-| Nacht mit Infrarot | 0 / 0 | 0 / 2 | 0 / 2 | – | 0 / 0 | 0 | 2× zu dunkel, 2× zu klein / weit weg |
-
-**Gegenstände (Wind, Licht, Lockmittel)** – 2026-11-13 22:00, Motion Watch 3.87.0
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Tag, Böen (Fahne, Plastiksack, Ballon, Wäsche, Tor, Obstbaum) | 1 / 0 | 1 / 1 | – | 8.7 s | 2 / 2 | 1 | – |
-| Dämmerung, Tiere am Lockmittel | 0 / 0 | 0 / 1 | 0 / 1 | – | 0 / 0 | 0 | 1× zu dunkel, 1× zu klein / weit weg |
-| Nacht mit Infrarot (Lampe mit Bewegungsmelder, Feuer, Kerze, Solarleuchten) | 0 / 0 | 0 / 3 | – | – | 1 / 2 | 0 | 3× zu dunkel |
-
-**Fahrzeuge in der Nacht (Licht, Blendung, Parkieren)** – 2026-11-13 22:00, Motion Watch 3.87.0
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Dämmerung, Abblendlicht, Velo mit Licht | 2 / 0 | 2 / 4 | 2 / 4 | 7.0 s | 0 / 0 | 0 | 2× zu dunkel, 2× zu klein / weit weg |
-| Nacht mit Infrarot: Fernlicht, Scheinwerfer auf die Kamera, Töff | 1 / 0 | 1 / 1 | – | 4.8 s | 0 / 0 | 0 | – |
-| Nacht: Auto parkiert, Leute steigen aus, Wohnmobil, E-Trottinett | 0 / 1 | 0 / 4 | 0 / 1 | – | 0 / 0 | 0 | 4× zu dunkel, 1× zu klein / weit weg |
+| Tag, Wind | 2 / 0 | 5 / 5 | – | 2.6 s | 2 / 2 | 2 | – |
+| Nacht mit Infrarot | 1 / 0 | 4 / 4 | 1 / 1 | 1.9 s | 1 / 1 | 0 | – |
 
