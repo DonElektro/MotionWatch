@@ -61,6 +61,12 @@ def seite(pg, base, name, a):
             break
         pg.wait_for_timeout(300)
     pruef(bool(l["text"]) and bool(CHIP_RE.match(l["text"] or "")), "%s: CPU-Chip im Live-Bild «%s»" % (name, l["text"]))
+    # 3.95.0: right after loading the buttons of the live picture fade out (opacity in between counts as visible) -
+    # measure again for up to 6 s; a lasting overlap stays red (on GitHub 3 of 5 runs red only in the fade)
+    t_ = time.time() + 6
+    while l["text"] and l["hit"] != 0 and time.time() < t_:
+        pg.wait_for_timeout(400)
+        l = pg.evaluate(LAGE)
     pruef(l["inside"] and l["hit"] == 0, "%s: Chip im Bild, auf nichts anderem (%s)" % (name, l))
     vw, ch = l["vw"], l["chip"]
     pruef(bool(vw and ch) and ch[2] > vw[2] - 40 and ch[1] < vw[1] + 40, "%s: Chip oben rechts im Bild" % name)
