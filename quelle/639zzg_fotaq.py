@@ -548,7 +548,8 @@ _HELP_FOTAQ = {
 }
 
 
-if FOTAQ_NEW:                                               # 3.88: the game runs on iPhone / iPad - no «play on the PC» in the manual
+if FOTAQ_NEW and _HELP_FOTAQ.get("de") and _HELP_FOTAQ.get("en"):   # 3.88: the game runs on iPhone / iPad - no «play on the PC» in the manual
+    # 3.89.1: only with the texts - without the data zip (core) _HELP_FOTAQ is empty and the program must still start
     _HELP_FOTAQ = {L: re.sub(r" <b>[^<]*iPad/iPhone[^<]*</b>(?: \([^)]*\)\.)?", "", h_) for L, h_ in _HELP_FOTAQ.items()}
     _HELP_FOTAQ["de"] = _HELP_FOTAQ["de"].replace(" Auf dem Handy braucht das Spiel viel Speicher (Deutsch ~110 MB Daten), ältere Geräte schaffen es eventuell nicht.", " Läuft auch auf iPhone und iPad.")
     _HELP_FOTAQ["en"] = _HELP_FOTAQ["en"].replace(" On phones the game needs a lot of memory (German ~110 MB of data), older devices may not manage.", " It also runs on iPhone and iPad.")

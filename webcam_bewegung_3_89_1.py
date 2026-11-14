@@ -283,7 +283,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_3_89_1.zip"
-ZD_SHA256 = "d91a355a1708852b11475f012ccaa9be1dcbec7e90fe42895bff8ecb74979824"
+ZD_SHA256 = "6e697ed66ac51d5d86aeeb11e8658da347c203e4afae0a10b9d60c05b89ca20e"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -89172,7 +89172,8 @@ if TOOLS_PAGE.count(_FQ_NOTE) == 1 and TOOLS_PAGE.count(_FQ_ROW) == 1:
 _HELP_FOTAQ = _zd('639zzg_fotaq/HELP_FOTAQ', _ZDDict())
 
 
-if FOTAQ_NEW:
+if FOTAQ_NEW and _HELP_FOTAQ.get("de") and _HELP_FOTAQ.get("en"):
+
 	_HELP_FOTAQ = {L: re.sub(r" <b>[^<]*iPad/iPhone[^<]*</b>(?: \([^)]*\)\.)?", "", h_) for L, h_ in _HELP_FOTAQ.items()}
 	_HELP_FOTAQ["de"] = _HELP_FOTAQ["de"].replace(" Auf dem Handy braucht das Spiel viel Speicher (Deutsch ~110 MB Daten), ältere Geräte schaffen es eventuell nicht.", " Läuft auch auf iPhone und iPad.")
 	_HELP_FOTAQ["en"] = _HELP_FOTAQ["en"].replace(" On phones the game needs a lot of memory (German ~110 MB of data), older devices may not manage.", " It also runs on iPhone and iPad.")

@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-14 05:24",
+ "generated": "2026-11-14 05:50",
  "versions": [
   {
    "version": "3.89.1",
    "file": "webcam_bewegung_3_89_1.py",
    "url": "",
-   "sha256": "24c739edf0815a02cbe53c61902ba82450ae6faa8823685d0c5c6560b40ef2d7",
-   "date": "2026-11-14 05:24",
+   "sha256": "aee4bf14ee4d3552ab9f34d0b410a6f3e81aae1a00bf6a6a19ec44506ce4c371",
+   "date": "2026-11-14 05:50",
    "notes": "«Flight of the Amazon Queen» läuft jetzt auch auf iPhone und iPad (neue Engine, nur rund 12 MB neu laden – die Spielstände bleiben): die Kachel steht bei «👆 Touch», keine Warnseite mehr; am Spielende und bei einem Fehler bleibt eine Tafel stehen statt einer leeren Seite. Wer das Spiel schon hat: unter Werkzeuge → Queen «⬆ Neue Fassung laden».",
-   "size": 3830865,
-   "sig": "8c36a550dd62221d0e1371e9a7d129735f5b2e5e56f05e05515ff10d9275ec25ab810a7dc70d1837b86ae21d25c6a8cc0c0881c9f730ab06ce1ea9084cfd010f",
+   "size": 3830918,
+   "sig": "a0ef144f55a9816582ba2e356d3e753194d84994fb32b7f712988a34389766c915ad4d7891725bbc862da0d9f771ee7414285463fe8387ab8ea5369eff933300",
    "data": {
     "file": "moveeye_daten_3_89_1.zip",
     "url": "",
-    "sha256": "d91a355a1708852b11475f012ccaa9be1dcbec7e90fe42895bff8ecb74979824",
-    "size": 11339454,
-    "sig": "af02189e2175c00de5696f3295afbcb9fc8ccb58368e6e3509ca3f700f208a1bc235796fc74e40b48b531488513c7e6c43ff3da6cbf88bc5664d069e9b7d450d"
+    "sha256": "6e697ed66ac51d5d86aeeb11e8658da347c203e4afae0a10b9d60c05b89ca20e",
+    "size": 11339598,
+    "sig": "6c3a0813a172bd1d416c5ec4f4be8e3f02ec2d9238ac221ee31e38f8695483578f93b30604e60db97123f1e2b201258e876e3cc467ba3ef4ea0012e1f4c2b20f"
    }
   },
   {
