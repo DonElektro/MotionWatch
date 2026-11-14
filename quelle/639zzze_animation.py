@@ -16,6 +16,7 @@
 # beim Laden, wie die Statuszeile; kein Akku = kein Chip). Alle 2 s neu aus STATE cpu / cpu_temp / battery (100 misst schon -
 # kein neuer Faden, keine neue Adresse; Gäste: /g/<token>/state). CPU orange ab 70 % / 70 °C, rot ab 85 % / 80 °C; Akku orange
 # unter 30 %, rot unter 15 %. Wird es eng (Handy, lange Titel), fällt zuerst «· °C» weg - der Titel bricht nie um.
+# Wer die Karte nicht sieht (Zuschauer, ohne Recht «Schutz», Karte ausgeblendet): die Chips rechts in der Statuszeile oben.
 # Gast-Seite: die Chips in der oberen Zeile. Fenster: zwei Etiketten in der Kopfzeile «KAMERASTEUERUNG» (570).
 # ----------------------------------------------------------------------------
 _HX_ANIM = {
@@ -60,6 +61,7 @@ ANIM_CSS = r"""<style id="anim-css">
 .lv-chip[hidden]{display:none}
 .lv-chip.warn{background:#f59a4a;color:#111}.lv-chip.hot{background:#ff4d4d;color:#fff}
 .lv-chips.nc .lv-cpu .c{display:none}
+header>.chips>.lv-chips.alt{margin:0 0 0 auto;order:99}
 /* 3. head compass, inside the live picture */
 .lv-comp{position:absolute;right:8px;bottom:8px;z-index:4;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;
   display:flex;align-items:center;justify-content:center;pointer-events:none;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
@@ -94,20 +96,26 @@ ANIM_JS = r"""<script>
   let chips = null, chip = null, batt = null, comp = null, lastCpu = 0;
   // the chips live in the header row (summary) of the card «Controls»; the language switch rewrites that row - they come back
   function chipEls() {
-    const sum = document.querySelector('details[data-view="controls"]>summary'); if (!sum) return null;
+    // who does not see the card (viewer, no right «protection», card hidden): right in the status line at the top - only on Live
+    let sum = document.querySelector('details[data-view="controls"]>summary'), alt = false;
+    if (!sum || !sum.getClientRects().length) { sum = (document.body.dataset.tab || "live") === "live" ? document.querySelector("header>.chips") : null; alt = true; }
+    if (!sum) { if (chips) chips.remove(); return null; }
     if (!chips) { chips = document.createElement("span"); chips.id = "lv-chips"; chips.className = "lv-chips"; chips.setAttribute("role", "status");
       chip = document.createElement("span"); chip.id = "lv-cpu"; chip.className = "lv-chip lv-cpu"; chip.hidden = true;
       chip.innerHTML = '<span class="u"></span><span class="c"></span>';
       batt = document.createElement("span"); batt.id = "lv-batt"; batt.className = "lv-chip lv-batt"; batt.hidden = true;
       chips.append(chip, batt); }
     if (chips.parentNode !== sum) sum.appendChild(chips);
+    chips.classList.toggle("alt", alt);
     chip.title = tr("Processor load and temperature"); batt.title = tr("Battery charge");
     return sum;
   }
   // tight (phone, long title): «· °C» goes first - the title never wraps
   function fit(sum) {
-    if (!sum.offsetParent) return;
+    if (!sum.getClientRects().length) return;
     chips.classList.remove("nc");
+    if (chips.classList.contains("alt")) { const k = chips.getBoundingClientRect(), s = sum.getBoundingClientRect();
+      if (k.right > s.right + 1 || k.left < s.left || sum.scrollWidth > sum.clientWidth + 1) chips.classList.add("nc"); return; }
     const over = () => { const rg = document.createRange(), tn = [...sum.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim());
       const k = chips.getBoundingClientRect(), s = sum.getBoundingClientRect(); let lines = 1, tr_ = s.left;
       if (tn.length) { rg.setStart(tn[0], 0); rg.setEnd(tn[tn.length - 1], tn[tn.length - 1].length); const q = rg.getClientRects(); lines = q.length;

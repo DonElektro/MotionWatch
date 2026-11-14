@@ -6,7 +6,8 @@ Startet MoveEye ohne Fenster mit der Demo (eigener Ordner, freier Port) und prü
   1. CPU- und Akku-Chip in der Kopfzeile der Karte «Bedienung» (nicht mehr im Bild): «CPU 42 % · 61 °C» und «🔋 82 %» /
      «🔌 97 %», rechts vom Titel, links vom ▾, alle 2 s neu gemalt, auch bei zugeklappter Karte sichtbar; Farben (CPU ab 70 / 85,
      Akku unter 30 / 15 %), kein Akku = kein Chip; eng (390 px, langer Titel) = «· °C» fällt weg, der Titel bricht nie um;
-     nach dem Sprachwechsel wieder da. Gast-Seite: die Chips in der oberen Zeile.
+     nach dem Sprachwechsel wieder da. Wer die Karte nicht sieht (Zuschauer: body.role-view): die Chips rechts in der
+     Statuszeile oben, ganz sichtbar (wie 041: die Karte per CSS ausgeblendet). Gast-Seite: die Chips in der oberen Zeile.
   2. Kopf-Kompass: mit Kopf (Joystick «immer») sichtbar, Schwenk 75 % -> der Pfeil steht auf +45°.
   3. Bewachen: der Punkt im Schutz-Chip atmet (Animation mwBreath); aus bei prefers-reduced-motion, beim Schalter
      «Bewegung reduzieren» (html.mwrm) und im Rotlicht (html.sxnight); ebenso das Einblenden der Seite.
@@ -100,14 +101,31 @@ def seite(pg, base, name, a):
     pg.evaluate(PAINT, {"cpu": 57, "cpu_temp": 67, "battery": {"on": True, "pct": 82}}); l = pg.evaluate(LAGE)
     pruef(l["nc"] and not l["temp_shown"] and l["lines"] == 1, "%s: eng - «· °C» fällt weg, der Titel bleibt in einer Zeile (%s)" % (name, l))
     pg.evaluate("() => { const su = document.querySelector('details[data-view=\"controls\"]>summary'); su.firstChild.textContent = su.dataset.keep; }")
+    # a viewer (no card «Controls»): the chips go right into the status line at the top
+    pg.evaluate("() => { const s = document.createElement('style'); s.id = 't-view'; s.textContent = 'details[data-view=\"controls\"]{display:none!important}'; document.head.appendChild(s); }")
+    pg.wait_for_timeout(2400)
+    v = pg.evaluate("""() => { const k = document.getElementById('lv-chips'), h = document.querySelector('header>.chips'); const r = k && k.getBoundingClientRect(), hr = h && h.getBoundingClientRect();
+        const e = r && document.elementFromPoint(r.left + 4, r.top + r.height / 2);
+        return {in_header: !!(k && k.parentNode === h), alt: !!(k && k.classList.contains('alt')), text: (document.getElementById('lv-cpu') || {}).textContent,
+                inside: !!(r && hr && r.width > 20 && r.left >= hr.left - 1 && r.right <= Math.min(hr.right, innerWidth) + 1), right: !!(r && hr && hr.right - r.right < 30),
+                top: !!(e && k.contains(e)), card: !!document.querySelector('details[data-view="controls"]>summary').getClientRects().length}; }""")
+    pruef(v["in_header"] and v["alt"] and v["inside"] and v["right"] and v["top"] and not v["card"] and bool(v["text"]),
+          "%s: Zuschauer ohne Karte «Bedienung» - die Chips rechts in der Statuszeile, ganz sichtbar (%s)" % (name, v))
+    if a.bilder:
+        pg.screenshot(path=os.path.join(a.bilder, "chips_%s_zuschauer.png" % name))
+    pg.evaluate("() => document.getElementById('t-view').remove()"); pg.wait_for_timeout(2400)
+    pruef(pg.evaluate(LAGE)["in_sum"], "%s: Karte wieder sichtbar - die Chips zurück in «Bedienung»" % name)
     pg.evaluate("() => langSet('fr')"); pg.wait_for_timeout(2600); l = pg.evaluate(LAGE)
     pruef(l["in_sum"] and bool(l["text"]) and l["lines"] == 1, "%s: nach dem Sprachwechsel (fr) sind die Chips wieder da (%s)" % (name, l["text"]))
     pg.evaluate("() => langSet('de')"); pg.wait_for_timeout(800)
-    comp = pg.evaluate("""async () => { const j = await (await fetch('/api/state', {cache: 'no-store'})).json(); await new Promise(r => setTimeout(r, 1500));
+    for _try in range(4):                                     # the head may still be on its way to 75 %
+      comp = pg.evaluate(r"""async () => { const j = await (await fetch('/api/state', {cache: 'no-store'})).json(); await new Promise(r => setTimeout(r, 1500));
         const j2 = await (await fetch('/api/state', {cache: 'no-store'})).json(); const k = document.getElementById('lv-comp');
         const m = k && !k.hidden && getComputedStyle(k).display !== 'none' ? /rotate\(([-\d.]+)deg\)/.exec(k.querySelector('svg').style.transform) : null;
         return {deg: m ? +m[1] : null, pan: j2.cfg.pan, range: j2.cfg.servo_range || 180}; }""")
-    want = (comp["pan"] - 50) / 100 * comp["range"]
+      want = (comp["pan"] - 50) / 100 * comp["range"]
+      if comp["deg"] is not None and abs(comp["deg"] - want) < 3:
+          break
     pruef(comp["deg"] is not None and abs(comp["deg"] - want) < 3, "%s: Kompass sichtbar, folgt dem Schwenk (%s, erwartet %.1f°)" % (name, comp, want))
     an = pg.evaluate(ANIM, "#b-arm")
     pruef(an and an["before"] == "mwBreath" and an["main"] == "mwPageIn", "%s: Bewachen - der Punkt atmet, die Seite blendet ein (%s)" % (name, an))
