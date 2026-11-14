@@ -34,7 +34,8 @@ sys.path.insert(0, HIER)
 import versionen  # noqa: E402
 
 REPO_GH = "DonElektro/MotionWatch"
-PAKETE = {"win": "MotionWatch3D_Simulator.zip", "linux": "MoveEyeSim3D_Linux.zip"}
+PAKETE = {"win": "MotionWatch3D_Simulator.zip", "linux": "MoveEyeSim3D_Linux.zip", "web": "sim-web.zip"}
+FREI = ("web",)                     # Simulator im Browser (MoveEye «Homepage»): fehlt das Asset, wird es übersprungen
 MAX = 300 * 1024 * 1024
 
 
@@ -73,6 +74,9 @@ def holen(v, tag, ordner, probe, pakete):
         m_s = re.search(r"^%s-size: (\d+)$" % key, notiz, re.M)
         m_h = re.search(r"^%s-sha256: ([0-9a-f]{64})$" % key, notiz, re.M)
         a = [x for x in rel.get("assets") or [] if x.get("name") == name]
+        if not a and key in FREI and not (m_s or m_h):
+            print("%s: kein Asset %s an %s - übersprungen" % (key, name, tag))
+            continue
         if not (m_s and m_h) or len(a) != 1:
             fehler.append("%s: Asset %s oder %s-size / %s-sha256 in der Notiz fehlt" % (key, name, key, key))
             continue
@@ -154,6 +158,9 @@ def pfad(key, ziel):
     ah = vj.get("anhang") if isinstance(vj.get("anhang"), dict) else {}
     e = ah.get(key) if isinstance(ah.get(key), dict) else None
     im_repo = os.path.join(REPO, versionen.ZIP_REL if key == "win" else versionen.LINUX_REL)
+    if not e and key in FREI:
+        print("PROBLEM: kein Anhang «%s» in version.json" % key)
+        return 1
     if not e:
         print("kein Anhang in version.json - Paket im Repository (Sim %s)" % vj.get("ver"))
         print(im_repo)
@@ -184,7 +191,7 @@ def main():
     h.add_argument("ver")
     h.add_argument("--tag", default="", help="Standard sim-X.Y.Z; simprobe-… = Probelauf (Vorabversion)")
     h.add_argument("--ordner", default="", help="Ziel-Ordner (Standard simulator3d/anhang)")
-    h.add_argument("--pakete", default="win,linux")
+    h.add_argument("--pakete", default="win,linux,web")
     p = sub.add_parser("pfad")
     p.add_argument("paket", choices=sorted(PAKETE))
     p.add_argument("--ziel", default="")

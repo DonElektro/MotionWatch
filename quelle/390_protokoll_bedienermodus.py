@@ -1202,7 +1202,7 @@ def sim_manifest_check(folder, m):
             if key not in ok_ or not sha or sha != ok_[key]["sha256"] or os.path.getsize(p_) != ok_[key]["size"]:
                 bad.append(f"simulator {key} {e.get('ver')}")
         ah_ = sim.get("anhang") if isinstance(sim, dict) and isinstance(sim.get("anhang"), dict) else {}
-        for key in ("win", "linux"):                    # Simulator-Anhang: Release assets - signature and address; the file
+        for key in SIM3D_ANHANG:                        # Simulator-Anhang: Release assets - signature and address; the file
             e = ah_.get(key)                            # only when it happens to lie here (simulator3d/anhang/, not in git)
             if e is None:
                 continue
@@ -1332,7 +1332,7 @@ def sim_manifest_block(folder, seed=b""):
         sub = {"ver": av, "version": str(ah.get("version") or ""), "notes": str(ah.get("notes") or "")[:400]}
         if ah.get("mw_min") and VER_RE.match(str(ah.get("mw_min"))):
             sub["mw_min"] = str(ah["mw_min"])
-        for key in ("win", "linux"):
+        for key in SIM3D_ANHANG:                          # win, linux, web (the browser simulator, 639zzzh)
             e = ah.get(key) if isinstance(ah.get(key), dict) else {}
             fn, v, url = SIM3D_ANHANG[key][0], str(e.get("ver") or ""), str(e.get("url") or "")
             sha, size = str(e.get("sha256") or "").lower(), e.get("size")
