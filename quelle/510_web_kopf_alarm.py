@@ -7,11 +7,12 @@ self.addEventListener("push", e => {
   try { d = e.data ? e.data.json() : {}; } catch (x) { d = {body: e.data ? e.data.text() : ""}; }
   e.waitUntil(self.registration.showNotification(d.title || "MoveEye", {
     body: d.body || "", icon: "/icon-192.png", badge: "/icon-192.png", tag: d.tag || "mw", renotify: true,
-    requireInteraction: !!d.urgent, vibrate: d.urgent ? [300, 120, 300, 120, 300] : [120], data: {url: d.url || "/"}}));
+    requireInteraction: !!d.urgent, vibrate: d.urgent ? [300, 120, 300, 120, 300] : [120],
+    actions: Array.isArray(d.actions) ? d.actions.slice(0, 2) : [], data: {url: d.url || "/", live: d.live || ""}}));
 });
 self.addEventListener("notificationclick", e => {
   e.notification.close();
-  const url = (e.notification.data && e.notification.data.url) || "/";
+  const dt = e.notification.data || {}, url = (e.action === "live" && dt.live) || dt.url || "/";   // 639zzzzb: «📷 Live öffnen»
   let ext = false; try { ext = new URL(url, self.location.href).origin !== self.location.origin; } catch (x) {}
   if (ext) { e.waitUntil(self.clients.openWindow(url)); return; }   // a message with a position: the map in a new window
   e.waitUntil(self.clients.matchAll({type: "window", includeUncontrolled: true}).then(cs => {

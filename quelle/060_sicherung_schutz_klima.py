@@ -1195,6 +1195,8 @@ class Notifier:
             f.update(retry="60", expire="1800")                 # every minute again, at most 30 minutes, until confirmed
         if push_map(p):                                         # 635b: the map is the link of a message with a position
             f.update(url=push_map(p)[:500], url_title=push_map_line()[:100])
+        elif push_live_url(p) and not p.get("home_id"):         # 639zzzzb: alarms / motion: the one link = «📷 Live öffnen»
+            f.update(url=push_live_url(p)[:500], url_title=push_live_label()[:100])
         elif p.get("link"):
             f.update(url=p["link"][:500], url_title="MoveEye")
         b = uuid.uuid4().hex; parts = []

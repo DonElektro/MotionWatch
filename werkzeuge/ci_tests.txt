@@ -49,6 +49,7 @@ kern | 4  | -  | python3 werkzeuge/werkskopie_test.py | Werkseinstellungen - Lis
 kern | 5  | -  | python3 werkzeuge/akku_nacht_test.py | «Akku bis Sonnenaufgang?» nach einem Neustart (am Netz nie, am Akku erst nach der Einschwingzeit, einmal pro Abend auch über Neustarts, kritisch sofort)
 kern | 5  | -  | python3 werkzeuge/protokoll_ruhe_test.py | Ruhiges Protokoll (kein Hin und Her bei walk_frames und Wind)
 kern | 8  | 1x | python3 werkzeuge/erststart_test.py | Erster Start ruhiger (Teil 639zzs - nie mehr als ein Hinweis gleichzeitig, Reihenfolge, neues Gerät ohne «Neu in dieser Version»)
+kern | 5  | -  | python3 werkzeuge/push_live_test.py --datei "$MW" | Push-Knopf «📷 Live öffnen» (Teil 639zzzzb – ntfy erster Knopf «view» auf den Live-Reiter, höchstens 3 Knöpfe, Telegram / Pushover / Web-Push, Infos unverändert, Schalter aus / keine Adresse = kein Knopf, kein Passwort / PIN / Token / App-Schlüssel / ntfy-Thema in Nachricht und Protokoll, 5 Sprachen)
 
 # ---------------------------------------------------------------------------------------------------- rechte (Web)
 rechte | 8 | -  | python3 werkzeuge/rechte_schutz_test.py --browser | Rechte und Schutz (Kind / Familie / ohne Rechte, PIN für alles im Browser, Stufe → Sirene, Zeitplan nach hartem Neustart)

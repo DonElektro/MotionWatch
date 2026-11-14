@@ -247,10 +247,12 @@ def webpush_all(title, text, url="/", tag="mw", urgent=True):
         return 0
     ok = 0; gone = []; cat = push_cat(tag)
     subs = [x for x in subs if push_sub_wants(x, cat)]      # 2.98.42: users get only alarms / infos / games they chose (041)
+    msg = {"title": title[:120], "body": text[:400], "url": url or "/", "tag": tag, "urgent": bool(urgent)}
+    if str(tag or "").startswith("mw-") and push_live_kind(str(tag)[3:]):     # 639zzzzb: button «📷 Live öffnen» = «/» of the own page
+        msg.update(live="/", actions=[{"action": "live", "title": push_live_label()}])
     for sb in subs:
         try:
-            code = webpush_send(sb, {"title": title[:120], "body": text[:400], "url": url or "/", "tag": tag, "urgent": bool(urgent)},
-                                urgent=urgent)
+            code = webpush_send(sb, msg, urgent=urgent)
         except Exception as e:
             code = 0; WEBPUSH["status"] = f"error: {str(e)[:120]}"
         if code in (404, 410):
