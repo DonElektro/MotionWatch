@@ -61,6 +61,7 @@ live | 8  | 1x | python3 werkzeuge/ansichten_test.py | Drei Kamera-Ansichten (Ko
 live | 6  | -  | python3 werkzeuge/untersuchen_test.py --browser | «🔍 Untersuchen» im Live-Bild (Ausschnitt, Kopf, Weitwinkel, Wärmebild, Hochladen, Rechte, Gäste, Funde, Zeitlimit, Browser)
 live | 8  | 1x | python3 werkzeuge/kamerawahl_test.py | Kamerawahl (kleine Bilder aller Videoquellen, Antippen wechselt nur das grosse Bild, Passwort nie im Browser)
 live | 8  | 1x | python3 werkzeuge/live_sauber_test.py | Live-Bild sauber (Knöpfe und Kacheln erst nach einem Tipp, 4 s, Vollbild, Maus, Schalter)
+live | 10 | 1x | python3 werkzeuge/lupe_test.py --browser | «🔍 Lupe» im Live-Bild (Rechte, Grenzen, Rate, Privatsphäre-Zone schwarz, schärfer als der Strom, Kopf erlaubt / nicht, Ort folgt; Handy Touch: Rahmen, zwei Finger, verschieben, Doppeltipp, keine Seiten-Zoom; quer, Vollbild, PC, 5 Sprachen, Gast) – lokal ~2.5 min
 live | 8  | 1x | python3 werkzeuge/nachtsicht_test.py | Kachel «🌙 Nachtsicht» (aus = aus, auch nach «Heute Nacht bewachen» / automatisch, bleibt aus im Dunkeln über viele Bilder und nach Neustart; JavaScript der Seite mit node; Hüllen Morse / Almanach um _lowlight_decide ohne Modus durchsichtig)
 
 # ---------------------------------------------------------------------------------------------------- daten (Web)
