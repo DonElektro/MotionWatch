@@ -35,8 +35,7 @@ main{padding:16px;max-width:720px;margin:0 auto}
   <a class="mi" href="/almanach"><i>🌦</i><span><b data-i18n="Almanac">Almanac</b><small data-i18n="Sun, moon, weather">Sun, moon, weather</small></span><span class="ar">›</span></a>
   <button type="button" class="mi" id="m-fb" onclick="window.mwFeedback && mwFeedback()"><i>💬</i><span><b data-i18n="Feedback to the developer">Feedback to the developer</b><small data-i18n="Errors, wishes, praise, questions - anonymous">Errors, wishes, praise, questions - anonymous</small></span><span class="ar">›</span></button>
   <button type="button" class="mi" id="m-about" onclick="window.mwAbout && mwAbout()"><i>ℹ️</i><span><b data-i18n="About MoveEye">About MoveEye</b><small data-i18n="history, developer, numbers">history, developer, numbers</small></span><span class="ar">›</span></button>
-  <div id="g2-more"></div>
-  <div id="g2-sys"></div>
+  <!-- 3.88 (Klar stage 1, owner): «Einrichtung» and «Auf Werkseinstellungen zurücksetzen» moved to Einstellungen → System -->
 </main>
 <script>
 /*COMMON*/
@@ -90,8 +89,8 @@ MORE_DE = {"Everything explained, with search": "Alles erklärt, mit Suche", "Qu
 
 
 def more_page():
-    js = "Object.assign(I18N.de, " + json.dumps(MORE_DE, ensure_ascii=False) + ");"
-    return render_page(MORE_PAGE, "more").replace("/*MOREDE*/", js, 1)
+    js = "Object.assign(I18N.de, " + json.dumps(dict(MORE_DE, **MORE_GROUPS_DE), ensure_ascii=False) + ");"
+    return more_grouped(render_page(MORE_PAGE, "more").replace("/*MOREDE*/", js, 1))     # 3.88: the entries in four groups (639zzzb)
 
 
 def main_tab_page(tab):

@@ -686,6 +686,23 @@ Object.assign(I18N.en || (I18N.en = {}), {"sd-note": "Every visit in the simulat
 
 
 GUEST_KEYS = ("Guest view · watch only · tap the picture = full screen", "access expired", "Armed", "Disarmed", "person in view", "quiet", "until")
+# 3.88 (Klar stage 1): ONE bar on top of every guest page (live, Digitaler Rucksack, packing lists, tours): the way back on the left
+# (44 px), the title, «MoveEye» on the right - before every page had its own (← Live at the right, ‹ Zurück as a box, ‹ … as a link).
+# No «%» in here: the bar also goes into templates that are filled with «%».
+GUEST_BAR_CSS = (".gtop{display:flex;align-items:center;gap:10px;min-height:56px;box-sizing:border-box;padding:6px 12px;"
+                 "padding-top:max(6px,env(safe-area-inset-top));border-bottom:1px solid #1f2b3a;background:#0d1218;color:#e6edf3}"
+                 ".gtop .gback{display:inline-flex;align-items:center;gap:4px;min-height:44px;box-sizing:border-box;padding:0 12px 0 9px;border-radius:12px;"
+                 "border:1px solid #27324a;background:#141c2e;color:#8ab4ff;text-decoration:none;font-weight:600;font-size:15px;white-space:nowrap;flex:none;margin:0}"
+                 ".gtop .gtt{flex:1;min-width:0;font-size:17px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}"
+                 ".gtop .gbrand{flex:none;font-size:13px;font-weight:600;color:#8b9bb0;white-space:nowrap}"
+                 ".gbtn{display:inline-flex;align-items:center;gap:8px;min-height:44px;box-sizing:border-box;padding:0 14px;border-radius:12px;"
+                 "border:1px solid #27324a;background:#141c2e;color:#e6edf3;text-decoration:none;font-weight:600;font-size:15px}")
+
+
+def guest_bar(title, back_href="", back_tx="", right="MoveEye"):
+    """the bar of the guest pages (title / back_tx: already HTML-escaped)"""
+    b = '<a class="gback back" href="%s">‹ %s</a>' % (back_href, back_tx) if back_href else ""
+    return '<div class="gtop">' + b + '<b class="gtt">' + title + "</b>" + ('<span class="gbrand">' + right + "</span>" if right else "") + "</div>"
 GUEST_PAGE = r"""<!doctype html>
 <html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -693,16 +710,15 @@ GUEST_PAGE = r"""<!doctype html>
 <title>MoveEye – Live</title>
 <style>
 html,body{margin:0;background:#000;color:#e6edf3;font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;height:100%}
-.top{display:flex;align-items:center;gap:10px;padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top))}
-.top b{font-size:17px}.dot{width:10px;height:10px;border-radius:50%;background:#3fb950;display:inline-block}
-.st{margin-left:auto;font-size:13px;color:#8b9bb0;text-align:right}
+.dot{width:10px;height:10px;border-radius:50%;background:#3fb950;display:inline-block;flex:none}
+.gtop .gtt{flex:0 0 auto}.st{margin-left:auto;font-size:13px;color:#8b9bb0;text-align:right}
 .wrap{position:relative;display:flex;align-items:center;justify-content:center;min-height:180px}
 #v{width:100%;max-height:calc(100dvh - 110px);object-fit:contain;display:block}
 .vwrap.vlost::after{content:"↻";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#8b9bb0;font-size:34px}
 .foot{padding:8px 14px;font-size:12px;color:#8b9bb0}
-.big .top,.big .foot{display:none}.big #v{max-height:100dvh;height:100dvh}
-</style></head><body>
-<div class="top"><span class="dot"></span><b>MoveEye</b><span class="st" id="st">…</span></div>
+.big .gtop,.big .foot{display:none}.big #v{max-height:100dvh;height:100dvh}
+/*GBAR*/</style></head><body>
+<div class="gtop"><span class="dot"></span><b class="gtt">MoveEye</b><span class="st" id="st">…</span></div>
 <div class="wrap vwrap"><img id="v" alt="" data-src="__BASE__/video"></div>
 <div class="foot" id="ft"></div>
 <script>
@@ -725,7 +741,7 @@ async function st() {
 }
 st();
 </script></body></html>
-"""
+""".replace("/*GBAR*/", GUEST_BAR_CSS, 1)
 
 
 LOG_PAGE = r"""<!doctype html>

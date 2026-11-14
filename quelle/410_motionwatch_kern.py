@@ -1192,14 +1192,15 @@ class MotionWatch:
 
             walktest_draw(frame)                           # 2.98.13: walk test - the marks so far (415)
             if CFG["show_hud"]:
-                hud = (f"{'RAIN MODE' if rain_mode else 'No rain'} | Wind: {STATE['wind_level']} x{STATE['wind_boost']} | "
-                       f"Persons: {len(person_boxes)} | Pan {CFG['pan']:.0f}% Tilt {CFG['tilt']:.0f}% | {STATE['patrol_status']}"
+                H_ = hud_tr                                 # 3.88 (Klar stage 1): in the language of the device, ASCII (639zzzb)
+                hud = (f"{H_('RAIN MODE') if rain_mode else H_('No rain')} | {H_('Wind')}: {H_(str(STATE['wind_level']))} x{STATE['wind_boost']} | "
+                       f"{H_('Persons')}: {len(person_boxes)} | {H_('Pan')} {CFG['pan']:.0f}% {H_('Tilt')} {CFG['tilt']:.0f}% | {H_(str(STATE['patrol_status']))}"
                        + (f" | CPU {STATE['cpu']:.0f}%" if STATE["cpu"] is not None else "")
                        + (f" {STATE['cpu_temp']:.0f}C" if STATE["cpu"] is not None and STATE["cpu_temp"] is not None else "")
-                       + (" | MANUAL" if STATE["manual"] else "")
+                       + (" | " + H_("MANUAL") if STATE["manual"] else "")
                        + (" | IR" if CFG["thermal_on"] and STATE["thermal"] == "connected" else "")
                        + (f" | WiFi {STATE['wifi']['dbm']}dBm" if STATE["wifi"] and STATE["wifi"]["connected"] else "")
-                       + (" | TIMELAPSE" if TL_HOLD["on"] else ""))
+                       + (" | " + H_("TIMELAPSE") if TL_HOLD["on"] else ""))
                 cv2.rectangle(frame, (0, 0), (W, 34), (0, 0, 0), -1)
                 cv2.putText(frame, hud, (10, 24), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (80, 160, 255) if rain_mode else (230, 230, 230), 2)
                 if STATE["recording"]:

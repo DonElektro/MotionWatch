@@ -955,8 +955,9 @@ main{max-width:720px;margin:0 auto;padding:14px}a{color:#8ab4ff}.mut{color:#9aa6
 .nums{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.nums div{border:1px solid #27324a;border-radius:10px;padding:8px 12px;background:#141c2e}
 .nums b{display:block;font-size:17px}svg{display:block;width:100%%;height:auto;border:1px solid #27324a;border-radius:12px;background:#141c2e;margin:10px 0}
 ul{padding-left:20px}li{overflow-wrap:anywhere}
-</style></head><body><main><a class="back" href="%(back)s">‹ %(backtx)s</a><h1>%(name)s</h1>%(body)s<p class="mut">%(foot)s</p></main></body></html>
+</style></head><body><div class="gtop"><a class="gback back" href="%(back)s">‹ %(backtx)s</a><b class="gtt">%(name)s</b></div><main>%(body)s<p class="mut">%(foot)s</p></main></body></html>
 """
+KT_GUEST_HTML = KT_GUEST_HTML.replace("</style>", GUEST_BAR_CSS + "</style>", 1)   # 3.88: the one guest bar (520)
 
 
 def kt_fmt_min(m):
@@ -1030,15 +1031,15 @@ def kt_guest_html(token, tid="", lang=None):
         s = kt_tour_stats(t)
         body.append('<a class="li" href="%s/touren?t=%s"><b>%s</b><span class="mut">%s</span></a>'
                     % (base, t["id"], esc(t["name"]), esc(" · ".join(b for _a, b in kt_numbers(s, lang)[:3]))))
-    return KT_GUEST_HTML % dict(common, title=esc(tr("Tours", lang)), name="🥾 " + esc(tr("Tours", lang)), back=base + "/", backtx=esc(tr("Back", lang)),
+    return KT_GUEST_HTML % dict(common, title=esc(tr("Tours", lang)), name="🥾 " + esc(tr("Tours", lang)), back=base + "/tausch", backtx=esc(tr("File exchange", lang)),
                                 body="".join(body) or '<p class="mut">' + esc(tr("No tours yet.", lang)) + "</p>")
 
 
 # ---- the guests' file exchange page: one more link ---------------------------------------------------------------------------------------
-_kt_gtop = '<a href="__BASE__/tausch/pack">🎒 __PACK__</a>'
+_kt_gtop = '<a class="gbtn" href="__BASE__/tausch/pack">🎒 __PACK__</a>'
 KT_GUEST_LINK = "__TOUREN__" not in TAUSCH_GUEST_HTML and TAUSCH_GUEST_HTML.count(_kt_gtop) == 1
 if KT_GUEST_LINK:
-    TAUSCH_GUEST_HTML = TAUSCH_GUEST_HTML.replace(_kt_gtop, _kt_gtop + '<a href="__BASE__/touren" style="margin-left:14px">🥾 __TOUREN__</a>', 1)
+    TAUSCH_GUEST_HTML = TAUSCH_GUEST_HTML.replace(_kt_gtop, _kt_gtop + '<a class="gbtn" href="__BASE__/touren">🥾 __TOUREN__</a>', 1)
 _tausch_guest_html_639zzx = tausch_guest_html
 
 

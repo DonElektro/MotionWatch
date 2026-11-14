@@ -7,7 +7,7 @@ _save_timer = None
 
 
 WEB_UI_KEY = re.compile(r"^mw-[A-Za-z0-9_:\-./ ]{1,90}$")
-WEB_UI_LOCAL = {"mw-sound", "mw-hdr", "mw-listen-vol", "mw-hdr-tabs", "mw-hdr-chips"}   # per device on purpose (sound on the phone, not on the PC; 639o: header folds)
+WEB_UI_LOCAL = {"mw-sound", "mw-hdr", "mw-listen-vol", "mw-hdr-tabs", "mw-hdr-chips", "mw-hdr-sum"}   # per device on purpose (sound on the phone, not on the PC; 639o: header folds, Klar: status line open)
 
 
 # ---- web password set on the page / in the window: stored as a salted PBKDF2 hash; checked passwords are remembered

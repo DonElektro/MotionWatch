@@ -35,6 +35,7 @@ SIMPLE_KEYS.update({"presence_auto", "presence_hosts", "device_name", "refscan_o
 # main switch of a part that has no key in SIMPLE_KEYS (shown in «Simple», the rest is folded)
 MENU_MAIN = {"refscan_on_arm", "kopf_on", "servo_stop_btn", "log_status_min", "dev_area", "tours_auto", "report_from", "report_hour",
              "time_from_browser", "gps_phone", "temp_warn", "disk_warn_mb", "deter_always"}
+MENU_NO_FINE = {"Recording", "Camping / protection"}         # 3.88 (owner): common settings - no «Feineinstellungen» (web: MN_NO_FINE, 530)
 MENU_NO_FOLD = {"Reference scan"}                          # «Simple»: only the link to the assistant (the rest in «Expert» / tools)
 MENU_TITLES = {"Setup": "Place & clock", "Camera / Servos": "Head (servos)", "Camping / protection": "Arming and own Wi-Fi",
                "Notifications": "Push messages", "Device & help": "Device & help", "Night time": "Night time", "Presence": "Presence"}
@@ -194,7 +195,7 @@ if GUI_OK:
         """a closed line «Feineinstellungen (n) ▸» with its body (the state is kept like the parts)"""
         h = tk.Frame(parent, bg=C["panel"], cursor="hand2"); h.pack(fill="x", pady=(8, 0))
         al = tk.Label(h, text="▸", bg=C["panel"], fg=C["acc"], font=("DejaVu Sans", 9), cursor="hand2"); al.pack(side="right")
-        tl = tk.Label(h, text=tr(title).upper() + (f" ({n})" if n else ""), bg=C["panel"], fg=C["acc"], font=("DejaVu Sans", 7, "bold"),
+        tl = tk.Label(h, text=tr(title) + (f" ({n})" if n else ""), bg=C["panel"], fg=C["acc"], font=("DejaVu Sans", 9, "bold"),   # 3.88: normal case
                       anchor="w", cursor="hand2")
         tl.pack(side="left", fill="x", expand=True)
         body = tk.Frame(parent, bg=C["panel"])
@@ -255,7 +256,8 @@ if GUI_OK:
                 and x[1] not in TK_AI_MODEL_KEYS + TK_SPECIES_KEYS and not (sec == "Deterrence" and x[1].startswith("deter_") and x[1][-4:] in ("_act", "ound"))]
         if not fine:
             return
-        fb = _menu_tk_fold(self, sp, "Fine-tuning", len(fine), sec)
+        # 3.88 (owner): one or two settings stay in their part (no extra fold level «Feineinstellungen» for them)
+        fb = _menu_tk_fold(self, sp, "Fine-tuning", len(fine), sec) if len(fine) > 2 and sec not in MENU_NO_FINE else sp
         keys = {x[1] for x in fine}
         for s, key, label in TOGGLES:
             if s == sec and key in keys:

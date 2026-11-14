@@ -8,7 +8,8 @@ Jetzt kommt das Datum aus dem Muster des Dateinamens (factory_backup_when).
   1. Ohne Programmstart: factory_backup_when / factory_backups aus quelle/586 mit echten Dateinamen (auch falsche).
   2. MoveEye ohne Fenster (Demo, eigener Ordner, Aufnahme-Ordner im Test-Ordner): eine ältere Kopie liegt schon da ->
      /api/factory nennt sie mit Datum; ein echtes Zurücksetzen -> die neue Kopie steht zuoberst, lässt sich laden;
-     die Seite Mehr → System zeigt «Kopien der alten Einstellungen» mit beiden.
+     Einstellungen → System → «Einrichtung & Werkseinstellungen» (bis 3.88: Mehr → System) zeigt «Kopien der alten
+     Einstellungen» mit beiden.
 
   python3 werkzeuge/werkskopie_test.py [--datei X.py] [--ohne-browser]
 """
@@ -140,7 +141,7 @@ def main():
                     pg = ctx.new_page()
                     jsf = []
                     pg.on("pageerror", lambda e: jsf.append(str(e)[:300]))
-                    pg.goto(base + "/more", wait_until="domcontentloaded")
+                    pg.goto(base + "/settings?open=g2:setup", wait_until="domcontentloaded")   # Design «Klar» Etappe 1: Einstellungen → System
                     t_ = time.time() + 25
                     links = []
                     while time.time() < t_ and len(links) < 2:
@@ -148,7 +149,10 @@ def main():
                         pg.wait_for_timeout(400)
                     txt = pg.evaluate("() => document.body.textContent")
                     pruef("Kopien der alten Einstellungen" in txt and len(links) == 2 and "09.11.2026 21:30" in links[1] and heute in links[0],
-                          "Seite Mehr → System: «Kopien der alten Einstellungen» mit beiden (%s)" % links)
+                          "Einstellungen → System: «Kopien der alten Einstellungen» mit beiden (%s)" % links)
+                    vis = pg.evaluate("() => { const s = document.getElementById('g2-setup'); if (!s) return null; s.open = true; s.scrollIntoView(); "
+                                      "const a = s.querySelector('a[href^=\"/api/factory/backup/\"]'); return !!a && a.getClientRects().length > 0; }")
+                    pruef(vis is True, "die Kopien stehen sichtbar unter Einstellungen → System → «Einrichtung & Werkseinstellungen» (%s)" % vis)
                     pruef(not jsf, "keine JavaScript-Fehler %s" % jsf[:3])
                     ctx.close(); br.close()
         if p.poll() is not None:

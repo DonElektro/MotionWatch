@@ -119,7 +119,8 @@ body.lv .ctl-grid{display:block!important}
 body.lv #qsw{display:flex!important;flex-wrap:wrap;gap:6px;margin:4px 0 0!important}
 body.lv #qsw>button{flex:1 1 0;min-width:44px;max-width:96px}
 body.lv #qsw{container-type:inline-size}
-@container (max-width:430px){body.lv #qsw:not(.lvopen)>button small{display:none}body.lv #qsw:not(.lvopen)>button{padding:7px 1px}}
+/* 3.88 (Klar stage 1): the favourite buttons keep their word on the phone too (before: only ● 📷 … without a name) */
+@container (max-width:430px){body.lv #qsw:not(.lvopen)>button{padding:7px 2px;min-height:52px}body.lv #qsw:not(.lvopen)>button small{font-size:10.5px}}
 body.lv #qsw:not(.lvopen){flex-wrap:nowrap}
 body.lv #qsw:not(.lvopen)>button{min-width:0}
 body.lv #qsw.lvopen>button{flex:0 0 calc((100% - 30px) / 6);max-width:none;min-width:52px}

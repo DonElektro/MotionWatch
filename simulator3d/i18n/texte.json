@@ -48788,5 +48788,23 @@
   "fr": "🪨 Lance une pierre : «Lancer» (PC : F) – la caméra regarde vers le bruit, pas vers toi",
   "it": "🪨 Lancia un sasso: «Lanciare» (PC: F) – la telecamera guarda verso il rumore, non verso di te",
   "rm": "🪨 Bitta in crap: «Bittar» (PC: F) – la camera guarda vers la canera, betg vers tai"
+ },
+ "Darstellung": {
+  "en": "Display",
+  "fr": "Affichage",
+  "it": "Visualizzazione",
+  "rm": "Preschentaziun"
+ },
+ "Symbole": {
+  "en": "Symbols",
+  "fr": "Symboles",
+  "it": "Simboli",
+  "rm": "Simbols"
+ },
+ "Menüs auf- und zuklappen": {
+  "en": "Fold the menus",
+  "fr": "Ouvrir et fermer les menus",
+  "it": "Aprire e chiudere i menu",
+  "rm": "Avrir e serrar ils menus"
  }
 }
