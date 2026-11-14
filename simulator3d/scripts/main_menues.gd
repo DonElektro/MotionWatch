@@ -543,6 +543,7 @@ func _build_ui() -> void:
 	for fb in fine_folds.values():                     # «Feineinstellungen» last in its part / card
 		var w: Control = fb.get_meta("wrap")
 		w.get_parent().move_child(w, -1)
+	_fine_flatten(fine_folds)
 	if groups.has("Entwickler"):
 		# 3D-4.22 (Angleichen, Besitzer 30.10.2026): «Entwickler» like MoveEye - shown when MoveEye's «Entwickler-Bereich» is on
 		# (dev_area, sent by MoveEye), no longer tied to «Experte». Paket «Entwickler zusammenlegen»: the card has only the
@@ -1054,6 +1055,35 @@ func _fold_paint() -> void:
 				b.add_theme_stylebox_override(n, main.UI.box(main.UI.ACC, main.UI.ACC, 10))
 			else:
 				b.remove_theme_stylebox_override(n)
+
+
+func _fine_flatten(fine_folds: Dictionary) -> void:
+	"""MoveEye 3.88 (Besitzer 13.11.2026): a «Feineinstellungen» with one or two settings is no extra fold level - its
+	settings stand directly in their part / card (the settings stay, only the fold goes). Three or more: the fold stays."""
+	for fk in fine_folds.keys():
+		var fb: VBoxContainer = fine_folds[fk]
+		var n := 0
+		for it in main.ui_items:
+			if it.size() > 4 and it[4] == fb:
+				n += 1
+		if n > 2:
+			continue
+		var w: Control = fb.get_meta("wrap")
+		var host: Control = w.get_parent()
+		var at := w.get_index()
+		for ch in fb.get_children():
+			fb.remove_child(ch)
+			host.add_child(ch)
+			host.move_child(ch, at)
+			at += 1
+		for it in main.ui_items:
+			if it.size() > 4 and it[4] == fb:
+				it[4] = host
+		main.sub_bodies.erase(fb)
+		main.fine_bodies.erase(fb)
+		fine_folds.erase(fk)
+		host.remove_child(w)
+		w.queue_free()
 
 
 func _fold_group_open(b: Control) -> bool:

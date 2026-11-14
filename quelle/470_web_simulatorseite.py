@@ -244,7 +244,9 @@ function simCtlBuild(G, r, ctl, fmt) {
       }
       row.dataset.cid = c.id; row.dataset.lab = c.label; row.dataset.ex = scExpert(c) && only ? "1" : ""; tgt.appendChild(row);
     });
-    fines.forEach(w => { w.parentNode.appendChild(w); scFineP(w); });            // «Feineinstellungen» last in its part / card
+    fines.forEach(w => { const sb = w.querySelector(".sc-sb"), n = sb.querySelectorAll(".sc-row, .sc-bt > button").length;
+      if (n <= 2) { w.replaceWith(...sb.childNodes); return; }              // 3.88 (owner): no extra fold level for one or two settings
+      w.parentNode.appendChild(w); scFineP(w); });                          // «Feineinstellungen» last in its part / card
   });
   const seg = el("div", "sc-seg"); const b1 = el("button", "", t("Simple")), b2 = el("button", "", t("Expert")); b1.type = b2.type = "button"; seg.append(b1, b2); G.appendChild(seg);
   const note = el("div", "mut", t("Simple: only the important settings. «Expert» shows all.")); G.appendChild(note);

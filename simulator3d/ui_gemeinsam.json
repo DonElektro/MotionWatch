@@ -143,6 +143,8 @@
    ]
   },
  "more_order": ["help", "build", "feedback", "about", "werk"],
+ "more_mw_elsewhere": {"werk": "settings:sys"},
+ "more_mw_elsewhere_note": "3.88 (Klar Etappe 1, Besitzer 13.11.2026): in MoveEye stehen «Einrichtung» und «Auf Werkseinstellungen zurücksetzen» unter Einstellungen → System (nicht mehr unter «Mehr»); der Simulator behält «werk» in «Mehr» - Abweichung gemeldet.",
  "shared": {
   "simple": {"mw": "CFG ui_simple", "sim": "ui_simple", "values": [true, false], "note": "E1: eine Einfach/Experte-Wahl für alles (MoveEye-Standard, Seiten und Simulator)"},
   "icons": {"mw": "mw-icons (web_ui)", "sim": "ui_icons", "values": ["color", "plain"]},

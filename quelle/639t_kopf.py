@@ -197,8 +197,10 @@ KOPF_CSS = r"""<style id="mwk-css">
 /* phone: the buttons next to the name on every page (like Live, 530); own badges of a page in their own line below */
 @media(max-width:760px){header>h1{order:-2}header>.hdr-ctl.mwk{order:-1}
   header>.chips.mwk-chips{display:flex;flex:1 1 100%;flex-wrap:wrap;align-items:center;gap:6px;order:30;min-width:0}}
-@media(max-width:700px){.hdr-ctl.mwk>button,.hdr-ctl.mwk>a.btn{width:34px;min-width:34px;height:30px}.hdr-ctl.mwk>button svg,.hdr-ctl.mwk>a.btn svg{width:17px;height:17px}
-  .hdr-ctl.mwk{gap:5px}}
+/* 3.88 (Klar stage 1): touch targets 44 px on the phone (before 34 × 30) - four buttons and the one-line mark fit into 360 px */
+@media(max-width:700px){.hdr-ctl.mwk>button,.hdr-ctl.mwk>a.btn{width:44px;min-width:44px;height:44px;border-radius:12px}.hdr-ctl.mwk>button svg,.hdr-ctl.mwk>a.btn svg{width:20px;height:20px}
+  .hdr-ctl.mwk{gap:2px}}
+@media(max-width:359px){.hdr-ctl.mwk>button,.hdr-ctl.mwk>a.btn{width:40px;min-width:40px}}
 /* narrow: from «Language» on, the buttons are in the ☰ menu (section «Header»), in the same order */
 @media(max-width:760px){.hdr-ctl.mwk>#btn-lang,.hdr-ctl.mwk>#btn-fs,.hdr-ctl.mwk>#mwk-fs,.hdr-ctl.mwk>#btn-hdr,.hdr-ctl.mwk>#mwk-dev{display:none!important}}
 @media(min-width:761px){.mwk-ovf{display:none!important}}

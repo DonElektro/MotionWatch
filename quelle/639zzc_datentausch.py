@@ -1719,12 +1719,13 @@ if GUI_OK:                                                # the window: «📁 D
 
 # ---- guest page (520): a link to the shared files --------------------------------------------------------------------------------
 # wraps: GUEST_KEYS
-GUEST_KEYS = tuple(GUEST_KEYS) + ("Shared files",)
+GUEST_KEYS = tuple(GUEST_KEYS) + ("Shared files", "Digital backpack")
 _tz_gfoot = '<div class="foot" id="ft"></div>'
 if _tz_gfoot in GUEST_PAGE and "gfiles" not in GUEST_PAGE:
-    GUEST_PAGE = GUEST_PAGE.replace(_tz_gfoot, _tz_gfoot + '<div class="foot"><a id="gfiles" href="__BASE__/tausch" hidden style="color:#8ab4f8;font-size:14px">📂 </a></div>', 1)
+    # 3.88 (Klar stage 1): a real button «📂 Digitaler Rucksack ›» (before: a small link «Geteilte Dateien» - another name than inside)
+    GUEST_PAGE = GUEST_PAGE.replace(_tz_gfoot, _tz_gfoot + '<div class="foot"><a id="gfiles" class="gbtn" href="__BASE__/tausch" hidden>📂 </a></div>', 1)
     GUEST_PAGE = GUEST_PAGE.replace("\nst();\n</script>", '\nst();\nfetch("__BASE__/tausch/list", {cache: "no-store"}).then(r => { if (r.ok) { const a = $("#gfiles"); '
-                                    'a.textContent += g_("Shared files", "Geteilte Dateien", "Shared files"); a.hidden = false; } }).catch(() => {});\n</script>', 1)
+                                    'a.textContent += g_("Digital backpack", "Digitaler Rucksack", "Digital backpack") + " ›"; a.hidden = false; } }).catch(() => {});\n</script>', 1)
 
 
 # ---- the page /tausch ----------------------------------------------------------------------------------------------------------------
@@ -2117,9 +2118,11 @@ main{padding:0 14px 30px;max-width:1000px;margin:0 auto}.mut{color:#8b9bb0;font-
 .lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
 .lb .doc{align-self:stretch;flex:1;overflow:auto;background:#111822;border-radius:10px;padding:12px 14px;line-height:1.55;overflow-wrap:anywhere}
 .lb .doc pre{white-space:pre-wrap}.lb .doc a{color:#8ab4f8}
+.glinks{display:flex;flex-wrap:wrap;gap:8px;padding:10px 14px 0;max-width:1000px;margin:0 auto}.glinks:empty{display:none}
 .bub{background:#1a2433;border-radius:12px;padding:6px 10px;margin:0 0 8px}.bub .hd{font-size:11.5px;color:#8b9bb0}.bub .tx{white-space:pre-wrap;overflow-wrap:anywhere}
 </style></head><body>
-<div class="top"><b>📂 MoveEye</b><a href="__BASE__">← __LIVE__</a></div>
+<div class="gtop"><a class="gback back" href="__BASE__">‹ __LIVE__</a><b class="gtt">📂 __TITLE__</b><span class="gbrand">MoveEye</span></div>
+<nav class="glinks"><!--GLINKS--></nav>
 <main><div class="mut" id="nt"></div><div class="crumb" id="cr"></div><div class="grid" id="g"></div><p class="mut" id="em" hidden></p></main>
 <script>
 const TX = /*TX*/{}, $ = s => document.querySelector(s);
@@ -2163,6 +2166,7 @@ function show(f) {
 load(); setInterval(() => { if (!document.hidden) fetch("__BASE__/tausch/list", {method: "HEAD"}).then(r => { if (r.status === 404) load(); }).catch(() => {}); }, 30000);
 </script></body></html>
 """
+TAUSCH_GUEST_HTML = TAUSCH_GUEST_HTML.replace("</style>", GUEST_BAR_CSS + "</style>", 1)   # 3.88: the one guest bar (520)
 
 
 # a small, safe Markdown: everything is escaped FIRST, only then our own tags are added (links only http / https)
@@ -2352,10 +2356,10 @@ def tausch_page_html():
 def tausch_guest_html(token):
     import html as _h
     L = sx_req_lang()
-    tx = {"note": tr("Shared files · only to look at (no download)", L), "all": tr("For everyone", L), "empty": tr("No files yet.", L),
+    tx = {"note": tr("Only to look at (no download)", L), "all": tr("For everyone", L), "empty": tr("No files yet.", L),
           "expired": tr("access expired", L), "only": tr("Preview only - downloading needs a login.", L), "read": tr("read only", L)}
     return (TAUSCH_GUEST_HTML.replace("/*TX*/{}", json.dumps(tx, ensure_ascii=False).replace("</", "<\\/"), 1).replace("/*TZMD*/", TZ_MD_JS, 1)
-            .replace("__LIVE__", _h.escape(tr("Live", L))).replace("__BASE__", "/g/" + token))
+            .replace("__LIVE__", _h.escape(tr("Live", L))).replace("__TITLE__", _h.escape(tr("File exchange", L))).replace("__BASE__", "/g/" + token))
 
 
 # ---- texts (English key: Deutsch, français, italiano, rumantsch) --------------------------------------------------------------------

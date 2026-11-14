@@ -170,6 +170,17 @@ def lauf(pg, a, pruef, base):
         const a = {text: ok.textContent, hx: H.classList.contains('hx'), cpu: getComputedStyle(document.getElementById('b-cpu')).display};
         ok.click(); return [a, {text: ok.textContent, hx: H.classList.contains('hx'), cpu: getComputedStyle(document.getElementById('b-cpu')).display}]; }""")
     pruef(r[0]["hx"] and r[0]["text"] == "✓ einklappen" and r[0]["cpu"] != "none", "Antippen mit Hinweis: Werte aufgeklappt, «✓ einklappen» (%s)" % r[0])
+    # 3.88 (Design «Klar» Etappe 1): am Handy eine Statuszeile (#mwb-sum) - Zustand, das Wichtigste; antippen zeigt alle Chips
+    pg.wait_for_timeout(500)                                     # the line repaints 250 ms after a change of the chips
+    s = pg.evaluate("""() => { const S = document.getElementById('mwb-sum'), cpu = document.getElementById('b-cpu'), hl = document.getElementById('b-health');
+        if (!S) return null; const vis = e => getComputedStyle(e).display !== 'none';
+        const a = {txt: S.textContent, h: S.getBoundingClientRect().height, health: vis(hl), open: document.body.classList.contains('mwb-sum-open')};
+        S.click(); const b = {health: vis(hl), cpu: vis(cpu), open: document.body.classList.contains('mwb-sum-open')};
+        S.click(); const c = {health: vis(hl), open: document.body.classList.contains('mwb-sum-open')}; return [a, b, c]; }""")
+    pruef(bool(s) and not s[0]["health"] and s[0]["h"] >= 44 and "Problem" in s[0]["txt"],
+          "Handy: eine Statuszeile (mind. 44 px), das Problem steht darin, die Chips sind zu (%s)" % (s and s[0]))
+    pruef(bool(s) and s[1]["open"] and s[1]["health"] and not s[2]["open"] and not s[2]["health"],
+          "Handy: Statuszeile antippen zeigt alle Chips, nochmals antippen klappt sie zu (%s)" % (s and s[1:]))
     pruef(not r[1]["hx"] and r[1]["text"] == "1 Hinweis" and r[1]["cpu"] == "none", "nochmals: zu, wieder «1 Hinweis» (%s)" % r[1])
 
 

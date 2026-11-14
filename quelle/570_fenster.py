@@ -777,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.91.0")
+        self.root.title("MoveEye 3.92.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1155,7 +1155,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.91.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.92.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1846,7 +1846,7 @@ class App:
                 if sec is None:
                     if any(items[i + 1:]):
                         tk.Frame(gbody, bg=C["line"], height=1).pack(fill="x", pady=(12, 4))
-                        tk.Label(gbody, text=tr("Fine-tuning").upper(), bg=C["panel"], fg=C["acc"], font=("DejaVu Sans", 7, "bold"),
+                        tk.Label(gbody, text=tr("Fine-tuning"), bg=C["panel"], fg=C["acc"], font=("DejaVu Sans", 9, "bold"),   # 3.88: normal case
                                  anchor="w").pack(fill="x")
                     continue
                 self._sub(gbody, sec, default_open=first); first = False
@@ -2254,6 +2254,13 @@ class App:
             ttk.Button(bf, text=tr("Save settings …"), command=self._export).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf, text=tr("Load settings …"), command=self._import).pack(side="left", expand=True, fill="x")
             sbody = sbody_
+        if sec == "Device & help":                      # 3.88 (Klar stage 1, owner): moved here from the tab «Mehr» (like the web page)
+            tk.Frame(sbody, bg=C["line"], height=1).pack(fill="x", pady=(10, 6))
+            ttk.Label(sbody, text="🧭 " + tr("Setup & factory settings"), style="Mut.TLabel").pack(anchor="w")
+            ttk.Button(sbody, text="🧭 " + tr("Setup"), command=self._tk_setup_again).pack(fill="x", pady=(6, 0))
+            ttk.Button(sbody, text="↺ " + tr("Reset all tours"), command=lambda: (g2_action({"action": "tours_reset"}, "window"),
+                       self._status("Setup", tr("All tours will show again."))) and None).pack(fill="x", pady=(6, 0))
+            ttk.Button(sbody, text=tr("⚠ Reset to factory settings …"), command=self._g2_factory).pack(fill="x", pady=(6, 0))
         if sec == "Updates":
             self.upd_cb = ttk.Combobox(sbody, state="readonly", height=3); self.upd_cb.pack(fill="x", pady=(6, 0))
             self.upd_cb.bind("<<ComboboxSelected>>", lambda e: self.root.focus_set())
@@ -3116,26 +3123,31 @@ class App:
         nosimple = tab == "sim"                             # the tab Simulator has only one view (the window shows all its groups)
         m = seg(r1, ((True, tr("Simple")), (False, tr("Expert"))), page_simple(tab), self._set_simple, nosimple)
         m.pack(side="left"); Tip(m, tr("This page has only one view") if nosimple else tr("Simple: only the important settings. «Expert» shows all of them."))
-        ic = seg(r1, (("color", "🎨 " + tr("Symbols coloured")), ("plain", "◯ " + tr("plain"))), tk_icons(), self._set_icons)
-        ic.pack(side="left", padx=(8, 0)); Tip(ic, tr("Symbols: green dot or green symbol = switched on"))
+        # 3.88 (Klar stage 1, owner): «Symbols» and the fold buttons are in ONE menu «Display» (like the web bar, 639o);
+        # Simple / Expert stays in the bar. «Groups only» (before: long press on «My view») is its own line of the menu.
         self._fold_cvs = {}
-        self._fold_btn(r2, "open", lambda: self._fold_all_btn(True), tr("Expand all")).pack(side="right")
-        mb = self._fold_btn(r2, "mine", self._mine_on, tr("My view: the menus open and close the way you left them (kept for you on every device). Long press or right click: groups only."))
-        mb.pack(side="right", padx=(0, 6))
-        hold = {"job": None, "long": False}                 # 639r: «Groups only» stays - long press or right click on the middle
+        menu = tk.Menu(self.root, tearoff=0, bg=C["panel"], fg=C["txt"], activebackground=C["acc"], activeforeground="#ffffff",
+                       font=("DejaVu Sans", 11 if small else 10))
+        icv = tk.StringVar(master=self.root, value=tk_icons()); self._mwbar_icv = icv
+        menu.add_command(label=tr("Symbols"), state="disabled")
+        menu.add_radiobutton(label="🎨 " + tr("Symbols coloured"), variable=icv, value="color", command=lambda: self._set_icons("color"))
+        menu.add_radiobutton(label="◯ " + tr("plain"), variable=icv, value="plain", command=lambda: self._set_icons("plain"))
+        menu.add_separator()
+        menu.add_command(label=tr("Fold the menus"), state="disabled")
+        menu.add_command(label="⇊ " + tr("Collapse all"), command=lambda: self._fold_all_btn(False))
+        menu.add_command(label="★ " + tr("My view"), command=self._mine_on)
+        menu.add_command(label="▤ " + tr("Groups only"), command=lambda: self._groups_only(save=False))
+        menu.add_command(label="⇈ " + tr("Expand all"), command=lambda: self._fold_all_btn(True))
+        vb = self._fbtn(r2, "⚙ " + tr("Display") + " ▾", lambda: None)
 
-        def _down(e):
-            hold["long"] = False
-            hold["job"] = self.root.after(600, lambda: (hold.update(long=True), self._groups_only(save=False)))
-
-        def _up(e):
-            if hold["job"] is not None:
-                self.root.after_cancel(hold["job"]); hold["job"] = None
-            if not hold["long"]:
-                self._mine_on()
-        mb.unbind("<Button-1>"); mb.bind("<ButtonPress-1>", _down); mb.bind("<ButtonRelease-1>", _up)
-        mb.bind("<Button-3>", lambda e: self._groups_only(save=False))
-        self._fold_btn(r2, "close", lambda: self._fold_all_btn(False), tr("Collapse all")).pack(side="right", padx=(0, 6))
+        def _pop(e=None):
+            icv.set(tk_icons())
+            try:
+                menu.tk_popup(vb.winfo_rootx(), vb.winfo_rooty() + vb.winfo_height())
+            finally:
+                menu.grab_release()
+        vb.configure(command=_pop) if isinstance(vb, (tk.Button, ttk.Button)) else vb.bind("<Button-1>", _pop)
+        vb.pack(side="right"); Tip(vb, tr("Symbols: green dot or green symbol = switched on"))
         self.root.after_idle(self._mine_paint)
         return f
 

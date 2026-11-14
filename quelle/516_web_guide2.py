@@ -36,8 +36,6 @@ G2_TOURS = {
             ("#c-game", "Team against MoveEye", "A game for guests: who gets past MoveEye unseen?")],
     "more": [("#games", "Games", "«Open all games»: game corner, game collection and the simulator game with one QR code."),
              ("a.mi[href='/help']", "Manual", "Everything explained, with a search - and a quick guide to print."),
-             ("#g2-more", "Setup and help", "Start or continue the setup, show the tours again, tip of the day."),
-             ("#g2-sys", "System", "Reset to factory settings - with a copy of the old settings first."),
              ("a.mi[href='/tools']", "Tools", "Network test, servos, diagnosis and more.")],
 }
 # «Tipps & Tricks» per page: (s = Simple and Expert, e = only Expert, English text)
@@ -81,7 +79,7 @@ G2_UI = [
     "Quick (about 5 min.) or thorough?", "Quick", "about 5 minutes", "In depth", "about 20 to 30 minutes",
     "Basics, push messages to the phone, camera test and place, protection and walk test.",
     "Everything of «Quick» plus zones, night time, light and siren, head, AI model, thermal camera, battery, simulator - each step can be skipped.",
-    "Welcome to MoveEye", "Every step can be skipped. You can stop at any time and continue later (More → Setup).",
+    "Welcome to MoveEye", "Every step can be skipped. You can stop at any time and continue later (Settings → System → Setup & factory settings).",
     "Language", "Name of this device (optional)", "e.g. camper, garden", "Time and place", "Time on MoveEye", "on this device",
     "🕒 Take the time of this device", "📍 Location of this device", "Latitude", "Longitude", "Location: only on a secure page (https) - or type it.",
     "Password for this page", "Without a password everybody in the same network (and with the link) can watch and switch everything.",
@@ -352,7 +350,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
     const gb = E("div", "gb"), close = () => { c.classList.remove("on"); setTimeout(() => c.remove(), 350); };
     const a = E("a", "btn", T("Show me") + " ›"); a.href = x.href;
     gb.append(a, BT(T("Not now"), "sec", close), (() => { const k = E("a", "btn sec", T(G2_SET_LINK)); k.href = "/settings?open=grp:sys"; return k; })());   // 3.23: set only in Settings → System
-    c.appendChild(gb); document.body.appendChild(c); requestAnimationFrame(() => requestAnimationFrame(() => c.classList.add("on")));
+    c.appendChild(gb); (window.mwInline || (x => document.body.appendChild(x)))(c); requestAnimationFrame(() => requestAnimationFrame(() => c.classList.add("on")));
     P("/api/g2", {action: "tip_seen", id: x.id});
   }
 
@@ -430,7 +428,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
     const STEP = {
       async choose(ctx) {
         const BK = window.MWBlinki && MWBlinki.on() ? MWBlinki : null; if (BK) BK.markHi();
-        H(ctx, "👋", T("Welcome to MoveEye"), T("Every step can be skipped. You can stop at any time and continue later (More → Setup)."),
+        H(ctx, "👋", T("Welcome to MoveEye"), T("Every step can be skipped. You can stop at any time and continue later (Settings → System → Setup & factory settings)."),
           BK ? [E("p", "bk-hi", BK.t("Hello, I am Blinki!")), E("p", "", BK.t("I am the eye of MoveEye. I show you everything step by step - and when I blink, all is well."))] : null);
         ctx.body.appendChild(E("p", "", T("Quick (about 5 min.) or thorough?")));
         const mk = (mode, ic, name, dur, text, cls) => { const b = BT("", "big " + cls); const bb = E("b", "", ic + " " + name + " · " + dur); b.append(bb, E("small", "", text));
@@ -709,6 +707,7 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
     setTimeout(() => (pw || pin || w).focus(), 50);
   }
   window.g2Factory = g2Factory;
+  window.g2MoreCards = () => moreCards();              // 3.88: the cards are in Einstellungen → System (530 makes the place, then fills them)
 
   // ---------------------------------------------------------------- Mehr: setup, tours, system
   async function moreCards() {

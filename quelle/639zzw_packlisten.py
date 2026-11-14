@@ -1794,10 +1794,11 @@ tr.cat td{font-weight:700;background:#111822;padding-top:10px}tr.cat svg{vertica
 td.w{text-align:right;white-space:nowrap;width:80px}td small{display:block;color:#8b9bb0;font-size:12.5px}
 td img{flex:none;width:44px;height:44px;object-fit:cover;border-radius:8px}.c{display:flex;align-items:center;gap:10px}.c span{min-width:0}tr.done b{color:#8b9bb0;text-decoration:line-through}
 </style></head><body>
-<div class="top"><b>🎒 %(name)s</b><a href="%(back)s">‹ %(backtx)s</a></div>
+<div class="gtop"><a class="gback back" href="%(back)s">‹ %(backtx)s</a><b class="gtt">🎒 %(name)s</b></div>
 <main><p class="mut">%(sum)s</p>%(body)s<p class="mut">%(foot)s</p></main>
 </body></html>
 """
+PL_GUEST_HTML = PL_GUEST_HTML.replace("</style>", GUEST_BAR_CSS + "</style>", 1)   # 3.88: the one guest bar (520)
 
 
 def pl_guest_html(token, lid="", lang=None):
@@ -1827,7 +1828,7 @@ def pl_guest_html(token, lid="", lang=None):
             body.append(f'<a class="li" href="{base}/tausch/pack?l={L["id"]}"><b>{esc(L["name"])}</b><span class="mut">'
                         + esc(trf("{a} of {b} packed", lang, a=t["packed"], b=t["n"]) + " · " + pl_fmt_g(t["pack"], lang)) + "</span></a>")
     return PL_GUEST_HTML % dict(common, refresh="", title=esc(tr("Packing lists", lang)), name=esc(tr("Packing lists", lang)), back=base + "/tausch",
-                                backtx=esc(tr("Shared files", lang)), sum="", body="".join(body) or '<p class="mut">' + esc(tr("No packing lists yet.", lang)) + "</p>")
+                                backtx=esc(tr("File exchange", lang)), sum="", body="".join(body) or '<p class="mut">' + esc(tr("No packing lists yet.", lang)) + "</p>")
 
 
 # ---- web ----------------------------------------------------------------------------------------------------------------------------
@@ -2554,9 +2555,9 @@ PL_TILE = ('  <a class="tz-card" id="tz-pack" href="/tausch/packlisten" style="d
 _pl_anchor = '  <div class="tz-msg" id="tz-msg" hidden></div>\n'
 if 'id="tz-pack"' not in TAUSCH_PAGE and _pl_anchor in TAUSCH_PAGE:
     TAUSCH_PAGE = TAUSCH_PAGE.replace(_pl_anchor, PL_TILE + _pl_anchor, 1)
-_pl_gtop = '<a href="__BASE__">← __LIVE__</a>'
+_pl_gtop = '<!--GLINKS-->'                             # 3.88: the links of the guests' page are buttons under the one guest bar (520)
 if "__PACK__" not in TAUSCH_GUEST_HTML and _pl_gtop in TAUSCH_GUEST_HTML:
-    TAUSCH_GUEST_HTML = TAUSCH_GUEST_HTML.replace(_pl_gtop, '<a href="__BASE__/tausch/pack">🎒 __PACK__</a><a href="__BASE__" style="margin-left:14px">← __LIVE__</a>', 1)
+    TAUSCH_GUEST_HTML = TAUSCH_GUEST_HTML.replace(_pl_gtop, '<a class="gbtn" href="__BASE__/tausch/pack">🎒 __PACK__</a><!--GLINKS-->', 1)
 
 _pl_guest_html_base = tausch_guest_html
 

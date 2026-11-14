@@ -66,11 +66,12 @@ WORDMARK_CSS = ("header h1.wm .wmc,header h1.wm .wmw{transform-box:view-box}head
                 "header h1.wm{gap:8px}header h1.wm::before{display:none}header h1.wm svg{overflow:visible}"
                 "header h1.wm svg{display:block;color:var(--txt,#e8eef5)}header h1.wm .wm6{height:46px;width:auto}"
                 "header h1.wm .wm1{height:76px;width:auto;display:none}"
-                "@media (max-width:560px){header h1.wm .wm6{display:none}header h1.wm .wm1{display:block}}")
+                # 3.88 (Klar stage 1, owner): the same mark on one line on the phone too (W1 stacked took two lines of the header)
+                "@media (max-width:560px){header h1.wm .wm6{height:38px}header h1.wm{gap:6px}}")
 
 
 def wordmark_h1(m):
     """the substitution for <h1 ...>MoveEye</h1> (render_page)"""
     tag = m.group(1)
     tag = tag[:-1] + (' class="wm"' if "class=" not in tag else "") + ">"
-    return tag + WORDMARK_W6 + WORDMARK_W1
+    return tag + WORDMARK_W6                    # 3.88: W1 (stacked) is no longer shown - one line everywhere (owner)

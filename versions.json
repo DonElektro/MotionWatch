@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-14 07:50",
+ "generated": "2026-11-14 09:22",
  "versions": [
+  {
+   "version": "3.92.0",
+   "file": "webcam_bewegung_3_92_0.py",
+   "url": "",
+   "sha256": "b820e74eff3be08ce626e81b4320c8e296515281f88a6478c91f8fdc83f1152b",
+   "date": "2026-11-14 09:22",
+   "notes": "Design «Klar», Etappe 1: ruhigere Kopfzeile mit aufklappbarer Statuszeile, klarere Gast-Seiten (ein Knopf «Digitaler Rucksack»), aufgeräumte Menüs in Web und Fenster; «Mehr» in vier Gruppen (Unterwegs · Spielen · Hilfe & Drucken · Gerät). «Einrichtung» und «Werkseinstellungen» stehen jetzt unter Einstellungen → System.",
+   "size": 3889868,
+   "sig": "a71ffcdb070730ca0d7bc8445c12dcdf0434fbbbe62f3bf175ed75819cbc39ccf0fb287d7746534f4566ccbee9123c6ee21933175ebd3be4b689763eb6016302",
+   "data": {
+    "file": "moveeye_daten_3_92_0.zip",
+    "url": "",
+    "sha256": "9e4610402272b685b4cf107aefacd17caf68061958878d9d036f4faf159f593e",
+    "size": 11470431,
+    "sig": "bf5d3bac0aae286c1c98b5d57927e90789ae1a44960e14f3ef924d73d1fe5eb8930208f3603af1468038679d903d42a4ea1c06d011b9e70ad26813640940b808"
+   }
+  },
   {
    "version": "3.91.0",
    "file": "webcam_bewegung_3_91_0.py",
    "url": "",
    "sha256": "bfda35f74e0f2a38c813513b4983d1984d2d26eee92b271c0dea0226a6faf92a",
-   "date": "2026-11-14 07:50",
+   "date": "2026-11-14 09:19",
    "notes": "Zwei Teile. (1) «🔍 Lupe» im Live-Bild: nur das Bild vergrössern, nicht die ganze Seite – Rahmen ziehen oder mit zwei Fingern zoomen; der Ausschnitt kommt scharf aus der vollen Auflösung der Kamera, Privatsphäre-Zonen bleiben schwarz; mit Kopf-Recht dreht der Kopf den Bereich in die Mitte. Bei eingeschaltetem Schutz nur auf Wunsch (höchstens alle 10 s). Auch im Pi-Fenster. (2) Morse-Modus, Schritt 2: Empfang auch über das Mikrofon (ab Werk aus, es wird kein Ton gespeichert), IR-Test zwischen zwei MoveEye, «Gegenstelle testen» in Web und Fenster.",
    "size": 3883148,
    "sig": "3591c4834e249af485ef0f0740640de9834b2e611dbf598daf67d67115de60e69bbad182f842d822ad1fd0e927c91ae4b3e131d50906a6ce6b0b8fe7893ca303",
@@ -136,23 +153,6 @@
     "sha256": "ba197cdf32f175d84b7082d81409192549896cfbc27aba8fe569100deefcaa35",
     "size": 10912494,
     "sig": "b5d7e326eb7744b0512cade19695bc4e97f90cb3aa70e145e3cb0d19c6996c78b630ef69d0669d5b0e1c8066584e1e838233054e0cf8ecf3dcdbbea96e236b08"
-   }
-  },
-  {
-   "version": "3.83.4",
-   "file": "webcam_bewegung_3_83_4.py",
-   "url": "",
-   "sha256": "d7d1144e109a6ffd8fced032473d45fab00297ad803843726186082ddbdc8cfd",
-   "date": "2026-11-12 16:50",
-   "notes": "Packlisten: Auch sehr lange, ungewöhnlich gebaute Texte halten MoveEye beim Einlesen nicht mehr auf (eine Prüfung auf GitHub hatte das bei 3.83.3 gezeigt).",
-   "size": 3817101,
-   "sig": "79a3b62315b4f2071562f4cd1ceb705e4dc275b9fe99bbae793e758dfa7a8c2486dee76e64df9578b484a9c1573f1bf2f5a523498aa9fed603cc2a1fdf1b270a",
-   "data": {
-    "file": "moveeye_daten_3_83_4.zip",
-    "url": "",
-    "sha256": "77a5128d5eb0377aa4104e8f5c195de15a10ae765aca04bebb28ff842bdfbd4e",
-    "size": 10889655,
-    "sig": "57fd4f6f19d6bae9e9e4f2ecbeeacc99a949d0397ebe9180624d98d5129d58115de65942bf1415700a685d01530a04eaa3cd33f4104142278bce52d10b51a30a"
    }
   },
   {

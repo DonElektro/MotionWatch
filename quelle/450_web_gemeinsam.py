@@ -165,7 +165,7 @@ button.sec,.btn.sec{background:var(--btn2);color:var(--txt);border:1px solid var
 button.red{background:var(--red)}
 button:disabled{opacity:.5;cursor:default;filter:none;transform:none}
 .card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)}
-details.card>summary{margin:0;font-size:11px;letter-spacing:.09em;color:var(--mut);font-weight:700;text-transform:uppercase;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none}
+details.card>summary{margin:0;font-size:15px;letter-spacing:0;color:var(--txt);font-weight:700;text-transform:none;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none;min-height:28px}
 details.card>summary::after{content:"▾";font-size:13px;transition:transform .15s}
 details.card:not([open])>summary::after{transform:rotate(-90deg)}
 details.card[open]>summary{margin-bottom:10px}
