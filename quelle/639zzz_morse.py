@@ -1245,7 +1245,8 @@ def morse_rx_text(text, source="camera", info=None):
     now = time.time()
     info = info if isinstance(info, dict) else {}
     m = {"t": datetime.now().strftime("%H:%M:%S"), "ts": now, "text": txt, "src": source, "wpm": float(info.get("wpm") or 0.0),
-         "x": info.get("x"), "y": info.get("y"), "push": "", "pic": False, "test": False}
+         "x": info.get("x"), "y": info.get("y"), "push": "", "pic": False, "test": False,
+         "fmt": "prot" if info.get("fmt") == "prot" else "morse", "key": bool(info.get("key")), "newer": bool(info.get("newer"))}   # 639zzzf
     MORSE["msgs"].appendleft(m); MORSE["last"] = m
     log_event("sys", f"Morse received ({source}, {m['wpm']:g} WPM): «{txt[:120]}»")
     if morse_is_test(txt):
@@ -1277,7 +1278,7 @@ def _morse_rx_out(m, img):
                 d = rec_dir(); os.makedirs(d, exist_ok=True)
                 name = f"morse_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{MORSE['seq'] % 1000:03d}{len(MORSE['msgs']) % 10}.jpg"
                 if cv2.imwrite(os.path.join(d, name), img, [cv2.IMWRITE_JPEG_QUALITY, 88]):
-                    _write_sidecar(name, {"source": "Morse", "note": "📡 " + m["text"]})
+                    _write_sidecar(name, {"source": "Morse", "note": "📡 " + m["text"] + (" · 🔑 " + tr("decrypted with the key", L) if m.get("key") else "")})
                     m["pic"] = True
             except OSError as e:
                 log_event("sys", f"Morse: picture: {e}"[:160])
@@ -1390,7 +1391,8 @@ def morse_state(lang=None):
                  "fast": bool(rx is not None and on and now - float(rx.stats.get("fast_t") or 0.0) < 15.0 and rx.stats.get("fast")),
                  "blink": int(rx.stats.get("periodic", 0)) if rx is not None else 0, "ms": (rx.stats.get("ms") if rx is not None else None),
                  "push_held": MORSE["push_held"],
-                 "msgs": [{"t": m["t"], "text": m["text"], "wpm": m["wpm"], "src": m["src"], "pic": m["pic"], "push": m["push"], "test": bool(m.get("test"))} for m in list(MORSE["msgs"])]}}
+                 "msgs": [{"t": m["t"], "text": m["text"], "wpm": m["wpm"], "src": m["src"], "pic": m["pic"], "push": m["push"], "test": bool(m.get("test")),
+                           "fmt": m.get("fmt", "morse"), "key": bool(m.get("key")), "newer": bool(m.get("newer"))} for m in list(MORSE["msgs"])]}}
     return st
 
 
@@ -1548,7 +1550,8 @@ if GUI_OK:
         self._fbtn(bf, "⏹ " + tr("End the Morse mode"), lambda: do({"action": "stop"})).pack(side="left")
         sf = tk.Frame(w, bg=C["bg"]); sf.pack(fill="x", padx=12)
         ent = tk.Entry(sf, font=("DejaVu Sans", 11)); ent.pack(side="left", fill="x", expand=True, padx=(0, 6))
-        self._fbtn(sf, "📡 " + tr("Send"), lambda: do({"action": "send", "text": ent.get()[:MORSE_TEXT_MAX], "outs": CFG.get("morse_outs"),
+        self._fbtn(sf, "📡 " + tr("Send"), lambda: do({"action": "send", "text": ent.get()[:MORSE_TEXT_MAX],
+                                                      "outs": ["beep"] if CFG.get("morse_fmt") == "prot" else CFG.get("morse_outs"),   # 639zzzf
                                                       "wpm": CFG.get("morse_wpm"), "fw": CFG.get("morse_fw")})).pack(side="left", padx=(0, 6))
         self._fbtn(sf, "⏹ " + tr("Stop"), lambda: do({"action": "tx_stop"})).pack(side="left")
         msg.pack(fill="x", padx=12, pady=(6, 0))
@@ -1571,14 +1574,17 @@ if GUI_OK:
                     return
                 s = morse_state()
                 if s["on"]:
-                    st.config(text="⏸ " + tr("Morse mode is running – the protection is PAUSED") + f"  ·  {s['rest'] // 60}:{s['rest'] % 60:02d}", fg=C.get("org", "#ff9f0a"))
+                    st.config(text="⏸ " + tr("Morse mode is running – the protection is PAUSED") + f"  ·  {s['rest'] // 60}:{s['rest'] % 60:02d}"
+                              + ("  ·  📻 " + tr("Own protocol (2 tones)") + (" 🔑" if CFG.get("morse_key") else "") if CFG.get("morse_fmt") == "prot" else ""),
+                              fg=C.get("org", "#ff9f0a"))
                 else:
                     st.config(text=tr("The Morse mode is off.") + ("  ·  " + tr("Only for the administrator") if not morse_may() else ""), fg=C["txt"])
                 r = s["rx"]
                 sd, pe = r["sound"], r.get("peer")
                 body = ((r["live"] + "  (" + str(r["live_wpm"]) + " WPM)\n\n") if r["live"] else "") + \
                     ((tr("sound") + ": " + sd["live"] + "  (" + str(sd["live_wpm"]) + " WPM)\n\n") if sd["live"] else "") + \
-                    "\n".join(f"{m['t']}  " + (tr("sound") + ": " if m["src"] == "sound" else "") + m["text"] for m in r["msgs"])
+                    "\n".join(f"{m['t']}  " + (tr("sound") + ": " if m["src"] == "sound" else "") + ("🔑 " if m.get("key") else "")
+                              + (tr("newer format - this MoveEye cannot read it") if m.get("newer") else m["text"]) for m in r["msgs"])
                 if snd.get() != bool(CFG.get("morse_rx_sound")):
                     snd.set(bool(CFG.get("morse_rx_sound")))
                 peer.config(text=("" if not s["on"] else tr("No test signal of the other MoveEye read yet.")) if not pe else
@@ -1639,6 +1645,13 @@ overflow-wrap:anywhere;white-space:pre-wrap;background:var(--field)}
 .mo-msgs{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}.mo-msgs li{border:1px solid var(--line);border-radius:10px;padding:8px 10px}
 .mo-msgs b{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-wrap:anywhere;white-space:pre-wrap;display:block}.mo-msgs small{color:var(--mut)}
 section.card h3{margin:0 0 10px}details.card>summary{cursor:pointer;font-weight:600;min-height:32px}
+.mo-seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}.mo-seg button{min-height:44px;font:inherit;font-size:15px;overflow-wrap:anywhere}
+.mo-seg button.sel{outline:2px solid var(--acc);outline-offset:-2px;font-weight:700}
+.mo-tones{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}.mo-tones label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}
+.mo-f input[type=number],.mo-f input[type=password]{font:inherit;font-size:16px;min-height:44px;width:100%;box-sizing:border-box;background:var(--field);color:var(--txt);
+border:1px solid var(--line);border-radius:10px;padding:6px 10px}
+.mo-lnk{display:inline-flex;align-items:center;justify-content:center;min-height:44px;flex:1 1 180px;border:1px solid var(--line);border-radius:10px;padding:6px 10px;
+text-decoration:none;color:var(--acc);font-weight:600;text-align:center;overflow-wrap:anywhere;box-sizing:border-box}
 </style></head><body>
 <header>
   <h1>MoveEye</h1>
@@ -1653,6 +1666,25 @@ section.card h3{margin:0 0 10px}details.card>summary{cursor:pointer;font-weight:
   <div class="mo-top"><h2 id="mo-title">📡 Morse mode</h2></div>
   <div class="mut" id="mo-intro" style="margin:0 0 12px"></div>
   <div class="mo-st" id="mo-st">…</div>
+  <section class="card" id="mo-fmt"><h3 id="mo-fmt-t">Format</h3>
+    <div class="mo-f">
+      <div class="mo-seg" role="group" id="mo-fmt-seg"><button type="button" class="sec" data-f="morse" id="mo-f-morse">Morse</button><button type="button" class="sec" data-f="prot" id="mo-f-prot">Own protocol (2 tones)</button></div>
+      <div id="mo-prot" class="mo-f" hidden>
+        <div class="mo-hint" id="mo-prot-h"></div>
+        <div class="mo-tones"><label><span id="mo-l-fa">Tone A</span><input type="number" id="mo-fa" min="300" max="3000" inputmode="numeric"></label>
+          <label><span id="mo-l-fb">Tone B</span><input type="number" id="mo-fb" min="300" max="3000" inputmode="numeric"></label></div>
+        <div class="mo-hint" id="mo-key-st"></div>
+        <label class="mo-hint" for="mo-key" id="mo-l-key"></label>
+        <input type="password" id="mo-key" maxlength="200" autocomplete="new-password" autocapitalize="off" spellcheck="false">
+        <div class="mo-row"><button type="button" id="mo-key-set">Set the key</button><button type="button" class="sec" id="mo-key-del">Delete the key</button></div>
+        <div class="mo-warn" id="mo-key-w"></div>
+        <div class="mo-warn" id="mo-legal"></div>
+      </div>
+      <div class="mo-row"><a class="mo-lnk" id="mo-funk" href="/morse/funk">📻 Phone radio</a><a class="mo-lnk" id="mo-funk-dl" href="/morse/funk.html" download="Handy-Funkgeraet.html">⬇ File</a></div>
+      <div class="mo-hint" id="mo-funk-h"></div>
+      <div class="mo-hint bad" id="mo-fmt-err"></div>
+    </div>
+  </section>
   <section class="card" id="mo-send"><h3 id="mo-send-t">Send</h3>
     <div class="mo-f">
       <textarea id="mo-text" maxlength="200" autocomplete="off" autocapitalize="characters" spellcheck="false"></textarea>
@@ -1720,11 +1752,38 @@ section.card h3{margin:0 0 10px}details.card>summary{cursor:pointer;font-weight:
    "While a MoveEye sends with a light it does not read its own light."].forEach(x => $i("mo-peer-how").appendChild(E("li", "", t(x))));
   $i("mo-peer-go").onclick = async () => { $i("mo-err").textContent = ""; const j = await api({action: "test", wpm: +$i("mo-wpm").value});
     if (j.state) J = j; if (!j.ok) $i("mo-err").textContent = j.error || ""; else { P = j; paintPlan(); } paint(); };
+  // 639zzzf: the format «Morse | own protocol (2 tones)», the tones, the key (only set / delete - never shown), the phone radio
+  $i("mo-fmt-t").textContent = t("Format"); $i("mo-f-morse").textContent = t("Morse"); $i("mo-f-prot").textContent = t("Own protocol (2 tones)");
+  $i("mo-prot-h").textContent = t("The protocol of the page «Phone radio»: tone A short = dot, long = dash; tone B short = end of a character, long = start / end of the message. 39 characters (A–Z, 0–9, space . ?). Only the loudspeaker sends it - light and infrared keep sending Morse. Reading: «Read a tone or a whistle with the microphone».");
+  $i("mo-l-fa").textContent = t("Tone A - data (Hz)"); $i("mo-l-fb").textContent = t("Tone B - control (Hz)");
+  $i("mo-l-key").textContent = t("New key (the same as on the other phone):"); $i("mo-key-set").textContent = "🔑 " + t("Set the key"); $i("mo-key-del").textContent = t("Delete the key");
+  $i("mo-key-w").textContent = "⚠ " + t("The key only obscures: every message shifts the characters with the same sequence. This is no strong encryption - whoever hears several messages can decode them.");
+  $i("mo-legal").textContent = "§ " + t("Encryption is forbidden in amateur radio (ITU Radio Regulations No. 25.2A; OFCOM: digital transmissions only unencrypted). Never send with a key over amateur radio; for other radios (e.g. PMR446) follow the rules of OFCOM (BAKOM).");
+  $i("mo-funk").textContent = "📻 " + t("Phone radio"); $i("mo-funk-dl").textContent = "⬇ " + t("Download as a file for another phone");
+  const fmtSet = async b => { $i("mo-fmt-err").textContent = ""; const j = await api(Object.assign({action: "funk"}, b)); if (j.state) J = j; if (!j.ok) $i("mo-fmt-err").textContent = j.error || ""; paint(); plan(); };
+  document.querySelectorAll("#mo-fmt-seg button").forEach(b => { b.onclick = () => fmtSet({fmt: b.dataset.f}); });
+  $i("mo-fa").onchange = () => fmtSet({fa: +$i("mo-fa").value}); $i("mo-fb").onchange = () => fmtSet({fb: +$i("mo-fb").value});
+  $i("mo-key-set").onclick = async () => { const k = $i("mo-key").value; $i("mo-fmt-err").textContent = ""; const j = await api({action: "key", key: k}); $i("mo-key").value = "";
+    if (j.state) J = j; if (!j.ok) $i("mo-fmt-err").textContent = j.error || ""; paint(); plan(); };
+  $i("mo-key-del").onclick = async () => { const j = await api({action: "key", clear: true}); if (j.state) J = j; paint(); plan(); };
   let J = null, P = null, tm = 0, dirty = false, planTm = 0, busy = false;
+  const prot = () => !!(J && J.state && J.state.funk && J.state.funk.fmt === "prot");
+  function paintFmt() {
+    const f = J.state.funk; if (!f) return;
+    document.querySelectorAll("#mo-fmt-seg button").forEach(b => { b.classList.toggle("sel", b.dataset.f === f.fmt); b.setAttribute("aria-pressed", b.dataset.f === f.fmt ? "true" : "false"); });
+    $i("mo-prot").hidden = f.fmt !== "prot";
+    if (document.activeElement !== $i("mo-fa")) $i("mo-fa").value = f.fa; if (document.activeElement !== $i("mo-fb")) $i("mo-fb").value = f.fb;
+    $i("mo-key-st").textContent = f.key ? "🔑 " + t("A key is set (it is never shown).") : t("No key: the text goes out readable.");
+    $i("mo-key-del").disabled = !f.key;
+    $i("mo-funk-h").textContent = t("Phone radio: the same page for a phone. Here on MoveEye the microphone works only on the secure page (https, port + 1) - the browser asks once about the certificate. For a phone without MoveEye:") + " " + f.pages
+      + " " + t("(«Add to Home Screen», then without internet). The file works on a computer (Chrome, Edge, Firefox); an iPhone gives no microphone to a file.");
+    $i("mo-l-outs").textContent = f.fmt === "prot" ? t("Own protocol: only the loudspeaker sends it - light and infrared send Morse.") : t("Outputs (several at once are possible):");
+  }
   const fmt = s => Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
-  const outsSel = () => Array.from(document.querySelectorAll("#mo-outs input[data-o]")).filter(c => c.checked && !c.disabled).map(c => c.dataset.o);
+  const outsChk = () => Array.from(document.querySelectorAll("#mo-outs input[data-o]")).filter(c => c.checked && !c.disabled).map(c => c.dataset.o);
+  const outsSel = () => prot() ? ["beep"] : outsChk();         // (639zzzf: the protocol only on the loudspeaker; the choice stays saved)
   const ssrSel = () => Array.from(document.querySelectorAll("#mo-outs input[data-ssr]")).filter(c => c.checked).map(c => +c.dataset.ssr);
-  const savePrefs = extra => api(Object.assign({action: "prefs", outs: outsSel(), ssr: ssrSel(), wpm: +$i("mo-wpm").value, fw: +$i("mo-fw").value}, extra || {}));
+  const savePrefs = extra => api(Object.assign({action: "prefs", outs: outsChk(), ssr: ssrSel(), wpm: +$i("mo-wpm").value, fw: +$i("mo-fw").value}, extra || {}));
   function paintMode() {
     const s = J.state, b = $i("mo-st"); b.textContent = ""; b.classList.toggle("on", s.on);
     if (s.on) {
@@ -1779,21 +1838,25 @@ section.card h3{margin:0 0 10px}details.card>summary{cursor:pointer;font-weight:
       : sd.own ? t("MoveEye plays a sound itself - not listening meanwhile.") : !sd.run ? t("The microphone delivers no sound.") + " (" + sd.status + ")"
       : (sd.live ? sd.live + "  (" + sd.live_wpm + " WPM, " + sd.hz + " Hz)" : sd.hz ? t("a tone at") + " " + sd.hz + " Hz …" : t("listening for a tone or a whistle"))
         + " · " + t("reads up to about") + " " + sd.limit + " WPM. " + t("No sound is stored - only the decoded text."));
+    const f = s.funk;                                          // 639zzzf: listening for the protocol (the two tones)
+    if (f && f.fmt === "prot" && sd.on && sd.mic && s.on) se.textContent = "🎤 📻 " + (f.own ? t("MoveEye plays a sound itself - not listening meanwhile.")
+      : !f.run ? t("The microphone delivers no sound.") + " (" + sd.status + ")" : (f.live || f.sym ? f.live + " " + f.sym.replace(/\./g, "·").replace(/-/g, "–") + "  (" + f.wpm + " WPM)"
+      : t("listening for the two tones")) + " · A " + f.fa + " Hz" + (f.a ? " ●" : "") + " · B " + f.fb + " Hz" + (f.b ? " ●" : "")) + " · " + t("No sound is stored - only the decoded text.");
     const pe = $i("mo-peer-r"), p = r.peer;
     pe.textContent = !p ? (s.on ? t("No test signal of the other MoveEye read yet.") : "") : (p.full ? "✓ " + t("Test signal of the other MoveEye read") : "◐ " + t("Test signal read only in part - send more slowly or aim better"))
       + " · " + p.t + " · " + p.wpm + " WPM";
     pe.className = "mo-hint" + (p && p.full ? " ok" : p ? " warn" : "");
     $i("mo-peer-go").disabled = !s.on || !!s.tx || !(s.outs.find(o => o.id === "ir") || {}).ok;
     const ul = $i("mo-msgs"); ul.textContent = "";
-    r.msgs.forEach(m => { const li = E("li"); li.appendChild(E("b", "", m.text));
-      li.appendChild(E("small", "", (m.src === "sound" ? "🎤 " : "💡 ") + m.t + " · " + m.wpm + " WPM" + (m.test ? " · " + t("test signal") : "") + (m.pic ? " · 🖼 " + t("in the history") : "") + (m.push === "sent" ? " · 📲 " + t("push sent") : m.push === "held" ? " · " + t("push held back (too many)") : ""))); ul.appendChild(li); });
+    r.msgs.forEach(m => { const li = E("li"); li.appendChild(E("b", "", m.newer ? t("newer format - this MoveEye cannot read it") : m.text));
+      li.appendChild(E("small", "", (m.fmt === "prot" ? "📻 " : m.src === "sound" ? "🎤 " : "💡 ") + (m.key ? "🔑 " + t("decrypted with the key") + " · " : "") + m.t + " · " + m.wpm + " WPM" + (m.test ? " · " + t("test signal") : "") + (m.pic ? " · 🖼 " + t("in the history") : "") + (m.push === "sent" ? " · 📲 " + t("push sent") : m.push === "held" ? " · " + t("push held back (too many)") : ""))); ul.appendChild(li); });
   }
   function paintPlan() {
     const el = $i("mo-plan"), f = $i("mo-flash"), w = $i("mo-wear"); f.hidden = true; w.hidden = true;
     if (!P) { el.textContent = ""; return; }
     if (!P.ok) { el.textContent = P.error || ""; el.className = "mo-hint bad"; return; }
     const p = P.plan; el.className = "mo-hint";
-    el.textContent = "«" + p.shown + "» · " + p.wpm + " WPM · " + fmt(p.secs) + (p.slow ? " · " + t("slowed down by:") + " " + p.slow : "")
+    el.textContent = (prot() ? "📻 " : "") + "«" + p.shown + "»" + (prot() && J.state.funk.key ? " 🔑" : "") + " · " + p.wpm + " WPM · " + fmt(p.secs) + (p.slow ? " · " + t("slowed down by:") + " " + p.slow : "")
       + (p.skipped.length ? " · " + t("left out (no Morse sign):") + " " + p.skipped.join(" ") : "");
     if (p.vis) { f.hidden = false; f.textContent = "⚠ " + (p.note ? t("Flashing light, about 3 flashes a second: it can trigger seizures in people with photosensitive epilepsy. Do not aim it at people.")
       : t("Flashing light: do not aim it at people or at the road.")); }
@@ -1805,7 +1868,7 @@ section.card h3{margin:0 0 10px}details.card>summary{cursor:pointer;font-weight:
     planTm = setTimeout(async () => { const txt = $i("mo-text").value; if (!txt.trim()) { P = null; paintPlan(); return; }
       P = await api({action: "plan", text: txt, outs: outsSel(), wpm: +$i("mo-wpm").value, fw: +$i("mo-fw").value}); paintPlan(); }, 250);
   }
-  function paint() { if (!J || !J.state) return; paintMode(); paintOuts(); paintTx(); paintRx(); }
+  function paint() { if (!J || !J.state) return; paintMode(); paintFmt(); paintOuts(); paintTx(); paintRx(); }
   async function load() {
     clearTimeout(tm);
     let j = null; try { j = await (await fetch("/api/morse?lang=" + encodeURIComponent(L()), {cache: "no-store"})).json(); } catch (e) {}
@@ -1966,6 +2029,24 @@ MORSE_PAGE_TEXTS = {
     "While a MoveEye sends with a light it does not read its own light.": ("Solange ein MoveEye mit einem Licht sendet, liest es das eigene Licht nicht.", "Tant qu’un MoveEye émet avec une lumière, il ne lit pas sa propre lumière.", "Mentre un MoveEye trasmette con una luce non legge la propria luce.", "Uschè ditg ch’in MoveEye trametta cun ina glisch, na legia el betg l’atgna glisch."),
     "Over a handheld radio: if the tone is keyed while the radio keeps sending, up to about 20 WPM; if the radio itself switches on for every sign (the squelch opens late), only up to about 12 WPM. The tone must be clearly louder than the noise.": ("Über ein Funkgerät: wird nur der Ton getastet und das Funkgerät sendet weiter, bis etwa 20 WPM; schaltet das Funkgerät bei jedem Zeichen selbst ein (die Rauschsperre öffnet spät), nur bis etwa 12 WPM. Der Ton muss deutlich lauter sein als das Rauschen.", "Par un émetteur-récepteur : si seul le son est manipulé et que l’appareil continue d’émettre, jusqu’à environ 20 WPM ; si l’appareil s’allume lui-même à chaque signe (le squelch s’ouvre en retard), seulement jusqu’à environ 12 WPM. Le son doit être nettement plus fort que le bruit.", "Con una radio portatile: se viene manipolato solo il suono e la radio continua a trasmettere, fino a circa 20 WPM; se la radio si accende da sola a ogni segno (lo squelch si apre in ritardo), solo fino a circa 12 WPM. Il suono deve essere chiaramente più forte del rumore.", "Cun in radio portabel: sche mo il tun vegn manipulà ed il radio trametta vinavant, fin circa 20 WPM; sch’il radio s’envida sez tar mintga segn (il squelch s’avra tard), mo fin circa 12 WPM. Il tun sto esser cleramain pli ferm che la canera."),
     "By sound: a tone or a whistle near the microphone is read like a light, up to about 20 WPM. The microphone is only listened to while the Morse mode runs and «with the microphone» is chosen. No sound is stored - only the decoded text.": ("Mit Ton: ein Ton oder Pfiff nahe am Mikrofon wird gelesen wie ein Licht, bis etwa 20 WPM. Das Mikrofon wird nur mitgehört, solange der Morse-Modus läuft und «mit dem Mikrofon» gewählt ist. Es wird kein Ton gespeichert – nur der entschlüsselte Text.", "Par le son : un son ou un sifflement près du microphone est lu comme une lumière, jusqu’à environ 20 WPM. Le microphone n’est écouté que pendant le mode morse et si «avec le microphone» est choisi. Aucun son n’est enregistré – seulement le texte décodé.", "Con il suono: un suono o un fischio vicino al microfono viene letto come una luce, fino a circa 20 WPM. Il microfono viene ascoltato solo con la modalità Morse attiva e se è scelto «con il microfono». Nessun suono viene salvato – solo il testo decodificato.", "Cun tun: in tun u in tschivel datiers dal microfon vegn legì sco ina glisch, fin circa 20 WPM. Il microfon vegn tadlà mo durant il modus da morse e sche «cun il microfon» è tschernì. I na vegn memorisà nagin tun – mo il text decodà."),
+    'Format': ('Format', 'Format', 'Formato', 'Format'),
+    'Morse': ('Morse', 'Morse', 'Morse', 'Morse'),
+    'The protocol of the page «Phone radio»: tone A short = dot, long = dash; tone B short = end of a character, long = start / end of the message. 39 characters (A–Z, 0–9, space . ?). Only the loudspeaker sends it - light and infrared keep sending Morse. Reading: «Read a tone or a whistle with the microphone».': ('Das Protokoll der Seite «Handy-Funkgerät»: Ton A kurz = Punkt, lang = Strich; Ton B kurz = Zeichenende, lang = Start / Ende der Nachricht. 39 Zeichen (A–Z, 0–9, Leerzeichen . ?). Nur der Lautsprecher sendet es – Licht und Infrarot senden weiter Morse. Lesen: «Einen Ton oder Pfiff mit dem Mikrofon lesen».', 'Le protocole de la page «Radio du téléphone» : son A court = point, long = trait ; son B court = fin d’un caractère, long = début / fin du message. 39 caractères (A–Z, 0–9, espace . ?). Seul le haut-parleur l’envoie – la lumière et l’infrarouge continuent en morse. Lecture : «Lire un son ou un sifflement avec le microphone».', 'Il protocollo della pagina «Radio del telefono»: suono A corto = punto, lungo = linea; suono B corto = fine del carattere, lungo = inizio / fine del messaggio. 39 caratteri (A–Z, 0–9, spazio . ?). Lo invia solo l’altoparlante – luce e infrarosso continuano in Morse. Lettura: «Leggere un suono o un fischio con il microfono».', 'Il protocol da la pagina «Radio dal telefonin»: tun A curt = punct, lung = lingia; tun B curt = fin dal caracter, lung = cumenzament / fin dal messadi. 39 caracters (A–Z, 0–9, spazi . ?). Mo il autpledader al trametta – glisch ed infracotschen trametten vinavant morse. Leger: «Leger in tun u in tschivel cun il microfon».'),
+    'Tone A - data (Hz)': ('Ton A – Daten (Hz)', 'Son A – données (Hz)', 'Suono A – dati (Hz)', 'Tun A – datas (Hz)'),
+    'Tone B - control (Hz)': ('Ton B – Steuerung (Hz)', 'Son B – commande (Hz)', 'Suono B – controllo (Hz)', 'Tun B – controlla (Hz)'),
+    'New key (the same as on the other phone):': ('Neuer Schlüssel (gleich wie auf dem anderen Handy):', 'Nouvelle clé (la même que sur l’autre téléphone) :', 'Nuova chiave (la stessa dell’altro telefono):', 'Nova clav (la medema sco sin l’auter telefonin):'),
+    'Set the key': ('Schlüssel setzen', 'Définir la clé', 'Impostare la chiave', 'Definir la clav'),
+    'Delete the key': ('Schlüssel löschen', 'Supprimer la clé', 'Cancellare la chiave', 'Stizzar la clav'),
+    'The key only obscures: every message shifts the characters with the same sequence. This is no strong encryption - whoever hears several messages can decode them.': ('Der Schlüssel verschleiert nur: jede Nachricht verschiebt die Zeichen mit derselben Folge. Das ist keine starke Verschlüsselung – wer mehrere Nachrichten hört, kann sie entschlüsseln.', 'La clé ne fait que masquer : chaque message décale les caractères avec la même suite. Ce n’est pas un chiffrement fort – qui entend plusieurs messages peut les décoder.', 'La chiave nasconde soltanto: ogni messaggio sposta i caratteri con la stessa sequenza. Non è una cifratura forte – chi ascolta più messaggi può decifrarli.', 'La clav zuppenta mo: mintga messadi spustescha ils caracters cun la medema successiun. Quai n’è nagin criptadi ferm – tgi che auda plirs messadis, als po decodar.'),
+    'Encryption is forbidden in amateur radio (ITU Radio Regulations No. 25.2A; OFCOM: digital transmissions only unencrypted). Never send with a key over amateur radio; for other radios (e.g. PMR446) follow the rules of OFCOM (BAKOM).': ('Im Amateurfunk ist Verschlüsselung verboten (ITU-Vollzugsordnung Funk Nr. 25.2A; BAKOM: digitale Übertragungen nur unverschlüsselt). Mit Schlüssel nie über Amateurfunk senden; für andere Funkgeräte (z. B. PMR446) die Regeln des BAKOM beachten.', 'Le chiffrement est interdit en radioamateur (Règlement des radiocommunications de l’UIT n° 25.2A ; OFCOM : transmissions numériques uniquement non chiffrées). Ne jamais émettre avec une clé en radioamateur ; pour d’autres radios (p. ex. PMR446), respecter les règles de l’OFCOM.', 'Nel radioamatorismo la cifratura è vietata (Regolamento delle radiocomunicazioni UIT n. 25.2A; UFCOM: trasmissioni digitali solo non cifrate). Non trasmettere mai con una chiave via radioamatori; per altre radio (p. es. PMR446) rispettare le regole dell’UFCOM.', 'En il radioamatur è il criptadi scumandà (Reglament da radiocommunicaziun UIT nr. 25.2A; UFCOM: transmissiuns digitalas mo betg criptadas). Mai trametter cun clav via radioamatur; per auters radios (p. ex. PMR446) observar las reglas da l’UFCOM.'),
+    'Phone radio': ('Handy-Funkgerät', 'Radio du téléphone', 'Radio del telefono', 'Radio dal telefonin'),
+    'Download as a file for another phone': ('Als Datei für ein anderes Handy herunterladen', 'Télécharger comme fichier pour un autre téléphone', 'Scaricare come file per un altro telefono', 'Telechargiar sco datoteca per in auter telefonin'),
+    'A key is set (it is never shown).': ('Ein Schlüssel ist gesetzt (er wird nie angezeigt).', 'Une clé est définie (elle n’est jamais affichée).', 'Una chiave è impostata (non viene mai mostrata).', 'Ina clav è definida (ella na vegn mai mussada).'),
+    'No key: the text goes out readable.': ('Kein Schlüssel: der Text geht lesbar hinaus.', 'Pas de clé : le texte part lisible.', 'Nessuna chiave: il testo esce leggibile.', 'Nagina clav: il text va ora legibel.'),
+    'Phone radio: the same page for a phone. Here on MoveEye the microphone works only on the secure page (https, port + 1) - the browser asks once about the certificate. For a phone without MoveEye:': ('Handy-Funkgerät: dieselbe Seite für ein Handy. Hier auf MoveEye geht das Mikrofon nur auf der sicheren Seite (https, Port + 1) – der Browser fragt einmal wegen des Zertifikats. Für ein Handy ohne MoveEye:', 'Radio du téléphone : la même page pour un téléphone. Ici sur MoveEye, le microphone ne fonctionne que sur la page sécurisée (https, port + 1) – le navigateur demande une fois pour le certificat. Pour un téléphone sans MoveEye :', 'Radio del telefono: la stessa pagina per un telefono. Qui su MoveEye il microfono funziona solo sulla pagina sicura (https, porta + 1) – il browser chiede una volta per il certificato. Per un telefono senza MoveEye:', 'Radio dal telefonin: la medema pagina per in telefonin. Qua sin MoveEye funcziuna il microfon mo sin la pagina segira (https, port + 1) – il navigatur dumonda ina giada pervia dal certificat. Per in telefonin senza MoveEye:'),
+    '(«Add to Home Screen», then without internet). The file works on a computer (Chrome, Edge, Firefox); an iPhone gives no microphone to a file.': ('(«Zum Home-Bildschirm», danach ohne Internet). Die Datei geht auf einem Computer (Chrome, Edge, Firefox); ein iPhone gibt einer Datei kein Mikrofon.', '(«Sur l’écran d’accueil», ensuite sans internet). Le fichier fonctionne sur un ordinateur (Chrome, Edge, Firefox) ; un iPhone ne donne pas le microphone à un fichier.', '(«Aggiungi alla schermata Home», poi senza internet). Il file funziona su un computer (Chrome, Edge, Firefox); un iPhone non dà il microfono a un file.', '(«Agiuntar al visur da partenza», suenter senza internet). La datoteca funcziuna sin in computer (Chrome, Edge, Firefox); in iPhone na dat nagin microfon ad ina datoteca.'),
+    'Own protocol: only the loudspeaker sends it - light and infrared send Morse.': ('Eigenes Protokoll: nur der Lautsprecher sendet es – Licht und Infrarot senden Morse.', 'Protocole propre : seul le haut-parleur l’envoie – la lumière et l’infrarouge envoient du morse.', 'Protocollo proprio: lo invia solo l’altoparlante – luce e infrarosso inviano Morse.', 'Agen protocol: mo il autpledader al trametta – glisch ed infracotschen trametten morse.'),
+    'listening for the two tones': ('wartet auf die zwei Töne', 'en attente des deux sons', 'in attesa dei due suoni', 'spetga ils dus tuns'),
 }
 for _k, _v in list(_HX_MORSE.items()) + list(MORSE_PAGE_TEXTS.items()):
     DE.setdefault(_k, _v[0])
