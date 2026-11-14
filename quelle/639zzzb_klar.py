@@ -22,9 +22,6 @@ _HX_KLAR = {
     "Play area": ("Spielen", "Jouer", "Giocare", "Giugar"),
     "Games": ("Spiele", "Jeux", "Giochi", "Gieus"),
     "Digital backpack": ("Digitaler Rucksack", "Sac à dos numérique", "Zaino digitale", "Satgados digital"),   # the guest page (639zzc, g_ by English)
-    "Game collection, game corner, open the games for guests": (
-        "Spielesammlung, Spielecke, Spiele für Gäste freigeben", "Collection de jeux, coin jeux, ouvrir les jeux aux invités",
-        "Raccolta di giochi, angolo giochi, aprire i giochi agli ospiti", "Collecziun da gieus, chantun da gieus, avrir ils gieus per giasts"),
     "Setup, tours and factory settings: Settings › System": (
         "Einrichtung, Rundgänge und Werkseinstellungen: Einstellungen › System", "Configuration, visites et réglages d’usine : Réglages › Système",
         "Configurazione, giri e impostazioni di fabbrica: Impostazioni › Sistema", "Configuraziun, visitas e parameters da fabrica: Parameters › Sistem"),
@@ -47,7 +44,6 @@ for _k, _v in _HX_KLAR.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 # the German of the page «Mehr» (its own list, 525 more_page)
 MORE_GROUPS_DE = {k: DE.get(k, _HX_KLAR[k][0]) for k in ("On the go", "Help & print", "Device", "Play area", "Games",
-                                                        "Game collection, game corner, open the games for guests",
                                                         "Setup, tours and factory settings: Settings › System")}
 
 # ---- «Mehr» in four groups ----------------------------------------------------------------------------------------------------------
@@ -60,9 +56,6 @@ MORE_GROUPS = (
 )
 _MG_ITEM_RE = re.compile(r'[ \t]*<(a|button)\b[^>]*\bclass="mi"[^>]*>.*?</\1>[ \t]*\n?', re.S)
 _MG_SCRIPT_RE = re.compile(r'[ \t]*<script\b[^>]*>.*?</script>[ \t]*\n?', re.S)
-MORE_PLAY_ITEM = ('  <a class="mi" href="/play" id="m-play"><i>⭐</i><span><b data-i18n="Games">Games</b>'
-                  '<small data-i18n="Game collection, game corner, open the games for guests">Game collection, game corner, open the games for guests</small>'
-                  '</span><span class="ar">›</span></a>\n')
 MORE_GROUP_CSS = r"""<style id="mg-css">
 /* 3.88 (Klar stage 1): «Mehr» in four groups - a heading, then one card with rows; «Unterwegs» as tiles */
 .mg{margin:20px 0 0}.mg:first-of-type{margin-top:8px}
@@ -78,7 +71,8 @@ MORE_GROUP_CSS = r"""<style id="mg-css">
 .mg-hint{margin:18px 4px 6px;font-size:13px;color:var(--mut)}.mg-hint a{color:var(--acc2);text-decoration:none;font-weight:600}
 </style>"""
 MORE_GROUP_JS = """<script>(function () {                    // a group whose entries are all hidden (rights, switched off) is hidden too
-  const go = () => document.querySelectorAll("main .mg").forEach(g => { g.hidden = ![...g.querySelectorAll(".mi")].some(x => !x.hidden); });
+  const go = () => document.querySelectorAll("main .mg").forEach(g => { const h = ![...g.querySelectorAll(".mi")].some(x => !x.hidden);
+    if (g.hidden !== h) g.hidden = h; });                 // only on a change: setting «hidden» again is a mutation too (endless loop)
   go(); [600, 2000, 5000].forEach(ms => setTimeout(go, ms));
   new MutationObserver(go).observe(document.querySelector("main") || document.body, {subtree: true, attributes: true, attributeFilter: ["hidden"]});
 })();</script>"""
@@ -92,8 +86,8 @@ def more_grouped(html):
     if i < 0 or j < 0:
         return html
     body = html[i + 6:j]
-    if 'href="/play"' not in body and 'class="mi"' in body:
-        body = body + MORE_PLAY_ITEM
+    # (no entry of its own for «Spielen»: the owner's rule «genau ein Einstieg zu den Spielen» = the sub tab; the group holds
+    # «Spielecke» (639zzo), which shows only for users who cannot open «Spielen» - else the group is hidden)
     items = [m.group(0) for m in _MG_ITEM_RE.finditer(body)]
     if not items:
         return html
@@ -151,8 +145,8 @@ def klar_selftest():
             '<script>x()</script>\n  <a class="mi" href="/tausch" id="m-tausch"><b>R</b></a>\n'
             '  <button type="button" class="mi" id="m-fb"><b>F</b></button>\n  <a class="mi" href="/neu"><b>N</b></a>\n</main></body></html>')
     out = more_grouped(page)
-    assert out.find('href="/tausch"') < out.find('href="/play"') < out.find('href="/help"') < out.find('href="/qr"') < out.find('id="m-fb"') < out.find('href="/neu"'), out
-    assert out.count('class="mi"') == 6 and out.index("<script>x()</script>") > out.index('href="/neu"') and 'id="g2-tt"' in out and "mg-css" in out
+    assert out.find('href="/tausch"') < out.find('href="/help"') < out.find('href="/qr"') < out.find('id="m-fb"') < out.find('href="/neu"'), out
+    assert 'href="/play"' not in out and out.count('class="mi"') == 5 and out.index("<script>x()</script>") > out.index('href="/neu"') and 'id="g2-tt"' in out and "mg-css" in out
     assert MORE_PAGE.count('class="mi"') >= 8 and 'id="g2-more"' not in MORE_PAGE, "639zzb: «Mehr» template"
     assert all('"sec:%s"' % s in WEB_PAGE.split("const MN_NO_FINE = [", 1)[1].split("]", 1)[0] for s in MENU_NO_FINE), "639zzzb: MN_NO_FINE (530) = MENU_NO_FINE (639c)"
     keep = CFG.get("lang")

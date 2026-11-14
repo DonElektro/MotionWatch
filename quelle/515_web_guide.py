@@ -178,7 +178,10 @@ GUIDE_JS = r"""
     // 3.88 (Klar stage 1): the explanation and the tip of the day stand in the page (under the bar), not over its content
     + ".mw-inl{position:relative!important;left:auto!important;bottom:auto!important;transform:none!important;margin:10px auto 4px!important;"
     + "width:min(720px,calc(100% - 24px))!important;box-sizing:border-box;box-shadow:none!important;z-index:auto!important;transition:opacity .25s ease!important}"
-    + ".mw-inl button,.mw-inl .btn{min-height:44px}";
+    + ".mw-inl button,.mw-inl .btn{min-height:44px}"
+    // a dialog / viewer over the page (recordings viewer, guide windows): the card in the page waits behind it, invisible -
+    // before it stood as a fixed card over everything; in the page it would only look tappable under the dialog
+    + "body:has(.modal:not([hidden]),.g2m,[role=dialog]:not([hidden]):not(.mw-inl)) .mw-inl{visibility:hidden!important}";
   document.head.appendChild(css);
   window.mwInline = function (c) {                         // one place for the small cards: right under the bar (else top of the page)
     c.classList.add("mw-inl"); const bar = document.getElementById("mwbar"), m = document.querySelector("main"), vc = document.getElementById("vcard");
