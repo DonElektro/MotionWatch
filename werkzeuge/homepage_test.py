@@ -1,0 +1,585 @@
+#!/usr/bin/env python3
+"""Test «🌐 Homepage» (Teil 639zzzh) gegen einen falschen Webspace auf localhost – nie gegen den echten.
+
+Der falsche Webspace hat dieselbe Schnittstelle wie der des Besitzers: POST /api/moveeye/upload?path= (Bearer-Schlüssel und
+«X-KV: 1», Inhalt = Bytes, höchstens 100 MB pro Datei, Platz begrenzt), GET /api/moveeye/files, DELETE /api/moveeye/files?path=,
+öffentlich /moveeye/<Pfad>; er macht wie das Original aus jedem Punkt ausser dem letzten «_» und unterscheidet Gross / Klein.
+Dazu Störungen auf Wunsch: 404, Umleitung auf eine andere Herkunft (zweiter Server), falscher Content-Type, nosniff,
+Content-Security-Policy (connect-src 'none', script-src ohne 'wasm-unsafe-eval'), 500 beim ersten Versuch, Platz voll.
+
+Geprüft: nur der Admin (Seite, API, /api/set, Eintrag unter «Mehr»); der Schlüssel steht nirgends ausser in der
+Einstellungs-Datei (Zustand, Status, Protokoll, alle anderen Dateien, Export für Nicht-Admins, Fehlertexte des Servers); alles
+hochgeladen (Startseite, Funk/ = funk/ des Repositorys, Sim/ = sim-web.zip, test.html); nur Geändertes; nur eigene Dateien
+gelöscht; falscher Schlüssel, Platz voll, zu grosse Datei; Wiederholen nach 500; Umleitung beim Hochladen nie befolgt; die
+Prüfung findet 404, Umleitung auf andere Herkunft, falschen Typ, nosniff und die CSP-Sperren; automatisch nur, wenn sich der
+Inhalt geändert hat, nie während eines Alarms; das Paket sim-web.zip nur mit der signierten Prüfsumme (Teil 300 «anhang.web»),
+werkzeuge/sim_web_paket.py; Texte in 5 Sprachen.
+
+  python3 werkzeuge/homepage_test.py [--datei webcam_bewegung_X_Y_Z.py]
+"""
+import argparse
+import base64
+import glob
+import hashlib
+import http.server
+import io
+import json
+import os
+import re
+import shutil
+import sys
+import tempfile
+import threading
+import time
+import urllib.parse
+import zipfile
+
+HIER = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(HIER)
+sys.path.insert(0, HIER)
+import sim_web_paket  # noqa: E402
+
+FEHLER = []
+N = {"ok": 0}
+HOMES = []
+KEY = "Test-" + base64.b16encode(os.urandom(10)).decode().lower()          # erzeugte Ersatz-Werte, nie echte
+KEY2 = "Neu-" + base64.b16encode(os.urandom(10)).decode().lower()
+ADMIN_PW = "Admin-" + base64.b16encode(os.urandom(6)).decode().lower()
+TYPES = {"html": "text/html; charset=utf-8", "js": "text/javascript", "wasm": "application/wasm", "png": "image/png", "pck": "application/octet-stream",
+         "webmanifest": "application/manifest+json", "json": "application/json"}
+
+
+def ok(cond, what):
+    if cond:
+        N["ok"] += 1
+    else:
+        FEHLER.append(what)
+        print("  ✗ " + what, flush=True)
+
+
+def neueste():
+    return sorted(glob.glob(os.path.join(REPO, "webcam_bewegung_*.py")),
+                  key=lambda p: [int(x) for x in re.findall(r"\d+", os.path.basename(p))])[-1]
+
+
+class Webspace:
+    """der falsche Webspace (gleiche Schnittstelle, Umbenennung, Gross / Klein) + Störungen"""
+
+    def __init__(self, key):
+        self.key, self.files, self.log, self.quota, self.max_file = key, {}, [], 500 * 1024 * 1024, 100 * 1024 * 1024
+        self.fail_once, self.csp, self.ctype, self.hide, self.redirect, self.nosniff, self.echo = set(), "", {}, set(), {}, False, False
+        self.up_redirect = False
+        ws = self
+
+        class H(http.server.BaseHTTPRequestHandler):
+            def log_message(self, *a):
+                pass
+
+            def _send(self, code, body=b"", hdr=None):
+                self.send_response(code)
+                for k, v in (hdr or {}).items():
+                    self.send_header(k, v)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                if self.command != "HEAD":
+                    self.wfile.write(body)
+
+            def _auth(self, write):
+                if self.headers.get("Authorization") != "Bearer " + ws.key:
+                    msg = b'{"error":"unauthorized"' + ((b',"got":"' + (self.headers.get("Authorization") or "").encode() + b'"') if ws.echo else b"") + b"}"
+                    self._send(401, msg, {"Content-Type": "application/json"})
+                    return False
+                if write and self.headers.get("X-KV") != "1":
+                    self._send(403, b'{"error":"X-KV missing"}')
+                    return False
+                return True
+
+            def _rec(self):
+                u = urllib.parse.urlsplit(self.path)
+                ws.log.append((self.command, u.path, urllib.parse.parse_qs(u.query).get("path", [""])[0], self.headers.get("Authorization") or ""))
+                return u
+
+            def do_GET(self):
+                u = self._rec()
+                if u.path == "/api/moveeye/files":
+                    if self._auth(False):
+                        self._send(200, json.dumps({"files": [{"path": p, "size": len(b)} for p, b in sorted(ws.files.items())]}).encode(),
+                                   {"Content-Type": "application/json"})
+                    return
+                if u.path.startswith("/moveeye/"):
+                    p = urllib.parse.unquote(u.path[9:])
+                    if p in ws.redirect:
+                        self._send(302, b"", {"Location": ws.redirect[p]})
+                        return
+                    if p == "" or p.endswith("/"):
+                        p += "index.html"
+                    if p not in ws.files or p in ws.hide:
+                        self._send(404, b"not found", {"Content-Type": "text/plain"})
+                        return
+                    ext = p.rsplit(".", 1)[-1]
+                    h = {"Content-Type": ws.ctype.get(p, TYPES.get(ext, "application/octet-stream"))}
+                    if ws.csp and ext == "html":
+                        h["Content-Security-Policy"] = ws.csp
+                    if ws.nosniff:
+                        h["X-Content-Type-Options"] = "nosniff"
+                    self._send(200, ws.files[p], h)
+                    return
+                self._send(404, b"no")
+
+            def do_POST(self):
+                u = self._rec()
+                n = int(self.headers.get("Content-Length") or 0)
+                data = self.rfile.read(n)
+                if u.path != "/api/moveeye/upload":
+                    self._send(404, b"no")
+                    return
+                if not self._auth(True):
+                    return
+                if ws.up_redirect:
+                    self._send(307, b"", {"Location": "http://127.0.0.1:%d/api/moveeye/upload?path=x" % OTHER["port"]})
+                    return
+                p = urllib.parse.parse_qs(u.query).get("path", [""])[0]
+                if p in ws.fail_once:
+                    ws.fail_once.discard(p)
+                    self._send(500, b"oops")
+                    return
+                if n > ws.max_file:
+                    self._send(413, b'{"error":"file too large"}')
+                    return
+                if sum(len(b) for q, b in ws.files.items() if q != p) + n > ws.quota:
+                    self._send(507, b'{"error":"quota exceeded"}')
+                    return
+                d, _, name = p.rpartition("/")
+                a, dot, e = name.rpartition(".")
+                name = (a.replace(".", "_") + "." + e) if dot else name          # wie das Original: nur der letzte Punkt bleibt
+                p2 = (d + "/" if d else "") + name
+                ws.files[p2] = data
+                self._send(200, json.dumps({"ok": True, "path": p2, "size": n}).encode(), {"Content-Type": "application/json"})
+
+            def do_DELETE(self):
+                u = self._rec()
+                p = urllib.parse.parse_qs(u.query).get("path", [""])[0]
+                if u.path != "/api/moveeye/files" or not self._auth(True):
+                    return
+                ws.files.pop(p, None)
+                self._send(200, b'{"ok":true}')
+
+        self.srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), H)
+        self.port = self.srv.server_address[1]
+        threading.Thread(target=self.srv.serve_forever, daemon=True).start()
+
+    def uploads(self):
+        return [x for x in self.log if x[0] == "POST"]
+
+
+OTHER = {"port": 0, "log": []}
+
+
+def andere_herkunft():
+    """ein zweiter Server (andere Herkunft) als Ziel einer Umleitung: merkt sich, ob je ein Schlüssel ankommt"""
+    class H(http.server.BaseHTTPRequestHandler):
+        def log_message(self, *a):
+            pass
+
+        def _do(self):
+            OTHER["log"].append((self.command, self.path, self.headers.get("Authorization") or ""))
+            body = b"\0asm" + b"x" * 100
+            self.send_response(200)
+            self.send_header("Content-Type", "application/octet-stream")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        do_GET = do_POST = _do
+    s = http.server.ThreadingHTTPServer(("127.0.0.1", 0), H)
+    OTHER["port"] = s.server_address[1]
+    threading.Thread(target=s.serve_forever, daemon=True).start()
+
+
+def fake_sim_zip(ordner, wasm_extra=b""):
+    """ein kleiner falscher Godot-Web-Export (8 Dateien, Namen wie Godot) -> sim-web.zip mit werkzeuge/sim_web_paket.py"""
+    ex = os.path.join(ordner, "export")
+    shutil.rmtree(ex, ignore_errors=True)
+    os.makedirs(ex)
+    files = {"index.html": '<html><head><link rel="icon" href="index.icon.png"><link rel="apple-touch-icon" href="index.apple-touch-icon.png"></head>'
+                           '<body><script src="index.js"></script><script>start()</script></body></html>',
+             "index.js": "function locate(path){ if (path.endsWith('.audio.worklet.js')) {\n return `${loadPath}.audio.worklet.js`;\n} }",
+             "index.audio.worklet.js": "class W extends AudioWorkletProcessor{}", "index.wasm": b"\0asm\x01\0\0\0" + os.urandom(3000) + wasm_extra,
+             "index.pck": os.urandom(5000), "index.png": b"\x89PNG-boot", "index.icon.png": b"\x89PNG-icon", "index.apple-touch-icon.png": b"\x89PNG-apple"}
+    for n, d in files.items():
+        with open(os.path.join(ex, n), "wb") as f:
+            f.write(d.encode() if isinstance(d, str) else d)
+    z = os.path.join(ordner, "sim-web.zip")
+    sim_web_paket.packen(ex, z)
+    return z
+
+
+def laden(datei):
+    os.environ["MOTIONWATCH_HOME"] = tempfile.mkdtemp(prefix="mw_hp_home_")
+    HOMES.append(os.environ["MOTIONWATCH_HOME"])
+    ns = {"__name__": "mw_hp_test", "__file__": os.path.abspath(datei)}
+    exec(compile(open(datei, encoding="utf-8").read(), datei, "exec"), ns)
+    return ns
+
+
+def basic(user, pw):
+    return {"Authorization": "Basic " + base64.b64encode(f"{user}:{pw}".encode()).decode()}
+
+
+def fmt(ns, j, L="de"):
+    """the state as the page shows it: HP_FMT_JS of the program in node, with the texts of the language L"""
+    import subprocess
+    D = {k: ns["tr"](k, L) for k in ns["HP_TEXTS"]}
+    js = ns["HP_FMT_JS"] + "\nconst D = " + json.dumps(D) + ", t = k => D[k] || k, j = " + json.dumps(j) + ";\n" + \
+        "const rows = ((j.check || {}).rows || []).map(r => hpRow(r, t));\n" + \
+        "console.log(JSON.stringify({err: hpErr(j.err, t), prog: hpProg(j.prog), note: j.last ? hpNote(j.last.note, t) : '', " + \
+        "last: j.last ? hpLast(j.last, t) : '', rows: rows, sum: hpSum(rows, t), ren: (j.last || {}).ren || []}));"
+    r = subprocess.run(["node", "-e", js], capture_output=True, text=True, timeout=60)
+    assert r.returncode == 0, r.stderr[-500:]
+    return json.loads(r.stdout)
+
+
+def warte(HP, s=60):
+    t0 = time.time()
+    time.sleep(0.05)
+    while HP["busy"] and time.time() - t0 < s:
+        time.sleep(0.05)
+
+
+def main():
+    ap = argparse.ArgumentParser(description="Homepage (Teil 639zzzh) gegen einen falschen Webspace")
+    ap.add_argument("--datei", default="")
+    a = ap.parse_args()
+    datei = os.path.abspath(a.datei) if a.datei else neueste()
+    tmp = tempfile.mkdtemp(prefix="mw_hp_")
+    try:
+        lauf(datei, tmp)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+        for h in HOMES:
+            shutil.rmtree(h, ignore_errors=True)
+    print(f"Homepage-Test: {N['ok']} ok, {len(FEHLER)} Fehler")
+    return 1 if FEHLER else 0
+
+
+def lauf(datei, tmp):
+    print("0) sim_web_paket.py (Paket für Sim/)", flush=True)
+    zp = fake_sim_zip(tmp)
+    with zipfile.ZipFile(zp) as z:
+        names = sorted(z.namelist())
+        js = z.read("index.js").decode()
+        html = z.read("index.html").decode()
+    ok(names == sorted(["index.html", "index.js", "index.wasm", "index.pck", "index_audio_worklet.js", "index.png", "index_icon.png",
+                        "index_apple-touch-icon.png"]), f"8 Dateien, je ein Punkt: {names}")
+    ok("`${loadPath}_audio_worklet.js`" in js and ".audio.worklet.js`" not in js, "index.js lädt index_audio_worklet.js")
+    ok('"index_icon.png"' in html and '"index_apple-touch-icon.png"' in html and "index.icon.png" not in html, "index.html: Symbole mit einem Punkt")
+    bad = os.path.join(tmp, "bad.zip")
+    with zipfile.ZipFile(bad, "w") as z:
+        z.writestr("index.audio.worklet.js", "x")
+        z.writestr("../x.js", "x")
+    ok(sim_web_paket.pruefen(zp) == [] and len(sim_web_paket.pruefen(bad)) >= 2, "pruefen: gut / schlecht")
+
+    ns = laden(datei)
+    CFG, HP = ns["CFG"], ns["HP"]
+    ns["HP_TEST_HTTP"] = True
+    ns["HP_RETRY"][:] = [0.05, 0.1]
+    ns["GAMESRV"]["port"] = 1
+    ns["sim_manifest_refresh"] = lambda *a, **k: None                    # kein Netz: versions.json kommt im Test von Hand
+    CFG.update(https_extra=False, lang="de", setup_done=True, update_url="")
+    assert ns["web_pw_set"](ADMIN_PW)[0]
+    okk, err = ns["users_action"]({"action": "add", "name": "Anna", "password": "anna-pass-1", "role": "family"})
+    assert okk, err
+    okk, err = ns["users_action"]({"action": "add", "name": "Cus", "password": "cus-pass-1", "role": "custom"})
+    assert okk, err
+    ns["users_action"]({"action": "update", "name": "Cus", "perms": ["live", "settings"]})
+    wst = ns["WebStream"](None)
+    wst._serve = lambda app, ctx: None
+    wst.start()
+    c = wst.app.test_client(use_cookies=False)
+    H = {"admin": basic("admin", ADMIN_PW), "Anna": basic("Anna", "anna-pass-1"), "Cus": basic("Cus", "cus-pass-1")}
+    W = Webspace(KEY)
+    andere_herkunft()
+    base = "http://127.0.0.1:%d" % W.port
+
+    def api(who="admin", d=None, lang="de", wait=True):
+        if d is None:
+            r = c.get("/api/homepage?lang=" + lang, headers=H[who])
+        else:
+            r = c.post("/api/homepage?lang=" + lang, json=dict(d, lang=lang), headers=H[who])
+            if wait:
+                warte(HP)
+                if r.status_code == 200:
+                    r2 = c.get("/api/homepage?lang=" + lang, headers=H[who])
+                    return r2.status_code, r2.get_json(silent=True) or {}
+        return r.status_code, r.get_json(silent=True) or {}
+
+    print("1) ab Werk, nur der Admin", flush=True)
+    ok(CFG["hp_base"] == "https://kevlaschef.com" and CFG["hp_auto"] is True and CFG["hp_key"] == "", "ab Werk: kevlaschef.com, automatisch an, kein Schlüssel")
+    code, j = api()
+    ok(code == 200 and j.get("key_set") is False and j.get("base") == "https://kevlaschef.com", f"Admin sieht den Status: {code}")
+    for who in ("Anna", "Cus"):
+        ok(api(who)[0] == 403 and api(who, {"action": "key", "key": KEY}, wait=False)[0] == 403 and not CFG["hp_key"], f"{who}: API verboten")
+        ok(c.get("/homepage", headers=H[who]).status_code == 403, f"{who}: Seite verboten")
+        c.post("/api/set", json={"key": "hp_base", "value": "https://boese.example"}, headers=H[who])
+        c.post("/api/text", json={"key": "hp_key", "value": "boese-1234"}, headers=H[who])
+        ok(CFG["hp_base"] == "https://kevlaschef.com" and not CFG["hp_key"], f"{who}: /api/set / /api/text gehen nicht")
+        ok('href="/homepage"' not in c.get("/more", headers=H[who]).get_data(as_text=True), f"{who}: kein Eintrag unter «Mehr»")
+    ok('href="/homepage"' in c.get("/more", headers=H["admin"]).get_data(as_text=True), "Admin: Eintrag «🌐 Homepage» unter «Mehr»")
+    pg = c.get("/homepage", headers=H["admin"])
+    ok(pg.status_code == 200 and "hp-go" in pg.get_data(as_text=True) and "Auf Homepage veröffentlichen" in pg.get_data(as_text=True), "Seite /homepage (Deutsch)")
+
+    print("2) Adresse und Schlüssel", flush=True)
+    ns["HP_TEST_HTTP"] = False
+    code, j = api("admin", {"action": "base", "base": base})
+    ok(code == 400 and CFG["hp_base"] == "https://kevlaschef.com", "http-Adresse abgewiesen (nur https)")
+    ns["HP_TEST_HTTP"] = True
+    for b in ("https://kevlaschef.com/x", "https://user:pw@kevlaschef.com", "javascript:alert(1)"):
+        ok(api("admin", {"action": "base", "base": b})[0] == 400, f"Adresse abgewiesen: {b}")
+    ok(api("admin", {"action": "key", "key": "kurz"})[0] == 400 and not CFG["hp_key"], "zu kurzer Schlüssel abgewiesen")
+    code, j = api("admin", {"action": "key", "key": KEY})
+    ok(code == 200 and j.get("key_set") is True and CFG["hp_key"] == KEY, "Schlüssel gesetzt")
+    code, j = api("admin", {"action": "base", "base": base})
+    ok(code == 200 and CFG["hp_base"] == base and not CFG["hp_key"] and j.get("key_set") is False, "neue Adresse löscht den Schlüssel")
+    api("admin", {"action": "key", "key": KEY})
+    ok(CFG["hp_key"] == KEY, "Schlüssel wieder gesetzt")
+
+    print("3) veröffentlichen (Simulator für den Browser noch nicht veröffentlicht)", flush=True)
+    code, j = api("admin", {"action": "publish"})
+    funk = {n: open(os.path.join(REPO, "funk", n), "rb").read() for n in os.listdir(os.path.join(REPO, "funk"))}
+    ok(code == 200 and not j.get("err") and fmt(ns, j)["note"].startswith("Der Simulator für den Browser ist noch nicht"), f"ohne Sim-Paket: {fmt(ns, j)['err']} {fmt(ns, j)}")
+    ok(fmt(ns, j)["last"].startswith("Fertig: 8 hochgeladen, 0 unverändert, 0 gelöscht. · "), "Meldung: " + fmt(ns, j)["last"])
+    ok(all(W.files.get("Funk/" + n) == b for n, b in funk.items()) and len(funk) == 6, "Funk/ = die 6 Dateien von funk/ (Byte für Byte)")
+    ok("index.html" in W.files and "Sim/test.html" in W.files and b"Funk/" in W.files["index.html"], "Startseite + Sim/test.html")
+    ok(len(W.uploads()) == 8, f"8 Dateien hochgeladen ({len(W.uploads())})")
+
+    print("4) Paket sim-web.zip nur mit der signierten Prüfsumme (Teil 300 «anhang.web»)", flush=True)
+    sha = hashlib.sha256(open(zp, "rb").read()).hexdigest()
+    size = os.path.getsize(zp)
+    ns["sig_ok"] = lambda v, f, s, sig: sig == "gut-" + s[:8]
+    url = ns["sim_anhang_url"]("web", "3.95.0")
+    good = {"ver": "3.95.0", "file": "simulator3d/anhang/sim-web.zip", "size": size, "sha256": sha, "url": url, "sig": "gut-" + sha[:8]}
+    for what, e in (("andere Adresse", dict(good, url="https://example.org/sim-web.zip")), ("falsche Signatur", dict(good, sig="x")),
+                    ("anderer Dateiname", dict(good, file="simulator3d/anhang/MoveEyeSim3D_Linux.zip"))):
+        ok("web" not in (ns["sim_manifest_verify"]({"anhang": {"ver": "3.95.0", "web": e}}).get("anhang") or {}), f"«anhang.web» abgewiesen: {what}")
+    ok(ns["sim_manifest_take"]({"anhang": {"ver": "3.95.0", "web": good}}, save=False) == ["web"] and ns["SIM3D_WEB"]["sha256"] == sha, "«anhang.web» übernommen")
+    # holen: wie die anderen Sim-Pakete (sim3d_fetch, Prüfsumme) - hier von einem lokalen Server statt von github.com
+    srv_dir = os.path.join(tmp, "rel")
+    os.makedirs(srv_dir)
+    shutil.copy(zp, os.path.join(srv_dir, "sim-web.zip"))
+    import functools
+    rel = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(http.server.SimpleHTTPRequestHandler, directory=srv_dir))
+    rel.RequestHandlerClass.log_message = lambda *a: None
+    threading.Thread(target=rel.serve_forever, daemon=True).start()
+    ns["SIM3D_WEB"]["url"] = "http://127.0.0.1:%d/sim-web.zip" % rel.server_address[1]
+    with open(os.path.join(srv_dir, "sim-web.zip"), "r+b") as f:
+        f.seek(size - 30)
+        f.write(b"X")                                           # verändert: wird nie benutzt
+    code, j = api("admin", {"action": "publish"})
+    ok("Laden fehlgeschlagen" in fmt(ns, j)["note"] and not os.path.exists(ns["sim3d_path"](ns["SIM3D_WEB"]))
+       and not any(p.startswith("Sim/index") for p in W.files), f"verändertes Paket nicht benutzt: {fmt(ns, j)['note']}")
+    shutil.copy(zp, os.path.join(srv_dir, "sim-web.zip"))
+    n0 = len(W.uploads())
+    code, j = api("admin", {"action": "publish"})
+    with zipfile.ZipFile(zp) as z:
+        ok(all(W.files.get("Sim/" + n) == z.read(n) for n in z.namelist()), "Sim/ = die 8 Dateien aus sim-web.zip")
+    ok(len(W.uploads()) - n0 == 8 and not j["last"].get("ren"), f"nur die 8 neuen Dateien hochgeladen ({len(W.uploads()) - n0}), keine Umbenennung")
+    ok(all(re.fullmatch(r"[^.]+\.[a-z0-9]+", p.rsplit("/", 1)[-1]) for p in W.files), "jede Datei auf dem Webspace hat genau einen Punkt")
+
+    print("5) nur Geändertes", flush=True)
+    n0 = len(W.uploads())
+    api("admin", {"action": "publish"})
+    ok(len(W.uploads()) == n0, f"nichts geändert: nichts hochgeladen ({len(W.uploads()) - n0})")
+    W.files["Funk/sw.js"] = b"alt"                                   # auf dem Webspace verändert (andere Grösse)
+    del W.files["Sim/index.png"]                                     # auf dem Webspace gelöscht
+    api("admin", {"action": "publish"})
+    ok(sorted(x[2] for x in W.uploads()[n0:]) == ["Funk/sw.js", "Sim/index.png"], f"nur die zwei: {[x[2] for x in W.uploads()[n0:]]}")
+    n0 = len(W.uploads())
+    old_test = ns["HP_TEST_HTML"]
+    ns["HP_TEST_HTML"] = old_test.replace("Sim-Test", "Sim-Test 2")
+    api("admin", {"action": "publish"})
+    ok([x[2] for x in W.uploads()[n0:]] == ["Sim/test.html"], "neue Test-Seite: nur sie")
+    ns["HP_TEST_HTML"] = old_test
+    W.files["sim/index.html"] = b"klein geschrieben, vom Besitzer"   # Gross / Klein: ein anderer Ordner
+    W.files["Sim/eigene.txt"] = b"vom Besitzer"
+    st = ns["hp_state"]()
+    st["up"]["Sim/alt_index.js"] = [3, "0" * 64]
+    W.files["Sim/alt_index.js"] = b"alt"
+    ns["hp_save"](st)
+    n0 = len(W.uploads())
+    api("admin", {"action": "publish"})
+    ok("Sim/alt_index.js" not in W.files and W.files.get("sim/index.html") and W.files.get("Sim/eigene.txt"), "nur eigene alte Datei gelöscht (sim/ und fremde bleiben)")
+
+    print("6) Retry, Umleitung, falscher Schlüssel, Platz, zu gross", flush=True)
+    W.files.pop("Funk/index.html")
+    W.fail_once.add("Funk/index.html")
+    code, j = api("admin", {"action": "publish"})
+    ok(not j.get("err") and W.files.get("Funk/index.html") == funk["index.html"]
+       and [x[2] for x in W.uploads()].count("Funk/index.html") >= 2, "500 beim ersten Versuch: nochmals, dann gut")
+    W.files.pop("Funk/index.html")
+    W.up_redirect = True
+    n_other = len(OTHER["log"])
+    code, j = api("admin", {"action": "publish"})
+    ok("umgeleitet" in fmt(ns, j)["err"] and len(OTHER["log"]) == n_other, f"Umleitung beim Hochladen nie befolgt: {fmt(ns, j)['err']}")
+    W.up_redirect = False
+    W.key, W.echo = KEY2, True                                        # der Server kennt einen anderen Schlüssel und zeigt den falschen
+    n0 = len(W.uploads())
+    code, j = api("admin", {"action": "publish"})
+    ok("Upload-Schlüssel falsch" in fmt(ns, j)["err"] and "401" in fmt(ns, j)["err"] and len(W.uploads()) == n0, f"falscher Schlüssel: {fmt(ns, j)['err']}")
+    ok(KEY not in json.dumps(j) and KEY not in str(HP), "Antwort des Servers mit dem Schlüssel: nicht im Status")
+    W.key, W.echo = KEY, False
+    oldt = ns["HP_MAX_TOTAL"]
+    ns["HP_MAX_TOTAL"] = sum(len(b) for b in W.files.values()) + 10
+    n0 = len(W.uploads())
+    code, j = api("admin", {"action": "publish"})
+    ok("voll" in fmt(ns, j)["err"] and len(W.uploads()) == n0, f"Platz voll (vor dem Hochladen erkannt): {fmt(ns, j)['err']}")
+    ns["HP_MAX_TOTAL"] = oldt
+    old = ns["HP_MAX_FILE"]
+    ns["HP_MAX_FILE"] = 1000
+    code, j = api("admin", {"action": "publish"})
+    ok("zu gross" in fmt(ns, j)["err"] and "Funk/index.html" in fmt(ns, j)["err"], f"zu grosse Datei: {fmt(ns, j)['err']}")
+    ns["HP_MAX_FILE"] = old
+    W.max_file = 1000
+    code, j = api("admin", {"action": "publish"})
+    ok("zu gross" in fmt(ns, j)["err"], f"413 vom Server: {fmt(ns, j)['err']}")
+    W.max_file = 100 * 1024 * 1024
+    W.quota = sum(len(b) for b in W.files.values()) + 10
+    code, j = api("admin", {"action": "publish"})
+    ok("voll" in fmt(ns, j)["err"], f"507 vom Server: {fmt(ns, j)['err']}")
+    W.quota = 500 * 1024 * 1024
+    code, j = api("admin", {"action": "publish"})
+    ok(not j.get("err") and W.files.get("Funk/index.html"), "danach wieder gut")
+    ren_item = ns["_hp_item"]("Sim/a.b.txt", b"zwei Punkte")
+    fixed = ns["hp_fixed_items"]
+    ns["hp_fixed_items"] = lambda: fixed() + [ren_item]
+    code, j = api("admin", {"action": "publish"})
+    ok(any("Sim/a.b.txt → Sim/a_b.txt" in x for x in j["last"].get("ren") or []), f"Umbenennung des Servers gemeldet: {j['last'].get('ren')}")
+    ns["hp_fixed_items"] = fixed
+    W.files.pop("Sim/a_b.txt", None)
+
+    print("7) Prüfung der öffentlichen Adressen", flush=True)
+    code, j = api("admin", {"action": "check"})
+    F = fmt(ns, j)
+    rows = {r["line"].split(":")[0]: r for r in F["rows"]}
+    ok(F["sum"] == "alle Adressen in Ordnung" and "Sim/index.wasm" in rows, f"alles gut: {F['sum']} {[r['probs'] for r in F['rows'] if r['probs']]}")
+    ok(re.match(r"Sim/index\.wasm: 200 · 0\.0 MB · application/wasm$", rows["Sim/index.wasm"]["line"]), rows["Sim/index.wasm"]["line"])
+    W.hide.add("Sim/index.js")
+    W.redirect["Sim/index.pck"] = "http://127.0.0.1:%d/cdn/index.pck" % OTHER["port"]
+    W.ctype["Sim/index.wasm"] = "text/plain"
+    W.ctype["Sim/index_audio_worklet.js"] = "text/plain"
+    W.nosniff = True
+    W.csp = "default-src 'self'; connect-src 'none'; script-src 'self'"
+    n_other = len(OTHER["log"])
+    code, j = api("admin", {"action": "check"})
+    F = fmt(ns, j)
+    rows = {r["line"].split(":")[0]: r for r in F["rows"]}
+    P = lambda p: " | ".join(rows[p]["probs"])                         # noqa: E731
+    ok("Antwort 404 statt 200" in P("Sim/index.js"), "404 gefunden: " + P("Sim/index.js"))
+    ok("andere Adresse" in P("Sim/index.pck") and rows["Sim/index.pck"]["chain"], "Umleitung auf andere Herkunft gefunden: " + P("Sim/index.pck"))
+    ok(all(not x[2] for x in OTHER["log"][n_other:]) and len(OTHER["log"]) > n_other, "die Prüfung schickt nie den Schlüssel (auch nicht an die Umleitung)")
+    ok("Typ text/plain – erwartet application/wasm" in P("Sim/index.wasm"), "falscher Typ gefunden: " + P("Sim/index.wasm"))
+    ok("nosniff" in P("Sim/index_audio_worklet.js"), "falscher Typ + nosniff gefunden: " + P("Sim/index_audio_worklet.js"))
+    ok("connect-src sperrt fetch()" in P("Sim/test.html") and "wasm-unsafe-eval" in P("Sim/test.html") and "unsafe-inline" in P("Sim/test.html"),
+       "CSP gefunden (connect-src, wasm-unsafe-eval, unsafe-inline): " + P("Sim/test.html"))
+    ok("Content-Security-Policy" in rows["Sim/test.html"]["headers"] and rows["Sim/index.wasm"]["headers"].get("X-Content-Type-Options") == "nosniff",
+       "Kopfzeilen CSP / X-Content-Type-Options werden gezeigt")
+    ok("connect-src" in P("/") and F["sum"].endswith("Adressen mit Problemen"), "auch die Startseite / und die Zusammenfassung: " + F["sum"])
+    W.csp = "default-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'"
+    W.hide.clear(); W.redirect.clear(); W.ctype.clear(); W.nosniff = False
+    code, j = api("admin", {"action": "check"})
+    F = fmt(ns, j)
+    ok(F["sum"] == "alle Adressen in Ordnung", "erlaubende CSP: in Ordnung " + str([r["probs"] for r in F["rows"] if r["probs"]]))
+    W.csp = ""
+    W.files["Funk/manifest.webmanifest"] = W.files["Funk/manifest.webmanifest"][:-1] + b" "
+    code, j = api("admin", {"action": "check"})
+    ok(any("Inhalt anders" in p for r in fmt(ns, j)["rows"] for p in r["probs"]), "anderer Inhalt bei gleicher Grösse gefunden")
+    api("admin", {"action": "publish"})
+    code, j = api("admin", {"action": "check", "lang": "fr"}, lang="fr")
+    ok(fmt(ns, j, "fr")["sum"] == "toutes les adresses sont en ordre", "Französisch: " + fmt(ns, j, "fr")["sum"])
+
+    print("8) automatisch nach einem Update - nur wenn sich der Inhalt geändert hat, nie während eines Alarms", flush=True)
+    n0 = len(W.uploads())
+    ok(ns["hp_auto_tick"]() is False and len(W.uploads()) == n0, "gleicher Inhalt: kein Lauf")
+    with zipfile.ZipFile(zp) as z:
+        z0 = {n: z.read(n) for n in z.namelist()}
+    zp2 = fake_sim_zip(os.path.join(tmp, "neu"), wasm_extra=b"neu")
+    shutil.copy(zp2, os.path.join(srv_dir, "sim-web.zip"))
+    sha2 = hashlib.sha256(open(zp2, "rb").read()).hexdigest()
+    ns["sim_manifest_take"]({"anhang": {"ver": "3.95.1", "web": dict(good, ver="3.95.1", url=ns["sim_anhang_url"]("web", "3.95.1"), size=os.path.getsize(zp2),
+                                                                     sha256=sha2, sig="gut-" + sha2[:8])}}, save=False)
+    ns["SIM3D_WEB"]["url"] = "http://127.0.0.1:%d/sim-web.zip" % rel.server_address[1]
+    CFG["hp_auto"] = False
+    ok(ns["hp_auto_tick"]() is False, "automatisch aus: kein Lauf")
+    CFG["hp_auto"] = True
+    ns["LED"]["alarm"] = True
+    ok(ns["hp_auto_tick"]() is False, "während eines Alarms: kein Start")
+    ns["LED"]["alarm"] = False
+    ok(ns["hp_auto_tick"]() is True, "neuer Simulator (neue signierte Prüfsumme): automatisch")
+    warte(HP)
+    with zipfile.ZipFile(zp2) as z:
+        changed = sorted("Sim/" + n for n in z.namelist() if z.read(n) != z0.get(n))
+    ok(sorted(set(x[2] for x in W.uploads()[n0:])) == changed and W.files["Sim/index.wasm"].endswith(b"neu"),
+       f"nur die geänderten Sim-Dateien: {sorted(set(x[2] for x in W.uploads()[n0:]))} = {changed}")
+    ok((ns["hp_state"]().get("last") or {}).get("auto") is True, "als «automatisch» vermerkt")
+    n0 = len(W.uploads())
+    ok(ns["hp_auto_tick"]() is False and len(W.uploads()) == n0, "danach gleich: kein Lauf")
+    ns["HP_TEST_HTML"] = old_test.replace("Sim-Test", "Sim-Test A")
+    ns["LED"]["alarm"] = True                                         # Alarm: der Lauf wartet, nichts wird hochgeladen
+    ns["hp_start"]("publish", True)
+    t0 = time.time()
+    while not HP["wait"] and time.time() - t0 < 20:
+        time.sleep(0.02)
+    time.sleep(0.3)
+    ok(HP["wait"] is True and HP["busy"] and len(W.uploads()) == n0, "Alarm: der Lauf wartet, nichts hochgeladen")
+    code, j = api("admin")
+    ok(j.get("wait") is True and ns["tr"]("waiting – alarm", "de") == "wartet – Alarm" and re.search(r"^1/1 · 0\.0 MB · Sim/test\.html$", fmt(ns, j)["prog"]),
+       f"Fortschritt «1/1 · MB» und «wartet – Alarm»: {fmt(ns, j)['prog']} {j.get('wait')}")
+    ns["LED"]["alarm"] = False
+    warte(HP)
+    ok([x[2] for x in W.uploads()[n0:]] == ["Sim/test.html"] and b"Sim-Test A" in W.files["Sim/test.html"], "nach dem Alarm hochgeladen")
+    W.key = KEY2
+    ns["HP_TEST_HTML"] = old_test.replace("Sim-Test", "Sim-Test 3")
+    ok(ns["hp_auto_tick"]() is True, "neue MoveEye (andere Test-Seite): automatisch")
+    warte(HP)
+    ok(HP["err"] == "key" and ns["hp_auto_tick"]() is False, "falscher Schlüssel: nicht gleich nochmals (erst nach 6 h oder neuem Schlüssel)")
+    W.key = KEY
+    api("admin", {"action": "key", "key": KEY})
+    ok(ns["hp_auto_tick"]() is True, "neuer Schlüssel: wieder")
+    warte(HP)
+    ns["HP_TEST_HTML"] = old_test
+
+    print("9) der Schlüssel steht nirgends sonst", flush=True)
+    ns["save_settings_now"]()
+    home = os.environ["MOTIONWATCH_HOME"]
+    wo = []
+    for d, _, fs in os.walk(home):
+        for f in fs:
+            p = os.path.join(d, f)
+            try:
+                if KEY.encode() in open(p, "rb").read():
+                    wo.append(os.path.relpath(p, home))
+            except OSError:
+                pass
+    ok(wo and all("settings" in os.path.basename(x) for x in wo), f"nur in der Einstellungs-Datei: {wo}")
+    for who in ("admin", "Anna", "Cus"):
+        for u in ("/api/state", "/api/homepage", "/api/schema", "/api/state?lang=fr"):
+            r = c.get(u, headers=H[who])
+            ok(KEY not in r.get_data(as_text=True), f"{who} {u}: kein Schlüssel")
+    ok(KEY not in json.dumps(list(ns["STATE"].get("events") or []), default=str), "nicht im Verlauf")
+    for who in ("Anna", "Cus"):
+        r = c.get("/api/settings/export", headers=H[who])
+        ok(r.status_code == 403 and KEY not in r.get_data(as_text=True), f"{who}: Export verboten ({r.status_code})")
+    ok(ns["_SECRET_RE"].search("hp_key"), "Diagnose-Bericht (Teil 300) blendet hp_key aus")
+    code, j = api("admin", {"action": "key_del"})
+    ok(j.get("key_set") is False and not CFG["hp_key"], "Schlüssel gelöscht")
+    ok(api("admin", {"action": "publish"})[0] == 400, "ohne Schlüssel: nicht veröffentlichen")
+
+    print("10) Texte in 5 Sprachen, Selbsttest des Teils", flush=True)
+    for L, w in (("de", "Kein Upload-Schlüssel gesetzt."), ("fr", "Aucune clé d’envoi définie."), ("it", "Nessuna chiave di caricamento impostata."),
+                 ("rm", "Nagina clav da chargiar definida.")):
+        ok(ns["tr"]("No upload key set.", L) == w, f"Text {L}")
+    for k, v in ns["HP_TEXTS"].items():
+        ok(len(v) == 4 and all(v), f"Text vollständig: {k}")
+    ok(ns["homepage_selftest"]() is True, "homepage_selftest")
+
+
+if __name__ == "__main__":
+    sys.exit(main())
