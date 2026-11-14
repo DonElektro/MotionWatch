@@ -833,14 +833,26 @@ def fall_g(L):
         umgestellt = L.unit_text()
         # NEU does not come up 3 times right after the update -> the start guard (390) goes back to ALT; ALT knows nothing of
         # the starter, so NEU must point the starter to ALT - else the next start of the Pi brings the rejected NEU again
+        # (this is also the start watchdog of the system unit: NotifyAccess / NOTIFY_SOCKET only since the new unit)
         t1 = time.time()
         n0 = len(L.log())
+        for x in ("start_hang.txt", "start_hang.txt.old"):
+            if os.path.exists(os.path.join(L.b.daten, x)):
+                os.remove(os.path.join(L.b.daten, x))
+        S.sctl("stop", UNIT)                                       # the hung old MoveEye takes the port while the service is off
         L.umgebung({"MW_START_WD": "8"})
         hp = alter_halter(L)
         try:
-            S.sctl("restart", UNIT)
+            S.sctl("start", UNIT)
             tr_ = warte(lambda: "going back to " + L.ver["alt"] in L.log()[n0:], 150, 1.0)
             ok(tr_ is not None, "g/r: %s startet 3-mal nicht -> zurück zu %s (Start-Wächter 390, %s s)" % (L.ver["neu"], L.ver["alt"], tr_))
+            j = S.journal(t1) or ""
+            n_ex = len(re.findall(r"motionwatch\.service: Main process exited, code=exited, status=1", j))
+            ok(n_ex >= 2, "g/r: Start-Wächter am System-Dienst - «Main process exited, status=1/FAILURE» %d-mal, systemd startet neu" % n_ex)
+            ok(any(os.path.exists(os.path.join(L.b.daten, x)) for x in ("start_hang.txt", "start_hang.txt.old")),
+               "g/r: start_hang.txt geschrieben (Threads des hängenden Starts)")
+            if tr_ is None:
+                L.zeigen("g/r")
         finally:
             halter_weg(hp)
         L.umgebung({"MW_START_WD": None})
@@ -852,14 +864,9 @@ def fall_g(L):
         # c: the next update (ALT -> NEU+1): the unit stays as it is, only the note changes
         update(L, L.ver["alt"], L.ver["plus1"], "g/c Update ALT -> NEU+1 (System-Dienst)")
         ok(L.unit_text() == umgestellt, "g/c: die Unit bleibt beim Update unverändert (nur moveeye_start.json)")
-        t1 = time.time()                                        # the start guard of the update runs 90 s: wait for it, then
-        tg = warte(lambda: not os.path.exists(os.path.join(L.b.daten, "update_guard.json")), 120, 2.0)
-        ok(tg is not None, "g/c: das Update gilt als gelungen (update_guard.json weg nach %s s)" % tg)
-        L.schritt("g/c Update-Wächter 90 s", t1)
         if not neustart_pi(L, L.ver["plus1"], "g/c"):
             L.zeigen("g Neustart")
             return
-        fall_f(L, L.ver["plus1"])                                   # start watchdog of the system unit (NotifyAccess now there)
         vor = L.unit_text()
         # einrichten.sh again with the newest file: --install-service writes the very same unit as the migration
         plus1 = os.path.join(L.b.app, L.prog["plus1"])
