@@ -222,6 +222,8 @@ class FunkRx:
                 self.stats["dropped"] += 1; return            # no long start tone: a beep nearby, not the protocol
             if not self.newer and len(plain) >= 4 and len(set(plain)) == 1:
                 self.stats["dropped"] += 1; return            # «EEEE» / «TTTT»: even beeping, no text
+            if not self.newer and len(plain) >= 6 and sum(ch in "ET" for ch in plain) >= 0.6 * len(plain):
+                self.stats["dropped"] += 1; return            # mostly the one-element signs: tones at random (text has ~25 % E / T)
         self.stats["msgs"] += 1
         if self.on_message is not None:
             self.on_message(t, info)
@@ -320,6 +322,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-f
 body{display:flex;justify-content:center}
 .app{width:100%;max-width:480px;min-height:100vh;display:flex;flex-direction:column;gap:16px;padding:calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 20px)}
 .back{display:inline-flex;align-items:center;min-height:40px;color:var(--acc);font-weight:600;text-decoration:none;align-self:flex-start}
+[hidden]{display:none!important}
 .ttl{margin:0;font-size:20px;display:flex;align-items:center;gap:8px}
 .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .pill{min-height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--line);background:var(--card);color:var(--text);font:500 15px inherit;font-family:inherit;display:flex;align-items:center;gap:8px;min-width:0}
@@ -369,7 +372,7 @@ input[type=range]{width:100%;accent-color:var(--a)}
 </head>
 <body>
 <div class="app">
-  <a class="back" id="back" href="/morse" hidden>‹ Morse</a>
+  <a class="back" id="mw-back" href="/morse" hidden>‹ Morse</a>
   <h1 class="ttl"><span aria-hidden="true">📻</span><span id="ttl">Handy-Funkgerät</span></h1>
   <div class="top">
     <button class="pill" id="keyBtn" aria-label="Schlüssel einstellen">
@@ -597,7 +600,7 @@ function applyLang(){
   $('ttl').textContent=T('title');$('keyBtn').setAttribute('aria-label',T('keyAria'));$('setBtn').setAttribute('aria-label',T('settings'));
   $('txIn').placeholder=T('ph');$('txGo').textContent=T('send');$('histBtn').textContent=T('hist');$('sendBtn').textContent=T('send');
   $('listenTxt').textContent=listening?T('stop'):T('listen');$('sL').value=LG;
-  if(MW){$('back').hidden=false;$('back').href=MW.back||'/morse';$('back').textContent=T('back');}
+  if(MW){$('mw-back').hidden=false;$('mw-back').href=MW.back||'/morse';$('mw-back').textContent=T('back');}   // (id mw-back: MoveEye adds no «✕ Zurück» on top)
   else{const i=$('install');i.hidden=!(location.protocol==='https:');i.textContent=T('install');}
   renderTop();dirty=true;
 }
