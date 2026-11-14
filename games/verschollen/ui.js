@@ -11,7 +11,10 @@
      window.__vb.S()    der Zustand          .tun(id)  wie Antippen      .step(s) s Sekunden vorspulen
      .bot({max})        der Test-Spieler spielt bis zum Ende von Kapitel 1 (rechnet ohne Warten) -> {echt, tage, aktionen}
      .knoepfe()         alle sichtbaren Knöpfe mit Lage und Grösse (für den Test der Tipp-Flächen)
-     .liste()           alles, was man gerade tun kann (K.liste)      .neu()  Spielstand löschen und neu beginnen */
+     .liste()           alles, was man gerade tun kann (K.liste)      .pausiert()  ⏸ gedrückt?
+   SPIELTEMPO: Knopf «⏩ 1×» oben tippt 1× → 2× → 4× → 1× (S.tempo, im Spielstand); die Spieluhr läuft so viel schneller, alle
+     Regeln gleich. Still steht die Zeit bei jeder Karte (Ereignis, Aufnahme, Entscheidung – sie sagt es), im Tagebuch / Menü,
+     im Schlussbild und mit ⏸ (gilt bis zum nächsten Tippen, nicht gespeichert). Geht bei 2× / 4× das Feuer aus: zurück auf 1×.      .neu()  Spielstand löschen und neu beginnen */
 (function () {
   'use strict';
   var K = window.VB, BILD = window.BILD, KEY = 'mw-verschollen-v1', HUND = K.HUND;
@@ -282,7 +285,7 @@
     }
     h = '<div class="' + cls + '" role="dialog" aria-modal="true" aria-label="' + esc(titel) + '"><div class="bild">' + BILD.svg(bild, titel) + '</div><div class="txt">'
       + (ueber ? '<div class="ueber">' + esc(ueber) + '</div>' : '') + '<h2>' + esc(titel) + '</h2>'
-      + z.map(function (s, i) { return '<p class="z" style="animation-delay:' + (0.15 + i * 0.45) + 's">' + esc(s) + '</p>'; }).join('') + '</div><div class="kn">' + kn + '</div></div>';
+      + z.map(function (s, i) { return '<p class="z" style="animation-delay:' + (0.15 + i * 0.45) + 's">' + esc(s) + '</p>'; }).join('') + '</div><div class="kn">' + kn + '<div class="still">⏸ Die Zeit steht still, solange diese Karte offen ist' + (tempo() > 1 ? ' – danach läuft sie wieder ' + tempo() + '× so schnell.' : '.') + '</div></div></div>';
     el.innerHTML = h; el.hidden = false;
   }
   function karteZu(i) {
@@ -294,7 +297,7 @@
     el.innerHTML = '<div class="kk" role="dialog" aria-modal="true" aria-label="Ende Kapitel 1"><div class="bild">' + BILD.svg(BILD.clip('ganz'), 'Die ganze Nacht') + '</div><div class="txt">'
       + '<h1>Ende Kapitel 1</h1><div class="fs">Fortsetzung folgt</div>'
       + '<p>Die Station misst wieder. Ihr letzter Wert stammt aus einem Tag, der noch nicht war – und neben dir stand in jener Nacht jemand, dessen Gesicht im Licht verborgen bleibt.</p>'
-      + '<p class="stat">Tag ' + K.tagNr(S) + ' · Spielzeit ' + (hh ? hh + ' h ' : '') + (m % 60) + ' min · ' + S.clips.filter(function (c) { return c !== 'ganz'; }).length + ' von ' + (Object.keys(K.CLIPS).length - 1) + ' Aufnahmen und die ganze Nacht<br>Dein Spielstand bleibt gespeichert.</p>'
+      + '<p class="stat">Tag ' + K.tagNr(S) + ' · Spielzeit ' + (hh ? hh + ' h ' : '') + (m % 60) + ' min' + (S.wirk && Math.round(S.wirk / 60) < m - 1 ? ' (wirklich ' + Math.round(S.wirk / 60) + ' min)' : '') + ' · ' + S.clips.filter(function (c) { return c !== 'ganz'; }).length + ' von ' + (Object.keys(K.CLIPS).length - 1) + ' Aufnahmen und die ganze Nacht<br>Dein Spielstand bleibt gespeichert.</p>'
       + '</div><div class="kn"><button type="button" class="haupt" id="bWeiter">Im Tal bleiben</button><button type="button" id="bClips">Aufnahmen ansehen</button></div></div>';
     el.hidden = false;
   }
@@ -328,7 +331,7 @@
   function render() {
     var L = K.liste(S);
     if (tab !== 'huette' && !tabSicht(tab)) tab = 'huette';
-    malUhr(); malTabs(L); malSzene(); malLog(); malVorrat(); malInhalt(L); zeigeKarte();
+    malUhr(); malTempo(); malTabs(L); malSzene(); malLog(); malVorrat(); malInhalt(L); zeigeKarte();
     if (S.ende && !endeZu && !S.karten.length && $('ende').hidden && !S.f.endeGesehen) zeigeEnde();
   }
 
@@ -337,6 +340,7 @@
     var e = K.eintrag(S, id);
     if (!e) return;
     if (e.sperre) { hinweis(e.sperre); return; }
+    if (pausiert) pauseWechsel(false);
     if (e.bereit < 1) { hinweis('Einen Moment noch …'); return; }
     if (K.tun(S, id)) {
       if (el) { el.classList.remove('blitz'); void el.offsetWidth; el.classList.add('blitz'); }
@@ -360,6 +364,8 @@
     if (t.closest('[data-blattzu]')) { $('blatt').hidden = true; return; }
     if (t.closest('#tagebuch')) { tagebuchBlatt(); return; }
     if (t.closest('#bMenu')) { menuBlatt(false); return; }
+    if (t.closest('#bTempo')) { tempoWechsel(); return; }
+    if (t.closest('#bPause') || t.closest('#pauseBand')) { pauseWechsel(); return; }
     if (t.closest('#bLog')) { tagebuchBlatt(); return; }
     if (t.closest('#bNeu')) { menuBlatt(true); return; }
     if (t.closest('#bNeuJa')) { neuBeginnen(); return; }
@@ -373,16 +379,38 @@
 
   // ---- Zeit ----
   var letzt = Date.now();
+  // ---- Spieltempo: ⏩ 1× / 2× / 4× (im Spielstand) und ⏸ Pause (nur bis zum nächsten Tippen) ----
+  function tempo() { var t = +S.tempo; return K.TEMPI.indexOf(t) >= 0 ? t : 1; }
+  var pausiert = false;
+  function malTempo() {
+    var t = tempo(), b = $('bTempo'), p = $('bPause'), txt = '⏩ ' + t + '×';
+    if (b.__t !== txt) { b.__t = txt; b.textContent = txt; b.setAttribute('aria-label', 'Spieltempo ' + t + '-fach, antippen zum Wechseln'); b.classList.toggle('schnell', t > 1); }
+    p.classList.toggle('an', pausiert); p.setAttribute('aria-pressed', pausiert ? 'true' : 'false');
+    $('pauseBand').hidden = !pausiert;
+  }
+  function tempoWechsel() {
+    var i = K.TEMPI.indexOf(tempo());
+    S.tempo = K.TEMPI[(i + 1) % K.TEMPI.length];
+    hinweis(S.tempo === 1 ? 'Normales Tempo (1×).' : 'Die Zeit läuft ' + S.tempo + '-mal so schnell. Bei Ereignissen hält sie an.');
+    sichern(); render();
+  }
+  function pauseWechsel(an) { pausiert = an === undefined ? !pausiert : an; letzt = Date.now(); render(); }
   function lauf() {
     var jetzt = Date.now(), dt = Math.min(5, (jetzt - letzt) / 1000); letzt = jetzt;
-    if (document.hidden || S.karten.length || ansicht) return;
-    K.step(S, dt * TEMPO);
+    // still: Seite verdeckt, eine Karte (Ereignis, Aufnahme, Entscheidung), das Tagebuch / Menü, das Schlussbild oder Pause
+    if (document.hidden || S.karten.length || ansicht || pausiert || !$('blatt').hidden || !$('ende').hidden) return;
+    var f0 = S.feuer, t = tempo();
+    S.wirk = (S.wirk || 0) + dt;
+    K.step(S, dt * TEMPO * t);
+    if (t > 1 && f0 > 0 && S.feuer === 0 && S.f.draussen) {     // fair bleiben: geht das Feuer aus, zurück auf 1×
+      S.tempo = 1; K.log(S, 'w', 'Das Feuer ist aus – das Tempo ist wieder 1×.'); hinweis('Das Feuer ist aus – zurück auf 1×.');
+    }
     render();
     if (jetzt - sichernT > 4000) sichern();
   }
   function zurueck(zeit) {      // höchstens 5 Minuten laufen weiter, während man weg war
     if (TEST || !zeit || !S.f.draussen || S.ende || S.karten.length) return;
-    var weg = Math.min(300, Math.max(0, (Date.now() - zeit) / 1000));
+    var weg = Math.min(300, Math.max(0, (Date.now() - zeit) / 1000 * tempo()));    // höchstens 5 Minuten Spieluhr
     if (weg < 20) return;
     var r0 = { holz: S.r.holz, wasser: S.r.wasser, essen: S.r.essen };
     K.step(S, weg);
@@ -411,6 +439,7 @@
       bot: function (o) { var r = K.bot(S, o || {}); merk.karte = null; sichern(); render(); return r; },
       liste: function () { return K.liste(S); },
       tab: function (t) { waehle(t); },
+      pausiert: function () { return pausiert; },
       neu: function () { neuBeginnen(); },
       knoepfe: function () {
         var out = [], bs = document.querySelectorAll('button, a');

@@ -35,6 +35,9 @@ warte() {   # warte SEKUNDEN BEDINGUNG…: bis die Bedingung gilt
 mkdir -p "$W/run/test" "$W/run/spiel" "$W/home"
 export MW_KIOSK_PAUSE="$W/run/test/kiosk_pause" MW_SPIEL="$W/run/spiel/spielen" MW_RUNNER_HOME="$W/home"
 export MW_HPU_STEMPEL="$W/letzter_lauf" MW_HPU_WARTET="$W/hpu_wartet" MW_HPU_FASSUNG="$W/hpu_fassung" MW_DAUER_TAKT=0.2
+# Reste beenden (dauer.py, job_ende.sh) nur für die Ersatz-Prozesse dieses Tests - nie ein MoveEye / Simulator, das am PC
+# des Entwicklers unter demselben Benutzer läuft
+export MW_RESTE_NUR="$W"
 D="$HIER/dauer.py"
 spielen() { printf '{"grund": "test", "seit": %s}\n' "$(date +%s)" > "$MW_SPIEL"; }
 ruhig_15min() { touch -d '16 minutes ago' "$MW_SPIEL"; }     # schnelle Uhr: 16 Min. ohne Spielen
@@ -379,9 +382,21 @@ ThreadingHTTPServer.daemon_threads = True
 ThreadingHTTPServer(("127.0.0.1", port), H).serve_forever()
 EOF
 chmod +x "$W/ersatz_sim.py"
-export ERSATZ_SIM_PROTOKOLL="$W/sim_starts.log" ERSATZ_SIM_ZAEHLER="$W/sim_zaehler" MW_KI_PORT=$(( 40000 + RANDOM % 20000 ))
+export ERSATZ_SIM_PROTOKOLL="$W/sim_starts.log" ERSATZ_SIM_ZAEHLER="$W/sim_zaehler"
+ersatz_weg() { ! pgrep -f -- "$W/ersatz_sim.py" >/dev/null; }
+freier_port() { python3 -I -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])'; }
+port_frei() { python3 -I -c 'import socket, sys; s = socket.socket(); s.bind(("127.0.0.1", int(sys.argv[1])))' "$1" 2>/dev/null; }
 ki() {   # ki MODUS MENGE AUSGABE [ENV=…]: ki-teil mit dem Ersatz-Simulator, ohne Bildschirm -> Exit-Code
 	local m=$1 n=$2 aus=$3; shift 3
+	# jeder Fall für sich (3.92.0 einmal rot: der Ersatz-Simulator des vorigen Falls antwortete noch auf demselben Port):
+	# zuerst muss der vorige weg sein - bleibt er, ist das ein Fehler (ki-teil liess einen Simulator stehen) -, dann ein
+	# eigener freier Port
+	if ! warte 20 ersatz_weg; then
+		fehler "Ersatz-Simulator vom vorigen Fall läuft noch 20 s nach dessen Ende (vor «$m»): $(pgrep -f -- "$W/ersatz_sim.py" | tr '\n' ' ')"
+		pkill -f -- "$W/ersatz_sim.py"; warte 5 ersatz_weg
+	fi
+	MW_KI_PORT=$(freier_port); export MW_KI_PORT
+	warte 10 port_frei "$MW_KI_PORT" || fehler "Port $MW_KI_PORT nicht frei (vor «$m»)"
 	rm -f "$ERSATZ_SIM_PROTOKOLL" "$ERSATZ_SIM_ZAEHLER"
 	env ERSATZ_SIM_MODUS="$m" MW_KI_ANTWORT_S=1 MW_KI_STILL_S=6 "$@" python3 "$D" ki-teil --repo "$R" --sim-bin "$W/ersatz_sim.py" --aus "$aus" \
 		--anzeige keine --menge "$n" --stand-name main > "$aus.log" 2>&1
@@ -633,6 +648,36 @@ MW_DAUER="$W/dauer6b_cli" python3 "$D" waehlen --kandidaten "$K" --arbeit erkenn
 MW_DAUER="$W/dauer6b_cli2" python3 "$D" waehlen --kandidaten "$K" --arbeit erkennung --ausgabe "$W/aus6b" > "$W/w6b.log" 2>&1
 [ "$(wert variante "$W/aus6b")" = standard ] && [ "$(wert plan "$W/aus6b")" = ursache ] \
 	&& ok "waehlen ohne --varianten: Grundplan «ursache» wie bisher" || { fehler "waehlen ohne Angabe: $(tr '\n' ' ' < "$W/aus6b")"; cat "$W/w6b.log"; }
+
+# ---------------------------------------------------------------- 7. job_ende.sh: Reste beenden, erst dann Pause frei
+# Nach einem abgebrochenen Job (Prüfstand: Simulator, MoveEye, Xvfb in eigenen Sitzungen) liefen sie sonst neben dem
+# Kiosk-Simulator weiter, sobald die Pause fällt. Ersatz-Prozesse mit dem Namen des echten Programms (prctl), einer ignoriert
+# SIGTERM; ein anderer Prozess desselben Benutzers bleibt.
+echo "--- 7. job_ende.sh: Reste des Jobs beenden, erst dann die Kiosk-Pause freigeben"
+JE="$HIER/job_ende.sh"
+rest() {   # rest NAME zaeh|normal: Ersatz-Prozess mit diesem Programmnamen, in eigener Sitzung (wie im Prüfstand)
+	setsid python3 -I -c 'import ctypes, signal, sys, time
+ctypes.CDLL(None).prctl(15, sys.argv[1].encode(), 0, 0, 0)
+if sys.argv[2] == "zaeh":
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+time.sleep(600)' "$1" "$2" "$W/rest_$1" > /dev/null 2>&1 &
+	PIDS+=($!)
+}
+mkdir -p "$W/tmp7"
+touch "$MW_KIOSK_PAUSE"
+rest MoveEyeSim3D.x8 zaeh; rest Xvfb normal
+setsid python3 -I -c 'import time; time.sleep(600)' "$W/webcam_bewegung_9_9_9.py" > /dev/null 2>&1 & PIDS+=($!)
+setsid python3 -I -c 'import time; time.sleep(600)' "$W/anderes_programm" > /dev/null 2>&1 & ANDERS=$!; PIDS+=("$ANDERS")
+reste7() { pgrep -f -- "$W/(rest_|webcam_bewegung_)" | while read -r p; do [[ "$(cat "/proc/$p/stat" 2>/dev/null)" =~ \)\ Z\  ]] || echo "$p"; done; }
+warte 5 test -n "$(reste7)"; n0=$(reste7 | wc -l)
+env -u GITHUB_WORKSPACE MW_RESTE_WARTEN=2 MW_JOBENDE_TMP="$W/tmp7" bash "$JE" > "$W/je.log" 2>&1; rc=$?
+[ "$rc" = 0 ] && [ "$n0" = 3 ] && [ -z "$(reste7)" ] && [ ! -e "$MW_KIOSK_PAUSE" ] && grep -q "Reste des Jobs beenden (KILL)" "$W/je.log" \
+	&& ok "Simulator (ignoriert SIGTERM), Xvfb und MoveEye beendet, danach Pause frei" \
+	|| { fehler "job_ende: Reste / Pause (Exit $rc, vorher $n0, übrig: $(reste7 | tr '\n' ' '), Pause $([ -e "$MW_KIOSK_PAUSE" ] && echo da || echo weg))"; cat "$W/je.log"; }
+kill -0 "$ANDERS" 2>/dev/null && ok "anderer Prozess desselben Benutzers läuft weiter" || fehler "job_ende hat einen fremden Prozess beendet"
+touch "$MW_KIOSK_PAUSE"
+env -u GITHUB_WORKSPACE MW_JOBENDE_TMP="$W/tmp7" bash "$JE" > "$W/je2.log" 2>&1
+[ ! -e "$MW_KIOSK_PAUSE" ] && ! grep -q "Reste" "$W/je2.log" && ok "ohne Reste: Pause sofort frei" || { fehler "job_ende ohne Reste"; cat "$W/je2.log"; }
 
 echo
 if [ $F -eq 0 ]; then echo "Dauerrechnen-Test: OK"; else echo "Dauerrechnen-Test: $F Fehler"; fi
