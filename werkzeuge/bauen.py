@@ -530,6 +530,25 @@ def _zd_anleitung_for(st):
     return "_".join(sorted(gesetzt)) if gesetzt and gesetzt <= set(ZD_ANLEITUNG) else ""
 
 
+# Hauptdatei kleiner, dritte Runde (14.11.2026): auch das Deutsch der Tabellen _HX… {Englisch: (de, fr, it, rm)} kommt in
+# die ZIP. In der Hauptdatei bleiben nur die englischen Schlüssel: _zd_hx_en((Englisch, …)) (012) gibt ohne ZIP
+# {Englisch: (Englisch, Englisch, Englisch, Englisch)} - jeder Schlüssel ist da, jeder Wert hat die gleiche Form (kein
+# KeyError, auch nicht bei DE[k] / v[0] auf den eingetragenen Texten), die Texte erscheinen nur englisch. Mit ZIP ist alles
+# wie vorher. Was ohne Zusatzdatei auf Deutsch bleiben muss (Alarm, Push, Schutz, Sicherheit, Anmelden, Speicherkarte /
+# Selbstheilung, Transport, Glut, LED), steht in ZD_HX_DE_BLEIBT und behält sein Deutsch (_zd_hx wie bisher).
+# ZD_HX_DE_ZIP = False: alles Deutsch bleibt wie bisher in der Hauptdatei.
+ZD_HX_DE_ZIP = True
+ZD_HX_DE_BLEIBT = {"_HX_ALARM", "_HX_PUSH", "_HX_NOSSID", "_HX_FP", "_HX_ROBUST", "_HX_SICHER", "_HX_KISICHER",
+                   "_HX_sicher3", "_HX_USERS", "_HX_TRANSPORT", "_HX_GLUT", "_HX_LED", "_HX_CHARGELED"}
+
+
+def _zd_hx_en_fallback(seg):
+    """the English keys of a table {English: (de, fr, it, rm)} as source: _zd_hx_en((English, …), list?) (012)"""
+    d = ast.literal_eval("(" + seg + "\n)")
+    rows = "".join("    %r,\n" % k for k in d)
+    return "_zd_hx_en((\n%s)%s)" % (rows, ", True" if isinstance(next(iter(d.values())), list) else "")
+
+
 _ANL = {"namen": None}
 
 
@@ -702,7 +721,10 @@ def auslagern(name, text):
         if hx == 5:
             ph = _zd_hxk_platzhalter(key, nd)
         else:
-            fb = _zd_hx_fallback(b[a:e].decode()) if hx == 4 else _zd_fallback(nd, ctx)
+            if hx == 4 and ZD_HX_DE_ZIP and re.split(r"[.\[]", ctx, maxsplit=1)[0] not in ZD_HX_DE_BLEIBT:
+                fb = _zd_hx_en_fallback(b[a:e].decode())   # German too into the zip, English keys stay
+            else:
+                fb = _zd_hx_fallback(b[a:e].decode()) if hx == 4 else _zd_fallback(nd, ctx)
             ph = "_zd(%r, %s)" % (key, fb)
         out.append(b[pos:a]); out.append(ph.encode()); pos = e
         ents.append((key, ph, b[a:e].decode()))
@@ -1029,7 +1051,7 @@ def bleibt_literale(n=5):
                         why = "kleiner als %d Bytes" % (ZD_MIN_KLEIN if _zd_statisch(nd, base, 0) else ZD_MIN)
                     rows.append((sz, name, ctx, why))
                 return
-            if isinstance(nd, ast.Call) and isinstance(nd.func, ast.Name) and nd.func.id in ("_zd_hx", "_zd_hxk") and not wo:
+            if isinstance(nd, ast.Call) and isinstance(nd.func, ast.Name) and nd.func.id in ("_zd_hx", "_zd_hxk", "_zd_hx_en") and not wo:
                 wo = "_zd_hx"
             elif isinstance(nd, stop) and not wo:
                 wo = "Funktion / Klasse %s" % getattr(nd, "name", "")
