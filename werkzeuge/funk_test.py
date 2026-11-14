@@ -590,7 +590,28 @@ def teil_g(base, pw, tmp, ns):
             gehoert = False
         ok(gehoert, "seine Seite im Browser hört MoveEyes Ton über das «Mikrofon»: «HALLO HANDY» im Verlauf (" + pg.inner_text("#live")[:40] + ")")
         ok(not errs, f"PWA: keine JavaScript-Fehler {errs[:2]}")
-        ctx.close(); br.close()
+        ctx.close()
+        # iPhone: getUserMedia zuerst (vor dem AudioContext), bei TypeError ein zweiter Versuch mit {audio:true}, Fehler mit Name + Meldung
+        for art in ("einmal", "immer"):
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, locale="de-CH")
+            ctx.grant_permissions(["microphone"])
+            ctx.add_init_script("""(() => { const md = navigator.mediaDevices, g = md.getUserMedia.bind(md); window.__gum = [];
+              md.getUserMedia = c => { window.__gum.push([JSON.stringify(c), !!window.__ctxDa]);
+                if ('%s' === 'immer' || typeof c.audio === 'object') return Promise.reject(new TypeError('Type error')); return g(c); };
+              const A = window.AudioContext; window.AudioContext = function(o) { window.__ctxDa = true; return new A(o); }; })();""" % art)
+            pg = ctx.new_page(); errs = []
+            pg.on("pageerror", lambda e: errs.append(str(e)[:200]))
+            pg.goto(pwa, wait_until="domcontentloaded"); pg.wait_for_timeout(500)
+            pg.locator("#listen").click(); pg.wait_for_timeout(1500)
+            gum, live, msg = pg.evaluate("() => window.__gum"), pg.evaluate("() => document.getElementById('listen').classList.contains('live')"), pg.inner_text("#msg")
+            if art == "einmal":
+                ok(len(gum) == 2 and not gum[0][1] and gum[1][0] == '{"audio":true}' and live and not msg and not errs,
+                   f"iPhone: Mikrofon vor dem AudioContext, nach TypeError zweiter Versuch {{audio:true}}: hört ({gum}, «{msg[:40]}»)")
+            else:
+                ok(len(gum) == 2 and not live and "TypeError: Type error" in msg and "audio:true" in msg and not errs,
+                   f"iPhone: geht es gar nicht, steht der Fehler mit Name und Meldung da («{msg[-60:]}»)")
+            ctx.close()
+        br.close()
     srv.shutdown()
 
 

@@ -661,16 +661,33 @@ function insecureMsg(){
 
 async function ensureCtx(){
   if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;ctx=new AC();}
-  if(ctx.state==='suspended')await ctx.resume();
+  if(ctx.state==='suspended'||ctx.state==='interrupted')await ctx.resume();
 }
 
+function errTxt(e){
+  // short, so the owner can send it: name and message of the error
+  const s=e&&e.name?e.name+(e.message?': '+e.message:''):String(e);return s.length>160?s.slice(0,160)+'…':s;
+}
 async function startListen(){
   showMsg('');
   if(!window.isSecureContext||!navigator.mediaDevices){insecureMsg();return;}
+  // iPhone (Safari / Home-Bildschirm): first the microphone, directly in the tap (no await before it, else the tap is «used up»),
+  // only then the sound (AudioContext) - so the iOS audio session (record + play) also fits the microphone
+  let step='getUserMedia';
   try{
+    const md=navigator.mediaDevices;
+    if(typeof md.getUserMedia!=='function')throw new TypeError('navigator.mediaDevices.getUserMedia missing');
+    try{stream=await md.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});}
+    catch(e){
+      if(!e||(e.name!=='TypeError'&&e.name!=='OverconstrainedError'))throw e;
+      step='getUserMedia(audio:true) after '+e.name;
+      stream=await md.getUserMedia({audio:true});
+    }
+    step='AudioContext';
     await ensureCtx();
-    stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
-  }catch(e){showMsg(T('micErr')+' '+(e.name||e));return;}
+  }catch(e){
+    if(stream){try{stream.getTracks().forEach(t=>t.stop());}catch(_){}stream=null;}
+    showMsg(T('micErr')+' ['+step+'] '+errTxt(e));return;}
   const prevLive=dec?{live:dec.live,ended:true}:null;
   dec=makeDecoder({sr:ctx.sampleRate,N:512,getCfg:()=>cfg,onUpdate:()=>{dirty=true;},onMessage:addHistory});
   dec.ks=ks;if(prevLive&&prevLive.live){dec.live=prevLive.live;}
