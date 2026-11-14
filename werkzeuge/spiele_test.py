@@ -2182,9 +2182,102 @@ def fotaq_lauf(pfad, fehler, warn, bilder):
             br = pw.chromium.launch(args=FOTAQ_ARGS)
             nur = [x for x in os.environ.get("MW_FOTAQ_NUR", "").split(",") if x] or None      # e.g. «handy»: only this device
             fotaq_pruefen(br, base, fehler, warn, bilder, nur=nur)
+            if "quitAfterGame" in open(os.path.join(d, "index.html"), encoding="utf-8").read() and b"onScummvmEnded" in open(os.path.join(d, "scummvm.js"), "rb").read():
+                fotaq_ende_pruefen(pw, br, base, fehler, bilder)          # fotaq-2: end of the game, errors, data in pieces
+            else:
+                print("FOTAQ: Engine ohne Patch 0005 (fotaq-1) – Spielende nicht geprüft", flush=True)
             br.close()
     finally:
         s.shutdown()
+
+
+def fotaq_ende_pruefen(pw, br, base, fehler, bilder, seite="/g/fotaq/index.html"):
+    """fotaq-2 (die auf dem iPhone erprobte Fassung «Test B»): «Aufgeben» → «Ja» im Tagebuch endet mit der Tafel «Spiel beendet»
+    (nie der Launcher von ScummVM, nie «Missing variable»), der Spielstand von vorher ist im Browser-Speicher und nach «Nochmal»
+    noch da; die Spieldaten kommen in Stücken («Range», wenig Speicher); bleiben sie aus, steht nach Wiederholungen eine
+    klare Meldung mit «Fehler kopieren» da - kein schwarzes Bild."""
+    import time
+    tag = "FOTAQ Ende"
+    geraet = dict(viewport={"width": 844, "height": 390}, is_mobile=True, has_touch=True, user_agent=pw.devices["iPhone 13"]["user_agent"], locale="de-CH")
+
+    def start(ctx):
+        pg = ctx.new_page()
+        pg.goto(base + seite, wait_until="load"); pg.wait_for_timeout(500)
+        pg.locator("#btn-de").tap()
+        pg.wait_for_function("() => window.FOTAQ && /User picked target/.test(FOTAQ.log.join(' ')) && window.httpFsStat && httpFsStat.requests >= 3"
+                             " && document.querySelector('#load').classList.contains('hidden')", timeout=150000)
+        return pg
+    ctx = br.new_context(**geraet)
+    try:
+        teile = []
+        ctx.on("request", lambda r: teile.append(r.headers.get("range", "")) if "queen.1c" in r.url else None)
+        pg = start(ctx)
+        fe = []
+        pg.on("pageerror", lambda e: fe.append(str(e)[:200]))
+        for _ in range(8):
+            pg.locator("#kSkip").tap(); pg.wait_for_timeout(2500)
+        pg.keyboard.press("F11"); pg.wait_for_timeout(2500)          # quick save in the first room
+        st = pg.evaluate("() => ({heap: Module.HEAPU8 ? Module.HEAPU8.length : 0, req: httpFsStat.requests, bytes: httpFsStat.bytes, errors: httpFsStat.errors})")
+        gross = [x for x in teile if not re.fullmatch(r"bytes=\d+-\d+", x) or int(x.split("-")[1]) - int(x.split("=")[1].split("-")[0]) >= 262144]
+        if not teile or gross or st["errors"] or not 0 < st["heap"] <= 128 * 1048576 or st["bytes"] > 40 * 1048576:
+            fehler.append(f"{tag}: die Spieldaten kommen nicht in Stücken bis 256 KB / zu viel Speicher ({len(teile)} Abrufe, auffällig {gross[:3]}, {st})")
+        pg.locator("#kMenu").tap(); pg.wait_for_timeout(2500)         # the journal: «Give Up» bottom left, then «Yes»
+        c = pg.locator("#canvas").bounding_box()
+        for fx, fy in ((0.27, 0.84), (0.27, 0.36)):
+            pg.touchscreen.tap(c["x"] + c["width"] * fx, c["y"] + c["height"] * fy); pg.wait_for_timeout(2500)
+        try:
+            pg.wait_for_selector("#fqEnd", timeout=15000)
+        except Exception:
+            pass
+        pg.wait_for_timeout(800)
+        if bilder:
+            pg.screenshot(path=os.path.join(bilder, "fotaq_ende.png"))
+        tx = pg.locator("#fqEnd").inner_text() if pg.locator("#fqEnd").count() else ""
+        z = pg.evaluate("() => ({ended: !!FOTAQ.ended, err: FOTAQ.err || '', log: FOTAQ.log.join(' | ')})")
+        if not z["ended"] or z["err"] or "Spiel beendet" not in tx or "gesichert" not in tx or "Missing variable" in z["log"] or pg.locator("#fqEnd.bad").count():
+            fehler.append(f"{tag}: «Aufgeben» → «Ja» endet nicht sauber mit «Spiel beendet» (Tafel: {tx[:120]!r}; Fehler: {z['err'][:120]!r}; Log: {z['log'][-300:]})")
+        elif not pg.locator("#fqAgain").is_visible() or not pg.locator("#fqBack").is_visible():
+            fehler.append(f"{tag}: Tafel «Spiel beendet» ohne «Nochmal» / «‹ Spiele»")
+        keys = pg.evaluate(FOTAQ_IDB) or []
+        sv = [k for k in keys if "/saves/de/" in k and not k.endswith("/de")]
+        if not sv:
+            fehler.append(f"{tag}: der Spielstand von vorher ist nach dem Ende nicht im Browser-Speicher ({len(keys)} Einträge)")
+        if pg.locator("#fqAgain").count():
+            pg.locator("#fqAgain").tap(); pg.wait_for_selector("#btn-de", state="visible", timeout=10000)
+            pg.locator("#btn-de").tap()
+            pg.wait_for_function("() => window.FOTAQ && FOTAQ.FS && window.httpFsStat && httpFsStat.requests >= 3", timeout=150000)
+            da = pg.evaluate("() => { try { return FOTAQ.FS.readdir('/home/web_user/saves/de').filter(x => x[0] !== '.'); } catch (e) { return String(e); } }")
+            if not isinstance(da, list) or not all(os.path.basename(k) in da for k in sv):
+                fehler.append(f"{tag}: nach «Nochmal» sieht das Spiel den Spielstand nicht ({da})")
+        for x in fe:
+            if "ExitStatus" not in x:
+                fehler.append(f"{tag}: JavaScript: {x}")
+        print(f"{tag:<18} Aufgeben -> «Spiel beendet» · Spielstand bleibt ({', '.join(os.path.basename(k) for k in sv) or '-'}) · {len(teile)} Stücke, {st['bytes'] >> 20} MB gelesen, Speicher {st['heap'] >> 20} MB", flush=True)
+    except Exception as e:
+        fehler.append(f"{tag}: {e.__class__.__name__}: {str(e)[:200]}")
+    ctx.close()
+    ctx = br.new_context(**geraet)                          # the game data stop coming after the start
+    try:
+        aus = [False]
+        ctx.route("**/data/games/**", lambda r: r.abort() if aus[0] and "queen.1c" in r.request.url else r.continue_())
+        pg = start(ctx)
+        aus[0] = True
+        t0 = time.time()
+        while time.time() - t0 < 60 and not pg.locator("#fqEnd.bad").count():
+            pg.locator("#kSkip").tap(); pg.wait_for_timeout(2000)
+        tx = pg.locator("#fqEnd").inner_text() if pg.locator("#fqEnd").count() else ""
+        z = pg.evaluate("() => ({kind: FOTAQ.kind || '', retries: (window.httpFsStat || {}).retries || 0})")
+        if bilder:
+            pg.screenshot(path=os.path.join(bilder, "fotaq_daten_weg.png"))
+        if z["kind"] != "data" or z["retries"] < 3 or "Spieldaten konnten nicht geladen werden" not in tx or "queen.1c" not in pg.locator("#fqMsg").input_value():
+            fehler.append(f"{tag}: fehlende Spieldaten geben keine klare Meldung nach Wiederholungen (Tafel: {tx[:120]!r}; {z})")
+        elif not pg.locator("#fqCopy").is_visible() or not pg.locator("#fqAgain").is_visible():
+            fehler.append(f"{tag}: «Fehler kopieren» / «Nochmal» fehlt")
+        else:
+            print(f"{tag:<18} Daten weg -> Meldung nach {z['retries']} Wiederholungen", flush=True)
+    except Exception as e:
+        fehler.append(f"{tag} (Daten weg): {e.__class__.__name__}: {str(e)[:200]}")
+    ctx.close()
 
 
 # ---- MoveEye side of FOTAQ (639zzg): load (pins, free space, wrong checksum), unpack, games port, tile, admin tab ------------------
@@ -2359,9 +2452,71 @@ def fotaq_moveeye(datei, fehler, warn, bilder, release="", pins=""):
             br = pw.chromium.launch(args=FOTAQ_ARGS)
             fotaq_pruefen(br, f"http://127.0.0.1:{gp}", fehler, warn, bilder)
             br.close()
+    if not release:
+        fotaq_neue_engine(ns, c, party, warten, srv, get, ok)
     code, j = party({"action": "fotaq_delete"})
     ok(code == 200 and not ns["fotaq_installed"]() and not os.path.exists(ns["fotaq_dir"]()), "Entfernen")
     shutil.rmtree(home, ignore_errors=True)
+
+
+def fotaq_neue_engine(ns, c, party, warten, srv, get, ok):
+    """3.88: «Test B» wird das Spiel (fotaq-2). Ein Gerät mit der alten Engine spielt weiter wie bisher (Warnseite, PC-Gruppe),
+    der Admin lädt die neue Fassung: nur die Engine, die Sprachen bleiben auf der Karte. Danach: Kachel für Touch, kein
+    Hinweis, keine Warnseite. Schlägt der Tausch fehl, ist alles wie vorher."""
+    F, DL = ns["FOTAQ_FILES"], ns["FOTAQ_DL"]
+    alt = dict(F["engine"])
+    q = os.path.join(ns["fotaq_dir"](), "data", "games")
+    vorher = {L: (os.stat(os.path.join(q, L, "queen.1c")).st_ino, hashlib.sha256(open(os.path.join(q, L, "queen.1c"), "rb").read()).hexdigest()) for L in ("de", "en")}
+    name, (k, b, unz) = next((n_, v_) for n_, v_ in _fake_fotaq("fotaq-77").items() if v_[0] == "engine")
+    alt_tag = ns["FOTAQ_TAG"]
+    ns["FOTAQ_TAG"] = "fotaq-77"
+    ns["FOTAQ_OLD_SHA"] = {alt["sha256"]}
+    F["engine"] = {"name": name, "size": len(b), "sha256": hashlib.sha256(b).hexdigest(), "unpacked": unz, "ios": True}
+    srv.files["/" + alt_tag + "/" + name] = b
+    st = party()[1]["fotaq"]
+    ok(ns["fotaq_installed"]() and ns["fotaq_engine"]() == "old" and st["installed"] and st["update"] and not st["ios"] and not st["engine"] and st["langs"] == ["de", "en"],
+       "neue Engine gepinnt, alte installiert: das Spiel bleibt da, «Neue Fassung laden» wird angeboten")
+    g = next((x for x in ns["games_list"]() if x.get("dir") == "fotaq"), {})
+    ok(g.get("input") == "keys" and g.get("note") and g.get("start") == "start.html" and "Trotzdem starten".encode() in get("/g/fotaq/")[2],
+       "mit der alten Engine: weiter PC-Gruppe, Hinweis und Warnseite")
+    ok(ns["fotaq_need"](["de", "en"]) == (["engine"], len(b), unz), f"«Neue Fassung laden» lädt nur die Engine ({len(b)} Bytes)")
+    echt = ns["_fotaq_ok_write"]
+
+    def kaputt(parts):
+        raise OSError("Karte voll (Test)")
+    ns["_fotaq_ok_write"] = kaputt                        # the swap fails half way: everything is as before
+    party({"action": "fotaq_install", "langs": ["de", "en"]}); warten()
+    ns["_fotaq_ok_write"] = echt
+    ok(ns["fotaq_engine"]() == "old" and ns["fotaq_langs"]() == ["de", "en"] and "Karte voll" in DL["msg"] and not os.path.exists(ns["fotaq_dir"]() + ".alt")
+       and all(os.stat(os.path.join(q, L, "queen.1c")).st_ino == vorher[L][0] for L in vorher) and b"/* test */" in get("/g/fotaq/scummvm.js")[2],
+       f"Tausch der Engine schlägt fehl: alte Engine und beide Sprachen unverändert ({DL['msg']})")
+    code, j = party({"action": "fotaq_install", "langs": ["de", "en"]}); warten()
+    st = party()[1]["fotaq"]
+    ok(code == 200 and not DL["msg"] and ns["fotaq_engine"]() == "new" and st["installed"] and st["ios"] and st["engine"] and not st["update"] and st["langs"] == ["de", "en"],
+       f"neue Fassung geladen ({DL['msg'] or 'ok'})")
+    ok(DL["total"] == len(b) and all(os.stat(os.path.join(q, L, "queen.1c")).st_ino == vorher[L][0]
+                                     and hashlib.sha256(open(os.path.join(q, L, "queen.1c"), "rb").read()).hexdigest() == vorher[L][1] for L in vorher),
+       "nur die Engine geladen: die Spieldaten beider Sprachen sind dieselben Dateien wie vorher")
+    ok(json.load(open(os.path.join(q, "index.json"))) == {"de": {}, "en": {}} and json.load(open(os.path.join(ns["fotaq_dir"](), "fotaq.json")))["tag"] == "fotaq-77"
+       and not os.path.exists(ns["fotaq_dir"]() + ".alt") and not os.path.exists(ns["fotaq_dl_dir"]()), "Ordner aufgeräumt, Sprachliste und neue Engine da")
+    g = next((x for x in ns["games_list"]() if x.get("dir") == "fotaq"), {})
+    ok(g.get("input") == "touch" and "note" not in g and "notes" not in g and g.get("start") == "index.html", "Kachel neu in der Gruppe «👆 Touch», ohne Hinweis")
+    t = c.get("/spiele", environ_base={"REMOTE_ADDR": "192.168.1.20"}).get_data(as_text=True)
+    ok("Flight of the Amazon Queen" in t and "👆" in t and "Am PC spielen" not in t and "/g/fotaq/index.html" in t and "start.html" not in t, "/spiele: Kachel für Handy und Tablet, kein «Am PC spielen»")
+    pv = ns["party_view"]("") if "party_view" in ns else {}
+    ok(any(x.get("dir") == "fotaq" and not x.get("note") and x.get("input") == "touch" for x in (pv.get("games") or [])), "Gästeseite: Kachel ohne Hinweis in der Touch-Gruppe")
+    for pfad in ("/g/fotaq/", "/g/fotaq/start.html", "/g/fotaq/index.html"):
+        s_, h_, b_ = get(pfad)
+        ok(s_ == 200 and b'id="backPick"' in b_ and b"Trotzdem starten" not in b_ and b'id="fotaq-warn"' not in b_ and b'id="mw-back"' in b_, f"Port: {pfad} = Startseite des Spiels, keine Warnseite")
+    s_, h_, b_ = get("/g/fotaq/data/games/de/queen.1c", {"Range": "bytes=100-299"})
+    ok(s_ == 206 and len(b_) == 200, "Port: Spieldaten in Stücken («Range»)")
+    code, j = party({"action": "fotaq_remove", "lang": "en"})
+    ok(code == 200 and ns["fotaq_langs"]() == ["de"] and ns["fotaq_ios"](), "eine Sprache entfernen geht weiter")
+    party({"action": "fotaq_install", "langs": ["en"]}); warten()
+    ok(ns["fotaq_langs"]() == ["de", "en"] and ns["fotaq_engine"]() == "new", "Sprache wieder dazu: die Engine bleibt")
+    code, j = party({"action": "fotaq_delete"})
+    party({"action": "fotaq_install", "langs": ["de"]}); warten()
+    ok(ns["fotaq_engine"]() == "new" and ns["fotaq_ios"]() and ns["fotaq_langs"]() == ["de"], "neue Installation: gleich die neue Engine")
 
 
 FOTAQ_UA = {

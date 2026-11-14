@@ -19,7 +19,7 @@ case "$V" in
      #   Asyncify keeps its hands off code that can never be on the stack while the game waits (asyncify_remove.txt:
      #   mixer and rate converters, MP3 / Vorbis / zlib / PNG decoders, OPL emulation, SDL pixel loops). These are the
      #   functions that run all the time, so Safari's optimising compiler gets them as small as in a build without Asyncify.
-     #   Safe because nothing below them waits: files are read with synchronous requests (patch 0101), the only waiting
+     #   Safe because nothing below them waits: files are read with synchronous requests (patch 0004), the only waiting
      #   calls are SDL_Delay and the directory / settings requests of the file system, all above this code.
      python3 -I "$H/ios_konfig.py" configure --opt Oz --extra "-s ASYNCIFY_REMOVE=@$H/asyncify_remove.txt -s BINARYEN_EXTRA_PASSES=--one-caller-inline-max-function-size=200" | tee "$O/$V.txt" ;;
   *) echo "unknown variant $V"; exit 1 ;;
