@@ -1221,16 +1221,17 @@ def morse_clean(text):
 
 
 def morse_is_test(txt):
-    """«Gegenstelle testen»: the test signal, also read in part («V TEST», «T UVV TEST»). Only words of the test signal count
-    (one garbled first letter is allowed): «CQ TEST DE HB9» is a message, not the test signal."""
+    """«Gegenstelle testen»: the test signal «VVV TEST», also read in part or garbled («V TEST», «T UVV TEST», «VVIA TEST»):
+    the start is V-like and the end is (the start of) TEST. «CQ TEST DE HB9» or «VIELEN DANK» are messages, not the test signal."""
     if MORSE_TEST_TEXT in txt:
         return True
     ws = txt.split()
     if not ws or len(txt) > 16:
         return False
-    if len(ws) > 1 and len(ws[0]) == 1:
-        ws = ws[1:]
-    return all(w == "TEST" or (len(w) >= 2 and "TEST".startswith(w)) or (len(w) <= 4 and w.endswith("V") and w.count("V") >= len(w) - 1) for w in ws)
+    if len(ws) == 1:
+        return "VV" in ws[0]
+    end = ws[-1]
+    return any(w.startswith("V") or "VV" in w for w in ws[:2]) and (end.startswith("TE") or "TEST".startswith(end))
 
 
 def morse_rx_text(text, source="camera", info=None):
@@ -2108,8 +2109,11 @@ def morse_selftest():
         assert morse_rx_text("V TEST", "camera") and not MORSE["peer"]["full"] and MORSE["msgs"][0]["test"], "the test signal read in part"
         assert morse_rx_text("T UVV TEST", "camera") and not MORSE["peer"]["full"] and MORSE["msgs"][0]["test"], "garbled at the start: in part"
         assert morse_rx_text("TESTE DAS", "camera") and not MORSE["msgs"][0]["test"], "another text is no test signal"
+        on_ = MORSE["out_n"]; MORSE["out_n"] = 3              # «outputs busy»: no output thread from the self-test (it would outlive it)
         assert morse_rx_text("CQ TEST DE HB9", "camera") and not MORSE["msgs"][0]["test"], "a message with the word TEST is no test signal"
-        assert morse_is_test("VVV TE") and morse_is_test("UVV TEST") and not morse_is_test("T") and not morse_is_test("TEST ME")
+        MORSE["out_n"] = on_
+        assert all(morse_is_test(x) for x in ("VVV TE", "UVV TEST", "VVIA TEST", "V TEST", "VVV")), "the test signal, also garbled"
+        assert not any(morse_is_test(x) for x in ("T", "TEST ME", "VIELEN DANK", "CQ TEST DE HB9", "VICTOR")), "messages stay messages"
         MORSE["tx_starts"] = []; CFG["light_ir_out"] = "gpio:27"
         c_, a_ = morse_do({"action": "test", "wpm": 99}, "self-test")
         assert (a_.get("ok") and MORSE["tx"]["outs"] == {"ir"} and MORSE["tx"]["wpm"] <= 20), (c_, a_)

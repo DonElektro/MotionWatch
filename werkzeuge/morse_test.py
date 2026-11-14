@@ -861,15 +861,22 @@ def teil_g(base, bilder, blinken, sprache):
             ok(not raus, f"{name}: nichts ragt aus Knopf / Feld {raus[:3]}")
             eng = pg.evaluate("""() => Array.from(document.querySelectorAll('main *')).filter(e => e.children.length === 0 && e.id !== 'mo-text'
               && /\\b(the|Morse mode|Send|Receive|Start the|flashes|pictures)\\b/.test(e.textContent)).map(e => e.textContent.slice(0, 40))""")
-            ok(not eng, f"{name}: keine englisch gebliebenen Texte {eng[:3]}")
+            ok(lang == "en" or not eng, f"{name}: keine englisch gebliebenen Texte {eng[:3]}")
             if lang == "de":
                 ok("ß" not in pg.evaluate("() => { const m = document.querySelector('main').cloneNode(true); m.querySelector('#mo-plan').remove(); return m.innerText; }"),
                    f"{name}: kein «ß» in den deutschen Texten (ausser im eingegebenen Text)")
             shot(pg, f"morse_{name}.png", full_page=True)
             if name == "iphone":
                 ende = blinken("HALLO", 4, 0.5)
-                pg.wait_for_function("() => Array.from(document.querySelectorAll('#mo-msgs b')).some(b => b.textContent === 'HALLO')", timeout=int((ende + 15) * 1000))
-                ok(True, "iphone: die empfangene Nachricht «HALLO» erscheint in der Liste")
+                try:
+                    pg.wait_for_function("() => Array.from(document.querySelectorAll('#mo-msgs b')).some(b => b.textContent === 'HALLO')", timeout=int((ende + 40) * 1000))   # Luft für langsame Rechner
+                    da = True
+                except Exception:
+                    da = False
+                if not da:
+                    st_ = pg.evaluate("() => fetch('/api/morse?lang=de').then(r => r.json()).then(j => j.state)")
+                    print("    Zustand:", json.dumps({k: st_.get(k) for k in ("on", "rest", "tx")}), json.dumps({k: (st_.get("rx") or {}).get(k) for k in ("on", "fps", "limit", "live", "fast", "blink", "msgs")}, ensure_ascii=False)[:900], flush=True)
+                ok(da, "iphone: die empfangene Nachricht «HALLO» erscheint in der Liste")
                 shot(pg, "morse_iphone_empfangen.png", full_page=True)
                 pg.goto(base + "/", wait_until="domcontentloaded"); pg.wait_for_timeout(4000)
                 ok(pg.evaluate("() => document.body.innerText.includes('Morse-Modus')"), "iphone: die Hauptseite zeigt «Morse-Modus» als Schutz-Zustand")
