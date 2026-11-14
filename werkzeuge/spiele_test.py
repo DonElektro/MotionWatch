@@ -90,6 +90,11 @@ einem Viertel der Zeit), das Tempo bleibt nach dem Neuladen, eine Karte hält di
 weiter, geht bei 4× das Feuer aus, springt das Tempo auf 1×, der Test-Spieler kommt auch bei 4× ans Ende.
 python3 werkzeuge/spiel_einbauen.py games/verschollen --nach /tmp/t.zip && python3 werkzeuge/spiele_test.py --zip /tmp/t.zip --nur verschollen
 
+Kachel-Texte (ab GS-1.20, Wunsch des Besitzers): jede Kurzbeschreibung (desc und descs in allen fünf Sprachen) höchstens KACHEL_MAX = 40
+Zeichen – im Paket, in games/kacheltexte.json und in den Kacheln, die MoveEye selbst mitbringt (FOTAQ, Fertigspiele); ab GS-1.20 hat jede
+Kachel fünf Sprachen. Im Browser: alle Kacheln mit GAME_TILES_CSS (quelle/340) am iPhone (390 px), je Sprache höchstens 2 Zeilen
+Beschreibung und keine gekürzte, die Kacheln einer Reihe gleich hoch.
+
 Die Spiele laufen hier wie am Spiele-Port von MoveEye unter /g/<ordner>/ und bekommen einen «✕ Zurück»-Knopf (#mw-back).
 """
 import argparse
@@ -129,10 +134,50 @@ START = ["#bPlay", "#playBtn", "#btnPlay", "#startBtn", "#play", "button.play", 
          ".q-shade[data-card=ready] .play"]
 
 
+# GS-1.20 (Besitzer): jede Kachel nur ein kurzer Satz, in allen fünf Sprachen höchstens so viele Zeichen (games/kacheltexte.json)
+KACHEL_MAX = 40          # passt am iPhone (390 px) in 2 Zeilen, auch mit der breiteren Schrift im GitHub-Test (DejaVu Sans)
+
+
+def kachel_texte_pruefen(d, g, fehler):
+    """Kurzbeschreibung einer Kachel: desc und jede Sprache in descs höchstens KACHEL_MAX Zeichen"""
+    texte = [("desc", g.get("desc") or "")] + [(L, t) for L, t in (g.get("descs") or {}).items()]
+    for L, t in texte:
+        if len(t) > KACHEL_MAX:
+            fehler.append(f"{d}: Kachel-Text {L} hat {len(t)} Zeichen (höchstens {KACHEL_MAX}): «{t[:70]}…»")
+
+
+def kachel_texte_quelle(fehler, liste=None):
+    """die Kacheln, die MoveEye selbst mitbringt (FOTAQ 639zzg, Fertigspiele 639zzn) und games/kacheltexte.json
+    (liste: dazu {dir, descs} der Kacheln aus quelle/ sammeln, für den Browser-Test)"""
+    import ast
+    n = 0
+    liste = [] if liste is None else liste
+    for datei in ("639zzg_fotaq.py", "639zzn_fertigspiele.py"):
+        p = os.path.join(REPO, "quelle", datei)
+        if not os.path.isfile(p):
+            continue
+        for k in ast.walk(ast.parse(open(p, encoding="utf-8").read())):
+            if isinstance(k, ast.Call) and getattr(k.func, "id", "") == "_fs_tile" and len(k.args) >= 5:
+                g = {"dir": k.args[0].value, "name": k.args[3].value, "descs": dict(zip(SPRACHEN, [e.value for e in k.args[4].elts]))}
+                kachel_texte_pruefen(g["dir"], g, fehler); liste.append(g); n += 1
+            if isinstance(k, ast.Assign) and getattr(k.targets[0], "id", "") == "FOTAQ_GAME":
+                g = ast.literal_eval(ast.Dict(keys=[x for x in k.value.keys if getattr(x, "value", "") in ("desc", "descs")],
+                                              values=[v for x, v in zip(k.value.keys, k.value.values) if getattr(x, "value", "") in ("desc", "descs")]))
+                kachel_texte_pruefen("fotaq", g, fehler); liste.append(dict(g, dir="fotaq", name="Flight of the Amazon Queen")); n += 1
+    kt_p = os.path.join(REPO, "games", "kacheltexte.json")
+    if os.path.isfile(kt_p):
+        for d, t in json.load(open(kt_p, encoding="utf-8")).items():
+            if isinstance(t, dict):
+                kachel_texte_pruefen(d + " (kacheltexte.json)", {"descs": t}, fehler); n += 1
+    return n
+
+
 def paket_pruefen(zp, fehler, warn):
     with zipfile.ZipFile(zp) as z:
         namen = set(z.namelist())
         gj = json.loads(z.read("games.json"))
+        v_ = re.fullmatch(r"GS-(\d+)\.(\d+)", gj.get("version", "")) or None
+        kt_pflicht = bool(v_ and (int(v_.group(1)), int(v_.group(2))) >= (1, 20))   # ab GS-1.20 hat jede Kachel fünf Sprachen
         lic = z.read("LIZENZEN.txt").decode("utf-8")
         for g in gj.get("games", []):
             d, st = g.get("dir", ""), g.get("start", "index.html")
@@ -147,12 +192,18 @@ def paket_pruefen(zp, fehler, warn):
                 fehler.append(f"{d}: Bild-Symbol {ic} fehlt")
             if f"({d}/)" not in lic and not any(f"({p}" in lic and d.startswith(p.rstrip("*/")) for p in ("kv-*/", "qg-*/")):
                 fehler.append(f"{d}: fehlt in LIZENZEN.txt")
-            if "names" in g or "descs" in g:
+            if "names" in g:
                 for L in SPRACHEN:
-                    if not (g.get("names") or {}).get(L) or not (g.get("descs") or {}).get(L):
-                        fehler.append(f"{d}: Name oder Beschreibung auf {L} fehlt")
+                    if not (g.get("names") or {}).get(L):
+                        fehler.append(f"{d}: Name auf {L} fehlt")
+            if "descs" in g or "names" in g or kt_pflicht:
+                for L in SPRACHEN:
+                    if not (g.get("descs") or {}).get(L):
+                        fehler.append(f"{d}: Beschreibung auf {L} fehlt")
                 if g.get("desc") != (g.get("descs") or {}).get("de"):
                     fehler.append(f"{d}: desc ist nicht die deutsche Beschreibung")
+            kachel_texte_pruefen(d, g, fehler)
+            if "names" in g:                      # die eigenen und neueren Spiele (mit Namen in fünf Sprachen)
                 for n in namen:                   # new games: nothing from outside (fonts, scripts, statistics)
                     if n.startswith(d + "/lib/") and d == "schach":
                         continue                  # unveränderte Bausteine: Adressen nur im Lizenzkopf; der Browser-Test beweist «keine Anfrage nach aussen»
@@ -175,6 +226,48 @@ def paket_pruefen(zp, fehler, warn):
             if m.group(1) != gj.get("version"):
                 fehler.append(f"quelle/320: GAMES_PKG version {m.group(1)} ≠ games.json {gj.get('version')}")
     return gj
+
+
+def kacheln_layout(br, gj, fehler, bilder):
+    """GS-1.20: alle Kacheln mit GAME_TILES_CSS (quelle/340) am iPhone (390 px) in jeder Sprache: Beschreibung höchstens 2 Zeilen,
+    die Kacheln einer Reihe gleich hoch"""
+    q = os.path.join(REPO, "quelle", "340_spiele_seiten.py")
+    if not os.path.isfile(q):
+        return
+    m = re.search(r'GAME_TILES_CSS = """(.*?)"""', open(q, encoding="utf-8").read(), re.S)
+    if not m:
+        fehler.append("quelle/340: GAME_TILES_CSS nicht gefunden"); return
+    alle = list(gj["games"])
+    kachel_texte_quelle([], alle)            # dazu die Kacheln aus quelle/ (FOTAQ, Fertigspiele)
+    gj = {"games": alle}
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, device_scale_factor=2)
+    pg = ctx.new_page()
+    from html import escape as _e
+    for L in SPRACHEN:
+        tiles = "".join(f'<a class="c" href="#"><div class="i">🎮</div><div class="n">{_e((g.get("names") or {}).get(L) or g.get("name", g["dir"]))}</div>'
+                        f'<div class="d">{_e((g.get("descs") or {}).get(L) or g.get("desc", ""))}</div></a>' for g in gj["games"])
+        pg.set_content(f'<!doctype html><meta name="viewport" content="width=device-width"><style>body{{margin:0;padding:12px;font:16px system-ui;'
+                       f'background:#0e1621;color:#fff}}{m.group(1)}</style><div class="mwg">{tiles}</div>')
+        r = pg.evaluate("""() => { const out = {zeilen: [], hoehen: []}, cs = [...document.querySelectorAll('.mwg a.c')];
+          cs.forEach((c, i) => { const d = c.querySelector('.d'), lh = parseFloat(getComputedStyle(d).lineHeight) || 16.5;
+            const voll = d.scrollHeight, sicht = d.getBoundingClientRect().height;
+            out.zeilen.push([i, Math.round(sicht / lh * 10) / 10, voll > sicht + 1]); out.hoehen.push([Math.round(c.getBoundingClientRect().top), Math.round(c.getBoundingClientRect().height)]); });
+          return out; }""")
+        for i, z, abgeschnitten in r["zeilen"]:
+            if z > 2.2:
+                fehler.append(f"Kachel {gj['games'][i]['dir']} ({L}): Beschreibung {z} Zeilen (höchstens 2)")
+            if abgeschnitten:
+                fehler.append(f"Kachel {gj['games'][i]['dir']} ({L}): Beschreibung passt nicht in 2 Zeilen (wird mit «…» gekürzt)")
+        reihen = {}
+        for top, h in r["hoehen"]:
+            reihen.setdefault(top, set()).add(h)
+        for top, hs in reihen.items():
+            if len(hs) > 1:
+                fehler.append(f"Kacheln ({L}): eine Reihe hat verschieden hohe Kacheln {sorted(hs)}")
+        if bilder and L == "de":
+            pg.screenshot(path=os.path.join(bilder, "kacheln_390_de.png"), full_page=True)
+    print(f"Kacheln am iPhone (390 px) in {len(SPRACHEN)} Sprachen: Beschreibung höchstens 2 Zeilen, Reihen gleich hoch", flush=True)
+    ctx.close()
 
 
 def server(root):
@@ -3226,6 +3319,7 @@ def main():
         sys.exit(1 if fehler else 0)
     gj = paket_pruefen(a.zip, fehler, warn)
     print(f"Paket {gj.get('version')}: {len(gj['games'])} Spiele", flush=True)
+    print(f"Kachel-Texte: höchstens {KACHEL_MAX} Zeichen – Paket und {kachel_texte_quelle(fehler)} Kacheln aus quelle/ und games/kacheltexte.json geprüft", flush=True)
     if os.path.isfile(os.path.join(REPO, "games", "wasnun", "kachel.json")) and not any(g.get("dir") == "wasnun" for g in gj["games"]):
         warn.append("«Was nun?» liegt in games/wasnun/, ist aber noch nicht in dieser ZIP (python3 werkzeuge/spiel_einbauen.py games/wasnun)")
     if os.path.isfile(os.path.join(REPO, "games", "verschollen", "kachel.json")) and not any(g.get("dir") == "verschollen" for g in gj["games"]):
@@ -3252,6 +3346,7 @@ def main():
             spiele = [g for g in spiele if g["dir"] not in ohne]
             with sync_playwright() as pw:
                 br = pw.chromium.launch()
+                kacheln_layout(br, gj, fehler, a.bilder)
                 print(f"{'Spiel':<20} {'Gruppe':<8} {'Handy: Start / Eingabe':<34} PC: Start", flush=True)
                 for g in spiele:
                     zeile = {}

@@ -100,6 +100,8 @@ CFG = {
     "env_on": True, "env_offset": 0.0,       # temperature / humidity sensor (BME280 / BMP280 on I2C, DS18B20 on 1-Wire GPIO 4), correction      # location from the phone (https page) / GPS data in photos and videos
     "presence_hosts": [], "away_after": 10.0,
     "extra_cams": [],            # more cameras (motion recording only): list of source ids
+    "extra_cams_off": [],        # 3.92.x: extra cameras switched off because they are the same sensor as another camera (440 cams_dedupe)
+    "sim_prev_cams": {},         # 3.92.x: the real extra cameras while the simulation runs {"cams": [...], "off": [...]} (340 sim_set)
     "relays_on": True,           # Auto relays may switch (On / Off relays are not affected)
     "relay1_off_done": True,     # 3.44.3: «Relay 1» is off from the factory; settings files without this key are older (040 migrates once)
     # timelapse: park the camera at a chosen position, take a photo every N minutes (an alarm always has priority)

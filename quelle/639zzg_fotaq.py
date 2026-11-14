@@ -54,13 +54,13 @@ FOTAQ_OLD_SHA = {FOTAQ_ENGINE_OLD["sha256"]} if FOTAQ_NEW else set()     # engin
 FOTAQ_MAX_BYTES = 400 * 1024 * 1024      # harte Obergrenze für die drei ZIP und für das Entpackte (je)
 FOTAQ_GAME = {"dir": "fotaq", "start": "start.html", "icon": "thumb.svg", "input": "keys",    # 3.70.2: start.html = warning page (MoveEye)
               "name": "Flight of the Amazon Queen",
-              "desc": "Abenteuer-Klassiker (1995) mit Sprachausgabe – Deutsch oder Englisch.",
+              "desc": "Abenteuer-Klassiker von 1995.",
               "names": {L: "Flight of the Amazon Queen" for L in ("de", "en", "fr", "it", "rm")},
-              "descs": {"de": "Abenteuer-Klassiker (1995) mit Sprachausgabe – Deutsch oder Englisch.",
-                        "en": "Classic adventure (1995) with speech – German or English.",
-                        "fr": "Jeu d’aventure classique (1995) avec voix – allemand ou anglais.",
-                        "it": "Avventura classica (1995) con voci – tedesco o inglese.",
-                        "rm": "Gieu d’aventura classic (1995) cun vusch – tudestg u englais."}}
+              "descs": {"de": "Abenteuer-Klassiker von 1995.",
+                        "en": "Classic adventure (1995) with speech.",
+                        "fr": "Aventure classique (1995) avec voix.",
+                        "it": "Avventura classica (1995) con voci.",
+                        "rm": "Aventura classica (1995) cun vusch."}}
 FOTAQ_DL = {"running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
 
 

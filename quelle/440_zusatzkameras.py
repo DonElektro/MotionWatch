@@ -23,7 +23,7 @@ class ExtraCam:
         self.writer = None; self.rec_name = ""; self.rec_info = None; self.last_motion = 0.0; self.streak = 0
         self.boxes = []; self.times = deque(maxlen=30); self.ftimes = deque(maxlen=31); self.n = 0; self.last_cleanup = 0.0
         self.raw = None; self.raw_t = 0.0; self.raw_until = 0.0        # 2.98.30: a clean picture for the panorama (317), only when asked
-        self.thread = threading.Thread(target=self.loop, daemon=True); self.thread.start()
+        self.thread = threading.Thread(target=self.loop, daemon=True, name=f"extracam-{idx}"); self.thread.start()   # 210 _main_opening
 
     def info(self):
         return {"n": self.idx, "id": self.spec, "label": self.label, "status": self.status, "res": self.res,
@@ -162,40 +162,186 @@ class ExtraCam:
         log_event("rec", f"Recording stopped: {name}")
 
 
-def cams_apply():
-    """Start / stop the extra camera threads so they match the settings."""
+# ---- 3.92.x: one sensor = one entry ----------------------------------------------------------------------------------------
+# Fehler des Besitzers (3.92.0, Pi 5): nach Simulator ein / aus stand «Pi camera 0» zweimal unter Kameras – die Hauptkamera
+# (rot, «Camera __init__ sequence did not complete») und eine Zusatzkamera auf demselben Sensor (grün). Ein Pi-Sensor lässt
+# sich nur einmal öffnen; wer zuerst kommt, gewinnt, die Hauptkamera versucht es ewig. Darum zählt hier nicht nur der Name
+# der Quelle, sondern der Sensor dahinter: «pi:N», ein interner Knoten «usb:N» des Pi (= die Pi-Kamera, 2.98.24) und
+# «auto» (= die Pi-Kamera, wenn keine USB-Kamera steckt). Die Hauptkamera hat immer Vorrang; im Simulator gehört ihr der
+# Sensor der echten Hauptkamera, die danach zurückkommt (sim_prev_source).
+_PIC_C = {"t": -1e9, "v": []}
+
+
+def _pi_cams_c():
+    """_pi_cams() with a 20 s cache (asked for every camera when the list changes)"""
+    if time.time() - _PIC_C["t"] > 20.0:
+        _PIC_C.update(t=time.time(), v=_pi_cams())
+    return _PIC_C["v"]
+
+
+def cam_sensor(spec):
+    """the camera chip behind a source: «pi:N» for a Pi camera (also for an internal node usb:N of the Pi, which open_source
+    turns into the Pi camera), else the source itself (usb:N, url:id, sim:N); "" for «auto» / nothing"""
+    spec = str(spec or "")
+    kind, _, arg = spec.partition(":")
+    if kind == "usb" and arg.isdigit() and _v4l_internal(int(arg)):
+        pis = _pi_cams_c()
+        return f"pi:{pis[0] if pis else 0}"
+    return "" if spec == "auto" else spec
+
+
+def cams_on():
+    """the extra cameras that may run (not switched off as a duplicate, cams_dedupe)"""
+    off = set(CFG.get("extra_cams_off") or [])
+    return [x for x in CFG.get("extra_cams") or [] if x not in off]
+
+
+def cam_auto_sensor():
+    """the sensor «auto» takes: what runs now, else (like open_source) a USB camera first, then the first Pi camera that no
+    extra camera has - all of them taken: the first one (the main camera has priority)"""
+    sid = str(STATE.get("source_id") or "")
+    if CFG.get("source") == "auto" and not CFG.get("sim_on") and sid.startswith(("usb:", "pi:")):
+        return cam_sensor(sid)
+    try:
+        if kw_usb_cams():                                  # 639zzi: plugged in USB cameras, found without opening them
+            return ""
+    except NameError:
+        pass
+    pis = _pi_cams_c()
+    if not pis:
+        return ""
+    ext = {cam_sensor(x) for x in cams_on()}
+    free = [n for n in pis if f"pi:{n}" not in ext]
+    return f"pi:{(free or pis)[0]}"
+
+
+def cam_main_sensors():
+    """the sensors that belong to the main camera: its setting, what runs now and - in the simulation - the real main camera
+    that comes back afterwards"""
+    specs = [CFG.get("source"), STATE.get("source_id")]
+    if CFG.get("sim_on"):
+        specs.append(CFG.get("sim_prev_source") or "auto")
+    out = set()
+    for sp in specs:
+        sp = str(sp or "")
+        out.add(cam_auto_sensor() if sp == "auto" else cam_sensor(sp))
+    out.discard("")
+    return out
+
+
+def cam_own_settings(spec):
+    """True when the owner has set something for exactly this extra camera (a role or a setting of its own) - then a duplicate
+    is only switched off, never removed. Same source as the main camera: its field of view belongs to the main camera."""
+    if str(CFG.get("kopf_ov") or "") == spec:              # role: the overview steers the head (162)
+        return True
+    if (CFG.get("cam_head") or {}).get(spec):              # 318: sits on the head
+        return True
+    if (CFG.get("cam_fov") or {}).get(spec) and spec not in (CFG.get("source"), CFG.get("sim_prev_source")) \
+            and spec not in cam_main_sensors():
+        return True                                        # 318: an own field of view
+    return False
+
+
+def cams_dedupe(why="start"):
+    """Self-heal (3.92.x): two entries on the same sensor. The main camera (it has the roles: detection, AI, recording) and
+    the older entry of the list stay. A later entry on the same sensor without own settings = an automatic duplicate: removed;
+    with own settings (cam_own_settings): only switched off (extra_cams_off, the card says so, ✕ removes it). A switched off
+    one whose sensor is free again comes back by itself. One log line. Returns the number of changes."""
+    mains = cam_main_sensors()
+    main_specs = {str(CFG.get("source") or ""), str(STATE.get("source_id") or "")}
+    if CFG.get("sim_on"):
+        main_specs.add(str(CFG.get("sim_prev_source") or ""))
+    seen, keep, off, gone, offn, back = set(mains), [], [], [], [], []
+    was_off = set(CFG.get("extra_cams_off") or [])
+    for x in CFG.get("extra_cams") or []:
+        s = cam_sensor(x)
+        if x not in main_specs and (not s or s not in seen):
+            seen.add(s); keep.append(x)
+            if x in was_off:
+                back.append(x)
+            continue
+        if cam_own_settings(x):
+            keep.append(x); off.append(x)
+            if x not in was_off:
+                offn.append(x)
+        else:
+            gone.append(x)
+    if not (gone or offn or back):
+        return 0
+    CFG["extra_cams"] = keep; CFG["extra_cams_off"] = off
+    if CFG.get("sim_on") and isinstance((CFG.get("sim_prev_cams") or {}).get("cams"), list):
+        pc = dict(CFG["sim_prev_cams"])                     # in the simulation: the list that comes back afterwards too
+        o_ = (set(pc.get("off") or []) | set(offn)) - set(back)
+        pc["cams"] = [x for x in pc["cams"] if x not in gone]; pc["off"] = [x for x in pc["cams"] if x in o_]
+        CFG["sim_prev_cams"] = pc
+    save_settings()
+    parts = [f"{source_label(x)} ({x}) removed - no own settings" for x in gone] + \
+            [f"{source_label(x)} ({x}) switched off - it has own settings, remove it under Settings → Cameras" for x in offn]
+    if parts:
+        log_event("sys", f"Duplicate camera ({why}): same sensor as the main camera or an older entry - " + "; ".join(parts))
+    if back:
+        log_event("sys", "Extra camera on again (its sensor is free now): " + ", ".join(source_label(x) for x in back))
+    return len(gone) + len(offn) + len(back)
+
+
+def cams_apply(wait=0.0):
+    """Start / stop the extra camera threads so they match the settings. wait: seconds to wait until the stopped ones have
+    closed their camera (sim_set, open_source: before the main camera opens the same sensor)."""
+    mains = cam_main_sensors()                              # 3.92.x: by sensor, also «auto» = this Pi camera, also in the simulation
     main_ = {CFG.get("source"), STATE.get("source_id")}       # 2.98.31: also when the main camera is «auto» = this Pi camera
-    want = [x for x in CFG["extra_cams"] if x not in main_]   # 2.98.27: never the main camera a second time
+    want, seen = [], set(mains)
+    for x in cams_on():                                       # 2.98.27: never the main camera a second time
+        s = cam_sensor(x)
+        if x in main_ or (s and s in seen):
+            continue
+        seen.add(s); want.append(x)
+    closing = []
     for c in list(CAMS):
         if c.spec not in want:
-            CAMS.remove(c); threading.Thread(target=c.close, daemon=True).start()
+            CAMS.remove(c); t_ = threading.Thread(target=c.close, daemon=True); t_.start(); closing.append(t_)
     have = {c.spec for c in CAMS}
     used = {c.idx for c in CAMS}
     for spec in want:
         if spec not in have:
             idx = next(i for i in range(1, 99) if i not in used); used.add(idx)
             CAMS.append(ExtraCam(idx, spec))
+    end = time.time() + float(wait or 0.0)
+    for t_ in closing:
+        t_.join(max(0.0, end - time.time()))
+
+
+CAMS_OFF_STATUS = "off: same sensor as another camera"
 
 
 def cams_status(watch=None):
     main = {"n": 0, "id": STATE["source_id"] or CFG["source"], "label": STATE["source_label"] or source_label(CFG["source"]),
             "status": STATE["source_status"], "res": STATE["source_res"], "fps": STATE["fps"],
             "motion": bool(STATE["persons"] or STATE["candidates"]), "recording": STATE["recording"]}
-    return [main] + [c.info() for c in CAMS]
+    off = [{"n": 100 + i, "id": x, "label": source_label(x), "status": CAMS_OFF_STATUS, "res": "", "fps": 0.0, "motion": False,
+            "recording": False, "off": True} for i, x in enumerate(CFG.get("extra_cams_off") or []) if x in CFG["extra_cams"]]
+    return [main] + [c.info() for c in CAMS] + off
 
 
 def cams_add(spec):
     if not isinstance(spec, str) or not SRC_RE.match(spec) or spec == "auto":
         return False, "unknown source"
-    if spec == CFG.get("source") or spec == STATE.get("source_id"):
+    if spec == CFG.get("source") or spec == STATE.get("source_id") or (CFG.get("sim_on") and spec == CFG.get("sim_prev_source")):
         return False, "this is the main camera already"         # 2.98.27: a Pi camera can be open only once
     if spec.startswith("url:") and not find_ip_source(spec[4:]):
         return False, "unknown network camera"
     if spec in CFG["extra_cams"] or spec == STATE["source_id"]:
         return False, "this camera is already in use"
+    s = cam_sensor(spec)                                       # 3.92.x: the same sensor under another name (pi:0 = usb:<node> = auto)
+    if s and s in cam_main_sensors():
+        return False, "this is the main camera already"
+    if s and any(cam_sensor(x) == s for x in CFG["extra_cams"]):
+        return False, "this camera is already in use"
     if len(CFG["extra_cams"]) >= MAX_EXTRA:
         return False, f"maximum {MAX_EXTRA} extra cameras"
     CFG["extra_cams"] = CFG["extra_cams"] + [spec]
+    pc = CFG.get("sim_prev_cams") or {}
+    if CFG.get("sim_on") and not spec.startswith("sim:") and isinstance(pc.get("cams"), list) and spec not in pc["cams"]:
+        CFG["sim_prev_cams"] = dict(pc, cams=pc["cams"] + [spec])     # a real camera added in the simulation stays afterwards
     save_settings(); cams_apply(); log_event("sys", f"Extra camera added: {source_label(spec)}")
     return True, ""
 
@@ -204,6 +350,10 @@ def cams_remove(spec):
     if spec not in CFG["extra_cams"]:
         return False, "unknown source"
     CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x != spec]
+    CFG["extra_cams_off"] = [x for x in CFG.get("extra_cams_off") or [] if x != spec]
+    pc = CFG.get("sim_prev_cams") or {}
+    if CFG.get("sim_on") and isinstance(pc.get("cams"), list) and spec in pc["cams"]:
+        CFG["sim_prev_cams"] = dict(pc, cams=[x for x in pc["cams"] if x != spec], off=[x for x in pc.get("off") or [] if x != spec])
     save_settings(); cams_apply(); log_event("sys", f"Extra camera removed: {source_label(spec)}")
     return True, ""
 

@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-14 11:41",
+ "generated": "2026-11-14 13:43",
  "versions": [
   {
-   "version": "3.92.1",
-   "file": "webcam_bewegung_3_92_1.py",
+   "version": "3.92.2",
+   "file": "webcam_bewegung_3_92_2.py",
    "url": "",
-   "sha256": "72d84b051c62e0ec9c9d930cc93f991bc7994a09a29fd6122882fa6ec92e92c1",
-   "date": "2026-11-14 11:40",
-   "notes": "«Verschollen im Bergtal»: Spieltempo ⏩ 1× / 2× / 4× und ⏸ Pause (Spielesammlung GS-1.20).",
-   "size": 3889584,
-   "sig": "7f2378f45144c78d312027b9d847eda11c0379e008f8d4bcba54121baf01f0f002bc83f9c5164cbcf74c0fa1274ea3f193700c00a7e01bb0c386ff62d280b10d",
+   "sha256": "3b5e35cbf273cf62f3da1cf2a682e229ccaf9f8e47b4560ea37b40cd3e27e794",
+   "date": "2026-11-14 13:43",
+   "notes": "Zwei Teile. (1) Kameras: nach dem Trennen vom Simulator kommt genau die Kamera-Liste von vorher zurück – keine zweite «Pi camera 0» mehr, die die Hauptkamera blockiert («Camera __init__ sequence did not complete»); ein solches Doppel wird beim Start von selbst aufgeräumt. (2) Spielecke: alle Spiel-Kacheln mit kurzen, gleich langen Texten in fünf Sprachen, zwei Zeilen, gleich hohe Reihen (Spielesammlung GS-1.21).",
+   "size": 3893968,
+   "sig": "8c7838e455186f123fc5827ae8e08510e00b6b354060270577d997fbe154cd5ae497ece998631dba0b76cf7620dcef68a3ea4f9a8f7f20637244c03a0c698502",
    "data": {
-    "file": "moveeye_daten_3_92_1.zip",
+    "file": "moveeye_daten_3_92_2.zip",
     "url": "",
-    "sha256": "3f5417683b3bce42723b613be6c3bf327f5d4718efc8d1648b4361e2f8d1313c",
-    "size": 11470256,
-    "sig": "b904ffac17094dcb3fb938a9999e741a8648f11de7f8768438f4a4dbcb86bc783f7b920a1de043549a63323a7d5b88c41fee210168d77a4c6ba5f0d6b38cc908"
+    "sha256": "4bfa077536ceb3fa6a3a846e0f57fd0209c9e184b52c606df6e9b0bbf0de9564",
+    "size": 11487492,
+    "sig": "3528b4ab7abf0f798f390257ed1df81fa8d56ba8f0606c13966865d51454c1d1d977154d41bdf2244456f1d5b9c5fad0aa3ee3dbe8271887932df158d3a46006"
    }
   },
   {

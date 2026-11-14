@@ -9,13 +9,14 @@ display:block;text-align:center;padding:14px;border-radius:14px;text-decoration:
 # Spieltab: the game tiles (picture or emoji, name, short description, group headings) - ONE style for the public page /spiele
 # and the admin tab «Mehr → Spielecke» (TOOLS_PAGE, part 460). Colours come from tokens with the old /spiele colours as fallback.
 GAME_TILES_CSS = """.mwg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-@media (max-width:520px){.mwg{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.mwg a.c{display:block;background:var(--mwg-tile,#16263A);border-radius:14px;padding:14px;color:inherit;text-decoration:none;min-width:0;overflow-wrap:anywhere}
+.mwg a.c{display:flex;flex-direction:column;background:var(--mwg-tile,#16263A);border-radius:14px;padding:14px;color:inherit;text-decoration:none;min-width:0;overflow-wrap:anywhere}
 .mwg a.c:hover{filter:brightness(1.12)}.mwg a.c:active{transform:scale(.98)}
 .mwg .i{font-size:34px}.mwg .i img{width:56px;height:56px;border-radius:12px;object-fit:cover;display:block}
-.mwg .n{font-weight:700;margin:6px 0 2px}.mwg .d{font-size:13px;color:var(--mwg-mut,#9FB0C3)}
+.mwg .n{font-weight:700;margin:6px 0 2px}.mwg .d{font-size:13px;color:var(--mwg-mut,#9FB0C3);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+/* GS-1.20: die Kurzbeschreibung (games/kacheltexte.json, höchstens 40 Zeichen) hat höchstens 2 Zeilen, sonst «…»; die Kacheln einer Reihe sind gleich hoch (Raster dehnt) */
 .mwg .gh{grid-column:1/-1;font-weight:700;margin:14px 0 2px}
 .mwg .w{font-size:12px;font-weight:600;color:var(--mwg-warn,#E9A23B);margin-top:4px}
+@media (max-width:520px){.mwg{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.mwg a.c{padding:12px 10px}.mwg .d{font-size:12.5px;line-height:1.3}}
 """
 SPIELE_PAGE = SPIELE_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
@@ -880,6 +881,10 @@ def sim_set(on, who="web", confirm=False):
     if on:
         CFG["sim_prev_source"] = CFG["source"] if not str(CFG["source"]).startswith("sim:") else "auto"
         CFG["sim_prev_thermal"] = CFG["thermal_source"] if not str(CFG["thermal_source"]).startswith("sim:") else ""
+        # 3.92.x (Besitzer: after the simulation a second «Pi camera 0» held the sensor): the real extra cameras come back
+        # exactly like this, in their order (a real camera added / removed during the simulation changes this list too, 440)
+        CFG["sim_prev_cams"] = {"cams": [x for x in CFG["extra_cams"] if not str(x).startswith("sim:")],
+                                "off": [x for x in CFG.get("extra_cams_off") or [] if not str(x).startswith("sim:")]}
         simprof_on()                                    # 2.95.86: own settings for the simulation
         CFG["sim_on"] = True; CFG["source"] = "sim:0"; CFG["thermal_source"] = "sim:thermal"
         if "sim:1" not in CFG["extra_cams"] and len(CFG["extra_cams"]) < MAX_EXTRA:
@@ -890,7 +895,13 @@ def sim_set(on, who="web", confirm=False):
         CFG["sim_on"] = False
         simprof_off()                                   # 2.95.86: the real settings back, question about the changes
         CFG["source"] = CFG["sim_prev_source"] or "auto"; CFG["thermal_source"] = CFG["sim_prev_thermal"] or ""
-        CFG["extra_cams"] = [x for x in CFG["extra_cams"] if not x.startswith("sim:")]
+        pc = CFG.get("sim_prev_cams") or {}
+        if isinstance(pc.get("cams"), list):            # 3.92.x: exactly the list from before the simulation (same order, same slots)
+            CFG["extra_cams"] = [x for x in pc["cams"] if isinstance(x, str) and SRC_RE.match(x) and x != "auto"][:MAX_EXTRA]
+            CFG["extra_cams_off"] = [x for x in pc.get("off") or [] if x in CFG["extra_cams"]]
+        else:                                           # switched on by an older MoveEye: as before
+            CFG["extra_cams"] = [x for x in CFG["extra_cams"] if not x.startswith("sim:")]
+        CFG["sim_prev_cams"] = {}
         CFG["sensors"] = [x for x in CFG["sensors"] if not x["src"].startswith("sim:")]
         SIM.update(ok=False, msg="off", off_t=time.time())
         QUICK["rec_until"] = 0.0                            # forget what happened in the simulation
@@ -901,9 +912,13 @@ def sim_set(on, who="web", confirm=False):
         log_event("sys", f"SIMULATION OFF ({who}) - back to the real hardware")
     save_settings()
     try:
-        cams_apply()
-    except Exception:
-        pass
+        if not on:
+            cams_dedupe("simulation off")                  # 3.92.x: never two entries on the real sensor
+        # 3.92.x: the simulator cameras (and anything on the sensor of the real main camera) are closed FIRST, then the
+        # main camera opens the real one - before, both started at the same time and the extra camera could win the sensor
+        cams_apply(wait=0.0 if on else 5.0)
+    except Exception as e:
+        log_event("sys", f"Extra cameras: {e}"[:160])
     if w is not None:
         w.request_source(CFG["source"])
     return True, ""

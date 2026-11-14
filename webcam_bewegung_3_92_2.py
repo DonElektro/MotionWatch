@@ -23,6 +23,10 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.92.2: Zwei Teile. (1) Kameras: nach dem Trennen vom Simulator kommt genau die Kamera-Liste von vorher zurück – keine
+    zweite «Pi camera 0» mehr, die die Hauptkamera blockiert («Camera __init__ sequence did not complete»); ein solches Doppel
+    wird beim Start von selbst aufgeräumt. (2) Spielecke: alle Spiel-Kacheln mit kurzen, gleich langen Texten in fünf Sprachen,
+    zwei Zeilen, gleich hohe Reihen (Spielesammlung GS-1.21).
   * 3.92.1: «Verschollen im Bergtal»: Spieltempo ⏩ 1× / 2× / 4× und ⏸ Pause (Spielesammlung GS-1.20).
   * 3.92.0: Design «Klar», Etappe 1: ruhigere Kopfzeile mit aufklappbarer Statuszeile, klarere Gast-Seiten (ein Knopf «Digitaler
     Rucksack»), aufgeräumte Menüs in Web und Fenster; «Mehr» in vier Gruppen (Unterwegs · Spielen · Hilfe & Drucken · Gerät).
@@ -121,8 +125,6 @@ Features
     andere tritt bei. Die Partie läuft über dein MoveEye, auch für Gäste, solange «Spiele freigeben» an ist. Remis anbieten, Zug
     zurück auf Anfrage, Revanche, Zuschauen mit dem Code; nach einer Verbindungspause geht es von selbst weiter. Spielesammlung
     einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
-  * 3.76.1: Spiel «Was nun?»: Im Hochformat reagiert das Spiel jetzt genau dort, wo man tippt (das Bild verschob sich vorher
-    nach dem Antippen leicht). Spielesammlung einmal neu laden: Mehr → Spielen → Spielecke → «Installieren / aktualisieren»
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -131,10 +133,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_92_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_92_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_92_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_92_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_92_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_92_2.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -151,7 +153,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.92.1"
+APP_VERSION = "3.92.2"
 
 
 def default_data_dir():
@@ -280,8 +282,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_92_1.zip"
-ZD_SHA256 = "3f5417683b3bce42723b613be6c3bf327f5d4718efc8d1648b4361e2f8d1313c"
+ZD_FILE = "moveeye_daten_3_92_2.zip"
+ZD_SHA256 = "4bfa077536ceb3fa6a3a846e0f57fd0209c9e184b52c606df6e9b0bbf0de9564"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -553,6 +555,8 @@ CFG = {
 	"env_on": True, "env_offset": 0.0,
 	"presence_hosts": [], "away_after": 10.0,
 	"extra_cams": [],
+	"extra_cams_off": [],
+	"sim_prev_cams": {},
 	"relays_on": True,
 	"relay1_off_done": True,
 
@@ -2577,6 +2581,9 @@ def apply_settings(data):
 		ZONES[:] = [z for z in (_clean_zone(x, i) for i, x in enumerate(zl[:MAX_ZONES])) if z]
 	CFG["presence_hosts"] = [h for h in CFG["presence_hosts"] if isinstance(h, str) and _HOST_RE.match(h)][:8]
 	CFG["extra_cams"] = [x for x in CFG["extra_cams"] if isinstance(x, str) and SRC_RE.match(x) and x != "auto"][:MAX_EXTRA]
+	CFG["extra_cams_off"] = [x for x in CFG.get("extra_cams_off") or [] if x in CFG["extra_cams"]]
+	if not isinstance((CFG.get("sim_prev_cams") or {}).get("cams"), list):
+		CFG["sim_prev_cams"] = {}
 	CFG["fleet"] = [d for d in CFG["fleet"] if isinstance(d, dict) and isinstance(d.get("url"), str) and _FLEET_URL.match(d["url"])
 					and isinstance(d.get("id"), str)][:12]
 	if CFG["notify_type"] not in NOTIFY_TYPES:
@@ -19548,15 +19555,17 @@ def open_source(spec, thermal=False):
 					return src, f"usb:{idx}", f"USB camera {idx}", ""
 			pis = _pi_cams()
 			if pis:
-				sp_ = f"pi:{pis[0]}"
-				if sp_ in CFG.get("extra_cams", []):
-					CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x != sp_]; save_settings()
-					log_event("sys", f"{source_label(sp_)}: removed from the extra cameras - it is the main camera")
-					cams_apply(); time.sleep(2.0)
-				return PiCamSource(pis[0]), sp_, source_label(sp_), ""
+				ext = {cam_sensor(x) for x in cams_on()}
+				free = [n for n in pis if f"pi:{n}" not in ext]
+				n_ = (free or pis)[0]; sp_ = f"pi:{n_}"
+				if not free:
+					cams_dedupe("main camera"); cams_apply(wait=5.0)
+				return _pi_open(n_), sp_, source_label(sp_), ""
 			return None, spec, label, "no working camera found (ls /dev/video*)"
 		if kind == "usb" and not thermal and _v4l_internal(int(arg)):
 			pis = [n for n in _pi_cams() if f"pi:{n}" not in {c.spec for c in CAMS}]
+			if not _main_opening():
+				pis = [n for n in pis if f"pi:{n}" not in cam_main_sensors()]
 			if pis:
 				log_event("sys", f"/dev/video{arg} is not a camera (internal node of the Raspberry Pi) - using the Pi camera {pis[0]}")
 				return PiCamSource(pis[0]), f"pi:{pis[0]}", source_label(f"pi:{pis[0]}"), ""
@@ -19565,20 +19574,11 @@ def open_source(spec, thermal=False):
 			src = (_open_usb(int(arg), raw=True) or _open_usb(int(arg))) if thermal else _open_usb(int(arg))
 			return (src, spec, label, "") if src else (None, spec, label, f"no picture from /dev/video{arg}")
 		if kind == "pi":
-			if not thermal and spec in CFG.get("extra_cams", []) and CFG.get("source") in (spec, "auto"):
+			if not thermal and _main_opening() and spec in cam_main_sensors() and any(cam_sensor(x) == spec for x in cams_on()):
 
-				CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x != spec]; save_settings()
-				log_event("sys", f"{label}: removed from the extra cameras - it is the main camera now")
-				cams_apply(); time.sleep(2.0)
-			try:
-				return PiCamSource(int(arg)), spec, label, ""
-			except Exception as e:
-				if any(k in str(e).lower() for k in ("busy", "acquire", "sequence did not complete", "in use")):
-					if any(c.spec == spec for c in CAMS):
-						cams_apply()
-					time.sleep(3.0)
-					return PiCamSource(int(arg)), spec, label, ""
-				raise
+
+				cams_dedupe("main camera"); cams_apply(wait=5.0)
+			return _pi_open(int(arg)), spec, label, ""
 		if kind == "senxor":
 			if not thermal:
 				return None, spec, label, "the Thermal-90 can only be used as thermal camera"
@@ -19594,6 +19594,24 @@ def open_source(spec, thermal=False):
 		return None, spec, label, "picamera2 not installed (sudo apt install python3-picamera2)"
 	except Exception as e:
 		return None, spec, label, str(e)[:160]
+
+
+def _main_opening():
+	""
+	return not threading.current_thread().name.startswith(("extracam", "kwprev"))
+
+
+def _pi_open(n):
+	""
+	try:
+		return PiCamSource(n)
+	except Exception as e:
+		if any(k in str(e).lower() for k in ("busy", "acquire", "sequence did not complete", "in use")):
+			if _main_opening() and any(cam_sensor(c.spec) == f"pi:{n}" for c in CAMS) and f"pi:{n}" in cam_main_sensors():
+				cams_apply(wait=5.0)
+			time.sleep(3.0)
+			return PiCamSource(n)
+		raise
 
 
 def _v4l_name(idx):
@@ -28536,11 +28554,10 @@ def _extra_cams_boot():
 		if WATCH_REF.get("w") is not None:
 			time.sleep(3.0)
 			try:
-				main_ = {CFG.get("source"), STATE.get("source_id")}
-				if any(x in main_ for x in CFG.get("extra_cams", [])):
-					CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x not in main_]; save_settings()
-					log_event("sys", "Extra cameras: the main camera was also in the list - removed there")
-				if CFG.get("extra_cams") and not CAMS and not toolmode_on():
+
+
+				cams_dedupe("start")
+				if cams_on() and not CAMS and not toolmode_on():
 					cams_apply()
 			except Exception as e:
 				print(f"extra cameras: {e}")
@@ -28553,7 +28570,7 @@ threading.Thread(target=_extra_cams_boot, daemon=True, name="extracams-boot").st
 
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.20", "file": "games/MotionWatch_Spiele.zip", "size": 16015517, "sha256": "46f3887ba9b7899c4453868b49a1c7f950423331ae64bd793f564c87e91e8b6a"}
+GAMES_PKG = {"version": "GS-1.21", "file": "games/MotionWatch_Spiele.zip", "size": 16012746, "sha256": "6568dd7dda36239707d6b57d7ca9400f52a6d1ff250b224e18eb8619e1ad7507"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
@@ -29512,15 +29529,7 @@ display:block;text-align:center;padding:14px;border-radius:14px;text-decoration:
 <h1>🎲 Spielecke</h1>__PARTY__<p>__NOTE__</p><div class="g mwg">__GAMES__</div></main></body></html>"""
 
 
-GAME_TILES_CSS = """.mwg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-@media (max-width:520px){.mwg{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.mwg a.c{display:block;background:var(--mwg-tile,#16263A);border-radius:14px;padding:14px;color:inherit;text-decoration:none;min-width:0;overflow-wrap:anywhere}
-.mwg a.c:hover{filter:brightness(1.12)}.mwg a.c:active{transform:scale(.98)}
-.mwg .i{font-size:34px}.mwg .i img{width:56px;height:56px;border-radius:12px;object-fit:cover;display:block}
-.mwg .n{font-weight:700;margin:6px 0 2px}.mwg .d{font-size:13px;color:var(--mwg-mut,#9FB0C3)}
-.mwg .gh{grid-column:1/-1;font-weight:700;margin:14px 0 2px}
-.mwg .w{font-size:12px;font-weight:600;color:var(--mwg-warn,#E9A23B);margin-top:4px}
-"""
+GAME_TILES_CSS = _zd('340_spiele_seiten/GAME_TILES_CSS', "")
 SPIELE_PAGE = SPIELE_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 
 
@@ -30024,6 +30033,10 @@ def sim_set(on, who="web", confirm=False):
 	if on:
 		CFG["sim_prev_source"] = CFG["source"] if not str(CFG["source"]).startswith("sim:") else "auto"
 		CFG["sim_prev_thermal"] = CFG["thermal_source"] if not str(CFG["thermal_source"]).startswith("sim:") else ""
+
+
+		CFG["sim_prev_cams"] = {"cams": [x for x in CFG["extra_cams"] if not str(x).startswith("sim:")],
+								"off": [x for x in CFG.get("extra_cams_off") or [] if not str(x).startswith("sim:")]}
 		simprof_on()
 		CFG["sim_on"] = True; CFG["source"] = "sim:0"; CFG["thermal_source"] = "sim:thermal"
 		if "sim:1" not in CFG["extra_cams"] and len(CFG["extra_cams"]) < MAX_EXTRA:
@@ -30034,7 +30047,13 @@ def sim_set(on, who="web", confirm=False):
 		CFG["sim_on"] = False
 		simprof_off()
 		CFG["source"] = CFG["sim_prev_source"] or "auto"; CFG["thermal_source"] = CFG["sim_prev_thermal"] or ""
-		CFG["extra_cams"] = [x for x in CFG["extra_cams"] if not x.startswith("sim:")]
+		pc = CFG.get("sim_prev_cams") or {}
+		if isinstance(pc.get("cams"), list):
+			CFG["extra_cams"] = [x for x in pc["cams"] if isinstance(x, str) and SRC_RE.match(x) and x != "auto"][:MAX_EXTRA]
+			CFG["extra_cams_off"] = [x for x in pc.get("off") or [] if x in CFG["extra_cams"]]
+		else:
+			CFG["extra_cams"] = [x for x in CFG["extra_cams"] if not x.startswith("sim:")]
+		CFG["sim_prev_cams"] = {}
 		CFG["sensors"] = [x for x in CFG["sensors"] if not x["src"].startswith("sim:")]
 		SIM.update(ok=False, msg="off", off_t=time.time())
 		QUICK["rec_until"] = 0.0
@@ -30045,9 +30064,13 @@ def sim_set(on, who="web", confirm=False):
 		log_event("sys", f"SIMULATION OFF ({who}) - back to the real hardware")
 	save_settings()
 	try:
-		cams_apply()
-	except Exception:
-		pass
+		if not on:
+			cams_dedupe("simulation off")
+
+
+		cams_apply(wait=0.0 if on else 5.0)
+	except Exception as e:
+		log_event("sys", f"Extra cameras: {e}"[:160])
 	if w is not None:
 		w.request_source(CFG["source"])
 	return True, ""
@@ -33850,6 +33873,7 @@ class MotionWatch:
 		global THERMAL, AUDIO, BACKUP
 		self.timelapse = Timelapse(); THERMAL = ThermalCam()
 		try:
+			cams_dedupe("start")
 			cams_apply()
 		except Exception as e:
 			log_event("sys", f"Extra cameras: {e}"[:160])
@@ -33947,8 +33971,9 @@ class MotionWatch:
 		""
 		CFG["source"] = spec; save_settings()
 		active = STATE["source_id"]
-		if self.cap is not None and (spec == active or (spec == "auto" and active.startswith("usb:"))):
+		if self.cap is not None and (spec == active or (spec == "auto" and active.startswith(("usb:", "pi:")))):
 			return
+
 		self._open_gen += 1
 		self._start_opener(spec)
 
@@ -33962,7 +33987,16 @@ class MotionWatch:
 			res = open_source(spec)
 			with self._open_lock:
 				if gen == self._open_gen:
-					self._opened = res; self._opening = False
+					prev = self._opened
+					if prev is not None and prev[0] is not None:
+
+
+
+						if res[0] is not None and res[0] is not prev[0]:
+							res[0].release()
+					else:
+						self._opened = res
+					self._opening = False
 				elif res[0] is not None:
 					res[0].release()
 		threading.Thread(target=work, daemon=True).start()
@@ -34610,7 +34644,7 @@ class MotionWatch:
 					ok_nc, buf_nc = cv2.imencode(".jpg", self.frame_out, [cv2.IMWRITE_JPEG_QUALITY, 70])
 					if ok_nc:
 						self.jpeg = buf_nc.tobytes(); self.jpeg_seq += 1
-				if not self._opening and time.time() >= self._retry_at:
+				if not self._opening and self._opened is None and time.time() >= self._retry_at:
 					self._start_opener(CFG["source"])
 				continue
 			if self._switch_fail_until and time.time() >= self._switch_fail_until:
@@ -34618,7 +34652,7 @@ class MotionWatch:
 				if STATE["source_status"].startswith(("switch failed", "simulator camera")):
 					STATE["source_status"] = "connected"
 			if (CFG["sim_on"] and str(CFG["source"]).startswith("sim:") and not str(STATE.get("source_id", "")).startswith("sim:")
-					and not self._opening and time.time() >= self._sim_retry_at):
+					and not self._opening and self._opened is None and time.time() >= self._sim_retry_at):
 				self._sim_retry_at = time.time() + 10.0
 				self._open_gen += 1; self._start_opener(CFG["source"], quiet=True)
 			ok, frame = self.cap.read()
@@ -39571,7 +39605,7 @@ class ExtraCam:
 		self.writer = None; self.rec_name = ""; self.rec_info = None; self.last_motion = 0.0; self.streak = 0
 		self.boxes = []; self.times = deque(maxlen=30); self.ftimes = deque(maxlen=31); self.n = 0; self.last_cleanup = 0.0
 		self.raw = None; self.raw_t = 0.0; self.raw_until = 0.0
-		self.thread = threading.Thread(target=self.loop, daemon=True); self.thread.start()
+		self.thread = threading.Thread(target=self.loop, daemon=True, name=f"extracam-{idx}"); self.thread.start()
 
 	def info(self):
 		return {"n": self.idx, "id": self.spec, "label": self.label, "status": self.status, "res": self.res,
@@ -39710,40 +39744,186 @@ class ExtraCam:
 		log_event("rec", f"Recording stopped: {name}")
 
 
-def cams_apply():
+
+
+
+
+
+
+
+_PIC_C = {"t": -1e9, "v": []}
+
+
+def _pi_cams_c():
 	""
+	if time.time() - _PIC_C["t"] > 20.0:
+		_PIC_C.update(t=time.time(), v=_pi_cams())
+	return _PIC_C["v"]
+
+
+def cam_sensor(spec):
+	"""
+"""
+	spec = str(spec or "")
+	kind, _, arg = spec.partition(":")
+	if kind == "usb" and arg.isdigit() and _v4l_internal(int(arg)):
+		pis = _pi_cams_c()
+		return f"pi:{pis[0] if pis else 0}"
+	return "" if spec == "auto" else spec
+
+
+def cams_on():
+	""
+	off = set(CFG.get("extra_cams_off") or [])
+	return [x for x in CFG.get("extra_cams") or [] if x not in off]
+
+
+def cam_auto_sensor():
+	"""
+"""
+	sid = str(STATE.get("source_id") or "")
+	if CFG.get("source") == "auto" and not CFG.get("sim_on") and sid.startswith(("usb:", "pi:")):
+		return cam_sensor(sid)
+	try:
+		if kw_usb_cams():
+			return ""
+	except NameError:
+		pass
+	pis = _pi_cams_c()
+	if not pis:
+		return ""
+	ext = {cam_sensor(x) for x in cams_on()}
+	free = [n for n in pis if f"pi:{n}" not in ext]
+	return f"pi:{(free or pis)[0]}"
+
+
+def cam_main_sensors():
+	"""
+"""
+	specs = [CFG.get("source"), STATE.get("source_id")]
+	if CFG.get("sim_on"):
+		specs.append(CFG.get("sim_prev_source") or "auto")
+	out = set()
+	for sp in specs:
+		sp = str(sp or "")
+		out.add(cam_auto_sensor() if sp == "auto" else cam_sensor(sp))
+	out.discard("")
+	return out
+
+
+def cam_own_settings(spec):
+	"""
+"""
+	if str(CFG.get("kopf_ov") or "") == spec:
+		return True
+	if (CFG.get("cam_head") or {}).get(spec):
+		return True
+	if (CFG.get("cam_fov") or {}).get(spec) and spec not in (CFG.get("source"), CFG.get("sim_prev_source")) \
+			and spec not in cam_main_sensors():
+		return True
+	return False
+
+
+def cams_dedupe(why="start"):
+	"""
+
+
+"""
+	mains = cam_main_sensors()
+	main_specs = {str(CFG.get("source") or ""), str(STATE.get("source_id") or "")}
+	if CFG.get("sim_on"):
+		main_specs.add(str(CFG.get("sim_prev_source") or ""))
+	seen, keep, off, gone, offn, back = set(mains), [], [], [], [], []
+	was_off = set(CFG.get("extra_cams_off") or [])
+	for x in CFG.get("extra_cams") or []:
+		s = cam_sensor(x)
+		if x not in main_specs and (not s or s not in seen):
+			seen.add(s); keep.append(x)
+			if x in was_off:
+				back.append(x)
+			continue
+		if cam_own_settings(x):
+			keep.append(x); off.append(x)
+			if x not in was_off:
+				offn.append(x)
+		else:
+			gone.append(x)
+	if not (gone or offn or back):
+		return 0
+	CFG["extra_cams"] = keep; CFG["extra_cams_off"] = off
+	if CFG.get("sim_on") and isinstance((CFG.get("sim_prev_cams") or {}).get("cams"), list):
+		pc = dict(CFG["sim_prev_cams"])
+		o_ = (set(pc.get("off") or []) | set(offn)) - set(back)
+		pc["cams"] = [x for x in pc["cams"] if x not in gone]; pc["off"] = [x for x in pc["cams"] if x in o_]
+		CFG["sim_prev_cams"] = pc
+	save_settings()
+	parts = [f"{source_label(x)} ({x}) removed - no own settings" for x in gone] + \
+			[f"{source_label(x)} ({x}) switched off - it has own settings, remove it under Settings → Cameras" for x in offn]
+	if parts:
+		log_event("sys", f"Duplicate camera ({why}): same sensor as the main camera or an older entry - " + "; ".join(parts))
+	if back:
+		log_event("sys", "Extra camera on again (its sensor is free now): " + ", ".join(source_label(x) for x in back))
+	return len(gone) + len(offn) + len(back)
+
+
+def cams_apply(wait=0.0):
+	"""
+"""
+	mains = cam_main_sensors()
 	main_ = {CFG.get("source"), STATE.get("source_id")}
-	want = [x for x in CFG["extra_cams"] if x not in main_]
+	want, seen = [], set(mains)
+	for x in cams_on():
+		s = cam_sensor(x)
+		if x in main_ or (s and s in seen):
+			continue
+		seen.add(s); want.append(x)
+	closing = []
 	for c in list(CAMS):
 		if c.spec not in want:
-			CAMS.remove(c); threading.Thread(target=c.close, daemon=True).start()
+			CAMS.remove(c); t_ = threading.Thread(target=c.close, daemon=True); t_.start(); closing.append(t_)
 	have = {c.spec for c in CAMS}
 	used = {c.idx for c in CAMS}
 	for spec in want:
 		if spec not in have:
 			idx = next(i for i in range(1, 99) if i not in used); used.add(idx)
 			CAMS.append(ExtraCam(idx, spec))
+	end = time.time() + float(wait or 0.0)
+	for t_ in closing:
+		t_.join(max(0.0, end - time.time()))
+
+
+CAMS_OFF_STATUS = "off: same sensor as another camera"
 
 
 def cams_status(watch=None):
 	main = {"n": 0, "id": STATE["source_id"] or CFG["source"], "label": STATE["source_label"] or source_label(CFG["source"]),
 			"status": STATE["source_status"], "res": STATE["source_res"], "fps": STATE["fps"],
 			"motion": bool(STATE["persons"] or STATE["candidates"]), "recording": STATE["recording"]}
-	return [main] + [c.info() for c in CAMS]
+	off = [{"n": 100 + i, "id": x, "label": source_label(x), "status": CAMS_OFF_STATUS, "res": "", "fps": 0.0, "motion": False,
+			"recording": False, "off": True} for i, x in enumerate(CFG.get("extra_cams_off") or []) if x in CFG["extra_cams"]]
+	return [main] + [c.info() for c in CAMS] + off
 
 
 def cams_add(spec):
 	if not isinstance(spec, str) or not SRC_RE.match(spec) or spec == "auto":
 		return False, "unknown source"
-	if spec == CFG.get("source") or spec == STATE.get("source_id"):
+	if spec == CFG.get("source") or spec == STATE.get("source_id") or (CFG.get("sim_on") and spec == CFG.get("sim_prev_source")):
 		return False, "this is the main camera already"
 	if spec.startswith("url:") and not find_ip_source(spec[4:]):
 		return False, "unknown network camera"
 	if spec in CFG["extra_cams"] or spec == STATE["source_id"]:
 		return False, "this camera is already in use"
+	s = cam_sensor(spec)
+	if s and s in cam_main_sensors():
+		return False, "this is the main camera already"
+	if s and any(cam_sensor(x) == s for x in CFG["extra_cams"]):
+		return False, "this camera is already in use"
 	if len(CFG["extra_cams"]) >= MAX_EXTRA:
 		return False, f"maximum {MAX_EXTRA} extra cameras"
 	CFG["extra_cams"] = CFG["extra_cams"] + [spec]
+	pc = CFG.get("sim_prev_cams") or {}
+	if CFG.get("sim_on") and not spec.startswith("sim:") and isinstance(pc.get("cams"), list) and spec not in pc["cams"]:
+		CFG["sim_prev_cams"] = dict(pc, cams=pc["cams"] + [spec])
 	save_settings(); cams_apply(); log_event("sys", f"Extra camera added: {source_label(spec)}")
 	return True, ""
 
@@ -39752,6 +39932,10 @@ def cams_remove(spec):
 	if spec not in CFG["extra_cams"]:
 		return False, "unknown source"
 	CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x != spec]
+	CFG["extra_cams_off"] = [x for x in CFG.get("extra_cams_off") or [] if x != spec]
+	pc = CFG.get("sim_prev_cams") or {}
+	if CFG.get("sim_on") and isinstance(pc.get("cams"), list) and spec in pc["cams"]:
+		CFG["sim_prev_cams"] = dict(pc, cams=[x for x in pc["cams"] if x != spec], off=[x for x in pc.get("off") or [] if x != spec])
 	save_settings(); cams_apply(); log_event("sys", f"Extra camera removed: {source_label(spec)}")
 	return True, ""
 
@@ -50150,7 +50334,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.92.1")
+		self.root.title("MoveEye 3.92.2")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -50528,7 +50712,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.92.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.92.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -57759,7 +57943,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 302
+INFO_PARTS = 303
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -89024,13 +89208,13 @@ FOTAQ_OLD_SHA = {FOTAQ_ENGINE_OLD["sha256"]} if FOTAQ_NEW else set()
 FOTAQ_MAX_BYTES = 400 * 1024 * 1024
 FOTAQ_GAME = {"dir": "fotaq", "start": "start.html", "icon": "thumb.svg", "input": "keys",
 			  "name": "Flight of the Amazon Queen",
-			  "desc": "Abenteuer-Klassiker (1995) mit Sprachausgabe – Deutsch oder Englisch.",
+			  "desc": "Abenteuer-Klassiker von 1995.",
 			  "names": {L: "Flight of the Amazon Queen" for L in ("de", "en", "fr", "it", "rm")},
-			  "descs": {"de": "Abenteuer-Klassiker (1995) mit Sprachausgabe – Deutsch oder Englisch.",
-						"en": "Classic adventure (1995) with speech – German or English.",
-						"fr": "Jeu d’aventure classique (1995) avec voix – allemand ou anglais.",
-						"it": "Avventura classica (1995) con voci – tedesco o inglese.",
-						"rm": "Gieu d’aventura classic (1995) cun vusch – tudestg u englais."}}
+			  "descs": {"de": "Abenteuer-Klassiker von 1995.",
+						"en": "Classic adventure (1995) with speech.",
+						"fr": "Aventure classique (1995) avec voix.",
+						"it": "Avventura classica (1995) con voci.",
+						"rm": "Aventura classica (1995) cun vusch."}}
 FOTAQ_DL = {"running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
 
 
@@ -90573,31 +90757,31 @@ FS_GAMES = {
 		"file": {"name": "fspiele-angst-1.zip", "size": 37087772, "sha256": "ddd557dde9326dc1e0ddb1e072cfd07950a716c3338ab164fe8e7dc103319d1c", "unpacked": 37063450},
 		"licence": "CC0 · Nicky Case, Monplaisir · Deutsch: Jonas Reich",
 		"tile": _fs_tile("fs-angst", "index.html", "touch", "Abenteuer mit Angst", (
-			"Interaktive Geschichte: Du spielst die Angst eines Menschen. Deutsch, etwa 30 Minuten, mit Ton.",
-			"Interactive story: you play a human’s anxiety. In German, about 30 minutes, with sound.",
-			"Histoire interactive : tu joues l’anxiété d’un humain. En allemand, env. 30 minutes, avec son.",
-			"Storia interattiva: interpreti l’ansia di una persona. In tedesco, circa 30 minuti, con audio.",
-			"Istorgia interactiva: ti giogas la tema d’in uman. Tudestg, var 30 minutas, cun tun."), (
+			"Geschichte: du spielst die Angst.",
+			"Story: you play the anxiety.",
+			"Histoire : tu joues l’anxiété.",
+			"Storia: interpreti l’ansia.",
+			"Istorgia: ti giogas la tema."), (
 			"Ab ca. 12 Jahren, mit Kraftausdrücken", "From about age 12, with swearing", "Dès 12 ans env., avec des gros mots",
 			"Da circa 12 anni, con parolacce", "A partir da ca. 12 onns, cun pleds groppos"))},
 	"fs-heroine": {
 		"file": {"name": "fspiele-heroine-1.zip", "size": 41254926, "sha256": "c9163f574b9d575f774b857f5e8627a432f2f84abe784fe47deb2cb2a8d286ff", "unpacked": 41241720},
 		"licence": "GPL v3+ / CC-BY-SA 3.0 · Clint Bellanger · Musik: Yubatake (CC-BY 3.0)",
 		"tile": _fs_tile("fs-heroine", "start.html", "touch", "Heroine Dusk", (
-			"Verlies-Rollenspiel im Retro-Stil: tippen zum Gehen, Kämpfen, Zaubern. Englisch, wenig Text.",
-			"Retro dungeon crawl: tap to walk, fight and cast spells. English, little text.",
-			"Exploration de donjon rétro : toucher pour marcher, combattre, lancer des sorts. Anglais, peu de texte.",
-			"Dungeon crawl rétro: tocca per camminare, combattere, lanciare incantesimi. Inglese, poco testo.",
-			"Gieu da rollas retro en il tschaler: tutgar per ir, cumbatter e striunar. Englais, pauc text."))},
+			"Retro-Rollenspiel im Verlies (Englisch).",
+			"Retro dungeon adventure (English).",
+			"Jeu de rôle rétro (anglais).",
+			"Gioco di ruolo retrò (inglese).",
+			"Gieu da rollas retro (englais)."))},
 	"fs-hexgl": {
 		"file": {"name": "fspiele-hexgl-1.zip", "size": 15373699, "sha256": "dc1d8058dae4f22b457ace5f37314ae99603e53b2c3581cc040461ac1c349e5b", "unpacked": 15352741},
 		"licence": "MIT / CC BY-NC 3.0 · Thibaut Despoulain (BKcore)",
 		"tile": _fs_tile("fs-hexgl", "index.html", "touch", "HexGL", (
-			"Futuristisches 3D-Rennen: links lenken, rechts Gas. Handy quer halten. Englisch, wenig Text.",
-			"Futuristic 3D racing: steer on the left, accelerate on the right. Hold the phone sideways. English, little text.",
-			"Course 3D futuriste : diriger à gauche, accélérer à droite. Tenir le téléphone à l’horizontale. Anglais, peu de texte.",
-			"Corsa 3D futuristica: sterza a sinistra, accelera a destra. Tieni il telefono in orizzontale. Inglese, poco testo.",
-			"Cursa 3D futuristica: manischar a sanestra, gas a dretga. Tegnair il telefonin a travers. Englais, pauc text."))},
+			"3D-Rennen, Handy quer (Englisch).",
+			"3D racing, phone sideways (English).",
+			"Course 3D en paysage (anglais).",
+			"Corsa 3D in orizzontale (inglese).",
+			"Cursa 3D a travers (englais)."))},
 }
 FS_DL = {"running": False, "id": "", "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
 FS_HIDE = ("fspiel.ok", "fspiel.ok.new")
@@ -102074,6 +102258,96 @@ lupe_selftest = _zd_fn('639zzzl_lupe/lupe_selftest()')
 
 
 SELFTEST_EXTRA.append(("Magnifier «🔍 Lupe» in the live picture (639zzzl)", lupe_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_HX_KAMDOPP = _zd_hxk('639zzzm_kamera_doppelt/HX_KAMDOPP', [
+	(CAMS_OFF_STATUS, 'aus: derselbe Sensor wie eine andere Kamera'),
+])
+for _k, _v in _HX_KAMDOPP.items():
+	DE.setdefault(_k, _v[0])
+	for _i, _L in enumerate(("fr", "it", "rm")):
+		TRX[_L].setdefault(_k, _v[_i + 1])
+
+
+
+
+kamdopp_selftest = _zd_fn('639zzzm_kamera_doppelt/kamdopp_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("One sensor = one camera entry, the cameras after the simulation (639zzzm)", kamdopp_selftest))
 if __name__ == "__main__":
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")

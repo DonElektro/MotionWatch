@@ -42,31 +42,31 @@ FS_GAMES = {
         "file": {"name": "fspiele-angst-1.zip", "size": 37087772, "sha256": "ddd557dde9326dc1e0ddb1e072cfd07950a716c3338ab164fe8e7dc103319d1c", "unpacked": 37063450},
         "licence": "CC0 · Nicky Case, Monplaisir · Deutsch: Jonas Reich",
         "tile": _fs_tile("fs-angst", "index.html", "touch", "Abenteuer mit Angst", (
-            "Interaktive Geschichte: Du spielst die Angst eines Menschen. Deutsch, etwa 30 Minuten, mit Ton.",
-            "Interactive story: you play a human’s anxiety. In German, about 30 minutes, with sound.",
-            "Histoire interactive : tu joues l’anxiété d’un humain. En allemand, env. 30 minutes, avec son.",
-            "Storia interattiva: interpreti l’ansia di una persona. In tedesco, circa 30 minuti, con audio.",
-            "Istorgia interactiva: ti giogas la tema d’in uman. Tudestg, var 30 minutas, cun tun."), (
+            "Geschichte: du spielst die Angst.",
+            "Story: you play the anxiety.",
+            "Histoire : tu joues l’anxiété.",
+            "Storia: interpreti l’ansia.",
+            "Istorgia: ti giogas la tema."), (
             "Ab ca. 12 Jahren, mit Kraftausdrücken", "From about age 12, with swearing", "Dès 12 ans env., avec des gros mots",
             "Da circa 12 anni, con parolacce", "A partir da ca. 12 onns, cun pleds groppos"))},
     "fs-heroine": {
         "file": {"name": "fspiele-heroine-1.zip", "size": 41254926, "sha256": "c9163f574b9d575f774b857f5e8627a432f2f84abe784fe47deb2cb2a8d286ff", "unpacked": 41241720},
         "licence": "GPL v3+ / CC-BY-SA 3.0 · Clint Bellanger · Musik: Yubatake (CC-BY 3.0)",
         "tile": _fs_tile("fs-heroine", "start.html", "touch", "Heroine Dusk", (
-            "Verlies-Rollenspiel im Retro-Stil: tippen zum Gehen, Kämpfen, Zaubern. Englisch, wenig Text.",
-            "Retro dungeon crawl: tap to walk, fight and cast spells. English, little text.",
-            "Exploration de donjon rétro : toucher pour marcher, combattre, lancer des sorts. Anglais, peu de texte.",
-            "Dungeon crawl rétro: tocca per camminare, combattere, lanciare incantesimi. Inglese, poco testo.",
-            "Gieu da rollas retro en il tschaler: tutgar per ir, cumbatter e striunar. Englais, pauc text."))},
+            "Retro-Rollenspiel im Verlies (Englisch).",
+            "Retro dungeon adventure (English).",
+            "Jeu de rôle rétro (anglais).",
+            "Gioco di ruolo retrò (inglese).",
+            "Gieu da rollas retro (englais)."))},
     "fs-hexgl": {
         "file": {"name": "fspiele-hexgl-1.zip", "size": 15373699, "sha256": "dc1d8058dae4f22b457ace5f37314ae99603e53b2c3581cc040461ac1c349e5b", "unpacked": 15352741},
         "licence": "MIT / CC BY-NC 3.0 · Thibaut Despoulain (BKcore)",
         "tile": _fs_tile("fs-hexgl", "index.html", "touch", "HexGL", (
-            "Futuristisches 3D-Rennen: links lenken, rechts Gas. Handy quer halten. Englisch, wenig Text.",
-            "Futuristic 3D racing: steer on the left, accelerate on the right. Hold the phone sideways. English, little text.",
-            "Course 3D futuriste : diriger à gauche, accélérer à droite. Tenir le téléphone à l’horizontale. Anglais, peu de texte.",
-            "Corsa 3D futuristica: sterza a sinistra, accelera a destra. Tieni il telefono in orizzontale. Inglese, poco testo.",
-            "Cursa 3D futuristica: manischar a sanestra, gas a dretga. Tegnair il telefonin a travers. Englais, pauc text."))},
+            "3D-Rennen, Handy quer (Englisch).",
+            "3D racing, phone sideways (English).",
+            "Course 3D en paysage (anglais).",
+            "Corsa 3D in orizzontale (inglese).",
+            "Cursa 3D a travers (englais)."))},
 }
 FS_DL = {"running": False, "id": "", "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
 FS_HIDE = ("fspiel.ok", "fspiel.ok.new")

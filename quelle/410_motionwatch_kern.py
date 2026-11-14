@@ -36,6 +36,7 @@ class MotionWatch:
         global THERMAL, AUDIO, BACKUP
         self.timelapse = Timelapse(); THERMAL = ThermalCam()
         try:                                              # 2.98.30: the extra cameras of the settings start with the program
+            cams_dedupe("start")                          # 3.92.x: self-heal - two entries on one sensor (before the main camera opens)
             cams_apply()                                  # (before only when one was added or the simulation switched)
         except Exception as e:
             log_event("sys", f"Extra cameras: {e}"[:160])
@@ -133,8 +134,9 @@ class MotionWatch:
         """Switch to another video source (any thread). The running camera keeps working until the new one delivers a picture."""
         CFG["source"] = spec; save_settings()
         active = STATE["source_id"]
-        if self.cap is not None and (spec == active or (spec == "auto" and active.startswith("usb:"))):
-            return                                                # that camera is already running
+        if self.cap is not None and (spec == active or (spec == "auto" and active.startswith(("usb:", "pi:")))):
+            return                                                # that camera is already running (3.92.x: also «auto» = this Pi camera -
+                                                                  # opening its sensor a second time always failed)
         self._open_gen += 1
         self._start_opener(spec)
 
@@ -148,7 +150,16 @@ class MotionWatch:
             res = open_source(spec)
             with self._open_lock:
                 if gen == self._open_gen:
-                    self._opened = res; self._opening = False
+                    prev = self._opened
+                    if prev is not None and prev[0] is not None:
+                        # 3.92.x: an earlier opener of the same request already has the camera and waits to be taken - keep it.
+                        # Before, a failed second try («Camera __init__ sequence did not complete») replaced it: the open Pi
+                        # camera was lost without being closed and held the sensor until the restart (Besitzer, 3.92.0)
+                        if res[0] is not None and res[0] is not prev[0]:
+                            res[0].release()
+                    else:
+                        self._opened = res
+                    self._opening = False
                 elif res[0] is not None:
                     res[0].release()                              # a newer request replaced this one
         threading.Thread(target=work, daemon=True).start()
@@ -796,15 +807,15 @@ class MotionWatch:
                     ok_nc, buf_nc = cv2.imencode(".jpg", self.frame_out, [cv2.IMWRITE_JPEG_QUALITY, 70])
                     if ok_nc:
                         self.jpeg = buf_nc.tobytes(); self.jpeg_seq += 1
-                if not self._opening and time.time() >= self._retry_at:
-                    self._start_opener(CFG["source"])
+                if not self._opening and self._opened is None and time.time() >= self._retry_at:
+                    self._start_opener(CFG["source"])               # 3.92.x: not while a result waits (it would be lost)
                 continue
             if self._switch_fail_until and time.time() >= self._switch_fail_until:
                 self._switch_fail_until = 0.0
                 if STATE["source_status"].startswith(("switch failed", "simulator camera")):
                     STATE["source_status"] = "connected"
             if (CFG["sim_on"] and str(CFG["source"]).startswith("sim:") and not str(STATE.get("source_id", "")).startswith("sim:")
-                    and not self._opening and time.time() >= self._sim_retry_at):
+                    and not self._opening and self._opened is None and time.time() >= self._sim_retry_at):
                 self._sim_retry_at = time.time() + 10.0          # 2.95.55: simulation on, but another camera runs: try the simulator again
                 self._open_gen += 1; self._start_opener(CFG["source"], quiet=True)
             ok, frame = self.cap.read()
