@@ -1084,7 +1084,13 @@ def main():
             ok(th is not None, "ALT von Hand gestartet (%s s)" % th)
             L.hand_ende()
             rc, out, _e = L.d.sctl("show", UNIT, "-p", "ExecStart")
-            ok(os.path.basename(altp) in out, "die Unit startet jetzt ALT (%s)" % os.path.basename(altp))
+            try:                                                 # ab 3.90.0: die Unit startet den Starter, der Starter die vermerkte Datei
+                ptr = json.load(open(os.path.join(b.app, "moveeye_start.json"), encoding="utf-8")).get("file")
+            except (OSError, ValueError, AttributeError):
+                ptr = None
+            ok(os.path.basename(altp) in out or ("moveeye_start.py" in out and ptr == os.path.basename(altp)),
+               "die Unit startet jetzt ALT (%s; ExecStart %s, Starter-Notiz %s)" % (os.path.basename(altp),
+                                                                                 "Starter" if "moveeye_start.py" in out else "Datei", ptr))
             leck = os.path.join(b.ci, "leck")
             os.makedirs(leck, exist_ok=True); b.gehoert(leck)
             open(os.path.join(leck, "sitecustomize.py"), "w").write(LECK)
