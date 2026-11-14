@@ -1170,7 +1170,8 @@ class App:
         for tid, lab in self._tabs():
             if small_ and self._win_w() < 760:
                 lab = shorts.get(tid, lab)
-            b = tk.Label(tabs, text=tr(lab), font=("DejaVu Sans", 9 if small_ else 10), padx=5 if small_ else 12, pady=4, cursor="hand2")
+            b = tk.Label(tabs, text=tr(lab), font=("DejaVu Sans", 9 if small_ else 10), padx=5 if small_ else 12, pady=4, cursor="hand2",
+                         compound="top" if small_ else "left")       # 639zzzc (Klar stage 2): the line symbol above / beside the word
             b.pack(side="left", padx=(0, 2), expand=small_, fill="x" if small_ else None); b.bind("<Button-1>", lambda e, t=tid: self._tab(t))
             self.tab_btns[tid] = b
         self._paint_tabs()
@@ -1353,6 +1354,9 @@ class App:
         for tid, b in getattr(self, "tab_btns", {}).items():
             on = tid == self.tab
             b.config(bg=C["acc"] if on else C["panel"], fg="#ffffff" if on else C["txt"])
+            im = tk_icon(tid, "#ffffff" if on else C["txt"])     # 639zzzc: the same symbols as the web page (alpha masks, 639zzzd)
+            if im is not None:
+                b.config(image=im)
 
     def _tab(self, tid):
         """Switch the tab (2.98.14: the 6 tabs of the web page; another kind of tab = the window is built again)."""

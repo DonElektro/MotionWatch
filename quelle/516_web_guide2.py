@@ -335,7 +335,8 @@ details.g2-tt ul{margin:0 0 12px;padding-left:20px}details.g2-tt li{margin:4px 0
   function helpButton() {
     if (!D.tours[PG] || document.getElementById("g2-help")) return;
     const hc = document.querySelector("header .hdr-ctl") || document.querySelector("header"); if (!hc) return;
-    const b = BT("?", "sec ic", () => tour(PG, true)); b.id = "g2-help"; b.title = T("Tour of this page"); b.setAttribute("aria-label", T("Tour of this page"));
+    const b = BT("?", "sec ic", () => tour(PG, true)); b.id = "g2-help";
+    if (document.getElementById("mwi-help")) b.innerHTML = '<svg class="mwi" viewBox="0 0 24 24" aria-hidden="true"><use href="#mwi-help"/></svg>';   // 639zzzc: line symbol b.title = T("Tour of this page"); b.setAttribute("aria-label", T("Tour of this page"));
     hc.insertBefore(b, hc.firstChild);
   }
 
