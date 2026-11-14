@@ -347,9 +347,18 @@ class Hardware:
             pan = self._cont_pan(pan)                      # 2.98.30: continuous rotation servo: speed instead of position (162)
             cur = (round(pan, 2), round(tilt, 2))
             if servo_detached():                           # 639zzzt transport mode: no pulse at all (limp, no holding torque)
-                if not getattr(self, "_detached", False):
-                    self._detached = True; self._servos_off()
-                self._last_servo = None
+                if not getattr(self, "_detached", False) and cur != self._last_servo:
+                    # 3.94.0: the planner arrives in the same tick in which it reports «home» - first send that home pulse
+                    # and hold it for one tick, only then cut the outputs (before, the head stopped one step short)
+                    try:
+                        self._servos(pan, tilt, cont=CFG.get("servo_kind") == "continuous" and not CFG.get("sim_on"))
+                    except Exception as e:
+                        log_event("servo", f"Servo error: {e}")
+                    self._last_servo = cur
+                else:
+                    if not getattr(self, "_detached", False):
+                        self._detached = True; self._servos_off()
+                    self._last_servo = None
             elif servo_outputs_off():
                 self._last_servo = None                    # 2.98.35: latched driver fault: outputs stay off until «Freigeben»
             elif cur != self._last_servo:
