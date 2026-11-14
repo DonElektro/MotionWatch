@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-14 01:45",
+ "generated": "2026-11-14 03:33",
  "versions": [
+  {
+   "version": "3.89.0",
+   "file": "webcam_bewegung_3_89_0.py",
+   "url": "",
+   "sha256": "3e7517788109318adbd49c79a030d51b7dde1ff85269d630d4cae5ee281d1762",
+   "date": "2026-11-14 03:33",
+   "notes": "Weitwinkel-KI: Person, Tier und Fahrzeug im Weitwinkelbild rufen den Kopf; Zonen grün (auslösen) und rot (ignorieren) mit Zielen pro Montage; nachts zählt ein Personen-Alarm nur, wenn das Wärmebild in seiner Richtung Wärme sieht – ab jetzt auf allen Geräten an (einmaliger Hinweis, abschaltbar).",
+   "size": 3830977,
+   "sig": "9637744fa5d298fa5460cf4c6386ccb6d8a4de41377adbc69ca88520b8e8d7aafb8f76ba3ecc6875e640c994d631ffc1bc2e276ada960210e100262a4075a504",
+   "data": {
+    "file": "moveeye_daten_3_89_0.zip",
+    "url": "",
+    "sha256": "9602199ed2887eee0e3426ba71741b1f8898e531b32322ba842c4ae85ac54df6",
+    "size": 11339116,
+    "sig": "84ad0e39a0cf2acdecdd1604800bf037bd2ed7660068ad4cd4716a9e223a603a2d8b6c022c79bc83d95aa3a97d5266a56a7836a309b1731c65384f7f41bf4c0b"
+   }
+  },
   {
    "version": "3.88.0",
    "file": "webcam_bewegung_3_88_0.py",
    "url": "",
    "sha256": "23053b6adc054586b4bee8f02d51827f560e56ce61cbeadcdb43ce5c1305a25f",
-   "date": "2026-11-14 01:45",
+   "date": "2026-11-14 02:40",
    "notes": "Drei Teile. (1) Neues Spiel «Verschollen im Bergtal», Kapitel 1: ein Aufbau-Abenteuer – ohne Erinnerung in einer Berghütte, nur dein Hund und die Kamera MoveEye (Spielecke, hinter «A Dark Room»; Spielesammlung GS-1.19). (2) Über dem offenen Passwort-Fenster erscheint kein Tipp und keine Tour mehr. (3) Unter der Haube: die Programmdatei ist nochmals rund 130 KB kleiner; am Verhalten ändert sich nichts.",
    "size": 3810134,
    "sig": "3043c55427f31b43dae8c5f71c113f85fceee8ef043d0ea9fec2f27a6a19b83dcd80feb86b5708c1f3c070a3192dad7a0ea3dabd18595ce26538199326b0a80b",
@@ -143,7 +160,7 @@
    "file": "webcam_bewegung_3_80_0.py",
    "url": "",
    "sha256": "0166b09d68dc1b67a93cab448a57935c572e83be3cc97f27e06a7b4555a3a0fb",
-   "date": "2026-11-12 00:16",
+   "date": "2026-11-14 03:28",
    "notes": "Neu (Versuch, ab Werk aus): QR-Befehls-Karten. Eine gedruckte Karte vor die Kamera halten löst einen Befehl aus: Push mit eigenem Text (auch mit Foto), Text vorlesen, Notiz im Verlauf, Aufnahme starten, Licht/Relais, Kopf auf eine Position, Profil wechseln. Karten erstellst du in der «Karten-Werkstatt» unter Mehr; es gelten nur Karten von deinem MoveEye; Ausschalten per Karte geht nicht. Einschalten: Einstellungen → Kameras & Kopf → «QR-Befehls-Karten». Reichweite etwa 80 cm bei Postkartengrösse, etwa 2 m bei A4 (geschätzt, nicht an der echten Kamera gemessen).",
    "size": 3980994,
    "sig": "4b7a17f6283e7d701b7e9c1f723de2eba0e193a6c4d28dc7d9f3138a76c0a5d259f02cbbba42d64fcb43f1d6de26f80fad19f30dbd2e2ca2a50a7e6baf799c0c",
