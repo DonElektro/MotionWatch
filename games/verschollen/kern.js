@@ -11,6 +11,9 @@
    Stücke). Die 13. ist die ganze Nacht des Felssturzes = Ende Kapitel 1.
    SPEICHERN: ui.js legt den Zustand unter «mw-verschollen-v1» ab ({v: VERSION, s: Zustand}); K.migriere() hebt ältere
    Fassungen an. Der Zustand enthält nur Zahlen, Texte, true/false, Listen und einfache Objekte.
+   TEMPO (ab GS-1.20): S.tempo = 1, 2 oder 4 – ui.js lässt die Spieluhr so viel schneller laufen (K.step mit dt × tempo).
+   Weil ALLES hier auf der Spieluhr läuft (Tag und Nacht, Feuer, Abklingzeiten, Ausflüge, Wetter, Erträge, MoveEye-Sprüche),
+   bleibt die Balance gleich. S.echt = Spielzeit auf der Spieluhr, S.wirk = wirklich gespielte Sekunden.
    TEST: K.bot() spielt wie ein vernünftiger Mensch (mit Lese- und Denkzeit) und zählt die echte Spielzeit (S.echt). */
 (function (G) {
   'use strict';
@@ -18,6 +21,7 @@
   var HUND = 'Maggie';          // Name der Hündin (vom Besitzer) – hier ändern, gilt für das ganze Spiel (die Texte sagen «sie» / «ihr»)
   var VERSION = 1, DAY = 300, START_T = 246;
   K.HUND = HUND; K.VERSION = VERSION; K.DAY = DAY;
+  K.TEMPI = [1, 2, 4];             // Spieltempo (ui.js): die Spieluhr läuft so viel schneller, alle Regeln bleiben gleich
 
   var NAME = { holz: 'Holz', wasser: 'Wasser', essen: 'Essen', draht: 'Draht', naegel: 'Nägel', schnur: 'Schnur', stoff: 'Stoff',
     seil: 'Seil', akku: 'Akku', panel: 'Solarpanel', wind: 'Windmesser', logger: 'Datenlogger' };
@@ -46,7 +50,7 @@
       v: VERSION, t: START_T, echt: 0, seed: (seed || (Date.now() % 1000003) + 7) | 0,
       feuer: 0, fz: 0, r: { holz: 0, wasser: 0, essen: 0 }, it: { draht: 0, naegel: 0, schnur: 0, stoff: 0 },
       w: {}, bau: {}, f: {}, n: {}, orte: {}, station: 0, leute: { livia: 0, balz: 0 }, clips: [], log: [], karten: [],
-      cd: {}, cdl: {}, wetter: 'sturm', muede: false, trip: null, ende: false, acc: {}, wahl: {}, meT: 0, meI: {}, logN: 0
+      cd: {}, cdl: {}, wetter: 'sturm', muede: false, trip: null, ende: false, acc: {}, wahl: {}, meT: 0, meI: {}, logN: 0, tempo: 1, wirk: 0
     };
   };
   K.migriere = function (d) {               // ältere Spielstände anheben (heute gibt es nur Fassung 1)

@@ -85,6 +85,9 @@ Test-Spieler (K.bot: liest, denkt, wartet wie ein vernünftiger Mensch) spielt b
 Ende bleibt nach dem Neuladen, «Im Tal bleiben» wird gemerkt; alle Knöpfe ≥ 44 px und nichts breiter als der Bildschirm
 (hoch, quer); PC mit Maus; ohne Speicher und mit «Bewegung reduzieren»; keine Anfrage nach aussen, keine Fehler. Balance:
 8 Läufe des Test-Spielers, die Mitte soll bei 60–120 min Spielzeit liegen (die Zahlen stehen in der Ausgabe).
+Ab GS-1.20 Spieltempo: Knopf «⏩ 1×» tippt 1× → 2× → 4×, die Spieluhr läuft gemessen 1× bzw. 4× so schnell (ein Tag bei 4× in
+einem Viertel der Zeit), das Tempo bleibt nach dem Neuladen, eine Karte hält die Zeit an und sagt es, ⏸ hält an und geht
+weiter, geht bei 4× das Feuer aus, springt das Tempo auf 1×, der Test-Spieler kommt auch bei 4× ans Ende.
 python3 werkzeuge/spiel_einbauen.py games/verschollen --nach /tmp/t.zip && python3 werkzeuge/spiele_test.py --zip /tmp/t.zip --nur verschollen
 
 Die Spiele laufen hier wie am Spiele-Port von MoveEye unter /g/<ordner>/ und bekommen einen «✕ Zurück»-Knopf (#mw-back).
@@ -1509,6 +1512,71 @@ def verschollen_pruefen(br, pw, base, fehler, bilder, balance=None):
           f"{min(x[2] for x in m)}–{max(x[2] for x in m)} Spieltage, {min(x[3] for x in m)}–{max(x[3] for x in m)} Aktionen", flush=True)
     if balance is not None:
         balance.extend(ms)
+    ctx.close()
+
+    # ---- Spieltempo (GS-1.20): ⏩ 1× / 2× / 4×, ⏸, Karten halten die Zeit an, Tempo im Spielstand ----
+    name = "Tempo"
+    ctx, pg = seite(name, {"width": 390, "height": 844}, True)
+    pg.evaluate("() => { __vb.bot({max: 700}); }"); zu(pg)
+    pg.evaluate("() => { const S = __vb.S(); S.feuer = 4; S.r.holz = 20; __vb.step(0.01); }")
+    def rate(sek=2.0):
+        t0 = S(pg, "S.t"); pg.wait_for_timeout(int(sek * 1000)); return (S(pg, "S.t") - t0) / sek
+    b = pg.locator("#bTempo")
+    if not b.is_visible():
+        f(name, "kein Knopf «⏩ 1×»")
+    else:
+        bb = b.bounding_box()
+        if bb["width"] < 43.9 or bb["height"] < 43.9:
+            f(name, f"Tempo-Knopf nur {bb['width']:.0f} × {bb['height']:.0f} px")
+        r1 = rate()
+        if not 0.7 <= r1 <= 1.4:
+            f(name, f"bei 1× läuft die Spieluhr {r1:.2f}× so schnell")
+        stufen = []
+        for soll in (2, 4):
+            tippe(pg, True, "#bTempo", name); pg.wait_for_timeout(100)
+            stufen.append((S(pg, "S.tempo"), b.inner_text().strip()))
+        if stufen != [(2, "⏩ 2×"), (4, "⏩ 4×")]:
+            f(name, f"Antippen schaltet nicht 1× → 2× → 4× ({stufen})")
+        r4 = rate()
+        if not 3.2 <= r4 <= 4.6:
+            f(name, f"bei 4× läuft die Spieluhr {r4:.2f}× so schnell (soll 4)")
+        # ein ganzer Tag dauert bei 4× ein Viertel: 300 s Spieluhr = 75 s wirklich
+        print(f"  {d}: Tempo – 1× {r1:.2f}, 4× {r4:.2f} Spielsekunden pro Sekunde -> ein Tag dauert bei 4× {300 / max(r4, 0.01):.0f} s statt {300 / max(r1, 0.01):.0f} s", flush=True)
+        # gespeichert
+        pg.wait_for_timeout(300)
+        pg.reload(); pg.wait_for_function("() => window.__vb", timeout=10000); pg.wait_for_timeout(300)
+        if S(pg, "S.tempo") != 4 or pg.locator("#bTempo").inner_text().strip() != "⏩ 4×":
+            f(name, "das Tempo 4× bleibt nach dem Neuladen nicht")
+        # eine Karte hält die Zeit an und sagt es
+        pg.evaluate("() => { const S = __vb.S(); S.karten.push({art: 'bild', bild: 'aussen', titel: 'Test', z: ['Eine Testkarte.']}); __vb.step(0.01); }")
+        t0 = S(pg, "S.t"); pg.wait_for_timeout(1200)
+        if S(pg, "S.t") != t0:
+            f(name, "bei offener Karte läuft die Zeit weiter")
+        if "Zeit steht still" not in pg.locator("#karte").inner_text():
+            f(name, "die Karte sagt nicht, dass die Zeit stillsteht")
+        tippe(pg, True, "#karte [data-zu]", name)
+        # Pause
+        tippe(pg, True, "#bPause", name)
+        t0 = S(pg, "S.t"); pg.wait_for_timeout(1200)
+        if S(pg, "S.t") != t0 or not pg.locator("#pauseBand").is_visible():
+            f(name, "⏸ hält die Zeit nicht an")
+        tippe(pg, True, "#pauseBand", name)
+        if rate(1.0) < 2.5:
+            f(name, "nach der Pause läuft die Zeit nicht wieder 4×")
+        # Feuer aus bei 4× -> zurück auf 1×
+        pg.evaluate("() => { const S = __vb.S(); S.feuer = 1; S.fz = 1000; S.leute.livia = 0; }")
+        pg.wait_for_timeout(600)
+        if S(pg, "S.feuer") != 0 or S(pg, "S.tempo") != 1:
+            f(name, f"geht bei 4× das Feuer aus, soll das Tempo auf 1× zurück ({S(pg, 'S.feuer')}, {S(pg, 'S.tempo')})")
+        masse(pg, name, 390)
+        # bei 4× bis zum Ende (der Test-Spieler rechnet auf der Spieluhr, das Tempo ändert die Regeln nicht)
+        pg.evaluate("() => { __vb.S().tempo = 4; }")
+        r = pg.evaluate("() => __vb.bot()")
+        if not r.get("ende"):
+            f(name, f"bei 4× erreicht der Test-Spieler das Ende nicht ({r})")
+        bild(pg, "7_tempo_4x_ende")
+    for u in sorted(set(pg.aussen)):
+        f(name, f"Anfrage nach aussen {u}")
     ctx.close()
 
     # ---- iPhone quer ----
