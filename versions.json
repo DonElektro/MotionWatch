@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-14 13:43",
+ "generated": "2026-11-14 15:05",
  "versions": [
+  {
+   "version": "3.93.0",
+   "file": "webcam_bewegung_3_93_0.py",
+   "url": "",
+   "sha256": "f256c230f11ad2c4cdcb5fbc748ed3a0cc3106b0bda9c8d1e1e2edfeffd45c94",
+   "date": "2026-11-14 15:05",
+   "notes": "Drei Teile. (1) Design «Klar», Etappe 2 – der Kopf: Reiter mit ruhigen Linien-Symbolen, klarere Kopf-Knöpfe, auch im Pi-Fenster. (2) Schach: Bewertungsbalken links neben dem Brett wie bei Lichess (Spielesammlung GS-1.22). (3) Morse-Modus: «Eigenes Protokoll (2 Töne)» und «📻 Handy-Funkgerät» – ein Handy wird zum Sender und Empfänger, auch ohne MoveEye.",
+   "size": 3923503,
+   "sig": "526d25e6060ef0ef1fc82e220bfff6cd2cb9f1273961f4617ec44863a1ebd66b983a6aca0b2deeb0cbb7223a2e5be445f5f647c106f9260cf5213fd67f1dfc0c",
+   "data": {
+    "file": "moveeye_daten_3_93_0.zip",
+    "url": "",
+    "sha256": "34615b58f5b6eba8241196bde87e5c1014f0ad9606f7ab84aaf81e69b9269191",
+    "size": 11566099,
+    "sig": "132f2683676b239e662fa16a7debdd7bdbe13d62b4db5ca66f08e2133c01e7e2543a8b5c6f77506e709a48f27218c67054963364ac09b9d776afc9a41eb9f801"
+   }
+  },
   {
    "version": "3.92.2",
    "file": "webcam_bewegung_3_92_2.py",
    "url": "",
    "sha256": "3b5e35cbf273cf62f3da1cf2a682e229ccaf9f8e47b4560ea37b40cd3e27e794",
-   "date": "2026-11-14 13:43",
+   "date": "2026-11-14 14:51",
    "notes": "Zwei Teile. (1) Kameras: nach dem Trennen vom Simulator kommt genau die Kamera-Liste von vorher zurück – keine zweite «Pi camera 0» mehr, die die Hauptkamera blockiert («Camera __init__ sequence did not complete»); ein solches Doppel wird beim Start von selbst aufgeräumt. (2) Spielecke: alle Spiel-Kacheln mit kurzen, gleich langen Texten in fünf Sprachen, zwei Zeilen, gleich hohe Reihen (Spielesammlung GS-1.21).",
    "size": 3893968,
    "sig": "8c7838e455186f123fc5827ae8e08510e00b6b354060270577d997fbe154cd5ae497ece998631dba0b76cf7620dcef68a3ea4f9a8f7f20637244c03a0c698502",
@@ -136,23 +153,6 @@
     "sha256": "1c2623563a6b00072efa5b3bf4cf54b58babfa723f3ddf0a97d4ce2be81cb799",
     "size": 10985546,
     "sig": "8116ba6adfdf09c0cfdb878983fe27dfa75cc6582acc6b4641e3461299ca94ae1b8232519c63ee775515e5d5df1308e157b637039155e713fca861c8f9511508"
-   }
-  },
-  {
-   "version": "3.84.2",
-   "file": "webcam_bewegung_3_84_2.py",
-   "url": "",
-   "sha256": "02bac0c628917e29e0f12b45d0fb9e8350e50607ad8729b391e55b5b7e306ecd",
-   "date": "2026-11-12 20:45",
-   "notes": "Queen – iPhone-Test, zweite Runde (Test fotaqios-10): «Aufgeben» → «Ja» endet neu mit der Tafel «Spiel beendet» und «Nochmal» statt mit einer Fehlermeldung. Fehler bleiben als Tafel mit «Fehler kopieren» stehen. Die Testseite meldet Start, Ende und Fehler an MoveEye: «Meldungen vom Test» im Kasten des Spiels (nur Administrator). Daten-Abrufe werden wiederholt. Den Test einmal neu installieren.",
-   "size": 3829136,
-   "sig": "e87dae3457a2c7b9bd0c0683428bf6cb278d2eeb0a77857ebc9638570d77e9cfaeee8114cefcf2cb9b0ab298f3b305dc00f6c33dbd984d91c20eb1be558d1100",
-   "data": {
-    "file": "moveeye_daten_3_84_2.zip",
-    "url": "",
-    "sha256": "ba197cdf32f175d84b7082d81409192549896cfbc27aba8fe569100deefcaa35",
-    "size": 10912494,
-    "sig": "b5d7e326eb7744b0512cade19695bc4e97f90cb3aa70e145e3cb0d19c6996c78b630ef69d0669d5b0e1c8066584e1e838233054e0cf8ecf3dcdbbea96e236b08"
    }
   },
   {
