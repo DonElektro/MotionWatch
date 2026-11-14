@@ -309,6 +309,8 @@ def lauf_sim(datei, pruef, tmp_root, sim_url, main_spec, name):
         pruef(c1[0]["status"] == "connected" and c1[0]["id"] == "pi:0", f"{name}: nach dem Simulator Hauptkamera wieder verbunden ({c1[0]})")
         pruef(ids == vorher, f"{name}: dieselbe Liste wie vorher {ids} (vorher {vorher})")
         pruef(not pi_auf_zusatz(c1), f"{name}: keine Zusatzkamera auf dem Pi-Sensor {pi_auf_zusatz(c1)}")
+        # die Datei wird gesammelt gespeichert (save_settings: höchstens alle 15 s) - bis zu 20 s auf sie warten
+        L.warte(lambda: L.settings().get("source") == main_spec and L.settings().get("extra_cams") == ["url:" + NETZ_ID], 20)
         s = L.settings()
         pruef(s.get("source") == main_spec and s.get("extra_cams") == ["url:" + NETZ_ID],
               f"{name}: Einstellungen wie vorher (source {s.get('source')}, extra_cams {s.get('extra_cams')})")

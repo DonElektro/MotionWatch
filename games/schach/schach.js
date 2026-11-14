@@ -40,6 +40,9 @@
   var ROLLE = { p: "pawn", n: "knight", b: "bishop", r: "rook", q: "queen", k: "king" };
   var LERN_SCHWELLE = 200;       // ab so vielen Hundertstel-Bauern Verlust gegenüber dem besten Zug warnt der Lern-Modus
   var LERN_FRIST = 3000;         // ms: dauert die Prüfung länger, gilt der Zug einfach
+  var BALKEN_BAHN = 28;          // px links neben dem Brett für den Bewertungsbalken (24 px Balken + 4 px Abstand)
+  var BALKEN_ZEIT = 350;         // ms Rechenzeit je Stellung für den Balken (höchstens; kurz genug fürs Handy und den Pi)
+  var BALKEN_TIEFE = 16;         // und höchstens so tief: auf schnellen Geräten früher fertig, der Worker ist gleich wieder frei
 
   /* ---------- Einstellungen und Speichern (läuft auch ohne Speicher) ---------- */
   var K_EINST = "moveeye-schach-einst", K_PARTIE = "moveeye-schach-partie";
@@ -158,7 +161,7 @@
     alleZu();
     partieSpeichern();
     var z = spiel.partie.zustand();
-    zeichne(z); balkenSetzen(50);
+    zeichne(z); balkenZeigen(null);
     if (z.ende) { endeZeigen(z); balkenEnde(z.ende); } else naechster();
   }
 
@@ -288,7 +291,7 @@
     }
     $("bTipp").hidden = !!spiel.vorzug; $("bVorzug").hidden = !spiel.vorzug;
     $("bLern").classList.toggle("an", lernAn()); $("bLern").setAttribute("aria-pressed", lernAn() ? "true" : "false");
-    $("balken").hidden = !balkenAn();
+    $("balken").hidden = !balkenAn(); $("balken").classList.toggle("dreh", spiel.drehung === "b");
   }
 
   function infoZeile() {
@@ -299,8 +302,42 @@
 
   /* ---------- Bewertung (Balken), Tipp ---------- */
   function cpVon(w) { return !w ? 0 : typeof w.matt === "number" ? (w.matt > 0 ? 3000 : -3000) : Math.max(-1500, Math.min(1500, w.cp)); }
-  function balkenSetzen(prozentWeiss) { $("balken").firstElementChild.style.width = prozentWeiss.toFixed(1) + "%"; }
-  function balkenEnde(e) { balkenSetzen(e.sieger === "w" ? 100 : e.sieger === "b" ? 0 : 50); spiel.analyse = null; infoZeile(); }
+  /* Balken links neben dem Brett. w = Bewertung aus Sicht von WEISS: {cp} oder {matt: n} (n > 0 Weiss setzt in n Zügen matt,
+     n < 0 Schwarz), null = ausgeglichen (neue Stellung), {ende: "1–0" | "0–1" | "½–½", seite}. Füllung wie Lichess über die
+     Gewinn-Chance (bei ±10 Bauern fast voll, darüber begrenzt); die Zahl zeigt den echten Wert. */
+  var balkenStand = { prozent: 50, text: "0.0", seite: "w" };
+  function balkenProzent(w) {
+    if (typeof w.matt === "number") return w.matt > 0 ? 100 : 0;
+    var cp = Math.max(-1000, Math.min(1000, w.cp));
+    return 50 + 50 * (2 / (1 + Math.exp(-0.00368208 * cp)) - 1);
+  }
+  function balkenText(w) {
+    if (typeof w.matt === "number") return (w.matt > 0 ? "" : "\u2212") + "M" + Math.abs(w.matt);
+    var x = w.cp / 100, a = Math.abs(x), t = a >= 9.95 ? String(Math.round(a)) : a.toFixed(1);
+    return t === "0.0" ? t : (x > 0 ? "+" : "\u2212") + t;
+  }
+  function balkenZeigen(w) {
+    var p, t, s;
+    if (!w) { p = 50; t = "0.0"; s = "w"; }
+    else if (w.ende) { p = w.seite === "w" ? 100 : w.seite === "b" ? 0 : 50; t = w.ende; s = w.seite === "b" ? "b" : "w"; }
+    else { p = balkenProzent(w); t = balkenText(w); s = (typeof w.matt === "number" ? w.matt > 0 : w.cp >= 0) ? "w" : "b"; }
+    balkenStand = { prozent: Math.round(p * 10) / 10, text: t, seite: s };
+    var el = $("balken"), zahl = $("balkenZahl");
+    el.firstElementChild.style.height = p.toFixed(1) + "%";
+    zahl.textContent = t; zahl.className = s === "b" ? "s" : "w";
+    var gr = 10; zahl.style.fontSize = "";                            // breite Schrift (z. B. «−M12»): kleiner, bis sie passt
+    while (gr > 7 && zahl.clientWidth && zahl.scrollWidth > zahl.clientWidth) { gr -= 0.5; zahl.style.fontSize = gr + "px"; }
+    el.setAttribute("aria-label", "Bewertung: " + (t === "0.0" ? "ausgeglichen" : t));
+  }
+  function balkenEnde(e) {
+    balkenZeigen({ ende: e.sieger === "w" ? "1\u20130" : e.sieger === "b" ? "0\u20131" : "\u00bd\u2013\u00bd", seite: e.sieger || "" });
+    spiel.analyse = null; infoZeile();
+  }
+  /** Bewertung des Motors (Sicht der Seite am Zug) -> Sicht von Weiss */
+  function ausSichtWeiss(w, amZug) {
+    var s = amZug === "w" ? 1 : -1;
+    return typeof w.matt === "number" ? { matt: w.matt * s } : { cp: w.cp * s };
+  }
   function bewertungsText(w, amZug) {
     var s = amZug === "w" ? 1 : -1;
     if (typeof w.matt === "number") return (w.matt * s > 0 ? "Weiss" : "Schwarz") + " kann matt setzen";
@@ -313,10 +350,11 @@
     var p = spiel.partie, nr = spiel.nr;
     if (!(balkenAn() || lernAn()) || !Motor.bereit || p.ende()) return Promise.resolve(null);
     if (spiel.analyse && spiel.analyse.zugNr === p.zuege.length) return Promise.resolve(spiel.analyse);
-    return Motor.suche(auftrag(p, Math.min(350, einst.zeit))).then(function (r) {
+    var a = auftrag(p, Math.min(BALKEN_ZEIT, einst.zeit)); a.tiefe = BALKEN_TIEFE;    // im Worker (motor.js): das Brett bleibt frei
+    return Motor.suche(a).then(function (r) {
       if (!r || !r.zug || nr !== spiel.nr) return null;
       spiel.analyse = { zugNr: p.zuege.length, zug: r.zug, wert: r.wert, pv: r.pv, text: r.wert ? bewertungsText(r.wert, p.amZug()) : "" };
-      if (r.wert) { var w = cpVon(r.wert) * (p.amZug() === "w" ? 1 : -1); balkenSetzen(50 + 50 * (2 / (1 + Math.exp(-w / 280)) - 1)); }
+      if (r.wert && balkenAn()) balkenZeigen(ausSichtWeiss(r.wert, p.amZug()));
       infoZeile();
       return spiel.analyse;
     });
@@ -332,6 +370,7 @@
       : Motor.suche(auftrag(p, Math.min(700, Math.max(300, einst.zeit)))).then(function (r) {
           if (!r || !r.zug || nr !== spiel.nr) return null;
           spiel.analyse = { zugNr: p.zuege.length, zug: r.zug, wert: r.wert, pv: r.pv, text: r.wert ? bewertungsText(r.wert, p.amZug()) : "" };
+          if (r.wert && balkenAn()) balkenZeigen(ausSichtWeiss(r.wert, p.amZug()));
           return spiel.analyse;
         });
     return fertig.then(function (a) {
@@ -555,7 +594,7 @@
     else p.zurueck(1);
     if (spiel.gegner === "motor") while (p.zuege.length && p.amZug() !== spiel.mensch) p.zurueck(1);
     if (spiel.gegner === "mensch" && einst.autodrehen) spiel.drehung = p.amZug();
-    partieSpeichern(); ton("zug"); zeichne(); balkenSetzen(50);
+    partieSpeichern(); ton("zug"); zeichne(); balkenZeigen(null);
     naechster();
   }
   function aufgeben() {
@@ -862,10 +901,11 @@
     var h = $("haupt"), W = h.clientWidth, H = h.clientHeight, quer = W >= 560 && W > H * 1.15, b;
     document.body.classList.toggle("quer", quer);
     document.body.classList.toggle("breit", !quer && W >= 700);
-    var leisten = 48 + (balkenAn() ? 6 : 0), bedarf = 6;        // Platz für Status, Zugliste, Knöpfe, Info-Zeile (gemessen)
+    var leisten = 48, bedarf = 6, bl = balkenAn() ? BALKEN_BAHN : 0;   // Platz für Status, Zugliste, Knöpfe, Info-Zeile (gemessen)
+    document.documentElement.style.setProperty("--bl", bl + "px");   // Balken links: das Brett wird um so viel schmaler
     if (!quer) Array.prototype.forEach.call($("rechts").children, function (k) { bedarf += k.offsetHeight; });
-    if (quer) b = Math.min(H - leisten - 6, W - 16 - 12 - 290);
-    else b = Math.min(W, H - leisten - bedarf);
+    if (quer) b = Math.min(H - leisten - 6, W - 16 - 12 - 290 - bl);
+    else b = Math.min(W - bl, H - leisten - bedarf);
     var dpr = window.devicePixelRatio || 1;
     b = Math.max(200, Math.floor(b * dpr / 8) * 8 / dpr);       // Chessground rundet das Brett auf ganze Geräte-Pixel je Feld: gleich so wählen
     document.documentElement.style.setProperty("--b", b + "px");
@@ -896,7 +936,8 @@
     document.addEventListener("visibilitychange", function () { if (document.hidden) vorzugAus("verdeckt"); });
     addEventListener("pagehide", function () { vorzugAus("verdeckt"); });
 
-    Motor.onStatus = function () { infoZeile(); if (Motor.bereit && menschDran() && !spiel.partie.ende()) analysiere(); };
+    // Motor bereit oder gewechselt: Stellung ansehen - aber nie eine Suche abbrechen, die nach dem Wechsel weiterläuft
+    Motor.onStatus = function () { infoZeile(); setTimeout(function () { if (Motor.bereit && !Motor.laeuft() && menschDran() && !spiel.partie.ende()) analysiere(); }, 0); };
     Motor.start({ nurJs: URLP.get("motor") === "js" });
     infoZeile();
 
@@ -945,7 +986,9 @@
     $("schTon").onclick = function () { einst.ton = !einst.ton; einstSpeichern(); schalter(this, einst.ton); tonStart(); ton("zug"); };
     $("schBalken").onclick = function () {
       if (spiel.gegner === "fern") einst.fernBalken = !einst.fernBalken; else einst.balken = !einst.balken;
-      einstSpeichern(); schalter(this, balkenAn()); ordnen(); zeichne(); infoZeile(); if (balkenAn() && menschDran()) analysiere();
+      einstSpeichern(); schalter(this, balkenAn()); ordnen(); zeichne(); infoZeile();
+      if (balkenAn() && spiel.analyse && spiel.analyse.zugNr === spiel.partie.zuege.length && spiel.analyse.wert) balkenZeigen(ausSichtWeiss(spiel.analyse.wert, spiel.partie.amZug()));
+      else if (balkenAn() && menschDran()) analysiere();
       if (spiel.gegner === "fern") fernHilfeMelden();
     };
     $("schVorzug").onclick = function () { einst.vorzug = !einst.vorzug; einstSpeichern(); schalter(this, einst.vorzug); if (!einst.vorzug) vorzugAus("aus"); zeichne(); };
@@ -979,7 +1022,7 @@
                  fen: z.fen, amZug: z.amZug, schach: z.schach, ende: z.ende, zuege: z.zuege, san: z.san, zugNr: z.zugNr, gegner: spiel.gegner, mensch: spiel.mensch,
                  stufe: spiel.stufe, drehung: spiel.drehung, denkt: spiel.denkt, prueft: spiel.prueft, menschDran: menschDran(), tippPfeil: spiel.tippPfeil,
                  analyse: spiel.analyse, motor: Motor.art, motorName: Motor.name, bereit: Motor.bereit, statistik: Motor.statistik, toene: tonZaehler,
-                 warnung: letzteWarnung, einst: einst, tonLaeuft: !!ac && ac.state, material: z.material,
+                 warnung: letzteWarnung, einst: einst, balken: { an: balkenAn(), sichtbar: !$("balken").hidden, dreh: $("balken").classList.contains("dreh"), prozent: balkenStand.prozent, text: balkenStand.text, seite: balkenStand.seite }, tonLaeuft: !!ac && ac.state, material: z.material,
                  vorzug: spiel.vorzug ? { von: spiel.vorzug.von, nach: spiel.vorzug.nach, ply: spiel.vorzug.ply } : null, cgVorzug: cg.state.premovable.current || null,
                  vorzugAn: !!cg.state.premovable.enabled, vorzugZahl: spiel.vorzugZahl, vorzugGrund: spiel.vorzugGrund || "", zugZeiten: spiel.zugZeiten };
       },

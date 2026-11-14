@@ -1,0 +1,11 @@
+#@ MoveEye – Teil 639zzzd: Daten – die Linien-Symbole des Kopfs für das Pi-Fenster (Alpha-Masken 20 × 20, erzeugt mit werkzeuge/symbole_tk.py aus MWI in 639zzzc). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+# Nicht von Hand ändern: python3 werkzeuge/symbole_tk.py
+MWI_TK = {
+    "live": "eNpjYKAYsEibmEgzI4vwNn/5DwSf67jhQg6v/6/N9fHJXfv/hTVUKPL3JUMGZh0dZgbDKz/DwUJW/w7wMsR9+P//XSQD/7F/IJXcD59xMQh+f15Q8PIbHwPvqwdAM/v+RwLV/i9mYKj4b8bAEPu/CySWz8Bg+b+UgaH8vzkDQ9H/bgYG/iffVBj4vz/PL37xlYdB+eczkHuc/z/Ugtmh8ei/A9ji+N8fi9mZ9bSYOcs+/Y6CufnV/2druyese/H/pS3Cb00QvzVwo4SBDHoYkAkAvWZbdA==",
+    "protect": "eNpjYMAD1NXQBNiTjv7/fzSJHUnJpI//P06ZAiQmqUOFdgGVxAGVsMcDFW8HC3H836IJ06G19T8HiOb+34Uwpvs/FylibP/7EGL9/1nB9PO1CLH1TyH04QsIsSsHIPSCvxpw1/+dDWFY/18DE9v43wrKWvq/jRFEM/b8nw+T5T74f7MiA4Pi9v/7ueEmc277/2fBgj//NyEFDAOj747//7f6MKIFoZICvhBnAACea0dd",
+    "history": "eNpjYCAF8Ee2bjywJIQdxt/azuDw9P//Swe//n+ZBhV7sLX0/4NgHgYGzrgz/5fCxXo4GBhsrYCiZ/4XgcXu/v//P5eB4fhRIFvi8Tc2kJhHQ0O9GgPD6VMgTvJ/bySrIWLC/+aAqNpwsNjJh2Ig6tAWEHn5Alhs8v+3vkBq52QQZ/sfDrBgyOP/egzMnwtB7OL/NhATORKYGBz+B4CYsr+OsMEs4r59jxvMqPq/kQkqNvuvBYTBNPf/eWsgzR53/H8T3G3Zb/+/O3Poy/9ncYwIB/PW7Hz//14NB0kBzAAAjihV2A==",
+    "settings": "eNpjYKAGYLYpsGJGE+v4//9/I5Tt8/s/BNyXePT//28vkJh4dQMY3Hga9vx6Q7UYsl67m//vWGLYokmW21gNWNGFYr/9/xaBLKC3+8C75+Ev3x4Ag93aIDFfoJuvMlyHOhziZiBoA3Ka0MxjC18ZzEKVgGQAANWAP5Q=",
+    "sim": "eNpjYMAD1NXQRcTn//8/VxJZhLPl+//9B/5/q+eCiTAmPP1/y5+BIeD2/ydxjGAh+xf/3xaxgFishe/+P7UDsRb8/90O1cPZ/ef/HBCj7P+j/0/jgXoYE5/9f/i/FCKmDNRzxtr68v+3+SowMXkGoQl//v//PUGQQREhxsCgeuO6MpBCEWM4fYoBv1jJ/xmCMDHBOf+LwJ4/D7SPBSTGkv/u/3kVuN9u+p0+FXDr/5N4RpiPuRq//f/y9f/3ek7kkJFc+P//bHH0EDQ3xhfiDABU5Gnf",
+    "more": "eNpjYCAaKJc0NJTpMDDolTU0lCiDhWT/g4G+GYSWAIll/7dmYND4X9vwX52Bwe5/Bkis7L88AwP3/67u/1wMDIr/S3GJZf03ZmBQ+F9XD5Iz/58JEpODmG1kCqFlUd1SDncLfdwX5eDgDXKft4NDDInuIwoAACo4eRQ=",
+    "help": "eNpjYMAN2HV02FAEmJvu/P3//++dRia4kNTh/8e7IyK6T/4/JAkTev0lGcJK+/YKKrj9qyqQ1NECEupft4KF0v+nMDAInv//fzEfA0PG/ySQ2LX3QGLJ16Sa/7kMDExvLwJ5rH9XAclQbwaGJ5uAjHV/gU4y+58JMbb1fzqQzP1vyMBgDDEBaOxaEJUMEmP7Owli+z1WEDX1F4i6fAgsZmsBpo6fB5Epf+1AVE4WiHT5Fw/R9U4JSC5aBCTU3m+GWCjx8hPUb8mfX4hDPSy0+P/xrrCo7hP/FwohAstz7av//1+sdkcLVDUlBnwAACtmWAs=",
+}

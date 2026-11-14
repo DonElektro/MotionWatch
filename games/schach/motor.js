@@ -170,6 +170,9 @@
     }
   };
 
+  /** läuft gerade eine Suche oder wartet eine? (dann soll der Balken sie nicht abbrechen) */
+  M.laeuft = function () { return !!M._lauf || M._warte.length > 0; };
+
   M.neuesSpiel = function () { M.stopp(); try { if (M._w && M.art === "wasm") M._w.postMessage("ucinewgame"); } catch (e) {} };
 
   global.Motor = M;

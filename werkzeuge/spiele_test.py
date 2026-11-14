@@ -66,7 +66,10 @@ bewegt und markiert, Antwort des Computers auf der untersten und obersten Stufe 
 zu zweit mit automatischem Drehen, Aufgeben, Einstellungen, Speichern und «Weiterspielen», ohne Speicher, Ersatz-Motor bei
 gesperrter .wasm-Datei und bei hängendem Motor, ganze Partien Motor gegen Motor über die Regeln, keine Anfrage nach
 aussen, keine Fehler in der Konsole, alle Knöpfe mindestens 44 px; «Zwei Handys»: Erstellen / Code-Feld, Prüfung des Codes
-(das Zusammenspiel zweier Handys über MoveEye prüft werkzeuge/schach_fern_test.py). Solange es nicht in der ZIP ist:
+(das Zusammenspiel zweier Handys über MoveEye prüft werkzeuge/schach_fern_test.py). GS-1.22 Bewertungsbalken: links neben
+dem Brett, gleich hoch, Brett + Balken passen in 390 px, Zahl passt hinein, Weiss von unten / gedreht von oben, Zahl nach
+einem Zug, «M1» / «−M1» bei Matt in 1, «1–0» nach dem Matt, zu zweit dreht er mit, Schalter aus (Brett wieder ganz breit)
+und an, Rotlicht («mw-night»): Seite und Balken rot. Solange es nicht in der ZIP ist:
 python3 werkzeuge/spiel_einbauen.py games/schach --nach /tmp/t.zip && python3 werkzeuge/spiele_test.py --zip /tmp/t.zip --nur schach
 
 «A Dark Room» (ab GS-1.17, auch ohne --alle): am iPhone (hoch und quer; WebKit, wenn installiert, sonst Chromium mit
@@ -1411,7 +1414,15 @@ SCHACH_FEN = {
     "mitte": "r1bq1rk1/pp2bppp/2n1pn2/2pp4/3P1B2/2PBPN2/PP1N1PPP/R2QK2R w KQ - 0 8",
     "vor_weg": "7k/7p/8/8/8/8/8/K5R1 w - - 0 1",                               # Tg8+ Kxg8 erzwungen: Vorzug Tg8-g1 geht nicht mehr
     "vor_umw": "7k/P7/8/8/8/8/8/K7 w - - 0 1",                                  # Vorzug a7-a8 -> Dame
+    "matt_s": "rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 2",  # Schwarz setzt mit Dh4 matt (Balken −M1)
 }
+# GS-1.22 Bewertungsbalken links neben dem Brett: Lage, Grösse, Zahl, Farbe der Füllung (Weiss von unten, gedreht von oben)
+SCHACH_BALKEN = """() => { const e = document.getElementById('balken'), b = document.getElementById('brett').getBoundingClientRect();
+  if (!e || e.hidden) return {da: false, bw: b.width, bl: b.left};
+  const r = e.getBoundingClientRect(), i = e.querySelector('i').getBoundingClientRect(), z = document.getElementById('balkenZahl'), zr = z.getBoundingClientRect();
+  return {da: true, l: r.left, r: r.right, t: r.top, u: r.bottom, w: r.width, h: r.height, bl: b.left, bt: b.top, bu: b.bottom, bw: b.width,
+          it: i.top, iu: i.bottom, ih: i.height, text: z.textContent, zl: zr.left, zr: zr.right, zt: zr.top, zu: zr.bottom, zsw: z.scrollWidth, zcw: z.clientWidth,
+          weiss: getComputedStyle(e.querySelector('i')).backgroundColor, nacht: document.documentElement.classList.contains('sxnight')}; }"""
 
 
 # «Verschollen im Bergtal» (GS-1.19, Quelle games/verschollen/, Test-Haken ?test=1 -> window.__vb, siehe Kopf von ui.js)
@@ -1711,8 +1722,10 @@ def schach_pruefen(br, pw, base, fehler, bilder):
     def f(name, text):
         fehler.append(f"{d} {name}: {text}")
 
-    def seite(name, geraet=None, ohne_wasm=False, ohne_speicher=False, **kw):
+    def seite(name, geraet=None, ohne_wasm=False, ohne_speicher=False, nacht=False, **kw):
         ctx = br.new_context(**(dict(geraet) if geraet else {}), **kw)
+        if nacht:                                                     # Rotlicht von MoveEye (gleicher Ursprung: «mw-night»)
+            ctx.add_init_script("try { localStorage.setItem('mw-night', '1'); } catch (e) {}")
         aussen = []
 
         def weg(r):
@@ -1762,6 +1775,20 @@ def schach_pruefen(br, pw, base, fehler, bilder):
         pg.evaluate("([f, o]) => __schach.stelle(f, o)", [SCHACH_FEN.get(fen, fen) if fen else None, o])
         pg.wait_for_timeout(150)
 
+    def balken(pg, name, wo, dreh=False):
+        """GS-1.22: Balken links neben dem Brett, gleich hoch, ganz im Bild, Zahl passt hinein; Weiss unten (gedreht oben)"""
+        m = pg.evaluate(SCHACH_BALKEN)
+        if not m["da"]:
+            f(name, f"{wo}: kein Bewertungsbalken"); return m
+        if m["r"] > m["bl"] + 0.5 or m["l"] < -0.5 or m["w"] < 16 or abs(m["h"] - m["bw"]) > 1 or abs(m["t"] - m["bt"]) > 1:
+            f(name, f"{wo}: Balken nicht links neben dem Brett / nicht gleich hoch ({m['l']:.0f}–{m['r']:.0f} × {m['h']:.0f}, Brett ab {m['bl']:.0f}, {m['bw']:.0f} px)")
+        if m["zsw"] > m["zcw"] + 0.5 or m["zl"] < m["l"] - 0.5 or m["zr"] > m["r"] + 0.5 or m["zt"] < m["t"] - 0.5 or m["zu"] > m["u"] + 0.5:
+            f(name, f"{wo}: die Zahl {m['text']!r} passt nicht in den Balken")
+        richtig = abs(m["it"] - m["t"]) < 1 if dreh else abs(m["iu"] - m["u"]) < 1
+        if m["ih"] > 1 and not richtig:
+            f(name, f"{wo}: Weiss füllt den Balken von der falschen Seite (gedreht: {dreh})")
+        return m
+
     def klein(pg, name, wo):
         k = pg.evaluate(SCHACH_KLEIN)
         if k:
@@ -1791,8 +1818,11 @@ def schach_pruefen(br, pw, base, fehler, bilder):
         bild(pg, "01_start")
         druecke(pg, "#bSpielen")
         m = passt(pg, name, "Brett")
-        if m["b"] < m["w"] - 1.5:
-            f(name, f"das Brett ist nicht so breit wie der Bildschirm ({m['b']:.0f} von {m['w']} px)")
+        if m["b"] + 28 < m["w"] - 4 or m["b"] < m["w"] - 40:
+            f(name, f"Brett und Balken sind nicht so breit wie der Bildschirm ({m['b']:.0f} + 28 von {m['w']} px)")
+        bm = balken(pg, name, "Start")
+        if z(pg)["balken"]["text"] != "0.0" or not z(pg)["einst"]["balken"]:
+            f(name, f"Balken beim Start nicht an / nicht 0.0: {z(pg)['balken']}")
         klein(pg, name, "Spiel")
         motor(pg)
         if "Stockfish" not in pg.inner_text("#info"):
@@ -1825,6 +1855,13 @@ def schach_pruefen(br, pw, base, fehler, bilder):
         if not (st["toene"].get("zug", 0) + st["toene"].get("schlag", 0) >= 2) or st["tonLaeuft"] != "running":
             f(name, f"Töne: {st['toene']} / AudioContext {st['tonLaeuft']}")
         bild(pg, "03_letzter_zug")
+        # GS-1.22 Bewertungsbalken: nach der Antwort des Computers rechnet der Worker kurz, die Zahl steht im Balken
+        warte(pg, "() => { const a = __schach.zustand().analyse; return !!a && a.zugNr === 2; }", 6000)
+        pg.wait_for_timeout(800)                                      # Übergang des Balkens (0,7 s)
+        bz = z(pg)["balken"]
+        if not re.fullmatch(r"0\.0|[+\u2212](\d\.\d|\d\d+)|\u2212?M\d+", bz["text"]) or not (2 < bz["prozent"] < 98):
+            f(name, f"Balken nach 1. e4: Zahl / Füllung unpassend: {bz}")
+        balken(pg, name, "nach 1. e4")
         # Tipp
         druecke(pg, "#bTipp")
         warte(pg, "() => !!__schach.zustand().tippPfeil", 6000)
@@ -2017,9 +2054,24 @@ def schach_pruefen(br, pw, base, fehler, bilder):
         st = z(pg)
         if st["ende"] != {"art": "matt", "sieger": "w"} or "gewonnen" not in pg.inner_text("#endeTitel") or st["toene"].get("matt", 0) < 1:
             f(name, f"selbst matt gesetzt: {st['ende']} / {pg.inner_text('#endeTitel')!r}")
+        if st["balken"]["text"] != "1\u20130" or st["balken"]["prozent"] != 100:
+            f(name, f"Balken nach dem Matt: {st['balken']} statt «1–0» und voll")
         if st["san"][-1] != "Ta8#":
             f(name, f"deutsche Notation: {st['san']}")
         bild(pg, "06_spielende")
+        # GS-1.22 Balken zeigt Matt: «M1» (Weiss setzt matt) und «−M1» (Schwarz), zu zweit an einem Gerät
+        for fen_, soll, voll in (("matt1", "M1", 100), ("matt_s", "\u2212M1", 0)):
+            stelle(pg, fen_, gegner="mensch", lern=False)
+            try:
+                warte(pg, "s => __schach.zustand().balken.text === s", 6000, soll)
+            except Exception:
+                pass
+            bz = z(pg)["balken"]
+            if bz["text"] != soll or bz["prozent"] != voll:
+                f(name, f"Balken bei Matt in 1 ({fen_}): {bz} statt {soll!r}")
+            balken(pg, name, f"Matt {soll}")
+            if fen_ == "matt1":
+                bild(pg, "06b_balken_matt")
         # Patt (mit Warnung, weil klar besser)
         stelle(pg, "patt", stufe=1, lern=True)
         tippe(pg, "g5"); tippe(pg, "g6")
@@ -2071,6 +2123,11 @@ def schach_pruefen(br, pw, base, fehler, bilder):
         stelle(pg, None, gegner="mensch", lern=False)
         tippe(pg, "e2"); tippe(pg, "e4")
         warte(pg, "() => __schach.zustand().drehung === 'b'", 3000)
+        warte(pg, "() => { const a = __schach.zustand().analyse; return !!a && a.zugNr === 1; }", 6000)   # zu zweit rechnet der Balken für beide
+        pg.wait_for_timeout(800)
+        if not z(pg)["balken"]["dreh"]:
+            f(name, "zu zweit: der Balken dreht nicht mit dem Brett")
+        balken(pg, name, "zu zweit, gedreht", dreh=True)
         tippe(pg, "e7"); tippe(pg, "e5")
         warte(pg, "() => __schach.zustand().drehung === 'w' && __schach.zustand().zugNr === 2", 3000)
         pg.evaluate("() => __schach.setze('autodrehen', false)")
@@ -2117,7 +2174,9 @@ def schach_pruefen(br, pw, base, fehler, bilder):
         st = z(pg)
         if st["einst"]["stufe"] != 5 or st["einst"]["zeit"] != 500 or st["einst"]["ton"] or st["einst"]["balken"] or pg.locator("#balken").is_visible():
             f(name, f"Einstellungen greifen nicht: {st['einst']}")
-        passt(pg, name, "ohne Balken")
+        m = passt(pg, name, "ohne Balken")
+        if m["b"] < m["w"] - 1.5:
+            f(name, f"ohne Balken: das Brett ist nicht so breit wie der Bildschirm ({m['b']:.0f} von {m['w']} px)")
         druecke(pg, "#bUeber")
         t = pg.inner_text("#dUeber")
         for wort in ("Chessground", "Stockfish", "chess.js", "js-chess-engine", "cburnett", "General Public License"):
@@ -2146,6 +2205,14 @@ def schach_pruefen(br, pw, base, fehler, bilder):
         if st["einst"]["zeit"] != 500 or st["einst"]["ton"] or st["einst"]["balken"] or st["einst"]["stufe"] != 2 or st["einst"]["farbe"] != "b":
             f(name, f"Einstellungen nach dem Neuladen: {st['einst']}")
         motor(pg)
+        druecke(pg, "#bEinst"); druecke(pg, "#schBalken"); druecke(pg, "#bEinstZu")   # GS-1.22: wieder einschalten, Brett gedreht
+        warte(pg, "() => { const a = __schach.zustand().analyse; return !!a && a.zugNr === 3; }", 6000)
+        pg.wait_for_timeout(800)
+        st = z(pg)
+        if not (st["einst"]["balken"] and st["balken"]["sichtbar"] and st["balken"]["dreh"]):
+            f(name, f"Balken lässt sich nicht wieder einschalten / dreht nicht mit (Schwarz unten): {st['balken']}")
+        balken(pg, name, "wieder an, Schwarz unten", dreh=True)
+        passt(pg, name, "Balken wieder an")
         tippe(pg, "d7"); tippe(pg, "d5")
         warte(pg, "() => __schach.zustand().zugNr >= 5", 8000)
         # Motor hängt: Wechsel auf den Ersatz, die Suche kommt trotzdem
@@ -2247,6 +2314,25 @@ def schach_pruefen(br, pw, base, fehler, bilder):
         f(name, f"{e.__class__.__name__}: {str(e)[:300]}")
     ctx.close()
 
+    # ---------- 3b. GS-1.22: Rotlicht von MoveEye («mw-night») – Seite rot, Balken rot statt weiss ----------
+    name = "Rotlicht"
+    ctx, pg = seite(name, {"viewport": {"width": 390, "height": 844}, "is_mobile": True, "has_touch": True, "device_scale_factor": 2}, nacht=True)
+    try:
+        druecke(pg, "#bSpielen")
+        motor(pg)
+        tippe(pg, "e2"); tippe(pg, "e4")
+        warte(pg, "() => { const a = __schach.zustand().analyse; return !!a && a.zugNr === 2; }", 10000)
+        pg.wait_for_timeout(800)
+        m = balken(pg, name, "Rotlicht")
+        rgb = [int(x) for x in re.findall(r"\d+", m.get("weiss", ""))[:3]] or [255, 255, 255]
+        if not m.get("nacht") or not (rgb[0] > rgb[1] + 40 and rgb[0] > rgb[2] + 40):
+            f(name, f"Rotlicht: Seite nicht rot oder Balken nicht rot ({m.get('weiss')})")
+        passt(pg, name, "Rotlicht")
+        bild(pg, "14_rotlicht")
+    except Exception as e:
+        f(name, f"{e.__class__.__name__}: {str(e)[:300]}")
+    ctx.close()
+
     # ---------- 4. Handy quer und PC (Maus: klicken und ziehen) ----------
     for name, vp, touch in (("quer", {"width": 844, "height": 390}, True), ("PC", {"width": 1280, "height": 800}, False)):
         ctx, pg = seite(name, None, viewport=vp, is_mobile=touch, has_touch=touch, device_scale_factor=2 if touch else 1)
@@ -2256,6 +2342,7 @@ def schach_pruefen(br, pw, base, fehler, bilder):
             m = passt(pg, name, "Brett")
             if m["b"] < (280 if touch else 560):
                 f(name, f"Brett nur {m['b']:.0f} px")
+            balken(pg, name, "Brett")
             klein(pg, name, "Spiel")
             motor(pg)
             if touch:
