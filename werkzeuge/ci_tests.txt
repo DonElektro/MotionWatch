@@ -44,6 +44,7 @@ kern | 8  | -  | python3 werkzeuge/deutsch_luecken_test.py | Deutsche Lücken (k
 kern | 8  | 1x | python3 werkzeuge/sprachen_tour_test.py | Sprachen-Rundgang (Französisch, Italienisch, Rätoromanisch: die Seiten im Browser, keine englisch gebliebenen Texte)
 kern | 8  | 1x | python3 werkzeuge/rucksack_test.py | «Digitaler Rucksack» statt «Datentausch» (5 Sprachen am Handy: neuer Name an jeder Stelle, kein alter Name sichtbar, Platz, alte Adressen gehen; Dokumente)
 kern | 4  | -  | python3 werkzeuge/kopf_chip_test.py | Kopf-Chip «N Hinweise» statt «alles ok», wenn etwas gemeldet wird
+kern | 5  | 1x | python3 werkzeuge/weit_zonen_test.py | Weitwinkel-KI: Zonen pro Montage mit Zielen, Rechte, Wärmebild-Bestätigung nachts nach dem Update (Hinweis einmal), Kameras-Karte
 kern | 4  | -  | python3 werkzeuge/werkskopie_test.py | Werkseinstellungen - Liste der Kopien mit Datum
 kern | 5  | -  | python3 werkzeuge/akku_nacht_test.py | «Akku bis Sonnenaufgang?» nach einem Neustart (am Netz nie, am Akku erst nach der Einschwingzeit, einmal pro Abend auch über Neustarts, kritisch sofort)
 kern | 5  | -  | python3 werkzeuge/protokoll_ruhe_test.py | Ruhiges Protokoll (kein Hin und Her bei walk_frames und Wind)

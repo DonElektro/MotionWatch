@@ -1136,7 +1136,7 @@ def main():
         alt, neu = neue_version(a.neue_version, a.version, a.stufe)
         print("Version %s → %s" % (alt, neu))
         fa, fn = dateiname(alt), dateiname(neu)
-        brucke = alt == "3.0.2"                          # Brücke (versionen.py BRUECKE): never removed
+        brucke = alt in ("3.0.2", "3.80.0")              # Brücke + Referenz (versionen.py BRUECKE, REFERENZ): never removed
         if os.path.isfile(fa) and alt.split(".")[:2] == neu.split(".")[:2] and not brucke:   # only the newest file of a main version stays
             if git("rm", "-q", os.path.basename(fa)).returncode != 0:
                 os.remove(fa)

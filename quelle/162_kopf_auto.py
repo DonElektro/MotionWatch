@@ -823,6 +823,11 @@ def kopf_ov_calibrate(cx=None, who="web"):
             return False, "the overview sees no movement right now"
         cx = t[0]
     head = (float(CFG["pan"]) - 50.0) / 50.0 * servo_half("pan")
+    try:
+        if cam_on_head(c.spec):
+            head = 0.0                                    # 639zw: on the head the offset is from the head itself (163 kopf_ov_deg)
+    except NameError:
+        pass
     CFG["kopf_ov_offset"] = round(head - (float(cx) - 0.5) * kopf_ov_fov(), 1)
     save_settings()
     log_event("servo", f"Overview calibrated ({who}): it looks {CFG['kopf_ov_offset']:+.0f}° from the middle of the head")

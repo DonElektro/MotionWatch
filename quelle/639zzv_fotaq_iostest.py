@@ -21,6 +21,9 @@
 #     Darum: Patch 0102 (nach dem Spielende endet ScummVM und meldet es der Seite: Tafel «Spiel beendet», Fehler bleiben als
 #     Tafel mit «Fehler kopieren» stehen), Wiederholung bei Daten-Abrufen (0101), Diagnose-Zeile nach dem Start versteckt
 #     (Knopf «ⓘ»), und die Seite meldet Start / Ende / Fehler an MoveEye («Meldungen vom Test» im Kasten, fqt_spieleport).
+#   * 14.11.2026: der Besitzer hat entschieden – «Test B» wird das Spiel (fotaq-2, Teil 639zzg, FOTAQ_ENGINE_NEW). Dieser Teil
+#     bleibt noch EINE Version stehen (Rückweg, falls fotaq-2 auf dem Gerät nicht läuft) und kommt danach weg. Spielstände
+#     aus dem Test sind dieselben wie im Spiel (gleicher Ursprung, gleicher Ordner) – geprüft: fotaq_iostest.py --umzug.
 #   * Rückbau: diese Datei löschen (und den «Range»-Abschnitt in 340 – der schadet aber nicht).
 # Selbsttest fqt_selftest; Tests werkzeuge/fotaq_iostest.py (--moveeye: Laden, Pins, Port, Stücke; --paket: die Varianten im Browser).
 # ----------------------------------------------------------------------------

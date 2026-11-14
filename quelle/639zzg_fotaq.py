@@ -25,15 +25,31 @@
 # Selbsttest fotaq_selftest; Tests werkzeuge/spiele_test.py --fotaq-moveeye (Laden, Prüfsumme, Platz, Port, Kachel) und
 # --nur-fotaq (das Spiel im Browser, Handy / iPad / PC, DE und EN).
 # ----------------------------------------------------------------------------
-FOTAQ_TAG = "fotaq-1"
-FOTAQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + FOTAQ_TAG + "/"}   # Tests: lokaler Server
-# Werte aus dem Workflow «FOTAQ» (pins.txt / Release-Notiz von FOTAQ_TAG); size 0 = noch nicht freigegeben (kommt mit einem Update).
+# 3.88 (Entscheid des Besitzers 14.11.2026 nach dem Test am iPhone, Teil 639zzv): die Fassung «Test B» wird das Spiel.
+#   * Neue Engine «fotaq-2» (Workflow «FOTAQ», gleicher Bau wie Test B: Spieldaten in Stücken, kleine Funktionen, Spielende
+#     ohne Launcher, Fehler bleiben als Tafel stehen). Nur die Engine ist neu; die Spieldaten (de / en) bleiben die von
+#     fotaq-1 – wer das Spiel hat, lädt mit «⬆ Neue Fassung laden» nur rund 12 MB, die Sprachen bleiben auf der Karte.
+#   * Solange FOTAQ_ENGINE_NEW keine Pins hat (size 0), bleibt alles wie in 3.70.2 (Engine fotaq-1, Warnseite, «Am PC»).
+#     Mit Pins: neue Installation = neue Engine; ein Gerät mit der alten Engine spielt weiter wie bisher (Warnseite,
+#     Hinweis, PC-Gruppe), bis der Admin die neue Fassung lädt. Mit der neuen Engine: Kachel in der Gruppe «👆 Touch»,
+#     kein Hinweis, keine Warnseite (start.html zeigt gleich die Startseite). «Range» am Spiele-Port (340) wird gebraucht.
+#   * Spielstände: gleicher Ursprung (Spiele-Port) und gleicher Ordner (IndexedDB «/home/web_user», saves/<sprache>) wie in
+#     fotaq-1 und im iPhone-Test – sie bleiben ohne Kopieren erhalten.
+FOTAQ_ROOT = "https://github.com/DonElektro/MotionWatch/releases/download/"
 # fotaq-1: Lauf 42600071456 (09.11.2026) von main e80c566, ScummVM v2026.4.0 (7d2709da).
+FOTAQ_ENGINE_OLD = {"name": "fotaq-engine-1.zip", "size": 12049091, "sha256": "6feab69b314ecc491f011ab9eaa0d0df670bd5be86e908c66e7491559ac31de5", "unpacked": 18533041, "tag": "fotaq-1"}
+# fotaq-2: Zeile «PIN fotaq-engine-2.zip size=… sha256=… unpacked=…» aus pins.txt des Releases fotaq-2 hier eintragen (size, sha256, unpacked).
+FOTAQ_ENGINE_NEW = {"name": "fotaq-engine-2.zip", "size": 0, "sha256": "", "unpacked": 0, "tag": "fotaq-2", "ios": True}
+FOTAQ_NEW = bool(FOTAQ_ENGINE_NEW["size"])
+FOTAQ_TAG = FOTAQ_ENGINE_NEW["tag"] if FOTAQ_NEW else FOTAQ_ENGINE_OLD["tag"]
+FOTAQ_BASE = {"url": FOTAQ_ROOT + FOTAQ_TAG + "/"}   # Tests: lokaler Server
+# Werte aus dem Workflow «FOTAQ» (pins.txt / Release-Notiz); «tag» = an welchem Release die Datei hängt (fehlt: FOTAQ_TAG).
 FOTAQ_FILES = {
-    "engine": {"name": "fotaq-engine-1.zip", "size": 12049091, "sha256": "6feab69b314ecc491f011ab9eaa0d0df670bd5be86e908c66e7491559ac31de5", "unpacked": 18533041},
-    "de": {"name": "fotaq-de-1.zip", "size": 108739455, "sha256": "c824460b7152c43c468c8c0dbfb2d436c17b7cfe84109358989d39316b1853ae", "unpacked": 108739281},
-    "en": {"name": "fotaq-en-1.zip", "size": 51225404, "sha256": "9af0594435d6ff0caa4b7956d31a31b006c5e49c1b940d9074d9c1b1add64279", "unpacked": 51227796},
+    "engine": dict(FOTAQ_ENGINE_NEW if FOTAQ_NEW else FOTAQ_ENGINE_OLD),
+    "de": {"name": "fotaq-de-1.zip", "size": 108739455, "sha256": "c824460b7152c43c468c8c0dbfb2d436c17b7cfe84109358989d39316b1853ae", "unpacked": 108739281, "tag": "fotaq-1"},
+    "en": {"name": "fotaq-en-1.zip", "size": 51225404, "sha256": "9af0594435d6ff0caa4b7956d31a31b006c5e49c1b940d9074d9c1b1add64279", "unpacked": 51227796, "tag": "fotaq-1"},
 }
+FOTAQ_OLD_SHA = {FOTAQ_ENGINE_OLD["sha256"]} if FOTAQ_NEW else set()     # engines that still run until the admin loads the new one
 FOTAQ_MAX_BYTES = 400 * 1024 * 1024      # harte Obergrenze für die drei ZIP und für das Entpackte (je)
 FOTAQ_GAME = {"dir": "fotaq", "start": "start.html", "icon": "thumb.svg", "input": "keys",    # 3.70.2: start.html = warning page (MoveEye)
               "name": "Flight of the Amazon Queen",
@@ -79,12 +95,17 @@ FOTAQ_LANGS = ("de", "en")
 FOTAQ_LANG_NAMES = {"de": "Deutsch", "en": "English"}
 
 
+def _fotaq_url(f):
+    """where one file is loaded from: its own release («tag»), or the test server"""
+    return (FOTAQ_ROOT + f["tag"] + "/" if f.get("tag") and FOTAQ_BASE["url"].startswith(FOTAQ_ROOT) else FOTAQ_BASE["url"]) + f["name"]
+
+
 def _fotaq_ok_read():
     """marker fotaq.ok (JSON): tag + sha256 of every part that was unpacked and checked ({"engine": …, "de": …})"""
     try:
         with open(os.path.join(fotaq_dir(), "fotaq.ok"), encoding="utf-8") as fh:
             d = json.load(fh)
-        return d if isinstance(d, dict) and d.get("tag") == FOTAQ_TAG and isinstance(d.get("parts"), dict) else {}
+        return d if isinstance(d, dict) and isinstance(d.get("parts"), dict) else {}      # 3.88: the checksums of the parts decide, not the tag
     except (OSError, ValueError):
         return {}
 
@@ -96,7 +117,31 @@ def _fotaq_ok_write(parts):
 
 
 def _fotaq_part_ok(parts, k):
-    return parts.get(k) == FOTAQ_FILES[k]["sha256"] and (k == "engine" or os.path.isdir(os.path.join(fotaq_dir(), "data", "games", k)))
+    if k == "engine":                                         # 3.88: an earlier engine still counts (it runs until the update)
+        return bool(parts.get(k)) and (parts.get(k) == FOTAQ_FILES[k]["sha256"] or parts.get(k) in FOTAQ_OLD_SHA)
+    return parts.get(k) == FOTAQ_FILES[k]["sha256"] and os.path.isdir(os.path.join(fotaq_dir(), "data", "games", k))
+
+
+def fotaq_engine():
+    """'new' = the pinned engine is installed, 'old' = an earlier one (plays as before, the admin can load the new one), '' = none"""
+    if not fotaq_pinned():
+        return ""
+    e_ = (_fotaq_ok_read().get("parts") or {}).get("engine")
+    return "new" if e_ and e_ == FOTAQ_FILES["engine"]["sha256"] else "old" if e_ and e_ in FOTAQ_OLD_SHA else ""
+
+
+def fotaq_ios():
+    """the installed engine runs on iPhone / iPad (fotaq-2 and later): tile for touch, no note, no warning page"""
+    return fotaq_engine() == "new" and bool(FOTAQ_FILES["engine"].get("ios"))
+
+
+def fotaq_game():
+    """the tile: as in 3.70.2 (PC group, note, warning page) with the old engine, a normal touch tile with the new one"""
+    g_ = dict(FOTAQ_GAME)
+    if fotaq_ios():
+        g_.update(input="touch", start="index.html")
+        g_.pop("note", None); g_.pop("notes", None)
+    return g_
 
 
 def fotaq_langs():
@@ -159,7 +204,7 @@ def _fotaq_unzip(zp, dest, limit, prefix=""):
 def fotaq_need(langs):
     """the parts a choice still needs (engine only when it is not there yet): (parts, download bytes, unpacked bytes)"""
     have = fotaq_langs()
-    eng = bool(have)
+    eng = fotaq_engine() == "new" and bool(have)           # 3.88: an old engine is replaced with the next download
     parts = ([] if eng else ["engine"]) + [L for L in FOTAQ_LANGS if L in langs and L not in have]
     return parts, sum(FOTAQ_FILES[k]["size"] for k in parts), sum(FOTAQ_FILES[k]["unpacked"] for k in parts)
 
@@ -174,8 +219,8 @@ def fotaq_download(langs=FOTAQ_LANGS, wait=False):
     if FOTAQ_DL["running"]:
         return True, ""
     parts, size, unz = fotaq_need(langs)
-    if not [k for k in parts if k != "engine"]:
-        return True, ""                                          # all chosen languages are there already
+    if not parts:
+        return True, ""                                          # all chosen languages (and the current engine) are there already
     try:
         free = shutil.disk_usage(DATA_DIR).free
     except OSError:
@@ -189,6 +234,7 @@ def fotaq_download(langs=FOTAQ_LANGS, wait=False):
     def work():
         new_root = "engine" in parts
         tmp = fotaq_dir() + ".new"
+        alt = fotaq_dir() + ".alt"
         done = []
         try:
             os.makedirs(dd, exist_ok=True)
@@ -197,7 +243,7 @@ def fotaq_download(langs=FOTAQ_LANGS, wait=False):
                 dest = os.path.join(dd, f["name"])
                 if os.path.isfile(dest) and piper_check_file(dest, f)[0]:
                     FOTAQ_DL["got"] += f["size"]; continue
-                bio_fetch(FOTAQ_BASE["url"] + f["name"], dest, f, FOTAQ_DL)      # 639zzd: resume, exact size + sha256
+                bio_fetch(_fotaq_url(f), dest, f, FOTAQ_DL)      # 639zzd: resume, exact size + sha256
             FOTAQ_DL["phase"] = "unpack"
             if new_root:                                          # first time: everything in a new folder, then swapped in
                 shutil.rmtree(tmp, ignore_errors=True)
@@ -209,9 +255,18 @@ def fotaq_download(langs=FOTAQ_LANGS, wait=False):
                     raise ValueError("the package is not " + FOTAQ_TAG)
                 for L in FOTAQ_LANGS:                             # a language only comes from its own ZIP
                     shutil.rmtree(os.path.join(tmp, "data", "games", L), ignore_errors=True)
-                shutil.rmtree(fotaq_dir(), ignore_errors=True)
+                keep = fotaq_langs()                              # 3.88: new engine over an old one - the languages stay on the card
+                pr0 = {"engine": FOTAQ_FILES["engine"]["sha256"]}
+                pr0.update({L: FOTAQ_FILES[L]["sha256"] for L in keep})
+                shutil.rmtree(alt, ignore_errors=True)
+                if os.path.isdir(fotaq_dir()):
+                    os.replace(fotaq_dir(), alt)                  # the old folder aside; «finally» puts it back if anything fails
                 os.replace(tmp, fotaq_dir())
-                _fotaq_ok_write({"engine": FOTAQ_FILES["engine"]["sha256"]})
+                for L in keep:
+                    os.makedirs(os.path.join(fotaq_dir(), "data", "games"), exist_ok=True)
+                    os.replace(os.path.join(alt, "data", "games", L), os.path.join(fotaq_dir(), "data", "games", L))
+                _fotaq_ok_write(pr0)
+                shutil.rmtree(alt, ignore_errors=True)
             for L in [k for k in parts if k != "engine"]:          # each language: own folder, swapped in when complete
                 g = os.path.join(fotaq_dir(), "data", "games")
                 lt = os.path.join(g, L + ".new")
@@ -240,6 +295,16 @@ def fotaq_download(langs=FOTAQ_LANGS, wait=False):
             log_event("sys", f"Flight of the Amazon Queen not installed: {FOTAQ_DL['msg']}")
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
+            if os.path.isdir(alt):                                # the swap of the engine did not finish: the old folder comes back whole
+                try:
+                    for L in FOTAQ_LANGS:
+                        n_, o_ = os.path.join(fotaq_dir(), "data", "games", L), os.path.join(alt, "data", "games", L)
+                        if os.path.isdir(n_) and not os.path.exists(o_) and os.path.isdir(os.path.dirname(o_)):
+                            os.replace(n_, o_)
+                    shutil.rmtree(fotaq_dir(), ignore_errors=True)
+                    os.replace(alt, fotaq_dir())
+                except OSError:
+                    pass
             for L in FOTAQ_LANGS:
                 shutil.rmtree(os.path.join(fotaq_dir(), "data", "games", L + ".new"), ignore_errors=True)
             if os.path.isdir(fotaq_dir()) and not fotaq_langs():   # engine without any language: nothing to play, nothing kept
@@ -261,7 +326,7 @@ def fotaq_cancel():
 def fotaq_delete():
     if FOTAQ_DL["running"]:
         return False, "busy right now - try again in a moment"
-    for p in (fotaq_dir(), fotaq_dir() + ".new", fotaq_dl_dir()):
+    for p in (fotaq_dir(), fotaq_dir() + ".new", fotaq_dir() + ".alt", fotaq_dl_dir()):
         shutil.rmtree(p, ignore_errors=True)
     log_event("sys", "Flight of the Amazon Queen deleted")
     return True, ""
@@ -294,7 +359,7 @@ def fotaq_state():
     have = fotaq_langs()
     return {"pinned": fotaq_pinned(), "installed": fotaq_installed(), "langs": have, "tag": FOTAQ_TAG,
             "parts": {k: {"size": f["size"], "unpacked": f["unpacked"]} for k, f in FOTAQ_FILES.items()},
-            "engine": bool(have), "size": fotaq_total(), "unpacked": fotaq_unpacked(), "free": free, "free_need": bio_free_need(),
+            "engine": bool(have) and fotaq_engine() == "new", "ios": fotaq_ios(), "update": bool(have) and fotaq_engine() == "old", "size": fotaq_total(), "unpacked": fotaq_unpacked(), "free": free, "free_need": bio_free_need(),
             "dl": {k: FOTAQ_DL[k] for k in ("running", "got", "total", "msg", "done", "phase")}}
 
 
@@ -321,7 +386,7 @@ _games_list_639zzg = games_list
 def games_list(extra=True):                                 # + 639zzg: FOTAQ when installed (extra=False: only the collection)
     gl = _games_list_639zzg()
     if extra and fotaq_installed():
-        gl = [x for x in gl if x.get("dir") != FOTAQ_GAME["dir"]] + [dict(FOTAQ_GAME)]
+        gl = [x for x in gl if x.get("dir") != FOTAQ_GAME["dir"]] + [fotaq_game()]
     return gl
 
 
@@ -335,7 +400,9 @@ def games_file(game, fn):                                   # + 639zzg: the file
     if not fotaq_installed():
         return None
     if (fn or "") in ("", "start.html"):                    # 3.70.2: first the warning page of MoveEye (iPad / iPhone), then index.html
-        return fotaq_start_file()
+        if not fotaq_ios():
+            return fotaq_start_file()
+        fn = "index.html"                                   # 3.88: the new engine runs on iPhone / iPad - straight to the start page
     base = os.path.realpath(fotaq_dir())
     p_ = os.path.realpath(os.path.join(base, fn or FOTAQ_GAME["start"]))
     if not p_.startswith(base + os.sep) or not os.path.isfile(p_) or os.path.basename(p_) in ("fotaq.ok", "fotaq.ok.new") or ".new" + os.sep in p_[len(base):] + os.sep:
@@ -362,6 +429,8 @@ _HX_FOTAQ = {
     "choose at least one language": ("mindestens eine Sprache wählen", "choisir au moins une langue", "scegliere almeno una lingua", "tscherner almain ina lingua"),
     "Add": ("Dazu laden", "Ajouter", "Aggiungi", "Agiuntar"),
     "Languages:": ("Sprachen:", "Langues :", "Lingue:", "Linguas:"),
+    "fotaq-upd": ("Neue Fassung laden (%s MB) – läuft auch auf iPhone/iPad", "Charger la nouvelle version (%s Mo) – fonctionne aussi sur iPhone/iPad",
+                  "Carica la nuova versione (%s MB) – funziona anche su iPhone/iPad", "Chargiar la nova versiun (%s MB) – funcziuna er sin iPhone/iPad"),
     "fotaq-ask": ("«Flight of the Amazon Queen» jetzt laden? %s MB von GitHub (danach %s MB auf der Speicherkarte, 2 GB bleiben frei).",
                   "Charger «Flight of the Amazon Queen» maintenant ? %s Mo depuis GitHub (ensuite %s Mo sur la carte, 2 Go restent libres).",
                   "Caricare «Flight of the Amazon Queen» adesso? %s MB da GitHub (poi %s MB sulla scheda, 2 GB restano liberi).",
@@ -455,11 +524,18 @@ def fotaq_start_file():
     except OSError:
         return None
     return p
-FOTAQ_JS_EN = {"fotaq-ask": "Load «Flight of the Amazon Queen» now? %s MB from GitHub (then %s MB on the memory card, 2 GB stay free).",
+FOTAQ_JS_EN = {"fotaq-upd": "Load the new version (%s MB) – also runs on iPhone/iPad", "fotaq-ask": "Load «Flight of the Amazon Queen» now? %s MB from GitHub (then %s MB on the memory card, 2 GB stay free).",
                "fotaq-del": "Remove «Flight of the Amazon Queen»? The saved games stay in the browsers.",
                "fotaq-del-lang": "Remove this language? The saved games stay in the browsers."}
 TOOLS_PAGE = TOOLS_PAGE.replace("/*FOTAQ_I18N*/", "Object.assign(I18N.de," + json.dumps(FOTAQ_JS_DE, ensure_ascii=False) + ");"
                                 "I18N.en=I18N.en||{};Object.assign(I18N.en," + json.dumps(FOTAQ_JS_EN, ensure_ascii=False) + ");", 1)
+# 3.88: with the new engine no note «Am PC spielen …» in the admin tab; with an old engine a button for the new version
+_FQ_NOTE = 'const wn = el("div", "", "⚠️ " + t("Play on the PC – it crashes on iPad/iPhone")); wn.id = "fotaq-note"; wn.style.cssText = "font-weight:600;color:var(--warn,#e9a23b);margin-top:4px"; w.appendChild(wn);'
+_FQ_ROW = 'row.append(el("span", "", "✓ " + t("installed")), pl, db);\n    ["de", "en"].forEach(L => { const r = el("div", "trow"); r.style.marginTop = "6px"; r.dataset.lang = L;'
+if TOOLS_PAGE.count(_FQ_NOTE) == 1 and TOOLS_PAGE.count(_FQ_ROW) == 1:
+    TOOLS_PAGE = TOOLS_PAGE.replace(_FQ_NOTE, "if (!F.ios) { " + _FQ_NOTE + " }", 1)
+    TOOLS_PAGE = TOOLS_PAGE.replace(_FQ_ROW, _FQ_ROW.replace("\n", '\n    if (F.update) { const ub = el("button", "", "⬆ " + t("fotaq-upd").replace("%s", MB((PT.engine || {}).size))); ub.type = "button"; ub.id = "fotaq-update"; '
+                                                             'ub.onclick = () => partyDo({action: "fotaq_install", langs: have}); const ur = el("div", "trow"); ur.style.marginTop = "6px"; ur.appendChild(ub); extra.appendChild(ur); }\n', 1), 1)
 
 # ---- the manual: one point in the section «Spiele freigeben» (5 languages), with the licences -------------------------------------
 _HELP_FOTAQ = {
@@ -469,6 +545,13 @@ _HELP_FOTAQ = {
     "it": '<li><b>🛩 Flight of the Amazon Queen</b> (avventura del 1995, versione CD con voci, tedesco o inglese): caricare una volta sotto Altro → Angolo giochi → «⬇ Installa» (circa 170 MB da GitHub, somma fissa, 2 GB restano liberi), poi è una tessera della raccolta, anche senza Internet. Toccare = clic, pressione lunga o «🖱 Destro» = clic destro, «☰ Menu» = salvare, caricare. <b>Su iPad/iPhone il gioco si blocca dopo circa un minuto – giocare sul PC.</b> <b>Licenza:</b> gioco © 1995 John Passfield &amp; Steven Stamatiadis, freeware; ScummVM © The ScummVM Team, GPL v3 (sorgente: link sulla pagina del gioco).</li>',
     "rm": '<li><b>🛩 Flight of the Amazon Queen</b> (aventura da 1995, versiun CD cun vusch, tudestg u englais): chargiar ina giada sut Dapli → Chantun da gieus → «⬇ Installar» (var 170 MB da GitHub, summa fixa, 2 GB restan libers), lura ina cachel da la collecziun, er senza internet. Tutgar = clic, smatgar ditg u «🖱 Dretg» = clic dretg, «☰ Menu» = memorisar, chargiar. <b>Sin iPad/iPhone s’interrumpa il gieu suenter var ina minuta – giugar al PC.</b> <b>Licenza:</b> gieu © 1995 John Passfield &amp; Steven Stamatiadis, freeware; ScummVM © The ScummVM Team, GPL v3 (code: link sin la pagina dal gieu).</li>',
 }
+
+
+if FOTAQ_NEW:                                               # 3.88: the game runs on iPhone / iPad - no «play on the PC» in the manual
+    _HELP_FOTAQ = {L: re.sub(r" <b>[^<]*iPad/iPhone[^<]*</b>(?: \([^)]*\)\.)?", "", h_) for L, h_ in _HELP_FOTAQ.items()}
+    _HELP_FOTAQ["de"] = _HELP_FOTAQ["de"].replace(" Auf dem Handy braucht das Spiel viel Speicher (Deutsch ~110 MB Daten), ältere Geräte schaffen es eventuell nicht.", " Läuft auch auf iPhone und iPad.")
+    _HELP_FOTAQ["en"] = _HELP_FOTAQ["en"].replace(" On phones the game needs a lot of memory (German ~110 MB of data), older devices may not manage.", " It also runs on iPhone and iPad.")
+    assert all("iPad/iPhone" not in h_ for h_ in _HELP_FOTAQ.values()) and "Läuft auch" in _HELP_FOTAQ["de"] and "also runs" in _HELP_FOTAQ["en"]
 
 
 def _help_fotaq(doc, lang):
@@ -492,7 +575,13 @@ def fotaq_selftest():
     assert FOTAQ_BASE["url"] == "https://github.com/DonElektro/MotionWatch/releases/download/" + FOTAQ_TAG + "/"
     assert re.fullmatch(r"fotaq-\d{1,3}", FOTAQ_TAG)
     n = FOTAQ_TAG.split("-")[1]
-    assert all(f["name"] == "fotaq-%s-%s.zip" % (k, n) for k, f in FOTAQ_FILES.items()), "FOTAQ_FILES: names fit FOTAQ_TAG"
+    assert all(f["name"] == "fotaq-%s-%s.zip" % (k, f.get("tag", FOTAQ_TAG).split("-")[1]) for k, f in FOTAQ_FILES.items()), "FOTAQ_FILES: names fit their release"
+    assert FOTAQ_FILES["engine"].get("tag") == FOTAQ_TAG and _fotaq_url(FOTAQ_FILES["de"]) == FOTAQ_ROOT + "fotaq-1/fotaq-de-1.zip" and n == str(2 if FOTAQ_NEW else 1)
+    assert _fotaq_url(FOTAQ_FILES["engine"]) == FOTAQ_ROOT + FOTAQ_TAG + "/fotaq-engine-%s.zip" % n
+    assert bool(FOTAQ_ENGINE_NEW["size"]) == bool(FOTAQ_ENGINE_NEW["sha256"]) == bool(FOTAQ_ENGINE_NEW["unpacked"]), "fotaq-2: either all pins or none"
+    assert FOTAQ_OLD_SHA == ({FOTAQ_ENGINE_OLD["sha256"]} if FOTAQ_NEW else set()) and bool(FOTAQ_FILES["engine"].get("ios")) == FOTAQ_NEW
+    assert fotaq_engine() in ("", "old", "new") and (fotaq_ios() or fotaq_game() == FOTAQ_GAME) and (not fotaq_ios() or (fotaq_game()["input"] == "touch" and "note" not in fotaq_game()))
+    assert "if (!F.ios) { const wn" in TOOLS_PAGE and 'ub.id = "fotaq-update"' in TOOLS_PAGE and '"fotaq-upd"' in TOOLS_PAGE
     assert fotaq_pinned() or all(not f["size"] and not f["sha256"] for f in FOTAQ_FILES.values()), "FOTAQ_FILES: either all pins or none"
     assert fotaq_total() <= 3 * FOTAQ_MAX_BYTES
     assert FOTAQ_GAME["input"] in GAME_GROUPS and FOTAQ_GAME["icon"] == "thumb.svg"

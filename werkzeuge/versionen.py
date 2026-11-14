@@ -28,6 +28,11 @@ versions.json und im Repository. Geräte bis 2.98.x nehmen nur Dateien bis 8 MiB
 auch unter 8 MiB (grosse Teile in moveeye_daten_X_Y_Z.zip, bauen.py) - dann gehen alte Geräte direkt auf die neueste.
 Wäre eine Datei je grösser, schreibt --make-manifest «needs»: "3.0.0" in ihren Eintrag; Geräte ab dem Verkleinern-Paket
 nehmen dann zuerst die Brücke (update_pick, Teil 397); ältere Geräte (2.98.x bis zur letzten Version ohne Zusatzdatei) wählen 3.0.2 von Hand.
+
+Referenz-Versionen (Entscheid 14.11.2026): REFERENZ (3.80.0 = die letzte MoveEye, die den Simulator-Anhang «anhang» noch nicht
+kennt) bleiben wie die Brücke für immer im Repository und in versions.json - zählen aber NICHT zu den MAX_HAUPT Hauptversionen.
+Grund: werkzeuge/sim_anhang_test.py (Fall M1) prüft mit genau so einer Datei, dass alte Geräte den Simulator weiter aus dem
+Repository holen; das Aufräumen hätte sonst die letzte solche Datei gelöscht (3.89.0).
 """
 import argparse
 import hashlib
@@ -63,6 +68,7 @@ MAX_ALT = 8 * 1024 * 1024           # Grenze der Geräte bis 2.98.x
 ZIEL = 5 * 1024 * 1024              # Schlank (3.59.0): Grenze der Hauptdatei (= bauen.py GROESSE_MAX), darüber Problem
 ZIEL_WARN = 4 * 1024 * 1024         # darüber Hinweis (= bauen.py GROESSE_WARN)
 MAX_HAUPT = 10                      # höchstens 10 Hauptversionen X.Y im Repository
+REFERENZ = ("3.80.0",)              # bleiben immer (letzte MoveEye ohne Simulator-Anhang, sim_anhang_test M1) - zählen nicht mit
 VFILE = re.compile(r"^webcam_bewegung_(\d{1,3})_(\d{1,3})_(\d{1,3})\.py$")
 
 
@@ -248,6 +254,9 @@ def pruefen():
         man = {}
     if not any(e.get("version") == app for e in man.get("versions") or []):
         warn.append("MoveEye %s steht noch nicht in versions.json (rel_mw.sh signiert)" % app)
+    for r in REFERENZ:                                   # die Referenz-Version bleibt signiert in versions.json (rel_mw.sh signiert)
+        if os.path.isfile(os.path.join(REPO, "webcam_bewegung_%s.py" % r.replace(".", "_"))) and not any(e.get("version") == r for e in man.get("versions") or []):
+            warn.append("Referenz-Version %s steht nicht in versions.json (rel_mw.sh signiert)" % r)
     else:                                                    # schon veröffentlicht: quelle/ seither geändert?
         q = geaendert_seit((git_text("log", "-1", "-m", "--format=%H", "-G", '"version": "%s"' % re.escape(app), "--", "versions.json") or "").strip(),
                            ["quelle"])
@@ -361,6 +370,10 @@ def groesse_bruecke(app):
         vs = json.load(open(os.path.join(REPO, "versions.json"), encoding="utf-8")).get("versions") or []
         if not any(e.get("version") == BRUECKE for e in vs):
             out.append("Brücke %s fehlt in versions.json" % BRUECKE)
+        hoechste = max((tuple(int(x) for x in m.groups()) for n in os.listdir(REPO) for m in [VFILE.match(n)] if m), default=())
+        for r in REFERENZ:                               # nur wo es schon neuere Versionen gibt (nicht in Wegwerf-Repositories der Tests)
+            if hoechste > tuple(int(x) for x in r.split(".")) and not os.path.isfile(os.path.join(REPO, "webcam_bewegung_%s.py" % r.replace(".", "_"))):
+                out.append("Referenz-Version %s fehlt im Repository (darf nie gelöscht werden)" % r)
     except (OSError, ValueError):
         out.append("versions.json nicht lesbar")
     return out
@@ -376,10 +389,12 @@ def aufraeumen(nur_zeigen=False):
     weg = [n for k, n in files if neu[k[:2]][1] != n]         # ältere Dateien derselben Hauptversion
     haupt = sorted(neu.values(), reverse=True)
     br = tuple(int(x) for x in BRUECKE.split("."))
-    rest = [x for x in haupt if x[0] != br]
+    refs = {tuple(int(x) for x in r.split(".")) for r in REFERENZ}
+    rest = [x for x in haupt if x[0] != br and x[0] not in refs]
     platz = MAX_HAUPT - (1 if any(x[0] == br for x in haupt) else 0)
     weg += [n for _k, n in rest[platz:]]
     weg = [n for n in weg if n != "webcam_bewegung_%s.py" % BRUECKE.replace(".", "_")]   # nie die Brücke
+    weg = [n for n in weg if n not in {"webcam_bewegung_%s.py" % r.replace(".", "_") for r in REFERENZ}]   # nie eine Referenz-Version
     for n in weg:
         z = "moveeye_daten_" + n[len("webcam_bewegung_"):-3] + ".zip"
         for x in (n, z):
@@ -388,7 +403,7 @@ def aufraeumen(nur_zeigen=False):
             print(("würde löschen: " if nur_zeigen else "gelöscht: ") + x)
             if not nur_zeigen and subprocess.run(["git", "rm", "-q", x], cwd=REPO).returncode != 0:
                 os.remove(os.path.join(REPO, x))
-    print("%d Hauptversionen, Brücke %s bleibt" % (min(len(haupt), MAX_HAUPT), BRUECKE))
+    print("%d Hauptversionen, Brücke %s bleibt, Referenz %s bleibt" % (min(len(haupt), MAX_HAUPT), BRUECKE, ", ".join(REFERENZ)))
     return 0
 
 

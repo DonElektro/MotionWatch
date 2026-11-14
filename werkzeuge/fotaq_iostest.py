@@ -382,15 +382,69 @@ def paket(pfad, daten, bilder, fehler, warn):
             print(f"    {k:<9} Start {x['start_s']:>3} s · Seite bis {x['mb']} MB · WebAssembly-Speicher {dg.get('heap', 0) >> 20} MB · Daten gelesen {dg.get('bytes', 0) >> 20} MB in {dg.get('req', 0)} Stücken")
 
 
+def umzug(wurzel, fehler, bilder=""):
+    """3.88 («Test B» wird das Spiel, fotaq-2): die Spielstände ziehen ohne Kopieren mit, weil alle drei Fassungen vom gleichen
+    Ursprung (Spiele-Port) kommen und denselben Ordner in IndexedDB benutzen. Geprüft im Browser: ein Spielstand aus der alten
+    Engine (fotaq-1, Englisch) und einer aus dem iPhone-Test (Test B, Deutsch) sind in der neuen Fassung da und lassen sich
+    laden (F12 = Schnellladen). wurzel: Ordner mit fotaqalt/ (fotaq-1), fotaqtest/ (Testpaket), fotaq/ (fotaq-2), je mit data/games."""
+    from playwright.sync_api import sync_playwright
+    import mimetypes
+    mimetypes.add_type("application/wasm", ".wasm")
+    s = ST.server(wurzel)
+    base = f"http://127.0.0.1:{s.server_address[1]}"
+    try:
+        with sync_playwright() as pw:
+            br = pw.chromium.launch(args=ST.FOTAQ_ARGS)
+            ctx = br.new_context(viewport={"width": 1000, "height": 640}, locale="de-CH")      # ONE browser profile for all three pages
+
+            def spielen(seite, L, speichern):
+                pg = ctx.new_page()
+                pg.goto(base + seite, wait_until="load"); pg.wait_for_timeout(800)
+                pg.locator(f"#btn-{L}").click()
+                pg.wait_for_function("() => window.FOTAQ && /User picked target/.test(FOTAQ.log.join(' ')) && document.querySelector('#load').classList.contains('hidden')", timeout=180000)
+                for _ in range(8):
+                    pg.locator("#kSkip").click(); pg.wait_for_timeout(2500)
+                if speichern:
+                    pg.keyboard.press("F11"); pg.wait_for_timeout(3500)
+                return pg
+            pg = spielen("/g/fotaqalt/index.html", "en", True); pg.close()
+            pg = spielen("/g/fotaqtest/index.html?v=b", "de", True); pg.close()
+            pg = ctx.new_page(); pg.goto(base + "/g/fotaq/index.html"); pg.wait_for_timeout(500)
+            keys = [k for k in (pg.evaluate(ST.FOTAQ_IDB) or []) if "/saves/" in k and k.endswith(".s00")]
+            pg.close()
+            if sorted(keys) != ["/home/web_user/saves/de/queen.s00", "/home/web_user/saves/en/queen.s00"]:
+                fehler.append(f"Umzug: die Spielstände der alten Engine (en) und des Tests (de) sind nicht beide im Browser-Speicher ({keys})")
+            for L in ("de", "en"):
+                pg = spielen("/g/fotaq/index.html", L, False)
+                da = pg.evaluate("(L) => { try { return FOTAQ.FS.readdir('/home/web_user/saves/' + L).filter(x => x[0] !== '.'); } catch (e) { return String(e); } }", L)
+                vor = pg.locator("#stage").screenshot()
+                pg.locator("#canvas").click(position={"x": 300, "y": 200}); pg.wait_for_timeout(4000)       # walk away, then quick load: back to the saved picture
+                pg.keyboard.press("F12"); pg.wait_for_timeout(4000)
+                z = pg.evaluate("() => ({err: FOTAQ.err || '', ended: !!FOTAQ.ended, log: FOTAQ.log.slice(-4).join(' | ')})")
+                if bilder:
+                    os.makedirs(bilder, exist_ok=True); pg.screenshot(path=os.path.join(bilder, f"umzug_{L}.png"))
+                if da != ["queen.s00"] or z["err"] or z["ended"] or pg.locator("#fqEnd").count():
+                    fehler.append(f"Umzug {L}: die neue Fassung sieht / lädt den Spielstand nicht ({da}; {z})")
+                else:
+                    print(f"Umzug {L}: Spielstand {da[0]} in der neuen Fassung da, Schnellladen ohne Fehler (Bild danach {ST._diff(vor, pg.locator('#stage').screenshot()):.0%} anders als vor dem Weggehen)", flush=True)
+                pg.close()
+            br.close()
+    finally:
+        s.shutdown()
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--paket", default="", help="Ordner fotaqtest/ des Testpakets (aus ios_paket.py)")
     ap.add_argument("--daten", default="", help="mit --paket: Ordner data/games des Spiels (de/, en/, index.json)")
     ap.add_argument("--bilder", default="")
     ap.add_argument("--datei", default="", help="die gebaute MoveEye-Datei (sonst die neueste)")
+    ap.add_argument("--umzug", default="", help="Ordner mit fotaqalt/ (fotaq-1), fotaqtest/ (Testpaket) und fotaq/ (fotaq-2): die Spielstände ziehen mit")
     a = ap.parse_args()
     fehler, warn = [], []
-    if a.paket:
+    if a.umzug:
+        umzug(a.umzug, fehler, a.bilder)
+    elif a.paket:
         paket(a.paket, a.daten, a.bilder, fehler, warn)
     else:
         moveeye(a.datei or ST._neueste_datei(), fehler)

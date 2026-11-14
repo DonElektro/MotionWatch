@@ -115,8 +115,7 @@ def main():
     lic = open(os.path.join(a.paket, "LIZENZEN.txt"), encoding="utf-8").read()
     kopf = ["«Queen – iPhone-Test» für MoveEye (%s): Test-Fassungen der Spiel-Engine von «Flight of the Amazon Queen»." % a.tag,
             "Dieses Paket enthält KEINE Spieldaten (sie kommen aus dem installierten Spiel) und ersetzt das Spiel nicht.",
-            "Zusätzlich zu den unten genannten Patches: werkzeuge/fotaq/ios/0101 (Spieldaten in Stücken über HTTP statt ganz im Speicher, mit Wiederholung),",
-            "0102 (nach dem Spielende endet ScummVM und meldet es der Seite, statt seinen Launcher zu öffnen),",
+            "Patches wie unten genannt (seit fotaq-2 gehören 0004 Spieldaten in Stücken und 0005 Spielende ohne Launcher zum Spiel selbst),",
             "andere Bau-Einstellungen je Variante (werkzeuge/fotaq/ios/bauen.sh, ios_konfig.py), Seite iostest.js (MoveEye, MIT).",
             "Quelle dieser Fassung: https://github.com/DonElektro/MotionWatch/tree/%s/werkzeuge/fotaq" % a.commit, "", "---- Angaben des Spiel-Pakets ----", ""]
     open(os.path.join(root, "LIZENZEN.txt"), "w", encoding="utf-8").write("\n".join(kopf) + lic)
