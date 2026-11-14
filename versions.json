@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-14 22:21",
+ "generated": "2026-11-14 23:13",
  "versions": [
   {
-   "version": "3.95.0",
-   "file": "webcam_bewegung_3_95_0.py",
+   "version": "3.95.1",
+   "file": "webcam_bewegung_3_95_1.py",
    "url": "",
-   "sha256": "24c5402fd21447b816fecc37eb1da6585c9286058ca30e01ba46b54d4991043c",
-   "date": "2026-11-14 22:21",
-   "notes": "Zwei Teile. (1) «⏪ Zeitfenster» im Live-Bild: Damals / Jetzt pro Blickrichtung. (2) «🔥 Glut-Wächter»: die Feuerstelle merken und fragen «Ist das Feuer aus?».",
-   "size": 4027888,
-   "sig": "44c830f150c5fdf2ab9c8568579734a5f5bab7aa4563f3ebc96d07354727404aa9583c968dc6fb81382ba7311b2d3858158a36dfc9d7b307f9eb5248fdfb0f06",
+   "sha256": "717adb7d349593b7bf4204856b32b3b40a9c8f917b92d86a5388222b3a0affd1",
+   "date": "2026-11-14 23:13",
+   "notes": "Unter der Haube: die Programmdatei ist rund 340 KB kleiner (deutsche Texte der Übersetzungstabellen in der Zusatzdatei, kein überflüssiger Leerraum im Code); am Verhalten ändert sich nichts.",
+   "size": 3679348,
+   "sig": "bc463b7c327bb1119fc38f822cd20bfffb996b61e60466a30c3be0d1e653882486f007ac178291d641c59bc3a0afd957e96127ce1567967c87322df6f7961a0d",
    "data": {
-    "file": "moveeye_daten_3_95_0.zip",
+    "file": "moveeye_daten_3_95_1.zip",
     "url": "",
-    "sha256": "bad2864281f94a43ed905fb403de27dc8bef8b89e9c86516159bbd01f85668d6",
-    "size": 11737570,
-    "sig": "66b7d0d2348765cabc92c2aa4931178f9816f7420f8f1138c8fea1b5edac86c5363e2b00310e11d06e56b030357a810a864ef9b6ce594583a6a7ae88231c9606"
+    "sha256": "c00fcff1269008337aca1c29076e28b9d738b8c92666d9bccb822aabd4be7f36",
+    "size": 12342864,
+    "sig": "94159b002abf623a649b4caccf536f301ab4ba13c14b3b238a63c4a64117a657c217c9ae57c9a1232dd0dd0c8b965f5db3c10f3c27ec68a6135b5a01987a0800"
    }
   },
   {
