@@ -179,7 +179,9 @@ def teil_b(datei, browser, bilder):
     clock = os.path.join(tmp, "clock.txt"); open(clock, "w").write("40")
     st = {"source": "demo", "sim_on": False, "sim_url": "http://127.0.0.1:9", "sim_auto": False, "sim_autostart": False, "sim_autostart_v2": False,
           "sim_autoupd": False, "update_url": "", "lang": "de", "desktop_notice": False, "setup_done": True, "https_extra": False, "news_popup": False,
-          "web_width": 960, "web_quality": 75, "cam_hfov": 66.0, "cam_vfov": 41.0}
+          "web_width": 960, "web_quality": 75, "cam_hfov": 66.0, "cam_vfov": 41.0,
+          "kopf_park": False,   # «Aus» without the privacy look-away (that one blocks the magnifier on purpose, part A)
+          "extra_cams": ["usb:0"], "kopf_ov": "usb:0", "cam_fov": {"usb:0": {"model": "own", "deg": 102}}}   # the small picture #v3-mini (639zv) and the tiles
     json.dump({"cfg": st}, open(os.path.join(cfg, "motionwatch_settings.json"), "w"))
     wrap = os.path.join(tmp, "wrap.py"); open(wrap, "w").write(WRAP)
     with socket.socket() as sk:
@@ -223,12 +225,13 @@ def teil_b(datei, browser, bilder):
             except Exception:
                 time.sleep(1)
         time.sleep(3)
+        req("/api/arm", {"action": "disarm"})                   # the demo starts in «Wachsam»: the guard rule is tested below on its own
         for n, r in {"Anna": "family", "Kim": "kid", "Vera": "view", "Cus": "custom"}.items():
             req("/api/users", {"action": "add", "name": n, "password": n.lower() + "-pass-1", "role": r})
         req("/api/users", {"action": "update", "name": "Cus", "perms": ["rec"]})
         A, K, V, C = ("Anna", "anna-pass-1"), ("Kim", "kim-pass-1"), ("Vera", "vera-pass-1"), ("Cus", "cus-pass-1")
         c, j, _h = req("/api/lupe?lang=de")
-        ok(c == 200 and j.get("head_right") and j.get("has_head") and j.get("sharp") == "sensor" and j.get("fov") == [66.0, 41.0],
+        ok(c == 200 and j.get("head_right") and j.get("has_head") and j.get("sharp") == "sensor" and j.get("fov") == [66.0, 41.0] and not j.get("armed"),
            f"Zustand (Admin): Kopf-Recht, Kopf, Scharfbild vom «Sensor», Blickwinkel ({j})")
         print("B) Rechte", flush=True)
         q = "cam=head&x=0.78&y=0.62&w=0.12&h=0.12&ow=800"
@@ -350,6 +353,46 @@ def teil_b(datei, browser, bilder):
         ok(c == 200 and h.get("X-Lupe-Src") == "frame" and h.get("X-Lupe-Note") == "alarm",
            f"Person im Bild: volles Kamerabild statt Sensor, Hinweis «alarm» ({h.get('X-Lupe-Src')}, {h.get('X-Lupe-Note')})")
         open(clock, "w").write("40")
+        print("B) Wache an: Scharfbild nur auf Wunsch, höchstens alle 10 s", flush=True)
+        t0 = time.time()
+        while time.time() - t0 < 30 and req("/api/lupe?lang=de")[1].get("pause"):
+            time.sleep(0.5)
+        req("/api/arm", {"action": "arm_now"})
+
+        def ruhig(limit=30):                                    # no person / recording / following: a still may be taken
+            t1 = time.time()
+            while time.time() - t1 < limit and req("/api/lupe?lang=de")[1].get("pause"):
+                time.sleep(0.5)
+        j = req("/api/lupe?lang=de")[1]
+        ok(j.get("armed") and j.get("armed_gap") == 10.0, f"Schutz an: Zustand «armed» ({j.get('armed')})")
+        time.sleep(16)                                              # older than LUPE_ARMED_KEEP: no still in use
+        n0 = req("/api/lupe?lang=de")[1]["stills"]
+        srcs = []
+        for _i in range(5):
+            c, b, h = crop("cam=head&x=0.78&y=0.62&w=0.12&h=0.12&ow=400")
+            srcs.append((h.get("X-Lupe-Src"), h.get("X-Lupe-Note"))); time.sleep(1.0)
+        n1 = req("/api/lupe?lang=de")[1]["stills"]
+        ok(n1 == n0 and all(x[0] == "frame" and x[1] in ("armed", "alarm") for x in srcs), f"Schutz an, ohne Wunsch: 5 s lang kein Standbild (Kamera-Frame, Hinweis «armed») {srcs}, Standbilder {n0} -> {n1}")
+        ruhig()
+        c, b, h = crop("cam=head&x=0.78&y=0.62&w=0.12&h=0.12&ow=400&want=1")
+        n2 = req("/api/lupe?lang=de")[1]["stills"]
+        ok(h.get("X-Lupe-Src") == "sensor" and n2 == n1 + 1, f"Schutz an, auf Wunsch (neuer Rahmen / «◐ Scharf»): genau ein Standbild ({h.get('X-Lupe-Src')}, {n1} -> {n2})")
+        c, b, h = crop("cam=head&x=0.78&y=0.62&w=0.12&h=0.12&ow=400&want=1")
+        n3 = req("/api/lupe?lang=de")[1]["stills"]
+        ok(n3 == n2 and h.get("X-Lupe-Note") == "armed_wait" and h.get("X-Lupe-Src") == "sensor",
+           f"gleich nochmals gewünscht: kein zweites (höchstens 1 pro 10 s), das letzte bleibt ({h.get('X-Lupe-Note')}, {n3})")
+        for _i in range(4):
+            crop("cam=head&x=0.78&y=0.62&w=0.12&h=0.12&ow=400"); time.sleep(1.0)
+        ok(req("/api/lupe?lang=de")[1]["stills"] == n3, "dazwischen ohne Wunsch: keines")
+        time.sleep(6.5); ruhig()
+        c, b, h = crop("cam=head&x=0.78&y=0.62&w=0.12&h=0.12&ow=400&want=1")
+        n4 = req("/api/lupe?lang=de")[1]["stills"]
+        ok(n4 == n3 + 1, f"nach 10 s wieder eines auf Wunsch ({n3} -> {n4})")
+        req("/api/arm", {"action": "disarm"}); time.sleep(0.5)
+        for _i in range(4):
+            crop("cam=head&x=0.78&y=0.62&w=0.12&h=0.12&ow=400"); time.sleep(0.8)
+        n5 = req("/api/lupe?lang=de")[1]["stills"]
+        ok(n5 >= n4 + 2, f"Schutz aus: wieder laufend (ohne Wunsch) ({n4} -> {n5})")
         if browser:
             teil_c(base, gp, bilder, (A, K))
     finally:
@@ -410,12 +453,24 @@ def teil_c(base, gp, bilder, users):
         touch(cdp, "touchStart", [a]); touch(cdp, "touchEnd", [])
 
     st = lambda pg: pg.evaluate("() => window.mwLupe.state()")
+    LAY = """() => { const vis = e => e && !e.hidden && e.getClientRects().length && getComputedStyle(e).display !== 'none';
+      const R = e => e.getBoundingClientRect(), hit = (a, b) => a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+      const tb = [...document.querySelectorAll('#lv-tools > *')].filter(vis);
+      const oth = [...document.querySelectorAll('#v3-mini, #kw-row .kw-t, #kw-row > button, #lv-joy > *, .vtag')].filter(vis);
+      const bad = []; tb.forEach(b => oth.forEach(o => { if (hit(R(b), R(o))) bad.push((b.id || b.className) + '/' + (o.id || o.className)); }));
+      const m = document.getElementById('v3-mini'); let mini = null;
+      if (vis(m)) { const r = R(m), e = document.elementFromPoint((r.left + r.right) / 2, (r.top + r.bottom) / 2); mini = !!(e && m.contains(e)); }
+      return {bad: bad, mini: mini, n: tb.length, wrap: document.getElementById('lv-tools').classList.contains('lvt-wrap'), lupe: !!document.getElementById('lv-b-lupe')}; }"""
     scale = lambda pg: pg.evaluate("() => window.visualViewport ? visualViewport.scale : 1")
     with sync_playwright() as pw:
         br = pw.chromium.launch(args=["--no-proxy-server"])
         # ---- phone (portrait), touch ----
         ctx, pg, errs = page(br, {"width": 390, "height": 844}, True)
         cdp = ctx.new_cdp_session(pg)
+        pg.wait_for_function("() => { const m = document.getElementById('v3-mini'); return m && !m.hidden; }", timeout=20000)
+        pg.wait_for_timeout(1500)
+        lay = pg.evaluate(LAY)
+        ok(lay["lupe"] and not lay["bad"] and lay["mini"], f"Handy hoch: Knopfleiste deckt das kleine Bild, die Kacheln, den Joystick nicht ({lay})")
         pg.evaluate("() => scrollTo(0, 0)")
         pg.locator("#lv-b-lupe").click()
         pg.wait_for_selector("#lupe-ov", timeout=5000); pg.wait_for_timeout(500)
@@ -497,6 +552,9 @@ def teil_c(base, gp, bilder, users):
         # ---- phone (landscape) ----
         ctx, pg, errs = page(br, {"width": 844, "height": 390}, True)
         cdp = ctx.new_cdp_session(pg)
+        pg.wait_for_timeout(1500)
+        lay = pg.evaluate(LAY)
+        ok(lay["lupe"] and not lay["bad"] and lay["mini"] is not False, f"Handy quer: Knopfleiste deckt nichts ({lay})")
         pg.locator("#lv-b-lupe").click(); pg.wait_for_selector("#lupe-ov"); pg.wait_for_timeout(300)
         r = pg.locator("#lupe-ov").bounding_box()
         drag1(cdp, (r["x"] + r["width"] * 0.2, r["y"] + r["height"] * 0.3), (r["x"] + r["width"] * 0.5, r["y"] + r["height"] * 0.7))
@@ -555,9 +613,30 @@ def teil_c(base, gp, bilder, users):
         ok(st(pg)["hi"] is not None, "Kind: scharfes Bild kommt")
         ok(not errs, f"Kind: keine JavaScript-Fehler {errs}")
         ctx.close()
+        # ---- protection on: «◐ Scharf» asks for one still, a second one within 10 s waits ----
+        ctx, pg, errs = page(br, {"width": 390, "height": 844}, True)
+        pg.evaluate("async () => { await fetch('/api/arm', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'arm_now'})}); }")
+        pg.locator("#lv-b-lupe").click(); pg.wait_for_selector("#lupe-ov"); pg.wait_for_timeout(800)
+        n0 = pg.evaluate("async () => (await (await fetch('/api/lupe?lang=de')).json()).stills")
+        pg.evaluate("() => window.mwLupe.zoomTo([0.7, 0.55, 0.2, 0.2])"); pg.wait_for_timeout(2500)
+        n1 = pg.evaluate("async () => (await (await fetch('/api/lupe?lang=de')).json()).stills")
+        pg.wait_for_timeout(2500)
+        n2 = pg.evaluate("async () => (await (await fetch('/api/lupe?lang=de')).json()).stills")
+        ok(n1 == n0 + 1 and n2 == n1 and st(pg)["info"].get("armed"), f"Schutz an, Seite: ein Standbild für den Rahmen, dann keines mehr ({n0} -> {n1} -> {n2})")
+        pg.locator("#lupe-sharp").click(); pg.wait_for_timeout(1500)
+        ok("nächste Scharfbild" in st(pg)["msg"], f"Schutz an: «◐ Scharf» innert 10 s = Hinweis «nächste Scharfbild …» ({st(pg)['msg'][:90]!r})")
+        pg.screenshot(path=os.path.join(bilder, "lupe_wache_an.png"))
+        pg.evaluate("async () => { await fetch('/api/arm', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'disarm'})}); }")
+        ok(not errs, f"Schutz an: keine JavaScript-Fehler {errs}")
+        ctx.close()
         # ---- 390 px, all languages, the font of the CI: the bar fits, nothing sticks out ----
         for lang in ("de", "en", "fr", "it", "rm"):
             ctx, pg, errs = page(br, {"width": 390, "height": 844}, True, lang=lang)
+            for vp_ in ({"width": 390, "height": 844}, {"width": 844, "height": 390}):
+                pg.set_viewport_size(vp_); pg.wait_for_timeout(1200)
+                lay = pg.evaluate(LAY)
+                ok(not lay["bad"] and lay["mini"] is not False, f"{vp_['width']} × {vp_['height']}, {lang}: Knopfleiste deckt nichts ({lay})")
+            pg.set_viewport_size({"width": 390, "height": 844}); pg.wait_for_timeout(800)
             pg.locator("#lv-b-lupe").click(); pg.wait_for_selector("#lupe-ov"); pg.wait_for_timeout(600)
             pg.evaluate("() => window.mwLupe.zoomTo([0.6, 0.5, 0.2, 0.2])"); pg.wait_for_timeout(1500)
             m = pg.evaluate("""() => { const o = document.getElementById('lupe-ov').getBoundingClientRect(), b = document.querySelector('#lupe-ov .lupe-bar');
@@ -665,8 +744,8 @@ def teil_d(datei):
     sharp = np.full((200, 200, 3), (255, 0, 0), np.uint8)                         # the sharp part: blue
     rate0, aim0 = ns["lupe_rate"], ns["lupe_aim"]
 
-    def crop_spy(cam, box, ref, ow):
-        calls["crop"].append((cam, list(box), ref, ow))
+    def crop_spy(cam, box, ref, ow, want=False):
+        calls["crop"].append((cam, list(box), ref, ow, want))
         import cv2
         return cv2.imencode(".png", sharp)[1].tobytes(), {"X-Lupe-Box": ",".join("%.5f" % v for v in box), "X-Lupe-Src": "sensor",
                                                           "X-Lupe-Note": "", "X-Lupe-Age": "0.2", "X-Lupe-Pose": "%.3f,%.3f" % tuple(ns["servo_pos_deg"]())}
@@ -714,7 +793,8 @@ def teil_d(datei):
         if L["hi"] is not None:
             break
         time.sleep(0.05)
-    ok(calls["crop"] and calls["crop"][-1][0] == "head" and calls["rate"][-1] == "tk|window" and calls["crop"][-1][2] is not None,
+    ok(calls["crop"] and calls["crop"][-1][0] == "head" and calls["rate"][-1] == "tk|window" and calls["crop"][-1][2] is not None
+       and calls["crop"][-1][4] is True,
        f"Fenster: Scharfbild über lupe_crop (Kopf, mit Richtung) und den Eimer «tk|window» ({calls['crop'][-1] if calls['crop'] else '-'})")
     a._update_video()
     im = np.array(a.photo.im)
@@ -739,6 +819,17 @@ def teil_d(datei):
     ns["lupe_tk_box_done"](L, [0.1, 0.1, 0.2, 0.2], "de")
     ok("Not-Aus" in L["msg"], f"Fenster: Not-Aus – der Kopf folgt nicht ({L['msg']})")
     CFG["servo_estop"] = False
+    # protection on: «◐ Scharf» in the window = one sharp still on request (the server keeps the 10 s), not a switch off
+    L["hi"] = None; L["busy"] = False; L["next"] = 0.0; L["want"] = False; ns["LUPE_RL"].pop("tk|window", None)
+    a._update_video(); time.sleep(0.4)
+    ok(calls["crop"][-1][4] is False, "Fenster: laufendes Nachladen fragt kein Standbild an (want = nein)")
+    CFG["armed"] = True
+    bs = [w for w in tkm.Button.__mro__[1].made if isinstance(w, tkm.Button) and w.master is bar and "Scharf" in str(w.cget("text"))][0]
+    bs.cget("command")()
+    ok(L["sharp"] and L["want"], "Fenster, Schutz an: «◐ Scharf» = ein Scharfbild auf Wunsch (bleibt an)")
+    L["busy"] = False; ns["lupe_tk_fetch"](L)
+    ok(calls["crop"][-1][4] is True and not L["want"], "Fenster: der Wunsch geht einmal an lupe_crop (want = ja), dann nicht mehr")
+    CFG["armed"] = False
     L["follow"] = False; n = len(calls["aim"])
     ns["lupe_tk_box_done"](L, [0.1, 0.1, 0.2, 0.2], "de")
     ok(len(calls["aim"]) == n, "Fenster: «🎯 Kopf folgt» aus = nur zoomen")

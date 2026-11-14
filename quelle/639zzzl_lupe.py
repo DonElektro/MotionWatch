@@ -49,9 +49,14 @@ LUPE_MIN_BOX = 0.02               # the smallest region (1/50 of the picture)
 LUPE_RATE = (6, 3.0)              # per user / guest address: burst of 6, then 3 per second
 LUPE_REFRESH_MS = 1000            # the page fetches a new sharp picture every second while zoomed
 LUPE_ZMAX = 12                    # the page zooms at most 12 x
+# 3.89 guard rule (decided): every still pauses the camera loop 0.3 - 0.8 s = blind time for the detection. While the protection
+# is on (Wachsam / Voll, CFG armed) a still is taken ONLY ON REQUEST (a new box, the button «◐ Scharf», the window the same) and at
+# most one per LUPE_ARMED_GAP s for all viewers, never continuously; it is shown LUPE_ARMED_KEEP s, then the camera frame again.
+LUPE_ARMED_GAP = 10.0
+LUPE_ARMED_KEEP = 15.0
 LUPE_DEMO_K = 3                   # the demo still: 3 x the demo picture (2880 x 1620)
 LUPE_HI = {"want": 0.0, "ev": threading.Event(), "frame": None, "t": 0.0, "pose": None, "src": 0, "ms": 0, "err": "", "err_t": 0.0,
-           "used": 0.0, "n": 0, "size": None}
+           "used": 0.0, "n": 0, "size": None, "demand_t": 0.0}
 LUPE_RL = {}
 WEB_UI_LOCAL.add("mw-lupe")       # per browser: «🎯 Kopf folgt» / «◐ Scharf»
 
@@ -306,7 +311,7 @@ DemoSource.read = _lupe_demo_read
 
 
 # ---- the picture to cut from --------------------------------------------------------------------------------------------------
-def lupe_picture(cam):
+def lupe_picture(cam, want=False):
     """-> (BGR, kind, pose ° or None, age s, note code) or (None, english reason, …). kind: sensor (full-sensor still), frame
     (full camera frame), wide (full frame of the wide-angle camera), shown (the picture as shown: thermal view)"""
     now = time.time()
@@ -332,16 +337,25 @@ def lupe_picture(cam):
         hi = LUPE_HI
         hi["used"] = now
         note = lupe_still_block(w)
+        armed = bool(CFG.get("armed"))
+        take = now - hi["t"] >= float(getattr(src, "lupe_gap", LUPE_GAP_S))
+        if armed:                                                # protection on: only on request, at most one per 10 s
+            take = bool(want) and now - hi["demand_t"] >= LUPE_ARMED_GAP
+            if not note and not take:
+                note = "armed_wait" if want else "armed"
         if getattr(src, "_lupe_off", 0.0) > now:
             note = "error"
-        elif not note and now - hi["t"] >= float(getattr(src, "lupe_gap", LUPE_GAP_S)):
+        elif not note and take:
+            if armed:
+                hi["demand_t"] = now
             hi["ev"].clear()
             hi["want"] = now + LUPE_WAIT_S
             hi["ev"].wait(LUPE_WAIT_S)
             if hi["err"] and now <= hi["err_t"]:
                 note = "error"
         f = hi["frame"]
-        if f is not None and hi["src"] == id(src) and time.time() - hi["t"] <= LUPE_HI_MAX_AGE:
+        keep = min(LUPE_HI_MAX_AGE, LUPE_ARMED_KEEP) if not armed else LUPE_ARMED_KEEP
+        if f is not None and hi["src"] == id(src) and time.time() - hi["t"] <= keep:
             return f, "sensor", hi["pose"], max(0.0, time.time() - hi["t"]), note
     if now > w.raw_until:
         w.frame_raw = None
@@ -356,9 +370,9 @@ def lupe_picture(cam):
     return f, "frame", servo_pos_deg(), 0.0, note
 
 
-def lupe_crop(cam, box, ref, ow):
-    """-> (jpeg, headers) or (None, english reason)"""
-    img, kind, pose, age, note = lupe_picture(cam)
+def lupe_crop(cam, box, ref, ow, want=False):
+    """-> (jpeg, headers) or (None, english reason); want = a sharp still is asked for (new box, «◐ Scharf»)"""
+    img, kind, pose, age, note = lupe_picture(cam, want)
     if img is None:
         return None, kind
     follow = cam == "head" and lupe_follow_ok()
@@ -395,6 +409,7 @@ def lupe_state(who, lang):
             "pose": [round(p, 3), round(t, 3)], "moving": not servo_arrived(), "block": tr(blk, L) if blk else "",
             "sharp": "sensor" if callable(getattr(src, "lupe_hires", None)) and not CFG.get("sim_on") else "frame",
             "pause": lupe_still_block(w) if src is not None else "", "refresh_ms": LUPE_REFRESH_MS, "zmax": LUPE_ZMAX,
+            "armed": bool(CFG.get("armed")), "armed_gap": LUPE_ARMED_GAP, "stills": LUPE_HI["n"],
             "wide": bool(view3_wide_cam())}
 
 
@@ -437,7 +452,7 @@ def smalltv_routes(app, reply, body):                     # + 639zzzl
                 return reply({"ok": False, "msg": "ref: pan,tilt in degrees"}, 400)
             ref = r
         ow = lupe_num(a.get("ow")) or 1024
-        jpg, hd = lupe_crop(cam, box, ref, ow)
+        jpg, hd = lupe_crop(cam, box, ref, ow, str(a.get("want") or "") == "1")
         if jpg is None:
             return reply({"ok": False, "msg": tr_err(hd, L)}, 503)
         return Response(jpg, mimetype="image/jpeg", headers=hd)
@@ -540,6 +555,8 @@ body.videoonly.moveravail #vo-lupe{right:calc(max(10px,env(safe-area-inset-right
 body.sim-on.videoonly #vo-lupe{right:calc(max(10px,env(safe-area-inset-right)) + 56px)}
 body.lvc-auto:not(.lvc-show) #vo-lupe{opacity:0!important;pointer-events:none!important;transition:opacity .7s ease}
 #vo-lupe svg,#lv-b-lupe svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#lv-tools.lvt-wrap{flex-wrap:wrap;justify-content:flex-end;gap:4px}
+#lv-tools.lvt-wrap button{width:34px;height:34px;font-size:15px}
 #g-lupe{margin:8px auto 0;display:block;background:#1a2433;color:#fff;border:1px solid #2a3442;border-radius:10px;padding:8px 16px;font:inherit}
 """
 
@@ -554,7 +571,7 @@ LUPE_JS = r"""
   const img = () => document.querySelector(G.img);
   const IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M10.5 7.5v6M7.5 10.5h6"/></svg>';
   const S = {on: false, v: [0, 0, 1], R: null, P: [0, 0], info: {}, follow: true, sharp: true, hi: null, busy: false, timer: 0, poll: 0,
-             fast: 0, g: null, tap: null, note: "", rnote: "", hint: "", hintT: 0, aimMsg: "", aimT: 0, cam: "head", n: 0, back: 0, url: ""};
+             fast: 0, g: null, tap: null, want: false, note: "", rnote: "", hint: "", hintT: 0, aimMsg: "", aimT: 0, cam: "head", n: 0, back: 0, url: ""};
   let OV = null, HI = null, SEL = null, BAR = null, MSG = null, B1 = null, BH = null, BS = null, WRAP = null;
   try { const s = JSON.parse(localStorage.getItem("mw-lupe") || "{}"); if (s.follow === 0) S.follow = false; if (s.sharp === 0) S.sharp = false; } catch (e) {}
   const save = () => { try { localStorage.setItem("mw-lupe", JSON.stringify({follow: S.follow ? 1 : 0, sharp: S.sharp ? 1 : 0})); } catch (e) {} };
@@ -636,7 +653,9 @@ LUPE_JS = r"""
     parts.push(head + (src ? " · " + src : ""));
     const nt = S.sharp && z > 1.001 && S.hi ? S.hi.note : "";
     if (nt) parts.push(({alarm: t("Sharp picture paused: alarm or person in view"), moving: t("Sharp picture paused while the head moves"),
-                         eco: t("Sharp picture paused: battery saving"), error: t("No sharp picture from the camera - the live picture is used")})[nt] || "");
+                         eco: t("Sharp picture paused: battery saving"), error: t("No sharp picture from the camera - the live picture is used"),
+                         armed: t("Protection is on: a sharp picture only on request - draw a box or tap «◐ Sharp» (at most every 10 s)."),
+                         armed_wait: t("Protection is on: the next sharp picture is possible in a few seconds.")})[nt] || "");
     if (S.note) parts.push(S.note);
     if (S.rnote) parts.push(S.rnote);
     if (S.aimMsg && now < S.aimT) parts.push(S.aimMsg);
@@ -665,7 +684,9 @@ LUPE_JS = r"""
     const bx = btn("✕ " + t("Magnifier"), "Close the magnifier (Esc)", close); bx.id = "lupe-x";
     B1 = btn("1:1", "Whole picture (double tap)", () => { S.v = [0, 0, 1]; S.R = null; S.hi = null; paint(); }); B1.id = "lupe-1";
     BH = btn("🎯 " + t("Head follows"), "The head turns the chosen area to the middle", () => { S.follow = !S.follow; save(); paint(); }); BH.id = "lupe-head";
-    BS = btn("◐ " + t("Sharp"), "Sharp picture from the camera (off: live picture, only enlarged)", () => { S.sharp = !S.sharp; save(); if (S.sharp) fetchHi(); paint(); }); BS.id = "lupe-sharp";
+    BS = btn("◐ " + t("Sharp"), "Sharp picture from the camera (off: live picture, only enlarged)", () => {
+      if (S.info.armed) { S.sharp = true; S.want = true; } else S.sharp = !S.sharp;      // protection on: «◐» = one sharp picture now
+      save(); if (S.sharp) { S.busy = false; fetchHi(); } paint(); }); BS.id = "lupe-sharp";
     top.append(BAR, MSG); OV.append(HI, SEL, top); WRAP.appendChild(OV);
     OV.addEventListener("click", e => e.stopPropagation());
     OV.addEventListener("dblclick", e => { e.stopPropagation(); e.preventDefault(); });
@@ -716,6 +737,7 @@ LUPE_JS = r"""
     const r = OV.getBoundingClientRect(), ow = Math.round(clamp(r.width * (window.devicePixelRatio || 1), 160, 2048));
     let q = "cam=" + S.cam + "&x=" + x.toFixed(5) + "&y=" + y.toFixed(5) + "&w=" + s.toFixed(5) + "&h=" + s.toFixed(5) + "&ow=" + ow + "&lang=" + L();
     if (followOk()) q += "&ref=" + S.P[0].toFixed(3) + "," + S.P[1].toFixed(3);
+    if (S.want) { q += "&want=1"; S.want = false; }
     let wait = S.info.refresh_ms || 1000;
     try {
       const res = await fetch(api("/crop.jpg?" + q + "&n=" + (++S.n)), {cache: "no-store"});
@@ -730,6 +752,7 @@ LUPE_JS = r"""
         S.hi = {box: box.length === 4 && box.every(isFinite) ? box : [x, y, s, s], pose: pp ? pp.split(",").map(Number) : null, src: H("X-Lupe-Src"),
                 age: parseFloat(H("X-Lupe-Age")) || 0, note: H("X-Lupe-Note"), size: H("X-Lupe-Size")};
         if (S.note && !S.info.block) S.note = "";
+        if (S.hi.note === "armed_wait") { S.aimMsg = t("Protection is on: the next sharp picture is possible in a few seconds."); S.aimT = Date.now() + 5000; }
       } else { let j = {}; try { j = await res.json(); } catch (e) {} S.hi = null; S.note = j.msg || ""; wait = 3000; }
     } catch (e) { wait = 3000; }
     S.busy = false; paint(); if (S.on) again(wait);
@@ -786,7 +809,7 @@ LUPE_JS = r"""
       const s = clamp(Math.max(b[2], b[3]), 1 / ZMAX(), 1);
       setView(b[0] + b[2] / 2 - s / 2, b[1] + b[3] / 2 - s / 2, s);
       S.hint = t("One finger moves, two fingers zoom, double tap = whole picture."); S.hintT = Date.now() + 5000;
-      aim(b); soon(); paint(); return;
+      S.want = true; aim(b); soon(); paint(); return;
     }
     if (g.k !== "pinch" && !g.moved && Date.now() - g.t0 < 400 && p) {            // a tap: a second one soon after = double tap
       const n = Date.now(), q = S.tap;
@@ -855,6 +878,22 @@ LUPE_JS = r"""
   addEventListener("keydown", e => { if (S.on && e.key === "Escape") { e.preventDefault(); close(); } });
   addEventListener("resize", () => { if (S.on) paint(); });
   setInterval(() => { if (S.on) { const c = cam(); if (c !== S.cam) { S.cam = c; S.hi = null; } paint(); } }, 400);
+  // 3.89: the toolbar on the picture (#lv-tools, 536) never covers the small picture (#v3-mini 639zv) or the camera tiles
+  // (#kw-row 639zzi) top left: when the room is short it wraps to the right in two rows of smaller buttons (above the joystick)
+  const vis = e => !!(e && !e.hidden && e.getClientRects().length && getComputedStyle(e).display !== "none");
+  function fitTools() {
+    const tb = document.getElementById("lv-tools"); if (!tb || getComputedStyle(tb).position === "fixed") return;
+    const w = tb.parentNode; if (!w || !w.getBoundingClientRect) return;
+    const wr = w.getBoundingClientRect(), top = tb.offsetTop || 8;
+    const edge = h => { let L = 0; document.querySelectorAll("#v3-mini, #kw-row .kw-t, #kw-row > button").forEach(e => {
+      if (!vis(e) || e.closest("#lv-tools")) return; const r = e.getBoundingClientRect();
+      if (r.top - wr.top < top + h && r.bottom - wr.top > top && r.right > wr.left) L = Math.max(L, r.right - wr.left); }); return L; };
+    const n = [...tb.children].filter(vis).length, room = L => w.clientWidth - 8 - (L ? L + 8 : 8);
+    const wrap = n > 0 && n * 38 + Math.max(0, n - 1) * 6 > room(edge(38));     // one row of 38 px next to what is on the left?
+    tb.classList.toggle("lvt-wrap", wrap);
+    const mw = wrap ? Math.max(76, Math.floor(room(edge(2 * 34 + 4)))) + "px" : "";  // two rows of 34 px: free next to both
+    if (tb.style.maxWidth !== mw) tb.style.maxWidth = mw;
+  }
   function tools() {
     if (G.tools === "live") {
       const tb = document.getElementById("lv-tools"); if (!tb) return setTimeout(tools, 400);
@@ -863,6 +902,7 @@ LUPE_JS = r"""
       b.setAttribute("aria-label", t("Magnifier"));
       b.onclick = e => { e.stopPropagation(); S.on ? close() : open("button"); }; b.addEventListener("dblclick", e => e.stopPropagation());
       tb.insertBefore(b, document.getElementById("lv-b-view") || null);
+      fitTools(); setInterval(fitTools, 700); addEventListener("resize", fitTools);
     } else if (G.tools === "guest") {
       const f = document.getElementById("ft"); if (!f || document.getElementById("g-lupe")) return;
       const b = E("button", "", "🔍 " + t("Magnifier")); b.id = "g-lupe"; b.type = "button"; b.onclick = () => (S.on ? close() : open("button"));
@@ -871,7 +911,7 @@ LUPE_JS = r"""
   }
   window.mwLupe = {open: open, close: close, state: () => ({on: S.on, view: view(), ref: S.R, pose: S.P, cam: S.cam, hi: S.hi, follow: S.follow, sharp: S.sharp,
                    canAim: canAim(), info: S.info, msg: MSG ? MSG.textContent : ""}), zoomTo: b => { const s = clamp(Math.max(b[2], b[3]), 1 / ZMAX(), 1);
-                   setView(b[0] + b[2] / 2 - s / 2, b[1] + b[3] / 2 - s / 2, s); soon(); }};
+                   setView(b[0] + b[2] / 2 - s / 2, b[1] + b[3] / 2 - s / 2, s); S.want = true; soon(); }, fit: fitTools};
   tools(); hook();
 })();
 """
@@ -897,7 +937,7 @@ def lupe_tk_cam():
 
 def lupe_tk_new():
     return {"on": False, "v": [0.0, 0.0, 1.0], "R": None, "hi": None, "busy": False, "next": 0.0, "g": None, "sel": None,
-            "follow": True, "sharp": True, "msg": "", "msg_t": 0.0, "geo": None, "click": 0.0, "n": 0}
+            "follow": True, "sharp": True, "msg": "", "msg_t": 0.0, "geo": None, "click": 0.0, "n": 0, "want": False}
 
 
 def lupe_tk_follow():
@@ -954,7 +994,8 @@ def lupe_tk_fetch(L):
         f = lupe_tk_follow()
         if not lupe_rate(LUPE_TK_KEY):
             return
-        jpg, hd = lupe_crop(lupe_tk_cam(), [x, y, s, s], list(servo_pos_deg()) if f else None, 1600)
+        want, L["want"] = bool(L.get("want")), False
+        jpg, hd = lupe_crop(lupe_tk_cam(), [x, y, s, s], list(servo_pos_deg()) if f else None, 1600, want)
         if jpg is None:
             L.update(hi=None, msg=tr_err(hd), msg_t=time.time() + 5)
             return
@@ -986,7 +1027,9 @@ def lupe_tk_status(L):
             parts.append(tr({"sensor": "sharp: full camera sensor", "frame": "sharp: full camera picture", "wide": "sharp: full wide-angle picture"}
                             .get(hi["src"], "only enlarged - no sharper source")))
             note = {"alarm": "Sharp picture paused: alarm or person in view", "moving": "Sharp picture paused while the head moves",
-                    "eco": "Sharp picture paused: battery saving", "error": "No sharp picture from the camera - the live picture is used"}.get(hi["note"])
+                    "eco": "Sharp picture paused: battery saving", "error": "No sharp picture from the camera - the live picture is used",
+                    "armed": "Protection is on: a sharp picture only on request - draw a box or tap «◐ Sharp» (at most every 10 s).",
+                    "armed_wait": "Protection is on: the next sharp picture is possible in a few seconds."}.get(hi["note"])
             if note:
                 parts.append(tr(note))
         if out > 0.5 and lupe_tk_follow():
@@ -1003,6 +1046,7 @@ def lupe_tk_box_done(L, box, lang=None):
     s = min(1.0, max(1.0 / LUPE_ZMAX, max(box[2], box[3])))
     lupe_tk_set(L, box[0] + box[2] / 2 - s / 2, box[1] + box[3] / 2 - s / 2, s)
     L["next"] = 0.0
+    L["want"] = True                                             # a new box: one sharp still (also while the protection is on)
     if L["follow"] and lupe_tk_cam() == "head" and lupe_follow_ok():
         ok, _code, res = lupe_aim(box, "window", lang)
         if ok:
@@ -1102,7 +1146,10 @@ if GUI_OK:
                   font=("DejaVu Sans", 10, "bold"), cursor="hand2")
 
         def tog(key, b):
-            L[key] = not L[key]
+            if key == "sharp" and CFG.get("armed"):
+                L.update(sharp=True, want=True)                  # protection on: «◐» = one sharp still now (at most every 10 s)
+            else:
+                L[key] = not L[key]
             b.config(bg="#2f81f7" if L[key] else "#1a2433")
             if key == "sharp":
                 L["next"] = 0.0
@@ -1288,6 +1335,15 @@ _HX_LUPE = {
     "wake-up alarm": ("Wecker", "réveil", "sveglia", "svegliarin"),
     "game round - the players steer": ("Spielrunde – die Spieler steuern", "manche de jeu – les joueurs dirigent", "turno di gioco – i giocatori guidano",
                                        "runda da gieu – ils giugaders dirigan"),
+    "Protection is on: a sharp picture only on request - draw a box or tap «◐ Sharp» (at most every 10 s).": (
+        "Schutz ist an: Scharfbild nur auf Wunsch – Rahmen ziehen oder «◐ Scharf» antippen (höchstens alle 10 s).",
+        "Protection active : image nette seulement sur demande – tracer un cadre ou toucher «◐ Net» (au plus toutes les 10 s).",
+        "Protezione attiva: immagine nitida solo su richiesta – traccia un riquadro o tocca «◐ Nitido» (al massimo ogni 10 s).",
+        "La protecziun è activa: maletg precis mo sin dumonda – trair in rom u tutgar «◐ Precis» (maximalmain mintga 10 s)."),
+    "Protection is on: the next sharp picture is possible in a few seconds.": (
+        "Schutz ist an: das nächste Scharfbild geht in wenigen Sekunden.", "Protection active : la prochaine image nette sera possible dans quelques secondes.",
+        "Protezione attiva: la prossima immagine nitida sarà possibile tra pochi secondi.",
+        "La protecziun è activa: il proxim maletg precis è pussaivel en paucas secundas."),
     "a simulator task is running": ("eine Simulator-Aufgabe läuft", "une tâche du simulateur est en cours", "è in corso un compito del simulatore",
                                     "ina incumbensa dal simulatur curra"),
 }
@@ -1325,11 +1381,11 @@ def lupe_guest_js(lang, token):
 
 # ---- the manual: one point in «Ansichten» (views) ------------------------------------------------------------------------------
 HELP_LUPE = {
-    "de": '<li id="lupe-help"><b>🔍 Lupe – nur das Live-Bild vergrössern:</b> Knopf mit der Lupe auf dem Bild (im Vollbild oben rechts) oder einfach mit zwei Fingern auf dem Bild zoomen (PC: Strg + Mausrad). In der Lupe: Rahmen ziehen = dieser Bereich gross, ein Finger verschiebt, zwei Finger zoomen, Doppeltipp = ganzes Bild, nochmals = Lupe zu; «✕ Lupe» / Esc. Die Seite selbst zoomt dabei nicht. Der Ausschnitt kommt <b>scharf</b> aus der vollen Auflösung der Kamera (Pi-Kamera: Standbild vom ganzen Sensor, etwa alle 2–3 s; während Alarm, Person im Bild oder Akku sparen nur das volle Kamerabild), Privatsphäre-Zonen bleiben schwarz. Mit dem Recht «Kopf steuern» dreht der Kopf den Bereich in die Mitte («🎯 Kopf folgt»), nicht aber bei Alarm / Folgen, Gehtest, «Aus» oder Not-Aus; der Ausschnitt bleibt dabei auf dem Ort. Wärmebild und andere Kameras: nur vergrössert. Im Fenster am Pi: Knopf «🔍 Lupe» oben rechts auf dem Live-Bild – Rahmen ziehen, Mausrad, Ziehen verschiebt, Doppelklick, Esc.</li>',
-    "en": '<li id="lupe-help"><b>🔍 Magnifier – enlarge only the live picture:</b> the magnifier button on the picture (full screen: top right) or simply zoom with two fingers on the picture (PC: Ctrl + mouse wheel). In the magnifier: drag a box = this area big, one finger moves, two fingers zoom, double tap = whole picture, again = close; «✕ Magnifier» / Esc. The page itself does not zoom. The area comes <b>sharp</b> from the full resolution of the camera (Pi camera: a still of the whole sensor, about every 2–3 s; during an alarm, a person in view or battery saving only the full camera frame); privacy zones stay black. With the right «steer the head» the head turns the area to the middle («🎯 Head follows»), but not during an alarm / following, a walk test, «Off» or the emergency stop; the area stays on its place. Thermal picture and other cameras: only enlarged. In the window on the Pi: button «🔍 Magnifier» top right on the live picture – drag a box, mouse wheel, drag moves, double click, Esc.</li>',
-    "fr": '<li id="lupe-help"><b>🔍 Loupe – agrandir seulement l’image en direct :</b> bouton loupe sur l’image (plein écran : en haut à droite) ou zoomer à deux doigts sur l’image (PC : Ctrl + molette). Dans la loupe : tracer un cadre = cette zone en grand, un doigt déplace, deux doigts zooment, double toucher = image entière, encore = fermer. La page ne zoome pas. La zone vient <b>nette</b> de la pleine résolution de la caméra ; les zones de confidentialité restent noires. Avec le droit «tête», la tête amène la zone au centre (pas pendant une alarme, un test de marche, «Arrêt» ou l’arrêt d’urgence). Image thermique et autres caméras : seulement agrandies.</li>',
-    "it": '<li id="lupe-help"><b>🔍 Lente – ingrandire solo l’immagine dal vivo:</b> pulsante lente sull’immagine (schermo intero: in alto a destra) o zoomare con due dita sull’immagine (PC: Ctrl + rotella). Nella lente: tracciare un riquadro = quest’area grande, un dito sposta, due dita zoomano, doppio tocco = immagine intera, ancora = chiudere. La pagina non zooma. L’area arriva <b>nitida</b> dalla piena risoluzione della telecamera; le zone di privacy restano nere. Con il diritto «testa» la testa porta l’area al centro (non durante un allarme, un test di camminata, «Spento» o l’arresto d’emergenza). Immagine termica e altre telecamere: solo ingrandite.</li>',
-    "rm": '<li id="lupe-help"><b>🔍 Lupa – engrondir mo il maletg live:</b> buttun lupa sin il maletg (entir visur: sura a dretga) u zoomar cun dus dets sin il maletg (PC: Ctrl + rodella). En la lupa: trair in rom = quest sectur grond, in det spusta, dus dets zoomeschan, tutgar duas giadas = entir maletg, anc ina giada = serrar. La pagina na zoomescha betg. Il sectur vegn <b>precis</b> da la resoluziun cumplaina da la camera; las zonas da privatezza restan naira. Cun il dretg «chau» volva il chau il sectur en il center (betg durant in alarm, in test da chaminar, «Ora» u il stop d’urgenza). Maletg termic ed autras cameras: mo engrondì.</li>',
+    "de": '<li id="lupe-help"><b>🔍 Lupe – nur das Live-Bild vergrössern:</b> Knopf mit der Lupe auf dem Bild (im Vollbild oben rechts) oder einfach mit zwei Fingern auf dem Bild zoomen (PC: Strg + Mausrad). In der Lupe: Rahmen ziehen = dieser Bereich gross, ein Finger verschiebt, zwei Finger zoomen, Doppeltipp = ganzes Bild, nochmals = Lupe zu; «✕ Lupe» / Esc. Die Seite selbst zoomt dabei nicht. Der Ausschnitt kommt <b>scharf</b> aus der vollen Auflösung der Kamera (Pi-Kamera: Standbild vom ganzen Sensor, etwa alle 2–3 s; während Alarm, Person im Bild oder Akku sparen nur das volle Kamerabild), Privatsphäre-Zonen bleiben schwarz. Mit dem Recht «Kopf steuern» dreht der Kopf den Bereich in die Mitte («🎯 Kopf folgt»), nicht aber bei Alarm / Folgen, Gehtest, «Aus» oder Not-Aus; der Ausschnitt bleibt dabei auf dem Ort. Wärmebild und andere Kameras: nur vergrössert. Ist der Schutz an (Wachsam / Voll), macht die Lupe ein Scharfbild nur auf Wunsch – beim Rahmen ziehen oder mit «◐ Scharf», höchstens alle 10 s –, damit die Erkennung nicht blind wird. Im Fenster am Pi: Knopf «🔍 Lupe» oben rechts auf dem Live-Bild – Rahmen ziehen, Mausrad, Ziehen verschiebt, Doppelklick, Esc.</li>',
+    "en": '<li id="lupe-help"><b>🔍 Magnifier – enlarge only the live picture:</b> the magnifier button on the picture (full screen: top right) or simply zoom with two fingers on the picture (PC: Ctrl + mouse wheel). In the magnifier: drag a box = this area big, one finger moves, two fingers zoom, double tap = whole picture, again = close; «✕ Magnifier» / Esc. The page itself does not zoom. The area comes <b>sharp</b> from the full resolution of the camera (Pi camera: a still of the whole sensor, about every 2–3 s; during an alarm, a person in view or battery saving only the full camera frame); privacy zones stay black. With the right «steer the head» the head turns the area to the middle («🎯 Head follows»), but not during an alarm / following, a walk test, «Off» or the emergency stop; the area stays on its place. Thermal picture and other cameras: only enlarged. While the protection is on (Wachsam / Voll) the magnifier takes a sharp still only on request – when you draw a box or tap «◐ Sharp», at most every 10 s – so the detection never goes blind. In the window on the Pi: button «🔍 Magnifier» top right on the live picture – drag a box, mouse wheel, drag moves, double click, Esc.</li>',
+    "fr": '<li id="lupe-help"><b>🔍 Loupe – agrandir seulement l’image en direct :</b> bouton loupe sur l’image (plein écran : en haut à droite) ou zoomer à deux doigts sur l’image (PC : Ctrl + molette). Dans la loupe : tracer un cadre = cette zone en grand, un doigt déplace, deux doigts zooment, double toucher = image entière, encore = fermer. La page ne zoome pas. La zone vient <b>nette</b> de la pleine résolution de la caméra ; les zones de confidentialité restent noires. Avec le droit «tête», la tête amène la zone au centre (pas pendant une alarme, un test de marche, «Arrêt» ou l’arrêt d’urgence). Image thermique et autres caméras : seulement agrandies. Si la protection est active (Wachsam / Voll), la loupe prend une image nette seulement sur demande – en traçant un cadre ou avec «◐ Net», au plus toutes les 10 s – pour que la détection ne soit jamais aveugle.</li>',
+    "it": '<li id="lupe-help"><b>🔍 Lente – ingrandire solo l’immagine dal vivo:</b> pulsante lente sull’immagine (schermo intero: in alto a destra) o zoomare con due dita sull’immagine (PC: Ctrl + rotella). Nella lente: tracciare un riquadro = quest’area grande, un dito sposta, due dita zoomano, doppio tocco = immagine intera, ancora = chiudere. La pagina non zooma. L’area arriva <b>nitida</b> dalla piena risoluzione della telecamera; le zone di privacy restano nere. Con il diritto «testa» la testa porta l’area al centro (non durante un allarme, un test di camminata, «Spento» o l’arresto d’emergenza). Immagine termica e altre telecamere: solo ingrandite. Se la protezione è attiva (Wachsam / Voll), la lente scatta un’immagine nitida solo su richiesta – tracciando un riquadro o con «◐ Nitido», al massimo ogni 10 s – così il rilevamento non resta mai cieco.</li>',
+    "rm": '<li id="lupe-help"><b>🔍 Lupa – engrondir mo il maletg live:</b> buttun lupa sin il maletg (entir visur: sura a dretga) u zoomar cun dus dets sin il maletg (PC: Ctrl + rodella). En la lupa: trair in rom = quest sectur grond, in det spusta, dus dets zoomeschan, tutgar duas giadas = entir maletg, anc ina giada = serrar. La pagina na zoomescha betg. Il sectur vegn <b>precis</b> da la resoluziun cumplaina da la camera; las zonas da privatezza restan naira. Cun il dretg «chau» volva il chau il sectur en il center (betg durant in alarm, in test da chaminar, «Ora» u il stop d’urgenza). Maletg termic ed autras cameras: mo engrondì. Sche la protecziun è activa (Wachsam / Voll), fa la lupa in maletg precis mo sin dumonda – cun trair in rom u cun «◐ Precis», maximalmain mintga 10 s –, uschia na vegn la renconuschientscha mai tschorva.</li>',
 }
 
 
