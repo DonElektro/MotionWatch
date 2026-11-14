@@ -151,18 +151,22 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
   Anleitung mit Teileliste, Warnungen und NACHMESSEN [Dokumente/LIESMICH_Montage_v5-3-1.md](Dokumente/LIESMICH_Montage_v5-3-1.md);
   prüfen im Ordner `Quellcode/`: `check531.py`, `printcheck531.py`, `druckcheck531.py`, Bilder `prev531.py`.
 
-- **5.4.0** (14.11.2026, neues Druckteil, kein Teil von v5.3 geändert; passt auch auf v5.1 / v5.2): **29 Transportsicherung**,
-  eine kleine Haube (28 × 131 × 55 mm, ca. 16 g), die von oben über Kopf und Lampen gedrückt wird (Kopf in Grundstellung) und an
-  den beiden Lampenbechern einrastet. Sie sperrt das **Neigen** (Spiel ± 0,5°), lässt Kamera (auch Weitwinkel), Wärmebild und
-  beide Lampen vorne ganz frei und drückt nicht auf Servos oder Kabel. Das **Schwenken sperrt sie nicht** (der Servo hält den
-  Kopf); eine Variante mit Beinen an den Deckel-Seiten ist im Quellcode vorbereitet (`PAN_BEINE`), aber nicht als Druckdatei.
-  Abnehmen: gerade nach oben ziehen. Quelle `Quellcode/kappe540.py`, Druck
-  [Druckdateien/v5-3/MoveEye_v5-3_29_Transportsicherung.3mf](Druckdateien/v5-3/MoveEye_v5-3_29_Transportsicherung.3mf)
-  (umgedreht, Dach unten, ohne Stützen), Anleitung mit Abständen und «Nicht getestet»
-  [Dokumente/LIESMICH_Montage_v5-4-0.md](Dokumente/LIESMICH_Montage_v5-4-0.md); in `bau.json` Teil «kappe», Drucken und
-  Montage «Transportsicherung aufsetzen / abnehmen». Prüfen im Ordner `Quellcode/`: `check540.py [--beine]`,
-  `printcheck540.py [--beine]`, `druckcheck540.py`, Bilder `prev540.py`, neu erzeugen `export540.py` (STL ausserhalb des
-  Repositorys).
+- **5.4.0** (14.11.2026, zwei neue Druckteile, kein Teil von v5.3 geändert; passt auch auf v5.1 / v5.2): **Transportsicherung**
+  aus zwei Teilen, zusammen ca. 22 g. Beide haben eine Öse (Ø 3,6) für eine Schnur.
+  - **29 Haube** (37 × 131 × 55 mm, mit Öse): wird von oben über Kopf und Lampen gedrückt (Kopf in Grundstellung) und rastet an
+    den beiden Lampenbechern ein. Sie sperrt das **Neigen** (Spiel ± 0,5°).
+  - **30 Drehsperre-Klammer** (62 × 70 × 18 mm, flach): wird von hinten über den Deckel geschoben und rastet am Kabelkamin ein;
+    zwei Pfosten an den hinteren Ecken des Gabelbodens sperren das **Schwenken** (Spiel + 0,6° / − 0,5°).
+  - Kamera (auch Weitwinkel), Wärmebild und beide Lampen bleiben vorne ganz frei; kein Teil drückt auf Servos oder Kabel.
+  - Quelle `Quellcode/kappe540.py` und `Quellcode/klammer540.py`, Druck
+    [Druckdateien/v5-3/MoveEye_v5-3_29_Transportsicherung.3mf](Druckdateien/v5-3/MoveEye_v5-3_29_Transportsicherung.3mf)
+    (umgedreht, Dach unten) und
+    [Druckdateien/v5-3/MoveEye_v5-3_30_Drehsperre_Klammer.3mf](Druckdateien/v5-3/MoveEye_v5-3_30_Drehsperre_Klammer.3mf)
+    (flach, wie eingebaut), beide ohne Stützen.
+  - Anleitung mit Abständen und «Nicht getestet»: [Dokumente/LIESMICH_Montage_v5-4-0.md](Dokumente/LIESMICH_Montage_v5-4-0.md).
+    In `bau.json` Teile «kappe» und «drehsperre», Drucken und Montage «Transportsicherung aufsetzen / abnehmen».
+  - Prüfen im Ordner `Quellcode/`: `check540.py`, `printcheck540.py`, `druckcheck540.py`, Bilder `prev540.py`, neu erzeugen
+    `export540.py` (STL ausserhalb des Repositorys).
 
 - **Archiv «PanTilt v6» (22.10.2026):** `PanTilt_v6_X2D_alle_Teile.3mf`, 7 Teile mit der alten Nummerierung
   (1_Gehaeuse_Unterteil … 7_Rueckdeckel), Unterteil 122 × 87 × 48 mm. Das ist die **ältere** PanTilt-Linie (v4, geschlossener

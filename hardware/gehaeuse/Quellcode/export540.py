@@ -1,17 +1,18 @@
-"""5.4.0: 29 Transportsicherung (Kappe) exportieren -> STL (+ .npz) AUSSERHALB des Repositorys (Ordner GEH_STL, Standard
-<tmp>/gehaeuse_out540) und als einzelne 3MF nach Druckdateien/v5-3/MoveEye_v5-3_29_Transportsicherung.3mf (Format wie
-gehaeuse_bauen.py --druck53). Gedreht für den Druck: umgedreht, Dach unten.
+"""5.4.0: 29 Transportsicherung (Haube) und 30 Drehsperre-Klammer exportieren -> STL (+ .npz) AUSSERHALB des Repositorys
+(Ordner GEH_STL, Standard <tmp>/gehaeuse_out540) und als einzelne 3MF nach Druckdateien/v5-3/MoveEye_v5-3_<Teil>.3mf (Format wie
+gehaeuse_bauen.py --druck53). Gedreht für den Druck: Haube umgedreht (Dach unten), Klammer wie eingebaut.
 python3 export540.py            (ca. 5–10 min)      python3 export540.py --nur-stl   (ohne 3MF)
 Alle übrigen Teile bleiben genau wie v5.3 (Druckdateien/v5-3/)."""
 import os, sys, time, tempfile, numpy as np
-import kappe540
+import kappe540, klammer540
 from export import mesh, orient, write_stl
 from decimate import cluster_qem_manifold
 
 HIER = os.path.dirname(os.path.abspath(__file__))
 DD = os.environ.get("GEH_DRUCKDATEIEN") or os.path.join(HIER, "..", "Druckdateien")
 OUT = os.environ.get("GEH_STL") or os.path.join(tempfile.gettempdir(), "gehaeuse_out540")
-JOBS = {"29_Transportsicherung": (kappe540.part_kappe, 0.3, [180, 0, 0], 1)}   # umgedreht: Dach unten
+JOBS = {"29_Transportsicherung": (kappe540.part_kappe, 0.3, [180, 0, 0], 1),        # umgedreht: Dach unten
+        "30_Drehsperre_Klammer": (klammer540.part_klammer, 0.2, [0, 0, 0], 1)}   # wie eingebaut
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)

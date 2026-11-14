@@ -2419,6 +2419,21 @@
     "it": "29 Blocco di trasporto (cappuccio su testa e lampade, si aggancia ai bicchieri delle lampade)",
     "rm": "29 Segirezza da transport (chapitscha sur il chau e las lampas, s'encliquetescha vi dals bitschiers da las lampas)"
    }
+  },
+  {
+   "id": "drehsperre",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 14,
+   "datei": "30_Drehsperre_Klammer",
+   "ohne": "betrieb",
+   "name": {
+    "de": "30 Drehsperre-Klammer (flach auf dem Deckel am Kabelkamin, sperrt das Schwenken beim Transport)",
+    "en": "30 Pan lock clip (flat on the lid at the cable chimney, locks the pan during transport)",
+    "fr": "30 Pince anti-rotation (à plat sur le couvercle à la cheminée, bloque la rotation pendant le transport)",
+    "it": "30 Clip blocca-rotazione (piatta sul coperchio al camino, blocca la rotazione durante il trasporto)",
+    "rm": "30 Clip cunter la rotaziun (plat sin il viertgel al chamin, bloccha la rotaziun durant il transport)"
+   }
   }
  ],
  "schritte": [
@@ -4054,13 +4069,30 @@
     "stuetzen": false,
     "schicht": "0.20",
     "brim": 5,
-    "zeit_h": 0.9,
+    "zeit_h": 1.0,
     "liegt": {
      "de": "Dach unten (umgedreht)",
      "en": "roof down (upside down)",
      "fr": "toit en bas (retourné)",
      "it": "tetto in basso (capovolto)",
      "rm": "tetg sut (volvì)"
+    }
+   },
+   {
+    "datei": "30_Drehsperre_Klammer",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 0.3,
+    "liegt": {
+     "de": "flach, wie eingebaut",
+     "en": "flat, as fitted",
+     "fr": "à plat, comme montée",
+     "it": "piatta, come montata",
+     "rm": "plat, sco montà"
     }
    }
   ],
@@ -5904,11 +5936,11 @@
     "rm": "Metter / prender davent la segirezza da transport"
    },
    "text": {
-    "de": "Für den Transport: MoveEye herunterfahren und den Strom trennen. Den Kopf von Hand in die Grundstellung drehen: er schaut nach vorne zu PIR und Mikrofon und steht waagrecht. Die Haube 29 von oben über Kopf und Lampen drücken (Status-LED durch das Loch im Dach), bis sie an beiden Lampenbechern einrastet. Sie sperrt das Neigen; Kamera, Wärmebild und Lampen bleiben vorne frei. Das Schwenken sperrt sie nicht: der Kopf kann sich mit der Haube drehen, der Servo hält ihn nur leicht – MoveEye im Rucksack darum aufrecht und gepolstert verstauen. Abnehmen: die Haube gerade nach oben abziehen. Vor dem Einschalten abnehmen.",
-    "en": "For transport: shut MoveEye down and disconnect the power. Turn the head by hand into the home position: it looks to the front towards PIR and microphone and is level. Press hood 29 from above over head and lamps (status LED through the hole in the roof) until it clicks onto both lamp cups. It locks the tilt; camera, thermal camera and lamps stay free at the front. It does not lock the pan: the head can turn together with the hood, only the servo holds it lightly – so pack MoveEye upright and padded in the rucksack. To remove: pull the hood straight up. Remove it before switching on.",
-    "fr": "Pour le transport : arrêter MoveEye et couper le courant. Tourner la tête à la main en position de base : elle regarde vers l'avant, vers le PIR et le micro, et se tient à l'horizontale. Presser le capot 29 par le haut sur la tête et les lampes (LED d'état dans le trou du toit) jusqu'à ce qu'il s'encliquette sur les deux godets. Il bloque l'inclinaison ; caméra, caméra thermique et lampes restent libres à l'avant. Il ne bloque pas la rotation : la tête peut tourner avec le capot, seul le servo la retient un peu – ranger donc MoveEye debout et rembourré dans le sac à dos. Retirer : tirer le capot droit vers le haut. Le retirer avant la mise sous tension.",
-    "it": "Per il trasporto: spegnere MoveEye e staccare la corrente. Girare a mano la testa nella posizione di base: guarda in avanti verso PIR e microfono ed è orizzontale. Premere dall'alto il cappuccio 29 su testa e lampade (LED di stato nel foro del tetto) finché scatta su entrambi i bicchieri delle lampade. Blocca l'inclinazione; fotocamera, termocamera e lampade restano libere davanti. Non blocca la rotazione: la testa può girare insieme al cappuccio, la tiene solo leggermente il servo – riporre quindi MoveEye in piedi e imbottito nello zaino. Per togliere: tirare il cappuccio dritto verso l'alto. Toglierlo prima di accendere.",
-    "rm": "Per il transport: stizzar MoveEye e separar il current. Volver il chau a maun en la posiziun da basa: el guarda enavant vers il PIR ed il microfon ed è orizontal. Smatgar la chapitscha 29 dad sura sur il chau e las lampas (LED da status tras la foura en il tetg), fin ch'ella s'encliquetescha vi dals dus bitschiers da las lampas. Ella bloccha l'inclinaziun; camera, camera termica e lampas restan libras davant. Ella na bloccha betg la rotaziun: il chau po sa volver cun la chapitscha, mo il servo al tegna levamain – metter MoveEye perquai en il satgados dretg ensi e bain pulstrà. Prender davent: trair la chapitscha dretg ensi. Prender davent avant che metter en funcziun."
+    "de": "Für den Transport: MoveEye herunterfahren und den Strom trennen. Den Kopf von Hand in die Grundstellung drehen: er schaut nach vorne zu PIR und Mikrofon und steht waagrecht. 1) Die Haube 29 von oben über Kopf und Lampen drücken (Status-LED durch das Loch im Dach), bis sie an beiden Lampenbechern einrastet – sie sperrt das Neigen. 2) Die Drehsperre-Klammer 30 flach von hinten über den Deckel schieben, bis sie am Kabelkamin einrastet; ihre zwei Pfosten gehen unter den Kabelbügeln an die hinteren Ecken des Gabelbodens – sie sperrt das Schwenken. Kamera, Wärmebild und Lampen bleiben vorne frei, die Kabel im Kamin werden nicht berührt. Beide Teile haben eine Öse: mit einer Schnur verbinden, dann geht keines verloren. Abnehmen: die Klammer an der Öse nach hinten ziehen, die Haube gerade nach oben abziehen. Vor dem Einschalten beide abnehmen.",
+    "en": "For transport: shut MoveEye down and disconnect the power. Turn the head by hand into the home position: it looks to the front towards PIR and microphone and is level. 1) Press hood 29 from above over head and lamps (status LED through the hole in the roof) until it clicks onto both lamp cups – it locks the tilt. 2) Slide pan lock clip 30 flat over the lid from the back until it clicks onto the cable chimney; its two posts go under the cable clips to the rear corners of the yoke base – it locks the pan. Camera, thermal camera and lamps stay free at the front, the cables in the chimney are not touched. Both parts have an eyelet: tie them together with a cord so neither gets lost. To remove: pull the clip backwards at its eyelet, pull the hood straight up. Remove both before switching on.",
+    "fr": "Pour le transport : arrêter MoveEye et couper le courant. Tourner la tête à la main en position de base : elle regarde vers l'avant, vers le PIR et le micro, et se tient à l'horizontale. 1) Presser le capot 29 par le haut sur la tête et les lampes (LED d'état dans le trou du toit) jusqu'à ce qu'il s'encliquette sur les deux godets – il bloque l'inclinaison. 2) Glisser la pince anti-rotation 30 à plat sur le couvercle par l'arrière jusqu'à ce qu'elle s'encliquette sur la cheminée ; ses deux montants passent sous les serre-câbles jusqu'aux coins arrière du socle de la fourche – elle bloque la rotation. Caméra, caméra thermique et lampes restent libres à l'avant, les câbles dans la cheminée ne sont pas touchés. Les deux pièces ont un œillet : les relier avec une cordelette pour ne rien perdre. Retirer : tirer la pince vers l'arrière par son œillet, tirer le capot droit vers le haut. Retirer les deux avant la mise sous tension.",
+    "it": "Per il trasporto: spegnere MoveEye e staccare la corrente. Girare a mano la testa nella posizione di base: guarda in avanti verso PIR e microfono ed è orizzontale. 1) Premere dall'alto il cappuccio 29 su testa e lampade (LED di stato nel foro del tetto) finché scatta su entrambi i bicchieri delle lampade – blocca l'inclinazione. 2) Far scorrere la clip blocca-rotazione 30 piatta sul coperchio da dietro finché scatta sul camino; i suoi due montanti passano sotto i fermacavi fino agli angoli posteriori della base della forcella – blocca la rotazione. Fotocamera, termocamera e lampade restano libere davanti, i cavi nel camino non vengono toccati. Entrambi i pezzi hanno un occhiello: legarli con un cordino così non si perdono. Per togliere: tirare la clip indietro per l'occhiello, tirare il cappuccio dritto verso l'alto. Togliere entrambi prima di accendere.",
+    "rm": "Per il transport: stizzar MoveEye e separar il current. Volver il chau a maun en la posiziun da basa: el guarda enavant vers il PIR ed il microfon ed è orizontal. 1) Smatgar la chapitscha 29 dad sura sur il chau e las lampas (LED da status tras la foura en il tetg), fin ch'ella s'encliquetescha vi dals dus bitschiers – ella bloccha l'inclinaziun. 2) Stuschar la clip cunter la rotaziun 30 plat sur il viertgel da davos, fin ch'ella s'encliquetescha vi dal chamin; ses dus pals van sut ils tegnacabels fin als chantuns davos da la basa da la furtga – ella bloccha la rotaziun. Camera, camera termica e lampas restan libras davant, ils cabels en il chamin na vegnan betg tutgads. Omadus parts han in ögl: als liar cun ina corda, uschia na va nagina a perder. Prender davent: trair la clip enavos vi da l'ögl, trair la chapitscha dretg ensi. Prender davent omaduas avant che metter en funcziun."
    }
   }
  ],
@@ -5974,7 +6006,8 @@
   "v5-3/MoveEye_v5-3_26_Akkuklappe.3mf",
   "v5-3/MoveEye_v5-3_27_Luftkanal.3mf",
   "v5-3/MoveEye_v5-3_28_Adapter_UPS_HAT_alt.3mf",
-  "v5-3/MoveEye_v5-3_29_Transportsicherung.3mf"
+  "v5-3/MoveEye_v5-3_29_Transportsicherung.3mf",
+  "v5-3/MoveEye_v5-3_30_Drehsperre_Klammer.3mf"
  ],
  "ui_bauen": [
   {
@@ -6787,7 +6820,8 @@
    "feet53_2",
    "feet53_3",
    "feet53_4",
-   "kappe"
+   "kappe",
+   "drehsperre"
   ],
   "turntable": "#f59a4a",
   "yoke": "#f59a4a",

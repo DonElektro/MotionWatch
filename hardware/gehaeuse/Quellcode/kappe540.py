@@ -1,5 +1,6 @@
 """MoveEye Gehäuse 5.4.0 – 29 Transportsicherung: kleine Haube, die von oben über den Kopf und die beiden Lampenbecher
-geschoben wird und an den Lampenbechern einrastet. Sie sperrt das Neigen (Tilt); das Schwenken (Pan) hält der Servo.
+geschoben wird und an den Lampenbechern einrastet. Sie sperrt das Neigen (Tilt); das Schwenken (Pan) sperrt die flache
+Drehsperre-Klammer 30 (klammer540.py) auf dem Deckel. Beide Teile haben hinten eine Öse für eine Schnur.
 Auftrag des Besitzers vom 14.11.2026 (Zweig geh-transportkappe), Runde 2: die erste Kappe (bis zum Kabelkamin, 82 × 131 × 86 mm)
 war zu gross für den Rucksack -> so klein wie möglich, nur über Kopf und Lampen. Nur ein ZUSÄTZLICHES Teil: alle Teile v5.3
 (und v5.1 / v5.2: Kopf, Gabel und Lampen sind dort gleich) bleiben genau wie sie sind. v53.py, v52.py, v5.py und pantilt.py werden
@@ -14,12 +15,12 @@ Aufbau (Kopf in Grundstellung: schaut nach vorne zur Stirnseite mit PIR und Mikr
   - Vorne ist alles offen: kein Material vor X_VORNE (1 mm hinter der vordersten Linsen-Ebene, Lampen). Kamera (auch
     Weitwinkel), Wärmebild und Lampen sehen nichts von der Haube (check540.py rechnet die Sichtkegel trotzdem nach).
   - Hinten endet die Haube über den Lampen vor dem Kabelschlitz der Lampenhalter (die Lampenkabel bleiben frei).
-  - Schwenken: kein festes Teil in kurzer Reichweite. Variante PAN_BEINE = True (nur Vorschlag, nicht als Druckdatei): 2 Beine
-    hinter den Lampen bis an die Längsseiten des Deckels (klemmen) – die Haube wird dann deutlich höher.
+  - Schwenken: die Haube dreht mit dem Kopf; gesperrt wird es von der Klammer 30 (Entscheid des Besitzers 14.11.2026).
+  - Öse hinten am Dach (flache Lasche, Ø OESE_D) für eine Schnur zur Klammer 30.
   - Aufsetzen und Abnehmen mit einer Hand: aufdrücken bis es klickt, zum Abnehmen gerade nach oben ziehen.
 Druck: umgedreht, Dach unten (Schrägen 45°, Wände senkrecht, Rastlippen mit 45°-Flächen), ohne Stützen.
 Koordinaten wie v5.py (Unterteil: x 0 = Stirnwand innen, Kopf schaut nach -x, z = 0 Bodenunterseite). Masse in mm.
-Ändern -> python3 export540.py, prüfen -> python3 check540.py [--beine], Bilder -> python3 prev540.py
+Ändern -> python3 export540.py, prüfen -> python3 check540.py, Bilder -> python3 prev540.py
 """
 import math
 import numpy as np
@@ -42,12 +43,9 @@ RUECK_MITTE_LUFT = 4.5               # Rückwand (zwischen den Armen) endet so w
 ARM_LUFT = 2.0                       # Rückwand <-> Innenseite der Arme
 KABEL_LUFT = 0.5                     # Haube endet über den Lampen so weit vor dem Kabelschlitz der Lampenhalter
 FASE = 1.2                           # Einführschräge innen unten an der Rückwand
-# Variante mit Pan-Sperre (nur Vorschlag): Beine hinter den Lampen bis an die Längsseiten des Deckels
-PAN_BEINE = False
-BEIN_X = (49.5, 52.3)                # hinter den Lampenhaltern (enden bei x 48,7)
-BEIN_T = 3.0                         # Dicke des Beins (federt beim Aufsetzen)
-BEIN_KLEMM = 0.2                     # Übermass an der Deckel-Seite (klemmt)
-BEIN_TIEF = 4.0                      # Bein reicht so weit unter die Deckel-Oberseite (Deckel 3 mm + 1 mm Unterteil)
+OESE_D = 3.6                         # Öse hinten am Dach: Loch für Schnur / Schlüsselring (Verbindung zur Klammer 30)
+OESE_RING = 3.0                      # Material um das Loch
+OESE_L = 9.0                         # Lasche ragt so weit hinter die Rückwand
 
 # ======================= ABGELEITET (aus v5 / v52 / pantilt) =============
 Z_KIPP = v5.PAN_Z0 + pt.AXZ                              # Kippachse
@@ -63,7 +61,6 @@ X_VORNE = max(LINSE_X.values()) + VORNE_RESERVE
 LAMPE_SCHLITZ_X = AX - v5.CUP_X0                         # Kabelschlitz in der Schürze des Lampenhalters beginnt hier
 DIFF_XY = (AX - v52.SLED_X, AY - v52.SLED_Y)
 KOPF_SCHLITZ_OBEN = Z_KIPP - pt.HH / 2 + 8.5 + 3.0      # Oberkante Kabelschlitz in der Kopf-Rückwand (pantilt.part_head)
-D_DECKEL = v5.LY / 2 + v5.WALL                           # Längsseiten des Deckels ab AY (AY = LY / 2)
 
 H_X0 = X_VORNE
 H_X1 = KOPF_HINTEN + PASS + WAND                         # hinten (Rückwand)
@@ -113,42 +110,24 @@ def _seite(s):
     lippe = I(box(H_X0, S_X1, l0, l1, LIPPE_Z - LIPPE_H, LIPPE_Z + LIPPE_H),
               ebene_d(s, -1, -1, -(LIPPE_Z - LIPPE_H + D_WI)),                # unten: Einführschräge 45°
               ebene_d(s, -1, 1, LIPPE_Z + LIPPE_H - D_WI))                    # oben: Rastfläche 45° (lösbar durch Ziehen)
-    teile = [schraeg, wand, lippe]
-    if PAN_BEINE:
-        teile += _bein(s)
-    return teile
+    return [schraeg, wand, lippe]
 
-
-def _bein(s):
-    """Variante: Bein hinter dem Lampenhalter bis an die Längsseite des Deckels (klemmt mit BEIN_KLEMM). Seitenwand nach hinten
-    verlängert, dann 45° nach innen unten und senkrecht an die Deckel-Seite. Alle Oberseiten 45° (Druck umgedreht)."""
-    bx0, bx1 = BEIN_X
-    d_in = D_DECKEL - BEIN_KLEMM
-    d_aus = d_in + BEIN_T
-    tb = BEIN_T * math.sqrt(2.0)
-    z_a = WAND_Z0 - 1.0                                   # Oberkante des schrägen Stücks an der Seitenwand aussen
-    w0, w1 = y_von(s, D_WI, D_WA)
-    verl = U(I(box(S_X1 - 0.01, bx1, w0, w1, WAND_Z0, WAND_Z1), Plane([1, 0, 1], S_X1 + WAND_Z1)),
-             box(bx0, bx1, w0, w1, z_a - tb - 1.0, WAND_Z0 + 0.5))
-    y0, y1 = y_von(s, d_in, D_WA)
-    band = I(box(bx0, bx1, y0, y1, LIDTOP - BEIN_TIEF, z_a),
-             ebene_d(s, -1, 1, z_a - D_WA),                               # oben:  z <= z_a - (D_WA - d)
-             ebene_d(s, 1, -1, -(z_a - D_WA - tb)))                       # unten: z >= z_a - (D_WA - d) - tb
-    y2, y3 = y_von(s, d_in, d_aus)
-    bein = box(bx0, bx1, y2, y3, LIDTOP - BEIN_TIEF, z_a - (D_WA - d_aus))
-    return [verl, band, bein]
 
 
 def part_kappe():
     """29 Transportsicherung in Einbaulage (Unterteil-Koordinaten). Druck: umgedreht (Dach unten), ohne Stützen."""
     dach = box(H_X0, H_X1, AY - KOPF_D - 0.5, AY + KOPF_D + 0.5, DACH_Z0, DACH_Z1)
     rueck = box(H_X1 - WAND, H_X1, RUECK_Y[0], RUECK_Y[1], RUECK_MITTE_Z0, DACH_Z1)
-    body = U(dach, rueck, *_seite(-1), *_seite(+1))
+    r = OESE_D / 2 + OESE_RING
+    oese = U(box(H_X1 - 0.5, H_X1 + OESE_L - r, AY - r, AY + r, DACH_Z0, DACH_Z1),
+             cyl_z(H_X1 + OESE_L - r, AY, DACH_Z0, DACH_Z1, 2 * r))       # flache Lasche hinten am Dach, Ende rund
+    body = U(dach, rueck, oese, *_seite(-1), *_seite(+1))
     xi = H_X1 - WAND
     fase = I(box(xi - 0.01, xi + FASE + 0.01, RUECK_Y[0] - 1, RUECK_Y[1] + 1, RUECK_MITTE_Z0 - 1, RUECK_MITTE_Z0 + FASE),
              Plane([1, 0, 1], FASE + xi + RUECK_MITTE_Z0))
     cut = [cyl_z(DIFF_XY[0], DIFF_XY[1], DACH_Z0 - 1, DACH_Z1 + 1, v52.DIFF_D + 2 * DIFF_PASS),
-           box(H_X0 - 5, H_X1 + 5, -100, 200, DACH_Z1, DACH_Z1 + 50), fase]
+           cyl_z(H_X1 + OESE_L - r, AY, DACH_Z0 - 1, DACH_Z1 + 1, OESE_D),
+           box(H_X0 - 5, H_X1 + OESE_L + 5, -100, 200, DACH_Z1, DACH_Z1 + 50), fase]
     return D(body, *cut)
 
 
@@ -225,8 +204,5 @@ if __name__ == "__main__":
     print("Linsen vorne x:", {k: round(v, 2) for k, v in LINSE_X.items()}, " -> kein Material vor x %.2f" % X_VORNE)
     print("Rastlippe: Spitze d %.2f (Becher aussen %.2f), z %.2f, Höhe ± %.2f; Seitenwand federt beim Aufschieben %.2f mm aus"
           % (D_LIPPE, LAMPE_R, LIPPE_Z, LIPPE_H, LAMPE_R - D_LIPPE))
-    for beine in (False, True):
-        PAN_BEINE = beine
-        lo, hi = part_kappe().bbox()
-        print("%s: Bounding Box %s %s  Grösse %s" % ("mit Pan-Beinen" if beine else "Haube", np.round(lo, 1), np.round(hi, 1),
-                                                     np.round(hi - lo, 1)))
+    lo, hi = part_kappe().bbox()
+    print("Haube Bounding Box", np.round(lo, 1), np.round(hi, 1), " Grösse", np.round(hi - lo, 1))

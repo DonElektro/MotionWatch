@@ -1,9 +1,9 @@
-"""5.4.0 Druck-Check: kleinste Wandstärke der Transportsicherung 29 (Methode druckcheck52.thickness).   python3 druckcheck540.py"""
+"""5.4.0 Druck-Check: kleinste Wandstärke der Transportsicherung 29 und der Klammer 30 (Methode druckcheck52.thickness).   python3 druckcheck540.py"""
 import sys, time, numpy as np
-import kappe540
+import kappe540, klammer540
 from druckcheck52 import thickness
 
-PARTS = {"kappe": (kappe540.part_kappe, 0.35)}
+PARTS = {"kappe": (kappe540.part_kappe, 0.35), "klammer": (klammer540.part_klammer, 0.25)}
 
 if __name__ == "__main__":
     for k in (sys.argv[1:] or list(PARTS)):

@@ -1,16 +1,15 @@
-"""5.4.0: Schicht-Prüfung (schwebende Inseln, Überhänge) der Transportsicherung 29 in Druckrichtung (umgedreht, Dach unten;
-Methode wie printcheck531.py).   python3 printcheck540.py [h] [--beine]   (h = seitliches Raster, Standard 0,4 mm)"""
+"""5.4.0: Schicht-Prüfung (schwebende Inseln, Überhänge) in Druckrichtung (Methode wie printcheck531.py): Haube 29 umgedreht
+(Dach unten), Klammer 30 wie eingebaut.   python3 printcheck540.py [h]   (h = seitliches Raster, Standard 0,4 mm)"""
 import numpy as np, sys
 from scipy import ndimage
-import kappe540
+import kappe540, klammer540
 from csg import R, T
 
 args = [a for a in sys.argv[1:] if not a.startswith("--")]
 h = float(args[0]) if args else 0.4
-if "--beine" in sys.argv:
-    kappe540.PAN_BEINE = True                         # Variante mit Pan-Beinen
 lh = 0.2
-for name, fn, rot in [("K_Transportsicherung_29", kappe540.part_kappe, [180, 0, 0])]:
+for name, fn, rot in [("K_Transportsicherung_29", kappe540.part_kappe, [180, 0, 0]),
+                      ("D_Drehsperre_Klammer_30", klammer540.part_klammer, [0, 0, 0])]:
     n = R(rot, fn()); lo, hi = n.bbox(); n = T(-lo, n); lo, hi = n.bbox()
     xs = np.arange(0, hi[0] + h, h); ys = np.arange(0, hi[1] + h, h); zs = np.arange(lh / 2, hi[2], lh)
     X, Y = np.meshgrid(xs, ys, indexing="ij"); XY = np.column_stack([X.ravel(), Y.ravel()])

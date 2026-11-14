@@ -1,21 +1,21 @@
-"""5.4.0 Prüfung 29 Transportsicherung (Haube über Kopf und Lampen) am unveränderten Gehäuse v5.3, Kopf in Grundstellung
-(pan 180, tilt 0):
+"""5.4.0 Prüfung 29 Transportsicherung (Haube über Kopf und Lampen) und 30 Drehsperre-Klammer (flach auf dem Deckel) am
+unveränderten Gehäuse v5.3, Kopf in Grundstellung (pan 180, tilt 0):
   1 Abstände Haube <-> jedes Teil (Anlage: Kopf PASS / DACH_LUFT, Lampenbecher 0 = Rastlippe liegt an, alles andere mit Luft)
   2 Sichtkegel: Kamera (gerechnet mit Weitwinkel 102° × 67° + 2°), Wärmebild (90° + 2°), Lampen (120°), Weitwinkel v5.2 vorne
   3 Kabel: Schlaufe Kopf -> Kamin, Lampenkabel
   4 Aufsetzen von oben: kein Teil des Geräts liegt über der Haube (Spalten-Abtastung; nur die Rastlippen greifen unter die Becher)
   5 Sperre: ab welchem Winkel stösst der Kopf beim Neigen an (Spiel); Schwenken
   6 Masse, Volumen, Gewicht
-python3 check540.py [--beine]   (--beine: Variante mit Pan-Beinen an den Deckel-Seiten; Abstand < 0 = Überschneidung in mm)"""
+  7 Klammer 30: Abstände, Einschieben von hinten (Weg), Abheben, Pan-Spiel, Masse
+python3 check540.py   (Abstand < 0 = Überschneidung in mm; Werte hängen an den Annahmen in kappe540.py / klammer540.py)"""
 import sys, time, numpy as np
 import v5, v52, v53
 import pantilt as pt
 import kappe540 as k
+import klammer540 as kl
 import csg
 from csg import U, I, box
 
-if "--beine" in sys.argv:
-    k.PAN_BEINE = True
 H = 0.5
 t0 = time.time()
 MARGIN_ALT = csg.MARGIN
@@ -51,12 +51,11 @@ P = k.placed()
 kap = P["kappe"]
 pts = shell_points(kap)
 probleme = []
-print("Haube%s: %d Prüfpunkte (Schale, Raster %.1f mm)  %.0fs" % (" mit Pan-Beinen" if k.PAN_BEINE else "", len(pts), H, time.time() - t0), flush=True)
+print("Haube: %d Prüfpunkte (Schale, Raster %.1f mm)  %.0fs" % (len(pts), H, time.time() - t0), flush=True)
 
 # ---------------------------------------------------------------- 1 Abstände
 print("== 1 Abstände Haube <-> Teile (mm) ==")
-ANLAGE = {"head": k.PASS, "side": k.PASS, "lamp1": 0.0, "lamp2": 0.0, "diff": k.DIFF_PASS,
-          "lid": -k.BEIN_KLEMM, "tub": -k.BEIN_KLEMM}
+ANLAGE = {"head": k.PASS, "side": k.PASS, "lamp1": 0.0, "lamp2": 0.0, "diff": k.DIFF_PASS}
 SOLL_LUFT = 1.0                                   # alles, was keine Anlagefläche ist
 reihen = []
 for name, node in P.items():
@@ -128,12 +127,9 @@ for z in np.arange(max(lo[2], v5.LIDTOP - 6) + 0.125, hi[2] + 0.5, 0.25):
 ueber = amax - cmin                                   # > 0: Gerät liegt in dieser Spalte über Material der Haube
 d_ = np.abs(XY[:, 1] - k.AY)
 rast = (XY[:, 0] < k.S_X1 + 0.4) & (d_ > k.D_LIPPE - 0.4) & (d_ < k.D_WI + 0.4)
-klemm = np.zeros(len(XY), bool)
-if k.PAN_BEINE:
-    klemm = (XY[:, 0] > k.BEIN_X[0] - 0.4) & (d_ > k.D_DECKEL - k.BEIN_KLEMM - 0.4) & (d_ < k.D_DECKEL + 0.4)
-schlecht = (ueber > 0.01) & ~rast & ~klemm
-print("  Spalten mit Material der Haube: %d; davon unter einem Teil des Geräts: %d (ausser Rastlippen%s)"
-      % (np.isfinite(cmin).sum(), schlecht.sum(), " und Klemmung der Beine" if k.PAN_BEINE else ""))
+schlecht = (ueber > 0.01) & ~rast
+print("  Spalten mit Material der Haube: %d; davon unter einem Teil des Geräts: %d (ausser Rastlippen)"
+      % (np.isfinite(cmin).sum(), schlecht.sum()))
 if schlecht.any():
     i = np.argmax(np.where(schlecht, ueber, -1))
     print("  schlimmste Spalte x %.1f y %.1f: %.2f mm" % (*XY[i], ueber[i]))
@@ -170,11 +166,7 @@ for nm, fn in (("Neigen +", lambda w: min_abstand(w, 180.0, KOPF)), ("Neigen -",
     print("  %-12s Anschlag nach %s" % (nm, "%.2f°" % w if w is not None else "mehr als 10° (KEINE Sperre)"), flush=True)
     if w is None or w > 2.0:
         probleme.append("Sperre %s zu weich (%s)" % (nm, w))
-if k.PAN_BEINE:
-    print("  Schwenken: Rastlippen fest an den Lampenbechern, Beine klemmen mit %.1f mm Übermass an den Deckel-Seiten -> kein Spiel,"
-          " federnd über die Beine (Hebel %.0f mm zur Pan-Achse)" % (k.BEIN_KLEMM, np.mean(k.BEIN_X) - k.AX))
-else:
-    print("  Schwenken: NICHT gesperrt – die Haube sitzt an Kopf und Lampen und dreht mit; der Pan-Servo (ohne Strom) hält den Kopf")
+print("  Schwenken: die Haube dreht mit dem Kopf – gesperrt wird es von der Klammer 30 (Abschnitt 7)")
 
 # ---------------------------------------------------------------- 6 Masse
 print("== 6 Masse ==")
@@ -187,6 +179,88 @@ alt = np.subtract(k.ALT_BOX[1], k.ALT_BOX[0])
 print("  Grösse %.1f × %.1f × %.1f mm (x × y × z), Druckhöhe umgedreht %.1f mm; Volumen ca. %.1f cm³ -> PETG ca. %.0f g (1,27 g/cm³, voll)"
       % (*(hi - lo), hi[2] - lo[2], vol, vol * 1.27))
 print("  erste Kappe (Runde 1): %.1f × %.1f × %.1f mm -> Hüllquader jetzt %.0f %% davon" % (*alt, 100 * np.prod(hi - lo) / np.prod(alt)))
+print("  (%.0fs)" % (time.time() - t0), flush=True)
+
+# ---------------------------------------------------------------- 7 Klammer 30
+print("== 7 Drehsperre-Klammer 30 ==", flush=True)
+csg.MARGIN = 40.0
+P["klammer"] = kla = kl.part_klammer()
+kp = shell_points(kla, 0.4)
+auf = kp[:, 2] < v5.LIDTOP + 0.3                      # liegt auf dem Deckel (gewollt)
+nase_m = np.zeros(len(kp), bool)
+for s_ in (-1, 1):
+    ny0, ny1 = kl.nase_y(s_)
+    nase_m |= (kp[:, 0] < kl.KA_X[0]) & (kp[:, 1] > ny0 - 0.3) & (kp[:, 1] < ny1 + 0.3)
+ANL_K = {"yoke": kl.PASS, "turntable": kl.PASS, "lid": kl.PASS}
+reihen = []
+for name, node in P.items():
+    if name == "klammer":
+        continue
+    d, p = naechst(kp[~auf] if name in ("lid", "tub") else kp, node)
+    if d < 30:
+        reihen.append((d, name, p))
+for nm, node in (("Schlaufe Kopf -> Kamin (Ø 8)", k.kabel_node(k.schlaufe_pts(), 8.0)),
+                 ("Lampenkabel weiss (Ø 4)", k.kabel_node(k.lampenkabel_pts(+1), 4.0)),
+                 ("Lampenkabel IR (Ø 4)", k.kabel_node(k.lampenkabel_pts(-1), 4.0)),
+                 ("Flachkabel 16 mm auf der Öse", box(v53.TIE_LID[0] - 3.0, v5.CHIM_X, v5.AY - 8, v5.AY + 8, v5.LIDTOP + 5.0, v5.LIDTOP + 6.8))):
+    d, p = naechst(kp, node, 60)
+    reihen.append((d, nm, p))
+for d, name, p in sorted(reihen, key=lambda r: r[0]):
+    soll = ANL_K.get(name, 0.5 if "kabel" in name.lower() or "Schlaufe" in name else SOLL_LUFT)
+    ok = d >= soll - 0.21
+    print("  %-30s %6.2f mm  bei %s%s" % (name, d, np.round(p, 1).tolist() if p is not None else "-", "" if ok else "   <-- zu nah"))
+    if not ok:
+        probleme.append("Klammer zu nah an %s: %.2f mm" % (name, d))
+print("  (liegt auf dem Deckel: %.2f mm – gewollt)" % naechst(kp[auf], P["lid"])[0])
+# Einschieben von hinten: Klammer um t nach +x verschoben (0 = eingebaut), nichts darf im Weg sein ausser den Rastnasen am Kamin
+GER_K = U(*[P[n] for n in ("lid", "tub", "turntable", "yoke", "arm2", "lamp1", "lamp2", "head", "side", "balls", "kappe")])
+csg.MARGIN = MARGIN_ALT
+schlimm = (9.0, 0.0)
+for t in np.arange(0.0, 60.01, 0.5):
+    q = kp + np.array([t, 0.0, 0.0])
+    d = GER_K.sdf(q)
+    d[auf] = np.maximum(d[auf], 0.0)                  # Unterseite gleitet auf dem Deckel
+    d[nase_m] = np.maximum(d[nase_m], 0.0)            # Rastnasen gleiten federnd am Kamin entlang
+    if d.min() < schlimm[0]:
+        schlimm = (float(d.min()), float(t))
+print("  Einschieben von hinten (60 mm Weg): kleinster Abstand %.2f mm (bei %.1f mm vor dem Ende)%s"
+      % (schlimm[0], schlimm[1], "" if schlimm[0] > -0.05 else "  <-- stösst an"))
+if schlimm[0] < -0.05:
+    probleme.append("Klammer lässt sich nicht von hinten einschieben (%.2f mm)" % schlimm[0])
+# Rastnasen: Überdeckung vor der runden Ecke
+print("  Rastnasen: greifen %.1f mm vor die runden Kamin-Ecken (Seitenwände federn beim Einschieben %.1f mm aus)" % (kl.NASE, kl.NASE))
+# Abheben: Pfosten unter den Kabelbügeln der Arme
+heb = 0.0
+Qh = U(P["yoke"], P["arm2"])
+csg.MARGIN = MARGIN_ALT
+for t in np.arange(0.0, 10.01, 0.1):
+    if Qh.sdf(kp + np.array([0.0, 0.0, t])).min() < 0:
+        heb = t; break
+print("  Abheben: nach %.1f mm stossen die Pfosten an die Kabelbügel der Gabel (Rastnasen greifen dann noch)" % heb)
+# Pan-Spiel
+
+
+def min_k(w):
+    Q2 = v53.placed(0.0, 180.0 + w)
+    return min(Q2[n].sdf(kp).min() for n in ("yoke", "turntable", "arm2"))
+
+
+for sgn, nm in ((1, "Schwenken +"), (-1, "Schwenken -")):
+    a, b = 0.0, 5.0
+    if min_k(sgn * b) > 0:
+        print("  %-12s kein Anschlag bis 5° (KEINE Sperre)" % nm); probleme.append("Pan-Sperre fehlt (%s)" % nm); continue
+    for _ in range(12):
+        m = (a + b) / 2
+        a, b = (m, b) if min_k(sgn * m) > 0 else (a, m)
+    print("  %-12s Anschlag nach %.2f°" % (nm, b), flush=True)
+    if b > 1.5:
+        probleme.append("Pan-Sperre zu weich (%s %.2f°)" % (nm, b))
+lo, hi = kla.bbox()
+g = 0.4
+xs_, ys_, zs_ = [np.arange(lo[i] + g / 2, hi[i], g) for i in range(3)]
+X, Y = np.meshgrid(xs_, ys_, indexing="ij"); XY = np.column_stack([X.ravel(), Y.ravel()])
+vol = sum(int((kla.sdf(np.column_stack([XY, np.full(len(XY), z)])) < 0).sum()) for z in zs_) * g ** 3 / 1000.0
+print("  Grösse %.1f × %.1f × %.1f mm, Volumen ca. %.1f cm³ -> PETG ca. %.1f g" % (*(hi - lo), vol, vol * 1.27))
 print("  (%.0fs)" % (time.time() - t0))
 print()
 if probleme:
