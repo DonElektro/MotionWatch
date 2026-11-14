@@ -476,10 +476,14 @@ def start_launcher_ensure():
     return p
 
 
-def start_pointer_set():
-    """from now on the starter starts THIS program file. True when the note changed."""
+def start_pointer_set(path=None):
+    """from now on the starter starts THIS program file (or `path`: the start guard of 390 going back to the old version).
+    Only a file next to the starter. True when the note changed."""
     p = os.path.join(HERE, START_PTR)
-    me = os.path.basename(os.path.abspath(__file__))
+    path = os.path.abspath(path or __file__)
+    if os.path.dirname(path) != os.path.abspath(HERE):
+        return False
+    me = os.path.basename(path)
     try:
         with open(p, encoding="utf-8") as f:
             if json.load(f).get("file") == me:
@@ -488,7 +492,7 @@ def start_pointer_set():
         pass
     tmp = p + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
-        json.dump({"file": me, "version": APP_VERSION, "set": datetime.now().isoformat(timespec="seconds")}, f)
+        json.dump({"file": me, "set": datetime.now().isoformat(timespec="seconds")}, f)
     os.chmod(tmp, 0o644)
     _owner_like_here(tmp)
     os.replace(tmp, p)

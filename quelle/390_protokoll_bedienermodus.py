@@ -859,6 +859,11 @@ def start_guard():
             os.remove(p)
         except OSError:
             pass
+        try:                                              # the autostart starter (140) starts the old file from now on too - an
+            if os.path.isfile(os.path.join(HERE, START_FILE)):      # old version does not know the starter and would leave
+                start_pointer_set(old)                                # it on this one
+        except (OSError, NameError):
+            pass
         _close_fds_on_exec()
         os.execv(sys.executable, [sys.executable, old] + _base_args())
     try:

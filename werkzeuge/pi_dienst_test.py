@@ -587,6 +587,28 @@ def fall_e(L, v):
     L.schritt("e Stromausfall", t0)
 
 
+def alter_halter(L):
+    """eine hängende ALTE MoveEye desselben Benutzers hält den Web-Port (ihre Befehlszeile nennt eine MoveEye-Datei) -> Prozess"""
+    os.makedirs(L.b.ci, exist_ok=True); L.b.gehoert(L.b.ci)
+    alt_py, marke = os.path.join(L.b.ci, "webcam_bewegung_9_9_8.py"), os.path.join(L.b.ci, "alt_bereit")
+    open(alt_py, "w").write("import socket, sys, time\ns = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)\n"
+                            "s.bind(('0.0.0.0', int(sys.argv[1]))); s.listen(5); open(sys.argv[2], 'w').write('ok'); time.sleep(900)\n")
+    L.b.gehoert(alt_py)
+    if os.path.exists(marke):
+        os.remove(marke)
+    hp = subprocess.Popen(L.b.cmd([L.b.py, alt_py, str(L.port), marke]), cwd=L.b.home, start_new_session=True)
+    warte(lambda: os.path.exists(marke), 20, 0.2)
+    return hp
+
+
+def halter_weg(hp):
+    try:
+        os.killpg(hp.pid, signal.SIGKILL)
+    except OSError:
+        pass
+    hp.wait(10)
+
+
 def fall_f(L, v):
     print("f  Start-Wächter: der Start hängt -> Code 1, systemd startet neu, start_hang.txt")
     t0 = time.time()
@@ -598,16 +620,7 @@ def fall_f(L, v):
     L.umgebung({"MW_START_WD": "12"})                           # 12 s instead of 90 s (the same code path)
     # 3.87.1: a genuinely hung start = a stuck OLD MoveEye of the same user holds the web port (a foreign program would not
     # end the guard - case f2). Its command line names a MoveEye file, so the service knows: a fresh start helps here.
-    os.makedirs(L.b.ci, exist_ok=True); L.b.gehoert(L.b.ci)
-    alt_py, marke = os.path.join(L.b.ci, "webcam_bewegung_9_9_8.py"), os.path.join(L.b.ci, "alt_bereit")
-    open(alt_py, "w").write("import socket, sys, time\ns = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)\n"
-                            "s.bind(('0.0.0.0', int(sys.argv[1]))); s.listen(5); open(sys.argv[2], 'w').write('ok'); time.sleep(900)\n")
-    L.b.gehoert(alt_py)
-    if os.path.exists(marke):
-        os.remove(marke)
-    hp = subprocess.Popen(L.b.cmd([L.b.py, alt_py, str(L.port), marke]), cwd=L.b.home, start_new_session=True)
-    warte(lambda: os.path.exists(marke), 20, 0.2)
-    h = None
+    hp = alter_halter(L)
     n0 = L.d.zeig()["NRestarts"]
     try:
         L.d.sctl("start", UNIT)
@@ -626,13 +639,9 @@ def fall_f(L, v):
                 txt += open(x, errors="replace").read()
         ok(tw is not None and ("File" in txt or "Thread" in txt), "start_hang.txt mit den Threads (%d Zeichen)" % len(txt))
     finally:
-        try:
-            os.killpg(hp.pid, signal.SIGKILL)
-        except OSError:
-            pass
-        hp.wait(10)
+        halter_weg(hp)
     t = warte(lambda: version_da(L.port) == v, L.a.limit + 30)
-    ok(t is not None, "Port frei -> Seite antwortet (%s s)" % t)
+    ok(t is not None, "Port frei -> Seite antwortet mit %s (%s s; da: %s)" % (v, t, version_da(L.port) or "nichts"))
     ok("The last start hung" in L.log(), "Protokoll: «The last start hung …»")
     z = L.d.zeig()
     ok(z.get("ActiveState") == "active", "Dienst active (%s)" % z.get("ActiveState"))
@@ -816,20 +825,42 @@ def fall_g(L):
             L.zeigen("g/a")
             return
         # b: the update; the new program (= the service) rewrites the old unit once with «sudo -n», without stopping itself
+        n0 = len(L.log())
         update(L, L.ver["alt"], L.ver["neu"], "g/b Update ALT -> NEU (System-Dienst, Unit wird einmal umgestellt)")
-        lg = L.log()[L.loglen:]
         if alte_art:
-            ok("Autostart: unit /etc/systemd/system/motionwatch.service updated" in lg,
+            ok("Autostart: unit /etc/systemd/system/motionwatch.service updated" in L.log()[n0:],
                "Protokoll: «Autostart: unit … updated (starter …) - the service keeps running»")
-        L.loglen = len(L.log())
-        if not neustart_pi(L, L.ver["neu"], "g"):
+        umgestellt = L.unit_text()
+        # NEU does not come up 3 times right after the update -> the start guard (390) goes back to ALT; ALT knows nothing of
+        # the starter, so NEU must point the starter to ALT - else the next start of the Pi brings the rejected NEU again
+        t1 = time.time()
+        n0 = len(L.log())
+        L.umgebung({"MW_START_WD": "8"})
+        hp = alter_halter(L)
+        try:
+            S.sctl("restart", UNIT)
+            tr_ = warte(lambda: "going back to " + L.ver["alt"] in L.log()[n0:], 150, 1.0)
+            ok(tr_ is not None, "g/r: %s startet 3-mal nicht -> zurück zu %s (Start-Wächter 390, %s s)" % (L.ver["neu"], L.ver["alt"], tr_))
+        finally:
+            halter_weg(hp)
+        L.umgebung({"MW_START_WD": None})
+        t = warte(lambda: version_da(L.port) == L.ver["alt"], L.a.limit + 30)
+        ok(t is not None, "g/r: %s läuft wieder (%s s; da: %s)" % (L.ver["alt"], t, version_da(L.port) or "nichts"))
+        ok(L.zeiger() == L.prog["alt"], "g/r: der Starter startet jetzt %s (moveeye_start.json: %s)" % (L.prog["alt"], L.zeiger() or "fehlt"))
+        neustart_pi(L, L.ver["alt"], "g/r")
+        L.schritt("g/r zurück zur alten Version", t1)
+        # c: the next update (ALT -> NEU+1): the unit stays as it is, only the note changes
+        update(L, L.ver["alt"], L.ver["plus1"], "g/c Update ALT -> NEU+1 (System-Dienst)")
+        ok(L.unit_text() == umgestellt, "g/c: die Unit bleibt beim Update unverändert (nur moveeye_start.json)")
+        t1 = time.time()                                        # the start guard of the update runs 90 s: wait for it, then
+        tg = warte(lambda: not os.path.exists(os.path.join(L.b.daten, "update_guard.json")), 120, 2.0)
+        ok(tg is not None, "g/c: das Update gilt als gelungen (update_guard.json weg nach %s s)" % tg)
+        L.schritt("g/c Update-Wächter 90 s", t1)
+        if not neustart_pi(L, L.ver["plus1"], "g/c"):
             L.zeigen("g Neustart")
             return
-        fall_f(L, L.ver["neu"])                                     # start watchdog of the system unit (NotifyAccess now there)
+        fall_f(L, L.ver["plus1"])                                   # start watchdog of the system unit (NotifyAccess now there)
         vor = L.unit_text()
-        update(L, L.ver["neu"], L.ver["plus1"], "g/c Update NEU -> NEU+1 (System-Dienst)")
-        ok(L.unit_text() == vor, "g/c: die Unit bleibt beim Update unverändert (nur moveeye_start.json)")
-        neustart_pi(L, L.ver["plus1"], "g/c")
         # einrichten.sh again with the newest file: --install-service writes the very same unit as the migration
         plus1 = os.path.join(L.b.app, L.prog["plus1"])
         r = subprocess.run([L.b.py, plus1, "--install-service", "--port", str(L.port), "--web-password", PW], capture_output=True,
