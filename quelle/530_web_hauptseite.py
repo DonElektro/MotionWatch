@@ -42,6 +42,9 @@ body:not(.icplain) .mon>summary>.gi .gdot{display:none}body.icplain .mon>summary
 /* 3.88 (Klar stage 1): the state as a word at the right («an» / «aus») instead of a green dot and a green arrow */
 .mst{margin-left:auto;padding:0 8px 0 10px;font-size:12.5px;font-weight:600;letter-spacing:0;text-transform:none;white-space:nowrap}
 .mst.on{color:var(--grn)}.mst.off{color:var(--mut)}
+/* «Selbstdiagnose · 3 Probleme · …»: the title on one line, the counts beside it (cut with … when narrow), never wrapped */
+summary:has(>#h-sum)>span:first-child{flex:none;white-space:nowrap}
+#h-sum{flex:1 1 0;min-width:0;margin:0 6px 0 8px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(min-width:1100px){body[data-tab="settings"] main{max-width:1400px!important}
   body[data-tab="settings"] #settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;align-items:start}}
 details.sub>summary>.gi{margin-right:8px;font-size:13px;letter-spacing:0}details.sub>summary>.sn{flex:1}
@@ -1587,9 +1590,11 @@ function mnMark(e, x) {
     const h = el("span", "mnhelp", x.help); h.hidden = true; e.appendChild(h); }
   return e;
 }
+const MN_NO_FINE = ["sec:Recording", "sec:Camping / protection"];   // the same list as MENU_NO_FINE (639c, window)
 function mnFold(d, view) {                                   // the closed «Feineinstellungen (n)» at the end of a part
   const rows = [...d.children].filter(c => c.classList && c.classList.contains("finerow"));
   if (rows.length <= 2) return null;                         // 3.88 (owner): one or two settings stay in their part - no extra fold level
+  if (MN_NO_FINE.includes(view)) return null;                // 3.88 (owner): common settings - shown directly (639c MENU_NO_FINE)
   const F = el("details", "sub ffold"); if (view) F.dataset.fold = view;
   F.appendChild(el("summary", "", t("Fine-tuning") + " (" + rows.length + ")")); rows.forEach(r => F.appendChild(r)); d.appendChild(F);
   return F;

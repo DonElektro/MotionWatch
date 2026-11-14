@@ -127,7 +127,9 @@ body.mwb-chips-off header>.chips{flex:0 0 auto!important;overflow:visible!import
 }
 /* the phone: the tabs 44 px high, text in the middle */
 @media(max-width:760px){header>nav.nav{align-items:stretch}header>nav.nav>a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;box-sizing:border-box}
-  header>nav.nav>.mwb-grip{min-width:28px;padding:0 .3rem}}
+  header>nav.nav>.mwb-grip{min-width:22px;padding:0 .2rem}}
+/* narrow phones: six tabs in one line in every language (it «Cronologia», rm «Protecziun» with DejaVu at 390 px) */
+@media(max-width:430px){header>nav.nav{gap:1px}header>nav.nav>a{padding-left:2px!important;padding-right:2px!important}}
 /* the phone: the status chips as ONE line - state, the worst thing, battery; a tap shows all chips (as before) */
 .mwb-sum{display:none}
 @media(max-width:760px){

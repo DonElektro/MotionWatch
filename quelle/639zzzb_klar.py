@@ -154,6 +154,7 @@ def klar_selftest():
     assert out.find('href="/tausch"') < out.find('href="/play"') < out.find('href="/help"') < out.find('href="/qr"') < out.find('id="m-fb"') < out.find('href="/neu"'), out
     assert out.count('class="mi"') == 6 and out.index("<script>x()</script>") > out.index('href="/neu"') and 'id="g2-tt"' in out and "mg-css" in out
     assert MORE_PAGE.count('class="mi"') >= 8 and 'id="g2-more"' not in MORE_PAGE, "639zzb: «Mehr» template"
+    assert all('"sec:%s"' % s in WEB_PAGE.split("const MN_NO_FINE = [", 1)[1].split("]", 1)[0] for s in MENU_NO_FINE), "639zzzb: MN_NO_FINE (530) = MENU_NO_FINE (639c)"
     keep = CFG.get("lang")
     try:
         CFG["lang"] = "de"; _HUD_TR.clear()

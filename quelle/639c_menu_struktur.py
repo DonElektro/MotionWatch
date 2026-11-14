@@ -35,6 +35,7 @@ SIMPLE_KEYS.update({"presence_auto", "presence_hosts", "device_name", "refscan_o
 # main switch of a part that has no key in SIMPLE_KEYS (shown in «Simple», the rest is folded)
 MENU_MAIN = {"refscan_on_arm", "kopf_on", "servo_stop_btn", "log_status_min", "dev_area", "tours_auto", "report_from", "report_hour",
              "time_from_browser", "gps_phone", "temp_warn", "disk_warn_mb", "deter_always"}
+MENU_NO_FINE = {"Recording", "Camping / protection"}         # 3.88 (owner): common settings - no «Feineinstellungen» (web: MN_NO_FINE, 530)
 MENU_NO_FOLD = {"Reference scan"}                          # «Simple»: only the link to the assistant (the rest in «Expert» / tools)
 MENU_TITLES = {"Setup": "Place & clock", "Camera / Servos": "Head (servos)", "Camping / protection": "Arming and own Wi-Fi",
                "Notifications": "Push messages", "Device & help": "Device & help", "Night time": "Night time", "Presence": "Presence"}
@@ -256,7 +257,7 @@ if GUI_OK:
         if not fine:
             return
         # 3.88 (owner): one or two settings stay in their part (no extra fold level «Feineinstellungen» for them)
-        fb = _menu_tk_fold(self, sp, "Fine-tuning", len(fine), sec) if len(fine) > 2 else sp
+        fb = _menu_tk_fold(self, sp, "Fine-tuning", len(fine), sec) if len(fine) > 2 and sec not in MENU_NO_FINE else sp
         keys = {x[1] for x in fine}
         for s, key, label in TOGGLES:
             if s == sec and key in keys:
