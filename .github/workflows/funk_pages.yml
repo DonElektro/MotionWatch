@@ -1,0 +1,47 @@
+# Die Seite «Handy-Funkgerät» (Ordner funk/, erzeugt von werkzeuge/funk_pwa.py) auf GitHub Pages: für ein Handy ohne MoveEye,
+# das Internet hat. https -> das Mikrofon geht; nach dem ersten Laden geht die Seite ohne Internet (Service Worker).
+# Adresse: https://donelektro.github.io/MotionWatch/funk/
+# EINMAL von Hand (Besitzer): Settings -> Pages -> Build and deployment -> Source: «GitHub Actions». Vorher bricht der Schritt
+# «configure-pages» ab (Pages ist aus) - das ist kein Fehler der Seite.
+# Veröffentlicht wird nur von main (die Umgebung «github-pages» lässt ab Werk nur den Standard-Zweig zu); von Hand: Actions ->
+# «Funk-Seite (GitHub Pages)» -> Run workflow. Keine Geheimnisse, keine Schlüssel: die Seite ist dieselbe Datei für alle.
+name: Funk-Seite (GitHub Pages)
+on:
+  push:
+    branches: [main]
+    paths: ["funk/**", ".github/workflows/funk_pages.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  seite:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}funk/
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: funk
+          sparse-checkout-cone-mode: true
+      - name: Seite zusammenstellen und prüfen
+        run: |
+          set -e
+          mkdir -p _site/funk
+          cp funk/index.html funk/manifest.webmanifest funk/sw.js funk/icon-192.png funk/icon-512.png funk/apple-touch-icon.png _site/funk/
+          printf '<!doctype html><meta charset="utf-8"><title>MoveEye</title><meta http-equiv="refresh" content="0; url=funk/"><a href="funk/">Handy-Funkgerät</a>\n' > _site/index.html
+          # keine Anfragen nach aussen, nicht die Fassung von MoveEye
+          ! grep -q "window.MW_FUNK=" _site/funk/index.html
+          ! grep -Eo "(src|href)=\"https?://" _site/funk/index.html
+          ls -l _site/funk
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
