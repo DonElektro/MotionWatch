@@ -11,6 +11,11 @@
 //                                                                     einlesen»: decodeSamples, V2 geöffnet; Fehler als «!bad» / «!nokey»)
 //   node funk_node.js SEITE v2seal    SCHLUESSEL NONCE KLARTEXT       -> JSON: die Zeichen nach dem Versionszeichen
 //   node funk_node.js SEITE v2open    SCHLUESSEL ZEICHEN              -> JSON: {text, err}
+//   Mehrton (/*MFSK-START*/ … /*MFSK-END*/):
+//   node funk_node.js SEITE mfframe   TEXT VORLAGE FEC SCHLUESSEL NONCE_HEX [BAUKASTEN_JSON] -> JSON: die Symbole (Ton-Nummern)
+//   node funk_node.js SEITE mfwav     TEXT VORLAGE FEC SCHLUESSEL NONCE_HEX BAUKASTEN_JSON|"" RATE DATEI -> float32 (mfRender, Lautstärke 0.8)
+//   node funk_node.js SEITE mfdecode  RAW SR SCHLUESSEL [BAUKASTEN_JSON] -> JSON: [{text, bad, key, pid, fec, n}, ...] (mfDecodeSamples)
+//   node funk_node.js SEITE mfcheck   BAUKASTEN_JSON                  -> JSON: {s, err, warn, need}
 "use strict";
 const fs = require("fs"), vm = require("vm");
 const [, , page, cmd, a1, a2, a3, a4, a5] = process.argv;
@@ -19,12 +24,14 @@ const cut = (a, b) => { const i = src.indexOf(a), j = src.indexOf(b, i); if (i <
 const fn = head => { const i = src.indexOf(head), j = src.indexOf("\n}\n", i); if (i < 0 || j < 0) throw new Error("not found: " + head); return src.slice(i, j + 3); };
 const decoder = cut("/*DECODER-START*/", "/*DECODER-END*/") + "/*DECODER-END*/";
 const v2 = cut("/*FUNK-V2-START*/", "/*FUNK-V2-END*/") + "/*FUNK-V2-END*/";
+const mfsk = cut("/*MFSK-START*/", "/*MFSK-END*/") + "/*MFSK-END*/";
 const prepTx = fn("function prepTx(");                     // (each function up to its closing brace at the start of a line)
 const transmit = fn("async function transmit(");
-const ctxObj = {TextEncoder, crypto: globalThis.crypto, console, Math, Uint8Array, Float32Array, DataView, ArrayBuffer, setTimeout: () => 0};
+const ctxObj = {TextEncoder, TextDecoder, crypto: globalThis.crypto, console, Math, Uint8Array, Float32Array, DataView, ArrayBuffer, setTimeout: () => 0};
 vm.createContext(ctxObj);
-vm.runInContext("var cfg, key, ks = null, ctx, sendNodes = [], sendingUntil = 0, $, ensureCtx;\n" + decoder + "\n" + v2 + "\n" + prepTx + transmit
-  + "\n;globalThis.__d={makeKeystream,makeDecoder,normText,ALPHA,PCODE,NA,v2Seal,v2Open,txPlan,sendPlanned,beepsOf,wavOf,decodeSamples,transmit};", ctxObj);
+vm.runInContext("var cfg, key, ks = null, ctx, sendNodes = [], sendingUntil = 0, $, ensureCtx;\n" + decoder + "\n" + v2 + "\n" + mfsk + "\n" + prepTx + transmit
+  + "\n;globalThis.__d={makeKeystream,makeDecoder,normText,ALPHA,PCODE,NA,v2Seal,v2Open,txPlan,sendPlanned,beepsOf,wavOf,decodeSamples,transmit,"
+  + "MF,mfFrame,mfRender,mfDecodeSamples,mfCheck};", ctxObj);
 const D = ctxObj.__d;
 (async () => {
   if (cmd === "keystream") {
@@ -33,6 +40,20 @@ const D = ctxObj.__d;
   }
   if (cmd === "v2seal") { process.stdout.write(JSON.stringify(await D.v2Seal(a3, a1, a2))); return; }
   if (cmd === "v2open") { process.stdout.write(JSON.stringify(await D.v2Open(a2 || "", a1))); return; }
+  if (cmd === "mfframe" || cmd === "mfwav") {
+    const [, , , , text, pid, fec, key, nonce, cu, rate, out] = process.argv;
+    const s = +pid ? D.MF.P[+pid] : D.mfCheck(JSON.parse(cu)).s;
+    const f = await D.mfFrame(text, +pid, s, +fec, key || "", nonce ? [...Buffer.from(nonce, "hex")] : undefined);
+    if (cmd === "mfframe") { process.stdout.write(JSON.stringify(f.sym || f.err)); return; }
+    const y = D.mfRender(f.sym, s, +rate, 0.8); fs.writeFileSync(out, Buffer.from(y.buffer, y.byteOffset, y.byteLength)); process.stdout.write(JSON.stringify(y.length)); return;
+  }
+  if (cmd === "mfdecode") {
+    const buf = fs.readFileSync(a1), x = new Float32Array(buf.buffer, buf.byteOffset, Math.floor(buf.length / 4));
+    const cu = a4 ? D.mfCheck(JSON.parse(a4)).s : null;
+    const r = await D.mfDecodeSamples(x, +a2, cu, () => a3 || "");
+    process.stdout.write(JSON.stringify(r)); return;
+  }
+  if (cmd === "mfcheck") { process.stdout.write(JSON.stringify(D.mfCheck(JSON.parse(a1)))); return; }
   const cfg = JSON.parse(a1);
   vm.runInContext("cfg = " + JSON.stringify(cfg) + "; key = " + JSON.stringify(a2 || "") + ";", ctxObj);
   if (cmd === "transmit") {

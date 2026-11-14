@@ -446,6 +446,9 @@ input[type=range]{width:100%;accent-color:var(--a)}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--bg);padding:4px;border-radius:12px}
 .seg button{min-height:42px;border:0;border-radius:9px;background:none;color:var(--muted);font:600 15px inherit;font-family:inherit}
 .seg button.sel{background:var(--card);color:var(--text)}
+.seg.three{grid-template-columns:1fr 1fr 1fr}
+.col{display:flex;flex-direction:column;gap:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .hint{font-size:13px;color:var(--muted);line-height:1.4;overflow-wrap:anywhere}
 .warn{font-size:13px;line-height:1.4;border:1px solid #6b5313;border-radius:10px;padding:8px 10px;color:#F2D58A}
 .hist{display:flex;flex-direction:column}
@@ -526,14 +529,32 @@ input[type=range]{width:100%;accent-color:var(--a)}
 <div class="sheet" id="shSet"><div class="panel">
   <h2><span data-t="settings">Einstellungen</span> <button class="close" data-close data-t="close">Schliessen</button></h2>
   <label class="f"><span data-t="lang">Sprache</span><select id="sL"><option value="de">Deutsch</option><option value="en">English</option><option value="fr">Français</option><option value="it">Italiano</option><option value="rm">Rumantsch</option></select></label>
-  <div class="seg" role="group" aria-label="Modus">
+  <div class="seg three" role="group" aria-label="Modus">
     <button id="mProt" data-t="prot">Eigenes Protokoll</button>
     <button id="mMorse" data-t="morse">Morse</button>
+    <button id="mMf" data-t="mf">Mehrton</button>
   </div>
+  <div class="col" id="mfBox" hidden>
+    <div class="hint" data-t="mfHelp">Mehrton</div>
+    <div class="two"><label class="f"><span data-t="mfTones">Töne</span><select id="sMfP"><option value="1">4</option><option value="2">8</option><option value="3">16</option><option value="0">Baukasten</option></select></label>
+      <label class="f"><span data-t="fec">Fehlerkorrektur</span><select id="sMfF"><option value="0" data-t="fec0">aus</option><option value="1" data-t="fec1">leicht</option><option value="2" data-t="fec2">stark</option></select></label></div>
+    <div class="col" id="kitBox" hidden>
+      <div class="two"><label class="f"><span data-t="kN">Anzahl Töne</span><input type="number" id="kN" min="2" max="32" inputmode="numeric"></label>
+        <label class="f"><span data-t="kF0">Erster Ton (Hz)</span><input type="number" id="kF0" min="300" max="3000" inputmode="decimal"></label>
+        <label class="f"><span data-t="kDf">Abstand (Hz)</span><input type="number" id="kDf" min="1" max="2700" inputmode="decimal"></label>
+        <label class="f"><span data-t="kT">Symbol (ms)</span><input type="number" id="kT" min="10" max="500" step="0.5" inputmode="decimal"></label>
+        <label class="f"><span data-t="kG">Schutzzeit (ms)</span><input type="number" id="kG" min="0" max="250" step="0.5" inputmode="decimal"></label></div>
+      <label class="f"><span data-t="kL">Oder eine Liste der Töne (Hz, mit Kommas)</span><input type="text" id="kL" inputmode="decimal" autocomplete="off" spellcheck="false"></label>
+    </div>
+    <div class="hint" id="mfInfo"></div>
+    <div class="warn" id="mfWarn" hidden></div>
+  </div>
+  <div class="col" id="twoBox">
   <label class="f"><span data-t="toneA">Ton A – Daten (Hz)</span><input type="number" id="sFA" inputmode="numeric" min="300" max="3000"></label>
   <label class="f"><span data-t="toneB">Ton B – Steuerung (Hz)</span><input type="number" id="sFB" inputmode="numeric" min="300" max="3000"></label>
   <label class="f"><span><span data-t="speed">Tempo</span>: <span id="sWv"></span> WPM</span><input type="range" id="sW" min="5" max="35" step="1"></label>
   <div class="row"><span data-t="auto">Tempo automatisch erkennen</span> <input type="checkbox" id="sAuto"></div>
+  </div>
   <label class="f"><span><span data-t="sens">Empfindlichkeit</span>: <span id="sSv"></span></span><input type="range" id="sS" min="3" max="15" step="1"></label>
   <label class="f"><span data-t="vol">Sende-Lautstärke</span><input type="range" id="sV" min="0.1" max="1" step="0.05"></label>
   <div class="hint" data-t="help">Protokoll</div>
@@ -760,14 +781,206 @@ async function decodeSamples(x,sr,onProgress){
   return got;
 }
 /*FUNK-V2-END*/
+/*MFSK-START*/
+// «Mehrton» (MFSK, MoveEye): Bit für Bit wie MoveEye (quelle/639zzzh_mehrton.py, Spezifikation dort und in docs/Funk_Protokoll.md).
+const MF={P:{1:{n:4,f0:800,df:250,T:40,g:6},2:{n:8,f0:650,df:200,T:50,g:8},3:{n:16,f0:500,df:150,T:64,g:8}},
+  SYNC:[0,15,5,10,3,12,8,1,14,6,11,2],LEAD:0.3,TAIL:3,FECS:['aus','leicht','stark'],HDR:92,MAXD:255,MAXT:200,BAND:[300,3000],G1:0o171,G2:0o133,PUN:[1,1,0,1,1,0]};
+function mfTones(s){if(s.list&&s.list.length)return s.list.map(Number);const o=[];for(let i=0;i<s.n;i++)o.push(s.f0+i*s.df);return o;}
+function mfK(s){const n=mfTones(s).length;return Math.max(1,Math.floor(Math.log2(n)));}
+function mfCheck(s0){
+  // a Baukasten setting -> {s (or null), err:[], warn:[]} (texts: keys of TXT)
+  const err=[],warn=[];const num=v=>Number(v);
+  const T=Math.round(num(s0.T)*2)/2,g=Math.round(num(s0.g)*2)/2;let s;
+  if(s0.list&&s0.list.length){const l=[...new Set(s0.list.map(f=>Math.round(num(f)*10)/10))].sort((a,b)=>a-b);s={n:l.length,list:l,T,g};}
+  else s={n:Math.round(num(s0.n)),f0:Math.round(num(s0.f0)*10)/10,df:Math.round(num(s0.df)*10)/10,T,g};
+  const t=mfTones(s);
+  if(!isFinite(T)||!isFinite(g)||t.some(f=>!isFinite(f)))return {s:null,err:['mfNum'],warn};
+  if(t.length<2||t.length>32)err.push('mfN');
+  if(T<10||T>500)err.push('mfT');
+  if(g<0||g>T/2)err.push('mfG');
+  if(Math.min(...t)<MF.BAND[0]||Math.max(...t)>MF.BAND[1])err.push('mfBand');
+  let need=0;
+  if(!err.length){
+    const w=(T-g)/1000;let gap=1e9;for(let i=1;i<t.length;i++)gap=Math.min(gap,t[i]-t[i-1]);need=Math.ceil(2/w);
+    if(gap<1/w)err.push('mfClose');else if(gap<2/w)warn.push('mfNear');
+    if(t.length&(t.length-1))warn.push('mfPow2');
+    if(T-g<15)warn.push('mfShort');
+  }
+  return {s:err.length?null:s,err,warn,need};
+}
+function mfCrc8(d){let c=0;for(const b of d){c^=b;for(let i=0;i<8;i++)c=c&0x80?((c<<1)^0x07)&0xFF:(c<<1)&0xFF;}return c;}
+function mfCrc16(d){let c=0xFFFF;for(const b of d){c^=b<<8;for(let i=0;i<8;i++)c=c&0x8000?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF;}return c;}
+function mfHash(s){const t=mfTones(s);return mfCrc8(new TextEncoder().encode(t.length+'|'+t.map(f=>Math.round(f*10)).join(';')+'|'+Math.round(s.T*10)+'|'+Math.round(s.g*10)));}
+function mfPack(text){
+  if(text&&[...text].every(c=>ALPHA.includes(c))){
+    const ix=[...text].map(c=>ALPHA.indexOf(c)),o=[];let i=0;
+    for(;i+3<=ix.length;i+=3){const v=ix[i]*1521+ix[i+1]*39+ix[i+2];o.push(v>>8,v&255);}
+    if(ix.length-i===2){const v=59319+ix[i]*39+ix[i+1];o.push(v>>8,v&255);}else if(ix.length-i===1)o.push(ix[i]);
+    return {b:o,packed:true};
+  }
+  return {b:[...new TextEncoder().encode(text)],packed:false};
+}
+function mfUnpack(b,packed){
+  if(!packed)return new TextDecoder().decode(new Uint8Array(b));
+  const o=[],n=b.length-(b.length%2);
+  for(let i=0;i<n;i+=2){let v=(b[i]<<8)|b[i+1];if(v>=59319){v-=59319;o.push(ALPHA[Math.floor(v/39)%39],ALPHA[v%39]);}else o.push(ALPHA[Math.floor(v/1521)%39],ALPHA[Math.floor(v/39)%39],ALPHA[v%39]);}
+  if(b.length%2)o.push(ALPHA[b[b.length-1]%39]);
+  return o.join('');
+}
+const mfPar=x=>{let p=0;while(x){p^=x&1;x>>=1;}return p;};
+function mfConv(bits){let r=0;const o=[];for(const b of bits.concat([0,0,0,0,0,0])){r=((r<<1)|b)&0x7F;o.push(mfPar(r&MF.G1),mfPar(r&MF.G2));}return o;}
+function mfCodedLen(n,fec){if(!fec)return n;const n2=2*(n+6);if(fec===2)return n2;let c=0;for(let i=0;i<n2;i++)c+=MF.PUN[i%6];return c;}
+function mfFecEnc(bits,fec){if(!fec)return bits.slice();const c=mfConv(bits);return fec===2?c:c.filter((x,i)=>MF.PUN[i%6]);}
+let mfTr=null;
+function mfViterbi(llr,nbits){
+  // soft Viterbi (llr > 0 = 1): the same as MoveEye (ties: the first predecessor)
+  if(!mfTr){mfTr=[];for(let ns=0;ns<64;ns++){const b=ns&1,row=[];for(let h=0;h<2;h++){const p=(ns>>1)|(h<<5),r=((p<<1)|b)&0x7F;row.push([2*mfPar(r&MF.G1)-1,2*mfPar(r&MF.G2)-1]);}mfTr.push(row);}}
+  const nst=nbits+6;let m=new Float64Array(64).fill(-1e18);m[0]=0;const dec=new Uint8Array(nst*64);
+  for(let t=0;t<nst;t++){const l1=llr[2*t],l2=llr[2*t+1],nm=new Float64Array(64);
+    for(let ns=0;ns<64;ns++){const pa=ns>>1,pb=pa|32,o=mfTr[ns];
+      const a=m[pa]+(o[0][0]*l1+o[0][1]*l2),b=m[pb]+(o[1][0]*l1+o[1][1]*l2);
+      if(b>a){nm[ns]=b;dec[t*64+ns]=1;}else nm[ns]=a;}
+    m=nm;}
+  const out=new Array(nst);let s=0;
+  for(let t=nst-1;t>=0;t--){out[t]=s&1;s=(s>>1)|(dec[t*64+s]<<5);}
+  return out.slice(0,nbits);
+}
+function mfFecDec(llr,nbits,fec){
+  if(!fec)return llr.slice(0,nbits).map(v=>v>0?1:0);
+  if(fec===1){const f=[];let j=0;for(let i=0;i<2*(nbits+6);i++)f.push(MF.PUN[i%6]?llr[j++]:0);llr=f;}
+  return mfViterbi(llr,nbits);
+}
+function mfIlv(n){const cols=Math.max(1,Math.ceil(Math.sqrt(n))),rows=Math.ceil(n/cols),o=[];for(let c=0;c<cols;c++)for(let r=0;r<rows;r++)if(r*cols+c<n)o.push(r*cols+c);return o;}
+const mfBits=d=>{const o=[];for(const b of d)for(let i=7;i>=0;i--)o.push((b>>i)&1);return o;};
+const mfBytes=bits=>{const o=[];for(let i=0;i+8<=bits.length;i+=8){let v=0;for(let j=0;j<8;j++)v=(v<<1)|bits[i+j];o.push(v);}return o;};
+async function mfStream(kE,nonce,n){const o=[];for(let c=0;o.length<n;c++){const m=new Uint8Array(5+nonce.length);m[0]=77;m.set(nonce,1);new DataView(m.buffer).setUint32(1+nonce.length,c);o.push(...await v2mac(kE,m));}return o.slice(0,n);}
+async function mfTag(kM,hdr,nonce,ct){return [...(await v2mac(kM,new Uint8Array([3,...hdr,...nonce,...ct])))].slice(0,4);}
+function mfNorm(t){return String(t||'').split(/\s+/).filter(x=>x).join(' ');}
+async function mfFrame(text,pid,s,fec,k,nonce){
+  // text -> {sym (tone indices of the whole transmission), err (TXT key)}
+  text=mfNorm(text);if(!text)return {sym:null,err:'mfEmpty'};if([...text].length>MF.MAXT)return {sym:null,err:'mfLong'};
+  let {b:data,packed}=mfPack(text);
+  const hdr=[0x10|(pid&15),(fec&3)|(k?4:0)|(packed?8:0),0,pid===0?mfHash(s):0];
+  if(k){
+    if(!nonce){nonce=[...crypto.getRandomValues(new Uint8Array(4))];}
+    const K=await v2Keys(k),ks=await mfStream(K.E,nonce,data.length),ct=data.map((x,i)=>x^ks[i]);
+    hdr[2]=data.length+8;data=nonce.concat(ct,await mfTag(K.M,hdr,nonce,ct));
+  }else hdr[2]=data.length;
+  if(data.length>MF.MAXD)return {sym:null,err:'mfLong'};
+  const crc=mfCrc16(hdr.concat(data));
+  let bits=mfConv(mfBits(hdr.concat([mfCrc8(hdr)])));
+  let pay=mfFecEnc(mfBits(data.concat([crc>>8,crc&255])),fec);
+  if(fec){const o=mfIlv(pay.length);pay=o.map(i=>pay[i]);}
+  bits=bits.concat(pay);const kk=mfK(s);while(bits.length%kk)bits.push(0);
+  const n=mfTones(s).length,lead=Math.max(2,Math.round(MF.LEAD*1000/s.T)),sym=[];
+  for(let i=0;i<lead;i++)sym.push(i%2===0?0:n-1);
+  for(const a of MF.SYNC)sym.push(Math.floor(a*n/16));
+  for(let i=0;i<bits.length;i+=kk){let v=0;for(let j=0;j<kk;j++)v=(v<<1)|bits[i+j];sym.push(v^(v>>1));}
+  for(let i=0;i<MF.TAIL;i++)sym.push(0);
+  return {sym,err:''};
+}
+function mfRender(sym,s,sr,vol){
+  // the tones (phase running through, borders at round(j·T·sr), 3 ms ramps at start and end) as Float32
+  const t=mfTones(s),T=s.T/1000,n=Math.round(sym.length*T*sr),y=new Float32Array(n);
+  let ph=0,j=0,nb=Math.round(T*sr),f=t[sym[0]];
+  for(let i=0;i<n;i++){if(i>=nb){j++;nb=Math.round((j+1)*T*sr);f=t[sym[j]];}y[i]=vol*Math.sin(ph);ph+=2*Math.PI*f/sr;}
+  const r=Math.min(Math.floor(n/2),Math.floor(0.003*sr));for(let i=0;i<r;i++){y[i]*=i/r;y[n-1-i]*=(i+1)/r;}
+  return y;
+}
+function pcmWav(x,sr){
+  const n=x.length,buf=new ArrayBuffer(44+n*2),v=new DataView(buf),w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+  w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
+  for(let i=0;i<n;i++)v.setInt16(44+i*2,Math.round(Math.max(-1,Math.min(1,x[i]))*32767),true);
+  return new Uint8Array(buf);
+}
+function mfDet(sr,pid,s,emit,keyFn){
+  // one tone set: energies every T/8 (Hann window over [start + guard, start + T)), sync, symbols, header, payload
+  const t=mfTones(s),n=t.length,k=mfK(s),nd=1<<k,h=Math.round(s.T*sr/8000),go=Math.round(s.g*sr/1000),W=Math.round((s.T-s.g)*sr/1000);
+  const C=[],S=[];for(let m=0;m<n;m++){const c=new Float64Array(W),si=new Float64Array(W);for(let i=0;i<W;i++){const w=0.5-0.5*Math.cos(2*Math.PI*i/(W-1)),a=-2*Math.PI*t[m]*i/sr;c[i]=Math.cos(a)*w;si[i]=Math.sin(a)*w;}C.push(c);S.push(si);}
+  const sync=MF.SYNC.map(a=>Math.floor(a*n/16)),thr=1/n+0.35*(1-1/n),hash=pid===0?mfHash(s):0;
+  const gi=[];for(let x=0;x<nd;x++)gi.push(x^(x>>1)^(x>>2)^(x>>3)^(x>>4));
+  const d={pid,n,live:null};let buf=new Float64Array(0),b0=0,hop=0,E=new Map(),st=0,best=null,floor=null,base=0,adj=0,dacc=0,j=0,llr=[],q=0,need=0,hdr=null,nb=0,lc=0;
+  d.reset=()=>{buf=new Float64Array(0);b0=0;hop=0;E=new Map();st=0;best=null;floor=null;d.live=null;};
+  function energy(off){const e=new Float64Array(n);for(let m=0;m<n;m++){const c=C[m],si=S[m];let re=0,im=0;for(let i=0;i<W;i++){const x=buf[off+i];re+=x*c[i];im+=x*si[i];}e[m]=re*re+im*im;}return e;}
+  function lock(c){st=1;base=c+96;adj=0;dacc=0;j=0;llr=[];q=base;need=Math.ceil(MF.HDR/k);hdr=null;d.live={pid,n,got:0,of:0};}
+  function symbol(){
+    const e=E.get(q),a=[];let m=0;for(let x=0;x<nd;x++){a.push(Math.sqrt(e[x]));if(a[x]>a[m])m=x;}
+    const ee=E.get(q-1)[m],el=E.get(q+1)[m];dacc+=(el-ee)/(el+ee+1e-30);
+    const mx=a[m]+1e-30;
+    for(let b=0;b<k;b++){let m1=-1,m0=-1;for(let x=0;x<nd;x++){if((gi[x]>>(k-1-b))&1){if(a[x]>m1)m1=a[x];}else if(a[x]>m0)m0=a[x];}llr.push((m1-m0)/mx);}
+    j++;
+    if(dacc>1.5){adj++;dacc=0;}else if(dacc<-1.5){adj--;dacc=0;}
+    q=base+j*8+adj;if(d.live)d.live.got=j;
+    if(j===need){if(!hdr)header();else payload();}
+  }
+  function header(){
+    const hb=mfBytes(mfViterbi(llr.slice(0,MF.HDR),40));
+    if(mfCrc8(hb.slice(0,4))!==hb[4]||(hb[0]>>4)!==1||(hb[0]&15)!==pid||(hb[1]&3)===3){st=0;d.live=null;return;}
+    hdr=hb.slice(0,4);const fec=hb[1]&3;nb=(hb[2]+2)*8;lc=mfCodedLen(nb,fec);need=Math.ceil((MF.HDR+lc)/k);
+    if(d.live)d.live.of=need;
+    if(need<=j)payload();
+  }
+  function payload(){
+    const hb=hdr,fec=hb[1]&3,keyOn=!!(hb[1]&4),packed=!!(hb[1]&8);let l=llr.slice(MF.HDR,MF.HDR+lc);
+    if(fec){const o=mfIlv(lc),dd=new Array(lc).fill(0);o.forEach((p,i)=>{dd[p]=l[i];});l=dd;}
+    const b=mfBytes(mfFecDec(l,nb,fec)),data=b.slice(0,-2),crc=(b[b.length-2]<<8)|b[b.length-1];
+    st=0;d.live=null;
+    emit((async()=>{
+      const r={pid,fec:MF.FECS[fec],key:false,bad:'',text:'',n};
+      if(mfCrc16(hb.concat(data))!==crc)r.bad='crc';
+      else if(pid===0&&hb[3]!==hash)r.bad='settings';
+      else if(keyOn){
+        const kk=keyFn?keyFn():'';
+        if(!kk)r.bad='nokey';else if(data.length<8)r.bad='bad';
+        else{const K=await v2Keys(kk),nonce=data.slice(0,4),ct=data.slice(4,-4),tag=data.slice(-4),tt=await mfTag(K.M,hb,nonce,ct);
+          if(tt.some((x,i)=>x!==tag[i]))r.bad='bad';else{const ks=await mfStream(K.E,nonce,ct.length);r.key=true;r.text=mfUnpack(ct.map((x,i)=>x^ks[i]),packed);}}
+      }else r.text=mfUnpack(data,packed);
+      return r;})());
+  }
+  function step(i){
+    if(st===0){
+      const c=i-88;if(!E.has(c-1))return;
+      let sc=0,lo=1e300;for(let x=0;x<12;x++){const e=E.get(c+8*x);let tot=0;for(let m=0;m<n;m++)tot+=e[m];sc+=e[sync[x]]/(tot+1e-30);if(tot<lo)lo=tot;}
+      sc/=12;
+      if(sc>=thr&&lo>1.5*floor&&(!best||sc>best[1]))best=[c,sc];
+      if(best&&c>=best[0]+8){lock(best[0]);best=null;}
+      return;
+    }
+    while(st&&q+1<=i)symbol();
+  }
+  d.feed=function(x){
+    const nbuf=new Float64Array(buf.length+x.length);nbuf.set(buf);nbuf.set(x,buf.length);buf=nbuf;
+    const last=b0+buf.length;
+    while(hop*h+go+W<=last){const e=energy(hop*h+go-b0);E.set(hop,e);let tot=0;for(let m=0;m<n;m++)tot+=e[m];
+      floor=(floor===null||tot<floor)?tot:floor+(tot-floor)*0.001;step(hop);hop++;}
+    const keep=hop*h-b0;if(keep>0){buf=buf.slice(keep);b0+=keep;}
+    const lo=st===0?hop-128:q-4;for(const key of [...E.keys()])if(key<lo)E.delete(key);
+  };
+  return d;
+}
+function mfRx(sr,custom,onMsg,keyFn){
+  // all presets and (if set) the Baukasten at once
+  const ds=[1,2,3].map(p=>mfDet(sr,p,MF.P[p],onMsg,keyFn));
+  if(custom)ds.push(mfDet(sr,0,custom,onMsg,keyFn));
+  return {feed(x){for(const d of ds)d.feed(x);},live(){const d=ds.find(z=>z.live);return d?d.live:null;},reset(){ds.forEach(z=>z.reset());}};
+}
+async function mfDecodeSamples(x,sr,custom,keyFn,onProgress){
+  // a recording through all MFSK receivers, faster than real time -> [result, ...]
+  const ps=[],r=mfRx(sr,custom,p=>ps.push(p),keyFn),step=Math.round(sr/10);
+  for(let i=0,c=0;i<x.length;i+=step,c++){r.feed(x.subarray(i,Math.min(x.length,i+step)));if(onProgress&&c%20===19)await onProgress(i/x.length);}
+  r.feed(new Float32Array(sr));
+  return Promise.all(ps);
+}
+/*MFSK-END*/
 
 // ---------- Sprache (MoveEye: fünf Sprachen) ----------
 const TXT={
-de:{title:'Handy-Funkgerät',back:'‹ Morse-Modus',keyAria:'Schlüssel einstellen',noKey:'Kein Schlüssel',keyOn:'Schlüssel aktiv',morseNoKey:'Morse · ohne Schlüssel',settings:'Einstellungen',recv:'Empfangen',prot:'Eigenes Protokoll',morse:'Morse',tap:'Tippe auf «Hören»',wait:'Warte auf Signal …',listen:'Hören',stop:'Stopp',hist:'Verlauf',send:'Senden',close:'Schliessen',text:'Text',ph:'z. B. Treffen um 15 Uhr',sentAs:'Wird gesendet als:',hold:'Handy-Lautsprecher ans Mikrofon des Funkgeräts halten, dann Sendetaste drücken.',cancel:'Abbrechen',key:'Schlüssel',keySame:'Schlüssel (gleich wie beim Gegenüber)',remember:'Auf diesem Gerät merken',keyLocal:'Der Schlüssel bleibt nur auf diesem Gerät. Ohne «merken» ist er nach dem Schliessen der App weg.',keyWarn:'Mit Schlüssel wird jede Nachricht neu verschlüsselt (V2: zufälliger Anfang, PBKDF2 und HMAC-SHA256, 6 Prüfzeichen; derselbe Text klingt jedes Mal anders). Trotzdem: kein geprüftes Verfahren und nur rund 32 Bit Prüfung – nichts Wichtiges damit schützen. Beide Seiten brauchen diese Fassung der Seite oder ein aktuelles MoveEye; die alte Seite «Morse-Funk» liest Nachrichten mit Schlüssel nicht.',legal:'Im Amateurfunk ist Verschlüsselung verboten (ITU-Vollzugsordnung Funk Nr. 25.2A; BAKOM: digitale Übertragungen nur unverschlüsselt). Mit Schlüssel nie über Amateurfunk senden; für andere Funkgeräte (z. B. PMR446) die Regeln des BAKOM beachten.',apply:'Übernehmen',keyDel:'Schlüssel löschen',lang:'Sprache',toneA:'Ton A – Daten (Hz)',toneB:'Ton B – Steuerung (Hz)',speed:'Tempo',auto:'Tempo automatisch erkennen',sens:'Empfindlichkeit',vol:'Sende-Lautstärke',help:'Protokoll: Ton A kurz = Punkt, lang = Strich. Ton B kurz = Zeichenende, lang = Start/Ende der Nachricht. Mehr Empfindlichkeit erkennt leise Töne, reagiert aber eher auf Rauschen.',mwMorse:'Morse von MoveEye kommt mit 660 Hz: für «Morse» hier Ton A auf 660 stellen. Das eigene Protokoll von MoveEye nutzt dieselben Töne wie diese Seite.',histClr:'Verlauf löschen',nothing:'Noch nichts empfangen.',hProt:'Protokoll',hMorse:'Morse',withKey:'mit Schlüssel',sending:'Sende …',micErr:'Kein Zugriff aufs Mikrofon. In Safari erlauben (aA › Website-Einstellungen › Mikrofon). Fehler:',insecure:'Das Mikrofon geht nur auf einer sicheren Seite (https).',openSecure:'Sichere Seite öffnen',cert:'Der Browser warnt einmal, dass dem Zertifikat nicht vertraut wird: MoveEye hat es selbst gemacht. «Erweitert» → «Weiter» wählen (iPhone: «Details einblenden» → «diese Website besuchen»).',install:'iPhone: Teilen → «Zum Home-Bildschirm». Nach dem ersten Laden geht die Seite auch ohne Internet.',v2recv:'verschlüsselte Nachricht kommt',v2bad:'falscher Schlüssel oder gestört – nicht lesbar',v2nokey:'verschlüsselte Nachricht – hier ist kein Schlüssel eingestellt',tooLong:'mit Schlüssel höchstens 200 Zeichen',wav:'Als Audiodatei',wavHint:'Die Datei klingt wie das Senden (Modus, Töne, Tempo, Schlüssel): teilen, speichern oder später ans Funkgerät abspielen.',file:'Audiodatei einlesen',reading:'Lese die Datei …',fileErr:'Diese Datei kann der Browser nicht lesen (Safari: WAV, M4A/AAC, MP3; Ogg/Opus meist nicht). Fehler:',fileLong:'Die Datei ist zu lang (höchstens 10 Minuten).',fileNone:'In der Datei wurde keine Nachricht gefunden (Modus und Töne wie beim Senden einstellen).',fileFound:'Aus der Datei:',fromFile:'aus Datei'},
-en:{title:'Phone radio',back:'‹ Morse mode',keyAria:'Set the key',noKey:'No key',keyOn:'Key active',morseNoKey:'Morse · without key',settings:'Settings',recv:'Receiving',prot:'Own protocol',morse:'Morse',tap:'Tap «Listen»',wait:'Waiting for a signal …',listen:'Listen',stop:'Stop',hist:'History',send:'Send',close:'Close',text:'Text',ph:'e.g. Meet at 3 pm',sentAs:'Sent as:',hold:'Hold the phone loudspeaker to the microphone of the radio, then press the talk button.',cancel:'Cancel',key:'Key',keySame:'Key (the same as the other side)',remember:'Remember on this device',keyLocal:'The key stays on this device only. Without «remember» it is gone when the app is closed.',keyWarn:'With a key every message is encrypted anew (V2: a random start, PBKDF2 and HMAC-SHA256, 6 check characters; the same text sounds different every time). Still: no reviewed method and only about 32 bits of check – protect nothing important with it. Both sides need this version of the page or a current MoveEye; the old page «Morse-Funk» cannot read messages with a key.',legal:'Encryption is forbidden in amateur radio (ITU Radio Regulations No. 25.2A; OFCOM: digital transmissions only unencrypted). Never send with a key over amateur radio; for other radios (e.g. PMR446) follow the rules of OFCOM (BAKOM).',apply:'Apply',keyDel:'Delete the key',lang:'Language',toneA:'Tone A – data (Hz)',toneB:'Tone B – control (Hz)',speed:'Speed',auto:'Detect the speed by itself',sens:'Sensitivity',vol:'Sending volume',help:'Protocol: tone A short = dot, long = dash. Tone B short = end of a character, long = start / end of the message. More sensitivity hears quiet tones but reacts more to noise.',mwMorse:'Morse from MoveEye comes at 660 Hz: for «Morse» set tone A to 660 here. The own protocol of MoveEye uses the same tones as this page.',histClr:'Delete the history',nothing:'Nothing received yet.',hProt:'Protocol',hMorse:'Morse',withKey:'with key',sending:'Sending …',micErr:'No access to the microphone. Allow it in Safari (aA › Website Settings › Microphone). Error:',insecure:'The microphone only works on a secure page (https).',openSecure:'Open the secure page',cert:'The browser will warn once that the certificate is not trusted: MoveEye made it itself. Choose «Advanced» → «Continue» (iPhone: «Show details» → «visit this website»).',install:'iPhone: Share → «Add to Home Screen». After the first load the page also works without internet.',v2recv:'encrypted message coming in',v2bad:'wrong key or disturbed – not readable',v2nokey:'encrypted message – no key is set here',tooLong:'with a key at most 200 characters',wav:'As an audio file',wavHint:'The file sounds like sending (mode, tones, speed, key): share it, save it or play it to the radio later.',file:'Read an audio file',reading:'Reading the file …',fileErr:'The browser cannot read this file (Safari: WAV, M4A/AAC, MP3; Ogg/Opus mostly not). Error:',fileLong:'The file is too long (at most 10 minutes).',fileNone:'No message found in the file (set the mode and the tones as for sending).',fileFound:'From the file:',fromFile:'from a file'},
-fr:{title:'Radio du téléphone',back:'‹ Mode morse',keyAria:'Régler la clé',noKey:'Pas de clé',keyOn:'Clé active',morseNoKey:'Morse · sans clé',settings:'Réglages',recv:'Réception',prot:'Protocole propre',morse:'Morse',tap:'Touchez «Écouter»',wait:'En attente d’un signal …',listen:'Écouter',stop:'Arrêt',hist:'Historique',send:'Envoyer',close:'Fermer',text:'Texte',ph:'p. ex. Rendez-vous à 15 h',sentAs:'Envoyé comme :',hold:'Tenez le haut-parleur du téléphone contre le microphone de la radio, puis appuyez sur la touche d’émission.',cancel:'Annuler',key:'Clé',keySame:'Clé (la même que de l’autre côté)',remember:'Mémoriser sur cet appareil',keyLocal:'La clé reste uniquement sur cet appareil. Sans «mémoriser», elle disparaît à la fermeture de l’app.',keyWarn:'Avec une clé, chaque message est chiffré à nouveau (V2 : début aléatoire, PBKDF2 et HMAC-SHA256, 6 caractères de contrôle ; le même texte sonne différemment à chaque fois). Pourtant : aucune méthode vérifiée et seulement environ 32 bits de contrôle – n’y protégez rien d’important. Les deux côtés ont besoin de cette version de la page ou d’un MoveEye à jour ; l’ancienne page «Morse-Funk» ne lit pas les messages avec clé.',legal:'Le chiffrement est interdit en radioamateur (Règlement des radiocommunications de l’UIT n° 25.2A ; OFCOM : transmissions numériques uniquement non chiffrées). Ne jamais émettre avec une clé en radioamateur ; pour d’autres radios (p. ex. PMR446), respecter les règles de l’OFCOM.',apply:'Appliquer',keyDel:'Supprimer la clé',lang:'Langue',toneA:'Son A – données (Hz)',toneB:'Son B – commande (Hz)',speed:'Vitesse',auto:'Détecter la vitesse automatiquement',sens:'Sensibilité',vol:'Volume d’émission',help:'Protocole : son A court = point, long = trait. Son B court = fin d’un caractère, long = début / fin du message. Plus de sensibilité capte les sons faibles mais réagit plus au bruit.',mwMorse:'Le morse de MoveEye arrive à 660 Hz : pour «Morse», réglez ici le son A sur 660. Le protocole propre de MoveEye utilise les mêmes sons que cette page.',histClr:'Effacer l’historique',nothing:'Encore rien reçu.',hProt:'Protocole',hMorse:'Morse',withKey:'avec clé',sending:'Envoi …',micErr:'Pas d’accès au microphone. L’autoriser dans Safari (aA › Réglages du site web › Microphone). Erreur :',insecure:'Le microphone ne fonctionne que sur une page sécurisée (https).',openSecure:'Ouvrir la page sécurisée',cert:'Le navigateur avertit une fois que le certificat n’est pas fiable : MoveEye l’a créé lui-même. Choisir «Paramètres avancés» → «Continuer» (iPhone : «Afficher les détails» → «visiter ce site web»).',install:'iPhone : Partager → «Sur l’écran d’accueil». Après le premier chargement, la page fonctionne aussi sans internet.',v2recv:'message chiffré en réception',v2bad:'mauvaise clé ou perturbé – illisible',v2nokey:'message chiffré – aucune clé n’est définie ici',tooLong:'avec clé, 200 caractères au plus',wav:'Comme fichier audio',wavHint:'Le fichier sonne comme l’envoi (mode, sons, vitesse, clé) : le partager, l’enregistrer ou le jouer plus tard à la radio.',file:'Lire un fichier audio',reading:'Lecture du fichier …',fileErr:'Le navigateur ne peut pas lire ce fichier (Safari : WAV, M4A/AAC, MP3 ; Ogg/Opus le plus souvent non). Erreur :',fileLong:'Le fichier est trop long (10 minutes au plus).',fileNone:'Aucun message trouvé dans le fichier (régler le mode et les sons comme pour l’envoi).',fileFound:'Du fichier :',fromFile:'d’un fichier'},
-it:{title:'Radio del telefono',back:'‹ Modalità Morse',keyAria:'Impostare la chiave',noKey:'Nessuna chiave',keyOn:'Chiave attiva',morseNoKey:'Morse · senza chiave',settings:'Impostazioni',recv:'Ricezione',prot:'Protocollo proprio',morse:'Morse',tap:'Tocca «Ascolta»',wait:'In attesa di un segnale …',listen:'Ascolta',stop:'Stop',hist:'Cronologia',send:'Invia',close:'Chiudi',text:'Testo',ph:'p. es. Ritrovo alle 15',sentAs:'Inviato come:',hold:'Tieni l’altoparlante del telefono vicino al microfono della radio, poi premi il tasto di trasmissione.',cancel:'Annulla',key:'Chiave',keySame:'Chiave (la stessa dell’altra parte)',remember:'Ricordare su questo apparecchio',keyLocal:'La chiave resta solo su questo apparecchio. Senza «ricordare» sparisce chiudendo l’app.',keyWarn:'Con la chiave ogni messaggio è cifrato di nuovo (V2: inizio casuale, PBKDF2 e HMAC-SHA256, 6 caratteri di controllo; lo stesso testo suona ogni volta diverso). Tuttavia: nessun metodo verificato e solo circa 32 bit di controllo – non proteggere nulla di importante. Entrambe le parti hanno bisogno di questa versione della pagina o di un MoveEye aggiornato; la vecchia pagina «Morse-Funk» non legge i messaggi con chiave.',legal:'Nel radioamatorismo la cifratura è vietata (Regolamento delle radiocomunicazioni UIT n. 25.2A; UFCOM: trasmissioni digitali solo non cifrate). Non trasmettere mai con una chiave via radioamatori; per altre radio (p. es. PMR446) rispettare le regole dell’UFCOM.',apply:'Applica',keyDel:'Cancellare la chiave',lang:'Lingua',toneA:'Suono A – dati (Hz)',toneB:'Suono B – controllo (Hz)',speed:'Velocità',auto:'Riconoscere la velocità da sé',sens:'Sensibilità',vol:'Volume di trasmissione',help:'Protocollo: suono A corto = punto, lungo = linea. Suono B corto = fine del carattere, lungo = inizio / fine del messaggio. Più sensibilità sente i suoni deboli ma reagisce di più al rumore.',mwMorse:'Il Morse di MoveEye arriva a 660 Hz: per «Morse» qui impostare il suono A su 660. Il protocollo proprio di MoveEye usa gli stessi suoni di questa pagina.',histClr:'Cancellare la cronologia',nothing:'Ancora niente ricevuto.',hProt:'Protocollo',hMorse:'Morse',withKey:'con chiave',sending:'Invio …',micErr:'Nessun accesso al microfono. Permetterlo in Safari (aA › Impostazioni sito web › Microfono). Errore:',insecure:'Il microfono funziona solo su una pagina sicura (https).',openSecure:'Aprire la pagina sicura',cert:'Il browser avvisa una volta che il certificato non è attendibile: l’ha creato MoveEye stesso. Scegliere «Avanzate» → «Procedi» (iPhone: «Mostra dettagli» → «visita questo sito web»).',install:'iPhone: Condividi → «Aggiungi alla schermata Home». Dopo il primo caricamento la pagina funziona anche senza internet.',v2recv:'messaggio cifrato in arrivo',v2bad:'chiave sbagliata o disturbato – illeggibile',v2nokey:'messaggio cifrato – qui non è impostata nessuna chiave',tooLong:'con la chiave al massimo 200 caratteri',wav:'Come file audio',wavHint:'Il file suona come l’invio (modalità, suoni, velocità, chiave): condividerlo, salvarlo o riprodurlo più tardi alla radio.',file:'Leggere un file audio',reading:'Lettura del file …',fileErr:'Il browser non può leggere questo file (Safari: WAV, M4A/AAC, MP3; Ogg/Opus per lo più no). Errore:',fileLong:'Il file è troppo lungo (al massimo 10 minuti).',fileNone:'Nessun messaggio trovato nel file (impostare modalità e suoni come per l’invio).',fileFound:'Dal file:',fromFile:'da un file'},
-rm:{title:'Radio dal telefonin',back:'‹ Modus da morse',keyAria:'Definir la clav',noKey:'Nagina clav',keyOn:'Clav activa',morseNoKey:'Morse · senza clav',settings:'Parameters',recv:'Retschaiver',prot:'Agen protocol',morse:'Morse',tap:'Tutga «Tadlar»',wait:'Spetga in signal …',listen:'Tadlar',stop:'Stop',hist:'Cronologia',send:'Trametter',close:'Serrar',text:'Text',ph:'p. ex. Sentupada a las 15',sentAs:'Vegn tramess sco:',hold:'Tegnair il autpledader dal telefonin vi dal microfon dal radio, lura smatgar la tasta da trametter.',cancel:'Interrumper',key:'Clav',keySame:'Clav (la medema sco tar l’auter)',remember:'Memorisar sin quest apparat',keyLocal:'La clav resta mo sin quest apparat. Senza «memorisar» è ella davent suenter avair serrà l’app.',keyWarn:'Cun clav vegn mintga messadi criptà da nov (V2: entschatta casuala, PBKDF2 e HMAC-SHA256, 6 caracters da controlla; il medem text tuna mintga giada auter). Tuttina: nagina metoda verifitgada e mo var 32 bits controlla – na proteger nagut impurtant cun quai. Omaduas varts dovran questa versiun da la pagina u in MoveEye actual; la veglia pagina «Morse-Funk» na legia betg messadis cun clav.',legal:'En il radioamatur è il criptadi scumandà (Reglament da radiocommunicaziun UIT nr. 25.2A; UFCOM: transmissiuns digitalas mo betg criptadas). Mai trametter cun clav via radioamatur; per auters radios (p. ex. PMR446) observar las reglas da l’UFCOM.',apply:'Applitgar',keyDel:'Stizzar la clav',lang:'Lingua',toneA:'Tun A – datas (Hz)',toneB:'Tun B – controlla (Hz)',speed:'Tempo',auto:'Enconuscher il tempo sez',sens:'Sensibilitad',vol:'Volumen da trametter',help:'Protocol: tun A curt = punct, lung = lingia. Tun B curt = fin dal caracter, lung = cumenzament / fin dal messadi. Dapli sensibilitad auda tuns flaivels, ma reagescha pli fitg sin canera.',mwMorse:'Il morse da MoveEye vegn cun 660 Hz: per «Morse» qua metter il tun A sin 660. L’agen protocol da MoveEye dovra ils medems tuns sco questa pagina.',histClr:'Stizzar la cronologia',nothing:'Anc nagut retschavì.',hProt:'Protocol',hMorse:'Morse',withKey:'cun clav',sending:'Trametta …',micErr:'Nagin access al microfon. Permetter en Safari (aA › Parameters da la website › Microfon). Errur:',insecure:'Il microfon funcziuna mo sin ina pagina segira (https).',openSecure:'Avrir la pagina segira',cert:'Il navigatur avertescha ina giada ch’il certificat na saja betg fidà: MoveEye l’ha fatg sez. Tscherner «Avanzà» → «Cuntinuar» (iPhone: «Mussar detagls» → «visitar questa website»).',install:'iPhone: Parter → «Agiuntar al visur da partenza». Suenter l’emprima chargiada funcziuna la pagina er senza internet.',v2recv:'messadi criptà arriva',v2bad:'clav sbagliada u disturbà – betg legibel',v2nokey:'messadi criptà – qua n’è definida nagina clav',tooLong:'cun clav maximalmain 200 caracters',wav:'Sco datoteca d’audio',wavHint:'La datoteca tuna sco il trametter (modus, tuns, tempo, clav): parter, memorisar u sunar pli tard al radio.',file:'Leger ina datoteca d’audio',reading:'Leger la datoteca …',fileErr:'Il navigatur na po betg leger questa datoteca (Safari: WAV, M4A/AAC, MP3; Ogg/Opus per il solit betg). Errur:',fileLong:'La datoteca è memia lunga (maximalmain 10 minutas).',fileNone:'Nagin messadi chattà en la datoteca (definir modus e tuns sco per trametter).',fileFound:'Da la datoteca:',fromFile:'d’ina datoteca'}};
+de:{title:'Handy-Funkgerät',back:'‹ Morse-Modus',keyAria:'Schlüssel einstellen',noKey:'Kein Schlüssel',keyOn:'Schlüssel aktiv',morseNoKey:'Morse · ohne Schlüssel',settings:'Einstellungen',recv:'Empfangen',prot:'Eigenes Protokoll',morse:'Morse',tap:'Tippe auf «Hören»',wait:'Warte auf Signal …',listen:'Hören',stop:'Stopp',hist:'Verlauf',send:'Senden',close:'Schliessen',text:'Text',ph:'z. B. Treffen um 15 Uhr',sentAs:'Wird gesendet als:',hold:'Handy-Lautsprecher ans Mikrofon des Funkgeräts halten, dann Sendetaste drücken.',cancel:'Abbrechen',key:'Schlüssel',keySame:'Schlüssel (gleich wie beim Gegenüber)',remember:'Auf diesem Gerät merken',keyLocal:'Der Schlüssel bleibt nur auf diesem Gerät. Ohne «merken» ist er nach dem Schliessen der App weg.',keyWarn:'Mit Schlüssel wird jede Nachricht neu verschlüsselt (V2: zufälliger Anfang, PBKDF2 und HMAC-SHA256, 6 Prüfzeichen; derselbe Text klingt jedes Mal anders). Trotzdem: kein geprüftes Verfahren und nur rund 32 Bit Prüfung – nichts Wichtiges damit schützen. Beide Seiten brauchen diese Fassung der Seite oder ein aktuelles MoveEye; die alte Seite «Morse-Funk» liest Nachrichten mit Schlüssel nicht.',legal:'Im Amateurfunk ist Verschlüsselung verboten (ITU-Vollzugsordnung Funk Nr. 25.2A; BAKOM: digitale Übertragungen nur unverschlüsselt). Mit Schlüssel nie über Amateurfunk senden; für andere Funkgeräte (z. B. PMR446) die Regeln des BAKOM beachten.',apply:'Übernehmen',keyDel:'Schlüssel löschen',lang:'Sprache',toneA:'Ton A – Daten (Hz)',toneB:'Ton B – Steuerung (Hz)',speed:'Tempo',auto:'Tempo automatisch erkennen',sens:'Empfindlichkeit',vol:'Sende-Lautstärke',help:'Protokoll: Ton A kurz = Punkt, lang = Strich. Ton B kurz = Zeichenende, lang = Start/Ende der Nachricht. Mehr Empfindlichkeit erkennt leise Töne, reagiert aber eher auf Rauschen.',mwMorse:'Morse von MoveEye kommt mit 660 Hz: für «Morse» hier Ton A auf 660 stellen. Das eigene Protokoll von MoveEye nutzt dieselben Töne wie diese Seite.',histClr:'Verlauf löschen',nothing:'Noch nichts empfangen.',hProt:'Protokoll',hMorse:'Morse',withKey:'mit Schlüssel',sending:'Sende …',micErr:'Kein Zugriff aufs Mikrofon. In Safari erlauben (aA › Website-Einstellungen › Mikrofon). Fehler:',insecure:'Das Mikrofon geht nur auf einer sicheren Seite (https).',openSecure:'Sichere Seite öffnen',cert:'Der Browser warnt einmal, dass dem Zertifikat nicht vertraut wird: MoveEye hat es selbst gemacht. «Erweitert» → «Weiter» wählen (iPhone: «Details einblenden» → «diese Website besuchen»).',install:'iPhone: Teilen → «Zum Home-Bildschirm». Nach dem ersten Laden geht die Seite auch ohne Internet.',v2recv:'verschlüsselte Nachricht kommt',v2bad:'falscher Schlüssel oder gestört – nicht lesbar',v2nokey:'verschlüsselte Nachricht – hier ist kein Schlüssel eingestellt',tooLong:'mit Schlüssel höchstens 200 Zeichen',wav:'Als Audiodatei',wavHint:'Die Datei klingt wie das Senden (Modus, Töne, Tempo, Schlüssel): teilen, speichern oder später ans Funkgerät abspielen.',file:'Audiodatei einlesen',reading:'Lese die Datei …',fileErr:'Diese Datei kann der Browser nicht lesen (Safari: WAV, M4A/AAC, MP3; Ogg/Opus meist nicht). Fehler:',fileLong:'Die Datei ist zu lang (höchstens 10 Minuten).',fileNone:'In der Datei wurde keine Nachricht gefunden (Modus und Töne wie beim Senden einstellen).',fileFound:'Aus der Datei:',fromFile:'aus Datei',mf:'Mehrton',mfHelp:'Mehrton (MFSK): viele Töne, jeder trägt mehrere Bits – schneller und robuster als zwei Töne, Gross- / Kleinbuchstaben und Umlaute gehen mit. Eine Vorlage (4, 8, 16 Töne) erkennt die Gegenseite selbst; den Baukasten auf beiden Seiten gleich einstellen. Fehlerkorrektur: stark hält am meisten aus, braucht aber doppelt so lange.',mfTones:'Töne',fec:'Fehlerkorrektur',fec0:'aus',fec1:'leicht',fec2:'stark',kN:'Anzahl Töne',kF0:'Erster Ton (Hz)',kDf:'Abstand (Hz)',kT:'Symbol (ms)',kG:'Schutzzeit (ms)',kL:'Oder eine Liste der Töne (Hz, mit Kommas)',mfRecv:'Rahmen kommt',mfWait:'Warte auf Mehrton …',mfCrc:'gestört – die Prüfsumme stimmt nicht',mfOther:'andere Baukasten-Einstellungen als hier',mfUses8:'Die Baukasten-Einstellungen gehen nicht – es gelten die 8 Töne.',mfNum:'keine Zahl',mfN:'2 bis 32 Töne',mfT:'ein Symbol dauert 10 bis 500 ms',mfG:'die Schutzzeit ist 0 bis zur Hälfte des Symbols',mfBand:'alle Töne zwischen 300 und 3000 Hz (das Band eines Funkgeräts)',mfClose:'die Töne liegen zu nah für diese Symbol-Länge',mfNear:'die Töne liegen nah für diese Symbol-Länge – mehr Abstand ist besser',mfPow2:'nur eine Zweierpotenz der Töne trägt Daten',mfShort:'sehr kurze Symbole: Funkgerät und Rauschsperre können sie verschmieren',mfEmpty:'kein Text',mfLong:'der Text ist zu lang'},
+en:{title:'Phone radio',back:'‹ Morse mode',keyAria:'Set the key',noKey:'No key',keyOn:'Key active',morseNoKey:'Morse · without key',settings:'Settings',recv:'Receiving',prot:'Own protocol',morse:'Morse',tap:'Tap «Listen»',wait:'Waiting for a signal …',listen:'Listen',stop:'Stop',hist:'History',send:'Send',close:'Close',text:'Text',ph:'e.g. Meet at 3 pm',sentAs:'Sent as:',hold:'Hold the phone loudspeaker to the microphone of the radio, then press the talk button.',cancel:'Cancel',key:'Key',keySame:'Key (the same as the other side)',remember:'Remember on this device',keyLocal:'The key stays on this device only. Without «remember» it is gone when the app is closed.',keyWarn:'With a key every message is encrypted anew (V2: a random start, PBKDF2 and HMAC-SHA256, 6 check characters; the same text sounds different every time). Still: no reviewed method and only about 32 bits of check – protect nothing important with it. Both sides need this version of the page or a current MoveEye; the old page «Morse-Funk» cannot read messages with a key.',legal:'Encryption is forbidden in amateur radio (ITU Radio Regulations No. 25.2A; OFCOM: digital transmissions only unencrypted). Never send with a key over amateur radio; for other radios (e.g. PMR446) follow the rules of OFCOM (BAKOM).',apply:'Apply',keyDel:'Delete the key',lang:'Language',toneA:'Tone A – data (Hz)',toneB:'Tone B – control (Hz)',speed:'Speed',auto:'Detect the speed by itself',sens:'Sensitivity',vol:'Sending volume',help:'Protocol: tone A short = dot, long = dash. Tone B short = end of a character, long = start / end of the message. More sensitivity hears quiet tones but reacts more to noise.',mwMorse:'Morse from MoveEye comes at 660 Hz: for «Morse» set tone A to 660 here. The own protocol of MoveEye uses the same tones as this page.',histClr:'Delete the history',nothing:'Nothing received yet.',hProt:'Protocol',hMorse:'Morse',withKey:'with key',sending:'Sending …',micErr:'No access to the microphone. Allow it in Safari (aA › Website Settings › Microphone). Error:',insecure:'The microphone only works on a secure page (https).',openSecure:'Open the secure page',cert:'The browser will warn once that the certificate is not trusted: MoveEye made it itself. Choose «Advanced» → «Continue» (iPhone: «Show details» → «visit this website»).',install:'iPhone: Share → «Add to Home Screen». After the first load the page also works without internet.',v2recv:'encrypted message coming in',v2bad:'wrong key or disturbed – not readable',v2nokey:'encrypted message – no key is set here',tooLong:'with a key at most 200 characters',wav:'As an audio file',wavHint:'The file sounds like sending (mode, tones, speed, key): share it, save it or play it to the radio later.',file:'Read an audio file',reading:'Reading the file …',fileErr:'The browser cannot read this file (Safari: WAV, M4A/AAC, MP3; Ogg/Opus mostly not). Error:',fileLong:'The file is too long (at most 10 minutes).',fileNone:'No message found in the file (set the mode and the tones as for sending).',fileFound:'From the file:',fromFile:'from a file',mf:'Multi-tone',mfHelp:'Multi-tone (MFSK): many tones, each carries several bits – faster and sturdier than two tones, upper / lower case and umlauts go along. A preset (4, 8, 16 tones) is found by the other side itself; set the Baukasten the same on both sides. Error correction: strong survives most but takes twice as long.',mfTones:'tones',fec:'Error correction',fec0:'off',fec1:'light',fec2:'strong',kN:'Number of tones',kF0:'First tone (Hz)',kDf:'Spacing (Hz)',kT:'Symbol (ms)',kG:'Guard time (ms)',kL:'Or a list of tones (Hz, with commas)',mfRecv:'frame coming',mfWait:'Waiting for multi-tone …',mfCrc:'disturbed – the check sum is wrong',mfOther:'other Baukasten settings than here',mfUses8:'The Baukasten settings do not work – the 8 tones are used.',mfNum:'not a number',mfN:'2 to 32 tones',mfT:'a symbol lasts 10 to 500 ms',mfG:'the guard time is 0 to half the symbol',mfBand:'all tones between 300 and 3000 Hz (the band of a radio)',mfClose:'the tones are too close for this symbol length',mfNear:'the tones are close for this symbol length – more space is better',mfPow2:'only a power of 2 of the tones carries data',mfShort:'very short symbols: a radio and its squelch may smear them',mfEmpty:'no text',mfLong:'the text is too long'},
+fr:{title:'Radio du téléphone',back:'‹ Mode morse',keyAria:'Régler la clé',noKey:'Pas de clé',keyOn:'Clé active',morseNoKey:'Morse · sans clé',settings:'Réglages',recv:'Réception',prot:'Protocole propre',morse:'Morse',tap:'Touchez «Écouter»',wait:'En attente d’un signal …',listen:'Écouter',stop:'Arrêt',hist:'Historique',send:'Envoyer',close:'Fermer',text:'Texte',ph:'p. ex. Rendez-vous à 15 h',sentAs:'Envoyé comme :',hold:'Tenez le haut-parleur du téléphone contre le microphone de la radio, puis appuyez sur la touche d’émission.',cancel:'Annuler',key:'Clé',keySame:'Clé (la même que de l’autre côté)',remember:'Mémoriser sur cet appareil',keyLocal:'La clé reste uniquement sur cet appareil. Sans «mémoriser», elle disparaît à la fermeture de l’app.',keyWarn:'Avec une clé, chaque message est chiffré à nouveau (V2 : début aléatoire, PBKDF2 et HMAC-SHA256, 6 caractères de contrôle ; le même texte sonne différemment à chaque fois). Pourtant : aucune méthode vérifiée et seulement environ 32 bits de contrôle – n’y protégez rien d’important. Les deux côtés ont besoin de cette version de la page ou d’un MoveEye à jour ; l’ancienne page «Morse-Funk» ne lit pas les messages avec clé.',legal:'Le chiffrement est interdit en radioamateur (Règlement des radiocommunications de l’UIT n° 25.2A ; OFCOM : transmissions numériques uniquement non chiffrées). Ne jamais émettre avec une clé en radioamateur ; pour d’autres radios (p. ex. PMR446), respecter les règles de l’OFCOM.',apply:'Appliquer',keyDel:'Supprimer la clé',lang:'Langue',toneA:'Son A – données (Hz)',toneB:'Son B – commande (Hz)',speed:'Vitesse',auto:'Détecter la vitesse automatiquement',sens:'Sensibilité',vol:'Volume d’émission',help:'Protocole : son A court = point, long = trait. Son B court = fin d’un caractère, long = début / fin du message. Plus de sensibilité capte les sons faibles mais réagit plus au bruit.',mwMorse:'Le morse de MoveEye arrive à 660 Hz : pour «Morse», réglez ici le son A sur 660. Le protocole propre de MoveEye utilise les mêmes sons que cette page.',histClr:'Effacer l’historique',nothing:'Encore rien reçu.',hProt:'Protocole',hMorse:'Morse',withKey:'avec clé',sending:'Envoi …',micErr:'Pas d’accès au microphone. L’autoriser dans Safari (aA › Réglages du site web › Microphone). Erreur :',insecure:'Le microphone ne fonctionne que sur une page sécurisée (https).',openSecure:'Ouvrir la page sécurisée',cert:'Le navigateur avertit une fois que le certificat n’est pas fiable : MoveEye l’a créé lui-même. Choisir «Paramètres avancés» → «Continuer» (iPhone : «Afficher les détails» → «visiter ce site web»).',install:'iPhone : Partager → «Sur l’écran d’accueil». Après le premier chargement, la page fonctionne aussi sans internet.',v2recv:'message chiffré en réception',v2bad:'mauvaise clé ou perturbé – illisible',v2nokey:'message chiffré – aucune clé n’est définie ici',tooLong:'avec clé, 200 caractères au plus',wav:'Comme fichier audio',wavHint:'Le fichier sonne comme l’envoi (mode, sons, vitesse, clé) : le partager, l’enregistrer ou le jouer plus tard à la radio.',file:'Lire un fichier audio',reading:'Lecture du fichier …',fileErr:'Le navigateur ne peut pas lire ce fichier (Safari : WAV, M4A/AAC, MP3 ; Ogg/Opus le plus souvent non). Erreur :',fileLong:'Le fichier est trop long (10 minutes au plus).',fileNone:'Aucun message trouvé dans le fichier (régler le mode et les sons comme pour l’envoi).',fileFound:'Du fichier :',fromFile:'d’un fichier',mf:'Multi-tons',mfHelp:'Multi-tons (MFSK) : beaucoup de sons, chacun porte plusieurs bits – plus rapide et plus robuste que deux sons, majuscules / minuscules et accents passent. Un modèle (4, 8, 16 sons) est reconnu tout seul ; régler le Baukasten de la même façon des deux côtés. Correction d’erreurs : forte résiste le mieux mais dure deux fois plus.',mfTones:'sons',fec:'Correction d’erreurs',fec0:'désactivée',fec1:'légère',fec2:'forte',kN:'Nombre de sons',kF0:'Premier son (Hz)',kDf:'Écart (Hz)',kT:'Symbole (ms)',kG:'Temps de garde (ms)',kL:'Ou une liste de sons (Hz, avec des virgules)',mfRecv:'trame en cours',mfWait:'En attente de multi-tons …',mfCrc:'perturbé – la somme de contrôle est fausse',mfOther:'autres réglages du Baukasten qu’ici',mfUses8:'Les réglages du Baukasten ne fonctionnent pas – les 8 sons sont utilisés.',mfNum:'pas un nombre',mfN:'2 à 32 sons',mfT:'un symbole dure 10 à 500 ms',mfG:'le temps de garde va de 0 à la moitié du symbole',mfBand:'tous les sons entre 300 et 3000 Hz (la bande d’une radio)',mfClose:'les sons sont trop proches pour cette durée de symbole',mfNear:'les sons sont proches pour cette durée de symbole – plus d’écart est mieux',mfPow2:'seule une puissance de 2 des sons porte des données',mfShort:'symboles très courts : la radio et son squelch peuvent les étaler',mfEmpty:'pas de texte',mfLong:'le texte est trop long'},
+it:{title:'Radio del telefono',back:'‹ Modalità Morse',keyAria:'Impostare la chiave',noKey:'Nessuna chiave',keyOn:'Chiave attiva',morseNoKey:'Morse · senza chiave',settings:'Impostazioni',recv:'Ricezione',prot:'Protocollo proprio',morse:'Morse',tap:'Tocca «Ascolta»',wait:'In attesa di un segnale …',listen:'Ascolta',stop:'Stop',hist:'Cronologia',send:'Invia',close:'Chiudi',text:'Testo',ph:'p. es. Ritrovo alle 15',sentAs:'Inviato come:',hold:'Tieni l’altoparlante del telefono vicino al microfono della radio, poi premi il tasto di trasmissione.',cancel:'Annulla',key:'Chiave',keySame:'Chiave (la stessa dell’altra parte)',remember:'Ricordare su questo apparecchio',keyLocal:'La chiave resta solo su questo apparecchio. Senza «ricordare» sparisce chiudendo l’app.',keyWarn:'Con la chiave ogni messaggio è cifrato di nuovo (V2: inizio casuale, PBKDF2 e HMAC-SHA256, 6 caratteri di controllo; lo stesso testo suona ogni volta diverso). Tuttavia: nessun metodo verificato e solo circa 32 bit di controllo – non proteggere nulla di importante. Entrambe le parti hanno bisogno di questa versione della pagina o di un MoveEye aggiornato; la vecchia pagina «Morse-Funk» non legge i messaggi con chiave.',legal:'Nel radioamatorismo la cifratura è vietata (Regolamento delle radiocomunicazioni UIT n. 25.2A; UFCOM: trasmissioni digitali solo non cifrate). Non trasmettere mai con una chiave via radioamatori; per altre radio (p. es. PMR446) rispettare le regole dell’UFCOM.',apply:'Applica',keyDel:'Cancellare la chiave',lang:'Lingua',toneA:'Suono A – dati (Hz)',toneB:'Suono B – controllo (Hz)',speed:'Velocità',auto:'Riconoscere la velocità da sé',sens:'Sensibilità',vol:'Volume di trasmissione',help:'Protocollo: suono A corto = punto, lungo = linea. Suono B corto = fine del carattere, lungo = inizio / fine del messaggio. Più sensibilità sente i suoni deboli ma reagisce di più al rumore.',mwMorse:'Il Morse di MoveEye arriva a 660 Hz: per «Morse» qui impostare il suono A su 660. Il protocollo proprio di MoveEye usa gli stessi suoni di questa pagina.',histClr:'Cancellare la cronologia',nothing:'Ancora niente ricevuto.',hProt:'Protocollo',hMorse:'Morse',withKey:'con chiave',sending:'Invio …',micErr:'Nessun accesso al microfono. Permetterlo in Safari (aA › Impostazioni sito web › Microfono). Errore:',insecure:'Il microfono funziona solo su una pagina sicura (https).',openSecure:'Aprire la pagina sicura',cert:'Il browser avvisa una volta che il certificato non è attendibile: l’ha creato MoveEye stesso. Scegliere «Avanzate» → «Procedi» (iPhone: «Mostra dettagli» → «visita questo sito web»).',install:'iPhone: Condividi → «Aggiungi alla schermata Home». Dopo il primo caricamento la pagina funziona anche senza internet.',v2recv:'messaggio cifrato in arrivo',v2bad:'chiave sbagliata o disturbato – illeggibile',v2nokey:'messaggio cifrato – qui non è impostata nessuna chiave',tooLong:'con la chiave al massimo 200 caratteri',wav:'Come file audio',wavHint:'Il file suona come l’invio (modalità, suoni, velocità, chiave): condividerlo, salvarlo o riprodurlo più tardi alla radio.',file:'Leggere un file audio',reading:'Lettura del file …',fileErr:'Il browser non può leggere questo file (Safari: WAV, M4A/AAC, MP3; Ogg/Opus per lo più no). Errore:',fileLong:'Il file è troppo lungo (al massimo 10 minuti).',fileNone:'Nessun messaggio trovato nel file (impostare modalità e suoni come per l’invio).',fileFound:'Dal file:',fromFile:'da un file',mf:'Multitono',mfHelp:'Multitono (MFSK): molti suoni, ognuno porta più bit – più veloce e più robusto di due suoni, maiuscole / minuscole e dieresi passano. Un modello (4, 8, 16 suoni) viene riconosciuto da sé; impostare il Baukasten uguale sui due lati. Correzione degli errori: forte resiste di più ma dura il doppio.',mfTones:'suoni',fec:'Correzione degli errori',fec0:'spenta',fec1:'leggera',fec2:'forte',kN:'Numero di suoni',kF0:'Primo suono (Hz)',kDf:'Distanza (Hz)',kT:'Simbolo (ms)',kG:'Tempo di guardia (ms)',kL:'Oppure un elenco di suoni (Hz, con virgole)',mfRecv:'trama in arrivo',mfWait:'In attesa del multitono …',mfCrc:'disturbato – la somma di controllo è sbagliata',mfOther:'altre impostazioni del Baukasten che qui',mfUses8:'Le impostazioni del Baukasten non funzionano – si usano gli 8 suoni.',mfNum:'non è un numero',mfN:'da 2 a 32 suoni',mfT:'un simbolo dura da 10 a 500 ms',mfG:'il tempo di guardia va da 0 a metà del simbolo',mfBand:'tutti i suoni tra 300 e 3000 Hz (la banda di una radio)',mfClose:'i suoni sono troppo vicini per questa durata del simbolo',mfNear:'i suoni sono vicini per questa durata del simbolo – più distanza è meglio',mfPow2:'solo una potenza di 2 dei suoni porta dati',mfShort:'simboli molto corti: la radio e lo squelch possono sbavarli',mfEmpty:'nessun testo',mfLong:'il testo è troppo lungo'},
+rm:{title:'Radio dal telefonin',back:'‹ Modus da morse',keyAria:'Definir la clav',noKey:'Nagina clav',keyOn:'Clav activa',morseNoKey:'Morse · senza clav',settings:'Parameters',recv:'Retschaiver',prot:'Agen protocol',morse:'Morse',tap:'Tutga «Tadlar»',wait:'Spetga in signal …',listen:'Tadlar',stop:'Stop',hist:'Cronologia',send:'Trametter',close:'Serrar',text:'Text',ph:'p. ex. Sentupada a las 15',sentAs:'Vegn tramess sco:',hold:'Tegnair il autpledader dal telefonin vi dal microfon dal radio, lura smatgar la tasta da trametter.',cancel:'Interrumper',key:'Clav',keySame:'Clav (la medema sco tar l’auter)',remember:'Memorisar sin quest apparat',keyLocal:'La clav resta mo sin quest apparat. Senza «memorisar» è ella davent suenter avair serrà l’app.',keyWarn:'Cun clav vegn mintga messadi criptà da nov (V2: entschatta casuala, PBKDF2 e HMAC-SHA256, 6 caracters da controlla; il medem text tuna mintga giada auter). Tuttina: nagina metoda verifitgada e mo var 32 bits controlla – na proteger nagut impurtant cun quai. Omaduas varts dovran questa versiun da la pagina u in MoveEye actual; la veglia pagina «Morse-Funk» na legia betg messadis cun clav.',legal:'En il radioamatur è il criptadi scumandà (Reglament da radiocommunicaziun UIT nr. 25.2A; UFCOM: transmissiuns digitalas mo betg criptadas). Mai trametter cun clav via radioamatur; per auters radios (p. ex. PMR446) observar las reglas da l’UFCOM.',apply:'Applitgar',keyDel:'Stizzar la clav',lang:'Lingua',toneA:'Tun A – datas (Hz)',toneB:'Tun B – controlla (Hz)',speed:'Tempo',auto:'Enconuscher il tempo sez',sens:'Sensibilitad',vol:'Volumen da trametter',help:'Protocol: tun A curt = punct, lung = lingia. Tun B curt = fin dal caracter, lung = cumenzament / fin dal messadi. Dapli sensibilitad auda tuns flaivels, ma reagescha pli fitg sin canera.',mwMorse:'Il morse da MoveEye vegn cun 660 Hz: per «Morse» qua metter il tun A sin 660. L’agen protocol da MoveEye dovra ils medems tuns sco questa pagina.',histClr:'Stizzar la cronologia',nothing:'Anc nagut retschavì.',hProt:'Protocol',hMorse:'Morse',withKey:'cun clav',sending:'Trametta …',micErr:'Nagin access al microfon. Permetter en Safari (aA › Parameters da la website › Microfon). Errur:',insecure:'Il microfon funcziuna mo sin ina pagina segira (https).',openSecure:'Avrir la pagina segira',cert:'Il navigatur avertescha ina giada ch’il certificat na saja betg fidà: MoveEye l’ha fatg sez. Tscherner «Avanzà» → «Cuntinuar» (iPhone: «Mussar detagls» → «visitar questa website»).',install:'iPhone: Parter → «Agiuntar al visur da partenza». Suenter l’emprima chargiada funcziuna la pagina er senza internet.',v2recv:'messadi criptà arriva',v2bad:'clav sbagliada u disturbà – betg legibel',v2nokey:'messadi criptà – qua n’è definida nagina clav',tooLong:'cun clav maximalmain 200 caracters',wav:'Sco datoteca d’audio',wavHint:'La datoteca tuna sco il trametter (modus, tuns, tempo, clav): parter, memorisar u sunar pli tard al radio.',file:'Leger ina datoteca d’audio',reading:'Leger la datoteca …',fileErr:'Il navigatur na po betg leger questa datoteca (Safari: WAV, M4A/AAC, MP3; Ogg/Opus per il solit betg). Errur:',fileLong:'La datoteca è memia lunga (maximalmain 10 minutas).',fileNone:'Nagin messadi chattà en la datoteca (definir modus e tuns sco per trametter).',fileFound:'Da la datoteca:',fromFile:'d’ina datoteca',mf:'Plirs tuns',mfHelp:'Plirs tuns (MFSK): blers tuns, mintgin porta plirs bits – pli svelt e pli robust che dus tuns, maiusclas / minusclas ed umlauts van cun. In model (4, 8, 16 tuns) vegn enconuschì sez; definir il Baukasten il medem sin omaduas varts. Correctura da sbagls: ferma resista il pli bain, ma dura il dubel.',mfTones:'tuns',fec:'Correctura da sbagls',fec0:'deactivada',fec1:'levga',fec2:'ferma',kN:'Dumber da tuns',kF0:'Emprim tun (Hz)',kDf:'Distanza (Hz)',kT:'Simbol (ms)',kG:'Temp da protecziun (ms)',kL:'U ina glista dals tuns (Hz, cun commas)',mfRecv:'rom arriva',mfWait:'Spetga plirs tuns …',mfCrc:'disturbà – la summa da controlla è sbagliada',mfOther:'auters parameters dal Baukasten che qua',mfUses8:'Ils parameters dal Baukasten na funcziunan betg – i valan ils 8 tuns.',mfNum:'nagin dumber',mfN:'2 fin 32 tuns',mfT:'in simbol cuzza 10 fin 500 ms',mfG:'il temp da protecziun è 0 fin la mesadad dal simbol',mfBand:'tut ils tuns tranter 300 e 3000 Hz (la banda d’in radio)',mfClose:'ils tuns èn memia datiers per questa lunghezza dal simbol',mfNear:'ils tuns èn datiers per questa lunghezza dal simbol – dapli distanza è meglier',mfPow2:'mo ina potenza da 2 dals tuns porta datas',mfShort:'simbols fitg curts: il radio e la serra da canera als pon sfarlattar',mfEmpty:'nagin text',mfLong:'il text è memia lung'}};
 const MW=window.MW_FUNK||null;
 const LOC={de:'de-CH',en:'en-GB',fr:'fr-CH',it:'it-CH',rm:'rm-CH'};
 function pickLang(){
@@ -801,6 +1014,23 @@ let ctx=null,stream=null,proc=null,src=null,dec=null,listening=false,sendingUnti
 let dirty=false;
 const V2L={prev:'',v2:false,lastPos:0,shown:''};   // V2 of the live decoder (which message is V2, its opened text)
 let wavFile=null,wavTm=0;
+if(!cfg.mf||typeof cfg.mf!=='object')cfg.mf={pid:2,fec:1,kit:{n:8,f0:600,df:200,T:50,g:8,list:''}};   // Mehrton (MFSK)
+let mrx=null,mfShown='';
+function mfSet(){
+  // the setting to send with: {pid, s, fec} - the Baukasten only when it is valid (otherwise the 8 tones)
+  const pid=+cfg.mf.pid||0,fec=Math.max(0,Math.min(2,+cfg.mf.fec));
+  if(MF.P[pid])return {pid,s:MF.P[pid],fec};
+  const c=mfCheck(mfKit());return c.s?{pid:0,s:c.s,fec}:{pid:2,s:MF.P[2],fec,bad:true};
+}
+function mfKit(){const k=cfg.mf.kit||{};const l=String(k.list||'').split(/[\s,;]+/).filter(x=>x).map(Number);return l.length?{list:l,T:k.T,g:k.g}:{n:k.n,f0:k.f0,df:k.df,T:k.T,g:k.g};}
+function mfCustom(){if(+cfg.mf.pid!==0)return null;const c=mfCheck(mfKit());return c.s;}
+function mfDone(r,src){
+  // a Mehrton frame is complete (microphone or file)
+  const o={src,key:r.key,mf:r.n+' '+T('mfTones')+' · '+T('fec'+MF.FECS.indexOf(r.fec))};
+  if(r.bad)o.bad=r.bad;
+  if(!src)mfShown=r.bad?histText({bad:r.bad}):r.text;
+  return addHistory(r.text,'mfsk',o);
+}
 
 function saveCfg(){store.set('cfg',cfg);}
 async function applyKey(){
@@ -815,13 +1045,22 @@ function renderTop(){
   if(cfg.mode==='morse'){$('keyTxt').textContent=T('morseNoKey');k.classList.remove('on');k.style.color='var(--muted)';}
   else if(key){$('keyTxt').textContent=T('keyOn');k.classList.add('on');k.style.color='var(--a)';}
   else{$('keyTxt').textContent=T('noKey');k.classList.remove('on');k.style.color='var(--text)';}
-  $('modeLbl').textContent=T('recv')+' · '+(cfg.mode==='prot'?T('prot'):T('morse'));
+  $('modeLbl').textContent=T('recv')+' · '+(cfg.mode==='prot'?T('prot'):cfg.mode==='mfsk'?T('mf'):T('morse'));
   $('fAl').textContent=cfg.fA;$('fBl').textContent=cfg.fB;
 }
 
 function render(){
   dirty=false;
   const L=$('live');
+  if(cfg.mode==='mfsk'){
+    // Mehrton: a frame coming in (how far), else the last message
+    const lv=mrx&&mrx.live();
+    if(lv){L.textContent='📶 '+T('mfRecv')+' · '+lv.n+' '+T('mfTones')+(lv.of?' · '+Math.round(100*lv.got/lv.of)+' %':'');L.classList.remove('empty');}
+    else if(mfShown){L.textContent=mfShown;L.classList.remove('empty');}
+    else{L.textContent=listening?T('mfWait'):T('tap');L.classList.add('empty');}
+    $('sym').textContent='';const m=mfSet();$('wpm').textContent=mfTones(m.s).length+' '+T('mfTones')+' · '+T('fec'+m.fec);
+    drawTrack();return;
+  }
   if(dec&&dec.live&&cfg.mode==='prot'&&V2L.v2){L.textContent=dec.ended?(V2L.shown||'🔒'):'🔒 '+T('v2recv')+' ('+Math.max(0,dec.live.length-1)+')';L.classList.remove('empty');}
   else if(dec&&dec.live){L.textContent=dec.live;L.classList.remove('empty');}
   else{L.textContent=listening?T('wait'):T('tap');L.classList.add('empty');}
@@ -888,7 +1127,9 @@ async function startListen(){
   src=ctx.createMediaStreamSource(stream);
   proc=ctx.createScriptProcessor(512,1,1);
   const sink=ctx.createGain();sink.gain.value=0;
-  proc.onaudioprocess=e=>dec.frame(e.inputBuffer.getChannelData(0),ctx.currentTime<sendingUntil);
+  mrx=cfg.mode==='mfsk'?mfRx(ctx.sampleRate,mfCustom(),pr=>pr.then(r=>mfDone(r,'')),()=>key):null;mfShown='';
+  proc.onaudioprocess=e=>{const x=e.inputBuffer.getChannelData(0),own=ctx.currentTime<sendingUntil;
+    if(mrx){if(own)mrx.reset();else mrx.feed(x);dirty=true;}else dec.frame(x,own);};
   src.connect(proc);proc.connect(sink);sink.connect(ctx.destination);
   listening=true;$('listen').classList.add('live');$('listenTxt').textContent=T('stop');
 }
@@ -897,7 +1138,7 @@ function stopListen(){
   if(dec){const t=dec.live.trim();if(!dec.ended&&t){rxDone(t,cfg.mode,'',V2L.v2);dec.ended=true;}}
   try{proc&&proc.disconnect();src&&src.disconnect();}catch(e){}
   if(stream)stream.getTracks().forEach(t=>t.stop());
-  stream=proc=src=null;listening=false;
+  stream=proc=src=mrx=null;listening=false;
   $('listen').classList.remove('live');$('listenTxt').textContent=T('listen');dirty=true;
 }
 
@@ -914,16 +1155,16 @@ async function rxDone(t,mode,src,isV2){
 }
 function addHistory(text,mode,o){
   o=o||{};
-  const h={t:Date.now(),text,mode,key:!!o.key};if(o.bad)h.bad=o.bad;if(o.src)h.src=o.src;
+  const h={t:Date.now(),text,mode,key:!!o.key};if(o.bad)h.bad=o.bad;if(o.src)h.src=o.src;if(o.mf)h.mf=o.mf;
   history.unshift(h);history=history.slice(0,200);store.set('hist',history);dirty=true;return h;
 }
-function histText(h){return h.bad==='nokey'?'🔒 '+T('v2nokey'):h.bad?'⚠ '+T('v2bad'):h.text;}
+function histText(h){return h.bad==='nokey'?'🔒 '+T('v2nokey'):h.bad==='crc'?'⚠ '+T('mfCrc'):h.bad==='settings'?'⚠ '+T('mfOther'):h.bad?'⚠ '+T('v2bad'):h.text;}
 function renderHist(){
   const L=$('histList');L.textContent='';
   if(!history.length){const d=document.createElement('div'),s=document.createElement('small');s.textContent=T('nothing');d.append(s);L.append(d);return;}
   for(const h of history){
     const d=document.createElement('div');const s=document.createElement('span');s.textContent=histText(h);
-    const m=document.createElement('small');m.textContent=(h.src==='file'?'📁 '+T('fromFile')+' · ':'')+new Date(h.t).toLocaleString(LOC[LG]||'de-CH')+' · '+(h.mode==='prot'?T('hProt'):T('hMorse'))+(h.key?' · 🔑 '+T('withKey'):'');
+    const m=document.createElement('small');m.textContent=(h.src==='file'?'📁 '+T('fromFile')+' · ':'')+new Date(h.t).toLocaleString(LOC[LG]||'de-CH')+' · '+(h.mode==='prot'?T('hProt'):h.mode==='mfsk'?'📶 '+T('mf')+(h.mf?' ('+h.mf+')':''):T('hMorse'))+(h.key?' · 🔑 '+T('withKey'):'');
     d.append(s,m);L.append(d);
   }
 }
@@ -940,6 +1181,14 @@ function prepTx(text){
   return {plain,codes:[...plain].map(c=>c===' '?' ':MORSE[c])};
 }
 function updPrev(){
+  if(cfg.mode==='mfsk'){
+    // Mehrton: the text as it is (UTF-8), how long it takes
+    const t=mfNorm($('txIn').value),m=mfSet();
+    $('txPrev').textContent=t?(t+(key?'  (🔑 '+T('withKey')+')':'')):'–';
+    if(t)mfFrame(t,m.pid,m.s,m.fec,key,[0,0,0,0]).then(f=>{if(mfNorm($('txIn').value)!==t)return;
+      $('txPrev').textContent+=f.sym?'  · '+(f.sym.length*m.s.T/1000).toFixed(1)+' s':'  ⚠ '+T(f.err);});
+    wavFile=null;$('txWav').disabled=!t;clearTimeout(wavTm);wavTm=setTimeout(makeWav,250);return;
+  }
   const p=prepTx($('txIn').value),v2=cfg.mode==='prot'&&!!key,n=p.plain.trim().length;
   $('txPrev').textContent=p.plain?(p.plain+(v2?'  (🔑 '+T('withKey')+')':'')):'–';
   if(v2&&n>V2.MAX)$('txPrev').textContent+='  ⚠ '+T('tooLong');
@@ -948,7 +1197,11 @@ function updPrev(){
 }
 async function makeWav(){
   const text=$('txIn').value;let f=null;
-  try{const p=await txPlan(text);if(p.codes.length){const b=wavOf(beepsOf(p.codes),22050);
+  try{let b=null;
+    if(cfg.mode==='mfsk'){const m=mfSet(),f=await mfFrame(text,m.pid,m.s,m.fec,key);
+      if(f.sym){const y=mfRender(f.sym,m.s,16000,Math.min(1,cfg.vol)*0.9),x=new Float32Array(y.length+8000);x.set(y,3200);b=pcmWav(x,16000);}}
+    else{const p=await txPlan(text);if(p.codes.length)b=wavOf(beepsOf(p.codes),22050);}
+    if(b){
     const d=new Date(),z=n=>String(n).padStart(2,'0');
     f=new File([b],'Funk_'+d.getFullYear()+z(d.getMonth()+1)+z(d.getDate())+'_'+z(d.getHours())+z(d.getMinutes())+z(d.getSeconds())+'.wav',{type:'audio/wav'});}}
   catch(e){f=null;}
@@ -975,8 +1228,10 @@ async function readFile(f){
     if(ab.duration>600){showMsg(T('fileLong'));return;}
     const n=ab.length,x=new Float32Array(n);
     for(let c=0;c<ab.numberOfChannels;c++){const y=ab.getChannelData(c);for(let i=0;i<n;i++)x[i]+=y[i]/ab.numberOfChannels;}
-    const got=await decodeSamples(x,ab.sampleRate,async q=>{showInfo(T('reading')+' '+Math.round(q*100)+' %');await new Promise(r=>setTimeout(r,0));});
-    const hs=[];for(const [t,m,v2] of got)hs.push(await rxDone(t,m,'file',v2));
+    const prog=async q=>{showInfo(T('reading')+' '+Math.round(q*100)+' %');await new Promise(r=>setTimeout(r,0));};
+    const hs=[];
+    if(cfg.mode==='mfsk'){for(const r of await mfDecodeSamples(x,ab.sampleRate,mfCustom(),()=>key,prog))hs.push(mfDone(r,'file'));}
+    else{const got=await decodeSamples(x,ab.sampleRate,prog);for(const [t,m,v2] of got)hs.push(await rxDone(t,m,'file',v2));}
     (hs.length&&hs.every(h=>!h.bad)?showInfo:showMsg)(hs.length?'📁 '+T('fileFound')+' '+hs.map(histText).join(' · '):T('fileNone'));
   }catch(e){showMsg(T('fileErr')+' '+errTxt(e));}
   finally{$('fileBtn').disabled=false;}
@@ -1003,6 +1258,18 @@ async function transmit(){
 async function transmitUI(){
   // his transmit stays as it is (it writes «Sende …» / «Senden»): afterwards the button in the language of the page.
   // With a key: V2 - start the sound right in the tap (iPhone), then plan the codes and let his transmit send them
+  if(cfg.mode==='mfsk'){
+    // Mehrton: start the sound right in the tap, then the frame, played as one buffer
+    const c0=ensureCtx(),m=mfSet(),f=await mfFrame($('txIn').value,m.pid,m.s,m.fec,key);
+    if(!f.sym){showMsg(T(f.err));return;}
+    await c0;
+    const y=mfRender(f.sym,m.s,ctx.sampleRate,Math.min(1,cfg.vol)),ab=ctx.createBuffer(1,y.length,ctx.sampleRate);ab.getChannelData(0).set(y);
+    const bs=ctx.createBufferSource();bs.buffer=ab;bs.connect(ctx.destination);const t0=ctx.currentTime+0.15;bs.start(t0);sendNodes.push(bs);
+    const total=t0+y.length/ctx.sampleRate-ctx.currentTime;sendingUntil=t0+y.length/ctx.sampleRate+0.3;
+    $('txGo').disabled=true;$('txGo').textContent=T('sending')+' '+total.toFixed(1)+' s';
+    setTimeout(()=>{$('txGo').textContent=T('send');$('txGo').disabled=false;sendNodes=[];},total*1000+300);
+    return;
+  }
   if(cfg.mode==='prot'&&key){
     const c0=ensureCtx();
     const p=await txPlan($('txIn').value);
@@ -1031,13 +1298,27 @@ $('keyDel').onclick=async()=>{key='';store.del('key');$('keyIn').value='';await 
 $('histBtn').onclick=()=>{renderHist();open('shHist');};
 $('histClr').onclick=()=>{history=[];store.set('hist',history);renderHist();};
 function syncSet(){
-  $('mProt').classList.toggle('sel',cfg.mode==='prot');$('mMorse').classList.toggle('sel',cfg.mode==='morse');
+  $('mProt').classList.toggle('sel',cfg.mode==='prot');$('mMorse').classList.toggle('sel',cfg.mode==='morse');$('mMf').classList.toggle('sel',cfg.mode==='mfsk');
+  $('mfBox').hidden=cfg.mode!=='mfsk';$('twoBox').hidden=cfg.mode==='mfsk';
+  $('sMfP').value=String(cfg.mf.pid);$('sMfF').value=String(cfg.mf.fec);$('kitBox').hidden=+cfg.mf.pid!==0;
+  const k=cfg.mf.kit||{},foc=id=>document.activeElement===$(id);
+  [['kN',k.n],['kF0',k.f0],['kDf',k.df],['kT',k.T],['kG',k.g],['kL',k.list||'']].forEach(([id,v])=>{if(!foc(id))$(id).value=v==null?'':v;});
+  const m=mfSet(),kk=mfK(m.s),c=+cfg.mf.pid===0?mfCheck(mfKit()):{err:[],warn:[],need:0},t=mfTones(m.s);
+  $('mfInfo').textContent=t.length+' '+T('mfTones')+' · '+Math.round(t[0])+'–'+Math.round(t[t.length-1])+' Hz · '+m.s.T+' ms · ≈ '+(kk*1000/m.s.T*[1,0.75,0.5][m.fec]).toFixed(1)+' bit/s';
+  const w=c.err.concat(c.warn).map(x=>'⚠ '+T(x)+((x==='mfClose'||x==='mfNear')&&c.need?' (≥ '+c.need+' Hz)':''));
+  if(m.bad)w.push('⚠ '+T('mfUses8'));
+  $('mfWarn').hidden=!w.length;$('mfWarn').textContent=w.join(' · ');
   $('sFA').value=cfg.fA;$('sFB').value=cfg.fB;$('sW').value=cfg.wpm;$('sWv').textContent=cfg.wpm;$('sAuto').checked=cfg.auto;
   $('sS').value=21-cfg.sens;$('sSv').textContent=(21-cfg.sens)+' / 15';$('sV').value=cfg.vol;renderTop();
 }
 $('setBtn').onclick=()=>{syncSet();open('shSet');};
 $('mProt').onclick=()=>{cfg.mode='prot';saveCfg();syncSet();updPrev();};
 $('mMorse').onclick=()=>{cfg.mode='morse';saveCfg();syncSet();updPrev();};
+$('mMf').onclick=()=>{cfg.mode='mfsk';saveCfg();syncSet();updPrev();};
+$('sMfP').onchange=e=>{cfg.mf.pid=+e.target.value;saveCfg();syncSet();updPrev();};
+$('sMfF').onchange=e=>{cfg.mf.fec=+e.target.value;saveCfg();syncSet();updPrev();};
+for(const [id,f] of [['kN','n'],['kF0','f0'],['kDf','df'],['kT','T'],['kG','g'],['kL','list']])
+  $(id).onchange=e=>{cfg.mf.kit=Object.assign({},cfg.mf.kit,{[f]:f==='list'?e.target.value:+e.target.value});saveCfg();syncSet();updPrev();};
 $('sFA').onchange=e=>{const v=+e.target.value;if(v>=300&&v<=3000)cfg.fA=v;saveCfg();syncSet();};
 $('sFB').onchange=e=>{const v=+e.target.value;if(v>=300&&v<=3000)cfg.fB=v;saveCfg();syncSet();};
 $('sW').oninput=e=>{cfg.wpm=+e.target.value;if(dec)dec.unit=1200/cfg.wpm;saveCfg();syncSet();};
@@ -1357,7 +1638,7 @@ def funk_audio_pcm(data):
 def funk_file_msg(text, src_info):
     """a message read from a file: into the list of the Morse page (📁) and the log - no picture, push or reading aloud; works
     also while the mode is off (nothing is watched for that)"""
-    txt = morse_clean(text)
+    txt = mfsk_clean(text) if src_info.get("fmt") == "mfsk" else morse_clean(text)
     if not txt:
         return None
     m = {"t": datetime.now().strftime("%H:%M:%S"), "ts": time.time(), "text": txt, "src": "file", "wpm": float(src_info.get("wpm") or 0.0),
