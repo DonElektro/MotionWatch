@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-14 20:42",
+ "generated": "2026-11-14 22:21",
  "versions": [
+  {
+   "version": "3.95.0",
+   "file": "webcam_bewegung_3_95_0.py",
+   "url": "",
+   "sha256": "24c5402fd21447b816fecc37eb1da6585c9286058ca30e01ba46b54d4991043c",
+   "date": "2026-11-14 22:21",
+   "notes": "Zwei Teile. (1) «⏪ Zeitfenster» im Live-Bild: Damals / Jetzt pro Blickrichtung. (2) «🔥 Glut-Wächter»: die Feuerstelle merken und fragen «Ist das Feuer aus?».",
+   "size": 4027888,
+   "sig": "44c830f150c5fdf2ab9c8568579734a5f5bab7aa4563f3ebc96d07354727404aa9583c968dc6fb81382ba7311b2d3858158a36dfc9d7b307f9eb5248fdfb0f06",
+   "data": {
+    "file": "moveeye_daten_3_95_0.zip",
+    "url": "",
+    "sha256": "bad2864281f94a43ed905fb403de27dc8bef8b89e9c86516159bbd01f85668d6",
+    "size": 11737570,
+    "sig": "66b7d0d2348765cabc92c2aa4931178f9816f7420f8f1138c8fea1b5edac86c5363e2b00310e11d06e56b030357a810a864ef9b6ce594583a6a7ae88231c9606"
+   }
+  },
   {
    "version": "3.94.0",
    "file": "webcam_bewegung_3_94_0.py",
    "url": "",
    "sha256": "37b53236d6a197929dfd7953f033887dd2e6982f482dfe53972c5c2c7ba1f5cb",
-   "date": "2026-11-14 20:42",
+   "date": "2026-11-14 21:07",
    "notes": "Drei Teile. (1) Live-Bild: ruhige Animationen und ein CPU-Chip im Bild. (2) «🧳 Transportmodus» für die Transportkappe: der Kopf fährt in die Transport-Lage und bleibt dort. (3) Digitaler Rucksack im Netzwerk: auf Wunsch eine Freigabe «rucksack» über SMB (ab Werk aus), damit PC und Handy im eigenen Netz direkt darauf zugreifen.",
    "size": 3981716,
    "sig": "47cf98147f6eb701c98b3da5373529802f089f6c32c7eb643002e3784f73db5e4d5240616a4f4727f8aa7a28d301a7602b1af4b64ad5815c66d64295bca9a60e",
@@ -136,23 +153,6 @@
     "sha256": "a220b4b3b99ae17243a58aa790882b4fa5272016fd97ca23185b8038db71fe6c",
     "size": 11078156,
     "sig": "a0251cbfdd979c6b797d3b12b0c6c8d47720ffaf6ab5b5713c859c0fdb2502969ffaa7446a73d77764c121c4cbddf758387b7243d95a2ca04f9cef2457c17105"
-   }
-  },
-  {
-   "version": "3.86.1",
-   "file": "webcam_bewegung_3_86_1.py",
-   "url": "",
-   "sha256": "11daa40d6ed7167ade7e2a1a22453fa9bead410e14e89abd79a75e2af7be350e",
-   "date": "2026-11-13 13:33",
-   "notes": "Touren: Die «Höhendaten Schweiz» sind da (60 MB, swisstopo DHM25, 25 m). Der Administrator lädt sie auf der Karte unter «Touren»; danach bekommen auch gezeichnete Routen Auf- und Abstieg, Höhenprofil und Wanderzeit. Ausserhalb der Daten steht «keine Höhendaten». Bei gezeichneten Routen heisst der Hinweis neu «aus dem Höhenmodell, geglättet».",
-   "size": 3930680,
-   "sig": "9a89710ae3e20062db61edc8d582410831d9173e328745c86908d275f30dc667f9ea72a8ca56d8fc813705afaf0612e628b3739f55a7e366c20b403e0fd7e00b",
-   "data": {
-    "file": "moveeye_daten_3_86_1.zip",
-    "url": "",
-    "sha256": "e9d2342116805b526dc26dda7e55cb8abb149d08cdbc13020943cd0d738e91d4",
-    "size": 11066088,
-    "sig": "2f487b68475be4f5c8e68cf4404dbf2f3e624620b00fbde0dbf486dca268b8e51dcd7e6914db561d9a3a635b282faf326296109553aa0c660b4ca5013c7adc0d"
    }
   },
   {
