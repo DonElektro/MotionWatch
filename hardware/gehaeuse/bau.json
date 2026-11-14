@@ -1,6 +1,6 @@
 {
  "_hinweis": "Eine Quelle für die Texte zum Gehäuse v5.1: Teile, Materialliste (Menge, Bezeichnung) und Montageschritte, in de / en / fr / it / rm (ein einzelner Text = in allen Sprachen gleich). werkzeuge/gehaeuse_bauen.py macht daraus simulator3d/scripts/werkstatt_daten.gd, die Übersetzungen in simulator3d/i18n/texte.json und quelle/639v_daten_gehaeuse.py. Ausführlich (mit Hinweisen und Bestellliste): Dokumente/Materialliste.md und Dokumente/LIESMICH_Montage_v5-1.md.",
- "version": "5.4.0",
+ "version": "5.5.0",
  "stand": "14.11.2026",
  "masse": {
   "de": "Unterteil 183 × 97 × 71,5 mm (mit Füssen 77,5 mm), Gesamthöhe ca. 161 mm, Kopf 58 × 58 mm",
@@ -2434,6 +2434,51 @@
     "it": "30 Clip blocca-rotazione (piatta sul coperchio al camino, blocca la rotazione durante il trasporto)",
     "rm": "30 Clip cunter la rotaziun (plat sin il viertgel al chamin, bloccha la rotaziun durant il transport)"
    }
+  },
+  {
+   "id": "schale_vorne",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 14,
+   "datei": "31_Schutzschale_vorne",
+   "ohne": "betrieb",
+   "name": {
+    "de": "31 Schutzschale vorne (über Kopf, Lampen und Gabel bis auf den Deckel; Sichtfenster für Kamera und Wärmebild)",
+    "en": "31 Protective shell, front (over head, lamps and yoke down to the lid; window for camera and thermal camera)",
+    "fr": "31 Coque de protection avant (sur la tête, les lampes et la fourche jusqu'au couvercle ; fenêtre pour caméra et caméra thermique)",
+    "it": "31 Guscio di protezione anteriore (su testa, lampade e forcella fino al coperchio; finestra per fotocamera e termocamera)",
+    "rm": "31 Scussa da protecziun davant (sur il chau, las lampas e la furtga fin sin il viertgel; fanestra per camera e camera termica)"
+   }
+  },
+  {
+   "id": "schale_hinten",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 14,
+   "datei": "32_Schutzschale_hinten",
+   "ohne": "betrieb",
+   "name": {
+    "de": "32 Schutzschale hinten (bis zum Kabelkamin; zwei Rippen innen sperren Neigen und Schwenken)",
+    "en": "32 Protective shell, rear (up to the cable chimney; two inner ribs lock tilt and pan)",
+    "fr": "32 Coque de protection arrière (jusqu'à la cheminée ; deux nervures intérieures bloquent inclinaison et rotation)",
+    "it": "32 Guscio di protezione posteriore (fino al camino; due nervature interne bloccano inclinazione e rotazione)",
+    "rm": "32 Scussa da protecziun davos (fin al chamin; duas nervaturas dadens blocan l'inclinaziun e la rotaziun)"
+   }
+  },
+  {
+   "id": "schale_stopfen",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 14,
+   "datei": "33_Schutzschale_Stopfen",
+   "ohne": "betrieb",
+   "name": {
+    "de": "33 Stopfen für das Sichtfenster der Schutzschale (rastet ein, Öse für die Schnur)",
+    "en": "33 Plug for the window of the protective shell (clicks in, eyelet for the cord)",
+    "fr": "33 Bouchon pour la fenêtre de la coque (s'encliquette, œillet pour la cordelette)",
+    "it": "33 Tappo per la finestra del guscio (scatta in posizione, occhiello per il cordino)",
+    "rm": "33 Zaffun per la fanestra da la scussa (s'encliquetescha, ögl per la corda)"
+   }
   }
  ],
  "schritte": [
@@ -4093,6 +4138,57 @@
      "fr": "à plat, comme montée",
      "it": "piatta, come montata",
      "rm": "plat, sco montà"
+    }
+   },
+   {
+    "datei": "31_Schutzschale_vorne",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 1.9,
+    "liegt": {
+     "de": "Stirnseite (Fenster) unten",
+     "en": "front face (window) down",
+     "fr": "face avant (fenêtre) en bas",
+     "it": "lato frontale (finestra) in basso",
+     "rm": "vart davant (fanestra) sut"
+    }
+   },
+   {
+    "datei": "32_Schutzschale_hinten",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 5,
+    "zeit_h": 3.3,
+    "liegt": {
+     "de": "Rückseite unten",
+     "en": "back face down",
+     "fr": "face arrière en bas",
+     "it": "lato posteriore in basso",
+     "rm": "vart davos sut"
+    }
+   },
+   {
+    "datei": "33_Schutzschale_Stopfen",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 0.4,
+    "liegt": {
+     "de": "Platte unten",
+     "en": "plate down",
+     "fr": "plaque en bas",
+     "it": "piastra in basso",
+     "rm": "plattina sut"
     }
    }
   ],
@@ -5942,6 +6038,22 @@
     "it": "Per il trasporto: spegnere MoveEye e staccare la corrente. Girare a mano la testa nella posizione di base: guarda in avanti verso PIR e microfono ed è orizzontale. 1) Premere dall'alto il cappuccio 29 su testa e lampade (LED di stato nel foro del tetto) finché scatta su entrambi i bicchieri delle lampade – blocca l'inclinazione. 2) Far scorrere la clip blocca-rotazione 30 piatta sul coperchio da dietro finché scatta sul camino; i suoi due montanti passano sotto i fermacavi fino agli angoli posteriori della base della forcella – blocca la rotazione. Fotocamera, termocamera e lampade restano libere davanti, i cavi nel camino non vengono toccati. Entrambi i pezzi hanno un occhiello: legarli con un cordino così non si perdono. Per togliere: tirare la clip indietro per l'occhiello, tirare il cappuccio dritto verso l'alto. Togliere entrambi prima di accendere.",
     "rm": "Per il transport: stizzar MoveEye e separar il current. Volver il chau a maun en la posiziun da basa: el guarda enavant vers il PIR ed il microfon ed è orizontal. 1) Smatgar la chapitscha 29 dad sura sur il chau e las lampas (LED da status tras la foura en il tetg), fin ch'ella s'encliquetescha vi dals dus bitschiers – ella bloccha l'inclinaziun. 2) Stuschar la clip cunter la rotaziun 30 plat sur il viertgel da davos, fin ch'ella s'encliquetescha vi dal chamin; ses dus pals van sut ils tegnacabels fin als chantuns davos da la basa da la furtga – ella bloccha la rotaziun. Camera, camera termica e lampas restan libras davant, ils cabels en il chamin na vegnan betg tutgads. Omadus parts han in ögl: als liar cun ina corda, uschia na va nagina a perder. Prender davent: trair la clip enavos vi da l'ögl, trair la chapitscha dretg ensi. Prender davent omaduas avant che metter en funcziun."
    }
+  },
+  {
+   "titel": {
+    "de": "Schutzschale aufsetzen / abnehmen",
+    "en": "Fit / remove the protective shell",
+    "fr": "Poser / retirer la coque de protection",
+    "it": "Montare / togliere il guscio di protezione",
+    "rm": "Metter / prender davent la scussa da protecziun"
+   },
+   "text": {
+    "de": "Für den Rucksack (bis 5 kg obendrauf): MoveEye herunterfahren und den Strom trennen. Den Kopf von Hand in die Grundstellung drehen: er schaut nach vorne zu PIR und Mikrofon und steht waagrecht. Haube 29 und Klammer 30 braucht es unter der Schale nicht. 1) Die hintere Hälfte 32 von hinten flach auf dem Deckel nach vorne schieben, bis sie am Kabelkamin ansteht – ihre zwei Rippen liegen dann hinten am Kopf an. 2) Die vordere Hälfte 31 von vorne aufschieben, bis die vier Zapfen in den Löchern der hinteren Hälfte sitzen und die Teilung rundum anliegt. 3) Den Gummiring unten rundum in die Nut legen; er hält beide Hälften zusammen. 4) Den Stopfen 33 ins Sichtfenster drücken, bis er einrastet, und mit einer Schnur durch seine Öse und das Loch unter dem Fenster sichern. Ohne Stopfen sehen Kamera und Wärmebild frei durch das Fenster; die Lampen bleiben abgedeckt. Die Schale sperrt Schwenken und Neigen: vor dem Einschalten abnehmen, sonst drücken die Servos gegen die Rippen. Abnehmen: Gummiring ab, die vordere Hälfte nach vorne, die hintere nach hinten abziehen.",
+    "en": "For the backpack (up to 5 kg on top): shut MoveEye down and disconnect the power. Turn the head by hand into the home position: it looks to the front towards PIR and microphone and is level. Hood 29 and clip 30 are not needed under the shell. 1) Slide rear half 32 flat over the lid from the back towards the front until it stops at the cable chimney – its two ribs then rest against the back of the head. 2) Slide front half 31 on from the front until the four pins sit in the holes of the rear half and the joint closes all round. 3) Lay the rubber band all round into the groove at the bottom; it holds both halves together. 4) Press plug 33 into the window until it clicks and secure it with a cord through its eyelet and the hole below the window. Without the plug, camera and thermal camera see freely through the window; the lamps stay covered. The shell locks pan and tilt: remove it before switching on, otherwise the servos push against the ribs. To remove: take off the rubber band, pull the front half forwards and the rear half backwards.",
+    "fr": "Pour le sac à dos (jusqu'à 5 kg dessus) : arrêter MoveEye et couper le courant. Tourner la tête à la main en position de base : elle regarde vers l'avant, vers le PIR et le micro, et se tient à l'horizontale. Le capot 29 et la pince 30 ne sont pas nécessaires sous la coque. 1) Glisser la moitié arrière 32 à plat sur le couvercle, de l'arrière vers l'avant, jusqu'à la cheminée – ses deux nervures touchent alors l'arrière de la tête. 2) Glisser la moitié avant 31 par l'avant jusqu'à ce que les quatre tenons entrent dans les trous de la moitié arrière et que le joint soit fermé tout autour. 3) Poser l'élastique tout autour dans la rainure en bas ; il tient les deux moitiés ensemble. 4) Presser le bouchon 33 dans la fenêtre jusqu'au clic et l'attacher avec une cordelette passant par son œillet et le trou sous la fenêtre. Sans bouchon, la caméra et la caméra thermique voient librement par la fenêtre ; les lampes restent couvertes. La coque bloque rotation et inclinaison : la retirer avant la mise sous tension, sinon les servos poussent contre les nervures. Retirer : enlever l'élastique, tirer la moitié avant vers l'avant et la moitié arrière vers l'arrière.",
+    "it": "Per lo zaino (fino a 5 kg sopra): spegnere MoveEye e staccare la corrente. Girare a mano la testa nella posizione di base: guarda in avanti verso PIR e microfono ed è orizzontale. Il cappuccio 29 e la clip 30 non servono sotto il guscio. 1) Far scorrere la metà posteriore 32 piatta sul coperchio da dietro in avanti fino al camino – le sue due nervature toccano allora il retro della testa. 2) Far scorrere la metà anteriore 31 da davanti finché i quattro perni entrano nei fori della metà posteriore e la giunzione è chiusa tutt'intorno. 3) Mettere l'elastico tutt'intorno nella scanalatura in basso; tiene insieme le due metà. 4) Premere il tappo 33 nella finestra finché scatta e fissarlo con un cordino attraverso il suo occhiello e il foro sotto la finestra. Senza tappo fotocamera e termocamera vedono liberamente attraverso la finestra; le lampade restano coperte. Il guscio blocca rotazione e inclinazione: toglierlo prima di accendere, altrimenti i servo spingono contro le nervature. Per togliere: levare l'elastico, tirare la metà anteriore in avanti e quella posteriore indietro.",
+    "rm": "Per il rucsac (fin 5 kg sisura): stizzar MoveEye e separar il current. Volver il chau a maun en la posiziun da basa: el guarda enavant vers il PIR ed il microfon ed è orizontal. La chapitscha 29 e la clip 30 na dovri betg sut la scussa. 1) Stuschar la mesadad davos 32 plat sur il viertgel da davos enavant, fin ch'ella tutga il chamin – sias duas nervaturas tutgan lura il chau davos. 2) Stuschar la mesadad davant 31 da davant, fin che las quatter puntas èn en las fouras da la mesadad davos e la giuntura è serrada dapertut. 3) Metter il gummi dapertut en la foppa sut; el tegna ensemen omaduas mesadads. 4) Smatgar il zaffun 33 en la fanestra, fin ch'el s'encliquetescha, e l'assicurar cun ina corda tras ses ögl e la foura sut la fanestra. Senza zaffun vesan la camera e la camera termica liber tras la fanestra; las lampas restan cuvertas. La scussa bloccha la rotaziun e l'inclinaziun: la prender davent avant che metter en funcziun, uschiglio smatgan ils servos cunter las nervaturas. Prender davent: prender giu il gummi, trair la mesadad davant enavant e la mesadad davos enavos."
+   }
   }
  ],
  "druckdateien_einzeln": [
@@ -6007,7 +6119,10 @@
   "v5-3/MoveEye_v5-3_27_Luftkanal.3mf",
   "v5-3/MoveEye_v5-3_28_Adapter_UPS_HAT_alt.3mf",
   "v5-3/MoveEye_v5-3_29_Transportsicherung.3mf",
-  "v5-3/MoveEye_v5-3_30_Drehsperre_Klammer.3mf"
+  "v5-3/MoveEye_v5-3_30_Drehsperre_Klammer.3mf",
+  "v5-3/MoveEye_v5-3_31_Schutzschale_vorne.3mf",
+  "v5-3/MoveEye_v5-3_32_Schutzschale_hinten.3mf",
+  "v5-3/MoveEye_v5-3_33_Schutzschale_Stopfen.3mf"
  ],
  "ui_bauen": [
   {
@@ -6821,7 +6936,10 @@
    "feet53_3",
    "feet53_4",
    "kappe",
-   "drehsperre"
+   "drehsperre",
+   "schale_vorne",
+   "schale_hinten",
+   "schale_stopfen"
   ],
   "turntable": "#f59a4a",
   "yoke": "#f59a4a",

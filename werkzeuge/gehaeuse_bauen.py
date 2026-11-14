@@ -124,6 +124,11 @@ GEO = {
     "kappe": ("base", 0.6, 2.5, "#9a9ea3", False, 470, 0.0),
     # 30 Drehsperre-Klammer aus klammer540.py (flach auf dem Deckel, sperrt Pan beim Transport) – ebenfalls «ohne»: betrieb
     "drehsperre": ("base", 0.3, 1.0, "#9a9ea3", False, 260, 0.0),
+    # Gehäuse 5.5.0 (geh-schutzschale, 14.11.2026): 31 / 32 Schutzschale und 33 Stopfen aus schale550.py, aufgesetzt; ebenfalls
+    # «ohne»: betrieb (nur im Rucksack auf dem Gerät)
+    "schale_vorne": ("base", 0.6, 2.5, "#9a9ea3", False, 520, 0.0),
+    "schale_hinten": ("base", 0.6, 2.5, "#9a9ea3", False, 520, 0.0),
+    "schale_stopfen": ("base", 0.4, 1.5, "#9a9ea3", False, 520, 0.0),
 }
 AUSSEN_V52 = ("wide", "irled")      # in der Szene sichtbar, wenn v5.2 gewählt ist (Linse / IR-Modul im Fenster)
 LITE_K = 2.3                         # Lite: Zellen so viel grösser
@@ -244,6 +249,11 @@ def modell():
     import klammer540
     P["kappe"] = kappe540.part_kappe()
     P["drehsperre"] = klammer540.part_klammer()
+    # Gehäuse 5.5.0 (schale550.py): 31 / 32 Schutzschale mit 33 Stopfen, aufgesetzt (gleiche Koordinaten)
+    import schale550
+    P["schale_vorne"] = schale550.part_vorne()
+    P["schale_hinten"] = schale550.part_hinten()
+    P["schale_stopfen"] = schale550.part_stopfen()
 
     def tilt_frame(n):
         return T([AX, AY, v5.PAN_Z0], R([0, 0, 180.0], T([0, 0, pt.AXZ], n)))
