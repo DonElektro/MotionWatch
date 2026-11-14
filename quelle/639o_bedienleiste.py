@@ -209,7 +209,7 @@ MWB_JS = r"""<script>
     const q = id => chips.querySelector("#" + id), arm = q("b-arm"), ok = q("b-ok");
     const bat = [q("b-batt"), q("b-pwr")].find(b => shown(b) && T(b));
     const st = SUM.querySelector(".mws-st"); st.textContent = shown(arm) ? T(arm) : "";
-    st.className = "mws-st " + (arm ? [...arm.classList].filter(c => /^(grn|red|yel|org|blu|alarm)$/.test(c)).join(" ") : "");
+    st.className = "mws-st " + (arm ? [...arm.classList].filter(c => /^(grn|red|yel|org|blu|alarm|guard)$/.test(c)).join(" ") : "");
     const red = [], yel = [], skip = ["b-arm", "b-ok", "b-led", "b-sim", "b-person", "b-view", "b-count", bat ? bat.id : ""];
     chips.querySelectorAll(".badge").forEach(b => { if (!shown(b) || skip.includes(b.id)) return;
       let t = T(b); if (b.id === "b-health") { const n = parseInt(t.replace(/\D+/g, ""), 10) || 1; t = n === 1 ? tr("1 problem") : tr("{n} problems").replace("{n}", n); }

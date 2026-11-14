@@ -1037,7 +1037,7 @@ class App:
         self.relay_segs, self.relay_dots, self.relay_err_labels = {}, {}, []
         self._built_sig = self._relay_sig()
         if self.video_only:
-            self.video = tk.Label(r, bg="#000", bd=0, cursor="hand2"); self.video.pack(fill="both", expand=True)
+            self.video = tk.Label(r, bg="#000", bd=0, cursor="hand2"); self.video.pack(fill="both", expand=True); self._anim_cpu_chip_start()   # 639zzze: CPU chip on the picture
             self.video.bind("<Double-Button-1>", lambda e: self.toggle_video_only())
             self.video.bind("<Button-3>", lambda e: self._view_menu(e.x_root, e.y_root))
             return
@@ -1388,7 +1388,7 @@ class App:
             vc = tk.Frame(left, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=10, pady=10)
             vc.grid(row=0, column=0, sticky="nsew"); left.rowconfigure(0, weight=1)        # the picture gets all spare room
             vh = tk.Frame(vc, bg="#000", width=240, height=120); vh.pack(fill="both", expand=True); vh.pack_propagate(False)   # the picture never makes the window wider
-            self.video = tk.Label(vh, bg="#000", bd=0, cursor="hand2"); self.video.pack(fill="both", expand=True)
+            self.video = tk.Label(vh, bg="#000", bd=0, cursor="hand2"); self.video.pack(fill="both", expand=True); self._anim_cpu_chip_start()   # 639zzze: CPU chip on the picture
             self.video.bind("<Double-Button-1>", lambda e: self.toggle_video_only())
             self.video.bind("<Button-3>", lambda e: self._view_menu(e.x_root, e.y_root))
             land = self._tk_live_land()                   # 2.98.26: wide window = the controls right of the picture (the picture keeps the height)

@@ -1068,12 +1068,12 @@ class MotionWatch:
                         px = frame[mk].astype(np.uint16)
                         frame[mk] = ((px * 7 + np.array([40, 40, 255], np.uint16) * 3) // 10).astype(np.uint8)    # 30 % red
                 kih_clean = kihilfe_clean_stream()        # «Team gegen MoveEye» without «KI-Rahmen»: no boxes in the picture (542)
+                anim_motion(bool(candidates or persons), t0)   # 639zzze: the zone frame flashes once when movement starts
                 for t in ([] if kih_clean else candidates):
                     x, y, w, h = [int(v) for v in (t.box[0] * sx, t.box[1] * sy, t.box[2] * sx, t.box[3] * sy)]
                     draw_outline(frame, cnts, t.box, sx, sy, (255, 255, 255), 1)
-                    cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 1)
-                    cv2.putText(frame, "vehicle" if t.is_vehicle else ("animal" if getattr(t, "animal_like", False) else "motion"), (x, max(14, y - 5)),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1, cv2.LINE_AA)
+                    anim_box(frame, "c%s" % getattr(t, "id", id(t)), t0, (x, y), (x + w, y + h), (255, 255, 255), 1,    # 639zzze: fades in
+                             "vehicle" if t.is_vehicle else ("animal" if getattr(t, "animal_like", False) else "motion"), (x, max(14, y - 5)), 0.45, 1)
                 for obj in objects:
                     draw_object(frame, obj, sx, sy)
                 if not kih_clean:
@@ -1089,7 +1089,7 @@ class MotionWatch:
                             tint = cv2.addWeighted(roi, 0.45, red, 0.55, 0)
                             roi[mroi > 0] = tint[mroi > 0]
                     draw_outline(frame, cnts, t.box, sx, sy, (0, 0, 255), 2)
-                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
+                    anim_box(frame, "p%s" % t.id, t0, (x, y), (x + w, y + h), (0, 0, 255), 3)       # 639zzze: the box fades in
                     cv2.putText(frame, f"PERSON{'?' if getattr(t, '_strict_maybe', False) else ''} #{t.id}{' AI' if t.ai_confirmed else ''}" + (dist_overlay(t) or f"  {t.speed():.1f}px/f"),
                                 (x, max(20, y - 8)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
                     if CFG["show_tracks"] and len(t.hist) > 1:
@@ -1108,7 +1108,10 @@ class MotionWatch:
                         continue
                     pts = np.array([(int(px * W), int(py * H)) for px, py in z["points"]], np.int32)
                     col = {"ignore": (0, 160, 255), "line": (255, 210, 60), "loiter": (60, 220, 255), "report": (255, 160, 201)}.get(z["mode"], (80, 200, 80))
-                    cv2.polylines(frame, [pts], z["mode"] != "line", col, 2 if z["mode"] == "line" else 1, cv2.LINE_AA)
+                    fl_ = anim_flash(t0)                 # 639zzze: movement started - the frame lights up once (0.35 s)
+                    if fl_:
+                        col = tuple(int(c_ + (255 - c_) * 0.6 * fl_) for c_ in col)
+                    cv2.polylines(frame, [pts], z["mode"] != "line", col, (2 if z["mode"] == "line" else 1) + (2 if fl_ else 0), cv2.LINE_AA)
                     if z["mode"] == "line" and z.get("dir", "both") != "both":
                         (ax, ay), (bx, by) = pts[0], pts[1]
                         mx, my = (ax + bx) / 2.0, (ay + by) / 2.0; nx, ny = -(by - ay), (bx - ax)
@@ -1149,7 +1152,7 @@ class MotionWatch:
                     present.add("warm"); self.last_warm = t0
                     for bx, by, bw, bh in warm_boxes:
                         p1 = (int(bx * W), int(by * H)); p2 = (int((bx + bw) * W), int((by + bh) * H))
-                        cv2.rectangle(frame, p1, p2, (0, 140, 255), 3)
+                        anim_box(frame, "w%d,%d" % (p1[0] // 40, p1[1] // 40), t0, p1, p2, (0, 140, 255), 3)   # 639zzze: fades in
                         cv2.putText(frame, "WARM", (p1[0], max(18, p1[1] - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 140, 255), 2)
                     if not self.warm_alerted:
                         self.warm_alerted = True
