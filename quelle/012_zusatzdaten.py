@@ -16,6 +16,10 @@
 #     the file keeps one line per function and empty lines (same line numbers). The running device never needs them.
 #     Second round (13.11.2026): also the helpers that only these checks use; French / Italian / Romansh from 256 bytes
 #     on (German stays), tables _HX… with names as keys (_zd_hxk below), the pairs of the supplements of the manual.
+#     Third round (14.11.2026): the German of the tables _HX… goes into the zip as well, the file keeps their English keys
+#     (_zd_hx_en below: English without the zip); alarm, push, protection, safety and log-in keep German (bauen.py).
+#     Spaces between tokens that Python does not need are not in indented statements of the file; the zip keeps
+#     their places («luecken»), zd_source() puts them back (bauen.py ZD_LEERZEICHEN).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = ""
@@ -126,6 +130,13 @@ def _zd_hx(de, as_list=False):
     return {k: ([v, k, k, v] if as_list else (v, k, k, v)) for k, v in de.items()}
 
 
+def _zd_hx_en(keys, as_list=False):
+    """Hauptdatei kleiner, dritte Runde (14.11.2026): the stand-in for a moved-out table {English: (de, fr, it, rm)} whose
+    German is in the zip too (bauen.py ZD_HX_DE_ZIP): every key is there with the same shape of value, all four texts
+    English - no crash without the zip (DE[k], v[0] …), the texts only show in English"""
+    return {k: ([k, k, k, k] if as_list else (k, k, k, k)) for k in keys}
+
+
 def _zd_hxk(key, rows, as_list=False):
     """Hauptdatei kleiner, zweite Runde (13.11.2026): a table _HX… whose keys are names (PL_HEIC_MSG: (de, fr, it, rm), …).
     The file keeps the keys (evaluated here, in the program) and the German texts: rows = [(key, de), …] in the order of the
@@ -166,13 +177,28 @@ def zd_source():
         d = _zd_read(os.path.join(HERE, ZD_FILE), ZD_SHA256)
     except Exception:
         return text
-    if d.get("zeilen"):                                    # Schlank: indentation, comments and docstrings back (same lines)
-        lines = []
-        for ln in text.split("\n"):
-            n = len(ln) - len(ln.lstrip("\t"))
-            lines.append("    " * n + ln[n:] if n else ln)
+    if d.get("zeilen") or d.get("luecken"):                # Schlank: indentation, comments and docstrings back (same lines)
+        lines = text.split("\n")
         try:
-            for row, orig in d["zeilen"]:
+            for t in d.get("luecken") or ():               # third round (14.11.2026): «row d,d,d.n» - the spaces taken out
+                row, rest = t.split(" ", 1)                # between the tokens (bauen.py ZD_LEERZEICHEN) go back in
+                lu, vor = [], 0
+                for x in rest.split(","):
+                    dd, _p, nn = x.partition(".")
+                    vor += int(dd)
+                    lu.append((vor, int(nn) if nn else 1))
+                ln = lines[int(row) - 1]
+                for at, nn in reversed(lu):
+                    ln = ln[:at] + " " * nn + ln[at:]
+                lines[int(row) - 1] = ln
+        except (IndexError, TypeError, ValueError, AttributeError):
+            return text
+        for i, ln in enumerate(lines):
+            n = len(ln) - len(ln.lstrip("\t"))
+            if n:
+                lines[i] = "    " * n + ln[n:]
+        try:
+            for row, orig in d.get("zeilen") or ():
                 lines[row - 1] = orig
         except (IndexError, TypeError, ValueError):
             return text

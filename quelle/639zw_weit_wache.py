@@ -1428,7 +1428,7 @@ def weit_wache_selftest():
         FUS.update(latch=0.0, pend_t=0.0); HEAT.clear()
         assert alarm_gate(_W(), fr_, [], now + 30.0) == [], "nobody: nothing"
         import inspect
-        assert "alarm_gate(self, frame, persons, now)" in inspect.getsource(MotionWatch.handle_recording), "only person alarms pass the gate"
+        assert "alarm_gate(self,frame,persons,now)" in re.sub(r"\s+", "", inspect.getsource(MotionWatch.handle_recording)), "only person alarms pass the gate"   # without spaces: the file has none there (bauen.py ZD_LEERZEICHEN)
         for fn in (push_alert, siren_alarm):
             assert "alarm_gate" not in inspect.getsource(fn), fn.__name__ + ": sabotage / SOS / by hand never pass the gate"
         # update: once on for existing devices, with a one-time notice (web and window)

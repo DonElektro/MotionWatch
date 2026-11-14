@@ -17,6 +17,8 @@ Prüft (ohne Netz, ohne Schlüssel):
   6. Zweite Runde (13.11.2026): Hilfsfunktionen nur des Prüf-Codes in der ZIP (nicht, wenn ein Werkzeug oder ein Text sie
      nennt oder der Betrieb sie braucht); Tabellen _HX… mit Namen als Schlüssel (_zd_hxk: mit ZIP fr / it / rm, ohne ZIP
      Deutsch, eine veränderte ZIP wird nie benutzt); kleine Übersetzungen fr / it / rm; Ergänzungen der Anleitung.
+  7. Dritte Runde (14.11.2026): Leerzeichen nur in eingerückten Anweisungen weg - die Zeilen auf oberster Ebene, die
+     Updates und Werkzeuge als Text lesen (APP_VERSION, ZD_FILE / ZD_SHA256, SIM3D…), bleiben; die ZIP kennt die Plätze.
 """
 import argparse
 import ast
@@ -340,6 +342,18 @@ print("OZ " + json.dumps(res, ensure_ascii=False))
     rest = [i for i, ln in enumerate(text.split("\n"), 1) if ln.startswith("    ") and ln.strip() and i not in im_text]
     ok(not rest, "keine Zeile ausserhalb von Texten beginnt mit vier Leerzeichen (%s)" % (rest[:5] or "0"))
     ast.parse(text)
+
+    print("7. Dritte Runde: ohne Leerzeichen nur in eingerückten Anweisungen")
+    # Updates (380 / 397, auch älterer Geräte), hp_update.sh, versionen.py und die Tests lesen diese Zeilen als Text
+    for was, rx in (("APP_VERSION", r'^APP_VERSION = "\d+\.\d+\.\d+"$'),
+                    ("ZD_FILE / ZD_SHA256", r'^ZD_FILE = "(moveeye_daten_\d{1,3}_\d{1,3}_\d{1,3}\.zip)"\s*\nZD_SHA256 = "([0-9a-f]{64})"'),
+                    ("SIM3D", r'^SIM3D = \{"version": "([0-9.]+)"'),
+                    ("SIM3D_LINUX", r'^SIM3D_LINUX = \{"version": "([0-9.]+)", "file": "[^"]+", "size": (\d+),\s*"sha256": "([0-9a-f]+)"'),
+                    ("Änderungsliste", r'^  \* \d+\.\d+\.\d+: ')):
+        ok(re.search(rx, text, re.M) is not None, "obere Ebene Zeichen für Zeichen: %s als Text lesbar" % was)
+    if bauen.ZD_LEERZEICHEN:
+        d = json.loads(bauen.zd_inhalt(os.path.join(os.path.dirname(datei), zf_name)) or "{}")
+        ok(bool(d.get("luecken")), "die ZIP kennt die Plätze der Leerzeichen («luecken», %d Zeilen)" % len(d.get("luecken") or []))
 
     print("\n" + ("Hauptdatei-Grösse OK" if not FEHLER else "%d FEHLER" % len(FEHLER)))
     return 1 if FEHLER else 0
