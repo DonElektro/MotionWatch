@@ -1,7 +1,7 @@
 {
  "dir": "wasnun",
  "name": "Was nun?",
- "desc": "Bilder-Rätsel: antippen, was als Nächstes passieren muss. 15 Bilder von leicht bis Meister+ – Dinge mitnehmen und kombinieren, Räume, Notizbuch, Bestzeit, Sterne und Geheimnisse.",
+ "desc": "Bilder-Rätsel: Was kommt als Nächstes?",
  "icon": "thumb.svg",
  "start": "index.html",
  "input": "touch",
@@ -13,11 +13,11 @@
   "rm": "E ussa?"
  },
  "descs": {
-  "de": "Bilder-Rätsel: antippen, was als Nächstes passieren muss. 15 Bilder von leicht bis Meister+ – Dinge mitnehmen und kombinieren, Räume, Notizbuch, Bestzeit, Sterne und Geheimnisse.",
-  "en": "Picture puzzles: tap what has to happen next. 15 scenes from easy to master+ – pick up and combine items, several rooms, notebook, best time, stars and secrets (game texts in German).",
-  "fr": "Énigmes en images : touche ce qui doit se passer ensuite. 15 scènes, de facile à maître+ – ramasse et combine des objets, plusieurs pièces, carnet, meilleur temps, étoiles et secrets (textes en allemand).",
-  "it": "Enigmi a immagini: tocca ciò che deve succedere dopo. 15 scene, da facile a maestro+ – raccogli e combina oggetti, più stanze, taccuino, miglior tempo, stelle e segreti (testi in tedesco).",
-  "rm": "Legns cun maletgs: tutga quai che sto capitar sco proxim. 15 scenas, da simpel fin maister+ – prender cun sai e cumbinar chaussas, plirs locals, cudeschet, temp record, stailas e secrets (texts en tudestg)."
+  "de": "Bilder-Rätsel: Was kommt als Nächstes?",
+  "en": "Picture puzzles: what happens next?",
+  "fr": "Énigmes en images : et ensuite ?",
+  "it": "Enigmi illustrati: e poi cosa succede?",
+  "rm": "Legns cun maletgs: tge suonda?"
  },
  "lizenz": [
   "Was nun?  (wasnun/)",

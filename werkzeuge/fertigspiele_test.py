@@ -386,7 +386,7 @@ def main():
     ok(r.status_code == 200 and all(G[g]["tile"]["name"] in t and f'src="/spiele/thumb/{g}"' in t and G[g]["tile"]["desc"].replace("’", "&#x27;") in t.replace("&#x27;", "&#x27;") for g in ids),
        "/spiele zeigt die Kacheln mit Bild, Name und Beschreibung")
     ok(all("⚠️ " + G[g]["tile"]["note"] in t for g in ids if G[g]["tile"].get("note")) and "⚠️ Ab ca. 12 Jahren, mit Kraftausdrücken" in t, "/spiele: Hinweis auf der Kachel (Angst: ab ca. 12 Jahren)")
-    ok(all("Englisch, wenig Text" in G[g]["tile"]["desc"] for g in ids if g != "fs-angst"), "englische Spiele: «Englisch, wenig Text» in der Beschreibung")
+    ok(all("(Englisch)" in G[g]["tile"]["desc"] for g in ids if g != "fs-angst"), "englische Spiele: «(Englisch)» in der Beschreibung")
     ok("👆 Für Handy und Tablet (Touch)" in t, "/spiele: Gruppe «Für Handy und Tablet»")
     pv = ns["party_view"]("") if "party_view" in ns else {}
     ok(all(any(x.get("dir") == g for x in (pv.get("games") or [])) for g in ids), "Gästeseite /p/<key>/: Kacheln da")

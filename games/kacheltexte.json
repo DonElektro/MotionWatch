@@ -1,0 +1,374 @@
+{
+ "_info": "Kurzbeschreibung jeder Kachel der Spielesammlung (games.json: desc = de, descs = alle fünf Sprachen), höchstens 40 Zeichen (passt am iPhone in 2 Zeilen, auch mit der breiteren Schrift im GitHub-Test), ein kurzer Satz: was man tut. spiel_einbauen.py setzt sie bei jedem Lauf ein; werkzeuge/spiele_test.py prüft die Länge. Längere Erklärungen gehören in das Spiel selbst.",
+ "2048": {
+  "de": "Zahlen schieben, bis 2048 entsteht.",
+  "en": "Slide numbers until you reach 2048.",
+  "fr": "Fais glisser les nombres jusqu’à 2048.",
+  "it": "Fai scorrere i numeri fino a 2048.",
+  "rm": "Stuschar numers fin che 2048 resulta."
+ },
+ "schlange": {
+  "de": "Die Schlange frisst und wird länger.",
+  "en": "The snake eats and keeps growing.",
+  "fr": "Le serpent mange et grandit sans cesse.",
+  "it": "Il serpente mangia e si allunga.",
+  "rm": "La serp maglia e daventa pli lunga."
+ },
+ "minen": {
+  "de": "Felder aufdecken, keine Mine treffen.",
+  "en": "Uncover fields without hitting a mine.",
+  "fr": "Découvre les cases sans toucher de mine.",
+  "it": "Scopri le caselle, evita le mine.",
+  "rm": "Avrir champs senza tutgar ina mina."
+ },
+ "sudoku": {
+  "de": "Zahlenrätsel in drei Stufen.",
+  "en": "Number puzzle in three levels.",
+  "fr": "Grille de chiffres en trois niveaux.",
+  "it": "Rompicapo numerico in tre livelli.",
+  "rm": "Enigma da numers en trais stgalims."
+ },
+ "memory": {
+  "de": "Paare finden – allein oder zu zweit.",
+  "en": "Find the pairs – alone or with a friend.",
+  "fr": "Trouve les paires – seul ou à deux.",
+  "it": "Trova le coppie – da solo o in due.",
+  "rm": "Chattar ils pèrs – sulet u en dus."
+ },
+ "wasnun": {
+  "de": "Bilder-Rätsel: Was kommt als Nächstes?",
+  "en": "Picture puzzles: what happens next?",
+  "fr": "Énigmes en images : et ensuite ?",
+  "it": "Enigmi illustrati: e poi cosa succede?",
+  "rm": "Legns cun maletgs: tge suonda?"
+ },
+ "hextris": {
+  "de": "Sechseck drehen, farbige Blöcke sammeln.",
+  "en": "Turn the hexagon, match the colours.",
+  "fr": "Tourne l’hexagone, joue des couleurs.",
+  "it": "Ruota l’esagono, unisci i colori.",
+  "rm": "Volver il sisieck, rimnar colurs."
+ },
+ "dino": {
+  "de": "Der Dino springt über Kakteen.",
+  "en": "The dino jumps over cacti.",
+  "fr": "Le dino saute par-dessus les cactus.",
+  "it": "Il dinosauro salta i cactus.",
+  "rm": "Il dino siglia sur ils cactus."
+ },
+ "adarkroom": {
+  "de": "Textabenteuer: Feuer machen, Dorf bauen.",
+  "en": "Text adventure: fire, then a village.",
+  "fr": "Aventure en texte : feu, puis village.",
+  "it": "Avventura testuale: fuoco e villaggio.",
+  "rm": "Aventura da text: fieu e vitg."
+ },
+ "verschollen": {
+  "de": "Ohne Erinnerung im Bergtal überleben.",
+  "en": "Lost in a mountain valley: survive.",
+  "fr": "Perdu dans la vallée : survivre.",
+  "it": "Perso nella valle: sopravvivi.",
+  "rm": "Senza memoria en la val: surviver."
+ },
+ "schach": {
+  "de": "Gegen den Computer oder zu zweit.",
+  "en": "Against the computer or for two.",
+  "fr": "Contre l’ordinateur ou à deux.",
+  "it": "Contro il computer o in due.",
+  "rm": "Cunter il computer u en dus."
+ },
+ "clumsybird": {
+  "de": "Vogel durch die Röhren flattern lassen.",
+  "en": "Flap the bird through the pipes.",
+  "fr": "Fais voler l’oiseau entre les tuyaux.",
+  "it": "Fai volare l’uccello tra i tubi.",
+  "rm": "L’utschè sgola tras ils bischens."
+ },
+ "tetris": {
+  "de": "Fallende Steine zu vollen Reihen legen.",
+  "en": "Stack falling blocks into full rows.",
+  "fr": "Empile les pièces en lignes complètes.",
+  "it": "Incastra i pezzi in righe complete.",
+  "rm": "Metter blocs en lingias cumplainas."
+ },
+ "astray": {
+  "de": "3D-Labyrinth: Kugel zum Ausgang rollen.",
+  "en": "3D maze: roll the ball to the exit.",
+  "fr": "Labyrinthe 3D : la bille vers la sortie.",
+  "it": "Labirinto 3D: la pallina all’uscita.",
+  "rm": "Labirint 3D: la balla a la sortida."
+ },
+ "racer": {
+  "de": "Autorennen im Retro-Stil.",
+  "en": "Retro-style car racing.",
+  "fr": "Course automobile au style rétro.",
+  "it": "Corsa d’auto in stile retrò.",
+  "rm": "Cursa d’autos en stil retro."
+ },
+ "breakout": {
+  "de": "Ball und Schläger: alle Ziegel abräumen.",
+  "en": "Ball and paddle: clear all the bricks.",
+  "fr": "Balle et raquette : casse les briques.",
+  "it": "Palla e racchetta: abbatti i mattoni.",
+  "rm": "Balla e racchetta: rumper quadrels."
+ },
+ "pong": {
+  "de": "Der Klassiker – allein oder zu zweit.",
+  "en": "The classic – alone or for two.",
+  "fr": "Le classique – seul ou à deux.",
+  "it": "Il classico – da solo o in due.",
+  "rm": "Il classic – sulet u en dus."
+ },
+ "kv-snake": {
+  "de": "Äpfel fressen und länger werden.",
+  "en": "Eat apples and grow longer.",
+  "fr": "Mange des pommes et grandis.",
+  "it": "Mangia mele, allungati, non morderti.",
+  "rm": "Magliar mails, crescher, betg sa morder."
+ },
+ "kv-traffic-dash": {
+  "de": "Mit Vollgas durch den Autobahnverkehr.",
+  "en": "Weave through motorway traffic.",
+  "fr": "À fond dans le trafic de l’autoroute.",
+  "it": "Sfreccia nel traffico in autostrada.",
+  "rm": "Cun tut gas tras il traffic."
+ },
+ "kv-wobbly-truck": {
+  "de": "Monstertruck über Hügel: Saltos!",
+  "en": "Monster truck over hills: flips!",
+  "fr": "Monster truck sur collines : saltos !",
+  "it": "Monster truck sulle colline: salti!",
+  "rm": "Monster truck sur collinas: stunts!"
+ },
+ "kv-block-drop": {
+  "de": "Blöcke stapeln, Reihen abräumen.",
+  "en": "Stack falling blocks and clear rows.",
+  "fr": "Empile les blocs et efface des lignes.",
+  "it": "Impila i blocchi e libera le righe.",
+  "rm": "Rimnar blocs e svidar lingias."
+ },
+ "kv-brick-smash": {
+  "de": "Alle Steine zertrümmern – mit Power-ups.",
+  "en": "Smash all the bricks – with power-ups.",
+  "fr": "Casse toutes les briques – avec bonus.",
+  "it": "Distruggi i mattoni – con power-up.",
+  "rm": "Fracassar quadrels – cun power-ups."
+ },
+ "kv-space-rocks": {
+  "de": "Asteroiden zerschiessen, UFO meiden.",
+  "en": "Blast space rocks and dodge the UFO.",
+  "fr": "Détruis les astéroïdes, évite l’OVNI.",
+  "it": "Distruggi gli asteroidi, evita l’UFO.",
+  "rm": "Sajettar asteroids ed evitar l’UFO."
+ },
+ "kv-chicken-flap": {
+  "de": "Einem dicken Huhn über den Hof helfen.",
+  "en": "Help a chubby chicken across the farm.",
+  "fr": "Aide une poule dodue sur la ferme.",
+  "it": "Aiuta una gallina sulla fattoria.",
+  "rm": "Gidar ina giaglina sur il bain puril."
+ },
+ "kv-merge-it": {
+  "de": "Zahlen schieben und verbinden bis 2048.",
+  "en": "Slide and merge numbers up to 2048.",
+  "fr": "Fais glisser et fusionne jusqu’à 2048.",
+  "it": "Scorri e unisci i numeri fino a 2048.",
+  "rm": "Stuschar ed unir numers fin 2048."
+ },
+ "kv-boom-field": {
+  "de": "Alle Bomben finden, ohne dass es knallt.",
+  "en": "Find every bomb before it goes boom.",
+  "fr": "Trouve toutes les bombes sans explosion.",
+  "it": "Trova le bombe senza farle esplodere.",
+  "rm": "Chattar las bumbas senza explosiun."
+ },
+ "kv-sky-hop": {
+  "de": "Immer höher hüpfen, bis ins Weltall.",
+  "en": "Hop higher and higher, up into space.",
+  "fr": "Saute toujours plus haut, vers l’espace.",
+  "it": "Salta sempre più in alto, nello spazio.",
+  "rm": "Siglir adina pli aut, fin en l’univers."
+ },
+ "kv-goofy-golf": {
+  "de": "Neun verrückte Minigolf-Bahnen.",
+  "en": "Nine crazy mini-golf holes.",
+  "fr": "Neuf parcours de minigolf farfelus.",
+  "it": "Nove buche pazze di minigolf.",
+  "rm": "Nov pistas da minigolf narras."
+ },
+ "kv-bonk-zombies": {
+  "de": "Zombies hauen – aber nie die Oma.",
+  "en": "Bonk the zombies – but never Grandma.",
+  "fr": "Tape les zombies – mais jamais mamie.",
+  "it": "Colpisci gli zombie – ma mai la nonna.",
+  "rm": "Dar sin ils zombies – mo mai a la tatta."
+ },
+ "qg-orbit": {
+  "de": "Als Elektron zwischen Bahnen springen.",
+  "en": "Jump between orbits as an electron.",
+  "fr": "Saute d’orbite en orbite, électron.",
+  "it": "Salta tra le orbite come un elettrone.",
+  "rm": "Siglir tranter orbitas sco electron."
+ },
+ "qg-tunnel": {
+  "de": "Durch Lücken fliegen oder tunneln.",
+  "en": "Fly through gaps or tunnel through.",
+  "fr": "Passe les trous ou traverse les murs.",
+  "it": "Vola tra i varchi o attraversa i muri.",
+  "rm": "Sgular tras foras u tras paraids."
+ },
+ "qg-superposition": {
+  "de": "Zwei Spiegel-Schiffe zugleich steuern.",
+  "en": "Steer two mirrored ships at once.",
+  "fr": "Pilote deux vaisseaux en miroir.",
+  "it": "Guida due navi speculari insieme.",
+  "rm": "Manischar duas navs a medem temp."
+ },
+ "qg-entangled": {
+  "de": "Rätsel mit zwei verschränkten Teilchen.",
+  "en": "Puzzles with two entangled particles.",
+  "fr": "Énigmes avec deux particules intriquées.",
+  "it": "Enigmi con due particelle intrecciate.",
+  "rm": "Legns cun duas particlas entretschadas."
+ },
+ "qg-collider": {
+  "de": "Zwei Teilchen im Ring kollidieren.",
+  "en": "Make two particles collide in the ring.",
+  "fr": "Fais se percuter deux particules.",
+  "it": "Fai scontrare due particelle.",
+  "rm": "Laschar cuntrar duas particlas."
+ },
+ "qg-breakout": {
+  "de": "Ziegel abräumen – mit doppeltem Ball.",
+  "en": "Clear bricks – with a double ball.",
+  "fr": "Casse-briques – la balle est double.",
+  "it": "Abbatti mattoni – la palla è doppia.",
+  "rm": "Rumper quadrels – cun balla dubla."
+ },
+ "qg-aim": {
+  "de": "Schrumpfende Ziele schnell treffen.",
+  "en": "Hit shrinking targets fast.",
+  "fr": "Touche vite des cibles qui rétrécissent.",
+  "it": "Colpisci bersagli che si restringono.",
+  "rm": "Tutgar svelt finamiras pitschnas."
+ },
+ "qg-merge": {
+  "de": "2048 mit Teilchen, bis zum Quantum.",
+  "en": "2048 with particles, quarks to quantum.",
+  "fr": "2048 avec des particules quantiques.",
+  "it": "2048 con particelle quantistiche.",
+  "rm": "2048 cun particlas quanticas."
+ },
+ "qg-blackhole": {
+  "de": "Als Schwarzes Loch Kleineres schlucken.",
+  "en": "Black hole: swallow what is smaller.",
+  "fr": "Trou noir : avale les plus petits.",
+  "it": "Buco nero: inghiotti i più piccoli.",
+  "rm": "Sco foss nair tragutter pli pitschens."
+ },
+ "qg-gravity": {
+  "de": "Sonde um Planeten ins Portal schleudern.",
+  "en": "Sling a probe into the portal.",
+  "fr": "Lance la sonde vers le portail.",
+  "it": "Lancia la sonda nel portale.",
+  "rm": "Bittar la sonda en il portal."
+ },
+ "qg-blocks": {
+  "de": "Atom-Blöcke stapeln, Ketten auslösen.",
+  "en": "Stack atoms, trigger chain reactions.",
+  "fr": "Empile des atomes, en chaîne.",
+  "it": "Impila atomi, crea reazioni a catena.",
+  "rm": "Rimnar atoms, chaschunar reacziuns."
+ },
+ "qg-wormhole": {
+  "de": "Schlange mit Wurmlöchern.",
+  "en": "Snake with wormholes.",
+  "fr": "Serpent avec trous de ver.",
+  "it": "Serpente con cunicoli spaziali.",
+  "rm": "Serp cun foras da verms."
+ },
+ "qg-box": {
+  "de": "Hütchenspiel: Wo ist die Katze?",
+  "en": "Shell game: find the cat in the box.",
+  "fr": "Bonneteau : où est le chat ?",
+  "it": "Gioco delle scatole: trova il gatto.",
+  "rm": "Gieu da chaschettas: chattar il giat."
+ },
+ "qg-miner": {
+  "de": "Erze aus Asteroiden abbauen.",
+  "en": "Mine ore from asteroids.",
+  "fr": "Extrais du minerai des astéroïdes.",
+  "it": "Estrai minerali dagli asteroidi.",
+  "rm": "Explotar mineral dad asteroids."
+ },
+ "qg-dash": {
+  "de": "Im Takt die Schwerkraft umdrehen.",
+  "en": "On the beat: flip gravity, avoid spikes.",
+  "fr": "En rythme : inverse la gravité.",
+  "it": "A ritmo: inverti la gravità.",
+  "rm": "En il tact: volver la gravitad."
+ },
+ "qg-stack": {
+  "de": "Gleitende Blöcke auf den Turm setzen.",
+  "en": "Drop sliding blocks on the tower.",
+  "fr": "Pose les blocs pile sur la tour.",
+  "it": "Posa i blocchi esattamente sulla torre.",
+  "rm": "Metter blocs exact sin la tur."
+ },
+ "qg-mirrors": {
+  "de": "Ruhiges Rätsel mit Spiegeln und Laser.",
+  "en": "Calm puzzle with mirrors and a laser.",
+  "fr": "Énigme calme : miroirs et laser.",
+  "it": "Enigma tranquillo: orienta gli specchi.",
+  "rm": "Legn quiet cun spievels e laser."
+ },
+ "qg-pong": {
+  "de": "Pong – manchmal wird der Ball zur Welle.",
+  "en": "Pong – the ball can become a wave.",
+  "fr": "Pong – la balle devient une onde.",
+  "it": "Pong – a volte la palla diventa un’onda.",
+  "rm": "Pong – la balla daventa ina unda."
+ },
+ "qg-clicker": {
+  "de": "Atom antippen, Generatoren kaufen.",
+  "en": "Tap the atom, buy generators.",
+  "fr": "Touche l’atome, achète des générateurs.",
+  "it": "Tocca l’atomo, compra generatori.",
+  "rm": "Tutgar l’atom, cumprar generaturs."
+ },
+ "qg-bridge": {
+  "de": "Blöcke im richtigen Moment setzen.",
+  "en": "Place blocks at just the right moment.",
+  "fr": "Pose les blocs au bord au bon moment.",
+  "it": "Metti i blocchi al momento giusto.",
+  "rm": "Metter blocs a l’ur al dretg mument."
+ },
+ "qg-rhythm": {
+  "de": "Kreise und Slider im Takt treffen.",
+  "en": "Hit circles and sliders on the beat.",
+  "fr": "Touche cercles et curseurs en rythme.",
+  "it": "Colpisci cerchi e slider a ritmo.",
+  "rm": "Tutgar circuls e sliders en il tact."
+ },
+ "qg-defense": {
+  "de": "Turmverteidigung gegen Antimaterie.",
+  "en": "Tower defence against antimatter.",
+  "fr": "Défense de tours contre l’antimatière.",
+  "it": "Difesa a torri contro l’antimateria.",
+  "rm": "Defensiun da turs cunter l’antimateria."
+ },
+ "qg-mines": {
+  "de": "Minensuche mit überlagerten Feldern.",
+  "en": "Minesweeper in superposition.",
+  "fr": "Démineur avec cases en superposition.",
+  "it": "Campo minato con caselle sovrapposte.",
+  "rm": "Tschertga da minas superponidas."
+ },
+ "qg-racer": {
+  "de": "Nachts durch Neon-Verkehr flitzen.",
+  "en": "Race through neon traffic at night.",
+  "fr": "Fonce la nuit dans le trafic néon.",
+  "it": "Sfreccia di notte nel traffico al neon.",
+  "rm": "Cursar la notg tras il traffic neon."
+ }
+}

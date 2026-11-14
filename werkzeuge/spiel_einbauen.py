@@ -11,6 +11,7 @@ kachel.json selbst kommt nicht in die ZIP.
   python3 werkzeuge/spiel_einbauen.py games/schach --entfernen chess --probe   # nur zeigen, was geschähe (schreibt nichts)
   python3 werkzeuge/spiel_einbauen.py games/schach --entfernen chess --version GS-1.12   # neues Spiel an den Platz des alten
   python3 werkzeuge/spiel_einbauen.py --entfernen chess --probe          # nur ein Spiel herausnehmen (hier: Probelauf)
+  python3 werkzeuge/spiel_einbauen.py --texte --version GS-1.20          # nur die Kachel-Texte (games/kacheltexte.json) einsetzen
 
 Was geschieht: alle anderen Einträge der ZIP bleiben Byte für Byte; der Ordner des Spiels wird ersetzt; games.json
 bekommt den Eintrag (neu: hinter --hinter, Standard «memory», sonst am Schluss; vorhanden: ersetzt); LIZENZEN.txt (in der ZIP
@@ -22,6 +23,10 @@ Block in LIZENZEN.txt (ZIP und games/LIZENZEN.txt). Zusammen mit einem neuen Spi
 übernimmt das neue den Platz des alten in der Kachel-Reihenfolge und in LIZENZEN.txt. --probe schreibt nichts und listet
 genau auf, was entfernt und was eingebaut würde. Entfernen nur nach Entscheid des Besitzers. Gespeicherte Spielstände im
 Browser (localStorage) rührt das Werkzeug nicht an.
+
+KACHEL-TEXTE (GS-1.20): games/kacheltexte.json hält für jedes Spiel der Sammlung die Kurzbeschreibung der Kachel in de/en/fr/it/rm
+(höchstens 40 Zeichen, ein kurzer Satz: was man tut – passt am iPhone in 2 Zeilen). Bei jedem Lauf setzt das Werkzeug sie in games.json ein (desc = de, descs =
+alle fünf) – sie gehen auch der Beschreibung in kachel.json vor. Fehlt ein Spiel in der Datei, sagt es das Werkzeug.
 """
 import argparse
 import hashlib
@@ -69,10 +74,11 @@ def main():
     ap.add_argument("--hinter", default=None, help="neuer Eintrag hinter diesem Spiel (Ordnername; Standard «memory» bzw. der Platz des entfernten Spiels)")
     ap.add_argument("--entfernen", default="", metavar="ORDNER", help="dieses Spiel aus ZIP, games.json und LIZENZEN.txt nehmen")
     ap.add_argument("--probe", action="store_true", help="nichts schreiben, nur auflisten, was geschähe")
+    ap.add_argument("--texte", action="store_true", help="ohne Spiel-Ordner: nur die Kachel-Texte aus games/kacheltexte.json einsetzen")
     a = ap.parse_args()
     weg = a.entfernen
-    if not a.ordner and not weg:
-        ap.error("Ordner des Spiels oder --entfernen ORDNER angeben")
+    if not a.ordner and not weg and not a.texte:
+        ap.error("Ordner des Spiels, --entfernen ORDNER oder --texte angeben")
     if (weg and not re.fullmatch(r"[A-Za-z0-9_\-]{1,40}", weg)) or (a.version and not re.fullmatch(r"GS-\d+\.\d+", a.version)):
         sys.exit("Ordnername oder --version passt nicht")
     k, block, d, dateien = None, None, "", []
@@ -127,6 +133,17 @@ def main():
                 spiele.insert(j + 1, k)
             lic = lizenz_einsetzen(lic, d, block, lic_hinter)
         lic = lic.replace(f"Spielesammlung {alt}", f"Spielesammlung {version}", 1)
+        kt_p = os.path.join(REPO, "games", "kacheltexte.json")
+        if os.path.isfile(kt_p):
+            kt = json.load(open(kt_p, encoding="utf-8"))
+            n_kt = 0
+            for g in spiele:
+                t = kt.get(g.get("dir"))
+                if isinstance(t, dict) and all(t.get(L) for L in ("de", "en", "fr", "it", "rm")):
+                    g["desc"] = t["de"]; g["descs"] = {L: t[L] for L in ("de", "en", "fr", "it", "rm")}; n_kt += 1
+                else:
+                    print(f"Kachel-Text fehlt in games/kacheltexte.json: {g.get('dir')}")
+            print(f"Kachel-Texte aus games/kacheltexte.json: {n_kt} von {len(spiele)} Spielen")
         if weg:
             print(f"Entfernen «{weg}»:")
             print(f"  Dateien in der ZIP: {len([x for x in weg_dateien if not x.filename.endswith('/')])} "
