@@ -14,7 +14,7 @@ bleibt; wartet bei Alarm / Aufnahme / kurz nach dem Alarm und macht es später i
 letzten 7 Tage); Ordner-Grenze -> übersprungen mit Protokoll-Zeile, kein neuer Versuch; Umstellung alter Einstellungen
 (einmal an + Hinweis), eigene Wahl «aus» bleibt; Liste der Zeitraffer-Seite.
 
-  python3 werkzeuge/zeitraffer_taeglich_test.py [--datei X.py]
+  python3 werkzeuge/zeitraffer_taeglich_test.py [--datei X.py] [--ersatz]
 """
 import argparse
 import glob
@@ -183,7 +183,14 @@ ok(ns["tld_tick"]() == "done tonight", "auch später in derselben Nacht nicht")
 ns["BATT_SAVE"]["on"] = False; nacht(2026, 12, 3, 0, 30)
 r = bis_fertig()
 ok(r == ["made tlv_20261201_auto.mp4", "nothing to do"], "nächste Nacht nachgeholt (%s)" % r)
-# 9. the max. timelapse folder: skipped with a log line, no new try
+# 9. the max. timelapse folder: skipped with a log line, no new try - independent of the encoder (own fake ffmpeg, fixed size)
+fake = os.path.join(os.path.dirname(rec), "fakebin"); os.makedirs(fake, exist_ok=True)
+marke = os.path.join(os.path.dirname(rec), "ffmpeg_lief")
+with open(os.path.join(fake, "ffmpeg"), "w") as fh:
+    fh.write("#!/bin/sh\nfor a; do last=$a; done\ntouch '%s'\necho frame=5\nhead -c 5000 /dev/zero > \"$last\"\necho progress=end\n" % marke)
+os.chmod(os.path.join(fake, "ffmpeg"), 0o755)
+pfad = os.environ.get("PATH", ""); os.environ["PATH"] = fake + os.pathsep + pfad
+# 9a. clearly too little room (200 bytes): skipped before the encoder starts
 fotos("20261203", 5)
 voll = ns["tld_folder_bytes"]()
 C["timelapse_max_gb"] = (voll + 200) / 1024 ** 3
@@ -192,11 +199,23 @@ r = ns["tld_tick"]()
 ok(r == "skipped" and not os.path.exists(os.path.join(tld(), "tlv_20261203_auto.mp4")) and reste() == [], "Video wäre über der Grenze: übersprungen (%s)" % r)
 ok(any("20261203 skipped: it would exceed the max. timelapse folder" in x for x in logs), "Protokoll-Zeile «would exceed»")
 ok(len(ns["tl_photos"]("20261203")) == 5 and "20261203" in C["tld_skip"], "Fotos bleiben, der Tag ist gemerkt")
+ok(not os.path.exists(marke), "Schätzung vorher: ffmpeg gar nicht gestartet")
+# 9b. the estimate fits (2000 bytes), the real file (5000 bytes) does not: made, measured, deleted, skipped
+fotos("20261204", 5)
+voll = ns["tld_folder_bytes"]()
+C["timelapse_max_gb"] = (voll + 2000) / 1024 ** 3
 nacht(2026, 12, 5, 0, 30)
-ok(ns["tld_tick"]() == "nothing to do", "kein neuer Versuch in der nächsten Nacht")
-C["timelapse_max_gb"] = (voll - 10) / 1024 ** 3; fotos("20261205", 3); nacht(2026, 12, 6, 0, 30)
 r = ns["tld_tick"]()
-ok(r == "skipped" and any("20261205 skipped: the timelapse folder is full" in x for x in logs), "Ordner schon voll: ohne ffmpeg übersprungen (%s)" % r)
+ok(r == "skipped" and os.path.exists(marke) and not os.path.exists(os.path.join(tld(), "tlv_20261204_auto.mp4")) and reste() == [],
+   "echte Grösse nach dem Video über der Grenze: gelöscht, übersprungen (%s)" % r)
+ok(any("20261204 skipped: it would exceed the max. timelapse folder" in x for x in logs) and "20261204" in C["tld_skip"],
+   "Protokoll-Zeile, der Tag ist gemerkt")
+nacht(2026, 12, 6, 0, 30)
+ok(ns["tld_tick"]() == "nothing to do", "kein neuer Versuch in der nächsten Nacht")
+os.environ["PATH"] = pfad
+C["timelapse_max_gb"] = (voll - 10) / 1024 ** 3; fotos("20261206", 3); nacht(2026, 12, 7, 0, 30)
+r = ns["tld_tick"]()
+ok(r == "skipped" and any("20261206 skipped: the timelapse folder is full" in x for x in logs), "Ordner schon voll: ohne ffmpeg übersprungen (%s)" % r)
 C["timelapse_max_gb"] = 2.0
 # 10. setting off with waiting days
 fotos("20261207", 3); C["timelapse_daily"] = False; nacht(2026, 12, 8, 0, 30)
@@ -240,7 +259,7 @@ ERSATZ_FFMPEG = """#!/bin/sh
 for a; do last=$a; done
 echo "frame=2"
 sleep 0.3
-printf 'kein echtes video' > "$last"
+head -c 5000 /dev/zero > "$last"
 echo "progress=end"
 """
 
@@ -248,6 +267,7 @@ echo "progress=end"
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--datei", default="")
+    ap.add_argument("--ersatz", action="store_true", help="Ersatz-ffmpeg auch wenn ffmpeg da ist (wie ein Rechner ohne ffmpeg)")
     a = ap.parse_args()
     datei = os.path.abspath(a.datei or sorted(glob.glob(os.path.join(REPO, "webcam_bewegung_*.py")),
                                                key=lambda p: [int(x) for x in re.findall(r"\d+", os.path.basename(p))])[-1])
@@ -255,7 +275,7 @@ def main():
     tmp = tempfile.mkdtemp(prefix="mw_tld_")
     try:
         env = dict(os.environ, MOTIONWATCH_HOME=os.path.join(tmp, "daten"))
-        if shutil.which("ffmpeg"):
+        if shutil.which("ffmpeg") and not a.ersatz:
             env["TLD_ECHT"] = "1"
             print("  echtes ffmpeg: " + shutil.which("ffmpeg"))
         else:

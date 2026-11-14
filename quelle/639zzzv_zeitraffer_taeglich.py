@@ -11,6 +11,8 @@
 #     Nie während Alarm, Aufnahme, Folgen (gleiche Regel wie das Zeitraffer-Foto, Wrapper um Timelapse.update) - wartet und
 #     versucht es jede Minute wieder bis 06:00; beginnt ein Alarm mitten im Video, wird ffmpeg abgebrochen und später neu
 #     gemacht. Akku schwach (Akku-Sparen, Teil 105 batt_save_active) = diese Nacht nichts, nächste Nacht nachholen.
+#   * Grenze sicher: vorher eine Schätzung, die nie zu gross ist (1 KiB + 16 Bytes pro Foto - weniger Platz = ohne ffmpeg
+#     übersprungen), danach zählt die echte Grösse der fertigen Datei (darüber = gelöscht, übersprungen).
 #   * Die Fotos bleiben; ist der Schalter an, räumt tl_cleanup (220) die Fotos schon bei 90 % von timelapse_max_gb auf
 #     (älteste zuerst, Videos nie) - Platz für die Videos. Wäre der Zeitraffer-Ordner mit dem Video grösser als
 #     timelapse_max_gb, kommt das Video nicht dazu (eine Zeile im Protokoll, der Tag in tld_skip, kein neuer Versuch); ebenso
@@ -87,6 +89,8 @@ def tld_render(day):
     limit = float(CFG["timelapse_max_gb"]) * 1024 ** 3
     if tld_folder_bytes() >= limit:
         return _tld_skip(day, f"Daily timelapse video {day} skipped: the timelapse folder is full (max. {CFG['timelapse_max_gb']:g} GB)")
+    if tld_folder_bytes() + 1024 + 16 * len(files) > limit:   # less than the smallest possible MP4 (header + a little per photo) left
+        return _tld_skip(day, f"Daily timelapse video {day} skipped: it would exceed the max. timelapse folder ({CFG['timelapse_max_gb']:g} GB)")
     ff = shutil.which("ffmpeg")
     if not ff:
         log_event("servo", "Daily timelapse video: ffmpeg missing (sudo apt install ffmpeg) - next night again")
