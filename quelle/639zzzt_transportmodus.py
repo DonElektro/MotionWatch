@@ -520,9 +520,10 @@ def transport_selftest():
         assert is_armed() == _is_armed_tp()
         assert 'id="tp-css"' in WEB_PAGE and "window.tpPaint(j)" in WEB_PAGE and "tpPanel(d)" in WEB_PAGE
         assert HELP_PAGE.count('id="tp-help"') == 2 and all('id="tp-help"' in HELP_X.get(L_, 'id="tp-help"') for L_ in ("fr", "it", "rm"))
-        # the window button: our wrapper is the outermost one - or right below the late one of 557 (thermal align, _TALIGN_TK),
-        # which wraps App._build_section only at the start, after every part (3.94.0: GitHub with tkinter was red here)
-        assert not GUI_OK or _tp_tk_build_section in (App._build_section, (globals().get("_TALIGN_TK") or {}).get("before")), "window button"
+        # the window button: our wrapper is the outermost one - or the saved predecessor of a later one (later parts, and 557
+        # thermal align which wraps only at the start, _TALIGN_TK) - 3.94.0 / 3.95.0: GitHub with tkinter was red here
+        assert not GUI_OK or _tp_tk_build_section in (App._build_section, (globals().get("_TALIGN_TK") or {}).get("before"),
+                                *[v for k, v in globals().items() if k.startswith("_") and k.endswith(("_build_section_before", "_build_section_base"))]), "window button"
         for k, v in _HX_TRANSPORT.items():
             assert len(v) == 4 and all(v) and "ß" not in "".join(v), k
         assert tr("Transport mode", "de") == "Transportmodus" and tr("Cap removed?", "it") == "Cappuccio tolto?"

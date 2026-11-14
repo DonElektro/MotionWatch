@@ -753,7 +753,9 @@ def glut_selftest():
     assert glut_shown_box((62, 80), [0.25, 0.25, 0.5, 0.5]) == [0.25, 0.25, 0.5, 0.5] or ThermalCam.sim_geom() or CFG["thermal_zoom"] != 100
     assert ThermalCam.overlay is _glut_overlay and ThermalCam.wanted is _glut_wanted and "/api/glut" in PERM_POST["arm"]
     assert 'id="glut-box"' in WEB_PAGE and "glutPaint(s)" in WEB_PAGE and HELP_PAGE.count('id="glut-help"') == 2
-    assert not GUI_OK or App._build_section is _glut_tk_build_section, "window buttons"
+    # our wrapper is the outermost one - or the saved predecessor of a later one (and 557 wraps late, _TALIGN_TK; 3.95.0)
+    assert not GUI_OK or _glut_tk_build_section in (App._build_section, (globals().get("_TALIGN_TK") or {}).get("before"),
+                                    *[v for k, v in globals().items() if k.startswith("_") and k.endswith(("_build_section_before", "_build_section_base"))]), "window buttons"
     for k, v in _HX_GLUT.items():
         assert len(v) == 4 and all(v) and "ß" not in "".join(v), k
     assert tr("Is the fire out?", "de") == "Ist das Feuer aus?" and "{t}" in tr("out – at most {t}", "rm")
