@@ -141,7 +141,8 @@ RESTE = ("MoveEyeSim3D", "Godot", "Xvfb")                  # comm-Anfang: Simula
 
 def eigene_reste():
     """[pid] der Simulatoren, MoveEye und Xvfb des eigenen Benutzers (Gegenstück zu kiosk_sim) - ohne diesen Prozess und seine
-    Eltern. Der Prüfstand startet sie in eigenen Sitzungen: killpg auf den Test erreicht sie nicht."""
+    Eltern und ohne Zombies. Der Prüfstand startet sie in eigenen Sitzungen: killpg auf den Test erreicht sie nicht.
+    MW_RESTE_NUR (nur Tests, wie job_ende.sh): nur Prozesse, deren Befehlszeile diesen Text enthält."""
     me, ich = os.getuid(), {os.getpid(), os.getppid()}
     out = []
     try:
@@ -154,10 +155,15 @@ def eigene_reste():
                 continue
             with open("/proc/%s/comm" % pid) as f:
                 comm = f.read().strip()
+            with open("/proc/%s/stat" % pid) as f:
+                if f.read().rsplit(")", 1)[-1].split()[0] == "Z":
+                    continue                                    # Zombie: schon beendet
             with open("/proc/%s/cmdline" % pid, "rb") as f:
                 cmd = f.read().replace(b"\0", b" ").decode("utf-8", "replace")
-        except OSError:
+        except (OSError, IndexError):
             continue
+        if os.environ.get("MW_RESTE_NUR") and os.environ["MW_RESTE_NUR"] not in cmd:
+            continue                                            # nur Tests: nur die eigenen Ersatz-Prozesse
         if comm.startswith(RESTE) or re.search(r"webcam_bewegung_[0-9_]+\.py", cmd):
             out.append(int(pid))
     return out

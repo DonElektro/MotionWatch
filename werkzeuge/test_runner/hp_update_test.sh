@@ -212,6 +212,8 @@ cmp -s "$X/usr/local/sbin/moveeye-hp-update" "$U" && ok "sich selbst eingespielt
 grep -q "^d $X/run/moveeye-spiel 0755 nobody nobody -" "$X/etc/tmpfiles.d/moveeye-spiel.conf" && ok "Spielen-Ordner für den Benutzer des Kiosks" || fehler "Spielen-Ordner"
 [ -s "$X/var/lib/moveeye-hp-update/letzter_lauf" ] && [ "$(stat -c %a "$X/var/lib/moveeye-hp-update/letzter_lauf")" = 644 ] && ok "Stempel letzter_lauf (fürs Dauerrechnen lesbar)" || fehler "Stempel"
 [ "$(stat -c %a "$X/usr/local/lib/moveeye-runner/job_start.sh")" = 755 ] && ok "Haken ausführbar" || fehler "Haken-Rechte"
+cmp -s "$X/usr/local/lib/moveeye-runner/job_ende.sh" "$HIER/job_ende.sh" && grep -q '^reste_beenden()' "$X/usr/local/lib/moveeye-runner/job_ende.sh" \
+	&& ok "job_ende.sh wie im Repository (beendet Reste des Jobs, bevor die Kiosk-Pause fällt)" || fehler "job_ende.sh nicht der neue Stand"
 grep -q '^echo neu' "$SIMD/MoveEyeSim3D.x86_64" && [ "$(stat -c %U "$SIMD/MoveEyeSim3D.x86_64")" = nobody ] && [ -x "$SIMD/MoveEyeSim3D.x86_64" ] \
 	&& ok "Simulator ersetzt (als Benutzer des Kiosks)" || fehler "Simulator nicht ersetzt"
 [ -e "$SIMD/hp_update.sh" ] && fehler "hp/ in den Simulator-Ordner kopiert"
