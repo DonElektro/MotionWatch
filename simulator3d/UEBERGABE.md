@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 13.11.2026 · Version **3.69.0** · MoveEye **3.87.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 14.11.2026 · Version **3.70.0** · MoveEye **3.93.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -31,6 +31,14 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
   (Ziegelreihen / Kies). Wärmezwillinge und Hindernisse unverändert. Luftbild wird jetzt vor den 3D-Gebäuden gesetzt.
 - Seon ohne OSM (Overpass war aus): 117 Häuser, 44 Wohnblöcke, 24 Bauernhäuser, 3 Scheunen, 2 Chalets, 2 Garagen;
   Dachfarbe aus dem Luftbild 130, Palette 62 (Häuser ausserhalb des nahen Luftbilds).
+
+## NEU in 3.70.0 (MoveEye 3.93.0): Sim 3.70.0: Leiste «Darstellung», Feineinstellungen erst ab drei, Hilfe-Knopf «?» im Kreis, HP job_ende.sh räumt Reste
+
+- bedienleiste.gd: «Symbole farbig | schlicht» und «Alle zuklappen · Meine Ansicht · Nur Gruppen · Alle aufklappen» in einem MenuButton «Darstellung»; «Einfach | Experte» bleibt sichtbar (05d3c57, wie MoveEye 3.88 Design «Klar» Etappe 1).
+- main_menues.gd: _fine_flatten – «Feineinstellungen» mit 1–2 Einstellungen ohne eigene Klappstufe; ab drei bleibt sie.
+- kopf.gd: Hilfe-Knopf als «?» im Kreis (a50ed95, wie MoveEye 3.93 Etappe 2).
+- i18n/texte.json: «Darstellung», «Symbole», «Menüs auf- und zuklappen» (en / fr / it / rm).
+- Linux-Paket: werkzeuge/test_runner/job_ende.sh beendet Reste des Runner-Benutzers (Simulator, Xvfb, MoveEye), bevor die Kiosk-Pause fällt (HP_FASSUNG bleibt 8; Prüfung: Kiosk = anderer Benutzer, nie berührt).
 
 ## NEU in 3.69.0 (MoveEye 3.87.0): Sim 3.69.0: als Person gehen, Mover beim Erkunden bis 10 m/s (sim-person-schneller)
 

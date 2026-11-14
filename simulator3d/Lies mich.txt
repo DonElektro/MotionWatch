@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.69.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.70.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,15 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.70.0
+3.70.0: Ruhigere Leiste wie in MoveEye (Design «Klar»): «Symbole farbig | schlicht» und das Auf- und Zuklappen der Menüs
+stehen jetzt zusammen im Menü «Darstellung» rechts; «Einfach | Experte» bleibt sichtbar. «Feineinstellungen» mit nur einer
+oder zwei Einstellungen sind keine eigene Klappstufe mehr – die Einstellung steht direkt in ihrem Teil. Der Knopf «Hilfe»
+oben ist jetzt ein Fragezeichen im Kreis. Am Test-PC (HP): nach einem Test werden übrig gebliebene Test-Programme beendet,
+bevor der Kiosk-Simulator wieder startet – nie zwei Simulatoren gleichzeitig.
+So testest du: oben rechts «Darstellung» öffnen und «Symbole schlicht» wählen; ein Menü mit wenigen Einstellungen öffnen –
+keine leere Klappstufe «Feineinstellungen»; das Fragezeichen oben antippen: die Hilfe geht auf.
 
 NEU IN 3.69.0
 3.69.0: Als Person gehen: in «Erkunden» und in «Die Karte des Grossvaters» mit dem Knopf «🚶 Person» (zurück: «🚜 Mover»),
