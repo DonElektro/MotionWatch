@@ -172,6 +172,8 @@ def svg_text(svg):
         a[int(y), int(x)] = 0
     a = cv2.resize(a, (n * 8, n * 8), interpolation=cv2.INTER_NEAREST)
     t, _pts, _q = cv2.QRCodeDetector().detectAndDecode(a)
+    if not t and hasattr(cv2, "QRCodeDetectorAruco"):     # 14.11.2026: the standard reader misses ~1 % of valid codes (45 of 4500
+        t = cv2.QRCodeDetectorAruco().detectAndDecode(a)[0]  # random game codes, all read by this one) - the CI flake «»
     return t
 
 
