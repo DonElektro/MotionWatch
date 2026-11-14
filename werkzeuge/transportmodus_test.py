@@ -122,6 +122,9 @@ def innen(datei):
         if b_[0] - a_[0] > 0.05:
             v = max(v, abs(deg(b_[3]) - deg(a_[3])) / (b_[0] - a_[0]))
     pruef(pulses and abs(deg(pulses[-1][3])) < 0.05 and 0 < v <= 17.0, "langsam in die Grundstellung: höchstens %.1f °/s (Grenze 15 °/s, Messung über die Pulse)" % v)
+    # 3.94.0: first the home pulse (one tick), then the outputs off - the flag «detached» comes one tick before the hardware
+    warte(lambda: {x[1] for x in pca.servo(t0) if x[2] == "off"} == {0, 1}, 2)
+    pulses = [x for x in pca.servo(t0) if x[2] == "us" and x[1] == 0]
     t_off = max([x[0] for x in pca.servo(t0) if x[2] == "off"] or [0])
     offs = {x[1] for x in pca.servo(t0) if x[2] == "off"}
     pruef(offs == {0, 1}, "beide Servo-Kanäle ganz aus (kein Haltemoment, kein Zittern): %s" % sorted(offs))

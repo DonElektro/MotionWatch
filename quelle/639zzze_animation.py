@@ -62,8 +62,8 @@ ANIM_CSS = r"""<style id="anim-css">
 body.lv-nohead .lv-comp{display:none}
 /* the buttons in the picture are shown (tap / mouse, 639zzj) or the small picture of the three views (639zv): the chip goes
    down to the right, next to the compass - it never lies on the buttons, the magnifier or the small picture */
-body.lvc-show .lv-cpu,.vwrap:has(#v3-mini:not([hidden])) .lv-cpu,.vwrap:has(#vo-lupe.on) .lv-cpu{top:auto;bottom:8px;right:50px}
-body.lv-nohead.lvc-show .lv-cpu,body.lv-nohead .vwrap:has(#v3-mini:not([hidden])) .lv-cpu{right:8px}
+body.lvc-show .lv-cpu,body:not(.lvc-auto) .lv-cpu,.vwrap:has(#v3-mini:not([hidden])) .lv-cpu,.vwrap:has(#vo-lupe.on) .lv-cpu{top:auto;bottom:8px;right:50px}
+body.lv-nohead.lvc-show .lv-cpu,body.lv-nohead:not(.lvc-auto) .lv-cpu,body.lv-nohead .vwrap:has(#v3-mini:not([hidden])) .lv-cpu{right:8px}
 /* 5. history: new recordings slide in, the count hops */
 #grid>.mw-new{animation:mwSlideIn .35s ease-out both}
 .badge.mw-pop{animation:mwPop .45s ease-out}
