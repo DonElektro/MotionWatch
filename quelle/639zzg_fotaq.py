@@ -39,7 +39,8 @@ FOTAQ_ROOT = "https://github.com/DonElektro/MotionWatch/releases/download/"
 # fotaq-1: Lauf 42600071456 (09.11.2026) von main e80c566, ScummVM v2026.4.0 (7d2709da).
 FOTAQ_ENGINE_OLD = {"name": "fotaq-engine-1.zip", "size": 12049091, "sha256": "6feab69b314ecc491f011ab9eaa0d0df670bd5be86e908c66e7491559ac31de5", "unpacked": 18533041, "tag": "fotaq-1"}
 # fotaq-2: Zeile «PIN fotaq-engine-2.zip size=… sha256=… unpacked=…» aus pins.txt des Releases fotaq-2 hier eintragen (size, sha256, unpacked).
-FOTAQ_ENGINE_NEW = {"name": "fotaq-engine-2.zip", "size": 0, "sha256": "", "unpacked": 0, "tag": "fotaq-2", "ios": True}
+# fotaq-2: Lauf 43555263964 (14.11.2026) von main 50ab91f (MoveEye 3.89.0), grösste wasm-Funktion 32727 Bytes (keine über 40 KB).
+FOTAQ_ENGINE_NEW = {"name": "fotaq-engine-2.zip", "size": 11619971, "sha256": "f40946c90bf16df55699e0ace6e1fd5cab82392259c13b1bc900a8d2ce71ba90", "unpacked": 16211637, "tag": "fotaq-2", "ios": True}
 FOTAQ_NEW = bool(FOTAQ_ENGINE_NEW["size"])
 FOTAQ_TAG = FOTAQ_ENGINE_NEW["tag"] if FOTAQ_NEW else FOTAQ_ENGINE_OLD["tag"]
 FOTAQ_BASE = {"url": FOTAQ_ROOT + FOTAQ_TAG + "/"}   # Tests: lokaler Server
