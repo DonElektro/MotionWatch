@@ -566,6 +566,7 @@ def teil_c(base, gp, bilder, users):
         ctx.close()
         # ---- PC: mouse ----
         ctx, pg, errs = page(br, {"width": 1366, "height": 860}, False)
+        pg.wait_for_timeout(1500)                                # like the phone: the Lupe script is wired before the click (slow CI runner)
         pg.locator("#lv-b-lupe").click(); pg.wait_for_selector("#lupe-ov"); pg.wait_for_timeout(500)
         r = pg.locator("#lupe-ov").bounding_box()
         pa = pg.evaluate("async () => (await fetch('/api/lupe?lang=de')).json()")["pose"]
