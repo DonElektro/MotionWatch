@@ -29,7 +29,6 @@ ZF_AVG = 70000                    # bytes of a still until real ones exist (esti
 ZF_SMALL = 192                    # px: width of the comparison
 ZF_THR = 24.0                     # grey levels (small, blurred picture) = a change
 ZF_SECTION = "Window to the past"
-ZF_NO_PIC = "No picture from back then for this direction yet. MoveEye collects one at every stop of the round, with every timelapse photo and every hour while the head stands still."
 ZF_FILE_RE = re.compile(r"^(\d{8})/zf_\d{6}_\d{3}\.jpg$")
 ZF_IDX_RE = re.compile(r"^idx_(\d{8})\.jsonl$")
 ZF = {"items": None, "lock": threading.Lock(), "calc": threading.Lock(), "chk": 0.0, "last": {}, "want": 0.0, "live": None,
@@ -458,14 +457,27 @@ def zf_thin_loop():
         time.sleep(86400)
 
 
-def zf_state():
+def zf_no_pic(lang=None):
+    """the message when this direction has no still yet: when the next one comes (the chosen interval), or that collecting is off"""
+    gap = zf_still_gap()
+    if not CFG.get("zf_on") or not gap:
+        return tr("No picture from back then for this direction yet - collecting pictures is off.", lang)
+    p, q = servo_pos_deg()
+    now = time.time()
+    wait = max(ZF_STILL_S - (now - float(SRV.get("arrive_t") or 0.0)),
+               ZF["last"].get("%.0f/%.0f" % (p / ZF_TOL, q / ZF_TOL), 0.0) + gap - now, 0.0)
+    return tr("No picture from back then for this direction yet - the next one comes in about %s min.", lang) % max(1, int(math.ceil(wait / 60.0)))
+
+
+def zf_state(lang=None):
     p, q = servo_pos_deg()
     its = zf_dir_items(p, q)
     every = zf_items()
     return {"ok": True, "on": bool(CFG.get("zf_on")), "pose": [round(p, 2), round(q, 2)], "moving": not servo_arrived(), "tol": ZF_TOL,
             "items": [[round(it[0]), it[3], it[4]] for it in its], "count": len(every), "mb": round(sum(it[5] for it in every) / 1024 ** 2, 1),
             "dirs": len({(round(it[1] / (2 * ZF_TOL)), round(it[2] / (2 * ZF_TOL))) for it in every}), "max_gb": CFG.get("zf_max_gb"),
-            "mask_top": CFG.get("zf_mask_top"), "est_mb": zf_estimate_mb(), "fov": list(cam_fov()), "oldest": round(every[0][0]) if every else None}
+            "mask_top": CFG.get("zf_mask_top"), "est_mb": zf_estimate_mb(), "fov": list(cam_fov()), "oldest": round(every[0][0]) if every else None,
+            "none_msg": "" if its else zf_no_pic(lang)}
 
 
 # ---- web: /api/zeitfenster (GET state), /api/zeitfenster/bild, /diff, /wann - administrator only --------------------------------
@@ -487,7 +499,7 @@ def smalltv_routes(app, reply, body):                     # + 639zzzz
     def api_zf():
         if not admin():
             return reply({"ok": False, "msg": tr("not allowed for your user", lang())}, 403)
-        return reply(zf_state())
+        return reply(zf_state(lang()))
 
     @app.route("/api/zeitfenster/bild")
     def api_zf_img():
@@ -654,7 +666,7 @@ window.zfPanel = function (d) {                       // 639zzzz: Einstellungen 
     if (!best) {
       TXT.textContent = "";
       MSG.textContent = !headCam() ? t("Only in the picture of the head camera.") : S.info && S.info.moving ? t("The head is moving …")
-        : t("No picture from back then for this direction yet. MoveEye collects one at every stop of the round, with every timelapse photo and every hour while the head stands still.");
+        : (S.info && S.info.none_msg) || "";
     } else {
       TXT.innerHTML = ""; TXT.append(document.createTextNode(fmt(best[0]) + " "), E("small", "", "(" + t("ago") + " " + ago(best[0]) + ")"));
       MSG.textContent = S.marks && S.diff && S.diff.ok ? marksText() : "";
@@ -773,11 +785,16 @@ _HX_ZF = {
     "Only in the picture of the head camera.": ("Nur im Bild der Kopf-Kamera.", "Seulement dans l’image de la caméra de tête.",
                                                 "Solo nell’immagine della telecamera della testa.", "Mo en il maletg da la camera dal chau."),
     "The head is moving …": ("Der Kopf fährt …", "La tête bouge …", "La testa si muove …", "Il chau sa mova …"),
-    "No picture from back then for this direction yet. MoveEye collects one at every stop of the round, with every timelapse photo and every hour while the head stands still.": (
-        "Für diese Richtung gibt es noch kein Bild von damals. MoveEye sammelt eines an jedem Halt der Runde, bei jedem Zeitraffer-Foto und jede Stunde, wenn der Kopf still steht.",
-        "Pas encore d’image d’autrefois pour cette direction. MoveEye en prend une à chaque arrêt de la ronde, à chaque photo du timelapse et chaque heure quand la tête est immobile.",
-        "Per questa direzione non c’è ancora un’immagine di allora. MoveEye ne raccoglie una a ogni sosta del giro, a ogni foto del timelapse e ogni ora quando la testa è ferma.",
-        "Per questa direcziun n’èsi anc nagin maletg da lura. MoveEye fa in a mintga fermada da la runda, cun mintga foto dal timelapse ed mintga ura, cura ch’il chau stat airi."),
+    "No picture from back then for this direction yet - the next one comes in about %s min.": (
+        "Noch kein Bild von damals für diese Richtung – das nächste kommt in etwa %s Min.",
+        "Pas encore d’image d’autrefois pour cette direction – la prochaine arrive dans environ %s min.",
+        "Ancora nessuna immagine di allora per questa direzione – la prossima arriva tra circa %s min.",
+        "Anc nagin maletg da lura per questa direcziun – il proxim vegn en circa %s min."),
+    "No picture from back then for this direction yet - collecting pictures is off.": (
+        "Noch kein Bild von damals für diese Richtung – Bilder sammeln ist aus.",
+        "Pas encore d’image d’autrefois pour cette direction – la collecte d’images est désactivée.",
+        "Ancora nessuna immagine di allora per questa direzione – la raccolta di immagini è spenta.",
+        "Anc nagin maletg da lura per questa direcziun – rimnar maletgs è deactivà."),
     "Collect pictures for «then / now»": ("Bilder für «Damals / Jetzt» sammeln", "Collecter des images pour «autrefois / maintenant»",
                                          "Raccogliere immagini per «allora / adesso»", "Rimnar maletgs per «lura / ussa»"),
     "Picture while the head stands still": ("Bild, wenn der Kopf still steht", "Image quand la tête est immobile", "Immagine quando la testa è ferma",
@@ -874,7 +891,7 @@ def zf_tk_window(app):
         it = zf_nearest(zf_dir_items(p, q), time.time() - age)
         im = zf_load(it[3]) if it else None
         if im is None:
-            lab.config(image=""); txt.config(text=tr(ZF_NO_PIC), wraplength=460)
+            lab.config(image=""); txt.config(text=zf_no_pic(), wraplength=460)
             return
         im = cv2.resize(im, (480, max(1, int(im.shape[0] * 480 / im.shape[1]))), interpolation=cv2.INTER_AREA)
         keep["p"] = tk.PhotoImage(data=base64.b64encode(cv2.imencode(".png", im)[1].tobytes()).decode())

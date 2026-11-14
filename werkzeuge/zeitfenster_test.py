@@ -132,6 +132,15 @@ def teil_a(datei):
     CFG["zf_still_min"] = "off"; eo = ns["zf_estimate_mb"]()
     ok(abs(e1 - avg * 1440 / 1048576) < 0.1 and abs(e60 - avg * 24 / 1048576) < 0.1 and eo is None,
        f"Schätzung aus der echten Bildgrösse: 1 Min. {e1} MB, 60 Min. {e60} MB pro Tag und Richtung, aus = keine")
+    # the message for a direction without a picture follows the interval
+    kopf(80.0, 20.0, 20.0, False); CFG["zf_still_min"] = "15"
+    ok(ns["zf_no_pic"]("de") == "Noch kein Bild von damals für diese Richtung – das nächste kommt in etwa 1 Min.", f"Meldung: «{ns['zf_no_pic']('de')}»")
+    ZF["last"]["%.0f/%.0f" % (54.0 / 3.0, -54.0 / 3.0)] = time.time() - 60
+    ok("in etwa 14 Min." in ns["zf_no_pic"]("de"), f"Meldung nach einem Bild vor 1 Min. (alle 15 Min.): «{ns['zf_no_pic']('de')}»")
+    CFG["zf_still_min"] = "off"
+    ok(ns["zf_no_pic"]("de").endswith("Bilder sammeln ist aus.") and all(ns["zf_no_pic"](L) != ns["zf_no_pic"]("en") for L in ("de", "fr", "it", "rm")),
+       "Meldung bei «aus»: «Bilder sammeln ist aus», fünf Sprachen")
+    CFG["zf_still_min"] = "60"
     # migration of the old switch «every hour»
     for old, want in (({"zf_hourly": True}, "60"), ({"zf_hourly": False}, "off"), ({"zf_hourly": False, "zf_still_min": "5"}, "5"), ({}, "5")):
         CFG["zf_still_min"] = "5"; ns["_settings_migrations"](old)
@@ -413,8 +422,14 @@ def teil_b(datei, a):
             pg = ctx.new_page(); pg.goto(base + "/", wait_until="domcontentloaded")
             warte(lambda: pg.evaluate("() => !!document.getElementById('lv-b-zf')"), 25)
             pg.evaluate("() => document.getElementById('lv-b-zf').click()")
-            m = warte(lambda: (lambda x: x if "noch kein Bild" in x["msg"] else None)(pg.evaluate(LAGE)), 10) or pg.evaluate(LAGE)
-            ok("noch kein Bild" in m["msg"] and not m["ov"], f"Richtung ohne Bild: klare Meldung («{m['msg'][:60]}…»)")
+            m = warte(lambda: (lambda x: x if "Noch kein Bild" in x["msg"] else None)(pg.evaluate(LAGE)), 10) or pg.evaluate(LAGE)
+            ok(re.search(r"Noch kein Bild von damals für diese Richtung – das nächste kommt in etwa \d+ Min\.", m["msg"]) and not m["ov"],
+               f"Richtung ohne Bild (alle 10 Min.): wann das nächste kommt («{m['msg']}»)")
+            req("/api/text", {"key": "zf_still_min", "value": "off", "lang": "de"})
+            pg.evaluate("() => { window.mwZf.close(); window.mwZf.open(); }")
+            m = warte(lambda: (lambda x: x if "sammeln ist aus" in x["msg"] else None)(pg.evaluate(LAGE)), 10) or pg.evaluate(LAGE)
+            ok("Bilder sammeln ist aus" in m["msg"], f"Richtung ohne Bild, «aus»: «{m['msg']}»")
+            req("/api/text", {"key": "zf_still_min", "value": "10", "lang": "de"})
             ctx.close()
             # the settings: the estimate under the choice
             ctx = br.new_context(http_credentials={"username": "admin", "password": PW}, viewport={"width": 390, "height": 844}, is_mobile=True,
