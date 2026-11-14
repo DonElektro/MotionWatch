@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-14 19:35",
+ "generated": "2026-11-14 20:17",
  "versions": [
   {
    "version": "3.94.0",
    "file": "webcam_bewegung_3_94_0.py",
    "url": "",
-   "sha256": "8d3fd5142a13581134267517a2bb5c1a70af8bbeb0a448a5afa985b1c108a6f1",
-   "date": "2026-11-14 19:35",
+   "sha256": "c3272bc919c9a538880a7e1217688f6c96ce65dcbea1a7446054eb15f9e1f883",
+   "date": "2026-11-14 20:17",
    "notes": "Drei Teile. (1) Live-Bild: ruhige Animationen und ein CPU-Chip im Bild. (2) «🧳 Transportmodus» für die Transportkappe: der Kopf fährt in die Transport-Lage und bleibt dort. (3) Digitaler Rucksack im Netzwerk: auf Wunsch eine Freigabe «rucksack» über SMB (ab Werk aus), damit PC und Handy im eigenen Netz direkt darauf zugreifen.",
-   "size": 3981413,
-   "sig": "7ea84c226b493b76c422312dff8661b1431ffb33e8a929e8a53d1eb3864d59af24998577ddd2aecf6e6d7ecc8628b2ef30888b955c03b57c7cd06f2dcf4a280c",
+   "size": 3981716,
+   "sig": "071bc3434471f21ef251d96ed616765fdbffb8ac8ff8e7d8412639fe2c6d3df152e69512a625a874cb90dc6bb3ef2cc2e8a327a1c15203c6de1c23663b47d80c",
    "data": {
     "file": "moveeye_daten_3_94_0.zip",
     "url": "",
-    "sha256": "3ba93349b6b722e2a1299f91b8cf815ceb3560d2beaf9b47016c8e9bbd312ca6",
-    "size": 11661355,
-    "sig": "058a6f30c492f8163131c272d4b474823a901c71b1138555b55d5a614cb28c462e37e2e54406897a14c9b023390645b54423d8791c6e8deb4bceece2c5990309"
+    "sha256": "9ec4f9faa6ee4a0ca733a9750e90395c27eaf977e9018eb3c7c875104aa8f17c",
+    "size": 11661934,
+    "sig": "4218d1e491df8fc2ec3a732cadc9fdd9d38b1dabb777094e970c85a5677d8da99eb4d725b62d0cff928fc5fba32cc61d25e0f1870b8a7bc91547917d008d0c0e"
    }
   },
   {

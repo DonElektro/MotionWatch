@@ -283,7 +283,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_3_94_0.zip"
-ZD_SHA256 = "3ba93349b6b722e2a1299f91b8cf815ceb3560d2beaf9b47016c8e9bbd312ca6"
+ZD_SHA256 = "9ec4f9faa6ee4a0ca733a9750e90395c27eaf977e9018eb3c7c875104aa8f17c"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -7738,9 +7738,18 @@ class Hardware:
 			pan = self._cont_pan(pan)
 			cur = (round(pan, 2), round(tilt, 2))
 			if servo_detached():
-				if not getattr(self, "_detached", False):
-					self._detached = True; self._servos_off()
-				self._last_servo = None
+				if not getattr(self, "_detached", False) and cur != self._last_servo:
+
+
+					try:
+						self._servos(pan, tilt, cont=CFG.get("servo_kind") == "continuous" and not CFG.get("sim_on"))
+					except Exception as e:
+						log_event("servo", f"Servo error: {e}")
+					self._last_servo = cur
+				else:
+					if not getattr(self, "_detached", False):
+						self._detached = True; self._servos_off()
+					self._last_servo = None
 			elif servo_outputs_off():
 				self._last_servo = None
 			elif cur != self._last_servo:
@@ -104794,6 +104803,8 @@ for _L in ("fr", "it", "rm"):
 
 
 transport_selftest = _zd_fn('639zzzt_transportmodus/transport_selftest()')
+
+
 
 
 
