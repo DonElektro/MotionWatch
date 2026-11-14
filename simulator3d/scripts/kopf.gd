@@ -284,6 +284,8 @@ func _paint_icon(d: Control, id: String) -> void:
 	var w := 2.0
 	match id:
 		"help":
+			# MoveEye 3.93 (Design «Klar» Etappe 2): «?» in a circle like the line symbol of the web header (639zzzc)
+			d.draw_arc(c + Vector2(0, 0.5), minf(d.size.x, d.size.y) * 0.42, 0, TAU, 40, col, w * 0.9, true)
 			d.draw_arc(c + Vector2(0, -3), 4.5, PI, TAU + PI * 0.45, 14, col, w, true)
 			d.draw_line(c + Vector2(1.6, 1.2), c + Vector2(0, 3.5), col, w, true)
 			d.draw_circle(c + Vector2(0, 7.5), 1.3, col)
