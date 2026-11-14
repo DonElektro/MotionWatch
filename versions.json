@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-13 22:34",
+ "generated": "2026-11-14 01:45",
  "versions": [
+  {
+   "version": "3.88.0",
+   "file": "webcam_bewegung_3_88_0.py",
+   "url": "",
+   "sha256": "23053b6adc054586b4bee8f02d51827f560e56ce61cbeadcdb43ce5c1305a25f",
+   "date": "2026-11-14 01:45",
+   "notes": "Drei Teile. (1) Neues Spiel «Verschollen im Bergtal», Kapitel 1: ein Aufbau-Abenteuer – ohne Erinnerung in einer Berghütte, nur dein Hund und die Kamera MoveEye (Spielecke, hinter «A Dark Room»; Spielesammlung GS-1.19). (2) Über dem offenen Passwort-Fenster erscheint kein Tipp und keine Tour mehr. (3) Unter der Haube: die Programmdatei ist nochmals rund 130 KB kleiner; am Verhalten ändert sich nichts.",
+   "size": 3810134,
+   "sig": "3043c55427f31b43dae8c5f71c113f85fceee8ef043d0ea9fec2f27a6a19b83dcd80feb86b5708c1f3c070a3192dad7a0ea3dabd18595ce26538199326b0a80b",
+   "data": {
+    "file": "moveeye_daten_3_88_0.zip",
+    "url": "",
+    "sha256": "ed47bc13c2cec3efa6e277daa1e8485b245768c182397a06d1fd9ed77261386e",
+    "size": 11301109,
+    "sig": "f88f19089d6ed3cb7c54d13c611a71c169b8b048926a1d7075f7c7dd90b370aa33ef740126f1039d520a76f1f9050d950d3373cc20762132dab347a17f04f402"
+   }
+  },
   {
    "version": "3.87.1",
    "file": "webcam_bewegung_3_87_1.py",
    "url": "",
    "sha256": "c07238bfe901edf70ef3d13d2490f219c24145e249f7bd23d0ba38e1d3a0ca3e",
-   "date": "2026-11-13 22:34",
+   "date": "2026-11-14 00:45",
    "notes": "Wichtig: Nach einem Update kommt die Webseite wieder. Bisher konnte MoveEye direkt nach dem Neustart seinen eigenen Autostart-Dienst anhalten – die Seite blieb weg, bis der Pi neu gestartet wurde. Jetzt nie mehr; hängt ein Start trotzdem länger als 90 Sekunden, startet MoveEye sich von selbst neu und schreibt auf, wo es hing (das zählt nicht als Stromausfall). Belegt ein anderes Programm den Port der Webseite, bewacht MoveEye weiter und meldet es einmal. Teilen mit verpixelten Gesichtern stürzt auf dem Pi nicht mehr ab. Höhenprofil nur noch für Routen bis 300 km. Schach: «Vorziehen» wie auf Li",
    "size": 3940479,
    "sig": "2024f8e11da93457766390d3d2ce117b08310dd3115218b04b1882d3e1f2982383bb23e7c8033e0f8ec63fb87ea2403c96c44eaf582b0584612289cfbe4aed07",
@@ -136,23 +153,6 @@
     "sha256": "b4c219b68f67742bf231dc2fbf6f530f5161180c5a308e074f5b798e1ca5aadb",
     "size": 4971954,
     "sig": "127504c647cad470f0618d7a272e9b3ee732c94a7f7f895653ac6e7a906c1cddbc762c2560adb3273879c58004fc80553146ae82e7e6a68cac59cd4ab949dc09"
-   }
-  },
-  {
-   "version": "3.79.0",
-   "file": "webcam_bewegung_3_79_0.py",
-   "url": "",
-   "sha256": "4cabab328ca836c767e3aa8ad385ba9e7d39f2641cbbff0fb6d6bdb2124bfdd9",
-   "date": "2026-11-11 23:55",
-   "notes": "Datentausch: Fotos vom iPhone bleiben nicht mehr bei 0 % hängen (jedes Stück hat jetzt ein Zeitlimit, wird bei Bedarf wiederholt und in kleineren Stücken gesendet; nach einem Fehler geht es mit «Nochmal versuchen» dort weiter, wo es aufgehört hat). Erster Start ruhiger: Hinweise erscheinen nacheinander statt gleichzeitig; nach einer Neuinstallation keine Versions-Neuigkeiten.",
-   "size": 3924663,
-   "sig": "78746829313a97c103d4f74e3a1c886a613ee953d42854a91e16754161888f53b11909ac9b2ccaaaf344a9c0dc7bd861eac5668818375ef29a5771391cb10a09",
-   "data": {
-    "file": "moveeye_daten_3_79_0.zip",
-    "url": "",
-    "sha256": "d7d7b9179b40406c23485e51059d4f45e4002facdb2ab8a08b9d0aa19cffae75",
-    "size": 4948336,
-    "sig": "1a9f3eb6ad388f2a48de79219c5e9d1491154e788eff742738d51eea6413166d5fd398ca38985ed0a183c327bc2e90c06fdbcf1143c961aea295cbc3f4508408"
    }
   },
   {
