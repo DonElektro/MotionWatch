@@ -19,6 +19,7 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 | Datum | Motion Watch | Simulator | Testlauf | Pushes richtig / falsch | Personen erkannt | Wärmebild | nah / mittel / weit | Reaktion | Tiere gemeldet | Flackern | Bilder/s | KI | Rechner |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-11-14 04:11 | 3.89.0 | 3.69.0 · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **3** / **0** | 10 / 10 (**100 %**) | 1 / 1 | 6/6 / 1/1 / 2/2 | 1.0 s | 3 / 3 | 0 | 1.8 | mit KI | GitHub (ubuntu, 4 Kerne) · Intel(R) Xeon(R) 6975P-C |
 | 2026-11-14 01:19 | 3.87.1 | 3.69.0 · Aussehen neu · Tiere Modelle | Voller Campingplatz ×3 · Zufall 1,2,3 | **11** / **2** (falsch 0–1 pro Lauf) | 17 / 17 (**100 %**) (100 %) | – | 15/15 / – / 2/2 | 6.1 s | 0 / 0 | 7 | 0.5 | mit KI | HP EliteDesk 800 G1 (4 Kerne) · Intel(R) Core(TM) i5-4590T CPU @ 2.00GHz |
 | 2026-11-14 01:19 | 3.87.1 | 3.69.0 · Aussehen neu · Tiere Modelle | Tarnen und Kriechen ×3 · Zufall 1,2,3 | **15** / **0** (falsch 0 pro Lauf) | 50 / 51 (**98 %**) (95–100 %) | 16 / 17 | 34/34 / – / – | 2.5 s | 0 / 0 | 3 | 1.0 | mit KI | HP EliteDesk 800 G1 (4 Kerne) · Intel(R) Core(TM) i5-4590T CPU @ 2.00GHz |
 | 2026-11-14 01:19 | 3.87.1 | 3.69.0 · Aussehen neu · Tiere Modelle | Velodieb ×3 · Zufall 1,2,3 | **9** / **3** (falsch 0–2 pro Lauf) | 24 / 28 (**86 %**) (70–100 %) | 1 / 1 | 23/27 / – / – | 3.5 s | 0 / 0 | 18 | 0.7 | mit KI | HP EliteDesk 800 G1 (4 Kerne) · Intel(R) Core(TM) i5-4590T CPU @ 2.00GHz |
@@ -311,42 +312,10 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 ## Einzelheiten pro Phase (letzter Lauf)
 
-**Voller Campingplatz** – 2026-11-14 01:19, Motion Watch 3.87.1
+**Kurz (Tag + Nacht)** – 2026-11-14 04:11, Motion Watch 3.89.0
 
 | Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
 |---|---|---|---|---|---|---|---|
-| Nachmittag, Nachbarn kochen, Kinder spielen | 2 / 0 | 3 / 3 | – | 0.0 s | 0 / 0 | 1 | – |
-| Nacht mit Infrarot, Nachbarn gehen zum WC | 1 / 1 | 2 / 2 | – | 9.8 s | 0 / 0 | 2 | – |
-
-**Tarnen und Kriechen** – 2026-11-14 01:19, Motion Watch 3.87.1
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Tag, Tarnkleidung und Robben | 2 / 0 | 7 / 7 | – | 5.1 s | 0 / 0 | 0 | – |
-| Dämmerung | 2 / 0 | 4 / 4 | 4 / 4 | 0.4 s | 0 / 0 | 0 | – |
-| Nacht mit Infrarot | 1 / 0 | 5 / 5 | 1 / 1 | 1.7 s | 0 / 0 | 0 | – |
-
-**Velodieb** – 2026-11-14 01:19, Motion Watch 3.87.1
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Tag | 1 / 0 | 4 / 4 | – | 4.2 s | 0 / 0 | 3 | – |
-| Dämmerung | 1 / 0 | 2 / 2 | – | 2.3 s | 0 / 0 | 1 | – |
-| Nacht mit Infrarot | 2 / 0 | 4 / 4 | – | 2.8 s | 0 / 0 | 0 | – |
-
-**Gegenstände (Wind, Licht, Lockmittel)** – 2026-11-14 01:19, Motion Watch 3.87.1
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Tag, Böen (Fahne, Plastiksack, Ballon, Wäsche, Tor, Obstbaum) | 1 / 0 | 1 / 4 | – | 2.3 s | 1 / 2 | 1 | – |
-| Dämmerung, Tiere am Lockmittel | 1 / 0 | 0 / 1 | 0 / 1 | – | 0 / 0 | 1 | 1× zu dunkel, 1× zu klein / weit weg |
-| Nacht mit Infrarot (Lampe mit Bewegungsmelder, Feuer, Kerze, Solarleuchten) | 2 / 1 | 2 / 3 | – | 2.9 s | 0 / 1 | 2 | 1× zu dunkel |
-
-**Fahrzeuge in der Nacht (Licht, Blendung, Parkieren)** – 2026-11-14 01:19, Motion Watch 3.87.1
-
-| Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
-|---|---|---|---|---|---|---|---|
-| Dämmerung, Abblendlicht, Velo mit Licht | 2 / 0 | 2 / 4 | 2 / 4 | 2.4 s | 0 / 0 | 0 | 2× zu dunkel, 2× zu klein / weit weg |
-| Nacht mit Infrarot: Fernlicht, Scheinwerfer auf die Kamera, Töff | 2 / 0 | 2 / 2 | 1 / 1 | 3.6 s | 0 / 0 | 0 | – |
-| Nacht: Auto parkiert, Leute steigen aus, Wohnmobil, E-Trottinett | 2 / 0 | 3 / 4 | 1 / 1 | 3.0 s | 0 / 0 | 0 | 1× zu dunkel |
+| Tag, Wind | 2 / 0 | 6 / 6 | – | 0.6 s | 2 / 2 | 0 | – |
+| Nacht mit Infrarot | 1 / 0 | 4 / 4 | 1 / 1 | 1.8 s | 1 / 1 | 0 | – |
 
