@@ -254,7 +254,7 @@ PERM_GET = {"live": ("/cams", "/preview", "/api/cams", "/api/frame.jpg", "/video
             "rec": ("/recordings", "/diary", "/kino", "/api/kino", "/api/dataset.zip", "/api/recordings", "/api/places", "/rec/file/", "/rec/play/",
                     "/rec/thumb/", "/rec/share/", "/rec/report/", "/api/day", "/api/diary", "/diary/img/", "/api/timelapse", "/timelapse/",
                     "/api/species", "/api/loop", "/api/report"),
-            "arm": ("/protect", "/zones", "/api/protect"),      # fix: who sees the page «Schutz» also gets its state
+            "arm": ("/protect", "/zones", "/api/protect", "/api/weit/zones", "/api/weit/frame.jpg"),   # fix: who sees the page «Schutz» also gets its state; 639zw: the wide zones
             "games": ("/party", "/api/party"),
             "settings": ("/settings",)}
 VIEW_POST = {"/api/webpush", "/api/time", "/api/gps"}
@@ -263,7 +263,7 @@ PERM_POST = {"rec": {"/api/rec/prepare", "/rec/zip", "/api/rec/fav", "/api/rec/f
              "light": {"/api/light", "/api/disco"},
              "talk": {"/api/talk", "/api/talk/stop", "/api/tts"},
              "head": {"/api/follow", "/api/mover", "/api/move", "/api/stick"},
-             "settings": {"/api/zones", "/api/schedule"}}
+             "settings": {"/api/zones", "/api/schedule", "/api/weit/zones"}}
 # fix: «arm» does NOT switch the remote access (POST /api/tunnel: on / off, new code) - like the setting «tunnel_on»
 # (USER_SETTINGS_DENY) that is for the administrator. /api/protect: only the level and «Schutz testen» (PERM_PROTECT_ACTIONS);
 # the PIN, the escalation and the presence stay with the administrator.
@@ -571,7 +571,7 @@ def _settings_migrations(cfg_in):
             protect_siren_sync()
     except Exception as e:
         log_event("sys", f"Settings migration (135): {e}"[:150])
-    for _f, _n in ((lambda: shortcut_migrate(cfg_in), "573"), (place_report_migrate, "317")):   # aufr: shortcut key -> app key, public path -> zone
+    for _f, _n in ((lambda: shortcut_migrate(cfg_in), "573"), (place_report_migrate, "317"), (lambda: heat_confirm_migrate(cfg_in), "639zw")):   # aufr: shortcut key -> app key, public path -> zone
         try:
             did = _f()
             if did:

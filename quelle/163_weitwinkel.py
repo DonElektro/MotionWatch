@@ -120,7 +120,12 @@ _kopf_ov_deg_162 = kopf_ov_deg
 def kopf_ov_deg(cx):                                      # + 163: the wide camera on the device (base: fixed, head: turns)
     g = weit_ov_geom()
     if g is None:
-        return _kopf_ov_deg_162(cx)
+        d = _kopf_ov_deg_162(cx)
+        try:                                              # 639zw (14.11.2026): a real overview camera on the head turns with it
+            on = bool(CFG.get("kopf_ov")) and cam_on_head(CFG.get("kopf_ov"))
+        except NameError:
+            on = False
+        return (d + weit_head_deg() + 180.0) % 360.0 - 180.0 if on else d
     d = g[0] + (float(cx) - 0.5) * kopf_ov_fov() + (weit_head_deg() if g[1] else 0.0)
     return (d + 180.0) % 360.0 - 180.0
 
