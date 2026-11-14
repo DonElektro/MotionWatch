@@ -201,12 +201,8 @@ def run(a):
                 os.makedirs(os.path.join(cfg, "models"), exist_ok=True)
                 shutil.copy(os.path.join(a.ki_ordner, fn), os.path.join(cfg, "models", fn))
         log("Motion Watch:", os.path.basename(mw))
-        mw_cmd = [sys.executable, mw, "--headless", "--port", str(a.mw_port), "--bind", "127.0.0.1", "--config", cfg]
-        kerne = str(env.get("MW_PRUEFSTAND_MW_KERNE", "")).strip()     # Vergleich: MoveEye nur auf diesen Kernen (weniger Bilder/s)
-        if kerne and re.fullmatch(r"[0-9]+([,-][0-9]+)*", kerne) and shutil.which("taskset"):
-            mw_cmd = ["taskset", "-c", kerne] + mw_cmd
-            log("Motion Watch nur auf Kern(en)", kerne, "(Vergleich: weniger Bilder/s)")
-        P.start("Motion Watch", mw_cmd, env, os.path.join(tmp, "motionwatch.log"))
+        P.start("Motion Watch", [sys.executable, mw, "--headless", "--port", str(a.mw_port), "--bind", "127.0.0.1", "--config", cfg],
+                env, os.path.join(tmp, "motionwatch.log"))
         sim = "http://127.0.0.1:%d" % a.sim_port
         web = "http://127.0.0.1:%d" % a.mw_port
         # --- wait: both running and connected, pictures coming
@@ -246,8 +242,6 @@ def run(a):
         info = {"datum": time.strftime("%Y-%m-%d %H:%M"), "mw_version": mw_version(mw), "ki": s.get("ai_status", "?"),
                 "rechner": a.rechner or ("%s %s, %d Kerne" % (platform.system(), platform.machine(), os.cpu_count() or 0)),
                 "qualitaet": a.qualitaet, "szene": a.szene, "kameras": "Kopfkamera" if a.kameras == [0] else "Kopf- und Weitwinkel-Kamera", "plaene": {}}
-        if kerne and mw_cmd[0] == "taskset":
-            info["mw_kerne"] = kerne                               # Vergleich: MoveEye mit weniger Kernen (nicht für VERLAUF.md)
         try:
             info["sim_version"] = str(http_json(sim + "/info", timeout=4).get("name", "?")).split()[-1]
         except Exception:
@@ -454,7 +448,7 @@ class Schnappschuesse:
 
 
 def zeigen(dateien):
-    """Ergebnis eines Laufs, der nicht in VERLAUF.md kommt (Vergleich: Aussehen alt / standard, Grundformen, Grafik, Kerne):
+    """Ergebnis eines Laufs, der nicht in VERLAUF.md kommt (Vergleich: Aussehen alt / standard, Grundformen, Grafik lite):
     Zusammenfassung pro Testlauf und die Sichtbarkeit jeder Person (Wahrheit des Simulators) in die Zusammenfassung des Jobs,
     dazu das ganze JSON ins Job-Protokoll (Zeilen «ERGEBNIS-JSON <plan> <seed> {…}»). Artefakte braucht es dafür nicht."""
     md = []
@@ -467,7 +461,7 @@ def zeigen(dateien):
             continue
         md.append("## Ergebnis %s · %s · Aussehen %s · Tiere %s · Grafik %s%s\n" % (
             os.path.basename(fn), d.get("mw_version", "?"), d.get("aussehen") or "alt", d.get("tiere") or "?", d.get("grafik") or "?",
-            (" · MoveEye-Kerne " + d["mw_kerne"]) if d.get("mw_kerne") else ""))
+            ""))
         md.append("| Testlauf | Zufall | Pushes richtig / falsch | Personen | nicht sichtbar | Reaktion | Flackern | Bilder/s |")
         md.append("|---|---|---|---|---|---|---|---|")
         zeilen = []

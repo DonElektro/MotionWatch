@@ -63,9 +63,6 @@ on:
         type: choice
         options: [wie-aussehen, lite]
         default: wie-aussehen
-      mw_kerne:
-        description: "Vergleich: MoveEye nur auf diesen Kernen (z. B. 0 oder 0,1 – weniger Bilder/s; leer = alle; nicht in VERLAUF.md)"
-        default: ""
       bilder:
         description: "Diagnose: zu jeder verpassten Person MoveEyes Bild vom besten Moment klein ins Job-Protokoll (Zeilen «BILD …»)"
         type: boolean
@@ -92,8 +89,8 @@ jobs:
     env:
       HP: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.rechner == 'hp') && '1' || '' }}
       # in VERLAUF.md (und ins Repository) kommt nur der Normalfall von main: Aussehen neu, Tier-Modelle, Grafik wie das
-      # Aussehen, MoveEye mit allen Kernen. Alles andere ist ein Vergleich: Ergebnis in der Zusammenfassung des Jobs.
-      VERLAUF: ${{ (github.ref == 'refs/heads/main' && (github.event.inputs.flora || 'neu') == 'neu' && (github.event.inputs.tiere || 'modelle') == 'modelle' && (github.event.inputs.grafik || 'wie-aussehen') == 'wie-aussehen' && (github.event.inputs.mw_kerne || '') == '') && '1' || '' }}
+      # Aussehen. Alles andere ist ein Vergleich: Ergebnis in der Zusammenfassung des Jobs.
+      VERLAUF: ${{ (github.ref == 'refs/heads/main' && (github.event.inputs.flora || 'neu') == 'neu' && (github.event.inputs.tiere || 'modelle') == 'modelle' && (github.event.inputs.grafik || 'wie-aussehen') == 'wie-aussehen') && '1' || '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -159,7 +156,6 @@ jobs:
           TIERE: ${{ github.event.inputs.tiere || 'modelle' }}
           MW_FLORA: ${{ (github.event.inputs.flora || 'neu') == 'neu' && 'normal' || '' }}
           MW_PRUEFSTAND_GRAFIK: ${{ github.event.inputs.grafik == 'lite' && 'lite' || ((github.event.inputs.flora || 'neu') != 'standard' && 'normal' || '') }}
-          MW_PRUEFSTAND_MW_KERNE: ${{ github.event.inputs.mw_kerne }}
           MW_PRUEFSTAND_BILDER: ${{ github.event.inputs.bilder == 'true' && '1' || '' }}
           MW_TIERE: ${{ (github.event.inputs.tiere || 'modelle') == 'grundformen' && 'alt' || 'modell' }}
           MW_PRUEFSTAND_DISPLAY: ${{ (github.event.inputs.rechner == 'hp' && github.event.inputs.anzeige == 'bildschirm') && ':0' || '' }}
@@ -173,7 +169,7 @@ jobs:
           fi
           # Aussehen und Tiere stehen in VERLAUF.md in der Spalte «Simulator» (pruefstand.py, aus MW_FLORA / MW_TIERE / Grafik)
           [ -n "$MW_PRUEFSTAND_DISPLAY" ] && RECHNER="$RECHNER · Grafikkarte"
-          echo "Testläufe: $PLAENE · Zufallsstarts $SEEDS · Wiederholungen $WDH · Kamera-Effekte $REAL (ohne: ${ROH:-alle}) · Besucher ×$MAL · Aussehen $AUSSEHEN · Tiere $TIERE · Grafik ${MW_PRUEFSTAND_GRAFIK:-auto}${MW_PRUEFSTAND_MW_KERNE:+ · MoveEye-Kerne $MW_PRUEFSTAND_MW_KERNE}"
+          echo "Testläufe: $PLAENE · Zufallsstarts $SEEDS · Wiederholungen $WDH · Kamera-Effekte $REAL (ohne: ${ROH:-alle}) · Besucher ×$MAL · Aussehen $AUSSEHEN · Tiere $TIERE · Grafik ${MW_PRUEFSTAND_GRAFIK:-auto}"
           # HP: wie Erkennung (HP) unter «dauer.py halten» – wird am HP gespielt, wartet der Prüfstand (höchstens 2 Std.); beginnt
           # jemand während des Laufs zu spielen, hält er in Sekunden an (Simulator zu, Kiosk frei) und beginnt nach 15 Min. ohne
           # Spielen von vorn (der Prüfstand speichert erst am Schluss). Spielen hat immer Vorrang.
@@ -209,7 +205,7 @@ jobs:
           path: ki
           retention-days: 3
       - name: Ergebnis ins Repository
-        # nur der Normalfall von main (env VERLAUF) kommt in den Verlauf; alt / standard / grundformen / Grafik / Kerne = Vergleich
+        # nur der Normalfall von main (env VERLAUF) kommt in den Verlauf; alt / standard / grundformen / Grafik lite = Vergleich
         if: always() && env.VERLAUF == '1'
         run: |
           git config user.name "Prüfstand"
