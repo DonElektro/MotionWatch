@@ -35,6 +35,10 @@ Warnung; werkzeuge/hauptdatei_groesse_test.py (CI «basis») wird rot, wenn weni
 Zweite Runde (13.11.2026): Hilfsfunktionen nur des Prüf-Codes (pruefhelfer_namen), fr / it / rm ab ZD_MIN_TR, Tabellen _HX…
 mit Namen als Schlüssel (_zd_hxk in Teil 012), Ergänzungen der Anleitung (ZD_ANLEITUNG, anleitung_namen). Deutsch bleibt.
 
+Dritte Runde (14.11.2026): das Deutsch der Tabellen _HX… in die ZIP, die englischen Schlüssel bleiben (ZD_HX_DE_ZIP; Alarm,
+Push, Schutz, Sicherheit … behalten Deutsch: ZD_HX_DE_BLEIBT), und keine unnötigen Leerzeichen in eingerückten Anweisungen
+(ZD_LEERZEICHEN; die Plätze stehen in der ZIP, «luecken»). Die obere Ebene bleibt Zeichen für Zeichen.
+
 Den Schlüssel nie ins Repository legen.
 """
 import argparse
@@ -828,10 +832,122 @@ def _schlank(text):
             if n < len(ln):
                 new[i] = "\t" * (n // 4) + ln[n - n % 4:]
     out = "\n".join(new)
+    luecken = {}
+    if ZD_LEERZEICHEN:
+        out, luecken = _ohne_leerzeichen(out)
+        new = out.split("\n")
     if len(new) != len(lines):
         raise SystemExit("Schlank: Zeilenzahl geändert – Fehler in bauen.py")
     compile(out, "schlank", "exec")                        # TabError / SyntaxError: stop here, never write such a file
-    return out, [[i + 1, a] for i, (a, b) in enumerate(zip(lines, new)) if _zd_tabs_aus(b) != a]
+    zeilen, kurz = [], []
+    for i, (a, b) in enumerate(zip(lines, new)):
+        lu = luecken.get(i + 1)
+        if lu and _zd_tabs_aus(_zd_luecken_zu(b, _zd_luecken_lesen(_zd_luecken_text(i + 1, lu))[1])) == a:
+            kurz.append(_zd_luecken_text(i + 1, lu))       # only spaces were taken out: their places are enough
+        elif _zd_tabs_aus(b) != a:
+            zeilen.append([i + 1, a])
+    return out, zeilen + ([["luecken", kurz]] if kurz else [])
+
+
+# Hauptdatei kleiner, dritte Runde (14.11.2026): Leerzeichen zwischen zwei Zeichen des Programms, die Python nicht braucht
+# («a = f(x, y)» -> «a=f(x,y)»), fallen weg - nur in eingerückten Anweisungen (in Funktionen / Klassen / Blöcken) und
+# ihren Folgezeilen. Anweisungen auf oberster Ebene bleiben Zeichen für Zeichen (APP_VERSION = …, ZD_FILE = … /
+# ZD_SHA256 = …, SIM3D… = {…}: Updates, Werkzeuge und ältere Geräte lesen sie als Text). Nie angefasst: Texte (auch
+# f-Texte samt ihren {…}), der Anfang einer Zeile, ein Leerzeichen, das zwei Wörter / Zahlen trennt. Die Zeilen bleiben
+# an ihrem Platz; die Originalzeilen stehen in der ZIP («zeilen», zd_source() setzt sie zurück). Der Bau bricht ab, wenn
+# der Syntaxbaum danach nicht genau derselbe ist. Folge für den Prüf-Code: wer den Quelltext des laufenden Programms
+# sucht (inspect.getsource, open(__file__)), sucht ohne Leerzeichen oder nimmt zd_source(). ZD_LEERZEICHEN = False: aus.
+ZD_LEERZEICHEN = True
+
+
+def _ohne_leerzeichen(text):
+    import io
+    import tokenize
+    lines = text.split("\n")
+
+    def wort(ch):
+        return ch.isalnum() or ch == "_" or ord(ch) > 127
+    t_fs_a, t_fs_e = getattr(tokenize, "FSTRING_START", -1), getattr(tokenize, "FSTRING_END", -1)
+    t_ts_a, t_ts_e = getattr(tokenize, "TSTRING_START", -1), getattr(tokenize, "TSTRING_END", -1)
+    leer = (tokenize.NL, tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT, tokenize.ENDMARKER, tokenize.COMMENT)
+    cuts, tief, oben, erstes, prev = {}, 0, True, True, None
+    for tok in tokenize.generate_tokens(io.StringIO(text).readline):
+        tt = tok.type
+        if tt in (t_fs_a, t_ts_a):                         # Python 3.12+: an f-string comes in pieces - one block here
+            if tief == 0:
+                anfang = tok
+            tief += 1
+            continue
+        if tt in (t_fs_e, t_ts_e):
+            tief -= 1
+            if tief:
+                continue
+            tok = tokenize.TokenInfo(tokenize.STRING, "", anfang.start, tok.end, "")
+            tt = tokenize.STRING
+        elif tief:
+            continue
+        if tt == tokenize.NEWLINE:
+            erstes, prev = True, None
+            continue
+        if tt in leer:
+            continue
+        if erstes:                                         # the first token of a statement: on the top level?
+            oben, erstes = tok.start[1] == 0, False
+        if prev is not None and not oben and prev.end[0] == tok.start[0] and tok.start[1] > prev.end[1]:
+            row = tok.start[0]
+            ln = lines[row - 1]
+            a, e = prev.end[1], tok.start[1]
+            if ln[a:e].strip(" ") == "":
+                links, rechts = ln[a - 1], ln[e]
+                noetig = (wort(links) and (wort(rechts) or rechts in "\"'")) or (
+                    prev.type == tokenize.NUMBER and rechts == ".") or (links == "." and tt == tokenize.NUMBER)
+                if not noetig:
+                    cuts.setdefault(row, []).append((a, e))
+                elif e - a > 1:
+                    cuts.setdefault(row, []).append((a + 1, e))
+        prev = tok
+    luecken = {}
+    for row, cs in cuts.items():
+        ln, lu, weg = lines[row - 1], [], 0
+        for a, e in sorted(cs):
+            lu += [a - weg, e - a]                         # place in the new line, number of spaces
+            weg += e - a
+        for a, e in sorted(cs, reverse=True):
+            ln = ln[:a] + ln[e:]
+        lines[row - 1] = ln
+        luecken[row] = lu
+    out = "\n".join(lines)
+    if ast.dump(ast.parse(out)) != ast.dump(ast.parse(text)):
+        raise SystemExit("Schlank: ohne Leerzeichen ist der Syntaxbaum anders – Fehler in bauen.py (ZD_LEERZEICHEN = False)")
+    return out, luecken
+
+
+def _zd_luecken_text(row, lu):
+    """one row of "luecken" in the zip: «row d,d,d.n» - d = place minus the place before (in the line without the spaces),
+    .n = number of spaces when more than one"""
+    out, vor = [], 0
+    for k in range(0, len(lu), 2):
+        out.append("%d" % (lu[k] - vor) + ("" if lu[k + 1] == 1 else ".%d" % lu[k + 1]))
+        vor = lu[k]
+    return "%d %s" % (row, ",".join(out))
+
+
+def _zd_luecken_lesen(t):
+    """«row d,d,d.n» -> (row, [place, number, …]) (the same as zd_source() in 012)"""
+    row, rest = t.split(" ", 1)
+    lu, vor = [], 0
+    for x in rest.split(","):
+        d, _p, n = x.partition(".")
+        vor += int(d)
+        lu += [vor, int(n) if n else 1]
+    return int(row), lu
+
+
+def _zd_luecken_zu(line, lu):
+    """the spaces back into a line: lu = [place, number, place, number, …] in the line without them (the same as zd_source() in 012)"""
+    for k in range(len(lu) - 2, -1, -2):
+        line = line[:lu[k]] + " " * lu[k + 1] + line[lu[k]:]
+    return line
 
 
 def _zd_tabs_aus(line):
@@ -866,8 +982,12 @@ def zusammensetzen_klein(zd_sha=None):
 
 def zd_json(v, ents, zeilen=()):
     d = {"app": "MoveEye", "version": v, "file": os.path.basename(dateiname(v)), "entries": [list(x) for x in ents]}
+    zeilen = list(zeilen)
+    luecken = zeilen.pop()[1] if zeilen and zeilen[-1][0] == "luecken" else []
     if zeilen:
         d["zeilen"] = [list(x) for x in zeilen]            # 3.59.0: original lines (comments, docstrings) for zd_source()
+    if luecken:
+        d["luecken"] = luecken                             # ZD_LEERZEICHEN: «row d,d,d.n» - the spaces taken out (012)
     return json.dumps(d, ensure_ascii=False, indent=0)
 
 

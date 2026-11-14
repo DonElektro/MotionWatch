@@ -18,6 +18,8 @@
 #     on (German stays), tables _HX… with names as keys (_zd_hxk below), the pairs of the supplements of the manual.
 #     Third round (14.11.2026): the German of the tables _HX… goes into the zip as well, the file keeps their English keys
 #     (_zd_hx_en below: English without the zip); alarm, push, protection, safety and log-in keep German (bauen.py).
+#     Spaces between tokens that Python does not need are not in indented statements of the file; the zip keeps
+#     their places («luecken»), zd_source() puts them back (bauen.py ZD_LEERZEICHEN).
 # ZD_FILE / ZD_SHA256 are filled in by bauen.py (empty = nothing was moved out).
 # ----------------------------------------------------------------------------
 ZD_FILE = ""
@@ -175,13 +177,28 @@ def zd_source():
         d = _zd_read(os.path.join(HERE, ZD_FILE), ZD_SHA256)
     except Exception:
         return text
-    if d.get("zeilen"):                                    # Schlank: indentation, comments and docstrings back (same lines)
-        lines = []
-        for ln in text.split("\n"):
-            n = len(ln) - len(ln.lstrip("\t"))
-            lines.append("    " * n + ln[n:] if n else ln)
+    if d.get("zeilen") or d.get("luecken"):                # Schlank: indentation, comments and docstrings back (same lines)
+        lines = text.split("\n")
         try:
-            for row, orig in d["zeilen"]:
+            for t in d.get("luecken") or ():               # third round (14.11.2026): «row d,d,d.n» - the spaces taken out
+                row, rest = t.split(" ", 1)                # between the tokens (bauen.py ZD_LEERZEICHEN) go back in
+                lu, vor = [], 0
+                for x in rest.split(","):
+                    dd, _p, nn = x.partition(".")
+                    vor += int(dd)
+                    lu.append((vor, int(nn) if nn else 1))
+                ln = lines[int(row) - 1]
+                for at, nn in reversed(lu):
+                    ln = ln[:at] + " " * nn + ln[at:]
+                lines[int(row) - 1] = ln
+        except (IndexError, TypeError, ValueError, AttributeError):
+            return text
+        for i, ln in enumerate(lines):
+            n = len(ln) - len(ln.lstrip("\t"))
+            if n:
+                lines[i] = "    " * n + ln[n:]
+        try:
+            for row, orig in d.get("zeilen") or ():
                 lines[row - 1] = orig
         except (IndexError, TypeError, ValueError):
             return text
