@@ -62,42 +62,30 @@ def _cert_python(cert, key, host):
 
 
 def service_text():
-    import shlex
-    args = [a for a in sys.argv[1:] if a not in ("--print-service", "--install-service")]
-    if "--headless" not in args:
-        args.append("--headless")
-    user = os.environ.get("SUDO_USER") or os.environ.get("USER") or "pi"
-    exe = " ".join(shlex.quote(x) for x in [sys.executable, os.path.abspath(__file__)] + args)
-    return f"""[Unit]
-Description=MoveEye (camera motion / person detection)
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=simple
-User={user}
-WorkingDirectory={HERE}
-ExecStart={exe}
-Restart=always
-RestartSec=5
-Environment=PYTHONUNBUFFERED=1
-
-[Install]
-WantedBy=multi-user.target
-"""
+    """--print-service: the system unit - the same generator as the autostart of the web page (140 autostart_unit)"""
+    return autostart_unit("system")
 
 
 def install_service():
-    path = "/etc/systemd/system/motionwatch.service"
+    """sudo … --install-service (einrichten.sh): the system unit, the same options as the user unit (140) - it starts the
+    fixed starter moveeye_start.py, which starts this file (moveeye_start.json): later updates need no root any more"""
+    path = _unit_path("system")
     if not hasattr(os, "geteuid") or os.geteuid() != 0:
         print("Installing a system service needs root. Run the same command again with sudo, e.g.:\n"
               f"   sudo {sys.executable} {os.path.abspath(__file__)} --install-service {' '.join(a for a in sys.argv[1:] if a != '--install-service')}\n"
               "or print the unit file with --print-service and install it yourself."); return 1
-    with open(path, "w") as f:
+    try:
+        start_launcher_ensure(); start_pointer_set()
+    except OSError as e:
+        print(f"Could not write {START_FILE} next to the program: {e}"); return 1
+    with open(path + ".tmp", "w") as f:
         f.write(service_text())
+    os.chmod(path + ".tmp", 0o600)                              # the web password may be in the command line
+    os.replace(path + ".tmp", path)
     for cmd in (["systemctl", "daemon-reload"], ["systemctl", "enable", "--now", "motionwatch.service"]):
         print("$", " ".join(cmd)); subprocess.run(cmd)
-    print(f"Service installed ({path}). Status: systemctl status motionwatch   Log: journalctl -u motionwatch -f")
+    print(f"Service installed ({path}, starts {START_FILE} -> {os.path.basename(__file__)}). Status: systemctl status motionwatch"
+          "   Log: journalctl -u motionwatch -f")
     return 0
 
 

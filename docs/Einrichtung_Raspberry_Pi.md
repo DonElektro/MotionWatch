@@ -78,7 +78,10 @@ sudo python3 webcam_bewegung_X_Y_Z.py --install-service     # Dienst «motionwat
 ```
 
 `--allow-wifi` nach grösseren Updates noch einmal auszuführen schadet nicht. Den Autostart kann man auch auf der Webseite
-ein- und ausschalten (Einstellungen). Neue Versionen übernimmt der Dienst von selbst. Zustand: `systemctl status motionwatch`,
+ein- und ausschalten (Einstellungen). Neue Versionen übernimmt der Dienst von selbst: er startet den kleinen Starter
+`moveeye_start.py` im Programm-Ordner, der die aktuelle Version startet (`moveeye_start.json`) – nach einem Update kommt so auch
+nach dem nächsten Einschalten die neue Version. Ein älterer Dienst wird beim ersten Update einmal umgestellt (mit `sudo -n`;
+geht das nicht, zeigt MoveEye den Befehl `sudo python3 … --install-service`). Zustand: `systemctl status motionwatch`,
 Protokoll: `journalctl -u motionwatch -f`.
 
 ## 5. Starten von Hand

@@ -84,3 +84,4 @@ def migrate_only_selftest():
 
 SELFTEST_EXTRA.append(("Old settings only for taking over (MIGRATE_ONLY)", migrate_only_selftest))
 SELFTEST_EXTRA.append(("Translations fr / it / rm (texts in use)", i18n_selftest))
+SELFTEST_EXTRA.append(("Autostart: one unit for user and system service, starter moveeye_start.py (140)", dienst_selftest))

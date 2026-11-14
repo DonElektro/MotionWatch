@@ -3,7 +3,10 @@
 eingeschaltet, Restart=always, WatchdogSec=120, «linger») - mit dem echten systemd, nicht mit einem nachgebauten systemctl.
 
   sudo python3 werkzeuge/pi_dienst_test.py --ci                 # im CI (GitHub, Ubuntu-VM): legt den Test-Benutzer an
-  sudo python3 werkzeuge/pi_dienst_test.py [--datei NEU.py] [--alt ALT.py] [--nur a,b,c,d,e,f,g] [--limit 60]
+  sudo python3 werkzeuge/pi_dienst_test.py [--datei NEU.py] [--alt ALT.py] [--nur a,d,e,f,z,b,c,g] [--limit 60]
+
+Geprüft wird die QUELLE: NEU = quelle/ als ALT+1 gebaut, NEU+1 = ALT+2, ALT = die neueste Programmdatei im Repository
+(--datei: eine fertige Datei als NEU, z. B. für den Nachweis mit einer alten Version).
 
 Anlass (Besitzer 13.11.2026): nach dem Update startete das NEUE Programm (gleiche PID nach os.execv = Hauptprozess des Dienstes),
 fand den Web-Port kurz belegt und rief «systemctl --user stop motionwatch.service» - es stoppte sich selbst; Seite weg bis zum
@@ -30,10 +33,18 @@ Update-Quelle: lokaler HTTPS-Server mit eigenem Zertifikat und Wegwerf-Schlüsse
      die Unit zeigt auf die neue Datei (autostart_follow_version)
   c  gleich danach das zweite Update (NEU -> NEU+1, aus quelle/ gebaut) bei offenem Live-Bild: Live-Bild endet, Seite kommt,
      Live-Bild geht wieder
-  g  System-Dienst /etc/systemd/system/motionwatch.service (sudo … --install-service wie einrichten.sh): a + b + Neustart
-     des Pi (systemctl restart): welche Version kommt? (nur mit dem System-systemd: auf GitHub, nicht im lokalen Namensraum)
+     danach Neustart des Pi: NEU+1 kommt (die Unit startet den Starter moveeye_start.py, der die Datei aus moveeye_start.json)
+  t  Starter startet nur aufgezeichnete Dateien (Grösse + SHA-256): Notiz fehlt + veränderte «neuere» Datei -> die
+     aufgezeichnete (Kopie im Daten-Ordner); die notierte Datei verändert -> letzte gute Version, laut; gar keine Notiz ->
+     nichts startet; einmal von Hand starten zeichnet wieder auf
+  z  Start ohne Zusatzdatei als Dienst: der Kern antwortet, holt die ZIP, ein Neustart im selben Dienst-Lauf, kein Start-Wächter
+  g  System-Dienst /etc/systemd/system/motionwatch.service (sudo ALT --install-service wie einrichten.sh, Unit der alten Art):
+     Update ALT -> NEU stellt die Unit einmal um (sudo -n wie auf Raspberry Pi OS, kein Stopp), Neustart des Pi -> NEU,
+     Start-Wächter (f) am System-Dienst, Update NEU -> NEU+1 ohne Änderung der Unit, Neustart -> NEU+1, --install-service
+     schreibt dieselbe Unit (ein Erzeuger, Teil 140). Nur mit dem System-systemd: auf GitHub, nicht im lokalen Namensraum.
 
-Reihenfolge: a, d, e, f mit NEU; dann ALT von Hand gestartet (der Dienst folgt der Hand-Version), b, c; zuletzt g.
+Reihenfolge: a, d, e, f, f2, z mit NEU; dann ALT von Hand gestartet (der Dienst folgt der Hand-Version, Unit der alten Art), b, c;
+zuletzt g.
 """
 import argparse
 import base64
@@ -297,11 +308,9 @@ def einstellungen(b, url, extra=None):
         b.gehoert(x)
 
 
-def bauen_plus1(neu, ziel_dir):
-    """NEU+1 aus quelle/ bauen (bauen.py in einer Kopie, wie update_uebergang_test.py) -> (py, zip) oder ("", "")"""
-    x, y, z = vkey(neu)
-    v = "%d.%d.%d" % (x, y, z + 1)
-    bau = os.path.join(ziel_dir, "bau")
+def bauen(v, ziel_dir):
+    """Version v aus quelle/ bauen (bauen.py in einer Kopie, wie update_uebergang_test.py) -> (py, zip) oder ("", "")"""
+    bau = os.path.join(ziel_dir, "bau_" + v.replace(".", "_"))
     shutil.copytree(os.path.join(REPO, "quelle"), os.path.join(bau, "quelle"))
     os.makedirs(os.path.join(bau, "werkzeuge")); os.makedirs(os.path.join(bau, "simulator3d"))
     shutil.copy(os.path.join(HIER, "bauen.py"), os.path.join(bau, "werkzeuge"))
@@ -326,6 +335,7 @@ class Lauf:
         self.port = frei_port()
         self.hand = None
         self.t0 = time.time()
+        self.sys_env = {}
 
     # -- program files in ~/MoveEye (with the throwaway public key), update server with versions.json
     def dateien(self, alt, neu, plus1):
@@ -369,6 +379,39 @@ class Lauf:
             vs = []
         self.url = base + "/versions.json"
         return ok(vs == sorted([self.ver["neu"], self.ver["plus1"]]), "Update-Quelle (HTTPS, signiert): %s" % ", ".join(vs))
+
+    def umgebung(self, werte):
+        """Umgebung des Dienstes ändern: {NAME: wert oder None}. Benutzer-Dienst: set-environment des eigenen systemd --user;
+        System-Dienst: eine Ergänzung (drop-in) /etc/systemd/system/motionwatch.service.d/ci.conf - die Unit bleibt, wie MoveEye
+        sie schreibt"""
+        if self.d.modus == "user":
+            an = ["%s=%s" % kv for kv in werte.items() if kv[1] is not None]
+            aus = [k for k, v in werte.items() if v is None]
+            if an:
+                self.d.sctl("set-environment", *an)
+            if aus:
+                self.d.sctl("unset-environment", *aus)
+            return
+        self.sys_env.update(werte)
+        d = "/etc/systemd/system/" + UNIT + ".d"
+        os.makedirs(d, exist_ok=True)
+        with open(d + "/ci.conf", "w") as f:
+            f.write("[Service]\n" + "".join("Environment=%s=%s\n" % kv for kv in self.sys_env.items() if kv[1] is not None))
+        subprocess.run(["systemctl", "daemon-reload"])
+
+    def zeiger(self):
+        """die Datei, die der Starter moveeye_start.py startet (moveeye_start.json) - "" ohne Hinweis-Datei"""
+        try:
+            return json.load(open(os.path.join(self.b.app, "moveeye_start.json"))).get("file") or ""
+        except (OSError, ValueError, AttributeError):
+            return ""
+
+    def unit_text(self):
+        p = (os.path.join(self.b.home, ".config", "systemd", "user", UNIT) if self.d.modus == "user" else "/etc/systemd/system/" + UNIT)
+        try:
+            return open(p).read()
+        except OSError:
+            return ""
 
     def kopieren(self, name):
         """eine Version nach ~/MoveEye (Programm + Zusatzdatei), dem Test-Benutzer gehörend -> Pfad"""
@@ -430,8 +473,11 @@ def einrichten(L, prog, titel):
         hinweis("Autostart-Meldung: %s" % j["autostart"]["msg"][:200])
     unit = os.path.join(L.b.home, ".config", "systemd", "user", UNIT)
     txt = open(unit).read() if os.path.isfile(unit) else ""
-    ok(all(x in txt for x in ("Restart=always", "WatchdogSec=120", "NotifyAccess=main", "--headless --boot", os.path.basename(prog))),
-       "Unit-Datei aus Teil 140 (autostart_unit): Restart=always, WatchdogSec=120, NotifyAccess=main, --headless --boot")
+    ok(all(x in txt for x in ("Restart=always", "WatchdogSec=120", "NotifyAccess=main", "StartLimitIntervalSec=0", "--headless --boot",
+                              "moveeye_start.py")) and os.path.basename(prog) not in txt,
+       "Unit-Datei aus Teil 140 (autostart_unit): Restart=always, WatchdogSec=120, NotifyAccess=main, --headless --boot, "
+       "startet den Starter moveeye_start.py (keine Datei einer Version)")
+    ok(L.zeiger() == os.path.basename(prog), "der Starter startet %s (moveeye_start.json: %s)" % (os.path.basename(prog), L.zeiger() or "fehlt"))
     rc, out, err = L.b.als(["systemd-analyze", "--user", "verify", unit], timeout=60)
     ok(rc == 0 or not (out + err).strip(), "systemd-analyze --user verify: %s" % ((out + err).strip()[:200] or "ok"))
     rc, out, _e = L.d.sctl("is-enabled", UNIT)
@@ -544,17 +590,8 @@ def fall_e(L, v):
     L.schritt("e Stromausfall", t0)
 
 
-def fall_f(L, v):
-    print("f  Start-Wächter: der Start hängt -> Code 1, systemd startet neu, start_hang.txt")
-    t0 = time.time()
-    hang, alt_ = os.path.join(L.b.daten, "start_hang.txt"), os.path.join(L.b.daten, "start_hang.txt.old")
-    for x in (hang, alt_):
-        if os.path.exists(x):
-            os.remove(x)
-    L.d.sctl("stop", UNIT)
-    L.d.sctl("set-environment", "MW_START_WD=12")              # 12 s instead of 90 s (the same code path)
-    # 3.87.1: a genuinely hung start = a stuck OLD MoveEye of the same user holds the web port (a foreign program would not
-    # end the guard - case f2). Its command line names a MoveEye file, so the service knows: a fresh start helps here.
+def alter_halter(L):
+    """eine hängende ALTE MoveEye desselben Benutzers hält den Web-Port (ihre Befehlszeile nennt eine MoveEye-Datei) -> Prozess"""
     os.makedirs(L.b.ci, exist_ok=True); L.b.gehoert(L.b.ci)
     alt_py, marke = os.path.join(L.b.ci, "webcam_bewegung_9_9_8.py"), os.path.join(L.b.ci, "alt_bereit")
     open(alt_py, "w").write("import socket, sys, time\ns = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)\n"
@@ -564,7 +601,29 @@ def fall_f(L, v):
         os.remove(marke)
     hp = subprocess.Popen(L.b.cmd([L.b.py, alt_py, str(L.port), marke]), cwd=L.b.home, start_new_session=True)
     warte(lambda: os.path.exists(marke), 20, 0.2)
-    h = None
+    return hp
+
+
+def halter_weg(hp):
+    try:
+        os.killpg(hp.pid, signal.SIGKILL)
+    except OSError:
+        pass
+    hp.wait(10)
+
+
+def fall_f(L, v):
+    print("f  Start-Wächter: der Start hängt -> Code 1, systemd startet neu, start_hang.txt")
+    t0 = time.time()
+    hang, alt_ = os.path.join(L.b.daten, "start_hang.txt"), os.path.join(L.b.daten, "start_hang.txt.old")
+    for x in (hang, alt_):
+        if os.path.exists(x):
+            os.remove(x)
+    L.d.sctl("stop", UNIT)
+    L.umgebung({"MW_START_WD": "12"})                           # 12 s instead of 90 s (the same code path)
+    # 3.87.1: a genuinely hung start = a stuck OLD MoveEye of the same user holds the web port (a foreign program would not
+    # end the guard - case f2). Its command line names a MoveEye file, so the service knows: a fresh start helps here.
+    hp = alter_halter(L)
     n0 = L.d.zeig()["NRestarts"]
     try:
         L.d.sctl("start", UNIT)
@@ -583,20 +642,16 @@ def fall_f(L, v):
                 txt += open(x, errors="replace").read()
         ok(tw is not None and ("File" in txt or "Thread" in txt), "start_hang.txt mit den Threads (%d Zeichen)" % len(txt))
     finally:
-        try:
-            os.killpg(hp.pid, signal.SIGKILL)
-        except OSError:
-            pass
-        hp.wait(10)
+        halter_weg(hp)
     t = warte(lambda: version_da(L.port) == v, L.a.limit + 30)
-    ok(t is not None, "Port frei -> Seite antwortet (%s s)" % t)
+    ok(t is not None, "Port frei -> Seite antwortet mit %s (%s s; da: %s)" % (v, t, version_da(L.port) or "nichts"))
     ok("The last start hung" in L.log(), "Protokoll: «The last start hung …»")
     z = L.d.zeig()
     ok(z.get("ActiveState") == "active", "Dienst active (%s)" % z.get("ActiveState"))
     if t is None:
         L.zeigen("f")
-    L.d.sctl("unset-environment", "MW_START_WD")
-    L.schritt("f Start-Wächter", t0)
+    L.umgebung({"MW_START_WD": None})
+    L.schritt("f Start-Wächter" + (" (System-Dienst)" if L.d.modus == "system" else ""), t0)
 
 
 def fall_f2(L, v):
@@ -623,6 +678,128 @@ def fall_f2(L, v):
     ok(t is not None, "Port frei -> Seite antwortet ohne Neustart (%s s)" % t)
     L.d.sctl("unset-environment", "MW_START_WD")
     L.schritt("f2 fremder Halter", t0)
+
+
+def fall_z(L, v):
+    print("z  Start ohne Zusatzdatei als Dienst: Kern läuft, holt die ZIP von der Update-Quelle, ein Neustart im selben Dienst")
+    t0 = time.time()
+    L.d.sctl("stop", UNIT)
+    z_ = os.path.join(L.b.app, os.path.basename(zip_zu(os.path.join(L.srv_dir, L.prog["neu"])) or "x"))
+    if os.path.exists(z_):
+        os.remove(z_)
+    for x in ("start_hang.txt", "start_hang.txt.old"):
+        if os.path.exists(os.path.join(L.b.daten, x)):
+            os.remove(os.path.join(L.b.daten, x))
+    L.loglen = len(L.log())
+    L.d.sctl("start", UNIT)
+    time.sleep(2)
+    z0 = L.d.zeig()
+    t = warte(lambda: version_da(L.port) == v, L.a.limit)
+    ok(t is not None, "ohne ZIP: der Kern antwortet (%s s)" % t)
+    tz = warte(lambda: os.path.isfile(z_) and "restarting once" in L.log()[L.loglen:], 90, 1.0)
+    ok(tz is not None, "die ZIP kommt von der Update-Quelle, danach ein Neustart (%s s)" % tz)
+    tw = warte(lambda: version_da(L.port) == v and "Data file is there" in L.log()[L.loglen:], L.a.limit)
+    time.sleep(5)
+    t2 = warte(lambda: version_da(L.port) == v, L.a.limit)
+    z = L.d.zeig()
+    ok(t2 is not None and z.get("ActiveState") == "active" and z.get("InvocationID") == z0.get("InvocationID") and z["MainPID"] == z0["MainPID"],
+       "derselbe Dienst-Lauf nach dem Neustart für die ZIP (os.execv): PID %s -> %s, %s" % (z0["MainPID"], z["MainPID"], z.get("ActiveState")))
+    ok(not os.path.exists(os.path.join(L.b.daten, "start_hang.txt.old")), "der Start-Wächter hat dabei nicht eingegriffen")
+    if t is None or tz is None:
+        L.zeigen("z")
+    L.schritt("z ohne Zusatzdatei", t0)
+
+
+def laeuft_datei(L):
+    """welche Programmdatei der Hauptprozess des Dienstes ausführt ("" = keiner)"""
+    pid = L.d.zeig()["MainPID"]
+    try:
+        cmd = open("/proc/%d/cmdline" % pid, "rb").read().split(b"\0")
+    except OSError:
+        return ""
+    return next((os.path.basename(x.decode(errors="replace")) for x in cmd if b"webcam_bewegung_" in x), "")
+
+
+def fall_t(L):
+    print("t  Starter startet nur aufgezeichnete Dateien (Grösse + SHA-256): Notiz fehlt / Datei verändert / fremde neuere Datei")
+    t0 = time.time()
+    app, cur = L.b.app, L.zeiger()
+    datei_v = {L.prog[k]: L.ver[k] for k in L.prog}
+    ptr, kopie = os.path.join(app, "moveeye_start.json"), os.path.join(L.b.daten, "start_good.json")
+    ok(cur in datei_v and os.path.isfile(kopie), "Notiz %s und Kopie start_good.json im Daten-Ordner da" % (cur or "fehlt"))
+    try:
+        rec = json.load(open(ptr))
+    except (OSError, ValueError):
+        rec = {}
+    ok(len(str(rec.get("sha256", ""))) == 64 and rec.get("size") == os.path.getsize(os.path.join(app, cur)),
+       "die Notiz hält Grösse und SHA-256 der Datei fest")
+    fremd = os.path.join(app, "webcam_bewegung_3_99_0.py")         # «newer», by name - but not recorded (changed copy)
+    shutil.copy(os.path.join(app, cur), fremd)
+    with open(fremd, "a") as f:
+        f.write("\n# verändert - darf nie gestartet werden\n")
+    L.b.gehoert(fremd)
+    n0 = len(L.log())
+    try:
+        # t1: the note next to the starter is gone, a «newer» changed file lies there -> the recorded file from the copy
+        L.d.sctl("stop", UNIT)
+        os.remove(ptr)
+        L.d.sctl("start", UNIT)
+        t = warte(lambda: version_da(L.port) == datei_v[cur], L.a.limit)
+        ok(t is not None and laeuft_datei(L) == cur, "t1: Notiz fehlt + fremde neuere Datei: läuft %s (nicht %s; %s s)"
+           % (laeuft_datei(L) or "nichts", os.path.basename(fremd), t))
+        ok("moveeye_start.json missing" in L.log()[n0:], "t1: Protokoll nennt es («MoveEye starter: moveeye_start.json missing …»)")
+        # t2: the noted file itself is changed -> the last good other version, loudly
+        gut = next((g.get("file") for g in (json.load(open(ptr)).get("good") or []) if g.get("file") != cur and g.get("file") in datei_v), "")
+        sicher = os.path.join(L.tmp, "sicher.py")
+        shutil.copy(os.path.join(app, cur), sicher)
+        with open(os.path.join(app, cur), "a") as f:
+            f.write("\n# verändert\n")
+        n0 = len(L.log())
+        L.d.sctl("restart", UNIT)
+        t = warte(lambda: bool(gut) and version_da(L.port) == datei_v[gut], L.a.limit)
+        ok(t is not None and laeuft_datei(L) == gut, "t2: %s verändert -> die letzte gute Version %s läuft (%s; %s s)"
+           % (cur, gut or "?", laeuft_datei(L) or "nichts", t))
+        ok("checksum does not match the record" in L.log()[n0:], "t2: Protokoll: «not started (checksum does not match the record) …»")
+        shutil.copy(sicher, os.path.join(app, cur)); L.b.gehoert(os.path.join(app, cur))
+        # t3: no note at all -> nothing is started, never «the newest»
+        tj = time.time()
+        L.d.sctl("stop", UNIT)
+        for x in (ptr, kopie):
+            if os.path.exists(x):
+                os.remove(x)
+        L.d.sctl("start", UNIT)
+        time.sleep(12)
+        ok(not version_da(L.port) and "3_99_0" not in laeuft_datei(L), "t3: ohne Notiz startet nichts (keine Seite, nicht %s)" % os.path.basename(fremd))
+        j = L.d.journal(tj)
+        if j is None:
+            hinweis("t3: kein Journal (lokal) - Meldung des Starters nicht geprüft")
+        else:
+            ok("NO program file matches" in j, "t3: Journal: «MoveEye starter: NO program file matches …»")
+        # back: start once by hand (autostart on) - that records the file again
+        L.d.sctl("stop", UNIT)
+        th = L.hand_start(os.path.join(app, gut or cur))
+        L.hand_ende()
+        L.d.sctl("start", UNIT)
+        t = warte(lambda: bool(version_da(L.port)), L.a.limit)
+        ok(th is not None and t is not None, "t3: einmal von Hand gestartet -> aufgezeichnet, der Dienst läuft wieder (%s)" % (version_da(L.port) or "nichts"))
+    finally:
+        if os.path.exists(fremd):
+            os.remove(fremd)
+    if FEHLER:
+        L.zeigen("t")
+    L.schritt("t Starter prüft", t0)
+
+
+def neustart_pi(L, v, titel):
+    """Pi aus- und einschalten = der Dienst startet neu: welche Version kommt?"""
+    t0 = time.time()
+    L.d.sctl("restart", UNIT, timeout=120)
+    t = warte(lambda: version_da(L.port) == v, L.a.limit)
+    ok(t is not None, "%s: nach dem Neustart des Pi läuft %s (%s s; da: %s)" % (titel, v, t, version_da(L.port) or "nichts"))
+    tw = warte(lambda: int(L.d.zeig().get("WatchdogTimestampMonotonic") or 0) > 0, 45, 1.0)
+    ok(tw is not None, "%s: systemd bekommt «WATCHDOG=1» (%s s)" % (titel, tw))
+    L.schritt(titel + " Neustart", t0)
+    return t is not None
 
 
 def update(L, von, nach, titel, live=False):
@@ -663,11 +840,10 @@ def update(L, von, nach, titel, live=False):
         print("  (Protokoll: %s)" % busy[-1][-200:])
     rc, out, _e = L.d.sctl("show", UNIT, "-p", "ExecStart", "-p", "NeedDaemonReload")
     nd = os.path.basename(L.prog["plus1" if nach == L.ver["plus1"] else "neu"])
-    folgt = nd in out and "NeedDaemonReload=no" in out
-    if L.d.modus == "system" and not folgt:
-        hinweis("BEKANNT (Vorschlag im Bericht): der System-Dienst von --install-service folgt dem Update nicht - die Unit "
-                "startet weiter die alte Datei (Teil 140 autostart_follow_version: nur als root bzw. mit CFG autostart)")
-    elif not ok(folgt, "die Unit startet jetzt %s (autostart_follow_version, daemon-reload)" % nd):
+    ut = L.unit_text()
+    folgt = "moveeye_start.py" in out and "NeedDaemonReload=no" in out and L.zeiger() == nd and "WatchdogSec=120" in ut
+    if not ok(folgt, "%s: die Unit startet den Starter (WatchdogSec, kein daemon-reload offen), der Starter jetzt %s (moveeye_start.json: %s)"
+              % ("System-Dienst" if L.d.modus == "system" else "Benutzer-Dienst", nd, L.zeiger() or "fehlt")):
         print("  (systemctl show: %s)" % out.replace("\n", " · ")[:400])
         print("  (Protokoll Autostart: %s)" % " / ".join(x[-160:] for x in lg.splitlines() if "utostart" in x)[-600:])
     if lb:
@@ -685,55 +861,107 @@ def update(L, von, nach, titel, live=False):
     return t is not None
 
 
+SUDOERS = "/etc/sudoers.d/010_mwtest-nopasswd"
+
+
 def fall_g(L):
-    print("g  System-Dienst /etc/systemd/system/motionwatch.service (sudo … --install-service, wie einrichten.sh)")
+    print("g  System-Dienst (sudo … --install-service wie einrichten.sh): alte Unit -> Update stellt einmal um -> Neustart, Wächter")
     t0 = time.time()
-    rc, out, _e = (lambda r: (r.returncode, r.stdout.strip(), ""))(subprocess.run(["systemctl", "is-system-running"], capture_output=True, text=True))
-    if out not in ("running", "degraded"):
+    r = subprocess.run(["systemctl", "is-system-running"], capture_output=True, text=True)
+    if r.stdout.strip() not in ("running", "degraded"):
         if L.a.ci:
-            ok(False, "g: System-systemd läuft nicht (%s)" % out)
+            ok(False, "g: System-systemd läuft nicht (%s)" % r.stdout.strip())
         else:
-            hinweis("g übersprungen: kein System-systemd hier (%s) - läuft im CI" % (out or "?"))
+            hinweis("g übersprungen: kein System-systemd hier (%s) - läuft im CI" % (r.stdout.strip() or "?"))
         return
     L.d.sctl("disable", "--now", UNIT)
     sysunit = "/etc/systemd/system/" + UNIT
     S = Dienst(L.b, "system")
+    # Raspberry Pi OS: the first user may use sudo without a password (/etc/sudoers.d/010_pi-nopasswd) - the same here
+    with open(SUDOERS, "w") as f:
+        f.write("%s ALL=(ALL) NOPASSWD: ALL\n" % L.b.name)
+    os.chmod(SUDOERS, 0o440)
     try:
-        L.d.sctl("stop", UNIT)
+        for f in os.listdir(L.b.app):                              # an install of the old kind: no starter yet
+            if re.match(r"(webcam_bewegung_|moveeye_daten_)\d+_\d+_\d+\.(py|zip)$|moveeye_start\.", f):
+                os.remove(os.path.join(L.b.app, f))
         alt = L.kopieren("alt")
-        einstellungen(L.b, L.url, {"autostart": False})
+        einstellungen(L.b, L.url, {"autostart": False})          # a system unit from einrichten.sh: autostart never set on the page
+        for x in ("run_state.json", "update_guard.json"):
+            if os.path.exists(os.path.join(L.b.daten, x)):
+                os.remove(os.path.join(L.b.daten, x))
         L.loglen = len(L.log())
         env = dict(os.environ, SUDO_USER=L.b.name, HOME="/root")
         r = subprocess.run([L.b.py, alt, "--install-service", "--port", str(L.port), "--web-password", PW], capture_output=True, text=True,
                            env=env, cwd=L.b.app, timeout=120)
         txt = open(sysunit).read() if os.path.isfile(sysunit) else ""
-        ok(r.returncode == 0 and ("User=%s" % L.b.name) in txt, "System-Unit geschrieben (User=%s): %s" % (L.b.name, (r.stdout + r.stderr).strip()[-160:]))
-        os.makedirs(sysunit + ".d", exist_ok=True)
-        with open(sysunit + ".d/ci.conf", "w") as f:            # the test server's certificate (a drop-in: the unit stays as written)
-            f.write("[Service]\nEnvironment=SSL_CERT_FILE=%s\n" % L.cert)
-        subprocess.run(["systemctl", "daemon-reload"])
+        ok(r.returncode == 0 and ("User=%s" % L.b.name) in txt, "System-Unit von %s geschrieben (User=%s)%s" % (
+            L.ver["alt"], L.b.name, "" if r.returncode == 0 else ": " + (r.stdout + r.stderr).strip()[-160:]))
+        alte_art = "moveeye_start.py" not in txt
+        print("  (Unit von %s: %s)" % (L.ver["alt"], "alte Art - Datei der Version in ExecStart, ohne WatchdogSec" if alte_art else "schon mit Starter"))
+        L.d = S
+        L.umgebung({"SSL_CERT_FILE": L.cert})                      # the test server's certificate (drop-in, the unit stays)
         S.sctl("restart", UNIT)
-        if "WatchdogSec" not in txt:
-            hinweis("g: die System-Unit von --install-service (Teil 420 service_text) hat kein WatchdogSec / NotifyAccess, kein "
-                    "--boot und kein StartLimitIntervalSec=0 - anders als die Benutzer-Unit (Teil 140 autostart_unit)")
         t = warte(lambda: version_da(L.port) == L.ver["alt"], L.a.limit)
         ok(t is not None, "g/a: System-Dienst, Seite antwortet mit %s (%s s)" % (L.ver["alt"], t))
-        z = S.zeig()
-        ok(z.get("ActiveState") == "active", "g/a: active (%s)" % z.get("ActiveState"))
         if t is None:
-            print(S.journal(t0) or "")
+            L.zeigen("g/a")
             return
-        L.d = S
-        update(L, L.ver["alt"], L.ver["neu"], "g/b Update (System-Dienst)")
-        # the Pi is switched off and on again: which version comes?
-        S.sctl("restart", UNIT, timeout=120)
-        tv = warte(lambda: version_da(L.port), L.a.limit)
-        v = version_da(L.port)
-        ok(tv is not None, "g: nach dem Neustart des Pi antwortet die Seite (%s)" % (v or "nichts"))
-        if v != L.ver["neu"]:
-            hinweis("BEKANNT (Vorschlag im Bericht): System-Dienst - nach dem Neustart des Pi läuft wieder %s statt %s "
-                    "(das Update gilt nur bis zum nächsten Neustart)" % (v or "nichts", L.ver["neu"]))
+        # b: the update; the new program (= the service) rewrites the old unit once with «sudo -n», without stopping itself
+        n0 = len(L.log())
+        update(L, L.ver["alt"], L.ver["neu"], "g/b Update ALT -> NEU (System-Dienst, Unit wird einmal umgestellt)")
+        if alte_art:
+            ok("Autostart: unit /etc/systemd/system/motionwatch.service updated" in L.log()[n0:],
+               "Protokoll: «Autostart: unit … updated (starter …) - the service keeps running»")
+        umgestellt = L.unit_text()
+        # NEU does not come up 3 times right after the update -> the start guard (390) goes back to ALT; ALT knows nothing of
+        # the starter, so NEU must point the starter to ALT - else the next start of the Pi brings the rejected NEU again
+        # (this is also the start watchdog of the system unit: NotifyAccess / NOTIFY_SOCKET only since the new unit)
+        t1 = time.time()
+        n0 = len(L.log())
+        for x in ("start_hang.txt", "start_hang.txt.old"):
+            if os.path.exists(os.path.join(L.b.daten, x)):
+                os.remove(os.path.join(L.b.daten, x))
+        S.sctl("stop", UNIT)                                       # the hung old MoveEye takes the port while the service is off
+        L.umgebung({"MW_START_WD": "8"})
+        hp = alter_halter(L)
+        try:
+            S.sctl("start", UNIT)
+            tr_ = warte(lambda: "going back to " + L.ver["alt"] in L.log()[n0:], 150, 1.0)
+            ok(tr_ is not None, "g/r: %s startet 3-mal nicht -> zurück zu %s (Start-Wächter 390, %s s)" % (L.ver["neu"], L.ver["alt"], tr_))
+            j = S.journal(t1) or ""
+            n_ex = len(re.findall(r"motionwatch\.service: Main process exited, code=exited, status=1", j))
+            ok(n_ex >= 2, "g/r: Start-Wächter am System-Dienst - «Main process exited, status=1/FAILURE» %d-mal, systemd startet neu" % n_ex)
+            ok(any(os.path.exists(os.path.join(L.b.daten, x)) for x in ("start_hang.txt", "start_hang.txt.old")),
+               "g/r: start_hang.txt geschrieben (Threads des hängenden Starts)")
+            if tr_ is None:
+                L.zeigen("g/r")
+        finally:
+            halter_weg(hp)
+        L.umgebung({"MW_START_WD": None})
+        t = warte(lambda: version_da(L.port) == L.ver["alt"], L.a.limit + 30)
+        ok(t is not None, "g/r: %s läuft wieder (%s s; da: %s)" % (L.ver["alt"], t, version_da(L.port) or "nichts"))
+        ok(L.zeiger() == L.prog["alt"], "g/r: der Starter startet jetzt %s (moveeye_start.json: %s)" % (L.prog["alt"], L.zeiger() or "fehlt"))
+        neustart_pi(L, L.ver["alt"], "g/r")
+        L.schritt("g/r zurück zur alten Version", t1)
+        # c: the next update (ALT -> NEU+1): the unit stays as it is, only the note changes
+        update(L, L.ver["alt"], L.ver["plus1"], "g/c Update ALT -> NEU+1 (System-Dienst)")
+        ok(L.unit_text() == umgestellt, "g/c: die Unit bleibt beim Update unverändert (nur moveeye_start.json)")
+        if not neustart_pi(L, L.ver["plus1"], "g/c"):
+            L.zeigen("g Neustart")
+            return
+        vor = L.unit_text()
+        # einrichten.sh again with the newest file: --install-service writes the very same unit as the migration
+        plus1 = os.path.join(L.b.app, L.prog["plus1"])
+        r = subprocess.run([L.b.py, plus1, "--install-service", "--port", str(L.port), "--web-password", PW], capture_output=True,
+                           text=True, env=env, cwd=L.b.app, timeout=120)
+        ok(r.returncode == 0 and L.unit_text() == vor, "--install-service (%s) schreibt dieselbe Unit wie die Umstellung (ein Erzeuger)"
+           % L.ver["plus1"])
+        ok(S.zeig().get("ActiveState") == "active" and version_da(L.port) == L.ver["plus1"], "g: Dienst läuft weiter mit %s" % L.ver["plus1"])
     finally:
+        for x in (SUDOERS,):
+            if os.path.exists(x):
+                os.remove(x)
         subprocess.run(["systemctl", "disable", "--now", UNIT], capture_output=True)
         for x in (sysunit + ".d/ci.conf",):
             if os.path.exists(x):
@@ -761,13 +989,13 @@ def benutzer_anlegen(name):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--datei", default="", help="neue Version (Standard: neueste webcam_bewegung_*.py im Repository)")
-    ap.add_argument("--alt", default="", help="alte Version für b (Standard: die Datei davor im Repository)")
-    ap.add_argument("--plus1", default="", help="fertige Version NEU+1 für c (Standard: aus quelle/ bauen)")
+    ap.add_argument("--datei", default="", help="fertige neue Version (Standard: quelle/ als ALT+1 bauen - so prüft der Test die Quelle)")
+    ap.add_argument("--alt", default="", help="alte Version für b (Standard: die neueste webcam_bewegung_*.py im Repository)")
+    ap.add_argument("--plus1", default="", help="fertige Version NEU+1 für c (Standard: quelle/ als ALT+2 bauen)")
     ap.add_argument("--benutzer", default="mwtest")
     ap.add_argument("--python", default=sys.executable, help="Python für MoveEye (wie auf dem Pi: 3.11)")
     ap.add_argument("--limit", type=int, default=60, help="Sekunden, bis die Seite antworten muss")
-    ap.add_argument("--nur", default="a,d,e,f,b,c,g")
+    ap.add_argument("--nur", default="a,d,e,f,z,b,c,t,g")
     ap.add_argument("--ci", action="store_true", help="Test-Benutzer anlegen, linger einschalten; g ist Pflicht")
     ap.add_argument("--ohne-leck", action="store_true", help="b ohne das Hilfsprogramm, das den Port hält (zum Vergleich)")
     a = ap.parse_args()
@@ -775,15 +1003,19 @@ def main():
         print("braucht root (sudo): Test-Benutzer, linger, System-Dienst"); return 2
     nur = set(a.nur.lower().split(","))
     progs = sorted((p for p in glob.glob(os.path.join(REPO, "webcam_bewegung_*_*_*.py")) if zip_zu(p)), key=vkey)
-    neu = os.path.abspath(a.datei or progs[-1])
-    alt = os.path.abspath(a.alt) if a.alt else next((p for p in reversed(progs) if vkey(p) < vkey(neu)), "")
-    if not (zip_zu(neu) and alt):
-        print("NEU mit Zusatzdatei und eine ältere Version nötig (%s / %s)" % (neu, alt)); return 1
     tmp = tempfile.mkdtemp(prefix="mw_pidienst_")
     os.chmod(tmp, 0o755)
-    plus1, bt = ([os.path.abspath(a.plus1), zip_zu(os.path.abspath(a.plus1))] if a.plus1 else []), None
-    if not a.plus1:                                             # built while the setup runs (about 40 s)
-        bt = threading.Thread(target=lambda: plus1.extend(bauen_plus1(neu, tmp)), daemon=True); bt.start()
+    if a.datei:
+        neu = os.path.abspath(a.datei)
+        alt = os.path.abspath(a.alt) if a.alt else next((p for p in reversed(progs) if vkey(p) < vkey(neu)), "")
+    else:
+        alt = os.path.abspath(a.alt) if a.alt else (progs[-1] if progs else "")
+    if not alt:
+        print("eine ältere Version mit Zusatzdatei nötig"); return 1
+    x, y, z = vkey(alt)
+    gebaut, bts = {}, []                                         # built while the user is set up (about 40 s, in parallel)
+    for k, v in ((("neu", "%d.%d.%d" % (x, y, z + 1)),) if not a.datei else ()) + ((("plus1", "%d.%d.%d" % (x, y, z + 2)),) if not a.plus1 else ()):
+        bts.append(threading.Thread(target=lambda k=k, v=v: gebaut.__setitem__(k, bauen(v, tmp)), daemon=True)); bts[-1].start()
     if a.ci:
         benutzer_anlegen(a.benutzer)
     b = Benutzer(a.benutzer, a.python)
@@ -804,13 +1036,18 @@ def main():
         return 1
     L = Lauf(a, b, tmp)
     L.loglen = 0
-    print("Neu: %s · alt: %s · Port %d · Benutzer %s (%s)" % (os.path.basename(neu), os.path.basename(alt), L.port, b.name, b.home))
     try:
-        if bt is not None:
+        for bt in bts:
             bt.join(600)
-        if not ok(len(plus1) == 2 and all(plus1), "NEU+1 aus quelle/ gebaut (%s)" % (os.path.basename(plus1[0]) if plus1 else "-")):
+        if not a.datei:
+            neu = (gebaut.get("neu") or ("", ""))[0]
+            if not ok(bool(neu), "NEU aus quelle/ gebaut (%s)" % os.path.basename(neu or "-")):
+                return 1
+        plus1 = os.path.abspath(a.plus1) if a.plus1 else (gebaut.get("plus1") or ("", ""))[0]
+        if not ok(bool(plus1), "NEU+1 aus quelle/ gebaut (%s)" % os.path.basename(plus1 or "-")):
             return 1
-        if not L.dateien(alt, neu, plus1[0]):
+        print("Neu: %s · alt: %s · Port %d · Benutzer %s (%s)" % (os.path.basename(neu), os.path.basename(alt), L.port, b.name, b.home))
+        if not L.dateien(alt, neu, plus1):
             return 1
         print("Versionen: alt %(alt)s · neu %(neu)s · neu+1 %(plus1)s" % L.ver)
         # ---- a, d, e, f with NEU
@@ -828,6 +1065,8 @@ def main():
             if "f" in nur:
                 fall_f(L, L.ver["neu"])
                 fall_f2(L, L.ver["neu"])
+            if "z" in nur:
+                fall_z(L, L.ver["neu"])
         # ---- b, c: ALT started by hand (the service follows the version started by hand), then two updates
         if nur & {"b", "c"}:
             t0 = time.time()
@@ -872,7 +1111,10 @@ def main():
                         st = "weg"
                     print("  (Hilfsprogramm PID %d nach dem Update: %s)" % (kind, st))
                 if "c" in nur and gut:
-                    update(L, L.ver["neu"], L.ver["plus1"], "c zweites Update NEU -> NEU+1 bei offenem Live-Bild", live=True)
+                    if update(L, L.ver["neu"], L.ver["plus1"], "c zweites Update NEU -> NEU+1 bei offenem Live-Bild", live=True):
+                        neustart_pi(L, L.ver["plus1"], "c")
+                        if "t" in nur:
+                            fall_t(L)
         if "g" in nur:
             fall_g(L)
     finally:

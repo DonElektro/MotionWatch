@@ -53,7 +53,7 @@ SPIELE_REIN = ["games/*", "werkzeuge/spiele_test.py", "werkzeuge/spiele_ordnen_t
 # Pi-Dienst (MoveEye unter echtem systemd wie auf dem Pi): its own test files alone -> only it (+ basic checks); the parts
 # for start, settings file, autostart / service, self-healing restarts, update, power, web server, run guard -> it runs too
 PIDIENST_REIN = ["werkzeuge/pi_dienst_test.py", "werkzeuge/pakete_bookworm.txt"]
-PIDIENST_QUELLE = [r"quelle/(010|012|040|140|145|380|390|397|400|550|578|640)_"]
+PIDIENST_QUELLE = [r"quelle/(010|012|040|140|145|380|390|397|400|420|550|578|640)_"]
 SPIELE_QUELLE = [r"quelle/(32\d|33\d|34[0-3])[a-z]*_", r"quelle/639zz[ghnor]_", r"quelle/[^/]*(spiele|fertigspiele|fotaq|schach|wasnun)[^/]*$"]
 
 
@@ -110,7 +110,7 @@ def entscheiden(ref, ereignis="push", alles=False, dateien=None, doppelt=""):
         warum = "%d Dateien gegenüber main geändert, keine davon betrifft diesen Teil" % n
     fest = {"spiele": "keine Spiele-Datei geändert (games/, Spiele-Teile in quelle/, Spiele-Tests) – läuft auf main immer",
             "usb": "werkzeuge/usb_installer/ nicht geändert – läuft auf main immer",
-            "pidienst": "weder Start, Update, Web-Server noch Dienst geändert (quelle/010 012 040 140 145 380 390 397 400 550 578 640, "
+            "pidienst": "weder Start, Update, Web-Server noch Dienst geändert (quelle/010 012 040 140 145 380 390 397 400 420 550 578 640, "
                         "werkzeuge/pi_dienst_test.py) – läuft auf main immer"}
     grund = {e: fest.get(e, warum + " – läuft auf main immer") for e in EINHEITEN if not laeuft[e]}
     kurz = "%d Dateien gegenüber main" % n + (": " + ", ".join("%d× %s" % (len(v), k) for k, v in sorted(kl.items())) if kl else "")
