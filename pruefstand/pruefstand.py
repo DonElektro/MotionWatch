@@ -201,8 +201,12 @@ def run(a):
                 os.makedirs(os.path.join(cfg, "models"), exist_ok=True)
                 shutil.copy(os.path.join(a.ki_ordner, fn), os.path.join(cfg, "models", fn))
         log("Motion Watch:", os.path.basename(mw))
-        P.start("Motion Watch", [sys.executable, mw, "--headless", "--port", str(a.mw_port), "--bind", "127.0.0.1", "--config", cfg],
-                env, os.path.join(tmp, "motionwatch.log"))
+        mw_cmd = [sys.executable, mw, "--headless", "--port", str(a.mw_port), "--bind", "127.0.0.1", "--config", cfg]
+        kerne = str(env.get("MW_PRUEFSTAND_MW_KERNE", "")).strip()     # Vergleich: MoveEye nur auf diesen Kernen (weniger Bilder/s)
+        if kerne and re.fullmatch(r"[0-9]+([,-][0-9]+)*", kerne) and shutil.which("taskset"):
+            mw_cmd = ["taskset", "-c", kerne] + mw_cmd
+            log("Motion Watch nur auf Kern(en)", kerne, "(Vergleich: weniger Bilder/s)")
+        P.start("Motion Watch", mw_cmd, env, os.path.join(tmp, "motionwatch.log"))
         sim = "http://127.0.0.1:%d" % a.sim_port
         web = "http://127.0.0.1:%d" % a.mw_port
         # --- wait: both running and connected, pictures coming
@@ -242,6 +246,8 @@ def run(a):
         info = {"datum": time.strftime("%Y-%m-%d %H:%M"), "mw_version": mw_version(mw), "ki": s.get("ai_status", "?"),
                 "rechner": a.rechner or ("%s %s, %d Kerne" % (platform.system(), platform.machine(), os.cpu_count() or 0)),
                 "qualitaet": a.qualitaet, "szene": a.szene, "kameras": "Kopfkamera" if a.kameras == [0] else "Kopf- und Weitwinkel-Kamera", "plaene": {}}
+        if kerne and mw_cmd[0] == "taskset":
+            info["mw_kerne"] = kerne                               # Vergleich: MoveEye mit weniger Kernen (nicht für VERLAUF.md)
         try:
             info["sim_version"] = str(http_json(sim + "/info", timeout=4).get("name", "?")).split()[-1]
         except Exception:
@@ -278,6 +284,7 @@ def run(a):
                 t0 = time.time()
                 fps = []
                 rep_ = None
+                schnapp = Schnappschuesse(web, t0) if os.environ.get("MW_PRUEFSTAND_BILDER") == "1" else None
                 soll = float(r.get("total_s") or PLAN_DAUER.get(plan0, 400) * a.mal)       # the simulator knows how long it takes
                 log("  dauert etwa %d Min." % round(soll / 60.0))
                 while time.time() - t0 < soll * 2.5 + 180:
@@ -290,6 +297,8 @@ def run(a):
                     if not r.get("running"):
                         rep_ = r.get("report") or None
                         break
+                if schnapp is not None and (not rep_ or not rep_.get("phases") or rep_.get("plan") != plan0):
+                    schnapp.stopp()
                 if not rep_ or not rep_.get("phases") or rep_.get("plan") != plan0:      # (0 visible persons is a valid result)
                     log("%s: kein Bericht – %s" % (plan_name(plan), (r.get("info") if isinstance(r, dict) else "") or "Zeit abgelaufen"), wichtig=True)
                     rep_ = None
@@ -299,6 +308,9 @@ def run(a):
                     except Exception:
                         pass
                     continue
+                if schnapp is not None:
+                    schnapp.stopp()
+                    schnapp.ausgeben(rep_, plan, seed_n, os.path.join(tmp, "bilder"))
                 rep_["dauer_s"] = round(time.time() - t0)
                 rep_["mw_fps"] = round(sum(fps) / len(fps), 1) if fps else 0
                 rep_.setdefault("seed", seed_n)
@@ -377,6 +389,108 @@ def run(a):
             shutil.rmtree(tmp, ignore_errors=True)
         else:
             log("Protokolle und Einstellungen:", tmp)
+
+
+class Schnappschuesse:
+    """Diagnose (MW_PRUEFSTAND_BILDER=1): holt alle 1.5 s MoveEyes ausgewertetes Bild (/snapshot.jpg, mit Rahmen) und gibt
+    nach dem Testlauf zu jeder verpassten Person das Bild vom «besten Moment» (missed_list t) klein ins Job-Protokoll aus:
+    Zeile «BILD <name> <base64-JPEG>» - so lässt es sich auch ohne Artefakt ansehen. Braucht OpenCV (sonst still aus)."""
+
+    def __init__(self, web, t0):
+        import threading
+        self.web, self.t0, self.bilder, self.halt = web, t0, [], threading.Event()
+        try:
+            import cv2                                   # noqa: F401 (only to see that it is there)
+            import numpy                                 # noqa: F401
+        except Exception:
+            self.halt.set()
+            return
+        threading.Thread(target=self._holen, daemon=True).start()
+
+    def _holen(self):
+        import cv2
+        import numpy as np
+        while not self.halt.is_set():
+            try:
+                with urllib.request.urlopen(self.web + "/snapshot.jpg", timeout=4) as r:
+                    b = r.read()
+                im = cv2.imdecode(np.frombuffer(b, np.uint8), cv2.IMREAD_COLOR)
+                if im is not None:
+                    h, w = im.shape[:2]
+                    k = 320.0 / max(1, w)
+                    ok, buf = cv2.imencode(".jpg", cv2.resize(im, (320, max(1, int(h * k)))), [cv2.IMWRITE_JPEG_QUALITY, 70])
+                    if ok:
+                        self.bilder.append((time.time() - self.t0, buf.tobytes(), float(im.mean())))
+                        del self.bilder[:-400]                   # at most ~10 min back
+            except Exception:
+                pass
+            self.halt.wait(1.5)
+
+    def stopp(self):
+        self.halt.set()
+
+    def ausgeben(self, rep_, plan, seed_n, ordner):
+        import base64
+        if not self.bilder:
+            return
+        os.makedirs(ordner, exist_ok=True)
+        for i, m in enumerate((rep_.get("missed_list") or [])[:12]):
+            t = float(m.get("t", 0))
+            dt, b, hell = min(self.bilder, key=lambda x: abs(x[0] - t))
+            if abs(dt - t) > 4:
+                continue
+            name = "%s_z%d_v%02d.jpg" % (plan.replace("~", "-"), seed_n, i)
+            with open(os.path.join(ordner, name), "wb") as f:
+                f.write(b)
+            log("  verpasst: %s · Phase %s · %s · Bild bei %.0f s (Helligkeit %.0f/255) → %s" % (
+                m.get("kind", "?"), m.get("phase", "?"), ", ".join(m.get("why") or []) or "ohne Grund", dt, hell, name))
+            print("BILD %s %s" % (name, base64.b64encode(b).decode("ascii")), flush=True)
+
+
+def zeigen(dateien):
+    """Ergebnis eines Laufs, der nicht in VERLAUF.md kommt (Vergleich: Aussehen alt / standard, Grundformen, Grafik, Kerne):
+    Zusammenfassung pro Testlauf und die Sichtbarkeit jeder Person (Wahrheit des Simulators) in die Zusammenfassung des Jobs,
+    dazu das ganze JSON ins Job-Protokoll (Zeilen «ERGEBNIS-JSON <plan> <seed> {…}»). Artefakte braucht es dafür nicht."""
+    md = []
+    for fn in dateien:
+        try:
+            with open(fn, encoding="utf-8") as f:
+                d = json.load(f)
+        except (OSError, ValueError) as e:
+            log("nicht lesbar:", fn, e)
+            continue
+        md.append("## Ergebnis %s · %s · Aussehen %s · Tiere %s · Grafik %s%s\n" % (
+            os.path.basename(fn), d.get("mw_version", "?"), d.get("aussehen") or "alt", d.get("tiere") or "?", d.get("grafik") or "?",
+            (" · MoveEye-Kerne " + d["mw_kerne"]) if d.get("mw_kerne") else ""))
+        md.append("| Testlauf | Zufall | Pushes richtig / falsch | Personen | nicht sichtbar | Reaktion | Flackern | Bilder/s |")
+        md.append("|---|---|---|---|---|---|---|---|")
+        zeilen = []
+        for plan, reps in (d.get("plaene") or {}).items():
+            for r in reps:
+                pu = r.get("pushes") or {}
+                nv = sum(int(p.get("not_visible", 0)) for p in r.get("phases", []))
+                md.append("| %s | %s | %s / %s | %s / %s | %d | %s s | %s | %s |" % (
+                    plan_name(plan), r.get("seed", 1), pu.get("ok", "–"), pu.get("false", "–"), r.get("persons_detected", 0),
+                    r.get("persons", 0), nv, r.get("latency_s", "–"), r.get("flicker", r.get("false_alarms", 0)), r.get("mw_fps", "–")))
+                for v in r.get("visitors", []):
+                    if v.get("person"):
+                        zeilen.append("| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |" % (
+                            plan, r.get("seed", 1), v.get("phase"), v.get("kind"), "Wärmebild" if v.get("thermal_only") else "Kamera",
+                            v.get("light"), int(v.get("px", 0)), v.get("th_px", 0), v.get("vis_s"), v.get("det_s")))
+                print("ERGEBNIS-JSON %s %s %s" % (plan, r.get("seed", 1), json.dumps(r, ensure_ascii=False, separators=(",", ":"))), flush=True)
+        md.append("\n<details><summary>Sichtbarkeit pro Person (Wahrheit des Simulators)</summary>\n")
+        md.append("| Testlauf | Zufall | Phase | Art | gesehen von | Licht | px | px Wärme | sichtbar s | erkannt nach s |")
+        md.append("|---|---|---|---|---|---|---|---|---|---|")
+        md += zeilen
+        md.append("\n</details>\n")
+    text = "\n".join(md) + "\n"
+    summ = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summ:
+        with open(summ, "a", encoding="utf-8") as f:
+            f.write(text)
+    else:
+        print(text)
+    return 0
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -843,6 +957,7 @@ def main():
     ap.add_argument("--behalten", action="store_true", help="Protokolle und Einstellungen nicht löschen")
     ap.add_argument("--streng", action="store_true", help="Rückgabewert 3, wenn die Erkennung schlechter geworden ist")
     ap.add_argument("--nur-verlauf", action="store_true", help="nur VERLAUF.md aus den gespeicherten Ergebnissen schreiben")
+    ap.add_argument("--zeigen", nargs="+", default=None, help="nur diese Ergebnis-Dateien in die Zusammenfassung des Jobs und ins Protokoll schreiben (Vergleichsläufe)")
     ap.add_argument("--wege-einlesen", action="store_true", help="nur die Schleichwege aus feedback/ nach simulator3d/spielwege/ übernehmen")
     ap.add_argument("--ohne-extras", action="store_true", help="Schleichwege und echte Nächte nicht automatisch mitlaufen lassen")
     ap.add_argument("--fall-aus-spur", default="", help="eine Alarm-Spur von MoveEye (alarm_tracks.json) als echte Nacht speichern")
@@ -866,6 +981,8 @@ def main():
     if a.folgen_weitwinkel and not a.folgen:
         a.folgen = [1]
     a.seeds = max(1, min(9, a.seeds))
+    if a.zeigen is not None:
+        return zeigen(a.zeigen)
     if a.fall_aus_spur:
         fall_aus_spur(a.fall_aus_spur, a.spur_id, a.spur_wetter)
         return 0
@@ -886,6 +1003,9 @@ def main():
         verlauf_schreiben()
         log("VERLAUF.md geschrieben")
         return 0
+    # «dauer.py halten» (HP, Spielen) beendet mit SIGTERM: wie Ctrl+C aufhören, damit run() im finally Simulator, MoveEye und
+    # Xvfb beendet (sie laufen in eigenen Sitzungen und blieben sonst neben dem Kiosk-Simulator stehen)
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
     rc, info = run(a)
     if info:
         zeilen, schlechter = vergleich(info)
