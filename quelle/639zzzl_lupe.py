@@ -231,10 +231,12 @@ def _lupe_pi_hires(self):
             x0, y0 = int(vc[0] / aw * W), int(vc[1] / ah * H)
             x1, y1 = int((vc[0] + vc[2]) / aw * W), int((vc[1] + vc[3]) / ah * H)
             if x1 - x0 > 32 and y1 - y0 > 32:
-                arr = arr[max(0, y0):min(H, y1), max(0, x0):min(W, x1)]
+                return arr[max(0, y0):min(H, y1), max(0, x0):min(W, x1)]
     except Exception:
         pass
-    return arr
+    # 3.89 (review): without the field of view of the stream the privacy zones (0..1 of the live picture) would not fit the
+    # still - no sharp still then (lupe_service: the camera frame for 60 s, logged)
+    raise RuntimeError("no ScalerCrop of the video stream - the privacy zones would not fit the still")
 
 
 def _lupe_demo_bg(self):
