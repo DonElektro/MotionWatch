@@ -1246,7 +1246,8 @@ def morse_rx_text(text, source="camera", info=None):
     info = info if isinstance(info, dict) else {}
     m = {"t": datetime.now().strftime("%H:%M:%S"), "ts": now, "text": txt, "src": source, "wpm": float(info.get("wpm") or 0.0),
          "x": info.get("x"), "y": info.get("y"), "push": "", "pic": False, "test": False,
-         "fmt": "prot" if info.get("fmt") == "prot" else "morse", "key": bool(info.get("key")), "newer": bool(info.get("newer"))}   # 639zzzf
+         "fmt": "prot" if info.get("fmt") == "prot" else "morse", "key": bool(info.get("key")), "newer": bool(info.get("newer")),
+         "bad": str(info.get("bad") or "")}   # 639zzzf (bad: V2 with a key - "bad" / "nokey" / "short")
     MORSE["msgs"].appendleft(m); MORSE["last"] = m
     log_event("sys", f"Morse received ({source}, {m['wpm']:g} WPM): «{txt[:120]}»")
     if morse_is_test(txt):
@@ -1392,7 +1393,8 @@ def morse_state(lang=None):
                  "blink": int(rx.stats.get("periodic", 0)) if rx is not None else 0, "ms": (rx.stats.get("ms") if rx is not None else None),
                  "push_held": MORSE["push_held"],
                  "msgs": [{"t": m["t"], "text": m["text"], "wpm": m["wpm"], "src": m["src"], "pic": m["pic"], "push": m["push"], "test": bool(m.get("test")),
-                           "fmt": m.get("fmt", "morse"), "key": bool(m.get("key")), "newer": bool(m.get("newer"))} for m in list(MORSE["msgs"])]}}
+                           "fmt": m.get("fmt", "morse"), "key": bool(m.get("key")), "newer": bool(m.get("newer")),
+                           "bad": m.get("bad") or ""} for m in list(MORSE["msgs"])]}}
     return st
 
 
@@ -1584,7 +1586,8 @@ if GUI_OK:
                 body = ((r["live"] + "  (" + str(r["live_wpm"]) + " WPM)\n\n") if r["live"] else "") + \
                     ((tr("sound") + ": " + sd["live"] + "  (" + str(sd["live_wpm"]) + " WPM)\n\n") if sd["live"] else "") + \
                     "\n".join(f"{m['t']}  " + (tr("sound") + ": " if m["src"] == "sound" else "") + ("🔑 " if m.get("key") else "")
-                              + (tr("newer format - this MoveEye cannot read it") if m.get("newer") else m["text"]) for m in r["msgs"])
+                              + (tr("encrypted - no key is set here") if m.get("bad") == "nokey" else tr("wrong key or disturbed") if m.get("bad")
+                                 else tr("newer format - this MoveEye cannot read it") if m.get("newer") else m["text"]) for m in r["msgs"])
                 if snd.get() != bool(CFG.get("morse_rx_sound")):
                     snd.set(bool(CFG.get("morse_rx_sound")))
                 peer.config(text=("" if not s["on"] else tr("No test signal of the other MoveEye read yet.")) if not pe else
@@ -1698,6 +1701,10 @@ text-decoration:none;color:var(--acc);font-weight:600;text-align:center;overflow
       <div id="mo-prog" hidden><div class="mo-live" id="mo-shown"></div><div class="mo-bar" style="margin-top:8px"><i id="mo-bar"></i></div></div>
       <div class="mo-row"><button type="button" id="mo-go">📡 Send</button><button type="button" class="sec" id="mo-halt" hidden>⏹ Stop</button></div>
       <div class="mo-hint bad" id="mo-err"></div>
+      <div class="mo-row"><a class="mo-lnk" id="mo-wav" href="/morse/audio.wav" download hidden>🎵 As an audio file</a><button type="button" class="sec" id="mo-file-b">📁 Read an audio file</button></div>
+      <input type="file" id="mo-file" accept="audio/*,.wav,.m4a,.mp3,.ogg,.opus,.aac" hidden>
+      <div class="mo-hint" id="mo-file-h"></div>
+      <div class="mo-hint" id="mo-file-r" role="status"></div>
     </div>
   </section>
   <section class="card" id="mo-recv"><h3 id="mo-recv-t">Receive</h3>
@@ -1757,7 +1764,7 @@ text-decoration:none;color:var(--acc);font-weight:600;text-align:center;overflow
   $i("mo-prot-h").textContent = t("The protocol of the page «Phone radio»: tone A short = dot, long = dash; tone B short = end of a character, long = start / end of the message. 39 characters (A–Z, 0–9, space . ?). Only the loudspeaker sends it - light and infrared keep sending Morse. Reading: «Read a tone or a whistle with the microphone».");
   $i("mo-l-fa").textContent = t("Tone A - data (Hz)"); $i("mo-l-fb").textContent = t("Tone B - control (Hz)");
   $i("mo-l-key").textContent = t("New key (the same as on the other phone):"); $i("mo-key-set").textContent = "🔑 " + t("Set the key"); $i("mo-key-del").textContent = t("Delete the key");
-  $i("mo-key-w").textContent = "⚠ " + t("The key only obscures: every message shifts the characters with the same sequence. This is no strong encryption - whoever hears several messages can decode them.");
+  $i("mo-key-w").textContent = "⚠ " + t("With a key every message is encrypted anew (V2: a random start, PBKDF2 and HMAC-SHA256, 6 check characters). Still: no reviewed method and only about 32 bits of check - protect nothing important with it. Both sides need a current MoveEye or the new phone radio page.");
   $i("mo-legal").textContent = "§ " + t("Encryption is forbidden in amateur radio (ITU Radio Regulations No. 25.2A; OFCOM: digital transmissions only unencrypted). Never send with a key over amateur radio; for other radios (e.g. PMR446) follow the rules of OFCOM (BAKOM).");
   $i("mo-funk").textContent = "📻 " + t("Phone radio"); $i("mo-funk-dl").textContent = "⬇ " + t("Download as a file for another phone");
   const fmtSet = async b => { $i("mo-fmt-err").textContent = ""; const j = await api(Object.assign({action: "funk"}, b)); if (j.state) J = j; if (!j.ok) $i("mo-fmt-err").textContent = j.error || ""; paint(); plan(); };
@@ -1848,8 +1855,9 @@ text-decoration:none;color:var(--acc);font-weight:600;text-align:center;overflow
     pe.className = "mo-hint" + (p && p.full ? " ok" : p ? " warn" : "");
     $i("mo-peer-go").disabled = !s.on || !!s.tx || !(s.outs.find(o => o.id === "ir") || {}).ok;
     const ul = $i("mo-msgs"); ul.textContent = "";
-    r.msgs.forEach(m => { const li = E("li"); li.appendChild(E("b", "", m.newer ? t("newer format - this MoveEye cannot read it") : m.text));
-      li.appendChild(E("small", "", (m.fmt === "prot" ? "📻 " : m.src === "sound" ? "🎤 " : "💡 ") + (m.key ? "🔑 " + t("decrypted with the key") + " · " : "") + m.t + " · " + m.wpm + " WPM" + (m.test ? " · " + t("test signal") : "") + (m.pic ? " · 🖼 " + t("in the history") : "") + (m.push === "sent" ? " · 📲 " + t("push sent") : m.push === "held" ? " · " + t("push held back (too many)") : ""))); ul.appendChild(li); });
+    r.msgs.forEach(m => { const li = E("li"); li.appendChild(E("b", "", m.bad === "nokey" ? "🔒 " + t("encrypted - no key is set here") : m.bad ? "⚠ " + t("wrong key or disturbed")
+        : m.newer ? t("newer format - this MoveEye cannot read it") : m.text));
+      li.appendChild(E("small", "", (m.src === "file" ? "📁 " + t("from a file") + " · " : "") + (m.fmt === "prot" ? "📻 " : m.src === "sound" ? "🎤 " : m.src === "file" ? "" : "💡 ") + (m.key ? "🔑 " + t("decrypted with the key") + " · " : "") + m.t + " · " + m.wpm + " WPM" + (m.test ? " · " + t("test signal") : "") + (m.pic ? " · 🖼 " + t("in the history") : "") + (m.push === "sent" ? " · 📲 " + t("push sent") : m.push === "held" ? " · " + t("push held back (too many)") : ""))); ul.appendChild(li); });
   }
   function paintPlan() {
     const el = $i("mo-plan"), f = $i("mo-flash"), w = $i("mo-wear"); f.hidden = true; w.hidden = true;
@@ -1865,7 +1873,9 @@ text-decoration:none;color:var(--acc);font-weight:600;text-align:center;overflow
   }
   function plan() {
     clearTimeout(planTm);
-    planTm = setTimeout(async () => { const txt = $i("mo-text").value; if (!txt.trim()) { P = null; paintPlan(); return; }
+    planTm = setTimeout(async () => { const txt = $i("mo-text").value; const wa = $i("mo-wav"); wa.hidden = !txt.trim();   // «As an audio file»: the existing download way
+      wa.href = "/morse/audio.wav?text=" + encodeURIComponent(txt) + "&wpm=" + $i("mo-wpm").value + "&fw=" + $i("mo-fw").value + "&lang=" + encodeURIComponent(L());
+      if (!txt.trim()) { P = null; paintPlan(); return; }
       P = await api({action: "plan", text: txt, outs: outsSel(), wpm: +$i("mo-wpm").value, fw: +$i("mo-fw").value}); paintPlan(); }, 250);
   }
   function paint() { if (!J || !J.state) return; paintMode(); paintFmt(); paintOuts(); paintTx(); paintRx(); }
@@ -1888,6 +1898,17 @@ text-decoration:none;color:var(--acc);font-weight:600;text-align:center;overflow
     const j = await api({action: "send", text: $i("mo-text").value, outs: outsSel(), wpm: +wp.value, fw: +fw.value}); busy = false;
     if (j.state) J = j; if (!j.ok) $i("mo-err").textContent = j.error || ""; else { P = j; paintPlan(); } paint(); };
   $i("mo-halt").onclick = async () => { const j = await api({action: "tx_stop"}); if (j.state) J = j; paint(); };
+  $i("mo-wav").textContent = "🎵 " + t("As an audio file"); $i("mo-file-b").textContent = "📁 " + t("Read an audio file");
+  $i("mo-file-h").textContent = t("The file sounds like the loudspeaker would send it (format, tones, speed, key). Reading uses the format chosen above.");
+  $i("mo-file-b").onclick = () => $i("mo-file").click();
+  $i("mo-file").onchange = async () => { const fi = $i("mo-file"), f = fi.files && fi.files[0], r = $i("mo-file-r"); if (!f) return;
+    r.className = "mo-hint"; r.textContent = t("Reading the file …"); $i("mo-file-b").disabled = true; let j;
+    try { const res = await fetch("/api/morse/audio?lang=" + encodeURIComponent(L()), {method: "POST", headers: {"Content-Type": f.type || "application/octet-stream"}, body: f}); j = await res.json(); }
+    catch (e) { j = {ok: false, error: t("No connection to MoveEye.")}; }
+    fi.value = ""; $i("mo-file-b").disabled = false; if (j.state) J = j;
+    r.className = "mo-hint" + (j.ok ? (j.found.length ? " ok" : "") : " bad");
+    r.textContent = !j.ok ? (j.error || "") : j.found.length ? "📁 " + t("Read from the file:") + " " + j.found.join(" · ") : t("No message found in the file.");
+    paint(); };
   paint(); tm = setTimeout(load, 1000);
 })();
 </script>
@@ -2037,7 +2058,7 @@ MORSE_PAGE_TEXTS = {
     'New key (the same as on the other phone):': ('Neuer Schlüssel (gleich wie auf dem anderen Handy):', 'Nouvelle clé (la même que sur l’autre téléphone) :', 'Nuova chiave (la stessa dell’altro telefono):', 'Nova clav (la medema sco sin l’auter telefonin):'),
     'Set the key': ('Schlüssel setzen', 'Définir la clé', 'Impostare la chiave', 'Definir la clav'),
     'Delete the key': ('Schlüssel löschen', 'Supprimer la clé', 'Cancellare la chiave', 'Stizzar la clav'),
-    'The key only obscures: every message shifts the characters with the same sequence. This is no strong encryption - whoever hears several messages can decode them.': ('Der Schlüssel verschleiert nur: jede Nachricht verschiebt die Zeichen mit derselben Folge. Das ist keine starke Verschlüsselung – wer mehrere Nachrichten hört, kann sie entschlüsseln.', 'La clé ne fait que masquer : chaque message décale les caractères avec la même suite. Ce n’est pas un chiffrement fort – qui entend plusieurs messages peut les décoder.', 'La chiave nasconde soltanto: ogni messaggio sposta i caratteri con la stessa sequenza. Non è una cifratura forte – chi ascolta più messaggi può decifrarli.', 'La clav zuppenta mo: mintga messadi spustescha ils caracters cun la medema successiun. Quai n’è nagin criptadi ferm – tgi che auda plirs messadis, als po decodar.'),
+    'With a key every message is encrypted anew (V2: a random start, PBKDF2 and HMAC-SHA256, 6 check characters). Still: no reviewed method and only about 32 bits of check - protect nothing important with it. Both sides need a current MoveEye or the new phone radio page.': ('Mit Schlüssel wird jede Nachricht neu verschlüsselt (V2: zufälliger Anfang, PBKDF2 und HMAC-SHA256, 6 Prüfzeichen). Trotzdem: kein geprüftes Verfahren und nur rund 32 Bit Prüfung – nichts Wichtiges damit schützen. Beide Seiten brauchen ein aktuelles MoveEye oder die neue Seite Handy-Funkgerät.', 'Avec une clé, chaque message est chiffré à nouveau (V2 : début aléatoire, PBKDF2 et HMAC-SHA256, 6 caractères de contrôle). Pourtant : aucune méthode vérifiée et seulement environ 32 bits de contrôle – n’y protégez rien d’important. Les deux côtés ont besoin d’un MoveEye à jour ou de la nouvelle page Radio du téléphone.', 'Con la chiave ogni messaggio è cifrato di nuovo (V2: inizio casuale, PBKDF2 e HMAC-SHA256, 6 caratteri di controllo). Tuttavia: nessun metodo verificato e solo circa 32 bit di controllo – non proteggere nulla di importante. Entrambe le parti hanno bisogno di un MoveEye aggiornato o della nuova pagina Radio del telefono.', 'Cun clav vegn mintga messadi criptà da nov (V2: entschatta casuala, PBKDF2 e HMAC-SHA256, 6 caracters da controlla). Tuttina: nagina metoda verifitgada e mo var 32 bits controlla – na proteger nagut impurtant cun quai. Omaduas varts dovran in MoveEye actual u la nova pagina Radio dal telefonin.'),
     'Encryption is forbidden in amateur radio (ITU Radio Regulations No. 25.2A; OFCOM: digital transmissions only unencrypted). Never send with a key over amateur radio; for other radios (e.g. PMR446) follow the rules of OFCOM (BAKOM).': ('Im Amateurfunk ist Verschlüsselung verboten (ITU-Vollzugsordnung Funk Nr. 25.2A; BAKOM: digitale Übertragungen nur unverschlüsselt). Mit Schlüssel nie über Amateurfunk senden; für andere Funkgeräte (z. B. PMR446) die Regeln des BAKOM beachten.', 'Le chiffrement est interdit en radioamateur (Règlement des radiocommunications de l’UIT n° 25.2A ; OFCOM : transmissions numériques uniquement non chiffrées). Ne jamais émettre avec une clé en radioamateur ; pour d’autres radios (p. ex. PMR446), respecter les règles de l’OFCOM.', 'Nel radioamatorismo la cifratura è vietata (Regolamento delle radiocomunicazioni UIT n. 25.2A; UFCOM: trasmissioni digitali solo non cifrate). Non trasmettere mai con una chiave via radioamatori; per altre radio (p. es. PMR446) rispettare le regole dell’UFCOM.', 'En il radioamatur è il criptadi scumandà (Reglament da radiocommunicaziun UIT nr. 25.2A; UFCOM: transmissiuns digitalas mo betg criptadas). Mai trametter cun clav via radioamatur; per auters radios (p. ex. PMR446) observar las reglas da l’UFCOM.'),
     'Phone radio': ('Handy-Funkgerät', 'Radio du téléphone', 'Radio del telefono', 'Radio dal telefonin'),
     'Download as a file for another phone': ('Als Datei für ein anderes Handy herunterladen', 'Télécharger comme fichier pour un autre téléphone', 'Scaricare come file per un altro telefono', 'Telechargiar sco datoteca per in auter telefonin'),
