@@ -3419,7 +3419,9 @@ async function tlLoad() {
     const dl = el("a", "", "⬇"); dl.href = "/timelapse/" + v.name + "?dl=1"; dl.title = t("Download"); dl.style.color = "var(--acc2)";
     const x = el("button", "sec", "✕"); x.style.padding = "2px 8px"; x.title = t("Remove");
     x.onclick = async () => { if (confirm(t("Remove this video?"))) { await post("/api/timelapse", {action: "delete_video", name: v.name}); tlLoad(); } };
-    row.append(a, dl, x); L.appendChild(row);
+    row.append(a);
+    if (/_auto\.mp4$/.test(v.name)) { const b = el("span", "mut", t("automatic")); b.style.cssText = "font-size:12px;border:1px solid var(--line);border-radius:8px;padding:0 6px;white-space:nowrap"; row.append(b); }
+    row.append(dl, x); L.appendChild(row);
   });
 }
 function tlExtras(d) {
