@@ -109,20 +109,23 @@ def spielt():
 
 
 def pause_nehmen(grund):
-    """den Bildschirm für den Test nehmen (Kiosk-Simulator aus) und warten, bis der Kiosk-Simulator wirklich zu ist"""
+    """den Bildschirm für den Test nehmen (Kiosk-Simulator aus) und warten, bis der Kiosk-Simulator wirklich zu ist.
+    -> True, wenn kein Kiosk-Simulator (mehr) läuft. Sonst startet betreuen() keinen Test (nie zwei Simulatoren, 4 GB RAM)."""
     try:
         with open(PAUSE + ".neu", "w") as f:
             f.write("Dauerrechnen %s %s\n" % (grund[:40], time.strftime("%F %T")))
         os.chmod(PAUSE + ".neu", 0o644)
         os.replace(PAUSE + ".neu", PAUSE)
     except OSError as e:
-        log("Hinweis: Pause-Datei nicht geschrieben (%s) - Kiosk läuft weiter" % (e.strerror or e))
-        return
+        log("Hinweis: Pause-Datei nicht geschrieben (%s)" % (e.strerror or e))
+        return not kiosk_sim()
     t = time.time() + 60
     while kiosk_sim() and time.time() < t:
         time.sleep(1)
     if kiosk_sim():
-        log("Hinweis: der Kiosk-Simulator läuft noch")
+        log("Hinweis: der Kiosk-Simulator läuft noch - kein Test, solange er läuft")
+        return False
+    return True
 
 
 def pause_freigeben():
@@ -131,6 +134,61 @@ def pause_freigeben():
             os.unlink(p)
         except OSError:
             pass
+
+
+RESTE = ("MoveEyeSim3D", "Godot", "Xvfb")                  # comm-Anfang: Simulator (Paket / Godot), virtueller Bildschirm
+
+
+def eigene_reste():
+    """[pid] der Simulatoren, MoveEye und Xvfb des eigenen Benutzers (Gegenstück zu kiosk_sim) - ohne diesen Prozess und seine
+    Eltern. Der Prüfstand startet sie in eigenen Sitzungen: killpg auf den Test erreicht sie nicht."""
+    me, ich = os.getuid(), {os.getpid(), os.getppid()}
+    out = []
+    try:
+        pids = [p for p in os.listdir("/proc") if p.isdigit()]
+    except OSError:
+        return out
+    for pid in pids:
+        try:
+            if int(pid) in ich or os.stat("/proc/" + pid).st_uid != me:
+                continue
+            with open("/proc/%s/comm" % pid) as f:
+                comm = f.read().strip()
+            with open("/proc/%s/cmdline" % pid, "rb") as f:
+                cmd = f.read().replace(b"\0", b" ").decode("utf-8", "replace")
+        except OSError:
+            continue
+        if comm.startswith(RESTE) or re.search(r"webcam_bewegung_[0-9_]+\.py", cmd):
+            out.append(int(pid))
+    return out
+
+
+def reste_beenden(warten=15):
+    """alle eigenen Simulatoren / MoveEye / Xvfb beenden (SIGTERM, dann SIGKILL) -> True, wenn keiner mehr läuft"""
+    for sig, t in ((signal.SIGTERM, warten), (signal.SIGKILL, 5)):
+        reste = eigene_reste()
+        if not reste:
+            return True
+        log("Reste des Tests beenden (%s): %s" % ("TERM" if sig == signal.SIGTERM else "KILL", " ".join(map(str, reste))))
+        for pid in reste:
+            try:
+                os.kill(pid, sig)
+            except OSError:
+                pass
+        ende = time.time() + t
+        while eigene_reste() and time.time() < ende:
+            time.sleep(0.2)
+    return not eigene_reste()
+
+
+def kiosk_frei():
+    """Kiosk-Pause freigeben - aber erst, wenn kein eigener Simulator / MoveEye / Xvfb mehr läuft (sonst bliebe einer neben
+    dem Kiosk-Simulator stehen). -> True, wenn freigegeben."""
+    if not reste_beenden():
+        log("::error::Reste des Tests lassen sich nicht beenden (%s) - Kiosk-Pause bleibt" % " ".join(map(str, eigene_reste())))
+        return False
+    pause_freigeben()
+    return True
 
 
 def kiosk_sim():
@@ -405,7 +463,7 @@ def betreuen(cmd, env=None, frist=None, warten_max=0, log_datei=None, grund="Tes
     """-> ("fertig", rc) | ("gespielt", None) | ("zeit", None). Läuft in einer Schleife, bis der Befehl fertig ist."""
     while True:
         if spielt():
-            pause_freigeben()
+            kiosk_frei()
             if warten_max <= 0:
                 return "gespielt", None
             log("Am HP wird gespielt - warte, bis 15 Min. lang niemand mehr spielt (höchstens %d Min.)" % (warten_max // 60))
@@ -421,6 +479,22 @@ def betreuen(cmd, env=None, frist=None, warten_max=0, log_datei=None, grund="Tes
             return "zeit", None
         if datei_alter(PAUSE) is None and os.path.isdir(os.path.dirname(PAUSE)):
             pause_nehmen(grund)
+        if kiosk_sim():                                     # nie zwei Simulatoren: der Kiosk muss zuerst zu sein
+            t_ende = time.time() + max(300, warten_max)
+            log("Der Kiosk-Simulator läuft noch - warte (höchstens %d Min.)" % ((t_ende - time.time()) // 60))
+            while kiosk_sim():
+                if spielt():
+                    break
+                if frist and time.time() > frist:
+                    return "zeit", None
+                if time.time() > t_ende:
+                    log("Der Kiosk-Simulator geht nicht zu - kein Test")
+                    return "gespielt", None
+                if datei_alter(PAUSE) is None and os.path.isdir(os.path.dirname(PAUSE)):
+                    pause_nehmen(grund)
+                time.sleep(TAKT * 5)
+            if kiosk_sim():
+                continue                                    # es wird gespielt: oben warten
         k = Kind(cmd, env, log_datei)
         stopp = None
         while k.laeuft():
@@ -432,9 +506,10 @@ def betreuen(cmd, env=None, frist=None, warten_max=0, log_datei=None, grund="Tes
                 log("Spielen gewünscht - Test wird angehalten und gesichert" if stopp == "gespielt" else "Zeit um - Stand wird gesichert")
                 t0 = time.time()
                 k.stoppen()
+                reste_beenden()                             # Simulator / MoveEye in eigenen Sitzungen (Prüfstand) auch
                 log("angehalten nach %.1f s" % (time.time() - t0))
                 if stopp == "gespielt":
-                    pause_freigeben()
+                    kiosk_frei()
                 break
             time.sleep(TAKT)
         if not stopp:
