@@ -198,8 +198,10 @@ def main():
             pruef(bool(txt) and bool(CHIP_RE.match(txt or "")), "Gast-Seite: CPU-Chip «%s»" % txt)
             g2 = pg.evaluate("""() => { gAnim({cpu: 57, cpu_temp: 67, battery: {on: true, pct: 12}}); const k = document.getElementById('lv-chips'), t = document.querySelector('.gtop');
                 return {top: !!(k && k.parentNode === t), pic: !!document.querySelector('.vwrap #lv-cpu'), batt: document.getElementById('lv-batt').textContent,
-                        hot: document.getElementById('lv-batt').classList.contains('hot'), over: t.scrollWidth > t.clientWidth + 1}; }""")
-            pruef(g2["top"] and not g2["pic"] and g2["batt"] == "🔋 12 %" and g2["hot"] and not g2["over"], "Gast-Seite: Chips oben in der Zeile, Akku rot unter 15 %% (%s)" % g2)
+                        hot: document.getElementById('lv-batt').classList.contains('hot'), over: t.scrollWidth > t.clientWidth + 1,
+                        title1: (() => { const h = document.querySelector('.gtop .gtt'); return h.getClientRects().length === 1 && h.offsetHeight < 30; })()}; }""")
+            pruef(g2["top"] and not g2["pic"] and g2["batt"] == "🔋 12 %" and g2["hot"] and not g2["over"] and g2["title1"],
+                  "Gast-Seite: Chips oben (am Handy eine eigene kurze Zeile), Akku rot unter 15 %%, der Titel in einer Zeile (%s)" % g2)
             pruef(not jsf, "Gast-Seite: keine JavaScript-Fehler %s" % jsf[:3])
             if a.bilder:
                 pg.screenshot(path=os.path.join(a.bilder, "anim_gast.png"))

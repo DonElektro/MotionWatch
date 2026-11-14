@@ -301,7 +301,8 @@ SELFTEST_EXTRA.append(("Animations and the CPU chip (639zzze)", anim_selftest))
 ANIM_GUEST_CSS = (".vwrap{position:relative}.lv-chips{display:inline-flex;gap:5px;margin-left:8px;flex:none;white-space:nowrap}"
                   ".lv-chip{padding:1px 7px;border-radius:999px;background:rgba(127,140,160,.22);color:#e6edf3;font:600 12px/1.45 system-ui,-apple-system,sans-serif;"
                   "font-variant-numeric:tabular-nums}.lv-chip[hidden]{display:none}.lv-chip.warn{background:#f59a4a;color:#111}.lv-chip.hot{background:#ff4d4d;color:#fff}"
-                  ".lv-chips.nc .lv-cpu .c{display:none}"
+                  ".lv-chips.nc .lv-cpu .c{display:none}.gtop:has(.lv-chips) .gtt{flex:none;white-space:nowrap}"
+                  "@media (max-width:600px){.gtop:has(.lv-chips){flex-wrap:wrap;row-gap:4px}.gtop .lv-chips{order:9;flex-basis:calc(100% - 20px);margin:0 0 2px 20px}}"
                   "@keyframes mwEye{0%,42%,50%,100%{transform:scaleY(1)}45%,47%{transform:scaleY(.08)}}"
                   ".vwrap.vlost::after{content:''!important;background:url(\"" + ANIM_EYE_URI + "\") center/64px 64px no-repeat;animation:mwEye 3.2s ease-in-out infinite}"
                   "@media (prefers-reduced-motion:reduce){.vwrap.vlost::after{animation:none}}")
@@ -316,7 +317,7 @@ ANIM_GUEST_JS = ("window.gAnim=function(j){var g=document.querySelector('.gtop')
                  "var a=j.battery||{},on=!!(a.on&&typeof a.pct==='number');b.hidden=!on;if(on){var p=(a.src==='ups'&&!a.on_battery)||!!a.charging;"
                  "b.textContent=(p?'🔌 ':'🔋 ')+Math.round(a.pct)+' %';b.classList.toggle('hot',!p&&a.pct<" + str(BATT_HOT) + ");"
                  "b.classList.toggle('warn',!p&&a.pct>=" + str(BATT_HOT) + "&&a.pct<" + str(BATT_WARN) + ");}"
-                 "k.classList.remove('nc');if(g.scrollWidth>g.clientWidth+1||document.getElementById('st').offsetHeight>26)k.classList.add('nc');};")
+                 "k.classList.remove('nc');if(k.scrollWidth>k.clientWidth+1||k.getBoundingClientRect().right>g.getBoundingClientRect().right)k.classList.add('nc');};")
 if "gAnim" not in GUEST_PAGE and "const j = await r.json();" in GUEST_PAGE:
     GUEST_PAGE = (GUEST_PAGE.replace("</style>", ANIM_GUEST_CSS + "</style>", 1)
                   .replace("const j = await r.json();", "const j = await r.json(); if (window.gAnim) gAnim(j);", 1)
