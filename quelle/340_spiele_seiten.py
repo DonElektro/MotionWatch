@@ -9,13 +9,14 @@ display:block;text-align:center;padding:14px;border-radius:14px;text-decoration:
 # Spieltab: the game tiles (picture or emoji, name, short description, group headings) - ONE style for the public page /spiele
 # and the admin tab «Mehr → Spielecke» (TOOLS_PAGE, part 460). Colours come from tokens with the old /spiele colours as fallback.
 GAME_TILES_CSS = """.mwg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-@media (max-width:520px){.mwg{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.mwg a.c{display:block;background:var(--mwg-tile,#16263A);border-radius:14px;padding:14px;color:inherit;text-decoration:none;min-width:0;overflow-wrap:anywhere}
+.mwg a.c{display:flex;flex-direction:column;background:var(--mwg-tile,#16263A);border-radius:14px;padding:14px;color:inherit;text-decoration:none;min-width:0;overflow-wrap:anywhere}
 .mwg a.c:hover{filter:brightness(1.12)}.mwg a.c:active{transform:scale(.98)}
 .mwg .i{font-size:34px}.mwg .i img{width:56px;height:56px;border-radius:12px;object-fit:cover;display:block}
-.mwg .n{font-weight:700;margin:6px 0 2px}.mwg .d{font-size:13px;color:var(--mwg-mut,#9FB0C3)}
+.mwg .n{font-weight:700;margin:6px 0 2px}.mwg .d{font-size:13px;color:var(--mwg-mut,#9FB0C3);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+/* GS-1.20: die Kurzbeschreibung (games/kacheltexte.json, höchstens 40 Zeichen) hat höchstens 2 Zeilen, sonst «…»; die Kacheln einer Reihe sind gleich hoch (Raster dehnt) */
 .mwg .gh{grid-column:1/-1;font-weight:700;margin:14px 0 2px}
 .mwg .w{font-size:12px;font-weight:600;color:var(--mwg-warn,#E9A23B);margin-top:4px}
+@media (max-width:520px){.mwg{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.mwg a.c{padding:12px 10px}.mwg .d{font-size:12.5px;line-height:1.3}}
 """
 SPIELE_PAGE = SPIELE_PAGE.replace("/*GAMETILES*/", GAME_TILES_CSS, 1)
 

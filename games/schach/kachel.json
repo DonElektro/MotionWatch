@@ -1,7 +1,7 @@
 {
  "dir": "schach",
  "name": "Schach",
- "desc": "Schach gegen den Computer, zu zweit an einem Gerät oder mit zwei Handys über MoveEye (Code oder QR-Code): 8 Stärke-Stufen vom Anfänger bis zum Grossmeister, Tipps, Lern-Modus (warnt vor groben Fehlern), Vorziehen (Premove), markierte Züge und Zug zurück.",
+ "desc": "Gegen den Computer oder zu zweit.",
  "icon": "thumb.svg",
  "start": "index.html",
  "input": "touch",
@@ -13,11 +13,11 @@
   "rm": "Schah"
  },
  "descs": {
-  "de": "Schach gegen den Computer, zu zweit an einem Gerät oder mit zwei Handys über MoveEye (Code oder QR-Code): 8 Stärke-Stufen vom Anfänger bis zum Grossmeister, Tipps, Lern-Modus (warnt vor groben Fehlern), Vorziehen (Premove), markierte Züge und Zug zurück.",
-  "en": "Chess against the computer, for two on one device or on two phones through MoveEye (code or QR code): 8 strength levels from beginner to grandmaster, hints, learner mode (warns before blunders), premoves, marked moves and take-back (game texts in German).",
-  "fr": "Échecs contre l'ordinateur, à deux sur un appareil ou sur deux téléphones via MoveEye (code ou code QR) : 8 niveaux du débutant au grand maître, conseils, mode apprentissage (avertit avant les grosses fautes), coups anticipés (premove), coups marqués et retour en arrière (textes en allemand).",
-  "it": "Scacchi contro il computer, in due su un dispositivo o su due telefoni tramite MoveEye (codice o codice QR): 8 livelli dal principiante al gran maestro, suggerimenti, modalità apprendimento (avvisa prima degli errori gravi), mosse anticipate (premove), mosse evidenziate e mossa indietro (testi in tedesco).",
-  "rm": "Schah cunter il computer, a dus sin in apparat u cun dus telefonins sur MoveEye (code u code QR): 8 stgalims dal principiant fin al grond maister, tips, modus d'emprender (avertescha avant sbagls gronds), trair ordavant (premove), tratgs marcads e tratg enavos (texts en tudestg)."
+  "de": "Gegen den Computer oder zu zweit.",
+  "en": "Against the computer or for two.",
+  "fr": "Contre l’ordinateur ou à deux.",
+  "it": "Contro il computer o in due.",
+  "rm": "Cunter il computer u en dus."
  },
  "lizenz": [
   "Schach  (schach/)",

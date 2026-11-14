@@ -1,7 +1,7 @@
 {
  "dir": "verschollen",
  "name": "Verschollen im Bergtal",
- "desc": "Aufbau-Abenteuer, Kapitel 1: Ohne Erinnerung in einer Berghütte, nur dein Hund und die Kamera MoveEye. Feuer hüten, Lager bauen, das Tal erkunden, die Wetterstation reparieren – und Stück für Stück die eigenen Aufnahmen zurückholen.",
+ "desc": "Ohne Erinnerung im Bergtal überleben.",
  "icon": "thumb.svg",
  "start": "index.html",
  "input": "touch",
@@ -13,11 +13,11 @@
   "rm": "Pers en la val"
  },
  "descs": {
-  "de": "Aufbau-Abenteuer, Kapitel 1: Ohne Erinnerung in einer Berghütte, nur dein Hund und die Kamera MoveEye. Feuer hüten, Lager bauen, das Tal erkunden, die Wetterstation reparieren – und Stück für Stück die eigenen Aufnahmen zurückholen.",
-  "en": "Building adventure, chapter 1: you wake without memory in a mountain hut, only your dog and the MoveEye camera. Keep the fire going, build a camp, explore the valley, repair the weather station – and recover your own recordings piece by piece (game texts in German).",
-  "fr": "Aventure de construction, chapitre 1 : tu te réveilles sans mémoire dans une cabane de montagne, avec ton chien et la caméra MoveEye. Entretiens le feu, construis un camp, explore la vallée, répare la station météo – et retrouve tes enregistrements morceau par morceau (textes en allemand).",
-  "it": "Avventura di costruzione, capitolo 1: ti svegli senza memoria in una capanna di montagna, solo il tuo cane e la telecamera MoveEye. Tieni acceso il fuoco, costruisci un campo, esplora la valle, ripara la stazione meteo – e recupera le tue registrazioni pezzo per pezzo (testi in tedesco).",
-  "rm": "Aventura da construcziun, chapitel 1: ti ta dasdas senza memoria en ina tegia da muntogna, mo tes chaun e la camera MoveEye. Mantegnair il fieu, construir in champ, explorar la val, reparar la staziun meteorologica – e recuperar toc per toc las atgnas registraziuns (texts en tudestg)."
+  "de": "Ohne Erinnerung im Bergtal überleben.",
+  "en": "Lost in a mountain valley: survive.",
+  "fr": "Perdu dans la vallée : survivre.",
+  "it": "Perso nella valle: sopravvivi.",
+  "rm": "Senza memoria en la val: surviver."
  },
  "lizenz": [
   "Verschollen im Bergtal  (verschollen/)",
