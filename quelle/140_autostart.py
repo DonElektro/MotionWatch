@@ -465,7 +465,7 @@ def checked(c):
 recs = [load(os.path.join(here, "moveeye_start.json"))]
 if os.environ.get("MOTIONWATCH_HOME"):
     recs.append(load(os.path.join(os.environ["MOTIONWATCH_HOME"], "start_good.json")))
-cands = [d for d in recs if d.get("file")] + [g for d in recs for g in (d.get("good") or []) if isinstance(g, dict)]
+cands = [d for d in recs if d.get("file")] + [g for d in recs for g in (d.get("good") if isinstance(d.get("good"), list) else []) if isinstance(g, dict)]
 path, bad = "", []
 for c in cands:
     path = checked(c)
