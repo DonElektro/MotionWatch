@@ -1,0 +1,5979 @@
+{
+ "datum": "2026-11-14 01:19",
+ "mw_version": "3.87.1",
+ "ki": "running · 110 ms",
+ "rechner": "HP EliteDesk 800 G1 (4 Kerne)",
+ "qualitaet": "simple",
+ "szene": "stellplatz",
+ "kameras": "Kopfkamera",
+ "plaene": {
+  "camping_voll": [
+   {
+    "date": "2026-11-14 01:25:06",
+    "device": "MoveEye",
+    "false_alarms": 4,
+    "false_events": 3,
+    "false_list": [
+     {
+      "cause": "Nachbar (auf seinem Platz / dem Weg)",
+      "dup": false,
+      "phase": 0,
+      "t": 11.2
+     },
+     {
+      "cause": "Nachbar (auf seinem Platz / dem Weg)",
+      "dup": true,
+      "phase": 0,
+      "t": 15.6
+     },
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 1,
+      "t": 202.2
+     },
+     {
+      "cause": "Nachbar (auf seinem Platz / dem Weg)",
+      "dup": false,
+      "phase": 1,
+      "t": 219.3
+     }
+    ],
+    "flicker": 4,
+    "latency_s": 3.1,
+    "missed_list": [],
+    "mult": 2,
+    "noise_alarms": [],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 6,
+    "persons_detected": 6,
+    "persons_thermal": 0,
+    "persons_thermal_detected": 0,
+    "phases": [
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 2,
+      "false_events": 1,
+      "flicker": 2,
+      "hour": 15.5,
+      "latency_s": 2.5,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nachmittag, Nachbarn kochen, Kinder spielen",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 4,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 2,
+      "false_events": 2,
+      "flicker": 2,
+      "hour": 23,
+      "latency_s": 4.3,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot, Nachbarn gehen zum WC",
+      "not_visible": 0,
+      "persons": 2,
+      "persons_detected": 2,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 1,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     }
+    ],
+    "plan": "camping_voll",
+    "plan_name": "Voller Campingplatz (Nachbarn bewegen sich, Fremde kommen an deinen Platz · etwa 5 Min.)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 44.6,
+      "who": "platz_besuch"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 135.5,
+      "who": "platz_besuch"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": false,
+      "phase": 1,
+      "t": 202.2,
+      "who": "unbekannt"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 263.6,
+      "who": "platz_besuch"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 331,
+      "who": "platz_besuch"
+     }
+    ],
+    "pushes": {
+     "alarm": 5,
+     "false": 1,
+     "noise": 0,
+     "ok": 4,
+     "raw": 5,
+     "repeat": 0
+    },
+    "rate": 100,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "camping_voll",
+    "seed": 1,
+    "simulator": "3.69.0",
+    "szene": {
+     "art": "camping_voll",
+     "auf_platz": 5,
+     "ohne_push": 3,
+     "push": 2,
+     "push_falsch_nachbar": 0,
+     "reaktion_platz_s": 7.7
+    },
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": true,
+      "det_s": 9.9,
+      "kind": "platz_besuch",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": 9.9,
+      "px": 235,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 22.3
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "platz_besuch",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 248,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 4.5
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "platz_besuch",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 151,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 4.5
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "platz_besuch",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 52,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 1.3
+     },
+     {
+      "crouch": true,
+      "det_s": 8.6,
+      "kind": "platz_besuch",
+      "light": 0.19,
+      "person": true,
+      "phase": 1,
+      "push_s": 8.6,
+      "px": 256,
+      "reported": false,
+      "th_px": 11,
+      "thermal_only": false,
+      "vis_s": 12.3
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "platz_besuch",
+      "light": 0.19,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 181,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": false,
+      "vis_s": 3
+     }
+    ],
+    "dauer_s": 341,
+    "mw_fps": 0.5
+   },
+   {
+    "date": "2026-11-14 01:30:48",
+    "device": "MoveEye",
+    "false_alarms": 0,
+    "false_events": 0,
+    "false_list": [],
+    "flicker": 0,
+    "latency_s": 11.2,
+    "missed_list": [],
+    "mult": 2,
+    "noise_alarms": [],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 6,
+    "persons_detected": 6,
+    "persons_thermal": 0,
+    "persons_thermal_detected": 0,
+    "phases": [
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 15.5,
+      "latency_s": 14.9,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nachmittag, Nachbarn kochen, Kinder spielen",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 4,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 23,
+      "latency_s": 3.9,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot, Nachbarn gehen zum WC",
+      "not_visible": 0,
+      "persons": 2,
+      "persons_detected": 2,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     }
+    ],
+    "plan": "camping_voll",
+    "plan_name": "Voller Campingplatz (Nachbarn bewegen sich, Fremde kommen an deinen Platz · etwa 5 Min.)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 60.9,
+      "who": "platz_besuch"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 147.1,
+      "who": "platz_besuch"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 245,
+      "who": "platz_besuch"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 317.7,
+      "who": "platz_besuch"
+     }
+    ],
+    "pushes": {
+     "alarm": 4,
+     "false": 0,
+     "noise": 0,
+     "ok": 4,
+     "raw": 4,
+     "repeat": 0
+    },
+    "rate": 100,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "camping_voll",
+    "seed": 2,
+    "simulator": "3.69.0",
+    "szene": {
+     "art": "camping_voll",
+     "auf_platz": 5,
+     "ohne_push": 3,
+     "push": 2,
+     "push_falsch_nachbar": 0,
+     "reaktion_platz_s": 3.1
+    },
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": true,
+      "det_s": 56,
+      "kind": "platz_besuch",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": 39.3,
+      "px": 236,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 17.8
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "platz_besuch",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 236,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 8
+     },
+     {
+      "crouch": true,
+      "det_s": 2.1,
+      "kind": "platz_besuch",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 267,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 10.8
+     },
+     {
+      "crouch": false,
+      "det_s": 1.3,
+      "kind": "platz_besuch",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 59,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 0.3
+     },
+     {
+      "crouch": true,
+      "det_s": 7.7,
+      "kind": "platz_besuch",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": 7.7,
+      "px": 236,
+      "reported": false,
+      "th_px": 14,
+      "thermal_only": false,
+      "vis_s": 14.8
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "platz_besuch",
+      "light": 0.18,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 164,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": false,
+      "vis_s": 6.5
+     }
+    ],
+    "dauer_s": 338,
+    "mw_fps": 0.5
+   },
+   {
+    "date": "2026-11-14 01:36:27",
+    "device": "MoveEye",
+    "false_alarms": 3,
+    "false_events": 3,
+    "false_list": [
+     {
+      "cause": "Nachbar (auf seinem Platz / dem Weg)",
+      "dup": false,
+      "phase": 0,
+      "t": 5.4
+     },
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 1,
+      "t": 178.7
+     },
+     {
+      "cause": "Nachbar (auf seinem Platz / dem Weg)",
+      "dup": false,
+      "phase": 1,
+      "t": 195.7
+     }
+    ],
+    "flicker": 3,
+    "latency_s": 3.9,
+    "missed_list": [],
+    "mult": 2,
+    "noise_alarms": [],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 5,
+    "persons_detected": 5,
+    "persons_thermal": 0,
+    "persons_thermal_detected": 0,
+    "phases": [
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 1,
+      "false_events": 1,
+      "flicker": 1,
+      "hour": 15.5,
+      "latency_s": 0,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nachmittag, Nachbarn kochen, Kinder spielen",
+      "not_visible": 1,
+      "persons": 3,
+      "persons_detected": 3,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 2,
+      "false_events": 2,
+      "flicker": 2,
+      "hour": 23,
+      "latency_s": 9.8,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot, Nachbarn gehen zum WC",
+      "not_visible": 0,
+      "persons": 2,
+      "persons_detected": 2,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 1,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     }
+    ],
+    "plan": "camping_voll",
+    "plan_name": "Voller Campingplatz (Nachbarn bewegen sich, Fremde kommen an deinen Platz · etwa 5 Min.)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 51.5,
+      "who": "platz_besuch"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 131.2,
+      "who": "platz_besuch"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": false,
+      "phase": 1,
+      "t": 195.7,
+      "who": "Nachbar (auf seinem Platz / dem Weg)"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 272.2,
+      "who": "platz_besuch"
+     }
+    ],
+    "pushes": {
+     "alarm": 4,
+     "false": 1,
+     "noise": 0,
+     "ok": 3,
+     "raw": 4,
+     "repeat": 0
+    },
+    "rate": 100,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "camping_voll",
+    "seed": 3,
+    "simulator": "3.69.0",
+    "szene": {
+     "art": "camping_voll",
+     "auf_platz": 5,
+     "ohne_push": 3,
+     "push": 2,
+     "push_falsch_nachbar": 1,
+     "reaktion_platz_s": 18.5
+    },
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "platz_besuch",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": 36.3,
+      "px": 261,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 22.8
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "platz_besuch",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 260,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 8.3
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "platz_besuch",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 132,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 4.8
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "platz_besuch",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": 62.7,
+      "px": 283,
+      "reported": false,
+      "th_px": 17,
+      "thermal_only": false,
+      "vis_s": 22.8
+     },
+     {
+      "crouch": false,
+      "det_s": 19.5,
+      "kind": "platz_besuch",
+      "light": 0.2,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 216,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": false,
+      "vis_s": 10.3
+     }
+    ],
+    "dauer_s": 339,
+    "mw_fps": 0.5
+   }
+  ],
+  "tarnen": [
+   {
+    "date": "2026-11-14 01:43:01",
+    "device": "MoveEye",
+    "false_alarms": 0,
+    "false_events": 0,
+    "false_list": [],
+    "flicker": 0,
+    "latency_s": 2.6,
+    "missed_list": [
+     {
+      "kind": "tarn_schirm",
+      "phase": 1,
+      "t": 266.5,
+      "why": [
+       "dark",
+       "small",
+       "crouch"
+      ]
+     }
+    ],
+    "mult": 2,
+    "noise_alarms": [],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 19,
+    "persons_detected": 18,
+    "persons_thermal": 7,
+    "persons_thermal_detected": 6,
+    "phases": [
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 13,
+      "latency_s": 4,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Tag, Tarnkleidung und Robben",
+      "not_visible": 0,
+      "persons": 8,
+      "persons_detected": 8,
+      "persons_pushed": 2,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 20.3,
+      "latency_s": 1.4,
+      "missed": [
+       "tarn_schirm"
+      ],
+      "missed_why": {
+       "crouch": 1,
+       "dark": 1,
+       "fast": 0,
+       "small": 1
+      },
+      "name": "Dämmerung",
+      "not_visible": 1,
+      "persons": 5,
+      "persons_detected": 4,
+      "persons_pushed": 1,
+      "persons_thermal": 5,
+      "persons_thermal_detected": 4,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "cloudy",
+      "wind": 15
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 23,
+      "latency_s": 1.4,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot",
+      "not_visible": 0,
+      "persons": 6,
+      "persons_detected": 6,
+      "persons_pushed": 2,
+      "persons_thermal": 2,
+      "persons_thermal_detected": 2,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     }
+    ],
+    "plan": "tarnen",
+    "plan_name": "Tarnen und Kriechen (Tarnkleidung, robben, Schirm, Karton · etwa 4½ Min.)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 63.5,
+      "who": "tarn_robben"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 123.6,
+      "who": "tarn_karton"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 223.6,
+      "who": "tarn_robben (nur Wärmebild)"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 292.7,
+      "who": "tarn_robben (nur Wärmebild)"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 353.5,
+      "who": "tarn_karton"
+     }
+    ],
+    "pushes": {
+     "alarm": 5,
+     "false": 0,
+     "noise": 0,
+     "ok": 5,
+     "raw": 5,
+     "repeat": 0
+    },
+    "rate": 95,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "tarnen",
+    "seed": 1,
+    "simulator": "3.69.0",
+    "szene": {
+     "art": "tarnen",
+     "arten": {
+      "tarn_karton": {
+       "erkannt": 6,
+       "push": 2,
+       "sichtbar": 6
+      },
+      "tarn_robben": {
+       "erkannt": 8,
+       "push": 3,
+       "sichtbar": 8
+      },
+      "tarn_schirm": {
+       "erkannt": 4,
+       "push": 0,
+       "sichtbar": 5
+      }
+     }
+    },
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": true,
+      "det_s": 12.5,
+      "kind": "tarn_robben",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": 42.6,
+      "px": 199,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 41.8
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_schirm",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 179,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 14.8
+     },
+     {
+      "crouch": true,
+      "det_s": 14.7,
+      "kind": "tarn_karton",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": 24.6,
+      "px": 106,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 11.8
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_robben",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 195,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 33.5
+     },
+     {
+      "crouch": true,
+      "det_s": 0.7,
+      "kind": "tarn_robben",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 230,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 16.8
+     },
+     {
+      "crouch": true,
+      "det_s": 2.1,
+      "kind": "tarn_schirm",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 119,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 2.8
+     },
+     {
+      "crouch": true,
+      "det_s": 2.2,
+      "kind": "tarn_karton",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 125,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 21.3
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_robben",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 153,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 11.3
+     },
+     {
+      "crouch": true,
+      "det_s": 4.2,
+      "kind": "tarn_robben",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": 53.4,
+      "px": 0,
+      "reported": false,
+      "th_px": 11,
+      "thermal_only": true,
+      "vis_s": 39.5
+     },
+     {
+      "crouch": true,
+      "det_s": 1.3,
+      "kind": "tarn_karton",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 11,
+      "thermal_only": true,
+      "vis_s": 44
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_robben",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 13,
+      "thermal_only": true,
+      "vis_s": 37.8
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_karton",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": true,
+      "vis_s": 24.5
+     },
+     {
+      "crouch": true,
+      "det_s": -1,
+      "kind": "tarn_schirm",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 8,
+      "thermal_only": true,
+      "vis_s": 1.8
+     },
+     {
+      "crouch": true,
+      "det_s": 4.6,
+      "kind": "tarn_robben",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": 4.6,
+      "px": 272,
+      "reported": false,
+      "th_px": 17,
+      "thermal_only": false,
+      "vis_s": 39.3
+     },
+     {
+      "crouch": true,
+      "det_s": 2.3,
+      "kind": "tarn_schirm",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 187,
+      "reported": false,
+      "th_px": 12,
+      "thermal_only": false,
+      "vis_s": 25.3
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_karton",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -3.6,
+      "px": 0,
+      "reported": false,
+      "th_px": 8,
+      "thermal_only": true,
+      "vis_s": 12.5
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_robben",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 270,
+      "reported": false,
+      "th_px": 16,
+      "thermal_only": false,
+      "vis_s": 33.3
+     },
+     {
+      "crouch": true,
+      "det_s": 1.6,
+      "kind": "tarn_schirm",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 188,
+      "reported": false,
+      "th_px": 11,
+      "thermal_only": false,
+      "vis_s": 21.8
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_karton",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": true,
+      "vis_s": 11.8
+     }
+    ],
+    "dauer_s": 386,
+    "mw_fps": 1.0
+   },
+   {
+    "date": "2026-11-14 01:49:29",
+    "device": "MoveEye",
+    "false_alarms": 3,
+    "false_events": 1,
+    "false_list": [
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 0,
+      "t": 7.1
+     },
+     {
+      "cause": "unbekannt",
+      "dup": true,
+      "phase": 0,
+      "t": 8.9
+     },
+     {
+      "cause": "unbekannt",
+      "dup": true,
+      "phase": 0,
+      "t": 12.6
+     }
+    ],
+    "flicker": 3,
+    "latency_s": 2.1,
+    "missed_list": [],
+    "mult": 2,
+    "noise_alarms": [],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 16,
+    "persons_detected": 16,
+    "persons_thermal": 5,
+    "persons_thermal_detected": 5,
+    "phases": [
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 3,
+      "false_events": 1,
+      "flicker": 3,
+      "hour": 13,
+      "latency_s": 1,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Tag, Tarnkleidung und Robben",
+      "not_visible": 1,
+      "persons": 7,
+      "persons_detected": 7,
+      "persons_pushed": 2,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 20.3,
+      "latency_s": 2.7,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Dämmerung",
+      "not_visible": 2,
+      "persons": 4,
+      "persons_detected": 4,
+      "persons_pushed": 1,
+      "persons_thermal": 4,
+      "persons_thermal_detected": 4,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "cloudy",
+      "wind": 15
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 23,
+      "latency_s": 3,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot",
+      "not_visible": 1,
+      "persons": 5,
+      "persons_detected": 5,
+      "persons_pushed": 2,
+      "persons_thermal": 1,
+      "persons_thermal_detected": 1,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     }
+    ],
+    "plan": "tarnen",
+    "plan_name": "Tarnen und Kriechen (Tarnkleidung, robben, Schirm, Karton · etwa 4½ Min.)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 58.6,
+      "who": "tarn_karton"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 121.8,
+      "who": "tarn_robben"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 222.1,
+      "who": "tarn_robben (nur Wärmebild)"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 291.1,
+      "who": "tarn_robben"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 361.8,
+      "who": "tarn_schirm"
+     }
+    ],
+    "pushes": {
+     "alarm": 5,
+     "false": 0,
+     "noise": 0,
+     "ok": 5,
+     "raw": 5,
+     "repeat": 0
+    },
+    "rate": 100,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "tarnen",
+    "seed": 2,
+    "simulator": "3.69.0",
+    "szene": {
+     "art": "tarnen",
+     "arten": {
+      "tarn_karton": {
+       "erkannt": 5,
+       "push": 1,
+       "sichtbar": 5
+      },
+      "tarn_robben": {
+       "erkannt": 7,
+       "push": 3,
+       "sichtbar": 7
+      },
+      "tarn_schirm": {
+       "erkannt": 4,
+       "push": 1,
+       "sichtbar": 4
+      }
+     }
+    },
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_robben",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 180,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 1.3
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_schirm",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 152,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 20
+     },
+     {
+      "crouch": true,
+      "det_s": 5.2,
+      "kind": "tarn_karton",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": 5.7,
+      "px": 115,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 40.8
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_robben",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": 53.1,
+      "px": 172,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 34.5
+     },
+     {
+      "crouch": true,
+      "det_s": 0.7,
+      "kind": "tarn_robben",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 201,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 25.5
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_schirm",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 167,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 20.3
+     },
+     {
+      "crouch": true,
+      "det_s": 1.4,
+      "kind": "tarn_karton",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 127,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 13.5
+     },
+     {
+      "crouch": true,
+      "det_s": 4.8,
+      "kind": "tarn_robben",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": 52.3,
+      "px": 0,
+      "reported": false,
+      "th_px": 12,
+      "thermal_only": true,
+      "vis_s": 50.3
+     },
+     {
+      "crouch": true,
+      "det_s": 0.8,
+      "kind": "tarn_karton",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": true,
+      "vis_s": 44.8
+     },
+     {
+      "crouch": true,
+      "det_s": 5.4,
+      "kind": "tarn_robben",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 13,
+      "thermal_only": true,
+      "vis_s": 35
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_karton",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": true,
+      "vis_s": 19.3
+     },
+     {
+      "crouch": true,
+      "det_s": 4.6,
+      "kind": "tarn_robben",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": 4.6,
+      "px": 234,
+      "reported": false,
+      "th_px": 15,
+      "thermal_only": false,
+      "vis_s": 33
+     },
+     {
+      "crouch": true,
+      "det_s": 1.8,
+      "kind": "tarn_schirm",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": 39,
+      "px": 175,
+      "reported": false,
+      "th_px": 11,
+      "thermal_only": false,
+      "vis_s": 19.8
+     },
+     {
+      "crouch": true,
+      "det_s": 3.3,
+      "kind": "tarn_karton",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": true,
+      "vis_s": 38.5
+     },
+     {
+      "crouch": true,
+      "det_s": 5.3,
+      "kind": "tarn_robben",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 239,
+      "reported": false,
+      "th_px": 15,
+      "thermal_only": false,
+      "vis_s": 30.8
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_schirm",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 212,
+      "reported": false,
+      "th_px": 13,
+      "thermal_only": false,
+      "vis_s": 15.3
+     }
+    ],
+    "dauer_s": 390,
+    "mw_fps": 1.0
+   },
+   {
+    "date": "2026-11-14 01:56:02",
+    "device": "MoveEye",
+    "false_alarms": 0,
+    "false_events": 0,
+    "false_list": [],
+    "flicker": 0,
+    "latency_s": 2.8,
+    "missed_list": [],
+    "mult": 2,
+    "noise_alarms": [],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 16,
+    "persons_detected": 16,
+    "persons_thermal": 5,
+    "persons_thermal_detected": 5,
+    "phases": [
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 13,
+      "latency_s": 5.1,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Tag, Tarnkleidung und Robben",
+      "not_visible": 1,
+      "persons": 7,
+      "persons_detected": 7,
+      "persons_pushed": 2,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 20.3,
+      "latency_s": 0.4,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Dämmerung",
+      "not_visible": 2,
+      "persons": 4,
+      "persons_detected": 4,
+      "persons_pushed": 1,
+      "persons_thermal": 4,
+      "persons_thermal_detected": 4,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "cloudy",
+      "wind": 15
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 23,
+      "latency_s": 1.7,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot",
+      "not_visible": 1,
+      "persons": 5,
+      "persons_detected": 5,
+      "persons_pushed": 1,
+      "persons_thermal": 1,
+      "persons_thermal_detected": 1,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     }
+    ],
+    "plan": "tarnen",
+    "plan_name": "Tarnen und Kriechen (Tarnkleidung, robben, Schirm, Karton · etwa 4½ Min.)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 36.6,
+      "who": "tarn_robben"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 113.6,
+      "who": "tarn_karton"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 175.7,
+      "who": "tarn_robben (nur Wärmebild)"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 237.1,
+      "who": "tarn_robben (nur Wärmebild)"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 297.4,
+      "who": "tarn_robben"
+     }
+    ],
+    "pushes": {
+     "alarm": 5,
+     "false": 0,
+     "noise": 0,
+     "ok": 5,
+     "raw": 5,
+     "repeat": 0
+    },
+    "rate": 100,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "tarnen",
+    "seed": 3,
+    "simulator": "3.69.0",
+    "szene": {
+     "art": "tarnen",
+     "arten": {
+      "tarn_karton": {
+       "erkannt": 5,
+       "push": 1,
+       "sichtbar": 5
+      },
+      "tarn_robben": {
+       "erkannt": 7,
+       "push": 3,
+       "sichtbar": 7
+      },
+      "tarn_schirm": {
+       "erkannt": 4,
+       "push": 0,
+       "sichtbar": 4
+      }
+     }
+    },
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": true,
+      "det_s": 12.6,
+      "kind": "tarn_robben",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": 12.6,
+      "px": 213,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 37.5
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_schirm",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 150,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 19.8
+     },
+     {
+      "crouch": true,
+      "det_s": 6.5,
+      "kind": "tarn_karton",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": 6.5,
+      "px": 123,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 7.5
+     },
+     {
+      "crouch": true,
+      "det_s": 0.6,
+      "kind": "tarn_robben",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 180,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 12
+     },
+     {
+      "crouch": true,
+      "det_s": 4.2,
+      "kind": "tarn_robben",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 226,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 19.3
+     },
+     {
+      "crouch": true,
+      "det_s": 11.5,
+      "kind": "tarn_schirm",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 160,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 32.3
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_karton",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 121,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 20.5
+     },
+     {
+      "crouch": true,
+      "det_s": 0.8,
+      "kind": "tarn_robben",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": 7.7,
+      "px": 0,
+      "reported": false,
+      "th_px": 14,
+      "thermal_only": true,
+      "vis_s": 49.8
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_karton",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 8,
+      "thermal_only": true,
+      "vis_s": 9.5
+     },
+     {
+      "crouch": true,
+      "det_s": 0.8,
+      "kind": "tarn_robben",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 13,
+      "thermal_only": true,
+      "vis_s": 37.8
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_karton",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": true,
+      "vis_s": 22.5
+     },
+     {
+      "crouch": true,
+      "det_s": 1.4,
+      "kind": "tarn_robben",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -14.7,
+      "px": 246,
+      "reported": false,
+      "th_px": 15,
+      "thermal_only": false,
+      "vis_s": 20.3
+     },
+     {
+      "crouch": true,
+      "det_s": 6.9,
+      "kind": "tarn_schirm",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 174,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": false,
+      "vis_s": 27
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_karton",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": true,
+      "vis_s": 42.8
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_robben",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 233,
+      "reported": false,
+      "th_px": 13,
+      "thermal_only": false,
+      "vis_s": 32.8
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "tarn_schirm",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 188,
+      "reported": false,
+      "th_px": 11,
+      "thermal_only": false,
+      "vis_s": 22.3
+     }
+    ],
+    "dauer_s": 390,
+    "mw_fps": 1.1
+   }
+  ],
+  "velodieb": [
+   {
+    "date": "2026-11-14 02:02:04",
+    "device": "MoveEye",
+    "false_alarms": 4,
+    "false_events": 3,
+    "false_list": [
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 0,
+      "t": 7.6
+     },
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 1,
+      "t": 150.4
+     },
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 2,
+      "t": 234
+     },
+     {
+      "cause": "unbekannt",
+      "dup": true,
+      "phase": 2,
+      "t": 238
+     }
+    ],
+    "flicker": 4,
+    "latency_s": 2.6,
+    "missed_list": [
+     {
+      "kind": "velodieb",
+      "phase": 0,
+      "t": 32.7,
+      "why": [
+       "crouch"
+      ]
+     },
+     {
+      "kind": "velodieb",
+      "phase": 0,
+      "t": 124.5,
+      "why": []
+     },
+     {
+      "kind": "velodieb",
+      "phase": 1,
+      "t": 206.9,
+      "why": [
+       "dark",
+       "crouch"
+      ]
+     }
+    ],
+    "mult": 2,
+    "noise_alarms": [],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 10,
+    "persons_detected": 7,
+    "persons_thermal": 1,
+    "persons_thermal_detected": 1,
+    "phases": [
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 1,
+      "false_events": 1,
+      "flicker": 1,
+      "hour": 14,
+      "latency_s": 7.5,
+      "missed": [
+       "velodieb",
+       "velodieb"
+      ],
+      "missed_why": {
+       "crouch": 1,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Tag",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 2,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 1,
+      "false_events": 1,
+      "flicker": 1,
+      "hour": 20.4,
+      "latency_s": 1.9,
+      "missed": [
+       "velodieb"
+      ],
+      "missed_why": {
+       "crouch": 1,
+       "dark": 1,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Dämmerung",
+      "not_visible": 0,
+      "persons": 2,
+      "persons_detected": 1,
+      "persons_pushed": 0,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 1,
+      "pushes_noise": 0,
+      "pushes_ok": 0,
+      "pushes_repeat": 0,
+      "weather": "cloudy",
+      "wind": 15
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 2,
+      "false_events": 1,
+      "flicker": 2,
+      "hour": 23.5,
+      "latency_s": 0.2,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 4,
+      "persons_pushed": 1,
+      "persons_thermal": 1,
+      "persons_thermal_detected": 1,
+      "pushes_false": 1,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     }
+    ],
+    "plan": "velodieb",
+    "plan_name": "Velodieb (schnell hin, Velo greifen, weg – Reaktionszeit · etwa 4 Min.)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 66.7,
+      "who": "velodieb"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": false,
+      "phase": 1,
+      "t": 131.7,
+      "who": "unbekannt"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": false,
+      "phase": 2,
+      "t": 234,
+      "who": "unbekannt"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 341.9,
+      "who": "velodieb"
+     }
+    ],
+    "pushes": {
+     "alarm": 4,
+     "false": 2,
+     "noise": 0,
+     "ok": 2,
+     "raw": 4,
+     "repeat": 0
+    },
+    "rate": 70,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "velodieb",
+    "seed": 1,
+    "simulator": "3.69.0",
+    "szene": {
+     "art": "velodieb",
+     "griffe": 8,
+     "ohne_push": 7,
+     "push_nach_griff": 0,
+     "push_vor_griff": 1,
+     "reaktion_griff_s": -9.6
+    },
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": true,
+      "det_s": -1,
+      "kind": "velodieb",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 171,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 2.3
+     },
+     {
+      "crouch": true,
+      "det_s": 14.9,
+      "kind": "velodieb",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": 14.9,
+      "px": 173,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 14.3
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "velodieb",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 174,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 10
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "velodieb",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 162,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 3.8
+     },
+     {
+      "crouch": true,
+      "det_s": 1.9,
+      "kind": "velodieb",
+      "light": 0.26,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 152,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": false,
+      "vis_s": 7.5
+     },
+     {
+      "crouch": true,
+      "det_s": -1,
+      "kind": "velodieb",
+      "light": 0.26,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 156,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": false,
+      "vis_s": 5.5
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "velodieb",
+      "light": 0.3,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 160,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": false,
+      "vis_s": 16.5
+     },
+     {
+      "crouch": false,
+      "det_s": 0.5,
+      "kind": "velodieb",
+      "light": 0.4,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 145,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": false,
+      "vis_s": 3.5
+     },
+     {
+      "crouch": false,
+      "det_s": 0.5,
+      "kind": "velodieb",
+      "light": 0.57,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 8,
+      "thermal_only": true,
+      "vis_s": 0.3
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "velodieb",
+      "light": 0.35,
+      "person": true,
+      "phase": 2,
+      "push_s": -5.2,
+      "px": 152,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 4.3
+     }
+    ],
+    "dauer_s": 361,
+    "mw_fps": 0.7
+   },
+   {
+    "date": "2026-11-14 02:08:07",
+    "device": "MoveEye",
+    "false_alarms": 10,
+    "false_events": 3,
+    "false_list": [
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 0,
+      "t": 4.6
+     },
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 1,
+      "t": 132.9
+     },
+     {
+      "cause": "unbekannt",
+      "dup": true,
+      "phase": 1,
+      "t": 140.3
+     },
+     {
+      "cause": "unbekannt",
+      "dup": true,
+      "phase": 1,
+      "t": 144.5
+     },
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 2,
+      "t": 226.7
+     },
+     {
+      "cause": "unbekannt",
+      "dup": true,
+      "phase": 2,
+      "t": 231
+     },
+     {
+      "cause": "unbekannt",
+      "dup": true,
+      "phase": 2,
+      "t": 235.3
+     },
+     {
+      "cause": "unbekannt",
+      "dup": true,
+      "phase": 2,
+      "t": 239.9
+     },
+     {
+      "cause": "unbekannt",
+      "dup": true,
+      "phase": 2,
+      "t": 244.5
+     },
+     {
+      "cause": "unbekannt",
+      "dup": true,
+      "phase": 2,
+      "t": 248.8
+     }
+    ],
+    "flicker": 10,
+    "latency_s": 4.5,
+    "missed_list": [
+     {
+      "kind": "velodieb",
+      "phase": 2,
+      "t": 259.2,
+      "why": [
+       "dark",
+       "crouch"
+      ]
+     }
+    ],
+    "mult": 2,
+    "noise_alarms": [],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 8,
+    "persons_detected": 7,
+    "persons_thermal": 0,
+    "persons_thermal_detected": 0,
+    "phases": [
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 1,
+      "false_events": 1,
+      "flicker": 1,
+      "hour": 14,
+      "latency_s": 6.8,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Tag",
+      "not_visible": 1,
+      "persons": 3,
+      "persons_detected": 3,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 3,
+      "false_events": 1,
+      "flicker": 3,
+      "hour": 20.4,
+      "latency_s": 3.7,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Dämmerung",
+      "not_visible": 0,
+      "persons": 2,
+      "persons_detected": 2,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 1,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "cloudy",
+      "wind": 15
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 6,
+      "false_events": 1,
+      "flicker": 6,
+      "hour": 23.5,
+      "latency_s": 1.8,
+      "missed": [
+       "velodieb"
+      ],
+      "missed_why": {
+       "crouch": 1,
+       "dark": 1,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot",
+      "not_visible": 1,
+      "persons": 3,
+      "persons_detected": 2,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     }
+    ],
+    "plan": "velodieb",
+    "plan_name": "Velodieb (schnell hin, Velo greifen, weg – Reaktionszeit · etwa 4 Min.)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 40.4,
+      "who": "velodieb"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": false,
+      "phase": 1,
+      "t": 140.3,
+      "who": "unbekannt"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 204.8,
+      "who": "velodieb"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 297.9,
+      "who": "velodieb"
+     }
+    ],
+    "pushes": {
+     "alarm": 4,
+     "false": 1,
+     "noise": 0,
+     "ok": 3,
+     "raw": 4,
+     "repeat": 0
+    },
+    "rate": 88,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "velodieb",
+    "seed": 2,
+    "simulator": "3.69.0",
+    "szene": {
+     "art": "velodieb",
+     "griffe": 9,
+     "ohne_push": 6,
+     "push_nach_griff": 1,
+     "push_vor_griff": 2,
+     "reaktion_griff_s": -2.6
+    },
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": true,
+      "det_s": 4.4,
+      "kind": "velodieb",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": 12.3,
+      "px": 172,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 12.8
+     },
+     {
+      "crouch": true,
+      "det_s": 16,
+      "kind": "velodieb",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 166,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 13.8
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "velodieb",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 159,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 12.3
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "velodieb",
+      "light": 0.35,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 181,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": false,
+      "vis_s": 10
+     },
+     {
+      "crouch": true,
+      "det_s": 7.3,
+      "kind": "velodieb",
+      "light": 0.26,
+      "person": true,
+      "phase": 1,
+      "push_s": 7.3,
+      "px": 174,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": false,
+      "vis_s": 7.5
+     },
+     {
+      "crouch": true,
+      "det_s": -1,
+      "kind": "velodieb",
+      "light": 0.27,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 170,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": false,
+      "vis_s": 5.5
+     },
+     {
+      "crouch": true,
+      "det_s": 3.6,
+      "kind": "velodieb",
+      "light": 0.25,
+      "person": true,
+      "phase": 2,
+      "push_s": 3.6,
+      "px": 171,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": false,
+      "vis_s": 6.5
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "velodieb",
+      "light": 0.3,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 160,
+      "reported": false,
+      "th_px": 8,
+      "thermal_only": false,
+      "vis_s": 8.3
+     }
+    ],
+    "dauer_s": 361,
+    "mw_fps": 0.7
+   },
+   {
+    "date": "2026-11-14 02:14:09",
+    "device": "MoveEye",
+    "false_alarms": 4,
+    "false_events": 3,
+    "false_list": [
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 0,
+      "t": 4.2
+     },
+     {
+      "cause": "unbekannt",
+      "dup": true,
+      "phase": 0,
+      "t": 6.9
+     },
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 0,
+      "t": 21.9
+     },
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 1,
+      "t": 134.2
+     }
+    ],
+    "flicker": 4,
+    "latency_s": 3.3,
+    "missed_list": [],
+    "mult": 2,
+    "noise_alarms": [],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 10,
+    "persons_detected": 10,
+    "persons_thermal": 0,
+    "persons_thermal_detected": 0,
+    "phases": [
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 3,
+      "false_events": 2,
+      "flicker": 3,
+      "hour": 14,
+      "latency_s": 4.2,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Tag",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 4,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 1,
+      "false_events": 1,
+      "flicker": 1,
+      "hour": 20.4,
+      "latency_s": 2.3,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Dämmerung",
+      "not_visible": 0,
+      "persons": 2,
+      "persons_detected": 2,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "cloudy",
+      "wind": 15
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 23.5,
+      "latency_s": 2.8,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 4,
+      "persons_pushed": 2,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     }
+    ],
+    "plan": "velodieb",
+    "plan_name": "Velodieb (schnell hin, Velo greifen, weg – Reaktionszeit · etwa 4 Min.)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 71.6,
+      "who": "velodieb"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 166,
+      "who": "velodieb"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 249.4,
+      "who": "velodieb"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 311.6,
+      "who": "velodieb"
+     }
+    ],
+    "pushes": {
+     "alarm": 4,
+     "false": 0,
+     "noise": 0,
+     "ok": 4,
+     "raw": 4,
+     "repeat": 0
+    },
+    "rate": 100,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "velodieb",
+    "seed": 3,
+    "simulator": "3.69.0",
+    "szene": {
+     "art": "velodieb",
+     "griffe": 9,
+     "ohne_push": 5,
+     "push_nach_griff": 1,
+     "push_vor_griff": 3,
+     "reaktion_griff_s": -7
+    },
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "velodieb",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 149,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 12
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "velodieb",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": 19.7,
+      "px": 159,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 7.8
+     },
+     {
+      "crouch": true,
+      "det_s": 15.5,
+      "kind": "velodieb",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 164,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 3.8
+     },
+     {
+      "crouch": true,
+      "det_s": 1.4,
+      "kind": "velodieb",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 161,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 10.8
+     },
+     {
+      "crouch": true,
+      "det_s": 2.3,
+      "kind": "velodieb",
+      "light": 0.32,
+      "person": true,
+      "phase": 1,
+      "push_s": 2.3,
+      "px": 157,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": false,
+      "vis_s": 10.3
+     },
+     {
+      "crouch": true,
+      "det_s": 2.3,
+      "kind": "velodieb",
+      "light": 0.29,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 235,
+      "reported": false,
+      "th_px": 14,
+      "thermal_only": false,
+      "vis_s": 7
+     },
+     {
+      "crouch": true,
+      "det_s": 0,
+      "kind": "velodieb",
+      "light": 0.31,
+      "person": true,
+      "phase": 2,
+      "push_s": -5.3,
+      "px": 169,
+      "reported": false,
+      "th_px": 8,
+      "thermal_only": false,
+      "vis_s": 5.5
+     },
+     {
+      "crouch": true,
+      "det_s": 8.3,
+      "kind": "velodieb",
+      "light": 0.3,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 176,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": false,
+      "vis_s": 5.8
+     },
+     {
+      "crouch": true,
+      "det_s": 2.2,
+      "kind": "velodieb",
+      "light": 0.37,
+      "person": true,
+      "phase": 2,
+      "push_s": 2.2,
+      "px": 148,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": false,
+      "vis_s": 6.5
+     },
+     {
+      "crouch": false,
+      "det_s": 0.5,
+      "kind": "velodieb",
+      "light": 0.53,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 168,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": false,
+      "vis_s": 0.8
+     }
+    ],
+    "dauer_s": 359,
+    "mw_fps": 0.7
+   }
+  ],
+  "gegenstaende": [
+   {
+    "date": "2026-11-14 02:22:54",
+    "device": "MoveEye",
+    "false_alarms": 0,
+    "false_events": 0,
+    "false_list": [],
+    "flicker": 0,
+    "latency_s": 3.8,
+    "missed_list": [
+     {
+      "kind": "person",
+      "phase": 0,
+      "t": 19.6,
+      "why": []
+     },
+     {
+      "kind": "person",
+      "phase": 0,
+      "t": 99.8,
+      "why": []
+     },
+     {
+      "kind": "person",
+      "phase": 0,
+      "t": 110.7,
+      "why": []
+     },
+     {
+      "kind": "person",
+      "phase": 0,
+      "t": 173,
+      "why": []
+     },
+     {
+      "kind": "person",
+      "phase": 1,
+      "t": 303.8,
+      "why": [
+       "dark",
+       "small"
+      ]
+     },
+     {
+      "kind": "person",
+      "phase": 2,
+      "t": 372.8,
+      "why": [
+       "dark"
+      ]
+     },
+     {
+      "kind": "e_trotti",
+      "phase": 2,
+      "t": 499.1,
+      "why": [
+       "dark"
+      ]
+     }
+    ],
+    "mult": 2,
+    "noise_alarms": [
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 13.8
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 21.5
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 36.5
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 54
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 71.8
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 96.1
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 113.1
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 131.1
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 155.6
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 172.9
+     }
+    ],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 8,
+    "persons_detected": 1,
+    "persons_thermal": 1,
+    "persons_thermal_detected": 0,
+    "phases": [
+     {
+      "animals": 2,
+      "animals_as_person": 0,
+      "animals_reported": 2,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 13,
+      "latency_s": -1,
+      "missed": [
+       "person",
+       "person",
+       "person",
+       "person"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Tag, Böen (Fahne, Plastiksack, Ballon, Wäsche, Tor, Obstbaum)",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 0,
+      "persons_pushed": 0,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 0,
+      "pushes_repeat": 0,
+      "weather": "cloudy",
+      "wind": 55
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 20.6,
+      "latency_s": -1,
+      "missed": [
+       "person"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 1,
+       "fast": 0,
+       "small": 1
+      },
+      "name": "Dämmerung, Tiere am Lockmittel",
+      "not_visible": 1,
+      "persons": 1,
+      "persons_detected": 0,
+      "persons_pushed": 0,
+      "persons_thermal": 1,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 0,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 25
+     },
+     {
+      "animals": 2,
+      "animals_as_person": 1,
+      "animals_reported": 1,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 23,
+      "latency_s": 3.8,
+      "missed": [
+       "person",
+       "e_trotti"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 2,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot (Lampe mit Bewegungsmelder, Feuer, Kerze, Solarleuchten)",
+      "not_visible": 1,
+      "persons": 3,
+      "persons_detected": 1,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 30
+     }
+    ],
+    "plan": "gegenstaende",
+    "plan_name": "Gegenstände (Wind, Lampen, Feuer, Lockmittel, Wertsachen vor der Kamera – unbekannte Dinge dürfen nicht alarmieren · etwa 5 Min.)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 456.9,
+      "who": "person"
+     }
+    ],
+    "pushes": {
+     "alarm": 1,
+     "false": 0,
+     "noise": 0,
+     "ok": 1,
+     "raw": 1,
+     "repeat": 0
+    },
+    "rate": 13,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "stellplatz",
+    "seed": 1,
+    "simulator": "3.69.0",
+    "szene": {
+     "art": "gegenstaende",
+     "dinge": 18,
+     "ki_kennt": 2,
+     "ki_kennt_nicht": 16,
+     "liste": [
+      {
+       "coco": "",
+       "k": "flag"
+      },
+      {
+       "coco": "",
+       "k": "plastic_bag"
+      },
+      {
+       "coco": "",
+       "k": "balloon"
+      },
+      {
+       "coco": "",
+       "k": "laundry_line"
+      },
+      {
+       "coco": "",
+       "k": "windchime"
+      },
+      {
+       "coco": "",
+       "k": "hammock"
+      },
+      {
+       "coco": "",
+       "k": "garden_gate"
+      },
+      {
+       "coco": "",
+       "k": "fruit_tree"
+      },
+      {
+       "coco": "",
+       "k": "solar_lights"
+      },
+      {
+       "coco": "",
+       "k": "campfire"
+      },
+      {
+       "coco": "",
+       "k": "candle"
+      },
+      {
+       "coco": "",
+       "k": "motion_lamp"
+      },
+      {
+       "coco": "",
+       "k": "trash_bag"
+      },
+      {
+       "coco": "bowl",
+       "k": "food_bowl"
+      },
+      {
+       "coco": "",
+       "k": "parcel"
+      },
+      {
+       "coco": "chair",
+       "k": "camp_chair"
+      },
+      {
+       "coco": "",
+       "k": "bin_lid"
+      },
+      {
+       "coco": "",
+       "k": "kettle_grill"
+      }
+     ],
+     "lockmittel_angekommen": 7,
+     "lockmittel_tiere": 8,
+     "push_falsch": 0,
+     "push_richtig": 1
+    },
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 161,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 1.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "cat",
+      "light": 0.85,
+      "person": false,
+      "phase": 0,
+      "push_s": -1,
+      "px": 66,
+      "reported": true,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 34.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 88,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 12
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 100,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "boar",
+      "light": 0.85,
+      "person": false,
+      "phase": 0,
+      "push_s": -1,
+      "px": 63,
+      "reported": true,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 18.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 81,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 4.8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 14,
+      "thermal_only": true,
+      "vis_s": 7.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "fox",
+      "light": 0.26,
+      "person": false,
+      "phase": 2,
+      "push_s": -1,
+      "px": 50,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 2.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": 86.6,
+      "px": 184,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": false,
+      "vis_s": 5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "boar",
+      "light": 0.08,
+      "person": false,
+      "phase": 2,
+      "push_s": -1,
+      "px": 0,
+      "reported": true,
+      "th_px": 5,
+      "thermal_only": true,
+      "vis_s": 22.8
+     },
+     {
+      "crouch": false,
+      "det_s": 3.8,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 310,
+      "reported": false,
+      "th_px": 14,
+      "thermal_only": false,
+      "vis_s": 2
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "e_trotti",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 224,
+      "reported": false,
+      "th_px": 11,
+      "thermal_only": false,
+      "vis_s": 1.3
+     }
+    ],
+    "dauer_s": 522,
+    "mw_fps": 0.7
+   },
+   {
+    "date": "2026-11-14 02:31:35",
+    "device": "MoveEye",
+    "false_alarms": 1,
+    "false_events": 1,
+    "false_list": [
+     {
+      "cause": "Wind (Bäume, Büsche)",
+      "dup": false,
+      "phase": 0,
+      "t": 36.9
+     }
+    ],
+    "flicker": 1,
+    "latency_s": 8.8,
+    "missed_list": [
+     {
+      "kind": "person",
+      "phase": 0,
+      "t": 120.4,
+      "why": []
+     },
+     {
+      "kind": "person",
+      "phase": 0,
+      "t": 170.7,
+      "why": []
+     },
+     {
+      "kind": "person",
+      "phase": 1,
+      "t": 302,
+      "why": [
+       "dark",
+       "small"
+      ]
+     },
+     {
+      "kind": "e_trotti",
+      "phase": 2,
+      "t": 420.4,
+      "why": [
+       "dark",
+       "small"
+      ]
+     }
+    ],
+    "mult": 2,
+    "noise_alarms": [
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 12.7
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 19.7
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 38.7
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 53.8
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 71.6
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 79.4
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 95.6
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 113.2
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 131.8
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 155.8
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 173.2
+     }
+    ],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 9,
+    "persons_detected": 5,
+    "persons_thermal": 2,
+    "persons_thermal_detected": 0,
+    "phases": [
+     {
+      "animals": 2,
+      "animals_as_person": 0,
+      "animals_reported": 1,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 1,
+      "false_events": 1,
+      "flicker": 1,
+      "hour": 13,
+      "latency_s": 7.6,
+      "missed": [
+       "person",
+       "person"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Tag, Böen (Fahne, Plastiksack, Ballon, Wäsche, Tor, Obstbaum)",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 2,
+      "persons_pushed": 2,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "cloudy",
+      "wind": 55
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 20.6,
+      "latency_s": -1,
+      "missed": [
+       "person"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 1,
+       "fast": 0,
+       "small": 1
+      },
+      "name": "Dämmerung, Tiere am Lockmittel",
+      "not_visible": 1,
+      "persons": 1,
+      "persons_detected": 0,
+      "persons_pushed": 0,
+      "persons_thermal": 1,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 0,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 25
+     },
+     {
+      "animals": 2,
+      "animals_as_person": 1,
+      "animals_reported": 2,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 23,
+      "latency_s": 9.6,
+      "missed": [
+       "e_trotti"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 1,
+       "fast": 0,
+       "small": 1
+      },
+      "name": "Nacht mit Infrarot (Lampe mit Bewegungsmelder, Feuer, Kerze, Solarleuchten)",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 3,
+      "persons_pushed": 2,
+      "persons_thermal": 1,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 30
+     }
+    ],
+    "plan": "gegenstaende",
+    "plan_name": "Gegenstände (Wind, Lampen, Feuer, Lockmittel, Wertsachen vor der Kamera – unbekannte Dinge dürfen nicht alarmieren · etwa 5 Min.)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 27.4,
+      "who": "person"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 100.8,
+      "who": "person"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 381.6,
+      "who": "person"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 467,
+      "who": "person"
+     }
+    ],
+    "pushes": {
+     "alarm": 4,
+     "false": 0,
+     "noise": 0,
+     "ok": 4,
+     "raw": 4,
+     "repeat": 0
+    },
+    "rate": 56,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "stellplatz",
+    "seed": 2,
+    "simulator": "3.69.0",
+    "szene": {
+     "art": "gegenstaende",
+     "dinge": 18,
+     "ki_kennt": 2,
+     "ki_kennt_nicht": 16,
+     "liste": [
+      {
+       "coco": "",
+       "k": "flag"
+      },
+      {
+       "coco": "",
+       "k": "plastic_bag"
+      },
+      {
+       "coco": "",
+       "k": "balloon"
+      },
+      {
+       "coco": "",
+       "k": "laundry_line"
+      },
+      {
+       "coco": "",
+       "k": "windchime"
+      },
+      {
+       "coco": "",
+       "k": "hammock"
+      },
+      {
+       "coco": "",
+       "k": "garden_gate"
+      },
+      {
+       "coco": "",
+       "k": "fruit_tree"
+      },
+      {
+       "coco": "",
+       "k": "solar_lights"
+      },
+      {
+       "coco": "",
+       "k": "campfire"
+      },
+      {
+       "coco": "",
+       "k": "candle"
+      },
+      {
+       "coco": "",
+       "k": "motion_lamp"
+      },
+      {
+       "coco": "",
+       "k": "trash_bag"
+      },
+      {
+       "coco": "bowl",
+       "k": "food_bowl"
+      },
+      {
+       "coco": "",
+       "k": "parcel"
+      },
+      {
+       "coco": "chair",
+       "k": "camp_chair"
+      },
+      {
+       "coco": "",
+       "k": "bin_lid"
+      },
+      {
+       "coco": "",
+       "k": "kettle_grill"
+      }
+     ],
+     "lockmittel_angekommen": 7,
+     "lockmittel_tiere": 8,
+     "push_falsch": 0,
+     "push_richtig": 4
+    },
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": false,
+      "det_s": 3.8,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": 3.8,
+      "px": 178,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 2.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "hedgehog",
+      "light": 0.85,
+      "person": false,
+      "phase": 0,
+      "push_s": -1,
+      "px": 19,
+      "reported": true,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 20
+     },
+     {
+      "crouch": false,
+      "det_s": 11.5,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": 11.5,
+      "px": 67,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 5.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 83,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 4
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "cat",
+      "light": 0.85,
+      "person": false,
+      "phase": 0,
+      "push_s": -1,
+      "px": 37,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 15
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 77,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 16,
+      "thermal_only": true,
+      "vis_s": 4.8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "fox",
+      "light": 0.27,
+      "person": false,
+      "phase": 2,
+      "push_s": -1,
+      "px": 54,
+      "reported": true,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 1.5
+     },
+     {
+      "crouch": false,
+      "det_s": 10.5,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": 10.5,
+      "px": 190,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": false,
+      "vis_s": 6.8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "e_trotti",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 8,
+      "thermal_only": true,
+      "vis_s": 0.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "boar",
+      "light": 0.08,
+      "person": false,
+      "phase": 2,
+      "push_s": -1,
+      "px": 0,
+      "reported": true,
+      "th_px": 4,
+      "thermal_only": true,
+      "vis_s": 2.5
+     },
+     {
+      "crouch": false,
+      "det_s": 14.1,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": 14.1,
+      "px": 317,
+      "reported": false,
+      "th_px": 18,
+      "thermal_only": false,
+      "vis_s": 8
+     },
+     {
+      "crouch": false,
+      "det_s": 4.2,
+      "kind": "e_trotti",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 209,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": false,
+      "vis_s": 1.8
+     }
+    ],
+    "dauer_s": 522,
+    "mw_fps": 0.7
+   },
+   {
+    "date": "2026-11-14 02:40:20",
+    "device": "MoveEye",
+    "false_alarms": 4,
+    "false_events": 3,
+    "false_list": [
+     {
+      "cause": "Tier (hedgehog)",
+      "dup": false,
+      "phase": 0,
+      "t": 61.1
+     },
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 1,
+      "t": 262.4
+     },
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 2,
+      "t": 337.3
+     },
+     {
+      "cause": "unbekannt",
+      "dup": true,
+      "phase": 2,
+      "t": 341.3
+     }
+    ],
+    "flicker": 4,
+    "latency_s": 2.7,
+    "missed_list": [
+     {
+      "kind": "person",
+      "phase": 0,
+      "t": 88.4,
+      "why": []
+     },
+     {
+      "kind": "person",
+      "phase": 0,
+      "t": 107.8,
+      "why": []
+     },
+     {
+      "kind": "person",
+      "phase": 0,
+      "t": 173.6,
+      "why": []
+     },
+     {
+      "kind": "person",
+      "phase": 1,
+      "t": 303.1,
+      "why": [
+       "dark",
+       "small"
+      ]
+     },
+     {
+      "kind": "person",
+      "phase": 2,
+      "t": 372.6,
+      "why": [
+       "dark"
+      ]
+     }
+    ],
+    "mult": 2,
+    "noise_alarms": [
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 12.5
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 18.9
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 36.2
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 53.8
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 72.5
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 80
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 95.7
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 113
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 131.4
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 155
+     },
+     {
+      "cause": "Geräusch der Welt",
+      "phase": 0,
+      "t": 173
+     }
+    ],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 8,
+    "persons_detected": 3,
+    "persons_thermal": 1,
+    "persons_thermal_detected": 0,
+    "phases": [
+     {
+      "animals": 2,
+      "animals_as_person": 1,
+      "animals_reported": 1,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 1,
+      "false_events": 1,
+      "flicker": 1,
+      "hour": 13,
+      "latency_s": 2.3,
+      "missed": [
+       "person",
+       "person",
+       "person"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Tag, Böen (Fahne, Plastiksack, Ballon, Wäsche, Tor, Obstbaum)",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 1,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "cloudy",
+      "wind": 55
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": true,
+      "false_alarms": 1,
+      "false_events": 1,
+      "flicker": 1,
+      "hour": 20.6,
+      "latency_s": -1,
+      "missed": [
+       "person"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 1,
+       "fast": 0,
+       "small": 1
+      },
+      "name": "Dämmerung, Tiere am Lockmittel",
+      "not_visible": 1,
+      "persons": 1,
+      "persons_detected": 0,
+      "persons_pushed": 0,
+      "persons_thermal": 1,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 1,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 25
+     },
+     {
+      "animals": 1,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 2,
+      "false_events": 1,
+      "flicker": 2,
+      "hour": 23,
+      "latency_s": 2.9,
+      "missed": [
+       "person"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 1,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot (Lampe mit Bewegungsmelder, Feuer, Kerze, Solarleuchten)",
+      "not_visible": 1,
+      "persons": 3,
+      "persons_detected": 2,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 1,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 30
+     }
+    ],
+    "plan": "gegenstaende",
+    "plan_name": "Gegenstände (Wind, Lampen, Feuer, Lockmittel, Wertsachen vor der Kamera – unbekannte Dinge dürfen nicht alarmieren · etwa 5 Min.)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 24.5,
+      "who": "person"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 257.8,
+      "who": "person"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": false,
+      "phase": 2,
+      "t": 337.3,
+      "who": "unbekannt"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 455.7,
+      "who": "person"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 517.4,
+      "who": "person"
+     }
+    ],
+    "pushes": {
+     "alarm": 5,
+     "false": 1,
+     "noise": 0,
+     "ok": 4,
+     "raw": 5,
+     "repeat": 0
+    },
+    "rate": 38,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "stellplatz",
+    "seed": 3,
+    "simulator": "3.69.0",
+    "szene": {
+     "art": "gegenstaende",
+     "dinge": 18,
+     "ki_kennt": 2,
+     "ki_kennt_nicht": 16,
+     "liste": [
+      {
+       "coco": "",
+       "k": "flag"
+      },
+      {
+       "coco": "",
+       "k": "plastic_bag"
+      },
+      {
+       "coco": "",
+       "k": "balloon"
+      },
+      {
+       "coco": "",
+       "k": "laundry_line"
+      },
+      {
+       "coco": "",
+       "k": "windchime"
+      },
+      {
+       "coco": "",
+       "k": "hammock"
+      },
+      {
+       "coco": "",
+       "k": "garden_gate"
+      },
+      {
+       "coco": "",
+       "k": "fruit_tree"
+      },
+      {
+       "coco": "",
+       "k": "solar_lights"
+      },
+      {
+       "coco": "",
+       "k": "campfire"
+      },
+      {
+       "coco": "",
+       "k": "candle"
+      },
+      {
+       "coco": "",
+       "k": "motion_lamp"
+      },
+      {
+       "coco": "",
+       "k": "trash_bag"
+      },
+      {
+       "coco": "bowl",
+       "k": "food_bowl"
+      },
+      {
+       "coco": "",
+       "k": "parcel"
+      },
+      {
+       "coco": "chair",
+       "k": "camp_chair"
+      },
+      {
+       "coco": "",
+       "k": "bin_lid"
+      },
+      {
+       "coco": "",
+       "k": "kettle_grill"
+      }
+     ],
+     "lockmittel_angekommen": 7,
+     "lockmittel_tiere": 8,
+     "push_falsch": 1,
+     "push_richtig": 4
+    },
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": false,
+      "det_s": 2.3,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": 2.3,
+      "px": 141,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 2.5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "hedgehog",
+      "light": 0.85,
+      "person": false,
+      "phase": 0,
+      "push_s": -1,
+      "px": 34,
+      "reported": true,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 48
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 76,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 9.8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 94,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 10.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "cat",
+      "light": 0.85,
+      "person": false,
+      "phase": 0,
+      "push_s": -1,
+      "px": 33,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 10.5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 87,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 4.5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 14,
+      "thermal_only": true,
+      "vis_s": 5.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "fox",
+      "light": 0.08,
+      "person": false,
+      "phase": 2,
+      "push_s": -1,
+      "px": 101,
+      "reported": false,
+      "th_px": 8,
+      "thermal_only": false,
+      "vis_s": 3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": 86.1,
+      "px": 182,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": false,
+      "vis_s": 9
+     },
+     {
+      "crouch": false,
+      "det_s": 3.6,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 281,
+      "reported": false,
+      "th_px": 15,
+      "thermal_only": false,
+      "vis_s": 1.8
+     },
+     {
+      "crouch": false,
+      "det_s": 2.3,
+      "kind": "e_trotti",
+      "light": 0.08,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 213,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": false,
+      "vis_s": 2
+     }
+    ],
+    "dauer_s": 522,
+    "mw_fps": 0.7
+   }
+  ],
+  "fahrzeuge": [
+   {
+    "date": "2026-11-14 02:49:05",
+    "device": "MoveEye",
+    "false_alarms": 1,
+    "false_events": 1,
+    "false_list": [
+     {
+      "cause": "unbekannt",
+      "dup": false,
+      "phase": 0,
+      "t": 3
+     }
+    ],
+    "flicker": 1,
+    "latency_s": 3,
+    "missed_list": [
+     {
+      "kind": "cyclist",
+      "phase": 0,
+      "t": 32.6,
+      "why": [
+       "dark",
+       "small"
+      ]
+     },
+     {
+      "kind": "cyclist",
+      "phase": 0,
+      "t": 108.5,
+      "why": [
+       "dark",
+       "small"
+      ]
+     }
+    ],
+    "mult": 2,
+    "noise_alarms": [],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 9,
+    "persons_detected": 7,
+    "persons_thermal": 5,
+    "persons_thermal_detected": 3,
+    "phases": [
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": true,
+      "false_alarms": 1,
+      "false_events": 1,
+      "flicker": 1,
+      "hour": 20.8,
+      "latency_s": 4.3,
+      "missed": [
+       "cyclist",
+       "cyclist"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 2,
+       "fast": 0,
+       "small": 2
+      },
+      "name": "Dämmerung, Abblendlicht, Velo mit Licht",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 2,
+      "persons_pushed": 2,
+      "persons_thermal": 4,
+      "persons_thermal_detected": 2,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 23,
+      "latency_s": 6.2,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot: Fernlicht, Scheinwerfer auf die Kamera, Töff",
+      "not_visible": 1,
+      "persons": 1,
+      "persons_detected": 1,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 5
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 0.5,
+      "latency_s": 1.7,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht: Auto parkiert, Leute steigen aus, Wohnmobil, E-Trottinett",
+      "not_visible": 7,
+      "persons": 4,
+      "persons_detected": 4,
+      "persons_pushed": 2,
+      "persons_thermal": 1,
+      "persons_thermal_detected": 1,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 3,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 5
+     }
+    ],
+    "plan": "fahrzeuge",
+    "plan_name": "Fahrzeuge in der Nacht (vorbeifahren, Fernlicht, Blendung, parkieren, Velos – Autos dürfen nicht alarmieren · etwa 5 Min.)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 84.7,
+      "who": "person (nur Wärmebild)"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 161.4,
+      "who": "person (nur Wärmebild)"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 244.8,
+      "who": "person"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 319.6,
+      "who": "person"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 382,
+      "who": "escooter"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 449.5,
+      "who": "cyclist"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 510.5,
+      "who": "cyclist"
+     }
+    ],
+    "pushes": {
+     "alarm": 7,
+     "false": 0,
+     "noise": 0,
+     "ok": 7,
+     "raw": 7,
+     "repeat": 0
+    },
+    "rate": 78,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "stellplatz",
+    "seed": 1,
+    "simulator": "3.69.0",
+    "szene": {
+     "art": "fahrzeuge",
+     "ausgestiegen": 5,
+     "blendung_max": 0.23,
+     "fahrzeuge": 16,
+     "fernlicht": 1,
+     "push_falsch": 0,
+     "push_falsch_fahrzeug": 0,
+     "push_richtig": 7,
+     "velos_ohne_licht": 0,
+     "zurueck": 2
+    },
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "cyclist",
+      "light": 0.08,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": true,
+      "vis_s": 1.5
+     },
+     {
+      "crouch": false,
+      "det_s": 2.6,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 0,
+      "push_s": 2.6,
+      "px": 0,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": true,
+      "vis_s": 5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "cyclist",
+      "light": 0.08,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 15,
+      "thermal_only": true,
+      "vis_s": 1.5
+     },
+     {
+      "crouch": false,
+      "det_s": 6,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 0,
+      "push_s": 6,
+      "px": 0,
+      "reported": false,
+      "th_px": 14,
+      "thermal_only": true,
+      "vis_s": 7.3
+     },
+     {
+      "crouch": false,
+      "det_s": 6.2,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": 6.2,
+      "px": 221,
+      "reported": false,
+      "th_px": 12,
+      "thermal_only": false,
+      "vis_s": 5.3
+     },
+     {
+      "crouch": false,
+      "det_s": 3.8,
+      "kind": "escooter",
+      "light": 0.07,
+      "person": true,
+      "phase": 2,
+      "push_s": 3.8,
+      "px": 205,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": false,
+      "vis_s": 3.3
+     },
+     {
+      "crouch": false,
+      "det_s": 1.4,
+      "kind": "cyclist",
+      "light": 0.07,
+      "person": true,
+      "phase": 2,
+      "push_s": 40.4,
+      "px": 195,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": false,
+      "vis_s": 2.5
+     },
+     {
+      "crouch": false,
+      "det_s": 1,
+      "kind": "escooter",
+      "light": 0.07,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 259,
+      "reported": false,
+      "th_px": 12,
+      "thermal_only": false,
+      "vis_s": 2.3
+     },
+     {
+      "crouch": false,
+      "det_s": 0.4,
+      "kind": "cyclist",
+      "light": 0.07,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 8,
+      "thermal_only": true,
+      "vis_s": 0.3
+     }
+    ],
+    "dauer_s": 524,
+    "mw_fps": 0.7
+   },
+   {
+    "date": "2026-11-14 02:57:50",
+    "device": "MoveEye",
+    "false_alarms": 1,
+    "false_events": 1,
+    "false_list": [
+     {
+      "cause": "Fahrzeug (Scheinwerfer blenden)",
+      "dup": false,
+      "phase": 1,
+      "t": 216.6
+     }
+    ],
+    "flicker": 1,
+    "latency_s": 7.8,
+    "missed_list": [
+     {
+      "kind": "cyclist",
+      "phase": 0,
+      "t": 108.4,
+      "why": [
+       "dark",
+       "small"
+      ]
+     },
+     {
+      "kind": "person",
+      "phase": 2,
+      "t": 473.6,
+      "why": [
+       "dark",
+       "small"
+      ]
+     }
+    ],
+    "mult": 2,
+    "noise_alarms": [],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 10,
+    "persons_detected": 8,
+    "persons_thermal": 5,
+    "persons_thermal_detected": 4,
+    "phases": [
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 20.8,
+      "latency_s": 3.6,
+      "missed": [
+       "cyclist"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 1,
+       "fast": 0,
+       "small": 1
+      },
+      "name": "Dämmerung, Abblendlicht, Velo mit Licht",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 3,
+      "persons_pushed": 2,
+      "persons_thermal": 4,
+      "persons_thermal_detected": 3,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 1,
+      "false_events": 1,
+      "flicker": 1,
+      "hour": 23,
+      "latency_s": 4,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot: Fernlicht, Scheinwerfer auf die Kamera, Töff",
+      "not_visible": 0,
+      "persons": 2,
+      "persons_detected": 2,
+      "persons_pushed": 2,
+      "persons_thermal": 1,
+      "persons_thermal_detected": 1,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 5
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 0.5,
+      "latency_s": 14.4,
+      "missed": [
+       "person"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 1,
+       "fast": 0,
+       "small": 1
+      },
+      "name": "Nacht: Auto parkiert, Leute steigen aus, Wohnmobil, E-Trottinett",
+      "not_visible": 5,
+      "persons": 4,
+      "persons_detected": 3,
+      "persons_pushed": 1,
+      "persons_thermal": 0,
+      "persons_thermal_detected": 0,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 5
+     }
+    ],
+    "plan": "fahrzeuge",
+    "plan_name": "Fahrzeuge in der Nacht (vorbeifahren, Fernlicht, Blendung, parkieren, Velos – Autos dürfen nicht alarmieren · etwa 5 Min.)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 84.9,
+      "who": "person (nur Wärmebild)"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 160.8,
+      "who": "person (nur Wärmebild)"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 243.6,
+      "who": "person"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 311.6,
+      "who": "person"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 411.4,
+      "who": "escooter"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 486.7,
+      "who": "escooter"
+     }
+    ],
+    "pushes": {
+     "alarm": 6,
+     "false": 0,
+     "noise": 0,
+     "ok": 6,
+     "raw": 6,
+     "repeat": 0
+    },
+    "rate": 80,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "stellplatz",
+    "seed": 2,
+    "simulator": "3.69.0",
+    "szene": {
+     "art": "fahrzeuge",
+     "ausgestiegen": 3,
+     "blendung_max": 0.28,
+     "fahrzeuge": 16,
+     "fernlicht": 3,
+     "push_falsch": 0,
+     "push_falsch_fahrzeug": 0,
+     "push_richtig": 6,
+     "velos_ohne_licht": 1,
+     "zurueck": 2
+    },
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": false,
+      "det_s": 2.9,
+      "kind": "cyclist",
+      "light": 0.08,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": true,
+      "vis_s": 1.8
+     },
+     {
+      "crouch": false,
+      "det_s": 3.3,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 0,
+      "push_s": 3.3,
+      "px": 0,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": true,
+      "vis_s": 6.5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "cyclist",
+      "light": 0.08,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 14,
+      "thermal_only": true,
+      "vis_s": 1.8
+     },
+     {
+      "crouch": false,
+      "det_s": 4.5,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 0,
+      "push_s": 4.5,
+      "px": 0,
+      "reported": false,
+      "th_px": 13,
+      "thermal_only": true,
+      "vis_s": 6.3
+     },
+     {
+      "crouch": false,
+      "det_s": 5.9,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": 5.9,
+      "px": 208,
+      "reported": false,
+      "th_px": 11,
+      "thermal_only": false,
+      "vis_s": 10.5
+     },
+     {
+      "crouch": false,
+      "det_s": 2.2,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": -5.9,
+      "px": 0,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": true,
+      "vis_s": 5.5
+     },
+     {
+      "crouch": false,
+      "det_s": 36.5,
+      "kind": "escooter",
+      "light": 0.07,
+      "person": true,
+      "phase": 2,
+      "push_s": 33.6,
+      "px": 181,
+      "reported": false,
+      "th_px": 11,
+      "thermal_only": false,
+      "vis_s": 8
+     },
+     {
+      "crouch": false,
+      "det_s": 3.6,
+      "kind": "cyclist",
+      "light": 0.07,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 229,
+      "reported": false,
+      "th_px": 11,
+      "thermal_only": false,
+      "vis_s": 1
+     },
+     {
+      "crouch": false,
+      "det_s": 3.1,
+      "kind": "escooter",
+      "light": 0.48,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 304,
+      "reported": false,
+      "th_px": 18,
+      "thermal_only": false,
+      "vis_s": 0.8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.25,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 37,
+      "reported": false,
+      "th_px": 0,
+      "thermal_only": false,
+      "vis_s": 2.8
+     }
+    ],
+    "dauer_s": 521,
+    "mw_fps": 0.8
+   },
+   {
+    "date": "2026-11-14 03:06:30",
+    "device": "MoveEye",
+    "false_alarms": 0,
+    "false_events": 0,
+    "false_list": [],
+    "flicker": 0,
+    "latency_s": 3,
+    "missed_list": [
+     {
+      "kind": "cyclist",
+      "phase": 0,
+      "t": 33.2,
+      "why": [
+       "dark",
+       "small"
+      ]
+     },
+     {
+      "kind": "cyclist",
+      "phase": 0,
+      "t": 108.5,
+      "why": [
+       "dark",
+       "small"
+      ]
+     },
+     {
+      "kind": "escooter",
+      "phase": 2,
+      "t": 453.5,
+      "why": [
+       "dark"
+      ]
+     }
+    ],
+    "mult": 2,
+    "noise_alarms": [],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).",
+    "persons": 10,
+    "persons_detected": 7,
+    "persons_thermal": 6,
+    "persons_thermal_detected": 4,
+    "phases": [
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 20.8,
+      "latency_s": 2.4,
+      "missed": [
+       "cyclist",
+       "cyclist"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 2,
+       "fast": 0,
+       "small": 2
+      },
+      "name": "Dämmerung, Abblendlicht, Velo mit Licht",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 2,
+      "persons_pushed": 2,
+      "persons_thermal": 4,
+      "persons_thermal_detected": 2,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 10
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 23,
+      "latency_s": 3.6,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot: Fernlicht, Scheinwerfer auf die Kamera, Töff",
+      "not_visible": 0,
+      "persons": 2,
+      "persons_detected": 2,
+      "persons_pushed": 2,
+      "persons_thermal": 1,
+      "persons_thermal_detected": 1,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 5
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 0,
+      "false_events": 0,
+      "flicker": 0,
+      "hour": 0.5,
+      "latency_s": 3,
+      "missed": [
+       "escooter"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 1,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht: Auto parkiert, Leute steigen aus, Wohnmobil, E-Trottinett",
+      "not_visible": 4,
+      "persons": 4,
+      "persons_detected": 3,
+      "persons_pushed": 1,
+      "persons_thermal": 1,
+      "persons_thermal_detected": 1,
+      "pushes_false": 0,
+      "pushes_noise": 0,
+      "pushes_ok": 2,
+      "pushes_repeat": 0,
+      "weather": "clear",
+      "wind": 5
+     }
+    ],
+    "plan": "fahrzeuge",
+    "plan_name": "Fahrzeuge in der Nacht (vorbeifahren, Fernlicht, Blendung, parkieren, Velos – Autos dürfen nicht alarmieren · etwa 5 Min.)",
+    "push_list": [
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 84,
+      "who": "person"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 0,
+      "t": 161.7,
+      "who": "person (nur Wärmebild)"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 242.9,
+      "who": "person"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 1,
+      "t": 321.8,
+      "who": "person"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 410.5,
+      "who": "escooter"
+     },
+     {
+      "dup": false,
+      "ev": "person",
+      "ok": true,
+      "phase": 2,
+      "t": 486,
+      "who": "escooter"
+     }
+    ],
+    "pushes": {
+     "alarm": 6,
+     "false": 0,
+     "noise": 0,
+     "ok": 6,
+     "raw": 6,
+     "repeat": 0
+    },
+    "rate": 70,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "stellplatz",
+    "seed": 3,
+    "simulator": "3.69.0",
+    "szene": {
+     "art": "fahrzeuge",
+     "ausgestiegen": 2,
+     "blendung_max": 0.28,
+     "fahrzeuge": 16,
+     "fernlicht": 4,
+     "push_falsch": 0,
+     "push_falsch_fahrzeug": 0,
+     "push_richtig": 6,
+     "velos_ohne_licht": 0,
+     "zurueck": 2
+    },
+    "truth_cams": [
+     0
+    ],
+    "v": 3,
+    "visitors": [
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "cyclist",
+      "light": 0.08,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": true,
+      "vis_s": 1.3
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 0,
+      "push_s": -0.8,
+      "px": 0,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": true,
+      "vis_s": 4.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "cyclist",
+      "light": 0.08,
+      "person": true,
+      "phase": 0,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 15,
+      "thermal_only": true,
+      "vis_s": 1
+     },
+     {
+      "crouch": false,
+      "det_s": 4.8,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 0,
+      "push_s": 4.8,
+      "px": 0,
+      "reported": false,
+      "th_px": 14,
+      "thermal_only": true,
+      "vis_s": 7.5
+     },
+     {
+      "crouch": false,
+      "det_s": 5.3,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": 5.3,
+      "px": 214,
+      "reported": false,
+      "th_px": 13,
+      "thermal_only": false,
+      "vis_s": 4.5
+     },
+     {
+      "crouch": false,
+      "det_s": 1.8,
+      "kind": "person",
+      "light": 0.08,
+      "person": true,
+      "phase": 1,
+      "push_s": -3.4,
+      "px": 0,
+      "reported": false,
+      "th_px": 8,
+      "thermal_only": true,
+      "vis_s": 1.5
+     },
+     {
+      "crouch": false,
+      "det_s": 3,
+      "kind": "escooter",
+      "light": 0.07,
+      "person": true,
+      "phase": 2,
+      "push_s": 33.2,
+      "px": 184,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": false,
+      "vis_s": 1.3
+     },
+     {
+      "crouch": false,
+      "det_s": 3.6,
+      "kind": "cyclist",
+      "light": 0.07,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 202,
+      "reported": false,
+      "th_px": 10,
+      "thermal_only": false,
+      "vis_s": 1.8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "escooter",
+      "light": 0.07,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 275,
+      "reported": false,
+      "th_px": 15,
+      "thermal_only": false,
+      "vis_s": 1.5
+     },
+     {
+      "crouch": false,
+      "det_s": 2.4,
+      "kind": "cyclist",
+      "light": 0.07,
+      "person": true,
+      "phase": 2,
+      "push_s": -1,
+      "px": 0,
+      "reported": false,
+      "th_px": 9,
+      "thermal_only": true,
+      "vis_s": 1.3
+     }
+    ],
+    "dauer_s": 519,
+    "mw_fps": 0.8
+   }
+  ]
+ },
+ "sim_version": "3.69.0",
+ "cpu": "Intel(R) Core(TM) i5-4590T CPU @ 2.00GHz",
+ "besucher_mal": 2,
+ "seeds": 3,
+ "waermebild": "an",
+ "aussehen": "neu",
+ "tiere": "modelle",
+ "grafik": "normal",
+ "smalltv": {
+  "uploads": 312,
+  "sets": 547,
+  "bad_size": 0,
+  "used": 18201,
+  "last": "me_a.gif"
+ }
+}
