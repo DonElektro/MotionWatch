@@ -170,7 +170,7 @@ def _morse_split(vals, ratio):
     return 0
 
 
-def morse_decode(ons, gaps):
+def morse_decode(ons, gaps, _fair=False):
     """ons[i] = seconds the light was on, gaps[i] = seconds dark after it (the last may be None = still open).
     -> {"text", "unit" (s per dit), "wpm", "mixed" (short and long seen), "periodic" (even blinking - no text), "q" (0..1 fit),
         "n" (elements), "unknown" (signs not in the table), "word" (s: a gap from here on is a new word)}
@@ -184,6 +184,13 @@ def morse_decode(ons, gaps):
     gl = [max(1e-4, float(g)) for g in gaps[:n] if g is not None]
     sg = sorted(gl)
     k = _morse_split(so, 2.2)
+    if k and len(sg) >= 2 and not _fair:
+        # the way shifts the lengths: a radio opens late (ON shorter, pauses longer), a lamp glows on (the other way round).
+        # A dit and the pause inside a sign are sent equally long - so half their difference is taken back from every length.
+        dit_, short_ = so[k // 2], sg[len(sg) // 4]
+        if 0.42 * dit_ <= short_ <= 2.4 * dit_ and abs(short_ - dit_) > 0.12 * dit_:
+            dl = 0.5 * (short_ - dit_)
+            return morse_decode([max(1e-3, float(o) + dl) for o in ons], [None if g is None else max(1e-3, float(g) - dl) for g in gaps], True)
     if k:
         dit, dah = so[k // 2], so[(k + n) // 2]
         u = (dit * k + dah / 3.0 * (n - k)) / n
@@ -409,12 +416,12 @@ class MorseRx:
         for peak, cx, cy, size in cand[:6]:
             if len(self.tracks) >= self.TRACKS:
                 break
-            r = 5 + size // 2
+            r = min(8, 4 + size // 2)                       # a small window: a person walking past must not cover a lamp nearby
             if any(abs(cx - q["x"]) <= r + q["r"] and abs(cy - q["y"]) <= r + q["r"] for q in self.tracks):
                 continue
             if any(abs(cx - gx) <= 6 and abs(cy - gy) <= 6 for gx, gy, _t in self.ignore):
                 continue
-            tr_ = {"x": cx, "y": cy, "r": min(16, r), "key": MorseKey(), "t0": t, "dec": None, "valid": False, "size": size}
+            tr_ = {"x": cx, "y": cy, "r": r, "key": MorseKey(), "t0": t, "dec": None, "valid": False, "size": size}
             x0, x1, y0, y1 = self._win(tr_, w, h)
             lv = (sub[:, y0:y1, x0:x1].astype(np.int16) - mn[y0:y1, x0:x1].astype(np.int16)).reshape(len(idx), -1).max(axis=1)
             after = max([0.0] + [te for dx, dy, te in self.done if abs(cx - dx) <= 12 and abs(cy - dy) <= 12])
@@ -432,7 +439,9 @@ class MorseRx:
     def _track(self, tr_, g, t):
         h, w = g.shape
         key = tr_["key"]
-        x0, x1, y0, y1 = self._win(tr_, w, h, int(6.0 * key.dark_for(t)))    # dark for a while: the hand may have moved - look wider
+        # dark for a while: the hand may have moved - look wider. Only for a place that has shown Morse already: anything else
+        # that moves (a person walking past) keeps its small window and cannot take up a lamp nearby.
+        x0, x1, y0, y1 = self._win(tr_, w, h, int(6.0 * key.dark_for(t)) if tr_["valid"] else 0)
         if self.mn is None or x1 <= x0 or y1 <= y0:
             return
         d = cv2.subtract(g[y0:y1, x0:x1], self.mn[y0:y1, x0:x1])
@@ -485,6 +494,148 @@ class MorseRx:
                 self._drop(tr_)
             elif not key.ons and not key.on and t - tr_["t0"] > self.SPAN_S + 2.0:
                 self._drop(tr_)                             # nothing came of it
+
+
+class MorseAudio:
+    """Morse by sound: a keyed tone or a whistle in the microphone signal (16 kHz mono). feed(samples) with every piece of
+    sound; cheap: one small FFT per 8 ms. Looks for ONE narrow tone that was there AND not there in the last seconds
+    (a steady tone, hiss, a bang or the wind are no key), follows it, and decodes with MorseKey / morse_decode like the
+    light. Nothing of the sound is kept: only the levels of 44 frequency fields of the last seconds (no speech can be made
+    of them), fixed memory."""
+    RATE = 16000
+    HOP, WIN = 128, 256                 # 8 ms steps, 16 ms window = fields of 62.5 Hz
+    LO, HI = 300.0, 3000.0              # Hz: the band of a voice radio, a whistle, the tone of MoveEye (660 Hz)
+    SPAN_S = 6.0
+    MIN_SWING = 9.0                     # dB a tone must stand out of the hiss
+    END_S = 3.0
+    IGNORE_S = 20.0
+
+    def __init__(self, on_message=None):
+        self.on_message = on_message
+        self.win = np.hanning(self.WIN).astype(np.float32)
+        self.b0 = int(round(self.LO * self.WIN / self.RATE)); self.b1 = int(round(self.HI * self.WIN / self.RATE)) + 1
+        self.fps = self.RATE / float(self.HOP)
+        self.N = int(self.SPAN_S * self.fps)
+        self.reset()
+
+    def reset(self):
+        self.tail = np.zeros(0, np.float32)
+        self.hist = np.zeros((self.N, self.b1 - self.b0), np.float32); self.i = 0; self.n = 0
+        self.t = 0.0; self.prev = None
+        self.key = None; self.bin = -1; self.dec = None; self.valid = False; self.t0 = 0.0
+        self.ignore = []; self.done = []; self.live = None
+        self.stats = {"frames": 0, "msgs": 0, "dropped": 0, "periodic": 0, "ms": 0.0, "hz": 0, "db": 0.0}
+
+    def _order(self):
+        n = min(self.n, self.N)
+        return [(self.i - n + j) % self.N for j in range(n)]
+
+    def _lev(self, rows, b):
+        return rows[:, max(0, b - 2):b + 3].max(axis=1)        # ±125 Hz: a whistle is never quite steady
+
+    def feed(self, pcm):
+        """pcm: the next samples (any number), int16 scale. Returns the live state (dict) or None."""
+        c0 = time.perf_counter()
+        x = np.asarray(pcm, np.float32).ravel()
+        if x.size > self.RATE * 2:
+            x = x[-self.RATE * 2:]                              # never more than 2 s at once
+        if not np.all(np.isfinite(x)):
+            return self.live
+        x = np.concatenate((self.tail, x)) if self.tail.size else x
+        nfr = (x.size - self.WIN) // self.HOP + 1
+        if nfr <= 0:
+            self.tail = x
+            return self.live
+        idx = np.arange(self.WIN)[None, :] + self.HOP * np.arange(nfr)[:, None]
+        X = np.abs(np.fft.rfft(x[idx] * self.win, axis=1))[:, self.b0:self.b1]
+        self.tail = x[nfr * self.HOP:]
+        med = np.median(X, axis=1)[:, None] + 1.0
+        c = np.clip(20.0 * np.log10(X / med + 1e-6), 0.0, 60.0).astype(np.float32)   # dB above the hiss of this moment
+        for r in range(nfr):
+            row = c[r] if self.prev is None else 0.55 * c[r] + 0.45 * self.prev
+            self.prev = row
+            self.hist[self.i] = row; self.i = (self.i + 1) % self.N; self.n += 1
+            self.t += self.HOP / float(self.RATE)
+            if self.key is not None:
+                v = float(row[max(0, self.bin - 2):self.bin + 3].max())
+                if self.key.level(v, self.t, self.SPAN_S, self.MIN_SWING):
+                    self._decoded()
+                if self.key is not None:
+                    self._close()
+            if self.n % 40 == 0 and self.n >= 60:
+                self._scan()
+        self.stats["frames"] += nfr
+        self.stats["ms"] = round(0.9 * self.stats["ms"] + 0.1 * (time.perf_counter() - c0) * 1000.0, 3)
+        return self.live
+
+    def _scan(self):
+        rows = self.hist[self._order()]
+        lo = np.percentile(rows, 15, axis=0); hi = np.percentile(rows, 97, axis=0)
+        sw = hi - lo
+        self.ignore = [g for g in self.ignore if self.t - g[1] < self.IGNORE_S]
+        self.done = [g for g in self.done if self.t - g[1] < self.SPAN_S + 2.0]
+        for b, _t in self.ignore:
+            sw[max(0, b - 3):b + 4] = 0.0
+        if self.key is not None:                                # follow a tone that drifts (a whistle, a radio off tune)
+            a, e = max(0, self.bin - 3), min(sw.size, self.bin + 4)
+            b = a + int(np.argmax(sw[a:e]))
+            if sw[b] > sw[self.bin] + 3.0:
+                self.bin = b
+            self.stats["hz"] = int(round((self.b0 + self.bin) * self.RATE / float(self.WIN)))
+            return
+        b = int(np.argmax(sw))
+        if sw[b] < self.MIN_SWING + 3.0:
+            return
+        lv = self._lev(rows, b)
+        mid = float(lo[b]) + 0.5 * float(sw[b])
+        duty = float((lv > mid).mean())
+        if not 0.03 <= duty <= 0.85:
+            return
+        self.key = MorseKey(); self.bin = b; self.dec = None; self.valid = False; self.t0 = self.t
+        self.stats["hz"] = int(round((self.b0 + b) * self.RATE / float(self.WIN))); self.stats["db"] = round(float(sw[b]), 1)
+        after = max([0.0] + [te for db_, te in self.done if abs(db_ - b) <= 4])
+        n = lv.size
+        self.key.prime(lv)
+        for j in range(n):                                      # the last seconds once more for this tone
+            tj = self.t - (n - 1 - j) * self.HOP / float(self.RATE)
+            if tj > after:
+                self.key.level(float(lv[j]), tj, self.SPAN_S, self.MIN_SWING)
+        if self.key.ons:
+            self._decoded()
+
+    def _decoded(self):
+        key = self.key
+        self.dec = d = morse_decode(key.ons, key.gaps)
+        self.valid = morse_valid(d, self.fps)
+        if d["periodic"] and d["n"] >= 12:                      # an even beep (a reversing lorry, an alarm clock): no text
+            self.stats["periodic"] += 1
+            self.ignore.append((self.bin, self.t)); del self.ignore[:-8]
+            self._drop(); return
+        self.live = {"text": d["text"], "wpm": d["wpm"], "hz": self.stats["hz"], "on": key.on, "t": self.t, "valid": self.valid}
+
+    def _drop(self):
+        self.key = None; self.bin = -1; self.dec = None; self.valid = False; self.live = None
+
+    def _close(self):
+        key, d = self.key, self.dec
+        end = self.END_S if not d or d["n"] < 3 else min(12.0, max(self.END_S, 2.2 * d["word"]))
+        full = len(key.ons) >= key.EL_MAX or (d is not None and len(d["text"]) >= MORSE_RX_TEXT_MAX)
+        if key.on and self.t - key.t_on > 8.0:                  # a tone that stays: no key
+            self._drop(); return
+        if (key.ons and key.dark_for(self.t) >= end) or full:
+            if key.gaps and key.gaps[-1] is not None:
+                key.gaps[-1] = None
+            d = morse_decode(key.ons, key.gaps)
+            self.done.append((self.bin, key.t_off)); del self.done[:-8]
+            if morse_valid(d, self.fps):
+                self.stats["msgs"] += 1
+                if self.on_message is not None:
+                    self.on_message(d["text"].strip(), dict(d, hz=self.stats["hz"], t=self.t))
+            else:
+                self.stats["dropped"] += 1
+            self._drop()
+        elif not key.ons and not key.on and self.t - self.t0 > self.SPAN_S + 2.0:
+            self._drop()
 # ==== MORSE-KERN ENDE ====
 
 
@@ -498,9 +649,12 @@ MORSE_LIMIT_K = 0.4                    # reading limit shown: WPM = 0.4 × pictu
 # switching cycles per second an output may do; a row of dits blinks with 1 / (2 dit) -> WPM = 2.4 × Hz
 MORSE_OUT_HZ = {"white": 3.0, "relay": 2.0, "relay_ssr": 3.0, "led": 4.5, "ir": 25.0 / 3.0, "beep": 25.0 / 2.4}
 MORSE_FLASH_NOTE_HZ = 3.0              # visible flashing from here on: the page shows the note about flashing light
-MORSE_SOURCES = ("camera",)            # step 2 adds "sound" (microphone) and "ir" (another MoveEye): they call morse_rx_text()
+MORSE_SOURCES = ("camera", "sound")    # camera: a light, also the infrared light of another MoveEye; sound: the microphone
+MORSE_TEST_TEXT = "VVV TEST"           # «Gegenstelle testen»: what one MoveEye sends by infrared and the other one looks for
+MORSE_SOUND_WPM = 20                   # reading by sound: shown limit (measured: docs/Morse_Messung_Ton.md)
+MORSE_OWN_S = 1.5                      # s after an own transmission in which the own light / tone is not read (no echo)
 MORSE_DEF = {"morse_minutes": 10, "morse_wpm": 5, "morse_fw": 0, "morse_outs": ["white"], "morse_ssr": [], "morse_rx": True,
-             "morse_rx_live": True, "morse_rx_hist": True, "morse_rx_push": False, "morse_rx_say": False}
+             "morse_rx_live": True, "morse_rx_hist": True, "morse_rx_push": False, "morse_rx_say": False, "morse_rx_sound": False}
 for _k, _v in MORSE_DEF.items():
     CFG.setdefault(_k, json.loads(json.dumps(_v))); DEFAULTS.setdefault(_k, json.loads(json.dumps(_v)))
     FACTORY_CFG.setdefault(_k, json.loads(json.dumps(_v)))
@@ -510,7 +664,8 @@ APPKEY_DENY_PATHS.update({"/api/morse", "/morse"})
 LOCK_DENY_PATHS.add("/api/morse")
 _IMP["sys"] = re.compile(_IMP["sys"].pattern + r"|Morse mode")       # «Morse-Modus ein / aus» counts as important in the log
 
-MORSE = {"until": 0.0, "t0": 0.0, "by": "", "tx": None, "rx": None, "msgs": deque(maxlen=20), "live": None, "last": None, "relearn": False,
+MORSE = {"until": 0.0, "t0": 0.0, "by": "", "tx": None, "rx": None, "arx": None, "alive": None, "a_t": 0.0, "own_light": 0.0, "own_sound": 0.0,
+         "own_rst": [False, False], "peer": None, "msgs": deque(maxlen=20), "live": None, "last": None, "relearn": False,
          "lock": threading.RLock(), "tx_starts": [], "push_t": [], "push_held": 0, "say_t": 0.0, "out_n": 0, "lab": {}, "err_t": 0.0, "seq": 0}
 
 
@@ -531,9 +686,10 @@ def morse_end(why="button", who=""):
             return False
         MORSE["until"] = 0.0
         morse_tx_stop(why)
-        MORSE["live"] = None; MORSE["relearn"] = True
-        if MORSE["rx"] is not None:
-            MORSE["rx"].reset()
+        MORSE["live"] = None; MORSE["alive"] = None; MORSE["relearn"] = True
+        for k in ("rx", "arx"):
+            if MORSE[k] is not None:
+                MORSE[k].reset()                             # nothing of the sound or the pictures stays behind
     try:                                                   # the sabotage guard and the lens check learn the scene again (no alarm
         if TAMPER is not None:                             # because a lamp was on a moment ago)
             TAMPER.ref = None; TAMPER.settle = time.time() + 10
@@ -571,6 +727,10 @@ def morse_start(minutes, who="web", more=False):
         if MORSE["rx"] is None:
             MORSE["rx"] = MorseRx(lambda text, info: morse_rx_text(text, "camera", info))
         MORSE["rx"].reset()
+        if MORSE["arx"] is None:
+            MORSE["arx"] = MorseAudio(lambda text, info: morse_rx_text(text, "sound", info))
+        MORSE["arx"].reset()
+        MORSE.update(alive=None, peer=None, own_light=0.0, own_sound=0.0)
         MORSE.update(until=now + m * 60.0, t0=now, by=str(who)[:40], live=None, last=None)
     try:
         protect_cancel_escalation()
@@ -713,7 +873,12 @@ def fog_twi_frame(w, small, gray, bright, lowlight, t0):     # + 639zzz: every p
     if MORSE["until"]:
         try:
             if morse_on() and CFG.get("morse_rx") and MORSE["rx"] is not None:
-                MORSE["live"] = MORSE["rx"].feed(gray, t0)
+                if time.time() - MORSE["own_light"] < MORSE_OWN_S:   # the own lamp lights the scene: that is no message
+                    if not MORSE["own_rst"][0]:
+                        MORSE["own_rst"][0] = True; MORSE["rx"].reset(); MORSE["live"] = None
+                else:
+                    MORSE["own_rst"][0] = False
+                    MORSE["live"] = MORSE["rx"].feed(gray, t0)
         except Exception as e:
             if t0 - MORSE["err_t"] > 60:
                 MORSE["err_t"] = t0; log_event("sys", f"Morse reader: {type(e).__name__}: {e}"[:160])
@@ -722,6 +887,35 @@ def fog_twi_frame(w, small, gray, bright, lowlight, t0):     # + 639zzz: every p
             except Exception:
                 pass
     return _morse_fog_twi_frame(w, small, gray, bright, lowlight, t0)
+
+
+_morse_audio_chunk_250 = AudioMonitor._chunk
+
+
+def _morse_audio_chunk(self, data):                          # + 639zzz step 2: the sound of the microphone to the Morse reader -
+    _morse_audio_chunk_250(self, data)                       # only while the mode runs and «by sound» is chosen; nothing is stored
+    if MORSE["until"] and CFG.get("morse_rx_sound"):
+        try:
+            if morse_on() and MORSE["arx"] is not None:
+                now = time.time()
+                if now < self.mute_until or SOUND["playing"] or now - MORSE["own_sound"] < MORSE_OWN_S:
+                    if not MORSE["own_rst"][1]:              # MoveEye plays a sound itself: not read
+                        MORSE["own_rst"][1] = True; MORSE["arx"].reset(); MORSE["alive"] = None
+                else:
+                    MORSE["own_rst"][1] = False
+                    MORSE["alive"] = MORSE["arx"].feed(np.frombuffer(data, dtype="<i2"))
+                    MORSE["a_t"] = now
+        except Exception as e:
+            if time.time() - MORSE["err_t"] > 60:
+                MORSE["err_t"] = time.time(); log_event("sys", f"Morse by sound: {type(e).__name__}: {e}"[:160])
+            try:
+                MORSE["arx"].reset()
+            except Exception:
+                pass
+
+
+# wraps: AudioMonitor._chunk
+AudioMonitor._chunk = _morse_audio_chunk
 
 
 # wraps: batt_save_pace
@@ -870,6 +1064,10 @@ def morse_tx_key(now=None):
     if PAUSING["on"] or now >= MORSE["until"] or now - tx["t0"] >= tx["total"]:
         morse_tx_stop("done" if now - tx["t0"] >= tx["total"] else "the mode ended")
         return None
+    if "beep" in tx["outs"]:                                 # the own tone / the own light is not read back (639zzz step 2)
+        MORSE["own_sound"] = now
+    if len(tx["outs"]) > ("beep" in tx["outs"]):
+        MORSE["own_light"] = now
     return morse_on_at(tx["ts"], tx["total"], now - tx["t0"])
 
 
@@ -1030,9 +1228,13 @@ def morse_rx_text(text, source="camera", info=None):
     now = time.time()
     info = info if isinstance(info, dict) else {}
     m = {"t": datetime.now().strftime("%H:%M:%S"), "ts": now, "text": txt, "src": source, "wpm": float(info.get("wpm") or 0.0),
-         "x": info.get("x"), "y": info.get("y"), "push": "", "pic": False}
+         "x": info.get("x"), "y": info.get("y"), "push": "", "pic": False, "test": False}
     MORSE["msgs"].appendleft(m); MORSE["last"] = m
     log_event("sys", f"Morse received ({source}, {m['wpm']:g} WPM): «{txt[:120]}»")
+    if MORSE_TEST_TEXT in txt or (len(txt) <= 16 and ("TEST" in txt.split() or "VVV" in txt.split() or (len(txt) >= 4 and txt in MORSE_TEST_TEXT))):
+        m["test"] = True                                     # «Gegenstelle testen»: shown on the page, no push, nothing read aloud
+        MORSE["peer"] = {"t": m["t"], "ts": now, "wpm": m["wpm"], "src": source, "full": MORSE_TEST_TEXT in txt}
+        return True
     if MORSE["out_n"] >= 3:
         return True                                          # the outputs are busy: the text is in the list and in the log
     MORSE["out_n"] += 1
@@ -1121,14 +1323,16 @@ def morse_draw(frame):
         txt, pos, col = "", None, (80, 220, 90)
         if lv and lv.get("valid") and lv.get("text"):
             txt, pos = lv["text"], (lv["x"], lv["y"], lv["r"])
+        elif MORSE["alive"] and MORSE["alive"].get("valid") and MORSE["alive"].get("text") and now - MORSE["a_t"] < 2.0:
+            txt = "♪ " + MORSE["alive"]["text"]                # by sound: no place in the picture
         elif last and now - last["ts"] < 8.0:
-            txt, pos = last["text"], ((last["x"], last["y"], 0.03) if last.get("x") is not None else None)
+            txt, pos = ("♪ " if last["src"] == "sound" else "") + last["text"], ((last["x"], last["y"], 0.03) if last.get("x") is not None else None)
         if pos:
             cx, cy, r = int(pos[0] * W), int(pos[1] * H), max(14, int(pos[2] * W))
             cv2.rectangle(frame, (cx - r, cy - r), (cx + r, cy + r), (0, 0, 0), 5, cv2.LINE_AA)
             cv2.rectangle(frame, (cx - r, cy - r), (cx + r, cy + r), col, 2, cv2.LINE_AA)
         if txt:
-            b, a = _morse_label("text", "Morse: " + morse_clean(txt)[-44:], col, hgt)   # (no symbols: the font of the Pi may lack them)
+            b, a = _morse_label("text", ("Morse (" + tr("sound", L) + "): " if txt[:1] == "♪" else "Morse: ") + morse_clean(txt)[-40:], col, hgt)   # (no symbols: the font of the Pi may lack them)
             _morse_paste(frame, b, a, W - b.shape[1] - 8, H - b.shape[0] - 10)   # bottom right (left: the marks «LIVE» of the page)
     except (cv2.error, ValueError, TypeError, IndexError, KeyError):
         pass
@@ -1161,13 +1365,25 @@ def morse_state(lang=None):
           "tx": None if tx is None else {"shown": tx["shown"], "wpm": tx["wpm"], "fw": tx["fw"], "outs": sorted(tx["outs"]), "total": round(tx["total"], 1),
                                         "pos": round(max(0.0, min(tx["total"], now - tx["t0"])), 1), "skipped": tx["skipped"], "by": tx["by"]},
           "rx": {"on": bool(CFG.get("morse_rx")), "fps": round(fps, 1), "limit": round(MORSE_LIMIT_K * fps, 1), "k": MORSE_LIMIT_K,
+                 "sound": morse_sound_state(on, now), "peer": MORSE["peer"] if on else None, "test_text": MORSE_TEST_TEXT,
                  "live": (MORSE["live"] or {}).get("text", "") if on and (MORSE["live"] or {}).get("valid") else "",
                  "live_wpm": (MORSE["live"] or {}).get("wpm", 0) if on else 0,
                  "fast": bool(rx is not None and on and now - float(rx.stats.get("fast_t") or 0.0) < 15.0 and rx.stats.get("fast")),
                  "blink": int(rx.stats.get("periodic", 0)) if rx is not None else 0, "ms": (rx.stats.get("ms") if rx is not None else None),
                  "push_held": MORSE["push_held"],
-                 "msgs": [{"t": m["t"], "text": m["text"], "wpm": m["wpm"], "src": m["src"], "pic": m["pic"], "push": m["push"]} for m in list(MORSE["msgs"])]}}
+                 "msgs": [{"t": m["t"], "text": m["text"], "wpm": m["wpm"], "src": m["src"], "pic": m["pic"], "push": m["push"], "test": bool(m.get("test"))} for m in list(MORSE["msgs"])]}}
     return st
+
+
+def morse_sound_state(on, now):
+    """reading by sound for the page: is there a microphone, does it deliver, the tone that is followed, the live text"""
+    au = STATE.get("audio") or {}
+    a, al = MORSE["arx"], MORSE["alive"] or {}
+    fresh = on and now - MORSE["a_t"] < 2.0
+    return {"on": bool(CFG.get("morse_rx_sound")), "mic": bool(au.get("mic")), "status": str(au.get("status") or "off")[:40], "run": bool(fresh),
+            "own": bool(on and (MORSE["own_rst"][1])), "hz": int(a.stats.get("hz") or 0) if (a is not None and fresh and a.key is not None) else 0,
+            "live": al.get("text", "") if fresh and al.get("valid") else "", "live_wpm": al.get("wpm", 0) if fresh else 0,
+            "limit": MORSE_SOUND_WPM, "blink": int(a.stats.get("periodic", 0)) if a is not None else 0}
 
 
 def morse_prefs(d):
@@ -1181,7 +1397,7 @@ def morse_prefs(d):
             if v == v:
                 CFG["morse_" + k] = max(lo, min(hi, v))
     num("minutes", 1, MORSE_MODE_MAX_MIN); num("wpm", MORSE_WPM_MIN, MORSE_WPM_MAX); num("fw", 0, MORSE_WPM_MAX)
-    for k in ("rx", "rx_live", "rx_hist", "rx_push", "rx_say"):
+    for k in ("rx", "rx_live", "rx_hist", "rx_push", "rx_say", "rx_sound"):
         if k in d:
             CFG["morse_" + k] = bool(d[k])
     ids = {o["id"] for o in morse_outputs()}
@@ -1236,6 +1452,11 @@ def morse_do(d, who, role="admin", appkey=None, pin=None, pin_checked=False, lan
             ok, err, plan = morse_tx_start(text, d.get("outs"), d.get("wpm"), d.get("fw"), who)
         if plan is None:
             return out(False, err, 429 if err.startswith("too many") else (409 if "running" in err or "SOS" in err or "ends before" in err else 400))
+        return out(True, plan={k: plan[k] for k in ("shown", "skipped", "wpm", "asked", "slow", "fw", "secs", "flash_hz", "note", "vis")})
+    if a == "test":                                          # «Gegenstelle testen»: the fixed text by infrared, at most 20 WPM
+        ok, err, plan = morse_tx_start(MORSE_TEST_TEXT, ["ir"], d.get("wpm") or CFG.get("morse_wpm"), 0, who)
+        if plan is None:
+            return out(False, err, 409 if "running" in err or "ends before" in err else (429 if err.startswith("too many") else 400))
         return out(True, plan={k: plan[k] for k in ("shown", "skipped", "wpm", "asked", "slow", "fw", "secs", "flash_hz", "note", "vis")})
     if a == "tx_stop":
         morse_tx_stop("button")
@@ -1373,7 +1594,7 @@ background:var(--field);color:var(--txt);border:1px solid var(--line);border-rad
 .mo-o label.sub{font-size:13px;color:var(--mut);min-height:30px}
 .mo-sl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}.mo-sl input[type=range]{width:100%;min-height:40px}
 .mo-sl b{font-variant-numeric:tabular-nums;white-space:nowrap}
-.mo-hint{font-size:13px;color:var(--mut);overflow-wrap:anywhere}.mo-hint.bad{color:var(--red)}.mo-hint.warn{color:var(--yel)}
+.mo-hint{font-size:13px;color:var(--mut);overflow-wrap:anywhere}.mo-hint.bad{color:var(--red)}.mo-hint.warn{color:var(--yel)}.mo-hint.ok{color:var(--grn)}
 .mo-warn{border:1px solid var(--yel);border-radius:10px;padding:8px 10px;font-size:13px}
 .mo-bar{height:10px;border-radius:999px;background:var(--line);overflow:hidden}.mo-bar i{display:block;height:100%;width:0;background:var(--acc)}
 .mo-chk{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 12px}.mo-chk label{display:flex;align-items:center;gap:8px;min-height:40px}
@@ -1417,9 +1638,15 @@ section.card h3{margin:0 0 10px}details.card>summary{cursor:pointer;font-weight:
       <div class="mo-hint" id="mo-fps"></div>
       <div class="mo-live" id="mo-live"></div>
       <div class="mo-hint warn" id="mo-fast" hidden></div>
+      <div class="mo-hint" id="mo-snd"></div>
       <ul class="mo-msgs" id="mo-msgs"></ul>
     </div>
   </section>
+  <details class="card" id="mo-peer"><summary id="mo-peer-s">Test the other MoveEye (infrared)</summary>
+    <ol id="mo-peer-how" class="mut"></ol>
+    <div class="mo-row"><button type="button" id="mo-peer-go">Send the test signal by infrared</button></div>
+    <div class="mo-hint" id="mo-peer-r"></div>
+  </details>
   <details class="card"><summary id="mo-how-s">How it works</summary><ul id="mo-how" class="mut"></ul></details>
 </main>
 <script>
@@ -1447,7 +1674,15 @@ section.card h3{margin:0 0 10px}details.card>summary{cursor:pointer;font-weight:
    "Receiving: aim a torch or a lamp at the camera and key slowly and evenly. The camera reads up to about 0.4 × its pictures per second in WPM. By hand, lengths may vary by about a third.",
    "By day a weak lamp is not read: the light must be clearly brighter than what is behind it. At night a small torch is enough.",
    "Even blinking (a car indicator) is no text. That is why a message of only E or only T («EEEE») is thrown away.",
+   "By sound: a tone or a whistle near the microphone is read like a light, up to about 20 WPM. The microphone is only listened to while the Morse mode runs and «with the microphone» is chosen. No sound is stored - only the decoded text.",
    "The received text is only shown, saved, sent and read aloud - it is never carried out as a command."].forEach(s => $i("mo-how").appendChild(E("li", "", t(s))));
+  $i("mo-peer-s").textContent = t("Test the other MoveEye (infrared)"); $i("mo-peer-go").textContent = "📡 " + t("Send the test signal by infrared");
+  ["Two MoveEye see each other at night: each one must have the infrared light of the other in its picture.",
+   "Start the Morse mode on both. On the other MoveEye the page shows «reads up to about … WPM» - set the speed here no higher.",
+   "Tap «Send the test signal by infrared» here. The other MoveEye shows «Test signal of the other MoveEye read». Then swap the roles.",
+   "While a MoveEye sends with a light it does not read its own light."].forEach(x => $i("mo-peer-how").appendChild(E("li", "", t(x))));
+  $i("mo-peer-go").onclick = async () => { $i("mo-err").textContent = ""; const j = await api({action: "test", wpm: +$i("mo-wpm").value});
+    if (j.state) J = j; if (!j.ok) $i("mo-err").textContent = j.error || ""; else { P = j; paintPlan(); } paint(); };
   let J = null, P = null, tm = 0, dirty = false, planTm = 0, busy = false;
   const fmt = s => Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
   const outsSel = () => Array.from(document.querySelectorAll("#mo-outs input[data-o]")).filter(c => c.checked && !c.disabled).map(c => c.dataset.o);
@@ -1495,15 +1730,26 @@ section.card h3{margin:0 0 10px}details.card>summary{cursor:pointer;font-weight:
   function paintRx() {
     const s = J.state, r = s.rx, box = $i("mo-chk");
     if (!box.childElementCount) [["rx", "Read a blinking light with the camera"], ["rx_live", "Show in the live picture"], ["rx_hist", "Save in the history with a picture"],
-      ["rx_push", "Push message to the phone (text only)"], ["rx_say", "Read aloud on the loudspeaker"]].forEach(([k, txt]) => { const lab = E("label"), cb = E("input"); cb.type = "checkbox";
+      ["rx_push", "Push message to the phone (text only)"], ["rx_say", "Read aloud on the loudspeaker"],
+      ["rx_sound", "Read a tone or a whistle with the microphone"]].forEach(([k, txt]) => { const lab = E("label"), cb = E("input"); cb.type = "checkbox";
         cb.dataset.k = k; cb.checked = !!s.prefs[k]; cb.onchange = async () => { const b = {action: "prefs"}; b[k] = cb.checked; const j = await api(b); if (j.state) J = j; paintRx(); }; lab.append(cb, E("span", "", t(txt))); box.appendChild(lab); });
     $i("mo-fps").textContent = !r.on ? t("Reading is switched off.") : !s.on ? t("Reading runs only while the Morse mode is on.")
       : t("The camera now delivers") + " " + r.fps + " " + t("pictures a second - it reads up to about") + " " + Math.max(1, Math.floor(r.limit)) + " WPM.";
     $i("mo-live").textContent = r.live ? r.live + "  (" + r.live_wpm + " WPM)" : (s.on && r.on ? "… " + t("waiting for a blinking light") : "–");
     $i("mo-fast").hidden = !r.fast; $i("mo-fast").textContent = t("A light blinks too fast for the camera - key more slowly.");
+    const sd = r.sound, se = $i("mo-snd");                     // step 2: by sound
+    se.textContent = !sd.on ? "" : "🎤 " + (!sd.mic ? t("No microphone is chosen (Settings → Sound).") : !s.on ? t("Reading runs only while the Morse mode is on.")
+      : sd.own ? t("MoveEye plays a sound itself - not listening meanwhile.") : !sd.run ? t("The microphone delivers no sound.") + " (" + sd.status + ")"
+      : (sd.live ? sd.live + "  (" + sd.live_wpm + " WPM, " + sd.hz + " Hz)" : sd.hz ? t("a tone at") + " " + sd.hz + " Hz …" : t("listening for a tone or a whistle"))
+        + " · " + t("reads up to about") + " " + sd.limit + " WPM. " + t("No sound is stored - only the decoded text."));
+    const pe = $i("mo-peer-r"), p = r.peer;
+    pe.textContent = !p ? (s.on ? t("No test signal of the other MoveEye read yet.") : "") : (p.full ? "✓ " + t("Test signal of the other MoveEye read") : "◐ " + t("Test signal read only in part - send more slowly or aim better"))
+      + " · " + p.t + " · " + p.wpm + " WPM";
+    pe.className = "mo-hint" + (p && p.full ? " ok" : p ? " warn" : "");
+    $i("mo-peer-go").disabled = !s.on || !!s.tx || !(s.outs.find(o => o.id === "ir") || {}).ok;
     const ul = $i("mo-msgs"); ul.textContent = "";
     r.msgs.forEach(m => { const li = E("li"); li.appendChild(E("b", "", m.text));
-      li.appendChild(E("small", "", m.t + " · " + m.wpm + " WPM" + (m.pic ? " · 🖼 " + t("in the history") : "") + (m.push === "sent" ? " · 📲 " + t("push sent") : m.push === "held" ? " · " + t("push held back (too many)") : ""))); ul.appendChild(li); });
+      li.appendChild(E("small", "", (m.src === "sound" ? "🎤 " : "💡 ") + m.t + " · " + m.wpm + " WPM" + (m.test ? " · " + t("test signal") : "") + (m.pic ? " · 🖼 " + t("in the history") : "") + (m.push === "sent" ? " · 📲 " + t("push sent") : m.push === "held" ? " · " + t("push held back (too many)") : ""))); ul.appendChild(li); });
   }
   function paintPlan() {
     const el = $i("mo-plan"), f = $i("mo-flash"), w = $i("mo-wear"); f.hidden = true; w.hidden = true;
@@ -1661,6 +1907,25 @@ MORSE_PAGE_TEXTS = {
     "too many transmissions - wait a minute": ("zu viele Sendungen – eine Minute warten", "trop d’émissions – attendez une minute", "troppe trasmissioni – attendi un minuto", "memia bleras transmissiuns – spetgar ina minuta"),
     "the SOS lamp is flashing - it goes first": ("die SOS-Lampe blinkt – sie geht vor", "la lampe SOS clignote – elle a la priorité", "la lampada SOS lampeggia – ha la precedenza", "la lampa SOS traglischa – ella ha la precedenza"),
     "the Morse mode ends before this text is sent - make it longer first": ("der Morse-Modus endet, bevor dieser Text gesendet ist – zuerst verlängern", "le mode morse se termine avant la fin de ce texte – prolongez-le d’abord", "la modalità Morse termina prima che il testo sia inviato – prima prolungala", "il modus da morse finescha avant che quest text è tramess – l’emprim prolungar"),
+    "Read a tone or a whistle with the microphone": ("Einen Ton oder Pfiff mit dem Mikrofon lesen", "Lire un son ou un sifflement avec le microphone", "Leggere un suono o un fischio con il microfono", "Leger in tun u in tschivel cun il microfon"),
+    "No microphone is chosen (Settings → Sound).": ("Kein Mikrofon gewählt (Einstellungen → Ton).", "Aucun microphone choisi (Réglages → Son).", "Nessun microfono scelto (Impostazioni → Suono).", "Nagin microfon tschernì (Parameters → Tun)."),
+    "MoveEye plays a sound itself - not listening meanwhile.": ("MoveEye spielt selbst einen Ton – solange wird nicht mitgehört.", "MoveEye joue lui-même un son – pas d’écoute pendant ce temps.", "MoveEye sta riproducendo un suono – nel frattempo non ascolta.", "MoveEye suna sez in tun – uschè ditg na vegn betg tadlà."),
+    "The microphone delivers no sound.": ("Das Mikrofon liefert keinen Ton.", "Le microphone ne fournit aucun son.", "Il microfono non fornisce alcun suono.", "Il microfon na furnescha nagin tun."),
+    "a tone at": ("ein Ton bei", "un son à", "un suono a", "in tun tar"),
+    "listening for a tone or a whistle": ("wartet auf einen Ton oder Pfiff", "en attente d’un son ou d’un sifflement", "in attesa di un suono o di un fischio", "spetga in tun u in tschivel"),
+    "reads up to about": ("liest bis etwa", "lit jusqu’à environ", "legge fino a circa", "legia fin circa"),
+    "No sound is stored - only the decoded text.": ("Es wird kein Ton gespeichert – nur der entschlüsselte Text.", "Aucun son n’est enregistré – seulement le texte décodé.", "Nessun suono viene salvato – solo il testo decodificato.", "I na vegn memorisà nagin tun – mo il text decodà."),
+    "No test signal of the other MoveEye read yet.": ("Noch kein Testsignal der Gegenstelle gelesen.", "Aucun signal de test de l’autre MoveEye lu pour l’instant.", "Nessun segnale di prova dell’altro MoveEye letto finora.", "Anc nagin signal da test da l’auter MoveEye legì."),
+    "Test signal of the other MoveEye read": ("Testsignal der Gegenstelle gelesen", "Signal de test de l’autre MoveEye lu", "Segnale di prova dell’altro MoveEye letto", "Signal da test da l’auter MoveEye legì"),
+    "Test signal read only in part - send more slowly or aim better": ("Testsignal nur teilweise gelesen – langsamer senden oder besser zielen", "Signal de test lu en partie seulement – envoyer plus lentement ou mieux viser", "Segnale di prova letto solo in parte – inviare più lentamente o puntare meglio", "Signal da test legì mo per part – trametter pli plaun u drizzar meglier"),
+    "test signal": ("Testsignal", "signal de test", "segnale di prova", "signal da test"),
+    "Test the other MoveEye (infrared)": ("Gegenstelle testen (Infrarot)", "Tester l’autre MoveEye (infrarouge)", "Provare l’altro MoveEye (infrarosso)", "Testar l’auter MoveEye (infracotschen)"),
+    "Send the test signal by infrared": ("Testsignal per Infrarot senden", "Envoyer le signal de test par infrarouge", "Inviare il segnale di prova a infrarossi", "Trametter il signal da test per infracotschen"),
+    "Two MoveEye see each other at night: each one must have the infrared light of the other in its picture.": ("Zwei MoveEye sehen sich in der Nacht: jedes muss das Infrarot-Licht des anderen im Bild haben.", "Deux MoveEye se voient la nuit : chacun doit avoir la lumière infrarouge de l’autre dans son image.", "Due MoveEye si vedono di notte: ognuno deve avere la luce a infrarossi dell’altro nell’immagine.", "Dus MoveEye sa vesan la notg: mintgin sto avair la glisch infracotschna da l’auter en ses maletg."),
+    "Start the Morse mode on both. On the other MoveEye the page shows «reads up to about … WPM» - set the speed here no higher.": ("Auf beiden den Morse-Modus starten. Auf der Gegenstelle zeigt die Seite «liest bis etwa … WPM» – hier das Tempo nicht höher stellen.", "Démarrez le mode morse sur les deux. Sur l’autre MoveEye, la page indique «lit jusqu’à environ … WPM» – ne réglez pas ici une vitesse plus élevée.", "Avvia la modalità Morse su entrambi. Sull’altro MoveEye la pagina mostra «legge fino a circa … WPM» – qui non impostare una velocità maggiore.", "Aviar il modus da morse sin tuts dus. Sin l’auter MoveEye mussa la pagina «legia fin circa … WPM» – qua betg tscherner in tempo pli aut."),
+    "Tap «Send the test signal by infrared» here. The other MoveEye shows «Test signal of the other MoveEye read». Then swap the roles.": ("Hier «Testsignal per Infrarot senden» antippen. Die Gegenstelle zeigt «Testsignal der Gegenstelle gelesen». Danach die Rollen tauschen.", "Touchez ici «Envoyer le signal de test par infrarouge». L’autre MoveEye affiche «Signal de test de l’autre MoveEye lu». Ensuite, échangez les rôles.", "Tocca qui «Inviare il segnale di prova a infrarossi». L’altro MoveEye mostra «Segnale di prova dell’altro MoveEye letto». Poi scambia i ruoli.", "Tutgar qua «Trametter il signal da test per infracotschen». L’auter MoveEye mussa «Signal da test da l’auter MoveEye legì». Suenter barattar las rollas."),
+    "While a MoveEye sends with a light it does not read its own light.": ("Solange ein MoveEye mit einem Licht sendet, liest es das eigene Licht nicht.", "Tant qu’un MoveEye émet avec une lumière, il ne lit pas sa propre lumière.", "Mentre un MoveEye trasmette con una luce non legge la propria luce.", "Uschè ditg ch’in MoveEye trametta cun ina glisch, na legia el betg l’atgna glisch."),
+    "By sound: a tone or a whistle near the microphone is read like a light, up to about 20 WPM. The microphone is only listened to while the Morse mode runs and «with the microphone» is chosen. No sound is stored - only the decoded text.": ("Mit Ton: ein Ton oder Pfiff nahe am Mikrofon wird gelesen wie ein Licht, bis etwa 20 WPM. Das Mikrofon wird nur mitgehört, solange der Morse-Modus läuft und «mit dem Mikrofon» gewählt ist. Es wird kein Ton gespeichert – nur der entschlüsselte Text.", "Par le son : un son ou un sifflement près du microphone est lu comme une lumière, jusqu’à environ 20 WPM. Le microphone n’est écouté que pendant le mode morse et si «avec le microphone» est choisi. Aucun son n’est enregistré – seulement le texte décodé.", "Con il suono: un suono o un fischio vicino al microfono viene letto come una luce, fino a circa 20 WPM. Il microfono viene ascoltato solo con la modalità Morse attiva e se è scelto «con il microfono». Nessun suono viene salvato – solo il testo decodificato.", "Cun tun: in tun u in tschivel datiers dal microfon vegn legì sco ina glisch, fin circa 20 WPM. Il microfon vegn tadlà mo durant il modus da morse e sche «cun il microfon» è tschernì. I na vegn memorisà nagin tun – mo il text decodà."),
 }
 for _k, _v in list(_HX_MORSE.items()) + list(MORSE_PAGE_TEXTS.items()):
     DE.setdefault(_k, _v[0])
@@ -1682,6 +1947,7 @@ _HELP_MORSE = {
            'Von Hand dürfen die Längen um etwa ein Drittel schwanken. Am Tag wird eine schwache Lampe nicht gelesen – das Licht muss deutlich heller sein als der Hintergrund. '
            'Gleichmässiges Blinken (Auto-Blinker) ist kein Text; darum wird auch eine Nachricht nur aus E oder nur aus T («EEEE») verworfen.</li>'
            '<li><b>Empfangener Text:</b> im Live-Bild, im Verlauf mit Bild, als Push (nur Text) und vorgelesen – jedes einzeln wählbar. Er wird nie als Befehl ausgeführt.</li>'
+           '<li><b>Mit Ton (Mikrofon):</b> ein Ton oder Pfiff nahe am Mikrofon wird gelesen wie ein Licht, bis etwa 20 WPM (ab Werk aus). Das Mikrofon wird dafür nur mitgehört, solange der Morse-Modus läuft und «mit dem Mikrofon» gewählt ist; <b>es wird kein Ton gespeichert</b>, nur der entschlüsselte Text. Ein gleichmässiges Piepen ist kein Text.</li><li><b>Zwei MoveEye mit Infrarot:</b> nachts sendet eines mit dem IR-Licht, das andere liest mit der Kamera. Unter «Gegenstelle testen» schickt eines ein Testsignal, das andere zeigt, ob es gelesen wurde. Solange ein MoveEye selbst mit Licht sendet, liest es das eigene Licht nicht.</li>'
            '</ul></section>\n'),
     "en": ('<section id="morse" data-icon="📡"><h2>Morse mode</h2><ul>'
            '<li><b>What:</b> More → «📡 Morse mode» (administrator only). Send a text as Morse code - with the white light, a relay, the infrared light, the status LED '
@@ -1695,23 +1961,27 @@ _HELP_MORSE = {
            'by about a third. By day a weak lamp is not read - the light must be clearly brighter than the background. Even blinking (a car indicator) is no text; '
            'that is why a message of only E or only T («EEEE») is thrown away.</li>'
            '<li><b>Received text:</b> in the live picture, in the history with a picture, as a push (text only) and read aloud - each can be chosen. It is never carried out as a command.</li>'
+           '<li><b>By sound (microphone):</b> a tone or a whistle near the microphone is read like a light, up to about 20 WPM (off by default). The microphone is only listened to while the Morse mode runs and «with the microphone» is chosen; <b>no sound is stored</b>, only the decoded text. An even beep is no text.</li><li><b>Two MoveEye by infrared:</b> at night one sends with the infrared light, the other reads with the camera. Under «Test the other MoveEye» one sends a test signal, the other shows whether it was read. While a MoveEye sends with a light it does not read its own light.</li>'
            '</ul></section>\n'),
     "fr": ('<section id="morse" data-icon="📡"><h2>Mode morse</h2><ul>'
            '<li>Plus → «📡 Mode morse» (administrateur uniquement) : envoyer un texte en morse (lumière blanche, relais, infrarouge, LED d’état, son) et lire une lumière clignotante avec la caméra.</li>'
            '<li>Pendant ce temps la protection est en pause ; le mode se termine tout seul (10 minutes, 30 au plus), ensuite la protection est comme avant, aussi après une coupure de courant.</li>'
            '<li>Vitesse : lumière blanche et relais au plus 3 éclairs par seconde = 7 WPM, relais mécanique 4 WPM, LED d’état 10 WPM, infrarouge 20 WPM, son 25 WPM.</li>'
+           '<li>Par le son (microphone, désactivé d’origine) : un son ou un sifflement est lu jusqu’à environ 20 WPM, uniquement pendant le mode morse ; <b>aucun son n’est enregistré</b>, seulement le texte décodé. Deux MoveEye par infrarouge : «Tester l’autre MoveEye» envoie un signal de test que l’autre affiche.</li>'
            '<li>Lecture : jusqu’à environ 0,4 × images par seconde en WPM ; de jour, une lampe faible n’est pas lue ; un clignotement régulier (ou «EEEE») n’est pas un texte. '
            'Le texte reçu n’est jamais exécuté comme une commande.</li></ul></section>\n'),
     "it": ('<section id="morse" data-icon="📡"><h2>Modalità Morse</h2><ul>'
            '<li>Altro → «📡 Modalità Morse» (solo amministratore): inviare un testo in Morse (luce bianca, relè, infrarosso, LED di stato, suono) e leggere una luce lampeggiante con la telecamera.</li>'
            '<li>Nel frattempo la protezione è in pausa; la modalità termina da sola (10 minuti, al massimo 30), poi la protezione è come prima, anche dopo un’interruzione di corrente.</li>'
            '<li>Velocità: luce bianca e relè al massimo 3 lampi al secondo = 7 WPM, relè meccanico 4 WPM, LED di stato 10 WPM, infrarosso 20 WPM, suono 25 WPM.</li>'
+           '<li>Con il suono (microfono, spento di fabbrica): un suono o un fischio viene letto fino a circa 20 WPM, solo con la modalità Morse attiva; <b>nessun suono viene salvato</b>, solo il testo decodificato. Due MoveEye a infrarossi: «Provare l’altro MoveEye» invia un segnale di prova che l’altro mostra.</li>'
            '<li>Lettura: fino a circa 0,4 × immagini al secondo in WPM; di giorno una lampada debole non viene letta; un lampeggio regolare (o «EEEE») non è un testo. '
            'Il testo ricevuto non viene mai eseguito come comando.</li></ul></section>\n'),
     "rm": ('<section id="morse" data-icon="📡"><h2>Modus da morse</h2><ul>'
            '<li>Dapli → «📡 Modus da morse» (mo l’administratur): trametter in text en morse (glisch alva, relais, infracotschen, LED da status, tun) e leger ina glisch che traglischa cun la camera.</li>'
            '<li>En quel temp è la protecziun en pausa; il modus finescha da sasez (10 minutas, maximalmain 30), suenter è la protecziun sco avant, er suenter in’interrupziun da current.</li>'
            '<li>Tempo: glisch alva e relais maximalmain 3 chametgs per secunda = 7 WPM, relais mecanic 4 WPM, LED da status 10 WPM, infracotschen 20 WPM, tun 25 WPM.</li>'
+           '<li>Cun tun (microfon, ora da fabrica): in tun u in tschivel vegn legì fin circa 20 WPM, mo durant il modus da morse; <b>i na vegn memorisà nagin tun</b>, mo il text decodà. Dus MoveEye cun infracotschen: «Testar l’auter MoveEye» trametta in signal da test che l’auter mussa.</li>'
            '<li>Leger: fin circa 0,4 × maletgs per secunda en WPM; da di na vegn ina lampa flaivla betg legida; in traglischar regular (u «EEEE») n’è nagin text. '
            'Il text retschavì na vegn mai exequì sco cumond.</li></ul></section>\n'),
 }
@@ -1798,6 +2068,26 @@ def morse_selftest():
         assert morse_rx_text("SOS <SOS>", "camera", {"wpm": 5}) and MORSE["msgs"][0]["text"] == "SOS <SOS>" and not morse_rx_text("X", "other")
         MORSE["until"] = time.time() - 1.0
         assert not morse_on() and is_armed() and MORSE["until"] == 0.0 and any("Morse mode off" in x for x in logs), "the mode ends by itself, the protection is back"
+        # step 2: by sound, the test signal of the other MoveEye, the own light is not read
+        assert morse_start(5, "self-test")[0] and morse_rx_text("OK", "sound", {"wpm": 12, "hz": 660}) and MORSE["msgs"][0]["src"] == "sound"
+        assert isinstance(MORSE["arx"], MorseAudio) and MORSE["arx"].feed(np.zeros(1600, np.int16)) is None
+        MORSE["push_t"] = []
+        assert morse_rx_text(MORSE_TEST_TEXT, "camera", {"wpm": 6}) and MORSE["peer"]["full"] and MORSE["msgs"][0]["test"] and not MORSE["push_t"]
+        assert morse_rx_text("V TEST", "camera") and not MORSE["peer"]["full"] and MORSE["msgs"][0]["test"], "the test signal read in part"
+        assert morse_rx_text("T UVV TEST", "camera") and not MORSE["peer"]["full"] and MORSE["msgs"][0]["test"], "garbled at the start: in part"
+        assert morse_rx_text("TESTE DAS", "camera") and not MORSE["msgs"][0]["test"], "another text is no test signal"
+        MORSE["tx_starts"] = []; CFG["light_ir_out"] = "gpio:27"
+        c_, a_ = morse_do({"action": "test", "wpm": 99}, "self-test")
+        assert (a_.get("ok") and MORSE["tx"]["outs"] == {"ir"} and MORSE["tx"]["wpm"] <= 20), (c_, a_)
+        if MORSE["tx"] is not None:
+            MORSE["tx"]["t0"] = time.time() - 0.01
+            morse_tx_key()
+            assert time.time() - MORSE["own_light"] < MORSE_OWN_S and MORSE["own_sound"] == 0.0, "the own light is marked"
+            morse_tx_stop("self-test")
+        morse_prefs({"rx_sound": True})
+        assert CFG["morse_rx_sound"] is True and morse_sound_state(True, time.time())["on"]
+        morse_end("self-test")
+        assert MORSE["arx"].n == 0 and MORSE["alive"] is None, "nothing of the sound stays after the mode"
         assert not morse_rx_text("SOS", "camera"), "no text is taken while the mode is off"
         pin0, fails0 = CFG.get("protect_pin"), list(PROTECT["pin_fails"])
         try:                                                 # the window: start and «longer» need the PIN for «Aus», like the web page
@@ -1813,8 +2103,9 @@ def morse_selftest():
         globals()["save_settings"], globals()["log_event"] = sv, lg
         CFG.update(keep); STATE["lights"] = ws
         MORSE.update(keepm); MORSE["until"] = 0.0; MORSE["tx"] = None; MORSE["relearn"] = False
+    assert "No sound is stored" in MORSE_PAGE and "mo-peer-go" in MORSE_PAGE, "the page: privacy sentence, test of the other MoveEye"
     assert "/*MORSEDE*/" in MORSE_PAGE and 'href="/more"' in MORSE_PAGE and "innerHTML" not in MORSE_PAGE, "the page: way back, texts, no innerHTML"
-    return "table, timing, speed limits per output, one entry for web and window (rights, PIN), mode pauses and ends by itself (never longer than the maximum), one transmission, light as before, received text cleaned"
+    return "table, timing, speed limits per output, one entry for web and window (rights, PIN), mode pauses and ends by itself (never longer than the maximum), one transmission, light as before, received text cleaned, by sound, test signal of the other MoveEye"
 
 
 SELFTEST_EXTRA.append(("Morse mode: send, read, pause of the protection (639zzz)", morse_selftest))
