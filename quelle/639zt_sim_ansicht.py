@@ -516,7 +516,7 @@ def simv_selftest():
     assert tr("Sim view", "rm") == "Vista dal simulatur" and DE.get("Quit") == "Beenden"
     assert HELP_PAGE.count('<section id="simview"') == 2 and all('id="simview"' in (HELP_X.get(L) or 'id="simview"') for L in ("fr", "it", "rm")), "manual: simview"
     try:
-        src_ = open(__file__, encoding="utf-8").read()
+        src_ = zd_source()                                  # the source as in quelle/ (the file has no spaces there, bauen.py ZD_LEERZEICHEN)
     except OSError:
         src_ = 'act_ == "localplay"'
     assert 'act_ == "localplay"' in src_, "server: /api/sim localplay (550)"
