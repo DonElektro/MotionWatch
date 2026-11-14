@@ -3,8 +3,10 @@
 
 Startet MoveEye ohne Fenster mit der Demo (eigener Ordner, freier Port) und prüft mit Playwright (iPhone 13 und PC):
 
-  1. CPU-Chip im Live-Bild: Text «CPU 42 % · 61 °C» (oder ohne Temperatur), oben rechts im Bild, wird alle 2 s neu gemalt;
-     liegt nie auf den Knöpfen im Bild (sichtbar gemacht), den Kacheln, «LIVE» oder dem Kompass; Gast-Seite hat ihn auch.
+  1. CPU- und Akku-Chip in der Kopfzeile der Karte «Bedienung» (nicht mehr im Bild): «CPU 42 % · 61 °C» und «🔋 82 %» /
+     «🔌 97 %», rechts vom Titel, links vom ▾, alle 2 s neu gemalt, auch bei zugeklappter Karte sichtbar; Farben (CPU ab 70 / 85,
+     Akku unter 30 / 15 %), kein Akku = kein Chip; eng (390 px, langer Titel) = «· °C» fällt weg, der Titel bricht nie um;
+     nach dem Sprachwechsel wieder da. Gast-Seite: die Chips in der oberen Zeile.
   2. Kopf-Kompass: mit Kopf (Joystick «immer») sichtbar, Schwenk 75 % -> der Pfeil steht auf +45°.
   3. Bewachen: der Punkt im Schutz-Chip atmet (Animation mwBreath); aus bei prefers-reduced-motion, beim Schalter
      «Bewegung reduzieren» (html.mwrm) und im Rotlicht (html.sxnight); ebenso das Einblenden der Seite.
@@ -41,14 +43,19 @@ def pruef(ok, text):
 
 ANIM = """sel => { const e = document.querySelector(sel); if (!e) return null; const c = getComputedStyle(e, '::before'), a = getComputedStyle(e, '::after');
   return {before: c.animationName, after: a.animationName, afterBg: a.backgroundImage.slice(0, 40), main: getComputedStyle(document.querySelector('main')).animationName}; }"""
-LAGE = """() => { const seen = e => { for (let n = e; n && n !== document.body; n = n.parentElement) { const c = getComputedStyle(n); if (n.hidden || c.display === 'none' || c.visibility === 'hidden' || +c.opacity === 0) return false; } return true; };
-  const R = e => { if (!e || !e.getClientRects().length || !seen(e)) return null; const r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; };
-  const chip = R(document.getElementById('lv-cpu')), vw = R(document.querySelector('#vcard .vwrap'));
-  const others = [...document.querySelectorAll('#lv-tools button, #kw-row .kw-t, .vtag, #lv-comp, #v3-mini')].map(R).filter(Boolean);
-  const hit = chip ? others.filter(o => !(o[2] <= chip[0] + 0.5 || o[0] >= chip[2] - 0.5 || o[3] <= chip[1] + 0.5 || o[1] >= chip[3] - 0.5)).length : -1;
-  const c = document.getElementById('lv-cpu');
-  return {chip, vw, hit, text: c ? c.textContent : null, t: c ? +c.dataset.t : 0, inside: !!(chip && vw && chip[0] >= vw[0] && chip[2] <= vw[2] && chip[1] >= vw[1] && chip[3] <= vw[3])}; }"""
+LAGE = """() => { const su = document.querySelector('details[data-view="controls"]>summary'), k = document.getElementById('lv-chips'), c = document.getElementById('lv-cpu'),
+    b = document.getElementById('lv-batt'), R = e => e && e.getClientRects().length ? e.getBoundingClientRect().toJSON() : null;
+  const tn = su ? [...su.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim()) : [], rg = document.createRange();
+  let lines = 0, tright = 0; if (tn.length) { rg.setStart(tn[0], 0); rg.setEnd(tn[tn.length - 1], tn[tn.length - 1].length); const q = [...rg.getClientRects()]; lines = q.length; tright = Math.max(...q.map(x => x.right)); }
+  const s = R(su), kr = R(k), a = su ? getComputedStyle(su, '::after') : null;
+  const cs = e => e && getComputedStyle(e);
+  return {in_sum: !!(k && su && k.parentNode === su), in_pic: !!document.querySelector('.vwrap #lv-cpu, .vwrap #lv-chips'), lines, sum: s, chips: kr,
+    right_of_title: !!(kr && kr.left >= tright + 4), left_of_arrow: !!(kr && s && kr.right <= s.right - 8), arrow: a ? a.content : null,
+    text: c && !c.hidden ? c.textContent : null, temp_shown: !!(c && c.lastChild && cs(c.lastChild).display !== 'none' && c.lastChild.textContent),
+    nc: !!(k && k.classList.contains('nc')), cls: c ? c.className : '', t: c ? +c.dataset.t : 0,
+    batt: b && !b.hidden && cs(b).display !== 'none' ? b.textContent : null, bcls: b ? b.className : '', open: !!(su && su.parentNode.open)}; }"""
 CHIP_RE = re.compile(r"^CPU (\d+ %|–)( · \d+ °C)?$")
+PAINT = "s => window.mwAnim({force: 1, state: s})"
 
 
 def seite(pg, base, name, a):
@@ -60,18 +67,42 @@ def seite(pg, base, name, a):
         if l["text"]:
             break
         pg.wait_for_timeout(300)
-    pruef(bool(l["text"]) and bool(CHIP_RE.match(l["text"] or "")), "%s: CPU-Chip im Live-Bild «%s»" % (name, l["text"]))
-    pruef(l["inside"] and l["hit"] == 0, "%s: Chip im Bild, auf nichts anderem (%s)" % (name, l))
-    vw, ch = l["vw"], l["chip"]
-    pruef(bool(vw and ch) and ch[2] > vw[2] - 40 and ch[1] < vw[1] + 40, "%s: Chip oben rechts im Bild" % name)
+    pruef(bool(l["text"]) and bool(CHIP_RE.match(l["text"] or "")), "%s: CPU-Chip «%s»" % (name, l["text"]))
+    pruef(l["in_sum"] and not l["in_pic"], "%s: die Chips sind in der Kopfzeile «Bedienung», nicht im Bild" % name)
+    pruef(l["lines"] == 1 and l["right_of_title"] and l["left_of_arrow"], "%s: rechts vom Titel, links vom ▾, der Titel in einer Zeile (%s)" % (name, l))
     t1 = l["t"]; pg.wait_for_timeout(4500); t2 = pg.evaluate(LAGE)["t"]
-    pruef(t2 > t1 and 1500 <= (t2 - t1) <= 6000, "%s: der Chip wird alle 2 s neu gemalt (%d ms)" % (name, t2 - t1))
-    pg.evaluate("document.body.classList.add('lvc-show')"); pg.wait_for_timeout(400)     # the buttons in the picture shown (639zzj)
-    l2 = pg.evaluate(LAGE)
-    pruef(l2["inside"] and l2["hit"] == 0, "%s: Knöpfe im Bild sichtbar - der Chip weicht aus, liegt auf nichts (%s)" % (name, l2))
+    pruef(t2 > t1 and 1500 <= (t2 - t1) <= 6000, "%s: die Chips werden alle 2 s neu gemalt (%d ms)" % (name, t2 - t1))
+    # the states (the demo has no battery and no temperature: painted directly, as the page does with /api/state)
+    for st, want, bwant, cc, bc in (({"cpu": 42.4, "cpu_temp": 61.2, "battery": {"on": True, "pct": 82}}, "CPU 42 % · 61 °C", "🔋 82 %", "", ""),
+                                    ({"cpu": 71, "cpu_temp": 50, "battery": {"on": True, "pct": 29}}, "CPU 71 % · 50 °C", "🔋 29 %", "warn", "warn"),
+                                    ({"cpu": 50, "cpu_temp": 81, "battery": {"on": True, "pct": 14}}, "CPU 50 % · 81 °C", "🔋 14 %", "hot", "hot"),
+                                    ({"cpu": 86, "battery": {"on": True, "pct": 97, "src": "ups", "on_battery": False}}, "CPU 86 %", "🔌 97 %", "hot", ""),
+                                    ({"cpu": 30, "battery": {"on": True, "pct": 10, "charging": True}}, "CPU 30 %", "🔌 10 %", "", ""),
+                                    ({"cpu": 30, "battery": {"on": False}}, "CPU 30 %", None, "", None)):
+        pg.evaluate(PAINT, st); l = pg.evaluate(LAGE)
+        lv = lambda cls: "hot" if " hot" in cls else ("warn" if " warn" in cls else "")
+        txt_ok = l["text"] == want or (l["nc"] and l["text"] and want.startswith(l["text"].split(" · ")[0]))
+        pruef(txt_ok and l["batt"] == bwant and lv(l["cls"]) == cc and (bc is None or lv(l["bcls"]) == bc) and l["lines"] == 1,
+              "%s: %s -> «%s» «%s» %s/%s, eine Zeile" % (name, json.dumps(st, ensure_ascii=False), l["text"], l["batt"], l["cls"], l["bcls"]))
+    pg.evaluate(PAINT, {"cpu": 57, "cpu_temp": 67, "battery": {"on": True, "pct": 82}})
+    l = pg.evaluate(LAGE)
+    pruef(l["temp_shown"] == (not l["nc"]) and l["lines"] == 1 and l["left_of_arrow"], "%s: mit Temperatur und Akku passt es (°C %s)" % (name, "weg" if l["nc"] else "da"))
     if a.bilder:
-        pg.locator("#vcard").screenshot(path=os.path.join(a.bilder, "anim_%s_knoepfe.png" % name))
-    pg.evaluate("document.body.classList.remove('lvc-show')")
+        pg.locator('details[data-view="controls"]').screenshot(path=os.path.join(a.bilder, "chips_%s_offen.png" % name))
+    pg.locator('details[data-view="controls"]>summary').click(); pg.wait_for_timeout(400)
+    l = pg.evaluate(LAGE)
+    pruef(not l["open"] and l["batt"] == "🔋 82 %" and bool(l["text"]), "%s: Karte zu - die Chips bleiben sichtbar (%s / %s)" % (name, l["text"], l["batt"]))
+    if a.bilder:
+        pg.locator('details[data-view="controls"]').screenshot(path=os.path.join(a.bilder, "chips_%s_zu.png" % name))
+    pg.locator('details[data-view="controls"]>summary').click(); pg.wait_for_timeout(300)
+    # tight: a long title - «· °C» goes first, the title stays in one line
+    pg.evaluate("() => { const su = document.querySelector('details[data-view=\"controls\"]>summary'); su.dataset.keep = su.firstChild.textContent; su.firstChild.textContent = 'Bedienung und Ka'; }")
+    pg.evaluate(PAINT, {"cpu": 57, "cpu_temp": 67, "battery": {"on": True, "pct": 82}}); l = pg.evaluate(LAGE)
+    pruef(l["nc"] and not l["temp_shown"] and l["lines"] == 1, "%s: eng - «· °C» fällt weg, der Titel bleibt in einer Zeile (%s)" % (name, l))
+    pg.evaluate("() => { const su = document.querySelector('details[data-view=\"controls\"]>summary'); su.firstChild.textContent = su.dataset.keep; }")
+    pg.evaluate("() => langSet('fr')"); pg.wait_for_timeout(2600); l = pg.evaluate(LAGE)
+    pruef(l["in_sum"] and bool(l["text"]) and l["lines"] == 1, "%s: nach dem Sprachwechsel (fr) sind die Chips wieder da (%s)" % (name, l["text"]))
+    pg.evaluate("() => langSet('de')"); pg.wait_for_timeout(800)
     comp = pg.evaluate("""async () => { const j = await (await fetch('/api/state', {cache: 'no-store'})).json(); await new Promise(r => setTimeout(r, 1500));
         const j2 = await (await fetch('/api/state', {cache: 'no-store'})).json(); const k = document.getElementById('lv-comp');
         const m = k && !k.hidden && getComputedStyle(k).display !== 'none' ? /rotate\(([-\d.]+)deg\)/.exec(k.querySelector('svg').style.transform) : null;
@@ -155,7 +186,7 @@ def main():
             an = pg.evaluate(ANIM, "#vcard .vwrap")
             pruef(an and an["after"] == "none" and "svg" in an["afterBg"], "prefers-reduced-motion: das Auge steht still, ist aber da (%s)" % an)
             ctx.close()
-            # the guest page: the same chip
+            # the guest page: the same chips in the top row
             req("/api/guest", {"action": "create", "hours": 1})
             g = req("/api/guest").get("path", "")
             ctx = br.new_context(**dict(dev)); pg = ctx.new_page(); jsf = []
@@ -165,6 +196,10 @@ def main():
             while time.time() < t_ and not txt:
                 txt = pg.evaluate("() => { const c = document.getElementById('lv-cpu'); return c && !c.hidden ? c.textContent : null; }"); pg.wait_for_timeout(300)
             pruef(bool(txt) and bool(CHIP_RE.match(txt or "")), "Gast-Seite: CPU-Chip «%s»" % txt)
+            g2 = pg.evaluate("""() => { gAnim({cpu: 57, cpu_temp: 67, battery: {on: true, pct: 12}}); const k = document.getElementById('lv-chips'), t = document.querySelector('.gtop');
+                return {top: !!(k && k.parentNode === t), pic: !!document.querySelector('.vwrap #lv-cpu'), batt: document.getElementById('lv-batt').textContent,
+                        hot: document.getElementById('lv-batt').classList.contains('hot'), over: t.scrollWidth > t.clientWidth + 1}; }""")
+            pruef(g2["top"] and not g2["pic"] and g2["batt"] == "🔋 12 %" and g2["hot"] and not g2["over"], "Gast-Seite: Chips oben in der Zeile, Akku rot unter 15 %% (%s)" % g2)
             pruef(not jsf, "Gast-Seite: keine JavaScript-Fehler %s" % jsf[:3])
             if a.bilder:
                 pg.screenshot(path=os.path.join(a.bilder, "anim_gast.png"))
