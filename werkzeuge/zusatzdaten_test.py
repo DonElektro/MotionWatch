@@ -189,7 +189,9 @@ c = ws.app.test_client()
 hx = ns["_zd_hx"]({"Tour of this page": "Rundgang durch diese Seite"})
 fx = c.get("/hilfe/fehler/DATA_MISSING")
 res = {"ok": ns["ZD"]["ok"], "err": ns["ZD"]["err"], "de": ns["DE"].get("Tour of this page"),
-       "fr": ns["TRX"].get("fr", {}).get("Tour of this page"), "hx": list(hx["Tour of this page"]),
+       "de_alarm": ns["DE"].get("Buttons in the push message: False alarm · Siren · Off (needs the address of this page for links)"),
+       "tr_de": ns["tr"]("Tour of this page", "de"),
+       "fr": ns["tr"]("Tour of this page", "fr"), "hx": list(hx["Tour of this page"]),
        "page": "/hilfe/fehler/DATA_MISSING" in ns["ZD_PAGE"], "fx": fx.status_code,
        "fx_text": "moveeye_daten" in fx.get_data(as_text=True) or "Zusatz" in fx.get_data(as_text=True),
        "health": [x.get("id") for x in (lambda h: h.get("items") if isinstance(h, dict) else h)(ns["health_check"]("de"))
@@ -205,7 +207,11 @@ print("KERN " + json.dumps(res, ensure_ascii=False))
            "/almanach ohne ZIP: das Kapitel «Notfall» als einfache Seite mit dem Hinweis (%s)" % alm[0])
         ok(re.search(r'<body><a class="z" href="/more">‹ Mehr</a>', alm[1]) and "min-height:44px" in alm[1],
            "/almanach ohne ZIP: ganz oben ein Weg zurück zu «Mehr» (44 px hoch, ein einfacher Link)")
-        ok(r.get("de") == "Rundgang durch diese Seite", "Deutsch aus den Tabellen _HX… bleibt in der Hauptdatei")
+        # Hauptdatei kleiner, dritte Runde (14.11.2026, ZD_HX_DE_ZIP): Alarm / Push / Schutz behalten ihr Deutsch in der
+        # Hauptdatei (ZD_HX_DE_BLEIBT); die anderen Tabellen _HX… behalten nur die englischen Schlüssel - ohne ZIP Englisch
+        ok(str(r.get("de_alarm", "")).startswith("Knöpfe in der Push-Nachricht"), "Deutsch der Alarm-Texte (_HX_ALARM) bleibt in der Hauptdatei")
+        ok(r.get("de") == "Tour of this page" and r.get("tr_de") == "Tour of this page",
+           "andere Tabellen _HX… (hier _HX_GUIDE2): ohne ZIP der Schlüssel da, Text englisch, kein Absturz (%s)" % r.get("tr_de"))
         ok(r.get("fr") == "Tour of this page" and r.get("hx") == ["Rundgang durch diese Seite", "Tour of this page",
                                                                     "Tour of this page", "Rundgang durch diese Seite"],
            "Französisch / Italienisch zeigen Englisch, Romanisch Deutsch")
