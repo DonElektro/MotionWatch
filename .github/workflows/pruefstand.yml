@@ -5,7 +5,7 @@
 #    nur quick (ab 29.10.2026, Ressourcen sparen); sonntags alles inkl. hard; von Hand: frei wählbar
 #  - jeden Sonntag in der Nacht: alles, auch «hard» (Nebel, Scheinwerfer, Spinnennetz, Tropfen …), 3 Zufallsstarts (Streuung)
 #  - von Hand (Actions → Prüfstand → Run workflow): alles wählbar; «rechner: hp» = auf dem Simulator-PC (self-hosted Runner
-#    «moveeye-hp», werkzeuge/test_runner/ANLEITUNG.md; Simulator aus dem Linux-Paket, kein Godot; Grafik Normal, nur bei «standard» Lite). Ist der HP aus,
+#    «moveeye-hp», werkzeuge/test_runner/ANLEITUNG.md; Simulator aus dem Linux-Paket, kein Godot; Grafik Lite ab Werk seit 14.11.2026, «grafik: normal» zum Vergleich). Ist der HP aus,
 #    bricht der Wächter nach 15 Min. ab. Automatisch (neue Version, Sonntag) läuft der Prüfstand immer auf GitHub.
 #  - Aussehen (Entscheid des Besitzers 10.11.2026 nach A/B #2 und der Tier-Stichprobe): Standard ist das neue Flora-Aussehen
 #    (MW_FLORA=normal, Grafik Normal) mit den Tier-Modellen (MW_TIERE=modell) – auch automatisch (neue Version, Sonntag), wo
@@ -59,9 +59,9 @@ on:
         options: [xvfb, bildschirm]
         default: xvfb
       grafik:
-        description: "Vergleich: wie-aussehen (Standard) oder lite (Grafik Lite bei gleichem Aussehen – weniger Rechenlast; nicht in VERLAUF.md)"
+        description: "wie-aussehen (Standard; am HP = Lite) · lite / normal = Vergleich (nicht in VERLAUF.md)"
         type: choice
-        options: [wie-aussehen, lite]
+        options: [wie-aussehen, lite, normal]
         default: wie-aussehen
       bilder:
         description: "Diagnose: zu jeder verpassten Person MoveEyes Bild vom besten Moment klein ins Job-Protokoll (Zeilen «BILD …»)"
@@ -155,7 +155,9 @@ jobs:
           AUSSEHEN: ${{ github.event.inputs.flora || 'neu' }}
           TIERE: ${{ github.event.inputs.tiere || 'modelle' }}
           MW_FLORA: ${{ (github.event.inputs.flora || 'neu') == 'neu' && 'normal' || '' }}
-          MW_PRUEFSTAND_GRAFIK: ${{ github.event.inputs.grafik == 'lite' && 'lite' || ((github.event.inputs.flora || 'neu') != 'standard' && 'normal' || '') }}
+          # HP: Grafik Lite ab Werk (14.11.2026: Lauf 43576551609 mit Lite 1.8–1.9 Bilder/s, mit Normal 1.0–1.1 bei denselben Plänen);
+          # «grafik: normal» erzwingt Normal auch am HP (Vergleich)
+          MW_PRUEFSTAND_GRAFIK: ${{ (github.event.inputs.grafik == 'lite' || (env.HP == '1' && (github.event.inputs.grafik || 'wie-aussehen') == 'wie-aussehen')) && 'lite' || ((github.event.inputs.grafik == 'normal' || (github.event.inputs.flora || 'neu') != 'standard') && 'normal' || '') }}
           MW_PRUEFSTAND_BILDER: ${{ github.event.inputs.bilder == 'true' && '1' || '' }}
           MW_TIERE: ${{ (github.event.inputs.tiere || 'modelle') == 'grundformen' && 'alt' || 'modell' }}
           MW_PRUEFSTAND_DISPLAY: ${{ (github.event.inputs.rechner == 'hp' && github.event.inputs.anzeige == 'bildschirm') && ':0' || '' }}
