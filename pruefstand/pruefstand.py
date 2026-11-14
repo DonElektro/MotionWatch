@@ -31,6 +31,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.error
 import urllib.request
 import zipfile
 
@@ -119,6 +120,10 @@ class Prozesse:
         pr = subprocess.Popen(cmd, env=env, stdout=out, stderr=subprocess.STDOUT, start_new_session=True)
         self.p.append((name, pr))
         return pr
+
+    def tot(self, name):
+        """ist dieses Programm schon beendet (z. B. der Simulator abgestürzt)?"""
+        return any(n == name and pr.poll() is not None for n, pr in self.p)
 
     def stop(self):
         for name, pr in reversed(self.p):
@@ -254,92 +259,106 @@ def run(a):
         info.update(aussehen_aus_umgebung(env))          # 10.11.2026: Aussehen und Tiere (Spalte «Simulator», Vergleich)
         laeufe = [(p, m) for m in a.realismus for p in a.plaene
                   if not (m == "aus" and (p in FIX_PLAENE or (a.roh_plaene and p not in a.roh_plaene)))]
-        for plan0, modus in laeufe:
-          try:                                                   # 2.98.13: camera effects of the simulator on / off
-              http_json(sim + "/control", {"action": "set", "id": "real_fx", "value": modus == "an"}, timeout=6)
-              http_json(sim + "/control", {"action": "set", "id": "real_look", "value": False}, timeout=6)
-          except Exception:
-              pass
-          plan = plan0 + ("" if modus == "an" else ROH)
-          for seed_n, rep in [(sd, rp) for sd in range(1, a.seeds + 1) for rp in range(a.wiederholungen)]:
-                log("Testlauf «%s» (Zufall %d, %d/%d) …" % (plan_name(plan), seed_n, rep + 1, a.wiederholungen))
-                try:
-                    st_ = http_json(sim + "/control", {"action": "test_report"}, timeout=6)
-                    if st_.get("running"):
-                        log("  (es lief schon ein Testlauf: %s – gestoppt)" % st_.get("info"))
-                        http_json(sim + "/control", {"action": "test_stop"}, timeout=6)
-                except Exception:
-                    pass
-                r = http_json(sim + "/control", {"action": "test_start", "plan": plan0, "cams": a.kameras, "mult": a.mal, "seed": seed_n}, timeout=10)
-                if not r.get("ok"):
-                    log("  startet nicht:", r.get("error") or r.get("info"))
-                    rc = 2
-                    continue
-                t0 = time.time()
-                fps = []
-                rep_ = None
-                schnapp = Schnappschuesse(web, t0) if os.environ.get("MW_PRUEFSTAND_BILDER") == "1" else None
-                soll = float(r.get("total_s") or PLAN_DAUER.get(plan0, 400) * a.mal)       # the simulator knows how long it takes
-                log("  dauert etwa %d Min." % round(soll / 60.0))
-                while time.time() - t0 < soll * 2.5 + 180:
-                    time.sleep(5)
+        abbruch = ""                                             # Simulator weg: das Teilergebnis bleibt (G5, 14.11.2026)
+        try:
+            for plan0, modus in laeufe:
+              try:                                                   # 2.98.13: camera effects of the simulator on / off
+                  http_json(sim + "/control", {"action": "set", "id": "real_fx", "value": modus == "an"}, timeout=6)
+                  http_json(sim + "/control", {"action": "set", "id": "real_look", "value": False}, timeout=6)
+              except Exception:
+                  pass
+              plan = plan0 + ("" if modus == "an" else ROH)
+              for seed_n, rep in [(sd, rp) for sd in range(1, a.seeds + 1) for rp in range(a.wiederholungen)]:
+                    log("Testlauf «%s» (Zufall %d, %d/%d) …" % (plan_name(plan), seed_n, rep + 1, a.wiederholungen))
                     try:
-                        fps.append(float(http_json(web + "/api/state", timeout=4)["state"].get("fps") or 0))
-                        r = http_json(sim + "/control", {"action": "test_report"}, timeout=6)
-                    except Exception:
-                        continue
-                    if not r.get("running"):
-                        rep_ = r.get("report") or None
-                        break
-                if schnapp is not None and (not rep_ or not rep_.get("phases") or rep_.get("plan") != plan0):
-                    schnapp.stopp()
-                if not rep_ or not rep_.get("phases") or rep_.get("plan") != plan0:      # (0 visible persons is a valid result)
-                    log("%s: kein Bericht – %s" % (plan_name(plan), (r.get("info") if isinstance(r, dict) else "") or "Zeit abgelaufen"), wichtig=True)
-                    rep_ = None
-                    rc = 2
-                    try:
-                        http_json(sim + "/control", {"action": "test_stop"}, timeout=6)
+                        st_ = http_json(sim + "/control", {"action": "test_report"}, timeout=6)
+                        if st_.get("running"):
+                            log("  (es lief schon ein Testlauf: %s – gestoppt)" % st_.get("info"))
+                            http_json(sim + "/control", {"action": "test_stop"}, timeout=6)
                     except Exception:
                         pass
-                    continue
-                if schnapp is not None:
-                    schnapp.stopp()
-                    schnapp.ausgeben(rep_, plan, seed_n, os.path.join(tmp, "bilder"))
-                rep_["dauer_s"] = round(time.time() - t0)
-                rep_["mw_fps"] = round(sum(fps) / len(fps), 1) if fps else 0
-                rep_.setdefault("seed", seed_n)
-                info["plaene"].setdefault(plan, []).append(rep_)
-                gb = kennzahlen([rep_])["groessen"]
-                if gb:
-                    log("  nach Grösse: " + ", ".join("%s %d/%d" % (b, gb[b][1], gb[b][0]) for b in ("nah", "mittel", "weit") if b in gb))
-                pu = rep_.get("pushes") or {}
-                log("%s: Pushes %s, Personen %d/%d (%.0f %%, davon nur Wärmebild %d/%d), Reaktion %s s, Tiere %d/%d, Flackern %d, %.1f Bilder/s" % (
-                    plan_name(plan), ("richtig %d / falsch %d" % (pu.get("ok", 0), pu.get("false", 0))) if pu else "unbekannt",
-                    rep_["persons_detected"], rep_["persons"], rep_["rate"], rep_.get("persons_thermal_detected", 0), rep_.get("persons_thermal", 0),
-                    rep_.get("latency_s", "–"),
-                    sum(p.get("animals_reported", 0) for p in rep_.get("phases", [])), sum(p.get("animals", 0) for p in rep_.get("phases", [])),
-                    rep_.get("flicker", rep_.get("false_alarms", 0)), rep_["mw_fps"]), wichtig=True)
-                sz = rep_.get("szene") or {}                     # the numbers of the new scenes (reaction from the pitch / the grab)
-                if sz.get("art") == "camping_voll":
-                    log("  Voller Platz: an deinem Platz %d, mit Push %d, ohne %d, Reaktion ab Platz %s s, falsche Pushes wegen Nachbarn %d" % (
-                        sz.get("auf_platz", 0), sz.get("push", 0), sz.get("ohne_push", 0), sz.get("reaktion_platz_s", "–"), sz.get("push_falsch_nachbar", 0)), wichtig=True)
-                elif sz.get("art") == "velodieb":
-                    log("  Velodieb: Griffe %d, Push vor dem Griff %d, danach %d, ohne %d, Reaktion ab Griff %s s" % (
-                        sz.get("griffe", 0), sz.get("push_vor_griff", 0), sz.get("push_nach_griff", 0), sz.get("ohne_push", 0), sz.get("reaktion_griff_s", "–")), wichtig=True)
-                elif sz.get("art") == "gegenstaende":
-                    log("  Gegenstände: %d Dinge (KI kennt %d, kennt nicht %d), Tiere zum Lockmittel %d (angekommen %d), Pushes falsch %d / richtig %d" % (
-                        sz.get("dinge", 0), sz.get("ki_kennt", 0), sz.get("ki_kennt_nicht", 0), sz.get("lockmittel_tiere", 0),
-                        sz.get("lockmittel_angekommen", 0), sz.get("push_falsch", 0), sz.get("push_richtig", 0)), wichtig=True)
-                elif sz.get("art") == "fahrzeuge":
-                    log("  Fahrzeuge: %d (Fernlicht %d), ausgestiegen %d, zurück %d, Blendung bis %.2f, Velos ohne Licht %d, Pushes falsch %d (wegen Fahrzeug %d) / richtig %d" % (
-                        sz.get("fahrzeuge", 0), sz.get("fernlicht", 0), sz.get("ausgestiegen", 0), sz.get("zurueck", 0), sz.get("blendung_max", 0.0),
-                        sz.get("velos_ohne_licht", 0), sz.get("push_falsch", 0), sz.get("push_falsch_fahrzeug", 0), sz.get("push_richtig", 0)), wichtig=True)
-                elif sz.get("art") == "tarnen":
-                    log("  Tarnen: " + ", ".join("%s %d/%d erkannt, %d Push" % (k[5:], v.get("erkannt", 0), v.get("sichtbar", 0), v.get("push", 0))
-                                                for k, v in sorted((sz.get("arten") or {}).items())), wichtig=True)
-                for q in rep_.get("push_list", []):
-                    log("    Push %5.0f s  %-8s %s%s" % (q.get("t", 0), q.get("ev", ""), ("richtig: " if q.get("ok") else "FALSCH: ") + str(q.get("who", "")),
-                                                     "  (gleicher Besuch innert 10 s)" if q.get("dup") else ""))
+                    kopf_heim(web)                                   # jeder Fall beginnt mit dem Kopf in der Grundstellung
+                    r = http_json(sim + "/control", {"action": "test_start", "plan": plan0, "cams": a.kameras, "mult": a.mal, "seed": seed_n}, timeout=10)
+                    if not r.get("ok"):
+                        log("  startet nicht:", r.get("error") or r.get("info"))
+                        rc = 2
+                        continue
+                    t0 = time.time()
+                    fps = []
+                    rep_ = None
+                    schnapp = Schnappschuesse(web, t0) if os.environ.get("MW_PRUEFSTAND_BILDER") == "1" else None
+                    soll = float(r.get("total_s") or PLAN_DAUER.get(plan0, 400) * a.mal)       # the simulator knows how long it takes
+                    log("  dauert etwa %d Min." % round(soll / 60.0))
+                    while time.time() - t0 < soll * 2.5 + 180:
+                        time.sleep(5)
+                        if P.tot("Simulator"):
+                            raise ConnectionError("Simulator beendet (Code %s)" % next(pr.poll() for n, pr in P.p if n == "Simulator"))
+                        try:
+                            fps.append(float(http_json(web + "/api/state", timeout=4)["state"].get("fps") or 0))
+                            r = http_json(sim + "/control", {"action": "test_report"}, timeout=6)
+                        except Exception:
+                            continue
+                        if not r.get("running"):
+                            rep_ = r.get("report") or None
+                            break
+                    if schnapp is not None and (not rep_ or not rep_.get("phases") or rep_.get("plan") != plan0):
+                        schnapp.stopp()
+                    if not rep_ or not rep_.get("phases") or rep_.get("plan") != plan0:      # (0 visible persons is a valid result)
+                        log("%s: kein Bericht – %s" % (plan_name(plan), (r.get("info") if isinstance(r, dict) else "") or "Zeit abgelaufen"), wichtig=True)
+                        rep_ = None
+                        rc = 2
+                        try:
+                            http_json(sim + "/control", {"action": "test_stop"}, timeout=6)
+                        except Exception:
+                            pass
+                        continue
+                    if schnapp is not None:
+                        schnapp.stopp()
+                        schnapp.ausgeben(rep_, plan, seed_n, os.path.join(tmp, "bilder"))
+                    rep_["dauer_s"] = round(time.time() - t0)
+                    rep_["mw_fps"] = round(sum(fps) / len(fps), 1) if fps else 0
+                    rep_.setdefault("seed", seed_n)
+                    info["plaene"].setdefault(plan, []).append(rep_)
+                    gb = kennzahlen([rep_])["groessen"]
+                    if gb:
+                        log("  nach Grösse: " + ", ".join("%s %d/%d" % (b, gb[b][1], gb[b][0]) for b in ("nah", "mittel", "weit") if b in gb))
+                    pu = rep_.get("pushes") or {}
+                    log("%s: Pushes %s, Personen %d/%d (%.0f %%, davon nur Wärmebild %d/%d), Reaktion %s s, Tiere %d/%d, Flackern %d, %.1f Bilder/s" % (
+                        plan_name(plan), ("richtig %d / falsch %d" % (pu.get("ok", 0), pu.get("false", 0))) if pu else "unbekannt",
+                        rep_["persons_detected"], rep_["persons"], rep_["rate"], rep_.get("persons_thermal_detected", 0), rep_.get("persons_thermal", 0),
+                        rep_.get("latency_s", "–"),
+                        sum(p.get("animals_reported", 0) for p in rep_.get("phases", [])), sum(p.get("animals", 0) for p in rep_.get("phases", [])),
+                        rep_.get("flicker", rep_.get("false_alarms", 0)), rep_["mw_fps"]), wichtig=True)
+                    sz = rep_.get("szene") or {}                     # the numbers of the new scenes (reaction from the pitch / the grab)
+                    if sz.get("art") == "camping_voll":
+                        log("  Voller Platz: an deinem Platz %d, mit Push %d, ohne %d, Reaktion ab Platz %s s, falsche Pushes wegen Nachbarn %d" % (
+                            sz.get("auf_platz", 0), sz.get("push", 0), sz.get("ohne_push", 0), sz.get("reaktion_platz_s", "–"), sz.get("push_falsch_nachbar", 0)), wichtig=True)
+                    elif sz.get("art") == "velodieb":
+                        log("  Velodieb: Griffe %d, Push vor dem Griff %d, danach %d, ohne %d, Reaktion ab Griff %s s" % (
+                            sz.get("griffe", 0), sz.get("push_vor_griff", 0), sz.get("push_nach_griff", 0), sz.get("ohne_push", 0), sz.get("reaktion_griff_s", "–")), wichtig=True)
+                    elif sz.get("art") == "gegenstaende":
+                        log("  Gegenstände: %d Dinge (KI kennt %d, kennt nicht %d), Tiere zum Lockmittel %d (angekommen %d), Pushes falsch %d / richtig %d" % (
+                            sz.get("dinge", 0), sz.get("ki_kennt", 0), sz.get("ki_kennt_nicht", 0), sz.get("lockmittel_tiere", 0),
+                            sz.get("lockmittel_angekommen", 0), sz.get("push_falsch", 0), sz.get("push_richtig", 0)), wichtig=True)
+                    elif sz.get("art") == "fahrzeuge":
+                        log("  Fahrzeuge: %d (Fernlicht %d), ausgestiegen %d, zurück %d, Blendung bis %.2f, Velos ohne Licht %d, Pushes falsch %d (wegen Fahrzeug %d) / richtig %d" % (
+                            sz.get("fahrzeuge", 0), sz.get("fernlicht", 0), sz.get("ausgestiegen", 0), sz.get("zurueck", 0), sz.get("blendung_max", 0.0),
+                            sz.get("velos_ohne_licht", 0), sz.get("push_falsch", 0), sz.get("push_falsch_fahrzeug", 0), sz.get("push_richtig", 0)), wichtig=True)
+                    elif sz.get("art") == "tarnen":
+                        log("  Tarnen: " + ", ".join("%s %d/%d erkannt, %d Push" % (k[5:], v.get("erkannt", 0), v.get("sichtbar", 0), v.get("push", 0))
+                                                    for k, v in sorted((sz.get("arten") or {}).items())), wichtig=True)
+                    for q in rep_.get("push_list", []):
+                        log("    Push %5.0f s  %-8s %s%s" % (q.get("t", 0), q.get("ev", ""), ("richtig: " if q.get("ok") else "FALSCH: ") + str(q.get("who", "")),
+                                                         "  (gleicher Besuch innert 10 s)" if q.get("dup") else ""))
+        except (urllib.error.URLError, ConnectionError, OSError) as e:
+            abbruch = "Simulator antwortet nicht mehr (%s)" % (getattr(e, "reason", None) or e)
+            log(abbruch + " – gespeichert wird, was fertig ist", wichtig=True)
+            log_tail(os.path.join(tmp, "simulator.log"), "Ende von simulator.log")
+            rc = 2
+        if abbruch:
+            info["abgebrochen"] = abbruch
+            a.weitwinkel = ""
+            a.folgen = []
         try:                                                     # 3D-4.19: the virtual SmallTV (MoveEye 552) - pictures sent during the run
             st_ = http_json(sim + "/control", {"action": "smalltv"}, timeout=4)
             if st_.get("ok"):
@@ -383,6 +402,20 @@ def run(a):
             shutil.rmtree(tmp, ignore_errors=True)
         else:
             log("Protokolle und Einstellungen:", tmp)
+
+
+def kopf_heim(web):
+    """MoveEyes Kopf vor jedem Fall in die Grundstellung (Mitte; frische Einstellungen = Grundstellung 50 / 50): sonst erbt ein
+    Fall die Richtung vom Ende des vorherigen - in einer langen Sitzung sah der Kopf manchmal ganz zur Seite und die Besucher
+    galten als «nicht sichtbar» (Velodieb / Campingplatz, 13.11.2026). Danach 6 s: der Kopf ist dort und MoveEyes kurze
+    Handsteuerung (manual_hold 5 s) ist vorbei, bevor der Fall beginnt."""
+    try:
+        r = http_json(web + "/api/move", {"dir": "center", "step": 3}, timeout=6)
+        if not r.get("ok"):
+            log("  Kopf: Grundstellung ging nicht (%s)" % (r.get("error") or r))
+    except Exception as e:
+        log("  Kopf: Grundstellung ging nicht (%s)" % e)
+    time.sleep(6)
 
 
 class Schnappschuesse:
