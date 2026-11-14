@@ -34,6 +34,9 @@ Update-Quelle: lokaler HTTPS-Server mit eigenem Zertifikat und Wegwerf-Schlüsse
   c  gleich danach das zweite Update (NEU -> NEU+1, aus quelle/ gebaut) bei offenem Live-Bild: Live-Bild endet, Seite kommt,
      Live-Bild geht wieder
      danach Neustart des Pi: NEU+1 kommt (die Unit startet den Starter moveeye_start.py, der die Datei aus moveeye_start.json)
+  t  Starter startet nur aufgezeichnete Dateien (Grösse + SHA-256): Notiz fehlt + veränderte «neuere» Datei -> die
+     aufgezeichnete (Kopie im Daten-Ordner); die notierte Datei verändert -> letzte gute Version, laut; gar keine Notiz ->
+     nichts startet; einmal von Hand starten zeichnet wieder auf
   z  Start ohne Zusatzdatei als Dienst: der Kern antwortet, holt die ZIP, ein Neustart im selben Dienst-Lauf, kein Start-Wächter
   g  System-Dienst /etc/systemd/system/motionwatch.service (sudo ALT --install-service wie einrichten.sh, Unit der alten Art):
      Update ALT -> NEU stellt die Unit einmal um (sudo -n wie auf Raspberry Pi OS, kein Stopp), Neustart des Pi -> NEU,
@@ -707,6 +710,86 @@ def fall_z(L, v):
     L.schritt("z ohne Zusatzdatei", t0)
 
 
+def laeuft_datei(L):
+    """welche Programmdatei der Hauptprozess des Dienstes ausführt ("" = keiner)"""
+    pid = L.d.zeig()["MainPID"]
+    try:
+        cmd = open("/proc/%d/cmdline" % pid, "rb").read().split(b"\0")
+    except OSError:
+        return ""
+    return next((os.path.basename(x.decode(errors="replace")) for x in cmd if b"webcam_bewegung_" in x), "")
+
+
+def fall_t(L):
+    print("t  Starter startet nur aufgezeichnete Dateien (Grösse + SHA-256): Notiz fehlt / Datei verändert / fremde neuere Datei")
+    t0 = time.time()
+    app, cur = L.b.app, L.zeiger()
+    datei_v = {L.prog[k]: L.ver[k] for k in L.prog}
+    ptr, kopie = os.path.join(app, "moveeye_start.json"), os.path.join(L.b.daten, "start_good.json")
+    ok(cur in datei_v and os.path.isfile(kopie), "Notiz %s und Kopie start_good.json im Daten-Ordner da" % (cur or "fehlt"))
+    try:
+        rec = json.load(open(ptr))
+    except (OSError, ValueError):
+        rec = {}
+    ok(len(str(rec.get("sha256", ""))) == 64 and rec.get("size") == os.path.getsize(os.path.join(app, cur)),
+       "die Notiz hält Grösse und SHA-256 der Datei fest")
+    fremd = os.path.join(app, "webcam_bewegung_3_99_0.py")         # «newer», by name - but not recorded (changed copy)
+    shutil.copy(os.path.join(app, cur), fremd)
+    with open(fremd, "a") as f:
+        f.write("\n# verändert - darf nie gestartet werden\n")
+    L.b.gehoert(fremd)
+    n0 = len(L.log())
+    try:
+        # t1: the note next to the starter is gone, a «newer» changed file lies there -> the recorded file from the copy
+        L.d.sctl("stop", UNIT)
+        os.remove(ptr)
+        L.d.sctl("start", UNIT)
+        t = warte(lambda: version_da(L.port) == datei_v[cur], L.a.limit)
+        ok(t is not None and laeuft_datei(L) == cur, "t1: Notiz fehlt + fremde neuere Datei: läuft %s (nicht %s; %s s)"
+           % (laeuft_datei(L) or "nichts", os.path.basename(fremd), t))
+        ok("moveeye_start.json missing" in L.log()[n0:], "t1: Protokoll nennt es («MoveEye starter: moveeye_start.json missing …»)")
+        # t2: the noted file itself is changed -> the last good other version, loudly
+        gut = next((g.get("file") for g in (json.load(open(ptr)).get("good") or []) if g.get("file") != cur and g.get("file") in datei_v), "")
+        sicher = os.path.join(L.tmp, "sicher.py")
+        shutil.copy(os.path.join(app, cur), sicher)
+        with open(os.path.join(app, cur), "a") as f:
+            f.write("\n# verändert\n")
+        n0 = len(L.log())
+        L.d.sctl("restart", UNIT)
+        t = warte(lambda: bool(gut) and version_da(L.port) == datei_v[gut], L.a.limit)
+        ok(t is not None and laeuft_datei(L) == gut, "t2: %s verändert -> die letzte gute Version %s läuft (%s; %s s)"
+           % (cur, gut or "?", laeuft_datei(L) or "nichts", t))
+        ok("checksum does not match the record" in L.log()[n0:], "t2: Protokoll: «not started (checksum does not match the record) …»")
+        shutil.copy(sicher, os.path.join(app, cur)); L.b.gehoert(os.path.join(app, cur))
+        # t3: no note at all -> nothing is started, never «the newest»
+        tj = time.time()
+        L.d.sctl("stop", UNIT)
+        for x in (ptr, kopie):
+            if os.path.exists(x):
+                os.remove(x)
+        L.d.sctl("start", UNIT)
+        time.sleep(12)
+        ok(not version_da(L.port) and "3_99_0" not in laeuft_datei(L), "t3: ohne Notiz startet nichts (keine Seite, nicht %s)" % os.path.basename(fremd))
+        j = L.d.journal(tj)
+        if j is None:
+            hinweis("t3: kein Journal (lokal) - Meldung des Starters nicht geprüft")
+        else:
+            ok("NO program file matches" in j, "t3: Journal: «MoveEye starter: NO program file matches …»")
+        # back: start once by hand (autostart on) - that records the file again
+        L.d.sctl("stop", UNIT)
+        th = L.hand_start(os.path.join(app, gut or cur))
+        L.hand_ende()
+        L.d.sctl("start", UNIT)
+        t = warte(lambda: bool(version_da(L.port)), L.a.limit)
+        ok(th is not None and t is not None, "t3: einmal von Hand gestartet -> aufgezeichnet, der Dienst läuft wieder (%s)" % (version_da(L.port) or "nichts"))
+    finally:
+        if os.path.exists(fremd):
+            os.remove(fremd)
+    if FEHLER:
+        L.zeigen("t")
+    L.schritt("t Starter prüft", t0)
+
+
 def neustart_pi(L, v, titel):
     """Pi aus- und einschalten = der Dienst startet neu: welche Version kommt?"""
     t0 = time.time()
@@ -912,7 +995,7 @@ def main():
     ap.add_argument("--benutzer", default="mwtest")
     ap.add_argument("--python", default=sys.executable, help="Python für MoveEye (wie auf dem Pi: 3.11)")
     ap.add_argument("--limit", type=int, default=60, help="Sekunden, bis die Seite antworten muss")
-    ap.add_argument("--nur", default="a,d,e,f,z,b,c,g")
+    ap.add_argument("--nur", default="a,d,e,f,z,b,c,t,g")
     ap.add_argument("--ci", action="store_true", help="Test-Benutzer anlegen, linger einschalten; g ist Pflicht")
     ap.add_argument("--ohne-leck", action="store_true", help="b ohne das Hilfsprogramm, das den Port hält (zum Vergleich)")
     a = ap.parse_args()
@@ -1030,6 +1113,8 @@ def main():
                 if "c" in nur and gut:
                     if update(L, L.ver["neu"], L.ver["plus1"], "c zweites Update NEU -> NEU+1 bei offenem Live-Bild", live=True):
                         neustart_pi(L, L.ver["plus1"], "c")
+                        if "t" in nur:
+                            fall_t(L)
         if "g" in nur:
             fall_g(L)
     finally:

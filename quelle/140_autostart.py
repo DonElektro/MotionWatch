@@ -425,26 +425,67 @@ def port_foreign(held):
 # power off), never with a stop of itself; without sudo a clear hint.
 START_FILE = "moveeye_start.py"
 START_PTR = "moveeye_start.json"
+START_GOOD = "start_good.json"              # copy of the note in the data folder (MOTIONWATCH_HOME of the unit)
 START_CODE = r"""#!/usr/bin/env python3
-# MoveEye starter (written by MoveEye, the autostart service starts it - do not change): starts the program file named in
-# moveeye_start.json next to it (set by MoveEye: the version that runs as the service, or the one started by hand while
-# autostart is on). Without that note: the newest webcam_bewegung_X_Y_Z.py of this folder. Same process (exec): systemd sees
-# MoveEye itself (watchdog, stop).
-import json, os, re, sys
+# MoveEye starter (written by MoveEye, the autostart service starts it - do not change). Starts ONLY a program file whose
+# size and SHA-256 match what MoveEye recorded: first the file in moveeye_start.json (the version that runs as the service,
+# or the one started by hand while autostart is on), then the last good versions of that note, also from the copy
+# $MOTIONWATCH_HOME/start_good.json. A file that is not recorded or does not match (newer, changed, half written) is never
+# started; if nothing matches, it ends with an error (systemd tries again; start MoveEye once by hand to record it again).
+# Same process (exec): systemd sees MoveEye itself (watchdog, stop).
+import hashlib, json, os, re, sys
 here = os.path.dirname(os.path.abspath(__file__))
-name_re = re.compile(r"^webcam_bewegung_(\d{1,3})_(\d{1,3})_(\d{1,3})\.py$")
-name = ""
-try:
-    with open(os.path.join(here, "moveeye_start.json"), encoding="utf-8") as f:
-        name = os.path.basename(str(json.load(f).get("file") or ""))
-except (OSError, ValueError, AttributeError):
-    pass
-if not (name_re.match(name) and os.path.isfile(os.path.join(here, name))):
-    found = sorted((tuple(int(x) for x in m.groups()), n) for n in os.listdir(here) for m in [name_re.match(n)] if m)
-    name = found[-1][1] if found else ""
-if not name:
-    sys.exit("MoveEye: no program file webcam_bewegung_X_Y_Z.py in " + here)
-os.execv(sys.executable, [sys.executable, os.path.join(here, name)] + sys.argv[1:])
+name_re = re.compile(r"^webcam_bewegung_\d{1,3}_\d{1,3}_\d{1,3}\.py$")
+
+
+def load(p):
+    try:
+        with open(p, encoding="utf-8") as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def checked(c):
+    n = os.path.basename(str(c.get("file") or ""))
+    p = os.path.join(here, n)
+    try:
+        if not (name_re.match(n) and os.path.getsize(p) == int(c.get("size", -1))):
+            return ""
+        h = hashlib.sha256()
+        with open(p, "rb") as f:
+            for b in iter(lambda: f.read(1 << 20), b""):
+                h.update(b)
+    except (OSError, ValueError, TypeError):
+        return ""
+    return p if h.hexdigest() == str(c.get("sha256") or "").lower() else ""
+
+
+recs = [load(os.path.join(here, "moveeye_start.json"))]
+if os.environ.get("MOTIONWATCH_HOME"):
+    recs.append(load(os.path.join(os.environ["MOTIONWATCH_HOME"], "start_good.json")))
+cands = [d for d in recs if d.get("file")] + [g for d in recs for g in (d.get("good") or []) if isinstance(g, dict)]
+path, bad = "", []
+for c in cands:
+    path = checked(c)
+    if path:
+        break
+    bad.append(os.path.basename(str(c.get("file") or "?")))
+if not path:
+    sys.exit("MoveEye starter: NO program file matches its recorded checksum in " + here + " (checked: " +
+             (", ".join(dict.fromkeys(bad)) or "no note moveeye_start.json / start_good.json") +
+             ") - nothing is started. Start MoveEye once by hand (or sudo ... --install-service) to record the file.")
+note = ""
+if not recs[0].get("file"):
+    note = "moveeye_start.json missing or damaged - used the copy in the data folder"
+if bad:
+    note = (note + "; " if note else "") + "not started (checksum does not match the record): " + ", ".join(dict.fromkeys(bad))
+if note:
+    note = "MoveEye starter: " + note + " - started " + os.path.basename(path)
+    print(note, file=sys.stderr, flush=True)
+    os.environ["MW_STARTER_NOTE"] = note
+os.execv(sys.executable, [sys.executable, path] + sys.argv[1:])
 """
 
 
@@ -476,27 +517,71 @@ def start_launcher_ensure():
     return p
 
 
-def start_pointer_set(path=None):
+def _file_rec(path):
+    """{file, sha256, size} of a program file (what the starter checks before it starts it)"""
+    h, n = hashlib.sha256(), 0
+    with open(path, "rb") as f:
+        for b in iter(lambda: f.read(1 << 20), b""):
+            h.update(b); n += len(b)
+    return {"file": os.path.basename(path), "sha256": h.hexdigest(), "size": n}
+
+
+def start_pointer_set(path=None, good=True):
     """from now on the starter starts THIS program file (or `path`: the start guard of 390 going back to the old version).
-    Only a file next to the starter. True when the note changed."""
+    Records its size and SHA-256 - the starter starts nothing else; good=True also puts it at the top of the «last good»
+    list (not while it is on trial after an update: 390 adds it after its 90 s). Only a file next to the starter.
+    Written next to the starter and as a copy in the data folder. True when the note changed.
+    Why hashes and no signature in the starter: the note is written only by MoveEye itself - for a version that it installed
+    after checking the signature (390 update_install) or that the owner started by hand. Whoever can write the note can also
+    replace the program files and the starter in the same folder, so a signature check in the starter would not stop that
+    person; what the hash stops is what really happens: a file that is not the recorded one (an unsigned or half-written
+    download, a copied-in or changed file, a damaged card) being started just because its name looks newer."""
     p = os.path.join(HERE, START_PTR)
     path = os.path.abspath(path or __file__)
     if os.path.dirname(path) != os.path.abspath(HERE):
         return False
-    me = os.path.basename(path)
+    rec = _file_rec(path)
     try:
         with open(p, encoding="utf-8") as f:
-            if json.load(f).get("file") == me:
-                return False
-    except (OSError, ValueError, AttributeError):
-        pass
-    tmp = p + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump({"file": me, "set": datetime.now().isoformat(timespec="seconds")}, f)
-    os.chmod(tmp, 0o644)
-    _owner_like_here(tmp)
-    os.replace(tmp, p)
+            old = json.load(f)
+        if not isinstance(old, dict):
+            old = {}
+    except (OSError, ValueError):
+        old = {}
+    if not old.get("good"):
+        try:
+            with open(os.path.join(DATA_DIR, START_GOOD), encoding="utf-8") as f:
+                old = dict(json.load(f), file=old.get("file"))
+        except (OSError, ValueError, TypeError):
+            pass
+    gl = [g for g in (old.get("good") or []) if isinstance(g, dict) and g.get("file")]
+    if good:
+        gl = [rec] + [g for g in gl if g.get("file") != rec["file"]]
+    new = dict(rec, good=gl[:5])
+    if all(old.get(k) == new[k] for k in new):
+        return False
+    new["set"] = datetime.now().isoformat(timespec="seconds")
+    for dst in (p, os.path.join(DATA_DIR, START_GOOD)):
+        try:
+            with open(dst + ".tmp", "w", encoding="utf-8") as f:
+                json.dump(new, f, indent=1)
+            os.chmod(dst + ".tmp", 0o644)
+            if dst == p:
+                _owner_like_here(dst + ".tmp")
+            os.replace(dst + ".tmp", dst)
+        except OSError:
+            if dst == p:
+                raise
     return True
+
+
+def start_on_trial():
+    """this version was just installed by an update and has not yet run its 90 s (390 start_guard)"""
+    try:
+        with open(os.path.join(DATA_DIR, "update_guard.json")) as f:
+            return json.load(f).get("new") == APP_VERSION
+    except (OSError, ValueError, AttributeError):
+        return False
 
 
 def autostart_unit(mode):
@@ -567,26 +652,39 @@ def dienst_selftest():
     for t in (u, sy):
         ex = shlex.split(next(x for x in t.splitlines() if x.startswith("ExecStart="))[len("ExecStart="):])
         assert ex[1] == os.path.join(HERE, START_FILE), "the unit starts the starter, never the file of one version"
-    d = tempfile.mkdtemp(prefix="mw_starter_")
+    d, h2 = tempfile.mkdtemp(prefix="mw_starter_"), tempfile.mkdtemp(prefix="mw_starter_home_")
     try:
         with open(os.path.join(d, START_FILE), "w") as f:
             f.write(START_CODE)
         for v in ("3_9_0", "3_10_0"):
             with open(os.path.join(d, f"webcam_bewegung_{v}.py"), "w") as f:
                 f.write("import sys; print('RUN', __file__.rsplit('_', 3)[1:], sys.argv[1:])\n")
+        r9, r10 = (_file_rec(os.path.join(d, f"webcam_bewegung_{v}.py")) for v in ("3_9_0", "3_10_0"))
+
+        def note(rec, good, where=d):
+            with open(os.path.join(where, START_PTR if where == d else START_GOOD), "w") as f:
+                json.dump(dict(rec, good=good), f)
 
         def run():
-            r = subprocess.run([sys.executable, os.path.join(d, START_FILE), "--boot"], capture_output=True, text=True, timeout=30)
-            return r.stdout.strip()
-        assert run() == "RUN ['3', '10', '0.py'] ['--boot']", "without a note: the newest file (by number), options passed on"
-        with open(os.path.join(d, START_PTR), "w") as f:
-            json.dump({"file": "webcam_bewegung_3_9_0.py"}, f)
-        assert run().startswith("RUN ['3', '9', '0.py']"), "the noted file"
-        with open(os.path.join(d, START_PTR), "w") as f:
-            json.dump({"file": "../webcam_bewegung_9_9_9.py"}, f)
-        assert run().startswith("RUN ['3', '10', '0.py']"), "a note to a missing / outside file: the newest"
+            r = subprocess.run([sys.executable, os.path.join(d, START_FILE), "--boot"], capture_output=True, text=True, timeout=30,
+                               env=dict(os.environ, MOTIONWATCH_HOME=h2))
+            return r.returncode, r.stdout.strip(), r.stderr
+        rc, out, err = run()
+        assert rc != 0 and "RUN" not in out and "NO program file" in err, "without a note nothing is started (not «the newest»)"
+        note(r9, [r9, r10])
+        assert run()[1] == "RUN ['3', '9', '0.py'] ['--boot']", "the noted file, options passed on"
+        with open(os.path.join(d, "webcam_bewegung_3_9_0.py"), "a") as f:
+            f.write("# changed\n")
+        rc, out, err = run()
+        assert out.startswith("RUN ['3', '10', '0.py']") and "checksum does not match" in err, "a changed file: the last good one, said loudly"
+        os.remove(os.path.join(d, START_PTR))
+        note(r10, [r10], h2)
+        with open(os.path.join(d, "webcam_bewegung_3_11_0.py"), "w") as f:
+            f.write("print('RUN', 'NEWER')\n")
+        rc, out, err = run()
+        assert out.startswith("RUN ['3', '10', '0.py']") and "NEWER" not in out, "no note + a newer unrecorded file: the copy decides"
     finally:
-        shutil.rmtree(d, ignore_errors=True)
+        shutil.rmtree(d, ignore_errors=True); shutil.rmtree(h2, ignore_errors=True)
     return "user + system unit alike, starter ok"
 
 
@@ -725,9 +823,13 @@ def autostart_follow_version():
         return
     if not (CFG["autostart"] or own_service(mode)):
         return
+    note = os.environ.pop("MW_STARTER_NOTE", "")
+    if note:                                             # the starter did not take the noted file: say it loudly
+        log_event("sys", note[:300]); print(note)
+        STATE["starter_note"] = note
     try:
         start_launcher_ensure()
-        if start_pointer_set():
+        if start_pointer_set(good=not start_on_trial()):
             log_event("sys", f"Autostart now starts this version: {os.path.basename(__file__)}")
     except OSError as e:
         log_event("sys", f"Autostart: {START_FILE} / {START_PTR} not written: {e}"[:200]); return

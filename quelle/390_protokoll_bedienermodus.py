@@ -861,7 +861,7 @@ def start_guard():
             pass
         try:                                              # the autostart starter (140) starts the old file from now on too - an
             if os.path.isfile(os.path.join(HERE, START_FILE)):      # old version does not know the starter and would leave
-                start_pointer_set(old)                                # it on this one
+                start_pointer_set(old, good=False)                    # it on this one
         except (OSError, NameError):
             pass
         _close_fds_on_exec()
@@ -877,6 +877,8 @@ def start_guard():
         try:
             os.remove(p)
             log_event("sys", f"Version {APP_VERSION} runs fine (update finished)")
+            if os.path.isfile(os.path.join(HERE, START_FILE)):
+                start_pointer_set(good=True)              # 140: now one of the «last good» versions of the starter
         except OSError:
             pass
     threading.Thread(target=ok_later, daemon=True).start()
