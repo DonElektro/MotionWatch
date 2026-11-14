@@ -432,6 +432,18 @@ def teil_c(base, gp, bilder, users):
         pg.wait_for_timeout(700)
         return ctx, pg, errs
 
+    def lupe_knopf(pg, warten=500):
+        """«Lupe» antippen wie ein Mensch: sind die Knöpfe des Live-Bilds gerade versteckt (nur 4 s nach einem Tipp, 639zzj), holt der
+        erste Tipp sie zurück - dann noch einmal (langsamer CI-Rechner: 14.11.2026 viermal rot nur deswegen)"""
+        for _i in range(3):
+            pg.locator("#lv-b-lupe").click()
+            try:
+                pg.wait_for_selector("#lupe-ov", timeout=2500)
+                break
+            except Exception:
+                continue
+        pg.wait_for_selector("#lupe-ov", timeout=5000); pg.wait_for_timeout(warten)
+
     def touch(cdp, kind, pts):
         cdp.send("Input.dispatchTouchEvent", {"type": kind, "touchPoints": [{"x": x, "y": y, "id": i, "radiusX": 4, "radiusY": 4, "force": 1}
                                                                           for i, (x, y) in enumerate(pts)]})
@@ -472,8 +484,7 @@ def teil_c(base, gp, bilder, users):
         lay = pg.evaluate(LAY)
         ok(lay["lupe"] and not lay["bad"] and lay["mini"], f"Handy hoch: Knopfleiste deckt das kleine Bild, die Kacheln, den Joystick nicht ({lay})")
         pg.evaluate("() => scrollTo(0, 0)")
-        pg.locator("#lv-b-lupe").click()
-        pg.wait_for_selector("#lupe-ov", timeout=5000); pg.wait_for_timeout(500)
+        lupe_knopf(pg, 500)
         r = pg.locator("#lupe-ov").bounding_box()
         ok(r and r["width"] > 300 and pg.evaluate("() => document.body.classList.contains('lupe-on')"), f"Handy: Lupe offen über dem Bild ({r and round(r['width'])} px)")
         ok(pg.locator("#lupe-x").is_visible() and "Lupe" in pg.inner_text("#lupe-x"), "Handy: «✕ Lupe» sichtbar (der Weg zurück)")
@@ -555,7 +566,7 @@ def teil_c(base, gp, bilder, users):
         pg.wait_for_timeout(1500)
         lay = pg.evaluate(LAY)
         ok(lay["lupe"] and not lay["bad"] and lay["mini"] is not False, f"Handy quer: Knopfleiste deckt nichts ({lay})")
-        pg.locator("#lv-b-lupe").click(); pg.wait_for_selector("#lupe-ov"); pg.wait_for_timeout(300)
+        lupe_knopf(pg, 300)
         r = pg.locator("#lupe-ov").bounding_box()
         drag1(cdp, (r["x"] + r["width"] * 0.2, r["y"] + r["height"] * 0.3), (r["x"] + r["width"] * 0.5, r["y"] + r["height"] * 0.7))
         pg.wait_for_timeout(1500)
@@ -566,8 +577,7 @@ def teil_c(base, gp, bilder, users):
         ctx.close()
         # ---- PC: mouse ----
         ctx, pg, errs = page(br, {"width": 1366, "height": 860}, False)
-        pg.wait_for_timeout(1500)                                # like the phone: the Lupe script is wired before the click (slow CI runner)
-        pg.locator("#lv-b-lupe").click(); pg.wait_for_selector("#lupe-ov"); pg.wait_for_timeout(500)
+        lupe_knopf(pg, 500)
         r = pg.locator("#lupe-ov").bounding_box()
         pa = pg.evaluate("async () => (await fetch('/api/lupe?lang=de')).json()")["pose"]
         pg.mouse.move(r["x"] + r["width"] * 0.7, r["y"] + r["height"] * 0.3); pg.mouse.down()
@@ -607,7 +617,7 @@ def teil_c(base, gp, bilder, users):
         ctx.close()
         # ---- a user without the right «head»: zoom yes, no 🎯 ----
         ctx, pg, errs = page(br, {"width": 390, "height": 844}, True, K)
-        pg.locator("#lv-b-lupe").click(); pg.wait_for_selector("#lupe-ov"); pg.wait_for_timeout(800)
+        lupe_knopf(pg, 800)
         ok(not pg.locator("#lupe-head").is_visible() and "nicht bewegen" in pg.inner_text("#lupe-ov .lupe-msg"),
            f"Kind: zoomen ja, kein «🎯 Kopf folgt», Hinweis ({pg.inner_text('#lupe-ov .lupe-msg')[:60]!r})")
         pg.evaluate("() => window.mwLupe.zoomTo([0.6, 0.5, 0.2, 0.2])"); pg.wait_for_timeout(1500)
@@ -617,7 +627,7 @@ def teil_c(base, gp, bilder, users):
         # ---- protection on: «◐ Scharf» asks for one still, a second one within 10 s waits ----
         ctx, pg, errs = page(br, {"width": 390, "height": 844}, True)
         pg.evaluate("async () => { await fetch('/api/arm', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'arm_now'})}); }")
-        pg.locator("#lv-b-lupe").click(); pg.wait_for_selector("#lupe-ov"); pg.wait_for_timeout(800)
+        lupe_knopf(pg, 800)
         n0 = pg.evaluate("async () => (await (await fetch('/api/lupe?lang=de')).json()).stills")
         pg.evaluate("() => window.mwLupe.zoomTo([0.7, 0.55, 0.2, 0.2])"); pg.wait_for_timeout(2500)
         n1 = pg.evaluate("async () => (await (await fetch('/api/lupe?lang=de')).json()).stills")
@@ -638,7 +648,7 @@ def teil_c(base, gp, bilder, users):
                 lay = pg.evaluate(LAY)
                 ok(not lay["bad"] and lay["mini"] is not False, f"{vp_['width']} × {vp_['height']}, {lang}: Knopfleiste deckt nichts ({lay})")
             pg.set_viewport_size({"width": 390, "height": 844}); pg.wait_for_timeout(800)
-            pg.locator("#lv-b-lupe").click(); pg.wait_for_selector("#lupe-ov"); pg.wait_for_timeout(600)
+            lupe_knopf(pg, 600)
             pg.evaluate("() => window.mwLupe.zoomTo([0.6, 0.5, 0.2, 0.2])"); pg.wait_for_timeout(1500)
             m = pg.evaluate("""() => { const o = document.getElementById('lupe-ov').getBoundingClientRect(), b = document.querySelector('#lupe-ov .lupe-bar');
                 const bs = [...b.querySelectorAll('button')].filter(x => !x.hidden).map(x => x.getBoundingClientRect());
