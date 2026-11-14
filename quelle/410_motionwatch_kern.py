@@ -568,11 +568,13 @@ class MotionWatch:
     def handle_recording(self, frame, persons):
         now = time.time()
         stamp = datetime.now().strftime("%Y%m%d_%H%M%S")          # video and snapshot of one event share the same name
-        if not is_armed():
+        quiet = bool(CFG.get("kopf_transport")) and bool(CFG["armed"])   # 639zzzt transport mode: film as armed, but no alarm
+        if not is_armed() and not quiet:
             persons = []                                  # disarmed: no snapshots, no notifications, no new recordings
         elif persons and CFG.get("mode") == "fire" and not CFG.get("mode_fire_persons"):
             persons = []                                  # 2.97.0: campfire - the people at the fire are no alarm, animals still are
-        persons = alarm_gate(self, frame, persons, now)   # 2.98.13: «Is it you?» / double confirmation (066)
+        if not quiet:
+            persons = alarm_gate(self, frame, persons, now)   # 2.98.13: «Is it you?» / double confirmation (066)
         settle = now - SIM.get("off_t", 0.0) < 30.0       # just back from the simulation: the camera learns its picture
         if settle:
             persons = []; self.last_person_time = 0
@@ -584,16 +586,19 @@ class MotionWatch:
             if CFG["snapshot_on_person"] and not CFG["sim_on"]:
                 snap = os.path.join(CFG["record_dir"], f"person_{stamp}.jpg")
                 cv2.imwrite(snap, frame, [cv2.IMWRITE_JPEG_QUALITY, 85]); gps_tag_jpg(snap)
-            alarm_ctx_note(self, stamp, snap, frame, persons)   # 2.98.13: picture + boxes for «What was it?» and the push buttons (066)
-            self.notifier.person(len(persons), snap, frame)
-            try:
-                alarm_track_begin("person", stamp, snap)
-            except Exception:
-                pass
             if snap and BACKUP is not None and CFG["backup_type"] != "off":
                 BACKUP.add(snap, {"first": True})                 # off the device at once - a thief may take the Pi
-            push_alert("person", "person", count=len(persons), source=STATE["source_label"])
-            siren_alarm("person")
+            if quiet:
+                log_event("rec", f"Transport mode: {len(persons)} person(s) - recorded, no alarm")
+            else:
+                alarm_ctx_note(self, stamp, snap, frame, persons)   # 2.98.13: picture + boxes for «What was it?» and the push buttons (066)
+                self.notifier.person(len(persons), snap, frame)
+                try:
+                    alarm_track_begin("person", stamp, snap)
+                except Exception:
+                    pass
+                push_alert("person", "person", count=len(persons), source=STATE["source_label"])
+                siren_alarm("person")
         man_rec = now < QUICK["rec_until"]
         want = man_rec or CFG["record"] and ((self.last_person_time > 0 and (now - self.last_person_time) < CFG["record_tail"])
                                   or (CFG["thermal_alarm"] and is_armed() and now - self.last_warm < CFG["record_tail"])

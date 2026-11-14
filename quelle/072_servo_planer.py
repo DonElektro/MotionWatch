@@ -33,7 +33,8 @@ for _k, _v in {"servo_vmax_pan": 120.0, "servo_vmax_tilt": 90.0, "servo_acc_pan"
 SRV = {"pos": None, "vel": [0.0, 0.0], "tgt": None, "scale": [(1.0, 1.0), (1.0, 1.0)], "cap": None, "moving": False, "arrive_t": 0.0,
        "start_t": 0.0, "beat": 0.0, "inhibit": "", "inhibit_t": 0.0, "inhibit_log": {}, "fault": "", "fault_t": 0.0,
        "io_err": 0, "io_t": 0.0, "wd_trip": False, "wd_log": 0.0, "limit_on": [False, False], "parked": False,
-       "estop_t": 0.0, "push_t": 0.0, "safety_t": 0.0, "test_uv": False, "trace": deque(maxlen=1500), "started": False}
+       "estop_t": 0.0, "push_t": 0.0, "safety_t": 0.0, "test_uv": False, "trace": deque(maxlen=1500), "started": False,
+       "tp": "", "tp_off_n": 0}                         # 639zzzt: transport mode («home» = released), times the outputs were cut
 SERVO_AXES = ("pan", "tilt")
 SRV_FAULT_LOCK = ("i2c", "pca_reset")          # latched faults that also keep the servo outputs off until the release
 
@@ -160,7 +161,24 @@ def servo_blocked():
         return "fault"
     if SRV["inhibit"]:
         return "inhibit"
+    if CFG.get("kopf_transport"):
+        return "transport"                               # 3.94 Transportmodus (639zzzt): home position, then released
     return ""
+
+
+def servo_detached():
+    """3.94 Transportmodus: the head stands in the home position and the servos get no pulse (no holding torque)"""
+    return bool(CFG.get("kopf_transport")) and SRV.get("tp") == "home"
+
+
+def servo_tp_home():
+    """the home position of the transport mode: stored when it was switched on (639zzzt), else the middle"""
+    p = CFG.get("kopf_transport_pos")
+    try:
+        c = srv_clamp(float(p[0]), float(p[1])) if isinstance(p, (list, tuple)) and len(p) == 2 else None
+    except (TypeError, ValueError):
+        c = None
+    return c or srv_clamp(50.0, 50.0) or (50.0, 50.0)
 
 
 def servo_blocked_text(lang=None):
@@ -171,6 +189,8 @@ def servo_blocked_text(lang=None):
         return tr("Servo fault", lang) + ": " + tr(SRV_FAULT_TEXT.get(SRV["fault"], SRV["fault"]), lang) + " - " + tr("press «Release» after checking", lang)
     if b == "inhibit":
         return tr("Servos stopped", lang) + ": " + tr(SRV_FAULT_TEXT.get(SRV["inhibit"], SRV["inhibit"]), lang) + " - " + tr("moves again by itself", lang)
+    if b == "transport":
+        return "🧳 " + tr("Transport mode active", lang) + " - " + tr("the head stays in the home position", lang)
     return ""
 
 
@@ -257,6 +277,9 @@ def servo_plan_tick(dt):
     SRV["beat"] = time.monotonic(); SRV["started"] = True
     dt = max(0.001, min(0.1, float(dt)))
     if SRV["pos"] is None:
+        if CFG.get("kopf_transport"):                     # 639zzzt: started in the transport mode - the cap holds the head at
+            h = servo_tp_home()                          # home: released at once, not one pulse (it would press against the cap)
+            CFG["pan"], CFG["tilt"] = h[0], h[1]; SRV.update(tp="home", parked=True)
         SRV["pos"] = [float(CFG["pan"]), float(CFG["tilt"])]; SRV["tgt"] = list(SRV["pos"])
     if now - SRV["safety_t"] >= 0.25:
         SRV["safety_t"] = now
@@ -270,18 +293,28 @@ def servo_plan_tick(dt):
         CFG["pan"], CFG["tilt"] = pos[0], pos[1]
     blocked = servo_blocked()
     estop = blocked == "estop"
-    if blocked:
-        # stop: brake (Not-Aus: twice the acceleration), then hold; with «park» drive slowly to the parking position
+    if servo_detached():                                 # 639zzzt: released in the home position - nothing moves any more
+        vel[0] = vel[1] = 0.0
+        CFG["pan"], CFG["tilt"] = round(pos[0], 3), round(pos[1], 3); SRV["cap"] = None; SRV["tgt"] = list(pos)
+    elif blocked:
+        # stop: brake (Not-Aus: twice the acceleration), then hold; with «park» drive slowly to the parking position;
+        # 639zzzt transport mode: the same way slowly (15 °/s) to its home position, then the servos are released
         park = None
-        if estop and CFG.get("servo_estop_park") and SRV["parked"] is not True:
+        if estop and CFG.get("servo_estop_park") and SRV["parked"] is not True and not CFG.get("kopf_transport"):
             park = servo_park_target()
+        elif blocked == "transport" and SRV["parked"] is not True:
+            park = servo_tp_home()
         if park is not None and SRV["parked"] == "go":
             for i, ax in enumerate(SERVO_AXES):          # stands: slowly (15 °/s) to the parking position
                 vm, am = srv_axis_limits(ax)
                 pos[i], vel[i] = srv_axis_step(pos[i], vel[i], park[i], min(vm, 15.0 * _srv_k(ax)), am, dt)
             if pos[0] == park[0] and pos[1] == park[1] and vel[0] == 0.0 and vel[1] == 0.0:
                 SRV["parked"] = True
-                log_event("servo", "Emergency stop: parked - holding")
+                if blocked == "transport":
+                    SRV["tp"] = "home"
+                    log_event("servo", "Transport mode: home position reached - the servos are released (put on the cap)")
+                else:
+                    log_event("servo", "Emergency stop: parked - holding")
         else:
             for i, ax in enumerate(SERVO_AXES):          # braking (Not-Aus: twice the acceleration) to a stand
                 _vm, am = srv_axis_limits(ax)
@@ -341,7 +374,7 @@ def servo_speed_deg():
 
 def servo_outputs_off():
     """a latched fault of the driver: the servo outputs stay off until the release"""
-    return SRV["fault"] in SRV_FAULT_LOCK
+    return SRV["fault"] in SRV_FAULT_LOCK or servo_detached()
 
 
 # ---- who steers the head (several «panels»: phones, PCs, the window, the controller, the simulator) --------------------
@@ -548,6 +581,7 @@ def servo_state(lang=None):
             "target": [round(float(CFG["pan"]), 2), round(float(CFG["tilt"]), 2)], "moving": SRV["moving"],
             "blocked": servo_blocked(), "text": servo_blocked_text(lang), "estop": bool(CFG.get("servo_estop")),
             "estop_by": CFG.get("servo_estop_by") or "", "fault": SRV["fault"], "inhibit": SRV["inhibit"],
+            "transport": bool(CFG.get("kopf_transport")), "detached": servo_detached(),
             # 2.98.43 (Besitzer): «⏹ Stopp» on the live page only with a head and when not switched off
             "stop_btn": bool(CFG.get("servo_stop_btn", True)) and bool(globals().get("live_has_head", lambda: True)()),
             "limits": [[round(plo, 1), round(phi, 1)], [round(tlo, 1), round(thi, 1)]],
