@@ -118,15 +118,17 @@ def open_source(spec, thermal=False):
                     return src, f"usb:{idx}", f"USB camera {idx}", ""
             pis = _pi_cams()                                     # 2.98.24: no USB camera -> the Pi camera
             if pis:
-                sp_ = f"pi:{pis[0]}"
-                if sp_ in CFG.get("extra_cams", []):              # 2.98.31: the main camera has priority (was: both fought)
-                    CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x != sp_]; save_settings()
-                    log_event("sys", f"{source_label(sp_)}: removed from the extra cameras - it is the main camera")
-                    cams_apply(); time.sleep(2.0)
-                return PiCamSource(pis[0]), sp_, source_label(sp_), ""
+                ext = {cam_sensor(x) for x in cams_on()}         # 3.92.x: first a Pi camera no extra camera has
+                free = [n for n in pis if f"pi:{n}" not in ext]
+                n_ = (free or pis)[0]; sp_ = f"pi:{n_}"
+                if not free:                                     # 2.98.31: the main camera has priority (was: both fought)
+                    cams_dedupe("main camera"); cams_apply(wait=5.0)     # 3.92.x: by sensor, removed only without own settings
+                return _pi_open(n_), sp_, source_label(sp_), ""
             return None, spec, label, "no working camera found (ls /dev/video*)"
         if kind == "usb" and not thermal and _v4l_internal(int(arg)):
             pis = [n for n in _pi_cams() if f"pi:{n}" not in {c.spec for c in CAMS}]     # 2.98.24: an internal node was chosen
+            if not _main_opening():                              # 3.92.x: an extra camera never takes the sensor of the main camera
+                pis = [n for n in pis if f"pi:{n}" not in cam_main_sensors()]
             if pis:
                 log_event("sys", f"/dev/video{arg} is not a camera (internal node of the Raspberry Pi) - using the Pi camera {pis[0]}")
                 return PiCamSource(pis[0]), f"pi:{pis[0]}", source_label(f"pi:{pis[0]}"), ""
@@ -135,20 +137,11 @@ def open_source(spec, thermal=False):
             src = (_open_usb(int(arg), raw=True) or _open_usb(int(arg))) if thermal else _open_usb(int(arg))
             return (src, spec, label, "") if src else (None, spec, label, f"no picture from /dev/video{arg}")
         if kind == "pi":
-            if not thermal and spec in CFG.get("extra_cams", []) and CFG.get("source") in (spec, "auto"):
+            if not thermal and _main_opening() and spec in cam_main_sensors() and any(cam_sensor(x) == spec for x in cams_on()):
                 # 2.98.26: the Pi camera can be open only once - the main camera has priority over an extra camera
-                CFG["extra_cams"] = [x for x in CFG["extra_cams"] if x != spec]; save_settings()
-                log_event("sys", f"{label}: removed from the extra cameras - it is the main camera now")
-                cams_apply(); time.sleep(2.0)
-            try:
-                return PiCamSource(int(arg)), spec, label, ""
-            except Exception as e:
-                if any(k in str(e).lower() for k in ("busy", "acquire", "sequence did not complete", "in use")):
-                    if any(c.spec == spec for c in CAMS):        # 2.98.27: an extra camera holds it - close that one first
-                        cams_apply()
-                    time.sleep(3.0)                              # the old picture of the camera is still being closed: once more
-                    return PiCamSource(int(arg)), spec, label, ""
-                raise
+                # (3.92.x: by sensor, also usb:<node of the Pi>; removed only without own settings, else switched off)
+                cams_dedupe("main camera"); cams_apply(wait=5.0)
+            return _pi_open(int(arg)), spec, label, ""
         if kind == "senxor":
             if not thermal:
                 return None, spec, label, "the Thermal-90 can only be used as thermal camera"
@@ -164,6 +157,24 @@ def open_source(spec, thermal=False):
         return None, spec, label, "picamera2 not installed (sudo apt install python3-picamera2)"
     except Exception as e:
         return None, spec, label, str(e)[:160]
+
+
+def _main_opening():
+    """True when open_source runs for the main camera (not in the thread of an extra camera or of a preview, 440 / 639zzi)"""
+    return not threading.current_thread().name.startswith(("extracam", "kwprev"))
+
+
+def _pi_open(n):
+    """a Pi camera; still busy (its old picture is being closed, 2.98.27: or an extra camera holds it): close that one, once more"""
+    try:
+        return PiCamSource(n)
+    except Exception as e:
+        if any(k in str(e).lower() for k in ("busy", "acquire", "sequence did not complete", "in use")):
+            if _main_opening() and any(cam_sensor(c.spec) == f"pi:{n}" for c in CAMS) and f"pi:{n}" in cam_main_sensors():
+                cams_apply(wait=5.0)                     # an extra camera on the sensor of the main camera: close it first
+            time.sleep(3.0)
+            return PiCamSource(n)
+        raise
 
 
 def _v4l_name(idx):

@@ -81,7 +81,7 @@ Object.assign(I18N.de, {"Add camera": "Kamera hinzufügen", "Scan for cameras": 
   "cameras": "Kameras", "Choose a camera…": "Kamera wählen …", "no picture yet": "noch kein Bild",
   "The main camera does the full detection (AI, tracking, relays). Extra cameras watch for movement and record clips; they follow the same switches and schedules. Every extra camera needs CPU - on a Raspberry Pi 2-3 cameras are realistic.":
     "Die Hauptkamera macht die volle Erkennung (KI, Verfolgung, Relais). Zusatzkameras erkennen Bewegung und nehmen Clips auf; sie folgen denselben Schaltern und Zeitplänen. Jede Zusatzkamera braucht CPU - auf einem Raspberry Pi sind 2-3 Kameras realistisch.",
-  "Remove this camera?": "Diese Kamera entfernen?", "Name": "Name"});
+  "Remove this camera?": "Diese Kamera entfernen?", "Name": "Name", "off: same sensor as another camera": "aus: derselbe Sensor wie eine andere Kamera"});
 let SIG = "", SRC = null;
 const tStatus = s => !s ? "" : s.startsWith("switch failed:") ? t("switch failed") + s.slice(14).replace("(still using ", "(" + t("still using") + " ") : s.startsWith("failed:") ? t("failed") + s.slice(7) : t(s);
 function tile(c) {

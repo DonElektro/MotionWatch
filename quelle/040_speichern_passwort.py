@@ -519,6 +519,9 @@ def apply_settings(data):
         ZONES[:] = [z for z in (_clean_zone(x, i) for i, x in enumerate(zl[:MAX_ZONES])) if z]
     CFG["presence_hosts"] = [h for h in CFG["presence_hosts"] if isinstance(h, str) and _HOST_RE.match(h)][:8]
     CFG["extra_cams"] = [x for x in CFG["extra_cams"] if isinstance(x, str) and SRC_RE.match(x) and x != "auto"][:MAX_EXTRA]
+    CFG["extra_cams_off"] = [x for x in CFG.get("extra_cams_off") or [] if x in CFG["extra_cams"]]    # 3.92.x (440 cams_dedupe)
+    if not isinstance((CFG.get("sim_prev_cams") or {}).get("cams"), list):
+        CFG["sim_prev_cams"] = {}
     CFG["fleet"] = [d for d in CFG["fleet"] if isinstance(d, dict) and isinstance(d.get("url"), str) and _FLEET_URL.match(d["url"])
                     and isinstance(d.get("id"), str)][:12]
     if CFG["notify_type"] not in NOTIFY_TYPES:
