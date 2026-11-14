@@ -1461,6 +1461,7 @@ def weit_wache_selftest():
         assert DEFAULTS["alarm_heat_fusion"] is True and DEFAULTS["fusion_window_s"] == 4.0 and DEFAULTS["fusion_tol_deg"] == 8.0
         assert not any(role_allows(r, "/api/weit/zones", "POST", {}) for r in ("view", "friend", "family", "kid")), "only the administrator (and «settings») edits"
         assert role_allows("custom", "/api/weit/zones", "POST", {}, ("settings",)) and role_allows("family", "/api/weit/zones", "GET", {})
+        assert not role_allows("custom", "/api/weit/frame.jpg", "GET", {}, ("arm",)) and role_allows("custom", "/api/weit/frame.jpg", "GET", {}, ("live",)), "the wide picture needs «live» (3.89 review)"
     finally:
         globals().update(sv)
         CFG.update(keep); WK.clear(); WK.update(keep_wk); FUS.clear(); FUS.update(keep_fus); HEAT.clear(); HEAT.extend(keep_heat)

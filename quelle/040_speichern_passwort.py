@@ -250,11 +250,11 @@ VIEW_GET = ("/api/tunnel", "/api/helper", "/api/info", "/api/nettest", "/api/sta
             "/api/schema", "/api/triggers", "/api/fa", "/api/appicon", "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/api/simbar", "/api/news",
             "/api/ui_simple", "/api/ui_sync")           # these two came through the beginning «/api/ui» before: Simple / Expert, version pair
 PERM_GET = {"live": ("/cams", "/preview", "/api/cams", "/api/frame.jpg", "/video_feed", "/cam_feed/", "/cam_snap/", "/snapshot.jpg", "/api/audio/live",
-                     "/sim/view.jpg", "/sim/view.mjpg"),
+                     "/sim/view.jpg", "/sim/view.mjpg", "/api/weit/frame.jpg"),    # 3.89: the wide picture of the zone editor = a camera picture (live)
             "rec": ("/recordings", "/diary", "/kino", "/api/kino", "/api/dataset.zip", "/api/recordings", "/api/places", "/rec/file/", "/rec/play/",
                     "/rec/thumb/", "/rec/share/", "/rec/report/", "/api/day", "/api/diary", "/diary/img/", "/api/timelapse", "/timelapse/",
                     "/api/species", "/api/loop", "/api/report"),
-            "arm": ("/protect", "/zones", "/api/protect", "/api/weit/zones", "/api/weit/frame.jpg"),   # fix: who sees the page «Schutz» also gets its state; 639zw: the wide zones
+            "arm": ("/protect", "/zones", "/api/protect", "/api/weit/zones"),   # fix: who sees the page «Schutz» also gets its state; 639zw: the wide zones (the picture: «live»)
             "games": ("/party", "/api/party"),
             "settings": ("/settings",)}
 VIEW_POST = {"/api/webpush", "/api/time", "/api/gps"}
