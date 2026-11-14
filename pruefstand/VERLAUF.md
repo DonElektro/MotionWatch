@@ -19,6 +19,7 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 | Datum | Motion Watch | Simulator | Testlauf | Pushes richtig / falsch | Personen erkannt | Wärmebild | nah / mittel / weit | Reaktion | Tiere gemeldet | Flackern | Bilder/s | KI | Rechner |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-11-14 05:43 | 3.89.1 | 3.69.0 · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **3** / **0** | 10 / 10 (**100 %**) | 2 / 2 | 5/5 / 2/2 / 1/1 | 4.8 s | 2 / 3 | 6 | 2.2 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 9V45 |
 | 2026-11-14 04:11 | 3.89.0 | 3.69.0 · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **3** / **0** | 10 / 10 (**100 %**) | 1 / 1 | 6/6 / 1/1 / 2/2 | 1.0 s | 3 / 3 | 0 | 1.8 | mit KI | GitHub (ubuntu, 4 Kerne) · Intel(R) Xeon(R) 6975P-C |
 | 2026-11-14 01:19 | 3.87.1 | 3.69.0 · Aussehen neu · Tiere Modelle | Voller Campingplatz ×3 · Zufall 1,2,3 | **11** / **2** (falsch 0–1 pro Lauf) | 17 / 17 (**100 %**) (100 %) | – | 15/15 / – / 2/2 | 6.1 s | 0 / 0 | 7 | 0.5 | mit KI | HP EliteDesk 800 G1 (4 Kerne) · Intel(R) Core(TM) i5-4590T CPU @ 2.00GHz |
 | 2026-11-14 01:19 | 3.87.1 | 3.69.0 · Aussehen neu · Tiere Modelle | Tarnen und Kriechen ×3 · Zufall 1,2,3 | **15** / **0** (falsch 0 pro Lauf) | 50 / 51 (**98 %**) (95–100 %) | 16 / 17 | 34/34 / – / – | 2.5 s | 0 / 0 | 3 | 1.0 | mit KI | HP EliteDesk 800 G1 (4 Kerne) · Intel(R) Core(TM) i5-4590T CPU @ 2.00GHz |
@@ -312,10 +313,10 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 ## Einzelheiten pro Phase (letzter Lauf)
 
-**Kurz (Tag + Nacht)** – 2026-11-14 04:11, Motion Watch 3.89.0
+**Kurz (Tag + Nacht)** – 2026-11-14 05:43, Motion Watch 3.89.1
 
 | Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
 |---|---|---|---|---|---|---|---|
-| Tag, Wind | 2 / 0 | 6 / 6 | – | 0.6 s | 2 / 2 | 0 | – |
-| Nacht mit Infrarot | 1 / 0 | 4 / 4 | 1 / 1 | 1.8 s | 1 / 1 | 0 | – |
+| Tag, Wind | 2 / 0 | 6 / 6 | – | 7.2 s | 2 / 2 | 6 | – |
+| Nacht mit Infrarot | 1 / 0 | 4 / 4 | 2 / 2 | 1.3 s | 0 / 1 | 0 | – |
 
