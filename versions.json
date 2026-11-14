@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-14 05:50",
+ "generated": "2026-11-14 06:54",
  "versions": [
+  {
+   "version": "3.90.0",
+   "file": "webcam_bewegung_3_90_0.py",
+   "url": "",
+   "sha256": "b10b8123454837a4c93666f3607fc84ed9e8b49d7f7c97b93f9ccba50e66da35",
+   "date": "2026-11-14 06:54",
+   "notes": "Autostart einheitlich: der Dienst startet einen festen kleinen Starter, der genau die Programmdatei startet, die MoveEye mit Grösse und Prüfsumme vermerkt hat – nach einem Update muss niemand mehr den Dienst neu einrichten, auch nicht den System-Dienst (sudo … --install-service). Die bestehende Einrichtung wird beim ersten Start einmal umgestellt, ohne dass MoveEye anhält. Eine fremde, veränderte oder halb geladene Datei startet der Starter nie.",
+   "size": 3838293,
+   "sig": "89cd584dd80bf8348d4a8c3fe8e80a83ae5886e646e402de4bf301b0031c8ffcb2b4615ab61954d52d8980383f801b0e0efb3a280d3c60f6228f09ace984f301",
+   "data": {
+    "file": "moveeye_daten_3_90_0.zip",
+    "url": "",
+    "sha256": "cea6e63bcfcaa0b98278e7a29abf51158515f362cf145fddeae88e0a7d2a9adc",
+    "size": 11348721,
+    "sig": "2c66af3a0baaf66299a3ce5049fd7f00820ea5797b15e7b15d587fad30b4ed7f806cb71c6a3b8946674ece844f3e723557abfd7c8134c23475524b94bb324900"
+   }
+  },
   {
    "version": "3.89.1",
    "file": "webcam_bewegung_3_89_1.py",
    "url": "",
    "sha256": "aee4bf14ee4d3552ab9f34d0b410a6f3e81aae1a00bf6a6a19ec44506ce4c371",
-   "date": "2026-11-14 05:50",
+   "date": "2026-11-14 06:41",
    "notes": "«Flight of the Amazon Queen» läuft jetzt auch auf iPhone und iPad (neue Engine, nur rund 12 MB neu laden – die Spielstände bleiben): die Kachel steht bei «👆 Touch», keine Warnseite mehr; am Spielende und bei einem Fehler bleibt eine Tafel stehen statt einer leeren Seite. Wer das Spiel schon hat: unter Werkzeuge → Queen «⬆ Neue Fassung laden».",
    "size": 3830918,
    "sig": "a0ef144f55a9816582ba2e356d3e753194d84994fb32b7f712988a34389766c915ad4d7891725bbc862da0d9f771ee7414285463fe8387ab8ea5369eff933300",
@@ -136,23 +153,6 @@
     "sha256": "622c4d9523254cf5dacd74a8073bbc699d725b728e0c673e33e1f27b55d47ab3",
     "size": 10442208,
     "sig": "9ab9cfe7445db4841b6fee3889932c2782d320dc20d95eaebe42434a964f579696ef209bdfe81adec87e9046ccd34eea61d25525fc16d38e3b7760577f621206"
-   }
-  },
-  {
-   "version": "3.81.3",
-   "file": "webcam_bewegung_3_81_3.py",
-   "url": "",
-   "sha256": "df97277e9f8186ce7f24094cfe1d7c0203677a88bf8b985d6f2dc3b58ea1d270",
-   "date": "2026-11-12 08:06",
-   "notes": "Anleitung auf Italienisch: die Seite ist am Handy nicht mehr breiter als der Bildschirm (ein langer Eintrag im Inhaltsverzeichnis wird jetzt gekürzt angezeigt).",
-   "size": 4023015,
-   "sig": "75f1d58dc3a0d099cc013e19c59b91d4e56f1ea1d8976d1bb9fc2b55ab2ecb1ce403e54e50431e6c56b2f10cb6847ea67617ece439ab2314936943558943e705",
-   "data": {
-    "file": "moveeye_daten_3_81_3.zip",
-    "url": "",
-    "sha256": "2cb8ad7607f20a3c70357648232e3291579cb50968c6f8d06517823a55a997cb",
-    "size": 10347723,
-    "sig": "bde5d08e2e845d44a796952b76669082d7758e10b6c3089f18bb1359d51f92f52bc98d78a7b981b7d02860cdb958ac0b3959730b263ac6b9faba4fc60838f501"
    }
   },
   {
