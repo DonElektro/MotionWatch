@@ -79,6 +79,7 @@ daten | 4 | -  | python3 werkzeuge/sim_intern_test.py | Simulator intern (gefäl
 daten | 6 | 1x | python3 werkzeuge/piper_test.py --browser | Piper-Stimme (Tabelle, Ersatz alte Stimme, Laden mit Prüfsumme, Browser «Ton im Browser», Simulator /speech)
 daten | 6 | -  | python3 werkzeuge/werkstatt_html.py --aus /tmp/werkstatt --test --bilder /tmp/werkstatt && ls -la /tmp/werkstatt | Werkstatt offline (eine HTML-Datei, file://, Netz gesperrt, keine JS-Fehler, Modell, Reiter)
 daten | 5 | -  | python3 werkzeuge/bausatz.py --sprachen de --unsigniert --aus /tmp/bausatz && ls -la /tmp/bausatz | Selbstbau-Paket (bausatz.py, nur Deutsch, ohne Signaturprüfung)
+daten | 6 | -  | python3 werkzeuge/rucksack_smb_test.py --e2e | Digitaler Rucksack im Netzwerk (SMB): ab Werk aus, nur Admin, Passwort nie in Protokoll / Einstellungen / Export, Samba-Datei (kein Gast, SMB2+, ein Benutzer, nur LAN), aus = keine Freigabe, Abgleich Netz ↔ Rucksack, 5 Sprachen (falsche Samba-/sudo-Schicht; echtes smbd nur wenn installiert)
 
 # ---------------------------------------------------------------------------------------------------- spiele (nur bei Spiele-Änderungen, auf main immer)
 spiele-1 | 15 | 1x | python3 werkzeuge/spiele_test.py --ohne wasnun | Spielesammlung (Paket, GAMES_PKG, jedes neue Spiel am Handy und PC ohne Internet; «Wobbly Truck», Schach) – ohne «Was nun?»
