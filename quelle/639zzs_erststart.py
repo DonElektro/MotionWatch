@@ -37,7 +37,7 @@ ERSTSTART_JS = r"""<script id="mw-queue">
   if (window.MWQ) return;
   const ORDER = ["guide", "news", "tour", "offer", "what", "tip"];
   const POP = {guide: 1, news: 1, tour: 1, tip: 1};  // windows over the page; offer / what are cards inside the page
-  const HARD = ".g2m, #wiz, #spa, .prt-wiz, #g2-bub, #mw-pin-dlg";   // any dialog (also opened by hand): everything waits
+  const HARD = ".g2m, #wiz, #spa, .prt-wiz, #g2-bub, #mw-pin-dlg, #pwd-ov";   // any dialog (also opened by hand): everything waits (3.88.0: the password dialog too)
   const SOFT = "#gd-card, #g2-tip, #iconhint";       // small cards at the bottom: only the windows wait for them
   const GRACE = 6000, GAP = 400, t0 = Date.now(), st = {}, log = [];
   let cur = null, iv = 0, quiet = false, lastEnd = 0;
