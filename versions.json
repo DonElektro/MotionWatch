@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-14 06:54",
+ "generated": "2026-11-14 07:50",
  "versions": [
+  {
+   "version": "3.91.0",
+   "file": "webcam_bewegung_3_91_0.py",
+   "url": "",
+   "sha256": "bfda35f74e0f2a38c813513b4983d1984d2d26eee92b271c0dea0226a6faf92a",
+   "date": "2026-11-14 07:50",
+   "notes": "Zwei Teile. (1) «🔍 Lupe» im Live-Bild: nur das Bild vergrössern, nicht die ganze Seite – Rahmen ziehen oder mit zwei Fingern zoomen; der Ausschnitt kommt scharf aus der vollen Auflösung der Kamera, Privatsphäre-Zonen bleiben schwarz; mit Kopf-Recht dreht der Kopf den Bereich in die Mitte. Bei eingeschaltetem Schutz nur auf Wunsch (höchstens alle 10 s). Auch im Pi-Fenster. (2) Morse-Modus, Schritt 2: Empfang auch über das Mikrofon (ab Werk aus, es wird kein Ton gespeichert), IR-Test zwischen zwei MoveEye, «Gegenstelle testen» in Web und Fenster.",
+   "size": 3883148,
+   "sig": "3591c4834e249af485ef0f0740640de9834b2e611dbf598daf67d67115de60e69bbad182f842d822ad1fd0e927c91ae4b3e131d50906a6ce6b0b8fe7893ca303",
+   "data": {
+    "file": "moveeye_daten_3_91_0.zip",
+    "url": "",
+    "sha256": "b75872d59e4a997f7b264e00a096b8ec64f829d6b00296cb4638a8a2dfa96dca",
+    "size": 11437754,
+    "sig": "0f7b54e3cf32723e410b525cac3c0279c6c0539a475ac2fd42bcd61e1acac743012d79196d035a5f7f77408f675398624aeffc11adb10ab807f74e21592c3008"
+   }
+  },
   {
    "version": "3.90.0",
    "file": "webcam_bewegung_3_90_0.py",
    "url": "",
    "sha256": "b10b8123454837a4c93666f3607fc84ed9e8b49d7f7c97b93f9ccba50e66da35",
-   "date": "2026-11-14 06:54",
+   "date": "2026-11-14 07:45",
    "notes": "Autostart einheitlich: der Dienst startet einen festen kleinen Starter, der genau die Programmdatei startet, die MoveEye mit Grösse und Prüfsumme vermerkt hat – nach einem Update muss niemand mehr den Dienst neu einrichten, auch nicht den System-Dienst (sudo … --install-service). Die bestehende Einrichtung wird beim ersten Start einmal umgestellt, ohne dass MoveEye anhält. Eine fremde, veränderte oder halb geladene Datei startet der Starter nie.",
    "size": 3838293,
    "sig": "89cd584dd80bf8348d4a8c3fe8e80a83ae5886e646e402de4bf301b0031c8ffcb2b4615ab61954d52d8980383f801b0e0efb3a280d3c60f6228f09ace984f301",
@@ -136,23 +153,6 @@
     "sha256": "77a5128d5eb0377aa4104e8f5c195de15a10ae765aca04bebb28ff842bdfbd4e",
     "size": 10889655,
     "sig": "57fd4f6f19d6bae9e9e4f2ecbeeacc99a949d0397ebe9180624d98d5129d58115de65942bf1415700a685d01530a04eaa3cd33f4104142278bce52d10b51a30a"
-   }
-  },
-  {
-   "version": "3.82.0",
-   "file": "webcam_bewegung_3_82_0.py",
-   "url": "",
-   "sha256": "1e85e4f9c8f922007e7d4c19e64318cc75bfc2aba69dd7075014e61446b9cf41",
-   "date": "2026-11-12 09:52",
-   "notes": "Neu im Datentausch: Packlisten. Listen anlegen oder aus Text, Excel und CSV übernehmen (immer mit Vorschau); pro Gegenstand Gewicht, Anzahl, Kategorie und Foto; Gesamtgewicht mit Ziel, Basisgewicht und Verbrauch getrennt; «Kaufen»-Ansicht; gemeinsam packen von mehreren Handys; Vorlagen, Kopieren, Drucken und Export.",
-   "size": 4132013,
-   "sig": "9b0a7d708b930e16c58daffe10a106f85e91ca5c11b90d5eb6d604839205e9a6cbdf6a206ca5ca58db569e394575d4ebd3cf7872448dac55f2dba6641eeccb06",
-   "data": {
-    "file": "moveeye_daten_3_82_0.zip",
-    "url": "",
-    "sha256": "622c4d9523254cf5dacd74a8073bbc699d725b728e0c673e33e1f27b55d47ab3",
-    "size": 10442208,
-    "sig": "9ab9cfe7445db4841b6fee3889932c2782d320dc20d95eaebe42434a964f579696ef209bdfe81adec87e9046ccd34eea61d25525fc16d38e3b7760577f621206"
    }
   },
   {
