@@ -15,7 +15,7 @@
      Speicher bleibt begrenzt, der Text enthält nur Zeichen der Tabelle und ist gekürzt.
   F) MoveEye mit der Demo-Kamera: Rechte (Familie / Kind / ohne Anmeldung / fremde Webseite), PIN, Modus pausiert den Schutz und endet
      von selbst (nie länger als 30 min), Senden mit Tempo-Grenze pro Ausgang (am GPIO gemessen), Stopp, eine Sendung auf einmal,
-     Empfang einer Lampe im Demo-Bild (Live, Verlauf, Push ohne Ort), «Strom weg» im Modus. G) --browser: Seite 390 px / PC, 4 Sprachen.
+     Empfang einer Lampe im Demo-Bild (Live, Verlauf, Push ohne Ort), «Strom weg» im Modus. G) --browser: Seite 390 px / PC, 5 Sprachen.
      Schritt 2: Ton am «Mikrofon» (ab Werk aus; gewählt: gelesen, nichts gespeichert), Testsignal der Gegenstelle, kein eigenes Echo.
   I) Ton: synthetisches Mikrofon -> MorseAudio (Tempo, Rauschen, Pfiff, Funkkanal, Dauerton, Pieper, Unsinn), Rundlauf eigener Ton.
   H) Nachgebaute Hardware (PCA9685 ohne Bus, GPIO): Status-LED und IR am PCA9685 getastet; Programm mitten in einem Strich
@@ -826,7 +826,7 @@ def teil_g(base, bilder, blinken, sprache):
         br = pw.chromium.launch(args=["--no-proxy-server"])
         for name, vp, mob, lang in (("iphone", {"width": 390, "height": 844}, True, "de"), ("pc", {"width": 1366, "height": 900}, False, "de"),
                                     ("iphone_fr", {"width": 390, "height": 844}, True, "fr"), ("iphone_it", {"width": 390, "height": 844}, True, "it"),
-                                    ("iphone_rm", {"width": 390, "height": 844}, True, "rm")):
+                                    ("iphone_rm", {"width": 390, "height": 844}, True, "rm"), ("iphone_en", {"width": 390, "height": 844}, True, "en")):
             ctx = br.new_context(viewport=vp, is_mobile=mob, has_touch=mob, device_scale_factor=2 if mob else 1,
                                  http_credentials={"username": "admin", "password": PW}, locale="de-CH")
             ctx.add_init_script("try{localStorage.setItem('mw-lang','%s');localStorage.setItem('mw-theme','dark');"
@@ -842,7 +842,7 @@ def teil_g(base, bilder, blinken, sprache):
             pg.goto(base + "/morse", wait_until="domcontentloaded")
             pg.wait_for_selector("#mo-outs .mo-o", timeout=20000)
             pg.wait_for_selector("#mo-st.on", timeout=10000)
-            titel = {"de": "Morse-Modus", "fr": "Mode morse", "it": "Modalità Morse", "rm": "Modus da morse"}[lang]
+            titel = {"de": "Morse-Modus", "en": "Morse mode", "fr": "Mode morse", "it": "Modalità Morse", "rm": "Modus da morse"}[lang]
             ok(titel in pg.inner_text("h2") and pg.locator("#mo-st .mo-cd").count() == 1, f"{name}: Seite «{titel}», Modus läuft, Restzeit sichtbar")
             ok(pg.locator("#mo-back").is_visible() and pg.get_attribute("#mo-back", "href") == "/more", f"{name}: Weg zurück sichtbar")
             pg.fill("#mo-text", "Grüße <script>alert(1)</script> €")
@@ -1250,7 +1250,7 @@ def messen_ton(ns, pfad=None, n=2):
     out("")
     out("Die Seite verspricht «liest bis etwa **%d WPM**», wenn der Ton deutlich lauter ist als die Umgebung (ab etwa +6 dB). " % TON_WPM
         + ("Die Messung hält das ein (direkt und über das Funkgerät mit getastetem Ton)." if passt else "ACHTUNG: die Messung hält das NICHT ein."))
-    out("Mit getastetem Träger geht es langsamer (siehe Tabelle) - das steht so in der Hilfe nicht, weil ein Funkgerät noch nicht angeschlossen ist.")
+    out("Mit getastetem Träger geht es langsamer (siehe Tabelle): Seite und Hilfe nennen dafür «nur bis etwa 12 WPM» (gemessen, nicht mit einem echten Funkgerät).")
     txt = "\n".join(zeilen) + "\n"
     if pfad:
         with open(pfad, "w", encoding="utf-8") as f:

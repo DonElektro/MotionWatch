@@ -78,4 +78,4 @@ Bei getastetem Träger fehlen jedem Zeichen-Element die ersten 40 ms: bei 15 WPM
 | Funkgerät, Träger getastet, +6 dB | 12 WPM |
 
 Die Seite verspricht «liest bis etwa **20 WPM**», wenn der Ton deutlich lauter ist als die Umgebung (ab etwa +6 dB). Die Messung hält das ein (direkt und über das Funkgerät mit getastetem Ton).
-Mit getastetem Träger geht es langsamer (siehe Tabelle) - das steht so in der Hilfe nicht, weil ein Funkgerät noch nicht angeschlossen ist.
+Mit getastetem Träger geht es langsamer (siehe Tabelle): Seite und Hilfe nennen dafür «nur bis etwa 12 WPM» (gemessen, nicht mit einem echten Funkgerät).

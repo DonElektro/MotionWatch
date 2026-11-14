@@ -1220,6 +1220,19 @@ def morse_clean(text):
     return " ".join("".join(c for c in str(text or "") if c in _MORSE_RX_OK).split())[:MORSE_RX_TEXT_MAX]
 
 
+def morse_is_test(txt):
+    """«Gegenstelle testen»: the test signal, also read in part («V TEST», «T UVV TEST»). Only words of the test signal count
+    (one garbled first letter is allowed): «CQ TEST DE HB9» is a message, not the test signal."""
+    if MORSE_TEST_TEXT in txt:
+        return True
+    ws = txt.split()
+    if not ws or len(txt) > 16:
+        return False
+    if len(ws) > 1 and len(ws[0]) == 1:
+        ws = ws[1:]
+    return all(w == "TEST" or (len(w) >= 2 and "TEST".startswith(w)) or (len(w) <= 4 and w.endswith("V") and w.count("V") >= len(w) - 1) for w in ws)
+
+
 def morse_rx_text(text, source="camera", info=None):
     """a message is complete (from the camera; step 2: from the microphone / another MoveEye). The text is NEVER a command."""
     txt = morse_clean(text)
@@ -1231,7 +1244,7 @@ def morse_rx_text(text, source="camera", info=None):
          "x": info.get("x"), "y": info.get("y"), "push": "", "pic": False, "test": False}
     MORSE["msgs"].appendleft(m); MORSE["last"] = m
     log_event("sys", f"Morse received ({source}, {m['wpm']:g} WPM): «{txt[:120]}»")
-    if MORSE_TEST_TEXT in txt or (len(txt) <= 16 and ("TEST" in txt.split() or "VVV" in txt.split() or (len(txt) >= 4 and txt in MORSE_TEST_TEXT))):
+    if morse_is_test(txt):
         m["test"] = True                                     # «Gegenstelle testen»: shown on the page, no push, nothing read aloud
         MORSE["peer"] = {"t": m["t"], "ts": now, "wpm": m["wpm"], "src": source, "full": MORSE_TEST_TEXT in txt}
         return True
@@ -1533,8 +1546,17 @@ if GUI_OK:
                                                       "wpm": CFG.get("morse_wpm"), "fw": CFG.get("morse_fw")})).pack(side="left", padx=(0, 6))
         self._fbtn(sf, "⏹ " + tr("Stop"), lambda: do({"action": "tx_stop"})).pack(side="left")
         msg.pack(fill="x", padx=12, pady=(6, 0))
+        xf = tk.Frame(w, bg=C["bg"]); xf.pack(fill="x", padx=12, pady=(6, 0))    # step 2: by sound, test of the other MoveEye
+        snd = tk.BooleanVar(value=bool(CFG.get("morse_rx_sound")))
+        tk.Checkbutton(xf, text=tr("Read a tone or a whistle with the microphone"), variable=snd, bg=C["bg"], fg=C["txt"], selectcolor=C["panel"],
+                       activebackground=C["bg"], activeforeground=C["txt"], font=("DejaVu Sans", 10), anchor="w",
+                       command=lambda: do({"action": "prefs", "rx_sound": snd.get()})).pack(side="left", padx=(0, 6))
+        self._fbtn(xf, "📡 " + tr("Send the test signal by infrared"), lambda: do({"action": "test", "wpm": CFG.get("morse_wpm")})).pack(side="left")
+        peer = tk.Label(w, text="", bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9), wraplength=520, justify="left", anchor="w")
+        peer.pack(fill="x", padx=12)
         self._fbtn(w, "🌐 " + tr("Outputs, speed, what happens with received text (browser)"), lambda: self._open_page("/morse")).pack(anchor="w", padx=12, pady=8)
         txt = tk.Text(w, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans Mono", 11), wrap="word", bd=0, padx=10, pady=8, height=8)
+        self._fbtn(w, tr("Close"), w.destroy, primary=True).pack(side="bottom", anchor="e", padx=12, pady=(0, 10))
         txt.pack(fill="both", expand=True, padx=12, pady=(0, 12))
 
         def tick(again=True):
@@ -1547,7 +1569,15 @@ if GUI_OK:
                 else:
                     st.config(text=tr("The Morse mode is off.") + ("  ·  " + tr("Only for the administrator") if not morse_may() else ""), fg=C["txt"])
                 r = s["rx"]
-                body = ((r["live"] + "  (" + str(r["live_wpm"]) + " WPM)\n\n") if r["live"] else "") + "\n".join(f"{m['t']}  {m['text']}" for m in r["msgs"])
+                sd, pe = r["sound"], r.get("peer")
+                body = ((r["live"] + "  (" + str(r["live_wpm"]) + " WPM)\n\n") if r["live"] else "") + \
+                    ((tr("sound") + ": " + sd["live"] + "  (" + str(sd["live_wpm"]) + " WPM)\n\n") if sd["live"] else "") + \
+                    "\n".join(f"{m['t']}  " + (tr("sound") + ": " if m["src"] == "sound" else "") + m["text"] for m in r["msgs"])
+                if snd.get() != bool(CFG.get("morse_rx_sound")):
+                    snd.set(bool(CFG.get("morse_rx_sound")))
+                peer.config(text=("" if not s["on"] else tr("No test signal of the other MoveEye read yet.")) if not pe else
+                            ("✓ " + tr("Test signal of the other MoveEye read") if pe["full"] else tr("Test signal read only in part - send more slowly or aim better"))
+                            + f"  ·  {pe['t']}  ·  {pe['wpm']:g} WPM")
                 if s["tx"]:
                     body = "📡 " + s["tx"]["shown"] + f"  {s['tx']['pos']:.0f} / {s['tx']['total']:.0f} s\n\n" + body
                 if body != getattr(txt, "_last", None):
@@ -1675,6 +1705,7 @@ section.card h3{margin:0 0 10px}details.card>summary{cursor:pointer;font-weight:
    "By day a weak lamp is not read: the light must be clearly brighter than what is behind it. At night a small torch is enough.",
    "Even blinking (a car indicator) is no text. That is why a message of only E or only T («EEEE») is thrown away.",
    "By sound: a tone or a whistle near the microphone is read like a light, up to about 20 WPM. The microphone is only listened to while the Morse mode runs and «with the microphone» is chosen. No sound is stored - only the decoded text.",
+   "Over a handheld radio: if the tone is keyed while the radio keeps sending, up to about 20 WPM; if the radio itself switches on for every sign (the squelch opens late), only up to about 12 WPM. The tone must be clearly louder than the noise.",
    "The received text is only shown, saved, sent and read aloud - it is never carried out as a command."].forEach(s => $i("mo-how").appendChild(E("li", "", t(s))));
   $i("mo-peer-s").textContent = t("Test the other MoveEye (infrared)"); $i("mo-peer-go").textContent = "📡 " + t("Send the test signal by infrared");
   ["Two MoveEye see each other at night: each one must have the infrared light of the other in its picture.",
@@ -1925,6 +1956,7 @@ MORSE_PAGE_TEXTS = {
     "Start the Morse mode on both. On the other MoveEye the page shows «reads up to about … WPM» - set the speed here no higher.": ("Auf beiden den Morse-Modus starten. Auf der Gegenstelle zeigt die Seite «liest bis etwa … WPM» – hier das Tempo nicht höher stellen.", "Démarrez le mode morse sur les deux. Sur l’autre MoveEye, la page indique «lit jusqu’à environ … WPM» – ne réglez pas ici une vitesse plus élevée.", "Avvia la modalità Morse su entrambi. Sull’altro MoveEye la pagina mostra «legge fino a circa … WPM» – qui non impostare una velocità maggiore.", "Aviar il modus da morse sin tuts dus. Sin l’auter MoveEye mussa la pagina «legia fin circa … WPM» – qua betg tscherner in tempo pli aut."),
     "Tap «Send the test signal by infrared» here. The other MoveEye shows «Test signal of the other MoveEye read». Then swap the roles.": ("Hier «Testsignal per Infrarot senden» antippen. Die Gegenstelle zeigt «Testsignal der Gegenstelle gelesen». Danach die Rollen tauschen.", "Touchez ici «Envoyer le signal de test par infrarouge». L’autre MoveEye affiche «Signal de test de l’autre MoveEye lu». Ensuite, échangez les rôles.", "Tocca qui «Inviare il segnale di prova a infrarossi». L’altro MoveEye mostra «Segnale di prova dell’altro MoveEye letto». Poi scambia i ruoli.", "Tutgar qua «Trametter il signal da test per infracotschen». L’auter MoveEye mussa «Signal da test da l’auter MoveEye legì». Suenter barattar las rollas."),
     "While a MoveEye sends with a light it does not read its own light.": ("Solange ein MoveEye mit einem Licht sendet, liest es das eigene Licht nicht.", "Tant qu’un MoveEye émet avec une lumière, il ne lit pas sa propre lumière.", "Mentre un MoveEye trasmette con una luce non legge la propria luce.", "Uschè ditg ch’in MoveEye trametta cun ina glisch, na legia el betg l’atgna glisch."),
+    "Over a handheld radio: if the tone is keyed while the radio keeps sending, up to about 20 WPM; if the radio itself switches on for every sign (the squelch opens late), only up to about 12 WPM. The tone must be clearly louder than the noise.": ("Über ein Funkgerät: wird nur der Ton getastet und das Funkgerät sendet weiter, bis etwa 20 WPM; schaltet das Funkgerät bei jedem Zeichen selbst ein (die Rauschsperre öffnet spät), nur bis etwa 12 WPM. Der Ton muss deutlich lauter sein als das Rauschen.", "Par un émetteur-récepteur : si seul le son est manipulé et que l’appareil continue d’émettre, jusqu’à environ 20 WPM ; si l’appareil s’allume lui-même à chaque signe (le squelch s’ouvre en retard), seulement jusqu’à environ 12 WPM. Le son doit être nettement plus fort que le bruit.", "Con una radio portatile: se viene manipolato solo il suono e la radio continua a trasmettere, fino a circa 20 WPM; se la radio si accende da sola a ogni segno (lo squelch si apre in ritardo), solo fino a circa 12 WPM. Il suono deve essere chiaramente più forte del rumore.", "Cun in radio portabel: sche mo il tun vegn manipulà ed il radio trametta vinavant, fin circa 20 WPM; sch’il radio s’envida sez tar mintga segn (il squelch s’avra tard), mo fin circa 12 WPM. Il tun sto esser cleramain pli ferm che la canera."),
     "By sound: a tone or a whistle near the microphone is read like a light, up to about 20 WPM. The microphone is only listened to while the Morse mode runs and «with the microphone» is chosen. No sound is stored - only the decoded text.": ("Mit Ton: ein Ton oder Pfiff nahe am Mikrofon wird gelesen wie ein Licht, bis etwa 20 WPM. Das Mikrofon wird nur mitgehört, solange der Morse-Modus läuft und «mit dem Mikrofon» gewählt ist. Es wird kein Ton gespeichert – nur der entschlüsselte Text.", "Par le son : un son ou un sifflement près du microphone est lu comme une lumière, jusqu’à environ 20 WPM. Le microphone n’est écouté que pendant le mode morse et si «avec le microphone» est choisi. Aucun son n’est enregistré – seulement le texte décodé.", "Con il suono: un suono o un fischio vicino al microfono viene letto come una luce, fino a circa 20 WPM. Il microfono viene ascoltato solo con la modalità Morse attiva e se è scelto «con il microfono». Nessun suono viene salvato – solo il testo decodificato.", "Cun tun: in tun u in tschivel datiers dal microfon vegn legì sco ina glisch, fin circa 20 WPM. Il microfon vegn tadlà mo durant il modus da morse e sche «cun il microfon» è tschernì. I na vegn memorisà nagin tun – mo il text decodà."),
 }
 for _k, _v in list(_HX_MORSE.items()) + list(MORSE_PAGE_TEXTS.items()):
@@ -1947,7 +1979,7 @@ _HELP_MORSE = {
            'Von Hand dürfen die Längen um etwa ein Drittel schwanken. Am Tag wird eine schwache Lampe nicht gelesen – das Licht muss deutlich heller sein als der Hintergrund. '
            'Gleichmässiges Blinken (Auto-Blinker) ist kein Text; darum wird auch eine Nachricht nur aus E oder nur aus T («EEEE») verworfen.</li>'
            '<li><b>Empfangener Text:</b> im Live-Bild, im Verlauf mit Bild, als Push (nur Text) und vorgelesen – jedes einzeln wählbar. Er wird nie als Befehl ausgeführt.</li>'
-           '<li><b>Mit Ton (Mikrofon):</b> ein Ton oder Pfiff nahe am Mikrofon wird gelesen wie ein Licht, bis etwa 20 WPM (ab Werk aus). Das Mikrofon wird dafür nur mitgehört, solange der Morse-Modus läuft und «mit dem Mikrofon» gewählt ist; <b>es wird kein Ton gespeichert</b>, nur der entschlüsselte Text. Ein gleichmässiges Piepen ist kein Text.</li><li><b>Zwei MoveEye mit Infrarot:</b> nachts sendet eines mit dem IR-Licht, das andere liest mit der Kamera. Unter «Gegenstelle testen» schickt eines ein Testsignal, das andere zeigt, ob es gelesen wurde. Solange ein MoveEye selbst mit Licht sendet, liest es das eigene Licht nicht.</li>'
+           '<li><b>Mit Ton (Mikrofon):</b> ein Ton oder Pfiff nahe am Mikrofon wird gelesen wie ein Licht, bis etwa 20 WPM (ab Werk aus). Das Mikrofon wird dafür nur mitgehört, solange der Morse-Modus läuft und «mit dem Mikrofon» gewählt ist; <b>es wird kein Ton gespeichert</b>, nur der entschlüsselte Text. Ein gleichmässiges Piepen ist kein Text. Über ein Funkgerät: wird nur der Ton getastet und das Funkgerät sendet weiter, bis etwa 20 WPM; schaltet das Funkgerät bei jedem Zeichen selbst ein (die Rauschsperre öffnet spät), nur bis etwa 12 WPM. Der Ton muss deutlich lauter sein als das Rauschen.</li><li><b>Zwei MoveEye mit Infrarot:</b> nachts sendet eines mit dem IR-Licht, das andere liest mit der Kamera. Unter «Gegenstelle testen» schickt eines ein Testsignal, das andere zeigt, ob es gelesen wurde. Solange ein MoveEye selbst mit Licht sendet, liest es das eigene Licht nicht.</li>'
            '</ul></section>\n'),
     "en": ('<section id="morse" data-icon="📡"><h2>Morse mode</h2><ul>'
            '<li><b>What:</b> More → «📡 Morse mode» (administrator only). Send a text as Morse code - with the white light, a relay, the infrared light, the status LED '
@@ -1961,27 +1993,27 @@ _HELP_MORSE = {
            'by about a third. By day a weak lamp is not read - the light must be clearly brighter than the background. Even blinking (a car indicator) is no text; '
            'that is why a message of only E or only T («EEEE») is thrown away.</li>'
            '<li><b>Received text:</b> in the live picture, in the history with a picture, as a push (text only) and read aloud - each can be chosen. It is never carried out as a command.</li>'
-           '<li><b>By sound (microphone):</b> a tone or a whistle near the microphone is read like a light, up to about 20 WPM (off by default). The microphone is only listened to while the Morse mode runs and «with the microphone» is chosen; <b>no sound is stored</b>, only the decoded text. An even beep is no text.</li><li><b>Two MoveEye by infrared:</b> at night one sends with the infrared light, the other reads with the camera. Under «Test the other MoveEye» one sends a test signal, the other shows whether it was read. While a MoveEye sends with a light it does not read its own light.</li>'
+           '<li><b>By sound (microphone):</b> a tone or a whistle near the microphone is read like a light, up to about 20 WPM (off by default). The microphone is only listened to while the Morse mode runs and «with the microphone» is chosen; <b>no sound is stored</b>, only the decoded text. An even beep is no text. Over a handheld radio: if the tone is keyed while the radio keeps sending, up to about 20 WPM; if the radio itself switches on for every sign (the squelch opens late), only up to about 12 WPM. The tone must be clearly louder than the noise.</li><li><b>Two MoveEye by infrared:</b> at night one sends with the infrared light, the other reads with the camera. Under «Test the other MoveEye» one sends a test signal, the other shows whether it was read. While a MoveEye sends with a light it does not read its own light.</li>'
            '</ul></section>\n'),
     "fr": ('<section id="morse" data-icon="📡"><h2>Mode morse</h2><ul>'
            '<li>Plus → «📡 Mode morse» (administrateur uniquement) : envoyer un texte en morse (lumière blanche, relais, infrarouge, LED d’état, son) et lire une lumière clignotante avec la caméra.</li>'
            '<li>Pendant ce temps la protection est en pause ; le mode se termine tout seul (10 minutes, 30 au plus), ensuite la protection est comme avant, aussi après une coupure de courant.</li>'
            '<li>Vitesse : lumière blanche et relais au plus 3 éclairs par seconde = 7 WPM, relais mécanique 4 WPM, LED d’état 10 WPM, infrarouge 20 WPM, son 25 WPM.</li>'
-           '<li>Par le son (microphone, désactivé d’origine) : un son ou un sifflement est lu jusqu’à environ 20 WPM, uniquement pendant le mode morse ; <b>aucun son n’est enregistré</b>, seulement le texte décodé. Deux MoveEye par infrarouge : «Tester l’autre MoveEye» envoie un signal de test que l’autre affiche.</li>'
+           '<li>Par le son (microphone, désactivé d’origine) : un son ou un sifflement est lu jusqu’à environ 20 WPM, uniquement pendant le mode morse ; <b>aucun son n’est enregistré</b>, seulement le texte décodé. Deux MoveEye par infrarouge : «Tester l’autre MoveEye» envoie un signal de test que l’autre affiche. Par un émetteur-récepteur : jusqu’à environ 20 WPM si seul le son est manipulé, seulement environ 12 WPM si l’appareil s’allume à chaque signe.</li>'
            '<li>Lecture : jusqu’à environ 0,4 × images par seconde en WPM ; de jour, une lampe faible n’est pas lue ; un clignotement régulier (ou «EEEE») n’est pas un texte. '
            'Le texte reçu n’est jamais exécuté comme une commande.</li></ul></section>\n'),
     "it": ('<section id="morse" data-icon="📡"><h2>Modalità Morse</h2><ul>'
            '<li>Altro → «📡 Modalità Morse» (solo amministratore): inviare un testo in Morse (luce bianca, relè, infrarosso, LED di stato, suono) e leggere una luce lampeggiante con la telecamera.</li>'
            '<li>Nel frattempo la protezione è in pausa; la modalità termina da sola (10 minuti, al massimo 30), poi la protezione è come prima, anche dopo un’interruzione di corrente.</li>'
            '<li>Velocità: luce bianca e relè al massimo 3 lampi al secondo = 7 WPM, relè meccanico 4 WPM, LED di stato 10 WPM, infrarosso 20 WPM, suono 25 WPM.</li>'
-           '<li>Con il suono (microfono, spento di fabbrica): un suono o un fischio viene letto fino a circa 20 WPM, solo con la modalità Morse attiva; <b>nessun suono viene salvato</b>, solo il testo decodificato. Due MoveEye a infrarossi: «Provare l’altro MoveEye» invia un segnale di prova che l’altro mostra.</li>'
+           '<li>Con il suono (microfono, spento di fabbrica): un suono o un fischio viene letto fino a circa 20 WPM, solo con la modalità Morse attiva; <b>nessun suono viene salvato</b>, solo il testo decodificato. Due MoveEye a infrarossi: «Provare l’altro MoveEye» invia un segnale di prova che l’altro mostra. Con una radio portatile: fino a circa 20 WPM se viene manipolato solo il suono, solo circa 12 WPM se la radio si accende a ogni segno.</li>'
            '<li>Lettura: fino a circa 0,4 × immagini al secondo in WPM; di giorno una lampada debole non viene letta; un lampeggio regolare (o «EEEE») non è un testo. '
            'Il testo ricevuto non viene mai eseguito come comando.</li></ul></section>\n'),
     "rm": ('<section id="morse" data-icon="📡"><h2>Modus da morse</h2><ul>'
            '<li>Dapli → «📡 Modus da morse» (mo l’administratur): trametter in text en morse (glisch alva, relais, infracotschen, LED da status, tun) e leger ina glisch che traglischa cun la camera.</li>'
            '<li>En quel temp è la protecziun en pausa; il modus finescha da sasez (10 minutas, maximalmain 30), suenter è la protecziun sco avant, er suenter in’interrupziun da current.</li>'
            '<li>Tempo: glisch alva e relais maximalmain 3 chametgs per secunda = 7 WPM, relais mecanic 4 WPM, LED da status 10 WPM, infracotschen 20 WPM, tun 25 WPM.</li>'
-           '<li>Cun tun (microfon, ora da fabrica): in tun u in tschivel vegn legì fin circa 20 WPM, mo durant il modus da morse; <b>i na vegn memorisà nagin tun</b>, mo il text decodà. Dus MoveEye cun infracotschen: «Testar l’auter MoveEye» trametta in signal da test che l’auter mussa.</li>'
+           '<li>Cun tun (microfon, ora da fabrica): in tun u in tschivel vegn legì fin circa 20 WPM, mo durant il modus da morse; <b>i na vegn memorisà nagin tun</b>, mo il text decodà. Dus MoveEye cun infracotschen: «Testar l’auter MoveEye» trametta in signal da test che l’auter mussa. Cun in radio portabel: fin circa 20 WPM sche mo il tun vegn manipulà, mo circa 12 WPM sch’il radio s’envida tar mintga segn.</li>'
            '<li>Leger: fin circa 0,4 × maletgs per secunda en WPM; da di na vegn ina lampa flaivla betg legida; in traglischar regular (u «EEEE») n’è nagin text. '
            'Il text retschavì na vegn mai exequì sco cumond.</li></ul></section>\n'),
 }
@@ -2076,6 +2108,8 @@ def morse_selftest():
         assert morse_rx_text("V TEST", "camera") and not MORSE["peer"]["full"] and MORSE["msgs"][0]["test"], "the test signal read in part"
         assert morse_rx_text("T UVV TEST", "camera") and not MORSE["peer"]["full"] and MORSE["msgs"][0]["test"], "garbled at the start: in part"
         assert morse_rx_text("TESTE DAS", "camera") and not MORSE["msgs"][0]["test"], "another text is no test signal"
+        assert morse_rx_text("CQ TEST DE HB9", "camera") and not MORSE["msgs"][0]["test"], "a message with the word TEST is no test signal"
+        assert morse_is_test("VVV TE") and morse_is_test("UVV TEST") and not morse_is_test("T") and not morse_is_test("TEST ME")
         MORSE["tx_starts"] = []; CFG["light_ir_out"] = "gpio:27"
         c_, a_ = morse_do({"action": "test", "wpm": 99}, "self-test")
         assert (a_.get("ok") and MORSE["tx"]["outs"] == {"ir"} and MORSE["tx"]["wpm"] <= 20), (c_, a_)
