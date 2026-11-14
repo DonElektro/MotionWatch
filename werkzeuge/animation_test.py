@@ -103,7 +103,12 @@ def seite(pg, base, name, a):
     pg.evaluate("() => { const su = document.querySelector('details[data-view=\"controls\"]>summary'); su.firstChild.textContent = su.dataset.keep; }")
     # a viewer (no card «Controls»): the chips go right into the status line at the top
     pg.evaluate("() => { const s = document.createElement('style'); s.id = 't-view'; s.textContent = 'details[data-view=\"controls\"]{display:none!important}'; document.head.appendChild(s); }")
-    pg.wait_for_timeout(2400)
+    # the chips move on the next refresh (every 2 s) - wait for it, at most 6 s (a fixed 2.4 s was too tight on a busy machine)
+    try:
+        pg.wait_for_function("() => { const k = document.getElementById('lv-chips'), h = document.querySelector('header>.chips'); return !!(k && h && k.parentNode === h); }", timeout=6000)
+    except Exception:
+        pass
+    pg.wait_for_timeout(300)
     v = pg.evaluate("""() => { const k = document.getElementById('lv-chips'), h = document.querySelector('header>.chips'); const r = k && k.getBoundingClientRect(), hr = h && h.getBoundingClientRect();
         const e = r && document.elementFromPoint(r.left + 4, r.top + r.height / 2);
         return {in_header: !!(k && k.parentNode === h), alt: !!(k && k.classList.contains('alt')), text: (document.getElementById('lv-cpu') || {}).textContent,
