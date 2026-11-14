@@ -445,6 +445,12 @@ class Schnappschuesse:
             log("  verpasst: %s · Phase %s · %s · Bild bei %.0f s (Helligkeit %.0f/255) → %s" % (
                 m.get("kind", "?"), m.get("phase", "?"), ", ".join(m.get("why") or []) or "ohne Grund", dt, hell, name))
             print("BILD %s %s" % (name, base64.b64encode(b).decode("ascii")), flush=True)
+        # dazu alle 30 s ein Blick (Richtung des Kopfs steht oben im Bild: «Pan … Tilt …») - auch wenn niemand sichtbar war
+        naechst = 0.0
+        for dt, b, hell in self.bilder:
+            if dt >= naechst:
+                print("BLICK %s_z%d_t%03d.jpg %s" % (plan.replace("~", "-"), seed_n, int(dt), base64.b64encode(b).decode("ascii")), flush=True)
+                naechst = dt + 30.0
 
 
 def zeigen(dateien):
