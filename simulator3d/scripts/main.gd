@@ -451,7 +451,7 @@ func _ready() -> void:
 	var t := Time.get_datetime_dict_from_system()
 	hour0 = t.hour + t.minute / 60.0
 	var port := 8765
-	var args := OS.get_cmdline_args() + OS.get_cmdline_user_args()
+	var args := OS.get_cmdline_args() + OS.get_cmdline_user_args() + preload("res://scripts/web.gd").args()   # Browser: aus der Adresse
 	for i in range(args.size()):
 		if args[i] == "--port" and i + 1 < args.size():
 			port = int(args[i + 1])
@@ -464,6 +464,7 @@ func _ready() -> void:
 		elif args[i] == "--solo":
 			welt_solo = true                         # 3D-4.x: the old scenes alone, without their world (Prüfstand)
 	_lite_auto_ok = not "--quality" in args
+	preload("res://scripts/web.gd").start(self)   # Browser: Bilder pro Sekunde in die Konsole
 	set_process(false)
 	set_process_unhandled_input(false)
 	if _vm_needs_angle(args):

@@ -238,7 +238,7 @@ func _ready() -> void:
 
 func check() -> void:
 	"""at the start: show once per version"""
-	if main.news_seen == main.VERSION or not main.news_popup:
+	if main.news_seen == main.VERSION or not main.news_popup or OS.has_feature("web"):   # Browser-Demo: kein Versions-Fenster
 		return
 	var es := entries(main.news_seen)
 	if es.is_empty():
