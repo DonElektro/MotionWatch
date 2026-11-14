@@ -23,6 +23,9 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 3.89.1: «Flight of the Amazon Queen» läuft jetzt auch auf iPhone und iPad (neue Engine, nur rund 12 MB neu laden – die
+    Spielstände bleiben): die Kachel steht bei «👆 Touch», keine Warnseite mehr; am Spielende und bei einem Fehler bleibt eine
+    Tafel stehen statt einer leeren Seite. Wer das Spiel schon hat: unter Werkzeuge → Queen «⬆ Neue Fassung laden».
   * 3.89.0: Weitwinkel-KI: Person, Tier und Fahrzeug im Weitwinkelbild rufen den Kopf; Zonen grün (auslösen) und rot
     (ignorieren) mit Zielen pro Montage; nachts zählt ein Personen-Alarm nur, wenn das Wärmebild in seiner Richtung Wärme sieht
     – ab jetzt auf allen Geräten an (einmaliger Hinweis, abschaltbar).
@@ -122,11 +125,6 @@ Features
     Einsturzbrücke, Feuerringe, Felsen, Eis, Schlamm) und einer Verfolgungsjagd alle 1000 m – der Rekord der Stunt-Piste beginnt
     neu, der alte bleibt als «alte Strecke» sichtbar. Neues Spiel «Was nun?»: Bilder-Rätsel mit 5 Bildern, Sternen, Tipp-Knopf
     und Geheimnissen (Idee von Elektro). Spielesammlung einmal neu laden: Mehr → Spielecke → «Installieren / aktualisieren»
-  * 3.72.0: Sicherheit und Anzeige nachgebessert: Die PIN fürs Ausschalten gilt jetzt überall im Browser (auch Modus
-    «Transport», «Camping aus» und der Kurzbefehl). Benutzer ohne Admin-Rechte kommen nicht mehr an alte Einstellungs-Kopien und
-    schalten den Fernzugriff nicht. «Wachsam» lässt die Sirene von «Voll» nicht mehr an, Ein / Aus wird sofort gespeichert. Die
-    Karte «Sicherheit» ist wieder da, oben steht «N Hinweise» statt «alles ok», wenn etwas gemeldet wird, deutsche Seiten sind
-    durchgehend deutsch, und das Protokoll ist ruhiger
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -135,10 +133,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_89_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_3_89_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_89_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_89_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_3_89_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_3_89_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -155,7 +153,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.89.0"
+APP_VERSION = "3.89.1"
 
 
 def default_data_dir():
@@ -284,8 +282,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_89_0.zip"
-ZD_SHA256 = "9602199ed2887eee0e3426ba71741b1f8898e531b32322ba842c4ae85ac54df6"
+ZD_FILE = "moveeye_daten_3_89_1.zip"
+ZD_SHA256 = "d91a355a1708852b11475f012ccaa9be1dcbec7e90fe42895bff8ecb74979824"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -49871,7 +49869,7 @@ class App:
 		self.watch = watch
 		self.web = web or WebStream(watch)
 		self.root = tk.Tk()
-		self.root.title("MoveEye 3.89.0")
+		self.root.title("MoveEye 3.89.1")
 		try:
 			import base64
 			self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -50249,7 +50247,7 @@ class App:
 			if not small:
 				vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
 				vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))
-			Tip(nm, f"{tr('Build')} 3.89.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm, f"{tr('Build')} 3.89.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps = []
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -88690,7 +88688,8 @@ FOTAQ_ROOT = "https://github.com/DonElektro/MotionWatch/releases/download/"
 
 FOTAQ_ENGINE_OLD = {"name": "fotaq-engine-1.zip", "size": 12049091, "sha256": "6feab69b314ecc491f011ab9eaa0d0df670bd5be86e908c66e7491559ac31de5", "unpacked": 18533041, "tag": "fotaq-1"}
 
-FOTAQ_ENGINE_NEW = {"name": "fotaq-engine-2.zip", "size": 0, "sha256": "", "unpacked": 0, "tag": "fotaq-2", "ios": True}
+
+FOTAQ_ENGINE_NEW = {"name": "fotaq-engine-2.zip", "size": 11619971, "sha256": "f40946c90bf16df55699e0ace6e1fd5cab82392259c13b1bc900a8d2ce71ba90", "unpacked": 16211637, "tag": "fotaq-2", "ios": True}
 FOTAQ_NEW = bool(FOTAQ_ENGINE_NEW["size"])
 FOTAQ_TAG = FOTAQ_ENGINE_NEW["tag"] if FOTAQ_NEW else FOTAQ_ENGINE_OLD["tag"]
 FOTAQ_BASE = {"url": FOTAQ_ROOT + FOTAQ_TAG + "/"}

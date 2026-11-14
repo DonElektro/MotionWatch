@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-14 03:33",
+ "generated": "2026-11-14 05:24",
  "versions": [
   {
-   "version": "3.89.0",
-   "file": "webcam_bewegung_3_89_0.py",
+   "version": "3.89.1",
+   "file": "webcam_bewegung_3_89_1.py",
    "url": "",
-   "sha256": "3e7517788109318adbd49c79a030d51b7dde1ff85269d630d4cae5ee281d1762",
-   "date": "2026-11-14 03:33",
-   "notes": "Weitwinkel-KI: Person, Tier und Fahrzeug im Weitwinkelbild rufen den Kopf; Zonen grün (auslösen) und rot (ignorieren) mit Zielen pro Montage; nachts zählt ein Personen-Alarm nur, wenn das Wärmebild in seiner Richtung Wärme sieht – ab jetzt auf allen Geräten an (einmaliger Hinweis, abschaltbar).",
-   "size": 3830977,
-   "sig": "9637744fa5d298fa5460cf4c6386ccb6d8a4de41377adbc69ca88520b8e8d7aafb8f76ba3ecc6875e640c994d631ffc1bc2e276ada960210e100262a4075a504",
+   "sha256": "24c739edf0815a02cbe53c61902ba82450ae6faa8823685d0c5c6560b40ef2d7",
+   "date": "2026-11-14 05:24",
+   "notes": "«Flight of the Amazon Queen» läuft jetzt auch auf iPhone und iPad (neue Engine, nur rund 12 MB neu laden – die Spielstände bleiben): die Kachel steht bei «👆 Touch», keine Warnseite mehr; am Spielende und bei einem Fehler bleibt eine Tafel stehen statt einer leeren Seite. Wer das Spiel schon hat: unter Werkzeuge → Queen «⬆ Neue Fassung laden».",
+   "size": 3830865,
+   "sig": "8c36a550dd62221d0e1371e9a7d129735f5b2e5e56f05e05515ff10d9275ec25ab810a7dc70d1837b86ae21d25c6a8cc0c0881c9f730ab06ce1ea9084cfd010f",
    "data": {
-    "file": "moveeye_daten_3_89_0.zip",
+    "file": "moveeye_daten_3_89_1.zip",
     "url": "",
-    "sha256": "9602199ed2887eee0e3426ba71741b1f8898e531b32322ba842c4ae85ac54df6",
-    "size": 11339116,
-    "sig": "84ad0e39a0cf2acdecdd1604800bf037bd2ed7660068ad4cd4716a9e223a603a2d8b6c022c79bc83d95aa3a97d5266a56a7836a309b1731c65384f7f41bf4c0b"
+    "sha256": "d91a355a1708852b11475f012ccaa9be1dcbec7e90fe42895bff8ecb74979824",
+    "size": 11339454,
+    "sig": "af02189e2175c00de5696f3295afbcb9fc8ccb58368e6e3509ca3f700f208a1bc235796fc74e40b48b531488513c7e6c43ff3da6cbf88bc5664d069e9b7d450d"
    }
   },
   {
