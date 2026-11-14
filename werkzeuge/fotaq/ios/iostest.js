@@ -154,11 +154,11 @@
   }
   // called by the launcher (index.html) with the Module object, before ScummVM is loaded
   window.FOTAQ_MODULE = function (M) {
-    M.quitAfterGame = true;                               // patch 0102: the end of the game ends ScummVM (no launcher)
+    M.quitAfterGame = true;                               // patch 0005: the end of the game ends ScummVM (no launcher)
     // (not «--gui-theme=builtin»: tried on 12.11.2026, ScummVM then fails to load any theme in this build without FreeType)
     M.onScummvmEnded = function (code) { gameEnded(code); };
     M.onHttpFsError = function (url, off, len, why) { fatal("data", String(url).replace(/^.*data\//, "data/") + " @" + off + ": " + why); };
-    // patch 0102: error() of ScummVM comes here instead of a message box drawn by SDL (it waited for a tap, then black)
+    // patch 0005: error() of ScummVM comes here instead of a message box drawn by SDL (it waited for a tap, then black)
     M.onScummvmMessage = function (isError, text) { if (!isError) return 0; fatal("error", String(text).replace(/\s+$/, "")); return 1; };
     M.onAbort = function (what) { fatal("abort", (lastError() ? lastError() + " | " : "") + what); };
     M.quit = function (status, toThrow) {                 // exit() of ScummVM: after error() the status is not 0

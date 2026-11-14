@@ -10,6 +10,10 @@
 #   Danach Grösse + sha256 (pins.txt / Release-Notiz) in FOTAQ_FILES (quelle/639zzg_fotaq.py) eintragen.
 # GPL: ScummVM-Quellcode = Tag STV (Commit STV_COMMIT) + die Patches in werkzeuge/fotaq/ + dieser Ablauf, alles öffentlich.
 # Getestet: Probe fotaqprobe-2 (Lauf 42596443429, 09.11.2026, auf dem Zweig mw-fotaq mit vorübergehendem Push-Start), wieder gelöscht.
+# fotaq-2 (14.11.2026): der normale Bau ist die auf dem iPhone erprobte Fassung «Test B» (Patches 0004 Spieldaten in Stücken,
+# 0005 Spielende ohne Launcher; werkzeuge/fotaq/ios/bauen.sh b). Nur fotaq-engine-2.zip wird in 639zzg gepinnt (FOTAQ_ENGINE_NEW),
+# die Spieldaten bleiben die von fotaq-1. Der Lauf bricht ab, wenn die Engine wieder Funktionen über 40 KB hat.
+#   Probe vom Zweig:  … -f ref=<zweig> -f 'inputs[release]=probe'      Echt:  … -f ref=main -f 'inputs[release]=echt' -f 'inputs[tag]=fotaq-2'
 # iPhone-Test (Job «ios», werkzeuge/fotaq/ios/, Varianten in bauen.sh): baut Test-Varianten der Engine (Spieldaten in Stücken statt
 # ganz im Speicher, kleine Funktionen gegen WebKit-Fehler 304810), misst sie (grösste Funktionen, Speicher der Seite) und legt
 # mit «probe» das Testpaket fotaq-iostest-N.zip an die Vorabversion «fotaqios-<Lauf>» (MoveEye Teil 639zzv lädt es gepinnt).
@@ -109,20 +113,17 @@ jobs:
             ${{ runner.temp }}/scummvm/dists/emscripten/emsdk-${{ env.EMSDK_VERSION }}
             ${{ runner.temp }}/scummvm/dists/emscripten/libs
           key: fotaq-emsdk-${{ env.EMSDK_VERSION }}-mad-${{ env.STV }}-1
-      - name: Bauen (nur Queen-Engine, Vorbis + libmad)
+      - name: Bauen (nur Queen-Engine, Vorbis + libmad; seit fotaq-2 die Fassung «Test B» des iPhone-Tests)
         run: |
           set -eo pipefail
-          cd "$RUNNER_TEMP/scummvm"
-          ./dists/emscripten/build.sh build --disable-all-engines --enable-engine=queen --enable-release \
-            --enable-vorbis --enable-ogg --enable-mad --enable-zlib --enable-png --datadir=/data \
-            --disable-detection-full --disable-cloud --disable-tts --disable-mt32emu --disable-lua --disable-tinygl --disable-bink \
-            --disable-fluidsynth --disable-eventrecorder --disable-enet --disable-sdlnet --disable-libcurl --disable-discord \
-            --disable-freetype2 --disable-jpeg --disable-gif 2>&1 | tee "$RUNNER_TEMP/bau.log" | grep -v '^\(emcc\|em++\|  C\|    C\)' | tail -120
-          test -s build-emscripten/scummvm.wasm || { echo "::error::kein scummvm.wasm"; exit 1; }
-          grep -E "^(Engines|Building|Using|Enabled)" "$RUNNER_TEMP/bau.log" | head -40 || true
-          grep -E "Vorbis|MAD|libmad|Ogg|zlib|PNG" config.h config.mk 2>/dev/null | head -20 || true
-          grep -q "define USE_VORBIS" config.h && grep -q "define USE_MAD" config.h || { echo "::error::Vorbis oder MAD fehlt im Bau"; exit 1; }
-          ls -la build-emscripten build-emscripten/data
+          # werkzeuge/fotaq/ios/bauen.sh b: -Oz, kleiner Speicher, Asyncify nicht im Ton- und Bild-Code, kein Zusammenlegen grosser
+          # Funktionen - auf dem iPhone des Besitzers erprobt (fotaqios-10). Misst auch die Funktionsgrössen (WebKit-Fehler 304810).
+          bash werkzeuge/fotaq/ios/bauen.sh b "$RUNNER_TEMP/scummvm" "$RUNNER_TEMP/ios"
+          test -s "$RUNNER_TEMP/ios/b/scummvm.wasm" || { echo "::error::kein scummvm.wasm"; exit 1; }
+          k=$(grep '^KENNZAHLEN b ' "$RUNNER_TEMP/ios/b.txt" | sed 's/^KENNZAHLEN b //')
+          python3 -I -c 'import json,sys; k=json.loads(sys.argv[1]); n=k["from_40000_to_160000"][0]; print("wasm", k["file"], "Bytes, grösste Funktion", k["largest"], "- Funktionen 40-160 KB:", n); sys.exit(1 if n or k["largest"] > 40000 or k["memory_pages"] != [1024, 8192] else 0)' "$k" \
+            || { echo "::error::die Engine hat wieder grosse Funktionen (über 40 KB) oder anderen Speicher - auf iPhone / iPad gefährlich (WebKit 304810)"; exit 1; }
+          ls -la "$RUNNER_TEMP/ios/b" "$RUNNER_TEMP/ios/b/data"
       - name: emsdk und Bibliotheken speichern (Cache, auch wenn ein späterer Schritt fehlschlägt)
         if: steps.ecache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
@@ -151,7 +152,7 @@ jobs:
           SHA: ${{ steps.v.outputs.sha }}
         run: |
           set -e
-          python3 -I werkzeuge/fotaq/fotaq_paket.py --build "$RUNNER_TEMP/scummvm/build-emscripten" --src "$RUNNER_TEMP/scummvm" \
+          python3 -I werkzeuge/fotaq/fotaq_paket.py --build "$RUNNER_TEMP/ios/b" --src "$RUNNER_TEMP/scummvm" \
             --de "$RUNNER_TEMP/dl/$DE_ZIP" --en "$RUNNER_TEMP/dl/$EN_ZIP" --lizenzen "$RUNNER_TEMP/libl" --tag "$TAG" --stv "$STV" \
             --stv-commit "$STV_COMMIT" --commit "$SHA" --quellen "$(cat "$RUNNER_TEMP/quellen.txt")" --aus "$RUNNER_TEMP/out"
           ls -la "$RUNNER_TEMP/out"; cat "$RUNNER_TEMP/out/fotaq/LIZENZEN.txt"
@@ -253,7 +254,7 @@ jobs:
           git clone -q --depth 1 --branch "$STV" https://github.com/scummvm/scummvm "$RUNNER_TEMP/scummvm"
           c=$(git -C "$RUNNER_TEMP/scummvm" rev-parse HEAD)
           [ "$c" = "$STV_COMMIT" ] || { echo "::error::$STV ist $c, nicht $STV_COMMIT"; exit 1; }
-          for p in werkzeuge/fotaq/*.patch werkzeuge/fotaq/ios/*.patch; do echo "== $p"; git -C "$RUNNER_TEMP/scummvm" apply --verbose "$GITHUB_WORKSPACE/$p"; done
+          for p in werkzeuge/fotaq/*.patch; do echo "== $p"; git -C "$RUNNER_TEMP/scummvm" apply --verbose "$GITHUB_WORKSPACE/$p"; done
           grep -q "EMSDK_VERSION:-$EMSDK_VERSION" "$RUNNER_TEMP/scummvm/dists/emscripten/build.sh" || { echo "::error::build.sh nutzt ein anderes emsdk"; exit 1; }
       - name: emsdk und Bibliotheken (Cache)
         uses: actions/cache/restore@v4
