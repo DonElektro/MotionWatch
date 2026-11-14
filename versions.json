@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-14 15:05",
+ "generated": "2026-11-14 17:16",
  "versions": [
   {
    "version": "3.93.0",
    "file": "webcam_bewegung_3_93_0.py",
    "url": "",
    "sha256": "f256c230f11ad2c4cdcb5fbc748ed3a0cc3106b0bda9c8d1e1e2edfeffd45c94",
-   "date": "2026-11-14 15:05",
+   "date": "2026-11-14 15:58",
    "notes": "Drei Teile. (1) Design «Klar», Etappe 2 – der Kopf: Reiter mit ruhigen Linien-Symbolen, klarere Kopf-Knöpfe, auch im Pi-Fenster. (2) Schach: Bewertungsbalken links neben dem Brett wie bei Lichess (Spielesammlung GS-1.22). (3) Morse-Modus: «Eigenes Protokoll (2 Töne)» und «📻 Handy-Funkgerät» – ein Handy wird zum Sender und Empfänger, auch ohne MoveEye.",
    "size": 3923503,
    "sig": "526d25e6060ef0ef1fc82e220bfff6cd2cb9f1273961f4617ec44863a1ebd66b983a6aca0b2deeb0cbb7223a2e5be445f5f647c106f9260cf5213fd67f1dfc0c",
@@ -204,33 +204,33 @@
    "sig": "3c0d6ad76326d81ce324c8914ca35b61596ef189eb0e83e04238c5088ad5e2954914805461e7194f7648bb37117d49454eb7d207ff54d89893e10667b26ea80a"
   },
   "pi": {
-   "ver": "3.69.0",
+   "ver": "3.70.0",
    "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 37994237,
-   "sha256": "8244b6850a8c66d59c1d341f738ce107173802d90a13c89fb864f673b34566de",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.69.0/MoveEyeSim3D_Pi.zip",
-   "sig": "884c9c9f34bedb45681d4bec25337c1512d0e7c91a02e0ae33700cba0483404fc28856e64e6888f18bc8cebc05fdf2b29815426ff127e607faa4120acbaee006"
+   "size": 37996552,
+   "sha256": "968626cb36812e53946f27bac3375c92bf1f9a533804779669a17cf0677d0b2c",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.70.0/MoveEyeSim3D_Pi.zip",
+   "sig": "abf3b3eef2bcd6f01707d6a53071969300ed037d439ca929f599900d846dbc26598850e3f4aa37bd913c4d48c003e28bd5ca6ba9958ca58744c0739e7a7d7707"
   },
   "anhang": {
-   "ver": "3.69.0",
-   "version": "3D-5.69.0",
-   "notes": "Als Person gehen, Mover beim Erkunden bis 10 m/s",
+   "ver": "3.70.0",
+   "version": "3D-5.70.0",
+   "notes": "Leiste «Darstellung», Feineinstellungen erst ab drei, Hilfe «?» im Kreis; HP räumt Test-Reste vor dem Kiosk",
    "mw_min": "3.55.0",
    "win": {
-    "ver": "3.69.0",
+    "ver": "3.70.0",
     "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
-    "size": 54463954,
-    "sha256": "e49ebe4292b7f94eb854f5c9b93f1492b0c2d2abef1fc1718c3f4dec09e0a47b",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.69.0/MotionWatch3D_Simulator.zip",
-    "sig": "928f4c64bf7ca32202f23a8d50345e6274f95bad7a29fa8e4a2126f91eacb600534357621e12ed2743736faa5848dec393a738954c7c94fc7c7cd2c48ea3e102"
+    "size": 54463597,
+    "sha256": "928242bfac422062b2c4ea65efbb27423b768a5ffb7220e35917c77fcd85a40b",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.70.0/MotionWatch3D_Simulator.zip",
+    "sig": "49b585042067a5e9b8919c6560d59e9bda7f0c33ac388f04e0ac8b5ae359f50656815413cea033ab90642179e0c6dad9a9e10b930e3be3cd652d9dccd34e7908"
    },
    "linux": {
-    "ver": "3.69.0",
+    "ver": "3.70.0",
     "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
-    "size": 48516932,
-    "sha256": "1cc5461b2b5dd56cf4f5e63420beb8259a092c3c01fdf8e11951cb37586583a3",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.69.0/MoveEyeSim3D_Linux.zip",
-    "sig": "09fd057485bcbe380c5f5711f4796492dcccf57507850ff58a1562321cc9b1d1b308312f0d40e542c29e912ac574d380e7c5595f603f2813e3e99c0127b59d00"
+    "size": 48515500,
+    "sha256": "e241223293bbda224a3436a2efa5390df95fda9a6d9cdb0705e08d3bfa96cafe",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.70.0/MoveEyeSim3D_Linux.zip",
+    "sig": "ac6f086266e111a78ea55b5c02f255ee29c2c95a35cef9a3f1370dc853000b7746b588199f15034ec613c0b3a1a708adb3a59df075fff9f70e24fd39de0e2506"
    }
   }
  }
