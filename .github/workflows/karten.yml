@@ -127,7 +127,7 @@ jobs:
           ln -sf "$(go env GOPATH)/bin/go-pmtiles" "$RUNNER_TEMP/pmtiles"
           "$RUNNER_TEMP/pmtiles" version || true
           sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool gdal-bin libsqlite3-dev zlib1g-dev > /dev/null
-          gdal_contour --version
+          gdalinfo --version; command -v gdal_contour gdalwarp ogr2ogr
           git -c advice.detachedHead=false clone -q --depth 1 -b 2.79.0 https://github.com/felt/tippecanoe "$RUNNER_TEMP/tippecanoe-src"
           make -s -C "$RUNNER_TEMP/tippecanoe-src" -j"$(nproc)" tippecanoe > /dev/null 2>&1 || make -C "$RUNNER_TEMP/tippecanoe-src" -j"$(nproc)" tippecanoe
           ln -sf "$RUNNER_TEMP/tippecanoe-src/tippecanoe" "$RUNNER_TEMP/tippecanoe"
@@ -229,7 +229,7 @@ jobs:
       - name: Zusammenfassung
         if: always()
         run: |
-          { echo "### Offline-Karten"; echo '```'; cat "$RUNNER_TEMP/out/pins.txt" 2>/dev/null; cat "$RUNNER_TEMP/out/topo.json" 2>/dev/null; cat "$RUNNER_TEMP/out/kacheln.json" 2>/dev/null; cat "$RUNNER_TEMP/out/orte.json" 2>/dev/null; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          { echo "### Offline-Karten"; echo '```'; for f in pins.txt topo.json kacheln.json orte.json; do cat "$RUNNER_TEMP/out/$f" 2>/dev/null || true; done; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - name: Release anlegen, Assets hochladen, zurücklesen
         if: env.REL == 'probe' || env.REL == 'echt'
         env:
