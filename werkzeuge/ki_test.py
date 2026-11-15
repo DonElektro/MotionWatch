@@ -561,6 +561,7 @@ def teil_b(datei, tmp, bilder, extra=None):
             for name, vp, mob in (("handy", {"width": 390, "height": 844}, True), ("pc", {"width": 1280, "height": 900}, False)):
                 ctx = br.new_context(viewport=vp, device_scale_factor=2 if mob else 1, is_mobile=mob, has_touch=mob, color_scheme="dark",
                                      http_credentials={"username": "admin", "password": PW}, locale="de-CH")
+                ctx.add_init_script("try { if (!sessionStorage.getItem('ki-fx')) localStorage.setItem('mw-sheet', 'full'); } catch (e) {}")   # 639zzzzx: whole page here, the window is checked in b_extra
                 pg = ctx.new_page(); errs = []
                 pg.on("pageerror", lambda e: errs.append(str(e)))
                 pg.goto(base + "/more", wait_until="domcontentloaded"); pg.wait_for_timeout(1500); weg(pg)
@@ -896,11 +897,12 @@ r = clap(3, blinki_clap=True, clap_on=True, clap_3="light_white"); ok(r["light"]
 r = clap(2, blinki_clap=True, clap_on=False, clap_2="light_white"); ok(r["listen"] and not r["light"], "Klatschschalter aus, Blinki ein: nur Blinki")
 r = clap(3, blinki_clap=True, clap_on=False, clap_3="light_white"); ok(not r["listen"] and not r["light"], "Klatschschalter aus: 3× schaltet nichts (wie vorher)")
 r = clap(2, blinki_clap=False, clap_on=False, clap_2="light_white"); ok(not r["listen"] and not r["light"], "beide aus: nichts")
-ns["WAKE"]["state"] = "ring"
+ns["WAKE"]["state"] = "ring"; _ai = C.get("audio_in"); C["audio_in"] = "hw:1"   # the wake-up alarm hears claps only with a microphone
 r = clap(2, blinki_clap=True, clap_on=True, clap_2="none"); ok(r["snooze"] and not r["listen"], "Wecker klingelt: 2× klatschen = Schlummern wie vorher, kein Blinki")
+C["audio_in"] = _ai
 ns["WAKE"]["state"] = "off"
 # the microphone path: claps with the clap switch off reach Blinki only with its switch
-class A_: mute_until = 0.0
+class A_: mute_until = 0.0; sim_t = 0.0
 ns["AUDIO"] = A_()
 ns["SOUND"]["playing"] = False
 ns["SERVO_MOVE"]["t"] = 0.0
@@ -958,7 +960,7 @@ for sec, kind in ((0.8, "q"), (1.2, "t"), (1.6, "q")):
 ok(wait(lambda: not LI["on"], 60), "ein Satz, dann Ende (Stille-Erkennung)")
 j = ns["BLINKI"]["jobs"].get(LI["jid"])
 ok(j is not None and j["q"] == "Wie laut ist die Sirene?" and j["who"].startswith("device"), "Frage vom Gerät: %s" % (j or {}).get("q"))
-ok(wait(lambda: len(said) >= 2, 30), "Antwort über den Lautsprecher (%d Sätze): %s" % (len(said), said[:1]))
+ok(wait(lambda: said and "Sirene" in " ".join(said), 30), "Antwort über den Lautsprecher (%d Stücke): %s" % (len(said), [x[:60] for x in said[:1]]))
 ok(not LI["buf"], "Ton nach dem Erkennen weg")
 ok(real_listen("test")[0], "nochmals zuhören")
 ns["blinki_mic_feed"](quiet(0.1), time.time() + 1); time.sleep(0.3)
@@ -1020,6 +1022,18 @@ def b_extra(pg, name, base, op, bilder):
     _c, st = http_api(op, base, "/api/ki/state")
     ok(st["state"]["speech"]["clap"] is False and st["state"]["speech"]["btn"] is False, "Klatschen / Knopf für Blinki ab Werk aus")
     pg.screenshot(path=os.path.join(bilder, "blinki_handy_einstellungen.png"))
+    # 639zzzzx (from 4.6.0): from «More» Blinki opens in the window «Middle» (iframe) - the page and 🎙 are there too
+    pg.evaluate("() => { sessionStorage.setItem('ki-fx', '1'); localStorage.setItem('mw-sheet', 'mid'); }")
+    pg.goto(base + "/more", wait_until="domcontentloaded"); pg.wait_for_timeout(1500); weg(pg)
+    pg.locator("#m-blinki").click()
+    fr = pg.frame_locator(".fx-win iframe")
+    fr.locator("#bk-mic.on").wait_for(state="visible", timeout=30000)
+    ok("blinki" in (pg.locator(".fx-win iframe").get_attribute("src") or "") and fr.locator("#bk-mic").is_visible(),
+       "handy: aus «Mehr» im Fenster «Mitte» (Rahmen) mit 🎙")
+    pg.wait_for_timeout(500)
+    pg.screenshot(path=os.path.join(bilder, "blinki_handy_fenster.png"))
+    pg.evaluate("() => { sessionStorage.removeItem('ki-fx'); localStorage.setItem('mw-sheet', 'full'); }")
+    pg.goto(base + "/blinki", wait_until="domcontentloaded"); pg.wait_for_timeout(1000)
     pg.evaluate("() => window.scrollTo(0, 0)")
 
 
