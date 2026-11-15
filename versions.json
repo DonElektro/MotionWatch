@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-15 19:08",
+ "generated": "2026-11-15 21:08",
  "versions": [
+  {
+   "version": "4.7.0",
+   "file": "webcam_bewegung_4_7_0.py",
+   "url": "",
+   "sha256": "c7825385f248adef98420cc0797f0731a1378c952fb0e73a8fe90c17db3e3e4e",
+   "date": "2026-11-15 21:07",
+   "notes": "Spielesammlung GS-1.24: neues Spiel «Gipfeltreffen» (erstes Level) und «Verschollen im Bergtal» Kapitel 2 «Drei Tage»",
+   "size": 3922285,
+   "sig": "1fd8eae2aeb0dd1e0814ef3789d162e666f5fc8278306081c807f118f414db11738df1c60a8a688fb1847cb8b01cb28820bed74eb9fb82706021d9ca6f264502",
+   "data": {
+    "file": "moveeye_daten_4_7_0.zip",
+    "url": "",
+    "sha256": "1a34dd3bcdd9b39b2369ccca5c4fae3079631d5d235fbf8ae1ff8e897f452b72",
+    "size": 13553973,
+    "sig": "279af444f91bf9e09081695c34e07cc3c9453ad35c417b20ceb5fb54b5d175c22b8a24edac379ec65d5d1ae7803e092e49049288769fef512480df028ae0b20b"
+   }
+  },
   {
    "version": "4.6.0",
    "file": "webcam_bewegung_4_6_0.py",
@@ -136,23 +153,6 @@
     "sha256": "04f8f47ecdaee848e9130a8ac3477273ffd2811305ae7ed18939a2e381937c0d",
     "size": 12921529,
     "sig": "454f71ded4ad7678c176603a6e9428bdf4496e4dcff51f5a78629be5ee5509f782b1f61c43e13776239bcb7a889e965b08c8996aa1e086d36eb5be4864d5a00b"
-   }
-  },
-  {
-   "version": "3.98.0",
-   "file": "webcam_bewegung_3_98_0.py",
-   "url": "",
-   "sha256": "9c81ce77a90235f802dd43db73de0e39c6acc3fcef3be47fec055464086833ff",
-   "date": "2026-11-15 15:14",
-   "notes": "Vier Teile. (1) Funk: «Hören» auf dem iPhone geht zuverlässig; mit Schlüssel nur noch V2; Nachrichten als Audiodatei speichern und einlesen; neu «Mehrton» (MFSK, 3–5 Zeichen pro Sekunde, mit Fehlerkorrektur). (2) Produktseite /info/ neu gestaltet wie die App, mit den neuen Funktionen. (3) Digitaler Rucksack: «🔏 Botschaft im Bild» – ein geheimer Text verschlüsselt in einem Foto. (4) «Was war das?» zeigt kleine Rahmen vergrössert neben dem Bild.",
-   "size": 3791389,
-   "sig": "623c80bb4b0d0dc3ac80bd5bed998e4a384b0bcd59301d219aeb0b6179fc27518caec32aa831a2f95befe326ec71952b74ff985ee26f97f13817864d071eee01",
-   "data": {
-    "file": "moveeye_daten_3_98_0.zip",
-    "url": "",
-    "sha256": "d88bc088fc291fa534165fef631f4800158e070f853a9964ea106fe4d2a37baf",
-    "size": 12795772,
-    "sig": "1d619c0106717f52e59ae1bde3860bf4e0044c188a516189bcdae45c2dee3a65d2d0eabce89fc23458b2809b3d32490e6ec4d3856c0f1ebd04d46588a520310e"
    }
   },
   {
