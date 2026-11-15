@@ -217,6 +217,9 @@ def teil_b(datei, bilder):
             except Exception:
                 time.sleep(1)
         time.sleep(2)
+        warten(lambda s: s["state"]["armed"], 8)               # --demo arms itself 3 s after the start (640_start) - then switch it off
+        req("/api/arm", {"action": "disarm"})
+        ok(not warten(lambda s: not s["state"]["armed"], 5)["state"]["armed"], "Demo: Schutz Aus")
         req("/api/users", {"action": "add", "name": "Anna", "password": "anna-pass-1", "role": "family"})
         Fa = ("Anna", "anna-pass-1")
         ok(req("/api/mk", user=Fa)[0] == 403 and req("/api/mk", {"action": "create", "name": "x"}, user=Fa)[0] in (401, 403),
@@ -255,7 +258,7 @@ def teil_b(datei, bilder):
         s = warten(lambda s: s["state"]["ses"] is None, 10)
         ok(s["state"]["ses"] is None and s["state"]["armed"], "Schutz ein: Sitzung zu Ende, Karte ignoriert")
         time.sleep(2.5)
-        lines = json.dumps(req("/api/log?limit=500&q=Markier")[1], ensure_ascii=False)
+        lines = json.dumps(req("/api/log?limit=500&q=Mark")[1], ensure_ascii=False)
         ok("Schutz Aus" in lines or "protection is off" in lines, "Protokoll: «Markier-Karte … nur bei Schutz Aus»")
         req("/api/arm", {"action": "disarm"})
         if bilder:
@@ -277,6 +280,10 @@ def teil_b(datei, bilder):
                     b.close()
             except ImportError:
                 print("  (Bilder übersprungen: kein Playwright)")
+            except Exception as e:                            # e.g. the browser of Playwright is not installed (HP)
+                if "Executable doesn't exist" not in str(e):
+                    raise
+                print("  (Bilder übersprungen: Playwright ohne Browser)")
     finally:
         p.terminate()
         try:
