@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-15 15:37",
+ "generated": "2026-11-15 19:08",
  "versions": [
+  {
+   "version": "4.6.0",
+   "file": "webcam_bewegung_4_6_0.py",
+   "url": "",
+   "sha256": "7adcf5804cce76713fca42310ab066d5f8efbe6298ea22fe6b01628264e2b607",
+   "date": "2026-11-15 19:08",
+   "notes": "Mitteilungen pausieren: Push-Pause, die von selbst endet (15 min bis «bis ich zurück bin»), 🔕 auf der Glocke – Sabotage, SOS und Akku kommen immer",
+   "size": 3922499,
+   "sig": "188bf90363bd4a1d0058174cd7c164e53a4c0a8286a95611829db4b46015876dccd35d89a026c97df0b41523505669d5173186f72f5c8e9fabf0c108f10b6009",
+   "data": {
+    "file": "moveeye_daten_4_6_0.zip",
+    "url": "",
+    "sha256": "bdebaa214646c56d7254328527dbc48944368120769cd8954d025a96f6689ec3",
+    "size": 13554056,
+    "sig": "89a32903ab8e16322f8f01bfda960f08838b85a187d385a3e70be41c8ccf47620eef2e5c0bc764a5ce1bf8c41f45e06092ef76aaa13b8ed87ad1a15407e57c0b"
+   }
+  },
   {
    "version": "4.5.0",
    "file": "webcam_bewegung_4_5_0.py",
    "url": "",
    "sha256": "471139bfd8617139921cee3bc1f9b124707a76f770cdfbce8a1b5e8b701f23f3",
-   "date": "2026-11-15 15:37",
+   "date": "2026-11-15 17:58",
    "notes": "Unterseiten öffnen als Fenster über der Seite – ab Werk «Mitte»; wählbar unter Einstellungen: «Von unten», «Mitte», «Von der Seite» oder wie bisher «Ganze Seite». Dialoge aus dem Fenster (z. B. Passwort, neuer Benutzer) liegen darüber.",
    "size": 3898199,
    "sig": "be5218fce25456762c6bceab157ed0b56039f5302f89c9d07327308206c2bfb91233ab6ec89289b0b05034ec8fba43bb08dd3b95878f35f839953f9df85c4b01",
@@ -136,23 +153,6 @@
     "sha256": "d88bc088fc291fa534165fef631f4800158e070f853a9964ea106fe4d2a37baf",
     "size": 12795772,
     "sig": "1d619c0106717f52e59ae1bde3860bf4e0044c188a516189bcdae45c2dee3a65d2d0eabce89fc23458b2809b3d32490e6ec4d3856c0f1ebd04d46588a520310e"
-   }
-  },
-  {
-   "version": "3.97.0",
-   "file": "webcam_bewegung_3_97_0.py",
-   "url": "",
-   "sha256": "98980f1fc9f53e04fd7c0047466284507d63223ec19870130556e78e213aaaff",
-   "date": "2026-11-15 15:14",
-   "notes": "Ein einheitlicher Stil auf allen Seiten wie unter «Mehr»: klare Zeilen mit Zustand, Gehtest und Tipps als Zeilen im Live-Bereich; ist kein Mikrofon eingesteckt, steht ein grauer Hinweis statt einer Warnung. Neu: Reiter «★ Favoriten» vor «Live»: Seiten, Schalter, Aktionen und Spiele als Kacheln, pro Benutzer gemerkt; hinzufügen mit ☆ am Ende jeder Zeile.",
-   "size": 3743824,
-   "sig": "877fd138cc8944616d5d2cd5748ec378f2cad1a2a85941513beacc3830955323b68cf49ef6d955a29dd5b6c3cf692c6b75af8a67115c188eb27d36c9b6abb601",
-   "data": {
-    "file": "moveeye_daten_3_97_0.zip",
-    "url": "",
-    "sha256": "5eaebb9c0ed31d87d1a795fb6b49980f75b4f6f885fdc2a71f41da95023f1489",
-    "size": 12592640,
-    "sig": "c469775ea415708a31ab69d576b0a4432911af173aed99060e0e9f72c309d918f6bbf4fd500df9f9256d6ab6d203c32b17518609a7844809327952aae8de7100"
    }
   },
   {
