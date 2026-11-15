@@ -1080,9 +1080,12 @@ def teil_b(datei, tmp, srv, bilder):
             pg.goto(base + "/protect", wait_until="domcontentloaded")
             pg.wait_for_function("() => { const r = document.getElementById('mwk-radio'); return r && !r.hidden; }", timeout=20000)
             pg.wait_for_timeout(1500); weg()
-            pg.locator("#mwk-radio").click(); pg.wait_for_url("**/radio", timeout=20000)
-            pg.wait_for_function("() => (document.getElementById('ra-st') || {}).textContent.length > 1", timeout=20000)
-            ok("läuft" in pg.locator("#ra-st").inner_text().lower() or "verbinde" in pg.locator("#ra-st").inner_text().lower(), "📻 → Radio-Seite: %s" % pg.locator("#ra-st").inner_text())
+            pg.locator("#mwk-radio").click()                                 # 4.4.0: «Mitte» = /radio as a window (frame) over the page
+            pg.wait_for_function("() => location.pathname === '/radio' || [...document.querySelectorAll('.fx-win iframe')].some(f => (f.getAttribute('src') || '').startsWith('/radio'))", timeout=20000)
+            rp = pg if pg.url.split("?")[0].endswith("/radio") else next(f for f in pg.frames if "/radio" in f.url)
+            rp.wait_for_function("() => (document.getElementById('ra-st') || {}).textContent.length > 1", timeout=20000)
+            st_ = rp.locator("#ra-st").inner_text()
+            ok("läuft" in st_.lower() or "verbinde" in st_.lower(), "📻 → Radio-Seite (%s): %s" % ("Fenster" if rp is not pg else "ganze Seite", st_))
             # «Mehr»: the row with the station
             pg.goto(base + "/more", wait_until="domcontentloaded")
             pg.wait_for_function("() => (document.getElementById('m-radio-s') || {}).textContent.includes('Radio Pilatus')", timeout=20000)
