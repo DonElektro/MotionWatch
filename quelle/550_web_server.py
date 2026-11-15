@@ -2313,6 +2313,8 @@ class WebStream:
                 ok, err = wifi_save(d.get("ssid"), d.get("password") or "", bool(d.get("preferred", True)))
             elif a == "forget":
                 ok, err = wifi_forget(d.get("id"))
+            elif a == "prefer":                                   # 639zzzzf «Mein Handy-Hotspot bevorzugen»
+                ok, err = hspref_set(d.get("on"), d.get("ssid"))
             else:
                 ok, err = False, "unknown action"
             out = wifi_status(); out.update(ok=ok, error=tr_err(err, lang) if err else None)
