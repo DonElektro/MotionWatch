@@ -102,6 +102,19 @@ body.swapside #lv-joy{right:auto;left:12px;flex-direction:row-reverse}
 body.lv-nohead #stick,body.lv-nohead .ctl-stick,body.lv-nohead #qs-track,body.lv-nohead #qs-patrol,body.lv-nohead #patrol-st,body.lv-nohead #vo-center,body.lv-nohead #lv-joy{display:none!important}
 body.lv-nohead:not(.moveravail) #ctl-side{display:none!important}
 body.lv-nohead.moveravail #ctl-side>:not(.spd),body.lv-nohead.moveravail #ctl-side .spd>:not(#mv-tog){display:none!important}
+/* 4.x (Elektro): the head controls (joystick, speed, ⇆, centre, calibrate, waypoints, Pan / Tilt) fold on their own inside
+   «Bedienung»; the quick switches and «Einstellungen» stay outside. Only there while the joystick is shown (no empty row). */
+body.lv #ctl-left>#lv-hc{flex:1 1 100%;width:100%}
+#lv-hc>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 4px;margin:0;font-size:14px;font-weight:600;
+  color:var(--txt);user-select:none;-webkit-user-select:none;border-radius:8px}
+#lv-hc>summary::-webkit-details-marker{display:none}
+#lv-hc>summary::after{content:"▾";margin-left:auto;padding-left:8px;font-size:13px;transition:transform .15s}
+#lv-hc:not([open])>summary::after{transform:rotate(-90deg)}
+#lv-hc .lv-hc-pos{font-size:11px;font-weight:500;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+#lv-hc[open]>summary .lv-hc-pos{display:none}
+body.lv-ovon #lv-hc[open]>summary .lv-hc-pos{display:inline}   /* the stick is in the picture: the position is only here */
+#lv-hc>.lv-hc-b{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:12px 18px}
+#lv-hc>.lv-hc-b>*{min-width:0}
 /* 3.16 (Elektro 31.10.2026): simulation (body.sim-on = CFG sim_on, the source of the stripe) - no speed, ⇆, 🚜, centre, calibrate, waypoints */
 body.sim-on #ctl-side{display:none!important}
 /* the controls card: wraps instead of overlapping (the old fixed columns pushed «Mittel» under the switches) */
@@ -348,7 +361,8 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
     if (low && !lowWas && !isVO()) [80, 400, 1000].forEach(ms => setTimeout(() => { const m = document.querySelector("main"); if (m && document.body.classList.contains("lv-low")) scrollTo(0, m.getBoundingClientRect().top + scrollY); }, ms));
     lowWas = low;
   }
-  function placeStick() {
+  function placeStick() { placeStick0(); hcPlace(); }
+  function placeStick0() {
     const head = lvHead(), md = mode();
     document.body.classList.toggle("lv-nohead", !head);
     if (typeof window.skOwns === "function" && window.skOwns()) { document.body.classList.remove("lv-ovon"); jc.remove(); return; }   // 549: Sim-Kompakt holds the sticks
@@ -359,6 +373,39 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
     if (ov && st.parentNode !== J) { J.appendChild(st); J.appendChild(jc); jWake(); }
     if (!ov && st.parentNode === J) { box.insertBefore(st, box.firstChild); jc.remove(); }
     if (!ov && st.parentNode !== J) jc.remove();
+  }
+  // ---- 4.x (Elektro): the head controls fold on their own («🕹 Kopf steuern ▾»), kept per browser like the other live folds ----
+  const HCK = "mw-open:headctl";
+  // 639o leaves it out (data-mwb-skip): its first «Meine Ansicht» = «Nur Gruppen» would close it on every start (default: open);
+  // its «Alle zuklappen» / «Alle aufklappen» still fold it, «Meine Ansicht» brings back the own state of this browser
+  const HC = E("details", "lv-hc"); HC.id = "lv-hc"; HC.dataset.mwbSkip = "1"; HC.hidden = true;
+  const HS = E("summary"), HL = E("span", "", T("Steer the head")), HP = E("small", "lv-hc-pos");
+  HL.dataset.i18n = "Steer the head"; HS.title = T("Show or hide the head controls");
+  HS.append(E("span", "", "🕹"), HL, HP);
+  const HB = E("div", "lv-hc-b"); HC.append(HS, HB);
+  let hcSaved = null; try { hcSaved = localStorage.getItem(HCK); } catch (e) {}
+  HC.open = hcSaved !== "0";                             // default: open
+  const hcAria = () => HS.setAttribute("aria-expanded", HC.open ? "true" : "false");
+  hcAria();
+  let hcQuiet = false;                                  // a fold of the ⇕ menu is not the own state
+  const hcOwn = () => { try { return localStorage.getItem(HCK) !== "0"; } catch (e) { return true; } };
+  document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("#all-close, #all-open, #all-mine"); if (!b || b._long) return;
+    const v = b.id === "all-open" ? true : b.id === "all-close" ? false : hcOwn(); if (HC.open !== v) { hcQuiet = true; HC.open = v; } }, true);
+  HC.addEventListener("toggle", () => { hcAria(); if (hcQuiet) { hcQuiet = false; return; } const v = HC.open ? "1" : "0";
+    try { const o = localStorage.getItem(HCK); if (o !== v && !(o === null && v === "1")) localStorage.setItem(HCK, v); } catch (e) {} });
+  const hcPos = () => { const p = document.getElementById("spos-txt"), t = p ? p.textContent.trim() : ""; if (HP.textContent !== t) HP.textContent = t; };
+  { const p = document.getElementById("spos-txt"); if (p) new MutationObserver(hcPos).observe(p, {childList: true, characterData: true, subtree: true}); }
+  function hcPlace() {                                  // the stick and the buttons beside it into the fold - without a head back where they were
+    const L = document.getElementById("ctl-left"), st = L && L.querySelector(".ctl-stick"), sd = document.getElementById("ctl-side");
+    if (!L || !st || !sd) return;
+    if (!HC.parentNode) st.before(HC);
+    const head = !document.body.classList.contains("lv-nohead");
+    if (head && st.parentNode !== HB) HB.append(st, sd);
+    if (!head && st.parentNode === HB) HC.before(st, sd);   // «🚜» of a mover stays reachable, the fold is gone
+    const vis = n => n.parentNode === HB && getComputedStyle(n).display !== "none";
+    const show = head && (vis(st) || vis(sd));          // landscape with the simulator: the stick in the picture, no buttons -> no empty row
+    if (HC.hidden === show) HC.hidden = !show;
+    hcPos();
   }
   // ---- quick switches: favourites ★, order, hidden (one list; the favourites show in the order of the list) ----
   const qsIds = () => [...document.querySelectorAll("#qsw > button")].filter(b => b.id !== "lv-more" && !b.classList.contains("na")).map(b => b.id.replace(/^qs-/, ""));
