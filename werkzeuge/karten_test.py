@@ -393,8 +393,10 @@ def teil_a(datei, P, rel, pins, tiles):
     ns["KQ_BASE"]["url"] = srv.url
     ok(all(ns["kq_tag"](r_) == f["tag"] for r_, f in pins.items()), "Tag jeder Datei wie paket.py (Karte + Ortssuche: %s)" % pins["tiles"]["tag"])
     echt = {r_: dict(f) for r_, f in KF.items()}                 # ab 3.81.0 stehen die echten Pins (Release karten-1) in der Datei
-    ok(ns["kq_pinned"]() or not any(f["size"] for f in echt.values()),
-       "Pins in der gebauten Datei: %s" % ("echt, %.1f MB" % (sum(f["size"] for f in echt.values()) / 1e6) if ns["kq_pinned"]() else "noch keine"))
+    neu_r = [r_ for r_ in echt if r_ not in ns["KQ_FILE_TAG"]]
+    ok(ns["kq_pinned"]() or not any(echt[r_]["size"] for r_ in neu_r),
+       "Pins in der gebauten Datei: %s" % ("echt, %.1f MB" % (sum(f["size"] for f in echt.values()) / 1e6) if ns["kq_pinned"]()
+                                           else "%s noch keine (Stufe 1), %s von früher" % (", ".join(neu_r), ", ".join(sorted(ns["KQ_FILE_TAG"])))))
     for f in KF.values():
         f.update(size=0, sha256="", unpacked=0)
     ns["KQ_RT"]["ok_t"] = 0
@@ -887,7 +889,7 @@ def topo_im_browser(pg, base, name, bilder, mob, echt, ansicht=None):
     ok(pg.evaluate("() => !!KQMAP.getLayer('probe-l') && !!KQMAP.getSource('probe')"), f"{name}: eigene Ebene (z. B. Tour) bleibt beim Wechsel")
     ok("swisstopo" not in pg.inner_text("#kq-at") and not pg.locator(".kq-leg").is_visible(), f"{name}: Standard: Quellenangabe nur OpenStreetMap, keine Wege-Legende")
     pg.screenshot(path=os.path.join(bilder, f"standard_dunkel_{name}.png"))
-    pg.click("#btn-theme")                                 # dark -> light
+    pg.evaluate("() => toggleTheme()")                     # dark -> light (the button of the header, also when it is folded away)
     pg.wait_for_function("() => KQ.file() === 'style.json' && KQMAP.isStyleLoaded()", timeout=30000)
     pg.locator(".kq-sw button[data-v=topo]").click()
     pg.wait_for_function("() => KQ.file() === 'style_topo.json' && KQMAP.isStyleLoaded() && !!KQMAP.getLayer('topo_hk')", timeout=30000)
@@ -895,7 +897,7 @@ def topo_im_browser(pg, base, name, bilder, mob, echt, ansicht=None):
     ok(pg.evaluate("() => KQMAP.getStyle().layers[0].paint['background-color']") in ("#f6f4ee",), f"{name}: hell: Topo hell")
     pg.screenshot(path=os.path.join(bilder, f"topo_hell_{name}.png"))
     ok(pg.evaluate("() => localStorage.getItem('mw-kq-style')") == "topo", f"{name}: Wahl im Browser gemerkt")
-    pg.click("#btn-theme"); pg.click("#btn-theme")         # light -> red -> dark (as before)
+    pg.evaluate("() => { toggleTheme(); toggleTheme(); }")  # light -> red -> dark (as before)
     ok(not errs, f"{name}: keine JS-Fehler beim Wechsel" + (": " + " | ".join(errs[:3]) if errs else ""))
 
 

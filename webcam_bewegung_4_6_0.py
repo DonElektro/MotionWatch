@@ -294,7 +294,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_6_0.zip"
-ZD_SHA256 = "bdebaa214646c56d7254328527dbc48944368120769cd8954d025a96f6689ec3"
+ZD_SHA256 = "fad76a51775a70d6c631211d8cd1197e45cadfe9b00f08685b55165f5da08ebf"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -93024,24 +93024,53 @@ SELFTEST_EXTRA.append(("QR command cards «▦ Karten-Werkstatt» (639zzp)", qrk
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import struct as _kq_struct
 from bisect import bisect_right as _kq_bisect
 from collections import OrderedDict as _KqOD
 
-KQ_TAG = "karten-1"
+KQ_TAG = "karten-2"
 KQ_MAXZOOM = 15
-KQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + KQ_TAG + "/"}
+KQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"}
+KQ_FILE_TAG = {"orte": "karten-1", "tiles": "karten-1"}
 
 KQ_FILES = {
 	"tiles": {"name": "karte-ch-1.pmtiles", "size": 655187450, "sha256": "ea71c54bcf1c91585106a6d3dcb7d5757f219761f3c0ebbbf54c5df487fde185", "unpacked": 0},
-	"web": {"name": "karte-web-1.zip", "size": 1434333, "sha256": "31f13e157ba0918d71df97b99f1cfdf70a1ad1a3560c91c16d83935e35cfdfa2", "unpacked": 2350250},
+	"web": {"name": "karte-web-2.zip", "size": 0, "sha256": "", "unpacked": 0},
 	"orte": {"name": "orte-ch-1.sqlite.gz", "size": 11211798, "sha256": "1e9f1e574a92a324b789768fb18c1deff2bf3716942d725d0dc1d3999330eb00", "unpacked": 28307456},
+	"topo": {"name": "topo-ch-2.pmtiles", "size": 0, "sha256": "", "unpacked": 0},
+	"relief": {"name": "relief-ch-2.pmtiles", "size": 0, "sha256": "", "unpacked": 0},
 }
-KQ_MAX = {"tiles": 2000 * 1000 * 1000, "web": 60 * 1000 * 1000, "orte": 300 * 1000 * 1000}
-KQ_NAME_RE = {"tiles": r"karte-ch-\d{1,3}\.pmtiles", "web": r"karte-web-\d{1,3}\.zip", "orte": r"orte-ch-\d{1,3}\.sqlite\.gz"}
+KQ_MAX = {"tiles": 2000 * 1000 * 1000, "web": 60 * 1000 * 1000, "orte": 300 * 1000 * 1000, "topo": 2000 * 1000 * 1000,
+		  "relief": 2000 * 1000 * 1000}
+KQ_NAME_RE = {"tiles": r"karte-ch-\d{1,3}\.pmtiles", "web": r"karte-web-\d{1,3}\.zip", "orte": r"orte-ch-\d{1,3}\.sqlite\.gz",
+			  "topo": r"topo-ch-\d{1,3}\.pmtiles", "relief": r"relief-ch-\d{1,3}\.pmtiles"}
+KQ_DISK = {"tiles": "ch.pmtiles", "topo": "topo.pmtiles", "relief": "relief.pmtiles", "orte": "orte.sqlite", "web": "web"}
+KQ_LAYER = {"ch": "tiles", "topo": "topo", "relief": "relief"}
+KQ_TTYPE = {"tiles": (1,), "topo": (1,), "relief": (2, 4)}
+KQ_MIME = {1: "application/x-protobuf", 2: "image/png", 3: "image/jpeg", 4: "image/webp"}
+KQ_EXT = {1: "mvt", 2: "png", 3: "jpg", 4: "webp"}
+KQ_ORDER = ("web", "orte", "topo", "relief", "tiles")
+KQ_STYLES = ("style.json", "style_dark.json", "style_topo.json", "style_topo_dark.json")
 KQ_LEAF_CACHE = 48
 KQ_DL = {"running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
-KQ_RT = {"pm": None, "db": None, "lock": threading.Lock(), "ok_t": 0.0, "ok": False}
+KQ_RT = {"pm": {}, "db": None, "lock": threading.Lock(), "ok_t": 0.0, "have": {}}
+for _k, _v in {"map_topo": True}.items():
+	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
 
 
 def kq_dir():
@@ -93052,50 +93081,101 @@ def kq_dl_dir():
 	return os.path.join(DATA_DIR,"karte_dl")
 
 
+def kq_tag(r_):
+	return KQ_FILE_TAG.get(r_,KQ_TAG)
+
+
+def kq_url(r_):
+	return KQ_BASE["url"]+kq_tag(r_)+"/"+KQ_FILES[r_]["name"]
+
+
+def kq_key(r_):
+	""
+	return(KQ_FILES[r_].get("sha256")or "0"*12)[:12]
+
+
 def kq_pinned():
 	""
 	for r_,f in KQ_FILES.items():
 		if not(isinstance(f.get("size"),int)and 0<f["size"]<=KQ_MAX[r_]and re.fullmatch(r"[0-9a-f]{64}",str(f.get("sha256")or ""))
-				and isinstance(f.get("unpacked"),int)and 0<=f["unpacked"]<=KQ_MAX[r_]and re.fullmatch(KQ_NAME_RE[r_],f.get("name")or "")):
+				and isinstance(f.get("unpacked"),int)and 0<=f["unpacked"]<=KQ_MAX[r_]and re.fullmatch(KQ_NAME_RE[r_],f.get("name")or "")
+				and re.fullmatch(r"karten-\d{1,3}",kq_tag(r_))and f["name"].split("-")[-1].split(".")[0]==kq_tag(r_).split("-")[1]):
 			return False
 	return KQ_FILES["web"]["unpacked"]>0 and KQ_FILES["orte"]["unpacked"]>0
 
 
 def kq_total():
-	return sum(f["size"]for f in KQ_FILES.values())
+	""
+	have=kq_have()
+	return sum(f["size"]for r_,f in KQ_FILES.items()if not have.get(r_))
 
 
 def kq_need_disk():
 	""
-	return KQ_FILES["tiles"]["size"]+KQ_FILES["web"]["unpacked"]+KQ_FILES["orte"]["unpacked"]
+	return sum(f["size"]for r_,f in KQ_FILES.items()if r_ not in("web","orte"))+KQ_FILES["web"]["unpacked"]+KQ_FILES["orte"]["unpacked"]
+
+
+def kq_have():
+	"""
+"""
+	now=time.time()
+	if now-KQ_RT["ok_t"]<2.0:
+		return KQ_RT["have"]
+	have={}
+	d_=kq_dir()
+	try:
+		with open(os.path.join(d_,"karte.ok"),encoding="utf-8")as fh:
+			m=json.load(fh)
+		sh=m.get("sha256")if isinstance(m,dict)else None
+		sh=sh if isinstance(sh,dict)else{}
+		for r_,f in KQ_FILES.items():
+			if not f.get("sha256")or sh.get(r_)!=f["sha256"]:
+				continue
+			p_=os.path.join(d_,KQ_DISK[r_])
+			if r_=="web":
+				ok=all(os.path.isfile(os.path.join(p_,x))for x in("maplibre-gl.js","maplibre-gl.css","style.json"))
+			elif r_=="orte":
+				ok=os.path.isfile(p_)and os.path.getsize(p_)==f["unpacked"]
+			else:
+				ok=os.path.isfile(p_)and os.path.getsize(p_)==f["size"]
+			if ok:
+				have[r_]=True
+	except(OSError,ValueError):
+		have={}
+	KQ_RT["have"],KQ_RT["ok_t"]=have,now
+	return have
 
 
 def kq_installed():
 	""
-	now=time.time()
-	if now-KQ_RT["ok_t"]<2.0:
-		return KQ_RT["ok"]
-	ok=False
-	if kq_pinned():
-		d_=kq_dir()
-		try:
-			with open(os.path.join(d_,"karte.ok"),encoding="utf-8")as fh:
-				m=json.load(fh)
-			ok=(isinstance(m,dict)and m.get("tag")==KQ_TAG and m.get("sha256")=={r_:f["sha256"]for r_,f in KQ_FILES.items()}
-				  and os.path.getsize(os.path.join(d_,"ch.pmtiles"))==KQ_FILES["tiles"]["size"]
-				  and os.path.getsize(os.path.join(d_,"orte.sqlite"))==KQ_FILES["orte"]["unpacked"]
-				  and all(os.path.isfile(os.path.join(d_,"web",f))for f in("maplibre-gl.js","maplibre-gl.css","style.json")))
-		except(OSError,ValueError):
-			ok=False
-	KQ_RT["ok"],KQ_RT["ok_t"]=ok,now
-	return ok
+	return kq_pinned()and all(kq_have().get(r_)for r_ in KQ_FILES)
+
+
+def kq_on():
+	"""
+"""
+	h_=kq_have()
+	return bool(h_.get("tiles")and h_.get("orte")and os.path.isfile(os.path.join(kq_dir(),"web","style.json"))
+				and os.path.isfile(os.path.join(kq_dir(),"web","maplibre-gl.js")))
+
+
+def kq_styles():
+	""
+	if not kq_on():
+		return[]
+	return[s_ for s_ in KQ_STYLES if os.path.isfile(os.path.join(kq_dir(),"web",s_))]
+
+
+def kq_topo_on():
+	h_=kq_have()
+	return bool(kq_on()and h_.get("topo")and h_.get("relief")and "style_topo.json"in kq_styles())
 
 
 def kq_close():
 	with KQ_RT["lock"]:
-		for k in("pm","db"):
-			o=KQ_RT[k]
-			KQ_RT[k]=None
+		pms,KQ_RT["pm"]=KQ_RT["pm"],{}
+		db_,KQ_RT["db"]=KQ_RT["db"],None
+		for o in list(pms.values())+[db_]:
 			try:
 				if o is not None:
 					o.close()
@@ -93139,7 +93219,7 @@ class KqPMTiles:
 			 self.data_len,self.n_addr,self.n_entries,self.n_contents)=_kq_struct.unpack_from("<11Q",h,8)
 			self.clustered,self.icomp,self.tcomp,self.ttype,self.minz,self.maxz=_kq_struct.unpack_from("<6B",h,96)
 			self.bounds=[v/1e7 for v in _kq_struct.unpack_from("<4i",h,102)]
-			if self.icomp not in(1,2)or self.ttype!=1 or self.root_len>1<<20:
+			if self.icomp not in(1,2)or self.ttype not in KQ_MIME or self.root_len>1<<20:
 				raise ValueError("unsupported PMTiles (compression %d, tile type %d)"%(self.icomp,self.ttype))
 			self.size=os.fstat(self.fd).st_size
 			self.leaves=_KqOD()
@@ -93233,11 +93313,12 @@ class KqPMTiles:
 		return None
 
 
-def kq_pm():
+def kq_pm(r_="tiles"):
 	with KQ_RT["lock"]:
-		if KQ_RT["pm"]is None:
-			KQ_RT["pm"]=KqPMTiles(os.path.join(kq_dir(),"ch.pmtiles"))
-		return KQ_RT["pm"]
+		pm=KQ_RT["pm"].get(r_)
+		if pm is None:
+			pm=KQ_RT["pm"][r_]=KqPMTiles(os.path.join(kq_dir(),KQ_DISK[r_]))
+		return pm
 
 
 
@@ -93275,7 +93356,7 @@ def kq_search(q, n=8):
 	"""
 """
 	k=kq_norm(q)[:60]
-	if len(k)<2 or not kq_installed():
+	if len(k)<2 or not kq_on():
 		return[]
 	try:
 		n=max(1,min(20,int(n or 8)))
@@ -93365,14 +93446,28 @@ def kq_free():
 
 
 def kq_space_ok():
-	""
+	"""
+"""
 	dd=kq_dl_dir()
-	have=0
-	for f in KQ_FILES.values():
+	have,h_=0,kq_have()
+	for r_,f in KQ_FILES.items():
+		if h_.get(r_):
+			continue
 		for p in(os.path.join(dd,f["name"]),os.path.join(dd,f["name"])+".part"):
 			if os.path.isfile(p):
 				have+=os.path.getsize(p)
-	return kq_free()-(kq_total()-have+KQ_FILES["web"]["unpacked"]+KQ_FILES["orte"]["unpacked"])>=bio_free_need()
+	unp=sum(KQ_FILES[r_]["unpacked"]for r_ in("web","orte")if not h_.get(r_))
+	return kq_free()-(kq_total()-have+unp)>=bio_free_need()
+
+
+def _kq_keep(src, dst, moved):
+	"""
+"""
+	try:
+		os.link(src,dst)
+	except OSError:
+		os.replace(src,dst)
+		moved.append((dst,src))
 
 
 def kq_download(wait=False):
@@ -93388,25 +93483,36 @@ def kq_download(wait=False):
 	KQ_DL.update(running=True,got=0,total=kq_total(),msg="",stop=False,done=False,phase="load")
 
 	def work():
-		dd,tmp=kq_dl_dir(),kq_dir()+".new"
+		dd,tmp,old=kq_dl_dir(),kq_dir()+".new",kq_dir()
+		have=dict(kq_have())
+		moved=[]
 		try:
 			os.makedirs(dd,exist_ok=True)
-			for r_ in("web","orte","tiles"):
+			for r_ in KQ_ORDER:
+				if have.get(r_):
+					continue
 				f=KQ_FILES[r_]
 				dest=os.path.join(dd,f["name"])
 				if os.path.isfile(dest)and piper_check_file(dest,f)[0]:
 					KQ_DL["got"]+=f["size"]
 				else:
-					bio_fetch(KQ_BASE["url"]+f["name"],dest,f,KQ_DL)
+					bio_fetch(kq_url(r_),dest,f,KQ_DL)
 			KQ_DL["phase"]="unpack"
 			shutil.rmtree(tmp,ignore_errors=True)
-			os.makedirs(os.path.join(tmp,"web"))
-			_kq_unzip(os.path.join(dd,KQ_FILES["web"]["name"]),os.path.join(tmp,"web"),KQ_FILES["web"]["unpacked"])
+			os.makedirs(tmp)
+			if have.get("web"):
+				shutil.copytree(os.path.join(old,"web"),os.path.join(tmp,"web"))
+			else:
+				os.makedirs(os.path.join(tmp,"web"))
+				_kq_unzip(os.path.join(dd,KQ_FILES["web"]["name"]),os.path.join(tmp,"web"),KQ_FILES["web"]["unpacked"])
 			with open(os.path.join(tmp,"web","karte.json"),encoding="utf-8")as fh:
 				man=json.load(fh)
-			if man.get("tag")!=KQ_TAG:
-				raise ValueError("the package is not "+KQ_TAG)
-			_kq_gunzip(os.path.join(dd,KQ_FILES["orte"]["name"]),os.path.join(tmp,"orte.sqlite"),KQ_FILES["orte"]["unpacked"])
+			if man.get("tag")!=kq_tag("web"):
+				raise ValueError("the package is not "+kq_tag("web"))
+			if have.get("orte"):
+				_kq_keep(os.path.join(old,"orte.sqlite"),os.path.join(tmp,"orte.sqlite"),moved)
+			else:
+				_kq_gunzip(os.path.join(dd,KQ_FILES["orte"]["name"]),os.path.join(tmp,"orte.sqlite"),KQ_FILES["orte"]["unpacked"])
 			import sqlite3
 			c_=sqlite3.connect("file:"+os.path.join(tmp,"orte.sqlite")+"?mode=ro",uri=True)
 			try:
@@ -93414,24 +93520,42 @@ def kq_download(wait=False):
 				c_.execute("SELECT k, id, w, r FROM such LIMIT 1").fetchall()
 			finally:
 				c_.close()
-			os.replace(os.path.join(dd,KQ_FILES["tiles"]["name"]),os.path.join(tmp,"ch.pmtiles"))
-			KqPMTiles(os.path.join(tmp,"ch.pmtiles")).close()
+			for r_ in("tiles","topo","relief"):
+				dst=os.path.join(tmp,KQ_DISK[r_])
+				if have.get(r_):
+					_kq_keep(os.path.join(old,KQ_DISK[r_]),dst,moved)
+				else:
+					os.replace(os.path.join(dd,KQ_FILES[r_]["name"]),dst)
+				pm=KqPMTiles(dst)
+				try:
+					if pm.ttype not in KQ_TTYPE[r_]:
+						raise ValueError("%s: wrong tile type %d"%(KQ_FILES[r_]["name"],pm.ttype))
+				finally:
+					pm.close()
 			with open(os.path.join(tmp,"karte.ok"),"w",encoding="utf-8")as fh:
-				json.dump({"tag":KQ_TAG,"sha256":{r_:f["sha256"]for r_,f in KQ_FILES.items()}},fh)
+				json.dump({"tag":KQ_TAG,"sha256":{r_:f["sha256"]for r_,f in KQ_FILES.items()},
+						   "tags":{r_:kq_tag(r_)for r_ in KQ_FILES}},fh)
 			kq_close()
-			shutil.rmtree(kq_dir(),ignore_errors=True)
-			os.replace(tmp,kq_dir())
+			moved.clear()
+			shutil.rmtree(old,ignore_errors=True)
+			os.replace(tmp,old)
 			shutil.rmtree(dd,ignore_errors=True)
 			KQ_DL["done"]=True
 			KQ_RT["ok_t"]=0.0
-			log_event("sys",f"Offline map of Switzerland installed ({KQ_TAG}, {round(kq_total() / 1e6)} MB)")
+			log_event("sys",f"Offline map of Switzerland installed ({KQ_TAG}, {round(kq_need_disk() / 1e6)} MB)")
 		except InterruptedError:
 			KQ_DL["msg"]="cancelled"
 		except Exception as e:
 			KQ_DL["msg"]=str(getattr(e,"reason","")or e)[:160]or e.__class__.__name__
 			log_event("sys",f"Offline map not installed: {KQ_DL['msg']}")
 		finally:
+			for dst,src in moved:
+				try:
+					os.replace(dst,src)
+				except OSError:
+					pass
 			shutil.rmtree(tmp,ignore_errors=True)
+			KQ_RT["ok_t"]=0.0
 			KQ_DL.update(running=False,phase="")
 	if wait:
 		work()
@@ -93475,15 +93599,33 @@ def kq_sim_ok():
 def kq_maxzoom():
 	""
 	try:
-		return int(kq_pm().maxz)if kq_installed()else KQ_MAXZOOM
+		return int(kq_pm().maxz)if kq_on()else KQ_MAXZOOM
 	except(OSError,ValueError):
 		return KQ_MAXZOOM
 
 
+def kq_layers():
+	""
+	out={}
+	h_=kq_have()
+	for sch,r_ in KQ_LAYER.items():
+		if not h_.get(r_)or(r_!="tiles"and not kq_topo_on()):
+			continue
+		try:
+			pm=kq_pm(r_)
+			out[sch]={"key":kq_key(r_),"z":[int(pm.minz),int(pm.maxz)],"bounds":[round(v,5)for v in pm.bounds],
+						"ext":KQ_EXT.get(pm.ttype,"mvt")}
+		except(OSError,ValueError):
+			pass
+	return out
+
+
 def kq_state():
-	on=kq_installed()
-	return{"on":on,"tag":KQ_TAG,"maxzoom":kq_maxzoom(),"pinned":kq_pinned(),"admin":kq_role()=="admin","sim":kq_sim_ok(),
-			"size":kq_total(),"disk":kq_need_disk(),"free":kq_free(),"free_need":bio_free_need(),"space_ok":True if on else kq_space_ok(),
+	on,full=kq_on(),kq_installed()
+	return{"on":on,"full":full,"topo":kq_topo_on(),"add":bool(on and not full and kq_pinned()),"tag":KQ_TAG,
+			"maxzoom":kq_maxzoom(),"pinned":kq_pinned(),"admin":kq_role()=="admin","sim":kq_sim_ok(),
+			"styles":kq_styles(),"layers":kq_layers(),"def":"topo"if CFG.get("map_topo",True)else "std",
+			"size":kq_total(),"disk":kq_need_disk(),"free":kq_free(),"free_need":bio_free_need(),"space_ok":True if full else kq_space_ok(),
 			"dl":{k:KQ_DL[k]for k in("running","got","total","msg","done","phase")}}
 
 
@@ -93503,12 +93645,9 @@ def smalltv_routes(app, reply, body):
 	def kq_page_():
 		return Response(kq_page(),mimetype="text/html")
 
-	@app.route("/karte/t/<tag>/<int:z>/<int:x>/<int:y>.mvt")
-	def kq_tile_(tag,z,x,y):
-		if tag!=KQ_TAG or not kq_installed():
-			return nope()
+	def tile_reply(r_,z,x,y):
 		try:
-			pm=kq_pm()
+			pm=kq_pm(r_)
 			b_=pm.tile(z,x,y)
 		except(ValueError,OSError):
 			return nope()
@@ -93517,13 +93656,26 @@ def smalltv_routes(app, reply, body):
 		h_={"Cache-Control":"public, max-age=2592000, immutable"}
 		if pm.tcomp==2:
 			h_["Content-Encoding"]="gzip"
-		return Response(b_,mimetype="application/x-protobuf",headers=h_)
+		return Response(b_,mimetype=KQ_MIME.get(pm.ttype,"application/octet-stream"),headers=h_)
+
+	@app.route("/karte/t/<tag>/<int:z>/<int:x>/<int:y>.mvt")
+	def kq_tile_(tag,z,x,y):
+		if tag not in(KQ_TAG,kq_tag("tiles"))or not kq_on():
+			return nope()
+		return tile_reply("tiles",z,x,y)
+
+	@app.route("/karte/t/<key>/<sch>/<int:z>/<int:x>/<int:y>.<ext>")
+	def kq_tile2_(key,sch,z,x,y,ext):
+		r_=KQ_LAYER.get(sch)
+		if not r_ or not kq_on()or key!=kq_key(r_)or not kq_have().get(r_)or(r_!="tiles"and not kq_topo_on()):
+			return nope()
+		return tile_reply(r_,z,x,y)
 
 	@app.route("/karte/fonts/<path:fp>")
 	def kq_font_(fp):
 		""
 		h_={"Cache-Control":"public, max-age=2592000"}
-		if not kq_installed():
+		if not kq_on():
 			return nope()
 		m_=re.fullmatch(r"([A-Za-z0-9 ,]{1,120})/(\d{1,5}-\d{1,5})\.pbf",fp)
 		if m_:
@@ -93537,7 +93689,7 @@ def smalltv_routes(app, reply, body):
 
 	@app.route("/karte/web/<path:fp>")
 	def kq_web_(fp):
-		if not kq_installed()or not re.fullmatch(r"[A-Za-z0-9._@/-]{1,120}",fp)or fp.endswith(".gz")or fp=="karte.json":
+		if not kq_on()or not re.fullmatch(r"[A-Za-z0-9._@/-]{1,120}",fp)or fp.endswith(".gz")or fp=="karte.json":
 			return nope()
 		base=os.path.realpath(os.path.join(kq_dir(),"web"))
 		p_=os.path.realpath(os.path.join(base,fp))
@@ -93587,57 +93739,70 @@ VIEW_GET = tuple(VIEW_GET) + tuple(p for p in ("/karte", "/karte/", "/api/karte"
 
 
 
-_HX_KQ = _zd('639zzq_offline_karten/HX_KQ', _zd_hx_en((
-	'OpenStreetMap contributors',
-	'Offline map of Switzerland',
-	'Map and place search without internet: loaded once from GitHub (fixed checksum), then everything stays on MoveEye.',
-	'Download offline map of Switzerland',
-	'kq-ask',
-	'kq-del',
-	'installed',
-	'Remove',
-	'Cancel',
-	'checking and unpacking …',
-	'not enough free space on the memory card',
-	'comes with an update',
-	'cancelled',
-	'Search a place …',
-	'Nothing found',
-	'Open in the simulator',
-	'Set as location of MoveEye',
-	'Big map',
-	'Map',
-	'Location of MoveEye',
-	'Tap on the map to choose a point. Two fingers or the wheel zoom.',
-	'The offline map is not installed.',
-	'Install it under Settings → Location.',
-	'Offline map not readable',
-	'Sent to the simulator – it loads the place.',
-	'Saved',
-	'Only in Switzerland',
-	'Sources and licences',
-	'kind-city',
-	'kind-town',
-	'kind-village',
-	'kind-suburb',
-	'kind-quarter',
-	'kind-neighbourhood',
-	'kind-hamlet',
-	'kind-locality',
-	'kind-isolated_dwelling',
-	'kind-farm',
-	'kind-island',
-	'kind-islet',
-	'kind-peak',
-	'kind-volcano',
-	'kind-saddle',
-	'kind-pass',
-	'kind-lake',
-	'kind-reservoir',
-	'kind-glacier',
-	'kind-street',
-)))
+_KQ_TOPO_LABEL = "Offline map: topo map (contour lines, relief, hiking paths) instead of the standard map"
+_HX_KQ = _zd_hxk('639zzq_offline_karten/HX_KQ', [
+	('OpenStreetMap contributors', 'OpenStreetMap-Mitwirkende'),
+	('Offline map of Switzerland', 'Offline-Karte Schweiz'),
+	('Map and place search without internet: loaded once from GitHub (fixed checksum), then everything stays on MoveEye.', 'Karte und Ortssuche ohne Internet: einmal von GitHub laden (feste Prüfsumme), danach bleibt alles auf MoveEye.'),
+	('Download offline map of Switzerland', 'Offline-Karte Schweiz herunterladen'),
+	('kq-ask', 'Offline-Karte Schweiz jetzt laden? %s MB von GitHub (danach %s MB auf der Speicherkarte, %s GB bleiben frei).'),
+	('kq-del', 'Offline-Karte entfernen? Danach kommen die Karten wieder aus dem Internet (wenn eingeschaltet).'),
+	('installed', 'installiert'),
+	('Remove', 'Entfernen'),
+	('Cancel', 'Abbrechen'),
+	('checking and unpacking …', 'prüfen und entpacken …'),
+	('not enough free space on the memory card', 'zu wenig freier Platz auf der Speicherkarte'),
+	('comes with an update', 'kommt mit einem Update'),
+	('cancelled', 'abgebrochen'),
+	('Search a place …', 'Ort suchen …'),
+	('Nothing found', 'Nichts gefunden'),
+	('Open in the simulator', 'Im Simulator öffnen'),
+	('Set as location of MoveEye', 'Als Standort von MoveEye setzen'),
+	('Big map', 'Grosse Karte'),
+	('Map', 'Karte'),
+	('Location of MoveEye', 'Standort von MoveEye'),
+	('Tap on the map to choose a point. Two fingers or the wheel zoom.', 'Auf die Karte tippen, um einen Punkt zu wählen. Mit zwei Fingern oder dem Rad zoomen.'),
+	('The offline map is not installed.', 'Die Offline-Karte ist nicht installiert.'),
+	('Install it under Settings → Location.', 'Installieren unter Einstellungen → Standort.'),
+	('Offline map not readable', 'Offline-Karte nicht lesbar'),
+	('Sent to the simulator – it loads the place.', 'An den Simulator geschickt – er lädt den Ort.'),
+	('Saved', 'Gespeichert'),
+	('Only in Switzerland', 'Nur in der Schweiz'),
+	('Sources and licences', 'Quellen und Lizenzen'),
+	('kind-city', 'Stadt'),
+	('kind-town', 'Stadt'),
+	('kind-village', 'Dorf'),
+	('kind-suburb', 'Quartier'),
+	('kind-quarter', 'Quartier'),
+	('kind-neighbourhood', 'Quartier'),
+	('kind-hamlet', 'Weiler'),
+	('kind-locality', 'Flurname'),
+	('kind-isolated_dwelling', 'Einzelhof'),
+	('kind-farm', 'Hof'),
+	('kind-island', 'Insel'),
+	('kind-islet', 'Insel'),
+	('kind-peak', 'Gipfel'),
+	('kind-volcano', 'Gipfel'),
+	('kind-saddle', 'Sattel'),
+	('kind-pass', 'Pass'),
+	('kind-lake', 'See'),
+	('kind-reservoir', 'Stausee'),
+	('kind-glacier', 'Gletscher'),
+	('kind-street', 'Strasse'),
+	('Map style', 'Kartenstil'),
+	('Standard', 'Standard'),
+	('Topo', 'Topo'),
+	('hiking trail', 'Wanderweg'),
+	('mountain trail', 'Bergwanderweg'),
+	('alpine trail', 'Alpinwanderweg'),
+	('Hiking paths from OpenStreetMap – not the official network.', 'Wanderwege aus OpenStreetMap – nicht das offizielle Netz.'),
+	('Add the topo map', 'Topo-Karte ergänzen'),
+	('Contour lines, relief and hiking paths for the map.', 'Höhenlinien, Relief und Wanderwege für die Karte.'),
+	('kq-ask-topo', 'Topo-Karte jetzt ergänzen? %s MB von GitHub (danach %s MB auf der Speicherkarte, %s GB bleiben frei). Die Karte bleibt solange an.'),
+	(_KQ_TOPO_LABEL, 'Offline-Karte: Topo-Karte (Höhenlinien, Relief, Wanderwege) statt Standard'),
+])
 _KQ_EN = {"kq-ask": "Load the offline map of Switzerland now? %s MB from GitHub (then %s MB on the memory card, %s GB stay free).",
+		  "kq-ask-topo": "Add the topo map now? %s MB from GitHub (then %s MB on the memory card, %s GB stay free). The map stays on meanwhile.",
 		  "kq-del": "Remove the offline map? Then the maps come from the internet again (if switched on).",
 		  "kind-city": "city", "kind-town": "town", "kind-village": "village", "kind-suburb": "quarter", "kind-quarter": "quarter",
 		  "kind-neighbourhood": "quarter", "kind-hamlet": "hamlet", "kind-locality": "locality", "kind-isolated_dwelling": "farmstead",
@@ -93648,6 +93813,10 @@ for _k, _v in _HX_KQ.items():
 	DE.setdefault(_k,_v[0])
 	for _i,_L in enumerate(("fr","it","rm")):
 		TRX[_L].setdefault(_k,_v[_i+1])
+
+
+_kq_i = max([i for i, x in enumerate(TOGGLES) if x[1] == "map_online"] or [len(TOGGLES) - 1])
+TOGGLES.insert(_kq_i + 1, ("Setup", "map_topo", _KQ_TOPO_LABEL))
 
 
 def kq_tx():
@@ -93664,7 +93833,7 @@ KQ_HEAD_JS = _zd('639zzq_offline_karten/KQ_HEAD_JS', "")
 
 def kq_head():
 	s_=kq_state()
-	st={k:s_[k]for k in("on","tag","maxzoom","pinned","admin","sim")}
+	st={k:s_[k]for k in("on","full","topo","tag","maxzoom","pinned","admin","sim","styles","layers","def")}
 	return(KQ_HEAD_JS.replace("/*KQSTATE*/{}",json.dumps(st),1)
 			.replace("/*KQTX*/{}",json.dumps(kq_tx(),ensure_ascii=False).replace("</","<\\/"),1))
 
@@ -93741,11 +93910,11 @@ def kq_page():
 
 
 _HELP_KQ = {
-	"de": ("🗺 Offline-Karte Schweiz", "(Einstellungen → Standort, nur der Admin): Karte und Ortssuche der ganzen Schweiz einmal von GitHub laden (feste Prüfsumme; vorher wird der freie Platz auf der Speicherkarte geprüft), danach ohne Internet: Standort auf der Karte antippen oder suchen («Zurich» findet Zürich), Orte der Aufnahmen, grosse Karte /karte, «🎮 Im Simulator öffnen» und «Ort von der Karte» im Simulator. «🗑 Entfernen» löscht sie wieder. Daten © OpenStreetMap-Mitwirkende (ODbL)."),
-	"en": ("🗺 Offline map of Switzerland", "(Settings → Location, administrator only): load the map and the place search of all of Switzerland once from GitHub (fixed checksum; the free space on the memory card is checked first), then without internet: tap or search the location (“Zurich” finds Zürich), the places of the recordings, the big map /karte, “🎮 Open in the simulator” and “Place from the map” in the simulator. “🗑 Remove” deletes it again. Data © OpenStreetMap contributors (ODbL)."),
-	"fr": ("🗺 Carte hors ligne de la Suisse", "(Réglages → Emplacement, administrateur seulement) : charger une fois depuis GitHub la carte et la recherche de lieux de toute la Suisse (somme de contrôle fixe ; l’espace libre sur la carte mémoire est vérifié d’abord), ensuite sans Internet : toucher ou chercher l’emplacement (« Zurich » trouve Zürich), les lieux des enregistrements, la grande carte /karte, « 🎮 Ouvrir dans le simulateur » et « Lieu sur la carte » dans le simulateur. « 🗑 Supprimer » l’efface. Données © contributeurs d’OpenStreetMap (ODbL)."),
-	"it": ("🗺 Mappa offline della Svizzera", "(Impostazioni → Posizione, solo l’amministratore): caricare una volta da GitHub la mappa e la ricerca di luoghi di tutta la Svizzera (somma di controllo fissa; prima viene controllato lo spazio libero sulla scheda di memoria), poi senza Internet: toccare o cercare la posizione («Zurich» trova Zürich), i luoghi delle registrazioni, la mappa grande /karte, «🎮 Apri nel simulatore» e «Luogo dalla mappa» nel simulatore. «🗑 Rimuovi» la cancella. Dati © contributori di OpenStreetMap (ODbL)."),
-	"rm": ("🗺 Charta offline da la Svizra", "(Parameters → Lieu, mo l’administratur): chargiar ina giada da GitHub la charta e la tschertga da lieus da tut la Svizra (summa da controlla fixa; avant vegn controllà il spazi liber sin la carta da memoria), lura senza internet: tutgar u tschertgar il lieu («Zurich» chatta Zürich), ils lieus da las registraziuns, la charta gronda /karte, «🎮 Avrir en il simulatur» e «Lieu da la charta» en il simulatur. «🗑 Allontanar» la stizza. Datas © contribuents d’OpenStreetMap (ODbL)."),
+	"de": ("🗺 Offline-Karte Schweiz", "(Einstellungen → Standort, nur der Admin): Karte und Ortssuche der ganzen Schweiz einmal von GitHub laden (feste Prüfsumme; vorher wird der freie Platz auf der Speicherkarte geprüft), danach ohne Internet: Standort auf der Karte antippen oder suchen («Zurich» findet Zürich), Orte der Aufnahmen, grosse Karte /karte, «🎮 Im Simulator öffnen» und «Ort von der Karte» im Simulator. «🗑 Entfernen» löscht sie wieder. Daten © OpenStreetMap-Mitwirkende (ODbL). Topo-Karte (Vorgabe, Schalter «Standard / Topo» auf /karte): Höhenlinien und Relief aus swissALTI3D (© swisstopo), Wanderwege gelb / rot / blau aus OpenStreetMap (nicht das offizielle Netz); hell oder dunkel wie die Seite."),
+	"en": ("🗺 Offline map of Switzerland", "(Settings → Location, administrator only): load the map and the place search of all of Switzerland once from GitHub (fixed checksum; the free space on the memory card is checked first), then without internet: tap or search the location (“Zurich” finds Zürich), the places of the recordings, the big map /karte, “🎮 Open in the simulator” and “Place from the map” in the simulator. “🗑 Remove” deletes it again. Data © OpenStreetMap contributors (ODbL). Topo map (default, switch “Standard / Topo” on /karte): contour lines and relief from swissALTI3D (© swisstopo), hiking paths yellow / red / blue from OpenStreetMap (not the official network); light or dark like the page."),
+	"fr": ("🗺 Carte hors ligne de la Suisse", "(Réglages → Emplacement, administrateur seulement) : charger une fois depuis GitHub la carte et la recherche de lieux de toute la Suisse (somme de contrôle fixe ; l’espace libre sur la carte mémoire est vérifié d’abord), ensuite sans Internet : toucher ou chercher l’emplacement (« Zurich » trouve Zürich), les lieux des enregistrements, la grande carte /karte, « 🎮 Ouvrir dans le simulateur » et « Lieu sur la carte » dans le simulateur. « 🗑 Supprimer » l’efface. Données © contributeurs d’OpenStreetMap (ODbL). Carte topo (par défaut, bouton « Standard / Topo » sur /karte) : courbes de niveau et relief de swissALTI3D (© swisstopo), sentiers jaunes / rouges / bleus d’OpenStreetMap (pas le réseau officiel) ; claire ou sombre comme la page."),
+	"it": ("🗺 Mappa offline della Svizzera", "(Impostazioni → Posizione, solo l’amministratore): caricare una volta da GitHub la mappa e la ricerca di luoghi di tutta la Svizzera (somma di controllo fissa; prima viene controllato lo spazio libero sulla scheda di memoria), poi senza Internet: toccare o cercare la posizione («Zurich» trova Zürich), i luoghi delle registrazioni, la mappa grande /karte, «🎮 Apri nel simulatore» e «Luogo dalla mappa» nel simulatore. «🗑 Rimuovi» la cancella. Dati © contributori di OpenStreetMap (ODbL). Mappa topo (predefinita, interruttore «Standard / Topo» su /karte): curve di livello e rilievo da swissALTI3D (© swisstopo), sentieri gialli / rossi / blu da OpenStreetMap (non la rete ufficiale); chiara o scura come la pagina."),
+	"rm": ("🗺 Charta offline da la Svizra", "(Parameters → Lieu, mo l’administratur): chargiar ina giada da GitHub la charta e la tschertga da lieus da tut la Svizra (summa da controlla fixa; avant vegn controllà il spazi liber sin la carta da memoria), lura senza internet: tutgar u tschertgar il lieu («Zurich» chatta Zürich), ils lieus da las registraziuns, la charta gronda /karte, «🎮 Avrir en il simulatur» e «Lieu da la charta» en il simulatur. «🗑 Allontanar» la stizza. Datas © contribuents d’OpenStreetMap (ODbL). Charta topo (predefinida, cumutatur «Standard / Topo» sin /karte): lingias d’autezza e relief da swissALTI3D (© swisstopo), sendas melnas / cotschnas / blauas da OpenStreetMap (betg la rait uffiziala); clera u stgira sco la pagina."),
 }
 
 
@@ -93775,6 +93944,19 @@ for _L in ("fr", "it", "rm"):
 
 
 kq_selftest = _zd_fn('639zzq_offline_karten/kq_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

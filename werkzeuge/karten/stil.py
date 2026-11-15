@@ -44,7 +44,7 @@ DUNKEL = {
     "contour_text_glacier": "#86b6e2", "cliff": "#a59f95", "path": "#7d746a",
     "weg1": "#f2c230", "weg2": "#ff6b55", "weg3": "#6ea8ff", "weg_casing": "#15181b", "weg1_casing": "#15181b",
     "text": "#dfe3e8", "text_minor": "#a9b0b8", "halo": "#16191c", "peak": "#e6dccb",
-    "shadow": "#000000", "highlight": "#c8d4e6", "accent": "#000000", "relief": 0.5,
+    "shadow": "#000000", "highlight": "rgba(160,176,198,0.30)", "accent": "rgba(0,0,0,0.25)", "relief": 0.45,
 }
 # Standard dark: the Protomaps layers with dark colours (layer id -> paint)
 STD_DUNKEL = {

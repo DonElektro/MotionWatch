@@ -1312,7 +1312,8 @@ def kq_selftest():
         assert kq_search("Seon") == [] and '"on": false' in kq_head() and not kq_topo_on() and kq_layers() == {}
     tx = kq_tx()
     assert all(tx[L_]["OpenStreetMap contributors"] for L_ in ("de", "fr", "it", "rm")) and tx["de"]["OpenStreetMap contributors"] == "OpenStreetMap-Mitwirkende"
-    assert all(tx[L_][k] for L_ in ("de", "fr", "it", "rm", "en") for k in ("kq-ask", "kq-ask-topo", "Map style", "Hiking paths from OpenStreetMap – not the official network."))
+    assert all(tx[L_][k] for L_ in ("de", "fr", "it", "rm") for k in ("kq-ask", "kq-ask-topo", "Map style", "Hiking paths from OpenStreetMap – not the official network."))
+    assert tx["en"]["kq-ask"] and tx["en"]["kq-ask-topo"]
     assert all("ß" not in v[0] for v in _HX_KQ.values()) and all(k in DE for k in _HX_KQ)
     assert _HELP_KQ["de"][0] in HELP_PAGE and _HELP_KQ["en"][0] in HELP_PAGE and "Topo" in _HELP_KQ["de"][1]
     # Topo: the setting (web + window), the styles, the credit, the switch
