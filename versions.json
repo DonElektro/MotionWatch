@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-15 00:44",
+ "generated": "2026-11-15 01:45",
  "versions": [
+  {
+   "version": "3.97.0",
+   "file": "webcam_bewegung_3_97_0.py",
+   "url": "",
+   "sha256": "e13f0deca86b72e17d8a3dc3faf5b912283462a5a281b0b4272b4948ac924be9",
+   "date": "2026-11-15 01:45",
+   "notes": "Ein einheitlicher Stil auf allen Seiten wie unter «Mehr»: klare Zeilen mit Zustand, Gehtest und Tipps als Zeilen im Live-Bereich; ist kein Mikrofon eingesteckt, steht ein grauer Hinweis statt einer Warnung.",
+   "size": 3732419,
+   "sig": "9090632508ad767bbeec3bc03935c54a191e07a1b88bfdcc4017e3abf628c44be5990a029b8faa873be5b085f6586e2a76807ed4e6bda182b2b3e3fb30cdd50b",
+   "data": {
+    "file": "moveeye_daten_3_97_0.zip",
+    "url": "",
+    "sha256": "af5c46a0834582eb2e8ca9dea889e63eae77db767838ab4cc0a6925a38041cab",
+    "size": 12557952,
+    "sig": "2ac2f3e42486fe3c770c1ba4561b1f5b231278be12f0aafaec65063828b6ad43174799af2275dc71a8450292e01543cc8baa0762665d3489f56c8f9424d66b03"
+   }
+  },
   {
    "version": "3.96.0",
    "file": "webcam_bewegung_3_96_0.py",
    "url": "",
    "sha256": "e2bf1136e0f9869675ba99545412dac048939511a8b654bd4be925d77c9f76f2",
-   "date": "2026-11-15 00:44",
+   "date": "2026-11-15 01:41",
    "notes": "Fünf Teile. (1) Zeitraffer: jeden Tag automatisch ein Video. (2) CPU- und Akku-Chip in der Kopfzeile «Bedienung», für Zuschauer in der Statuszeile. (3) Mehr → «🌐 Homepage»: öffentliche Seiten auf dem eigenen Webspace. (4) Alarm-Pushes mit Knopf «📷 Live öffnen». (5) «⏪ Zeitfenster»: Abstand der Bilder einstellbar.",
    "size": 3719012,
    "sig": "54bb0a6b0619cf7acf9eac6e2680cc683e296f5aa8890fe2ecb01f9497c9ffa5a0a262a392072b85f0ed991f35c1c7f2653258c3716a161f2d386565d00a9305",
@@ -136,23 +153,6 @@
     "sha256": "6e697ed66ac51d5d86aeeb11e8658da347c203e4afae0a10b9d60c05b89ca20e",
     "size": 11339598,
     "sig": "6c3a0813a172bd1d416c5ec4f4be8e3f02ec2d9238ac221ee31e38f8695483578f93b30604e60db97123f1e2b201258e876e3cc467ba3ef4ea0012e1f4c2b20f"
-   }
-  },
-  {
-   "version": "3.88.0",
-   "file": "webcam_bewegung_3_88_0.py",
-   "url": "",
-   "sha256": "23053b6adc054586b4bee8f02d51827f560e56ce61cbeadcdb43ce5c1305a25f",
-   "date": "2026-11-14 02:40",
-   "notes": "Drei Teile. (1) Neues Spiel «Verschollen im Bergtal», Kapitel 1: ein Aufbau-Abenteuer – ohne Erinnerung in einer Berghütte, nur dein Hund und die Kamera MoveEye (Spielecke, hinter «A Dark Room»; Spielesammlung GS-1.19). (2) Über dem offenen Passwort-Fenster erscheint kein Tipp und keine Tour mehr. (3) Unter der Haube: die Programmdatei ist nochmals rund 130 KB kleiner; am Verhalten ändert sich nichts.",
-   "size": 3810134,
-   "sig": "3043c55427f31b43dae8c5f71c113f85fceee8ef043d0ea9fec2f27a6a19b83dcd80feb86b5708c1f3c070a3192dad7a0ea3dabd18595ce26538199326b0a80b",
-   "data": {
-    "file": "moveeye_daten_3_88_0.zip",
-    "url": "",
-    "sha256": "ed47bc13c2cec3efa6e277daa1e8485b245768c182397a06d1fd9ed77261386e",
-    "size": 11301109,
-    "sig": "f88f19089d6ed3cb7c54d13c611a71c169b8b048926a1d7075f7c7dd90b370aa33ef740126f1039d520a76f1f9050d950d3373cc20762132dab347a17f04f402"
    }
   },
   {
