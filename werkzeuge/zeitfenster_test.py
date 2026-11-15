@@ -238,7 +238,8 @@ def teil_a(datei):
     cap = total * 0.4 / 1024 ** 3
     gone, left = ns["zf_thin"](now=T, cap_gb=cap)
     its2 = ns["zf_items"]()
-    ok(left <= cap * 1024 ** 3 and its2 and min(x[0] for x in its2) > max(x[0] for x in its if x not in its2),
+    # >=: two directions can have a picture with the same time - the cap may split such a pair (still oldest first)
+    ok(left <= cap * 1024 ** 3 and its2 and min(x[0] for x in its2) >= max(x[0] for x in its if x not in its2),
        f"Obergrenze (klein simuliert {cap * 1024:.2f} MB): die ältesten zuerst gelöscht, {left / 1024 ** 2:.2f} MB übrig")
     ok(all(os.path.isfile(p) for p in keepf), "Zeitraffer-Fotos und Aufnahmen bleiben unberührt")
     ok(not moves, "auch dabei nie ein Befehl an den Kopf")
