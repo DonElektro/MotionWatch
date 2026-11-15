@@ -338,7 +338,6 @@ _HX_PB = {
                                                        "L'immagine è troppo piccola (almeno 640 × 360).", "Il maletg è memia pitschen (almain 640 × 360)."),
     "Unknown picture.": ("Unbekanntes Bild.", "Image inconnue.", "Immagine sconosciuta.", "Maletg nunenconuschent."),
     "No connection to MoveEye.": ("Keine Verbindung zu MoveEye.", "Pas de connexion à MoveEye.", "Nessuna connessione a MoveEye.", "Nagina connexiun cun MoveEye."),
-    "Tools": ("Werkzeuge", "Outils", "Strumenti", "Utensils"),
 }
 for _k, _v in _HX_PB.items():
     DE.setdefault(_k, _v[0])
@@ -400,7 +399,7 @@ main{padding:16px;max-width:760px;margin:0 auto;box-sizing:border-box}
   </span>
 </header>
 <main>
-  <a class="pb-back" href="/tools" id="pb-back">‹ Tools</a>
+  <a class="pb-back" href="/homepage" id="pb-back">‹ Homepage</a>
   <h2 id="pb-title">🖼 Product page: pictures</h2>
   <section class="pb-hint"><span id="pb-h1"></span><span class="warn" id="pb-h2"></span><span class="mut" id="pb-h3"></span><span class="pb-off" id="pb-off" hidden></span></section>
   <div class="pb-list" id="pb-list"></div>
@@ -414,7 +413,7 @@ main{padding:16px;max-width:760px;margin:0 auto;box-sizing:border-box}
   const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
   const L = () => { try { return LANG || "de"; } catch (e) { return "de"; } };
   document.title = "MoveEye – " + t("Product page: pictures");
-  $i("pb-back").textContent = "‹ " + t("Tools"); $i("pb-title").textContent = "🖼 " + t("Product page: pictures");
+  $i("pb-back").textContent = "‹ " + t("Homepage"); $i("pb-title").textContent = "🖼 " + t("Product page: pictures");
   $i("pb-h1").textContent = t("These pictures are shown to guests on the product page (/info/). Your own photos replace the examples.");
   $i("pb-h2").textContent = "⚠ " + t("No people, number plates or house numbers.");
   $i("pb-h3").textContent = t("Location data (EXIF, GPS) is removed. The picture is cut to 16:9 and stored on MoveEye.");
@@ -520,7 +519,7 @@ def produktbilder_selftest():
         for k in PB_SLOTS:
             assert pbild_default(k) and pbild_default(k)[0][:4] == b"RIFF", "example picture in the page: " + k
         assert all(DE.get(k) and all(TRX[L].get(k) for L in ("fr", "it", "rm")) for k in _HX_PB), "texts in 5 languages"
-        assert 'id="hp-pbild" href="/produktbilder"' in HP_PAGE and 'href="/produktbilder"' not in TOOLS_PAGE, "entry in the card Homepage"
+        assert 'class="pb-back" href="/homepage"' in PB_PAGE and 'id="hp-pbild" href="/produktbilder"' in HP_PAGE and 'href="/produktbilder"' not in TOOLS_PAGE, "entry in the card Homepage"
     finally:
         DATA_DIR = old
         shutil.rmtree(d, ignore_errors=True)

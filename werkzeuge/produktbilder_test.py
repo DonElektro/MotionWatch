@@ -220,6 +220,8 @@ def browser(base, bilder, tag, slot, foto=""):
         names = pg.evaluate("() => [...document.querySelectorAll('#pb-list .pb-b b')].map(b => b.textContent)")
         ok(names == ["Live-Bild (Handy)", "Sieh selbst: Tag", "Sieh selbst: Nacht", "Zeitfenster: damals", "Zeitfenster: jetzt"], "Seite: %s" % names)
         ok("Keine Personen, Kennzeichen oder Hausnummern." in pg.locator("#pb-h2").inner_text(), "Hinweis «Keine Personen, Kennzeichen oder Hausnummern»")
+        bk = pg.evaluate("() => { const b = document.getElementById('pb-back'); return [b.textContent.trim(), b.getAttribute('href')]; }")
+        ok(bk == ["‹ Homepage", "/homepage"], "Zurück-Link «‹ Homepage» → /homepage %s" % bk)
         ok(pg.evaluate("() => document.documentElement.scrollWidth") <= 390, "keine waagrechte Bildlaufleiste")
         if bilder:
             pg.screenshot(path=os.path.join(bilder, "produktbilder_%s.png" % tag), full_page=True)
