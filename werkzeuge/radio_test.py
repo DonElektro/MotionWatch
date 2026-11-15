@@ -1082,7 +1082,13 @@ def teil_b(datei, tmp, srv, bilder):
             pg.wait_for_timeout(1500); weg()
             pg.locator("#mwk-radio").click()                                 # 4.4.0: «Mitte» = /radio as a window (frame) over the page
             pg.wait_for_function("() => location.pathname === '/radio' || [...document.querySelectorAll('.fx-win iframe')].some(f => (f.getAttribute('src') || '').startsWith('/radio'))", timeout=20000)
-            rp = pg if pg.url.split("?")[0].endswith("/radio") else next(f for f in pg.frames if "/radio" in f.url)
+            rp, t_ = None, time.time() + 20
+            while rp is None and time.time() < t_:                            # the frame needs a moment for its address
+                rp = pg if pg.url.split("?")[0].endswith("/radio") else next((f for f in pg.frames if "/radio" in f.url), None)
+                if rp is None:
+                    pg.wait_for_timeout(250)
+            if rp is None:
+                raise RuntimeError("📻: weder /radio noch ein Fenster mit /radio")
             rp.wait_for_function("() => (document.getElementById('ra-st') || {}).textContent.length > 1", timeout=20000)
             st_ = rp.locator("#ra-st").inner_text()
             ok("läuft" in st_.lower() or "verbinde" in st_.lower(), "📻 → Radio-Seite (%s): %s" % ("Fenster" if rp is not pg else "ganze Seite", st_))
