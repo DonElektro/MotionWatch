@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-15 08:43",
+ "generated": "2026-11-15 10:41",
  "versions": [
+  {
+   "version": "4.1.0",
+   "file": "webcam_bewegung_4_1_0.py",
+   "url": "",
+   "sha256": "8212ea3db915989af3d4ebac90df495f67e2b1562a48b7ed0e2db2dd16faee42",
+   "date": "2026-11-15 10:41",
+   "notes": "«📻 Radio» auch im Browser: «📱 dieser Browser» spielt den Sender auf dem Handy, der Lautsprecher bleibt still; geht es direkt nicht, läuft der Strom über MoveEye (höchstens 2 Zuhörer). Sicherheit: MoveEye holt Radio-Ströme nur noch von öffentlichen Adressen – auch nach Umleitungen und aus Wiedergabelisten; ein selbst eingetragener Sender im Heimnetz spielt nur über den Lautsprecher.",
+   "size": 3880846,
+   "sig": "6aa3c0f44c2750b62c75dc47b4ee915e69fc08c74abe3b07d5e2f1cd4ae4f824921a24e6fcbbcc7db830357bcd0d6d8648245711dad91ff1d0911c56870c3d0b",
+   "data": {
+    "file": "moveeye_daten_4_1_0.zip",
+    "url": "",
+    "sha256": "04c891b6057959b5c687dcffbd7e2aef31eae7d0d05d4196179834a6882b1682",
+    "size": 13376205,
+    "sig": "7d29e5b35885f51b33628ff8920d63a447dd9a207d874cc7a41634f51549780420523e3122515400cea6a2be2700f6306906a3eb82233c1f3e451fff2d27c90b"
+   }
+  },
   {
    "version": "4.0.0",
    "file": "webcam_bewegung_4_0_0.py",
    "url": "",
    "sha256": "75ba60493d2b1edbf4132da9656947ff8c93361bf3de501a292c5209f227e2da",
-   "date": "2026-11-15 08:43",
+   "date": "2026-11-15 09:21",
    "notes": "MoveEye 4.0: Mehr → Bauen → Drucken zeigt neu «🧳 Transportsicherung (noch nicht erprobt)» – Haube, Drehsperre-Klammer und Schutzschale zum Drucken (einzeln oder als ZIP mit Anleitung), in der 3D-Werkstatt mit einem Schalter einblendbar. Die Gehäuse-Nummer bleibt 5.3.1. Neu auch auf der Seite «Handy-Funkgerät»: Reiter «🔏 Bild» – Botschaft im Bild verstecken und lesen, ganz ohne Netz.",
    "size": 3870627,
    "sig": "03e70ca6c992683bb0c64c1907588aedd8a3e1b4720486063ad2feffc7fe30999c56262f5e7607a66a305e9ee652110ef6b30f247d1acc7b38f7a1833940f20f",
@@ -136,23 +153,6 @@
     "sha256": "34615b58f5b6eba8241196bde87e5c1014f0ad9606f7ab84aaf81e69b9269191",
     "size": 11566099,
     "sig": "132f2683676b239e662fa16a7debdd7bdbe13d62b4db5ca66f08e2133c01e7e2543a8b5c6f77506e709a48f27218c67054963364ac09b9d776afc9a41eb9f801"
-   }
-  },
-  {
-   "version": "3.92.2",
-   "file": "webcam_bewegung_3_92_2.py",
-   "url": "",
-   "sha256": "3b5e35cbf273cf62f3da1cf2a682e229ccaf9f8e47b4560ea37b40cd3e27e794",
-   "date": "2026-11-14 14:51",
-   "notes": "Zwei Teile. (1) Kameras: nach dem Trennen vom Simulator kommt genau die Kamera-Liste von vorher zurück – keine zweite «Pi camera 0» mehr, die die Hauptkamera blockiert («Camera __init__ sequence did not complete»); ein solches Doppel wird beim Start von selbst aufgeräumt. (2) Spielecke: alle Spiel-Kacheln mit kurzen, gleich langen Texten in fünf Sprachen, zwei Zeilen, gleich hohe Reihen (Spielesammlung GS-1.21).",
-   "size": 3893968,
-   "sig": "8c7838e455186f123fc5827ae8e08510e00b6b354060270577d997fbe154cd5ae497ece998631dba0b76cf7620dcef68a3ea4f9a8f7f20637244c03a0c698502",
-   "data": {
-    "file": "moveeye_daten_3_92_2.zip",
-    "url": "",
-    "sha256": "4bfa077536ceb3fa6a3a846e0f57fd0209c9e184b52c606df6e9b0bbf0de9564",
-    "size": 11487492,
-    "sig": "3528b4ab7abf0f798f390257ed1df81fa8d56ba8f0606c13966865d51454c1d1d977154d41bdf2244456f1d5b9c5fad0aa3ee3dbe8271887932df158d3a46006"
    }
   },
   {
