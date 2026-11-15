@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-15 23:49",
+ "generated": "2026-11-16 00:00",
  "versions": [
   {
    "version": "4.9.0",
    "file": "webcam_bewegung_4_9_0.py",
    "url": "",
-   "sha256": "7f63133748ecd1377a7022e01d2daffb995d3ce62a66d8f7fff25b206696e4cc",
-   "date": "2026-11-15 23:49",
-   "notes": "Digitaler Rucksack bei Import und Export: überall eine Datei aus dem Rucksack wählen oder einen Export direkt dort ablegen",
-   "size": 3965444,
-   "sig": "d93b4e323d49d5b332541de75cab59d394c3a9b3698b3ed1d2e9de74833635c962a332d9108bb84e0c16728ae6a3847236de79d7ac89ea67a780cedfb5eb5a05",
+   "sha256": "c9e0f4e3f1bd2efbf691b4d6c2d8e6606a347a8490b18abef2d1b718c2693c67",
+   "date": "2026-11-16 00:00",
+   "notes": "Digitaler Rucksack bei Import und Export: überall eine Datei aus dem Rucksack wählen oder einen Export direkt dort ablegen · Mein Handy-Hotspot bevorzugen: ein gespeichertes Netz markieren, MoveEye wechselt hin, sobald es da ist (Schalter, ab Werk aus)",
+   "size": 3977610,
+   "sig": "9de5e64119a28279f4ef3e1cf11d6abafe55c6ca7bce7ffe052f2df2e8a6910eab6dba935bfcf9c1bb08ff7f72fe274d3bd48a2be7296c43ac4d247898951a0c",
    "data": {
     "file": "moveeye_daten_4_9_0.zip",
     "url": "",
-    "sha256": "18ea1ef25d0e0b2203176e5dde5af7af7cd81a4b4c6a3093b487f7fff97d4c6b",
-    "size": 13652376,
-    "sig": "f717f48d94e0440c85f276c0e98f4997b246f165bbc28c18d260e34bc7321c5780983708242bf604389928beed8b3ad77a6c21d2f4642caac988ae5842a92c07"
+    "sha256": "2d38ee0fdff11ac0ae34cd72ac9906a13cb145ece1ed728538cb41c477f2a742",
+    "size": 13681557,
+    "sig": "78c4acd47af58bae717466a562ed6643ae7397e322c3545fbb31689fc7f26cd5d318360b6eb169ce33b29efabd6bde633eae0c1740cf294bb7e322e5c5c6f50f"
    }
   },
   {

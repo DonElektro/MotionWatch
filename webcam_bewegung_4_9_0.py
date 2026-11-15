@@ -24,7 +24,7 @@ Features
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
   * 4.9.0: Digitaler Rucksack bei Import und Export: überall eine Datei aus dem Rucksack wählen oder einen Export direkt dort
-    ablegen
+    ablegen · Mein Handy-Hotspot bevorzugen: ein gespeichertes Netz markieren, MoveEye wechselt hin, sobald es da ist (Schalter, ab Werk aus)
   * 4.8.0: Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt
     hoch) · Spielesammlung GS-1.25: «Verschollen im Bergtal» zeigt den Fortschritt pro Kapitel (oben und im Menü) und läuft bis 16× schnell; in «Gipfeltreffen» trifft Antippen am Handy wieder die richtige Stelle
   * 4.7.0: Spielesammlung GS-1.24: neues Spiel «Gipfeltreffen» (erstes Level) und «Verschollen im Bergtal» Kapitel 2 «Drei Tage»
@@ -286,7 +286,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_9_0.zip"
-ZD_SHA256 = "18ea1ef25d0e0b2203176e5dde5af7af7cd81a4b4c6a3093b487f7fff97d4c6b"
+ZD_SHA256 = "2d38ee0fdff11ac0ae34cd72ac9906a13cb145ece1ed728538cb41c477f2a742"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -3449,7 +3449,7 @@ def tailscale_https_url():
 
 class Backup:
 	def __init__(self):
-		self.q=queue.Queue(maxsize=200)
+		self.q=queue.Queue(maxsize=200);self.busy=""
 		threading.Thread(target=self.loop,daemon=True).start()
 
 	def add(self,path,meta=None):
@@ -3466,9 +3466,13 @@ class Backup:
 	def loop(self):
 		while True:
 			path,meta,tries=self.q.get()
-			if not self._wait_ready(path):
-				continue
-			ok,err=backup_copy(path,meta)
+			self.busy=path
+			try:
+				if not self._wait_ready(path):
+					continue
+				ok,err=backup_copy(path,meta)
+			finally:
+				self.busy=""
 			name=os.path.basename(path)
 			if ok:
 				STATE["backup_status"]=f"✓ {datetime.now().strftime('%H:%M')} {name}"
@@ -44303,6 +44307,8 @@ class WebStream:
 				ok,err=wifi_save(d.get("ssid"),d.get("password")or "",bool(d.get("preferred",True)))
 			elif a=="forget":
 				ok,err=wifi_forget(d.get("id"))
+			elif a=="prefer":
+				ok,err=hspref_set(d.get("on"),d.get("ssid"))
 			else:
 				ok,err=False,"unknown action"
 			out=wifi_status();out.update(ok=ok,error=tr_err(err,lang)if err else None)
@@ -115233,6 +115239,421 @@ _uf_selftest = _zd_fn('639zzzzx_fenster/_uf_selftest()')
 
 
 SELFTEST_EXTRA.append(("Sub-pages as a window (639zzzzx)", _uf_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+HSP_DEF = {"hs_prefer": False, "hs_prefer_ssid": ""}
+for _k, _v in HSP_DEF.items():
+	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
+FACTORY_KEEP.update(HSP_DEF)
+LOCK_DENY_KEYS.update(HSP_DEF)
+HSP_EVERY_S = 30.0
+HSP_RESCAN_S = 120.0
+HSP_PEEK_S = 300.0
+HSP_NET_S = 40.0
+HSP_HAND_S = 600.0
+HSP_STABLE_S = 600.0
+HSP_BACKOFF = (120.0, 300.0, 600.0)
+HSPREF = {"state": "off", "n": 0, "fails": 0, "next": 0.0, "tick": 0.0, "rescan": 0.0, "peek": 0.0, "on_since": 0.0, "hand": -1e9,
+		  "saved": [], "saved_t": -1e9}
+
+HSP_OK, HSP_AWAY, HSP_GO = "connected", "not in range", "found - connecting …"
+HSP_BACK = "after a failure: next try in {n} min"
+HSP_DEV1, HSP_DEVN = "waiting, because {n} device is connected", "waiting, because {n} devices are connected"
+
+
+def hspref_hand():
+	HSPREF["hand"]=time.monotonic()
+
+
+def _hsp_set(state, n=0):
+	HSPREF.update(state=state,n=n)
+	return state
+
+
+def hspref_block():
+	""
+	try:
+		w=WATCH_REF.get("w")
+		if(not hp_quiet()or STATE.get("tracking")or STATE.get("persons")or STATE.get("recording")
+				or getattr(w,"writer",None)is not None):
+			return "found - waiting for the alarm to end"
+		if UPD_PROG.get("phase")or RESTART.get("pending")or POWER.get("pending"):
+			return "found - waiting for the update"
+		if getattr(BACKUP,"busy",""):
+			return "found - waiting for the backup upload"
+		if HP.get("busy"):
+			return "found - waiting for the homepage upload"
+	except Exception:
+		pass
+	return ""
+
+
+def _hsp_saved(fresh=False):
+	if fresh or time.monotonic()-HSPREF["saved_t"]>300:
+		HSPREF["saved"]=_nm_saved();HSPREF["saved_t"]=time.monotonic()
+	return HSPREF["saved"]
+
+
+def _hsp_active():
+	""
+	code,out,_e=_run(["nmcli","-t","-f","NAME,UUID,TYPE","connection","show","--active"],10)
+	ap,cur=False,set()
+	for f in(map(_nm_split,out.splitlines())if code==0 else()):
+		if len(f)>=3 and f[2]in("802-11-wireless","wifi"):
+			ap=ap or f[0]==HOTSPOT_CON
+			if f[0]!=HOTSPOT_CON:
+				cur.add(f[1])
+	return ap,cur
+
+
+def hspref_scan(iface, ap, rescan="no"):
+	""
+	for r in dict.fromkeys((rescan,"no")):
+		code,out,_e=_run(["nmcli","-t","-f","SSID,SIGNAL","device","wifi","list","ifname",iface,"--rescan",r],30)
+		if code==0:
+			break
+	else:
+		return None
+	seen={}
+	for f in map(_nm_split,out.splitlines()):
+		if len(f)>=2 and f[0]and not(ap and f[0]==CFG["hotspot_ssid"]):
+			seen[f[0]]=max(seen.get(f[0],0),int(f[1])if f[1].isdigit()else 0)
+	return seen if seen or not ap else None
+
+
+def hspref_online(secs=HSP_NET_S):
+	""
+	import socket
+	end=time.monotonic()+secs
+	while True:
+		for hp in(("1.1.1.1",443),("8.8.8.8",443),("1.1.1.1",53)):
+			try:
+				socket.create_connection(hp,timeout=3).close()
+				return True
+			except Exception:
+				pass
+		if time.monotonic()>=end:
+			return False
+		time.sleep(3)
+
+
+def _hsp_ap(on):
+	ok=hotspot_set(on,persist=False)[0]
+	hotspot_refresh()
+	return ok
+
+
+def _hsp_fail(ssid, why):
+	HSPREF["fails"]+=1
+	d=HSP_BACKOFF[min(HSPREF["fails"],len(HSP_BACKOFF))-1]
+	HSPREF["next"]=time.monotonic()+d;HSPREF["on_since"]=0.0
+	log_event("sys",f"Phone hotspot «{ssid}»: {why} - next try in {int(d / 60)} min")
+
+
+def hspref_switch(tgt, prev, ap, frm):
+	""
+	uid,ssid=tgt["id"],tgt["ssid"]
+	WIFI.update(busy=True,job=f"connecting to {ssid}…",job_ok=None)
+	log_event("sys",f"Phone hotspot «{ssid}» in range: switching ({frm})")
+	try:
+		if ap and not DUAL["on"]:
+			_hsp_ap(False)
+		with _WIFI_LOCK:
+			code,_o,err=_run(["nmcli","--wait","40","connection","up","uuid",uid]+(["ifname",DUAL["up"]]if DUAL["on"]else[]),50)
+		why=("could not connect ("+_perm_hint(err)[:80]+")")if code else ""if hspref_online()else "no internet"
+		if not why:
+			HSPREF["on_since"]=time.monotonic()
+			WIFI.update(job=f"connected to {ssid} · {page_address()}",job_ok=True)
+			log_event("sys",f"Phone hotspot «{ssid}»: connected, internet works")
+			return True
+		with _WIFI_LOCK:
+			if not code:
+				_run(["nmcli","connection","down","uuid",uid],30)
+			back=""if not prev else " - back on «%s»"%prev["ssid"]if _nm_up(prev["id"])else " - previous network did not come back"
+		if(ap or not back.startswith(" - back"))and not DUAL["on"]and(ap or CFG["net_mode"]!="client"):
+			back+=" - own Wi-Fi on"if _hsp_ap(True)else " - own Wi-Fi did not come on"
+		WIFI.update(job=f"failed: {why}{back}",job_ok=False)
+		_hsp_fail(ssid,why+back)
+		return False
+	finally:
+		WIFI.update(busy=False,refresh=True)
+
+
+def hspref_tick(force=False):
+	""
+	ssid,now=str(CFG.get("hs_prefer_ssid")or ""),time.monotonic()
+	if not CFG.get("hs_prefer"):
+		HSPREF["on_since"]=0.0
+		return _hsp_set("off")
+	if not ssid:
+		return _hsp_set("choose a saved network as «My phone hotspot»")
+	if not force and now<HSPREF["tick"]or WIFI.get("busy")or WIFI.get("hs_busy"):
+		return HSPREF["state"]
+	HSPREF["tick"]=now+HSP_EVERY_S
+	if wifi_backend()!="nm":
+		return _hsp_set("needs NetworkManager")
+	tgt=next((s for s in _hsp_saved()if s["ssid"]==ssid),None)or next((s for s in _hsp_saved(True)if s["ssid"]==ssid),None)
+	if tgt is None:
+		return _hsp_set("no longer saved")
+	ap,cur=_hsp_active()
+	if tgt["id"]in cur:
+		if HSPREF["on_since"]and now-HSPREF["on_since"]>=HSP_STABLE_S:
+			HSPREF.update(fails=0,on_since=0.0)
+		return _hsp_set(HSP_OK)
+	if HSPREF["on_since"]:
+		if now-HSPREF["on_since"]<HSP_STABLE_S:
+			_hsp_fail(ssid,"gone again soon after switching")
+		HSPREF["on_since"]=0.0
+	if now<HSPREF["next"]:
+		return _hsp_set(HSP_BACK,int((HSPREF["next"]-now)/60+0.99))
+	if NETAUTO.get("paused")or CFG.get("camping")or now-HSPREF["hand"]<HSP_HAND_S:
+		return _hsp_set("paused (switched by hand)")
+	prev=next((s for s in _hsp_saved()if s["id"]in cur),None)
+	one=ap and not DUAL["on"]
+	clients=_hotspot_clients(WIFI.get("ap_iface")or WIFI["iface"])if one else 0
+	resc="auto"if not cur or now-HSPREF["rescan"]>=HSP_RESCAN_S else "no"
+	if resc=="auto":
+		HSPREF["rescan"]=now
+	seen=hspref_scan(WIFI["iface"],one,resc)
+	frm="from the own Wi-Fi"if one else f"from «{prev['ssid']}»"if prev else "no network before"
+	if seen is None and one:
+		blk=(HSP_DEVN if clients>1 else HSP_DEV1)if clients else hspref_block()
+		if blk or now-HSPREF["peek"]<HSP_PEEK_S:
+			return _hsp_set(blk or "own Wi-Fi: next look in {n} min",clients or int((HSPREF["peek"]+HSP_PEEK_S-now)/60+0.99))
+		HSPREF["peek"]=now
+		log_event("sys",f"Phone hotspot «{ssid}»: own Wi-Fi off for a moment to look for it")
+		_hsp_ap(False)
+		seen=hspref_scan(WIFI["iface"],False,"yes")or{}
+		if ssid not in seen:
+			_hsp_ap(True)
+	if ssid not in(seen or{}):
+		return _hsp_set(HSP_AWAY)
+	blk=(HSP_DEVN if clients>1 else HSP_DEV1)if clients else hspref_block()
+	if blk:
+		return _hsp_set(blk,clients)
+	_hsp_set(HSP_GO)
+	if hspref_switch(tgt,prev,ap,frm):
+		return _hsp_set(HSP_OK)
+	return _hsp_set(HSP_BACK,int((HSPREF["next"]-time.monotonic())/60+0.99))
+
+
+def hspref_set(on=None, ssid=None):
+	""
+	if ssid:
+		if wifi_backend()=="nm"and ssid not in{s["ssid"]for s in _hsp_saved(True)}:
+			return False,"the network is not saved"
+	if ssid is not None:
+		CFG["hs_prefer_ssid"]=str(ssid)
+	if on is not None:
+		CFG["hs_prefer"]=bool(on)
+	HSPREF.update(fails=0,next=0.0,tick=0.0,on_since=0.0,peek=0.0)
+	save_settings()
+	log_event("sys",f"Phone hotspot preferred: {'on' if CFG['hs_prefer'] else 'off'} «{CFG['hs_prefer_ssid']}»")
+	return True,""
+
+
+def hspref_state():
+	return{"on":bool(CFG.get("hs_prefer")),"ssid":CFG.get("hs_prefer_ssid")or "","state":HSPREF["state"],"n":HSPREF["n"]}
+
+
+def hspref_text(L=None):
+	""
+	h=hspref_state()
+	if not h["on"]or h["state"]=="off":
+		return ""
+	s=trf(h["state"],L,n=h["n"])
+	return trf("📶 Hotspot «{name}»: {state}",L,name=h["ssid"],state=s)if h["ssid"]else "📶 "+s
+
+
+
+_hsp_netauto_step_base = NetAuto.step
+
+
+def _hsp_netauto_step(self):
+	_hsp_netauto_step_base(self)
+	try:
+		hspref_tick()
+	except Exception as e:
+		HSPREF["state"]="error: "+str(e)[:80]
+
+
+
+NetAuto.step = _hsp_netauto_step
+_netauto_pause_base = netauto_pause
+
+
+def netauto_pause():
+	hspref_hand()
+	_netauto_pause_base()
+
+
+_wifi_connect_base = wifi_connect
+
+
+def wifi_connect(ssid, password="", preferred=True):
+	hspref_hand()
+	return _wifi_connect_base(ssid,password,preferred)
+
+
+_wifi_status_base = wifi_status
+
+
+def wifi_status():
+	st=_wifi_status_base()
+	st["hsp"]=hspref_state()
+	return st
+
+
+_push_ssids_base = push_ssids
+
+
+def push_ssids():
+	out=_push_ssids_base()
+	s=str(CFG.get("hs_prefer_ssid")or "").strip()
+	return sorted(out+[s],key=len,reverse=True)if len(s)>=3 and s not in out and s not in _NOSSID_KEEP else out
+
+
+
+HSP_HTML = _zd('639zzzzy_hotspot_bevorzugen/HSP_HTML', ZD_PAGE)
+
+
+
+_hsp_tk_build_section_base = App._build_section
+
+
+def _hsp_tk_build_section(self, sec, sbody, settings_parent=None):
+	_hsp_tk_build_section_base(self,sec,sbody,settings_parent)
+	if sec!="Wi-Fi / hotspot"or CFG["lock_on"]:
+		return
+	try:
+		v=tk.BooleanVar(value=bool(CFG.get("hs_prefer")))
+		ttk.Checkbutton(sbody,text="📶 "+tr("Prefer my phone hotspot"),variable=v,command=lambda:hspref_set(v.get())).pack(anchor="w",pady=(10,0))
+		cb=ttk.Combobox(sbody,state="readonly");cb.pack(fill="x",pady=(4,0))
+		lab=ttk.Label(sbody,text="",style="Mut.TLabel",wraplength=380,justify="left");lab.pack(anchor="w",pady=(4,0))
+		nm=[]
+		threading.Thread(target=lambda:nm.extend(s["ssid"]for s in _hsp_saved(True)),daemon=True).start()
+		cb.bind("<<ComboboxSelected>>",lambda _e:(hspref_set(None,nm[cb.current()])if 0<=cb.current()<len(nm)else None,self.root.focus_set()))
+
+		def paint():
+			if not lab.winfo_exists():
+				return
+			vals=[("📶 "if n==CFG["hs_prefer_ssid"]else "")+n for n in nm]
+			if list(cb["values"])!=vals:
+				cb["values"]=vals
+				if CFG["hs_prefer_ssid"]in nm:
+					cb.current(nm.index(CFG["hs_prefer_ssid"]))
+			lab.config(text=hspref_text()or tr("My phone hotspot")+": "+(CFG["hs_prefer_ssid"]or "–"))
+			lab.after(2000,paint)
+		paint()
+	except Exception as e:
+		log_event("sys",f"Window: phone hotspot: {e}"[:160])
+
+
+
+App._build_section = _hsp_tk_build_section
+
+
+
+_HX_HSP = _zd('639zzzzy_hotspot_bevorzugen/HX_HSP', _zd_hx_en((
+	'Prefer my phone hotspot',
+	'My phone hotspot',
+	'📶 Hotspot «{name}»: {state}',
+	'connected',
+	'found - connecting …',
+	'not in range',
+	'after a failure: next try in {n} min',
+	'paused (switched by hand)',
+	'found - waiting for the alarm to end',
+	'found - waiting for the update',
+	'found - waiting for the backup upload',
+	'found - waiting for the homepage upload',
+	'waiting, because {n} device is connected',
+	'waiting, because {n} devices are connected',
+	'own Wi-Fi: next look in {n} min',
+	'no longer saved',
+	'needs NetworkManager',
+	'choose a saved network as «My phone hotspot»',
+	'the network is not saved',
+)))
+for _k, _v in _HX_HSP.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+if 'id="hsp-css"' not in WEB_PAGE:
+	WEB_PAGE=WEB_PAGE.replace("</body>","<script>try { Object.assign(I18N.de, "+json.dumps({k:v[0]for k,v in _HX_HSP.items()},ensure_ascii=False)
+								+"); } catch (e) {}</script>"+HSP_HTML+"</body>",1)
+TRX["fr"].update(_zd('639zzzzy_hotspot_bevorzugen/TRX_fr_update', _ZDDict()))
+TRX["it"].update(_zd('639zzzzy_hotspot_bevorzugen/TRX_it_update', _ZDDict()))
+TRX["rm"].update(_zd('639zzzzy_hotspot_bevorzugen/TRX_rm_update', _ZDDict()))
+
+
+
+HELP_HSP = _zd('639zzzzy_hotspot_bevorzugen/HELP_HSP', _ZDDict())
+
+
+def _help_hsp(doc, lang):
+	i=doc.find('<section id="system"')
+	if i<0 or 'id="hsp-help"'in doc:
+		return doc
+	j=doc.find("</section>",i)
+	return doc[:j]+HELP_HSP[lang]+doc[j:]if j>=0 else doc
+
+
+_hp_en_hsp = HELP_PAGE.find('<div lang="en">')
+if _hp_en_hsp > 0:
+	HELP_PAGE=_help_hsp(HELP_PAGE[:_hp_en_hsp],"de")+_help_hsp(HELP_PAGE[_hp_en_hsp:],"en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L]=_help_hsp(HELP_X[_L],_L)
+
+
+
+hspref_selftest = _zd_fn('639zzzzy_hotspot_bevorzugen/hspref_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Prefer my phone hotspot (639zzzzy)", hspref_selftest))
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")
