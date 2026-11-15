@@ -24,7 +24,8 @@ Features
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
   * 3.97.0: Ein einheitlicher Stil auf allen Seiten wie unter «Mehr»: klare Zeilen mit Zustand, Gehtest und Tipps als Zeilen im
-    Live-Bereich; ist kein Mikrofon eingesteckt, steht ein grauer Hinweis statt einer Warnung.
+    Live-Bereich; ist kein Mikrofon eingesteckt, steht ein grauer Hinweis statt einer Warnung. Neu: Reiter «★ Favoriten»
+    vor «Live»: Seiten, Schalter, Aktionen und Spiele als Kacheln, pro Benutzer gemerkt; hinzufügen mit ☆ am Ende jeder Zeile.
   * 3.96.0: Fünf Teile. (1) Zeitraffer: jeden Tag automatisch ein Video. (2) CPU- und Akku-Chip in der Kopfzeile «Bedienung»,
     für Zuschauer in der Statuszeile. (3) Mehr → «🌐 Homepage»: öffentliche Seiten auf dem eigenen Webspace. (4) Alarm-Pushes mit
     Knopf «📷 Live öffnen». (5) «⏪ Zeitfenster»: Abstand der Bilder einstellbar.
@@ -281,7 +282,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_3_97_0.zip"
-ZD_SHA256 = "af5c46a0834582eb2e8ca9dea889e63eae77db767838ab4cc0a6925a38041cab"
+ZD_SHA256 = "ee996e3f90db5c1f4ff2af174c73692e098048df429fe6e4162b320c59cfcdc2"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -50710,6 +50711,10 @@ class App:
 		body.columnconfigure(0,weight=1);body.rowconfigure(0,weight=1)
 		if self.tab not in[t for t,_ in self._tabs()]:
 			self.tab="live"
+		if self.tab=="fav"and getattr(self,"_fav_tk",None):
+			self.left_f=None
+			self._fav_tk(body)
+			return
 		if self.tab in TK_PANEL_TABS:
 			self.left_f=None
 			prev_=dict(self._open_before if getattr(self,"_open_before",None)is not None else getattr(self,"_shown",{}))
@@ -102673,7 +102678,8 @@ def _ms_tk_search(self):
 
 
 def _ms_tk_tab(self, tid):
-	self._ms_cur=None
+	self._ms_cur=getattr(self,"_ms_next",None)
+	self._ms_next=None
 	return _ms_tk_tab_before(self,tid)
 
 
@@ -103594,6 +103600,348 @@ mic_info_selftest = _zd_fn('639zzzh_mikrofon_info/mic_info_selftest()')
 
 
 SELFTEST_EXTRA.append(("Missing microphone = info, not a problem (639zzzh)", mic_info_selftest))
+
+
+
+
+
+
+
+
+
+
+
+_HX_FAV = _zd('639zzzi_favoriten/HX_FAV', _zd_hx_en((
+	'Favourites',
+	'Edit',
+	'Done',
+	'+ Add',
+	'No favourites yet',
+	'fav-empty',
+	'Drag to sort, ✕ removes',
+	'Add to favourites',
+	'Remove from favourites',
+	'Added to the favourites',
+	'Quick switches',
+	'Pages',
+	'Games (favourites)',
+	'PIN for switching off',
+	'Search …',
+	'not here',
+	'Quiz with buzzer',
+	'Werewolf',
+	'Pictionary',
+	'Connect four',
+	'Scattergories',
+	'Estimation',
+	'Explain the word',
+	'Who am I?',
+	'Reaction',
+	'Battleships',
+	'Removed from the favourites',
+	'Game chosen',
+	'fav-tk-empty',
+	'Long press: favourite',
+)))
+for _k, _v in _HX_FAV.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(('fr','it','rm')):
+		TRX[_L].setdefault(_k,_v[_i+1])
+
+FAV_MAX = 60
+_FAV_KEY = re.compile(r"^(qs|pr|row|page|game):[\w:#./\- ]{1,90}$")
+VIEW_GET = VIEW_GET + ("/api/fav", "/fav")
+VIEW_POST.add("/api/fav")
+LOCK_KEEP.update({"ui_fav"})
+CFG.setdefault("ui_fav", {})
+
+
+FAV_PAGES = [("page:/", "👁", "Live", "/"), ("page:/protect", "🛡", "Protection", "/protect"), ("page:/recordings", "🕘", "History", "/recordings"),
+			 ("page:/settings", "⚙", "Settings", "/settings"), ("page:/cams", "📷", "Cameras", "/cams"), ("page:/sim", "🧪", "Simulator", "/sim"),
+			 ("page:/zones", "🗺", "Zones", "/zones"), ("page:/tausch", "📁", "File " + "ex" "change", "/tausch"), ("page:/karte", "🗺", "Map", "/karte"),
+			 ("page:/almanach", "🌦", "Almanac", "/almanach"), ("page:/morse", "📡", "Morse mode", "/morse"), ("page:/help", "📖", "Manual", "/help"),
+			 ("page:/quick", "📄", "Quick guide (1 page)", "/quick"), ("page:/qr", "▦", "QR codes", "/qr"), ("page:/tools", "🧰", "Tools", "/tools"),
+			 ("page:/kino", "🎬", "Cinema", "/kino"), ("page:/more", "▦", "More", "/more")]
+FAV_GAMES = [("game:quiz", "🔔", "Quiz with buzzer"), ("game:wolf", "🐺", "Werewolf"), ("game:draw", "🎨", "Pictionary"), ("game:c4", "🔴", "Connect four"),
+			 ("game:slf", "🏙", "Scattergories"), ("game:guess", "📏", "Estimation"), ("game:taboo", "🗣", "Explain the word"), ("game:whoami", "🤔", "Who am I?"),
+			 ("game:react", "⚡", "Reaction"), ("game:ships", "🚢", "Battleships")]
+
+
+def fav_user(g_=None):
+	return ansicht_user(g_)
+
+
+def fav_clean(items):
+	out,seen=[],set()
+	for x in items if isinstance(items,list)else[]:
+		if not isinstance(x,dict):
+			continue
+		k=str(x.get("k")or "")[:100]
+		if not _FAV_KEY.match(k)or k in seen:
+			continue
+		seen.add(k)
+		out.append({"k":k,"l":str(x.get("l")or "")[:60],"i":str(x.get("i")or "")[:8]})
+		if len(out)>=FAV_MAX:
+			break
+	return out
+
+
+def fav_get(user):
+	return fav_clean((CFG.get("ui_fav")or{}).get(str(user)[:60])or[])
+
+
+def fav_set(user, items):
+	allf=dict(CFG.get("ui_fav")or{})
+	allf[str(user)[:60]]=fav_clean(items)
+	CFG["ui_fav"]=allf
+	save_settings()
+	return allf[str(user)[:60]]
+
+
+def fav_catalog():
+	""
+	langs=("de","en","fr","it","rm")
+	more_de=dict(globals().get("MORE_DE")or{},**(globals().get("MORE_GROUPS_DE")or{}))
+	nm=lambda e:{L:(EN_SHOW.get(e,e)if L=="en"else(more_de.get(e)or tr(e,L))if L=="de"else tr(e,L))for L in langs}
+	return{"pages":[{"k":k,"i":i,"n":nm(e),"h":h}for k,i,e,h in FAV_PAGES],
+			"games":[{"k":k,"i":i,"n":nm(e),"h":"/party?game="+k.split(":",1)[1]}for k,i,e in FAV_GAMES],
+			"tx":{L:{k:(EN_SHOW.get(k,k)if L=="en"else tr(k,L))for k in _HX_FAV}for L in langs},
+			"ic":dict(globals().get("TK_SUB_ICONS")or{})}
+
+
+_smalltv_routes_fav = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_fav(app,reply,body)
+	from flask import Response,request,g as g_
+
+	@app.route("/fav")
+	def fav_page():
+		return Response(main_tab_page("fav"),mimetype="text/html")
+
+	@app.route("/api/fav/game",methods=["POST"])
+	def api_fav_game():
+		if getattr(g_,"role","admin")!="admin":
+			return reply({"ok":False,"error":"not allowed"},403)
+		err=fav_game(str(body().get("game")or ""))
+		return reply({"ok":not err,"error":err or None,"game":PARTY.get("game")},200 if not err else 400)
+
+	@app.route("/api/fav",methods=["GET","POST"])
+	def api_fav():
+		user=fav_user(g_)
+		if request.method=="POST":
+			d=body()
+			return reply({"ok":True,"items":fav_set(user,d.get("items")),"user":user})
+		return reply({"ok":True,"items":fav_get(user),"user":user})
+
+
+def fav_game(gm):
+	""
+	if gm not in[k.split(":",1)[1]for k,_i,_e in FAV_GAMES]:
+		return "unknown game"
+	if not party_on():
+		games_all_open(6.0,"favourite")
+	host=PARTY.get("host")if PARTY.get("host")in PARTY["players"]else ""
+	tmp=""
+	if not host:
+		tmp="fav-"+secrets.token_hex(4)
+		PARTY["players"][tmp]={"name":"★","score":0,"t":time.time()}
+		PARTY["host"]=host=tmp
+	try:
+		err=party_act(host,{"a":"game","game":gm})
+	finally:
+		if tmp:
+			PARTY["players"].pop(tmp,None)
+			if PARTY.get("host")==tmp:
+				PARTY["host"]=""
+			party_bump()
+	return err or ""
+
+
+
+if not any(x[0] == "fav" for x in NAV_ITEMS):
+	NAV_ITEMS.insert(0,("fav","/fav","Favourites","Favourites"))
+FAV_STAR_SVG = ('<svg class="ni" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3.2l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17.2l-5.4 2.9 1-6.1-4.4-4.3 '
+				'6.1-.9z"/></svg>')
+_nav_html_639zzzi = nav_html
+
+
+
+def nav_html(active):
+	h_=_nav_html_639zzzi(active)
+	return re.sub(r'<a href="/fav"( class="on")?>',lambda m_:'<a href="/fav" class="fav%s" title="%s" aria-label="%s">%s'%(
+		" on"if m_.group(1)else "",tr("Favourites"),tr("Favourites"),FAV_STAR_SVG),h_,count=1)
+
+
+FAV_CSS = _zd('639zzzi_favoriten/FAV_CSS', "")
+
+FAV_PARTY_JS = r"""<script>
+(async function () {                                       // 639zzzi: the tile of a game - /party?game=<id> chooses it
+  const q = new URLSearchParams(location.search), gm = q.get("game"); if (!gm) return;
+  try { const r = await fetch("/api/fav/game", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({game: gm})});
+    const j = await r.json(), L = (typeof LANG !== "undefined" && LANG) || "de", tx = ((window.FAV_CAT || {}).tx || {})[L] || {};
+    if (j.ok && typeof toast === "function") toast("🎮 " + (tx["Game chosen"] || "✓"));
+    if (typeof partyLoad === "function") partyLoad(); } catch (e) {}
+  try { history.replaceState(null, "", location.pathname); } catch (e) {}
+})();
+</script>"""
+
+FAV_JS = _zd('639zzzi_favoriten/FAV_JS', "")
+
+_render_page_639zzzi = render_page
+
+
+
+def render_page(page, active):
+	out=_render_page_639zzzi(page,active)
+	if '<nav class="nav">'not in out or "</head>"not in out or "</body>"not in out:
+		return out
+	out=out.replace("</head>",FAV_CSS+"</head>",1)
+	if active=="party"and "</body>"in out:
+		i=out.rfind("</body>")
+		out=out[:i]+"<script>window.FAV_CAT="+json.dumps(fav_catalog(),ensure_ascii=False).replace("</","<\\/")+";</script>"+FAV_PARTY_JS+out[i:]
+	if active in("fav","live")or "MS_PAGE="in out:
+		i=out.rfind("</body>")
+		extra=""
+		if active=="fav"and "window.MS_CONF"not in out:
+			extra="<script>window.MS_CONF="+json.dumps(MS_PAGES,ensure_ascii=False)+";window.MS_TX="+json.dumps(ms_tx(),ensure_ascii=False).replace("</","<\\/")+";</script>"
+		out=out[:i]+extra+"<script>window.FAV_CAT="+json.dumps(fav_catalog(),ensure_ascii=False).replace("</","<\\/")+";</script>"+FAV_JS+out[i:]
+	return out
+
+
+fav_selftest = _zd_fn('639zzzi_favoriten/fav_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("★ Favourites (639zzzi)", fav_selftest))
+
+
+
+def _fav_tk_tabs(self):
+	return[(k,"★"if k=="fav"else lab)for k,lab in _fav_tk_tabs_before(self)]
+
+
+def _fav_tk_level():
+	try:
+		return str((protect_status(None)or{}).get("level")or "")
+	except Exception:
+		return ""
+
+
+def _fav_tk(self, body):
+	""
+	card=tk.Frame(body,bg=C["bg"]);card.grid(row=0,column=0,sticky="nsew")
+	tk.Label(card,text="★ "+tr("Favourites"),bg=C["bg"],fg=C["txt"],font=("DejaVu Sans",14,"bold"),anchor="w").pack(fill="x",pady=(4,10))
+	items=fav_get("admin")
+	self._fav_tiles=[]
+	if not items:
+		tk.Label(card,text="☆",bg=C["bg"],fg=C["acc"],font=("DejaVu Sans",40)).pack(pady=(30,6))
+		tk.Label(card,text=tr("fav-tk-empty"),bg=C["bg"],fg=C["mut"],font=("DejaVu Sans",10),wraplength=420,justify="center").pack()
+		return
+	grid=tk.Frame(card,bg=C["bg"]);grid.pack(fill="both",expand=True)
+	cols=4
+	for c_ in range(cols):
+		grid.columnconfigure(c_,weight=1,uniform="fav")
+	for n,f in enumerate(items):
+		b=tk.Label(grid,text=(f.get("i")or "★")+"\n"+(f.get("l")or f["k"].split(":",1)[1]),bg=C["panel"],fg=C["txt"],font=("DejaVu Sans",11,"bold"),
+					 highlightthickness=1,highlightbackground=C["line"],padx=6,pady=14,wraplength=150,justify="center",cursor="hand2")
+		b.grid(row=n//cols,column=n%cols,sticky="nsew",padx=4,pady=4)
+		b.bind("<Button-1>",lambda e,f=f:self._fav_go(f))
+		self._fav_tiles.append((f,b))
+	self._fav_paint()
+
+
+def _fav_tk_on(self, f):
+	kind,rest=f["k"].split(":",1)
+	if kind=="qs":
+		q=next((x for x in self._qs_list()if x["id"]==rest),None)
+		if q is None or q.get("flash")or rest in("photo",):
+			return None
+		try:
+			return bool(q["on"]())
+		except Exception:
+			return None
+	if kind=="pr"and rest in("off","watch","full"):
+		return _fav_tk_level()==rest
+	return None
+
+
+def _fav_paint(self):
+	for f,b in getattr(self,"_fav_tiles",[]):
+		try:
+			if not b.winfo_exists():
+				continue
+			on=self._fav_tk_on(f)
+			col=C["grn"]if on else C["line"]
+			if b.cget("highlightbackground")!=col:
+				b.config(highlightbackground=col,highlightthickness=2 if on else 1)
+		except Exception:
+			pass
+	if getattr(self,"_fav_tiles",None)and not getattr(self,"_fav_job",None):
+		def run():
+			self._fav_job=None
+			if self.tab=="fav":
+				self._fav_paint()
+		self._fav_job=self.root.after(2000,run)
+
+
+def _fav_go(self, f):
+	""
+	kind,rest=f["k"].split(":",1)
+	import webbrowser
+	from tkinter import simpledialog,messagebox as mb_
+	try:
+		if kind=="qs":
+			q=next((x for x in self._qs_list()if x["id"]==rest),None)
+			if q is not None and(not q.get("ok")or q["ok"]()):
+				q["go"]()
+		elif kind=="pr":
+			if rest=="night":
+				self._night()
+			elif rest=="off"and CFG.get("protect_pin"):
+				pin=simpledialog.askstring("MoveEye",tr("PIN for switching off"),show="*",parent=self.root)
+				if pin is not None:
+					ok,err=protect_disarm(pin,"window")
+					if not ok:
+						mb_.showwarning("MoveEye",tr(err))
+			elif rest in("off","watch","full"):
+				protect_set(rest,"window",None)
+		elif kind=="row":
+			page,rid=rest.split(":",1)
+			tab={"settings":"settings","protect":"protect","sim":"sim"}.get(page)
+			if tab:
+				self._ms_next=rid[4:]if rid.startswith("sec:")else None
+				self._tab(tab)
+			else:
+				webbrowser.open(page_address().rstrip("/")+{"history":"/recordings","cams":"/cams"}.get(page,"/"))
+		elif kind in("page","game"):
+			href=next((h for k,_i,_e,h in FAV_PAGES if k==f["k"]),None)if kind=="page"else "/party?game="+rest
+			webbrowser.open(page_address().rstrip("/")+(href or "/"))
+	except Exception as e:
+		log_event("sys",f"Favourite {f['k']}: {e}")
+	self._fav_paint()
+
+
+if "App" in globals():
+	_fav_tk_tabs_before=App._tabs
+
+	App._tabs=_fav_tk_tabs
+	App._fav_tk,App._fav_tk_on,App._fav_paint,App._fav_go=_fav_tk,_fav_tk_on,_fav_paint,_fav_go
 
 
 

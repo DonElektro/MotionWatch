@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-15 01:45",
+ "generated": "2026-11-15 01:54",
  "versions": [
   {
    "version": "3.97.0",
    "file": "webcam_bewegung_3_97_0.py",
    "url": "",
-   "sha256": "e13f0deca86b72e17d8a3dc3faf5b912283462a5a281b0b4272b4948ac924be9",
-   "date": "2026-11-15 01:45",
-   "notes": "Ein einheitlicher Stil auf allen Seiten wie unter «Mehr»: klare Zeilen mit Zustand, Gehtest und Tipps als Zeilen im Live-Bereich; ist kein Mikrofon eingesteckt, steht ein grauer Hinweis statt einer Warnung.",
-   "size": 3732419,
-   "sig": "9090632508ad767bbeec3bc03935c54a191e07a1b88bfdcc4017e3abf628c44be5990a029b8faa873be5b085f6586e2a76807ed4e6bda182b2b3e3fb30cdd50b",
+   "sha256": "f75ecd04545f09241bf019600b2f85e14099b13ea0fb751563220f48cc0712a1",
+   "date": "2026-11-15 01:54",
+   "notes": "Ein einheitlicher Stil auf allen Seiten wie unter «Mehr»: klare Zeilen mit Zustand, Gehtest und Tipps als Zeilen im Live-Bereich; ist kein Mikrofon eingesteckt, steht ein grauer Hinweis statt einer Warnung. Neu: Reiter «★ Favoriten» vor «Live»: Seiten, Schalter, Aktionen und Spiele als Kacheln, pro Benutzer gemerkt; hinzufügen mit ☆ am Ende jeder Zeile.",
+   "size": 3743746,
+   "sig": "c60010fc2d930a2fefc80f76b15605acdd957551a01effdf94f8f0247374c911d47efe27d3da51086053613971476d885be81c5d6a4649eb4149d54f011f4102",
    "data": {
     "file": "moveeye_daten_3_97_0.zip",
     "url": "",
-    "sha256": "af5c46a0834582eb2e8ca9dea889e63eae77db767838ab4cc0a6925a38041cab",
-    "size": 12557952,
-    "sig": "2ac2f3e42486fe3c770c1ba4561b1f5b231278be12f0aafaec65063828b6ad43174799af2275dc71a8450292e01543cc8baa0762665d3489f56c8f9424d66b03"
+    "sha256": "ee996e3f90db5c1f4ff2af174c73692e098048df429fe6e4162b320c59cfcdc2",
+    "size": 12592328,
+    "sig": "b1008dba6ba018658d3900eff8bf08afb24f6438f94cee898ade6c193d4a73c533dba65d76581049110789d113f93e3270a8610c5d9c6d67fcd56e1fb924e306"
    }
   },
   {
