@@ -601,6 +601,9 @@ def teil_b(datei, bilder):
                     pg.screenshot(path=os.path.join(bilder, "tausch_desktop_liste.png"), full_page=True); pg.click("#tz-view")
                 # editor with preview, then a conflict
                 pg.locator(".tz-it", has_text="Ferienplan.md").locator(".th").click()
+                pg.wait_for_selector("#tz-ta, #tz-viewer")
+                if pg.locator("#tz-viewer").count():                # 639zzzzv: a text opens the reading view first, «✎» = the editor
+                    pg.locator("#tz-viewer button", has_text="✎").click()
                 pg.wait_for_selector("#tz-ta"); pg.click("#tz-pv"); pg.wait_for_timeout(300)
                 html_ = pg.inner_html("#tz-mdv")
                 ok("<script" not in html_ and 'href="javascript' not in html_ and "&lt;script&gt;" in html_ and "<b>Abfahrt</b>" in html_ and 'href="https://www.meteoschweiz.admin.ch"' in html_,
