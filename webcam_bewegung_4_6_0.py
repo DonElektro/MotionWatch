@@ -294,7 +294,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_6_0.zip"
-ZD_SHA256 = "bdebaa214646c56d7254328527dbc48944368120769cd8954d025a96f6689ec3"
+ZD_SHA256 = "cef4e7dd656aa26f32ab8b5efb63238461155158932197717d461bf3e0b9a9c6"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -114012,6 +114012,326 @@ push_pause_selftest = _zd_fn('639zzzzp_push_pause/push_pause_selftest()')
 
 
 SELFTEST_EXTRA.append(("Push pause (639zzzzp)", push_pause_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from urllib.parse import urlsplit as _rk_urlsplit, unquote as _rk_unquote, parse_qsl as _rk_parse_qsl
+
+
+
+_RK_N = r"[^/?#\\\x00-\x1f]{1,160}"
+RK_EXPORTS = (
+	(r"/api/settings/export", (), "private", "data"),
+	(r"/tools/diag\.zip", (), "private", "archive"),
+	(r"/api/nacht/export/[A-Za-z0-9_.-]{1,80}", (), "private", "data"),
+	(r"/api/factory/backup/[A-Za-z0-9_.-]{1,120}", (), "private", "data"),
+	(r"/api/sim/sicherung/[A-Za-z0-9_.-]{1,120}", (), "private", "data"),
+	(r"/api/simtest/report\.zip", ("lang",), "private", "archive"),
+	(r"/api/servo/export", ("fmt",), "all", "data"),
+	(r"/api/dataset\.zip", (), "mine", "archive"),
+	(r"/touren/x/[A-Za-z0-9_-]{1,40}\.(gpx|kml|zip)", ("lang",), "all", "route"),
+	(r"/tausch/pack/x/[A-Za-z0-9_-]{1,40}\.(csv|json|zip|txt|md|pdf)", ("lang",), "all", "doc"),
+	(r"/api/qrk/card/[A-Za-z0-9_-]{1,40}\.(png|svg|pdf)", ("dl", "lang", "t", "size"), "all", "image"),
+	(r"/build/datei/[A-Za-z0-9_. ()+-]{1,120}(/[A-Za-z0-9_. ()+-]{1,120}){0,3}", (), "all", "doc"),
+	(r"/build/(alle|transport|platten)\.zip", (), "all", "archive"),
+	(r"/diary/img/[A-Za-z0-9_.-]{1,120}", (), "mine", "image"),
+	(r"/rec/file/" + _RK_N, ("dl",), "mine", "video"),
+	(r"/rec/report/" + _RK_N, ("lang",), "mine", "pdf"),
+	(r"/rec/zip", ("names",), "mine", "archive"),
+)
+_RK_RE = tuple((re.compile(p), frozenset(q), m, k) for p, q, m, k in RK_EXPORTS)
+RK_QV_MAX = 4000
+
+
+def rk_export_find(url):
+	""
+	try:
+		s=str(url or "")
+		if len(s)>6000 or any(c in s for c in "\\\r\n\t\x00"):
+			return None
+		u=_rk_urlsplit(s)
+	except ValueError:
+		return None
+	if u.scheme or u.netloc or u.fragment or not u.path.startswith("/")or u.path.startswith("//"):
+		return None
+	path=_rk_unquote(u.path)
+	if ".."in path or "//"in path or path.startswith(("/tausch/dl","/api/tausch","/g/")):
+		return None
+	try:
+		q=_rk_parse_qsl(u.query,keep_blank_values=True,strict_parsing=bool(u.query))
+	except ValueError:
+		return None
+	for rx,keys,mode,kind in _RK_RE:
+		if rx.fullmatch(path):
+			if all(k in keys and len(v)<=RK_QV_MAX and not any(ord(c)<32 for c in v)for k,v in q):
+				return u.path,u.query,mode,kind
+			return None
+	return None
+
+
+def rk_disp_name(cd, path):
+	""
+	cd=str(cd or "")
+	m=re.search(r"filename\*\s*=\s*UTF-8''([^;]+)",cd,re.I)
+	if m:
+		n=_rk_unquote(m.group(1).strip().strip('"'))
+	else:
+		m=re.search(r'filename\s*=\s*"([^"]*)"',cd,re.I)or re.search(r"filename\s*=\s*([^;]+)",cd,re.I)
+		n=m.group(1).strip()if m else _rk_unquote(path.rstrip("/").rsplit("/",1)[-1])
+	return n or "datei"
+
+
+def rk_probe(who, lang=None):
+	lim=tausch_limits()
+	return{"ok":True,"on":bool(CFG.get("tausch_on",True)),"view":"files_view"in who["perms"],
+			"down":"files_down"in who["perms"],"up":"files_up"in who["perms"]and bool(CFG.get("tausch_on",True)),
+			"max":lim["file"],"exports":[[p,sorted(q),m,k]for p,q,m,k in RK_EXPORTS]}
+
+
+def rk_fetch_export(app, req, g_, path, query, spool, cap, lang=None):
+	"""
+"""
+	from flask import request as _req
+	if getattr(g_,"appkey",None):
+		return False,tr("not allowed for your user",lang),"",0
+	hdr={k:v for k,v in req.headers.items()if k.lower()not in("content-length","content-type","transfer-encoding","origin",
+																	"range","if-none-match","if-modified-since","accept-encoding")}
+	env={"REMOTE_ADDR":req.remote_addr or "127.0.0.1"}
+	if req.environ.get("mw.funnel"):
+		env["mw.funnel"]=req.environ["mw.funnel"]
+	resp=None
+	with app.test_request_context(path,method="GET",query_string=query,headers=hdr,environ_base=env):
+		try:
+			for f in app.before_request_funcs.get(None,()):
+				if getattr(f,"__name__","")=="auth":
+					continue
+				rv=f()
+				if rv is not None:
+					return False,tr("not allowed for your user",lang),"",0
+			resp=app.make_response(app.dispatch_request())
+			if resp.status_code!=200:
+				return False,tr("The download did not work.",lang)+f" (HTTP {resp.status_code})","",0
+			name=rk_disp_name(resp.headers.get("Content-Disposition"),_req.path)
+			n=0
+			resp.direct_passthrough=False
+			with open(spool,"wb")as f:
+				for part in resp.iter_encoded():
+					n+=len(part)
+					if n>cap:
+						return False,tr("The file is too big for the backpack.",lang),name,n
+					f.write(part)
+			return True,"",name,n
+		except Exception as e:
+			log_event("web",f"Backpack: export {path[:60]} failed ({e.__class__.__name__})")
+			return False,tr("The download did not work.",lang),"",0
+		finally:
+			if resp is not None:
+				try:
+					resp.close()
+				except Exception:
+					pass
+
+
+def rk_save_export(app, req, g_, d, lang=None):
+	""
+	who=tausch_who(g_)
+	if "files_up"not in who["perms"]or not CFG.get("tausch_on",True):
+		return False,tr("You may not upload files.",lang),{}
+	hit=rk_export_find(d.get("url"))
+	if hit is None:
+		return False,tr("This download cannot be saved in the backpack.",lang),{}
+	path,query,mode,kind=hit
+	area="mine"if mode=="private"or d.get("area")=="mine"else "all"
+	folder=str(d.get("folder")or "")[:80]if area=="all"else ""
+	root=_tz_load()
+	if root is None:
+		return False,tr("The storage (USB stick / SSD) is not there - plug it in again.",lang),{}
+	spool=os.path.join(root,"up","rk_"+secrets.token_hex(8)+".tmp")
+	try:
+		ok,err,name,size=rk_fetch_export(app,req,g_,path,query,spool,tausch_limits()["file"],lang)
+		if not ok:
+			return False,err,{}
+		want=str(d.get("name")or "").strip()[:200]
+		ok,err,st=tausch_up_start(who,{"name":want or name,"size":size,"area":area,"folder":folder,
+											"lastmod":int(time.time())},lang)
+		if not ok:
+			return False,err,{}
+		uid,off=st["id"],st.get("have",0)
+		with open(spool,"rb")as f:
+			f.seek(off)
+			while off<size:
+				data=f.read(TZ_CHUNK)
+				if not data:
+					break
+				ok,err,off,code=tausch_up_chunk(who,uid,off,data,lang)
+				if not ok:
+					tausch_up_abort(who,uid,lang)
+					return False,err,{}
+		ok,err,res=tausch_up_finish(who,uid,lang)
+		if ok:
+			res["private"]=mode=="private"
+		return ok,err,res
+	finally:
+		try:
+			os.remove(spool)
+		except OSError:
+			pass
+
+
+_RK_TX = _zd('639zzzzr_rucksack_io/RK_TX', _ZDDict())
+for _k, _v in _RK_TX.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+
+for _p in TZ_PERMS:
+	PERM_POST[_p]=set(PERM_POST.get(_p,()))|{"/api/tausch/io"}
+VIEW_GET_PAGES.add("/rk/io.js")
+
+RK = {"js": None, "v": ""}
+
+
+def rk_js():
+	""
+	if RK["js"]is None:
+		tx={L:{k:(v[0]if L=="de"else v[1+("fr","it","rm").index(L)])for k,v in _RK_TX.items()}for L in("de","fr","it","rm")}
+		js=RK_IO_JS.replace("/*RKTX*/{}",json.dumps(tx,ensure_ascii=False),1)
+		RK["v"]=hashlib.sha256(js.encode("utf-8")).hexdigest()[:12]
+		RK["js"]=js
+	return RK["js"]
+
+
+_render_page_before_rk = render_page
+
+
+
+def render_page(page, active):
+	""
+	out=_render_page_before_rk(page,active)
+	if '<nav class="nav">'not in out or "</body>"not in out or "/rk/io.js"in out:
+		return out
+	rk_js()
+	i=out.rfind("</body>")
+	return out[:i]+'<script src="/rk/io.js?v='+RK["v"]+'" defer></script>'+out[i:]
+
+
+_smalltv_routes_639zzzzr = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzzzr(app,reply,body)
+	from flask import request,Response,g
+
+	@app.route("/rk/io.js")
+	def rk_io_js():
+		js=rk_js()
+		cache="private, max-age=86400"if request.args.get("v")==RK["v"]else "no-cache"
+		return Response(js,mimetype="text/javascript",headers={"Cache-Control":cache,"X-Content-Type-Options":"nosniff"})
+
+	@app.route("/api/tausch/io",methods=["GET","POST"])
+	def api_tausch_io():
+		who=tausch_who(g)
+		if request.method=="GET":
+			L=norm_lang(request.args.get("lang")or CFG.get("lang"))
+			if not who["perms"]or getattr(g,"appkey",None):
+				return reply({"ok":False,"error":tr("not allowed for your user",L)},403)
+			return reply(rk_probe(who,L))
+		d=body()
+		L=norm_lang(d.get("lang")or CFG.get("lang"))
+		if d.get("action")!="save":
+			return reply({"ok":False,"error":tr("unknown action",L)},400)
+		if not tausch_rate(who["key"],"io",60):
+			return reply({"ok":False,"error":tr("Too many uploads in a short time - wait a few minutes.",L)},429)
+		ok,err,res=rk_save_export(app,request,g,d,L)
+		return reply(dict(res,ok=ok,error=err or None),200 if ok else 400)
+
+
+RK_IO_JS = _zd('639zzzzr_rucksack_io/RK_IO_JS', "")
+
+
+
+RK_HELP_HTML = _zd('639zzzzr_rucksack_io/RK_HELP_HTML', ZD_PAGE)
+_HELP_RK = dict(x.split("|", 1) for x in RK_HELP_HTML.strip().split("\n") if "|" in x)
+
+
+def _help_rk(doc, lang):
+	i=doc.find('<section id="tausch"')
+	j=doc.find("</ul></section>",i)
+	return doc if i<0 or j<0 or "<li><b>🎒 "in doc[i:j]or lang not in _HELP_RK else doc[:j]+_HELP_RK[lang]+doc[j:]
+
+
+try:
+	_hp_en_rk=HELP_PAGE.find('<div lang="en">')
+	if _hp_en_rk>0:
+		HELP_PAGE=_help_rk(HELP_PAGE[:_hp_en_rk],"de")+_help_rk(HELP_PAGE[_hp_en_rk:],"en")
+	for _L in("fr","it","rm"):
+		if HELP_X.get(_L):
+			HELP_X[_L]=_help_rk(HELP_X[_L],_L)
+except Exception as _e:
+	print(f"639zzzzr help: {_e}")
+
+
+
+rucksack_io_selftest = _zd_fn('639zzzzr_rucksack_io/rucksack_io_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Backpack for import / export: export list, private, script (639zzzzr)", rucksack_io_selftest))
 
 
 
