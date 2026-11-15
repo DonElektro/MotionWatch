@@ -12,7 +12,7 @@
 #               einem eigenen OK (POST mit ok:true, nur Administrator). Keine Behebung schaltet den Schutz aus (BLINKI_FIX_DENY).
 # ----------------------------------------------------------------------------
 # Der Programmtext dieses Teils steht in EINEM Literal (Besitzer / Koordinator 15.11.2026: Hauptdatei klein): werkzeuge/bauen.py
-# legt es in die Zusatz-ZIP, beim Start läuft es hier an seinem Platz (exec in den gemeinsamen Namen). Ohne ZIP gibt es
+# legt es in die Zusatz-ZIP, beim Start läuft es hier an seinem Platz (zd_exec, Teil 639zzzzk_blinki_kern). Ohne ZIP gibt es
 # «Blinki fragen» nicht - es gehört nicht zu Start, Schutz oder Alarm. Die ZIP ist über ZD_SHA256 (Teil 012) mit signiert.
 BLINKI_WISSEN_PY = r'''BLINKI_IDX = {}
 BLINKI_FIX_DENY = re.compile(r"protect|schutz|arm|alarm_off|disarm|aus$", re.I)
@@ -286,7 +286,7 @@ def blinki_ask(mode, q, lang=None, prev=None, who="web", client="", extra=None):
     msgs, sources, links, fixes = blinki_messages(mode, q, L, prev, extra)
     eng = blinki_engine_for(mode)
     x = {"sources": sources, "links": links, "fixes": fixes, "engine": eng or "manual", "client": client, "who": who}
-    x.update({k: v for k, v in (extra or {}).items() if k in ("kid", "place", "speak", "quiz", "image", "max_tokens", "temp")})
+    x.update({k: v for k, v in (extra or {}).items() if k in ("kid", "place", "speak", "quiz", "image", "sent_image", "max_tokens", "temp")})
     if not eng:
         import queue as _q
         jid = os.urandom(6).hex()
@@ -307,5 +307,4 @@ def blinki_ask(mode, q, lang=None, prev=None, who="web", client="", extra=None):
 BLINKI_EXTRA_MODES = ()                 # 639zzzzk_blinki_mehr: stories, nature guide, quiz
 BLINKI_NOQ_MODES = ("fehler",)          # modes that work without a typed text
 '''
-if BLINKI_WISSEN_PY:
-    exec(compile(BLINKI_WISSEN_PY, '<639zzzzk_blinki_wissen>', "exec"), globals())
+zd_exec(BLINKI_WISSEN_PY, '639zzzzk_blinki_wissen.py')

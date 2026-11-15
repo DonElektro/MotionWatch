@@ -302,6 +302,7 @@ ok("/api/ki/set" in ns["APPKEY_DENY_PATHS"] and "/api/ki/model" in ns["LOCK_DENY
 # --- texts, self-test
 tx = ns["BKFRAG_TX"]
 ok(all(ns["DE"].get(k) and all(ns["TRX"][L].get(k) for L in ("fr", "it", "rm")) for k in tx), "Texte in 5 Sprachen (%d)" % len(tx))
+ok(not [k for k in tx if "ß" in ns["DE"].get(k, "")], "Deutsch (Schweiz): nie «ß»")
 ok('id="blinki"' in ns["HELP_PAGE"] and all('id="blinki"' in ns["HELP_X"][L] for L in ("fr", "it", "rm")), "Anleitung: Abschnitt «Blinki fragen» in 5 Sprachen")
 ok('href="/blinki"' in ns["render_page"](ns["MORE_PAGE"], "more"), "Mehr → Übersicht: Zeile «💬 Blinki fragen»")
 f = next(f for n, f in ns["SELFTEST_EXTRA"] if "Blinki fragen" in n)
@@ -309,6 +310,35 @@ try:
     ok(bool(f()), "Selbsttest-Funktion")
 except AssertionError as e_:
     ok(False, "Selbsttest-Funktion: %s" % e_)
+# --- program text as a literal of the data zip (zd_exec): the same checks as for a normal part
+import ast as _ast, glob as _glob
+lits = []
+for f_ in sorted(_glob.glob(os.path.join(os.environ["KI_REPO"], "quelle", "*.py"))):
+    for st_ in _ast.parse(open(f_, encoding="utf-8").read()).body:
+        if isinstance(st_, _ast.Assign) and len(st_.targets) == 1 and isinstance(st_.targets[0], _ast.Name) and st_.targets[0].id.endswith("_PY") \
+                and isinstance(st_.value, _ast.Constant) and isinstance(st_.value.value, str):
+            lits.append((os.path.basename(f_), st_.targets[0].id, st_.value.value))
+ok(len(lits) >= 3, "Literale mit Programmtext: %s" % [x[1] for x in lits])
+others = {}
+for f_ in sorted(_glob.glob(os.path.join(os.environ["KI_REPO"], "quelle", "*.py"))):
+    for st_ in _ast.parse(open(f_, encoding="utf-8").read()).body:
+        if isinstance(st_, (_ast.FunctionDef, _ast.ClassDef)):
+            others.setdefault(st_.name, os.path.basename(f_))
+for fn, nm, src_ in lits:
+    try:
+        code_ = compile(src_, fn, "exec"); good = code_.co_filename == fn
+    except SyntaxError as e_:
+        good = False
+    tree_ = _ast.parse(src_)
+    defs_ = [st_.name for st_ in tree_.body if isinstance(st_, (_ast.FunctionDef, _ast.ClassDef))]
+    alias_ = {st_.value.id for st_ in tree_.body if isinstance(st_, _ast.Assign) and isinstance(st_.value, _ast.Name)}
+    dup_ = [d for d in defs_ if d in others and others[d] != fn and d not in alias_]
+    miss_ = {L: v for L, v in ns["i18n_missing"](src=src_).items() if v}
+    old_ = ns["rucksack_alt_source"](src_) if "rucksack_alt_source" in ns else []
+    ok(good and not dup_ and not miss_ and not old_,
+       "%s/%s: kompiliert als «%s», keine doppelten Namen ohne Wrapper %s, Texte fr/it/rm %s, alter Name %s" % (fn, nm, fn, dup_, miss_, old_))
+ok(ns["linecache"].getline("639zzzzk_blinki_kern.py", 1).startswith("import signal") if "linecache" in ns else __import__("linecache").getline("639zzzzk_blinki_kern.py", 1).startswith("import signal"),
+   "Tracebacks zeigen die Zeilen des Teils (linecache)")
 EXTRA = os.environ.get("KI_EXTRA_A")
 if EXTRA:
     exec(open(EXTRA).read())
@@ -318,7 +348,7 @@ print("RESULT " + json.dumps(K.FEHLER))
 
 def teil_a(datei, tmp):
     print("A) im eigenen Prozess", flush=True)
-    env = dict(env_for(tmp, os.path.join(tmp, "ahome")), KI_HIER=HIER)
+    env = dict(env_for(tmp, os.path.join(tmp, "ahome")), KI_HIER=HIER, KI_REPO=REPO)
     p = subprocess.run([sys.executable, "-c", TEIL_A, datei], capture_output=True, text=True, env=env, cwd=tmp, timeout=900)
     out = p.stdout
     print("\n".join(x for x in out.splitlines() if x.startswith("  ")), flush=True)

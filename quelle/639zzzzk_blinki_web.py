@@ -12,7 +12,7 @@
 #           Motor und Einstellungen: nur der Administrator (nie mit App-Schlüssel, nicht im Bedienermodus).
 # ----------------------------------------------------------------------------
 # Der Programmtext dieses Teils steht in EINEM Literal (Besitzer / Koordinator 15.11.2026: Hauptdatei klein): werkzeuge/bauen.py
-# legt es in die Zusatz-ZIP, beim Start läuft es hier an seinem Platz (exec in den gemeinsamen Namen). Ohne ZIP gibt es
+# legt es in die Zusatz-ZIP, beim Start läuft es hier an seinem Platz (zd_exec, Teil 639zzzzk_blinki_kern). Ohne ZIP gibt es
 # «Blinki fragen» nicht - es gehört nicht zu Start, Schutz oder Alarm. Die ZIP ist über ZD_SHA256 (Teil 012) mit signiert.
 BLINKI_WEB_PY = r'''VIEW_GET_PAGES.add("/blinki")
 VIEW_GET = VIEW_GET + ("/api/ki/state", "/api/ki/job/", "/api/ki/voice/")
@@ -372,5 +372,4 @@ if GUI_OK:
     # wraps: App._tk_more_bar (572, after 639zzzzd «Radio»)
     App._tk_more_bar = _blinki_tk_more_bar
 '''
-if BLINKI_WEB_PY:
-    exec(compile(BLINKI_WEB_PY, '<639zzzzk_blinki_web>', "exec"), globals())
+zd_exec(BLINKI_WEB_PY, '639zzzzk_blinki_web.py')

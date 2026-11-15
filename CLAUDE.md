@@ -138,7 +138,14 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
   Prüfen: jeder Bau zeigt «Grösse: … Luft bis zur Warnung», `bauen.py --groessen` zeigt, was mit welchem Grund bleibt;
   `werkzeuge/hauptdatei_groesse_test.py` (CI «basis») wird rot unter 150 KiB Luft (`GROESSE_LUFT`). Die Funktionen
   `…_selftest` stehen als Quelltext in der ZIP (`ZD_PRUEFCODE`, `_zd_fn` in Teil 012): nur für «--self-test», nie im Betrieb
-  aufrufen (sonst bleibt die Funktion in der Hauptdatei). **Ablage entlasten (Nov. 2026):** `daten.json` steht **ungepackt** in der ZIP
+  aufrufen (sonst bleibt die Funktion in der Hauptdatei). **Programmtext in der ZIP (Nov. 2026, «Blinki fragen» 639zzzzk):**
+  der ganze Programmtext eines Teils darf als **ein** Literal `NAME_PY = r'''…'''` auf oberster Ebene stehen, danach
+  `zd_exec(NAME_PY, "<teil>.py")` (Teil 639zzzzk_blinki_kern). Der Text kommt nur über `_zd` (also nur aus einer ZIP, deren SHA-256
+  zu `ZD_SHA256` passt), `compile` mit dem echten Dateinamen + linecache (lesbare Tracebacks). **Nur für Funktionen, die nicht zu
+  Start, Schutz, Alarm, Update oder Reparatur gehören** – ohne ZIP fehlen sie einfach; was ohne ZIP gelten muss (z. B. Geheimnis-
+  Schlüssel in `USER_SETTINGS_DENY`, Rückfall-Funktionen, die andere Teile aufrufen) bleibt ausserhalb des Literals. Prüfung:
+  `werkzeuge/ki_test.py` kompiliert jedes `…_PY`-Literal und prüft Texte fr / it / rm, doppelte Namen (Wrapper nur mit Alias), alte Namen.
+  **Ablage entlasten (Nov. 2026):** `daten.json` steht **ungepackt** in der ZIP
   (`ZD_GEPACKT = False` in `bauen.py`, rund 10 MB statt 4.9 MB): git speichert so pro Version nur den Unterschied
   (rund 0.1 MB statt 4.9 MB; `werkzeuge/ablage_test.py` misst es). Nicht wieder packen, die ZIP nie von Hand neu packen.
   Die Geräte nehmen die Programmdatei von der Adresse `url` ihres Eintrags (seit 2.98.x) und suchen die ZIP **daneben**;

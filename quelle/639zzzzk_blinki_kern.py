@@ -23,8 +23,22 @@
 # Test: werkzeuge/ki_test.py (Ersatz-llama-server, lokaler Ersatz für Hugging Face, nie das echte Internet).
 # ----------------------------------------------------------------------------
 # Der Programmtext dieses Teils steht in EINEM Literal (Besitzer / Koordinator 15.11.2026: Hauptdatei klein): werkzeuge/bauen.py
-# legt es in die Zusatz-ZIP, beim Start läuft es hier an seinem Platz (exec in den gemeinsamen Namen). Ohne ZIP gibt es
+# legt es in die Zusatz-ZIP, beim Start läuft es hier an seinem Platz (zd_exec, Teil 639zzzzk_blinki_kern). Ohne ZIP gibt es
 # «Blinki fragen» nicht - es gehört nicht zu Start, Schutz oder Alarm. Die ZIP ist über ZD_SHA256 (Teil 012) mit signiert.
+
+def zd_exec(src, name):
+    """run the program text of a part that bauen.py moved into the data zip (639zzzzk «Blinki fragen»): src comes from _zd
+    (Teil 012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program - no own loader. Real file name
+    for compile + linecache: tracebacks and the log show the lines of the part. Only for functions that do not belong to
+    start, protection, alarm, update or repair (without the zip they are simply missing)."""
+    if not src:
+        return False
+    import linecache
+    linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+    exec(compile(src, name, "exec"), globals())
+    return True
+
+
 BLINKI_KERN_PY = r'''import signal as _bsig
 import http.client as _bhttp
 
@@ -536,7 +550,7 @@ def _blinki_stream(j, host, port, path, headers, messages, tls=False, body_extra
                     pass
                 return
     try:
-        c.request("POST", path, data, dict({"Content-Type": "application/json"}, **headers))
+        c.request("POST", path, data, dict({"Content-Type": "application/json", "Connection": "close"}, **headers))
         r = c.getresponse()
         if r.status != 200:
             raise RuntimeError("the engine answered %d: %s" % (r.status, r.read(300).decode("utf-8", "replace")[:200]))
@@ -562,6 +576,8 @@ def _blinki_stream(j, host, port, path, headers, messages, tls=False, body_extra
                 ev = json.loads(d)
             except ValueError:
                 continue
+            if isinstance(ev, dict) and ev.get("type") == "message_stop":
+                break                                      # Anthropic Messages: the end of the answer
             piece = blinki_piece(ev)
             if piece:
                 if j["t_first"] is None:
@@ -619,5 +635,4 @@ def blinki_state():
             "ram": {"total": tot, "avail": avail}, "disk_free_mb": free, "speak": bool(CFG.get("blinki_speak")),
             "threads": int(CFG.get("blinki_threads") or 2)}
 '''
-if BLINKI_KERN_PY:
-    exec(compile(BLINKI_KERN_PY, '<639zzzzk_blinki_kern>', "exec"), globals())
+zd_exec(BLINKI_KERN_PY, '639zzzzk_blinki_kern.py')
