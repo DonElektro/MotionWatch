@@ -65,7 +65,7 @@ def main():
     ap.add_argument("--foto", default="", help="ein eigenes Foto für die Bilder «nachher» (sonst ein erzeugtes)")
     a = ap.parse_args()
     ver = lambda f: tuple(int(x) for x in re.findall(r"(\d+)_(\d+)_(\d+)\.py$", f)[0])
-    datei = a.datei or max(glob.glob(os.path.join(REPO, "webcam_bewegung_*_*_*.py")), key=ver)
+    datei = os.path.abspath(a.datei or max(glob.glob(os.path.join(REPO, "webcam_bewegung_*_*_*.py")), key=ver))             # MoveEye starts with cwd = tmp
     from PIL import Image
     tmp = tempfile.mkdtemp(prefix="mw_pbtest_")
     cfg = os.path.join(tmp, "mw"); os.makedirs(cfg)
