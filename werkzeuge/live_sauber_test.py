@@ -258,6 +258,8 @@ def handy(pg, base, a, pruef):
         for _ in range(3):
             if pg.evaluate("() => !!document.getElementById('lvk-row').offsetParent && document.getElementById('lvk-row').getClientRects().length > 0 && !!document.getElementById('lvk-row').closest('details[open]') && !document.getElementById('lvk-row').closest('details:not([open])')"):
                 break
+            pg.evaluate("() => { const r = document.getElementById('lvk-row'); if (window.msOpen) { const v_ = (r.closest('details.sub[data-view], details.grp[data-view]') || {}).dataset; if (v_ && v_.view) msOpen(v_.view); } }")   # 639zzzg: its subpage
+            pg.wait_for_timeout(500)
             pg.evaluate("() => { const r = document.getElementById('lvk-row'); const ds = []; let d = r.closest('details'); while (d) { ds.unshift(d); d = d.parentElement && d.parentElement.closest('details'); } ds.forEach(x => { if (!x.open) x.querySelector(':scope > summary').click(); }); }")
             pg.wait_for_timeout(600)
         pg.evaluate("() => document.getElementById('lvk-row').scrollIntoView({block: 'center'})")

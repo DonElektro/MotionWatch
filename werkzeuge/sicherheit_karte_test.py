@@ -128,7 +128,7 @@ def holen(port, pfad, user=None, pw=None, kopf=None):
 
 def lauf(br, a, pruef, geheim):
     base = "http://127.0.0.1:%d" % a.port
-    KARTE = "#settings details[data-view='grp:security']"      # eine Gruppe mit nur einem Abschnitt ist selbst die Karte
+    KARTE = "details[data-view='grp:security']"      # eine Gruppe mit nur einem Abschnitt ist selbst die Karte (639zzzg: in ihrer Unterseite)
     jsf = []
 
     def seite(**kw):

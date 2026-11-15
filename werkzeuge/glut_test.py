@@ -293,7 +293,8 @@ def teil_b(datei, tmp, bilder):
             def klick(text):
                 weg(); pg.locator("#glut-box button", has_text=text).click()
             weg()
-            if not pg.evaluate("() => document.getElementById('pr-card').open"):
+            # 639zzzg (Mehr-Stil): the mode card is on top of the page, «Schutzstufe» (#pr-card) is not shown any more
+            if not pg.evaluate("() => { const d = document.getElementById('pr-card'); return !d || d.open || !d.getClientRects().length; }"):
                 pg.locator("#pr-card > summary").click()
             pg.wait_for_timeout(500)
 
