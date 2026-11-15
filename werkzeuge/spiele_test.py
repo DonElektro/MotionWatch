@@ -1714,6 +1714,79 @@ def verschollen_pruefen(br, pw, base, fehler, bilder, balance=None):
     ctx.close()
 
 
+# «Gipfeltreffen» (GS-1.23, Quelle games/gipfeltreffen/, Test-Haken window.GT, siehe Ende von index.html)
+def gipfeltreffen_pruefen(br, base, fehler, bilder):
+    """Koop-Spiel, vorerst ein Level: am iPhone (Touch) und am PC Titel ohne Überbreite, «Jedes am eigenen Handy» ist
+    «kommt bald» und startet nichts (auch kein Solo), «Los» startet allein, Antippen lässt laufen, lange Drücken spannt
+    das Seil; der Test-Spieler (GT.bot) schafft das Level mit 2, 3 und 6 Figuren allein und zusammen an einem Gerät;
+    keine Anfrage nach aussen, keine JavaScript-Fehler"""
+    d = "gipfeltreffen"
+    url = f"{base}/g/{d}/index.html"
+
+    def f(name, text):
+        fehler.append(f"{d} {name}: {text}")
+
+    for name, vp, mobil in (("iPhone", {"width": 390, "height": 844}, True), ("PC", {"width": 1280, "height": 800}, False)):
+        ctx = br.new_context(viewport=vp, is_mobile=mobil, has_touch=mobil, device_scale_factor=2 if mobil else 1)
+        aussen = []
+        ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(base) or r.request.url.startswith(("data:", "blob:"))
+                  else (aussen.append(r.request.url[:100]), r.abort()))
+        pg = ctx.new_page()
+        pg.on("pageerror", lambda e, n=name: f(n, f"JavaScript: {str(e)[:300]}"))
+        pg.on("console", lambda m, n=name: f(n, f"console.error: {m.text[:200]}") if m.type == "error" else None)
+        pg.goto(url, wait_until="load", timeout=30000)
+        pg.wait_for_function("() => window.GT && document.querySelectorAll('#figs .fk').length === 6", timeout=10000)
+        if pg.evaluate("document.documentElement.scrollWidth") > vp["width"]:
+            f(name, "Titel breiter als der Bildschirm")
+        klein = pg.evaluate("""() => [...document.querySelectorAll('#titel button, #titel a')].filter(b => { const r = b.getBoundingClientRect();
+            return r.width && (r.width < 44 || r.height < 44); }).length""")
+        if klein:
+            f(name, f"{klein} Knöpfe im Titel kleiner als 44 px")
+        tippe = pg.tap if mobil else pg.click
+        tippe('.modus[data-m="party"]', force=True)   # aria-disabled: «kommt bald»
+        if pg.evaluate("document.querySelector('.modus[data-m=party]').getAttribute('aria-pressed')") != "false" or pg.is_hidden("#partyInfo"):
+            f(name, "«Jedes am eigenen Handy» ist wählbar oder zeigt keinen Hinweis «kommt bald»")
+        tippe("#los")
+        if pg.is_hidden("#spiel"):
+            f(name, "«Los» startet das Spiel nicht (Modus Allein)")
+        pg.evaluate("() => { document.querySelector('#backS').click(); }")
+        tippe('.modus[data-m="party"]', force=True)   # aria-disabled: «kommt bald»
+        tippe("#los")
+        if not pg.is_hidden("#spiel") and pg.evaluate("document.querySelector('.modus[data-m=solo]').getAttribute('aria-pressed')") != "true":
+            f(name, "nach «Jedes am eigenen Handy» startet ein Spiel")
+        pg.evaluate("() => { document.querySelector('#backS').click(); }")
+        tippe('.modus[data-m="solo"]'); tippe("#los")
+        pg.wait_for_timeout(300)
+        pg.evaluate("GT.pause(true)")
+        x, y = pg.evaluate("GT.screen(4, 29)")
+        if mobil:
+            pg.touchscreen.tap(x, y)
+        else:
+            pg.mouse.click(x, y)
+        if not pg.evaluate("GT.state().figs[0].path"):
+            f(name, "Antippen einer Stelle lässt die Figur nicht laufen")
+        pg.evaluate("GT.run(3)")
+        x, y = pg.evaluate("GT.screen(4, 28)")
+        pg.mouse.move(x, y); pg.mouse.down(); pg.wait_for_timeout(650); pg.mouse.up()
+        pg.evaluate("GT.run(2)")
+        if not pg.evaluate("GT.state().bridge"):
+            f(name, "lange Drücken auf die Kluft spannt kein Seil")
+        pg.evaluate("GT.pause(false)")
+        for ids in (["kletterin", "hund"], ["traeger", "lampe", "funker"], ["kletterin", "traeger", "lampe", "spaeherin", "funker", "hund"]):
+            for modus in ("solo", "multi"):
+                s_ = pg.evaluate("([i, m]) => { GT.start(i, m); return GT.bot(); }", [ids, modus])
+                if not s_.get("won"):
+                    f(name, f"Test-Spieler kommt mit {len(ids)} Figuren ({modus}) nicht ins Ziel")
+        if pg.is_hidden("#ende"):
+            f(name, "kein Bild «Alle im Ziel!»")
+        if bilder:
+            pg.wait_for_timeout(1500)
+            pg.screenshot(path=os.path.join(bilder, f"gipfeltreffen_{name}.png"))
+        if aussen:
+            f(name, "Anfrage nach aussen: " + ", ".join(aussen[:3]))
+        ctx.close()
+
+
 def schach_pruefen(br, pw, base, fehler, bilder):
     d = "schach"
     url = f"{base}/g/{d}/index.html?test=1"
@@ -3450,6 +3523,8 @@ def main():
                     verschollen_pruefen(br, pw, base, fehler, a.bilder)     # GS-1.19: eigenes Aufbau-Abenteuer, Kapitel 1
                 if any(g["dir"] == "schach" for g in spiele):
                     schach_pruefen(br, pw, base, fehler, a.bilder)
+                if any(g["dir"] == "gipfeltreffen" for g in spiele):
+                    gipfeltreffen_pruefen(br, base, fehler, a.bilder)      # GS-1.23: Koop-Spiel, vorerst ein Level
                 if any(g["dir"] == "adarkroom" for g in gj["games"]) and (not nur or "adarkroom" in nur) and "adarkroom" not in ohne:
                     adarkroom_pruefen(pw, base, fehler, a.bilder)      # GS-1.17: am iPhone mit Pfeiltasten (eigener Browser: WebKit, wenn da)
                 br.close()

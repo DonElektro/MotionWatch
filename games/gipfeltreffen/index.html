@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#16202c">
 <title>Gipfeltreffen</title>
-<!-- «Gipfeltreffen» – Probe-Level. Eigenes Spiel für MoveEye (MIT), Idee: der Besitzer.
+<!-- «Gipfeltreffen» – erstes Level (vorerst das einzige). Eigenes Spiel für MoveEye (MIT), Idee: der Besitzer.
      Gemeinsam vom Zeltplatz im Tal zur Hütte: jede Figur kann etwas anderes, ins Ziel kommt man nur zusammen.
      Eine Datei, keine Anfrage nach aussen: alle Bilder sind im Canvas selbst gezeichnet (keine fremden Bilder, Schriften, Töne).
      Test-Haken: window.GT (start, walk, abil, run, bot, state …), siehe Ende der Datei. -->
@@ -39,6 +39,7 @@ h2{font-size:15px;margin:18px 2px 8px;color:var(--mut);font-weight:700;text-tran
 .modus b{display:block;font-size:15.5px}
 .modus small{display:block;color:var(--mut);font-size:13px;line-height:1.3}
 .modus[aria-pressed=true]{border-color:var(--acc);background:#2a3546}
+.modus.aus{opacity:.55;border-style:dashed}
 .modus .bald{position:absolute;top:6px;right:8px;font-size:11px;font-weight:800;color:#1a1206;background:var(--acc);border-radius:8px;padding:1px 6px}
 .figs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 @media (min-width:640px){.figs{grid-template-columns:repeat(6,1fr)}}
@@ -126,7 +127,7 @@ h2{font-size:15px;margin:18px 2px 8px;color:var(--mut);font-weight:700;text-tran
   <div class="modi" id="modi">
    <button class="modus" data-m="solo" aria-pressed="true"><span class="ic">👤</span><span><b>Allein</b><small>Du steuerst alle Figuren und wechselst mit Antippen.</small></span></button>
    <button class="modus" data-m="multi" aria-pressed="false"><span class="ic">👥</span><span><b>Zusammen an einem Gerät</b><small>Jede Hand eine Figur: Figur antippen oder ziehen.</small></span></button>
-   <button class="modus" data-m="party" aria-pressed="false"><span class="bald">bald</span><span class="ic">📱</span><span><b>Jedes am eigenen Handy</b><small>Über die Spielecke von MoveEye (QR-Code).</small></span></button>
+   <button class="modus aus" data-m="party" aria-pressed="false" aria-disabled="true"><span class="bald">kommt bald</span><span class="ic">📱</span><span><b>Jedes am eigenen Handy</b><small>Über die Spielecke von MoveEye (QR-Code).</small></span></button>
   </div>
   <div class="info" id="partyInfo" hidden></div>
 
@@ -201,7 +202,7 @@ function verteile(ids) {
    C Höhle (dunkel)  O schwere Tür  s Geröll  ? verborgener Weg  x verborgene Falle  N enge Spalte  K Schlüssel  L verschlossenes Tor
    Höhe je Zeile (hrow); später je Kachel (Plan: JSON mit tiles + heights). */
 const LV = {
-  name: "Probe: Vom Zeltplatz zur Hütte",
+  name: "Vom Zeltplatz zur Hütte",
   rows: [
     "RRRRRRRRRR", "RRTZHHZTRR", "RTZZZZZZTR", "RRffLfffRR", "R...,..NKR", "RT..,..RRR", "R...,..TFR", "~~~~DD~~~~",
     "RT..,,..TR", "R.x.,.x..R", "RRR,,.x.RR", "RRRs??sRRR", "RRRs?ssRRR", "RRRRORRRRR", "RRCCCRRRRR", "RRCRRRRRRR",
@@ -986,19 +987,19 @@ function titelMalen() {
     ". " + (Math.max(1, n - 1)) + " Druckplatte" + (n > 2 ? "n" : "") + " gleichzeitig.<div class='zl'>" + V.map(f => "<span>" + f.ch.emo + " " + f.ch.name + ": " + f.ab.map(a => AB[a].emo).join("") + "</span>").join("") + "</div>";
 }
 function kurz(b) { b.animate && b.animate([{transform: "translateX(-4px)"}, {transform: "translateX(4px)"}, {transform: "none"}], {duration: 220}); toast2("Mindestens 2 Figuren."); }
-function toast2(s) { let i = $("#partyInfo"); if (modus !== "party") { i.hidden = false; i.textContent = s; setTimeout(() => { if (modus !== "party") i.hidden = true; }, 1800); } }
+function toast2(s) { const i = $("#partyInfo"); i.hidden = false; i.textContent = s; setTimeout(() => { i.hidden = true; }, 1800); }
 for (const b of document.querySelectorAll(".modus")) b.onclick = () => {
+  if (b.getAttribute("aria-disabled") === "true") {      // «Jedes am eigenen Handy»: kommt bald, nicht wählbar
+    const i = $("#partyInfo"); i.hidden = false;
+    i.innerHTML = (PARTY ? "<b>Spielecke gefunden.</b> " : "") + "<b>Kommt bald:</b> Die Spielecke von MoveEye öffnen, alle scannen den QR-Code, jedes wählt eine Figur und steuert sie am eigenen Handy. " +
+      "Bis dahin: <b>Allein</b> oder <b>Zusammen an einem Gerät</b> spielen.";
+    return;
+  }
   modus = b.dataset.m;
   for (const x of document.querySelectorAll(".modus")) x.setAttribute("aria-pressed", x === b ? "true" : "false");
-  const i = $("#partyInfo");
-  if (modus === "party") {
-    i.hidden = false;
-    i.innerHTML = (PARTY ? "<b>Spielecke gefunden.</b> " : "") + "Kommt im nächsten Schritt: Die Spielecke von MoveEye öffnen, alle scannen den QR-Code, jedes wählt eine Figur und steuert sie am eigenen Handy. " +
-      "Bis dahin: <b>Allein</b> oder <b>Zusammen an einem Gerät</b> spielen.";
-    $("#los").textContent = "Probe allein starten ▸";
-  } else { i.hidden = true; $("#los").textContent = "Los geht’s ▸"; }
+  $("#partyInfo").hidden = true;
 };
-$("#los").onclick = () => starte(wahl.slice(), modus === "party" ? "solo" : modus);
+$("#los").onclick = () => { if (modus === "solo" || modus === "multi") starte(wahl.slice(), modus); };
 $("#bNeu").onclick = () => { if (!st.steps || confirm("Neu beginnen?")) starte(ids0, modus); };
 $("#bHilfe").onclick = () => { $("#hilfe").hidden = false; };
 $("#hilfeZu").onclick = () => { $("#hilfe").hidden = true; };

@@ -5,15 +5,20 @@
  "icon": "thumb.svg",
  "start": "index.html",
  "input": "touch",
- "names": {"de": "Gipfeltreffen", "en": "Summit Meeting", "fr": "Rendez-vous au sommet", "it": "Incontro in vetta", "rm": "Inscunter sin il piz"},
+ "names": {
+  "de": "Gipfeltreffen",
+  "en": "Summit Meeting",
+  "fr": "Rendez-vous au sommet",
+  "it": "Incontro in vetta",
+  "rm": "Inscunter sin il piz"
+ },
  "descs": {
   "de": "Zusammen vom Zeltplatz zur Hütte.",
-  "en": "Together from the camp to the hut.",
-  "fr": "Ensemble du camping au refuge.",
+  "en": "Together from the campsite to the hut.",
+  "fr": "Ensemble du camping jusqu’au refuge.",
   "it": "Insieme dal campeggio alla capanna.",
-  "rm": "Ensemen dal campadi a la chamona."
+  "rm": "Ensemen dal campadi fin tar la chamona."
  },
- "_hinweis": "PROBE – noch nicht in games/MotionWatch_Spiele.zip eingebaut (spiel_einbauen.py erst nach Entscheid des Besitzers; dann auch games/kacheltexte.json).",
  "lizenz": [
   "Gipfeltreffen  (gipfeltreffen/)",
   "  Lizenz: MIT",
