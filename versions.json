@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-15 23:35",
+ "generated": "2026-11-15 23:49",
  "versions": [
+  {
+   "version": "4.9.0",
+   "file": "webcam_bewegung_4_9_0.py",
+   "url": "",
+   "sha256": "7f63133748ecd1377a7022e01d2daffb995d3ce62a66d8f7fff25b206696e4cc",
+   "date": "2026-11-15 23:49",
+   "notes": "Digitaler Rucksack bei Import und Export: überall eine Datei aus dem Rucksack wählen oder einen Export direkt dort ablegen",
+   "size": 3965444,
+   "sig": "d93b4e323d49d5b332541de75cab59d394c3a9b3698b3ed1d2e9de74833635c962a332d9108bb84e0c16728ae6a3847236de79d7ac89ea67a780cedfb5eb5a05",
+   "data": {
+    "file": "moveeye_daten_4_9_0.zip",
+    "url": "",
+    "sha256": "18ea1ef25d0e0b2203176e5dde5af7af7cd81a4b4c6a3093b487f7fff97d4c6b",
+    "size": 13652376,
+    "sig": "f717f48d94e0440c85f276c0e98f4997b246f165bbc28c18d260e34bc7321c5780983708242bf604389928beed8b3ad77a6c21d2f4642caac988ae5842a92c07"
+   }
+  },
   {
    "version": "4.8.0",
    "file": "webcam_bewegung_4_8_0.py",
@@ -41,7 +58,7 @@
    "file": "webcam_bewegung_4_6_0.py",
    "url": "",
    "sha256": "7adcf5804cce76713fca42310ab066d5f8efbe6298ea22fe6b01628264e2b607",
-   "date": "2026-11-15 19:08",
+   "date": "2026-11-15 23:45",
    "notes": "Mitteilungen pausieren: Push-Pause, die von selbst endet (15 min bis «bis ich zurück bin»), 🔕 auf der Glocke – Sabotage, SOS und Akku kommen immer",
    "size": 3922499,
    "sig": "188bf90363bd4a1d0058174cd7c164e53a4c0a8286a95611829db4b46015876dccd35d89a026c97df0b41523505669d5173186f72f5c8e9fabf0c108f10b6009",
@@ -136,23 +153,6 @@
     "sha256": "04c891b6057959b5c687dcffbd7e2aef31eae7d0d05d4196179834a6882b1682",
     "size": 13376205,
     "sig": "7d29e5b35885f51b33628ff8920d63a447dd9a207d874cc7a41634f51549780420523e3122515400cea6a2be2700f6306906a3eb82233c1f3e451fff2d27c90b"
-   }
-  },
-  {
-   "version": "4.0.0",
-   "file": "webcam_bewegung_4_0_0.py",
-   "url": "",
-   "sha256": "75ba60493d2b1edbf4132da9656947ff8c93361bf3de501a292c5209f227e2da",
-   "date": "2026-11-15 15:14",
-   "notes": "MoveEye 4.0: Mehr → Bauen → Drucken zeigt neu «🧳 Transportsicherung (noch nicht erprobt)» – Haube, Drehsperre-Klammer und Schutzschale zum Drucken (einzeln oder als ZIP mit Anleitung), in der 3D-Werkstatt mit einem Schalter einblendbar. Die Gehäuse-Nummer bleibt 5.3.1. Neu auch auf der Seite «Handy-Funkgerät»: Reiter «🔏 Bild» – Botschaft im Bild verstecken und lesen, ganz ohne Netz.",
-   "size": 3870627,
-   "sig": "03e70ca6c992683bb0c64c1907588aedd8a3e1b4720486063ad2feffc7fe30999c56262f5e7607a66a305e9ee652110ef6b30f247d1acc7b38f7a1833940f20f",
-   "data": {
-    "file": "moveeye_daten_4_0_0.zip",
-    "url": "",
-    "sha256": "da29d79e3b7f11319d093a0b4c42c654f77d98ed9118bfa8a26ca50bdcc14212",
-    "size": 13351123,
-    "sig": "144d825d48bfb659dedcbca9d4ae80f93ff04e903898e8ce1bab336991c217a7d68e513603434e27063accdf7b57ffc88cffdd56ab1a4fd6e3fe208b53579b04"
    }
   },
   {
