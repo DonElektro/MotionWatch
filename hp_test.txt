@@ -1,0 +1,3 @@
+godot werkzeuge/sim_fenster_handy_test.gd
+godot werkzeuge/fenster_dock_test.gd
+python3 werkzeuge/sim_web_sandbox_test.py
