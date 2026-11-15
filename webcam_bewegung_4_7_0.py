@@ -23,6 +23,39 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 4.7.0: Spielesammlung GS-1.24: neues Spiel «Gipfeltreffen» (erstes Level) und «Verschollen im Bergtal» Kapitel 2 «Drei Tage»
+    · Fehler behoben: der Passwort-Dialog nimmt dem Feld «Wiederholen» den Cursor nicht mehr weg
+  * 4.6.0: Mitteilungen pausieren: Push-Pause, die von selbst endet (15 min bis «bis ich zurück bin»), 🔕 auf der Glocke –
+    Sabotage, SOS und Akku kommen immer
+  * 4.5.0: Unterseiten öffnen als Fenster über der Seite – ab Werk «Mitte»; wählbar unter Einstellungen: «Von unten», «Mitte»,
+    «Von der Seite» oder wie bisher «Ganze Seite». Dialoge aus dem Fenster (z. B. Passwort, neuer Benutzer) liegen darüber.
+  * 4.4.0: Zwei Teile. (1) Live → «Bedienung»: «🕹 Kopf steuern» lässt sich für sich einklappen; «⏹ Stopp» bleibt immer sichtbar.
+    (2) Homepage-Karte: drei Schalter – Startseite, Funkgerät und Simulator einzeln hochladen (aus = nicht hochgeladen und auf
+    dem Webspace nie gelöscht); neu «Öffentliche Adresse»
+    (nur https), und eine Seite mit Passwortschutz des Webspace gilt bei der Prüfung als «🔒 geschützt ✓».
+  * 4.3.0: Fünf Teile. (1) Produktseite /info/ mit Bildern: echte App-Bilder (Live, Tagebuch, Mehr) und ruhige Beispielbilder; neu «🖼
+    Produktseite: Bilder» in der Karte «Homepage» – eigene Fotos für die Seite hochladen (nur Admin; ohne Ortsangaben und
+    Kamera-Daten, verkleinert). (2) «📻 Radio» spielt weiter, wenn man
+    die Seite verlässt; solange es spielt, steht 📻 oben in der Kopfzeile (antippen = zurück zum Radio). (3) Jede Seite und jedes
+    Fenster hat einen Weg zurück, auch als App vom Home-Bildschirm (Handy-Funkgerät, Bild gross, Update / Neustart); Downloads gehen
+    in der App überall ins Teilen-Blatt. (4) «Was war das?» lässt sich auf Live zuklappen. (5) Homepage: neuer Schalter «Startseite mit
+    hochladen» (ab Werk aus – dann bleibt die Startseite auf dem Webspace unberührt).
+  * 4.2.0: Zwei Teile. (1) Die Bedienleiste oben ist eine Zeile schmaler: «Einfach / Experte» ist ein Knopf in der Leiste, die
+    Zeile «Darstellung» fällt weg, ⇕ klappt alle Karten auf und zu, die Symbole sitzen neu (Fenster und Webseite). (2) Bauen auf
+    dem Handy: keine Seite mehr breiter als der Bildschirm, Druckdateien untereinander; in Drucken neu die Spalte «Nr.» (wie im
+    Dateinamen), «Wände» erst ab 480 px.
+  * 4.1.0: «📻 Radio» auch im Browser: «📱 dieser Browser» spielt den Sender auf dem Handy, der Lautsprecher bleibt still; geht es
+    direkt nicht, läuft der Strom über MoveEye (höchstens 2 Zuhörer). Sicherheit: MoveEye holt Radio-Ströme nur noch von
+    öffentlichen Adressen – auch nach Umleitungen und aus Wiedergabelisten; ein selbst eingetragener Sender im Heimnetz spielt
+    nur über den Lautsprecher.
+  * 4.0.0: MoveEye 4.0: Mehr → Bauen → Drucken zeigt neu «🧳 Transportsicherung (noch nicht erprobt)» – Haube, Drehsperre-Klammer
+    und Schutzschale zum Drucken (einzeln oder als ZIP mit Anleitung), in der 3D-Werkstatt mit einem Schalter einblendbar. Die
+    Gehäuse-Nummer bleibt 5.3.1. Neu auch auf der Seite «Handy-Funkgerät»: Reiter «🔏 Bild» – Botschaft im Bild
+    verstecken und lesen, ganz ohne Netz.
+  * 3.99.0: Zwei Teile. (1) «📻 Radio» (Mehr → Unterwegs): Internet-Radio über den Lautsprecher, Sender suchen im offenen
+    Verzeichnis radio-browser.info, Einschlaf-Timer, Radio als Wecker; Sirene, Ansagen, Gegensprechen und Morse haben Vorrang.
+    (2) «🏠 Apple Home» (Beta, Einstellungen → Netz & Zugang, nur Admin, ab Werk aus): Kamera, Bewegungsmelder, Schutz, Kopf und
+    Licht in der Home-App über Homebridge; Ausschalten mit PIN bleibt abgelehnt, ausser der Besitzer erlaubt es.
   * 3.98.0: Vier Teile. (1) Funk: «Hören» auf dem iPhone geht zuverlässig; mit Schlüssel nur noch V2; Nachrichten als Audiodatei
     speichern und einlesen; neu «Mehrton» (MFSK, 3–5 Zeichen pro Sekunde, mit Fehlerkorrektur). (2) Produktseite /info/ neu
     gestaltet wie die App, mit den neuen Funktionen. (3) Digitaler Rucksack: «🔏 Botschaft im Bild» – ein geheimer Text
@@ -98,30 +131,6 @@ Features
     «Nochmal» statt mit einer Fehlermeldung. Fehler bleiben als Tafel mit «Fehler kopieren» stehen. Die Testseite meldet Start,
     Ende und Fehler an MoveEye: «Meldungen vom Test» im Kasten des Spiels (nur Administrator). Daten-Abrufe werden wiederholt.
     Den Test einmal neu installieren.
-  * 3.84.1: Almanach: Neu oben links die Taste «‹ Zurück» – vom Artikel ins Kapitel, vom Kapitel zum Inhalt, vom Inhalt zu
-    «Mehr». Die Zurück-Geste des Handys geht durch dieselben Ansichten, ein vergrössertes Bild hat «✕ Schliessen». «✕» verlässt
-    den Almanach wie bisher mit einem Tipp. Offline-Karte: oben «‹ Mehr».
-  * 3.84.0: Neu für den Besitzer: «Queen – iPhone-Test» (Mehr → Spielecke, im Kasten von «Flight of the Amazon Queen», nur
-    Administrator). Zwei Test-Fassungen A und B für iPhone/iPad – Spieldaten in Stücken, kleineres Programm. Das Spiel selbst
-    bleibt unverändert. Ob der Absturz auf dem iPhone weg ist, zeigt erst das Gerät.
-  * 3.83.4: Packlisten: Auch sehr lange, ungewöhnlich gebaute Texte halten MoveEye beim Einlesen nicht mehr auf (eine Prüfung
-    auf GitHub hatte das bei 3.83.3 gezeigt).
-  * 3.83.3: Unter der Haube: Die Programmdatei ist um rund 370 KB kleiner (Prüf-Code und Almanach-Texte liegen jetzt im
-    Daten-Paket); am Verhalten ändert sich nichts. Ohne Daten-Paket zeigt der Almanach neu wenigstens das Notfall-Kapitel.
-  * 3.83.2: Packlisten: Import versteht jetzt auch Listen aus Apple Notizen und Markdown-Listen (Überschriften wie **KLEIDUNG**,
-    Gewichte wie «550g» direkt am Wort); eigene Kategorien bleiben erhalten; Überschriften in eingefügtem Text werden als
-    Kategorie erkannt; ähnliche Einträge werden beim Import markiert; die Tipp-Karte verdeckt die Eingabezeile nicht mehr. Sehr
-    lange oder absichtlich verdrehte Zeilen in einer Import-Datei können MoveEye nicht mehr aufhalten.
-  * 3.83.1: Almanach: Beschriftungen in den Bildern werden auf keinem Gerät mehr abgeschnitten.
-  * 3.83.0: Überlebens-Almanach neu: Bilder in jedem Kapitel, acht Knoten Schritt für Schritt gezeichnet, neue Kapitel
-    «Tierspuren» und «Essbar oder giftig?», dein Standort für den Notruf (Schweizer Koordinaten), Luftdruck-Trend, «Heute Nacht»
-    mit Sonne und Mond, und eine SOS-Lampe, die auch Gäste im WLAN einschalten können. Erste-Hilfe-Texte mit Schweizer Quellen
-    abgeglichen (Samariter, Rega, SAC, BAG, Tox Info).
-  * 3.82.0: Neu im Datentausch: Packlisten. Listen anlegen oder aus Text, Excel und CSV übernehmen (immer mit Vorschau); pro
-    Gegenstand Gewicht, Anzahl, Kategorie und Foto; Gesamtgewicht mit Ziel, Basisgewicht und Verbrauch getrennt;
-    «Kaufen»-Ansicht; gemeinsam packen von mehreren Handys; Vorlagen, Kopieren, Drucken und Export.
-  * 3.81.3: Anleitung auf Italienisch: die Seite ist am Handy nicht mehr breiter als der Bildschirm (ein langer Eintrag im
-    Inhaltsverzeichnis wird jetzt gekürzt angezeigt).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -130,10 +139,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_98_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_4_7_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_98_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_98_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_4_7_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_4_7_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -150,7 +159,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.98.0"
+APP_VERSION = "4.7.0"
 
 
 def default_data_dir():
@@ -283,8 +292,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_98_0.zip"
-ZD_SHA256 = "d88bc088fc291fa534165fef631f4800158e070f853a9964ea106fe4d2a37baf"
+ZD_FILE = "moveeye_daten_4_7_0.zip"
+ZD_SHA256 = "1aa6fbe919ca42e0a09de3514fd42dc119531253724e701b97fa63dfb271b50c"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -929,6 +938,7 @@ ALERTS_COND = threading.Condition()
 def push_alert(kind, text="", **extra):
 	try:
 		protect_on_alert(kind)
+		homekit_on_alert(kind)
 		if CFG.get("sim_on"):
 			rover_on_alarm(kind)
 	except NameError:
@@ -1567,7 +1577,7 @@ def text_choice_pairs(key):
 				("sun-thu",tr("Sunday to Thursday")),("once",tr("only once (next time)"))]
 	if extra=="wake_sounds":
 		return[("chime",tr("Soft melody")),("birds",tr("Birdsong")),("beeps",tr("Fast beeps")),("marmot",tr("Marmot whistle"))]+ \
-			   [("file:"+f,"♪ "+f)for f in own_sounds()]
+			   [("file:"+f,"♪ "+f)for f in own_sounds()]+(radio_wake_pairs()if "radio_wake_pairs"in globals()else[])
 	if extra=="siren_on":
 		return[("off",tr("off")),("person",tr("person alarm")),("alarm",tr("person, thermal and noise alarm")),
 				("all",tr("every alarm, also the pre-alarm (movement)"))]
@@ -2397,6 +2407,8 @@ def role_allows(role, path, method, d, perms=None):
 		return "settings"in P and isinstance(d.get("key"),str)and d.get("key")not in USER_SETTINGS_DENY
 	if path=="/api/audio":
 		return("siren"in P and d.get("action")in("test","siren","stop"))or("talk"in P and d.get("action")=="stop")
+	if path=="/api/radio":
+		return "siren"in P and d.get("action")in RADIO_PLAY_ACTIONS
 	if path=="/api/protect":
 		return "arm"in P and d.get("action")in PERM_PROTECT_ACTIONS
 	if path=="/api/action":
@@ -4933,6 +4945,9 @@ def ntfy_server_messages(since="24h"):
 
 
 
+
+
+
 _ALX_CFG = {"push_actions": True, "alarm_confirm2": False, "arm_announce": True, "back_hold_s": 60,
 			"report_strip": True}
 for _k, _v in _ALX_CFG.items():
@@ -4943,6 +4958,7 @@ ALX = {"lock": threading.Lock(), "tok": {}, "fails": {}, "ctx": None, "hold_unti
 	   "g": {"sig": None, "hits": 0, "ok": False, "last_p": 0.0, "pre_t": 0.0, "hold_log": 0.0}}
 ALX_TTL = 3600
 ALX_ACTS = ("fa", "siren", "off")
+ALX_NAMES = {"fa": "False alarm", "siren": "Siren", "off": "Off"}
 ALX_LABELS = ("person", "animal", "nothing")
 ALX_ZOOM_N = 3
 ALX_ZOOM_MAX = 0.25
@@ -4989,7 +5005,7 @@ def alx_buttons(p, lang=None):
 	base=alx_base()
 	with ALX["lock"]:
 		acts=list((ALX["tok"].get(tok)or{}).get("acts")or[])
-	names={"fa":"False alarm","siren":"Siren","off":"Off"}
+	names=ALX_NAMES
 	return[(tr(names[a],lang),f"{base}/na/{tok}/{a}",a!="siren")for a in acts if a in names]
 
 
@@ -5086,7 +5102,7 @@ def alx_routes(app, watch, reply, body):
 		rec=[x for x in ALX["fails"].get(ip,[])if now-x<600]
 		if len(rec)>=20:
 			return sx_err(429,"keys")
-		names={"fa":"False alarm","siren":"Siren","off":"Off"}
+		names=ALX_NAMES
 		if request.method=="GET":
 			with ALX["lock"]:
 				e=ALX["tok"].get(tok)
@@ -22248,6 +22264,7 @@ def sound_play(kind=None, seconds=None, volume=None, reason="test"):
 		try:
 			y=sound_samples(kind,seconds)
 			data=(np.clip(y*(vol**2),-1,1)*32767).astype("<i2").tobytes()
+			radio_yield("voice"if kind=="tts"else "sound")
 			cmd,err=out_cmd(OUT_RATE)
 			if cmd is None:
 				raise RuntimeError(err)
@@ -22498,12 +22515,18 @@ def _light(on):
 
 def _ring_sound(now):
 	""
+	kind=CFG.get("wake_sound")or "chime"
+	if str(kind).startswith("radio:"):
+		if radio_wake_sound(kind,now):
+			return
+		kind="chime"
+		if not WAKE.get("radio_fb"):
+			WAKE["radio_fb"]=True;WAKE["snd_t"]=0.0
 	if now-WAKE["snd_t"]<20.0:
 		return
 	WAKE["snd_t"]=now
 	full=float(CFG.get("wake_volume",60))
 	WAKE["level"]=min(full,max(full*0.4,WAKE["level"]+full*0.1))if WAKE["level"]else full*0.4
-	kind=CFG.get("wake_sound")or "chime"
 	ok,err=sound_play(kind,12.0 if wake_clap_listens()else 19.0,WAKE["level"],reason="wake-up alarm")
 	if not ok:
 		WAKE["msg"]=err
@@ -22511,7 +22534,7 @@ def _ring_sound(now):
 
 def wake_ring(test=False, who="time"):
 	with WAKE_LOCK:
-		WAKE.update(state="ring",t0=time.time(),test=bool(test),snd_t=0.0,level=0.0,gest="",until=0.0)
+		WAKE.update(state="ring",t0=time.time(),test=bool(test),snd_t=0.0,level=0.0,gest="",until=0.0,radio_fb=False)
 	WAKEG.reset()
 	MANUAL["until"]=0.0
 	_look(bed_view())
@@ -22527,6 +22550,7 @@ def wake_snooze(who="web"):
 	mins=float(CFG.get("wake_snooze",9))
 	with WAKE_LOCK:
 		WAKE.update(state="snooze",until=time.time()+mins*60.0,snoozes=WAKE["snoozes"]+1,last=f"snooze ({who})")
+	radio_wake_end()
 	MANUAL["until"]=0.0
 	_look(away_view())
 	log_event("sys",f"Wake-up alarm: snooze {mins:g} min ({who})")
@@ -22537,7 +22561,7 @@ def wake_stop(who="web"):
 	if WAKE["state"]not in("ring","snooze","sleep"):
 		return False,"the alarm is not on"
 	was=WAKE["state"]
-	sound_stop()
+	sound_stop();radio_wake_end()
 	_light(False)
 	with WAKE_LOCK:
 		if was in("ring","snooze"):
@@ -28781,7 +28805,7 @@ threading.Thread(target=_extra_cams_boot, daemon=True, name="extracams-boot").st
 
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.22", "file": "games/MotionWatch_Spiele.zip", "size": 16015122, "sha256": "6c4a0558aafbc48faa06346f1704e74328561d739c9022e9bdb8208576585f35"}
+GAMES_PKG = {"version": "GS-1.24", "file": "games/MotionWatch_Spiele.zip", "size": 16049910, "sha256": "a4c42f40dbe62a5fbaa045fa5334c6f627258f0974c22bf27ce3312d972da872"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
@@ -31570,6 +31594,7 @@ def talk_chunk(data, who=""):
 		if p is None or p.poll()is not None or TALK["dev"]!=dev:
 			if SOUND["playing"]:
 				sound_stop()
+			radio_yield("talk")
 			cmd,err=out_cmd(AUDIO_RATE,connect=False)
 			if cmd is None:
 				return False,err
@@ -38478,7 +38503,14 @@ def loop_day(day):
 
 
 
-EXT = {"proc": None, "ff": None, "msg": "", "port": None}
+EXT = {"proc": None, "ff": None, "msg": "", "port": None, "lan": None, "local_tok": secrets.token_urlsafe(18)}
+
+
+RTSP_LOCAL = {}
+
+
+def rtsp_wanted():
+	return bool(CFG["rtsp_on"]and CFG["ext_on"])or bool(RTSP_LOCAL)
 
 
 def ext_token():
@@ -38527,7 +38559,7 @@ def rtsp_stop():
 
 def rtsp_restart():
 	rtsp_stop()
-	if CFG["rtsp_on"]and CFG["ext_on"]:
+	if rtsp_wanted():
 		threading.Thread(target=rtsp_start,daemon=True,name="rtsp").start()
 
 
@@ -38539,13 +38571,23 @@ def rtsp_start():
 	if not shutil.which("ffmpeg"):
 		EXT["msg"]="ffmpeg is missing (sudo apt install ffmpeg)";return
 	tok=ext_token();port=int(CFG["rtsp_port"])
+	lan=EXT["lan"]=bool(CFG["rtsp_on"]and CFG["ext_on"])
 	cfg_dir=os.path.join(DATA_DIR,"mediamtx");os.makedirs(cfg_dir,exist_ok=True)
 	yml=os.path.join(cfg_dir,"motionwatch.yml")
+	src=f"http://127.0.0.1:{CFG['web_port']}/x/{tok}/video.mjpg"if lan else f"http://127.0.0.1:{CFG['web_port']}/k/hk/video.mjpg?t={EXT['local_tok']}"
+	if WEB_OPTS.get("https"):
+		src=src.replace("http://","https://")
+	cmd=["ffmpeg","-loglevel","error","-tls_verify","0","-f","mjpeg","-i",src,"-an","-c:v","libx264","-preset","ultrafast",
+		   "-tune","zerolatency","-g","30","-pix_fmt","yuv420p","-f","rtsp","-rtsp_transport","tcp",f"rtsp://127.0.0.1:{port}/motionwatch"]
+	if not WEB_OPTS.get("https"):
+		cmd.remove("-tls_verify");cmd.remove("0")
 	with open(yml,"w")as f:
-		f.write("logLevel: warn\nrtspAddress: :%d\nrtmp: no\nhls: no\nwebrtc: no\nsrt: no\napi: no\nmetrics: no\npprof: no\nplayback: no\n"
+		f.write("logLevel: warn\nrtspAddress: %s:%d\nrtmp: no\nhls: no\nwebrtc: no\nsrt: no\napi: no\nmetrics: no\npprof: no\nplayback: no\n"
 				"authInternalUsers:\n- user: any\n  pass:\n  ips: ['127.0.0.1/32', '::1/128']\n  permissions:\n  - action: publish\n"
-				"- user: motionwatch\n  pass: %s\n  ips: []\n  permissions:\n  - action: read\n    path: motionwatch\n"
-				"paths:\n  motionwatch:\n"%(port,tok))
+				%(""if lan else "127.0.0.1",port)
+				+("- user: motionwatch\n  pass: %s\n  ips: []\n  permissions:\n  - action: read\n    path: motionwatch\n"%tok if lan else "")
+				+"".join(RTSP_LOCAL.values())+"paths:\n  motionwatch:\n"
+				+(""if lan else "    runOnDemand: %s\n    runOnDemandCloseAfter: 15s\n"%json.dumps(" ".join(cmd))))
 	os.chmod(yml,0o600)
 	try:
 		EXT["proc"]=subprocess.Popen([mtx,yml],stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,cwd=cfg_dir)
@@ -38555,13 +38597,10 @@ def rtsp_start():
 	if EXT["proc"].poll()is not None:
 		err=(EXT["proc"].stderr.read()or b"").decode(errors="replace").strip().splitlines()
 		EXT["msg"]=("mediamtx: "+(err[-1]if err else "stopped"))[:160];EXT["proc"]=None;return
-	src=f"http://127.0.0.1:{CFG['web_port']}/x/{tok}/video.mjpg"
-	if WEB_OPTS.get("https"):
-		src=src.replace("http://","https://")
-	cmd=["ffmpeg","-loglevel","error","-tls_verify","0","-f","mjpeg","-i",src,"-an","-c:v","libx264","-preset","ultrafast",
-		   "-tune","zerolatency","-g","30","-pix_fmt","yuv420p","-f","rtsp","-rtsp_transport","tcp",f"rtsp://127.0.0.1:{port}/motionwatch"]
-	if not WEB_OPTS.get("https"):
-		cmd.remove("-tls_verify");cmd.remove("0")
+	if not lan:
+		EXT["msg"]="running"
+		log_event("web",f"RTSP video on 127.0.0.1:{port} (only for Apple Home, on demand)")
+		return
 	try:
 		EXT["ff"]=subprocess.Popen(cmd,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 		EXT["msg"]="running"
@@ -38574,8 +38613,10 @@ def rtsp_watch():
 	""
 	while True:
 		time.sleep(15)
-		want=CFG["rtsp_on"]and CFG["ext_on"]
-		alive=EXT["proc"]is not None and EXT["proc"].poll()is None and EXT["ff"]is not None and EXT["ff"].poll()is None
+		want=rtsp_wanted()
+		lan=bool(CFG["rtsp_on"]and CFG["ext_on"])
+		alive=(EXT["proc"]is not None and EXT["proc"].poll()is None and(not lan or EXT["ff"]is not None and EXT["ff"].poll()is None)
+				 and EXT["lan"]==lan)
 		if want and not alive:
 			rtsp_restart()
 		elif not want and(EXT["proc"]or EXT["ff"]):
@@ -40392,7 +40433,7 @@ def i18n_js(lang, help_=False):
 
 def render_page(page, active):
 	""
-	page=page.replace("<head>","<head>"+ui_seed_script()+i18n_loader(active=="help")+PWA_HEAD.replace(
+	page=page.replace("<head>","<head>"+ui_seed_script()+i18n_loader(active=="help")+"<script>"+APP_DL_JS+"</script>"+PWA_HEAD.replace(
 		'<link rel="apple-touch-icon" href="/apple-touch-icon.png">',apple_icon_link()).replace(
 		'content="MoveEye">','content="'+app_title(host_variant())+'">').replace(".png\"",".png?i="+app_icon_id()+"\"")
 		+"<script>window.MW_ICON="+json.dumps(app_icon_id())+";</script>"+makeover_head()
@@ -40406,6 +40447,12 @@ def render_page(page, active):
 				  +('<span class="badge yel" style="font-size:10px;padding:1px 7px;min-height:0">DEMO</span>'if DEMO["on"]else "")+"</h1>",page,count=1)
 	return(page.replace("/*BASECSS*/",BASE_CSS).replace("/*COMMON*/",COMMON_JS).replace("<!--NAV-->",nav_html(active))
 			.replace("/*ALERTS*/",HEADER_JS.replace("__APPVER__",APP_VERSION).replace("__BELLY__",_BELLY)+guide_js(active)+ALERT_JS).replace("/*BTJS*/",BT_JS))
+
+
+
+
+
+APP_DL_JS = _zd('510_web_kopf_alarm/APP_DL_JS', "")
 
 
 HEADER_JS = _zd('510_web_kopf_alarm/HEADER_JS', "")
@@ -40610,7 +40657,7 @@ G2_TOURS = {
 				("#btn-fav", "Favourites", "⭐ keeps a recording for ever; the others are deleted when the memory is full."),
 				("nav.subnav", "More history", "Night timeline, animal diary, message list and log.")],
 	"settings": [("#srch", "Search", "Type a word - every setting is found, sorted by topic."),
-				 ("#mwbar .mwb-mode", "Simple or Expert", "«Simple» shows only the important settings - for this page. «Expert» shows all."),
+				 ("#mwb-mode", "Simple or Expert", "«Simple» shows only the important settings - for this page. «Expert» shows all."),
 				 ("#settings", "Topics", "Open a topic to change it. Changes are saved at once."),
 				 ("#settings .g2-q", "The «?»", "Next to a setting: what it does and what we recommend."),
 				 ("nav.subnav a[href='/cams']", "Cameras", "Choose the camera, add a second one, check the thermal picture.")],
@@ -50555,7 +50602,7 @@ class App:
 		self.watch=watch
 		self.web=web or WebStream(watch)
 		self.root=tk.Tk()
-		self.root.title("MoveEye 3.98.0")
+		self.root.title("MoveEye 4.7.0")
 		try:
 			import base64
 			self._icon=tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -50703,6 +50750,11 @@ class App:
 					sub.add_checkbutton(label=tr(label),variable=v,command=lambda k=key,vv=v:self.set_hidden(k,not vv.get()))
 			m.add_cascade(label=tr(g),menu=sub)
 		m.add_separator()
+		icv=tk.StringVar(master=self.root,value=tk_icons());self._mwbar_icv=icv
+		icm=tk.Menu(m,**kw)
+		icm.add_radiobutton(label="🎨 "+tr("Symbols coloured"),variable=icv,value="color",command=lambda:self._set_icons("color"))
+		icm.add_radiobutton(label="◯ "+tr("plain"),variable=icv,value="plain",command=lambda:self._set_icons("plain"))
+		m.add_cascade(label=tr("Symbols"),menu=icm)
 		m.add_command(label=tr("Settings")+"   (Ctrl+B)",command=self.toggle_sidebar)
 		m.add_command(label=tr("Show all"),command=self.show_all)
 		if self.tab=="live":
@@ -50937,7 +50989,7 @@ class App:
 			if not small:
 				vl=tk.Label(tl,text=APP_VERSION,bg=C["bg"],fg=C["mut"],font=("DejaVu Sans",8),cursor="hand2");vl.pack(side="left",padx=(8,0),pady=(5,0))
 				vl.bind("<Button-1>",self._ver_tap,add="+");Tip(vl,tr("About MoveEye"))
-			Tip(nm,f"{tr('Build')} 3.98.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm,f"{tr('Build')} 4.7.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps=[]
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>",self._egg_tap,add="+")
@@ -51566,8 +51618,10 @@ class App:
 		inner=ttk.Frame(canvas,style="Bg.TFrame");win=canvas.create_window((0,0),window=inner,anchor="nw")
 		inner.bind("<Configure>",lambda e:canvas.configure(scrollregion=canvas.bbox("all")))
 		canvas.bind("<Configure>",lambda e:canvas.itemconfigure(win,width=min(e.width,860)))
-		lb=self._mwbar(right,tab);lb.pack(side="top",fill="x",pady=(0,8),before=sb)
 		bar=tk.Frame(right,bg=C["bg"]);bar.pack(side="top",fill="x",pady=(0,10),before=sb)
+		tg=self._mwbar(bar,tab)
+		if tg is not None:
+			tg.pack(side="right")
 		sf=tk.Frame(bar,bg=C["panel"],highlightthickness=1,highlightbackground=C["line"]);sf.pack(side="left",fill="x",expand=True,padx=(0,8))
 		tk.Label(sf,text="⚲",bg=C["panel"],fg=C["mut"],font=("DejaVu Sans",11)).pack(side="left",padx=(8,0))
 		self.search_var=tk.StringVar()
@@ -52893,52 +52947,15 @@ class App:
 	def _mwbar(self,parent,tab):
 		"""
 """
-		f=tk.Frame(parent,bg=C["bg"]);small=self._lay[0]
-		r1=tk.Frame(f,bg=C["bg"]);r1.pack(fill="x")
-		r2=tk.Frame(f,bg=C["bg"])if small else r1
-		if small:
-			r2.pack(fill="x",pady=(6,0))
-
-		def seg(host,items,cur,cmd,dis=False):
-			w=tk.Frame(host,bg=C["line"],padx=1,pady=1)
-			for i,(val,lab)in enumerate(items):
-				on=cur==val
-				l=tk.Label(w,text=lab,font=("DejaVu Sans",9,"bold"),pady=3,padx=8,cursor=""if dis else "hand2",
-							 bg=C["acc"]if on and not dis else C["field"],fg="#ffffff"if on and not dis else C["mut"])
-				l.pack(side="left",padx=(0 if i==0 else 1,0))
-				if not dis:
-					l.bind("<Button-1>",lambda e,v=val:cmd(v))
-			return w
-		nosimple=tab=="sim"
-		m=seg(r1,((True,tr("Simple")),(False,tr("Expert"))),page_simple(tab),self._set_simple,nosimple)
-		m.pack(side="left");Tip(m,tr("This page has only one view")if nosimple else tr("Simple: only the important settings. «Expert» shows all of them."))
-
-
-		self._fold_cvs={}
-		menu=tk.Menu(self.root,tearoff=0,bg=C["panel"],fg=C["txt"],activebackground=C["acc"],activeforeground="#ffffff",
-					   font=("DejaVu Sans",11 if small else 10))
-		icv=tk.StringVar(master=self.root,value=tk_icons());self._mwbar_icv=icv
-		menu.add_command(label=tr("Symbols"),state="disabled")
-		menu.add_radiobutton(label="🎨 "+tr("Symbols coloured"),variable=icv,value="color",command=lambda:self._set_icons("color"))
-		menu.add_radiobutton(label="◯ "+tr("plain"),variable=icv,value="plain",command=lambda:self._set_icons("plain"))
-		menu.add_separator()
-		menu.add_command(label=tr("Fold the menus"),state="disabled")
-		menu.add_command(label="⇊ "+tr("Collapse all"),command=lambda:self._fold_all_btn(False))
-		menu.add_command(label="★ "+tr("My view"),command=self._mine_on)
-		menu.add_command(label="▤ "+tr("Groups only"),command=lambda:self._groups_only(save=False))
-		menu.add_command(label="⇈ "+tr("Expand all"),command=lambda:self._fold_all_btn(True))
-		vb=self._fbtn(r2,"⚙ "+tr("Display")+" ▾",lambda:None)
-
-		def _pop(e=None):
-			icv.set(tk_icons())
-			try:
-				menu.tk_popup(vb.winfo_rootx(),vb.winfo_rooty()+vb.winfo_height())
-			finally:
-				menu.grab_release()
-		vb.configure(command=_pop)if isinstance(vb,(tk.Button,ttk.Button))else vb.bind("<Button-1>",_pop)
-		vb.pack(side="right");Tip(vb,tr("Symbols: green dot or green symbol = switched on"))
-		self.root.after_idle(self._mine_paint)
-		return f
+		if tab=="sim":
+			return None
+		simple=page_simple(tab)
+		b=tk.Label(parent,text=tr("Simple")if simple else "🎓 "+tr("Expert"),font=("DejaVu Sans",9,"bold"),padx=10,pady=5,cursor="hand2",
+					 bg=C["field"]if simple else C["acc"],fg=C["txt"]if simple else "#ffffff",highlightthickness=1,highlightbackground=C["line"])
+		b.bind("<Button-1>",lambda e:self._set_simple(not simple))
+		Tip(b,tr("Simple: only the important settings. «Expert» shows all of them."))
+		self._mwbar_btn=b
+		return b
 
 	def _set_icons(self,v):
 		""
@@ -54315,9 +54332,10 @@ def appkey_entries():
 
 SHORTCUT_SCOPE = "shortcut"
 SHORTCUT_KEY_NAME = "iPhone shortcuts"
+HOMEKIT_SCOPE = "homekit"
 
 
-def appkey_find(key, api=False):
+def appkey_find(key, api=False, want=""):
 	"""
 """
 	if not isinstance(key,str)or not(10<=len(key)<=120):
@@ -54327,6 +54345,8 @@ def appkey_find(key, api=False):
 	for e in appkey_entries():
 		if hmac.compare_digest(str(e.get("h","")),h):
 			hit=e
+	if hit is not None and(hit.get("scope")==HOMEKIT_SCOPE)!=(want==HOMEKIT_SCOPE):
+		return None
 	if api and hit is not None and hit.get("scope")==SHORTCUT_SCOPE:
 		return None
 	return hit
@@ -54413,8 +54433,8 @@ def appkey_create(name, who="web", scope=""):
 	key=APPKEY_PREFIX+secrets.token_urlsafe(24)
 	now=int(time.time())
 	e={"id":secrets.token_hex(4),"name":name,"h":_appkey_hash(key),"t0":now,"seen":0,"ip":""}
-	if scope==SHORTCUT_SCOPE:
-		e["scope"]=SHORTCUT_SCOPE
+	if scope in(SHORTCUT_SCOPE,HOMEKIT_SCOPE):
+		e["scope"]=scope
 	lst.append(e)
 	CFG["app_keys"]=lst
 	save_settings_now()
@@ -56044,7 +56064,7 @@ _PX_LABELS = {
 	"pushover_user": "User key", "pushover_token": "App token", "msg_keyword_prefix": "Keyword (empty = off)",
 	"email_to": "To (your address)", "email_host": "SMTP server", "email_port": "Port", "email_user": "User name",
 	"email_password": "Password", "email_events": "Which messages", "public_url": "Address of this page for links",
-	"push_pics": "Pictures", "notify_cooldown": "Pause between alarms (s)", "prealarm_cooldown": "Pause between pre-alarms (s)",
+	"push_pics": "Pictures", "notify_cooldown": "Gap between alarms (s)", "prealarm_cooldown": "Gap between pre-alarms (s)",
 }
 
 
@@ -58175,7 +58195,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 319
+INFO_PARTS = 324
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -65820,6 +65840,8 @@ _HX_live2 = _zd('627_uebersetzungen_live2/HX_live2', _zd_hx_en((
 	'Learn the picture again (after moving the camera)',
 	'Recalibrating - keep the picture empty for a few seconds',
 	'Standard',
+	'Steer the head',
+	'Show or hide the head controls',
 )))
 for _k, _v in _HX_live2.items():
 	DE.setdefault(_k,_v[0])
@@ -67893,8 +67915,8 @@ _HX_PUSH = _zd('639a_uebersetzungen_push/HX_PUSH', _zd_hx({
 	'with picture': 'mit',
 	'small picture': 'klein',
 	'without picture': 'ohne',
-	'Pause between alarms (s)': 'Pause zwischen Alarmen (s)',
-	'Pause between pre-alarms (s)': 'Pause zwischen Voralarmen (s)',
+	'Gap between alarms (s)': 'Abstand zwischen Alarmen (s)',
+	'Gap between pre-alarms (s)': 'Abstand zwischen Voralarmen (s)',
 	'Quiet hours (no alarm push)': 'Ruhezeiten (kein Alarm-Push)',
 	'Report persons anyway': 'Personen trotzdem melden',
 	'What is reported': 'Was gemeldet wird',
@@ -69882,7 +69904,7 @@ for _k, _v in _HX_MWB.items():
 		TRX[_L].setdefault(_k,_v[_i+1])
 
 MWB_KEYS = sorted(set(_HX_MWB) | {
-	"Simple", "Expert", "On start: groups only", "Collapse all", "Groups only", "Expand all", "My view",
+	"Simple", "Expert", "on", "off", "On start: groups only", "Collapse all", "Groups only", "Expand all", "My view",
 	"Simple: only the important settings. «Expert» shows all of them.", "Symbols: green dot or green symbol = switched on",
 	"On every start the settings show only the groups. Off: the menus open as you left them."})
 
@@ -69902,9 +69924,27 @@ MWB_JS = _zd('639o_bedienleiste/MWB_JS', "")
 
 
 
-for _a, _b in _zd('639o_bedienleiste/anleitung_HELP_PAGE', ()):
-	if _a in HELP_PAGE:
-		HELP_PAGE=HELP_PAGE.replace(_a,_a+_b,1)
+MWB_HELP = _zd('639o_bedienleiste/MWB_HELP', _ZDDict())
+
+
+def mwb_help(doc, lang):
+	""
+	if not isinstance(doc,str)or MWB_HELP[lang][:40]in doc:
+		return doc
+	i=doc.find('<section id="tips"')
+	j=doc.find("</h2>",i)if i>=0 else-1
+	return doc[:j+5]+MWB_HELP[lang]+doc[j+5:]if j>=0 else doc
+
+
+try:
+	_hp_en=HELP_PAGE.find('<div lang="en">')
+	if _hp_en>0:
+		HELP_PAGE=mwb_help(HELP_PAGE[:_hp_en],"de")+mwb_help(HELP_PAGE[_hp_en:],"en")
+	for _L in("fr","it","rm"):
+		if HELP_X.get(_L):
+			HELP_X[_L]=mwb_help(HELP_X[_L],_L)
+except Exception as _e:
+	print(f"639o help: {_e}")
 
 
 _render_page_before_mwb = render_page
@@ -69923,6 +69963,11 @@ def render_page(page, active):
 
 
 _mwb_selftest = _zd_fn('639o_bedienleiste/_mwb_selftest()')
+
+
+
+
+
 
 
 
@@ -75259,7 +75304,7 @@ SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json
 
 
 
-GEH_QUELLE_SHA = '143217515ac5b3cac7fa040087de0338713210eae3deae6434a32c26677fc9de'
+GEH_QUELLE_SHA = '3551bbdbff0cce549f45bfd21f67a2326159474a3d787a556e50c25d53e7abef'
 GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', '{}'))
 GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Elektro – parametric Python model.": "Eigenes Werk von Elektro – parametrisches Python-Modell.", "Step": "Schritt"}
 GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
@@ -75270,11 +75315,19 @@ GEH_UI2_TRX = _zd('639v_daten_gehaeuse/GEH_UI2_TRX', _ZDDict())
 
 
 
-BAU3D_QUELLE_SHA = '143217515ac5b3cac7fa040087de0338713210eae3deae6434a32c26677fc9de'
+BAU3D_QUELLE_SHA = '3551bbdbff0cce549f45bfd21f67a2326159474a3d787a556e50c25d53e7abef'
 BAU3D = _zd('639vb_daten_bau3d/BAU3D', _ZDDict())
 BAU3D_GLB = _zd('639vb_daten_bau3d/BAU3D_GLB', [])
 
 BAU3D_MODELLE = json.loads(_zd('639vb_daten_bau3d/BAU3D_MODELLE', '{}'))
+
+BAU3D_GLB_TRANSPORT = _zd('639vb_daten_bau3d/BAU3D_GLB_TRANSPORT', [])
+BAU3D_MODELLE_TRANSPORT = json.loads('[{"id":"kappe","gruppe":"base","aussen":false,"mitte":[0.0,0.004,0.0027],"explosion":[0.0,0.47,-0.0],"farbe":"#9a9ea3","transport":"haube"},{"id":"drehsperre","gruppe":"base","aussen":false,"mitte":[0.0,-0.0453,0.0444],"explosion":[0.0,0.26,-0.0],"farbe":"#9a9ea3","transport":"haube"},{"id":"schale_vorne","gruppe":"base","aussen":false,"mitte":[-0.0,-0.0032,-0.0221],"explosion":[-0.0,0.52,-0.0],"farbe":"#9a9ea3","transport":"schale"},{"id":"schale_hinten","gruppe":"base","aussen":false,"mitte":[-0.0,-0.0032,0.0293],"explosion":[-0.0,0.52,-0.0],"farbe":"#9a9ea3","transport":"schale"},{"id":"schale_stopfen","gruppe":"base","aussen":false,"mitte":[0.0121,-0.0059,-0.0399],"explosion":[0.0,0.52,-0.0],"farbe":"#9a9ea3","transport":"schale"}]')
+
+
+
+
+
 
 
 
@@ -75335,7 +75388,8 @@ for _k, _v in GEH_DL_TX.items():
 	DE.setdefault(_k,_v[0])
 	for _i,_L in enumerate(("fr","it","rm")):
 		TRX.setdefault(_L,{}).setdefault(_k,_v[_i+1])
-GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)", "Needs internet (GitHub)",
+GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)", "Needs internet (GitHub)", "No.",
+	"On a narrow screen the column «Walls» is hidden – turn the phone or open the page on a PC.",
 	"Saved only in this browser (offline version).", "The print files come from GitHub – this needs internet. Everything else on this page works offline.", "Offline version", "Ready-made? Request on the MoveEye homepage",
 	"Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:"} | {
 	"Case", "Step", "Name", "Opened in the simulator.", "Simulator not connected – start it and connect it on the page Simulator."})
@@ -75347,12 +75401,18 @@ def geh_fk():
 	return{i:{k:es[i].get(k)for k in("titel","text","schritte","stufe")}for i in GEH_BAU.get("fehlersuche")or[]if i in es}
 
 
+def geh_m3():
+	""
+	tm=globals().get("BAU3D_MODELLE_TRANSPORT")or[]
+	return dict(BAU3D_MODELLE,teile=list(BAU3D_MODELLE.get("teile")or[])+list(tm))if tm else BAU3D_MODELLE
+
+
 def geh_page(off=None):
 	""
 	js="Object.assign(I18N.de, "+json.dumps({k:DE.get(k,k)for k in GEH_KEYS},ensure_ascii=False)+");"
 	J=lambda o:json.dumps(o,ensure_ascii=False).replace("</","<\\/")
 	return((geh_render_off(GEH_PAGE,off)if off else render_page(GEH_PAGE,"more")).replace("/*GEHDE*/",js,1).replace("/*GEHBAU*/null",J(GEH_BAU),1)
-			.replace("/*GEHFK*/null",J(geh_fk()),1).replace("/*GEHM3*/null",J(BAU3D_MODELLE),1)
+			.replace("/*GEHFK*/null",J(geh_fk()),1).replace("/*GEHM3*/null",J(geh_m3()),1)
 			.replace("/*GEHVER*/\"\"",json.dumps(APP_VERSION),1)
 			.replace("/*GEHSIM*/false","true"if CFG.get("sim_on")else "false",1)
 			.replace("/*GEHTABS*/",J([list(x)for x in BAU_TABS])).replace("/*GEH3D*/",GEH_3D_JS,1)
@@ -75369,7 +75429,7 @@ def geh_render_off(page, off):
 	probe=page+COMMON_JS+GEH_3D_JS+str(globals().get("GEH_EINZEL_JS",""))+str(globals().get("GEH_EINZEL_3D",""))+fertig_js()
 	keys=set(GEH_KEYS)|set(re.findall(r'data-i18n="([^"]+)"',page))|{k for k in TRX.get("fr",{})if '"'+k+'"'in probe}
 	trx={L:{k:TRX.get(L,{})[k]for k in sorted(keys)if TRX.get(L,{}).get(k)}for L in("fr","it","rm")}
-	cfg={k:off[k]for k in("home","raw","kit","glb")if off.get(k)}
+	cfg={k:off[k]for k in("home","raw","kit","glb","glbt")if off.get(k)}
 	head=("<script>window.MW_OFFLINE="+J(cfg)+";window.I18NXA="+J(trx)+";\n"+LANG_JS.replace("</","<\\/")+"\n"
 			"(function(){var l='';try{l=localStorage.getItem('mw-lang')||'';}catch(e){}"
 			"var nl=((navigator.language||'de').slice(0,2)||'de').toLowerCase();if(['de','fr','it','rm','en'].indexOf(nl)<0)nl='en';"
@@ -75400,6 +75460,8 @@ def geh_offline_html(homepage=""):
 	imports={("three"if k=="three.module.min.js"else "three/addons/"+k):du(v.encode("utf-8"),"text/javascript")for k,v in src.items()}
 	home=str(homepage or(globals().get("FERTIG")or{}).get("homepage_url")or "")
 	off={"home":home if home.startswith("https://")else "","raw":GEH_DRUCK_RAW,"kit":GEH_BAUSATZ_URL,"glb":du(gzip.decompress(bau3d_bytes("glb")),"model/gltf-binary"),"imports":imports}
+	if bau3d_bytes("glbt"):
+		off["glbt"]=du(gzip.decompress(bau3d_bytes("glbt")),"model/gltf-binary")
 	return geh_page(off=off)
 
 
@@ -75469,7 +75531,13 @@ def geh_druck_dir():
 
 
 def geh_druck_namen():
-	return list(GEH_BAU.get("druckdateien")or[])+list(GEH_BAU.get("druckdateien_einzeln")or[])
+	return list(GEH_BAU.get("druckdateien")or[])+list(GEH_BAU.get("druckdateien_einzeln")or[])+geh_transport_namen()
+
+
+def geh_transport_namen():
+	"""
+"""
+	return list((GEH_BAU.get("transport")or{}).get("dateien")or[])
 
 
 
@@ -75590,7 +75658,8 @@ def geh_druck_holen(name, timeout=30):
 def geh_var_namen(var):
 	""
 	d=GEH_VAR_DIR.get(var,"v5-2/")
-	return[n for n in geh_druck_namen()if(n.split("/")[0]+"/"if "/"in n else "")==d]
+	tr_=set(geh_transport_namen())
+	return[n for n in geh_druck_namen()if(n.split("/")[0]+"/"if "/"in n else "")==d and n not in tr_]
 
 
 GEH_VAR_DIR = {"v51": "", "v52": "v5-2/", "v53": "v5-3/"}
@@ -75643,12 +75712,30 @@ def _geh_bg_fetch(names):
 		_GEH_DL_BG["run"]=False
 
 
-def geh_alle_zip(var=None, budget=None):
+def geh_transport_liesmich(L=None):
+	""
+	L=cur_lang(L)
+	T_=GEH_BAU.get("transport")or{}
+	out=[tr("MoveEye transport lock – not yet tried out – as of MoveEye %s",L)%APP_VERSION,"",_gx_py(T_.get("hinweis"),L)]
+	nm={t_.get("datei"):_gx_py(t_.get("name"),L)for t_ in GEH_BAU.get("teile")or[]if t_.get("datei")}
+	for g_ in T_.get("gruppen")or[]:
+		out+=["","== "+_gx_py(g_.get("titel"),L)+" =="]
+		for p in T_.get("teile")or[]:
+			if p.get("gruppe")==g_.get("id"):
+				out.append("- %s: %s · %s %s%s · %s ~%s h"%(nm.get(p["datei"],p["datei"]),_gx_py(p.get("liegt"),L),tr("Layer",L),
+						   p["schicht"]," · Brim %s mm"%p["brim"]if p.get("brim")else "",tr("Print time",L),p["zeit_h"]))
+		out+=["",_gx_py(g_.get("hinweis"),L)]
+		if g_.get("montage"):
+			out+=["",tr("How to fit it",L)+":",_gx_py(g_["montage"].get("text"),L)]
+	return "\r\n".join(out+[""])
+
+
+def geh_alle_zip(var=None, budget=None, transport=False):
 	"""
 """
 	import io
 	var=var if var in GEH_VAR_DIR else geh_var_std()
-	names=geh_var_namen(var)
+	names=geh_transport_namen()if transport else geh_var_namen(var)
 	t0,paths=time.time(),{}
 	budget=GEH_ZIP_BUDGET if budget is None else budget
 	for i,n in enumerate(names):
@@ -75662,11 +75749,11 @@ def geh_alle_zip(var=None, budget=None):
 		if not p:
 			return "offline",why,None
 		paths[n]=p
-	zn=geh_zip_name(var)
+	zn=("MoveEye_Transportsicherung_%s.zip"%APP_VERSION)if transport else geh_zip_name(var)
 	top=zn[:-4]+"/"
 	b=io.BytesIO()
 	with zipfile.ZipFile(b,"w",zipfile.ZIP_STORED)as z:
-		z.writestr(top+"LIESMICH.txt",geh_liesmich(var).encode("utf-8"))
+		z.writestr(top+"LIESMICH.txt",(geh_transport_liesmich()if transport else geh_liesmich(var)).encode("utf-8"))
 		for n in names:
 			bn=geh_base_name(n)
 			z.write(paths[n],top+("Platten_X2D/"+bn if n in(GEH_BAU.get("druckdateien")or[])else bn))
@@ -75704,6 +75791,11 @@ def bau3d_bytes(key):
 			if len(BAU3D_GLB)<3:
 				return None
 			_BAU3D_CACHE[key]=base64.b64decode(BAU3D_GLB[2])
+		elif key=="glbt":
+			gt_=globals().get("BAU3D_GLB_TRANSPORT")or[]
+			if len(gt_)<3:
+				return None
+			_BAU3D_CACHE[key]=base64.b64decode(gt_[2])
 		elif key in BAU3D:
 			_BAU3D_CACHE[key]=base64.b64decode(BAU3D[key][1])
 		else:
@@ -75745,6 +75837,11 @@ def smalltv_routes(app, reply, body):
 		b_=bau3d_bytes("glb")
 		return gz(b_,"model/gltf-binary")if b_ else Response("additional data missing",503)
 
+	@app.route("/build/gehaeuse_transport.glb")
+	def geh_glb_tr():
+		b_=bau3d_bytes("glbt")
+		return gz(b_,"model/gltf-binary")if b_ else Response("additional data missing",503)
+
 	@app.route("/build/qr.svg")
 	def geh_qr():
 		return Response(qr_svg(request.host_url),mimetype="image/svg+xml",headers={"Cache-Control":"no-store"})
@@ -75761,13 +75858,15 @@ def smalltv_routes(app, reply, body):
 			return Response(f_.read(),mimetype="application/octet-stream",
 							headers={"Content-Disposition":f'attachment; filename="{geh_base_name(name)}"',"Cache-Control":"private, max-age=600"})
 
+	@app.route("/build/transport.zip")
 	@app.route("/build/alle.zip")
 	def geh_alle():
 		var=request.args.get("var")or geh_var_std()
-		st,a_,b_=geh_alle_zip(var)
+		trp=request.path.endswith("/transport.zip")
+		st,a_,b_=geh_alle_zip(var,transport=trp)
 		if st=="zip":
 			return Response(a_,mimetype="application/zip",headers={"Content-Disposition":f'attachment; filename="{b_}"',"Cache-Control":"no-store"})
-		url="/build/alle.zip?var="+(var if var in GEH_VAR_DIR else geh_var_std())
+		url="/build/transport.zip"if trp else "/build/alle.zip?var="+(var if var in GEH_VAR_DIR else geh_var_std())
 		if st=="wait":
 			return Response(geh_dl_page(tr("The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».")%(a_,b_),retry=url,refresh=15),202,mimetype="text/html")
 		return Response(geh_dl_page(tr("The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package."),retry=url),503,mimetype="text/html")
@@ -75898,6 +75997,15 @@ geh_check = _zd_fn('639w_gehaeuse/geh_check()')
 
 
 
+
+
+
+
+
+
+
+
+
 bau_infos_veraltet = _zd_fn('639w_gehaeuse/bau_infos_veraltet()')
 
 
@@ -75914,6 +76022,19 @@ bau_infos_veraltet = _zd_fn('639w_gehaeuse/bau_infos_veraltet()')
 
 
 geh_selftest = _zd_fn('639w_gehaeuse/geh_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -100725,6 +100846,7 @@ def morse_beep_play(tx):
 	def work():
 		p=None
 		try:
+			radio_yield("morse")
 			cmd,err=out_cmd(OUT_RATE)
 			if cmd is None:
 				raise RuntimeError(err)
@@ -101398,7 +101520,7 @@ MORE_GROUPS_DE = {k: DE.get(k, _HX_KLAR[k][0]) for k in ("On the go", "Help & pr
 
 
 MORE_GROUPS = (
-	("travel", "On the go", ('href="/tausch"', 'href="/karte"', 'href="/almanach"', 'href="/morse"')),
+	("travel", "On the go", ('href="/tausch"', 'href="/karte"', 'href="/almanach"', 'href="/morse"', 'href="/radio"')),
 	("play", "Play area", ('href="/play"', 'href="/party"')),
 	("help", "Help & print", ('href="/help"', 'href="/quick"', 'href="/qr"', 'href="/karten"', 'href="/info"')),
 	("device", "Device", ('href="/tools"', 'href="/build"', 'id="m-fb"', 'id="m-about"')),
@@ -102636,6 +102758,9 @@ def funk_page(variant="mw", lang=None, https_port=None):
 		a,e=p.find("<!--PWA-->"),p.find("<!--/PWA-->")
 		if a>=0 and e>a:
 			p=p[:a]+p[e+len("<!--/PWA-->"):]
+	if variant!="pwa":
+		js=globals().get("STEGO_JS")or ""
+		p=p.replace('<script src="stego.js"></script>',("<script>\n"+js+"\n</script>")if "MWStego"in js else "",1)
 	if variant=="mw":
 		mw={"lang":norm_lang(lang or CFG.get("lang")),"back":"/morse","https_port":https_port}
 		p=p.replace("/*MWFUNK*/","window.MW_FUNK="+json.dumps(mw).replace("</","<\\/")+";",1)
@@ -103152,7 +103277,20 @@ if "App" in globals():
 
 
 
-_HP_CFG = {"hp_key": "", "hp_base": "https://kevlaschef.com", "hp_auto": True}
+
+
+
+
+
+
+
+
+
+
+
+
+_HP_CFG = {"hp_key": "", "hp_base": "https://kevlaschef.com", "hp_auto": True, "hp_start_on": False, "hp_funk_on": True,
+		   "hp_sim_on": True, "hp_public": ""}
 for _k, _v in _HP_CFG.items():
 	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
 USER_SETTINGS_DENY.update(_HP_CFG)
@@ -103220,6 +103358,26 @@ def hp_base_ok(u):
 	if HP_TEST_HTTP and re.fullmatch(r"http://127\.0\.0\.1:\d{1,5}",u):
 		return u
 	return ""
+
+
+def hp_public_ok(u):
+	""
+	u=str(u or "").strip()
+	m=re.fullmatch(r"(https://[A-Za-z0-9](?:[A-Za-z0-9-]{0,62}\.)+[A-Za-z]{2,63}(?::\d{1,5})?)(/[A-Za-z0-9._~/-]{0,200})?",u)
+	if not m and HP_TEST_HTTP:
+		m=re.fullmatch(r"(http://127\.0\.0\.1:\d{1,5})(/[A-Za-z0-9._~/-]{0,200})?",u)
+	if not m or "//"in(m.group(2)or "")or "/../"in(m.group(2)or "")+"/":
+		return ""
+	return m.group(1)+((m.group(2)or "/").rstrip("/")+"/")
+
+
+def hp_public_url():
+	""
+	pub=hp_public_ok(CFG.get("hp_public"))
+	if pub:
+		return pub
+	base=hp_base_ok(CFG.get("hp_base"))
+	return base+"/moveeye/"if base else ""
 
 
 def _hp_conn(url, timeout=60):
@@ -103305,17 +103463,19 @@ def hp_list():
 
 
 def hp_funk_files():
-	""
+	"""
+"""
 	import base64
 	import hashlib
 	html=funk_page("pwa").encode("utf-8")
-	ver=hashlib.sha256(html).hexdigest()[:12]
+	js=STEGO_JS.encode("utf-8")
+	ver=hashlib.sha256(html+js).hexdigest()[:12]
 	man={"name":"Handy-Funkgerät","short_name":"Funk","description":"Morse und das eigene Protokoll mit zwei Tönen über ein Handfunkgerät (MoveEye)",
 		   "lang":"de","start_url":"./","scope":"./","display":"standalone","background_color":"#111418","theme_color":"#111418",
 		   "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png"},
 					 {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
 	out={"index.html":html,"manifest.webmanifest":(json.dumps(man,ensure_ascii=False,indent=1)+"\n").encode("utf-8"),
-		   "sw.js":HP_FUNK_SW_JS.replace("@VER@",ver).encode("utf-8")}
+		   "sw.js":HP_FUNK_SW_JS.replace("@VER@",ver).encode("utf-8"),"stego.js":js}
 	try:
 		out.update({k:base64.b64decode(v)for k,v in json.loads(HP_FUNK_PNG).items()})
 	except(ValueError,TypeError):
@@ -103329,10 +103489,33 @@ def _hp_item(path, data):
 	return{"path":path,"size":len(data),"sha":hashlib.sha256(data).hexdigest(),"get":lambda d=data:io.BytesIO(d)}
 
 
+HP_START = "index.html"
+HP_PARTS = ("start", "funk", "sim")
+_HP_PART_DIR = {"start": "", "funk": "Funk/", "sim": "Sim/"}
+
+
+def hp_part_on(part):
+	return bool(CFG.get("hp_"+part+"_on"))
+
+
+def hp_start_on():
+	return hp_part_on("start")
+
+
+def hp_part(p):
+	""
+	return "start"if p==HP_START else "funk"if p.startswith("Funk/")else "sim"if p.startswith("Sim/")else None
+
+
+def hp_any_on():
+	return any(hp_part_on(x)for x in HP_PARTS)
+
+
 def hp_fixed_items():
-	out=[_hp_item("index.html",HP_INDEX_HTML.encode("utf-8"))]
-	out+=[_hp_item("Funk/"+n,b)for n,b in sorted(hp_funk_files().items())]
-	return out+[_hp_item("Sim/test.html",HP_TEST_HTML.encode("utf-8"))]
+	out=[_hp_item(HP_START,HP_INDEX_HTML.encode("utf-8"))]if hp_part_on("start")else[]
+	if hp_part_on("funk"):
+		out+=[_hp_item("Funk/"+n,b)for n,b in sorted(hp_funk_files().items())]
+	return out+([_hp_item("Sim/test.html",HP_TEST_HTML.encode("utf-8"))]if hp_part_on("sim")else[])
 
 
 def hp_sim_check(p):
@@ -103407,7 +103590,9 @@ def hp_content_id():
 """
 	import hashlib
 	sim_manifest_load()
-	t="|".join(it["path"]+":"+it["sha"]for it in hp_fixed_items())+"|sim:"+str(SIM3D_WEB.get("sha256")or "")
+	t="|".join(it["path"]+":"+it["sha"]for it in hp_fixed_items())
+	t+="|sim:"+(str(SIM3D_WEB.get("sha256")or "")if hp_part_on("sim")else "")
+	t+="|on:"+"".join("1"if hp_part_on(x)else "0"for x in HP_PARTS)
 	return hashlib.sha256((t+"|"+str(CFG.get("hp_base"))).encode("utf-8")).hexdigest()
 
 
@@ -103496,7 +103681,7 @@ def hp_publish(auto=False):
 	cid=hp_content_id()
 	HP.update(busy="comparing",prog={},msg="")
 	items=hp_fixed_items()
-	sim,note=hp_sim_items(True)
+	sim,note=hp_sim_items(True)if hp_part_on("sim")else([],None)
 	items+=sim
 	if HP["cancel"]:
 		raise HpErr("cancel")
@@ -103525,7 +103710,8 @@ def hp_publish(auto=False):
 		st["up"]=up
 		hp_save(st)
 	paths={it["path"]for it in items}
-	gone=[p for p in list(up)if p not in paths and _hp_ours(p)]
+
+	gone=[p for p in list(up)if p not in paths and _hp_ours(p)and hp_part_on(hp_part(p))]
 	for p in gone:
 		from urllib.parse import quote
 		if p in remote:
@@ -103576,7 +103762,7 @@ def hp_start(kind, auto=False):
 def hp_auto_tick(now=None):
 	""
 	now=now or time.time()
-	if not(CFG.get("hp_auto")and CFG.get("hp_key")and hp_base_ok(CFG.get("hp_base")))or HP["busy"]or not hp_quiet():
+	if not(CFG.get("hp_auto")and CFG.get("hp_key")and hp_base_ok(CFG.get("hp_base"))and hp_any_on())or HP["busy"]or not hp_quiet():
 		return False
 	st=hp_state()
 	if now-float(st.get("t_man")or 0)>6*3600:
@@ -103654,7 +103840,7 @@ def hp_probe(url, want=None, origin=""):
 			break
 		else:
 			raise HpErr("loop")
-		H={k:_hp_clean(r.getheader(k)or "")[:300]for k in("Content-Type","Content-Length","Content-Security-Policy",
+		H={k:_hp_clean(r.getheader(k)or "")[:300]for k in("Content-Type","Content-Length","Content-Security-Policy","WWW-Authenticate",
 																 "X-Content-Type-Options","Cross-Origin-Embedder-Policy",
 																 "Cross-Origin-Opener-Policy","Cross-Origin-Resource-Policy")}
 		exp=want.get("size")if want else None
@@ -103684,6 +103870,9 @@ def hp_probe(url, want=None, origin=""):
 	fin=re.match(r"^[a-z]+://[^/]+",url)
 	if row["chain"]and fin and fin.group(0)!=origin:
 		P.append(("redirected to another address – fetch() and WebAssembly often fail there",fin.group(0)))
+	if r.status==401 and H["WWW-Authenticate"]:
+		row["locked"]=True
+		return row
 	if r.status!=200:
 		P.append(("answer {code} instead of 200",str(r.status)))
 		return row
@@ -103706,19 +103895,27 @@ def hp_probe(url, want=None, origin=""):
 
 
 def hp_check(items=None):
-	base=hp_base_ok(CFG.get("hp_base"))
-	if not base:
+	pub=hp_public_url()
+	if not pub:
 		raise HpErr("url")
+	origin=re.match(r"^[a-z]+://[^/]+",pub).group(0)
 	if items is None:
-		items=hp_fixed_items()+(hp_sim_items(False)[0]or[{"path":"Sim/"+n,"size":None,"sha":None}for n in HP_SIM_NAMES])
+		items=hp_fixed_items()+((hp_sim_items(False)[0]or[{"path":"Sim/"+n,"size":None,"sha":None}for n in HP_SIM_NAMES])
+									if hp_part_on("sim")else[])
 	from urllib.parse import quote
 	rows=[]
-	for i,it in enumerate([{"path":""},{"path":"Funk/"},{"path":"Sim/"}]+list(items)):
-		HP["prog"]={"i":i+1,"n":len(items)+3,"file":it["path"]or "/"}
+	for x in HP_PARTS:
+		if not hp_part_on(x):
+			rows.append({"path":_HP_PART_DIR[x]or "/","off":x,"url":"","chain":[],"probs":[],"status":0,"size":0,"type":"",
+						 "headers":{}})
+	items=[it for it in items if hp_part(it["path"])is None or hp_part_on(hp_part(it["path"]))]
+	probe=[{"path":_HP_PART_DIR[x]}for x in HP_PARTS if hp_part_on(x)]+list(items)
+	for i,it in enumerate(probe):
+		HP["prog"]={"i":i+1,"n":len(probe),"file":it["path"]or "/"}
 		if HP["cancel"]:
 			raise HpErr("cancel")
 		want={"path":it["path"],"size":it.get("size"),"sha":it.get("sha")}if it["path"]and not it["path"].endswith("/")else None
-		row=hp_probe(base+"/moveeye/"+quote(it["path"],safe="/"),want,base)
+		row=hp_probe(pub+quote(it["path"],safe="/"),want,origin)
 		row["path"]=it["path"]or "/"
 		rows.append(row)
 	st=hp_state()
@@ -103737,9 +103934,10 @@ def hp_status():
 	""
 	st,p,pk=hp_state(),HP["prog"],SIM3D_WEB
 	return{"ok":True,"key_set":bool(CFG.get("hp_key")),"base":CFG.get("hp_base")or "","auto":bool(CFG.get("hp_auto")),
+			"start_on":hp_part_on("start"),"funk_on":hp_part_on("funk"),"sim_on":hp_part_on("sim"),
 			"busy":HP["busy"],"wait":HP["wait"],"prog":{k:p.get(k)for k in("i","n","bytes","total","file")}if p.get("n")else None,
 			"err":[HP["err"],HP["msg"]]if HP["err"]else None,"cancelled":HP["msg"]=="cancel","last":st.get("last"),
-			"check":st.get("check"),"public":(hp_base_ok(CFG.get("hp_base"))or "")+"/moveeye/",
+			"check":st.get("check"),"public":hp_public_url(),"public_set":hp_public_ok(CFG.get("hp_public")),
 			"sim":{"ver":pk["version"]if pk["size"]else "","ready":bool(pk["size"])and sim3d_ready(pk)}}
 
 
@@ -103770,13 +103968,32 @@ def hp_action(d, lang=None):
 			save_settings()
 			log_event("sys","Homepage: address changed, upload key deleted")
 		return True,""
+	if a=="public":
+		v=str(d.get("public")or "").strip()
+		pub=hp_public_ok(v)if v else ""
+		if v and not pub:
+			return False,"Only https addresses, without user name or password."
+		if pub!=(CFG.get("hp_public")or ""):
+			CFG["hp_public"]=pub
+			st=hp_state();st.pop("check",None);hp_save(st)
+			save_settings()
+			log_event("sys","Homepage: public address "+("set"if pub else "cleared"))
+		return True,""
 	if a=="auto":
 		CFG["hp_auto"]=bool(d.get("on"))
 		save_settings()
 		return True,""
+	if a in("start_on","funk_on","sim_on"):
+		CFG["hp_"+a]=bool(d.get("on"))
+		save_settings()
+		log_event("sys","Homepage: "+{"start_on":"start page","funk_on":"phone radio","sim_on":"simulator"}[a]+(
+			" on"if CFG["hp_"+a]else " off"))
+		return True,""
 	if a in("publish","check"):
 		if a=="publish"and not CFG.get("hp_key"):
 			return False,"No upload key set."
+		if a=="publish"and not hp_any_on():
+			return False,"Nothing chosen – switch on at least one part."
 		return(True,"")if hp_start(a)else(False,"busy - try again")
 	if a=="cancel":
 		HP["cancel"]=True
@@ -103904,6 +104121,12 @@ for _L in ("fr", "it", "rm"):
 
 
 homepage_selftest = _zd_fn('639zzzh_homepage/homepage_selftest()')
+
+
+
+
+
+
 
 
 
@@ -107360,6 +107583,1115 @@ SELFTEST_EXTRA.append(("Digital backpack in the network: Samba file, rules, text
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+HK_DEF = {"hk_on": False, "hk_quality": "copy", "hk_step": 15, "hk_disarm_nopin": False, "hk_st": {}}
+for _k, _v in HK_DEF.items():
+	CFG.setdefault(_k,json.loads(json.dumps(_v)));DEFAULTS.setdefault(_k,json.loads(json.dumps(_v)))
+	FACTORY_CFG.setdefault(_k,json.loads(json.dumps(_v)))
+USER_SETTINGS_DENY.update(HK_DEF)
+APPKEY_DENY_KEYS.update(HK_DEF)
+APPKEY_DENY_PATHS.add("/api/homekit")
+LOCK_DENY_PATHS.add("/api/homekit")
+
+HK_VERSIONS = (("homebridge", "1.8.5"), ("homebridge-camera-ffmpeg", "3.1.4"))
+HK_USER = "moveeye-hb"
+HK_SVC = "moveeye-homebridge"
+HK_PORT = 51836
+HK_MOTION_PORT = 51837
+HK_KEY_NAME = "Apple Home (Homebridge)"
+HK_PKGS = ("nodejs", "npm", "ffmpeg")
+HK = {"opt": "/opt/moveeye-homebridge", "var": "/var/lib/moveeye-homebridge", "unit": "/etc/systemd/system/moveeye-homebridge.service",
+	  "lock": threading.RLock(), "busy": "", "err": "", "cmds": [], "want": False, "seen": 0.0, "paired": None, "active": (0.0, False),
+	  "log": deque(maxlen=8), "t_head": 0.0, "rl": deque(maxlen=40), "bad": {}, "motion_t": 0.0, "rtsp_h": ""}
+HK_CPU = {"copy": "about 1–3 % of one core to copy + 15–25 % for the encoder of MoveEye, only while somebody watches",
+		  "720p": "about 25–40 % of one core, only while somebody watches", "idle": "about 1 % and 80 MB of memory"}
+HK_STEPS_OK = (5, 10, 15, 20, 30, 45)
+
+
+def hk_sys(cmd, inp=None, timeout=60, root=True):
+	""
+	return smb_sys(cmd,inp,timeout,root)
+
+
+def hk_step(cmd, why, inp=None, timeout=120):
+	rc,out=hk_sys(cmd,inp,timeout)
+	if rc==0:
+		return ""
+	if _SMB_DENIED.search(out)or rc==127 and "sudo"in out:
+		return "no rights"
+	return f"{why}: {(out.splitlines() or ['?'])[-1][:120] if rc != -9 else 'timeout'}"
+
+
+def _hk_dir():
+	d=os.path.join(DATA_DIR,"homekit")
+	os.makedirs(d,mode=0o700,exist_ok=True)
+	return d
+
+
+def _hk_write600(path, text):
+	fd=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600)
+	with os.fdopen(fd,"w",encoding="utf-8")as f:
+		f.write(text)
+	os.chmod(path,0o600)
+
+
+def hk_state():
+	return dict(CFG.get("hk_st")or{})
+
+
+def hk_state_set(**kw):
+	st=hk_state()
+	st.update(kw)
+	CFG["hk_st"]=st
+	save_settings()
+	return st
+
+
+
+HK_BAD_CODES = {"00000000", "11111111", "22222222", "33333333", "44444444", "55555555", "66666666", "77777777", "88888888",
+				"99999999", "12345678", "87654321"}
+
+
+def hk_new_code():
+	while True:
+		c="".join(secrets.choice("0123456789")for _ in range(8))
+		if c not in HK_BAD_CODES:
+			return f"{c[:3]}-{c[3:5]}-{c[5:]}"
+
+
+def hk_new_identity():
+	b=[secrets.randbelow(256)for _ in range(6)]
+	b[0]=(b[0]&0xFC)|0x02
+	sid="".join(secrets.choice("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")for _ in range(4))
+	return ":".join(f"{x:02X}"for x in b),sid
+
+
+def hk_setup_uri(code, sid, category=2):
+	""
+	low=int(str(code).replace("-",""))|1<<28
+	if category&1:
+		low|=1<<31
+	v=(category>>1)*0x100000000+low
+	s=""
+	while v:
+		v,r=divmod(v,36)
+		s="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r]+s
+	return "X-HM://"+s.rjust(9,"0")+sid
+
+
+def hk_setup_load():
+	try:
+		with open(os.path.join(_hk_dir(),"setup.json"),encoding="utf-8")as f:
+			d=json.load(f)
+		if re.fullmatch(r"\d{3}-\d{2}-\d{3}",d.get("code",""))and re.fullmatch(r"[0-9A-Z]{4}",d.get("sid","")):
+			return d
+	except(OSError,ValueError,AttributeError):
+		pass
+	return None
+
+
+def hk_setup_new():
+	mac,sid=hk_new_identity()
+	d={"code":hk_new_code(),"sid":sid}
+	_hk_write600(os.path.join(_hk_dir(),"setup.json"),json.dumps(d))
+	hk_state_set(mac=mac)
+	return d
+
+
+
+def _hk_hash(x):
+	return hashlib.sha256(("mw-hk|"+str(x)).encode()).hexdigest()
+
+
+def hk_cam_name():
+	n=re.sub(r"[^\w ']"," ",str(CFG.get("device_name")or "MoveEye"),flags=re.U)
+	n=re.sub(r"\s+"," ",n).strip()[:30]
+	return n if n and n[0].isalnum()and n[-1].isalnum()else "MoveEye"
+
+
+def hk_quality_eff():
+	""
+	return "copy"if CFG.get("hk_quality")!="720p"and _mediamtx_bin()else "720p"
+
+
+def hk_base():
+	return("https"if WEB_OPTS.get("https")else "http")+f"://127.0.0.1:{int(CFG['web_port'])}"
+
+
+def hk_config(key, vpw, setup, lan_if, ffmpeg="/usr/bin/ffmpeg"):
+	"""
+"""
+	st=hk_state()
+	q=hk_quality_eff()
+	base=hk_base()
+	tls=" -tls_verify 0"if base.startswith("https")else ""
+	snap=f"{base}/k/hk/photo.jpg?t={vpw}"
+	if q=="copy":
+		vc={"source":f"-rtsp_transport tcp -i rtsp://homekit:{vpw}@127.0.0.1:{int(CFG['rtsp_port'])}/motionwatch","vcodec":"copy"}
+	else:
+		vc={"source":f"-f mjpeg{tls} -i {base}/k/hk/video.mjpg?t={vpw}","vcodec":"libx264","maxWidth":1280,"maxHeight":720,
+			  "maxFPS":15,"maxBitrate":1500,"forceMax":True,"encoderOptions":"-preset ultrafast -tune zerolatency"}
+	vc.update({"stillImageSource":f"{tls.strip()} -i {snap}".strip(),"maxStreams":2,"audio":False,"packetSize":1316,"debug":False})
+	host=re.sub(r"[^A-Za-z0-9-]","",socket.gethostname()or "")or "pi"
+	return{
+		"description":"MoveEye (Apple Home) - written by MoveEye, do not change by hand (MoveEye: Settings -> Network & access -> Apple Home)",
+		"bridge":{"name":f"MoveEye {host}"[:30],"username":st.get("mac",""),"port":HK_PORT,"pin":setup["code"],
+				   "setupID":setup["sid"],"bind":list(lan_if),"advertiser":"ciao","manufacturer":"MoveEye","model":"MoveEye Bridge"},
+		"plugins":["homebridge-camera-ffmpeg","homebridge-moveeye"],
+		"accessories":[],
+		"platforms":[
+			{"platform":"Camera-ffmpeg","name":"Camera FFmpeg","videoProcessor":ffmpeg,"porthttp":HK_MOTION_PORT,"localhttp":True,
+			 "cameras":[{"name":hk_cam_name(),"manufacturer":"MoveEye","model":"MoveEye","motion":True,"motionTimeout":30,
+						  "switches":False,"motionDoorbell":False,"unbridge":False,"videoConfig":vc}]},
+			{"platform":"MoveEye","name":"MoveEye","base":base,"key":key,"username":st.get("mac",""),"poll":5}]}
+
+
+HK_UNIT_TEXT = """# MoveEye: Homebridge for Apple Home - written by MoveEye (Settings -> Network & access -> Apple Home)
+[Unit]
+Description=Homebridge for MoveEye (Apple Home)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={user}
+Group={user}
+Environment=HOME={var}
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node {opt}/node_modules/homebridge/bin/homebridge -U {var} -P {opt}/node_modules -P {opt}/plugins --strict-plugin-resolution -C -Q
+Restart=on-failure
+RestartSec=10
+Nice=5
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths={var}
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictNamespaces=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+MemoryMax=400M
+
+[Install]
+WantedBy=multi-user.target
+"""
+
+
+def hk_unit_text():
+	return HK_UNIT_TEXT.format(user=HK_USER,var=HK["var"],opt=HK["opt"])
+
+
+HK_PLUGIN_PKG = json.dumps({"name": "homebridge-moveeye", "version": "1.0.0", "description": "MoveEye switches, head and lights (written by MoveEye)",
+							"main": "index.js", "license": "UNLICENSED", "private": True, "keywords": ["homebridge-plugin"],
+							"engines": {"homebridge": ">=1.6.0", "node": ">=18"}}, indent=1)
+
+
+HK_PLUGIN_JS = _zd('639zzzo_apple_home/HK_PLUGIN_JS', "")
+
+
+
+def _hk_pkg_have(p):
+	rc,out=hk_sys(["dpkg-query","-W","-f=${Status}",p],root=False,timeout=20)
+	return rc==0 and "install ok installed"in out
+
+
+def _hk_node_ok():
+	rc,out=hk_sys(["node","--version"],root=False,timeout=20)
+	m=re.match(r"v(\d+)\.",out.strip())if rc==0 else None
+	return bool(m and int(m.group(1))>=18)
+
+
+def hk_cmds():
+	""
+	o,v,u,d=HK["opt"],HK["var"],HK_USER,_hk_dir()
+	pk=" ".join(f"{n}@{x}"for n,x in HK_VERSIONS)
+	return[f"sudo apt install -y --no-install-recommends {' '.join(HK_PKGS)}",
+			f"id {u} || sudo useradd --system --no-create-home --home-dir {v} --shell /usr/sbin/nologin --user-group {u}",
+			f"sudo install -d -m 755 {o} {o}/plugins/homebridge-moveeye && sudo install -d -m 700 -o {u} -g {u} {v}",
+			f"sudo npm install --prefix {o} --omit=dev --ignore-scripts --no-audit --no-fund --cache {o}/.npm-tmp {pk} && sudo rm -rf {o}/.npm-tmp",
+			f"sudo install -m 644 '{d}/plugin/package.json' '{d}/plugin/index.js' {o}/plugins/homebridge-moveeye/",
+			f"sudo install -m 600 -o {u} -g {u} '{d}/config.pending.json' {v}/config.json && rm -f '{d}/config.pending.json'",
+			f"sudo install -m 644 '{d}/{HK_SVC}.service' {HK['unit']}",
+			f"sudo systemctl daemon-reload && sudo systemctl enable --now {HK_SVC}"]
+
+
+def hk_cmds_off(mine):
+	""
+	c=[f"sudo systemctl disable --now {HK_SVC}"]
+	if mine.get("unit"):
+		c+=[f"sudo rm -f {HK['unit']}","sudo systemctl daemon-reload"]
+	c+=[f"sudo rm -rf --one-file-system {mine[k]}"for k in("opt","var")if isinstance(mine.get(k),str)]
+	if mine.get("user"):
+		c.append(f"sudo userdel {HK_USER}")
+	if mine.get("pkgs"):
+		c.append("sudo apt remove -y "+" ".join(mine["pkgs"]))
+	return c
+
+
+def _hk_files_local():
+	""
+	d=_hk_dir()
+	os.makedirs(os.path.join(d,"plugin"),exist_ok=True)
+	for n,t in(("plugin/package.json",HK_PLUGIN_PKG),("plugin/index.js",HK_PLUGIN_JS),(HK_SVC+".service",hk_unit_text())):
+		with open(os.path.join(d,n),"w",encoding="utf-8")as f:
+			f.write(t)
+	return d
+
+
+def hk_install():
+	""
+	mine=dict(hk_state().get("mine")or{})
+	need=[p for p in HK_PKGS if not _hk_pkg_have(p)]
+	if "nodejs"not in need and not _hk_node_ok():
+		return "Node.js on this Pi is older than version 18"
+	if need:
+		apt=shutil.which("apt-get")or "apt-get"
+		inst=[apt,"install","-y","--no-install-recommends","-o","Dpkg::Options::=--force-confold"]+need
+		rc,out=hk_sys(inst,timeout=1500)
+		if rc!=0 and re.search(r"Unable to locate package|has no installation candidate|Failed to fetch",out):
+			if hk_sys([apt,"update"],timeout=600)[0]==0:
+				rc,out=hk_sys(inst,timeout=1500)
+		if rc!=0:
+			low=out.lower()
+			if _SMB_DENIED.search(out):
+				return "no rights"
+			if "could not get lock"in low or "dpkg frontend lock"in low:
+				return "apt is busy right now (another installation or update) - try again in a few minutes"
+			if "temporary failure resolving"in low or "could not resolve"in low or "failed to fetch"in low:
+				return "no internet for apt - try again with internet"
+			return "apt: "+((out.splitlines()or["?"])[-1][:120])
+		mine["pkgs"]=sorted(set(mine.get("pkgs")or[])|set(need))
+		hk_state_set(mine=mine)
+		log_event("sys","Apple Home: installed with apt: "+", ".join(need))
+	import pwd
+	try:
+		u=pwd.getpwnam(HK_USER)
+		if u.pw_uid>=1000 and not mine.get("user"):
+			return f"a user «{HK_USER}» exists already and is not the one of MoveEye"
+	except KeyError:
+		e=hk_step(["useradd","--system","--no-create-home","--home-dir",HK["var"],"--shell","/usr/sbin/nologin","--user-group",HK_USER],"useradd")
+		if e:
+			return e
+		mine["user"]=True
+		hk_state_set(mine=mine)
+	for ok_ in("opt","var"):
+		if mine.get(ok_)!=HK[ok_]and os.path.exists(HK[ok_]):
+			return f"{HK[ok_]} exists already and is not the one of MoveEye"
+	e=(hk_step(["install","-d","-m","755","-o","root","-g","root",HK["opt"],HK["opt"]+"/plugins",HK["opt"]+"/plugins/homebridge-moveeye"],"install -d")
+		 or hk_step(["install","-d","-m","700","-o",HK_USER,"-g",HK_USER,HK["var"]],"install -d"))
+	if e:
+		return e
+	mine.update(opt=HK["opt"],var=HK["var"])
+	hk_state_set(mine=mine)
+	npm=shutil.which("npm")or "/usr/bin/npm"
+	cache=HK["opt"]+"/.npm-tmp"
+	rc,out=hk_sys([npm,"install","--prefix",HK["opt"],"--omit=dev","--ignore-scripts","--no-audit","--no-fund","--no-update-notifier",
+					  "--cache",cache]+[f"{n}@{v}"for n,v in HK_VERSIONS],timeout=1800)
+	hk_sys(["rm","-rf","--one-file-system",cache],timeout=120)
+	if rc!=0:
+		if _SMB_DENIED.search(out):
+			return "no rights"
+		return "npm: "+((out.splitlines()or["?"])[-1][:120]if rc!=-9 else "timeout")
+	d=_hk_files_local()
+	e=hk_step(["install","-m","644","-o","root","-g","root",d+"/plugin/package.json",d+"/plugin/index.js",
+				 HK["opt"]+"/plugins/homebridge-moveeye/"],"install plugin")
+	if e:
+		return e
+	hk_state_set(installed=int(time.time()),versions=dict(HK_VERSIONS))
+	log_event("sys","Apple Home: Homebridge "+dict(HK_VERSIONS)["homebridge"]+" installed (own service "+HK_SVC+")")
+	return ""
+
+
+def _hk_key_new():
+	""
+	st=hk_state()
+	if st.get("key_id"):
+		appkey_revoke(st["key_id"],"Apple Home")
+	for e in appkey_entries():
+		if e.get("name")==HK_KEY_NAME:
+			appkey_revoke(e["id"],"Apple Home")
+	ok,err,key=appkey_create(HK_KEY_NAME,"Apple Home",scope=HOMEKIT_SCOPE)
+	if not ok:
+		return ""
+	hk_state_set(key_id=appkey_find(key,want=HOMEKIT_SCOPE)["id"])
+	return key
+
+
+def hk_rtsp_sync():
+	""
+	h=hk_state().get("vh","")
+	want=bool(CFG.get("hk_on")and hk_state().get("installed")and h and hk_quality_eff()=="copy")
+	if want:
+		import base64
+		RTSP_LOCAL["homekit"]=("- user: homekit\n  pass: sha256:%s\n  ips: ['127.0.0.1/32', '::1/128']\n  permissions:\n  - action: read\n"
+								 "    path: motionwatch\n"%base64.b64encode(bytes.fromhex(h)).decode())
+	else:
+		RTSP_LOCAL.pop("homekit",None)
+	if HK["rtsp_h"]!=(RTSP_LOCAL.get("homekit")or ""):
+		HK["rtsp_h"]=RTSP_LOCAL.get("homekit")or ""
+		try:
+			rtsp_restart()
+		except Exception as e:
+			log_event("sys",f"Apple Home: RTSP: {e}"[:160])
+
+
+def hk_write_config(new_setup=False):
+	""
+	lan=smb_lan()
+	if not lan:
+		return "no home network found (Wi-Fi / LAN)"
+	setup=hk_setup_load()
+	if setup is None or new_setup:
+		setup=hk_setup_new()
+	key=_hk_key_new()
+	if not key:
+		return "no app key could be made (at most 20)"
+	vpw=secrets.token_urlsafe(24)
+	hk_state_set(vh=hashlib.sha256(vpw.encode()).hexdigest())
+	ff=shutil.which("ffmpeg")or "/usr/bin/ffmpeg"
+	text=json.dumps(hk_config(key,vpw,setup,sorted({x[0]for x in lan}),ff),indent=1)
+	key=vpw=None
+	dst=HK["var"]+"/config.json"
+	e=hk_step(["install","-m","600","-o",HK_USER,"-g",HK_USER,"/dev/stdin",dst],"install config",inp=text)
+	if e=="no rights":
+		_hk_write600(os.path.join(_hk_dir(),"config.pending.json"),text)
+		hk_state_set(pending=int(time.time()))
+	text=None
+	hk_rtsp_sync()
+	return e
+
+
+def hk_service(on):
+	if on:
+		d=_hk_files_local()
+		e=(hk_step(["install","-m","644","-o","root","-g","root",d+"/"+HK_SVC+".service",HK["unit"]],"install unit")
+			 or hk_step(["systemctl","daemon-reload"],"systemctl daemon-reload")
+			 or hk_step(["systemctl","enable",HK_SVC],"systemctl enable")
+			 or hk_step(["systemctl","restart",HK_SVC],"systemctl restart"))
+		if not e:
+			st=hk_state()
+			hk_state_set(mine=dict(st.get("mine")or{},unit=True))
+		HK["active"]=(0.0,False)
+		return e
+	if os.path.exists(HK["unit"]):
+		return hk_step(["systemctl","disable","--now",HK_SVC],"systemctl disable")
+	return ""
+
+
+def hk_apply(why=""):
+	""
+	with HK["lock"]:
+		HK["cmds"]=[]
+		err=""
+		if CFG.get("hk_on"):
+			if not hk_state().get("installed"):
+				HK["busy"]="installing Homebridge … (a few minutes)"
+				err=hk_install()
+			if not err:
+				HK["busy"]="writing the settings …"
+				err=hk_write_config()
+			if not err:
+				err=hk_service(True)
+		if err=="no rights":
+			_hk_files_local()
+			HK["cmds"]=hk_cmds()
+		HK["err"]=err
+		hk_rtsp_sync()
+		if why:
+			log_event("sys",f"Apple Home: {why}"+(f" - not done: {err}"if err else ""))
+		return err
+
+
+def hk_repair():
+	""
+	with HK["lock"]:
+		e=hk_step(["systemctl","stop",HK_SVC],"systemctl stop")
+		if not e:
+			for pat in("AccessoryInfo.*.json","IdentifierCache.*.json"):
+				e=e or hk_step(["find",HK["var"]+"/persist","-maxdepth","1","-type","f","-name",pat,"-delete"],"find")
+			e=e or hk_step(["find",HK["var"]+"/accessories","-maxdepth","1","-type","f","-name","cachedAccessories*","-delete"],"find")
+		if not e:
+			e=hk_write_config(new_setup=True)or hk_service(True)
+		HK.update(paired=None,seen=0.0)
+		HK["err"]=e
+		if e=="no rights":
+			HK["cmds"]=hk_cmds()
+		log_event("sys","Apple Home: paired again (new code)"+(f" - not done: {e}"if e else ""))
+		return e
+
+
+def hk_uninstall():
+	""
+	with HK["lock"]:
+		st=hk_state()
+		mine=dict(st.get("mine")or{})
+		errs=[]
+		if mine.get("unit")or os.path.exists(HK["unit"]):
+			e=hk_step(["systemctl","disable","--now",HK_SVC],"systemctl disable")
+			if e=="no rights":
+				HK.update(err=e,cmds=hk_cmds_off(mine))
+				return e
+			if e and "not loaded"not in e and "does not exist"not in e:
+				errs.append(e)
+			if mine.get("unit"):
+				errs+=[x for x in[hk_step(["rm","-f",HK["unit"]],"rm unit"),hk_step(["systemctl","daemon-reload"],"daemon-reload")]if x]
+		for k in("opt","var"):
+			p=mine.get(k)
+			if isinstance(p,str)and p==HK[k]and os.path.basename(p)=="moveeye-homebridge":
+				e=hk_step(["rm","-rf","--one-file-system",p],"rm "+k)
+				if e:
+					errs.append(e)
+		if mine.get("user"):
+			e=hk_step(["userdel",HK_USER],"userdel")
+			if e and "does not exist"not in e:
+				errs.append(e)
+		if mine.get("pkgs"):
+			apt=shutil.which("apt-get")or "apt-get"
+			e=hk_step([apt,"remove","-y"]+list(mine["pkgs"]),"apt remove",timeout=900)
+			if e:
+				errs.append(e)
+		if st.get("key_id"):
+			appkey_revoke(st["key_id"],"Apple Home")
+		for n in("setup.json","config.pending.json"):
+			try:
+				os.remove(os.path.join(_hk_dir(),n))
+			except OSError:
+				pass
+		CFG["hk_on"]=False
+		CFG["hk_st"]={}if not errs else{"mine":mine}
+		save_settings()
+		RTSP_LOCAL.pop("homekit",None)
+		hk_rtsp_sync()
+		HK.update(paired=None,seen=0.0,err=errs[0]if errs else "",cmds=[],want=False)
+		log_event("sys","Apple Home: switched off and removed"+(f" - not everything: {errs[0]}"if errs else ""))
+		return errs[0]if errs else ""
+
+
+def hk_bg(label, fn):
+	with HK["lock"]:
+		if HK["busy"]:
+			return False
+		HK["busy"]=label
+
+	def run():
+		try:
+			fn()
+		except Exception as e:
+			HK["err"]=f"error: {e.__class__.__name__}"
+			log_event("sys",f"Apple Home: {e.__class__.__name__}: {e}"[:160])
+		finally:
+			HK["busy"]=""
+	threading.Thread(target=run,daemon=True,name="apple-home").start()
+	return True
+
+
+def hk_active():
+	t,v=HK["active"]
+	if time.time()-t<10:
+		return v
+	rc,out=hk_sys(["systemctl","is-active",HK_SVC],root=False,timeout=15)
+	v=rc==0 and out.strip()=="active"
+	HK["active"]=(time.time(),v)
+	return v
+
+
+def hk_status(lang=None):
+	""
+	st=hk_state()
+	on=bool(CFG.get("hk_on"))
+	pend=st.get("pending")
+	if pend and(time.time()-pend>3600 or not on):
+		try:
+			os.remove(os.path.join(_hk_dir(),"config.pending.json"))
+		except OSError:
+			pass
+		hk_state_set(pending=0)
+	if HK["busy"]:
+		state,why="busy",tr(HK["busy"],lang)
+	elif not on:
+		state,why="off",""
+	elif HK["err"]:
+		e=HK["err"]
+		state,why="err",(tr("MoveEye has no rights for this (sudo asks for a password) - run the commands below once in a terminal.",lang)
+							 if e=="no rights"else smb_tr(e,lang))
+	elif not hk_active():
+		state,why="err",tr("Homebridge does not run",lang)
+	elif HK["paired"]:
+		state,why="paired",""
+	elif HK["seen"]and time.time()-HK["seen"]<30:
+		state,why="run",""
+	else:
+		state,why="run",tr("starting …",lang)
+	out={"ok":True,"on":on,"state":state,"why":why,"need_confirm":bool(HK["want"])and not on,"cmds":list(HK["cmds"]),
+		   "quality":CFG.get("hk_quality","copy"),"quality_eff":hk_quality_eff(),"mediamtx":bool(_mediamtx_bin()),
+		   "step":int(CFG.get("hk_step")or 15),"steps":list(HK_STEPS_OK),"pin":bool(CFG.get("protect_pin")),
+		   "nopin":bool(CFG.get("hk_disarm_nopin")),"cpu":{k:tr(v,lang)for k,v in HK_CPU.items()},"items":[x["name"]for x in hk_items(lang)]if on else[],
+		   "log":[{"t":t,"name":n,"why":_hk_why(w,lang)}for t,n,w in HK["log"]],"port":HK_PORT}
+	s=hk_setup_load()if on and state=="run"and st.get("installed")else None
+	if s:
+		uri=hk_setup_uri(s["code"],s["sid"])
+		out.update(code=s["code"],uri=uri,qr=qr_svg(uri))
+	return out
+
+
+def hk_action(d):
+	""
+	a=str(d.get("action")or "")
+	if HK["busy"]and a not in("quality","step","nopin"):
+		return False,"busy - try again"
+	if a=="setup":
+		HK["want"]=True
+		return True,""
+	if a=="cancel":
+		HK["want"]=False
+		return True,""
+	if a=="install":
+		if not HK["want"]and not CFG.get("hk_on"):
+			return False,"Press «Set up» first."
+		HK["want"]=False
+		CFG["hk_on"]=True
+		save_settings()
+		hk_bg("installing Homebridge … (a few minutes)",lambda:hk_apply("switched on"))
+		return True,""
+	if a=="uninstall":
+		hk_bg("removing …",hk_uninstall)
+		return True,""
+	if a=="repair":
+		if not CFG.get("hk_on"):
+			return False,"Switch it on first."
+		hk_bg("new pairing …",hk_repair)
+		return True,""
+	if a=="retry":
+		if not CFG.get("hk_on"):
+			return False,"Switch it on first."
+		hk_bg("checking …",lambda:hk_apply("try again"))
+		return True,""
+	if a=="quality":
+		q=str(d.get("value")or "")
+		if q not in("copy","720p"):
+			return False,"invalid value"
+		CFG["hk_quality"]=q
+		save_settings()
+		if CFG.get("hk_on")and hk_state().get("installed"):
+			hk_bg("writing the settings …",lambda:hk_apply("camera quality "+q))
+		return True,""
+	if a=="step":
+		try:
+			v=int(d.get("value"))
+		except(TypeError,ValueError):
+			return False,"invalid value"
+		if v not in HK_STEPS_OK:
+			return False,"invalid value"
+		CFG["hk_step"]=v
+		save_settings()
+		return True,""
+	if a=="nopin":
+		CFG["hk_disarm_nopin"]=bool(d.get("value"))
+		save_settings()
+		log_event("sys","Apple Home: switching off from the Home app despite the PIN "+("ALLOWED by the owner"if CFG["hk_disarm_nopin"]else "refused (standard)"))
+		return True,""
+	return False,"unknown action"
+
+
+
+def homekit_on_alert(kind):
+	""
+	try:
+		if not CFG.get("hk_on")or kind not in("person","warm","noise")or not is_armed()or CFG.get("sim_on"):
+			return False
+		now=time.time()
+		if now-HK["motion_t"]<5:
+			return False
+		HK["motion_t"]=now
+		url=f"http://127.0.0.1:{HK_MOTION_PORT}/motion?"+urllib.parse.quote(hk_cam_name())
+
+		def go():
+			try:
+				urllib.request.urlopen(urllib.request.Request(url),timeout=3).read(200)
+			except Exception as e:
+				log_event("sys",f"Apple Home: motion sensor not reached ({e.__class__.__name__})")
+		threading.Thread(target=go,daemon=True,name="hk-motion").start()
+		return True
+	except Exception:
+		return False
+
+
+
+HK_NAMES = {
+	"protect": ("Schutz", "Protection", "Protection", "Protezione", "Protecziun"),
+	"patrol": ("Patrouille", "Patrol", "Patrouille", "Pattuglia", "Patruglia"),
+	"follow": ("Folgen", "Follow", "Suivre", "Segui", "Suandar"),
+	"light_white": ("Licht weiss", "White light", "Lumiere blanche", "Luce bianca", "Glisch alva"),
+	"light_ir": ("Infrarot", "Infrared", "Infrarouge", "Infrarosso", "Infracotschen"),
+	"head_home": ("Kopf Grundstellung", "Head home position", "Tete position de base", "Testa posizione base", "Chau posiziun da basa"),
+	"head_left": ("Kopf links", "Head left", "Tete gauche", "Testa sinistra", "Chau sanester"),
+	"head_right": ("Kopf rechts", "Head right", "Tete droite", "Testa destra", "Chau dretg"),
+	"head_up": ("Kopf hoch", "Head up", "Tete haut", "Testa su", "Chau ensi"),
+	"head_down": ("Kopf runter", "Head down", "Tete bas", "Testa giu", "Chau engiu"),
+	"head_pt": ("Kopf", "Head", "Tete", "Testa", "Chau"),
+}
+
+
+def _hk_name(i, lang=None):
+	L=norm_lang(lang or CFG.get("lang"))
+	return HK_NAMES[i][{"de":0,"en":1,"fr":2,"it":3,"rm":4}.get(L,1)]
+
+
+def _hk_clean(n):
+	n=re.sub(r"[^\w ']"," ",str(n),flags=re.U)
+	return re.sub(r"\s+"," ",n).strip()[:40]
+
+
+def _hk_light(n):
+	m=CFG.get("light_"+n,"off")
+	return m=="on"or m=="auto"and bool((STATE.get("lights")or{}).get(n))
+
+
+def hk_items(lang=None):
+	""
+	it=[{"id":"protect","type":"switch","name":_hk_name("protect",lang),"on":bool(CFG.get("armed"))}]
+	head=False
+	try:
+		head=bool(live_has_head())
+	except Exception:
+		pass
+	if head:
+		it+=[{"id":"patrol","type":"switch","name":_hk_name("patrol",lang),"on":bool(CFG.get("patrol"))},
+			   {"id":"follow","type":"switch","name":_hk_name("follow",lang),"on":bool(CFG.get("track_person")or CFG.get("track_motion"))}]
+	for n in("white","ir"):
+		if CFG.get(f"light_{n}_out")or CFG.get("sim_on"):
+			it.append({"id":"light_"+n,"type":"light","name":_hk_name("light_"+n,lang),"on":_hk_light(n)})
+	if head:
+		it.append({"id":"head_home","type":"button","name":_hk_name("head_home",lang),"on":False})
+		seen={x["name"].lower()for x in it}
+		for p in teach_list(lang):
+			nm=_hk_clean(p["name"])
+			full=_hk_clean(_hk_name("head_pt",lang)+" "+nm)if nm else ""
+			if nm and full.lower()not in seen:
+				seen.add(full.lower())
+				it.append({"id":"pt:"+nm,"type":"button","name":full,"on":False})
+		for dd in("left","right","up","down"):
+			it.append({"id":"head_"+dd,"type":"button","name":_hk_name("head_"+dd,lang),"on":False})
+	return it
+
+
+HK_SRV_WHY = {"estop": "Emergency stop - press «Release» to move again", "fault": "Servo fault", "inhibit": "Servos stopped",
+			  "transport": "Transport mode active"}
+
+
+def _hk_why(w, lang=None):
+	""
+	if str(w).startswith("srv:"):
+		c=w[4:]
+		return("🧳 "if c=="transport"else "")+tr(HK_SRV_WHY.get(c,c),lang)
+	return tr(w,lang)
+
+
+def hk_head_block(lang=None):
+	""
+	b=servo_blocked()
+	if b:
+		return "srv:"+b
+	try:
+		cl=kopf_claims()
+	except NameError:
+		cl=set()
+	if "alarm"in cl:
+		return "an alarm has the head now"
+	if "walktest"in cl:
+		return "walk test runs"
+	try:
+		if KOPF.get("game_was")and kopf_game_hand():
+			return "game round: only the players move the head"
+	except NameError:
+		pass
+	if time.time()-HK["t_head"]<0.8:
+		return "too fast - one command at a time"
+	return ""
+
+
+def hk_refuse(name, why):
+	HK["log"].appendleft((int(time.time()),name,why))
+	log_event("web",f"Apple Home: «{name}» refused: {why}"[:200])
+	return{"ok":False,"error":_hk_why(why,"en")}
+
+
+def hk_do(d):
+	""
+	i,on=str(d.get("id")or ""),bool(d.get("on"))
+	items={x["id"]:x for x in hk_items()}
+	if i not in items:
+		return{"ok":False,"error":"unknown accessory"}
+	it=items[i]
+	nm=it["name"]
+	who="Apple Home"
+	if i=="protect":
+		if on:
+			arm()
+		else:
+			if CFG.get("protect_pin")and CFG.get("armed")and not CFG.get("hk_disarm_nopin"):
+				return dict(hk_refuse(nm,"a PIN for switching off is set - switch off in MoveEye (or allow it on the Apple Home card)"),on=True)
+			try:
+				protect_cancel_escalation()
+				CFG["protect_level"]="off"
+				protect_siren_sync()
+			except NameError:
+				pass
+			disarm()
+		log_event("web",f"Apple Home: protection {'on' if on else 'off'}")
+		return{"ok":True,"on":bool(CFG.get("armed"))}
+	if i in("patrol","follow"):
+		if on:
+			b=servo_blocked()
+			if b:
+				return dict(hk_refuse(nm,"srv:"+b),on=False)
+		if i=="patrol":
+			CFG["patrol"]=on
+			if on and CFG.get("patrol_mode")not in("pendulum","loop"):
+				CFG["patrol_mode"]="pendulum"
+			save_settings()
+			log_event("patrol",f"Patrol {'ON' if on else 'switched OFF'} ({who})")
+		else:
+			follow_set(on,who)
+		return{"ok":True,"on":hk_items_on(i)}
+	if i.startswith("light_"):
+		n=i[6:]
+		cur=CFG.get("light_"+n,"off")
+		prev=dict(hk_state().get("lprev")or{})
+		if on:
+			if cur!="on":
+				prev[n]=cur
+			light_set(n,"on")
+		else:
+			light_set(n,"auto"if prev.get(n)=="auto"else "off")
+			prev.pop(n,None)
+		hk_state_set(lprev=prev)
+		return{"ok":True,"on":_hk_light(n)if not on else True}
+	if it["type"]=="button":
+		if not on:
+			return{"ok":True,"on":False}
+		b=hk_head_block()
+		if b:
+			return hk_refuse(nm,b)
+		HK["t_head"]=time.time()
+		if i=="head_home":
+			hp=tp_pick_home()
+			MANUAL["until"]=time.time()+max(10.0,float(CFG.get("manual_hold")or 10))
+			servo_driver_note(who,"goto")
+			ok=servo_goto(hp[0],hp[1],"teach",wait=False)
+			log_event("servo",f"To the home position ({who})")
+			return{"ok":bool(ok),"on":False}if ok else hk_refuse(nm,"interrupted")
+		if i.startswith("pt:"):
+			k=next((p["i"]for p in teach_list()if _hk_clean(p["name"])==i[3:]),None)
+			ok,err=teach_goto(k,who)if k is not None else(False,"no such point")
+			return{"ok":True,"on":False}if ok else hk_refuse(nm,err)
+		dd=i[5:]
+		ax="pan"if dd in("left","right")else "tilt"
+		step=float(CFG.get("hk_step")or 15)*kopf_pct_per_deg(ax)
+		if not move_camera(dd,step,who):
+			return hk_refuse(nm,("srv:"+servo_blocked())if servo_blocked()else "refused")
+		return{"ok":True,"on":False}
+	return{"ok":False,"error":"unknown accessory"}
+
+
+def hk_items_on(i):
+	return next((x["on"]for x in hk_items()if x["id"]==i),False)
+
+
+
+def _hk_local(req):
+	""
+	return req.remote_addr in("127.0.0.1","::1")and not any(
+		req.headers.get(h)for h in("X-Forwarded-For","X-Forwarded-Host","X-Forwarded-Proto","Forwarded","X-Real-Ip","Tailscale-User-Login"))
+
+
+def _hk_vpw_ok(t):
+	h=hk_state().get("vh","")
+	t=str(t or "")
+	if len(t)>=20 and h and hmac.compare_digest(hashlib.sha256(t.encode()).hexdigest(),h):
+		return True
+	return len(t)>=20 and hmac.compare_digest(t,EXT.get("local_tok")or "")
+
+
+def _hk_rate(ip, bad=False):
+	""
+	now=time.time()
+	if bad:
+		rec=[x for x in HK["bad"].get(ip,[])if now-x<600]+[now]
+		HK["bad"][ip]=rec
+		return len(rec)>10
+	if len([x for x in HK["bad"].get(ip,[])if now-x<600])>=10:
+		return True
+	HK["rl"].append(now)
+	return len([x for x in HK["rl"]if now-x<10])>30
+
+
+_smalltv_routes_639zzzo = smalltv_routes
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzzo(app,reply,body)
+	from flask import request,g,Response
+
+	@app.route("/k/hk/<action>",methods=["GET","POST"])
+	def hk_local_api(action):
+		ip=request.remote_addr or "?"
+		if not _hk_local(request):
+			return Response("not found",404)
+		if action in("photo.jpg","video.mjpg"):
+			if not CFG.get("hk_on")or not _hk_vpw_ok(request.args.get("t")):
+				_hk_rate(ip,True)
+				return Response("not found",404)
+			w=WATCH_REF.get("w")
+			if action=="photo.jpg":
+				f=getattr(w,"frame_out",None)
+				if f is None:
+					return Response("no picture yet",503)
+				ok,buf=cv2.imencode(".jpg",f,[cv2.IMWRITE_JPEG_QUALITY,85])
+				return Response(buf.tobytes(),mimetype="image/jpeg",headers={"Cache-Control":"no-store"})if ok else Response("error",500)
+
+			def gen():
+				last=-1
+				if w is None:
+					return
+				w.web_viewers+=1;STATE["web_viewers"]=w.web_viewers
+				try:
+					while True:
+						jpg,seq=w.jpeg,w.jpeg_seq
+						if jpg and seq!=last:
+							last=seq
+							yield b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: "+str(len(jpg)).encode()+b"\r\n\r\n"+jpg+b"\r\n"
+						time.sleep(0.03)
+				finally:
+					w.web_viewers=max(0,w.web_viewers-1);STATE["web_viewers"]=w.web_viewers
+			return Response(gen(),mimetype="multipart/x-mixed-replace; boundary=frame",headers={"Cache-Control":"no-store"})
+		if action not in("state","do"):
+			return Response("not found",404)
+		k=request.headers.get("X-MoveEye-Key")or ""
+		ke=appkey_find(k,want=HOMEKIT_SCOPE)if CFG.get("hk_on")else None
+		if ke is None:
+			if _hk_rate(ip,True):
+				return reply({"ok":False,"error":"too many wrong keys - wait 10 minutes"},429)
+			return reply({"ok":False,"error":"unknown key"},403)
+		if _hk_rate(ip):
+			return reply({"ok":False,"error":"too many commands"},429)
+		appkey_seen(ke,ip)
+		HK["seen"]=time.time()
+		HK["paired"]=request.headers.get("X-HK-Paired")=="1"
+		if action=="state":
+			return reply({"ok":True,"items":hk_items(),"device":CFG.get("device_name")or "MoveEye"})
+		if request.method!="POST":
+			return reply({"ok":False,"error":"POST"},405)
+		d=request.get_json(force=True,silent=True)or{}
+		return reply(hk_do(d if isinstance(d,dict)else{}))
+
+	@app.route("/api/homekit",methods=["GET","POST"])
+	def api_homekit():
+		d=body()if request.method=="POST"else{}
+		L=norm_lang(request.args.get("lang")or d.get("lang")or CFG.get("lang"))
+		if getattr(g,"role","admin")!="admin"or getattr(g,"appkey",None):
+			return reply({"ok":False,"error":tr("only the administrator",L)},403)
+		if request.method=="POST":
+			ok,err=hk_action(d)
+			if not ok:
+				return reply(dict(hk_status(L),ok=False,error=tr(err,L)),400)
+		return reply(hk_status(L))
+
+	if CFG.get("hk_on"):
+		hk_rtsp_sync()
+
+
+
+HK_CARD_HTML = ('<details class="card" data-view="applehome" data-vgroup="Panels" data-vlabel="Apple Home">'
+				'<summary>🏠 Apple Home</summary><div id="hk-card" class="hk-card"></div></details>\n    ')
+HK_PANEL_JS = _zd('639zzzo_apple_home/HK_PANEL_JS', "")
+_hk_g = '{sec: "MQTT / Home Assistant", title: "MQTT / Home Assistant", ic: "🏠"}]},'
+_hk_c = '<details class="card" data-view="guest" data-vgroup="Panels" data-vlabel="Guest access">'
+_hk_m = '"sec:MQTT / Home Assistant": c => c.mqtt_on,'
+if _hk_g in WEB_PAGE and _hk_c in WEB_PAGE and "hkPanel" not in WEB_PAGE:
+	WEB_PAGE=WEB_PAGE.replace(_hk_g,_hk_g[:-3]+', {card: "applehome", title: "Apple Home", ic: "🏠"}]},',1)
+	WEB_PAGE=WEB_PAGE.replace(_hk_c,HK_CARD_HTML+_hk_c,1)
+	WEB_PAGE=WEB_PAGE.replace(_hk_m,_hk_m+' "applehome": () => !!window.HK_ON,',1)
+	WEB_PAGE=WEB_PAGE.replace("</body>",HK_PANEL_JS+"</body>",1)
+
+
+_HX_HK = _zd('639zzzo_apple_home/HX_HK', _zd_hx_en((
+	'running – not paired yet',
+	'running – paired with the Home app',
+	'hk-intro',
+	'Set up',
+	'hk-beta',
+	'Homebridge is installed (about 150 MB) and runs as its own service. Continue?',
+	'HomeKit setup code',
+	'hk-howto',
+	'In the Home app',
+	'Camera with live picture and motion sensor',
+	'Refused from the Home app:',
+	'Done – check again',
+	'Camera quality',
+	'Copy the stream (little CPU)',
+	'720p, encoded again (more CPU)',
+	'CPU',
+	'mediamtx is missing - the camera is encoded again (720p)',
+	'Head step (left / right / up / down)',
+	'Allow «Schutz» off from the Home app despite the PIN',
+	'Allow switching off from the Home app without the PIN? Everybody with access to your Home can then switch the protection off.',
+	'allowed by you',
+	'Standard: refused – a PIN for switching off is set.',
+	'Pair again',
+	'Switch off / uninstall',
+	'New code: remove «MoveEye» in the Home app first, then add it again with the new code.',
+	'Remove Homebridge and everything MoveEye installed for Apple Home? The devices disappear from the Home app.',
+	'hk-note',
+	'Homebridge does not run',
+	'starting …',
+	'installing Homebridge … (a few minutes)',
+	'writing the settings …',
+	'removing …',
+	'new pairing …',
+	'checking …',
+	'Press «Set up» first.',
+	'Node.js on this Pi is older than version 18',
+	'no app key could be made (at most 20)',
+	'a PIN for switching off is set - switch off in MoveEye (or allow it on the Apple Home card)',
+	'an alarm has the head now',
+	'walk test runs',
+	'game round: only the players move the head',
+	'too fast - one command at a time',
+	'interrupted',
+	'no such point',
+	'unknown accessory',
+	'refused',
+	'about 1–3 % of one core to copy + 15–25 % for the encoder of MoveEye, only while somebody watches',
+	'about 25–40 % of one core, only while somebody watches',
+	'about 1 % and 80 MB of memory',
+	'Apple Home: set up in the browser',
+)))
+HK_EN = {
+	"hk-beta": "Beta – setting it up the first time is the test; if something goes wrong, send a screenshot",
+	"hk-intro": "MoveEye in the Home app of iPhone, iPad and Mac: camera with live picture, motion sensor at an alarm, switch «Protection», "
+				"head positions, patrol, follow and light. For this MoveEye sets up Homebridge as its own service on the Pi (home network only).",
+	"hk-howto": "iPhone: Home app → ＋ → Add Accessory → scan this QR code (or «More options» and enter the code). "
+				"Confirm «Uncertified Accessory» with «Add Anyway».",
+	"hk-note": "Away from home: works through your home hub (HomePod, Apple TV or an iPad at home) – MoveEye opens nothing to the outside. "
+			   "Homebridge listens only in the home network; the key for MoveEye is only in its settings file (readable only by Homebridge).",
+}
+MENU_EN.update(HK_EN)
+WEB_PAGE = WEB_PAGE.replace("/*HKEN*/{}", json.dumps(HK_EN, ensure_ascii=False), 1)
+for _k, _v in _HX_HK.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+WEB_PAGE = WEB_PAGE.replace("/*HKDE*/{}", json.dumps({_k: DE.get(_k, _v[0]) for _k, _v in _HX_HK.items()}, ensure_ascii=False), 1)
+
+
+if GUI_OK:
+	_hk_tk_build_section_before=App._build_section
+
+	def _hk_tk_build_section(self,sec,sbody,settings_parent=None):
+		_hk_tk_build_section_before(self,sec,sbody,settings_parent)
+		if sec!="MQTT / Home Assistant"or CFG.get("lock_on"):
+			return
+		try:
+			s=hk_status()
+			txt={"off":tr("off"),"run":tr("running – not paired yet"),"paired":tr("running – paired with the Home app"),
+				   "busy":tr("working …")}.get(s["state"],tr("Error")+" – "+s["why"])
+			ttk.Label(sbody,text="🏠 Apple Home: "+txt,style="Mut.TLabel",wraplength=330,justify="left").pack(anchor="w",pady=(8,0))
+			ttk.Button(sbody,text=tr("Apple Home: set up in the browser"),command=lambda:self._open_page("/settings")).pack(fill="x",pady=(4,0))
+		except Exception as e:
+			log_event("sys",f"Window: Apple Home: {e}"[:160])
+
+
+	App._build_section=_hk_tk_build_section
+
+
+
+apple_home_selftest = _zd_fn('639zzzo_apple_home/apple_home_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Apple Home (Homebridge): setup code, config, card (639zzzo)", apple_home_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 TP_DEF = {"kopf_transport": False, "kopf_transport_pos": [], "kopf_transport_by": "", "kopf_transport_t": 0.0}
 for _k, _v in TP_DEF.items():
 	CFG.setdefault(_k,json.loads(json.dumps(_v)));DEFAULTS.setdefault(_k,json.loads(json.dumps(_v)))
@@ -109574,6 +110906,7 @@ SELFTEST_EXTRA.append(("Push button «📷 Live öffnen» (639zzzzb)", push_live
 
 
 
+
 import hashlib as _bild_hashlib
 import hmac as _bild_hmac
 import struct as _bild_struct
@@ -109899,6 +111232,2891 @@ bild_selftest = _zd_fn('639zzzzc_bild_stego/bild_selftest()')
 
 
 SELFTEST_EXTRA.append(("Botschaft im Bild: hide/read, encryption, capacity, wrong key, Python↔JS vector (639zzzzc)", bild_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import socket as _rsock
+
+RADIO_UA = "MoveEye/" + APP_VERSION + " (internet radio; github.com/DonElektro/MotionWatch)"
+RADIO_DISCOVER = "https://all.api.radio-browser.info"
+RADIO_RATE = 44100
+RADIO_CHUNK = RADIO_RATE // 10 * 2
+RADIO_MAX = 40
+RADIO_BACKOFF = (5.0, 10.0, 20.0, 40.0, 80.0)
+RADIO_WAKE_S = 10.0
+RADIO_FIRST_S = 20.0
+RADIO_FADE_S = 45.0
+RADIO_SLEEP = (0, 15, 30, 60, 90)
+RADIO_GAP_S = 1.5
+RADIO_HELD_DROP_S = 60.0
+RADIO_PLAY_ACTIONS = ("play", "stop", "toggle", "volume", "sleep", "bplay", "bstop")
+RADIO_BR_MAX = 2
+RADIO_BR_TTL = 600.0
+RADIO_DEF = {"radio_stations": [{"id": "pilatus", "name": "Radio Pilatus", "sub": "Luzern", "find": {"name": "Radio Pilatus", "cc": "CH"}}],
+			 "radio_volume": 40, "radio_last": "pilatus"}
+for _k, _v in RADIO_DEF.items():
+	CFG.setdefault(_k,json.loads(json.dumps(_v)));DEFAULTS.setdefault(_k,json.loads(json.dumps(_v)))
+	FACTORY_CFG.setdefault(_k,json.loads(json.dumps(_v)))
+USER_SETTINGS_DENY.update({"radio_stations", "radio_last"})
+APPKEY_DENY_KEYS.update({"radio_stations"})
+VIEW_GET_PAGES.add("/radio")
+VIEW_GET = VIEW_GET + ("/api/radio",)
+PERM_GET["siren"] = tuple(PERM_GET.get("siren", ())) + ("/radio/stream/",)
+_RADIO_ID = re.compile(r"^[a-z0-9]{1,16}$")
+_RADIO_UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+_RADIO_PL_CT = ("audio/x-scpls", "audio/scpls", "audio/x-mpegurl", "audio/mpegurl", "application/x-mpegurl", "application/vnd.apple.mpegurl",
+				"application/pls+xml", "text/plain")
+_RADIO_FMT = {"audio/mpeg": "mp3", "audio/mp3": "mp3", "audio/mpeg3": "mp3", "audio/aac": "aac", "audio/aacp": "aac", "audio/x-aac": "aac",
+			  "audio/ogg": "ogg", "application/ogg": "ogg", "audio/opus": "ogg", "audio/flac": "flac", "audio/x-flac": "flac"}
+RADIO = {"want": False, "gen": 0, "sid": "", "name": "", "title": "", "state": "off", "msg": "", "offline": False, "err_n": 0, "retry_at": 0.0,
+		 "t_audio": 0.0, "hold_t": 0.0, "hold_why": "", "held": "", "sleep_until": 0.0, "sleep_min": 0, "fade": 1.0, "wake": False,
+		 "wake_t0": 0.0, "wake_fail": 0.0, "wvol": 0.0, "out": None, "dec": None, "conn": None, "thread": None, "ev": threading.Event(),
+		 "lock": threading.RLock(), "olock": threading.Lock(), "tries": deque(maxlen=30), "net_err": "", "servers": [], "srv_t": 0.0}
+
+
+def _radio_txt(s, n=60):
+	return re.sub(r"[\x00-\x1f\x7f]+"," ",str(s or "")).strip()[:n]
+
+
+def radio_url_ok(u):
+	""
+	if not isinstance(u,str)or len(u)>500 or not re.match(r"^https?://[^\s/@]+(/[^\s]*)?$",u,re.I):
+		return False
+	try:
+		from urllib.parse import urlsplit
+		h=urlsplit(u).hostname or ""
+		return bool(h)and ".."not in h and not h.startswith((".","-"))
+	except ValueError:
+		return False
+
+
+def radio_clean(lst):
+	out,ids=[],set()
+	for x in(lst if isinstance(lst,list)else[])[:RADIO_MAX]:
+		if not isinstance(x,dict)or not _RADIO_ID.match(str(x.get("id")or ""))or x["id"]in ids:
+			continue
+		e={"id":x["id"],"name":_radio_txt(x.get("name")),"sub":_radio_txt(x.get("sub"))}
+		if _RADIO_UUID.match(str(x.get("uuid")or "")):
+			e["uuid"]=x["uuid"]
+		if radio_url_ok(x.get("url")):
+			e["url"]=x["url"]
+			if x.get("lan")is True:
+				e["lan"]=True
+		f=x.get("find")
+		if isinstance(f,dict)and _radio_txt(f.get("name")):
+			e["find"]={"name":_radio_txt(f.get("name")),"cc":str(f.get("cc")or "")[:2].upper()if re.match(r"^[A-Za-z]{2}$",str(f.get("cc")or ""))else ""}
+		if e["name"]and("uuid"in e or "url"in e or "find"in e):
+			ids.add(e["id"]);out.append(e)
+	return out
+
+
+def radio_list():
+	return radio_clean(CFG.get("radio_stations"))
+
+
+def radio_station(sid):
+	for e in CFG.get("radio_stations")or[]:
+		if isinstance(e,dict)and e.get("id")==sid:
+			return e
+	return None
+
+
+
+
+
+
+
+
+
+import ipaddress as _rip
+_RADIO_LAN_NETS = tuple(_rip.ip_network(n) for n in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "fc00::/7"))
+
+
+class RadioBlocked(ValueError):
+	""
+
+
+def radio_addr_kind(a, lan=False):
+	""
+	try:
+		ip=_rip.ip_address(str(a).split("%",1)[0])
+	except ValueError:
+		return None
+	if ip.version==6 and ip.ipv4_mapped is not None:
+		ip=ip.ipv4_mapped
+	if ip.is_global and not ip.is_multicast:
+		return "global"
+	if lan and any(ip in n for n in _RADIO_LAN_NETS):
+		return "lan"
+	return None
+
+
+def radio_resolve_host(host, port, lan=False):
+	""
+	addrs=list(dict.fromkeys(i[4][0]for i in _rsock.getaddrinfo(host,port,type=_rsock.SOCK_STREAM)))
+	kinds=[radio_addr_kind(a,lan)for a in addrs]
+	if not addrs or any(k is None for k in kinds):
+		raise RadioBlocked("this address is not allowed (local network)")
+	return addrs,("lan"if "lan"in kinds else "global")
+
+
+def _rh_open(url, timeout=8.0, icy=False, lan=False):
+	"""
+"""
+	import ssl
+	from urllib.parse import urlsplit,urljoin,quote
+	for hop in range(6):
+		if not radio_url_ok(url):
+			raise ValueError("not a valid address")
+		u=urlsplit(url)
+		port=u.port or(443 if u.scheme.lower()=="https"else 80)
+		addrs,net=radio_resolve_host(u.hostname,port,lan and hop==0)
+		s,last=None,None
+		for a in addrs:
+			try:
+				s=_rsock.create_connection((a,port),timeout);break
+			except OSError as e:
+				last=e
+		if s is None:
+			raise last or OSError("no connection")
+		try:
+			if u.scheme.lower()=="https":
+				s=ssl.create_default_context().wrap_socket(s,server_hostname=u.hostname)
+			path=quote((u.path or "/")+("?"+u.query if u.query else ""),safe="/?&=%:+,;!$'()*~-._@")
+			s.sendall(("GET %s HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\nAccept: */*\r\n%sConnection: close\r\n\r\n"
+					   %(path,u.netloc,RADIO_UA,"Icy-MetaData: 1\r\n"if icy else "")).encode("latin-1","replace"))
+			f=s.makefile("rb")
+			m=re.match(rb"^(?:HTTP/\d(?:\.\d)?|ICY) (\d{3})",f.readline(4096))
+			if not m:
+				raise ValueError("no HTTP answer")
+			code,hdr=int(m.group(1)),{}
+			for _i in range(100):
+				ln=f.readline(8192)
+				if ln in(b"\r\n",b"\n",b""):
+					break
+				k,_sep,v=ln.decode("latin-1").partition(":")
+				hdr[k.strip().lower()]=v.strip()
+		except Exception:
+			s.close();raise
+		if code in(301,302,303,307,308)and hdr.get("location"):
+			s.close();url=urljoin(url,hdr["location"]);continue
+		return code,hdr,f,s,url,net
+	raise ValueError("too many redirects")
+
+
+def _rh_get(url, timeout=8.0, limit=2 << 20):
+	code,_h,f,s,_u,_n=_rh_open(url,timeout)
+	try:
+		data=f.read(limit)
+	finally:
+		s.close()
+	if code!=200:
+		raise ValueError("HTTP %d"%code)
+	return data
+
+
+def radio_lan_ok(st):
+	""
+	return bool(st and st.get("url")and not st.get("uuid")and not st.get("find"))
+
+
+def radio_offline_err(e):
+	""
+	import errno
+	return isinstance(e,(_rsock.gaierror,_rsock.timeout,TimeoutError))or getattr(e,"errno",None)in(errno.ENETUNREACH,errno.EHOSTUNREACH,errno.ENETDOWN)
+
+
+
+def radio_servers(force=False):
+	"""
+"""
+	now=time.time()
+	if RADIO["servers"]and not force and now-RADIO["srv_t"]<6*3600:
+		return list(RADIO["servers"])
+	env=os.environ.get("MW_RADIO_DISCOVER","").strip()
+	base=env or RADIO_DISCOVER
+	sch="http"if base.lower().startswith("http://")else "https"
+	names=[]
+	try:
+		for x in json.loads(_rh_get(base.rstrip("/")+"/json/servers",6.0,200000).decode("utf-8","replace")):
+			n=str((x or{}).get("name")or "").lower()
+			if re.match(r"^[a-z0-9.\-]{3,80}(:\d{2,5})?$",n)and(env or n.endswith(".api.radio-browser.info"))and n not in names:
+				names.append(n)
+	except Exception:
+		pass
+	if not names and not env:
+		try:
+			for ip in{a[4][0]for a in _rsock.getaddrinfo("all.api.radio-browser.info",443,proto=_rsock.IPPROTO_TCP)}:
+				try:
+					n=_rsock.gethostbyaddr(ip)[0].lower()
+					if n.endswith(".api.radio-browser.info")and n not in names:
+						names.append(n)
+				except OSError:
+					pass
+		except OSError:
+			pass
+	if not names:
+		names=[base.split("://",1)[1].strip("/")]if env else["all.api.radio-browser.info"]
+	import random
+	random.shuffle(names)
+	RADIO["servers"]=[sch+"://"+n for n in names[:8]];RADIO["srv_t"]=now
+	return list(RADIO["servers"])
+
+
+def radio_api(path, timeout=8.0):
+	""
+	last=None
+	for srv in radio_servers()[:3]:
+		try:
+			j=json.loads(_rh_get(srv+path,timeout).decode("utf-8","replace"))
+			if RADIO["servers"]and RADIO["servers"][0]!=srv and srv in RADIO["servers"]:
+				RADIO["servers"].remove(srv);RADIO["servers"].insert(0,srv)
+			return j
+		except Exception as e:
+			last=e
+	RADIO["srv_t"]=0.0
+	raise last if last is not None else ValueError("no directory server")
+
+
+def _radio_hit(x):
+	if not isinstance(x,dict)or not _RADIO_UUID.match(str(x.get("stationuuid")or "")):
+		return None
+	try:
+		br=max(0,min(9999,int(x.get("bitrate")or 0)))
+	except(TypeError,ValueError):
+		br=0
+	return{"uuid":x["stationuuid"],"name":_radio_txt(x.get("name")),"cc":_radio_txt(x.get("countrycode"),2).upper(),
+			"country":_radio_txt(x.get("country"),40),"codec":_radio_txt(x.get("codec"),10),"bitrate":br,"tags":_radio_txt(x.get("tags"),60),
+			"url":x.get("url_resolved")or x.get("url")or ""}
+
+
+def radio_search(q, cc=""):
+	from urllib.parse import urlencode
+	q=_radio_txt(q,60)
+	if len(q)<2:
+		return None,"type at least 2 letters"
+	p={"name":q,"hidebroken":"true","order":"clickcount","reverse":"true","limit":"25"}
+	if re.match(r"^[A-Za-z]{2}$",str(cc or "")):
+		p["countrycode"]=cc.upper()
+	try:
+		lst=radio_api("/json/stations/search?"+urlencode(p))
+	except Exception as e:
+		return None,"no internet - the directory cannot be reached"if radio_offline_err(e)else "the directory does not answer"
+	return[h for h in(_radio_hit(x)for x in(lst if isinstance(lst,list)else[]))if h and h["name"]][:25],""
+
+
+def radio_resolve(st):
+	""
+	from urllib.parse import urlencode,quote
+	if st.get("uuid"):
+		try:
+			u=(radio_api("/json/url/"+st["uuid"])or{}).get("url")
+		except Exception:
+			u=None
+		if not radio_url_ok(u):
+			lst=radio_api("/json/stations/byuuid/"+st["uuid"])
+			h=_radio_hit(lst[0])if isinstance(lst,list)and lst else None
+			u=h["url"]if h else None
+			if not h and st.get("find"):
+				st.pop("uuid",None)
+		if radio_url_ok(u):
+			return u
+	if st.get("find"):
+		f=st["find"]
+		p={"name":f["name"],"hidebroken":"true","order":"votes","reverse":"true","limit":"10"}
+		if f.get("cc"):
+			p["countrycode"]=f["cc"]
+		hits=[h for h in(_radio_hit(x)for x in(radio_api("/json/stations/search?"+urlencode(p))or[]))if h]
+		best=next((h for h in hits if h["name"].casefold()==f["name"].casefold()),hits[0]if hits else None)
+		if not best:
+			raise ValueError("the station is not in the directory")
+		with RADIO["lock"]:
+			st["uuid"]=best["uuid"]
+			if not st.get("sub"):
+				st["sub"]=" · ".join(x for x in(best["country"],best["codec"])if x)
+		save_settings()
+		try:
+			u=(radio_api("/json/url/"+quote(best["uuid"]))or{}).get("url")
+		except Exception:
+			u=None
+		u=u if radio_url_ok(u)else best["url"]
+		if radio_url_ok(u):
+			return u
+	if radio_url_ok(st.get("url")):
+		return st["url"]
+	raise ValueError("the station has no address")
+
+
+def radio_playlist_urls(txt, base):
+	""
+	from urllib.parse import urljoin
+	pls="[playlist]"in txt[:2000].lower()
+	out=[]
+	for ln in txt.splitlines()[:500]:
+		s=ln.strip()
+		m=re.match(r"(?i)^file\d+\s*=\s*(\S+)$",s)
+		v=m.group(1)if m else(s if not pls and s and not s.startswith(("#","["))and "="not in s.split("://",1)[0]else None)
+		if v:
+			v=urljoin(base,v)
+			if radio_url_ok(v)and v not in out:
+				out.append(v)
+	return out[:10]
+
+
+def radio_open(url, depth=0, lan=False):
+	"""
+"""
+	from urllib.parse import urlsplit
+	code,hdr,f,s,final,net=_rh_open(url,10.0,icy=True,lan=lan)
+	ok=False
+	try:
+		if code!=200:
+			raise ValueError("HTTP %d"%code)
+		ct=hdr.get("content-type","").split(";")[0].strip().lower()
+		path=urlsplit(final).path.lower()
+		if ct in _RADIO_PL_CT or(ct.startswith("text/")and not ct.startswith("text/html"))or path.endswith((".pls",".m3u",".m3u8")):
+			txt=f.read(65536).decode("utf-8","replace")
+			if "#EXT-X-"in txt:
+				return{"kind":"hls","url":final,"ct":ct,"net":net,"text":txt}
+			if depth>=3:
+				raise ValueError("play list in a play list too often")
+			urls=radio_playlist_urls(txt,final)
+			if not urls:
+				raise ValueError("the play list has no stream address")
+			last=None
+			for u in urls[:3]:
+				try:
+					return radio_open(u,depth+1)
+				except Exception as e:
+					last=e if not isinstance(last,RadioBlocked)else last
+			raise last
+		if ct.startswith("text/html"):
+			raise ValueError("this is a web page, not a stream")
+		try:
+			mi=max(0,min(1<<20,int(hdr.get("icy-metaint")or 0)))
+		except ValueError:
+			mi=0
+		ok=True
+		return{"kind":"icy","f":f,"sock":s,"url":final,"ct":ct,"metaint":mi,"net":net,
+				"icyh":any(k.startswith("icy-")for k in hdr)}
+	finally:
+		if not ok:
+			s.close()
+
+
+def radio_hls_media(txt, base):
+	""
+	from urllib.parse import urljoin
+	best,bw,want=None,None,False
+	for ln in txt.splitlines()[:2000]:
+		s_=ln.strip()
+		if s_.startswith("#EXT-X-STREAM-INF"):
+			m=re.search(r"BANDWIDTH=(\d+)",s_)
+			want,b_=True,int(m.group(1))if m else 0
+			continue
+		if want and s_ and not s_.startswith("#"):
+			u=urljoin(base,s_)
+			if radio_url_ok(u)and(bw is None or b_<bw):
+				best,bw=u,b_
+			want=False
+	return best
+
+
+def _radio_hls_reader(gen, src, w):
+	"""
+"""
+	from urllib.parse import urljoin
+	url,txt=src["url"],src.get("text")or ""
+	try:
+		v=radio_hls_media(txt,url)
+		if v:
+			url,txt=v,_rh_get(v,10.0,1<<20).decode("utf-8","replace")
+		seen,first,init=set(),True,False
+		while RADIO["gen"]==gen:
+			if re.search(r"#EXT-X-KEY:[^\n]*METHOD=(?!NONE)",txt):
+				RADIO["net_err"]="encrypted stream (HLS) - not possible";break
+			m=re.search(r'#EXT-X-MAP:[^\n]*URI="([^"]+)"',txt)
+			if m and not init:
+				w.write(_rh_get(urljoin(url,m.group(1)),10.0,4<<20));init=True
+			segs=[urljoin(url,x.strip())for x in txt.splitlines()if x.strip()and not x.strip().startswith("#")]
+			if first:
+				seen.update(segs[:-3]);first=False
+			for sg in segs:
+				if sg in seen or RADIO["gen"]!=gen:
+					continue
+				seen.add(sg)
+				w.write(_rh_get(sg,15.0,16<<20))
+			if "#EXT-X-ENDLIST"in txt:
+				break
+			m=re.search(r"#EXT-X-TARGETDURATION:(\d+)",txt)
+			time.sleep(max(1.0,min(10.0,(int(m.group(1))if m else 6)/2.0)))
+			txt=_rh_get(url,10.0,1<<20).decode("utf-8","replace")
+			if len(seen)>2000:
+				seen=set(list(seen)[-500:])
+	except RadioBlocked:
+		RADIO["net_err"]="this address is not allowed (local network)"
+	except(OSError,ValueError)as e:
+		if RADIO["gen"]==gen:
+			RADIO["net_err"]=RADIO["net_err"]or("the station stopped sending"if not str(e).startswith("HTTP")else "the station does not answer: "+str(e)[:40])
+	finally:
+		try:
+			w.close()
+		except Exception:
+			pass
+
+
+def radio_icy_title(meta):
+	m=re.search(rb"StreamTitle='(.*?)';(?:Stream|\s*$|\x00)",meta+b"\x00",re.S)
+	if not m:
+		return None
+	raw=m.group(1)
+	try:
+		t_=raw.decode("utf-8")
+	except UnicodeDecodeError:
+		t_=raw.decode("latin-1")
+	return _radio_txt(t_,120)
+
+
+
+_RADIO_PRCTL = []
+
+
+def _radio_prctl():
+	""
+	if not _RADIO_PRCTL:
+		try:
+			import ctypes
+			_RADIO_PRCTL.append(ctypes.CDLL(None,use_errno=True).prctl)
+		except Exception:
+			_RADIO_PRCTL.append(None)
+	return _RADIO_PRCTL[0]
+
+
+def _radio_pre():
+	try:
+		os.nice(5)
+	except OSError:
+		pass
+	f=_RADIO_PRCTL[0]if _RADIO_PRCTL else None
+	if f is not None:
+		try:
+			f(1,9)
+		except Exception:
+			pass
+
+
+def _radio_kill(p):
+	if p is None:
+		return
+	try:
+		if p.poll()is None:
+			p.kill()
+		p.wait(timeout=2)
+	except Exception:
+		pass
+
+
+def radio_held(now=None):
+	""
+	now=time.time()if now is None else now
+	try:
+		if SOUND.get("playing"):
+			k=str(SOUND.get("kind")or "")
+			return "wake"if WAKE.get("state")=="ring"else "voice"if k=="tts"else "morse"if k=="morse"else "siren"if k in SOUND_KINDS or k.startswith("file:")else "sound"
+		if TALK.get("proc")is not None:
+			return "talk"
+		if MORSE.get("tx")is not None:
+			return "morse"
+		if MORSE.get("until")and morse_on()and(CFG.get("morse_rx_sound")or funk_on()):
+			return "mic"
+		if WAKE.get("state")=="ring"and not RADIO["wake"]:
+			return "wake"
+	except Exception:
+		pass
+	return(RADIO["hold_why"]or "sound")if now-RADIO["hold_t"]<RADIO_GAP_S else ""
+
+
+def radio_yield(why="sound"):
+	""
+	if not RADIO["want"]:
+		return
+	got=RADIO["olock"].acquire(timeout=0.3)
+	try:
+		RADIO["hold_t"]=time.time();RADIO["hold_why"]=why
+		p=RADIO["out"];RADIO["out"]=None
+	finally:
+		if got:
+			RADIO["olock"].release()
+	_radio_kill(p)
+
+
+def radio_play(sid=None, who="web", wake=False, vol=None):
+	""
+	sid=sid or CFG.get("radio_last")or((radio_list()or[{}])[0].get("id"))
+	st=radio_station(sid)if sid else None
+	if not st or not radio_clean([st]):
+		return False,"unknown station"
+	if not out_selected():
+		return False,"no loudspeaker selected"
+	if not shutil.which("ffmpeg"):
+		return False,"ffmpeg is missing (sudo apt install ffmpeg)"
+	keep_sleep=RADIO["sleep_until"]if RADIO["want"]and not wake else 0.0
+	radio_stop("another station",quiet=True)
+	with RADIO["lock"]:
+		RADIO["gen"]+=1;gen=RADIO["gen"]
+		RADIO.update(want=True,sid=sid,name=st["name"],title="",state="connecting",msg="",offline=False,err_n=0,retry_at=0.0,t_audio=0.0,
+					 held="",sleep_until=keep_sleep,sleep_min=RADIO["sleep_min"]if keep_sleep else 0,fade=1.0,wake=bool(wake),
+					 wake_t0=time.time()if wake else 0.0,wvol=float(vol or 0.0),net_err="")
+		RADIO["ev"].clear()
+		th=threading.Thread(target=_radio_session,args=(gen,),daemon=True,name="radio")
+		RADIO["thread"]=th
+	if not wake and CFG.get("radio_last")!=sid:
+		CFG["radio_last"]=sid;save_settings()
+	th.start()
+	log_event("sys",f"Radio: {st['name']} ({who})"[:160])
+	return True,""
+
+
+def radio_stop(why="button", who="", quiet=False):
+	with RADIO["lock"]:
+		was=RADIO["want"]or RADIO["thread"]is not None
+		RADIO["want"]=False;RADIO["gen"]+=1
+		RADIO["ev"].set()
+		th=RADIO["thread"];RADIO["thread"]=None
+		c=RADIO["conn"]
+	if c is not None:
+		try:
+			c.shutdown(_rsock.SHUT_RDWR)
+		except OSError:
+			pass
+	_radio_kill(RADIO["dec"]);_radio_kill(RADIO["out"])
+	if th is not None and th is not threading.current_thread():
+		th.join(timeout=4)
+	RADIO.update(state="off",held="",sleep_until=0.0,sleep_min=0,wake=False,title="")
+	if was and not quiet:
+		log_event("sys",f"Radio off ({why}{', ' + who if who else ''})"[:160])
+	return was
+
+
+def _radio_session(gen):
+	""
+	alive=lambda:RADIO["gen"]==gen and RADIO["want"]
+	try:
+		while alive():
+			how,err=_radio_once(gen)
+			if not alive()or how=="stop":
+				break
+			if how=="held":
+				while alive()and radio_held():
+					RADIO["ev"].wait(0.5)
+				continue
+			if how=="fatal":
+				RADIO.update(want=False,state="error",msg=err)
+				break
+			now=time.time()
+			if how=="drop":
+				RADIO["err_n"]=0
+			RADIO["err_n"]+=1
+			RADIO["tries"].append((round(now,2),err[:80]))
+			if RADIO["wake"]:
+				RADIO.update(wake_fail=now,want=False,state="error",msg=err)
+				log_event("sys",f"Radio as wake-up alarm: {err} - the alarm takes its tone"[:160])
+				break
+			if RADIO["err_n"]>len(RADIO_BACKOFF):
+				RADIO.update(want=False,state="offline"if RADIO["offline"]else "error",msg=err)
+				log_event("sys",f"Radio: given up after {RADIO['err_n']} tries ({err})"[:160])
+				break
+			d=RADIO_BACKOFF[RADIO["err_n"]-1]
+			RADIO.update(state="retry",msg=err,retry_at=now+d)
+			RADIO["ev"].wait(d)
+	except Exception as e:
+		RADIO.update(want=False,state="error",msg=str(e)[:160])
+	finally:
+		if RADIO["gen"]==gen:
+			_radio_kill(RADIO["dec"]);_radio_kill(RADIO["out"])
+			RADIO["out"]=RADIO["dec"]=RADIO["conn"]=None
+			if not RADIO["want"]:
+				RADIO.update(sleep_until=0.0,sleep_min=0,held="",fade=1.0)
+				if RADIO["state"]not in("error","offline"):
+					RADIO["state"]="off"
+			RADIO["thread"]=None if RADIO["thread"]is threading.current_thread()else RADIO["thread"]
+
+
+def _radio_reader(gen, src, w):
+	""
+	f,mi=src["f"],src["metaint"]
+	try:
+		while RADIO["gen"]==gen:
+			data=f.read(mi)if mi else f.read(8192)
+			if not data:
+				RADIO["net_err"]=RADIO["net_err"]or "the station stopped sending"
+				break
+			w.write(data)
+			if mi:
+				n=f.read(1)
+				if not n:
+					break
+				if n[0]:
+					t_=radio_icy_title(f.read(n[0]*16))
+					if t_ is not None:
+						RADIO["title"]=t_
+	except(OSError,ValueError)as e:
+		if RADIO["gen"]==gen:
+			RADIO["net_err"]="the station stopped sending"if isinstance(e,(_rsock.timeout,TimeoutError))else(RADIO["net_err"]or "")
+	finally:
+		for c in(w,src["sock"]):
+			try:
+				c.close()
+			except Exception:
+				pass
+
+
+def _radio_once(gen):
+	""
+	st=radio_station(RADIO["sid"])
+	if st is None:
+		return "fatal","unknown station"
+	RADIO.update(state="connecting",t_audio=0.0,net_err="")
+	try:
+		src=radio_open(radio_resolve(st),lan=radio_lan_ok(st))
+		if src.get("net")=="lan"and not st.get("lan"):
+			with RADIO["lock"]:
+				st["lan"]=True
+			save_settings()
+	except RadioBlocked as e:
+		RADIO["offline"]=False
+		return "fatal",str(e)
+	except Exception as e:
+		RADIO["offline"]=radio_offline_err(e)
+		return "fail","no internet"if RADIO["offline"]else "the station does not answer: "+_radio_txt(e,100)
+	RADIO["offline"]=False
+	if RADIO["gen"]!=gen:
+		if src.get("sock"):
+			src["sock"].close()
+		return "stop",""
+	hls=src["kind"]=="hls"
+	cmd=["ffmpeg","-nostdin","-hide_banner","-loglevel","error","-threads","1"]
+	cmd+=(["-f",_RADIO_FMT[src["ct"]]]if not hls and src["ct"]in _RADIO_FMT else[])+["-i","pipe:0"]
+	cmd+=["-vn","-ac","1","-ar",str(RADIO_RATE),"-f","s16le","pipe:1"]
+	errf=tempfile.TemporaryFile()
+	_radio_prctl()
+	try:
+		dec=subprocess.Popen(cmd,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=errf,preexec_fn=_radio_pre)
+	except OSError as e:
+		errf.close()
+		if src.get("sock"):
+			src["sock"].close()
+		return "fatal","ffmpeg: "+str(e)[:100]
+	RADIO["dec"]=dec
+	mine=[]
+	if hls:
+		threading.Thread(target=_radio_hls_reader,args=(gen,src,dec.stdin),daemon=True,name="radio-net").start()
+	else:
+		RADIO["conn"]=src["sock"]
+		threading.Thread(target=_radio_reader,args=(gen,src,dec.stdin),daemon=True,name="radio-net").start()
+	t0=time.time();first=RADIO_WAKE_S if RADIO["wake"]else RADIO_FIRST_S
+	watch=threading.Timer(first,lambda:_radio_kill(dec)if RADIO["dec"]is dec and not RADIO["t_audio"]else None)
+	watch.daemon=True;watch.start()
+	how,err,ramp,held_t,fatal="fail","",0,0.0,""
+	try:
+		while RADIO["gen"]==gen and RADIO["want"]:
+			chunk=dec.stdout.read(RADIO_CHUNK)
+			if not chunk:
+				break
+			now=time.time()
+			if not RADIO["t_audio"]:
+				RADIO.update(t_audio=now,state="playing",err_n=0 if not RADIO["err_n"]else RADIO["err_n"])
+			if RADIO["sleep_until"]:
+				left=RADIO["sleep_until"]-now
+				if left<=0:
+					RADIO.update(want=False,msg="sleep timer: the radio is off")
+					log_event("sys","Radio off (sleep timer)")
+					how="stop";break
+				RADIO["fade"]=min(1.0,left/RADIO_FADE_S)
+			else:
+				RADIO["fade"]=1.0
+			why=radio_held(now)
+			kill=None
+			if why:
+				held_t=held_t or now
+				with RADIO["olock"]:
+					kill=RADIO["out"];RADIO["out"]=None
+				RADIO["held"]=why
+				_radio_kill(kill)
+				if now-held_t>RADIO_HELD_DROP_S:
+					how="held";break
+				continue
+			held_t=0.0;RADIO["held"]=""
+			o=RADIO["out"]
+			if o is None or o.poll()is not None:
+				ocmd,oerr=out_cmd(RADIO_RATE)
+				if ocmd is None:
+					fatal=oerr;break
+				with RADIO["olock"]:
+					if radio_held()or RADIO["gen"]!=gen:
+						continue
+					try:
+						o=subprocess.Popen(ocmd,stdin=subprocess.PIPE,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,preexec_fn=_radio_pre)
+					except OSError as e:
+						fatal="loudspeaker: "+str(e)[:100];break
+					RADIO["out"]=o;mine.append(o)
+				ramp=0
+			vol=RADIO["wvol"]if RADIO["wake"]else float(CFG.get("radio_volume",40))
+			y=np.frombuffer(chunk[:len(chunk)//2*2],dtype="<i2").astype(np.float32)*((max(0.0,min(100.0,vol))/100.0)**2*RADIO["fade"])
+			if ramp<RADIO_RATE//3:
+				k=np.minimum(1.0,(ramp+np.arange(y.size,dtype=np.float32))/(RADIO_RATE/3.0));y*=k;ramp+=y.size
+			try:
+				o.stdin.write(np.clip(y,-32768,32767).astype("<i2").tobytes())
+			except(BrokenPipeError,OSError,ValueError):
+				with RADIO["olock"]:
+					if RADIO["out"]is o:
+						RADIO["out"]=None
+				_radio_kill(o)
+			if AUDIO is not None:
+				AUDIO.mute_until=now+2.0
+	except(OSError,ValueError)as e:
+		err=str(e)[:100]
+	finally:
+		watch.cancel()
+		_radio_kill(dec)
+		with RADIO["olock"]:
+			if RADIO["out"]in mine:
+				RADIO["out"]=None
+		for o in mine:
+			_radio_kill(o)
+		if RADIO["dec"]is dec:
+			RADIO["dec"]=RADIO["conn"]=None
+		try:
+			errf.seek(0);fe=errf.read()[-400:].decode(errors="replace").strip().splitlines()
+		except Exception:
+			fe=[]
+		errf.close()
+	if fatal:
+		return "fatal",fatal
+	if how in("stop","held")or RADIO["gen"]!=gen or not RADIO["want"]:
+		return how if how=="held"else "stop",""
+	if RADIO["net_err"]=="this address is not allowed (local network)":
+		return "fatal",RADIO["net_err"]
+	if RADIO["t_audio"]and time.time()-RADIO["t_audio"]>30:
+		return "drop",RADIO["net_err"]or "the station stopped sending"
+	if not RADIO["t_audio"]:
+		return "fail","no sound from the station"if time.time()-t0>=first-0.5 else("the station sends no sound"+(": "+fe[-1][:80]if fe else ""))
+	return "fail",RADIO["net_err"]or err or(fe[-1][:80]if fe else "the station stopped sending")
+
+
+def radio_sleep(minutes):
+	try:
+		m=int(minutes)
+	except(TypeError,ValueError):
+		return False,"invalid value"
+	if m not in RADIO_SLEEP:
+		return False,"invalid value"
+	if m and not RADIO["want"]:
+		return False,"the radio is off"
+	RADIO.update(sleep_min=m,sleep_until=time.time()+m*60.0 if m else 0.0,fade=1.0)
+	return True,""
+
+
+
+def radio_wake_pairs():
+	return[("radio:"+e["id"],"📻 "+e["name"])for e in radio_list()]
+
+
+def radio_wake_sound(kind, now):
+	""
+	sid=str(kind)[6:]
+	t0=WAKE.get("t0")or 0.0
+	if RADIO["wake_fail"]and RADIO["wake_fail"]>=t0:
+		return False
+	full=float(CFG.get("wake_volume",60))
+	lvl=full*min(1.0,0.4+0.6*max(0.0,now-t0)/120.0)
+	if not(RADIO["want"]and RADIO["wake"]and RADIO["sid"]==sid):
+		ok,err=radio_play(sid,"wake-up alarm",wake=True,vol=lvl)
+		if not ok:
+			RADIO["wake_fail"]=now;WAKE["msg"]=err
+			log_event("sys",f"Radio as wake-up alarm: {err} - the alarm takes its tone"[:160])
+			return False
+		return True
+	RADIO["wvol"]=lvl
+	if not RADIO["t_audio"]and now-RADIO["wake_t0"]>RADIO_WAKE_S+1.0:
+		radio_stop("wake-up alarm: no sound",quiet=True)
+		RADIO["wake_fail"]=now
+		log_event("sys","Radio as wake-up alarm: no sound after 10 s - the alarm takes its tone")
+		return False
+	return True
+
+
+def radio_wake_end():
+	if RADIO["wake"]:
+		radio_stop("wake-up alarm off")
+
+
+
+_RADIO_HELD_TXT = {"siren": "Paused: the siren / an alarm sound plays", "sound": "Paused: MoveEye plays a sound", "voice": "Paused: announcement",
+				   "talk": "Paused: somebody talks through the loudspeaker", "morse": "Paused: Morse / radio signal is being sent",
+				   "mic": "Paused: the microphone receives Morse / radio signals (no feedback)", "wake": "Paused: the wake-up alarm rings"}
+
+
+def radio_tr(msg, L):
+	""
+	head,sep,rest=str(msg).partition(": ")
+	if sep and head in _HX_RADIO:
+		return tr(head,L)+": "+rest
+	return tr_err(msg,L)
+
+
+def radio_may(role="admin", perms=None, edit=False, appkey=None):
+	if role=="admin":
+		return not(edit and CFG.get("lock_on"))
+	return not edit and "siren"in set(perms if perms is not None else ROLE_PERMS.get(ROLE_OLD.get(role,role),()))
+
+
+def radio_state(lang=None, role="admin", perms=None):
+	L=norm_lang(lang or CFG.get("lang"))
+	now=time.time()
+	lst=radio_list()
+	msg=RADIO["msg"]
+	st={"on":RADIO["want"],"state":RADIO["state"],"sid":RADIO["sid"],"name":RADIO["name"],"title":RADIO["title"],
+		  "msg":radio_tr(msg,L)if msg else "","offline":bool(RADIO["offline"])and RADIO["state"]in("retry","offline"),
+		  "held":tr(_RADIO_HELD_TXT[RADIO["held"]],L)if RADIO["want"]and RADIO["held"]in _RADIO_HELD_TXT else "",
+		  "vol":int(CFG.get("radio_volume",40)),"wake":RADIO["wake"],"last":CFG.get("radio_last")or "",
+		  "sleep":{"min":RADIO["sleep_min"],"left":max(0,int(RADIO["sleep_until"]-now))if RADIO["sleep_until"]else 0,"opts":list(RADIO_SLEEP)},
+		  "retry":{"in":max(0,int(RADIO["retry_at"]-now)),"n":RADIO["err_n"],"max":len(RADIO_BACKOFF)+1}if RADIO["state"]=="retry"else None,
+		  "quiet":bool(CFG.get("noise_alarm")or CFG.get("clap_on")),
+		  "spk":bool(out_selected()),"ffmpeg":bool(shutil.which("ffmpeg")),"mic":bool(CFG.get("audio_in")),
+		  "wake_radio":str(CFG.get("wake_sound")or "").startswith("radio:"),
+		  "stations":[{"id":e["id"],"name":e["name"],"sub":e.get("sub",""),"kind":"url"if("url"in e and "uuid"not in e and "find"not in e)else "dir",
+						"lan":bool(e.get("lan"))}for e in lst],
+		  "may":{"play":radio_may(role,perms),"edit":radio_may(role,perms,True)},"max":RADIO_MAX}
+	return st
+
+
+def radio_add(d):
+	lst=list(CFG.get("radio_stations")or[])
+	if len(lst)>=RADIO_MAX:
+		return False,"the list is full"
+	uuid,url=str(d.get("uuid")or ""),str(d.get("url")or "").strip()
+	if uuid:
+		if not _RADIO_UUID.match(uuid):
+			return False,"invalid value"
+		if any(e.get("uuid")==uuid for e in lst):
+			return False,"the station is already in the list"
+		try:
+			got=radio_api("/json/stations/byuuid/"+uuid)
+		except Exception as e:
+			return False,"no internet - the directory cannot be reached"if radio_offline_err(e)else "the directory does not answer"
+		h=_radio_hit(got[0])if isinstance(got,list)and got else None
+		if not h or not h["name"]:
+			return False,"the station is not in the directory"
+		import hashlib
+		e={"id":"b"+hashlib.sha1(uuid.encode()).hexdigest()[:12],"name":h["name"],"sub":" · ".join(x for x in(h["country"],(h["codec"]+(" %d kbit/s"%h["bitrate"]if h["bitrate"]else "")).strip())if x),"uuid":uuid}
+	else:
+		if not radio_url_ok(url):
+			return False,"not a valid address (http:// or https://)"
+		if any(e.get("url")==url for e in lst):
+			return False,"the station is already in the list"
+		import hashlib
+		from urllib.parse import urlsplit
+		e={"id":"u"+hashlib.sha1(url.encode()).hexdigest()[:12],"name":_radio_txt(d.get("name"))or urlsplit(url).hostname[:60],
+			 "sub":urlsplit(url).hostname[:60],"url":url}
+		try:
+			if radio_resolve_host(urlsplit(url).hostname,urlsplit(url).port or 80,lan=True)[1]=="lan":
+				e["lan"]=True
+		except RadioBlocked as x:
+			return False,str(x)
+		except OSError:
+			pass
+	if any(x.get("id")==e["id"]for x in lst):
+		return False,"the station is already in the list"
+	with RADIO["lock"]:
+		CFG["radio_stations"]=radio_clean(lst+[e])
+	save_settings()
+	log_event("sys",f"Radio: station added «{e['name']}»"[:160])
+	return True,""
+
+
+def radio_do(d, who="web", role="admin", perms=None, appkey=None, lang=None):
+	""
+	d=d if isinstance(d,dict)else{}
+	L=norm_lang(lang or d.get("lang")or CFG.get("lang"))
+	a=str(d.get("action")or "")
+	edit=a not in RADIO_PLAY_ACTIONS
+	if not radio_may(role,perms,edit):
+		return 403,{"ok":False,"error":tr("Only for the administrator"if edit else "not allowed for your user",L)}
+
+	def out(ok,err="",**kw):
+		return(200 if ok else 400),dict({"ok":ok,"error":radio_tr(err,L)if err else None,"state":radio_state(L,role,perms)},**kw)
+	if a=="toggle":
+		a="stop"if RADIO["want"]else "play"
+	if a=="bplay":
+		ok,err,src=radio_bplay(str(d.get("id")or "")or None)
+		return out(ok,err,src=src)
+	if a=="bstop":
+		BR["sid"]=""
+		return out(True)
+	if a=="play":
+		return out(*radio_play(str(d.get("id")or "")or None,who))
+	if a=="stop":
+		radio_stop("button",who)
+		RADIO["msg"]=""
+		return out(True)
+	if a=="volume":
+		try:
+			CFG["radio_volume"]=int(max(0,min(100,float(d.get("v")))))
+		except(TypeError,ValueError):
+			return out(False,"invalid value")
+		save_settings()
+		return out(True)
+	if a=="sleep":
+		return out(*radio_sleep(d.get("min")))
+	if a=="search":
+		hits,err=radio_search(d.get("q"),d.get("cc")or "")
+		have={e.get("uuid")for e in CFG.get("radio_stations")or[]}
+		return out(hits is not None,err,hits=[dict({k:v for k,v in h.items()if k!="url"},have=h["uuid"]in have)for h in hits or[]])
+	if a=="add":
+		return out(*radio_add(d))
+	if a in("remove","move"):
+		sid=str(d.get("id")or "")
+		lst=list(CFG.get("radio_stations")or[])
+		i=next((n for n,e in enumerate(lst)if isinstance(e,dict)and e.get("id")==sid),-1)
+		if i<0:
+			return out(False,"unknown station")
+		if a=="remove":
+			if RADIO["want"]and RADIO["sid"]==sid:
+				radio_stop("station removed",who)
+			gone=lst.pop(i)
+			if CFG.get("wake_sound")=="radio:"+sid:
+				CFG["wake_sound"]="chime"
+			log_event("sys",f"Radio: station removed «{gone.get('name')}»"[:160])
+		else:
+			try:
+				j=max(0,min(len(lst)-1,i+int(d.get("by")or 0)))
+			except(TypeError,ValueError):
+				return out(False,"invalid value")
+			lst.insert(j,lst.pop(i))
+		with RADIO["lock"]:
+			CFG["radio_stations"]=radio_clean(lst)
+		save_settings()
+		return out(True)
+	return 400,{"ok":False,"error":"unknown action"}
+
+
+def radio_fav_items(lang=None):
+	""
+	L=norm_lang(lang or CFG.get("lang"))
+	its=[{"k":"page:/radio","i":"📻","l":tr("Radio",L),"kind":"page","href":"/radio"},
+		   {"k":"radio:on","i":"📻","l":tr("Radio on / off",L),"kind":"switch","on":RADIO["want"],"post":["/api/radio",{"action":"toggle"}]}]
+	return its+[{"k":"radio:play:"+e["id"],"i":"▶","l":e["name"],"kind":"action","post":["/api/radio",{"action":"play","id":e["id"]}]}
+				  for e in radio_list()]
+
+
+atexit.register(lambda: radio_stop("program end", quiet=True))
+
+
+
+
+
+
+
+
+BR = {"sid": "", "t_poll": 0.0, "title": "", "title_sid": "", "src": {}, "n": 0, "lock": threading.Lock(), "watch": None}
+
+
+def radio_br_src(sid, fresh=False):
+	""
+	st=radio_station(sid)if _RADIO_ID.match(str(sid or ""))else None
+	if not st:
+		raise KeyError("unknown station")
+	c=BR["src"].get(sid)
+	if c and not fresh and time.time()-c["t"]<RADIO_BR_TTL:
+		return c
+	src=radio_open(radio_resolve(st))
+	if src.get("sock")is not None:
+		src["sock"].close()
+	c={"t":time.time(),"url":src["url"],"kind":src["kind"],"ct":src.get("ct")or "","metaint":int(src.get("metaint")or 0)}
+	BR["src"][sid]=c
+	return c
+
+
+def radio_bplay(sid=None):
+	sid=sid or CFG.get("radio_last")or((radio_list()or[{}])[0].get("id"))
+	st=radio_station(sid)if sid else None
+	if st and st.get("lan"):
+		return False,"this station only plays on the MoveEye loudspeaker",None
+	try:
+		c=radio_br_src(sid,fresh=True)
+	except KeyError:
+		return False,"unknown station",None
+	except RadioBlocked:
+		return False,("this station only plays on the MoveEye loudspeaker"if radio_lan_ok(st)else "this address is not allowed (local network)"),None
+	except Exception as e:
+		return False,"no internet"if radio_offline_err(e)else "the station does not answer: "+_radio_txt(e,100),None
+	if BR["title_sid"]!=sid:
+		BR.update(title="",title_sid=sid)
+	BR.update(sid=sid,t_poll=time.time())
+	th=BR["watch"]
+	if th is None or not th.is_alive():
+		BR["watch"]=threading.Thread(target=_radio_br_watch,daemon=True,name="radio-title")
+		BR["watch"].start()
+	return True,"",{"id":sid,"name":radio_station(sid)["name"],"url":c["url"],"kind":c["kind"],"ct":c["ct"],"proxy":"/radio/stream/"+sid}
+
+
+def _radio_icy_peek(url, sid):
+	""
+	src=radio_open(url)
+	try:
+		f,mi=src["f"],src["metaint"]
+		if not mi:
+			return False
+		for _i in range(3):
+			if not f.read(mi):
+				break
+			n=f.read(1)
+			if not n:
+				break
+			if n[0]:
+				t_=radio_icy_title(f.read(n[0]*16))
+				if t_ is not None and BR["sid"]==sid:
+					BR.update(title=t_,title_sid=sid)
+					break
+		return True
+	finally:
+		src["sock"].close()
+
+
+def _radio_br_watch():
+	""
+	last,wait_="",0.0
+	while BR["sid"]and time.time()-BR["t_poll"]<20.0:
+		sid=BR["sid"];c=BR["src"].get(sid)
+		if BR["n"]>0 or not c or c["kind"]!="icy"or(sid==last and time.time()<wait_):
+			time.sleep(1.0);continue
+		try:
+			has=_radio_icy_peek(c["url"],sid)
+			last,wait_=sid,time.time()+(20.0 if has else 600.0)
+		except Exception:
+			last,wait_=sid,time.time()+30.0
+	BR["watch"]=None
+
+
+def radio_br_proxy(sid):
+	""
+	if not _RADIO_ID.match(str(sid or ""))or not radio_station(sid):
+		return 404,"unknown station",None
+	if radio_station(sid).get("lan"):
+		return 403,"this station only plays on the MoveEye loudspeaker",None
+	try:
+		c=radio_br_src(sid)
+	except KeyError:
+		return 404,"unknown station",None
+	except RadioBlocked:
+		return 403,"this address is not allowed (local network)",None
+	except Exception as e:
+		return 502,"no internet"if radio_offline_err(e)else "the station does not answer",None
+	if c["kind"]!="icy":
+		return 415,"this stream (HLS) cannot go through MoveEye",None
+	with BR["lock"]:
+		if BR["n"]>=RADIO_BR_MAX:
+			return 429,"too many listeners through MoveEye (at most 2)",None
+		BR["n"]+=1
+	try:
+		src=radio_open(c["url"])
+	except Exception as e:
+		with BR["lock"]:
+			BR["n"]-=1
+		return(403,"this address is not allowed (local network)",None)if isinstance(e,RadioBlocked)else \
+			(502,"no internet"if radio_offline_err(e)else "the station does not answer",None)
+	ct=src.get("ct")or ""
+	if src["kind"]!="icy"or not(ct.startswith("audio/")or ct=="application/ogg"or(ct in("application/octet-stream","")and src.get("icyh"))):
+		try:
+			src["sock"].close()
+		except(KeyError,OSError):
+			pass
+		with BR["lock"]:
+			BR["n"]-=1
+		return 415,"this is not an audio stream",None
+	ct=ct if ct.startswith("audio/")or ct=="application/ogg"else "audio/mpeg"
+
+	return 200,ct,_RadioBrStream(src,sid)
+
+
+class _RadioBrStream:
+	"""
+"""
+
+	def __init__(self,src,sid):
+		self.src,self.sid,self.done=src,sid,False
+
+	def __iter__(self):
+		f,mi=self.src["f"],self.src["metaint"]
+		try:
+			while not self.done:
+				data=f.read(mi)if mi else f.read(8192)
+				if not data:
+					break
+				yield data
+				if mi:
+					n=f.read(1)
+					if not n:
+						break
+					if n[0]:
+						t_=radio_icy_title(f.read(n[0]*16))
+						if t_ is not None:
+							BR.update(title=t_,title_sid=self.sid)
+		except(OSError,ValueError):
+			pass
+		finally:
+			self.close()
+
+	def close(self):
+		with BR["lock"]:
+			if self.done:
+				return
+			self.done=True
+			BR["n"]-=1
+		try:
+			self.src["sock"].close()
+		except OSError:
+			pass
+
+
+
+_smalltv_routes_radio = smalltv_routes
+
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_radio(app,reply,body)
+	from flask import Response,request,g
+
+	def who_():
+		role=getattr(g,"role","admin")
+		return role,(None if role=="admin"else user_req_perms(g))
+
+	@app.route("/api/radio",methods=["GET","POST"])
+	def api_radio():
+		role,perms=who_()
+		if request.method=="GET":
+			if request.args.get("on"):
+				return reply({"ok":True,"on":bool(RADIO["want"])})
+			st=radio_state(request.args.get("lang"),role,perms)
+			b=request.args.get("b")or ""
+			if b and b==BR["sid"]:
+				BR["t_poll"]=time.time()
+			st["btitle"]=BR["title"]if b and BR["title_sid"]==b else ""
+			return reply({"ok":True,"state":st})
+		code,ans=radio_do(body(),getattr(g,"user","")or "web",role,perms,getattr(g,"appkey",None))
+		return reply(ans,code)
+
+	@app.route("/radio/stream/<sid>")
+	def radio_stream(sid):
+		role,perms=who_()
+		L=norm_lang(request.args.get("lang"))
+		if not radio_may(role,perms):
+			return reply({"ok":False,"error":tr("not allowed for your user",L)},403)
+		if set(request.args)-{"t","lang"}:
+			return reply({"ok":False,"error":radio_tr("only the stations of the list",L)},400)
+		code,ct,gen=radio_br_proxy(sid)
+		if code!=200:
+			return reply({"ok":False,"error":radio_tr(ct,L)},code)
+		return Response(gen,mimetype=ct,direct_passthrough=True,headers={"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"})
+
+	@app.route("/radio")
+	def radio_page():
+		return Response(render_page(RADIO_PAGE,"more"),mimetype="text/html",headers={"Cache-Control":"no-store"})
+
+
+
+if GUI_OK:
+	def _radio_tk_win(self):
+		w=getattr(self,"_radio_top",None)
+		if w is not None and w.winfo_exists():
+			w.lift();return
+		w=self._radio_top=tk.Toplevel(self.root);w.title("MoveEye – "+tr("Radio"));w.configure(bg=C["bg"]);w.geometry("440x440")
+		st=tk.Label(w,text="",bg=C["bg"],fg=C["txt"],font=("DejaVu Sans",11,"bold"),wraplength=410,justify="left",anchor="w")
+		st.pack(fill="x",padx=12,pady=(10,2))
+		sub=tk.Label(w,text="",bg=C["bg"],fg=C["mut"],font=("DejaVu Sans",9),wraplength=410,justify="left",anchor="w")
+		sub.pack(fill="x",padx=12)
+		lb=tk.Listbox(w,bg=C["panel"],fg=C["txt"],font=("DejaVu Sans",11),height=8,activestyle="none",exportselection=False,bd=0)
+		lb.pack(fill="both",expand=True,padx=12,pady=8)
+		bf=tk.Frame(w,bg=C["bg"]);bf.pack(fill="x",padx=12)
+		msg=tk.Label(w,text="",bg=C["bg"],fg=C.get("yel","#ffd60a"),font=("DejaVu Sans",9),wraplength=410,justify="left",anchor="w")
+		ids=[]
+
+		def do(d):
+			_c,ans=radio_do(d,"window")
+			msg.config(text=""if ans.get("ok")else "⚠ "+str(ans.get("error")or ""))
+			tick(False)
+
+		def play():
+			sel=lb.curselection()
+			do({"action":"play","id":ids[sel[0]]if sel and sel[0]<len(ids)else None})
+		self._fbtn(bf,"▶ "+tr("Play"),play,primary=True).pack(side="left",padx=(0,6))
+		self._fbtn(bf,"⏹ "+tr("Stop"),lambda:do({"action":"stop"})).pack(side="left")
+		vf=tk.Frame(w,bg=C["bg"]);vf.pack(fill="x",padx=12,pady=(8,0))
+		tk.Label(vf,text="🔈 "+tr("Volume"),bg=C["bg"],fg=C["txt"],font=("DejaVu Sans",10)).pack(side="left")
+		vol=tk.Scale(vf,from_=0,to=100,orient="horizontal",showvalue=True,bg=C["bg"],fg=C["txt"],highlightthickness=0,troughcolor=C["panel"],
+					   command=lambda v:CFG.update(radio_volume=int(float(v))))
+		vol.set(int(CFG.get("radio_volume",40)))
+		vol.bind("<ButtonRelease-1>",lambda _e:do({"action":"volume","v":vol.get()}))
+		vol.pack(side="left",fill="x",expand=True,padx=(6,0))
+		msg.pack(fill="x",padx=12,pady=(6,0))
+		self._fbtn(w,"🌐 "+tr("Add stations, sleep timer (browser)"),lambda:self._open_page("/radio")).pack(anchor="w",padx=12,pady=6)
+		self._fbtn(w,tr("Close"),w.destroy,primary=True).pack(side="bottom",anchor="e",padx=12,pady=(0,10))
+
+		def tick(again=True):
+			try:
+				if not w.winfo_exists():
+					return
+				s=radio_state()
+				new=[e["id"]for e in s["stations"]]
+				if new!=ids or lb.size()!=len(new):
+					ids[:]=new;lb.delete(0,"end")
+					for e in s["stations"]:
+						lb.insert("end",e["name"])
+				st.config(text=("▶ "+s["name"]if s["on"]else tr("The radio is off."))if s["on"]or s["state"]not in("offline","error")else "⚠ "+(s["msg"]or s["name"]))
+				sub.config(text=s["held"]or s["title"]or((tr("No internet - the radio needs a connection.")if s["offline"]else s["msg"])if s["state"]in("retry","offline","error")else
+															(tr("connecting …")if s["state"]=="connecting"else "")))
+				if again:
+					w.after(1000,tick)
+			except Exception:
+				pass
+		tick()
+
+	App._radio_win=_radio_tk_win
+	_radio_tk_more_base=App._tk_more_bar
+
+	def _radio_tk_more_bar(self,parent):
+		f=_radio_tk_more_base(self,parent)
+		row=max([int(x.grid_info().get("row",0))for x in f.grid_slaves()]+[-1])+1
+		self._fbtn(f,"📻 "+tr("Radio"),self._radio_win).grid(row=row,column=0,sticky="ew",padx=(0,6),pady=(0,6))
+		return f
+
+
+	App._tk_more_bar=_radio_tk_more_bar
+
+
+RADIO_PAGE = _zd('639zzzzd_radio/RADIO_PAGE', ZD_PAGE)
+
+RADIO_MORE_ROW = ('  <a class="mi" href="/radio" id="m-radio"><i>📻</i><span><b data-i18n="Radio">Radio</b><small id="m-radio-s" data-i18n="Internet radio on the loudspeaker">'
+				  'Internet radio on the loudspeaker</small></span><span class="ar">›</span></a>\n')
+_ra_anchor = '  <a class="mi" href="/tools">'
+if 'href="/radio"' not in MORE_PAGE and MORE_PAGE.count(_ra_anchor) == 1:
+	MORE_PAGE=MORE_PAGE.replace(_ra_anchor,RADIO_MORE_ROW+_ra_anchor,1)
+	MORE_PAGE=MORE_PAGE.replace("/*ALERTS*/",'fetch("/api/radio", {cache: "no-store"}).then(r => r.json()).then(j => { const s = document.getElementById("m-radio-s"), x = j && j.state; '
+								  'if (s && x && x.on) { s.removeAttribute("data-i18n"); s.textContent = "▶ " + x.name + (x.title ? " · " + x.title : ""); } '
+								  'if (s && x && x.quiet) { const q = document.createElement("small"); q.style.cssText = "display:block;color:var(--yel)"; '
+								  'q.textContent = "🔇 " + t("While the radio plays: noise alarm and clap switch paused - the camera alarm works as usual"); s.after(q); } }).catch(() => {});\n/*ALERTS*/',1)
+
+_render_page_radio = render_page
+
+
+
+RADIO_SYM_BTN = ('<a class="btn sec ic" id="mwk-radio" href="/radio" hidden><span aria-hidden="true">📻</span>'
+				 '<i class="mwr-eq" aria-hidden="true"><b></b><b></b><b></b></i></a>')
+RADIO_SYM_AT = '<button class="sec ic" type="button" id="mwk-help"'
+RADIO_SYM_JS = _zd('639zzzzd_radio/RADIO_SYM_JS', "")
+if isinstance(KOPF_JS, str) and KOPF_JS.count('const KNOWN = new Set(["mwk-help", ') == 1:
+	KOPF_JS=KOPF_JS.replace('const KNOWN = new Set(["mwk-help", ','const KNOWN = new Set(["mwk-radio", "mwk-help", ',1)
+
+
+def radio_sym(out):
+	""
+	if 'id="mwk-radio"'in out or out.count(RADIO_SYM_AT)!=1 or "</body>"not in out or "mwk-radio"not in RADIO_SYM_JS:
+		return out
+	k="Radio is playing - to the radio"
+	tx={L:(DE if L=="de"else TRX.get(L,{})).get(k)or k for L in("de","fr","it","rm")}
+	tx["en"]=k.replace(" - "," – ")
+	js=RADIO_SYM_JS.replace("/*RSTX*/{}",json.dumps(tx,ensure_ascii=False).replace("</","<\\/"),1)
+	out=out.replace(RADIO_SYM_AT,RADIO_SYM_BTN+RADIO_SYM_AT,1)
+	i=out.rfind("</body>")
+	return out[:i]+js+out[i:]
+
+
+
+def render_page(page, active):
+	out=_render_page_radio(page,active)
+	if "/*RADIODE*/"in out:
+		out=out.replace("/*RADIODE*/","Object.assign(I18N.de, "+json.dumps(_RADIO_DE,ensure_ascii=False).replace("</","<\\/")+");",1)
+	return radio_sym(out)
+
+
+
+_HX_RADIO = _zd('639zzzzd_radio/HX_RADIO', _zd_hx_en((
+	'Radio',
+	'Internet radio on the loudspeaker',
+	'While the radio plays: noise alarm and clap switch paused - the camera alarm works as usual',
+	'Where to play',
+	'MoveEye loudspeaker',
+	'this browser',
+	'via MoveEye',
+	'This station (HLS) cannot play in this browser - use the MoveEye loudspeaker.',
+	'The station does not play in this browser.',
+	'«📱 this browser»: the phone plays the station, the MoveEye loudspeaker stays silent. If the station does not play directly, it runs through MoveEye (at most 2 listeners).',
+	'this address is not allowed (local network)',
+	'this station only plays on the MoveEye loudspeaker',
+	'this is not an audio stream',
+	'encrypted stream (HLS) - not possible',
+	'Home network',
+	'only the stations of the list',
+	'this stream (HLS) cannot go through MoveEye',
+	'too many listeners through MoveEye (at most 2)',
+	'Radio is playing - to the radio',
+	'Radio on / off',
+	'Play',
+	'Volume',
+	'Sleep timer',
+	'My stations',
+	'Add a station',
+	'Name of the station, e.g. Pilatus',
+	'Search',
+	'Directory: radio-browser.info (open and free). MoveEye asks it, not your phone.',
+	'Paste a stream address',
+	'Name',
+	'Add',
+	'A stream (MP3, AAC, Ogg) or a play list (.pls, .m3u). Only http:// or https://.',
+	'Good to know',
+	'Radio as wake-up alarm',
+	'Siren, alarms, announcements, Morse and the wake-up alarm always go first: the radio pauses and plays on afterwards.',
+	'While the microphone receives Morse or radio signals the radio pauses - otherwise the microphone would hear it.',
+	'While the radio plays, the noise alarm does not listen (like with every sound of MoveEye).',
+	'The radio needs internet. Without it MoveEye tries a few times and then stops - tap ▶ again later.',
+	'The station address is fetched fresh every time: a station that changes its address keeps working.',
+	'Radio as wake-up alarm: Settings › Wake-up alarm › Wake-up sound. Without internet the alarm takes its tone after 10 s.',
+	'paused',
+	'on air',
+	'connecting …',
+	'trying again',
+	'stopped',
+	'off',
+	'No station yet',
+	'off in',
+	'No loudspeaker selected: Settings › Light & sound › Loudspeaker.',
+	'No internet - the radio needs a connection.',
+	'Next try in',
+	'MoveEye has stopped trying - tap ▶ again later.',
+	'The station does not answer.',
+	'Done',
+	'Edit',
+	'own address',
+	'up',
+	'down',
+	'Remove',
+	'Remove this station?',
+	'search one below.',
+	'Playing the radio needs the right «Siren / sounds».',
+	'type at least 2 letters',
+	'searching …',
+	'Nothing found.',
+	'The radio is off.',
+	'Add stations, sleep timer (browser)',
+	'Paused: the siren / an alarm sound plays',
+	'Paused: MoveEye plays a sound',
+	'Paused: announcement',
+	'Paused: somebody talks through the loudspeaker',
+	'Paused: Morse / radio signal is being sent',
+	'Paused: the microphone receives Morse / radio signals (no feedback)',
+	'Paused: the wake-up alarm rings',
+	'unknown station',
+	'no internet',
+	'no internet - the directory cannot be reached',
+	'the directory does not answer',
+	'the station is not in the directory',
+	'the station has no address',
+	'the station is already in the list',
+	'the list is full',
+	'not a valid address (http:// or https://)',
+	'the radio is off',
+	'sleep timer: the radio is off',
+	'the station stopped sending',
+	'the station sends no sound',
+	'the station does not answer',
+	'no sound from the station',
+	'Only for the administrator',
+	'ffmpeg is missing (sudo apt install ffmpeg)',
+)))
+for _k, _v in _HX_RADIO.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+_RADIO_DE = {_k: DE.get(_k, _v[0]) for _k, _v in _HX_RADIO.items()}
+_RADIO_DE.update({k: DE[k] for k in ("More", "Stop", "Wake-up alarm", "No connection to MoveEye.", "not allowed for your user") if DE.get(k)})
+MORE_DE.update({k: _HX_RADIO[k][0] for k in ("Radio", "Internet radio on the loudspeaker", "While the radio plays: noise alarm and clap switch paused - the camera alarm works as usual")})
+
+
+_HELP_RADIO = _zd('639zzzzd_radio/HELP_RADIO', _ZDDict())
+
+
+def _help_radio(doc, lang):
+	if 'id="radio"'in doc:
+		return doc
+	i=doc.find('<section id="tips"')
+	return doc[:i]+_HELP_RADIO[lang]+doc[i:]if i>=0 else doc
+
+
+_hp_en_radio = HELP_PAGE.find('<div lang="en">')
+if _hp_en_radio > 0:
+	HELP_PAGE=_help_radio(HELP_PAGE[:_hp_en_radio],"de")+_help_radio(HELP_PAGE[_hp_en_radio:],"en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L]=_help_radio(HELP_X[_L],_L)
+
+
+
+radio_selftest = _zd_fn('639zzzzd_radio/radio_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Radio: stations, play lists, ICY, priority, rights (639zzzzd)", radio_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import io
+import shutil
+
+PB_SLOTS = ("live", "tag", "nacht", "damals", "jetzt")
+PB_BOXED = ("tag", "nacht", "jetzt")
+PB_W, PB_H, PB_BYTES, PB_UPLOAD_MAX, PB_MIN = 1280, 720, 220000, 25 << 20, (640, 360)
+PB_DEFAULT_BOX = {"jetzt": [58, 75.5, 16, 17]}
+_PB_LOCK = threading.Lock()
+_PB_DEF = {}
+
+
+def pbild_dir():
+	return os.path.join(DATA_DIR,"produktseite")
+
+
+def pbild_meta():
+	try:
+		with open(os.path.join(pbild_dir(),"bilder.json"),encoding="utf-8")as f:
+			d=json.load(f)
+	except(OSError,ValueError):
+		return{}
+	return{k:v for k,v in d.items()if k in PB_SLOTS and isinstance(v,dict)and os.path.isfile(os.path.join(pbild_dir(),k+".webp"))}
+
+
+def _pb_write(name, data):
+	os.makedirs(pbild_dir(),exist_ok=True)
+	p=os.path.join(pbild_dir(),name);t=p+".tmp"
+	with open(t,"wb")as f:
+		f.write(data)
+	os.replace(t,p)
+
+
+def _pb_save_meta(m):
+	_pb_write("bilder.json",json.dumps(m,ensure_ascii=False).encode("utf-8"))
+
+
+def pbild_box_clean(box, label):
+	""
+	try:
+		x,y,w,h=[float(v)for v in(box or[])][:4]
+	except(TypeError,ValueError):
+		return None,""
+	x,y=min(max(x,0.0),98.0),min(max(y,0.0),98.0)
+	w,h=min(max(w,2.0),100.0-x),min(max(h,2.0),100.0-y)
+	lab=re.sub(r"[\x00-\x1f<>]","",str(label or "")).strip()[:40]
+	return[round(x,1),round(y,1),round(w,1),round(h,1)],lab
+
+
+def pbild_make(raw, pos=50):
+	""
+	from PIL import Image,ImageOps
+	if len(raw)>PB_UPLOAD_MAX:
+		raise ValueError("The picture is too big (at most 25 MB).")
+	if raw[4:12]in(b"ftypheic",b"ftypheix",b"ftypmif1",b"ftyphevc",b"ftypmsf1"):
+		try:
+			import pillow_heif
+			pillow_heif.register_heif_opener()
+		except Exception:
+			raise ValueError("HEIC cannot be read on this MoveEye. Please choose a JPEG or PNG.")
+	try:
+		im=Image.open(io.BytesIO(raw))
+		if im.size[0]*im.size[1]>80_000_000:
+			raise ValueError("The picture is too big (at most 25 MB).")
+		im=ImageOps.exif_transpose(im)
+		im=im.convert("RGB")
+	except ValueError:
+		raise
+	except Exception:
+		raise ValueError("This picture cannot be read. Please choose a JPEG or PNG.")
+	w,h=im.size
+	if w<PB_MIN[0]or h<PB_MIN[1]:
+		raise ValueError("The picture is too small (at least 640 × 360).")
+	p=min(max(float(pos),0.0),100.0)/100.0
+	if w*9>h*16:
+		cw=h*16//9;box=(int((w-cw)*p),0,int((w-cw)*p)+cw,h)
+	else:
+		ch=w*9//16;box=(0,int((h-ch)*p),w,int((h-ch)*p)+ch)
+	im=im.crop(box)
+	if im.size[0]>PB_W:
+		im=im.resize((PB_W,PB_H),Image.LANCZOS)
+	clean=Image.new("RGB",im.size)
+	clean.paste(im)
+	out=b""
+	for q in(80,72,64,56,48,40):
+		b=io.BytesIO();clean.save(b,"WEBP",quality=q,method=4);out=b.getvalue()
+		if len(out)<=PB_BYTES:
+			break
+	return out
+
+
+def pbild_set(slot, raw, pos=50, box=None, label=""):
+	if slot not in PB_SLOTS:
+		raise ValueError("Unknown picture.")
+	data=pbild_make(raw,pos)
+	with _PB_LOCK:
+		m=pbild_meta()
+		b,lab=pbild_box_clean(box,label)if slot in PB_BOXED else(None,"")
+		_pb_write(slot+".webp",data)
+		m[slot]={"v":int(time.time()*1000),"box":b,"label":lab if b else ""}
+		_pb_save_meta(m)
+	log_event("sys",f"Product page: own picture «{slot}» ({len(data) // 1024} KB)")
+	return m[slot]
+
+
+def pbild_box(slot, box, label):
+	with _PB_LOCK:
+		m=pbild_meta()
+		if slot not in m or slot not in PB_BOXED:
+			raise ValueError("Unknown picture.")
+		b,lab=pbild_box_clean(box,label)if box else(None,"")
+		m[slot].update(box=b,label=lab if b else "")
+		_pb_save_meta(m)
+	return m[slot]
+
+
+def pbild_reset(slot):
+	if slot not in PB_SLOTS:
+		raise ValueError("Unknown picture.")
+	with _PB_LOCK:
+		m=pbild_meta();m.pop(slot,None);_pb_save_meta(m)
+		try:
+			os.remove(os.path.join(pbild_dir(),slot+".webp"))
+		except OSError:
+			pass
+	log_event("sys",f"Product page: picture «{slot}» back to the example")
+
+
+def pbild_default(slot):
+	""
+	key=id(INFO_HTML_GZ)
+	if _PB_DEF.get("_k")!=key:
+		import gzip as _gz,base64 as _b64
+		h=_gz.decompress(_b64.b64decode(INFO_HTML_GZ)).decode("utf-8")
+		tags={m.group(1):m.group(0)for m in re.finditer(r'<img\b[^>]*\bdata-pb="(\w+)"[^>]*>',h)}
+		ids={m.group(2):m.group(1)for m in re.finditer(r'<img\b[^>]*\bsrc="(data:[^"]+)"[^>]*\bid="([\w-]+)"',h)}
+		_PB_DEF.clear();_PB_DEF["_k"]=key
+		for k,t in tags.items():
+			s=re.search(r'\bsrc="(data:[^"]+)"',t);same=re.search(r'\bdata-same="([\w-]+)"',t)
+			u=s.group(1)if s else ids.get(same.group(1),"")if same else ""
+			m=re.match(r"data:(image/[a-z]+);base64,(.*)",u)
+			if m:
+				_PB_DEF[k]=(_b64.b64decode(m.group(2)),m.group(1))
+	return _PB_DEF.get(slot)
+
+
+def pbild_apply(h):
+	""
+	m=pbild_meta()
+	if not m:
+		return h
+	for k,v in m.items():
+		url="/info/bild/%s.webp?v=%s"%(k,int(v.get("v")or 0))
+
+		def tag_(mt,url=url):
+			t=re.sub(r'\s(?:src|data-same|data-alt|alt)="[^"]*"',"",mt.group(0))
+			return t.replace("<img",'<img src="%s" alt="Kamerabild" data-alt="alt_cam"'%url,1)
+		h=re.sub(r'<img\b[^>]*\bdata-pb="%s"[^>]*>'%k,tag_,h,count=1)
+	pb={k:{"box":v.get("box"),"label":v.get("label")or ""}for k,v in m.items()}
+	js="<script>window.PB="+json.dumps(pb,ensure_ascii=False).replace("</","<\\/")+";</script>"
+	return h.replace("</head>",js+"</head>",1)
+
+
+_info_html_639zzzze = info_html
+
+
+
+def info_html():
+	return pbild_apply(_info_html_639zzzze())
+
+
+def pbild_state(lang=None):
+	L=norm_lang(lang or CFG.get("lang"))
+	m=pbild_meta()
+	names={"live":"Live picture (phone)","tag":"See for yourself: day","nacht":"See for yourself: night",
+			 "damals":"Window to the past: then","jetzt":"Window to the past: now"}
+	notes={"nacht":"Night: ideally an infrared picture of MoveEye.","damals":"Then and now: twice the same view, a little changed.",
+			 "jetzt":"Then and now: twice the same view, a little changed."}
+	out=[]
+	for k in PB_SLOTS:
+		v=m.get(k)or{}
+		out.append({"id":k,"name":tr(names[k],L),"note":tr(notes[k],L)if k in notes else "","custom":bool(v),"v":v.get("v")or 0,
+					"box":v.get("box")if v else PB_DEFAULT_BOX.get(k),"label":v.get("label")or "","boxable":k in PB_BOXED})
+	return{"ok":True,"slots":out,"info_on":bool(CFG.get("info_page"))}
+
+
+def pbild_admin(g_):
+	return getattr(g_,"role","admin")=="admin"and not getattr(g_,"appkey",None)
+
+
+_smalltv_routes_639zzzze = smalltv_routes
+
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzzze(app,reply,body)
+	from flask import Response,request,g
+
+	def no_(lang):
+		return reply({"ok":False,"error":tr("Only the administrator can change the pictures of the product page.",lang)},403)
+
+	@app.route("/produktbilder")
+	def pbild_page_():
+		if not pbild_admin(g):
+			return no_(norm_lang(request.args.get("lang")))
+		return Response(render_page(PB_PAGE,"tools"),mimetype="text/html",headers={"Cache-Control":"no-store"})
+
+	@app.route("/api/produktbilder",methods=["GET","POST"])
+	def api_pb():
+		lang=norm_lang(request.args.get("lang")or CFG.get("lang"))
+		if not pbild_admin(g):
+			if(request.content_length or 0)<1<<20:
+				request.get_data()
+			return no_(lang)
+		if request.method=="GET":
+			return reply(pbild_state(lang))
+		a=request.args.get("action")or ""
+		try:
+			if a=="set":
+				if(request.content_length or 0)>PB_UPLOAD_MAX:
+					raise ValueError("The picture is too big (at most 25 MB).")
+				raw=request.get_data(cache=False)
+				box=[v for v in(request.args.get("box")or "").split(",")if v.strip()]
+				pbild_set(request.args.get("slot"),raw,request.args.get("pos")or 50,box if len(box)==4 else None,request.args.get("label")or "")
+			else:
+				d=body();slot=str(d.get("slot")or "")
+				if a=="reset"or d.get("action")=="reset":
+					pbild_reset(slot)
+				elif a=="box"or d.get("action")=="box":
+					pbild_box(slot,d.get("box"),d.get("label"))
+				else:
+					raise ValueError("Unknown picture.")
+		except ValueError as e:
+			return reply(dict(pbild_state(lang),ok=False,error=tr(str(e),lang)),400)
+		return reply(pbild_state(lang))
+
+	@app.route("/api/produktbilder/bild/<slot>")
+	def api_pb_img(slot):
+		if not pbild_admin(g):
+			return no_(norm_lang(request.args.get("lang")))
+		p=os.path.join(pbild_dir(),slot+".webp")
+		if slot in PB_SLOTS and slot in pbild_meta():
+			with open(p,"rb")as f:
+				return Response(f.read(),mimetype="image/webp",headers={"Cache-Control":"no-store"})
+		d=pbild_default(slot)if slot in PB_SLOTS else None
+		return Response(d[0],mimetype=d[1],headers={"Cache-Control":"no-store"})if d else Response("not found",404)
+
+	@app.route("/info/bild/<name>")
+	def info_pb_img(name):
+		slot=name[:-5]if name.endswith(".webp")else ""
+		if not CFG.get("info_page")or slot not in PB_SLOTS or slot not in pbild_meta():
+			return Response("not found",404)
+		with open(os.path.join(pbild_dir(),slot+".webp"),"rb")as f:
+			return Response(f.read(),mimetype="image/webp",headers={"Cache-Control":"public, max-age=86400","X-Content-Type-Options":"nosniff"})
+
+
+
+_PB_HP_ROW = '<div class="hp-row"><button type="button" id="hp-key-b"></button><button type="button" class="sec" id="hp-key-d"></button></div>'
+_PB_HP_LINK = ('<a class="btn sec" id="hp-pbild" href="/produktbilder" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;'
+			   'text-decoration:none;box-sizing:border-box">🖼 <span data-i18n="Product page: pictures">Product page: pictures</span></a>')
+if 'id="hp-pbild"' not in HP_PAGE and HP_PAGE.count(_PB_HP_ROW) == 1:
+	HP_PAGE=HP_PAGE.replace(_PB_HP_ROW,_PB_HP_ROW[:-len("</div>")]+_PB_HP_LINK+"</div>",1)
+
+
+_HX_PB = _zd('639zzzze_produktbilder/HX_PB', _zd_hx_en((
+	'Product page: pictures',
+	'These pictures are shown to guests on the product page (/info/). Your own photos replace the examples.',
+	'No people, number plates or house numbers.',
+	'Location data (EXIF, GPS) is removed. The picture is cut to 16:9 and stored on MoveEye.',
+	'The product page is switched off - guests do not see it at the moment.',
+	'Live picture (phone)',
+	'See for yourself: day',
+	'See for yourself: night',
+	'Window to the past: then',
+	'Window to the past: now',
+	'Night: ideally an infrared picture of MoveEye.',
+	'Then and now: twice the same view, a little changed.',
+	'Example',
+	'Own picture',
+	'Replace',
+	'Back to the example',
+	'Save picture',
+	'Cancel',
+	'Section',
+	'Mark (optional): draw a box on the picture',
+	'Text of the mark, e.g. «new: …»',
+	'Remove the mark',
+	'Change the mark',
+	'Saving …',
+	'Saved.',
+	'Only the administrator can change the pictures of the product page.',
+	'This picture cannot be read. Please choose a JPEG or PNG.',
+	'HEIC cannot be read on this MoveEye. Please choose a JPEG or PNG.',
+	'The picture is too big (at most 25 MB).',
+	'The picture is too small (at least 640 × 360).',
+	'Unknown picture.',
+	'No connection to MoveEye.',
+)))
+for _k, _v in _HX_PB.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+_PB_DE = {_k: DE.get(_k, _v[0]) for _k, _v in _HX_PB.items()}
+
+_render_page_639zzzze = render_page
+
+
+
+def render_page(page, active):
+	out=_render_page_639zzzze(page,active)
+	if 'id="hp-pbild"'in out:
+		out=out.replace("</body>","<script>Object.assign(I18N.de, {\"Product page: pictures\": "+json.dumps(_PB_DE["Product page: pictures"],ensure_ascii=False)
+						  +"});document.querySelectorAll('#hp-pbild [data-i18n]').forEach(e => e.textContent = t(e.dataset.i18n));</script></body>",1)
+	if "/*PBDE*/"in out:
+		out=out.replace("/*PBDE*/","Object.assign(I18N.de, "+json.dumps(_PB_DE,ensure_ascii=False).replace("</","<\\/")+");",1)
+	return out
+
+
+PB_PAGE = _zd('639zzzze_produktbilder/PB_PAGE', ZD_PAGE)
+
+
+produktbilder_selftest = _zd_fn('639zzzze_produktbilder/produktbilder_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Product page: own pictures (16:9, without EXIF, back to the example) (639zzzze)", produktbilder_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+for _k in ("push_pause", "push_pause_users"):
+	CFG.setdefault(_k,{});DEFAULTS.setdefault(_k,{})
+try:
+	USER_SETTINGS_DENY.update({"push_pause","push_pause_users"})
+except NameError:
+	pass
+VIEW_GET = VIEW_GET + ("/api/pushpause",)
+VIEW_POST.add("/api/pushpause")
+
+PP_DUR = {"15": 15, "30": 30, "60": 60, "120": 120}
+PP_MAX_S = 24 * 3600
+PP_ALARM_EV = ("person", "prealarm", "warm", "noise")
+PP_EXEMPT_TEXTS = ("Battery almost empty: about {pct} % ({hours:.1f} h)", "Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap",
+				   "Battery empty – the Pi shuts down cleanly")
+PP = {"lock": threading.Lock(), "started": False, "logt": {}}
+_PP_TL = threading.local()
+
+_HX_PP = _zd('639zzzzp_push_pause/HX_PP', _zd_hx_en((
+	'Pause notifications',
+	'Notifications paused',
+	'Until tomorrow morning',
+	'Until I am back',
+	'Own time …',
+	'min · h · time',
+	'phone away',
+	'phone at home',
+	'no presence set up',
+	'First enter your phone under Time & presence',
+	'End pause',
+	'Extend:',
+	'until {hm}',
+	'until tomorrow {hm}',
+	'{left} left',
+	'until you are back (at the latest {hm})',
+	'by {who}',
+	'via the bell 🔔',
+	'on the push page',
+	'in the Pi window',
+	'with the push button',
+	'push button',
+	'1 alarm',
+	'{n} alarms',
+	'1 note',
+	'{n} notes',
+	'Held back so far: {what}',
+	'Nothing held back so far.',
+	'During the pause: {what} (in the history)',
+	'During the pause nothing was held back.',
+	'Sabotage, theft, emergency call and «battery almost empty» still come.',
+	'Everything else is only recorded – at the end a short message comes.',
+	'Ends by itself.',
+	'Also with the bell 🔔 at the top and the button in the push message.',
+	'Only your own push messages are paused.',
+	'Sound in the browser',
+	'🔔 Alarm sound in this browser',
+	'Sound settings …',
+	'Duration',
+	'Until a time',
+	'minutes',
+	'hours',
+	'Pause until {hm}',
+	'‹ back',
+	'🔕 Pause 1 h',
+	'🔔 End pause',
+	'Notifications paused until {hm}',
+	'Notifications on again',
+	'🔕 paused until {hm}',
+	'Minutes, hours (e.g. 90 or 1.5 h) or an end time (e.g. 22:30)',
+	'Enter minutes, hours or a time (HH:MM).',
+	'At most 24 hours.',
+	'The presence detection is not set up.',
+	'Only who gets alarm pushes may pause them.',
+	'Notifications paused, {left} left – menu',
+	'1 minute',
+	'{n} minutes',
+	'1 hour',
+	'{n} hours',
+	'No pause is running.',
+	'running',
+	'off',
+)))
+for _k, _v in _HX_PP.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+
+PK_TITLES.setdefault("Notifications paused", ("🔕", "Notifications paused", "info", False))
+PK_TITLES.setdefault("Notifications on again", ("🔔", "Notifications on again", "info", False))
+
+
+
+def _pp_clean(s):
+	""
+	if not isinstance(s,dict):
+		return None
+	try:
+		until,t0=float(s.get("until")or 0),float(s.get("t0")or 0)
+	except(TypeError,ValueError):
+		return None
+	if not(math.isfinite(until)and math.isfinite(t0))or until<=0 or until-t0>PP_MAX_S+3600:
+		return None
+	mode=s.get("mode")if s.get("mode")in("min","morning","home")else "min"
+	via=s.get("via")if s.get("via")in("bell","page","window","push")else "page"
+	return{"until":until,"t0":t0,"mode":mode,"via":via,"by":str(s.get("by")or "")[:40],
+			"held":max(0,int(s.get("held")or 0)),"held_info":max(0,int(s.get("held_info")or 0)),"away":bool(s.get("away"))}
+
+
+def pp_raw(scope=""):
+	""
+	if not scope:
+		return _pp_clean(CFG.get("push_pause"))
+	allu=CFG.get("push_pause_users")if isinstance(CFG.get("push_pause_users"),dict)else{}
+	return _pp_clean(allu.get(scope))
+
+
+def pp_active(scope="", now=None):
+	s=pp_raw(scope)
+	return s if s and(time.time()if now is None else now)<s["until"]else None
+
+
+def _pp_put(scope, s, save=True):
+	with PP["lock"]:
+		if not scope:
+			CFG["push_pause"]=dict(s)if s else{}
+		else:
+			allu=dict(CFG.get("push_pause_users")if isinstance(CFG.get("push_pause_users"),dict)else{})
+			if s:
+				allu[scope]=dict(s)
+			else:
+				allu.pop(scope,None)
+			CFG["push_pause_users"]=allu
+	if save:
+		save_settings()
+
+
+def pp_presence_ready():
+	return bool(CFG.get("presence_hosts")or CFG.get("presence_macs")or CFG.get("presence_bt"))
+
+
+def pp_presence():
+	""
+	try:
+		return presence_home()if pp_presence_ready()else None
+	except Exception:
+		return None
+
+
+def pp_morning_ts(now=None):
+	""
+	now=time.time()if now is None else now
+	hm=str(CFG.get("wake_time")or "07:00")if CFG.get("wake_on")else "07:00"
+	m=re.match(r"^([01]?\d|2[0-3]):([0-5]\d)$",hm.strip())
+	h,mi=(int(m.group(1)),int(m.group(2)))if m else(7,0)
+	d=datetime.fromtimestamp(now)
+	t=d.replace(hour=h,minute=mi,second=0,microsecond=0)
+	if t.timestamp()<=now+60:
+		t=t+timedelta(days=1)
+	return t.timestamp()
+
+
+def pp_morning_hm():
+	return datetime.fromtimestamp(pp_morning_ts()).strftime("%H:%M")
+
+
+def pp_parse(text, now=None):
+	""
+	now=time.time()if now is None else now
+	v=str(text or "").strip().lower().replace(",",".")
+	m=re.fullmatch(r"([01]?\d|2[0-3]):([0-5]\d)",v)
+	if m:
+		d=datetime.fromtimestamp(now)
+		t=d.replace(hour=int(m.group(1)),minute=int(m.group(2)),second=0,microsecond=0)
+		if t.timestamp()<=now:
+			t=t+timedelta(days=1)
+		return t.timestamp(),""
+	m=re.fullmatch(r"(\d+(?:\.\d+)?)\s*(m|min|mins|minuten|minutes|minuti|minutas|h|std|stunden|hours|heures|ore|uras)?",v)
+	m2=re.fullmatch(r"(\d+):([0-5]\d)\s*h",v)
+	if m2:
+		sec=int(m2.group(1))*3600+int(m2.group(2))*60
+	elif m:
+		n=float(m.group(1))
+		sec=n*3600 if(m.group(2)or "")in("h","std","stunden","hours","heures","ore","uras")else n*60
+	else:
+		return 0,"Enter minutes, hours or a time (HH:MM)."
+	if sec<60:
+		return 0,"Enter minutes, hours or a time (HH:MM)."
+	if sec>PP_MAX_S:
+		return 0,"At most 24 hours."
+	return now+sec,""
+
+
+def _pp_log(msg):
+	try:
+		log_event("sys",msg)
+	except Exception:
+		pass
+
+
+def pp_who(who, scope=""):
+	return str(scope or who or "admin")[:40]
+
+
+def pp_start(scope, mode, who="admin", via="page", value=None, now=None, save=True):
+	"""
+"""
+	now=time.time()if now is None else now
+	m_="min"
+	if str(mode)in PP_DUR:
+		until=now+PP_DUR[str(mode)]*60
+	elif mode=="morning":
+		until,m_=pp_morning_ts(now),"morning"
+	elif mode=="home":
+		if not pp_presence_ready():
+			return False,"The presence detection is not set up.",None
+		until,m_=now+PP_MAX_S,"home"
+	elif mode=="own":
+		until,err=pp_parse(value,now)
+		if err:
+			return False,err,None
+	else:
+		return False,"unknown",None
+	old=pp_active(scope,now)
+	s={"until":until,"t0":old["t0"]if old else now,"mode":m_,"via":via,"by":pp_who(who,scope),
+		 "held":old["held"]if old else 0,"held_info":old["held_info"]if old else 0,"away":pp_presence()is False}
+	_pp_put(scope,s,save)
+	_pp_log(f"Push messages paused until {datetime.fromtimestamp(until).strftime('%d.%m. %H:%M')} ({mode}) by {pp_who(who)} ({via})"
+			+(f" - only the own pushes of «{scope}»"if scope else " - for all receivers"))
+	pp_thread()
+	return True,"",s
+
+
+def pp_extend(scope, add_min=0, morning=False, who="admin", via="page", save=True):
+	s=pp_active(scope)
+	if not s:
+		return False,"No pause is running.",None
+	if morning:
+		s["until"],s["mode"]=max(s["until"],pp_morning_ts()),"morning"
+	else:
+		s["until"]=min(s["until"]+max(1,int(add_min))*60,time.time()+PP_MAX_S)
+		if s["mode"]=="home":
+			s["mode"]="min"
+	_pp_put(scope,s,save)
+	_pp_log(f"Push pause extended until {datetime.fromtimestamp(s['until']).strftime('%d.%m. %H:%M')} by {pp_who(who)} ({via})"
+			+(f" - «{scope}»"if scope else ""))
+	return True,"",s
+
+
+def pp_what(held, held_info, lang=None):
+	parts=[]
+	if held:
+		parts.append(tr("1 alarm",lang)if held==1 else trf("{n} alarms",lang,n=held))
+	if held_info:
+		parts.append(tr("1 note",lang)if held_info==1 else trf("{n} notes",lang,n=held_info))
+	return " · ".join(parts)
+
+
+def pp_end(scope, reason="ended", who="admin", via="page", push=True, save=True):
+	""
+	s=pp_raw(scope)
+	if not s:
+		return False,"No pause is running."
+	_pp_put(scope,None,save)
+	_pp_log(f"Push messages on again ({reason}"+(f", {pp_who(who)}, {via}"if reason=="ended"else "")+f") - held back: {s['held']} alarms, "
+			f"{s['held_info']} notes"+(f" - «{scope}»"if scope else ""))
+	if push:
+		pp_end_push(scope,s)
+	return True,""
+
+
+
+def pp_exempt(p):
+	""
+	if not isinstance(p,dict):
+		return True
+	ev=p.get("event")
+	if ev in("tamper","test")or p.get("pp_pass")or p.get("_test")or p.get("fs_tok"):
+		return True
+	if ev=="info":
+		tt=str(p.get("info_title")or "")
+		if "🆘"in tt or "SOS"in tt:
+			return True
+		tx=str(p.get("text")or "")
+		for k in PP_EXEMPT_TEXTS:
+			for L in(None,"en"):
+				pre=tr(k,L).split("{")[0].strip()[:18]
+				if pre and tx.startswith(pre):
+					return True
+	return False
+
+
+def _pp_count(scope, ev):
+	with PP["lock"]:
+		if not scope:
+			s=CFG.get("push_pause")if isinstance(CFG.get("push_pause"),dict)else None
+		else:
+			s=(CFG.get("push_pause_users")or{}).get(scope)
+		if isinstance(s,dict):
+			k="held"if ev in PP_ALARM_EV else "held_info"
+			s[k]=int(s.get(k)or 0)+1
+	t=time.time()
+	if t-PP["logt"].get(scope,0)>30:
+		PP["logt"][scope]=t
+		try:
+			save_settings()
+		except Exception:
+			pass
+
+
+_pp_dispatch_before = Notifier._dispatch
+
+
+def _pp_dispatch(self, p, jpg, fname):
+	""
+	ex=pp_exempt(p)
+	if not ex and pp_active(""):
+		ev=self._event(p)
+		_pp_count("",ev)
+		STATE["notify_status"]="paused (push pause)"
+		try:
+			msglog_add(self._title(p),push_with_map(self._text(p),p," · "),ev,jpg,"none","🔕 Pause")
+		except Exception:
+			pass
+		_pp_log(f"No push message (push pause): {ev}")
+		return None
+	_PP_TL.exempt=ex
+	try:
+		return _pp_dispatch_before(self,p,jpg,fname)
+	finally:
+		_PP_TL.exempt=False
+
+
+
+Notifier._dispatch = _pp_dispatch
+
+_pp_users_dispatch_before = users_push_dispatch
+
+
+
+def users_push_dispatch(title, text, cat, click=""):
+	""
+	_PP_TL.users=True
+	try:
+		return _pp_users_dispatch_before(title,text,cat,click)
+	finally:
+		_PP_TL.users=False
+
+
+_pp_users_wants_before = users_push_wants
+
+
+
+def users_push_wants(name, cat):
+	ok=_pp_users_wants_before(name,cat)
+	if ok and getattr(_PP_TL,"users",False)and cat!="test"and not getattr(_PP_TL,"exempt",False)and pp_active(str(name or "")):
+		_pp_count(str(name),"person"if cat=="alarm"else "info")
+		return False
+	return ok
+
+
+
+def _pp_notifier():
+	try:
+		w=WATCH_REF.get("w")
+		n=getattr(w,"notifier",None)if w is not None else None
+		return n if n is not None and n.configured()and CFG.get("notify_on")else None
+	except Exception:
+		return None
+
+
+def _pp_send_info(title, text, link="", acts=None):
+	n=_pp_notifier()
+	if n is None:
+		return False
+	p={"event":"info","persons":0,"time":datetime.now().isoformat(timespec="seconds"),"text":text,"info_title":"{name}: "+title,
+		 "snapshot":None,"rain":False,"wind":"","source":STATE.get("source_label",""),"link":link,"pp_pass":True}
+	if acts:
+		p["alx_acts"]=tuple(acts)
+	threading.Thread(target=n._dispatch,args=(p,None,""),daemon=True,name="push-pause").start()
+	return True
+
+
+def pp_end_push(scope, s):
+	what=pp_what(s["held"],s["held_info"])
+	text=trf("During the pause: {what} (in the history)",what=what)if what else tr("During the pause nothing was held back.")
+	base=alx_base()
+	link=base+"/recordings"if base else ""
+	if not scope:
+		return _pp_send_info("Notifications on again",text,link)
+	title="🔔 "+tr("Notifications on again")
+	u=user_get(scope)
+	if u and u.get("ntfy"):
+		threading.Thread(target=_users_ntfy_send,args=(u["name"],_users_ntfy_url(u["ntfy"]),title,text,"info",link),
+						 daemon=True,name="push-pause-user").start()
+		return True
+	return False
+
+
+def pp_confirm_push(s):
+	""
+	hm=datetime.fromtimestamp(s["until"]).strftime("%H:%M")
+	return _pp_send_info("Notifications paused",trf("until {hm}",hm=hm).capitalize()+". "
+						 +tr("Sabotage, theft, emergency call and «battery almost empty» still come."),"",("resume",))
+
+
+
+def pp_tick(now=None):
+	now=time.time()if now is None else now
+	scopes=[""]+[k for k in(CFG.get("push_pause_users")or{})if isinstance(k,str)]
+	for sc in scopes:
+		s=pp_raw(sc)
+		if s is None:
+			if sc and sc in(CFG.get("push_pause_users")or{}):
+				_pp_put(sc,None)
+			elif not sc and CFG.get("push_pause"):
+				_pp_put("",None)
+			continue
+		if s["mode"]=="home":
+			h=pp_presence()
+			if h is False and not s["away"]:
+				s["away"]=True;_pp_put(sc,s)
+			elif h is True and s["away"]:
+				pp_end(sc,"back home")
+				continue
+		if now>=s["until"]:
+			pp_end(sc,"time is up")
+
+
+def pp_thread():
+	if PP["started"]:
+		return
+	PP["started"]=True
+
+	def loop():
+		while True:
+			try:
+				pp_tick()
+			except Exception as e:
+				_pp_log(f"Push pause: {e}"[:150])
+			time.sleep(5.0)
+	threading.Thread(target=loop,daemon=True,name="push-pause").start()
+
+
+
+def pp_left_text(sec, short=False):
+	mins=max(1,(max(0,int(sec))+59)//60)
+	if mins<60:
+		return "%d min"%mins
+	h,m=divmod(mins,60)
+	return("%d h %02d"%(h,m))if short else("%d h %d min"%(h,m)if m else "%d h"%h)
+
+
+def pp_badge(sec, mode):
+	""
+	if mode=="morning":
+		return "☾"
+	mins=max(1,(max(0,int(sec))+59)//60)
+	return "%d′"%mins if mins<60 else "%dh"%(mins//60)
+
+
+def pp_left_long(sec, lang=None):
+	""
+	mins=max(1,(max(0,int(sec))+59)//60)
+	h,m=divmod(mins,60)
+	hs=(tr("1 hour",lang)if h==1 else trf("{n} hours",lang,n=h))if h else ""
+	ms=(tr("1 minute",lang)if m==1 else trf("{n} minutes",lang,n=m))if m else ""
+	return(hs+" "+ms).strip()
+
+
+def pp_info(scope="", lang=None, can=True):
+	""
+	L=cur_lang(lang)
+	now=time.time()
+	s=pp_active(scope,now)
+	pres=pp_presence()
+	out={"can":bool(can),"scope":"user"if scope else "all","on":bool(s),"morning":pp_morning_hm(),
+		   "presence":{"ready":pp_presence_ready(),"home":pres,
+						"text":tr("no presence set up",L)if not pp_presence_ready()else tr("phone at home",L)if pres else tr("phone away",L)if pres is False else ""}}
+	if s:
+		hm=datetime.fromtimestamp(s["until"]).strftime("%H:%M")
+		tomorrow=datetime.fromtimestamp(s["until"]).date()!=datetime.fromtimestamp(now).date()
+		left=s["until"]-now
+		if s["mode"]=="home":
+			until=trf("until you are back (at the latest {hm})",L,hm=hm)
+		else:
+			until=trf("until tomorrow {hm}",L,hm=hm)if tomorrow else trf("until {hm}",L,hm=hm)
+		via={"bell":"via the bell 🔔","page":"on the push page","window":"in the Pi window","push":"with the push button"}[s["via"]]
+		who=tr("push button",L)if s["by"]=="push button"else s["by"]
+		what=pp_what(s["held"],s["held_info"],L)
+		out.update(until=s["until"],left=int(left),hm=hm,mode=s["mode"],short=pp_left_text(left,True),badge=pp_badge(left,s["mode"]),
+				   aria=trf("Notifications paused, {left} left – menu",L,left=pp_left_long(left,L)),
+				   line=until+" · "+trf("{left} left",L,left=pp_left_text(left)),
+				   by=trf("by {who}",L,who=who)+" · "+tr(via,L),held=s["held"],held_info=s["held_info"],
+				   held_line=trf("Held back so far: {what}",L,what=what)if what else tr("Nothing held back so far.",L))
+	return out
+
+
+def pp_tx(lang=None):
+	L=cur_lang(lang)
+	keys=list(_HX_PP)+["Sabotage, theft, emergency call and «battery almost empty» still come."]
+	return{k:(EN_SHOW.get(k,k)if L=="en"else tr(k,L))for k in keys}
+
+
+_pp_status_line_before = push_status_line
+
+
+
+def push_status_line(lang=None, ch=None, te=None):
+	out=_pp_status_line_before(lang,ch,te)
+	s=pp_active("")
+	if s and CFG.get("notify_on"):
+		out+=" · "+trf("🔕 paused until {hm}",lang,hm=datetime.fromtimestamp(s["until"]).strftime("%H:%M"))
+	return out
+
+
+_pp_push_info_before = push_info
+
+
+
+def push_info(lang=None):
+	d=_pp_push_info_before(lang)
+	d["pause"]=pp_info("",lang)
+	return d
+
+
+
+ALX_ACTS = tuple(ALX_ACTS) + ("pause", "resume")
+ALX_NAMES.update({"pause": "🔕 Pause 1 h", "resume": "🔔 End pause"})
+_pp_alx_token_before = alx_token
+
+
+
+def alx_token(p):
+	""
+	if isinstance(p,dict)and not p.get("alx_acts")and p.get("event")in PP_ALARM_EV:
+		return _pp_alx_token_before(dict(p,alx_acts=("fa","siren","off","pause")))
+	return _pp_alx_token_before(p)
+
+
+_pp_alx_buttons_before = alx_buttons
+
+
+
+def alx_buttons(p, lang=None):
+	""
+	b=_pp_alx_buttons_before(p,lang)
+	if getattr(_PP_TL,"hide",False):
+		return[x for x in b if not x[1].endswith(("/pause","/resume"))]
+	return b
+
+
+def _pp_extra(p):
+	try:
+		return[x for x in _pp_alx_buttons_before(p)if x[1].endswith(("/pause","/resume"))]
+	except Exception:
+		return[]
+
+
+_pp_ntfy_before = alx_ntfy_actions
+
+
+
+def alx_ntfy_actions(p):
+	_PP_TL.hide=True
+	try:
+		acts=_pp_ntfy_before(p)
+	finally:
+		_PP_TL.hide=False
+	ex=_pp_extra(p)if isinstance(p,dict)and not p.get("fs_tok")else[]
+	if not ex:
+		return acts
+	lst=[a.strip()for a in str(acts or "").split(";")if a.strip()]
+	def url_of(a):
+		x=a.split(",")
+		return x[2].strip()if len(x)>2 else ""
+	for lab,url,_c in ex:
+		if url.endswith("/pause"):
+			lst=[a for a in lst if not url_of(a).endswith("/siren")]
+		lst.append(f"http, {' '.join(lab.replace(',', ' ').replace(';', ' ').split())}, {url}, method=POST, clear=true")
+	if len(lst)>3:
+		lst=[a for a in lst if not url_of(a).endswith("/off")]
+		lst=lst[:2]+lst[-1:]if len(lst)>3 else lst
+	return "; ".join(lst)
+
+
+_pp_tg_before = alx_telegram_markup
+
+
+
+def alx_telegram_markup(p):
+	_PP_TL.hide=True
+	try:
+		mk=_pp_tg_before(p)
+	finally:
+		_PP_TL.hide=False
+	ex=_pp_extra(p)if isinstance(p,dict)and not p.get("fs_tok")else[]
+	if not ex:
+		return mk
+	rows=list((mk or{}).get("inline_keyboard")or[])+[[{"text":lab,"url":url}]for lab,url,_c in ex]
+	return{"inline_keyboard":rows}
+
+
+_pp_alx_do_before = alx_do
+
+
+
+def alx_do(act, e, who="push"):
+	if act=="pause":
+		ok,err,s=pp_start("","60",who="push button",via="push")
+		if not ok:
+			return False,tr_err(err)
+		pp_confirm_push(s)
+		return True,"🔕 "+trf("Notifications paused until {hm}",hm=datetime.fromtimestamp(s["until"]).strftime("%H:%M"))
+	if act=="resume":
+		if not pp_active(""):
+			return True,tr("No pause is running.")
+		pp_end("","ended",who="push button",via="push")
+		return True,"🔔 "+tr("Notifications on again")
+	return _pp_alx_do_before(act,e,who)
+
+
+
+def pp_scope_of(role, user):
+	""
+	if role=="admin":
+		return True,""
+	n=str(user or "")
+	try:
+		u=user_get(n)
+		n=u["name"]if u else n
+		return bool(u and _pp_users_wants_before(n,"alarm")),n
+	except Exception:
+		return False,n
+
+
+def pp_api(d, role, user, method="POST"):
+	""
+	lang=norm_lang((d or{}).get("lang"))
+	can,scope=pp_scope_of(role,user)
+	if method=="GET":
+		out=pp_info(scope,lang,can)
+		if(d or{}).get("tx"):
+			out["tx"]=pp_tx(lang)
+		return out,200
+	if not can:
+		return{"ok":False,"error":tr("Only who gets alarm pushes may pause them.",lang)},403
+	a=str(d.get("action")or "")
+	via=d.get("via")if d.get("via")in("bell","page","window")else "page"
+	who="admin"if role=="admin"else scope
+	if a=="pause":
+		ok,err,_s=pp_start(scope,str(d.get("mode")or ""),who=who,via=via,value=d.get("value"))
+	elif a=="extend":
+		ok,err,_s=pp_extend(scope,add_min=int(d.get("min")or 0)if str(d.get("min")or "0").isdigit()else 0,
+								morning=d.get("mode")=="morning",who=who,via=via)
+	elif a=="end":
+		ok,err=pp_end(scope,"ended",who=who,via=via)
+	else:
+		ok,err=False,"unknown action"
+	if not ok:
+		return{"ok":False,"error":tr_err(err,lang)if err not in _HX_PP else tr(err,lang)},400
+	return dict(pp_info(scope,lang,can),ok=True),200
+
+
+_pp_sx_routes_before = sx_routes
+
+
+def sx_routes(app, watch, reply, body):
+	_pp_sx_routes_before(app,watch,reply,body)
+	from flask import request,g as g_
+	pp_thread()
+
+	@app.route("/api/pushpause",methods=["GET","POST"])
+	def api_pushpause():
+		role,user=getattr(g_,"role","admin"),getattr(g_,"user","")
+		if request.method=="GET":
+			out,code=pp_api({"lang":request.args.get("lang"),"tx":request.args.get("tx")},role,user,"GET")
+		else:
+			out,code=pp_api(body(),role,user,"POST")
+		return reply(out,code)
+
+
+
+PP_JS = _zd('639zzzzp_push_pause/PP_JS', "")
+ALERT_JS = ALERT_JS + PP_JS
+
+
+
+HELP_PP = _zd('639zzzzp_push_pause/HELP_PP', _ZDDict())
+
+
+def _help_pp(doc, lang):
+	i=doc.find('<section id="notify"')
+	if i<0 or 'id="pp-help"'in doc:
+		return doc
+	j=doc.find("</section>",i)
+	return doc[:j]+HELP_PP[lang]+doc[j:]if j>=0 else doc
+
+
+_hp_en_pp = HELP_PAGE.find('<div lang="en">')
+if _hp_en_pp > 0:
+	HELP_PAGE=_help_pp(HELP_PAGE[:_hp_en_pp],"de")+_help_pp(HELP_PAGE[_hp_en_pp:],"en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L]=_help_pp(HELP_X[_L],_L)
+
+
+
+_PP_TK = {"app": None}
+
+
+def _pp_tk_box(app, parent):
+	box=tk.Frame(parent,bg=C["panel"],highlightthickness=1,highlightbackground=C["line"],padx=8,pady=6)
+	box.pack(fill="x",pady=(2,6))
+	S=app._pp={"box":box,"sig":None}
+	_pp_tk_fill(app)
+
+
+def _pp_tk_do(app, fn):
+	try:
+		res=fn()
+	except Exception as e:
+		res=(False,str(e))
+	if res and not res[0]and res[1]:
+		messagebox.showinfo("MoveEye",tr_err(res[1])if res[1]not in _HX_PP else tr(res[1]),parent=app.root)
+	_pp_tk_fill(app,force=True)
+	try:
+		_px_tk_paint(app)
+	except Exception:
+		pass
+
+
+def _pp_tk_own(app):
+	from tkinter import simpledialog
+	v=simpledialog.askstring("MoveEye",tr("Minutes, hours (e.g. 90 or 1.5 h) or an end time (e.g. 22:30)"),parent=app.root)
+	if v:
+		_pp_tk_do(app,lambda:pp_start("","own",who="admin",via="window",value=v)[:2])
+
+
+def _pp_tk_fill(app, force=False):
+	S=getattr(app,"_pp",None)
+	if not S:
+		return
+	try:
+		if not S["box"].winfo_exists():
+			return
+	except Exception:
+		return
+	I=pp_info("")
+	sig=(I["on"],I.get("line"),I.get("held_line"),I["presence"]["ready"],I["presence"]["text"],I["morning"])
+	if sig==S["sig"]and not force:
+		return
+	S["sig"]=sig
+	for c in S["box"].winfo_children():
+		c.destroy()
+	box=S["box"]
+	top=tk.Frame(box,bg=C["panel"]);top.pack(fill="x")
+	tk.Label(top,text="🔕 "+tr("Pause notifications"),bg=C["panel"],fg=C["txt"],font=("DejaVu Sans",9,"bold"),anchor="w").pack(side="left")
+	tk.Label(top,text=tr("running")if I["on"]else tr("off"),bg=C["panel"],fg=C["yel"]if I["on"]else C["mut"]).pack(side="right")
+	if I["on"]:
+		for txt,fg in(("🔕 "+tr("Notifications paused"),C["yel"]),(I["line"],C["txt"]),(I["by"],C["mut"]),(I["held_line"],C["mut"])):
+			tk.Label(box,text=txt,bg=C["panel"],fg=fg,anchor="w",justify="left",wraplength=330).pack(fill="x")
+		ttk.Button(box,text="🔔 "+tr("End pause"),command=lambda:_pp_tk_do(app,lambda:pp_end("","ended",via="window"))).pack(fill="x",pady=(6,2))
+		r=tk.Frame(box,bg=C["panel"]);r.pack(fill="x")
+		tk.Label(r,text=tr("Extend:"),bg=C["panel"],fg=C["mut"]).pack(side="left")
+		for lab,kw in(("+15 min",{"add_min":15}),("+1 h",{"add_min":60}),("🌅 "+I["morning"],{"morning":True})):
+			ttk.Button(r,text=lab,command=lambda kw=kw:_pp_tk_do(app,lambda:pp_extend("",via="window",**kw)[:2])).pack(side="left",padx=2)
+		return
+	g=tk.Frame(box,bg=C["panel"]);g.pack(fill="x",pady=(4,0))
+	for i,(m,lab)in enumerate((("15","15 min"),("30","30 min"),("60","1 h"),("120","2 h"))):
+		g.columnconfigure(i,weight=1)
+		ttk.Button(g,text=lab,command=lambda m=m:_pp_tk_do(app,lambda:pp_start("",m,via="window")[:2])).grid(row=0,column=i,sticky="ew",padx=1)
+	ttk.Button(box,text="🌅 "+tr("Until tomorrow morning")+"  ("+I["morning"]+")",
+			   command=lambda:_pp_tk_do(app,lambda:pp_start("","morning",via="window")[:2])).pack(fill="x",pady=(3,0))
+	hb=ttk.Button(box,text="🏠 "+tr("Until I am back")+"  ("+I["presence"]["text"]+")",
+					command=lambda:_pp_tk_do(app,lambda:pp_start("","home",via="window")[:2]))
+	hb.pack(fill="x",pady=(3,0))
+	if not I["presence"]["ready"]:
+		hb.state(["disabled"])
+		tk.Label(box,text=tr("First enter your phone under Time & presence"),bg=C["panel"],fg=C["mut"],anchor="w",wraplength=330,justify="left").pack(fill="x")
+	ttk.Button(box,text="⏱ "+tr("Own time …"),command=lambda:_pp_tk_own(app)).pack(fill="x",pady=(3,0))
+	tk.Label(box,text=tr("Ends by itself.")+" "+tr("Sabotage, theft, emergency call and «battery almost empty» still come.")+" "
+			 +tr("Everything else is only recorded – at the end a short message comes."),bg=C["panel"],fg=C["mut"],anchor="w",
+			 wraplength=330,justify="left",font=("DejaVu Sans",8)).pack(fill="x",pady=(4,0))
+
+
+_pp_tk_head_before = _px_tk_head
+
+
+
+def _px_tk_head(parent, text):
+	_pp_tk_head_before(parent,text)
+	app=_PP_TK["app"]
+	if text=="When"and app is not None:
+		try:
+			_pp_tk_box(app,parent)
+		except Exception as e:
+			log_event("sys",f"Window: push pause: {e}"[:160])
+
+
+_pp_tk_panel_before = _px_tk_panel
+
+
+
+def _px_tk_panel(app, sbody):
+	_PP_TK["app"]=app
+	try:
+		return _pp_tk_panel_before(app,sbody)
+	finally:
+		_PP_TK["app"]=None
+
+
+_pp_tk_paint_before = _px_tk_paint
+
+
+
+def _px_tk_paint(app):
+	_pp_tk_paint_before(app)
+	try:
+		_pp_tk_fill(app)
+	except Exception:
+		pass
+
+
+
+push_pause_selftest = _zd_fn('639zzzzp_push_pause/push_pause_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Push pause (639zzzzp)", push_pause_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+WEB_UI_LOCAL.add("mw-sheet")
+
+UF_CSS = _zd('639zzzzx_fenster/UF_CSS', "")
+
+UF_JS = _zd('639zzzzx_fenster/UF_JS', "")
+
+UF_TX_JS = _zd('639zzzzx_fenster/UF_TX_JS', "")
+try:
+	UF_TX={k:tuple(v)for k,v in json.loads(UF_TX_JS).items()}
+except ValueError:
+	UF_TX={}
+for _k, _v in UF_TX.items():
+	if len(_v)==5:
+		DE.setdefault(_k,_v[1])
+		for _i,_L in enumerate(("fr","it","rm")):
+			TRX[_L].setdefault(_k,_v[_i+2])
+
+
+def uf_tx():
+	return{L:{k:v[i]for k,v in UF_TX.items()}for i,L in enumerate(("en","de","fr","it","rm"))}
+
+
+
+UF_HELP_JS = _zd('639zzzzx_fenster/UF_HELP_JS', "")
+try:
+	UF_HELP=json.loads(UF_HELP_JS)
+except ValueError:
+	UF_HELP={}
+
+
+def uf_help(doc, lang):
+	""
+	p=UF_HELP.get(lang)
+	if not p or not isinstance(doc,str)or p[:40]in doc:
+		return doc
+	i=doc.find('<section id="tips"')
+	j=doc.find("</h2>",i)if i>=0 else-1
+	return doc[:j+5]+p+doc[j+5:]if j>=0 else doc
+
+
+try:
+	_hp_en_uf=HELP_PAGE.find('<div lang="en">')
+	if _hp_en_uf>0:
+		HELP_PAGE=uf_help(HELP_PAGE[:_hp_en_uf],"de")+uf_help(HELP_PAGE[_hp_en_uf:],"en")
+	for _L in("fr","it","rm"):
+		if HELP_X.get(_L):
+			HELP_X[_L]=uf_help(HELP_X[_L],_L)
+except Exception as _e:
+	print(f"639zzzzx help: {_e}")
+
+
+_render_page_before_uf = render_page
+
+
+
+def render_page(page, active):
+	""
+	out=_render_page_before_uf(page,active)
+	if '<nav class="nav">'not in out or "</body>"not in out or "</head>"not in out:
+		return out
+	out=out.replace("</head>",UF_CSS+"</head>",1)
+	i=out.rfind("</body>")
+	js=UF_JS.replace("/*FXTX*/{}",json.dumps(uf_tx(),ensure_ascii=False).replace("</","<\\/"),1)
+	return out[:i]+js+out[i:]
+
+
+_uf_selftest = _zd_fn('639zzzzx_fenster/_uf_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Sub-pages as a window (639zzzzx)", _uf_selftest))
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")
