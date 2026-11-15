@@ -23,9 +23,10 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
-  * 4.3.0: Produktseite /info/ mit Bildern: echte App-Bilder (Live, Tagebuch, Mehr) und ruhige Beispielbilder; neu «🖼
+  * 4.3.0: Zwei Teile. (1) Produktseite /info/ mit Bildern: echte App-Bilder (Live, Tagebuch, Mehr) und ruhige Beispielbilder; neu «🖼
     Produktseite: Bilder» in der Karte «Homepage» – eigene Fotos für die Seite hochladen (nur Admin; ohne Ortsangaben und
-    Kamera-Daten, verkleinert).
+    Kamera-Daten, verkleinert). (2) «📻 Radio» spielt weiter, wenn man
+    die Seite verlässt; solange es spielt, steht 📻 oben in der Kopfzeile (antippen = zurück zum Radio).
   * 4.2.0: Zwei Teile. (1) Die Bedienleiste oben ist eine Zeile schmaler: «Einfach / Experte» ist ein Knopf in der Leiste, die
     Zeile «Darstellung» fällt weg, ⇕ klappt alle Karten auf und zu, die Symbole sitzen neu (Fenster und Webseite). (2) Bauen auf
     dem Handy: keine Seite mehr breiter als der Bildschirm, Druckdateien untereinander; in Drucken neu die Spalte «Nr.» (wie im
@@ -289,7 +290,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_3_0.zip"
-ZD_SHA256 = "bdd35ae8e1fc3c18c21b566e4c83b2abf0944cca3ed76768a21f8ed8f258d3b8"
+ZD_SHA256 = "7a9addc5bf2e138ef58534b8d885f43a06d52db003087dff0b926e39bc14f8b2"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -111153,6 +111154,16 @@ SELFTEST_EXTRA.append(("Botschaft im Bild: hide/read, encryption, capacity, wron
 
 
 
+
+
+
+
+
+
+
+
+
+
 import socket as _rsock
 
 RADIO_UA = "MoveEye/" + APP_VERSION + " (internet radio; github.com/DonElektro/MotionWatch)"
@@ -112315,6 +112326,8 @@ def smalltv_routes(app, reply, body):
 	def api_radio():
 		role,perms=who_()
 		if request.method=="GET":
+			if request.args.get("on"):
+				return reply({"ok":True,"on":bool(RADIO["want"])})
 			st=radio_state(request.args.get("lang"),role,perms)
 			b=request.args.get("b")or ""
 			if b and b==BR["sid"]:
@@ -112428,11 +112441,33 @@ _render_page_radio = render_page
 
 
 
+RADIO_SYM_BTN = ('<a class="btn sec ic" id="mwk-radio" href="/radio" hidden><span aria-hidden="true">📻</span>'
+				 '<i class="mwr-eq" aria-hidden="true"><b></b><b></b><b></b></i></a>')
+RADIO_SYM_AT = '<button class="sec ic" type="button" id="mwk-help"'
+RADIO_SYM_JS = _zd('639zzzzd_radio/RADIO_SYM_JS', "")
+if isinstance(KOPF_JS, str) and KOPF_JS.count('const KNOWN = new Set(["mwk-help", ') == 1:
+	KOPF_JS=KOPF_JS.replace('const KNOWN = new Set(["mwk-help", ','const KNOWN = new Set(["mwk-radio", "mwk-help", ',1)
+
+
+def radio_sym(out):
+	""
+	if 'id="mwk-radio"'in out or out.count(RADIO_SYM_AT)!=1 or "</body>"not in out or "mwk-radio"not in RADIO_SYM_JS:
+		return out
+	k="Radio is playing - to the radio"
+	tx={L:(DE if L=="de"else TRX.get(L,{})).get(k)or k for L in("de","fr","it","rm")}
+	tx["en"]=k.replace(" - "," – ")
+	js=RADIO_SYM_JS.replace("/*RSTX*/{}",json.dumps(tx,ensure_ascii=False).replace("</","<\\/"),1)
+	out=out.replace(RADIO_SYM_AT,RADIO_SYM_BTN+RADIO_SYM_AT,1)
+	i=out.rfind("</body>")
+	return out[:i]+js+out[i:]
+
+
+
 def render_page(page, active):
 	out=_render_page_radio(page,active)
 	if "/*RADIODE*/"in out:
 		out=out.replace("/*RADIODE*/","Object.assign(I18N.de, "+json.dumps(_RADIO_DE,ensure_ascii=False).replace("</","<\\/")+");",1)
-	return out
+	return radio_sym(out)
 
 
 
@@ -112455,6 +112490,7 @@ _HX_RADIO = _zd('639zzzzd_radio/HX_RADIO', _zd_hx_en((
 	'only the stations of the list',
 	'this stream (HLS) cannot go through MoveEye',
 	'too many listeners through MoveEye (at most 2)',
+	'Radio is playing - to the radio',
 	'Radio on / off',
 	'Play',
 	'Volume',
@@ -112557,6 +112593,9 @@ for _L in ("fr", "it", "rm"):
 
 
 radio_selftest = _zd_fn('639zzzzd_radio/radio_selftest()')
+
+
+
 
 
 

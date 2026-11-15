@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-15 12:34",
+ "generated": "2026-11-15 12:40",
  "versions": [
   {
    "version": "4.3.0",
    "file": "webcam_bewegung_4_3_0.py",
    "url": "",
-   "sha256": "3071bdf0784acf9c8844f2a46dc1c71016305c4b78d1f3890a4f634b9dbd9713",
-   "date": "2026-11-15 12:34",
-   "notes": "Produktseite /info/ mit Bildern: echte App-Bilder (Live, Tagebuch, Mehr) und ruhige Beispielbilder; neu «🖼 Produktseite: Bilder» in der Karte «Homepage» – eigene Fotos für die Seite hochladen (nur Admin; ohne Ortsangaben und Kamera-Daten, verkleinert).",
-   "size": 3891578,
-   "sig": "3fb991da176862fcf99a8e7a6097155eb338a6321498017891c2a92facd7347b68dee7db7e2de8b255e103d5ef9e2ef5e84715cc49542c5551d8018f2c723803",
+   "sha256": "c7ef46a5fd3dd87e9a83aaf50bca77c50a1da34314345f749927ebc12c41e63d",
+   "date": "2026-11-15 12:40",
+   "notes": "Zwei Teile. (1) Produktseite /info/ mit Bildern: echte App-Bilder (Live, Tagebuch, Mehr) und ruhige Beispielbilder; neu «🖼 Produktseite: Bilder» in der Karte «Homepage» – eigene Fotos für die Seite hochladen (nur Admin; ohne Ortsangaben und Kamera-Daten, verkleinert). (2) «📻 Radio» spielt weiter, wenn man die Seite verlässt; solange es spielt, steht 📻 oben in der Kopfzeile (antippen = zurück zum Radio).",
+   "size": 3892929,
+   "sig": "b9ccaecb0678f7e05a91a48fb00e2eb7b7118ce8a5c8a4acdc81353786df9d8254fae27f80cc1a9f9f8d011d6d95d62f007df01702664ef72b7b88ac627d370a",
    "data": {
     "file": "moveeye_daten_4_3_0.zip",
     "url": "",
-    "sha256": "bdd35ae8e1fc3c18c21b566e4c83b2abf0944cca3ed76768a21f8ed8f258d3b8",
-    "size": 13413236,
-    "sig": "c3395bde1511b138af958c5b81d54ef59dbc0b4b5b242ceca291ba0508d1f31978af394c0734338acddc6b58d7d22ee51a49cad2c67ca79d112a3ccac9765502"
+    "sha256": "7a9addc5bf2e138ef58534b8d885f43a06d52db003087dff0b926e39bc14f8b2",
+    "size": 13425195,
+    "sig": "1e1370e02bf10a273418b4841613c1672613c3eb3f32e062de488b5a89c142b94364ba0f04cbafc4c2a948644e799e6ec822ce228c4a9accc35335b84b1e900d"
    }
   },
   {
