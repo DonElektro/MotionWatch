@@ -169,10 +169,12 @@ func _close_in(n: Node, fr: Rect2) -> bool:
 			var b := c as Button
 			var tx := b.text.strip_edges()
 			if tx in CLOSE_TXT or b.tooltip_text.contains("chliess"):
-				if tx in ["✕", "×", "✖"] and (b.custom_minimum_size.x < 44.0 or b.custom_minimum_size.y < 44.0):
+				if b.custom_minimum_size.x < 44.0 or b.custom_minimum_size.y < 44.0:   # Finger: mindestens 44 × 44
 					b.custom_minimum_size = Vector2(maxf(44.0, b.custom_minimum_size.x), maxf(44.0, b.custom_minimum_size.y))
-				var br := b.get_global_rect()
-				if fr.grow(2).encloses(br):
+				var k := b.get_global_transform().get_scale()
+				var br := Rect2(b.global_position, b.size * k)
+				# nur gut, wenn es auch nach dem Verkleinern (scale) noch gross genug zum Tippen ist; sonst kommt ein eigenes ✕
+				if fr.grow(2).encloses(br) and br.size.x >= 40.0 and br.size.y >= 40.0:
 					ok = true
 		if not ok and c is Node and c.get_child_count() > 0:
 			ok = _close_in(c, fr)

@@ -32,13 +32,13 @@ func _perf_tick() -> void:
 	if lvl > 0:
 		main._set_quality(["simple", "medium", "nice", "ultra"][lvl - 1])
 		what = "Grafik «%s»" % ["einfach", "mittel", "schön"][lvl - 1]
-	elif main.view_scale > 0.75:
+	elif main.view_scale > 0.75 and not fixed_scale():
 		main.set_view_scale(0.75)
 		what = "Ansicht 75 % scharf"
 	elif main.meadow_on:
 		main.set_meadow(false)
 		what = "ohne Gras und Blumen"
-	elif main.view_scale > 0.55:
+	elif main.view_scale > 0.55 and not fixed_scale():
 		main.set_view_scale(0.55)
 		what = "Ansicht 55 % scharf"
 	else:
@@ -47,6 +47,34 @@ func _perf_tick() -> void:
 	main._perf_auto = false
 	main.start_info = "Der PC ist langsam – leichter gemacht: %s (nur bis zum Neustart; Bilder für MoveEye unverändert)" % what
 	print("auto graphics: " + what)
+
+
+func fixed_scale() -> bool:
+	"""Handy-Modus und Browser (Besitzer 15.11.2026, «Die Simulation soll mit der normalen Auflösung laufen»): die Schärfe der
+	Ansicht wird nie automatisch gesenkt - leichter wird es über die Grafik (handy_gfx), nicht über eine unscharfe Ansicht"""
+	return OS.has_feature("web") or (main.get("handy") != null and main.handy.on)
+
+
+func phone_scale() -> float:
+	"""Schärfe der 3D-Ansicht im Browser: volle Auflösung bis zur doppelten Pixeldichte (iPhone 3× -> 2× = 0.67 der
+	Bildpunkte, sieht gleich scharf aus und braucht weniger als die Hälfte); am PC-Browser (1× / 2×) 100 %"""
+	var dpr := DisplayServer.screen_get_scale() if OS.has_feature("web") else 1.0
+	return clampf(2.0 / maxf(dpr, 1.0), 0.5, 1.0)
+
+
+func handy_gfx(on: bool) -> void:
+	"""Grafik «Handy» (Handy-Modus und Browser): wie «einfach» (kein Glühen, kein SSAO, Lite: weniger Gras, kleine Dinge in
+	der Ferne weg), dazu einfache harte Schatten der Sonne nur in der Nähe - statt einer unscharfen Ansicht"""
+	if main.sun == null or main.quality != "simple":
+		return
+	main.sun.shadow_enabled = on
+	if on:
+		main.sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+		main.sun.directional_shadow_max_distance = 30.0
+		RenderingServer.directional_shadow_atlas_set_size(1024, true)
+		RenderingServer.directional_soft_shadow_filter_set_quality(RenderingServer.SHADOW_QUALITY_HARD)
+	else:
+		RenderingServer.directional_soft_shadow_filter_set_quality(int(ProjectSettings.get_setting("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality", 2)))
 
 
 func _set_quality(v: String) -> void:
@@ -103,6 +131,8 @@ func _apply_quality() -> void:
 	main.get_viewport().use_taa = fwd and lvl >= 3
 	if main.hoch != null:
 		main.hoch.after_quality()                       # F1: «Hoch» on top of the chosen level (or away again)
+	if lvl == 0 and fixed_scale():
+		handy_gfx(true)                                 # Handy / Browser: «einfach» mit kleinen harten Schatten
 
 
 func set_grafik_mode(v: String) -> void:
@@ -143,7 +173,8 @@ func _lite_apply(on: bool) -> void:
 				main._perf_orig[k_] = main.get(k_)
 		main._perf_auto = true                                  # not the own choice: the setters keep _perf_orig
 		main._set_quality("simple")
-		main.set_view_scale(minf(main.view_scale, Quality.SCALE))
+		if not fixed_scale():                                 # Handy / Browser: die Ansicht bleibt scharf (handy_gfx)
+			main.set_view_scale(minf(main.view_scale, Quality.SCALE))
 		if main.win_fps <= 0 or main.win_fps > Quality.FPS:
 			main.win_fps = Quality.FPS
 		main.max_visitors = mini(main.max_visitors, Quality.VISITORS)

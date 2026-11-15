@@ -8032,6 +8032,13 @@
   "it": "Browser",
   "rm": "Navigatur"
  },
+ "Browser (WebGL 2)": {
+  "en": "Browser (WebGL 2)",
+  "fr": "Navigateur (WebGL 2)",
+  "it": "Browser (WebGL 2)",
+  "rm": "Navigatur (WebGL 2)",
+  "?": "rm automatisch"
+ },
  "Browser liess sich nicht starten: ": {
   "en": "Browser could not be started: ",
   "fr": "Le navigateur n’a pas pu démarrer : ",
@@ -21467,6 +21474,13 @@
   "it": "Aprire http://<IP del Pi>:5000/ nel browser (Wi-Fi proprio del Pi: http://10.42.0.1:5000/) e impostare subito una password. Il codice QR qui sotto porta a questa pagina.",
   "rm": "Avrir http://<IP dal Pi>:5000/ en il navigatur (WLAN agen dal Pi: http://10.42.0.1:5000/) e metter immediatamain in pled-clav. Il code QR sutvart maina sin questa pagina."
  },
+ "Im Browser: die Seite bringt die neue Version": {
+  "en": "In the browser: the page brings the new version",
+  "fr": "Dans le navigateur : la page apporte la nouvelle version",
+  "it": "Nel browser: la pagina porta la nuova versione",
+  "rm": "En il navigatur: la pagina porta la nova versiun",
+  "?": "rm automatisch"
+ },
  "Im Bunker beim Pass soll es nachts ein Büro für Murmeltiere geben. Ich glaube kein Wort.": {
   "en": "They say there's an office for marmots in the bunker by the pass at night. I don't believe a word.",
   "fr": "Il paraît que dans le bunker près du col, il y a la nuit un bureau pour marmottes. Je n'en crois pas un mot.",
@@ -23106,6 +23120,13 @@
   "fr": "Aligner la caméra",
   "it": "Allineare la fotocamera",
   "rm": "Drizzar la camera"
+ },
+ "Kamera von MoveEye": {
+  "en": "MoveEye camera",
+  "fr": "Caméra de MoveEye",
+  "it": "Telecamera di MoveEye",
+  "rm": "Camera da MoveEye",
+  "?": "rm automatisch"
  },
  "Kamera wackelt im Wind (Mast, Stange)": {
   "en": "Camera shakes in the wind (mast, pole)",

@@ -132,3 +132,11 @@ Shader in `shaders/`). Kartendaten eines echten Orts kommen beim Laden von swiss
 **Draco-Entpacker** (`scripts/draco.gd`, ab Sim 3.66.0): eigene GDScript-Umsetzung nach dem veröffentlichten Draco-Datenformat
 (Google Draco, Apache-2.0); kein fremder Code übernommen, keine Bibliothek beigelegt. Nötig für die 3D-Gebäude von swisstopo
 (swissBUILDINGS3D © swisstopo, freie Nutzung mit Quellenangabe), die Draco-komprimiert geliefert werden.
+
+## Schrift für Zeichen im Browser – `schrift/symbole.ttf`
+
+Im Browser gibt es keine Schriften des Systems; damit Zeichen wie ✕ ● ▲ ◀ ↳ ⚠ nicht als leere Kästchen erscheinen, hängt
+`scripts/web.gd` eine kleine Teilmenge (91 Zeichen, 13 KB) von **DejaVu Sans** als Rückfall an die Standardschrift.
+DejaVu-Lizenz (frei, Bitstream-Vera-Lizenz mit Ergänzungen, Weitergabe und Teilmengen erlaubt, Name nicht «Bitstream Vera»):
+`schrift/DejaVu_Lizenz.txt`. Neu erzeugen: alle Zeichen ab U+2000 aus `scripts/*.gd` und `i18n/texte.json`, die DejaVu Sans
+kennt, mit `pyftsubset DejaVuSans.ttf --unicodes=… --output-file=schrift/symbole.ttf --no-hinting`.

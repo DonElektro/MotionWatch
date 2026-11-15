@@ -1524,6 +1524,8 @@ class Win extends Control:
 			h.add_child(fold_b)
 		close_b = mgr._flat_button("✕", T.t("Fenster ausblenden (zurück über «Fenster» in der Leiste unten)"))
 		close_b.pressed.connect(func(): mgr.set_on(id, false, true))
+		if DisplayServer.is_touchscreen_available():          # Touch (Tablet): ✕ gross genug für den Finger (44 × 44)
+			close_b.custom_minimum_size = Vector2(44, 44)
 		h.add_child(close_b)
 		v.add_child(content)
 		grip = Grip.new()

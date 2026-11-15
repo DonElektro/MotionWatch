@@ -47,6 +47,7 @@ var _user_t := -100.0
 var _my_goal := {"pan": INF, "tilt": INF}
 var _seq := {"protect": -1, "ack": -1}
 var _last_size := Vector2i.ZERO
+var _last_phone := false
 var _narrow := false
 var _narrow_done := false
 var _hidden: Array = []
@@ -111,17 +112,35 @@ func _process(dt: float) -> void:
 
 
 # ---- Oberfläche --------------------------------------------------------------------------------------------------------
+func phone() -> bool:
+	"""Handy-Modus (handy.gd) nach der Grösse in Punkten des Browsers (CSS-Pixel), nicht nach der vergrösserten Oberfläche"""
+	var h = main.get("handy")
+	if h == null:
+		return false
+	if h.mode != "auto":
+		return h.mode == "phone"
+	var dpr := DisplayServer.screen_get_scale()
+	var css := Vector2(get_tree().root.size) / (dpr if dpr > 0.0 else 1.0)
+	return minf(css.x, css.y) < h.SHORT
+
+
 func _rescale() -> void:
 	var w := get_tree().root
-	if w.size == _last_size:
+	var ph := phone()
+	var k: float = main._mod("start").phone_scale()     # 3D-Ansicht: normale Auflösung (Besitzer 15.11.2026), nie unscharf
+	if absf(main.get_viewport().scaling_3d_scale - k) > 0.01 or main.view_scale != k:
+		main.set_view_scale(k)
+	if w.size == _last_size and ph == _last_phone:
 		return
 	_last_size = w.size
+	_last_phone = ph
 	var dpr := DisplayServer.screen_get_scale()
-	var f := (dpr if dpr > 0.0 else 1.0) * (TOUCH_K if DisplayServer.is_touchscreen_available() else 1.0)
-	if w.size.x / f < MIN_W:
-		f = w.size.x / MIN_W
-	if w.size.y / f < MIN_H:
-		f = w.size.y / MIN_H
+	var f := (dpr if dpr > 0.0 else 1.0) * (TOUCH_K if DisplayServer.is_touchscreen_available() and not ph else 1.0)
+	if not ph:                                         # Handy-Modus: die Oberfläche in Punkten des Handys (390 × 844)
+		if w.size.x / f < MIN_W:
+			f = w.size.x / MIN_W
+		if w.size.y / f < MIN_H:
+			f = w.size.y / MIN_H
 	w.content_scale_factor = maxf(f, 0.5)
 	var vs: Vector2 = main.get_viewport().get_visible_rect().size
 	_narrow = vs.x < NARROW or vs.y < SHORT
@@ -279,9 +298,11 @@ func _paint() -> void:
 	var p0 := Vector2(224.0, 14.0) if low else Vector2(14.0, 222.0)   # links unter der Karte (minimap.gd), Handy quer: rechts neben ihr
 	var pw := clampf(vs.x * (0.46 if _narrow else 0.24), 200.0, 340.0)
 	pw = minf(pw, (vs.y - p0.y - 150.0) / asp)          # unten bleibt Platz für die Leiste
-	fr.custom_minimum_size = Vector2(pw, pw * asp)
-	_pip.reset_size()
-	_pip.position = p0
+	var hon: bool = main.get("handy") != null and main.handy.on
+	if not hon:                                         # Handy-Modus: das Bild hängt in «Kamera» gross (handy.gd) oder ist weg
+		fr.custom_minimum_size = Vector2(pw, pw * asp)
+		_pip.reset_size()
+		_pip.position = p0
 	var l := led()
 	var c := Color.html(str(l.get("rgb", "#000000")))
 	var br := float(l.get("br", 0.0))
@@ -295,6 +316,13 @@ func _paint() -> void:
 	if n["animal"] > 0:
 		s += " · %d %s" % [n["animal"], tx("animal")]
 	_status.text = s
+	if hon:                                              # Handy-Modus: Leiste, Steuerkreuz und Hinweis oben macht handy.gd
+		_pad.visible = false
+		_banner.visible = false
+		_pip.visible = false
+		_paint_welcome(vs)
+		return
+	_pad.visible = DisplayServer.is_touchscreen_available()
 	var cover: bool = _narrow and main.ui_root.visible   # schmal und Bedienfeld offen: nur «≡» bleibt (zum Schliessen)
 	_pip.visible = not cover
 	for b in _pad.get_children():
@@ -318,12 +346,21 @@ func _paint() -> void:
 		_pad.reset_size()
 		_pad.size = _pad.get_combined_minimum_size()
 		_pad.position = Vector2(14.0, vs.y - _pad.size.y - 74.0) if low else Vector2(vs.x - _pad.size.x - 14.0, vs.y - _pad.size.y - 96.0)
+	_paint_welcome(vs)
+	if _narrow and main.cam_float != null and not main.ui_root.visible:
+		main.cam_float.visible = false                   # schmal: das Bild oben links genügt (die Kamera-Karte bleibt im Bedienfeld)
+
+
+func _paint_welcome(vs: Vector2) -> void:
 	if _welcome.visible:
 		_welcome.custom_minimum_size.x = minf(vs.x - 28.0, 520.0)
 		_welcome.reset_size()
 		_welcome.position = Vector2((vs.x - _welcome.size.x) * 0.5, vs.y * 0.36)
-	if _narrow and main.cam_float != null and not main.ui_root.visible:
-		main.cam_float.visible = false                   # schmal: das Bild oben links genügt (die Kamera-Karte bleibt im Bedienfeld)
+
+
+func pip_frame() -> Control:
+	"""das Bild der Kopfkamera mit den Rahmen (für «Kamera» gross im Handy-Modus, handy.gd)"""
+	return _pip.get_meta("frame") if _built else null
 
 
 func _draw_boxes() -> void:

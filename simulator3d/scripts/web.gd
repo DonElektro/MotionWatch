@@ -53,11 +53,17 @@ static func start(main: Node) -> void:
 		var nav = JavaScriptBridge.eval("(navigator.language || 'de').slice(0, 2).toLowerCase()", true)
 		if typeof(nav) == TYPE_STRING and str(nav) in T.codes():
 			T.set_moveeye_lang(str(nav))             # wie die Sprache, die MoveEye meldet: eine eigene Wahl gilt vor
+	_symbols()
 	var demo = preload("res://scripts/web_demo.gd").new()
 	demo.name = "WebDemo"
 	demo.main = main
 	main.web_demo = demo
 	main.add_child(demo)
+	if q.has("test"):                               # Tests in Chromium: window.mwControl (web_bruecke.gd)
+		var wt = preload("res://scripts/web_bruecke.gd").new()
+		wt.name = "WebTest"
+		wt.main = main
+		main.add_child(wt)
 	var t := Timer.new()
 	t.wait_time = 10.0
 	t.autostart = true
@@ -65,3 +71,15 @@ static func start(main: Node) -> void:
 		print("web: %d fps, %d MB statisch, %d MB Grafik" % [Engine.get_frames_per_second(), OS.get_static_memory_usage() / 1048576,
 			Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576]))
 	main.add_child(t)
+
+
+static func _symbols() -> void:
+	"""im Browser gibt es keine Schriften des Systems: Zeichen wie ✕ ● ▲ ↳ ⚠ wären leere Kästchen. Eine kleine Schrift mit genau
+	diesen Zeichen (schrift/symbole.ttf, aus DejaVu Sans, werkzeuge: pyftsubset) hängt als Rückfall an der Standardschrift"""
+	var sym = load("res://schrift/symbole.ttf")
+	var fb: Font = ThemeDB.fallback_font
+	if sym == null or fb == null or sym in fb.fallbacks:
+		return
+	var l := fb.fallbacks.duplicate()
+	l.append(sym)
+	fb.fallbacks = l

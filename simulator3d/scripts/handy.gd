@@ -71,6 +71,34 @@ func _ready() -> void:
 	_load()
 	_build()
 	layer.visible = false
+	if OS.has_feature("web"):                           # Zurück-Geste / Zurück-Taste des Browsers schliesst das Blatt
+		_pop_cb = JavaScriptBridge.create_callback(_on_pop)
+		JavaScriptBridge.get_interface("window").addEventListener("popstate", _pop_cb)
+
+
+var _pop_cb                                             # JavaScriptObject (muss gehalten werden)
+var _hist := false                                      # ein Eintrag im Verlauf des Browsers steht für das offene Blatt
+var _skip_pop := false
+
+
+func _on_pop(_args: Array) -> void:
+	if _skip_pop:
+		_skip_pop = false
+		return
+	_hist = false
+	_back()
+
+
+func _web_history() -> void:
+	"""ein offenes Blatt / grosses Fenster = ein Schritt im Verlauf: «Zurück» (Geste, Taste) schliesst es statt die Seite"""
+	var open: bool = cur != "" or big_id != "" or panel_x.visible
+	if open and not _hist:
+		_hist = true
+		JavaScriptBridge.eval("history.pushState({moveeye: 1}, '')", true)
+	elif not open and _hist:
+		_hist = false
+		_skip_pop = true
+		JavaScriptBridge.eval("history.back()", true)
 
 
 func _load() -> void:
@@ -97,6 +125,9 @@ func view_size() -> Vector2:
 
 
 func wanted() -> bool:
+	var wd = main.get("web_demo")
+	if wd != null:                                      # Browser: nach den Punkten des Handys (web_demo.gd vergrössert sonst)
+		return wd.phone()
 	var vs := view_size()
 	return mode == "phone" or (mode == "auto" and minf(vs.x, vs.y) < SHORT)
 
@@ -320,7 +351,7 @@ func _build_big() -> void:
 	hd.add_child(big_title)
 	hd.add_child(_close_btn(func(): show_win(big_id, false)))
 	big_scroll = ScrollContainer.new()
-	big_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	big_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO   # breiter Inhalt: wischen, das Fenster bleibt im Bild
 	big_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	v.add_child(big_scroll)
 
@@ -335,6 +366,10 @@ func _set_on(v: bool) -> void:
 	layer.visible = v
 	if main.fenster != null:
 		main.fenster.handy_hide = v
+	if main.sun != null and main.quality == "simple":    # Grafik «Handy» statt unscharfer Ansicht (main_start.handy_gfx)
+		main._mod("start").handy_gfx(v)
+		if not v:
+			main._apply_quality()
 	if v:
 		_was.clear()
 		for c in _hideables():
@@ -376,6 +411,8 @@ func _process(dt: float) -> void:
 				_hold = ""
 			else:
 				main.mw_look(_hold, 2.5)
+	if _pop_cb != null:
+		_web_history()
 	_t -= dt
 	if _t <= 0.0:
 		_t = 0.4
@@ -441,7 +478,8 @@ func _layout() -> void:
 			inner_w = (big_scroll.get_child(0) as Control).get_combined_minimum_size().x
 		if ls and inner_w > 0.0:
 			bw = minf(bw, maxf(inner_w + 22.0, 260.0))
-		big.size = Vector2(bw, minf(bh, 44.0 + 6.0 + inner + 22.0) if inner > 0.0 else bh)
+		var sb_h: float = 14.0 if inner_w > bw - 22.0 else 0.0   # Platz für den Schiebebalken unten
+		big.size = Vector2(bw, minf(bh, 44.0 + 6.0 + inner + 22.0 + sb_h) if inner > 0.0 else bh)
 		if not ls:                                       # hoch: die runden Knöpfe rücken unter das grosse Fenster
 			win_box.position = Vector2(10, big.position.y + big.size.y + 10)
 	if panel_x.visible:
@@ -797,28 +835,39 @@ func show_win(id: String, v: bool) -> void:
 	if big_id != "" and big_id != id:
 		show_win(big_id, false)
 	var f = main.fenster
-	if f == null:
+	var pip: Control = null                              # Browser-Demo: «Kamera» = das Bild von MoveEye mit den Rahmen
+	if id == "kameras" and main.get("web_demo") != null:
+		pip = main.web_demo.pip_frame()
+	var w = f.win(id) if f != null and pip == null else null
+	if w == null and pip == null:
 		return
-	var w = f.win(id)
-	if w == null:
-		return
-	var c: Control = w.content
+	var c: Control = pip if pip != null else w.content
 	if v:
 		close()
-		_big_home = {"parent": c.get_parent(), "i": c.get_index(), "w": c.size.x, "on": f.is_on(id)}
-		f.set_on(id, true)
+		_big_home = {"parent": c.get_parent(), "i": c.get_index(), "w": c.size.x, "min": c.custom_minimum_size,
+				"on": f.is_on(id) if w != null else true}
+		if w != null:
+			f.set_on(id, true)
 		c.get_parent().remove_child(c)
 		big_scroll.add_child(c)
 		c.visible = true
 		big_id = id
-		big_title.text = w.title()
+		big_title.text = w.title() if w != null else T.t("Kamera von MoveEye")
 		big.visible = true
 		_layout()
 		var cw: float = big.size.x - 22.0
 		if id == "map":                                  # quadratisch: quer passt sie in die Höhe
 			cw = minf(cw, view_size().y - (100.0 if landscape() else 160.0))
-		if w.opts.has("set_size"):
+		if pip != null:                                  # 16:9 (das Bild der Kopfkamera); quer: in die Höhe
+			var isz := Vector2(main.vps[0].size)
+			var asp := isz.y / maxf(isz.x, 1.0)
+			cw = minf(cw, (view_size().y - (90.0 if landscape() else 200.0)) / asp)
+			c.custom_minimum_size = Vector2(cw, cw * asp)
+		elif w.opts.has("set_size"):
 			(w.opts["set_size"] as Callable).call(cw, 0.0)
+			var over := c.get_combined_minimum_size().x - (big.size.x - 22.0)   # Rahmen des Inhalts: noch einmal kleiner
+			if over > 0.5:
+				(w.opts["set_size"] as Callable).call(cw - over, 0.0)
 		else:
 			c.custom_minimum_size.x = cw
 	else:
@@ -830,9 +879,12 @@ func show_win(id: String, v: bool) -> void:
 			p.add_child(c)
 			p.move_child(c, mini(int(_big_home.get("i", 0)), p.get_child_count() - 1))
 		var pw: float = float(_big_home.get("w", 0.0))
-		if pw > 0.0 and w.opts.has("set_size"):
+		if pip != null:
+			c.custom_minimum_size = _big_home.get("min", Vector2.ZERO)
+		elif pw > 0.0 and w.opts.has("set_size"):
 			(w.opts["set_size"] as Callable).call(pw, 0.0)
-		f.set_on(id, bool(_big_home.get("on", true)))
+		if w != null:
+			f.set_on(id, bool(_big_home.get("on", true)))
 		big_id = ""
 		big.visible = false
 	_paint()
