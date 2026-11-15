@@ -652,7 +652,8 @@ Features
     infrared night picture - persons near the camera are now seen at night).
   * 4.0.0: MoveEye 4.0: Mehr → Bauen → Drucken zeigt neu «🧳 Transportsicherung (noch nicht erprobt)» – Haube, Drehsperre-Klammer
     und Schutzschale zum Drucken (einzeln oder als ZIP mit Anleitung), in der 3D-Werkstatt mit einem Schalter einblendbar. Die
-    Gehäuse-Nummer bleibt 5.3.1.
+    Gehäuse-Nummer bleibt 5.3.1. Neu auch auf der Seite «Handy-Funkgerät»: Reiter «🔏 Bild» – Botschaft im Bild
+    verstecken und lesen, ganz ohne Netz.
   * 3.99.0: Zwei Teile. (1) «📻 Radio» (Mehr → Unterwegs): Internet-Radio über den Lautsprecher, Sender suchen im offenen
     Verzeichnis radio-browser.info, Einschlaf-Timer, Radio als Wecker; Sirene, Ansagen, Gegensprechen und Morse haben Vorrang.
     (2) «🏠 Apple Home» (Beta, Einstellungen → Netz & Zugang, nur Admin, ab Werk aus): Kamera, Bewegungsmelder, Schutz, Kopf und

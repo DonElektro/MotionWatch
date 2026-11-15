@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-15 08:23",
+ "generated": "2026-11-15 08:43",
  "versions": [
   {
    "version": "4.0.0",
    "file": "webcam_bewegung_4_0_0.py",
    "url": "",
-   "sha256": "9dd921976b1b8066e83f3792ecb95c76a56b91de04faa5a042ecba28fa89d87a",
-   "date": "2026-11-15 08:22",
-   "notes": "MoveEye 4.0: Mehr → Bauen → Drucken zeigt neu «🧳 Transportsicherung (noch nicht erprobt)» – Haube, Drehsperre-Klammer und Schutzschale zum Drucken (einzeln oder als ZIP mit Anleitung), in der 3D-Werkstatt mit einem Schalter einblendbar. Die Gehäuse-Nummer bleibt 5.3.1.",
-   "size": 3870279,
-   "sig": "e42795c94a8d0dd26681d6502893bee504b2380ce9010bb9024a2a5a111a79ad1e52b7cc883c039f45117ad2b8107c419de96e077b1680cceafb011d41413b04",
+   "sha256": "75ba60493d2b1edbf4132da9656947ff8c93361bf3de501a292c5209f227e2da",
+   "date": "2026-11-15 08:43",
+   "notes": "MoveEye 4.0: Mehr → Bauen → Drucken zeigt neu «🧳 Transportsicherung (noch nicht erprobt)» – Haube, Drehsperre-Klammer und Schutzschale zum Drucken (einzeln oder als ZIP mit Anleitung), in der 3D-Werkstatt mit einem Schalter einblendbar. Die Gehäuse-Nummer bleibt 5.3.1. Neu auch auf der Seite «Handy-Funkgerät»: Reiter «🔏 Bild» – Botschaft im Bild verstecken und lesen, ganz ohne Netz.",
+   "size": 3870627,
+   "sig": "03e70ca6c992683bb0c64c1907588aedd8a3e1b4720486063ad2feffc7fe30999c56262f5e7607a66a305e9ee652110ef6b30f247d1acc7b38f7a1833940f20f",
    "data": {
     "file": "moveeye_daten_4_0_0.zip",
     "url": "",
-    "sha256": "4e420175ea39032360b18901f145fcb5f8add0514a567886fe8571b417ee4c0c",
-    "size": 13339830,
-    "sig": "1e739c14ce0eb1feb4c50d885f3d8246f3e299a259dcb0206080cf2d227241eaddc71269db53fb77a91900d0ea300913f129d1e00997b12e85f657f4eb864600"
+    "sha256": "da29d79e3b7f11319d093a0b4c42c654f77d98ed9118bfa8a26ca50bdcc14212",
+    "size": 13351123,
+    "sig": "144d825d48bfb659dedcbca9d4ae80f93ff04e903898e8ce1bab336991c217a7d68e513603434e27063accdf7b57ffc88cffdd56ab1a4fd6e3fe208b53579b04"
    }
   },
   {

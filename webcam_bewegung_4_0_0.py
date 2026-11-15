@@ -25,7 +25,8 @@ Features
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
   * 4.0.0: MoveEye 4.0: Mehr → Bauen → Drucken zeigt neu «🧳 Transportsicherung (noch nicht erprobt)» – Haube, Drehsperre-Klammer
     und Schutzschale zum Drucken (einzeln oder als ZIP mit Anleitung), in der 3D-Werkstatt mit einem Schalter einblendbar. Die
-    Gehäuse-Nummer bleibt 5.3.1.
+    Gehäuse-Nummer bleibt 5.3.1. Neu auch auf der Seite «Handy-Funkgerät»: Reiter «🔏 Bild» – Botschaft im Bild
+    verstecken und lesen, ganz ohne Netz.
   * 3.99.0: Zwei Teile. (1) «📻 Radio» (Mehr → Unterwegs): Internet-Radio über den Lautsprecher, Sender suchen im offenen
     Verzeichnis radio-browser.info, Einschlaf-Timer, Radio als Wecker; Sirene, Ansagen, Gegensprechen und Morse haben Vorrang.
     (2) «🏠 Apple Home» (Beta, Einstellungen → Netz & Zugang, nur Admin, ab Werk aus): Kamera, Bewegungsmelder, Schutz, Kopf und
@@ -286,7 +287,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_0_0.zip"
-ZD_SHA256 = "4e420175ea39032360b18901f145fcb5f8add0514a567886fe8571b417ee4c0c"
+ZD_SHA256 = "da29d79e3b7f11319d093a0b4c42c654f77d98ed9118bfa8a26ca50bdcc14212"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -102745,6 +102746,9 @@ def funk_page(variant="mw", lang=None, https_port=None):
 		a,e=p.find("<!--PWA-->"),p.find("<!--/PWA-->")
 		if a>=0 and e>a:
 			p=p[:a]+p[e+len("<!--/PWA-->"):]
+	if variant!="pwa":
+		js=globals().get("STEGO_JS")or ""
+		p=p.replace('<script src="stego.js"></script>',("<script>\n"+js+"\n</script>")if "MWStego"in js else "",1)
 	if variant=="mw":
 		mw={"lang":norm_lang(lang or CFG.get("lang")),"back":"/morse","https_port":https_port}
 		p=p.replace("/*MWFUNK*/","window.MW_FUNK="+json.dumps(mw).replace("</","<\\/")+";",1)
@@ -103414,17 +103418,19 @@ def hp_list():
 
 
 def hp_funk_files():
-	""
+	"""
+"""
 	import base64
 	import hashlib
 	html=funk_page("pwa").encode("utf-8")
-	ver=hashlib.sha256(html).hexdigest()[:12]
+	js=STEGO_JS.encode("utf-8")
+	ver=hashlib.sha256(html+js).hexdigest()[:12]
 	man={"name":"Handy-Funkgerät","short_name":"Funk","description":"Morse und das eigene Protokoll mit zwei Tönen über ein Handfunkgerät (MoveEye)",
 		   "lang":"de","start_url":"./","scope":"./","display":"standalone","background_color":"#111418","theme_color":"#111418",
 		   "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png"},
 					 {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
 	out={"index.html":html,"manifest.webmanifest":(json.dumps(man,ensure_ascii=False,indent=1)+"\n").encode("utf-8"),
-		   "sw.js":HP_FUNK_SW_JS.replace("@VER@",ver).encode("utf-8")}
+		   "sw.js":HP_FUNK_SW_JS.replace("@VER@",ver).encode("utf-8"),"stego.js":js}
 	try:
 		out.update({k:base64.b64decode(v)for k,v in json.loads(HP_FUNK_PNG).items()})
 	except(ValueError,TypeError):
@@ -104013,6 +104019,7 @@ for _L in ("fr", "it", "rm"):
 
 
 homepage_selftest = _zd_fn('639zzzh_homepage/homepage_selftest()')
+
 
 
 
@@ -110773,6 +110780,7 @@ push_live_selftest = _zd_fn('639zzzzb_push_live/push_live_selftest()')
 
 
 SELFTEST_EXTRA.append(("Push button «📷 Live öffnen» (639zzzzb)", push_live_selftest))
+
 
 
 
