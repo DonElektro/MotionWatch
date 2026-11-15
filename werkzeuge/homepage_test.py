@@ -344,10 +344,11 @@ def lauf(datei, tmp):
 
     print("3) veröffentlichen (Simulator für den Browser noch nicht veröffentlicht)", flush=True)
     code, j = api("admin", {"action": "publish"})
-    funk = {n: open(os.path.join(REPO, "funk", n), "rb").read() for n in os.listdir(os.path.join(REPO, "funk"))}
+    funk = {n: open(os.path.join(REPO, "funk", n), "rb").read() for n in os.listdir(os.path.join(REPO, "funk"))
+            if n != "stego.js"}            # stego.js = Quelle des Browser-Moduls von 639zzzzc, die Funk-Seite lädt es nicht
     ok(code == 200 and not j.get("err") and fmt(ns, j)["note"].startswith("Der Simulator für den Browser ist noch nicht"), f"ohne Sim-Paket: {fmt(ns, j)['err']} {fmt(ns, j)}")
     ok(fmt(ns, j)["last"].startswith("Fertig: 8 hochgeladen, 0 unverändert, 0 gelöscht. · "), "Meldung: " + fmt(ns, j)["last"])
-    ok(all(W.files.get("Funk/" + n) == b for n, b in funk.items()) and len(funk) == 6, "Funk/ = die 6 Dateien von funk/ (Byte für Byte)")
+    ok(all(W.files.get("Funk/" + n) == b for n, b in funk.items()) and len(funk) == 6, "Funk/ = die 6 Dateien der Funk-Seite aus funk/ (Byte für Byte)")
     ok("index.html" in W.files and "Sim/test.html" in W.files and b"Funk/" in W.files["index.html"], "Startseite + Sim/test.html")
     ok(len(W.uploads()) == 8, f"8 Dateien hochgeladen ({len(W.uploads())})")
 

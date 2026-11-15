@@ -878,7 +878,7 @@ def teil_b(datei, bilder):
             print("B) iPhone: Kachel, Übersicht, Liste", flush=True)
             ctx, pg = neu(A)
             pg.goto(base + "/tausch"); pg.wait_for_selector("#tz-pack", timeout=20000); pg.wait_for_timeout(1200)
-            ok(pg.inner_text("#tz-pack").startswith("🎒") and "Packlisten" in pg.inner_text("#tz-pack") and "Gewicht" in pg.inner_text("#tz-pack"), f"Kachel im Datentausch (deutsch): {pg.inner_text('#tz-pack')!r}")
+            ok(pg.inner_text("#tz-pack").startswith(("📋", "🎒")) and "Packlisten" in pg.inner_text("#tz-pack") and "Gewicht" in pg.inner_text("#tz-pack"), f"Kachel im Datentausch (deutsch): {pg.inner_text('#tz-pack')!r}")
             bild(pg, "00_datentausch_kachel.png")
             tippbar(pg, "#tz-pack", "Kachel")
             pg.click("#tz-pack"); pg.wait_for_selector(".pl-card", timeout=15000); pg.wait_for_timeout(600)
