@@ -136,10 +136,18 @@ func _collect(nd: Node, depth: int) -> void:
 		if c is Window and not (c is PopupMenu) and not (c is FileDialog) and not (c is AcceptDialog and depth > 5):
 			cands.append(c)
 			continue
-		if c is Control and c.get_parent() is CanvasLayer and (c is PanelContainer or c is Panel) and not (c as Control).visible:
+		if c is Control and c.get_parent() is CanvasLayer and (c is PanelContainer or c is Panel) and not (c as Control).visible \
+				and not _mini_part(c):
 			cands.append(c)
 		if depth < 6:
 			_collect(c, depth + 1)
+
+
+func _mini_part(c: Node) -> bool:
+	"""kein Fenster: mini.gd (Kästchen / Symbol, wenn das Fenster des Simulators minimiert ist - dann ist das ganze
+	Fenster so klein, im Browser und auf dem Handy nie)"""
+	var s = c.get_parent().get_script()
+	return s != null and s.resource_path.get_file() == "mini.gd"
 
 
 func _texts(nd: Node, out: Array) -> void:
