@@ -2404,6 +2404,81 @@
     "it": "Cavo fotocamera CAM0 (v5.3: camino → sopra il condotto → pettine)",
     "rm": "Cabel da camera CAM0 (v5.3: chamin → sur il canal → pettan)"
    }
+  },
+  {
+   "id": "kappe",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 14,
+   "datei": "29_Transportsicherung",
+   "name": {
+    "de": "29 Transportsicherung (Haube über Kopf und Lampen, rastet an den Lampenbechern)",
+    "en": "29 Transport lock (hood over head and lamps, clicks onto the lamp cups)",
+    "fr": "29 Sécurité de transport (capot sur la tête et les lampes, s'encliquette sur les godets des lampes)",
+    "it": "29 Blocco di trasporto (cappuccio su testa e lampade, si aggancia ai bicchieri delle lampade)",
+    "rm": "29 Segirezza da transport (chapitscha sur il chau e las lampas, s'encliquetescha vi dals bitschiers da las lampas)"
+   },
+   "transport": "haube"
+  },
+  {
+   "id": "drehsperre",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 14,
+   "datei": "30_Drehsperre_Klammer",
+   "name": {
+    "de": "30 Drehsperre-Klammer (flach auf dem Deckel am Kabelkamin, sperrt das Schwenken beim Transport)",
+    "en": "30 Pan lock clip (flat on the lid at the cable chimney, locks the pan during transport)",
+    "fr": "30 Pince anti-rotation (à plat sur le couvercle à la cheminée, bloque la rotation pendant le transport)",
+    "it": "30 Clip blocca-rotazione (piatta sul coperchio al camino, blocca la rotazione durante il trasporto)",
+    "rm": "30 Clip cunter la rotaziun (plat sin il viertgel al chamin, bloccha la rotaziun durant il transport)"
+   },
+   "transport": "haube"
+  },
+  {
+   "id": "schale_vorne",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 14,
+   "datei": "31_Schutzschale_vorne",
+   "name": {
+    "de": "31 Schutzschale vorne (über Kopf, Lampen und Gabel bis auf den Deckel; Sichtfenster für Kamera und Wärmebild)",
+    "en": "31 Protective shell, front (over head, lamps and yoke down to the lid; window for camera and thermal camera)",
+    "fr": "31 Coque de protection avant (sur la tête, les lampes et la fourche jusqu'au couvercle ; fenêtre pour caméra et caméra thermique)",
+    "it": "31 Guscio di protezione anteriore (su testa, lampade e forcella fino al coperchio; finestra per fotocamera e termocamera)",
+    "rm": "31 Scussa da protecziun davant (sur il chau, las lampas e la furtga fin sin il viertgel; fanestra per camera e camera termica)"
+   },
+   "transport": "schale"
+  },
+  {
+   "id": "schale_hinten",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 14,
+   "datei": "32_Schutzschale_hinten",
+   "name": {
+    "de": "32 Schutzschale hinten (bis zum Kabelkamin; zwei Rippen innen sperren Neigen und Schwenken)",
+    "en": "32 Protective shell, rear (up to the cable chimney; two inner ribs lock tilt and pan)",
+    "fr": "32 Coque de protection arrière (jusqu'à la cheminée ; deux nervures intérieures bloquent inclinaison et rotation)",
+    "it": "32 Guscio di protezione posteriore (fino al camino; due nervature interne bloccano inclinazione e rotazione)",
+    "rm": "32 Scussa da protecziun davos (fin al chamin; duas nervaturas dadens blocan l'inclinaziun e la rotaziun)"
+   },
+   "transport": "schale"
+  },
+  {
+   "id": "schale_stopfen",
+   "art": "druck",
+   "bom": "petg",
+   "schritt": 14,
+   "datei": "33_Schutzschale_Stopfen",
+   "name": {
+    "de": "33 Stopfen für das Sichtfenster der Schutzschale (rastet ein, Öse für die Schnur)",
+    "en": "33 Plug for the window of the protective shell (clicks in, eyelet for the cord)",
+    "fr": "33 Bouchon pour la fenêtre de la coque (s'encliquette, œillet pour la cordelette)",
+    "it": "33 Tappo per la finestra del guscio (scatta in posizione, occhiello per il cordino)",
+    "rm": "33 Zaffun per la fanestra da la scussa (s'encliquetescha, ögl per la corda)"
+   },
+   "transport": "schale"
   }
  ],
  "schritte": [
@@ -6571,6 +6646,48 @@
    "fr": "état MoveEye %s",
    "it": "stato MoveEye %s",
    "rm": "stadi MoveEye %s"
+  },
+  {
+   "en": "Show the transport lock",
+   "de": "Transportsicherung zeigen",
+   "fr": "Montrer la sécurité de transport",
+   "it": "Mostra il blocco di trasporto",
+   "rm": "Mussar la segirezza da transport"
+  },
+  {
+   "en": "Hood + clip",
+   "de": "Haube + Klammer",
+   "fr": "Capot + pince",
+   "it": "Cappuccio + clip",
+   "rm": "Chapitscha + clip"
+  },
+  {
+   "en": "Protective shell",
+   "de": "Schutzschale",
+   "fr": "Coque de protection",
+   "it": "Guscio di protezione",
+   "rm": "Scussa da protecziun"
+  },
+  {
+   "en": "All files of this section (ZIP)",
+   "de": "Alle Dateien dieses Abschnitts (ZIP)",
+   "fr": "Tous les fichiers de cette section (ZIP)",
+   "it": "Tutti i file di questa sezione (ZIP)",
+   "rm": "Tut las datotecas da quest chapitel (ZIP)"
+  },
+  {
+   "en": "How to fit it",
+   "de": "So setzt du sie auf",
+   "fr": "Comment la poser",
+   "it": "Come montarla",
+   "rm": "Uschia la mettas ti"
+  },
+  {
+   "en": "MoveEye transport lock – not yet tried out – as of MoveEye %s",
+   "de": "MoveEye Transportsicherung – noch nicht erprobt – Stand MoveEye %s",
+   "fr": "Sécurité de transport MoveEye – pas encore testée – état MoveEye %s",
+   "it": "Blocco di trasporto MoveEye – non ancora provato – stato MoveEye %s",
+   "rm": "Segirezza da transport MoveEye – anc betg empruvada – stadi MoveEye %s"
   }
  ],
  "gehaeuse_v52": {
@@ -7117,6 +7234,190 @@
     "it": "Supporto: la cinghia 25 mm passa nelle fessure 4 × 28 mm, viti a muro Ø 5",
     "rm": "Tegnider: la tschinta 25 mm passa tras las fessas 4 × 28 mm, scrauvs da paraid Ø 5"
    }
+  ]
+ },
+ "transport": {
+  "_hinweis": "Transportsicherung (Haube 29 + Klammer 30, Schutzschale 31–33): eigener Abschnitt in Bauen → Drucken, noch nicht erprobt; gehört zum Gehäuse 5.4.0 / 5.5.0 (noch nicht freigegeben, die Nummer oben bleibt). Teile mit «transport» (Gruppe) zeigt die 3D-Werkstatt nur mit dem Schalter «Transportsicherung zeigen». Das 3D-Modell dieser Teile liegt getrennt (hardware/gehaeuse/Modelle/gehaeuse_transport.glb, in MoveEye BAU3D_GLB_TRANSPORT, erst mit dem Schalter geladen) – gehaeuse.glb und die Daten des Simulators bleiben ohne sie.",
+  "titel": {
+   "de": "🧳 Transportsicherung (noch nicht erprobt)",
+   "en": "🧳 Transport lock (not yet tried out)",
+   "fr": "🧳 Sécurité de transport (pas encore testée)",
+   "it": "🧳 Blocco di trasporto (non ancora provato)",
+   "rm": "🧳 Segirezza da transport (anc betg empruvada)"
+  },
+  "hinweis": {
+   "de": "Neu und noch nicht gedruckt oder am Gerät erprobt – zuerst einen Testdruck machen und die Passung prüfen. Gehört zum Gehäuse 5.4.0 / 5.5.0, das noch nicht freigegeben ist. Passt auf v5.3 (auch v5.1 / v5.2). Nur für den Transport: MoveEye vorher herunterfahren und den Kopf in die Grundstellung drehen (schaut nach vorne, waagrecht).",
+   "en": "New and not yet printed or tried on the device – make a test print first and check the fit. Part of case 5.4.0 / 5.5.0, not yet released. Fits v5.3 (also v5.1 / v5.2). Only for transport: shut MoveEye down first and turn the head to the home position (looking to the front, level).",
+   "fr": "Nouveau, pas encore imprimé ni essayé sur l'appareil – faire d'abord une impression d'essai et vérifier l'ajustement. Fait partie du boîtier 5.4.0 / 5.5.0, pas encore publié. Convient à la v5.3 (aussi v5.1 / v5.2). Seulement pour le transport : arrêter d'abord MoveEye et tourner la tête en position de base (vers l'avant, à l'horizontale).",
+   "it": "Nuovo, non ancora stampato né provato sull'apparecchio – fare prima una stampa di prova e verificare l'accoppiamento. Fa parte della custodia 5.4.0 / 5.5.0, non ancora rilasciata. Va bene per la v5.3 (anche v5.1 / v5.2). Solo per il trasporto: prima spegnere MoveEye e girare la testa nella posizione di base (in avanti, orizzontale).",
+   "rm": "Nov ed anc betg stampà u empruvà vi da l'apparat – l'emprim far ina stampa d'emprova e controllar la passanza. Tutga tar la chascha 5.4.0 / 5.5.0, anc betg publitgada. Va per v5.3 (er v5.1 / v5.2). Mo per il transport: l'emprim stizzar MoveEye e volver il chau en la posiziun da basa (enavant, orizontal)."
+  },
+  "gruppen": [
+   {
+    "id": "haube",
+    "titel": {
+     "de": "Haube 29 + Drehsperre-Klammer 30 (sperren Neigen und Schwenken)",
+     "en": "Hood 29 + pan lock clip 30 (lock tilt and pan)",
+     "fr": "Capot 29 + pince anti-rotation 30 (bloquent inclinaison et rotation)",
+     "it": "Cappuccio 29 + clip blocca-rotazione 30 (bloccano inclinazione e rotazione)",
+     "rm": "Chapitscha 29 + clip cunter la rotaziun 30 (blocan l'inclinaziun e la rotaziun)"
+    },
+    "hinweis": {
+     "de": "PETG, ohne Stützen. Zusammen ca. 22 g, ca. 1,3 h. Beide haben eine Öse (Ø 3,6) für eine Schnur. Vor dem Einschalten abnehmen.",
+     "en": "PETG, no supports. Together about 22 g, about 1.3 h. Both have an eyelet (Ø 3.6) for a cord. Remove before switching on.",
+     "fr": "PETG, sans supports. Ensemble env. 22 g, env. 1,3 h. Les deux ont un œillet (Ø 3,6) pour une cordelette. Retirer avant la mise sous tension.",
+     "it": "PETG, senza supporti. Insieme circa 22 g, circa 1,3 h. Entrambi hanno un occhiello (Ø 3,6) per un cordino. Togliere prima di accendere.",
+     "rm": "PETG, senza sustegns. Ensemen var 22 g, var 1,3 h. Omadus han in ögl (Ø 3,6) per ina corda. Prender davent avant che metter en funcziun."
+    },
+    "montage": {
+     "titel": {
+      "de": "Transportsicherung aufsetzen / abnehmen",
+      "en": "Fit / remove the transport lock",
+      "fr": "Poser / retirer la sécurité de transport",
+      "it": "Montare / togliere il blocco di trasporto",
+      "rm": "Metter / prender davent la segirezza da transport"
+     },
+     "text": {
+      "de": "Für den Transport: MoveEye herunterfahren und den Strom trennen. Den Kopf von Hand in die Grundstellung drehen: er schaut nach vorne zu PIR und Mikrofon und steht waagrecht. 1) Die Haube 29 von oben über Kopf und Lampen drücken (Status-LED durch das Loch im Dach), bis sie an beiden Lampenbechern einrastet – sie sperrt das Neigen. 2) Die Drehsperre-Klammer 30 flach von hinten über den Deckel schieben, bis sie am Kabelkamin einrastet; ihre zwei Pfosten gehen unter den Kabelbügeln an die hinteren Ecken des Gabelbodens – sie sperrt das Schwenken. Kamera, Wärmebild und Lampen bleiben vorne frei, die Kabel im Kamin werden nicht berührt. Beide Teile haben eine Öse: mit einer Schnur verbinden, dann geht keines verloren. Abnehmen: die Klammer an der Öse nach hinten ziehen, die Haube gerade nach oben abziehen. Vor dem Einschalten beide abnehmen.",
+      "en": "For transport: shut MoveEye down and disconnect the power. Turn the head by hand into the home position: it looks to the front towards PIR and microphone and is level. 1) Press hood 29 from above over head and lamps (status LED through the hole in the roof) until it clicks onto both lamp cups – it locks the tilt. 2) Slide pan lock clip 30 flat over the lid from the back until it clicks onto the cable chimney; its two posts go under the cable clips to the rear corners of the yoke base – it locks the pan. Camera, thermal camera and lamps stay free at the front, the cables in the chimney are not touched. Both parts have an eyelet: tie them together with a cord so neither gets lost. To remove: pull the clip backwards at its eyelet, pull the hood straight up. Remove both before switching on.",
+      "fr": "Pour le transport : arrêter MoveEye et couper le courant. Tourner la tête à la main en position de base : elle regarde vers l'avant, vers le PIR et le micro, et se tient à l'horizontale. 1) Presser le capot 29 par le haut sur la tête et les lampes (LED d'état dans le trou du toit) jusqu'à ce qu'il s'encliquette sur les deux godets – il bloque l'inclinaison. 2) Glisser la pince anti-rotation 30 à plat sur le couvercle par l'arrière jusqu'à ce qu'elle s'encliquette sur la cheminée ; ses deux montants passent sous les serre-câbles jusqu'aux coins arrière du socle de la fourche – elle bloque la rotation. Caméra, caméra thermique et lampes restent libres à l'avant, les câbles dans la cheminée ne sont pas touchés. Les deux pièces ont un œillet : les relier avec une cordelette pour ne rien perdre. Retirer : tirer la pince vers l'arrière par son œillet, tirer le capot droit vers le haut. Retirer les deux avant la mise sous tension.",
+      "it": "Per il trasporto: spegnere MoveEye e staccare la corrente. Girare a mano la testa nella posizione di base: guarda in avanti verso PIR e microfono ed è orizzontale. 1) Premere dall'alto il cappuccio 29 su testa e lampade (LED di stato nel foro del tetto) finché scatta su entrambi i bicchieri delle lampade – blocca l'inclinazione. 2) Far scorrere la clip blocca-rotazione 30 piatta sul coperchio da dietro finché scatta sul camino; i suoi due montanti passano sotto i fermacavi fino agli angoli posteriori della base della forcella – blocca la rotazione. Fotocamera, termocamera e lampade restano libere davanti, i cavi nel camino non vengono toccati. Entrambi i pezzi hanno un occhiello: legarli con un cordino così non si perdono. Per togliere: tirare la clip indietro per l'occhiello, tirare il cappuccio dritto verso l'alto. Togliere entrambi prima di accendere.",
+      "rm": "Per il transport: stizzar MoveEye e separar il current. Volver il chau a maun en la posiziun da basa: el guarda enavant vers il PIR ed il microfon ed è orizontal. 1) Smatgar la chapitscha 29 dad sura sur il chau e las lampas (LED da status tras la foura en il tetg), fin ch'ella s'encliquetescha vi dals dus bitschiers – ella bloccha l'inclinaziun. 2) Stuschar la clip cunter la rotaziun 30 plat sur il viertgel da davos, fin ch'ella s'encliquetescha vi dal chamin; ses dus pals van sut ils tegnacabels fin als chantuns davos da la basa da la furtga – ella bloccha la rotaziun. Camera, camera termica e lampas restan libras davant, ils cabels en il chamin na vegnan betg tutgads. Omadus parts han in ögl: als liar cun ina corda, uschia na va nagina a perder. Prender davent: trair la clip enavos vi da l'ögl, trair la chapitscha dretg ensi. Prender davent omaduas avant che metter en funcziun."
+     }
+    }
+   },
+   {
+    "id": "schale",
+    "titel": {
+     "de": "Schutzschale 31 / 32 mit Stopfen 33 (für den Rucksack, bis 5 kg obendrauf)",
+     "en": "Protective shell 31 / 32 with plug 33 (for the backpack, up to 5 kg on top)",
+     "fr": "Coque de protection 31 / 32 avec bouchon 33 (pour le sac à dos, jusqu'à 5 kg dessus)",
+     "it": "Guscio di protezione 31 / 32 con tappo 33 (per lo zaino, fino a 5 kg sopra)",
+     "rm": "Scussa da protecziun 31 / 32 cun zaffun 33 (per il rucsac, fin 5 kg sisura)"
+    },
+    "hinweis": {
+     "de": "PETG, ohne Stützen. Zusammen ca. 170 g, ca. 5,6 h (Schätzung, im Slicer nachsehen). Gummiring: flach ca. 150–170 mm lang (Umfang 300–340 mm), höchstens 2,5 mm breit, z. B. O-Ring 2 mm, Innen-Ø ca. 100 mm. Die Steckzapfen sind angedruckt (Ø 4 × 5 mm in Löcher Ø 4,4) – keine Zusatzteile. Schnur bis ca. 3 mm für den Stopfen. Sperrt Schwenken und Neigen: vor dem Einschalten abnehmen.",
+     "en": "PETG, no supports. Together about 170 g, about 5.6 h (estimate, check in the slicer). Rubber band: about 150–170 mm long laid flat (300–340 mm round), at most 2.5 mm wide, e.g. O-ring 2 mm, inner Ø about 100 mm. The pins are printed on (Ø 4 × 5 mm into holes Ø 4.4) – no extra parts. Cord up to about 3 mm for the plug. Locks pan and tilt: remove before switching on.",
+     "fr": "PETG, sans supports. Ensemble env. 170 g, env. 5,6 h (estimation, à vérifier dans le slicer). Élastique : env. 150–170 mm à plat (tour 300–340 mm), 2,5 mm de large au plus, p. ex. joint torique 2 mm, Ø intérieur env. 100 mm. Les tenons sont imprimés (Ø 4 × 5 mm dans des trous Ø 4,4) – aucune pièce en plus. Cordelette jusqu'à env. 3 mm pour le bouchon. Bloque rotation et inclinaison : retirer avant la mise sous tension.",
+     "it": "PETG, senza supporti. Insieme circa 170 g, circa 5,6 h (stima, controllare nello slicer). Elastico: circa 150–170 mm in piano (giro 300–340 mm), al massimo 2,5 mm di larghezza, p. es. O-ring 2 mm, Ø interno circa 100 mm. I perni sono stampati (Ø 4 × 5 mm in fori Ø 4,4) – nessun pezzo in più. Cordino fino a circa 3 mm per il tappo. Blocca rotazione e inclinazione: togliere prima di accendere.",
+     "rm": "PETG, senza sustegns. Ensemen var 170 g, var 5,6 h (stimaziun, guardar en il slicer). Gummi: plat var 150–170 mm lung (circumferenza 300–340 mm), maximalmain 2,5 mm lad, p.ex. O-ring 2 mm, Ø dadens var 100 mm. Las puntas èn stampadas vi (Ø 4 × 5 mm en fouras Ø 4,4) – naginas parts supplementaras. Corda fin var 3 mm per il zaffun. Bloccha la rotaziun e l'inclinaziun: prender davent avant che metter en funcziun."
+    },
+    "montage": {
+     "titel": {
+      "de": "Schutzschale aufsetzen / abnehmen",
+      "en": "Fit / remove the protective shell",
+      "fr": "Poser / retirer la coque de protection",
+      "it": "Montare / togliere il guscio di protezione",
+      "rm": "Metter / prender davent la scussa da protecziun"
+     },
+     "text": {
+      "de": "Für den Rucksack (bis 5 kg obendrauf): MoveEye herunterfahren und den Strom trennen. Den Kopf von Hand in die Grundstellung drehen: er schaut nach vorne zu PIR und Mikrofon und steht waagrecht. Haube 29 und Klammer 30 braucht es unter der Schale nicht. 1) Die hintere Hälfte 32 von hinten flach auf dem Deckel nach vorne schieben, bis sie am Kabelkamin ansteht – ihre zwei Rippen liegen dann hinten am Kopf an. 2) Die vordere Hälfte 31 von vorne aufschieben, bis die vier Zapfen in den Löchern der hinteren Hälfte sitzen und die Teilung rundum anliegt. 3) Den Gummiring unten rundum in die Nut legen; er hält beide Hälften zusammen. 4) Den Stopfen 33 ins Sichtfenster drücken, bis er einrastet, und mit einer Schnur durch seine Öse und das Loch unter dem Fenster sichern. Ohne Stopfen sehen Kamera und Wärmebild frei durch das Fenster; die Lampen bleiben abgedeckt. Die Schale sperrt Schwenken und Neigen: vor dem Einschalten abnehmen, sonst drücken die Servos gegen die Rippen. Abnehmen: Gummiring ab, die vordere Hälfte nach vorne, die hintere nach hinten abziehen.",
+      "en": "For the backpack (up to 5 kg on top): shut MoveEye down and disconnect the power. Turn the head by hand into the home position: it looks to the front towards PIR and microphone and is level. Hood 29 and clip 30 are not needed under the shell. 1) Slide rear half 32 flat over the lid from the back towards the front until it stops at the cable chimney – its two ribs then rest against the back of the head. 2) Slide front half 31 on from the front until the four pins sit in the holes of the rear half and the joint closes all round. 3) Lay the rubber band all round into the groove at the bottom; it holds both halves together. 4) Press plug 33 into the window until it clicks and secure it with a cord through its eyelet and the hole below the window. Without the plug, camera and thermal camera see freely through the window; the lamps stay covered. The shell locks pan and tilt: remove it before switching on, otherwise the servos push against the ribs. To remove: take off the rubber band, pull the front half forwards and the rear half backwards.",
+      "fr": "Pour le sac à dos (jusqu'à 5 kg dessus) : arrêter MoveEye et couper le courant. Tourner la tête à la main en position de base : elle regarde vers l'avant, vers le PIR et le micro, et se tient à l'horizontale. Le capot 29 et la pince 30 ne sont pas nécessaires sous la coque. 1) Glisser la moitié arrière 32 à plat sur le couvercle, de l'arrière vers l'avant, jusqu'à la cheminée – ses deux nervures touchent alors l'arrière de la tête. 2) Glisser la moitié avant 31 par l'avant jusqu'à ce que les quatre tenons entrent dans les trous de la moitié arrière et que le joint soit fermé tout autour. 3) Poser l'élastique tout autour dans la rainure en bas ; il tient les deux moitiés ensemble. 4) Presser le bouchon 33 dans la fenêtre jusqu'au clic et l'attacher avec une cordelette passant par son œillet et le trou sous la fenêtre. Sans bouchon, la caméra et la caméra thermique voient librement par la fenêtre ; les lampes restent couvertes. La coque bloque rotation et inclinaison : la retirer avant la mise sous tension, sinon les servos poussent contre les nervures. Retirer : enlever l'élastique, tirer la moitié avant vers l'avant et la moitié arrière vers l'arrière.",
+      "it": "Per lo zaino (fino a 5 kg sopra): spegnere MoveEye e staccare la corrente. Girare a mano la testa nella posizione di base: guarda in avanti verso PIR e microfono ed è orizzontale. Il cappuccio 29 e la clip 30 non servono sotto il guscio. 1) Far scorrere la metà posteriore 32 piatta sul coperchio da dietro in avanti fino al camino – le sue due nervature toccano allora il retro della testa. 2) Far scorrere la metà anteriore 31 da davanti finché i quattro perni entrano nei fori della metà posteriore e la giunzione è chiusa tutt'intorno. 3) Mettere l'elastico tutt'intorno nella scanalatura in basso; tiene insieme le due metà. 4) Premere il tappo 33 nella finestra finché scatta e fissarlo con un cordino attraverso il suo occhiello e il foro sotto la finestra. Senza tappo fotocamera e termocamera vedono liberamente attraverso la finestra; le lampade restano coperte. Il guscio blocca rotazione e inclinazione: toglierlo prima di accendere, altrimenti i servo spingono contro le nervature. Per togliere: levare l'elastico, tirare la metà anteriore in avanti e quella posteriore indietro.",
+      "rm": "Per il rucsac (fin 5 kg sisura): stizzar MoveEye e separar il current. Volver il chau a maun en la posiziun da basa: el guarda enavant vers il PIR ed il microfon ed è orizontal. La chapitscha 29 e la clip 30 na dovri betg sut la scussa. 1) Stuschar la mesadad davos 32 plat sur il viertgel da davos enavant, fin ch'ella tutga il chamin – sias duas nervaturas tutgan lura il chau davos. 2) Stuschar la mesadad davant 31 da davant, fin che las quatter puntas èn en las fouras da la mesadad davos e la giuntura è serrada dapertut. 3) Metter il gummi dapertut en la foppa sut; el tegna ensemen omaduas mesadads. 4) Smatgar il zaffun 33 en la fanestra, fin ch'el s'encliquetescha, e l'assicurar cun ina corda tras ses ögl e la foura sut la fanestra. Senza zaffun vesan la camera e la camera termica liber tras la fanestra; las lampas restan cuvertas. La scussa bloccha la rotaziun e l'inclinaziun: la prender davent avant che metter en funcziun, uschiglio smatgan ils servos cunter las nervaturas. Prender davent: prender giu il gummi, trair la mesadad davant enavant e la mesadad davos enavos."
+     }
+    }
+   }
+  ],
+  "teile": [
+   {
+    "datei": "29_Transportsicherung",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 5,
+    "zeit_h": 1.0,
+    "liegt": {
+     "de": "Dach unten (umgedreht)",
+     "en": "roof down (upside down)",
+     "fr": "toit en bas (retourné)",
+     "it": "tetto in basso (capovolto)",
+     "rm": "tetg sut (volvì)"
+    },
+    "gruppe": "haube"
+   },
+   {
+    "datei": "30_Drehsperre_Klammer",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 0.3,
+    "liegt": {
+     "de": "flach, wie eingebaut",
+     "en": "flat, as fitted",
+     "fr": "à plat, comme montée",
+     "it": "piatta, come montata",
+     "rm": "plat, sco montà"
+    },
+    "gruppe": "haube"
+   },
+   {
+    "datei": "31_Schutzschale_vorne",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 1.9,
+    "liegt": {
+     "de": "Stirnseite (Fenster) unten",
+     "en": "front face (window) down",
+     "fr": "face avant (fenêtre) en bas",
+     "it": "lato frontale (finestra) in basso",
+     "rm": "vart davant (fanestra) sut"
+    },
+    "gruppe": "schale"
+   },
+   {
+    "datei": "32_Schutzschale_hinten",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 5,
+    "zeit_h": 3.3,
+    "liegt": {
+     "de": "Rückseite unten",
+     "en": "back face down",
+     "fr": "face arrière en bas",
+     "it": "lato posteriore in basso",
+     "rm": "vart davos sut"
+    },
+    "gruppe": "schale"
+   },
+   {
+    "datei": "33_Schutzschale_Stopfen",
+    "stueck": 1,
+    "fuellung": 15,
+    "waende": 3,
+    "stuetzen": false,
+    "schicht": "0.20",
+    "brim": 0,
+    "zeit_h": 0.4,
+    "liegt": {
+     "de": "Platte unten",
+     "en": "plate down",
+     "fr": "plaque en bas",
+     "it": "piastra in basso",
+     "rm": "plattina sut"
+    },
+    "gruppe": "schale"
+   }
+  ],
+  "dateien": [
+   "v5-3/MoveEye_v5-3_29_Transportsicherung.3mf",
+   "v5-3/MoveEye_v5-3_30_Drehsperre_Klammer.3mf",
+   "v5-3/MoveEye_v5-3_31_Schutzschale_vorne.3mf",
+   "v5-3/MoveEye_v5-3_32_Schutzschale_hinten.3mf",
+   "v5-3/MoveEye_v5-3_33_Schutzschale_Stopfen.3mf"
   ]
  }
 }

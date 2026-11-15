@@ -184,17 +184,19 @@ def hp_list():
 
 # ---- the content -------------------------------------------------------------------------------------------------------------
 def hp_funk_files():
-    """the 6 files of the PWA «Handy-Funkgerät» - the same bytes as funk/ in the repository (werkzeuge/funk_pwa.py)"""
+    """the 7 files of the PWA «Handy-Funkgerät» - the same bytes as funk/ in the repository (werkzeuge/funk_pwa.py);
+    4.0.0: + stego.js (the page loads it for «🔏 Bild», 639zzzzc STEGO_JS)"""
     import base64
     import hashlib
     html = funk_page("pwa").encode("utf-8")
-    ver = hashlib.sha256(html).hexdigest()[:12]
+    js = STEGO_JS.encode("utf-8")
+    ver = hashlib.sha256(html + js).hexdigest()[:12]
     man = {"name": "Handy-Funkgerät", "short_name": "Funk", "description": "Morse und das eigene Protokoll mit zwei Tönen über ein Handfunkgerät (MoveEye)",
            "lang": "de", "start_url": "./", "scope": "./", "display": "standalone", "background_color": "#111418", "theme_color": "#111418",
            "icons": [{"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
                      {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}]}
     out = {"index.html": html, "manifest.webmanifest": (json.dumps(man, ensure_ascii=False, indent=1) + "\n").encode("utf-8"),
-           "sw.js": HP_FUNK_SW_JS.replace("@VER@", ver).encode("utf-8")}
+           "sw.js": HP_FUNK_SW_JS.replace("@VER@", ver).encode("utf-8"), "stego.js": js}
     try:
         out.update({k: base64.b64decode(v) for k, v in json.loads(HP_FUNK_PNG).items()})
     except (ValueError, TypeError):
@@ -868,7 +870,7 @@ _HP_DE = {_k: DE.get(_k, _v[0]) for _k, _v in HP_TEXTS.items()}
 HP_FUNK_SW_JS = ("// Service Worker der Seite «Handy-Funkgerät» (erzeugt von werkzeuge/funk_pwa.py): alles aus dem Speicher, damit die Seite\n"
                  "// nach dem ersten Laden ohne Internet geht. Eine neue Seite = ein neuer Name des Speichers (die alte wird gelöscht).\n"
                  "const C = 'funk-@VER@';\n"
-                 "const TEILE = [\"./\", \"index.html\", \"manifest.webmanifest\", \"icon-192.png\", \"icon-512.png\", \"apple-touch-icon.png\"];\n"
+                 "const TEILE = [\"./\", \"index.html\", \"manifest.webmanifest\", \"icon-192.png\", \"icon-512.png\", \"apple-touch-icon.png\", \"stego.js\"];\n"
                  "self.addEventListener('install', e => { e.waitUntil(caches.open(C).then(c => c.addAll(TEILE)).then(() => self.skipWaiting())); });\n"
                  "self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C).map(k => caches.delete(k))))\n"
                  "  .then(() => self.clients.claim())); });\n"
@@ -1102,7 +1104,8 @@ def homepage_selftest():
     assert any("wasm-unsafe-eval" in k for k, _ in hp_csp("script-src 'self' 'unsafe-inline'", o))
     assert not hp_csp("default-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'", o)
     f = hp_funk_files()
-    assert set(f) == {"index.html", "manifest.webmanifest", "sw.js", "icon-192.png", "icon-512.png", "apple-touch-icon.png"}, sorted(f)
+    assert set(f) == {"index.html", "manifest.webmanifest", "sw.js", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "stego.js"}, sorted(f)
+    assert b'"stego.js"' in f["sw.js"] and b'<script src="stego.js"></script>' in f["index.html"] and b"MWStego" in f["stego.js"]
     assert all(_HP_NAME_RE.match(n) for n in f) and all(_HP_NAME_RE.match(n) for n in HP_SIM_NAMES)
     assert "Funk/" in HP_INDEX_HTML and "Sim/" in HP_INDEX_HTML and "index_audio_worklet.js" in HP_TEST_HTML
     k0 = CFG.get("hp_key")

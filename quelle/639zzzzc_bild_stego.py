@@ -12,7 +12,8 @@
 #   ist nichts mehr als Rauschen zu sehen. Falscher Schlüssel / beschädigtes Bild → «keine Botschaft gefunden oder
 #   falscher Schlüssel» (mit Absicht nicht zu unterscheiden). JPEG wird dekodiert, Ausgabe ist immer PNG.
 #   Der Schlüssel und der Text bleiben im Browser (WebCrypto); der Server bekommt sie nie, nichts davon wird
-#   protokolliert. Das Modul funk/stego.js braucht kein Netz; die Seite «Handy-Funkgerät» lädt es erst ab Phase 2.
+#   protokolliert. Das Modul funk/stego.js braucht kein Netz; die Seite «Handy-Funkgerät» (📡) hat damit den Reiter «🔏 Bild»
+#   (funk/ lädt stego.js neben der Seite und hält es im Service Worker; MoveEye und die Einzeldatei haben es eingebettet).
 # Der Python-Kern unten ist bitgleich zu funk/stego.js (gemeinsamer Test-Vektor, werkzeuge/stego_test.py). Er steht
 # für die Prüfung auf dem Gerät und als zweiter Weg bereit (der Browser rechnet im Normalfall selbst).
 # Tests: werkzeuge/stego_test.py (Python↔node, mehrere Grössen, Grenze, falscher Schlüssel, geänderter Bereich,
@@ -258,7 +259,7 @@ def bild_reveal_image(image_bytes, pw):
 # ---- das Modul für den Browser (wortgetreu funk/stego.js; bauen.py legt dieses grosse Literal in die Zusatzdatei) ----
 STEGO_JS = r"""/* MoveEye – «Botschaft im Bild» (Steganographie) – ein eigenständiges Modul, das im Browser (WebCrypto,
    Canvas) und in node (crypto.subtle, zlib) gleich rechnet. Es wird im «Digitalen Rucksack» eingebaut und
-   braucht kein Netz; auf der Seite «Handy-Funkgerät» lädt es erst Phase 2. Für den Besitzer von MoveEye gemacht.
+   braucht kein Netz und läuft auch offline auf der Seite «Handy-Funkgerät» («🔏 Bild»). Für den Besitzer von MoveEye gemacht.
 
    Format (bitgleich zur Python-Seite quelle/639zzzzc_bild_stego.py):
      Schlüssel k = PBKDF2-HMAC-SHA256(Passwort, "MoveEye-Bild-v1"+salt, 200000, 32 Byte)
