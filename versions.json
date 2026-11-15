@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-15 21:18",
+ "generated": "2026-11-15 23:35",
  "versions": [
+  {
+   "version": "4.8.0",
+   "file": "webcam_bewegung_4_8_0.py",
+   "url": "",
+   "sha256": "fab8aafffe8a17dac270925b1e904580fe8463459500dee630fd06ec02f2a98b",
+   "date": "2026-11-15 23:35",
+   "notes": "Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt hoch) · Spielesammlung GS-1.25: «Verschollen im Bergtal» zeigt den Fortschritt pro Kapitel (oben und im Menü) und läuft bis 16× schnell; in «Gipfeltreffen» trifft Antippen am Handy wieder die richtige Stelle",
+   "size": 3957146,
+   "sig": "c1c73cddd00bf6615a9df3ae1295343647e3ace0e5e808137c2e78775fffe71b7a348876e26b73ae31f10e35f620da17ca715e1085aac8e7ea157cbfffe20e0b",
+   "data": {
+    "file": "moveeye_daten_4_8_0.zip",
+    "url": "",
+    "sha256": "bb1b8d40de731391cf3bd8be3ed809f3bfdfb6336e433dc77b8e825f406ee99a",
+    "size": 13603898,
+    "sig": "a5e3df59cc77e94d1cca18d3706f2adfb1fb5a5604ac697ce5fffe70ebf41901a534cf2361bc7e1e2bcd8439994a12fe7a9a2558c4ed666328e31382f577f90d"
+   }
+  },
   {
    "version": "4.7.0",
    "file": "webcam_bewegung_4_7_0.py",
@@ -136,23 +153,6 @@
     "sha256": "da29d79e3b7f11319d093a0b4c42c654f77d98ed9118bfa8a26ca50bdcc14212",
     "size": 13351123,
     "sig": "144d825d48bfb659dedcbca9d4ae80f93ff04e903898e8ce1bab336991c217a7d68e513603434e27063accdf7b57ffc88cffdd56ab1a4fd6e3fe208b53579b04"
-   }
-  },
-  {
-   "version": "3.99.0",
-   "file": "webcam_bewegung_3_99_0.py",
-   "url": "",
-   "sha256": "4bd3f05a413031ccb1a7be4299a35110db39c1baff0313fb5063bf44e73e6420",
-   "date": "2026-11-15 15:14",
-   "notes": "Zwei Teile. (1) «📻 Radio» (Mehr → Unterwegs): Internet-Radio über den Lautsprecher, Sender suchen im offenen Verzeichnis radio-browser.info, Einschlaf-Timer, Radio als Wecker; Sirene, Ansagen, Gegensprechen und Morse haben Vorrang. (2) «🏠 Apple Home» (Beta, Einstellungen → Netz & Zugang, nur Admin, ab Werk aus): Kamera, Bewegungsmelder, Schutz, Kopf und Licht in der Home-App über Homebridge; Ausschalten mit PIN bleibt abgelehnt, ausser der Besitzer erlaubt es.",
-   "size": 3867512,
-   "sig": "4a88120cc320e61c52bf4fdc474a0741c20582d824eccf696e53c0796b45fd5490b18a02622bd9fa96a8d53de4e7975eda9e6aa50be8630de979d8be78395f0a",
-   "data": {
-    "file": "moveeye_daten_3_99_0.zip",
-    "url": "",
-    "sha256": "04f8f47ecdaee848e9130a8ac3477273ffd2811305ae7ed18939a2e381937c0d",
-    "size": 12921529,
-    "sig": "454f71ded4ad7678c176603a6e9428bdf4496e4dcff51f5a78629be5ee5509f782b1f61c43e13776239bcb7a889e965b08c8996aa1e086d36eb5be4864d5a00b"
    }
   },
   {
