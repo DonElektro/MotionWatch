@@ -2254,7 +2254,8 @@ def _ms_tk_search(self):
 
 
 def _ms_tk_tab(self, tid):
-    self._ms_cur = None                                        # another tab: the rows of that tab
+    self._ms_cur = getattr(self, "_ms_next", None)             # another tab: the rows of that tab (a favourite may name its topic, 639zzzi)
+    self._ms_next = None
     return _ms_tk_tab_before(self, tid)
 
 

@@ -1046,6 +1046,10 @@ class App:
         body.columnconfigure(0, weight=1); body.rowconfigure(0, weight=1)
         if self.tab not in [t for t, _ in self._tabs()]:
             self.tab = "live"
+        if self.tab == "fav" and getattr(self, "_fav_tk", None):   # 639zzzi: the tab ★
+            self.left_f = None
+            self._fav_tk(body)
+            return
         if self.tab in TK_PANEL_TABS:                     # 2.98.14: Schutz / Einstellungen / Simulator: the settings over the whole width
             self.left_f = None
             prev_ = dict(self._open_before if getattr(self, "_open_before", None) is not None else getattr(self, "_shown", {}))
