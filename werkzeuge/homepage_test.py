@@ -9,8 +9,8 @@ Content-Security-Policy (connect-src 'none', script-src ohne 'wasm-unsafe-eval')
 
 Geprüft: nur der Admin (Seite, API, /api/set, Eintrag unter «Mehr»); der Schlüssel steht nirgends ausser in der
 Einstellungs-Datei (Zustand, Status, Protokoll, alle anderen Dateien, Export für Nicht-Admins, Fehlertexte des Servers); alles
-hochgeladen (Funk/ = funk/ des Repositorys, Sim/ = sim-web.zip, test.html; die Startseite nur mit dem Schalter «Startseite mit
-hochladen», ab Werk aus: dann weder hochgeladen noch gelöscht, die Prüfung überspringt sie); nur Geändertes; nur eigene Dateien
+hochgeladen (Funk/ = funk/ des Repositorys, Sim/ = sim-web.zip, test.html; drei Schalter Startseite (ab Werk aus) /
+Funkgerät / Simulator (ab Werk an): ein Teil aus = weder hochgeladen noch gelöscht, die Prüfung überspringt ihn, alle aus = gesperrt); nur Geändertes; nur eigene Dateien
 gelöscht; falscher Schlüssel, Platz voll, zu grosse Datei; Wiederholen nach 500; Umleitung beim Hochladen nie befolgt; die
 Prüfung findet 404, Umleitung auf andere Herkunft, falschen Typ, nosniff und die CSP-Sperren; automatisch nur, wenn sich der
 Inhalt geändert hat, nie während eines Alarms; das Paket sim-web.zip nur mit der signierten Prüfsumme (Teil 300 «anhang.web»),
@@ -363,7 +363,7 @@ def lauf(datei, tmp):
     ok(rows3 and rows3[0] == "Startseite: nicht hochgeladen (aus)" and not any(r.startswith(("/:", "index.html:")) for r in rows3)
        and not any(x[0] == "GET" and x[1] in ("/moveeye/", "/moveeye/index.html") for x in W.log), f"Prüfung überspringt die Startseite: {rows3[:3]}")
     pg = c.get("/homepage", headers=H["admin"]).get_data(as_text=True)
-    ok('id="hp-start"' in pg and "Startseite mit hochladen" in pg, "Schalter «Startseite mit hochladen» auf der Seite")
+    ok('id="hp-start"' in pg and "Öffentlich auf der Homepage" in pg, "Schalter «Startseite» unter «Öffentlich auf der Homepage» auf der Seite")
     cid_off = ns["hp_content_id"]()
     code, j = api("admin", {"action": "start_on", "on": True})
     ok(code == 200 and CFG["hp_start_on"] is True and j.get("start_on") is True and ns["hp_content_id"]() != cid_off, "Schalter an: anderer Inhalt (hp_content_id)")
@@ -439,6 +439,53 @@ def lauf(datei, tmp):
     n0 = len(W.uploads())
     api("admin", {"action": "publish"})
     ok("Sim/alt_index.js" not in W.files and W.files.get("sim/index.html") and W.files.get("Sim/eigene.txt"), "nur eigene alte Datei gelöscht (sim/ und fremde bleiben)")
+
+    print("5b) drei Schalter: Funkgerät / Simulator einzeln aus, alle aus", flush=True)
+    ok(CFG["hp_funk_on"] is True and CFG["hp_sim_on"] is True and ns["DEFAULTS"]["hp_funk_on"] is True and ns["DEFAULTS"]["hp_sim_on"] is True,
+       "ab Werk: Funkgerät und Simulator an")
+    api("admin", {"action": "publish"})
+    for part, pre, wort in (("funk", "Funk/", "Funkgerät (Funk/)"), ("sim", "Sim/", "Simulator (Sim/ + Test-Seite)")):
+        mine = {p: b for p, b in W.files.items() if p.startswith(pre)}
+        up0 = {p: v for p, v in ns["hp_state"]()["up"].items() if p.startswith(pre)}
+        cid_on = ns["hp_content_id"]()
+        code, j = api("admin", {"action": part + "_on", "on": False})
+        ok(code == 200 and CFG["hp_" + part + "_on"] is False and j.get(part + "_on") is False and ns["hp_content_id"]() != cid_on,
+           f"{part} aus: Status und anderer Inhalt (hp_content_id)")
+        weg = sorted(p for p in up0 if p in mine)[0]                  # eine eigene Datei (nicht die fremde Sim/eigene.txt)
+        W.files.pop(weg)                                              # auf dem Webspace weg: aus = trotzdem nicht hochgeladen
+        n0, nl = len(W.uploads()), len(W.log)
+        code, j = api("admin", {"action": "publish"})
+        ok(not j.get("err") and not any(x[2].startswith(pre) for x in W.uploads()[n0:]), f"{part} aus: nichts von {pre} hochgeladen")
+        ok(not any(x[0] == "DELETE" for x in W.log[nl:]) and all(W.files.get(p) == b for p, b in mine.items() if p != weg),
+           f"{part} aus: nichts gelöscht")
+        ok({p: v for p, v in ns["hp_state"]()["up"].items() if p.startswith(pre)} == up0, f"{part} aus: eigene Liste unverändert")
+        rows = [r["line"] for r in fmt(ns, j)["rows"]]
+        ok(wort + ": nicht hochgeladen (aus)" in rows and not any(r.startswith(pre) for r in rows)
+           and not any(x[0] == "GET" and x[1].startswith("/moveeye/" + pre) for x in W.log[nl:]), f"{part} aus: Prüfung überspringt {pre}: {rows[:4]}")
+        api("admin", {"action": part + "_on", "on": True})
+        n0 = len(W.uploads())
+        ok(ns["hp_auto_tick"]() is True, f"{part} wieder an: automatisch ein Lauf")
+        warte(HP)
+        ok([x[2] for x in W.uploads()[n0:]] == [weg] and W.files.get(weg) == mine[weg], f"{part} wieder an: {weg} hochgeladen ({[x[2] for x in W.uploads()[n0:]]})")
+    for part in ("start", "funk", "sim"):
+        api("admin", {"action": part + "_on", "on": False})
+    n0, nl = len(W.uploads()), len(W.log)
+    code, j = api("admin", {"action": "publish"})
+    ok(code == 400 and "Nichts gewählt" in j.get("error", "") and len(W.uploads()) == n0, f"alle aus: nicht veröffentlichen ({code} {j.get('error')})")
+    ok(ns["hp_auto_tick"]() is False and not any(x[0] == "DELETE" for x in W.log[nl:]), "alle aus: kein automatischer Lauf, nichts gelöscht")
+    import subprocess
+    D = {k: ns["tr"](k, "de") for k in ns["HP_TEXTS"]}
+    js = ns["HP_FMT_JS"] + "\nconst D = " + json.dumps(D) + ", t = k => D[k] || k;\nconsole.log(JSON.stringify([hpIntro({}, t), " + \
+        "hpIntro({funk_on: true, sim_on: true}, t), hpIntro({start_on: true, funk_on: true, sim_on: true}, t)]));"
+    r = subprocess.run(["node", "-e", js], capture_output=True, text=True, timeout=60)
+    I = json.loads(r.stdout) if r.returncode == 0 else ["", "", ""]
+    ok(I[0].startswith("Nichts gewählt") and I[1] == "MoveEye lädt auf deinen Webspace: Handy-Funkgerät (Funk/) und Simulator im Browser mit Test-Seite (Sim/)."
+       and I[2].startswith("MoveEye lädt auf deinen Webspace: Startseite, Handy-Funkgerät"), f"Text oben nennt die Auswahl: {I}")
+    pg = c.get("/homepage", headers=H["admin"]).get_data(as_text=True)
+    ok(all(f'id="{x}"' in pg for x in ("hp-start", "hp-funk", "hp-sim-on", "hp-none")), "drei Schalter + Hinweis auf der Seite")
+    for part in ("start", "funk", "sim"):
+        api("admin", {"action": part + "_on", "on": True})
+    api("admin", {"action": "publish"})
 
     print("6) Retry, Umleitung, falscher Schlüssel, Platz, zu gross", flush=True)
     W.files.pop("Funk/index.html")
