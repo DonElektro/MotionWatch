@@ -156,7 +156,7 @@ while True:
     n += len(b)
     with open(f, "w") as o:
         o.write(str(n))
-    time.sleep(len(b) / 2 / float(sys.argv[2]) * 0.5)
+    time.sleep(len(b) / 2 / float(sys.argv[2]) * 0.8)
 '''
 
 
@@ -327,14 +327,15 @@ def teil_a(datei, tmp):
     ok(wait(lambda: VL["held"] == "alarm", 3), "Alarm: Pause")
     VL["alarm_t"] = 0.0
     ok(wait(lambda: VL["held"] == ""), "nach dem Alarm: weiter")
-    post("Anna", "/api/vorlesen", {"action": "pause"}); ok(wait(lambda: VL["held"] == "pause"), "⏸ Pause")
+    post("Anna", "/api/vorlesen", {"action": "seek", "c": 0, "s": 0})   # a fast machine: the short story is not over before the buttons
+    post("Anna", "/api/vorlesen", {"action": "pause"}); ok(wait(lambda: VL["held"] == "pause"), "⏸ Pause (%s)" % VL["state"])
     post("Anna", "/api/vorlesen", {"action": "resume"}); ok(wait(lambda: VL["held"] == ""), "▶ weiter")
-    post("Anna", "/api/vorlesen", {"action": "seek", "c": 2, "s": 0}); ok(wait(lambda: VL["c"] == 2), "⏭ springen")
+    post("Anna", "/api/vorlesen", {"action": "seek", "c": 2, "s": 0}); ok(wait(lambda: VL["c"] == 2), "⏭ springen (%s)" % VL["state"])
     post("Anna", "/api/vorlesen", {"action": "volume", "v": 33}); ok(CFG["vl_volume"] == 33, "Lautstärke")
     # radio <-> reading
     keep_rp = ns["_radio_play_vl"]; ns["_radio_play_vl"] = lambda *a, **k: (True, "")
     ns["radio_play"]("pilatus")
-    ok(not VL["want"] and VL["state"] == "off", "Radio startet: Vorlesen stoppt")
+    ok(not VL["want"] and VL["state"] == "off", "Radio startet: Vorlesen stoppt (%s)" % VL["state"])
     ok(wait(lambda: VL["out"] is None and not [d for d in os.listdir("/proc") if d.isdigit() and _cmd(d).endswith("mwvlsink")], 4), "Stopp: kein Lautsprecher-Prozess mehr")
     ns["_radio_play_vl"] = keep_rp
     _c, j = get("Anna", "/api/vorlesen?bms=1"); ok(j["bms"][F["Fuchs.txt"]]["c"] == 2, "Lesezeichen beim Stopp gesichert")
@@ -451,6 +452,7 @@ def teil_b(datei, tmp, bilder):
                 ctx.add_init_script("try{localStorage.setItem('mw-lang','de');localStorage.setItem('mw-theme','dark');localStorage.setItem('tausch-view','list')}catch(e){}")
                 g = ctx.new_page(); g.on("pageerror", lambda e, nm=nm: errs.append(nm + ": " + str(e)[:200]))
                 g.goto(base + "/tausch#dateien"); g.wait_for_selector(".tz-it", timeout=20000); g.wait_for_timeout(1500)
+                _wait(g, "() => document.querySelectorAll('a.vl-chip').length >= 5 && !!document.getElementById('vl-cont')", 20)   # a busy machine: the list comes late
                 ok(g.locator("a.vl-chip").count() == 5, f"{nm}: «🔊 Vorlesen» bei 5 Geschichten ({g.locator('a.vl-chip').count()})")
                 ok(g.locator("#vl-cont").count() == 1 and ("Fuchs" if mob else "Bergtal") in g.inner_text("#vl-cont"), f"{nm}: «▶ Weiter» oben (das zuletzt Gelesene)")
                 ok("Kap. 2" in g.inner_text(f'a.vl-chip[data-vl="{F["Fuchs.txt"]}"]'), f"{nm}: Lesezeichen am Knopf")
