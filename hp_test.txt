@@ -1,0 +1,4 @@
+# Handy-Hotspot bevorzugen (639zzzzf): bauen, eigener Test mit Browser, Grundprüfungen
+python3 werkzeuge/bauen.py
+python3 werkzeuge/hotspot_bevorzugen_test.py --browser
+python3 werkzeuge/ci_lauf.py --gruppe basis
