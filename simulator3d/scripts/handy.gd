@@ -489,6 +489,14 @@ func _layout() -> void:
 		big.size = Vector2(bw, minf(bh, 44.0 + 6.0 + inner + 22.0 + sb_h) if inner > 0.0 else bh)
 		if not ls:                                       # hoch: die runden Knöpfe rücken unter das grosse Fenster
 			win_box.position = Vector2(10, big.position.y + big.size.y + 10)
+		else:                                            # quer: der Hinweis oben («MoveEye (Demo) · Wachsam») bleibt lesbar
+			var x0: float = big.position.x + big.size.x + 8.0
+			if fr.size.x - x0 >= top.size.x + 8.0:       # rechts neben dem Fenster
+				top.position = Vector2(roundf(x0 + (fr.size.x - x0 - top.size.x) / 2.0), 10)
+			else:                                        # kein Platz daneben: das Fenster beginnt unter dem Hinweis
+				var y0: float = top.position.y + top.size.y + 6.0
+				big.position.y = y0
+				big.size.y = minf(big.size.y, vs.y - y0 - 10.0)
 	if panel_x.visible:
 		panel_x.position = Vector2(8, 8)
 
@@ -717,10 +725,10 @@ func _paint_scenes() -> void:
 		for s in rows:
 			var id: String = s[0]
 			var info: String = Tpl.SCENE_INFO.get(id, "")
-			if q != "" and not (str(s[1]).to_lower().contains(q) or info.to_lower().contains(q)):
+			if q != "" and not (T.t(str(s[1])).to_lower().contains(q) or T.t(info).to_lower().contains(q) or str(s[1]).to_lower().contains(q)):
 				continue
 			var cur_s: bool = id == main.scene or (id == W.world_of(main.scene) and not W.is_place(id))
-			_row(_scene_list, ("↳ " if s[2] else "") + str(s[1]), info, func(): _pick_scene(id), cur_s, id in Tpl.NEW_SCENES)
+			_row(_scene_list, ("↳ " if s[2] else "") + T.t(str(s[1])), info, func(): _pick_scene(id), cur_s, id in Tpl.NEW_SCENES)   # «↳ » vor dem Übersetzen fände nichts
 
 
 func _pick_scene(id: String) -> void:
