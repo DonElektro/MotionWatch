@@ -1624,7 +1624,13 @@ Object.assign(I18N.de, /*VLDE*/{});
   const when = s => { const d = new Date(s * 1000); return d.toLocaleDateString() + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2); };
   let BMS = {};
   const chipTxt = (a, id) => { a.textContent = "🔊 " + t("Read aloud"); const b = BMS[id]; if (b) a.appendChild(E("i", "", "🔖 " + t("Ch.") + " " + (b.c + 1) + " · " + b.pct + " %")); };
+  // Hooks chained (also «Eigene Orte» 639zzzzo): a part that holds the hook as getter / setter calls this one itself,
+  // otherwise an earlier plain hook is called first (tzCard) or when this one does not open the file (tzOpen).
+  const acc = n => { const d = Object.getOwnPropertyDescriptor(window, n); return !!(d && d.get); };
+  const pc = !acc("tzCard") && typeof window.tzCard === "function" ? window.tzCard : null;
+  const po = !acc("tzOpen") && typeof window.tzOpen === "function" ? window.tzOpen : null;
   window.tzCard = function (f, it, tx, th) {
+    if (pc) { try { pc(f, it, tx, th); } catch (e) {} }
     if (f.ext === "epub" && !f.thumb && th && !th.querySelector("img")) th.textContent = "📖";
     if (!RD.has(f.ext) || !f.dl) return;
     const a = E("a", "vl-chip"); a.href = "/vorlesen?id=" + f.id; a.dataset.vl = f.id; chipTxt(a, f.id); tx.appendChild(a);
@@ -1743,7 +1749,8 @@ Object.assign(I18N.de, /*VLDE*/{});
     if (f.dl) { const a = E("a", "btn", "⬇ " + t("Download")); a.href = "/tausch/dl/" + f.id; a.setAttribute("download", ""); u.appendChild(a); }
     V.bd.appendChild(u);
   }
-  window.tzOpen = function (f, H) {
+  window.tzOpen = function (f, H) { if (vlOpen(f, H)) return true; return po ? po(f, H) : false; };
+  const vlOpen = function (f, H) {
     if (f.kind === "video" || f.kind === "audio" || f.kind === "chat") return false;
     if (f.kind === "image") return false;                // pictures: the preview of 639zzc (with 🌿 Bestimmen) stays
     if (!f.dl || f.risky || (!RD.has(f.ext) && f.kind !== "text" && !["csv", "tsv", "json"].includes(f.ext) && f.kind !== "doc") || OFFICE.has(f.ext)) {
@@ -2010,6 +2017,7 @@ def vorlesen_selftest():
     assert h_.count('id="mwk-read"') == 1 and h_.count('id="mwk-radio"') == 1, "📖 and 📻 in the header"
     p_ = render_page(VL_PAGE, "more")
     assert "/*VLDE*/" not in p_ and "/*VLPLAYER*/" not in p_ and "window.mwReadP = " in p_ and DE["Read aloud"] in p_
+    assert "getOwnPropertyDescriptor(window, n)" in VL_TZ_JS and "if (pc) { try { pc(" in VL_TZ_JS and "po ? po(f, H) : false" in VL_TZ_JS, "hooks chained"
     assert tausch_page_html().count("window.tzCard = function") == 1 and "/*VLDE*/" not in tausch_page_html(), "the viewer in /tausch"
     assert HELP_PAGE.count('id="vorlesen"') == 2 or '<section id="tips"' not in HELP_PAGE, "manual de / en"
     return "sentences, chapters, Markdown, epub HTML, priority (siren / alarm / announcement), rights, texts, pages"
