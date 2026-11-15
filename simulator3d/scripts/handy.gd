@@ -375,6 +375,8 @@ func _set_on(v: bool) -> void:
 		for c in _hideables():
 			if c != null and is_instance_valid(c):
 				_was[c] = (c as CanvasItem).visible
+				if not (c as CanvasItem).visibility_changed.is_connected(_rehide):
+					(c as CanvasItem).visibility_changed.connect(_rehide.bind(c))   # auch zwischen zwei Bildern (Timer)
 		main.show_panel(false)
 	else:
 		close()
@@ -386,6 +388,11 @@ func _set_on(v: bool) -> void:
 		if main.show_btn != null and main.ui_root != null:
 			main.show_btn.visible = not main.ui_root.visible
 	print("handy: ", "an" if v else "aus", " (", mode, ", ", view_size(), ")")
+
+
+func _rehide(c: CanvasItem) -> void:
+	if on and is_instance_valid(c) and c.visible:
+		c.set_deferred("visible", false)
 
 
 func _process(dt: float) -> void:

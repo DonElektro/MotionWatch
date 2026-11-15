@@ -320,6 +320,8 @@ func _paint() -> void:
 		_pad.visible = false
 		_banner.visible = false
 		_pip.visible = false
+		if _welcome.visible and (main.handy.cur != "" or main.handy.big_id != "" or _other_open()):
+			_welcome.visible = false                    # ein Blatt / Fenster / Dialog ist offen: der Hinweis hat gedient
 		_paint_welcome(vs)
 		return
 	_pad.visible = DisplayServer.is_touchscreen_available()
@@ -349,6 +351,17 @@ func _paint() -> void:
 	_paint_welcome(vs)
 	if _narrow and main.cam_float != null and not main.ui_root.visible:
 		main.cam_float.visible = false                   # schmal: das Bild oben links genügt (die Kamera-Karte bleibt im Bedienfeld)
+
+
+func _other_open() -> bool:
+	"""ein Fenster oder Dialog eines anderen Teils ist offen (vom Fenster-Wächter gefunden, nicht die eigenen der Demo)"""
+	var f = main.get("waechter")
+	if f == null:
+		return false
+	for c in f._track:
+		if is_instance_valid(c) and (c as Node).get_parent() != _layer and (c as Control).is_visible_in_tree():
+			return true
+	return false
 
 
 func _paint_welcome(vs: Vector2) -> void:
