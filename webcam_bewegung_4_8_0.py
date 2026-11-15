@@ -24,7 +24,7 @@ Features
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
   * 4.8.0: Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt
-    hoch)
+    hoch) · Spielesammlung GS-1.25: in «Gipfeltreffen» trifft Antippen am Handy wieder die richtige Stelle
   * 4.7.0: Spielesammlung GS-1.24: neues Spiel «Gipfeltreffen» (erstes Level) und «Verschollen im Bergtal» Kapitel 2 «Drei Tage»
     · Fehler behoben: der Passwort-Dialog nimmt dem Feld «Wiederholen» den Cursor nicht mehr weg
   * 4.6.0: Mitteilungen pausieren: Push-Pause, die von selbst endet (15 min bis «bis ich zurück bin»), 🔕 auf der Glocke –
@@ -291,7 +291,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_8_0.zip"
-ZD_SHA256 = "f47641cd68d87ccae94f195eca8f69a15fc5099efc44d7ab8ffc45cadbf85616"
+ZD_SHA256 = "57ba02fecdf51398855f18c27910828192869dba1d0be0316010a7166d2929fe"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -28803,7 +28803,7 @@ threading.Thread(target=_extra_cams_boot, daemon=True, name="extracams-boot").st
 
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.24", "file": "games/MotionWatch_Spiele.zip", "size": 16049910, "sha256": "a4c42f40dbe62a5fbaa045fa5334c6f627258f0974c22bf27ce3312d972da872"}
+GAMES_PKG = {"version": "GS-1.25", "file": "games/MotionWatch_Spiele.zip", "size": 16050029, "sha256": "cd9a1d5aed0563988bdd44368522fa2825077d13720ffeda867092d2dc165356"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),

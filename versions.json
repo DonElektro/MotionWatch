@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-15 22:00",
+ "generated": "2026-11-15 22:47",
  "versions": [
   {
    "version": "4.8.0",
    "file": "webcam_bewegung_4_8_0.py",
    "url": "",
-   "sha256": "5d87938b26fbc2dae3607a8e5e0bf02e240beb6d8c5cdbb6828ea17ff4f43c3f",
-   "date": "2026-11-15 21:59",
-   "notes": "Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt hoch)",
-   "size": 3956933,
-   "sig": "3f1edcde7597090e44ac359d9169aa2d769bf4cedf0c3094adbbc7bc7b2820789129df145d8e267c9d8fda053fd3444a7806211a531c017f52f9c974b6d8080f",
+   "sha256": "50b1833c9c714f7b6e0c89cf4eb9a10db860ba1e74d31c2afbed3df4f2db7b7d",
+   "date": "2026-11-15 22:47",
+   "notes": "Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt hoch) · Spielesammlung GS-1.25: in «Gipfeltreffen» trifft Antippen am Handy wieder die richtige Stelle",
+   "size": 3957033,
+   "sig": "be57433ba81e5669a86c1350a2850ce244abfe25455b84bfa607bf274e929c50bff9bc252eb62281034c86025e167caf7719829ba3db25d96feb42df5b1b5403",
    "data": {
     "file": "moveeye_daten_4_8_0.zip",
     "url": "",
-    "sha256": "f47641cd68d87ccae94f195eca8f69a15fc5099efc44d7ab8ffc45cadbf85616",
-    "size": 13603241,
-    "sig": "0890a38a0d125334273347e4c35704a66b0bc4b7baac490cf6eb2919715dcd362593ec3b449193d939c5e523d3418c7e7f87dbccf2e10870c50612da9b102b0d"
+    "sha256": "57ba02fecdf51398855f18c27910828192869dba1d0be0316010a7166d2929fe",
+    "size": 13603441,
+    "sig": "1152e423e6d94eaae5fd2dbbe2c093c40e4c67e64430b5e529e0dc6b735a620a4fdf4d9a6551d87da5a4b768bc3928b32c2f45126269c843dcc94001ac874c02"
    }
   },
   {
