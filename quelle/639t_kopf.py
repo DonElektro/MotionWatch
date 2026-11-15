@@ -290,7 +290,7 @@ KOPF_JS = r"""<script>
   if (!C) { window.MWK = {toggles: toggles, menuLists: menuLists, chip: chip, tr: tr}; return; }
   // ---- the header ----
   const hold = E("div"); hold.id = "mwk-hold"; hold.hidden = true; B.appendChild(hold);
-  const KNOWN = new Set(["mwk-help", "g2-help", "btn-sound", "btn-reload", "btn-lang", "btn-view", "mwk-menu-btn", "btn-fs", "mwk-fs", "btn-hdr", "mwk-dev", "btn-side", "btn-theme"]);
+  const KNOWN = new Set(["mwk-help", "g2-help", "btn-sound", "btn-reload", "btn-lang", "btn-view", "mwk-menu-btn", "btn-fs", "mwk-fs", "btn-hdr", "mwk-dev", "btn-side", "btn-theme", "mwbar"]);   // mwbar: Simple / Expert (639o, 4.x)
   const GENERAL = ["btn-theme", "fbx-b"];
   function tidy() {                          // a page (or a script later) put something else into the header: into the ☰ menu
     [...C.children].forEach(x => { if (!KNOWN.has(x.id)) hold.appendChild(x); });

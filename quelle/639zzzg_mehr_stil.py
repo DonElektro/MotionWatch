@@ -479,6 +479,24 @@ MS_TEXT_JS = r"""{
 "Astuces",
 "Consigli e trucchi",
 "Cussegls e tricks"
+],
+"Symbols": [
+"Symbole",
+"Symboles",
+"Simboli",
+"Simbols"
+],
+"coloured": [
+"farbig",
+"en couleur",
+"a colori",
+"colurads"
+],
+"plain": [
+"schlicht",
+"simples",
+"semplici",
+"simpels"
 ]
 },
 "dx": {
@@ -1003,6 +1021,12 @@ MS_TEXT_JS = r"""{
 "Petites aides pour cette page",
 "Brevi aiuti per questa pagina",
 "Curts agids per questa pagina"
+],
+"d:icons": [
+"Farbig oder schlicht, grüner Punkt = an",
+"En couleur ou simples, point vert = activé",
+"A colori o semplici, punto verde = attivo",
+"Colurads u simpels, punct verd = activ"
 ]
 },
 "en": {
@@ -1092,7 +1116,8 @@ MS_TEXT_JS = r"""{
 "d:loop": "Continuous recording",
 "d:map": "Recordings on the map",
 "d:zf": "Collect pictures for «then / now»",
-"d:tips": "Short help for this page"
+"d:tips": "Short help for this page",
+"d:icons": "Coloured or plain, green dot = on"
 },
 "pages": {
 "settings": [
@@ -1362,6 +1387,13 @@ MS_TEXT_JS = r"""{
 [
 "Display & language",
 [
+[
+"#mwb-icons-card",
+"d:icons",
+"icons",
+"🎨",
+"Symbols"
+],
 [
 "sec:Device & help",
 "d:devhelp",
@@ -1777,6 +1809,7 @@ MS_JS = r"""<script>
     mqtt: (c, s) => !c.mqtt_on ? ON(false) : (s.mqtt && s.mqtt.status === "connected" ? [tr("connected"), "on"] : [tr("not connected"), "warn"]),
     security: (c, s) => s.pw_set ? [tr("password set"), ""] : [tr("no password"), "warn"],
     rucksack: c => ON(c.tausch_on),
+    icons: () => { let v = "color"; try { v = localStorage.getItem("mw-icons") || "color"; } catch (e) {} return [v === "plain" ? tr("plain") : tr("coloured"), ""]; },
     updates: (c, s) => { const n = s.update_new && s.update_new.version; if (n) return [n + " · " + tr("ready to install"), "on"];
       const m = {auto: [tr("automatic"), "on"], dev: [tr("developer"), "on"], off: [tr("by hand"), ""]}[c.update_mode || "off"] || [String(c.update_mode), ""];
       return (c.update_url || "").trim() ? m : [m[0] + " · " + tr("no source"), "warn"]; },
@@ -1864,7 +1897,8 @@ MS_JS = r"""<script>
     const q = E("div"); q.id = "ms-q"; const qi = E("input"); qi.type = "search"; qi.id = "ms-qi"; qi.placeholder = tr("Search all settings") + " …"; q.appendChild(qi); list.before(q);
     find.onclick = () => { const o = !q.classList.contains("on"); q.classList.toggle("on", o); if (o) { if (cur) close(); qi.focus(); } else { qi.value = ""; filter(""); } };
     qi.oninput = () => filter(qi.value);
-    if (nav) nav.appendChild(find); else { const rr = E("div"); rr.style.cssText = "display:flex;justify-content:flex-end"; rr.appendChild(find); list.before(rr); }
+    const tb = document.getElementById("mwbar");                // 639o (4.x): the 🔍 joins the tools at the right end of the row
+    if (nav && tb && tb.parentNode === nav) tb.appendChild(find); else if (nav) nav.appendChild(find); else { const rr = E("div"); rr.style.cssText = "display:flex;justify-content:flex-end"; rr.appendChild(find); list.before(rr); }
     return true;
   }
   let none = null;
