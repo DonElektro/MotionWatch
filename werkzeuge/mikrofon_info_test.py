@@ -81,13 +81,13 @@ def main():
             except Exception:
                 time.sleep(1)
 
-        def lage(want_level, t_max=40):
+        def lage(want_level, t_max=40, bad=None):          # bad: also wait until the head counts this many problems
             t_ = time.time() + t_max; mic = None; s = {}
             while time.time() < t_:
                 h = req("/api/health?lang=de")
                 mic = next((x for x in h.get("items") or [] if x.get("id") == "mic"), None)
                 s = req("/api/state")
-                if mic and mic.get("level") == want_level and mic.get("mic_none"):
+                if mic and mic.get("level") == want_level and mic.get("mic_none") and (bad is None or (h.get("count") or {}).get("bad", 0) == bad):
                     break
                 time.sleep(1)
             st_ = s.get("state") or {}
@@ -108,7 +108,7 @@ def main():
         pruef(bool(mic) and mic["level"] == "bad" and "Geräusch-Alarm" in mic["text"], "Geräusch-Alarm an: rot, nennt die Funktion (%s)" % mic)
         pruef(cnt.get("bad", 0) == bad0 + 1, "zählt jetzt als Problem (%d -> %d)" % (bad0, cnt.get("bad", 0)))
         req("/api/set", {"key": "noise_alarm", "value": False})
-        mic, cnt, hs, prot = lage("off")
+        mic, cnt, hs, prot = lage("off", bad=bad0)              # the count follows a little later than the item (CI)
         pruef(bool(mic) and mic["level"] == "off" and cnt.get("bad", 0) == bad0, "wieder aus: wieder grau (%s)" % mic)
         if p.poll() is not None:
             FEHLER.append("MoveEye ist während des Tests abgestürzt")
