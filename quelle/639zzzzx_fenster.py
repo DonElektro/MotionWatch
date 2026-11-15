@@ -73,11 +73,12 @@ UF_JS = r"""<script>
 (function () {
   if (window.MWFX) return;
   let T = null; try { if (window !== window.top && window.top.MWFX && window.top.location.origin === location.origin) T = window.top; } catch (e) {}
+  const PLAYER = /^\/(radio|vorlesen)$/;                      // pages whose player lives in the main page: 📻 radio, 📖 read aloud (639zzzzv)
   // inside a frame of the main page: «📻» / a link to /radio opens the radio window of the main page (its player keeps playing there)
   if (T) document.addEventListener("click", e => {
     const a = !e.defaultPrevented && !e.button && e.target.closest && e.target.closest("a[href]"); if (!a || (a.target && a.target !== "_self")) return;
     let u; try { u = new URL(a.href, location.href); } catch (_) { return; }
-    if (u.origin === location.origin && u.pathname === "/radio" && location.pathname !== "/radio") { e.preventDefault(); T.MWFX.radio(a); }
+    if (u.origin === location.origin && PLAYER.test(u.pathname) && location.pathname !== u.pathname) { e.preventDefault(); T.MWFX.radio(a, u.pathname + u.search); }
   });
   if (T && /[?&]fenster=1/.test(location.search)) { window.MWFX = {frame: true, on: () => false}; return; }   // a sub-page in a window opens nothing of its own
   const TX = /*FXTX*/{};
@@ -98,7 +99,7 @@ UF_JS = r"""<script>
   let dim = null, cur = null;                                  // cur = {win, o, ret, done, timer}
   // the style: the chosen one; «Full page» (only the radio while it plays, a page while the radio plays) = the whole screen
   function variant(w) { w.classList.remove("fx-bottom", "fx-mid", "fx-side", "fx-full"); w.classList.add("fx-" + (w.dataset.fxForce || mode())); }
-  const radioOn = () => { try { const P = window.mwRadioP; return !!(P && P.S && P.S.on); } catch (e) { return false; } };
+  const radioOn = () => { try { const P = window.mwRadioP, R = window.mwReadP; return !!((P && P.S && P.S.on) || (R && R.S && R.S.on)); } catch (e) { return false; } };   // radio or read aloud (639zzzzv)
   const FOC = 'a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),iframe,[tabindex]:not([tabindex="-1"]),summary';
   // ---- dialogs opened from a window lie above it (Web-Passwort #pwd-ov, «Neuer Benutzer», menus, pickers, toasts …): every overlay
   // of the page that appears while a window is open (a child of <body> or an overlay anywhere, fixed / absolute, visible, not there
@@ -242,16 +243,16 @@ UF_JS = r"""<script>
   // kind: "sub" (a page of «Mehr»), "radio" (📻 / a link to /radio, on every page), "page" (any other page while the radio plays:
   // the whole screen with its own header - the main page does not reload, so the radio plays on)
   function openFrame(u, title, ret, push, kind) {
-    kind = kind || "sub"; const key = kind === "page" ? u.pathname + u.search : u.pathname;
-    if (fr && fr.path === key) return;
+    kind = kind || "sub"; const key = kind === "page" || kind === "radio" ? u.pathname + u.search : u.pathname;
+    if (fr && fr.key === key) return;
     if (fr) { const o = fr; fr = null; finish(true); park(o); }
     let n = null;
-    if (parked && parked.path === key) { n = parked; parked = null; n.win.classList.remove("fx-park"); n.win.id = "fx-frame"; }
+    if (parked && parked.key === key) { n = parked; parked = null; n.win.classList.remove("fx-park"); n.win.id = "fx-frame"; }
     else {
       const w = E("div", "fx-fr"); w.id = "fx-frame"; const bar = E("div", "fx-bar"), t = E("b"), x = E("button", "sec");
       x.type = "button"; bar.append(t, x); const f = E("iframe"); f.title = title; f.setAttribute("allow", "autoplay; fullscreen; geolocation; clipboard-write");
       f.src = frameHref(u, kind); if (kind === "page") { w.classList.add("fx-page"); w.append(f); } else w.append(bar, f); B.appendChild(w);
-      n = {win: w, f, bar, t, x, path: key, url: u.href, title, first: true, kind};
+      n = {win: w, f, bar, t, x, path: kind === "page" ? key : u.pathname, key, url: u.href, title, first: true, kind};
       f.addEventListener("load", () => {
         let p = null; try { p = f.contentWindow.location; } catch (e) {}
         if (n.kind === "page") { w.classList.add("fx-ok"); if (p && fr === n) { try { history.replaceState(history.state, "", "#p=" + encodeURIComponent(p.pathname + p.search)); } catch (e) {} } return; }
@@ -284,15 +285,15 @@ UF_JS = r"""<script>
     const ic = i && !i.querySelector("svg") ? i.textContent.trim() : "";
     return {text: t, full: (ic && ic.length <= 4 ? ic + " " : "") + t};
   }
-  const RADIO = "📻 Radio";
-  function radio(a) { openFrame(new URL("/radio", location.href), RADIO, a || document.activeElement, true, "radio"); }
+  const RADIO = "📻 Radio", ptitle = h => /^\/vorlesen/.test(h) ? "📖 " + tr("Read aloud") : RADIO;
+  function radio(a, h) { h = h || "/radio"; openFrame(new URL(h, location.href), ptitle(h), a || document.activeElement, true, "radio"); }
   document.addEventListener("click", e => {
     if (e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     const a = e.target.closest && e.target.closest("a[href]"); if (!a || a.closest(".fx-win") || (a.target && a.target !== "_self") || a.hasAttribute("download")) return;
     let u; try { u = new URL(a.href, location.href); } catch (_) { return; }
     if (u.origin !== location.origin || /^(javascript|mailto|tel|sms):/i.test(u.protocol)) return;
     // 📻 in the header / any link to the radio: its window (also on Live - a window over it, the page itself stays)
-    if (u.pathname === "/radio" && location.pathname !== "/radio") { e.preventDefault(); radio(a); return; }
+    if (PLAYER.test(u.pathname) && location.pathname !== u.pathname) { e.preventDefault(); radio(a, u.pathname + u.search); return; }
     if (on() && topTab() === "/more" && a.matches("main a.mi[href]") && eligible(a)) { e.preventDefault(); const t = rowTitle(a); openFrame(u, t.full, a, true); return; }
     // the radio plays in this page: no reload - the other page opens over it (whole screen, with its own header)
     if (radioOn() && (u.pathname !== location.pathname || u.search !== location.search) && !SKIP.test(u.pathname + "/")) { e.preventDefault(); openFrame(u, "", a, true, "page"); }
@@ -300,7 +301,7 @@ UF_JS = r"""<script>
   window.addEventListener("popstate", e => {
     const s = e.state && e.state.fx, k = (e.state && e.state.k) || "sub";
     if (s) { const u = new URL(s, location.href); const a = [...document.querySelectorAll("main a.mi[href]")].find(x => eligible(x) && eligible(x).pathname === u.pathname);
-      if (k !== "sub" || on()) openFrame(u, k === "radio" ? RADIO : (a ? rowTitle(a).full : u.pathname.slice(1)), a, false, k); return; }
+      if (k !== "sub" || on()) openFrame(u, k === "radio" ? ptitle(u.pathname) : (a ? rowTitle(a).full : u.pathname.slice(1)), a, false, k); return; }
     if (fr) closeFrame(true);
   });
   function deep() {                                           // /more#f=/radio: the window over «Mehr»
@@ -308,9 +309,9 @@ UF_JS = r"""<script>
     const m = location.hash.match(/^#f=(.+)$/); if (!m) return;
     let u; try { u = new URL(decodeURIComponent(m[1]), location.href); } catch (e) { return; }
     const a = [...document.querySelectorAll("main a.mi[href]")].find(x => eligible(x) && eligible(x).pathname === u.pathname);
-    if (u.pathname !== "/radio" && (!a || !on())) return;
+    if (!PLAYER.test(u.pathname) && (!a || !on())) return;
     try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
-    if (u.pathname === "/radio") radio(a); else openFrame(u, rowTitle(a).full, a, true);
+    if (PLAYER.test(u.pathname)) radio(a, u.pathname + u.search); else openFrame(u, rowTitle(a).full, a, true);
   }
   // ---- 3. the choice: Einstellungen → Darstellung & Sprache → «Unterseiten» (the card for the row of 639zzzg) -------------
   const ICON = {full: '<rect x="4.5" y="3.5" width="13" height="23" rx="1.5"/>', bottom: '<rect x="4.5" y="11" width="13" height="15.5" rx="2"/>',
@@ -386,6 +387,13 @@ UF_TX_JS = r"""{
 "Par le côté",
 "Dal lato",
 "Da la vart"
+],
+"Read aloud": [
+"Read aloud",
+"Vorlesen",
+"Lecture à voix haute",
+"Lettura ad alta voce",
+"Leger ad auta vusch"
 ],
 "fx-note": [
 "How the pages of Settings, Protection, History and More open: over the page or as a full page. Live stays as it is. Close: ✕, tap beside the window, Esc or back; or drag the title row down (from the side: to the right).",
@@ -471,7 +479,7 @@ def _uf_selftest():
         assert "🪟" in UF_HELP.get(L, ""), "639zzzzx: manual " + L
     if '<section id="tips"' in HELP_PAGE:
         assert HELP_PAGE.count("🪟 Unterseiten als Fenster") == 1 and HELP_PAGE.count("🪟 Sub-pages as a window") == 1, "639zzzzx: manual de / en"
-    for k in ('lsg("mw-sheet", "mid")', '"/protect", "/recordings", "/settings", "/more"', "history.pushState({fx:", "T.MWFX.radio(a)", "radioOn()", "prefers-reduced-motion",
+    for k in ('lsg("mw-sheet", "mid")', '"/protect", "/recordings", "/settings", "/more"', "history.pushState({fx:", "T.MWFX.radio(a, ", "radioOn()", "window.mwReadP", "prefers-reduced-motion",
               'card.id = "fx-card"', 'setAttribute("aria-modal", "true")'):
         assert k in UF_JS or k in UF_CSS, "639zzzzx: " + k
 
