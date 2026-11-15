@@ -37,9 +37,14 @@
 # (hp_start_on, ab Werk aus), 📻 Funkgerät Funk/ (hp_funk_on, ab Werk an), 🎮 Simulator Sim/ + Test-Seite (hp_sim_on, ab Werk an).
 # Für jeden Teil dieselbe Regel: aus = nicht hochgeladen, NIE gelöscht, eigene Liste unverändert, Prüfung zeigt «nicht
 # hochgeladen (aus)»; hp_content_id enthält alle drei (Einschalten = automatischer Upload); alle aus = nichts zu veröffentlichen.
+# Folgeauftrag (Host neu): die Seiten sind unter einer eigenen Adresse erreichbar (z. B. https://moveeye.kevlaschef.com/), vom
+# Host mit Passwort geschützt (HTTP Basic). hp_public («Öffentliche Adresse», ab Werk leer = <hp_base>/moveeye/, nur https,
+# nur der Admin; gehört nicht zum Upload: ändern lässt den Schlüssel stehen) gilt für «Homepage öffnen» und die Prüfung;
+# hochgeladen wird weiter über hp_base. 401 mit WWW-Authenticate = «🔒 geschützt (Passwort)», kein Fehler. Ein Seiten-Passwort
+# kennt und speichert MoveEye nie (kein Feld, keine Adresse mit Benutzer / Passwort).
 # ----------------------------------------------------------------------------
 _HP_CFG = {"hp_key": "", "hp_base": "https://kevlaschef.com", "hp_auto": True, "hp_start_on": False, "hp_funk_on": True,
-           "hp_sim_on": True}
+           "hp_sim_on": True, "hp_public": ""}
 for _k, _v in _HP_CFG.items():
     CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
 USER_SETTINGS_DENY.update(_HP_CFG)
@@ -107,6 +112,26 @@ def hp_base_ok(u):
     if HP_TEST_HTTP and re.fullmatch(r"http://127\.0\.0\.1:\d{1,5}", u):
         return u
     return ""
+
+
+def hp_public_ok(u):
+    """the public address of the pages: https, a host, an optional path, never a user / password -> normalized with "/" or "" """
+    u = str(u or "").strip()
+    m = re.fullmatch(r"(https://[A-Za-z0-9](?:[A-Za-z0-9-]{0,62}\.)+[A-Za-z]{2,63}(?::\d{1,5})?)(/[A-Za-z0-9._~/-]{0,200})?", u)
+    if not m and HP_TEST_HTTP:
+        m = re.fullmatch(r"(http://127\.0\.0\.1:\d{1,5})(/[A-Za-z0-9._~/-]{0,200})?", u)
+    if not m or "//" in (m.group(2) or "") or "/../" in (m.group(2) or "") + "/":
+        return ""
+    return m.group(1) + ((m.group(2) or "/").rstrip("/") + "/")
+
+
+def hp_public_url():
+    """where the pages are public: hp_public, else <hp_base>/moveeye/ ("" without a valid address)"""
+    pub = hp_public_ok(CFG.get("hp_public"))
+    if pub:
+        return pub
+    base = hp_base_ok(CFG.get("hp_base"))
+    return base + "/moveeye/" if base else ""
 
 
 def _hp_conn(url, timeout=60):
@@ -569,7 +594,7 @@ def hp_probe(url, want=None, origin=""):
             break
         else:
             raise HpErr("loop")
-        H = {k: _hp_clean(r.getheader(k) or "")[:300] for k in ("Content-Type", "Content-Length", "Content-Security-Policy",
+        H = {k: _hp_clean(r.getheader(k) or "")[:300] for k in ("Content-Type", "Content-Length", "Content-Security-Policy", "WWW-Authenticate",
                                                                  "X-Content-Type-Options", "Cross-Origin-Embedder-Policy",
                                                                  "Cross-Origin-Opener-Policy", "Cross-Origin-Resource-Policy")}
         exp = want.get("size") if want else None
@@ -599,6 +624,9 @@ def hp_probe(url, want=None, origin=""):
     fin = re.match(r"^[a-z]+://[^/]+", url)
     if row["chain"] and fin and fin.group(0) != origin:
         P.append(("redirected to another address – fetch() and WebAssembly often fail there", fin.group(0)))
+    if r.status == 401 and H["WWW-Authenticate"]:          # protected by the host (password): fine, the content is not checkable
+        row["locked"] = True
+        return row
     if r.status != 200:
         P.append(("answer {code} instead of 200", str(r.status)))
         return row
@@ -621,9 +649,10 @@ def hp_probe(url, want=None, origin=""):
 
 
 def hp_check(items=None):
-    base = hp_base_ok(CFG.get("hp_base"))
-    if not base:
+    pub = hp_public_url()                                   # hp_public or <hp_base>/moveeye/ - never with a password
+    if not pub:
         raise HpErr("url")
+    origin = re.match(r"^[a-z]+://[^/]+", pub).group(0)
     if items is None:
         items = hp_fixed_items() + ((hp_sim_items(False)[0] or [{"path": "Sim/" + n, "size": None, "sha": None} for n in HP_SIM_NAMES])
                                     if hp_part_on("sim") else [])
@@ -640,7 +669,7 @@ def hp_check(items=None):
         if HP["cancel"]:
             raise HpErr("cancel")
         want = {"path": it["path"], "size": it.get("size"), "sha": it.get("sha")} if it["path"] and not it["path"].endswith("/") else None
-        row = hp_probe(base + "/moveeye/" + quote(it["path"], safe="/"), want, base)
+        row = hp_probe(pub + quote(it["path"], safe="/"), want, origin)
         row["path"] = it["path"] or "/"
         rows.append(row)
     st = hp_state()
@@ -662,7 +691,7 @@ def hp_status():
             "start_on": hp_part_on("start"), "funk_on": hp_part_on("funk"), "sim_on": hp_part_on("sim"),
             "busy": HP["busy"], "wait": HP["wait"], "prog": {k: p.get(k) for k in ("i", "n", "bytes", "total", "file")} if p.get("n") else None,
             "err": [HP["err"], HP["msg"]] if HP["err"] else None, "cancelled": HP["msg"] == "cancel", "last": st.get("last"),
-            "check": st.get("check"), "public": (hp_base_ok(CFG.get("hp_base")) or "") + "/moveeye/",
+            "check": st.get("check"), "public": hp_public_url(), "public_set": hp_public_ok(CFG.get("hp_public")),
             "sim": {"ver": pk["version"] if pk["size"] else "", "ready": bool(pk["size"]) and sim3d_ready(pk)}}
 
 
@@ -692,6 +721,17 @@ def hp_action(d, lang=None):
             st = hp_state(); st.pop("up", None); st.pop("check", None); hp_save(st)
             save_settings()
             log_event("sys", "Homepage: address changed, upload key deleted")
+        return True, ""
+    if a == "public":                                       # not part of the upload: the key stays
+        v = str(d.get("public") or "").strip()
+        pub = hp_public_ok(v) if v else ""
+        if v and not pub:
+            return False, "Only https addresses, without user name or password."
+        if pub != (CFG.get("hp_public") or ""):
+            CFG["hp_public"] = pub
+            st = hp_state(); st.pop("check", None); hp_save(st)
+            save_settings()
+            log_event("sys", "Homepage: public address " + ("set" if pub else "cleared"))
         return True, ""
     if a == "auto":
         CFG["hp_auto"] = bool(d.get("on"))
@@ -864,6 +904,28 @@ HP_TEXTS = {
                                         "Nagina colliaziun cun il spazi web."),
     "Address not valid.": ("Adresse ungültig.", "Adresse non valable.", "Indirizzo non valido.", "Adressa nunvalaivla."),
     "Only https addresses.": ("Nur https-Adressen.", "Seulement des adresses https.", "Solo indirizzi https.", "Mo adressas https."),
+    "Only https addresses, without user name or password.": ("Nur https-Adressen, ohne Benutzername oder Passwort.",
+                                                             "Seulement des adresses https, sans nom d’utilisateur ni mot de passe.",
+                                                             "Solo indirizzi https, senza nome utente né password.",
+                                                             "Mo adressas https, senza num d’utilisader u pled-clav."),
+    "Public address (optional)": ("Öffentliche Adresse (freiwillig)", "Adresse publique (facultative)", "Indirizzo pubblico (facoltativo)",
+                                  "Adressa publica (facultativa)"),
+    "Save the public address": ("Öffentliche Adresse speichern", "Enregistrer l’adresse publique", "Salvare l’indirizzo pubblico", "Memorisar l’adressa publica"),
+    "Empty = {d}. For «Open the homepage» and the check; uploading always goes to the web space address.":
+        ("Leer = {d}. Für «Homepage öffnen» und die Prüfung; hochgeladen wird immer über die Adresse des Webspace.",
+         "Vide = {d}. Pour «Ouvrir la page d’accueil» et la vérification ; l’envoi passe toujours par l’adresse de l’espace web.",
+         "Vuoto = {d}. Per «Aprire la homepage» e la verifica; il caricamento passa sempre dall’indirizzo dello spazio web.",
+         "Vid = {d}. Per «Avrir la pagina d’entrada» e la controlla; chargià vegn adina sur l’adressa dal spazi web."),
+    "A password for the pages is set at your host – MoveEye does not know it and never stores it.":
+        ("Ein Passwort für die Seiten setzt du beim Host – MoveEye kennt es nicht und speichert es nie.",
+         "Un mot de passe pour les pages se définit chez ton hébergeur – MoveEye ne le connaît pas et ne l’enregistre jamais.",
+         "Una password per le pagine si imposta presso il tuo host – MoveEye non la conosce e non la salva mai.",
+         "In pled-clav per las paginas defineschas tar il host – MoveEye na l’enconuscha betg e na la memorisescha mai."),
+    "🔒 protected (password)": ("🔒 geschützt (Passwort)", "🔒 protégé (mot de passe)", "🔒 protetto (password)", "🔒 protegì (pled-clav)"),
+    "Everything behind a password – content cannot be checked": ("Alles hinter Passwort – Inhalt nicht prüfbar",
+                                                                 "Tout est derrière un mot de passe – contenu non vérifiable",
+                                                                 "Tutto dietro password – contenuto non verificabile",
+                                                                 "Tut davos in pled-clav – cuntegn betg controllabel"),
     "The key: 8 to 512 signs, no spaces.": ("Der Schlüssel: 8 bis 512 Zeichen, ohne Leerzeichen.", "La clé : 8 à 512 caractères, sans espaces.",
                                             "La chiave: da 8 a 512 caratteri, senza spazi.", "La clav: 8 fin 512 caracters, senza spazis."),
     "The server redirected the upload – stopped (the key is never sent to another address).":
@@ -1017,13 +1079,16 @@ function hpIntro(j, t) { const p = ["start", "funk", "sim"].filter(x => j[x + "_
   if (!p.length) return t("Nothing chosen – switch on at least one part.");
   return t("MoveEye uploads to your web space: {list}.").replace("{list}", p.length > 1 ? p.slice(0, -1).join(", ") + t(" and ") + p[p.length - 1] : p[0]); }
 function hpRow(r, t) { if (r.off) return {line: t(HP_OFF[r.off] || HP_OFF.start), probs: [], chain: [], headers: {}, off: true};
+  if (r.locked) return {line: r.path + ": " + t("🔒 protected (password)") + " ✓", probs: (r.probs || []).map(p => hpProb(p[0], p[1], t)),
+    chain: r.chain || [], headers: r.headers || {}, locked: true};
   return {line: r.path + ": " + (r.status || "–") + " · " + hpMB(r.size) + " · " + (r.type || "?"),
   probs: (r.probs || []).map(p => hpProb(p[0], p[1], t)), chain: r.chain || [], headers: r.headers || {}}; }
 function hpErr(e, t) { return e ? t(HP_ERR[e[0]] || "Error: {d}").replace("{d}", e[1] || "") : ""; }
 function hpNote(n, t) { return n && n[0] ? t(n[0]) + (n[1] ? " – " + n[1] : "") : ""; }
 function hpLast(l, t) { return t("Done: {up} uploaded, {same} unchanged, {gone} deleted.").replace("{up}", l.up || 0).replace("{same}", l.same || 0)
   .replace("{gone}", l.gone || 0) + " · " + hpMB(l.bytes); }
-function hpSum(rows, t) { const n = rows.filter(r => r.probs.length).length; return n ? t("{n} addresses with problems").replace("{n}", n) : t("all addresses ok"); }
+function hpSum(rows, t) { const n = rows.filter(r => r.probs.length).length; if (n) return t("{n} addresses with problems").replace("{n}", n);
+  const on = rows.filter(r => !r.off); return on.length && on.every(r => r.locked) ? t("Everything behind a password – content cannot be checked") : t("all addresses ok"); }
 """
 
 HP_PAGE = r"""<!doctype html>
@@ -1081,6 +1146,11 @@ section.card h3{margin:0 0 10px}
     <label class="hp-hint" for="hp-base" id="hp-base-l"></label>
     <div class="hp-row"><input type="url" id="hp-base" autocomplete="off" spellcheck="false" maxlength="200"><button type="button" class="sec" id="hp-base-b"></button></div>
     <div class="hp-hint" id="hp-base-h"></div>
+    <label class="hp-hint" for="hp-pub" id="hp-pub-l"></label>
+    <div class="hp-row"><input type="url" id="hp-pub" autocomplete="off" spellcheck="false" maxlength="220" placeholder="https://moveeye.kevlaschef.com/">
+      <button type="button" class="sec" id="hp-pub-b"></button></div>
+    <div class="hp-hint" id="hp-pub-h"></div>
+    <div class="hp-hint" id="hp-pw-h"></div>
     <div id="hp-key-st"></div>
     <label class="hp-hint" for="hp-key" id="hp-key-l"></label>
     <input type="password" id="hp-key" maxlength="512" autocomplete="new-password" autocapitalize="off" spellcheck="false">
@@ -1111,7 +1181,9 @@ section.card h3{margin:0 0 10px}
   $("hp-start-h").textContent = t("Off: this part is not uploaded – and never deleted on the web space.");
   $("hp-none").textContent = t("Nothing chosen – switch on at least one part.");
   $("hp-acc-t").textContent = t("Access"); $("hp-base-l").textContent = t("Address of the web space"); $("hp-base-b").textContent = t("Save the address");
-  $("hp-base-h").textContent = t("A new address deletes the upload key."); $("hp-key-l").textContent = t("Upload key");
+  $("hp-base-h").textContent = t("A new address deletes the upload key.");
+  $("hp-pub-l").textContent = t("Public address (optional)"); $("hp-pub-b").textContent = t("Save the public address");
+  $("hp-pw-h").textContent = "🔒 " + t("A password for the pages is set at your host – MoveEye does not know it and never stores it."); $("hp-key-l").textContent = t("Upload key");
   $("hp-key-d").textContent = t("Delete the key"); $("hp-res-t").textContent = t("Result of the check"); $("hp-open").textContent = "↗ " + t("Open the homepage");
   function paint(j) {
     if (!j) return; J = j;
@@ -1136,10 +1208,13 @@ section.card h3{margin:0 0 10px}
     $("hp-key-b").textContent = j.key_set ? t("Replace the key") : t("Set the key"); $("hp-key-d").hidden = !j.key_set;
     $("hp-sim").textContent = "🎮 " + t("Browser simulator") + ": " + (j.sim && j.sim.ver ? j.sim.ver + (j.sim.ready ? " · " + t("ready") : "") : t("not released yet"));
     $("hp-open").href = j.public || "#";
+    if (document.activeElement !== $("hp-pub")) $("hp-pub").value = j.public_set || "";
+    $("hp-pub-h").textContent = t("Empty = {d}. For «Open the homepage» and the check; uploading always goes to the web space address.")
+      .replace("{d}", (j.base || "") + "/moveeye/");
     const c = j.check; $("hp-res-c").hidden = !c;
     if (c) { const rows = (c.rows || []).map(r => hpRow(r, t)); $("hp-res-s").textContent = (c.t ? new Date(c.t * 1000).toLocaleString() + " · " : "") + hpSum(rows, t);
       const ul = $("hp-res"); ul.textContent = "";
-      rows.forEach(r => { const li = E("li", r.probs.length ? "bad" : ""); li.appendChild(E("b", "", (r.off ? "– " : r.probs.length ? "✗ " : "✓ ") + r.line));
+      rows.forEach(r => { const li = E("li", r.probs.length ? "bad" : ""); li.appendChild(E("b", "", (r.off ? "– " : r.probs.length ? "✗ " : r.locked ? "" : "✓ ") + r.line));
         if (r.chain.length) li.appendChild(E("div", "hp-hint", r.chain.join(" · ")));
         if (r.probs.length) { const u = E("ul"); r.probs.forEach(p => u.appendChild(E("li", "", p))); li.appendChild(u); }
         const hk = Object.keys(r.headers); if (hk.length) { const d = E("details"), s = E("summary", "", t("Headers")); d.appendChild(s);
@@ -1155,6 +1230,7 @@ section.card h3{margin:0 0 10px}
   $("hp-funk").onchange = () => act({action: "funk_on", on: $("hp-funk").checked});
   $("hp-sim-on").onchange = () => act({action: "sim_on", on: $("hp-sim-on").checked});
   $("hp-base-b").onclick = () => act({action: "base", base: $("hp-base").value.trim()}, $("hp-base-b"));
+  $("hp-pub-b").onclick = () => act({action: "public", public: $("hp-pub").value.trim()}, $("hp-pub-b"));
   $("hp-key-b").onclick = async () => { const k = $("hp-key").value.trim(); if (!k) return; const j = await act({action: "key", key: k}, $("hp-key-b"));
     if (j && j.ok !== false) $("hp-key").value = ""; };
   $("hp-key-d").onclick = () => { if (confirm(t("Delete the upload key?"))) act({action: "key_del"}); };
@@ -1165,11 +1241,11 @@ section.card h3{margin:0 0 10px}
 
 # ---- the manual: one point in the section «Morse-Modus» (the phone radio lives there) --------------------------------------------
 HP_HELP_HTML = r"""
-de|<li><b>🌐 Homepage</b> (Mehr → Homepage, nur der Administrator): lädt deine öffentlichen Seiten auf deinen Webspace – Startseite, Handy-Funkgerät (<code>Funk/</code>), Simulator im Browser (<code>Sim/</code>, nur das signierte Paket «sim-web.zip») und <code>Sim/test.html</code>. Adresse ab Werk <code>https://kevlaschef.com</code> (nur https), dazu der Upload-Schlüssel: setzen, ersetzen oder löschen, er wird nie mehr angezeigt und steht nie im Protokoll; eine neue Adresse löscht ihn. Hochgeladen wird nur, was sich geändert hat, im Hintergrund, nie während eines Alarms; «nach jedem Update automatisch» ist ab Werk an. Drei Schalter wählen, was öffentlich ist: «Startseite» (ab Werk aus), «📻 Funkgerät» (<code>Funk/</code>) und «🎮 Simulator» (<code>Sim/</code> + Test-Seite), beide ab Werk an. Ein ausgeschalteter Teil wird nicht hochgeladen, was davon schon auf dem Webspace liegt, bleibt unberührt (nie gelöscht); sind alle drei aus, gibt es nichts zu veröffentlichen. Danach prüft MoveEye jede öffentliche Adresse (Status, Grösse, Typ, Umleitungen, Content-Security-Policy) – z. B. «connect-src sperrt fetch()» erklärt «Load failed» am iPhone.</li>
-en|<li><b>🌐 Homepage</b> (More → Homepage, administrator only): puts your public pages on your web space – start page, phone radio (<code>Funk/</code>), simulator in the browser (<code>Sim/</code>, only the signed package «sim-web.zip») and <code>Sim/test.html</code>. Address by default <code>https://kevlaschef.com</code> (https only), plus the upload key: set, replace or delete it; it is never shown again and never in the log; a new address deletes it. Only changed files are uploaded, in the background, never during an alarm; «automatically after every update» is on by default. Three switches choose what is public: «Start page» (off by default), «📻 Phone radio» (<code>Funk/</code>) and «🎮 Simulator» (<code>Sim/</code> + test page), both on by default. A part that is off is not uploaded; what of it is already on the web space stays untouched (never deleted); with all three off there is nothing to publish. Then MoveEye checks every public address (status, size, type, redirects, Content-Security-Policy) – e.g. «connect-src blocks fetch()» explains «Load failed» on the iPhone.</li>
-fr|<li><b>🌐 Page d’accueil</b> (Plus → Page d’accueil, administrateur seulement) : met tes pages publiques sur ton espace web – page d’accueil, radio du téléphone (<code>Funk/</code>), simulateur dans le navigateur (<code>Sim/</code>, seulement le paquet signé «sim-web.zip») et <code>Sim/test.html</code>. Adresse par défaut <code>https://kevlaschef.com</code> (https seulement) et la clé d’envoi : jamais réaffichée, jamais dans le journal ; une nouvelle adresse la supprime. Seuls les fichiers modifiés sont envoyés, jamais pendant une alarme. Trois interrupteurs choisissent ce qui est public : «Page d’accueil» (désactivée par défaut), «📻 Radio du téléphone» (<code>Funk/</code>) et «🎮 Simulateur» (<code>Sim/</code> + page de test), activés par défaut. Une partie désactivée n’est pas envoyée ; ce qui est déjà sur l’espace web reste intact (jamais supprimé) ; tout désactivé = rien à publier. Ensuite MoveEye vérifie chaque adresse publique (statut, taille, type, redirections, Content-Security-Policy).</li>
-it|<li><b>🌐 Homepage</b> (Altro → Homepage, solo l’amministratore): carica le tue pagine pubbliche sul tuo spazio web – pagina iniziale, radio del telefono (<code>Funk/</code>), simulatore nel browser (<code>Sim/</code>, solo il pacchetto firmato «sim-web.zip») e <code>Sim/test.html</code>. Indirizzo di fabbrica <code>https://kevlaschef.com</code> (solo https) e la chiave di caricamento: mai più mostrata, mai nel registro; un nuovo indirizzo la cancella. Vengono caricati solo i file modificati, mai durante un allarme. Tre interruttori scelgono cosa è pubblico: «Pagina iniziale» (spenta di fabbrica), «📻 Radio del telefono» (<code>Funk/</code>) e «🎮 Simulatore» (<code>Sim/</code> + pagina di test), accesi di fabbrica. Una parte spenta non viene caricata; ciò che è già sullo spazio web resta intatto (mai cancellato); tutti spenti = niente da pubblicare. Poi MoveEye verifica ogni indirizzo pubblico (stato, dimensione, tipo, reindirizzamenti, Content-Security-Policy).</li>
-rm|<li><b>🌐 Pagina d’entrada</b> (Dapli → Pagina d’entrada, mo l’administratur): chargia tias paginas publicas sin tes spazi web – pagina d’entrada, radio dal telefonin (<code>Funk/</code>), simulatur en il browser (<code>Sim/</code>, mo il pachet signà «sim-web.zip») e <code>Sim/test.html</code>. Adressa da fabrica <code>https://kevlaschef.com</code> (mo https) e la clav da chargiar: mai pli mussada, mai en il protocol; ina nova adressa la stizza. Chargià vegn mo quai ch’è midà, mai durant in alarm. Trais interruptuders tschernan tge ch’è public: «Pagina d’entrada» (deactivada da fabrica), «📻 Radio dal telefonin» (<code>Funk/</code>) e «🎮 Simulatur» (<code>Sim/</code> + pagina da test), activads da fabrica. Ina part deactivada na vegn betg chargiada; quai ch’è gia sin il spazi web resta intact (mai stizzà); tut deactivà = nagut da publitgar. Suenter controllescha MoveEye mintga adressa publica (status, grondezza, tip, deviaziuns, Content-Security-Policy).</li>
+de|<li><b>🌐 Homepage</b> (Mehr → Homepage, nur der Administrator): lädt deine öffentlichen Seiten auf deinen Webspace – Startseite, Handy-Funkgerät (<code>Funk/</code>), Simulator im Browser (<code>Sim/</code>, nur das signierte Paket «sim-web.zip») und <code>Sim/test.html</code>. Adresse ab Werk <code>https://kevlaschef.com</code> (nur https), dazu der Upload-Schlüssel: setzen, ersetzen oder löschen, er wird nie mehr angezeigt und steht nie im Protokoll; eine neue Adresse löscht ihn. Freiwillig eine eigene «Öffentliche Adresse» (z. B. <code>https://moveeye.kevlaschef.com/</code>, nur https) für «Homepage öffnen» und die Prüfung – hochgeladen wird weiter über die Adresse des Webspace, der Schlüssel bleibt. Schützt der Host die Seiten mit einem Passwort, zeigt die Prüfung «🔒 geschützt (Passwort)»; das Passwort setzt du beim Host, MoveEye kennt und speichert es nie. Hochgeladen wird nur, was sich geändert hat, im Hintergrund, nie während eines Alarms; «nach jedem Update automatisch» ist ab Werk an. Drei Schalter wählen, was öffentlich ist: «Startseite» (ab Werk aus), «📻 Funkgerät» (<code>Funk/</code>) und «🎮 Simulator» (<code>Sim/</code> + Test-Seite), beide ab Werk an. Ein ausgeschalteter Teil wird nicht hochgeladen, was davon schon auf dem Webspace liegt, bleibt unberührt (nie gelöscht); sind alle drei aus, gibt es nichts zu veröffentlichen. Danach prüft MoveEye jede öffentliche Adresse (Status, Grösse, Typ, Umleitungen, Content-Security-Policy) – z. B. «connect-src sperrt fetch()» erklärt «Load failed» am iPhone.</li>
+en|<li><b>🌐 Homepage</b> (More → Homepage, administrator only): puts your public pages on your web space – start page, phone radio (<code>Funk/</code>), simulator in the browser (<code>Sim/</code>, only the signed package «sim-web.zip») and <code>Sim/test.html</code>. Address by default <code>https://kevlaschef.com</code> (https only), plus the upload key: set, replace or delete it; it is never shown again and never in the log; a new address deletes it. Optionally an own «Public address» (e.g. <code>https://moveeye.kevlaschef.com/</code>, https only) for «Open the homepage» and the check – uploading still goes to the web space address, the key stays. If the host protects the pages with a password, the check shows «🔒 protected (password)»; you set the password at the host, MoveEye never knows or stores it. Only changed files are uploaded, in the background, never during an alarm; «automatically after every update» is on by default. Three switches choose what is public: «Start page» (off by default), «📻 Phone radio» (<code>Funk/</code>) and «🎮 Simulator» (<code>Sim/</code> + test page), both on by default. A part that is off is not uploaded; what of it is already on the web space stays untouched (never deleted); with all three off there is nothing to publish. Then MoveEye checks every public address (status, size, type, redirects, Content-Security-Policy) – e.g. «connect-src blocks fetch()» explains «Load failed» on the iPhone.</li>
+fr|<li><b>🌐 Page d’accueil</b> (Plus → Page d’accueil, administrateur seulement) : met tes pages publiques sur ton espace web – page d’accueil, radio du téléphone (<code>Funk/</code>), simulateur dans le navigateur (<code>Sim/</code>, seulement le paquet signé «sim-web.zip») et <code>Sim/test.html</code>. Adresse par défaut <code>https://kevlaschef.com</code> (https seulement) et la clé d’envoi : jamais réaffichée, jamais dans le journal ; une nouvelle adresse la supprime. En option une «Adresse publique» propre (p. ex. <code>https://moveeye.kevlaschef.com/</code>, https seulement) pour «Ouvrir la page d’accueil» et la vérification – l’envoi passe toujours par l’adresse de l’espace web, la clé reste. Si l’hébergeur protège les pages par un mot de passe, la vérification affiche «🔒 protégé (mot de passe)» ; tu le définis chez l’hébergeur, MoveEye ne le connaît ni ne l’enregistre jamais. Seuls les fichiers modifiés sont envoyés, jamais pendant une alarme. Trois interrupteurs choisissent ce qui est public : «Page d’accueil» (désactivée par défaut), «📻 Radio du téléphone» (<code>Funk/</code>) et «🎮 Simulateur» (<code>Sim/</code> + page de test), activés par défaut. Une partie désactivée n’est pas envoyée ; ce qui est déjà sur l’espace web reste intact (jamais supprimé) ; tout désactivé = rien à publier. Ensuite MoveEye vérifie chaque adresse publique (statut, taille, type, redirections, Content-Security-Policy).</li>
+it|<li><b>🌐 Homepage</b> (Altro → Homepage, solo l’amministratore): carica le tue pagine pubbliche sul tuo spazio web – pagina iniziale, radio del telefono (<code>Funk/</code>), simulatore nel browser (<code>Sim/</code>, solo il pacchetto firmato «sim-web.zip») e <code>Sim/test.html</code>. Indirizzo di fabbrica <code>https://kevlaschef.com</code> (solo https) e la chiave di caricamento: mai più mostrata, mai nel registro; un nuovo indirizzo la cancella. Facoltativo un proprio «Indirizzo pubblico» (p. es. <code>https://moveeye.kevlaschef.com/</code>, solo https) per «Aprire la homepage» e la verifica – il caricamento passa sempre dall’indirizzo dello spazio web, la chiave resta. Se l’host protegge le pagine con una password, la verifica mostra «🔒 protetto (password)»; la imposti presso l’host, MoveEye non la conosce né la salva mai. Vengono caricati solo i file modificati, mai durante un allarme. Tre interruttori scelgono cosa è pubblico: «Pagina iniziale» (spenta di fabbrica), «📻 Radio del telefono» (<code>Funk/</code>) e «🎮 Simulatore» (<code>Sim/</code> + pagina di test), accesi di fabbrica. Una parte spenta non viene caricata; ciò che è già sullo spazio web resta intatto (mai cancellato); tutti spenti = niente da pubblicare. Poi MoveEye verifica ogni indirizzo pubblico (stato, dimensione, tipo, reindirizzamenti, Content-Security-Policy).</li>
+rm|<li><b>🌐 Pagina d’entrada</b> (Dapli → Pagina d’entrada, mo l’administratur): chargia tias paginas publicas sin tes spazi web – pagina d’entrada, radio dal telefonin (<code>Funk/</code>), simulatur en il browser (<code>Sim/</code>, mo il pachet signà «sim-web.zip») e <code>Sim/test.html</code>. Adressa da fabrica <code>https://kevlaschef.com</code> (mo https) e la clav da chargiar: mai pli mussada, mai en il protocol; ina nova adressa la stizza. Facultativ in’atgna «Adressa publica» (p. ex. <code>https://moveeye.kevlaschef.com/</code>, mo https) per «Avrir la pagina d’entrada» e la controlla – chargià vegn vinavant sur l’adressa dal spazi web, la clav resta. Sch’il host protegia las paginas cun in pled-clav, mussa la controlla «🔒 protegì (pled-clav)»; il pled-clav defineschas tar il host, MoveEye n’al enconuscha e memorisescha mai. Chargià vegn mo quai ch’è midà, mai durant in alarm. Trais interruptuders tschernan tge ch’è public: «Pagina d’entrada» (deactivada da fabrica), «📻 Radio dal telefonin» (<code>Funk/</code>) e «🎮 Simulatur» (<code>Sim/</code> + pagina da test), activads da fabrica. Ina part deactivada na vegn betg chargiada; quai ch’è gia sin il spazi web resta intact (mai stizzà); tut deactivà = nagut da publitgar. Suenter controllescha MoveEye mintga adressa publica (status, grondezza, tip, deviaziuns, Content-Security-Policy).</li>
 """
 
 
@@ -1209,6 +1285,8 @@ def homepage_selftest():
     assert "Funk/" in HP_INDEX_HTML and "Sim/" in HP_INDEX_HTML and "index_audio_worklet.js" in HP_TEST_HTML
     assert DEFAULTS.get("hp_start_on") is False and "hp_start_on" in USER_SETTINGS_DENY, "start page: off by default, admin only"
     assert DEFAULTS.get("hp_funk_on") is True and DEFAULTS.get("hp_sim_on") is True and "hp_sim_on" in USER_SETTINGS_DENY, "funk / sim: on by default"
+    assert hp_public_ok("https://moveeye.kevlaschef.com") == "https://moveeye.kevlaschef.com/" and not hp_public_ok("http://moveeye.kevlaschef.com/")
+    assert not hp_public_ok("https://user:pw@moveeye.kevlaschef.com/") and not hp_public_ok("https://a.ch/x?pw=1")
     assert [hp_part(x) for x in ("index.html", "Funk/sw.js", "Sim/test.html", "sim/x.js")] == ["start", "funk", "sim", None]
     k0 = CFG.get("hp_key")
     try:
