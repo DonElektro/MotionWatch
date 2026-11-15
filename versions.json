@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-16 00:21",
+ "generated": "2026-11-16 00:43",
  "versions": [
+  {
+   "version": "4.10.0",
+   "file": "webcam_bewegung_4_10_0.py",
+   "url": "",
+   "sha256": "105a3fdc18ec9e8880a2f1e5482c33b24c53d3caa9f12d2ee3a5224edcf7a5df",
+   "date": "2026-11-16 00:43",
+   "notes": "💬 Blinki fragen: Blinki beantwortet Fragen zur Bedienung und erklärt Fehler – offline auf dem Gerät (Sprachmodell auf Knopfdruck laden), wahlweise mit eigener Cloud; Fragen auch gesprochen (Handy 🎙, am Gerät nach 2× klatschen, Knopf oder QR-Karte – ab Werk aus)",
+   "size": 4023668,
+   "sig": "6f404afb50a925dccec9be7ac95496d0d647271a22342a869ade9379bcc3d85c2fecf4361300c76bf4b639393354a4bb8955d379f140b9887803cc6fbeccb000",
+   "data": {
+    "file": "moveeye_daten_4_10_0.zip",
+    "url": "",
+    "sha256": "c31b540f8be2e6db590fb40593c0710c084d1728b22d6b5d1c061ec654f2fbc9",
+    "size": 13993088,
+    "sig": "8c89b4c1299081c10d602587f5e8635f1b6346d4ce3d1f81b16a34b47f31b42a80953e9c93e11cb91880db5d2003330dc25e28dbc360e5eb2ec5a31140d0f406"
+   }
+  },
   {
    "version": "4.9.0",
    "file": "webcam_bewegung_4_9_0.py",
@@ -136,23 +153,6 @@
     "sha256": "93682b3709998523985c73b927e45448ee481c803ccc3ae5336334aaa3fec115",
     "size": 13387561,
     "sig": "d9c4778b3d38d516bfa7c29f688e1bc601a9c03a248e2646fc08878e4de3df4886497e8e2cc75acf83384d0ea0f74962797095d9a81f423883f41986c76af80d"
-   }
-  },
-  {
-   "version": "4.1.0",
-   "file": "webcam_bewegung_4_1_0.py",
-   "url": "",
-   "sha256": "8212ea3db915989af3d4ebac90df495f67e2b1562a48b7ed0e2db2dd16faee42",
-   "date": "2026-11-15 15:14",
-   "notes": "«📻 Radio» auch im Browser: «📱 dieser Browser» spielt den Sender auf dem Handy, der Lautsprecher bleibt still; geht es direkt nicht, läuft der Strom über MoveEye (höchstens 2 Zuhörer). Sicherheit: MoveEye holt Radio-Ströme nur noch von öffentlichen Adressen – auch nach Umleitungen und aus Wiedergabelisten; ein selbst eingetragener Sender im Heimnetz spielt nur über den Lautsprecher.",
-   "size": 3880846,
-   "sig": "6aa3c0f44c2750b62c75dc47b4ee915e69fc08c74abe3b07d5e2f1cd4ae4f824921a24e6fcbbcc7db830357bcd0d6d8648245711dad91ff1d0911c56870c3d0b",
-   "data": {
-    "file": "moveeye_daten_4_1_0.zip",
-    "url": "",
-    "sha256": "04c891b6057959b5c687dcffbd7e2aef31eae7d0d05d4196179834a6882b1682",
-    "size": 13376205,
-    "sig": "7d29e5b35885f51b33628ff8920d63a447dd9a207d874cc7a41634f51549780420523e3122515400cea6a2be2700f6306906a3eb82233c1f3e451fff2d27c90b"
    }
   },
   {
