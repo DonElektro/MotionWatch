@@ -372,7 +372,8 @@ def browser(base, bilder, req):
             return b && b.closest('details[data-view="sec:Camera / Servos"]') && b.closest('.tp-box.on'); }""", timeout=30000)
         weg()
         zeige = """() => { ['g2-ov', 'g2-spot', 'g2-bub', 'gd-card'].forEach(i => { const e = document.getElementById(i); if (e) e.remove(); });
-            const b = document.getElementById('tp-box'), g = b.closest('details.grp'), h = b.closest('details.sub');
+            const b = document.getElementById('tp-box'); if (window.msOpen) msOpen('sec:Camera / Servos');   // 639zzzg: its own subpage
+            const g = b.closest('details.grp'), h = b.closest('details.sub');
             if (g && !g.open) g.querySelector(':scope > summary').click(); if (h && !h.open) h.querySelector(':scope > summary').click();
             window.scrollBy(0, b.getBoundingClientRect().top - 330); return b.textContent; }"""
         t_ = pg.evaluate(zeige)

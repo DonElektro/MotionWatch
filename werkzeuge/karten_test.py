@@ -658,6 +658,8 @@ def teil_b(datei, P, rel, pins, bilder, echt=False):
                     pg.goto(base + "/settings")
                     pg.wait_for_selector(".locbox", state="attached", timeout=30000)
                     pg.wait_for_timeout(2500)               # the settings are grouped after loading (the boxes move into new parts)
+                    pg.evaluate("() => { const b = document.querySelector('.locbox'); if (window.msOpen) { const v_ = (b.closest('details.sub[data-view], details.grp[data-view]') || {}).dataset; if (v_ && v_.view) msOpen(v_.view); } }")   # 639zzzg: its subpage
+                    pg.wait_for_timeout(600)
                     for _k in range(12):                    # outer first, then inner, until the box is really visible
                         if pg.locator(".locbox .lmap").is_visible():
                             break

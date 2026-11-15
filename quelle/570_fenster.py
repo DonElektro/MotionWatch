@@ -777,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.96.0")
+        self.root.title("MoveEye 3.97.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1046,6 +1046,10 @@ class App:
         body.columnconfigure(0, weight=1); body.rowconfigure(0, weight=1)
         if self.tab not in [t for t, _ in self._tabs()]:
             self.tab = "live"
+        if self.tab == "fav" and getattr(self, "_fav_tk", None):   # 639zzzi: the tab ★
+            self.left_f = None
+            self._fav_tk(body)
+            return
         if self.tab in TK_PANEL_TABS:                     # 2.98.14: Schutz / Einstellungen / Simulator: the settings over the whole width
             self.left_f = None
             prev_ = dict(self._open_before if getattr(self, "_open_before", None) is not None else getattr(self, "_shown", {}))
@@ -1155,7 +1159,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.96.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.97.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1819,6 +1823,8 @@ class App:
         groups = [list(g) for g in TK_GROUPS]
         groups[-1][2] = groups[-1][2] + [x for x in SECTIONS if x not in listed]     # sections added later -> System
         groups = [g for g in groups if TK_GROUP_TAB.get(g[0], "settings") == tab] if tab != "sim" else [list(g) for g in TK_SIM_GROUPS]
+        if getattr(self, "_ms_tk_rows", None) and self._ms_tk_rows(inner, tab, groups):   # 639zzzg: rows -> one topic with «‹ Zurück»
+            return
         for gid, name, items in groups:
             items = [x for x in items if x is None or x in TK_PSEUDO or (x in SECTIONS and self.is_shown("sec:" + x) and (tab == "sim" or not simple_hidden(None, x)))]
             real = [x for x in items if x]
