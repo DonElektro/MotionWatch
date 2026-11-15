@@ -18,7 +18,10 @@
   Teil B (echter Prozess, lokaler Schein-ntfy-Server): MoveEye startet mit einer laufenden Pause aus der Einstellungsdatei,
     /api/pushpause zeigt sie, die Seiten tragen das Glocken-Menü, nach Ablauf kommt «Mitteilungen wieder an» beim Schein-Server.
 
-  python3 werkzeuge/push_pause_test.py [--datei X.py] [--nur a|b]
+  Mit --browser (Playwright): Kopf bei 390 px, dunkel, 📻 sichtbar, Pause aktiv (1 h / bis morgen früh / 15 min): 🔕 im gleichen
+    44-px-Knopf mit Abzeichen «1h» / «☾» / «15′», aria-label mit der vollen Restzeit, Knöpfe auf der Logo-Zeile, kein seitliches Scrollen.
+
+  python3 werkzeuge/push_pause_test.py [--datei X.py] [--nur a|b|c] [--browser [--bilder ORDNER]]
 """
 import argparse
 import base64
@@ -293,6 +296,56 @@ class Fake(http.server.BaseHTTPRequestHandler):
         pass
 
 
+BROWSER = {"an": False, "bilder": ""}
+
+
+def kopf_messen(base):
+    """390 px, dunkel, 📻 sichtbar, Pause aktiv: die Knöpfe bleiben auf der Logo-Zeile, kein seitliches Scrollen, 🔕 im 44-px-Knopf"""
+    from playwright.sync_api import sync_playwright
+    print(" Kopf bei 390 px (📻 + Pause)")
+    with sync_playwright() as pw:
+        b = pw.chromium.launch()
+        c = b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, color_scheme="dark",
+                          http_credentials={"username": "admin", "password": PASSWORT})
+        pg = c.new_page()
+        errs = []
+        pg.on("pageerror", lambda e: errs.append(str(e)))
+        # 📻 shows while the radio plays: the page asks /api/radio?on=1 - here it «plays» (nothing is played)
+        pg.route("**/api/radio?on=1*", lambda rt: rt.fulfill(status=200, content_type="application/json", body='{"ok": true, "on": true}'))
+        for path, mode, want in (("/", "60", "1h"), ("/protect", "morning", "☾"), ("/", "15", "15′")):
+            pg.goto(base + path, wait_until="domcontentloaded")
+            pg.wait_for_selector("#btn-sound", timeout=30000)
+            r = pg.evaluate("""m => fetch('/api/pushpause', {method: 'POST', headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({action: 'pause', mode: m, via: 'bell', lang: 'de'})}).then(r => r.json())""", mode)
+            pg.goto(base + path, wait_until="domcontentloaded")
+            pg.wait_for_selector("#btn-sound .pp-badge", timeout=30000)
+            pg.evaluate("""() => { document.querySelectorAll('.g2-tour,.g2-bubble,[class*=tour]').forEach(e => { if (e.closest('header') == null) e.remove(); });
+                                }""")
+            pg.wait_for_function("() => { const r = document.getElementById('mwk-radio'); return r && !r.hidden; }", timeout=30000)
+            pg.wait_for_timeout(600)
+            m = pg.evaluate("""() => { const b = document.getElementById('btn-sound').getBoundingClientRect(), ctl = document.querySelector('.hdr-ctl'),
+                                c = ctl.getBoundingClientRect(), h = document.querySelector('header h1, header .brand, header a.logo') || document.querySelector('header');
+                                const l = h.getBoundingClientRect(), rd = document.getElementById('mwk-radio');
+                                const kids = [...ctl.children].filter(x => x.offsetParent !== null).map(x => x.getBoundingClientRect());
+                                return {bw: Math.round(b.width), bh: Math.round(b.height), top: Math.round(c.top), bottom: Math.round(c.bottom), ltop: Math.round(l.top),
+                                        lbottom: Math.round(l.bottom), tops: [...new Set(kids.map(k => Math.round(k.top)))], right: Math.round(Math.max(...kids.map(k => k.right))),
+                                        sw: document.documentElement.scrollWidth, radio: !!(rd && rd.offsetParent !== null),
+                                        badge: (document.querySelector('#btn-sound .pp-badge') || {}).textContent || '',
+                                        aria: document.getElementById('btn-sound').getAttribute('aria-label') || ''}; }""")
+            ok(r.get("ok") and m["radio"], "%s, Pause «%s»: 📻 sichtbar" % (path, mode))
+            ok(m["badge"] == want and m["bw"] <= 48, "🔕 im gleichen Knopf (%d × %d px), Abzeichen «%s»" % (m["bw"], m["bh"], m["badge"]))
+            ok(len(m["tops"]) == 1 and m["top"] < m["lbottom"], "Knöpfe auf der Logo-Zeile (Knöpfe %s, Logo %d–%d)" % (m["tops"], m["ltop"], m["lbottom"]))
+            ok(m["sw"] <= 390 and m["right"] <= 390, "kein seitliches Scrollen (Breite %d, rechter Rand %d)" % (m["sw"], m["right"]))
+            if mode == "60":
+                ok(m["aria"] == "Mitteilungen pausiert, noch 1 Stunde – Menü" or m["aria"] == "Mitteilungen pausiert, noch 59 Minuten – Menü",
+                   "aria-label «%s»" % m["aria"])
+            if BROWSER["bilder"]:
+                pg.screenshot(path=os.path.join(BROWSER["bilder"], "kopf_pause_%s_%s.png" % (path.strip("/") or "live", mode)),
+                              clip={"x": 0, "y": 0, "width": 390, "height": 220})
+        ok(not errs, "keine JavaScript-Fehler %s" % errs[:2])
+        b.close()
+
+
 def teil_b(datei, tmp):
     print("Teil B (echter Prozess, Schein-ntfy)")
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Fake)
@@ -347,6 +400,8 @@ def teil_b(datei, tmp):
            "nach Ablauf beim Schein-ntfy: %s" % str(m and (m[0][1].get("title"), m[0][2].decode()[:60])))
         d = json.loads(get("/api/pushpause?lang=de"))
         ok(not d.get("on"), "danach: keine Pause")
+        if BROWSER["an"]:
+            kopf_messen(base)
     finally:
         p.terminate()
         try:
@@ -447,9 +502,12 @@ def main():
     ap.add_argument("--datei", default="")
     ap.add_argument("--nur", choices=("a", "b", "c"), default="")
     ap.add_argument("--intern-c", default="")
+    ap.add_argument("--browser", action="store_true", help="Teil B: Kopf bei 390 px mit Playwright messen (📻 + Pause)")
+    ap.add_argument("--bilder", default="", help="Ordner für Bilder des Kopfs (mit --browser)")
     a = ap.parse_args()
     datei = os.path.abspath(a.datei or sorted(glob.glob(os.path.join(REPO, "webcam_bewegung_*.py")),
                                               key=lambda f: [int(x) for x in re.findall(r"\d+", os.path.basename(f))])[-1])
+    BROWSER.update(an=a.browser, bilder=a.bilder)
     if a.intern_c:
         os.makedirs(a.intern_c, exist_ok=True)
         teil_c_intern(datei, a.intern_c)

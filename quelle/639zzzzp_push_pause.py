@@ -123,6 +123,12 @@ _HX_PP = {
                                               "Il rilevamento di presenza non è configurato.", "La constataziun da preschientscha n’è betg endrizzada."),
     "Only who gets alarm pushes may pause them.": ("Pausieren darf nur, wer Alarm-Pushes bekommt.", "Seul qui reçoit les push d’alarme peut les mettre en pause.",
                                                    "Solo chi riceve i push d’allarme può metterli in pausa.", "Mo tgi che survegn ils push d’alarm po als pausar."),
+    "Notifications paused, {left} left – menu": ("Mitteilungen pausiert, noch {left} – Menü", "Notifications en pause, encore {left} – menu",
+                                                 "Notifiche in pausa, ancora {left} – menu", "Communicaziuns en pausa, anc {left} – menu"),
+    "1 minute": ("1 Minute", "1 minute", "1 minuto", "1 minuta"),
+    "{n} minutes": ("{n} Minuten", "{n} minutes", "{n} minuti", "{n} minutas"),
+    "1 hour": ("1 Stunde", "1 heure", "1 ora", "1 ura"),
+    "{n} hours": ("{n} Stunden", "{n} heures", "{n} ore", "{n} uras"),
     "No pause is running.": ("Es läuft keine Pause.", "Aucune pause en cours.", "Nessuna pausa in corso.", "I na va nagina pausa."),
     "running": ("läuft", "en cours", "in corso", "en funcziun"),
     "off": ("aus", "désactivé", "spento", "deactivà"),
@@ -497,6 +503,23 @@ def pp_left_text(sec, short=False):
     return ("%d h %02d" % (h, m)) if short else ("%d h %d min" % (h, m) if m else "%d h" % h)
 
 
+def pp_badge(sec, mode):
+    """the small badge on the bell 🔕 (the button stays 44 px): «43′», «1h», «7h», «☾» until tomorrow morning"""
+    if mode == "morning":
+        return "☾"
+    mins = max(1, (max(0, int(sec)) + 59) // 60)
+    return "%d′" % mins if mins < 60 else "%dh" % (mins // 60)
+
+
+def pp_left_long(sec, lang=None):
+    """«43 Minuten», «7 Stunden 49 Minuten» (for the screen reader)"""
+    mins = max(1, (max(0, int(sec)) + 59) // 60)
+    h, m = divmod(mins, 60)
+    hs = (tr("1 hour", lang) if h == 1 else trf("{n} hours", lang, n=h)) if h else ""
+    ms = (tr("1 minute", lang) if m == 1 else trf("{n} minutes", lang, n=m)) if m else ""
+    return (hs + " " + ms).strip()
+
+
 def pp_info(scope="", lang=None, can=True):
     """everything the bell menu, the push page and the window need"""
     L = cur_lang(lang)
@@ -517,7 +540,8 @@ def pp_info(scope="", lang=None, can=True):
         via = {"bell": "via the bell 🔔", "page": "on the push page", "window": "in the Pi window", "push": "with the push button"}[s["via"]]
         who = tr("push button", L) if s["by"] == "push button" else s["by"]
         what = pp_what(s["held"], s["held_info"], L)
-        out.update(until=s["until"], left=int(left), hm=hm, mode=s["mode"], short=pp_left_text(left, True),
+        out.update(until=s["until"], left=int(left), hm=hm, mode=s["mode"], short=pp_left_text(left, True), badge=pp_badge(left, s["mode"]),
+                   aria=trf("Notifications paused, {left} left – menu", L, left=pp_left_long(left, L)),
                    line=until + " · " + trf("{left} left", L, left=pp_left_text(left)),
                    by=trf("by {who}", L, who=who) + " · " + tr(via, L), held=s["held"], held_info=s["held_info"],
                    held_line=trf("Held back so far: {what}", L, what=what) if what else tr("Nothing held back so far.", L))
@@ -740,10 +764,11 @@ body.hdrhidden .pp-pop{top:44px}
 .pp-own input,.pp-own select{width:100%;box-sizing:border-box;padding:9px;border-radius:10px;font-size:15px;background:var(--field);color:var(--txt);border:1px solid var(--line)}
 .pp-own .go{grid-column:1/-1;padding:10px;border-radius:10px;background:var(--acc);color:#fff;border:0;font-size:15px;font-weight:600;cursor:pointer}
 .pp-own .wide{grid-column:1/-1}.pp-err{grid-column:1/-1;color:var(--red);font-size:12px}
-#btn-sound[data-pp]{width:auto!important;padding:0 10px!important;gap:5px;display:inline-flex;align-items:center;color:var(--yel)!important;
-  border:1px solid rgba(224,165,38,.6)!important;background:rgba(224,165,38,.14)!important;font-size:14px;font-weight:700;white-space:nowrap}
-#btn-sound[data-pp]>svg{display:none}#btn-sound .pp-left svg{width:20px;height:20px;vertical-align:-4px;margin-right:4px}
-#btn-sound .pp-left{display:inline-flex;align-items:center}
+#btn-sound[data-pp]{position:relative;color:var(--yel)!important;border-color:rgba(224,165,38,.6)!important;background:rgba(224,165,38,.14)!important}
+#btn-sound[data-pp]>svg{display:none}#btn-sound .pp-left{display:contents}
+#btn-sound .pp-left svg{width:22px;height:22px}
+#btn-sound .pp-badge{position:absolute;right:-3px;bottom:-3px;min-width:15px;height:15px;padding:0 3px;box-sizing:border-box;border-radius:8px;
+  background:var(--yel);color:#111;font:700 10px/15px system-ui,sans-serif;text-align:center;pointer-events:none;white-space:nowrap}
 .pp-box{border:1px solid var(--line);border-radius:12px;padding:12px;margin:6px 0 12px;background:var(--panel2)}
 .pp-box .pp-t{display:flex;justify-content:space-between;align-items:center;font-weight:600;margin-bottom:8px}
 .pp-box .pp-t small{color:var(--mut);font-weight:400;font-size:13px}`;
@@ -821,15 +846,22 @@ body.hdrhidden .pp-pop{top:44px}
     pop.addEventListener("pointerdown", e => e.stopPropagation());
     document.body.appendChild(pop);
   }
-  function headPaint() {
+  let aria0 = null;                                    // the label of the bell without a pause (510 / 578)
+  function headPaint() {                               // the pause on the bell itself: 🔕 in the same 44 px button + a small badge
     const on = !!(P && P.can && P.on);
     const has = btn.querySelector(".pp-left");
-    if (!on) { if (btn.dataset.pp !== undefined) delete btn.dataset.pp; if (has) has.remove(); return; }
-    btn.dataset.pp = "1"; btn.title = "🔕 " + t("Notifications paused") + " · " + (P.line || "");
-    if (has) { const s = has.querySelector("span"); if (s && s.textContent !== P.short) s.textContent = P.short; return; }
-    const sp = E("span", "pp-left"); sp.innerHTML = SLASH; sp.appendChild(E("span", "", P.short)); btn.appendChild(sp);
+    if (!on) { if (btn.dataset.pp !== undefined) { delete btn.dataset.pp; if (aria0 != null) btn.setAttribute("aria-label", aria0); } if (has) has.remove(); return; }
+    if (btn.dataset.pp === undefined) aria0 = btn.getAttribute("aria-label");
+    btn.dataset.pp = "1";
+    const tl = "🔕 " + t("Notifications paused") + " · " + (P.line || "");
+    if (btn.title !== tl) btn.title = tl;
+    if (P.aria && btn.getAttribute("aria-label") !== P.aria) btn.setAttribute("aria-label", P.aria);
+    if (has) { const b = has.querySelector(".pp-badge"); if (b && b.textContent !== P.badge) b.textContent = P.badge; return; }
+    const sp = E("span", "pp-left"); sp.innerHTML = SLASH; sp.appendChild(E("span", "pp-badge", P.badge)); sp.lastChild.setAttribute("aria-hidden", "true");
+    btn.appendChild(sp);
   }
-  new MutationObserver(() => { if (P && P.on && !btn.querySelector(".pp-left")) headPaint(); }).observe(btn, {childList: true});
+  new MutationObserver(() => { if (P && P.on && P.can && (!btn.querySelector(".pp-left") || btn.getAttribute("aria-label") !== P.aria || !btn.title.startsWith("🔕"))) headPaint(); })
+    .observe(btn, {childList: true, attributes: true, attributeFilter: ["aria-label", "title"]});
   function pagePaint() {
     const slot = document.getElementById("pp-push"); if (!slot || !P) return;
     if (slot.contains(document.activeElement) && document.activeElement.tagName === "INPUT") return;
@@ -1026,6 +1058,8 @@ def push_pause_selftest():
             assert pp_exempt(p) == ex, p
         assert pp_what(3, 0) == "3 Alarme" and pp_what(1, 2) == "1 Alarm · 2 Hinweise" and pp_left_text(43 * 60 - 5) == "43 min"
         assert pp_left_text(7 * 3600 + 49 * 60, True) == "7 h 49" and pp_left_text(3595, True) == "1 h 00"
+        assert [pp_badge(x, "min") for x in (43 * 60 - 5, 3595, 7 * 3600 + 49 * 60)] == ["43′", "1h", "7h"] and pp_badge(9000, "morning") == "☾"
+        assert pp_left_long(43 * 60 - 5) == "43 Minuten" and pp_left_long(7 * 3600 + 49 * 60 - 5) == "7 Stunden 49 Minuten" and pp_left_long(3600) == "1 Stunde"
         _pp_put("", None, False)
         assert pp_scope_of("admin", "") == (True, "")
         assert tr("Gap between alarms (s)") == "Abstand zwischen Alarmen (s)"
