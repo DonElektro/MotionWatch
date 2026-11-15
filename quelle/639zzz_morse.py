@@ -1239,7 +1239,7 @@ def morse_is_test(txt):
 
 def morse_rx_text(text, source="camera", info=None):
     """a message is complete (from the camera; step 2: from the microphone / another MoveEye). The text is NEVER a command."""
-    txt = mfsk_clean(text) if (info or {}).get("fmt") == "mfsk" else morse_clean(text)     # 639zzzh: Mehrton carries UTF-8 text
+    txt = mfsk_clean(text) if (info or {}).get("fmt") == "mfsk" else morse_clean(text)     # 639zzzi: Mehrton carries UTF-8 text
     if not txt or source not in MORSE_SOURCES or not morse_on():
         return False
     now = time.time()
@@ -1553,7 +1553,7 @@ if GUI_OK:
         sf = tk.Frame(w, bg=C["bg"]); sf.pack(fill="x", padx=12)
         ent = tk.Entry(sf, font=("DejaVu Sans", 11)); ent.pack(side="left", fill="x", expand=True, padx=(0, 6))
         self._fbtn(sf, "📡 " + tr("Send"), lambda: do({"action": "send", "text": ent.get()[:MORSE_TEXT_MAX],
-                                                      "outs": ["beep"] if CFG.get("morse_fmt") in ("prot", "mfsk") else CFG.get("morse_outs"),   # 639zzzf / 639zzzh
+                                                      "outs": ["beep"] if CFG.get("morse_fmt") in ("prot", "mfsk") else CFG.get("morse_outs"),   # 639zzzf / 639zzzi
                                                       "wpm": CFG.get("morse_wpm"), "fw": CFG.get("morse_fw")})).pack(side="left", padx=(0, 6))
         self._fbtn(sf, "⏹ " + tr("Stop"), lambda: do({"action": "tx_stop"})).pack(side="left")
         msg.pack(fill="x", padx=12, pady=(6, 0))
@@ -1577,7 +1577,7 @@ if GUI_OK:
                 s = morse_state()
                 if s["on"]:
                     st.config(text="⏸ " + tr("Morse mode is running – the protection is PAUSED") + f"  ·  {s['rest'] // 60}:{s['rest'] % 60:02d}"
-                              + ("  ·  📻 " + tr("Own protocol (2 tones)") + (" 🔑" if CFG.get("morse_key") else "") if CFG.get("morse_fmt") == "prot" else ""),
+                              + ("  ·  📡 " + tr("Own protocol (2 tones)") + (" 🔑" if CFG.get("morse_key") else "") if CFG.get("morse_fmt") == "prot" else ""),
                               fg=C.get("org", "#ff9f0a"))
                 else:
                     st.config(text=tr("The Morse mode is off.") + ("  ·  " + tr("Only for the administrator") if not morse_may() else ""), fg=C["txt"])
@@ -1699,7 +1699,7 @@ text-decoration:none;color:var(--acc);font-weight:600;text-align:center;overflow
         <div class="mo-warn" id="mo-key-w"></div>
         <div class="mo-warn" id="mo-legal"></div>
       </div>
-      <div class="mo-row"><a class="mo-lnk" id="mo-funk" href="/morse/funk">📻 Phone radio</a><a class="mo-lnk" id="mo-funk-dl" href="/morse/funk.html" download="Handy-Funkgeraet.html">⬇ File</a></div>
+      <div class="mo-row"><a class="mo-lnk" id="mo-funk" href="/morse/funk">📡 Phone radio</a><a class="mo-lnk" id="mo-funk-dl" href="/morse/funk.html" download="Handy-Funkgeraet.html">⬇ File</a></div>
       <div class="mo-hint" id="mo-funk-h"></div>
       <div class="mo-hint bad" id="mo-fmt-err"></div>
     </div>
@@ -1777,7 +1777,7 @@ text-decoration:none;color:var(--acc);font-weight:600;text-align:center;overflow
     if (j.state) J = j; if (!j.ok) $i("mo-err").textContent = j.error || ""; else { P = j; paintPlan(); } paint(); };
   // 639zzzf: the format «Morse | own protocol (2 tones)», the tones, the key (only set / delete - never shown), the phone radio
   $i("mo-fmt-t").textContent = t("Format"); $i("mo-f-morse").textContent = t("Morse"); $i("mo-f-prot").textContent = t("Own protocol (2 tones)");
-  $i("mo-f-mfsk").textContent = t("Multi-tone");                // 639zzzh
+  $i("mo-f-mfsk").textContent = t("Multi-tone");                // 639zzzi
   $i("mo-mf-h").textContent = t("Multi-tone (MFSK): many tones, each carries several bits - faster and sturdier than two tones. The other side needs the same tones (a preset is found by itself; the Baukasten must be the same on both sides). Only the loudspeaker sends it.");
   [["mo-l-mfp", "Tones"], ["mo-l-mff", "Error correction"], ["mo-l-kn", "Number of tones"], ["mo-l-kf0", "First tone (Hz)"], ["mo-l-kdf", "Spacing (Hz)"], ["mo-l-kT", "Symbol (ms)"],
    ["mo-l-kg", "Guard time (ms)"], ["mo-l-kl", "Or a list of tones (Hz, with commas):"], ["mo-k-set", "Apply"]].forEach(([id, k]) => { $i(id).textContent = t(k); });
@@ -1788,7 +1788,7 @@ text-decoration:none;color:var(--acc);font-weight:600;text-align:center;overflow
   $i("mo-l-key").textContent = t("New key (the same as on the other phone):"); $i("mo-key-set").textContent = "🔑 " + t("Set the key"); $i("mo-key-del").textContent = t("Delete the key");
   $i("mo-key-w").textContent = "⚠ " + t("With a key every message is encrypted anew (V2: a random start, PBKDF2 and HMAC-SHA256, 6 check characters). Still: no reviewed method and only about 32 bits of check - protect nothing important with it. Both sides need a current MoveEye or the new phone radio page.");
   $i("mo-legal").textContent = "§ " + t("Encryption is forbidden in amateur radio (ITU Radio Regulations No. 25.2A; OFCOM: digital transmissions only unencrypted). Never send with a key over amateur radio; for other radios (e.g. PMR446) follow the rules of OFCOM (BAKOM).");
-  $i("mo-funk").textContent = "📻 " + t("Phone radio"); $i("mo-funk-dl").textContent = "⬇ " + t("Download as a file for another phone");
+  $i("mo-funk").textContent = "📡 " + t("Phone radio"); $i("mo-funk-dl").textContent = "⬇ " + t("Download as a file for another phone");
   const mfSet = async mf => { $i("mo-fmt-err").textContent = ""; const j = await api({action: "funk", mf}); if (j.state) J = j; if (!j.ok) $i("mo-fmt-err").textContent = j.error || ""; paint(); plan(); };
   $i("mo-mf-p").onchange = () => mfSet({pid: +$i("mo-mf-p").value}); $i("mo-mf-fec").onchange = () => mfSet({fec: +$i("mo-mf-fec").value});
   $i("mo-k-set").onclick = () => mfSet({custom: {n: +$i("mo-kn").value, f0: +$i("mo-kf0").value, df: +$i("mo-kdf").value, T: +$i("mo-kT").value, g: +$i("mo-kg").value, list: $i("mo-kl").value}});
@@ -1805,7 +1805,7 @@ text-decoration:none;color:var(--acc);font-weight:600;text-align:center;overflow
     const f = J.state.funk; if (!f) return;
     document.querySelectorAll("#mo-fmt-seg button").forEach(b => { b.classList.toggle("sel", b.dataset.f === f.fmt); b.setAttribute("aria-pressed", b.dataset.f === f.fmt ? "true" : "false"); });
     $i("mo-prot").hidden = f.fmt === "morse"; $i("mo-tones").hidden = $i("mo-prot-h").hidden = f.fmt !== "prot"; $i("mo-mf").hidden = f.fmt !== "mfsk";
-    const mf = f.mf;                                           // 639zzzh: Mehrton - preset, error correction, Baukasten
+    const mf = f.mf;                                           // 639zzzi: Mehrton - preset, error correction, Baukasten
     if (mf) {
       const foc = id => document.activeElement === $i(id);
       if (!foc("mo-mf-p")) $i("mo-mf-p").value = String(mf.pid); if (!foc("mo-mf-fec")) $i("mo-mf-fec").value = String(mf.fec);
@@ -1886,7 +1886,7 @@ text-decoration:none;color:var(--acc);font-weight:600;text-align:center;overflow
       : (sd.live ? sd.live + "  (" + sd.live_wpm + " WPM, " + sd.hz + " Hz)" : sd.hz ? t("a tone at") + " " + sd.hz + " Hz …" : t("listening for a tone or a whistle"))
         + " · " + t("reads up to about") + " " + sd.limit + " WPM. " + t("No sound is stored - only the decoded text."));
     const f = s.funk;                                          // 639zzzf: listening for the protocol (the two tones)
-    if (f && f.fmt === "prot" && sd.on && sd.mic && s.on) se.textContent = "🎤 📻 " + (f.own ? t("MoveEye plays a sound itself - not listening meanwhile.")
+    if (f && f.fmt === "prot" && sd.on && sd.mic && s.on) se.textContent = "🎤 📡 " + (f.own ? t("MoveEye plays a sound itself - not listening meanwhile.")
       : !f.run ? t("The microphone delivers no sound.") + " (" + sd.status + ")" : (f.live || f.sym ? f.live + " " + f.sym.replace(/\./g, "·").replace(/-/g, "–") + "  (" + f.wpm + " WPM)"
       : t("listening for the two tones")) + " · A " + f.fa + " Hz" + (f.a ? " ●" : "") + " · B " + f.fb + " Hz" + (f.b ? " ●" : "")) + " · " + t("No sound is stored - only the decoded text.");
     if (f && f.fmt === "mfsk" && f.mf && sd.on && sd.mic && s.on) { const lv = f.mf.live; se.textContent = "🎤 📶 " + (sd.own ? t("MoveEye plays a sound itself - not listening meanwhile.")
@@ -1901,14 +1901,14 @@ text-decoration:none;color:var(--acc);font-weight:600;text-align:center;overflow
     r.msgs.forEach(m => { const li = E("li"); li.appendChild(E("b", "", m.bad === "nokey" ? "🔒 " + t("encrypted - no key is set here") : m.bad === "crc" ? "⚠ " + t("disturbed - the check sum is wrong")
         : m.bad === "settings" ? "⚠ " + t("other Baukasten settings than here") : m.bad ? "⚠ " + t("wrong key or disturbed")
         : m.newer ? t("newer format - this MoveEye cannot read it") : m.text));
-      li.appendChild(E("small", "", (m.src === "file" ? "📁 " + t("from a file") + " · " : "") + (m.fmt === "prot" ? "📻 " : m.fmt === "mfsk" ? "📶 " : m.src === "sound" ? "🎤 " : m.src === "file" ? "" : "💡 ") + (m.key ? "🔑 " + t("decrypted with the key") + " · " : "") + m.t + " · " + m.wpm + " WPM" + (m.test ? " · " + t("test signal") : "") + (m.pic ? " · 🖼 " + t("in the history") : "") + (m.push === "sent" ? " · 📲 " + t("push sent") : m.push === "held" ? " · " + t("push held back (too many)") : ""))); ul.appendChild(li); });
+      li.appendChild(E("small", "", (m.src === "file" ? "📁 " + t("from a file") + " · " : "") + (m.fmt === "prot" ? "📡 " : m.fmt === "mfsk" ? "📶 " : m.src === "sound" ? "🎤 " : m.src === "file" ? "" : "💡 ") + (m.key ? "🔑 " + t("decrypted with the key") + " · " : "") + m.t + " · " + m.wpm + " WPM" + (m.test ? " · " + t("test signal") : "") + (m.pic ? " · 🖼 " + t("in the history") : "") + (m.push === "sent" ? " · 📲 " + t("push sent") : m.push === "held" ? " · " + t("push held back (too many)") : ""))); ul.appendChild(li); });
   }
   function paintPlan() {
     const el = $i("mo-plan"), f = $i("mo-flash"), w = $i("mo-wear"); f.hidden = true; w.hidden = true;
     if (!P) { el.textContent = ""; return; }
     if (!P.ok) { el.textContent = P.error || ""; el.className = "mo-hint bad"; return; }
     const p = P.plan; el.className = "mo-hint";
-    el.textContent = (mfP() ? "📶 " : prot() ? "📻 " : "") + "«" + p.shown + "»" + (prot() && J.state.funk.key ? " 🔑" : "") + " · " + (p.mf ? p.mf.n + " " + t("tones") + " · " + t(p.mf.fec === "aus" ? "off" : p.mf.fec === "leicht" ? "light" : "strong") : p.wpm + " WPM") + " · " + fmt(p.secs) + (p.slow ? " · " + t("slowed down by:") + " " + p.slow : "")
+    el.textContent = (mfP() ? "📶 " : prot() ? "📡 " : "") + "«" + p.shown + "»" + (prot() && J.state.funk.key ? " 🔑" : "") + " · " + (p.mf ? p.mf.n + " " + t("tones") + " · " + t(p.mf.fec === "aus" ? "off" : p.mf.fec === "leicht" ? "light" : "strong") : p.wpm + " WPM") + " · " + fmt(p.secs) + (p.slow ? " · " + t("slowed down by:") + " " + p.slow : "")
       + (p.skipped.length ? " · " + t("left out (no Morse sign):") + " " + p.skipped.join(" ") : "");
     if (p.vis) { f.hidden = false; f.textContent = "⚠ " + (p.note ? t("Flashing light, about 3 flashes a second: it can trigger seizures in people with photosensitive epilepsy. Do not aim it at people.")
       : t("Flashing light: do not aim it at people or at the road.")); }

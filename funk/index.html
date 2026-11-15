@@ -76,7 +76,7 @@ input[type=range]{width:100%;accent-color:var(--a)}
 <body>
 <div class="app">
   <a class="back" id="mw-back" href="/morse" hidden>‹ Morse</a>
-  <h1 class="ttl"><span aria-hidden="true">📻</span><span id="ttl">Handy-Funkgerät</span></h1>
+  <h1 class="ttl"><span aria-hidden="true">📡</span><span id="ttl">Handy-Funkgerät</span></h1>
   <div class="top">
     <button class="pill" id="keyBtn" aria-label="Schlüssel einstellen">
       <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/></svg>
@@ -408,7 +408,7 @@ async function decodeSamples(x,sr,onProgress){
 }
 /*FUNK-V2-END*/
 /*MFSK-START*/
-// «Mehrton» (MFSK, MoveEye): Bit für Bit wie MoveEye (quelle/639zzzh_mehrton.py, Spezifikation dort und in docs/Funk_Protokoll.md).
+// «Mehrton» (MFSK, MoveEye): Bit für Bit wie MoveEye (quelle/639zzzi_mehrton.py, Spezifikation dort und in docs/Funk_Protokoll.md).
 const MF={P:{1:{n:4,f0:800,df:250,T:40,g:6},2:{n:8,f0:650,df:200,T:50,g:8},3:{n:16,f0:500,df:150,T:64,g:8}},
   SYNC:[0,15,5,10,3,12,8,1,14,6,11,2],LEAD:0.3,TAIL:3,FECS:['aus','leicht','stark'],HDR:92,MAXD:255,MAXT:200,BAND:[300,3000],G1:0o171,G2:0o133,PUN:[1,1,0,1,1,0]};
 function mfTones(s){if(s.list&&s.list.length)return s.list.map(Number);const o=[];for(let i=0;i<s.n;i++)o.push(s.f0+i*s.df);return o;}

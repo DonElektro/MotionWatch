@@ -98,7 +98,7 @@ SHA-256-Strom seiner Seite, ist weg):
 ## Mehrton (MFSK): Spezifikation (Besitzer 14.11.2026)
 
 Dritte Art neben Morse und dem 2-Ton-Protokoll, nur über den Ton, auf der Seite (Block `MFSK` in `FUNK_PAGE`) und in MoveEye
-(Teil 639zzzh) Bit für Bit gleich (Testvektoren `MFSK_VEKTOREN`, `funk_test.py` Teil M).
+(Teil 639zzzi) Bit für Bit gleich (Testvektoren `MFSK_VEKTOREN`, `funk_test.py` Teil M).
 
 | Vorlage | Töne | Frequenzen | Symbol / Schutz | Bit pro Symbol | roh |
 |---|---|---|---|---|---|
@@ -657,6 +657,10 @@ def teil_e(datei, ns, browser):
         page = b.decode("utf-8", "replace")
         ok(c == 200 and "window.MW_FUNK=" in page and '"lang": "fr"' in page and "manifest.webmanifest" not in page and "/*DECODER-START*/" in page,
            "Administrator: /morse/funk = seine Seite in MoveEye (Sprache, Weg zurück, ohne Manifest)")
+        c, b, h = req("/help", raw=True)
+        hp = b.decode("utf-8", "replace")
+        ok(c == 200 and "📡 Eigenes Protokoll (2 Töne) und Handy-Funkgerät" in hp and "📶 Mehrton (MFSK)" in hp and "📡 Own protocol (2 tones)" in hp,
+           "Anleitung: die Absätze zum Protokoll und zum Mehrton stehen drin (de, en)")
         c, b, h = req("/morse/funk.html", raw=True)
         ok(c == 200 and "attachment" in h.get("Content-Disposition", "") and "window.MW_FUNK=" not in b.decode("utf-8", "replace"),
            "«Als Datei herunterladen»: /morse/funk.html als Anhang, ohne MoveEye-Teil")

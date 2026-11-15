@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639zzzh: «Mehrton» (MFSK) als dritter Weg neben Morse und «Eigenes Protokoll (2 Töne)» – nur über den Ton: Vorlagen 4 / 8 / 16 Töne und ein Baukasten, Rahmen (Vorspann, Kopf, Nutzdaten, CRC-16), Fehlerkorrektur aus / leicht / stark (Faltungscode K=7 mit Viterbi, weiche Entscheidungen, Verschachtelung), Schlüssel wie V2 auf Bytes; dieselbe Rechnung auf der Seite «Handy-Funkgerät» (Block MFSK in FUNK_PAGE). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639zzzi: «Mehrton» (MFSK) als dritter Weg neben Morse und «Eigenes Protokoll (2 Töne)» – nur über den Ton: Vorlagen 4 / 8 / 16 Töne und ein Baukasten, Rahmen (Vorspann, Kopf, Nutzdaten, CRC-16), Fehlerkorrektur aus / leicht / stark (Faltungscode K=7 mit Viterbi, weiche Entscheidungen, Verschachtelung), Schlüssel wie V2 auf Bytes; dieselbe Rechnung auf der Seite «Handy-Funkgerät» (Block MFSK in FUNK_PAGE). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Besitzer (14.11.2026): Mehrton als neue Art neben Morse und dem eigenen Protokoll, auf der Seite und in MoveEye (nur Ton).
 # Spezifikation (Bit für Bit gleich in der Seite, geprüft von werkzeuge/funk_test.py Teil M, Testvektoren MFSK_VEKTOREN):
@@ -534,7 +534,7 @@ _morse_plan_mfsk = morse_plan
 
 
 # wraps: morse_plan (639zzzf)
-def morse_plan(text, outs, wpm, fw=0, lang=None):              # + 639zzzh: «Mehrton» - only with the loudspeaker
+def morse_plan(text, outs, wpm, fw=0, lang=None):              # + 639zzzi: «Mehrton» - only with the loudspeaker
     ids = [str(x) for x in (outs or [])] if isinstance(outs, (list, tuple)) else []
     if not mfsk_on() or "beep" not in ids:
         return _morse_plan_mfsk(text, outs, wpm, fw, lang)
@@ -558,7 +558,7 @@ _morse_beep_chunks_mfsk = morse_beep_chunks
 
 
 # wraps: morse_beep_chunks (639zzzf)
-def morse_beep_chunks(tl, rate, lead=0.6):                      # + 639zzzh: Mehrton with the phase running through
+def morse_beep_chunks(tl, rate, lead=0.6):                      # + 639zzzi: Mehrton with the phase running through
     if not isinstance(tl, MfskTL):
         yield from _morse_beep_chunks_mfsk(tl, rate, lead); return
     yield np.zeros(int(lead * rate), np.float32)
@@ -574,7 +574,7 @@ def mfsk_rx_message(res):
 _mfsk_audio_chunk_prev = AudioMonitor._chunk
 
 
-def _mfsk_audio_chunk(self, data):                            # + 639zzzh: the microphone to the Mehrton readers (in the mode)
+def _mfsk_audio_chunk(self, data):                            # + 639zzzi: the microphone to the Mehrton readers (in the mode)
     if not mfsk_on():
         return _mfsk_audio_chunk_prev(self, data)
     _morse_audio_chunk_250(self, data)                        # (the sound monitor as always; no Morse reader meanwhile)
@@ -608,7 +608,7 @@ _morse_state_mfsk = morse_state
 
 
 # wraps: morse_state (639zzzf)
-def morse_state(lang=None):                                     # + 639zzzh: the Mehrton choice and what the reader is at
+def morse_state(lang=None):                                     # + 639zzzi: the Mehrton choice and what the reader is at
     st = _morse_state_mfsk(lang)
     pid, s, fec = mfsk_setting()
     cu = CFG.get("morse_mf_custom") or MFSK_DEF["morse_mf_custom"]
@@ -628,7 +628,7 @@ _morse_do_mfsk = morse_do
 
 
 # wraps: morse_do (639zzzf)
-def morse_do(d, who, role="admin", appkey=None, pin=None, pin_checked=False, lang=None):   # + 639zzzh: format «mfsk», its settings
+def morse_do(d, who, role="admin", appkey=None, pin=None, pin_checked=False, lang=None):   # + 639zzzi: format «mfsk», its settings
     d = d if isinstance(d, dict) else {}
     if str(d.get("action") or "") != "funk" or not (d.get("fmt") == "mfsk" or isinstance(d.get("mf"), dict)):
         return _morse_do_mfsk(d, who, role, appkey, pin, pin_checked, lang)
@@ -676,7 +676,7 @@ _funk_wav_bytes_mfsk = funk_wav_bytes
 
 
 # wraps: funk_wav_bytes (639zzzf)
-def funk_wav_bytes(text, wpm, fw=0):                            # + 639zzzh: Mehrton as WAV (16 kHz: every symbol whole samples)
+def funk_wav_bytes(text, wpm, fw=0):                            # + 639zzzi: Mehrton as WAV (16 kHz: every symbol whole samples)
     if not mfsk_on():
         return _funk_wav_bytes_mfsk(text, wpm, fw)
     import io
@@ -696,7 +696,7 @@ _funk_audio_read_mfsk = funk_audio_read
 
 
 # wraps: funk_audio_read (639zzzf)
-def funk_audio_read(data, lang=None):                           # + 639zzzh: a Mehrton recording
+def funk_audio_read(data, lang=None):                           # + 639zzzi: a Mehrton recording
     if not mfsk_on():
         return _funk_audio_read_mfsk(data, lang)
     if FUNK_FILE["busy"]:
@@ -801,9 +801,7 @@ _HELP_MFSK = {
     "it": '<li><b>📶 Multitono (MFSK):</b> 4, 8 o 16 suoni o un Baukasten; trame con CRC-16; correzione degli errori spenta / leggera / forte. Un modello viene riconosciuto da sé, il Baukasten deve essere uguale sui due lati.</li>',
     "rm": '<li><b>📶 Plirs tuns (MFSK):</b> 4, 8 u 16 tuns u in Baukasten; roms cun CRC-16; correctura da sbagls deactivada / levga / ferma. In model vegn enconuschì sez, il Baukasten sto esser il medem sin omaduas varts.</li>',
 }
-for _L, _li in _HELP_MFSK.items():
-    if _L in _HELP_MORSE and "</ul></section>" in _HELP_MORSE[_L]:
-        _HELP_MORSE[_L] = _HELP_MORSE[_L].replace("</ul></section>", _li + "</ul></section>", 1)
+funk_help_add(_HELP_MFSK)                                   # (into the finished manual too - see 639zzzf)
 
 # test vectors (the same in werkzeuge/funk_test.py: page in node = MoveEye): text, preset, FEC, key, nonce (hex) -> the first 16 hex
 # signs of SHA-256 of the symbols written as "3,0,15,…"
@@ -815,6 +813,7 @@ MFSK_VEKTOREN = (("HALLO WELT 73?", 1, 0, "", "", "27cc5c2e5d0db79f"), ("Grüsse
 def mfsk_selftest():
     """Mehrton: CRC, packing, code + Viterbi, the fixed vectors, a frame through the reader for every preset and FEC (with
     and without key, wrong key, the Baukasten and its check value), noise is no frame, the settings check"""
+    assert _HELP_MFSK["de"] in HELP_PAGE, "the paragraph on Mehrton is in the manual"
     assert mfsk_crc16(b"123456789") == 0x29B1 and mfsk_crc8(b"123456789") == 0xF4, "CRC-16/CCITT-FALSE, CRC-8"
     for t in ("A", "AB", "ABC", "HALLO WELT 73?", "Grüsse aus Zürich!"):
         b, pk = mfsk_pack(t)
@@ -850,4 +849,4 @@ def mfsk_selftest():
     return "CRC, packing, Viterbi, vectors, every preset / FEC with and without key, wrong key, Baukasten, noise"
 
 
-SELFTEST_EXTRA.append(("Mehrton (MFSK): frames, error correction, key, Baukasten (639zzzh)", mfsk_selftest))
+SELFTEST_EXTRA.append(("Mehrton (MFSK): frames, error correction, key, Baukasten (639zzzi)", mfsk_selftest))

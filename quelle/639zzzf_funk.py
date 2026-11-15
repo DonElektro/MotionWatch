@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639zzzf: «Eigenes Protokoll (2 Töne)» des Besitzers im Morse-Modus (senden über den Lautsprecher, lesen über das Mikrofon, Schlüssel nur für den Administrator) und die Seite «📻 Handy-Funkgerät» (/morse/funk, dieselbe Seite als PWA in funk/). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639zzzf: «Eigenes Protokoll (2 Töne)» des Besitzers im Morse-Modus (senden über den Lautsprecher, lesen über das Mikrofon, Schlüssel nur für den Administrator) und die Seite «📡 Handy-Funkgerät» (/morse/funk, dieselbe Seite als PWA in funk/). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Besitzer (14.11.2026): seine Seite «Morse-Funk» (Handy-Lautsprecher / Mikrofon über ein Handfunkgerät) soll mit MoveEye reden.
 # Sein Protokoll, Bit für Bit gleich wie seine Seite:
@@ -461,7 +461,7 @@ input[type=range]{width:100%;accent-color:var(--a)}
 <body>
 <div class="app">
   <a class="back" id="mw-back" href="/morse" hidden>‹ Morse</a>
-  <h1 class="ttl"><span aria-hidden="true">📻</span><span id="ttl">Handy-Funkgerät</span></h1>
+  <h1 class="ttl"><span aria-hidden="true">📡</span><span id="ttl">Handy-Funkgerät</span></h1>
   <div class="top">
     <button class="pill" id="keyBtn" aria-label="Schlüssel einstellen">
       <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/></svg>
@@ -793,7 +793,7 @@ async function decodeSamples(x,sr,onProgress){
 }
 /*FUNK-V2-END*/
 /*MFSK-START*/
-// «Mehrton» (MFSK, MoveEye): Bit für Bit wie MoveEye (quelle/639zzzh_mehrton.py, Spezifikation dort und in docs/Funk_Protokoll.md).
+// «Mehrton» (MFSK, MoveEye): Bit für Bit wie MoveEye (quelle/639zzzi_mehrton.py, Spezifikation dort und in docs/Funk_Protokoll.md).
 const MF={P:{1:{n:4,f0:800,df:250,T:40,g:6},2:{n:8,f0:650,df:200,T:50,g:8},3:{n:16,f0:500,df:150,T:64,g:8}},
   SYNC:[0,15,5,10,3,12,8,1,14,6,11,2],LEAD:0.3,TAIL:3,FECS:['aus','leicht','stark'],HDR:92,MAXD:255,MAXT:200,BAND:[300,3000],G1:0o171,G2:0o133,PUN:[1,1,0,1,1,0]};
 function mfTones(s){if(s.list&&s.list.length)return s.list.map(Number);const o=[];for(let i=0;i<s.n;i++)o.push(s.f0+i*s.df);return o;}
@@ -1814,39 +1814,59 @@ _MORSE_DE.update({_k: DE.get(_k, _v[0]) for _k, _v in _HX_FUNK.items()})
 
 # ---- the manual: in the section «Morse-Modus» ----------------------------------------------------------------------------------------
 _HELP_FUNK = {
-    "de": ('<li><b>📻 Eigenes Protokoll (2 Töne) und Handy-Funkgerät:</b> im Morse-Modus «Format» → «Eigenes Protokoll (2 Töne)»: Ton A (800 Hz) '
+    "de": ('<li><b>📡 Eigenes Protokoll (2 Töne) und Handy-Funkgerät:</b> im Morse-Modus «Format» → «Eigenes Protokoll (2 Töne)»: Ton A (800 Hz) '
            'trägt Punkt und Strich, Ton B (1400 Hz) kurz = Zeichenende, lang = Start / Ende der Nachricht; 39 Zeichen (A–Z, 0–9, Leerzeichen . ?). '
            'Gesendet wird nur über den Lautsprecher (Licht und IR senden weiter Morse), gelesen über das Mikrofon («mit dem Mikrofon» an). '
-           'Gleich wie die Seite «Handy-Funkgerät» (Morse-Modus → «📻 Handy-Funkgerät»; für ein Handy ohne MoveEye: '
+           'Gleich wie die Seite «Handy-Funkgerät» (Morse-Modus → «📡 Handy-Funkgerät»; für ein Handy ohne MoveEye: '
            '<code>' + FUNK_PAGES_URL + '</code>, «Zum Home-Bildschirm», geht danach ohne Internet). Am iPhone braucht das Mikrofon die sichere '
            'Seite (https, Port + 1): einmal die Zertifikatswarnung bestätigen. <b>Schlüssel</b> (nur Administrator): jede Nachricht wird neu verschlüsselt '
            '(V2: zufälliger Anfang, PBKDF2 / HMAC-SHA256, 6 Prüfzeichen – falscher Schlüssel oder Störung: «falscher Schlüssel oder gestört»); kein geprüftes Verfahren. '
            '<b>Audiodatei:</b> «🎵 Als Audiodatei» speichert die Nachricht als WAV, «📁 Audiodatei einlesen» liest eine Aufnahme (WAV immer; M4A, MP3, Ogg mit ffmpeg). Im Amateurfunk ist Verschlüsselung verboten (ITU Nr. 25.2A, BAKOM); für PMR446 & Co. die '
            'Regeln des BAKOM beachten. Der Schlüssel steht nie im Protokoll, im Verlauf oder in einer Push; im Verlauf steht nur «entschlüsselt mit Schlüssel».</li>'),
-    "en": ('<li><b>📻 Own protocol (2 tones) and phone radio:</b> in the Morse mode «Format» → «Own protocol (2 tones)»: tone A (800 Hz) carries dot '
+    "en": ('<li><b>📡 Own protocol (2 tones) and phone radio:</b> in the Morse mode «Format» → «Own protocol (2 tones)»: tone A (800 Hz) carries dot '
            'and dash, tone B (1400 Hz) short = end of a character, long = start / end of the message; 39 characters (A–Z, 0–9, space . ?). It is sent only '
            'with the loudspeaker (light and IR keep sending Morse) and read with the microphone («with the microphone» on). The same as the page «Phone radio» '
-           '(Morse mode → «📻 Phone radio»; for a phone without MoveEye: <code>' + FUNK_PAGES_URL + '</code>, «Add to Home Screen», then it works without '
+           '(Morse mode → «📡 Phone radio»; for a phone without MoveEye: <code>' + FUNK_PAGES_URL + '</code>, «Add to Home Screen», then it works without '
            'internet). On an iPhone the microphone needs the secure page (https, port + 1): accept the certificate warning once. <b>Key</b> (administrator only): '
            'every message is encrypted anew (V2: random start, PBKDF2 / HMAC-SHA256, 6 check characters - a wrong key or noise: «wrong key or disturbed»); no reviewed method. '
            '<b>Audio file:</b> «🎵 As an audio file» saves the message as WAV, «📁 Read an audio file» reads a recording (WAV always; M4A, MP3, Ogg with ffmpeg). Encryption is forbidden in amateur radio (ITU No. 25.2A, OFCOM); '
            'for PMR446 & co. follow the rules of OFCOM. The key is never in the log, the history or a push; the history only says «decrypted with the key».</li>'),
-    "fr": ('<li><b>📻 Protocole propre (2 sons) et radio du téléphone :</b> mode morse «Format» → «Protocole propre (2 sons)» : son A (800 Hz) = point et '
+    "fr": ('<li><b>📡 Protocole propre (2 sons) et radio du téléphone :</b> mode morse «Format» → «Protocole propre (2 sons)» : son A (800 Hz) = point et '
            'trait, son B (1400 Hz) court = fin du caractère, long = début / fin ; 39 caractères. Envoyé seulement par le haut-parleur, lu par le microphone. '
            'Téléphone sans MoveEye : <code>' + FUNK_PAGES_URL + '</code>. iPhone : page sécurisée (https). <b>Clé</b> (administrateur) : chaque message chiffré à nouveau '
            '(V2, 6 caractères de contrôle), méthode non vérifiée ; fichier audio : «Comme fichier audio» (WAV), «Lire un fichier audio» ; chiffrement interdit en radioamateur (UIT n° 25.2A, OFCOM). La clé n’apparaît jamais dans le journal, l’historique ou un push.</li>'),
-    "it": ('<li><b>📻 Protocollo proprio (2 suoni) e radio del telefono:</b> modalità Morse «Formato» → «Protocollo proprio (2 suoni)»: suono A (800 Hz) = '
+    "it": ('<li><b>📡 Protocollo proprio (2 suoni) e radio del telefono:</b> modalità Morse «Formato» → «Protocollo proprio (2 suoni)»: suono A (800 Hz) = '
            'punto e linea, suono B (1400 Hz) corto = fine del carattere, lungo = inizio / fine; 39 caratteri. Inviato solo con l’altoparlante, letto con il '
            'microfono. Telefono senza MoveEye: <code>' + FUNK_PAGES_URL + '</code>. iPhone: pagina sicura (https). <b>Chiave</b> (amministratore): ogni messaggio cifrato di nuovo '
            '(V2, 6 caratteri di controllo), metodo non verificato; file audio: «Come file audio» (WAV), «Leggere un file audio»; cifratura vietata nel radioamatorismo (UIT n. 25.2A, UFCOM). La chiave non appare mai nel registro, nella cronologia o in un push.</li>'),
-    "rm": ('<li><b>📻 Agen protocol (2 tuns) e radio dal telefonin:</b> modus da morse «Format» → «Agen protocol (2 tuns)»: tun A (800 Hz) = punct e '
+    "rm": ('<li><b>📡 Agen protocol (2 tuns) e radio dal telefonin:</b> modus da morse «Format» → «Agen protocol (2 tuns)»: tun A (800 Hz) = punct e '
            'lingia, tun B (1400 Hz) curt = fin dal caracter, lung = cumenzament / fin; 39 caracters. Tramess mo cun il autpledader, legì cun il microfon. '
            'Telefonin senza MoveEye: <code>' + FUNK_PAGES_URL + '</code>. iPhone: pagina segira (https). <b>Clav</b> (administratur): mintga messadi criptà da nov '
            '(V2, 6 caracters da controlla), metoda betg verifitgada; datoteca d’audio: «Sco datoteca d’audio» (WAV), «Leger ina datoteca d’audio»; criptadi scumandà en il radioamatur (UIT nr. 25.2A, UFCOM). La clav na cumpara mai en il protocol, la cronologia u in push.</li>'),
 }
-for _L, _li in _HELP_FUNK.items():
-    if _L in _HELP_MORSE and "</ul></section>" in _HELP_MORSE[_L]:
-        _HELP_MORSE[_L] = _HELP_MORSE[_L].replace("</ul></section>", _li + "</ul></section>", 1)
+
+
+def funk_help_add(lis):
+    """a paragraph per language into the section «Morse-Modus» of the manual. The section is put into HELP_PAGE / HELP_X
+    when 639zzz loads - a change of _HELP_MORSE afterwards comes too late, so the paragraph goes into the finished pages too"""
+    global HELP_PAGE
+
+    def put(doc, li):
+        i = doc.find('id="morse"')
+        j = doc.find("</ul></section>", i) if i >= 0 else -1
+        return doc[:j] + li + doc[j:] if j >= 0 and li not in doc else doc
+    for L, li in lis.items():
+        if L in _HELP_MORSE and "</ul></section>" in _HELP_MORSE[L] and li not in _HELP_MORSE[L]:
+            _HELP_MORSE[L] = _HELP_MORSE[L].replace("</ul></section>", li + "</ul></section>", 1)
+    k = HELP_PAGE.find('<div lang="en">')
+    if k > 0:
+        HELP_PAGE = put(HELP_PAGE[:k], lis.get("de", "")) + put(HELP_PAGE[k:], lis.get("en", ""))
+    for L in ("fr", "it", "rm"):
+        if HELP_X.get(L) and lis.get(L):
+            HELP_X[L] = put(HELP_X[L], lis[L])
+
+
+funk_help_add(_HELP_FUNK)
 
 
 FUNK_V2_VEKTOREN = (("geheim", "ABC12.", "TREFFEN UM 15 UHR", "ABC12.N?.4R8USIXLEETRJ1VONQ0F"),      # (the same in funk_test.py:
@@ -1882,6 +1902,9 @@ def funk_selftest():
     a, e = FUNK_PAGE.index("/*DECODER-START*/"), FUNK_PAGE.index("/*DECODER-END*/")
     assert "makeDecoder" in FUNK_PAGE[a:e] and "innerHTML" not in FUNK_PAGE and "http://" not in FUNK_PAGE.replace("http://www.w3.org/2000/svg", "")
     assert "/*FUNK-V2-START*/" in FUNK_PAGE and FUNK_PAGE.index("/*FUNK-V2-START*/") > e, "V2 is outside his decoder"
+    k_ = HELP_PAGE.find('<div lang="en">')
+    assert _HELP_FUNK["de"] in HELP_PAGE[:k_] and _HELP_FUNK["en"] in HELP_PAGE[k_:] and all(_HELP_FUNK[L] in HELP_X.get(L, _HELP_FUNK[L]) for L in ("fr", "it", "rm")), \
+        "the paragraphs on the protocol are in the manual (de, en, fr, it, rm)"
     assert "window.MW_FUNK=" in funk_page("mw", "de") and "manifest" not in funk_page("file") and "manifest.webmanifest" in funk_page("pwa")
     keep, kfmt = CFG.get("morse_key"), CFG.get("morse_fmt")
     try:
