@@ -128,6 +128,15 @@ jobs:
         run: |
           if [ "${{ steps.pwcache.outputs.cache-hit }}" = "true" ]; then python3 -m playwright install-deps chromium
           else python3 -m playwright install --with-deps chromium; fi
+      - name: ffmpeg (nur «kern» – radio_test.py braucht ein echtes ffmpeg, 3.99.0)
+        if: ${{ matrix.gruppe == 'kern' }}
+        timeout-minutes: 6
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get install -y -qq --no-install-recommends ffmpeg > /dev/null 2>&1 \
+            || { sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg; }
+          ffmpeg -hide_banner -version | head -1
       - name: Tests der Gruppe «${{ matrix.gruppe }}» (werkzeuge/ci_tests.txt – Zeit je Test in der Zusammenfassung)
         env:
           GRUPPE: ${{ matrix.gruppe }}
