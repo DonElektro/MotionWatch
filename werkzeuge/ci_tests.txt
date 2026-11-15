@@ -49,6 +49,8 @@ kern | 4  | -  | python3 werkzeuge/werkskopie_test.py | Werkseinstellungen - Lis
 kern | 5  | -  | python3 werkzeuge/akku_nacht_test.py | «Akku bis Sonnenaufgang?» nach einem Neustart (am Netz nie, am Akku erst nach der Einschwingzeit, einmal pro Abend auch über Neustarts, kritisch sofort)
 kern | 5  | -  | python3 werkzeuge/protokoll_ruhe_test.py | Ruhiges Protokoll (kein Hin und Her bei walk_frames und Wind)
 kern | 8  | 1x | python3 werkzeuge/erststart_test.py | Erster Start ruhiger (Teil 639zzs - nie mehr als ein Hinweis gleichzeitig, Reihenfolge, neues Gerät ohne «Neu in dieser Version»)
+kern | 5  | -  | python3 werkzeuge/zeitraffer_taeglich_test.py | Zeitraffer: jeden Tag automatisch ein Video (falsche Uhr, falsche Fotos, echtes ffmpeg: gestern einmal, vorhandenes bleibt, wartet bei Alarm / Abbruch mitten im Video, Akku schwach, 7 Tage nachholen, Ordner-Grenze, aus = nichts, Umstellung + Hinweis einmal)
+kern | 5  | -  | python3 werkzeuge/push_live_test.py --datei "$MW" | Push-Knopf «📷 Live öffnen» (Teil 639zzzzb – ntfy erster Knopf «view» auf den Live-Reiter, höchstens 3 Knöpfe, Telegram / Pushover / Web-Push, Infos unverändert, Schalter aus / keine Adresse = kein Knopf, kein Passwort / PIN / Token / App-Schlüssel / ntfy-Thema in Nachricht und Protokoll, 5 Sprachen)
 
 # ---------------------------------------------------------------------------------------------------- rechte (Web)
 rechte | 8 | -  | python3 werkzeuge/rechte_schutz_test.py --browser | Rechte und Schutz (Kind / Familie / ohne Rechte, PIN für alles im Browser, Stufe → Sirene, Zeitplan nach hartem Neustart)
@@ -84,6 +86,7 @@ daten | 6 | 1x | python3 werkzeuge/piper_test.py --browser | Piper-Stimme (Tabel
 daten | 6 | -  | python3 werkzeuge/werkstatt_html.py --aus /tmp/werkstatt --test --bilder /tmp/werkstatt && ls -la /tmp/werkstatt | Werkstatt offline (eine HTML-Datei, file://, Netz gesperrt, keine JS-Fehler, Modell, Reiter)
 daten | 5 | -  | python3 werkzeuge/bausatz.py --sprachen de --unsigniert --aus /tmp/bausatz && ls -la /tmp/bausatz | Selbstbau-Paket (bausatz.py, nur Deutsch, ohne Signaturprüfung)
 daten | 6 | -  | python3 werkzeuge/rucksack_smb_test.py --e2e | Digitaler Rucksack im Netzwerk (SMB): ab Werk aus, nur Admin, Passwort nie in Protokoll / Einstellungen / Export, Samba-Datei (kein Gast, SMB2+, ein Benutzer, nur LAN), aus = keine Freigabe, Abgleich Netz ↔ Rucksack, 5 Sprachen (falsche Samba-/sudo-Schicht; echtes smbd nur wenn installiert)
+daten | 5 | -  | python3 werkzeuge/homepage_test.py | «🌐 Homepage» gegen einen falschen Webspace auf localhost (nur Admin, Schlüssel nie in Protokoll / Zustand / Export, nur Geändertes, falscher Schlüssel, Platz voll, zu gross, Umleitung nie befolgt, Prüfung findet 404 / andere Herkunft / falschen Typ / CSP, automatisch nur bei neuem Inhalt und nie während eines Alarms, sim-web.zip nur signiert)
 
 # ---------------------------------------------------------------------------------------------------- spiele (nur bei Spiele-Änderungen, auf main immer)
 spiele-1 | 15 | 1x | python3 werkzeuge/spiele_test.py --ohne wasnun | Spielesammlung (Paket, GAMES_PKG, jedes neue Spiel am Handy und PC ohne Internet; «Wobbly Truck», Schach) – ohne «Was nun?»

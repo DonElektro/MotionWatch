@@ -3,7 +3,7 @@
 # Wunsch des Besitzers (14.11.2026, alle drei Stufen freigegeben, höchstens 5 GB, nur Administrator):
 #   Stufe 1 – Bilder sammeln OHNE zusätzliche Kopfbewegung: der Zeitraffer-Fotograf (220) meldet jedes Foto mit seiner Kopf-Richtung,
 #     an jedem Halt der Runde (160 / 162) ein Bild (pro Richtung höchstens alle ZF_STOP_GAP s) und einmal pro Stunde, solange der Kopf
-#     still steht (Schalter zf_hourly). Gespeichert klein (ZF_W px, JPEG ZF_Q) unter <Aufnahmen>/zeitfenster/JJJJMMTT/zf_*.jpg, dazu
+#     still steht (zf_still_min: aus / 1 / 5 / 10 / 15 / 30 / 60 Min., Besitzer 15.11.2026; früher Schalter zf_hourly). Gespeichert klein (ZF_W px, JPEG ZF_Q) unter <Aufnahmen>/zeitfenster/JJJJMMTT/zf_*.jpg, dazu
 #     pro Tag ein Index idx_JJJJMMTT.jsonl (eine Zeile pro Bild: Zeit, Schwenk / Neigung in Grad, Kamera, Quelle) – nur angehängt,
 #     ausser beim Ausdünnen. Eine Richtung = Schwenk und Neigung je höchstens ±ZF_TOL°. Das Bild kommt aus der Kamera-Schleife (410) vor
 #     Rahmen und Wärmebild, Privatsphäre-Zonen schon schwarz; während Alarm / Person / Aufnahme / Folgen wird nichts gesammelt.
@@ -23,19 +23,19 @@ ZF_W, ZF_Q = 960, 70              # stored stills: width px, JPEG quality
 ZF_TOL = 3.0                      # one direction: pan and tilt each within ±3°
 ZF_STOP_SETTLE = 2.5              # s on a stop of the round before the still (picture calm)
 ZF_STOP_GAP = 600.0               # s: at most one still per direction from the round
-ZF_STILL_S = 60.0                 # s the head must stand still before the hourly still
-ZF_HOUR = 3600.0
+ZF_STILL_S = 60.0                 # s the head must stand still before the first still
+ZF_STILL_MIN = ("1", "5", "10", "15", "30", "60")   # «picture while the head stands still»: every N minutes (or "off")
+ZF_AVG = 70000                    # bytes of a still until real ones exist (estimate)
 ZF_SMALL = 192                    # px: width of the comparison
 ZF_THR = 24.0                     # grey levels (small, blurred picture) = a change
 ZF_SECTION = "Window to the past"
-ZF_NO_PIC = "No picture from back then for this direction yet. MoveEye collects one at every stop of the round, with every timelapse photo and every hour while the head stands still."
 ZF_FILE_RE = re.compile(r"^(\d{8})/zf_\d{6}_\d{3}\.jpg$")
 ZF_IDX_RE = re.compile(r"^idx_(\d{8})\.jsonl$")
 ZF = {"items": None, "lock": threading.Lock(), "calc": threading.Lock(), "chk": 0.0, "last": {}, "want": 0.0, "live": None,
       "ev": threading.Event(), "cache": {}, "thin": None, "saving": False}
-for _k, _v in {"zf_on": True, "zf_max_gb": 5.0, "zf_hourly": True, "zf_mask_top": 0.0}.items():
+for _k, _v in {"zf_on": True, "zf_max_gb": 5.0, "zf_still_min": "60", "zf_mask_top": 0.0}.items():
     CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
-USER_SETTINGS_DENY.update({"zf_on", "zf_max_gb", "zf_hourly", "zf_mask_top"})        # admin only (Besitzer)
+USER_SETTINGS_DENY.update({"zf_on", "zf_max_gb", "zf_still_min", "zf_mask_top"})        # admin only (Besitzer)
 
 
 def zf_dir():
@@ -139,6 +139,20 @@ def zf_save_bg(frame, pose, src, extra=None):
     threading.Thread(target=work, daemon=True, name="zf-save").start()
 
 
+def zf_still_gap():
+    """seconds between two stills while the head stands still, 0 = off"""
+    v = str(CFG.get("zf_still_min") or "off")
+    return float(v) * 60.0 if v in ZF_STILL_MIN else 0.0
+
+
+def zf_estimate_mb():
+    """MB per day and direction from the stills of a head that stands still (real average size of the last stills), None = off"""
+    gap = zf_still_gap()
+    its = zf_items()[-200:]
+    avg = sum(it[5] for it in its) / len(its) if its else ZF_AVG
+    return round(avg * 86400.0 / gap / 1024 ** 2, 1) if gap else None
+
+
 def zf_feed(frame, alarm):
     """every camera frame (the clean picture, 410 via Timelapse.update): never moves the head - only looks whether a still is due"""
     now = time.time()
@@ -159,8 +173,8 @@ def zf_feed(frame, alarm):
     key = "%.0f/%.0f" % (pose[0] / ZF_TOL, pose[1] / ZF_TOL)
     if KOPF.get("round_on") and not STATE.get("patrol_moving") and still >= ZF_STOP_SETTLE:
         src, gap = "stop", ZF_STOP_GAP
-    elif CFG.get("zf_hourly") and still >= ZF_STILL_S:
-        src, gap = "hour", ZF_HOUR
+    elif zf_still_gap() and still >= ZF_STILL_S:
+        src, gap = "hour", zf_still_gap()
     else:
         return
     if now - ZF["last"].get(key, 0.0) < gap:
@@ -443,14 +457,27 @@ def zf_thin_loop():
         time.sleep(86400)
 
 
-def zf_state():
+def zf_no_pic(lang=None):
+    """the message when this direction has no still yet: when the next one comes (the chosen interval), or that collecting is off"""
+    gap = zf_still_gap()
+    if not CFG.get("zf_on") or not gap:
+        return tr("No picture from back then for this direction yet - collecting pictures is off.", lang)
+    p, q = servo_pos_deg()
+    now = time.time()
+    wait = max(ZF_STILL_S - (now - float(SRV.get("arrive_t") or 0.0)),
+               ZF["last"].get("%.0f/%.0f" % (p / ZF_TOL, q / ZF_TOL), 0.0) + gap - now, 0.0)
+    return tr("No picture from back then for this direction yet - the next one comes in about %s min.", lang) % max(1, int(math.ceil(wait / 60.0)))
+
+
+def zf_state(lang=None):
     p, q = servo_pos_deg()
     its = zf_dir_items(p, q)
     every = zf_items()
     return {"ok": True, "on": bool(CFG.get("zf_on")), "pose": [round(p, 2), round(q, 2)], "moving": not servo_arrived(), "tol": ZF_TOL,
             "items": [[round(it[0]), it[3], it[4]] for it in its], "count": len(every), "mb": round(sum(it[5] for it in every) / 1024 ** 2, 1),
             "dirs": len({(round(it[1] / (2 * ZF_TOL)), round(it[2] / (2 * ZF_TOL))) for it in every}), "max_gb": CFG.get("zf_max_gb"),
-            "mask_top": CFG.get("zf_mask_top"), "fov": list(cam_fov()), "oldest": round(every[0][0]) if every else None}
+            "mask_top": CFG.get("zf_mask_top"), "est_mb": zf_estimate_mb(), "fov": list(cam_fov()), "oldest": round(every[0][0]) if every else None,
+            "none_msg": "" if its else zf_no_pic(lang)}
 
 
 # ---- web: /api/zeitfenster (GET state), /api/zeitfenster/bild, /diff, /wann - administrator only --------------------------------
@@ -472,7 +499,7 @@ def smalltv_routes(app, reply, body):                     # + 639zzzz
     def api_zf():
         if not admin():
             return reply({"ok": False, "msg": tr("not allowed for your user", lang())}, 403)
-        return reply(zf_state())
+        return reply(zf_state(lang()))
 
     @app.route("/api/zeitfenster/bild")
     def api_zf_img():
@@ -537,8 +564,12 @@ window.zfPanel = function (d) {                       // 639zzzz: Einstellungen 
   const tick = async () => { let j = null; try { j = await (await fetch("/api/zeitfenster", {cache: "no-store"})).json(); } catch (e) {}
     if (!j || !j.ok) return;
     st.textContent = j.count + " " + t("pictures") + " · " + j.dirs + " " + t("directions") + " · " + j.mb + " MB / " + j.max_gb + " GB"
-      + (j.oldest ? " · " + t("oldest") + ": " + new Date(j.oldest * 1000).toLocaleDateString() : "") + " · Live → ⏪"; };
-  d.addEventListener("toggle", () => { if (d.open) tick(); }); if (d.open) tick();
+      + (j.oldest ? " · " + t("oldest") + ": " + new Date(j.oldest * 1000).toLocaleDateString() : "") + " · Live → ⏪";
+    const sel = document.querySelector('#settings select[data-key="zf_still_min"], select[data-key="zf_still_min"]'), w = sel && sel.closest(".sl");
+    if (w) { let e = w.querySelector(".zf-est"); if (!e) { e = el("div", "mut zf-est"); e.style.cssText = "font-size:12.5px;margin-top:3px"; w.appendChild(e);
+        sel.addEventListener("change", () => setTimeout(tick, 600)); }
+      e.textContent = j.est_mb == null ? "" : t("about %s MB per day and direction (thinned out later)").replace("%s", j.est_mb < 10 ? j.est_mb : Math.round(j.est_mb)); } };
+  d.addEventListener("toggle", () => { if (d.open) tick(); }); setTimeout(tick, 300);     // the section may be a card, not <details>
 };
 (function () {
   if (window.mwZf || document.body.dataset.tab !== "live") return;
@@ -635,7 +666,7 @@ window.zfPanel = function (d) {                       // 639zzzz: Einstellungen 
     if (!best) {
       TXT.textContent = "";
       MSG.textContent = !headCam() ? t("Only in the picture of the head camera.") : S.info && S.info.moving ? t("The head is moving …")
-        : t("No picture from back then for this direction yet. MoveEye collects one at every stop of the round, with every timelapse photo and every hour while the head stands still.");
+        : (S.info && S.info.none_msg) || "";
     } else {
       TXT.innerHTML = ""; TXT.append(document.createTextNode(fmt(best[0]) + " "), E("small", "", "(" + t("ago") + " " + ago(best[0]) + ")"));
       MSG.textContent = S.marks && S.diff && S.diff.ok ? marksText() : "";
@@ -754,15 +785,26 @@ _HX_ZF = {
     "Only in the picture of the head camera.": ("Nur im Bild der Kopf-Kamera.", "Seulement dans l’image de la caméra de tête.",
                                                 "Solo nell’immagine della telecamera della testa.", "Mo en il maletg da la camera dal chau."),
     "The head is moving …": ("Der Kopf fährt …", "La tête bouge …", "La testa si muove …", "Il chau sa mova …"),
-    "No picture from back then for this direction yet. MoveEye collects one at every stop of the round, with every timelapse photo and every hour while the head stands still.": (
-        "Für diese Richtung gibt es noch kein Bild von damals. MoveEye sammelt eines an jedem Halt der Runde, bei jedem Zeitraffer-Foto und jede Stunde, wenn der Kopf still steht.",
-        "Pas encore d’image d’autrefois pour cette direction. MoveEye en prend une à chaque arrêt de la ronde, à chaque photo du timelapse et chaque heure quand la tête est immobile.",
-        "Per questa direzione non c’è ancora un’immagine di allora. MoveEye ne raccoglie una a ogni sosta del giro, a ogni foto del timelapse e ogni ora quando la testa è ferma.",
-        "Per questa direcziun n’èsi anc nagin maletg da lura. MoveEye fa in a mintga fermada da la runda, cun mintga foto dal timelapse ed mintga ura, cura ch’il chau stat airi."),
+    "No picture from back then for this direction yet - the next one comes in about %s min.": (
+        "Noch kein Bild von damals für diese Richtung – das nächste kommt in etwa %s Min.",
+        "Pas encore d’image d’autrefois pour cette direction – la prochaine arrive dans environ %s min.",
+        "Ancora nessuna immagine di allora per questa direzione – la prossima arriva tra circa %s min.",
+        "Anc nagin maletg da lura per questa direcziun – il proxim vegn en circa %s min."),
+    "No picture from back then for this direction yet - collecting pictures is off.": (
+        "Noch kein Bild von damals für diese Richtung – Bilder sammeln ist aus.",
+        "Pas encore d’image d’autrefois pour cette direction – la collecte d’images est désactivée.",
+        "Ancora nessuna immagine di allora per questa direzione – la raccolta di immagini è spenta.",
+        "Anc nagin maletg da lura per questa direcziun – rimnar maletgs è deactivà."),
     "Collect pictures for «then / now»": ("Bilder für «Damals / Jetzt» sammeln", "Collecter des images pour «autrefois / maintenant»",
                                          "Raccogliere immagini per «allora / adesso»", "Rimnar maletgs per «lura / ussa»"),
-    "One picture every hour while the head stands still": ("Jede Stunde ein Bild, wenn der Kopf still steht", "Une image par heure quand la tête est immobile",
-                                                           "Un’immagine ogni ora quando la testa è ferma", "In maletg mintga ura, cura ch’il chau stat airi"),
+    "Picture while the head stands still": ("Bild, wenn der Kopf still steht", "Image quand la tête est immobile", "Immagine quando la testa è ferma",
+                                            "Maletg, cura ch’il chau stat airi"),
+    "every minute": ("jede Minute", "chaque minute", "ogni minuto", "mintga minuta"),
+    "every %s min": ("alle %s Min.", "toutes les %s min", "ogni %s min", "mintga %s min"),
+    "about %s MB per day and direction (thinned out later)": ("ca. %s MB pro Tag und Blickrichtung (später ausgedünnt)",
+                                                              "env. %s Mo par jour et par direction (éclairci plus tard)",
+                                                              "circa %s MB al giorno per direzione (sfoltito più tardi)",
+                                                              "ca. %s MB per di e direcziun (pli tard sminuì)"),
     "At most (GB)": ("Höchstens (GB)", "Au maximum (Go)", "Al massimo (GB)", "Maximalmain (GB)"),
     "Ignore at the top (%)": ("Oben nicht beachten (%)", "Ignorer en haut (%)", "Ignorare in alto (%)", "Ignorar survart (%)"),
     "pictures": ("Bilder", "images", "immagini", "maletgs"),
@@ -794,8 +836,29 @@ if _ZF_SEC in WEB_PAGE:
     WEB_PAGE = WEB_PAGE.replace(_ZF_SEC, _ZF_SEC + '\n    if (sec.id === "Window to the past" && window.zfPanel) zfPanel(d);   // 639zzzz', 1)
 
 # ---- the settings: Einstellungen → Kameras & Kopf → «Zeitfenster» (web and window read the same lists) ---------------------------
-TOGGLES.extend([(ZF_SECTION, "zf_on", "Collect pictures for «then / now»"),
-                (ZF_SECTION, "zf_hourly", "One picture every hour while the head stands still")])
+TOGGLES.append((ZF_SECTION, "zf_on", "Collect pictures for «then / now»"))
+TEXTS.append((ZF_SECTION, "zf_still_min", "Picture while the head stands still", "enum", "zf_still"))
+TEXT_SPECS["zf_still_min"] = ("enum", "zf_still")
+MIGRATE_ONLY["zf_hourly"] = "zf_still_min (639zzzz, 3.96)"
+_text_choice_pairs_zf = text_choice_pairs
+
+
+# wraps: text_choice_pairs
+def text_choice_pairs(key):                                  # + 639zzzz: the still interval
+    if (TEXT_SPECS.get(key) or (None, None))[1] == "zf_still":
+        return [("off", tr("off")), ("1", tr("every minute"))] + [(m, tr("every %s min") % m) for m in ZF_STILL_MIN[1:]]
+    return _text_choice_pairs_zf(key)
+
+
+_settings_migrations_before_zf = _settings_migrations
+
+
+# wraps: _settings_migrations
+def _settings_migrations(cfg_in):                            # + 639zzzz: the switch «every hour» -> the interval (on = 60, off = off)
+    _settings_migrations_before_zf(cfg_in)
+    if isinstance(cfg_in, dict) and "zf_hourly" in cfg_in and "zf_still_min" not in cfg_in:
+        CFG["zf_still_min"] = "60" if cfg_in.get("zf_hourly") else "off"
+        log_event("sys", "Settings of an older version taken over: window to the past " + CFG["zf_still_min"])
 SLIDERS.extend([(ZF_SECTION, "zf_max_gb", "At most (GB)", 0.5, 20, 0.5), (ZF_SECTION, "zf_mask_top", "Ignore at the top (%)", 0, 80, 5)])
 SECTIONS.append(ZF_SECTION)
 MENU_TITLES.setdefault(ZF_SECTION, ZF_SECTION)
@@ -804,8 +867,10 @@ for _g in TK_GROUPS:
     if _g[0] == "camera" and ZF_SECTION not in _g[2]:
         _g[2].append(ZF_SECTION)
 SET_HELP.update({
-    "zf_on": ("Small pictures per head direction for «⏪» on Live, without extra head movement (round, timelapse, hourly). Thinned out daily.", "on"),
+    "zf_on": ("Small pictures per head direction for «⏪» on Live, without extra head movement (round, timelapse, head standing still). Thinned out daily.", "on"),
     "zf_max_gb": ("Above this the oldest pictures are deleted (never timelapse photos or recordings).", "5 GB"),
+    "zf_still_min": ("While the head stands still: one picture every N minutes per direction. Never during an alarm, recording or following. "
+                     "Thinned out daily as above; the estimate is shown under the setting.", "60 min"),
     "zf_mask_top": ("This band at the top (sky, trees) is never marked as a change.", "0 - 30 %"),
 })
 
@@ -826,7 +891,7 @@ def zf_tk_window(app):
         it = zf_nearest(zf_dir_items(p, q), time.time() - age)
         im = zf_load(it[3]) if it else None
         if im is None:
-            lab.config(image=""); txt.config(text=tr(ZF_NO_PIC), wraplength=460)
+            lab.config(image=""); txt.config(text=zf_no_pic(), wraplength=460)
             return
         im = cv2.resize(im, (480, max(1, int(im.shape[0] * 480 / im.shape[1]))), interpolation=cv2.INTER_AREA)
         keep["p"] = tk.PhotoImage(data=base64.b64encode(cv2.imencode(".png", im)[1].tobytes()).decode())
@@ -839,6 +904,14 @@ def _zf_tk_build_section(self, sec, sbody, settings_parent=None):
     if sec == ZF_SECTION:
         try:
             ttk.Button(sbody, text="⏪ " + tr("Show then"), command=lambda: zf_tk_window(self)).pack(anchor="w", pady=(6, 0))
+            lab = ttk.Label(sbody, text=""); lab.pack(anchor="w")
+
+            def est():
+                if lab.winfo_exists():
+                    e = zf_estimate_mb()
+                    lab.config(text="" if e is None else tr("about %s MB per day and direction (thinned out later)") % (e if e < 10 else round(e)))
+                    self.root.after(5000, est)
+            est()
         except Exception as e:
             log_event("sys", f"Window: window to the past {e}"[:160])
 
@@ -850,8 +923,8 @@ App._build_section = _zf_tk_build_section
 
 # ---- the manual: one point in «Ansichten» (views) ------------------------------------------------------------------------------
 HELP_ZF = {
-    "de": '<li id="zf-help"><b>⏪ Zeitfenster – Damals / Jetzt (nur Administrator):</b> Knopf ⏪ auf dem Live-Bild. Unter dem Bild wählst du, wie lange her (1 h · gestern · 1 Woche · 1 Monat · 1 Jahr oder frei schieben); links vom gelben Balken siehst du dieselbe Blickrichtung von damals, rechts das Live-Bild – den Balken ziehen. «Änderungen markieren» rahmt ein, was anders ist (Helligkeit zählt nicht, oben ein Band für Himmel / Bäume ausblenden); einen Rahmen antippen sucht, wann es sich geändert hat, mit Sprung in die Zeitleiste oder zur Aufnahme. Die Bilder sammelt MoveEye ohne zusätzliche Kopfbewegung: an den Halten der Runde, bei den Zeitraffer-Fotos und stündlich, wenn der Kopf still steht. Täglich ausgedünnt (24 h alles, bis 7 Tage 1 pro Stunde, dann 1 pro Tag), höchstens 5 GB (Einstellungen → Kameras & Kopf → Zeitfenster). Im Fenster am Pi: dort «⏪ Damals ansehen».</li>',
-    "en": '<li id="zf-help"><b>⏪ Window to the past – then / now (administrator only):</b> button ⏪ on the live picture. Under the picture choose how long ago (1 h · yesterday · 1 week · 1 month · 1 year or slide freely); left of the yellow bar the same direction back then, right the live picture – drag the bar. «Mark changes» frames what is different (brightness does not count, hide a band at the top for sky / trees); tap a frame to find when it changed, with a jump to the timeline or the recording. MoveEye collects the pictures without extra head movement: at the stops of the round, with the timelapse photos and every hour while the head stands still. Thinned out daily (24 h all, until 7 days 1 per hour, then 1 per day), at most 5 GB (Settings → Cameras & head → Window to the past). In the window on the Pi: «⏪ Show then» there.</li>',
+    "de": '<li id="zf-help"><b>⏪ Zeitfenster – Damals / Jetzt (nur Administrator):</b> Knopf ⏪ auf dem Live-Bild. Unter dem Bild wählst du, wie lange her (1 h · gestern · 1 Woche · 1 Monat · 1 Jahr oder frei schieben); links vom gelben Balken siehst du dieselbe Blickrichtung von damals, rechts das Live-Bild – den Balken ziehen. «Änderungen markieren» rahmt ein, was anders ist (Helligkeit zählt nicht, oben ein Band für Himmel / Bäume ausblenden); einen Rahmen antippen sucht, wann es sich geändert hat, mit Sprung in die Zeitleiste oder zur Aufnahme. Die Bilder sammelt MoveEye ohne zusätzliche Kopfbewegung: an den Halten der Runde, bei den Zeitraffer-Fotos und alle 1–60 Min. (Standard 60), wenn der Kopf still steht. Täglich ausgedünnt (24 h alles, bis 7 Tage 1 pro Stunde, dann 1 pro Tag), höchstens 5 GB (Einstellungen → Kameras & Kopf → Zeitfenster). Im Fenster am Pi: dort «⏪ Damals ansehen».</li>',
+    "en": '<li id="zf-help"><b>⏪ Window to the past – then / now (administrator only):</b> button ⏪ on the live picture. Under the picture choose how long ago (1 h · yesterday · 1 week · 1 month · 1 year or slide freely); left of the yellow bar the same direction back then, right the live picture – drag the bar. «Mark changes» frames what is different (brightness does not count, hide a band at the top for sky / trees); tap a frame to find when it changed, with a jump to the timeline or the recording. MoveEye collects the pictures without extra head movement: at the stops of the round, with the timelapse photos and every 1–60 min (default 60) while the head stands still. Thinned out daily (24 h all, until 7 days 1 per hour, then 1 per day), at most 5 GB (Settings → Cameras & head → Window to the past). In the window on the Pi: «⏪ Show then» there.</li>',
     "fr": '<li id="zf-help"><b>⏪ Fenêtre sur le passé – autrefois / maintenant (administrateur) :</b> bouton ⏪ sur l’image en direct. Sous l’image, choisis il y a combien de temps (1 h · hier · 1 semaine · 1 mois · 1 an ou librement) ; à gauche de la barre jaune la même direction autrefois, à droite l’image en direct. «Marquer les changements» encadre ce qui a changé ; toucher un cadre cherche quand cela a changé, avec un lien vers la chronologie. Les images sont prises sans mouvement de tête supplémentaire ; au maximum 5 Go.</li>',
     "it": '<li id="zf-help"><b>⏪ Finestra sul passato – allora / adesso (amministratore):</b> pulsante ⏪ sull’immagine dal vivo. Sotto l’immagine scegli quanto tempo fa (1 h · ieri · 1 settimana · 1 mese · 1 anno o liberamente); a sinistra della barra gialla la stessa direzione di allora, a destra l’immagine dal vivo. «Segnare i cambiamenti» incornicia ciò che è cambiato; toccare un riquadro cerca quando è cambiato, con un collegamento alla cronologia. Le immagini sono raccolte senza movimenti extra della testa; al massimo 5 GB.</li>',
     "rm": '<li id="zf-help"><b>⏪ Fanestra en il passà – lura / ussa (administratur):</b> buttun ⏪ sin il maletg live. Sut il maletg tschernas ti quant ditg (1 h · ier · 1 emna · 1 mais · 1 onn u liber); a sanestra da la trav gelga la medema direcziun da lura, a dretga il maletg live. «Marcar las midadas» enturnescha quai ch’è midà; tutgar in rom tschertga cura ch’i è sa midà, cun colliaziun a la lingia dal temp. Ils maletgs vegnan rimnads senza moviment supplementar dal chau; maximalmain 5 GB.</li>',

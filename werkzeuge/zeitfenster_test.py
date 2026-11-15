@@ -72,7 +72,7 @@ def teil_a(datei):
         ns[n] = (lambda n_: lambda *a, **k: moves.append(n_) or True)(n)
     rng = np.random.default_rng(1)
     szene = cv2.GaussianBlur(rng.integers(30, 220, (540, 960, 3), dtype=np.uint8), (0, 0), 4)
-    CFG.update(pan=50.0, tilt=50.0, zf_on=True, zf_hourly=True, servo_range=180.0, pan_servo_range=180.0)
+    CFG.update(pan=50.0, tilt=50.0, zf_on=True, zf_still_min="60", servo_range=180.0, pan_servo_range=180.0)
     STATE["tracking"] = False
 
     def kopf(pan_pct, tilt_pct, still_s, runde):
@@ -102,9 +102,53 @@ def teil_a(datei):
     ok(zahl() == 2, "ohne Runde, Kopf erst 10 s still: noch kein Stundenbild")
     kopf(30.0, 40.0, 61.0, False); ns["zf_feed"](szene, False)
     ok(zahl() == 3 and ns["zf_items"]()[-1][4] == "hour", "Kopf steht still: ein Stundenbild")
-    CFG["zf_hourly"] = False; kopf(10.0, 40.0, 120.0, False); ns["zf_feed"](szene, False)
-    ok(zahl() == 3, "Schalter «jede Stunde» aus: kein Stundenbild")
-    CFG["zf_hourly"] = True
+    CFG["zf_still_min"] = "off"; kopf(10.0, 40.0, 120.0, False); ns["zf_feed"](szene, False)
+    ok(zahl() == 3, "«Bild, wenn der Kopf still steht: aus»: kein Bild")
+    # the interval (Besitzer 15.11.2026): 1 / 5 / 10 / 15 / 30 / 60 min - the clock moved back by shifting the last still
+    def frueher(s_):
+        ns["zf_items"]()[-1][0] -= s_
+        for k_ in ZF["last"]:
+            ZF["last"][k_] -= s_
+    for m, (zu_frueh, genug) in (("5", (200, 150)), ("1", (40, 25)), ("30", (1500, 400))):
+        CFG["zf_still_min"] = m
+        kopf(10.0 + float(m), 40.0, 120.0, False); n0 = zahl(); ns["zf_feed"](szene, False)
+        ok(zahl() == n0 + 1, f"alle {m} Min.: erstes Bild in der neuen Richtung")
+        frueher(zu_frueh); kopf(10.0 + float(m), 40.0, 120.0, False); ns["zf_feed"](szene, False)
+        ok(zahl() == n0 + 1, f"alle {m} Min.: nach {zu_frueh} s noch kein zweites Bild")
+        frueher(genug); kopf(10.0 + float(m), 40.0, 120.0, False); ns["zf_feed"](szene, False)
+        ok(zahl() == n0 + 2, f"alle {m} Min.: nach {zu_frueh + genug} s das nächste Bild")
+    CFG["zf_still_min"] = "1"
+    kopf(30.0, 40.0, 120.0, False); n0 = zahl(); ns["zf_feed"](szene, True)
+    ok(zahl() == n0, "jede Minute, aber Alarm / Aufnahme: kein Bild")
+    STATE["tracking"] = True; ZF["chk"] = 0.0; ns["zf_feed"](szene, False); STATE["tracking"] = False
+    ok(zahl() == n0, "jede Minute, aber Folgen: kein Bild")
+    ok([c for c, _l in ns["text_choice_pairs"]("zf_still_min")] == ["off", "1", "5", "10", "15", "30", "60"]
+       and ns["text_choice_pairs"]("zf_still_min")[2][1] == ns["tr"]("every %s min") % "5", "Auswahl: aus / 1 / 5 / 10 / 15 / 30 / 60 Min.")
+    ok(all(ns["tr"](k, L) != k or L == "en" for k in ("Picture while the head stands still", "every minute", "every %s min",
+                                                         "about %s MB per day and direction (thinned out later)") for L in ("de", "fr", "it", "rm")),
+       "Texte in fünf Sprachen")
+    avg = sum(x[5] for x in ns["zf_items"]()[-200:]) / len(ns["zf_items"]()[-200:])
+    CFG["zf_still_min"] = "1"; e1 = ns["zf_estimate_mb"](); CFG["zf_still_min"] = "60"; e60 = ns["zf_estimate_mb"]()
+    CFG["zf_still_min"] = "off"; eo = ns["zf_estimate_mb"]()
+    ok(abs(e1 - avg * 1440 / 1048576) < 0.1 and abs(e60 - avg * 24 / 1048576) < 0.1 and eo is None,
+       f"Schätzung aus der echten Bildgrösse: 1 Min. {e1} MB, 60 Min. {e60} MB pro Tag und Richtung, aus = keine")
+    # the message for a direction without a picture follows the interval
+    kopf(80.0, 20.0, 20.0, False); CFG["zf_still_min"] = "15"
+    ok(ns["zf_no_pic"]("de") == "Noch kein Bild von damals für diese Richtung – das nächste kommt in etwa 1 Min.", f"Meldung: «{ns['zf_no_pic']('de')}»")
+    ZF["last"]["%.0f/%.0f" % (54.0 / 3.0, -54.0 / 3.0)] = time.time() - 60
+    ok("in etwa 14 Min." in ns["zf_no_pic"]("de"), f"Meldung nach einem Bild vor 1 Min. (alle 15 Min.): «{ns['zf_no_pic']('de')}»")
+    CFG["zf_still_min"] = "off"
+    ok(ns["zf_no_pic"]("de").endswith("Bilder sammeln ist aus.") and all(ns["zf_no_pic"](L) != ns["zf_no_pic"]("en") for L in ("de", "fr", "it", "rm")),
+       "Meldung bei «aus»: «Bilder sammeln ist aus», fünf Sprachen")
+    CFG["zf_still_min"] = "60"
+    # migration of the old switch «every hour»
+    for old, want in (({"zf_hourly": True}, "60"), ({"zf_hourly": False}, "off"), ({"zf_hourly": False, "zf_still_min": "5"}, "5"), ({}, "5")):
+        CFG["zf_still_min"] = "5"; ns["_settings_migrations"](old)
+        ok(CFG["zf_still_min"] == want, f"Übernahme {old} -> «{CFG['zf_still_min']}»")
+    CFG["zf_still_min"] = "60"; ns["apply_settings"]({"cfg": {"zf_hourly": False}})
+    ok(CFG["zf_still_min"] == "off" and "zf_hourly" not in CFG and "zf_hourly" not in ns["settings_data"]()["cfg"],
+       "alte Datei mit «jede Stunde: aus» -> «aus», der alte Schlüssel wird nicht mehr gespeichert")
+    CFG["zf_still_min"] = "60"
     CFG.update(timelapse_pan=60.0, timelapse_tilt=55.0, timelapse_on=True)
     kopf(60.0, 55.0, 0.0, False)
     tl = ns["Timelapse"](); tl._shoot(szene, time.time())
@@ -115,7 +159,7 @@ def teil_a(datei):
     rows = []
     for f in glob.glob(os.path.join(rec, "zeitfenster", "idx_*.jsonl")):
         rows += [json.loads(x) for x in open(f, encoding="utf-8")]
-    ok(len(rows) == 4 and all(set(r) >= {"t", "p", "q", "f", "s", "c"} for r in rows) and any(r.get("tl") == tlname for r in rows),
+    ok(len(rows) == len(ns["zf_items"]()) >= 4 and all(set(r) >= {"t", "p", "q", "f", "s", "c"} for r in rows) and any(r.get("tl") == tlname for r in rows),
        "Index pro Tag (JSONL): Zeit, Schwenk, Neigung, Kamera, Quelle; Zeitraffer mit Namen")
     im = cv2.imread(os.path.join(rec, "zeitfenster", rows[0]["f"]))
     ok(im is not None and im.shape[1] == 960 and os.path.getsize(os.path.join(rec, "zeitfenster", rows[0]["f"])) < 400000,
@@ -194,7 +238,8 @@ def teil_a(datei):
     cap = total * 0.4 / 1024 ** 3
     gone, left = ns["zf_thin"](now=T, cap_gb=cap)
     its2 = ns["zf_items"]()
-    ok(left <= cap * 1024 ** 3 and its2 and min(x[0] for x in its2) > max(x[0] for x in its if x not in its2),
+    # >=: two directions can have a picture with the same time - the cap may split such a pair (still oldest first)
+    ok(left <= cap * 1024 ** 3 and its2 and min(x[0] for x in its2) >= max(x[0] for x in its if x not in its2),
        f"Obergrenze (klein simuliert {cap * 1024:.2f} MB): die ältesten zuerst gelöscht, {left / 1024 ** 2:.2f} MB übrig")
     ok(all(os.path.isfile(p) for p in keepf), "Zeitraffer-Fotos und Aufnahmen bleiben unberührt")
     ok(not moves, "auch dabei nie ein Befehl an den Kopf")
@@ -270,7 +315,7 @@ def teil_b(datei, a):
     st = {"source": "demo", "extra_cams": [], "sim_on": False, "sim_url": "http://127.0.0.1:9", "sim_auto": False, "sim_autostart": False,
           "sim_autostart_v2": False, "sim_autoupd": False, "update_url": "", "lang": "de", "desktop_notice": False, "setup_done": True,
           "https_extra": False, "ui_simple": False, "tours_auto": False, "pan": 50.0, "tilt": 50.0, "patrol": False, "track_person": False,
-          "track_motion": False, "record_dir": rec, "zf_mask_top": 0, "theme": "dark"}
+          "track_motion": False, "record_dir": rec, "zf_mask_top": 0, "theme": "dark", "zf_hourly": False}     # an install of 3.95.0 with the switch off
     with open(os.path.join(cfg, "motionwatch_settings.json"), "w") as f:
         json.dump({"cfg": st}, f)
     wrap = os.path.join(tmp, "zf_wrap.py")
@@ -315,6 +360,14 @@ def teil_b(datei, a):
                                                          "/api/zeitfenster/wann?f=" + f0 + "&box=0.1,0.1,0.2,0.2")),
                f"{who[0]} (kein Administrator): 403 überall")
         ok(req("/api/zeitfenster", user=None)[0] == 401, "ohne Anmeldung: 401")
+        ok(j.get("est_mb") is None, "alte Einstellung «jede Stunde: aus» übernommen: aus, keine Schätzung")
+        c, r_ = req("/api/text", {"key": "zf_still_min", "value": "7", "lang": "de"})
+        ok(c != 200 or not r_.get("ok"), "Intervall 7 Min.: abgelehnt (nur die Auswahl)")
+        c, r_ = req("/api/text", {"key": "zf_still_min", "value": "1", "lang": "de"})
+        e = req("/api/zeitfenster")[1].get("est_mb")
+        ok(c == 200 and e and 20 < e < 400, f"jede Minute gewählt: Schätzung {e} MB pro Tag und Richtung")
+        ok(req("/api/text", {"key": "zf_still_min", "value": "1"}, user=("Anna", "anna-pass-1"))[0] == 403, "Familie darf das Intervall nicht ändern (403)")
+        req("/api/text", {"key": "zf_still_min", "value": "10", "lang": "de"})      # 10 min: no new still in the direction «without a picture» below
         c, b = req("/api/zeitfenster/bild?f=" + f0)
         ok(c == 200 and bytes(b[:2]) == b"\xff\xd8", "Admin: Bild von damals (JPEG)")
         ok(req("/api/zeitfenster/bild?f=../../mw/motionwatch_settings.json")[0] == 404, "Pfad-Trick: 404")
@@ -370,8 +423,34 @@ def teil_b(datei, a):
             pg = ctx.new_page(); pg.goto(base + "/", wait_until="domcontentloaded")
             warte(lambda: pg.evaluate("() => !!document.getElementById('lv-b-zf')"), 25)
             pg.evaluate("() => document.getElementById('lv-b-zf').click()")
-            m = warte(lambda: (lambda x: x if "noch kein Bild" in x["msg"] else None)(pg.evaluate(LAGE)), 10) or pg.evaluate(LAGE)
-            ok("noch kein Bild" in m["msg"] and not m["ov"], f"Richtung ohne Bild: klare Meldung («{m['msg'][:60]}…»)")
+            m = warte(lambda: (lambda x: x if "Noch kein Bild" in x["msg"] else None)(pg.evaluate(LAGE)), 10) or pg.evaluate(LAGE)
+            ok(re.search(r"Noch kein Bild von damals für diese Richtung – das nächste kommt in etwa \d+ Min\.", m["msg"]) and not m["ov"],
+               f"Richtung ohne Bild (alle 10 Min.): wann das nächste kommt («{m['msg']}»)")
+            req("/api/text", {"key": "zf_still_min", "value": "off", "lang": "de"})
+            pg.evaluate("() => { window.mwZf.close(); window.mwZf.open(); }")
+            m = warte(lambda: (lambda x: x if "sammeln ist aus" in x["msg"] else None)(pg.evaluate(LAGE)), 10) or pg.evaluate(LAGE)
+            ok("Bilder sammeln ist aus" in m["msg"], f"Richtung ohne Bild, «aus»: «{m['msg']}»")
+            req("/api/text", {"key": "zf_still_min", "value": "10", "lang": "de"})
+            ctx.close()
+            # the settings: the estimate under the choice
+            ctx = br.new_context(http_credentials={"username": "admin", "password": PW}, viewport={"width": 390, "height": 844}, is_mobile=True,
+                                 has_touch=True, color_scheme="dark"); ctx.add_init_script(init)
+            pg = ctx.new_page(); pg.goto(base + "/settings", wait_until="domcontentloaded"); pg.wait_for_timeout(2500)
+            info = pg.evaluate("""() => { const s = document.querySelector('select[data-key="zf_still_min"]');
+                if (!s) return [...document.querySelectorAll('details > summary')].map(x => x.textContent.trim()).filter(x => /Zeit|Kopf/.test(x));
+                for (let d = s.closest('details'); d; d = d.parentElement && d.parentElement.closest('details')) { d.open = true; d.dispatchEvent(new Event('toggle')); }
+                s.scrollIntoView(); return 'ok'; }""")
+            ok(info == "ok", f"Einstellungen: Auswahl «Bild, wenn der Kopf still steht» da ({info})")
+            est = warte(lambda: pg.evaluate("() => { const s = document.querySelector('select[data-key=\"zf_still_min\"]'), e = document.querySelector('.zf-est');"
+                                            " return s && e && e.textContent ? [s.value, [...s.options].map(o => o.textContent).join(' / '), e.textContent] : null; }"), 10)
+            ok(bool(est) and est[0] == "10" and "jede Minute" in est[1] and "alle 5 Min." in est[1] and "aus" in est[1]
+               and re.search(r"ca\. [\d.]+ MB pro Tag und Blickrichtung", est[2] or ""), f"Einstellungen: Auswahl und Schätzung darunter ({est})")
+            if a.bilder:
+                srch = pg.locator("input[type=search], input[placeholder*='suchen']").first
+                if srch.count():
+                    srch.fill("Kopf still steht"); pg.wait_for_timeout(800)
+                pg.evaluate("() => document.querySelector('.zf-est').scrollIntoView({block: 'center'})"); pg.wait_for_timeout(400)
+                pg.screenshot(path=os.path.join(a.bilder, "zeitfenster_intervall_handy.png"))
             ctx.close()
             # «nur ansehen»: no button
             ctx = br.new_context(http_credentials={"username": "Vera", "password": "vera-pass-1"}, viewport={"width": 390, "height": 844}); ctx.add_init_script(init)

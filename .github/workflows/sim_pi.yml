@@ -2,8 +2,10 @@
 #   pi     MoveEyeSim3D_Pi.zip        Raspberry Pi 5 (arm64), «Simulator intern» (MoveEye Teil 639zx) - seit Sim 3.57.0
 #   win    MotionWatch3D_Simulator.zip  Windows   } Simulator-Anhang (Besitzer 12.11.2026, «Ablage entlasten»): ab der Version
 #   linux  MoveEyeSim3D_Linux.zip       Linux/HP  } NACH Sim 3.67.2 - sie kommen nicht mehr ins Repository (103 MB pro Version)
+#   web    sim-web.zip                  Browser (Vorlage «Web», ohne Threads): MoveEye lädt es nach Mehr → Homepage → Sim/
+#          (Teil 639zzzh); werkzeuge/sim_web_paket.py: jede Datei genau ein Punkt (der Webspace macht aus weiteren «_»)
 # pakete=auto (Standard): steht die Nummer als «ver» in simulator3d/version.json (Pakete im Repository, z. B. 3.67.2), nur pi;
-# sonst alle drei. Nur von Hand (Actions -> Sim-Pakete -> Run workflow, oder: gh workflow run sim_pi.yml -f ver=X.Y.Z -f probe=false).
+# sonst win, linux, pi und - wenn der Stand die Vorlage «Web» hat - web. Nur von Hand (Actions -> Sim-Pakete -> Run workflow, oder: gh workflow run sim_pi.yml -f ver=X.Y.Z -f probe=false).
 #
 # Ablauf beim echten Sim-Release (ab der Version nach 3.67.2):
 #   1. rel_sim.sh X.Y.Z … (Nummer in main.gd, «Lies mich», UEBERGABE; KEIN Export, keine ZIP), committen, main pushen
@@ -36,7 +38,7 @@ on:
         type: boolean
         default: true
       pakete:
-        description: "auto (Nummer = Pakete im Repository: nur pi; sonst win,linux,pi) oder eine Liste, z. B. pi"
+        description: "auto (Nummer = Pakete im Repository: nur pi; sonst win,linux,pi[,web]) oder eine Liste, z. B. pi,web"
         default: auto
       abruf:
         description: "Abruf-Probe statt bauen: kleines Ersatz-Asset hochladen und wie die Geräte zurückholen (Umleitung)"
@@ -59,7 +61,7 @@ jobs:
     name: Sim-Pakete · ${{ inputs.ver }}${{ inputs.probe && ' (Probe)' || '' }}
     if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen == '' && !inputs.abruf
     runs-on: ubuntu-24.04
-    timeout-minutes: 50
+    timeout-minutes: 70
     steps:
       - uses: actions/checkout@v4
         with:
@@ -99,8 +101,13 @@ jobs:
           im_repo=$(python3 -c 'import json; print(json.load(open("simulator3d/version.json")).get("ver") or "")')
           if [ "$PAKETE" = "auto" ]; then
             if [ "$VER" = "$im_repo" ]; then PAKETE=pi; else PAKETE=win,linux,pi; fi
+            if [ "$PAKETE" != pi ] && grep -q '^name="Web"' simulator3d/export_presets.cfg && [ -f werkzeuge/sim_web_paket.py ]; then PAKETE="$PAKETE,web"; fi
           fi
-          echo "$PAKETE" | grep -Eq '^(win|linux|pi)(,(win|linux|pi))*$' || { echo "::error::pakete «$PAKETE»: auto oder eine Liste aus win, linux, pi"; exit 1; }
+          echo "$PAKETE" | grep -Eq '^(win|linux|pi|web)(,(win|linux|pi|web))*$' || { echo "::error::pakete «$PAKETE»: auto oder eine Liste aus win, linux, pi, web"; exit 1; }
+          if echo ",$PAKETE," | grep -q ',web,'; then
+            grep -q '^name="Web"' simulator3d/export_presets.cfg || { echo "::error::Preset «Web» fehlt (kommt mit sim-web)"; exit 1; }
+            [ -f werkzeuge/sim_web_paket.py ] || { echo "::error::werkzeuge/sim_web_paket.py fehlt"; exit 1; }
+          fi
           if [ "$PROBE" != "true" ] && echo ",$PAKETE," | grep -Eq ',(win|linux),'; then
             python3 - "$VER" "$im_repo" <<'PY' || { echo "::error::Windows- / Linux-Paket als Asset nur für eine Nummer NACH den Paketen im Repository ($im_repo)"; exit 1; }
           import sys
@@ -142,6 +149,32 @@ jobs:
             templates/windows_release_x86_64_console.exe templates/windows_debug_x86_64_console.exe \
             templates/linux_release.arm64 templates/linux_debug.arm64
           mv templates/* "$d"/ && rm -rf "$RUNNER_TEMP/t" && ls -la "$d"
+      # Web (ohne Threads): nur die zwei offiziellen Vorlagen aus demselben Godot-Release, eigener Cache (der Satz oben bleibt
+      # gleich); die .tpz wird gegen SHA512-SUMS.txt desselben Releases geprüft.
+      - name: Export-Vorlagen 4.3 Web (Cache)
+        id: wcache
+        if: contains(format(',{0},', steps.v.outputs.pakete), ',web,')
+        uses: actions/cache@v4
+        with:
+          path: ~/godot_web_tpl
+          key: godot-templates-4.3-stable-web-nothreads
+      - name: Export-Vorlagen Web herunterladen
+        if: contains(format(',{0},', steps.v.outputs.pakete), ',web,') && steps.wcache.outputs.cache-hit != 'true'
+        run: |
+          set -e
+          mkdir -p ~/godot_web_tpl "$RUNNER_TEMP/tw" && cd "$RUNNER_TEMP/tw"
+          u=https://github.com/godotengine/godot/releases/download/4.3-stable
+          curl -fsSL -o Godot_v4.3-stable_export_templates.tpz "$u/Godot_v4.3-stable_export_templates.tpz"
+          curl -fsSL -o SHA512-SUMS.txt "$u/SHA512-SUMS.txt"
+          grep ' Godot_v4.3-stable_export_templates.tpz$' SHA512-SUMS.txt | sha512sum -c -
+          unzip -q Godot_v4.3-stable_export_templates.tpz templates/web_nothreads_release.zip templates/web_nothreads_debug.zip
+          mv templates/web_nothreads_*.zip ~/godot_web_tpl/ && cd / && rm -rf "$RUNNER_TEMP/tw" && ls -la ~/godot_web_tpl
+      - name: Export-Vorlagen Web einsetzen
+        if: contains(format(',{0},', steps.v.outputs.pakete), ',web,')
+        run: |
+          d=~/.local/share/godot/export_templates/4.3.stable; mkdir -p "$d"
+          cp ~/godot_web_tpl/web_nothreads_release.zip ~/godot_web_tpl/web_nothreads_debug.zip "$d"/
+          [ -f "$d/version.txt" ] || echo "4.3.stable" > "$d/version.txt"
       - name: Import (Cache simulator3d/.godot)
         uses: actions/cache@v4
         with:
@@ -197,6 +230,18 @@ jobs:
           rm -rf "$out/win"
           python3 -c 'import sys; sys.path.insert(0, "werkzeuge"); import versionen; f = versionen.paket_inhalt(sys.argv[1], "win", sys.argv[2]); print("Windows-Paket:", f or "ok"); sys.exit(1 if f else 0)' \
             "$out/MotionWatch3D_Simulator.zip" "${{ inputs.ver }}"
+      - name: Exportieren «Web» (Browser) und packen (sim-web.zip)
+        if: contains(format(',{0},', steps.v.outputs.pakete), ',web,')
+        run: |
+          set -e
+          out="$RUNNER_TEMP/build"; mkdir -p "$out/web"
+          timeout 1500 "$GODOT_BIN" --headless --path simulator3d --export-release "Web" "$out/web/index.html" 2>&1 | tail -30
+          test -s "$out/web/index.wasm" && test -s "$out/web/index.pck" || { echo "::error::Export «Web» fehlgeschlagen"; exit 1; }
+          ls -la "$out/web"
+          python3 werkzeuge/sim_web_paket.py packen "$out/web" "$out/sim-web.zip"
+          rm -rf "$out/web"
+          python3 -c 'import sys; sys.path.insert(0, "werkzeuge"); import versionen; f = versionen.paket_inhalt(sys.argv[1], "web", sys.argv[2]); print("Web-Paket:", f or "ok"); sys.exit(1 if f else 0)' \
+            "$out/sim-web.zip" "${{ inputs.ver }}"
       - name: Release anlegen, Assets hochladen, zurücklesen (API und öffentliche Adresse)
         env:
           GH_TOKEN: ${{ github.token }}
@@ -217,9 +262,9 @@ jobs:
             echo "(«sim.anhang», «sim.pi») bzw. simulator3d/version.json angenommen."
             echo
             echo "sim-ver: $VER"
-            for k in win linux pi; do
+            for k in win linux pi web; do
               echo ",$PAKETE," | grep -q ",$k," || continue
-              case $k in win) f=MotionWatch3D_Simulator.zip ;; linux) f=MoveEyeSim3D_Linux.zip ;; pi) f=MoveEyeSim3D_Pi.zip ;; esac
+              case $k in win) f=MotionWatch3D_Simulator.zip ;; linux) f=MoveEyeSim3D_Linux.zip ;; pi) f=MoveEyeSim3D_Pi.zip ;; web) f=sim-web.zip ;; esac
               [ "$k" = pi ] && echo "pi-ver: $VER"
               echo "$k-size: $(stat -c %s "$O/$f")"
               echo "$k-sha256: $(sha256sum "$O/$f" | cut -d' ' -f1)"
@@ -228,9 +273,9 @@ jobs:
             echo "lauf: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           } > notes.md
           cat notes.md
-          for k in win linux pi; do
+          for k in win linux pi web; do
             echo ",$PAKETE," | grep -q ",$k," || continue
-            case $k in win) A="$A $O/MotionWatch3D_Simulator.zip" ;; linux) A="$A $O/MoveEyeSim3D_Linux.zip" ;; pi) A="$A $O/MoveEyeSim3D_Pi.zip" ;; esac
+            case $k in win) A="$A $O/MotionWatch3D_Simulator.zip" ;; linux) A="$A $O/MoveEyeSim3D_Linux.zip" ;; pi) A="$A $O/MoveEyeSim3D_Pi.zip" ;; web) A="$A $O/sim-web.zip" ;; esac
           done
           if [ "$PROBE" = "true" ]; then
             gh release create "$TAG" $A -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Probe · Sim-Pakete $VER" \

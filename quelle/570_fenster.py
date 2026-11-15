@@ -777,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 3.95.1")
+        self.root.title("MoveEye 3.96.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1037,7 +1037,7 @@ class App:
         self.relay_segs, self.relay_dots, self.relay_err_labels = {}, {}, []
         self._built_sig = self._relay_sig()
         if self.video_only:
-            self.video = tk.Label(r, bg="#000", bd=0, cursor="hand2"); self.video.pack(fill="both", expand=True); self._anim_cpu_chip_start()   # 639zzze: CPU chip on the picture
+            self.video = tk.Label(r, bg="#000", bd=0, cursor="hand2"); self.video.pack(fill="both", expand=True)
             self.video.bind("<Double-Button-1>", lambda e: self.toggle_video_only())
             self.video.bind("<Button-3>", lambda e: self._view_menu(e.x_root, e.y_root))
             return
@@ -1155,7 +1155,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 3.95.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 3.96.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1388,7 +1388,7 @@ class App:
             vc = tk.Frame(left, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=10, pady=10)
             vc.grid(row=0, column=0, sticky="nsew"); left.rowconfigure(0, weight=1)        # the picture gets all spare room
             vh = tk.Frame(vc, bg="#000", width=240, height=120); vh.pack(fill="both", expand=True); vh.pack_propagate(False)   # the picture never makes the window wider
-            self.video = tk.Label(vh, bg="#000", bd=0, cursor="hand2"); self.video.pack(fill="both", expand=True); self._anim_cpu_chip_start()   # 639zzze: CPU chip on the picture
+            self.video = tk.Label(vh, bg="#000", bd=0, cursor="hand2"); self.video.pack(fill="both", expand=True)
             self.video.bind("<Double-Button-1>", lambda e: self.toggle_video_only())
             self.video.bind("<Button-3>", lambda e: self._view_menu(e.x_root, e.y_root))
             land = self._tk_live_land()                   # 2.98.26: wide window = the controls right of the picture (the picture keeps the height)
@@ -1416,6 +1416,7 @@ class App:
                 h2 = tk.Label(hd, text="▸" if folded else "▾", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 10), cursor="hand2"); h2.pack(side="right")
                 h3 = tk.Label(hd, text="◫", bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11), cursor="hand2", padx=6); h3.pack(side="right")
                 h3.bind("<Button-1>", lambda e: self._tkv_dialog()); Tip(h3, tr("View: layout, picture size, buttons, cards"))
+                self._anim_chips_mount(hd)                        # 639zzze: CPU and battery chips in this row
                 for w_ in (hd, h1, h2):
                     w_.bind("<Button-1>", lambda e: self._fold_ctl())
                 if not folded:

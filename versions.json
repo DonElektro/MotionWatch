@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-14 23:13",
+ "generated": "2026-11-15 00:44",
  "versions": [
+  {
+   "version": "3.96.0",
+   "file": "webcam_bewegung_3_96_0.py",
+   "url": "",
+   "sha256": "e2bf1136e0f9869675ba99545412dac048939511a8b654bd4be925d77c9f76f2",
+   "date": "2026-11-15 00:44",
+   "notes": "Fünf Teile. (1) Zeitraffer: jeden Tag automatisch ein Video. (2) CPU- und Akku-Chip in der Kopfzeile «Bedienung», für Zuschauer in der Statuszeile. (3) Mehr → «🌐 Homepage»: öffentliche Seiten auf dem eigenen Webspace. (4) Alarm-Pushes mit Knopf «📷 Live öffnen». (5) «⏪ Zeitfenster»: Abstand der Bilder einstellbar.",
+   "size": 3719012,
+   "sig": "54bb0a6b0619cf7acf9eac6e2680cc683e296f5aa8890fe2ecb01f9497c9ffa5a0a262a392072b85f0ed991f35c1c7f2653258c3716a161f2d386565d00a9305",
+   "data": {
+    "file": "moveeye_daten_3_96_0.zip",
+    "url": "",
+    "sha256": "fca0f468d0cc9f757da178573cfaa362d1da91005d470c1eff941d8496e039f6",
+    "size": 12482016,
+    "sig": "8b7773b9f8253b038291906b8203b9d80f6b4d98feaa150d0920702eca697d5fb55462941a90b23f297f419324e25eeae393577f9f7269ce967b467d74fca503"
+   }
+  },
   {
    "version": "3.95.1",
    "file": "webcam_bewegung_3_95_1.py",
    "url": "",
    "sha256": "717adb7d349593b7bf4204856b32b3b40a9c8f917b92d86a5388222b3a0affd1",
-   "date": "2026-11-14 23:13",
+   "date": "2026-11-14 23:43",
    "notes": "Unter der Haube: die Programmdatei ist rund 340 KB kleiner (deutsche Texte der Übersetzungstabellen in der Zusatzdatei, kein überflüssiger Leerraum im Code); am Verhalten ändert sich nichts.",
    "size": 3679348,
    "sig": "bc463b7c327bb1119fc38f822cd20bfffb996b61e60466a30c3be0d1e653882486f007ac178291d641c59bc3a0afd957e96127ce1567967c87322df6f7961a0d",
@@ -136,23 +153,6 @@
     "sha256": "ed47bc13c2cec3efa6e277daa1e8485b245768c182397a06d1fd9ed77261386e",
     "size": 11301109,
     "sig": "f88f19089d6ed3cb7c54d13c611a71c169b8b048926a1d7075f7c7dd90b370aa33ef740126f1039d520a76f1f9050d950d3373cc20762132dab347a17f04f402"
-   }
-  },
-  {
-   "version": "3.87.1",
-   "file": "webcam_bewegung_3_87_1.py",
-   "url": "",
-   "sha256": "c07238bfe901edf70ef3d13d2490f219c24145e249f7bd23d0ba38e1d3a0ca3e",
-   "date": "2026-11-14 00:45",
-   "notes": "Wichtig: Nach einem Update kommt die Webseite wieder. Bisher konnte MoveEye direkt nach dem Neustart seinen eigenen Autostart-Dienst anhalten – die Seite blieb weg, bis der Pi neu gestartet wurde. Jetzt nie mehr; hängt ein Start trotzdem länger als 90 Sekunden, startet MoveEye sich von selbst neu und schreibt auf, wo es hing (das zählt nicht als Stromausfall). Belegt ein anderes Programm den Port der Webseite, bewacht MoveEye weiter und meldet es einmal. Teilen mit verpixelten Gesichtern stürzt auf dem Pi nicht mehr ab. Höhenprofil nur noch für Routen bis 300 km. Schach: «Vorziehen» wie auf Li",
-   "size": 3940479,
-   "sig": "2024f8e11da93457766390d3d2ce117b08310dd3115218b04b1882d3e1f2982383bb23e7c8033e0f8ec63fb87ea2403c96c44eaf582b0584612289cfbe4aed07",
-   "data": {
-    "file": "moveeye_daten_3_87_1.zip",
-    "url": "",
-    "sha256": "a220b4b3b99ae17243a58aa790882b4fa5272016fd97ca23185b8038db71fe6c",
-    "size": 11078156,
-    "sig": "a0251cbfdd979c6b797d3b12b0c6c8d47720ffaf6ab5b5713c859c0fdb2502969ffaa7446a73d77764c121c4cbddf758387b7243d95a2ca04f9cef2457c17105"
    }
   },
   {

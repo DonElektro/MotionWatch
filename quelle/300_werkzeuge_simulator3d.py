@@ -820,7 +820,13 @@ SIM3D["url"] = ""; SIM3D_LINUX["url"] = ""                # "" = in the reposito
 # MoveEye versions before this change read only «win» / «linux» / «pi» and never see «anhang». ----
 SIM3D_ANHANG_BASE = "https://github.com/DonElektro/MotionWatch/releases/download/"     # tests: a local server
 SIM3D_ANHANG = {"win": ("simulator3d/anhang/MotionWatch3D_Simulator.zip", "MotionWatch3D_Simulator.zip"),
-                "linux": ("simulator3d/anhang/MoveEyeSim3D_Linux.zip", "MoveEyeSim3D_Linux.zip")}
+                "linux": ("simulator3d/anhang/MoveEyeSim3D_Linux.zip", "MoveEyeSim3D_Linux.zip"),
+                "web": ("simulator3d/anhang/sim-web.zip", "sim-web.zip")}
+# «web» (Besitzer 14.11.2026): the simulator for the browser (Godot web export, werkzeuge/sim_web_paket.py) - only an asset,
+# never in the repository, nothing embedded (size 0 = not known yet); used by «Homepage» (639zzzh) for the folder Sim/.
+SIM3D_WEB = {"version": "0.0.0", "file": "simulator3d/anhang/sim-web.zip", "size": 0, "sha256": "", "stem": "sim-web",
+             "label": "MoveEye Sim (Browser)", "url": ""}
+SIM3D_WEB_DL = {"running": False, "got": 0, "msg": ""}
 
 
 def sim_anhang_url(key, ver):
@@ -878,7 +884,7 @@ def sim_manifest_verify(blk):
     ah = blk.get("anhang")
     if isinstance(ah, dict):
         got = {}
-        for key in ("win", "linux"):
+        for key in SIM3D_ANHANG:
             e = _sim_entry_ok(ah.get(key), SIM3D_ANHANG[key][0], lambda v, u, key=key: u == sim_anhang_url(key, v))
             if e:
                 got[key] = e
@@ -891,7 +897,7 @@ def sim_manifest_take(blk, save=True):
     """use the signed simulator entries of versions.json (see above); returns the keys that changed"""
     ok = sim_manifest_verify(blk)
     changed = []
-    for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX), ("pi", SIM3D_PI)):
+    for key, pkg in (("win", SIM3D), ("linux", SIM3D_LINUX), ("pi", SIM3D_PI), ("web", SIM3D_WEB)):
         e = ok.get(key)
         a = (ok.get("anhang") or {}).get(key)             # Simulator-Anhang: the newer one wins, the repository one at a tie
         if a and sim_vkey(a["ver"]) and (not e or not sim_vkey(e["ver"]) or sim_vkey(a["ver"]) > sim_vkey(e["ver"])):
@@ -968,7 +974,7 @@ def sim3d_fetch(pkg=None, dl=None):
         try:
             src = CFG["update_url"].strip()
             base = src.rsplit("/", 1)[0] + "/" if src.startswith("https://") else SIM3D_BASE
-            if SIM3D is globals()["SIM3D"] or SIM3D is globals()["SIM3D_LINUX"] or SIM3D is globals()["SIM3D_PI"]:
+            if any(SIM3D is globals()[k_] for k_ in ("SIM3D", "SIM3D_LINUX", "SIM3D_PI", "SIM3D_WEB")):
                 sim_manifest_refresh(base)                    # 3 tracks: the newest signed simulator (versions.json «sim»)
                 if sim3d_ready(SIM3D):
                     return

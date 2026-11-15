@@ -36,7 +36,7 @@ PASSWORT = "Deutsch-" + base64.b16encode(os.urandom(5)).decode().lower()
 SEITEN = ["/", "/protect", "/zones", "/recordings", "/timeline", "/diary", "/messages", "/log", "/settings", "/cams", "/sim", "/more",
           "/play", "/help", "/party", "/tools", "/build", "/quick"]
 # deutsch = englisch (kein Fehler, wenn der Schlüssel stehen bleibt)
-GLEICH = {"Live", "Simulator", "Sim", "Status", "Test", "Person", "Name", "Start", "Version", "Alarm", "Camping", "Download", "Demo", "Stop",
+GLEICH = {"Live", "Homepage", "Simulator", "Sim", "Status", "Test", "Person", "Name", "Start", "Version", "Alarm", "Camping", "Download", "Demo", "Stop",
           "Standard", "Normal", "Info", "OK", "Server", "Position", "Text", "System", "Details", "Online", "Offline", "Turbo", "Disco", "Party",
           "Hotspot", "Feedback", "Trailer", "Software", "Videos", "Badges", "Level", "Port", "Material", "Material:", "Film", "Radio", "Timer", "Wind", "Tunnel", "Reset",
           "Filter"}   # 3.88: «Filter» (Verlauf) ist auf Deutsch dasselbe Wort

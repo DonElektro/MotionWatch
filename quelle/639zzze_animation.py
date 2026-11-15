@@ -11,16 +11,20 @@
 #      Chip «N Aufnahmen» hüpft kurz
 #   6. Reiterwechsel: der Inhalt blendet sanft ein (180 ms)
 #   Das Logo-Animation (144) bleibt wie sie ist.
-# CPU-Chip: oben rechts im Live-Bild «CPU 42 % · 61 °C», halbdurchsichtig, alle 2 s neu (aus STATE cpu / cpu_temp, die der
-# Systemwächter 100 schon misst - kein neuer Faden, keine neue Adresse; Gäste: /g/<token>/state hat jetzt cpu / cpu_temp);
-# orange ab 70 % / 70 °C, rot ab 85 % / 80 °C. Sind die Knöpfe im Bild sichtbar (639zzj) oder das kleine Bild der drei
-# Ansichten (639zv), rutscht der Chip nach unten rechts. Fenster: ein kleines Etikett oben rechts im Bild (570).
+# CPU- und Akku-Chip (Besitzer nach 3.94.0: nicht mehr im Bild): in der Kopfzeile der Karte «Bedienung» auf Live, rechts
+# neben dem Titel (links vom ▾), bleiben sichtbar, wenn die Karte zu ist: «CPU 42 % · 61 °C» und «🔋 82 %» («🔌 97 %» am Netz /
+# beim Laden, wie die Statuszeile; kein Akku = kein Chip). Alle 2 s neu aus STATE cpu / cpu_temp / battery (100 misst schon -
+# kein neuer Faden, keine neue Adresse; Gäste: /g/<token>/state). CPU orange ab 70 % / 70 °C, rot ab 85 % / 80 °C; Akku orange
+# unter 30 %, rot unter 15 %. Wird es eng (Handy, lange Titel), fällt zuerst «· °C» weg - der Titel bricht nie um.
+# Wer die Karte nicht sieht (Zuschauer, ohne Recht «Schutz», Karte ausgeblendet): die Chips rechts in der Statuszeile oben.
+# Gast-Seite: die Chips in der oberen Zeile. Fenster: zwei Etiketten in der Kopfzeile «KAMERASTEUERUNG» (570).
 # ----------------------------------------------------------------------------
 _HX_ANIM = {
     "Processor load and temperature": ("Prozessor-Last und Temperatur", "Charge et température du processeur",
                                        "Carico e temperatura del processore", "Chargia e temperatura dal processur"),
     "Head direction": ("Richtung des Kopfs", "Direction de la tête", "Direzione della testa", "Direcziun dal chau"),
     "Picture is coming …": ("Bild kommt …", "L’image arrive …", "L’immagine arriva …", "Il maletg vegn …"),
+    "Battery charge": ("Akkustand", "Charge de la batterie", "Carica della batteria", "Stadi da l’accu"),
 }
 for _k, _v in _HX_ANIM.items():
     DE.setdefault(_k, _v[0])
@@ -29,6 +33,8 @@ for _k, _v in _HX_ANIM.items():
 
 CPU_WARN = (70, 70)                 # % / °C: orange from here
 CPU_HOT = (85, 80)                  # % / °C: red from here
+BATT_WARN = 30                      # %: orange below
+BATT_HOT = 15                       # %: red below
 
 # the eye of the logo (ring + pupil, colours of the wordmark 144) - blinks while the picture is on its way
 _EYE_SVG = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="20" fill="none" stroke="#ff9f43" stroke-width="9"/>'
@@ -48,22 +54,21 @@ ANIM_CSS = r"""<style id="anim-css">
 /* 4. waiting for the picture: the eye of the logo blinks (the text below stays) */
 .vwrap.vlost::after{content:""!important;background:url("__EYE__") center/64px 64px no-repeat;animation:mwEye 3.2s ease-in-out infinite!important;
   transform-origin:50% 50%}
-/* 3. head compass + CPU chip, inside the live picture */
-.lv-cpu{position:absolute;top:8px;right:8px;z-index:4;padding:3px 9px;border-radius:999px;background:rgba(0,0,0,.5);color:#fff;
-  font:600 12px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,"DejaVu Sans",sans-serif;white-space:nowrap;pointer-events:none;
-  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);font-variant-numeric:tabular-nums;transition:opacity .2s}
-.lv-cpu[hidden]{display:none}
-.lv-cpu.warn{background:rgba(245,154,74,.88);color:#111}.lv-cpu.hot{background:rgba(255,77,77,.92);color:#fff}
+/* CPU + battery chips: in the header row of the card «Controls», right of the title, left of ▾ (stay when the card is closed) */
+.lv-chips{margin-left:auto;margin-right:8px;display:inline-flex;align-items:center;gap:5px;flex:none;white-space:nowrap}
+.lv-chip{padding:1px 7px;border-radius:999px;background:rgba(127,140,160,.2);color:var(--txt);font:600 12px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"DejaVu Sans",sans-serif;
+  font-variant-numeric:tabular-nums;letter-spacing:0;transition:background-color .2s}
+.lv-chip[hidden]{display:none}
+.lv-chip.warn{background:#f59a4a;color:#111}.lv-chip.hot{background:#ff4d4d;color:#fff}
+.lv-chips.nc .lv-cpu .c{display:none}
+header>.chips>.lv-chips.alt{margin:0 0 0 auto;order:99}
+/* 3. head compass, inside the live picture */
 .lv-comp{position:absolute;right:8px;bottom:8px;z-index:4;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;
   display:flex;align-items:center;justify-content:center;pointer-events:none;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .lv-comp[hidden]{display:none}
 .lv-comp svg{width:24px;height:24px;transition:transform .6s cubic-bezier(.3,.7,.3,1);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .lv-comp svg .tip{fill:#ff9f43;stroke:#ff9f43}
 body.lv-nohead .lv-comp{display:none}
-/* the buttons in the picture are shown (tap / mouse, 639zzj) or the small picture of the three views (639zv): the chip goes
-   down to the right, next to the compass - it never lies on the buttons, the magnifier or the small picture */
-body.lvc-show .lv-cpu,body:not(.lvc-auto) .lv-cpu,.vwrap:has(#v3-mini:not([hidden])) .lv-cpu,.vwrap:has(#vo-lupe.on) .lv-cpu{top:auto;bottom:8px;right:50px}
-body.lv-nohead.lvc-show .lv-cpu,body.lv-nohead:not(.lvc-auto) .lv-cpu,body.lv-nohead .vwrap:has(#v3-mini:not([hidden])) .lv-cpu{right:8px}
 /* 5. history: new recordings slide in, the count hops */
 #grid>.mw-new{animation:mwSlideIn .35s ease-out both}
 .badge.mw-pop{animation:mwPop .45s ease-out}
@@ -71,11 +76,11 @@ body.lv-nohead.lvc-show .lv-cpu,body.lv-nohead:not(.lvc-auto) .lv-cpu,body.lv-no
 body:has(nav.nav) main{animation:mwPageIn .18s ease-out backwards}
 /* off: «reduce motion» (system or the switch of MoveEye) and the red light view (motion would disturb the eyes in the dark) */
 @media (prefers-reduced-motion:reduce){#b-arm.guard::before,.mwb-sum .mws-st.guard::before,.vwrap.vlost::after,#grid>.mw-new,.badge.mw-pop,
-  body:has(nav.nav) main{animation:none!important}.lv-comp svg,.lv-cpu{transition:none}}
+  body:has(nav.nav) main{animation:none!important}.lv-comp svg,.lv-chip{transition:none}}
 html.mwrm #b-arm.guard::before,html.mwrm .mwb-sum .mws-st.guard::before,html.mwrm .vwrap.vlost::after,html.mwrm #grid>.mw-new,html.mwrm .badge.mw-pop,
 html.mwrm body:has(nav.nav) main,html.sxnight #b-arm.guard::before,html.sxnight .mwb-sum .mws-st.guard::before,html.sxnight .vwrap.vlost::after,
 html.sxnight #grid>.mw-new,html.sxnight .badge.mw-pop,html.sxnight body:has(nav.nav) main{animation:none!important}
-html.mwrm .lv-comp svg,html.mwrm .lv-cpu{transition:none}
+html.mwrm .lv-comp svg,html.mwrm .lv-chip{transition:none}
 html.sxnight #b-arm.guard::before,html.sxnight .mwb-sum .mws-st.guard::before{opacity:.8}
 </style>""".replace("__EYE__", ANIM_EYE_URI)
 
@@ -87,29 +92,62 @@ ANIM_JS = r"""<script>
   const TX = window.ANIM_TX || {};
   const L = () => { try { return (typeof LANG !== "undefined" && LANG) || localStorage.getItem("mw-lang") || "de"; } catch (e) { return "de"; } };
   const tr = k => ((TX[L()] || {})[k]) || k;
-  const W = window.ANIM_LIM || {warn: [70, 70], hot: [85, 80]};
-  let chip = null, comp = null, lastCpu = 0;
+  const W = window.ANIM_LIM || {warn: [70, 70], hot: [85, 80], bwarn: 30, bhot: 15};
+  let chips = null, chip = null, batt = null, comp = null, lastCpu = 0;
+  // the chips live in the header row (summary) of the card «Controls»; the language switch rewrites that row - they come back
+  function chipEls() {
+    // who does not see the card (viewer, no right «protection», card hidden): right in the status line at the top - only on Live
+    let sum = document.querySelector('details[data-view="controls"]>summary'), alt = false;
+    if (!sum || !sum.getClientRects().length) { sum = (document.body.dataset.tab || "live") === "live" ? document.querySelector("header>.chips") : null; alt = true; }
+    if (!sum) { if (chips) chips.remove(); return null; }
+    if (!chips) { chips = document.createElement("span"); chips.id = "lv-chips"; chips.className = "lv-chips"; chips.setAttribute("role", "status");
+      chip = document.createElement("span"); chip.id = "lv-cpu"; chip.className = "lv-chip lv-cpu"; chip.hidden = true;
+      chip.innerHTML = '<span class="u"></span><span class="c"></span>';
+      batt = document.createElement("span"); batt.id = "lv-batt"; batt.className = "lv-chip lv-batt"; batt.hidden = true;
+      chips.append(chip, batt); }
+    if (chips.parentNode !== sum) sum.appendChild(chips);
+    chips.classList.toggle("alt", alt);
+    chip.title = tr("Processor load and temperature"); batt.title = tr("Battery charge");
+    return sum;
+  }
+  // tight (phone, long title): «· °C» goes first - the title never wraps
+  function fit(sum) {
+    if (!sum.getClientRects().length) return;
+    chips.classList.remove("nc");
+    if (chips.classList.contains("alt")) { const k = chips.getBoundingClientRect(), s = sum.getBoundingClientRect();
+      if (k.right > s.right + 1 || k.left < s.left || sum.scrollWidth > sum.clientWidth + 1) chips.classList.add("nc"); return; }
+    const over = () => { const rg = document.createRange(), tn = [...sum.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim());
+      const k = chips.getBoundingClientRect(), s = sum.getBoundingClientRect(); let lines = 1, tr_ = s.left;
+      if (tn.length) { rg.setStart(tn[0], 0); rg.setEnd(tn[tn.length - 1], tn[tn.length - 1].length); const q = rg.getClientRects(); lines = q.length;
+        tr_ = Math.max(...[...q].map(x => x.right)); }
+      return lines > 1 || k.left < tr_ + 6 || k.right > s.right - 10; };   // title in one line, a gap to the title, room for ▾
+    if (over()) chips.classList.add("nc");
+  }
   function els() {
     const box = document.querySelector("#vcard .vwrap"); if (!box) return false;
-    if (!chip || !chip.isConnected) { chip = document.createElement("div"); chip.id = "lv-cpu"; chip.className = "lv-cpu"; chip.hidden = true;
-      chip.setAttribute("role", "status"); box.appendChild(chip); }
     if (!comp || !comp.isConnected) { comp = document.createElement("div"); comp.id = "lv-comp"; comp.className = "lv-comp"; comp.hidden = true;
       comp.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" opacity=".45"/><path class="tip" d="M12 4.5l3 7.5h-6z"/><path d="M12 12v6"/></svg>';
       box.appendChild(comp); }
-    chip.title = tr("Processor load and temperature"); comp.title = tr("Head direction"); comp.setAttribute("aria-label", comp.title);
+    comp.title = tr("Head direction"); comp.setAttribute("aria-label", comp.title);
     return true;
   }
-  // the CPU chip: «CPU 42 % · 61 °C», at most every 2 s
+  // the chips: «CPU 42 % · 61 °C» and «🔋 82 %» / «🔌 97 %» (like the status line), at most every 2 s
   function cpuPaint(s, force) {
     const now = Date.now(); if (!force && now - lastCpu < 1900) return; lastCpu = now;
-    if (!els()) return;
+    const sum = chipEls(); if (!sum) return;
     const c = typeof s.cpu === "number" ? s.cpu : null, tt = typeof s.cpu_temp === "number" ? s.cpu_temp : null;
-    if (c === null && tt === null) { chip.hidden = true; return; }
-    chip.hidden = false; chip.dataset.t = String(now);           // when it was painted last (tests: every 2 s)
-    chip.textContent = "CPU " + (c === null ? "–" : Math.round(c) + " %") + (tt === null ? "" : " · " + Math.round(tt) + " °C");
+    chip.hidden = c === null && tt === null; chip.dataset.t = String(now);           // when it was painted last (tests: every 2 s)
+    chip.firstChild.textContent = "CPU " + (c === null ? "–" : Math.round(c) + " %"); chip.lastChild.textContent = tt === null ? "" : " · " + Math.round(tt) + " °C";
     const hot = (c !== null && c >= W.hot[0]) || (tt !== null && tt >= W.hot[1]), warn = !hot && ((c !== null && c >= W.warn[0]) || (tt !== null && tt >= W.warn[1]));
     chip.classList.toggle("hot", hot); chip.classList.toggle("warn", warn);
     chip.setAttribute("aria-label", tr("Processor load and temperature") + ": " + chip.textContent);
+    const b = s.battery || {}, has = !!(b.on && typeof b.pct === "number");
+    batt.hidden = !has;
+    if (has) { const plug = (b.src === "ups" && !b.on_battery) || !!b.charging;
+      batt.textContent = (plug ? "🔌 " : "🔋 ") + Math.round(b.pct) + " %";
+      batt.classList.toggle("hot", !plug && b.pct < W.bhot); batt.classList.toggle("warn", !plug && b.pct >= W.bhot && b.pct < W.bwarn);
+      batt.setAttribute("aria-label", tr("Battery charge") + ": " + batt.textContent); }
+    fit(sum);
   }
   // the compass: the arrow turns with the pan of the head (0 % = left, 100 % = right, over the servo range)
   function compPaint(c) {
@@ -123,9 +161,9 @@ ANIM_JS = r"""<script>
   // one call per poll of the page (530 refresh); the guest page calls it with its own small state
   window.mwAnim = function (j) {
     try { const s = (j && j.state) || {}, c = (j && j.cfg) || {};
-      cpuPaint(s); if (j && j.cfg) compPaint(c); } catch (e) {}
+      cpuPaint(s, j && j.force); if (j && j.cfg) compPaint(c); } catch (e) {}
   };
-  window.mwAnim.chip = () => chip; window.mwAnim.comp = () => comp;
+  window.mwAnim.chip = () => chip; window.mwAnim.batt = () => batt; window.mwAnim.comp = () => comp;
 })();
 </script>"""
 
@@ -148,7 +186,7 @@ def render_page(page, active):                                 # + 639zzze: the 
     out = out.replace("</head>", ANIM_CSS + "</head>", 1)
     i = out.rfind("</body>")
     tag = ("<script>window.ANIM_TX=" + json.dumps(anim_tx(), ensure_ascii=False).replace("</", "<\\/") + ";window.ANIM_LIM="
-           + json.dumps({"warn": list(CPU_WARN), "hot": list(CPU_HOT)}) + ";</script>" + ANIM_JS)
+           + json.dumps({"warn": list(CPU_WARN), "hot": list(CPU_HOT), "bwarn": BATT_WARN, "bhot": BATT_HOT}) + ";</script>" + ANIM_JS)
     return out[:i] + tag + out[i:] if i >= 0 else out + tag
 
 
@@ -256,32 +294,52 @@ def anim_selftest():
     assert "mw-new" in REC_PAGE and "mwAnim" in WEB_PAGE and "gAnim(j)" in GUEST_PAGE, "639zzze: hooks (history, live page, guest page)"
     assert anim_cpu_text(42.4, 61.2) == ("CPU 42 % · 61 °C", "") and anim_cpu_text(71, 50)[1] == "warn" and anim_cpu_text(50, 81)[1] == "hot"
     assert anim_cpu_text(None, None) == ("", "") and anim_cpu_text(None, 40)[0] == "CPU – · 40 °C"
-    return "boxes fade in, zone frame flashes once, off with «reduce motion»; CPU chip and compass on Live"
+    assert anim_batt_text({"on": True, "pct": 82}) == ("🔋 82 %", "") and anim_batt_text({"on": False}) == ("", "")
+    assert anim_batt_text({"on": True, "pct": 97, "src": "ups", "on_battery": False}) == ("🔌 97 %", "")
+    assert anim_batt_text({"on": True, "pct": 20})[1] == "warn" and anim_batt_text({"on": True, "pct": 14})[1] == "hot"
+    assert anim_batt_text({"on": True, "pct": 10, "charging": True}) == ("🔌 10 %", "")
+    assert "lv-chips" in ANIM_JS and "lv-cpu{position:absolute" not in ANIM_CSS, "639zzze: chips in the card «Controls», not in the picture"
+    return "boxes fade in, zone frame flashes once, off with «reduce motion»; CPU and battery chips in «Controls», compass on Live"
 
 
 SELFTEST_EXTRA.append(("Animations and the CPU chip (639zzze)", anim_selftest))
 
 
-# ---- the guest page (520): the same CPU chip and the blinking eye while the picture is on its way ------------------------------------
-ANIM_GUEST_CSS = (".vwrap{position:relative}.lv-cpu{position:absolute;top:8px;right:8px;z-index:4;padding:3px 9px;border-radius:999px;background:rgba(0,0,0,.5);"
-                  "color:#fff;font:600 12px/1.4 system-ui,-apple-system,sans-serif;white-space:nowrap;pointer-events:none;font-variant-numeric:tabular-nums}"
-                  ".lv-cpu[hidden]{display:none}.lv-cpu.warn{background:rgba(245,154,74,.88);color:#111}.lv-cpu.hot{background:rgba(255,77,77,.92)}"
+# ---- the guest page (520): the same chips in the top row and the blinking eye while the picture is on its way ------------------------
+ANIM_GUEST_CSS = (".vwrap{position:relative}.lv-chips{display:inline-flex;gap:5px;margin-left:8px;flex:none;white-space:nowrap}"
+                  ".lv-chip{padding:1px 7px;border-radius:999px;background:rgba(127,140,160,.22);color:#e6edf3;font:600 12px/1.45 system-ui,-apple-system,sans-serif;"
+                  "font-variant-numeric:tabular-nums}.lv-chip[hidden]{display:none}.lv-chip.warn{background:#f59a4a;color:#111}.lv-chip.hot{background:#ff4d4d;color:#fff}"
+                  ".lv-chips.nc .lv-cpu .c{display:none}.gtop:has(.lv-chips) .gtt{flex:none;white-space:nowrap}"
+                  "@media (max-width:600px){.gtop:has(.lv-chips){flex-wrap:wrap;row-gap:4px}.gtop .lv-chips{order:9;flex-basis:calc(100% - 20px);margin:0 0 2px 20px}}"
                   "@keyframes mwEye{0%,42%,50%,100%{transform:scaleY(1)}45%,47%{transform:scaleY(.08)}}"
                   ".vwrap.vlost::after{content:''!important;background:url(\"" + ANIM_EYE_URI + "\") center/64px 64px no-repeat;animation:mwEye 3.2s ease-in-out infinite}"
                   "@media (prefers-reduced-motion:reduce){.vwrap.vlost::after{animation:none}}")
-ANIM_GUEST_JS = ("window.gAnim=function(j){var w=document.querySelector('.vwrap');if(!w)return;var c=document.getElementById('lv-cpu');"
-                 "if(!c){c=document.createElement('div');c.id='lv-cpu';c.className='lv-cpu';c.hidden=true;w.appendChild(c);}"
-                 "var u=typeof j.cpu==='number'?j.cpu:null,t=typeof j.cpu_temp==='number'?j.cpu_temp:null;if(u===null&&t===null){c.hidden=true;return;}"
-                 "c.hidden=false;c.textContent='CPU '+(u===null?'–':Math.round(u)+' %')+(t===null?'':' · '+Math.round(t)+' °C');"
+ANIM_GUEST_JS = ("window.gAnim=function(j){var g=document.querySelector('.gtop');if(!g)return;var k=document.getElementById('lv-chips');"
+                 "if(!k){k=document.createElement('span');k.id='lv-chips';k.className='lv-chips';k.innerHTML='<span id=\"lv-cpu\" class=\"lv-chip lv-cpu\" hidden>"
+                 "<span class=\"u\"></span><span class=\"c\"></span></span><span id=\"lv-batt\" class=\"lv-chip lv-batt\" hidden></span>';"
+                 "var s=document.getElementById('st');g.insertBefore(k,s);}var c=document.getElementById('lv-cpu'),b=document.getElementById('lv-batt');"
+                 "var u=typeof j.cpu==='number'?j.cpu:null,t=typeof j.cpu_temp==='number'?j.cpu_temp:null;c.hidden=u===null&&t===null;"
+                 "c.firstChild.textContent='CPU '+(u===null?'–':Math.round(u)+' %');c.lastChild.textContent=t===null?'':' · '+Math.round(t)+' °C';"
                  "var h=(u!==null&&u>=" + str(CPU_HOT[0]) + ")||(t!==null&&t>=" + str(CPU_HOT[1]) + "),wa=!h&&((u!==null&&u>=" + str(CPU_WARN[0])
-                 + ")||(t!==null&&t>=" + str(CPU_WARN[1]) + "));c.classList.toggle('hot',h);c.classList.toggle('warn',wa);};")
+                 + ")||(t!==null&&t>=" + str(CPU_WARN[1]) + "));c.classList.toggle('hot',h);c.classList.toggle('warn',wa);"
+                 "var a=j.battery||{},on=!!(a.on&&typeof a.pct==='number');b.hidden=!on;if(on){var p=(a.src==='ups'&&!a.on_battery)||!!a.charging;"
+                 "b.textContent=(p?'🔌 ':'🔋 ')+Math.round(a.pct)+' %';b.classList.toggle('hot',!p&&a.pct<" + str(BATT_HOT) + ");"
+                 "b.classList.toggle('warn',!p&&a.pct>=" + str(BATT_HOT) + "&&a.pct<" + str(BATT_WARN) + ");}"
+                 "k.classList.remove('nc');if(k.scrollWidth>k.clientWidth+1||k.getBoundingClientRect().right>g.getBoundingClientRect().right)k.classList.add('nc');};")
 if "gAnim" not in GUEST_PAGE and "const j = await r.json();" in GUEST_PAGE:
     GUEST_PAGE = (GUEST_PAGE.replace("</style>", ANIM_GUEST_CSS + "</style>", 1)
                   .replace("const j = await r.json();", "const j = await r.json(); if (window.gAnim) gAnim(j);", 1)
                   .replace("<script>", "<script>" + ANIM_GUEST_JS + "\n", 1))
 
 
-# ---- the window (Tkinter): a small label «CPU 42 % · 61 °C» top right on the picture, every 2 s -----------------------------------
+# ---- the window (Tkinter): two small labels «CPU 42 % · 61 °C» «🔋 82 %» in the header row «CAMERA CONTROL», every 2 s ----------------
+def _anim_chips_mount(self, hd):
+    """570: the header row of the card «Controls» (title left, ◫ and ▾ right) - the chips go right of the title, left of ◫"""
+    self._anim_chip_hd = hd
+    self._cpu_chip_lbl = self._batt_chip_lbl = None
+    self._anim_cpu_chip_start()
+
+
 def _anim_cpu_chip_start(self):
     if getattr(self, "_cpu_chip_job", None) is None:
         self._cpu_chip_job = self.root.after(800, self._anim_cpu_chip_tick)
@@ -297,21 +355,38 @@ def anim_cpu_text(c, t):
     return txt, "hot" if hot else ("warn" if warn else "")
 
 
+def anim_batt_text(bt):
+    """(text, level) of the battery chip: «🔋 82 %», «🔌 97 %» on mains / charging (like the status line); no battery = ("", "")"""
+    bt = bt or {}
+    if not (bt.get("on") and isinstance(bt.get("pct"), (int, float))):
+        return "", ""
+    plug = (bt.get("src") == "ups" and not bt.get("on_battery")) or bool(bt.get("charging"))
+    p = bt["pct"]
+    return ("🔌 " if plug else "🔋 ") + "%d %%" % round(p), "" if plug else ("hot" if p < BATT_HOT else ("warn" if p < BATT_WARN else ""))
+
+
 def _anim_cpu_chip_tick(self):
     self._cpu_chip_job = None
     try:
-        v = getattr(self, "video", None)
-        if v is not None and v.winfo_exists():
-            lb = getattr(self, "_cpu_chip_lbl", None)
-            if lb is None or not lb.winfo_exists() or str(lb.master) != str(v):
-                lb = self._cpu_chip_lbl = tk.Label(v, font=("DejaVu Sans", 9, "bold"), padx=6, pady=1, bd=0)
-                Tip(lb, tr("Processor load and temperature"))
-            txt, lv = anim_cpu_text(STATE.get("cpu"), STATE.get("cpu_temp"))
-            if not txt:
-                lb.place_forget()
-            else:
-                lb.config(text=txt, bg={"hot": "#ff4d4d", "warn": "#f59a4a"}.get(lv, "#1b2330"), fg="#111111" if lv == "warn" else "#ffffff")
-                lb.place(relx=1.0, x=-8, y=8, anchor="ne")
+        hd = getattr(self, "_anim_chip_hd", None)
+        if hd is not None and hd.winfo_exists():
+            bg0 = hd.cget("bg")
+
+            def lbl(attr, tip):
+                lb = getattr(self, attr, None)
+                if lb is None or not lb.winfo_exists():
+                    lb = tk.Label(hd, font=("DejaVu Sans", 8, "bold"), padx=5, pady=0, bd=0)
+                    setattr(self, attr, lb); Tip(lb, tr(tip))
+                    lb.bind("<Button-1>", lambda e: self._fold_ctl())
+                return lb
+            cl, bl = lbl("_cpu_chip_lbl", "Processor load and temperature"), lbl("_batt_chip_lbl", "Battery charge")
+            for lb, (txt, lv) in ((bl, anim_batt_text(STATE.get("battery"))), (cl, anim_cpu_text(STATE.get("cpu"), STATE.get("cpu_temp")))):
+                if not txt:
+                    lb.pack_forget(); continue
+                lb.config(text=txt, bg={"hot": "#ff4d4d", "warn": "#f59a4a"}.get(lv, C.get("field", bg0)), fg="#111111" if lv == "warn" else ("#ffffff" if lv else C.get("txt", "#e6edf3")))
+                if lb.winfo_manager() != "pack":
+                    kids = [w for w in hd.pack_slaves() if w in (cl,)] if lb is bl else []
+                    lb.pack(side="right", padx=(0, 6), **({"before": kids[0]} if kids else {}))
     except Exception:
         pass
     try:
@@ -323,3 +398,4 @@ def _anim_cpu_chip_tick(self):
 if "App" in globals():
     App._anim_cpu_chip_start = _anim_cpu_chip_start
     App._anim_cpu_chip_tick = _anim_cpu_chip_tick
+    App._anim_chips_mount = _anim_chips_mount

@@ -58,7 +58,9 @@ PI_URL = "https://github.com/DonElektro/MotionWatch/releases/download/sim-%s/Mov
 # und «linux» EINGEFROREN (= Sim 3.67.2); die neuste Version steht im Block «anhang» {ver, version, notes, mw_min,
 # win: {file, ver, size, sha256, url}, linux: {…}} und signiert in versions.json «sim.anhang» (Teil 300 / 390).
 # Lokal liegen die geholten Assets unter simulator3d/anhang/ (.gitignore), nur zum Nachrechnen vor dem Signieren.
-ANHANG_REL = {"win": "simulator3d/anhang/MotionWatch3D_Simulator.zip", "linux": "simulator3d/anhang/MoveEyeSim3D_Linux.zip"}
+ANHANG_REL = {"win": "simulator3d/anhang/MotionWatch3D_Simulator.zip", "linux": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
+              "web": "simulator3d/anhang/sim-web.zip"}
+ANHANG_FREI = ("web",)              # Simulator im Browser (MoveEye «Homepage», Teil 639zzzh): darf fehlen
 ANHANG_URL = "https://github.com/DonElektro/MotionWatch/releases/download/sim-%s/%s"
 ANHANG_HINWEIS = (" · Neuere Versionen holt sich der Simulator nach dem Start selbst (zweites Update). "
                   "Für den Download der neusten Version direkt aus MoveEye: bitte zuerst MoveEye aktualisieren.")
@@ -538,8 +540,13 @@ def pi_pruefen(vj, man):
 
 
 def paket_inhalt(pfad, key, v):
-    """Fehlerliste (leer = ok): ist die ZIP das Paket <key> («win» / «linux») der Sim-Nummer v?"""
+    """Fehlerliste (leer = ok): ist die ZIP das Paket <key> («win» / «linux» / «web») der Sim-Nummer v?"""
     import zipfile
+    if key == "web":                                       # 8 Dateien des Web-Exports, Regeln in sim_web_paket.py
+        if HIER not in sys.path:
+            sys.path.insert(0, HIER)
+        import sim_web_paket
+        return sim_web_paket.pruefen(pfad)
     exe = "MoveEyeSim3D/MoveEyeSim3D.exe" if key == "win" else "MoveEyeSim3D/MoveEyeSim3D.x86_64"
     out = []
     try:
@@ -587,6 +594,9 @@ def anhang_json(v, notes):
         ah["mw_min"] = mm
     for key, rel in ANHANG_REL.items():
         fp = os.path.join(REPO, rel)
+        if not os.path.isfile(fp) and key in ANHANG_FREI:
+            print("Hinweis: %s fehlt - Anhang ohne «%s»" % (rel, key))
+            continue
         if not os.path.isfile(fp):
             sys.exit("%s fehlt - zuerst: python3 werkzeuge/sim_anhang.py holen %s" % (rel, v))
         fehler = paket_inhalt(fp, key, v)
@@ -626,7 +636,8 @@ def anhang_pruefen(vj, alt_vj, man):
     for key, rel in ANHANG_REL.items():
         e = ah.get(key)
         if not isinstance(e, dict):
-            warn.append("Anhang %s ohne Paket «%s»" % (v, key))
+            if key not in ANHANG_FREI:
+                warn.append("Anhang %s ohne Paket «%s»" % (v, key))
             continue
         if e.get("file") != rel or e.get("ver") != v or e.get("url") != ANHANG_URL % (v, os.path.basename(rel)) \
                 or not re.fullmatch(r"[0-9a-f]{64}", str(e.get("sha256") or "")) or not isinstance(e.get("size"), int):
