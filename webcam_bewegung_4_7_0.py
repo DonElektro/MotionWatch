@@ -24,6 +24,7 @@ Features
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
   * 4.7.0: Spielesammlung GS-1.24: neues Spiel «Gipfeltreffen» (erstes Level) und «Verschollen im Bergtal» Kapitel 2 «Drei Tage»
+    · Fehler behoben: der Passwort-Dialog nimmt dem Feld «Wiederholen» den Cursor nicht mehr weg
   * 4.6.0: Mitteilungen pausieren: Push-Pause, die von selbst endet (15 min bis «bis ich zurück bin»), 🔕 auf der Glocke –
     Sabotage, SOS und Akku kommen immer
   * 4.5.0: Unterseiten öffnen als Fenster über der Seite – ab Werk «Mitte»; wählbar unter Einstellungen: «Von unten», «Mitte»,
@@ -292,7 +293,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_7_0.zip"
-ZD_SHA256 = "1a34dd3bcdd9b39b2369ccca5c4fae3079631d5d235fbf8ae1ff8e897f452b72"
+ZD_SHA256 = "1aa6fbe919ca42e0a09de3514fd42dc119531253724e701b97fa63dfb271b50c"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 

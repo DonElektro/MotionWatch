@@ -651,6 +651,7 @@ Features
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
   * 4.7.0: Spielesammlung GS-1.24: neues Spiel «Gipfeltreffen» (erstes Level) und «Verschollen im Bergtal» Kapitel 2 «Drei Tage»
+    · Fehler behoben: der Passwort-Dialog nimmt dem Feld «Wiederholen» den Cursor nicht mehr weg
   * 4.6.0: Mitteilungen pausieren: Push-Pause, die von selbst endet (15 min bis «bis ich zurück bin»), 🔕 auf der Glocke –
     Sabotage, SOS und Akku kommen immer
   * 4.5.0: Unterseiten öffnen als Fenster über der Seite – ab Werk «Mitte»; wählbar unter Einstellungen: «Von unten», «Mitte»,
