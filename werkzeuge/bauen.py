@@ -561,11 +561,14 @@ def anleitung_namen(neu=False):
     manual (_zd_anleitung_for) - their pairs go into the zip like the manual itself"""
     if _ANL["namen"] is not None and not neu:
         return _ANL["namen"]
-    zuw, nutz, schl = {}, {}, set()
+    zuw, nutz = {}, {}
     for n in teile():
         if n.startswith(ZD_KEEP_PARTS):
             continue
         tree = ast.parse(lesen(n), n)
+        # id() only within the same tree: the trees of earlier parts are freed, Python reuses their addresses - a set across
+        # all parts let a name of a later part count as «only in for … in NAME» by chance (main CI 4.4.0 red, rerun green)
+        schl = set()
         for st in tree.body:
             if isinstance(st, ast.Assign) and len(st.targets) == 1 and isinstance(st.targets[0], ast.Name):
                 zuw[st.targets[0].id] = zuw.get(st.targets[0].id, 0) + 1

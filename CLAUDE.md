@@ -226,6 +226,21 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
 - Echte Prozess-Tests für Neustart/Pause/Update (`os.execv`, gleiche PID).
 - Fenster ohne Bildschirm: Xvfb, oder notfalls ein Tkinter-Ersatz (nur Rauchtest).
 
+## HP-Testweg (nur bis 20.11.2026, 17:00 Uhr Schweizer Zeit)
+
+Der lokale Container ist mit allen Helfern überlastet: Tests dürfen bis Freitag 20.11.2026, 17:00 auf dem HP rechnen (Besitzer, 15.11.2026, verlängert;
+Workflow `.github/workflows/hp_helfer.yml`, Fenster `HP_HELFER_BIS` dort auf main; danach hört jeder Lauf sofort auf).
+- **Starten:** der Zweig muss main mit `hp_helfer.yml` enthalten (`git merge origin/main`), dann
+  `git push origin HEAD:hp-test/<name>` (`<name>`: A-Z a-z 0-9 . _ -). Was läuft: `hp_test.txt` im Wurzelordner des Zweigs
+  (eine Zeile pro Befehl, nur `python3 werkzeuge/….py …`, `python3 werkzeuge/ci_lauf.py --gruppe X`, `godot werkzeuge/…_test.gd`,
+  keine Shell – Regeln im Kopf von `werkzeuge/hp_helfer.py`); ohne die Datei die Gruppen wie im CI (`ci_auswahl.py`: basis +
+  was die Änderung betrifft). Höchstens 50 Min. pro Lauf – lieber gezielt wenige Gruppen / Tests.
+- **Ergebnis:** `werkzeuge/ci_status.sh hp-test/<name> --warten --fehler` (Exit 0 = grün; Protokolle und Bildschirmfotos als
+  Artefakt «hp-test-<name>-<nr>»). Der HP rechnet einen Job aufs Mal: Warten in der Schlange ist normal. Kein Lauf nach
+  dem Push? `werkzeuge/ci_status.sh hp-test/<name> --start`.
+- `hp-test/*`-Zweige werden **nie gemergt** (auch `hp_test.txt` nicht in den Arbeitszweig übernehmen); der Integrator
+  löscht sie danach (`git push origin --delete hp-test/<name>`). Grün auf dem HP ersetzt nicht das CI auf GitHub.
+
 ## Hardware
 
 Pi 5, Camera Module 3 NoIR, Waveshare Thermal-90 (SPI, I2C 0x40, GPIO 7/23/24, Treiber pysenxor – noch nicht mit echtem Modul getestet),

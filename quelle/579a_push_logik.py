@@ -61,7 +61,7 @@ _PX_LABELS = {   # key: short English label (the old long one is in the «?» no
     "pushover_user": "User key", "pushover_token": "App token", "msg_keyword_prefix": "Keyword (empty = off)",
     "email_to": "To (your address)", "email_host": "SMTP server", "email_port": "Port", "email_user": "User name",
     "email_password": "Password", "email_events": "Which messages", "public_url": "Address of this page for links",
-    "push_pics": "Pictures", "notify_cooldown": "Pause between alarms (s)", "prealarm_cooldown": "Pause between pre-alarms (s)",
+    "push_pics": "Pictures", "notify_cooldown": "Gap between alarms (s)", "prealarm_cooldown": "Gap between pre-alarms (s)",
 }
 
 
