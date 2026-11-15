@@ -399,6 +399,11 @@ try:
     UF_TX = {k: tuple(v) for k, v in json.loads(UF_TX_JS).items()}
 except ValueError:
     UF_TX = {}
+for _k, _v in UF_TX.items():                                   # the same texts for tr() on the server side (the check of 395: fr / it / rm)
+    if len(_v) == 5:
+        DE.setdefault(_k, _v[1])
+        for _i, _L in enumerate(("fr", "it", "rm")):
+            TRX[_L].setdefault(_k, _v[_i + 2])
 
 
 def uf_tx():
