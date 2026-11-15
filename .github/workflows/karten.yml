@@ -226,6 +226,15 @@ jobs:
             ${{ runner.temp }}/out/${{ steps.v.outputs.n_web }}
           retention-days: 3
           compression-level: 0
+      - name: Kleiner Ausschnitt ins Protokoll (base64, nur bbox unter 20 MB - wo Artefakte nicht erreichbar sind)
+        if: always() && env.BBOX != ''
+        run: |
+          O="$RUNNER_TEMP/out"
+          for n in ${{ steps.v.outputs.n_topo }} ${{ steps.v.outputs.n_relief }}; do
+            [ -f "$O/$n" ] || continue
+            [ "$(stat -c %s "$O/$n")" -lt 20000000 ] || { echo "$n zu gross fürs Protokoll"; continue; }
+            echo "B64BEGIN $n $(sha256sum "$O/$n" | cut -c1-64)"; base64 -w 4000 "$O/$n" | sed "s/^/B64 $n /"; echo "B64END $n"
+          done
       - name: Zusammenfassung
         if: always()
         run: |
