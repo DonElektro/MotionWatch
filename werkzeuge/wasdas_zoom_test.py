@@ -8,6 +8,9 @@ Startet MoveEye ohne Fenster (Demo-Bild) mit zwei gespeicherten Alarmbildern und
      in voller Auflösung (person_<zeit>.jpg, im Test grün an den Rahmen) und nicht aus dem gespeicherten Bild (dort blau);
      antippen = gross mit «✕» (Schliessen); ohne das Foto: aus dem gespeicherten Bild.
   B  ein grosser Rahmen (über einem Viertel des Bilds): kein Ausschnitt, die Karte wie bisher (Bild + Knöpfe).
+  C  zuklappbar auf Live (Wunsch Besitzer 15.11.2026): ab Werk offen, Pfeil; antippen = zu, nur die Titelzeile mit der Zahl
+     der offenen Alarme; ein neuer Alarm klappt sie nicht auf (Zahl + 1); neu laden: bleibt zu; «⇕» Alle aufklappen / Alle
+     zuklappen / Meine Ansicht wirken auf die Karte (Bildschirmfotos waswar_offen.png / waswar_zu.png).
 
   python3 werkzeuge/wasdas_zoom_test.py [--datei X.py] [--bilder ORDNER]   # Bildschirmfotos wasdas_zoom_*.png
 """
@@ -78,12 +81,12 @@ class Geraet:
 
     def __init__(self, datei):
         self.tmp = tempfile.mkdtemp(prefix="mw_wasdas_")
-        cfg = os.path.join(self.tmp, "mw"); os.makedirs(cfg)
+        cfg = self.cfg = os.path.join(self.tmp, "mw"); os.makedirs(cfg)
         self.rec = os.path.join(self.tmp, "recordings")     # the standard «recordings» beside the working folder
         self.ids = anlegen(cfg, self.rec)
         st = {"source": "demo", "extra_cams": [], "sim_on": False, "sim_url": "http://127.0.0.1:9", "sim_auto": False, "sim_autostart": False,
               "sim_autostart_v2": False, "sim_autoupd": False, "update_url": "", "lang": "de", "desktop_notice": False, "https_extra": False,
-              "setup_done": True}
+              "setup_done": True, "armed": False}       # not armed: the demo picture gives no own person alarm in between
         with open(os.path.join(cfg, "motionwatch_settings.json"), "w") as f:
             json.dump({"cfg": st}, f)
         with socket.socket() as sk:
@@ -214,6 +217,63 @@ def lightbox(pg, name):
     return q
 
 
+FALT = """() => { const d = document.querySelector('#alx-what details.aw'); if (!d) return null; const s = d.querySelector(':scope > summary'),
+  n = d.querySelector('.aw-n'), i = d.querySelector('.aw-i'), r = s.getBoundingClientRect();
+  let ls = null; try { ls = localStorage.getItem('mw-open:alx-what'); } catch (e) {}
+  return {open: d.open, pfeil: getComputedStyle(s, '::after').content, titel: s.firstChild.textContent, n: n ? n.textContent : '',
+          nsicht: !!n && n.getClientRects().length > 0, bild: !!i && i.checkVisibility(), h: r.height, kh: d.getBoundingClientRect().height, ls: ls}; }"""
+
+
+def falt_menu(pg, k):
+    pg.locator("#mwb-fold").click(); pg.wait_for_timeout(200)
+    pg.locator("#all-" + k).click(); pg.wait_for_timeout(600)
+    return pg.evaluate(FALT)
+
+
+def pruef_c(br, g, bilder):
+    """C: the card folds like the other Live cards (one unanswered alarm left: B)"""
+    print("C) zuklappbar (Handy 390 dunkel)", flush=True)
+    ctx, pg = seite(br, 390, 844, True)
+    pruef(karte(pg, g), "C: Live zeigt «Was war das?»")
+    pg.evaluate("() => document.getElementById('alx-what').scrollIntoView({block: 'center'})"); pg.wait_for_timeout(300)
+    q = pg.evaluate(FALT)
+    pruef(q and q["open"] and q["bild"] and "▾" in q["pfeil"] and not q["nsicht"], "C: ab Werk offen, mit Pfeil (%s)" % q)
+    if bilder:
+        pg.locator("#alx-what .aw").screenshot(path=os.path.join(bilder, "waswar_offen.png"))
+    pg.locator("#alx-what summary").click(); pg.wait_for_timeout(400)
+    q = pg.evaluate(FALT)
+    n0 = int(q["n"]) if q and q["n"].isdigit() else 0
+    pruef(q and not q["open"] and not q["bild"] and q["nsicht"] and n0 >= 1 and q["ls"] == "0" and "Was war das?" in q["titel"] and q["kh"] < 70,
+          "C: antippen = zu, nur die Titelzeile mit der Zahl, gemerkt (%s)" % q)
+    if bilder:
+        pg.locator("#alx-what .aw").screenshot(path=os.path.join(bilder, "waswar_zu.png"))
+    # a new unanswered alarm while collapsed: the number grows, the card stays closed
+    d = os.path.join(g.cfg, "alarm_labels"); stamp = (datetime.now() + timedelta(minutes=1)).strftime("%Y%m%d_%H%M%S")
+    cv2.imwrite(os.path.join(d, stamp + ".jpg"), bild_malen(STORED, BOXES_B, (255, 60, 0)))
+    with open(os.path.join(d, stamp + ".json"), "w") as f:
+        json.dump({"id": stamp, "t": time.time(), "stamp": stamp, "kind": "person", "count": 1, "boxes": BOXES_B, "label": "",
+                   "src": "Test", "sim": False, "w": STORED[0], "h": STORED[1]}, f)
+    t_ = time.time() + 30
+    while time.time() < t_ and (pg.evaluate(FALT) or {}).get("n") != str(n0 + 1):
+        pg.wait_for_timeout(500)
+    q = pg.evaluate(FALT)
+    pruef(q and q["n"] == str(n0 + 1) and not q["open"] and q["nsicht"], "C: neuer Alarm – bleibt zu, Zahl %d (%s)" % (n0 + 1, q))
+    pg.reload(); pg.wait_for_selector("#alx-what details.aw", state="attached", timeout=30000); pg.wait_for_timeout(1500)
+    q = pg.evaluate(FALT)
+    pruef(q and not q["open"], "C: neu laden – bleibt zu (%s)" % q)
+    q = falt_menu(pg, "open")
+    pruef(q and q["open"], "C: «⇕» Alle aufklappen öffnet sie")
+    q = falt_menu(pg, "close")
+    pruef(q and not q["open"], "C: «⇕» Alle zuklappen schliesst sie")
+    q = falt_menu(pg, "mine")
+    pruef(q and not q["open"], "C: «⇕» Meine Ansicht – so wie selbst gelassen (zu)")
+    pg.locator("#alx-what summary").click(); pg.wait_for_timeout(1500)   # open again (also kept in «My view»)
+    q = pg.evaluate(FALT)
+    pruef(q and q["open"] and q["ls"] == "1", "C: wieder auf (%s)" % q)
+    pruef(not pg.jsf, "C: keine JavaScript-Fehler %s" % pg.jsf[:3])
+    ctx.close()
+
+
 def main():
     ap = argparse.ArgumentParser(description="«Was war das?» mit vergrösserten Rahmen (066)")
     ap.add_argument("--datei", default="")
@@ -300,6 +360,7 @@ def main():
             pruef(g.get("/api/alarmlabel?n=3")["items"][0]["label"] == "person", "A beantwortet: «Person» gespeichert")
             pruef(not pg.jsf, "B: keine JavaScript-Fehler %s" % pg.jsf[:3])
             ctx.close()
+            pruef_c(br, g, a.bilder)
             br.close()
     finally:
         g.zu()
