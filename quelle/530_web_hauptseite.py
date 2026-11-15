@@ -2718,7 +2718,8 @@ function compactHeader(s, c) {
   let small = false;
   addEventListener("scroll", () => {
     const y = scrollY;
-    if (!small && y > 90) { small = true; document.body.classList.add("hdr-small"); }
+    // 4.x: only when the page stays scrolled after the header got smaller (about 105 px less) - else it goes in and out without end
+    if (!small && y > 90 && document.documentElement.scrollHeight - innerHeight > 150) { small = true; document.body.classList.add("hdr-small"); }
     else if (small && y < 12) { small = false; document.body.classList.remove("hdr-small"); }
   }, {passive: true});
 })();

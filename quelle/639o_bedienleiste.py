@@ -39,7 +39,7 @@ for _k, _v in _HX_MWB.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 
 MWB_KEYS = sorted(set(_HX_MWB) | {
-    "Simple", "Expert", "On start: groups only", "Collapse all", "Groups only", "Expand all", "My view",
+    "Simple", "Expert", "on", "off", "On start: groups only", "Collapse all", "Groups only", "Expand all", "My view",
     "Simple: only the important settings. «Expert» shows all of them.", "Symbols: green dot or green symbol = switched on",
     "On every start the settings show only the groups. Off: the menus open as you left them."})
 
@@ -86,8 +86,25 @@ body.mwb-chips-off header>.chips{flex:0 0 auto!important;overflow:visible!import
   header>.chips>.badge{font-size:.7rem;padding:.1rem .5rem;min-height:1.5rem}
 }
 @media(min-width:761px){.chips{flex-wrap:wrap!important;overflow:visible!important;row-gap:.35rem}}
-#mwbar{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem .7rem;padding:.4rem 1rem;border-bottom:1px solid var(--line);
-  background:var(--hdr,var(--bg));font-size:.8rem;box-sizing:border-box;max-width:100%}
+/* 4.x (owner): no bar under the tabs any more - the tools sit at the right end of the sub-tab row (else of the status line) */
+#mwbar{display:inline-flex;align-items:center;gap:.4rem;margin-left:auto;flex:none;font-size:.8rem}
+#mwbar>.mwb-mt{min-height:2.4rem;padding:0 .75rem;border-radius:99px;font-size:.8rem;font-weight:650;white-space:nowrap}
+#mwbar>.mwb-mt.is{border-color:var(--acc);color:var(--acc2,var(--acc))}
+header>nav.subnav:has(>#mwbar){align-items:center;overflow-x:auto;scrollbar-width:none}header>nav.subnav:has(>#mwbar)::-webkit-scrollbar{display:none}
+header>nav.subnav>#mwbar{position:sticky;right:0;z-index:2;background:var(--hdr,var(--bg));padding-left:.4rem;box-shadow:-10px 0 10px -6px var(--hdr,var(--bg))}#mwbar>.mwb-mt[hidden],#mwbar .mwb-vw[hidden]{display:none}
+#mwbar .mwb-vbtn{min-width:2.4rem;justify-content:center;padding:0 .55rem!important}
+header>.chips>#mwbar{order:99}
+#mwbar>.mwb-mt{display:inline-flex;align-items:center;gap:.35rem}#mwbar>.mwb-mt:not(.is) .ic{display:none}
+/* in the header row (no sub-tabs, no status line: Sim) only the symbol - the row has no room for a word */
+.hdr-ctl>#mwbar.inctl{order:-1;margin:0!important;gap:0;padding:0;flex:none}
+.hdr-ctl>#mwbar.inctl>.mwb-mt .l{display:none}.hdr-ctl>#mwbar.inctl>.mwb-mt .ic{display:inline}
+.hdr-ctl>#mwbar.inctl>.mwb-mt{min-width:44px;width:44px;height:44px;min-height:44px!important;margin:0;justify-content:center;padding:0;font-size:1.05rem;box-sizing:border-box}
+.hdr-ctl>#mwbar.inctl>.mwb-mt:not(.is){opacity:.55}
+#mwbar #ms-find{margin-left:0}
+.mwb-icons .mwb-seg{display:flex;border:1px solid var(--line);border-radius:.6rem;overflow:hidden;background:var(--field);margin:.4rem 0}
+.mwb-icons .mwb-seg button{flex:1;min-height:2.75rem;background:none;color:var(--mut);border:0;border-radius:0;font-weight:600}
+.mwb-icons .mwb-seg button+button{border-left:1px solid var(--line)}.mwb-icons .mwb-seg button.on{background:var(--acc);color:#fff}
+.mwb-icons h3{margin:0 0 .3rem}
 #mwbar .mwb-seg{display:inline-flex;flex:none;border:1px solid var(--line);border-radius:.6rem;overflow:hidden;background:var(--field)}
 #mwbar .mwb-seg button{background:none;color:var(--mut);border:0;border-radius:0;padding:.32rem .75rem;font-size:.8rem;font-weight:600;
   white-space:nowrap;min-height:0;box-shadow:none}
@@ -122,7 +139,7 @@ body.mwb-chips-off header>.chips{flex:0 0 auto!important;overflow:visible!import
 }
 /* touch screens: every button of the bar and the header grips at least 44 px high (Klar stage 1) */
 @media(pointer:coarse),(max-width:760px){
-  #mwbar .mwb-mode button,#mwbar .mwb-vbtn{min-height:44px}
+  #mwbar>.mwb-mt,#mwbar .mwb-vbtn{min-height:44px}
   .mwb-grip{min-height:44px;min-width:40px;justify-content:center}
 }
 /* the phone: the tabs 44 px high, text in the middle */
@@ -235,15 +252,17 @@ MWB_JS = r"""<script>
       .observe(chips, {subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class", "hidden"]});
     paintSum();
   }
-  // ---- 2. the bar under the tabs ----
-  const bar = E("div"); bar.id = "mwbar"; bar.setAttribute("role", "toolbar");
+  // ---- 2. the tools at the right end of the sub-tab row (4.x, owner: the bar under the tabs is gone - one row less) ----
+  // Simple / Expert = ONE small toggle (same storage and logic: /api/ui_simple per page); Live: «⇕» with the fold buttons;
+  // «Symbols coloured / plain» = a row in Einstellungen → «Darstellung & Sprache» (the card #mwb-icons-card, 639zzzg).
+  // Where a page has no sub-tabs: the right end of the status line (the nearest row on top).
+  const bar = E("span", "mwb-tools"); bar.id = "mwbar"; bar.setAttribute("role", "toolbar");
   const seg = (cls, a, b) => { const s = E("div", "mwb-seg " + cls), x = E("button"), y = E("button"); x.type = y.type = "button";
     x.innerHTML = a; y.innerHTML = b; s.append(x, y); return [s, x, y]; };
-  const [sm, bS, bE] = seg("mwb-mode", "", "");
+  const mt = E("button", "sec mwb-mt"); mt.type = "button"; mt.id = "mwb-mode";
   const [si, bC, bP] = seg("mwb-ic", '🎨 <span class="l"></span>', '◯ <span class="l"></span>');
   const fd = E("div", "mwb-fold");
-  // 639r: the middle is «My view» (two bars + a small star); «Groups only» stays: long press / right click on «My view»,
-  // and since 3.88 (Klar stage 1) also its own line in the menu «Display»
+  // 639r: «My view» (two bars + a small star) is the start; «Groups only» = long press / right click on «My view»
   const SV = {close: "M7 4l5 5 5-5M7 20l5-5 5 5", mine: "M4 5h16v5H4zM4 14h8v5H4zM18 12.6l1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.4z",
               groups: "M4 5h16v5H4zM8 14h12v5H8z", open: "M7 15l5 5 5-5M7 9l5-5 5 5"};
   const FB = {};
@@ -251,13 +270,12 @@ MWB_JS = r"""<script>
     const b = E("button", "sec"); b.type = "button"; b.id = "all-" + k; b.dataset.k = lb; b.setAttribute("role", "menuitem");
     b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + SV[k] + '"/></svg><span class="l"></span>';
     b.onclick = () => { if (b._long) { b._long = false; return; } fold(k); closeView(); };
+    if (k === "groups") b.hidden = true;                      // «Groups only»: the long press on «My view» (and the start switch)
     FB[k] = b; fd.appendChild(b); });
-  // 3.88 (Klar stage 1, owner): «Symbols» and the fold buttons are in ONE menu «Display»; Simple / Expert stays visible in the bar
-  const vb = E("button", "sec mwb-vbtn"); vb.type = "button"; vb.id = "mwb-view"; vb.setAttribute("aria-haspopup", "true"); vb.setAttribute("aria-expanded", "false");
-  vb.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span class="l"></span><i class="mwb-cv">▾</i>';
+  const vb = E("button", "sec mwb-vbtn"); vb.type = "button"; vb.id = "mwb-fold"; vb.setAttribute("aria-haspopup", "true"); vb.setAttribute("aria-expanded", "false");
+  vb.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>';
   const vp = E("div", "mwb-vpop"); vp.id = "mwb-vpop"; vp.hidden = true; vp.setAttribute("role", "menu");
-  const vh1 = E("div", "mwb-vh"), vh2 = E("div", "mwb-vh");
-  vp.append(vh1, si, vh2, fd);
+  vp.append(fd);
   function closeView() { vp.hidden = true; vb.setAttribute("aria-expanded", "false"); }
   vb.onclick = e => { e.stopPropagation(); const open = vp.hidden; vp.hidden = !open; vb.setAttribute("aria-expanded", open ? "true" : "false"); if (open) state(); };
   document.addEventListener("click", e => { if (!vp.hidden && !vp.contains(e.target) && !vb.contains(e.target)) closeView(); });
@@ -267,14 +285,31 @@ MWB_JS = r"""<script>
     b.addEventListener("contextmenu", e => { e.preventDefault(); clearTimeout(tm); go(); setTimeout(() => { b._long = false; }, 400); });
     b.addEventListener("pointerdown", e => { if (e.button) return; clearTimeout(tm); b._long = false; tm = setTimeout(go, 600); });
     ["pointerup", "pointerleave", "pointercancel"].forEach(n => b.addEventListener(n, () => clearTimeout(tm))); })();
-  const vw = E("div", "mwb-vw"); vw.append(vb, vp);
-  bar.append(sm, vw);
-  H.after(bar);
-  // Simple / Expert of this page (586: /api/ui_simple per page); a page without two views shows it grey
+  const vw = E("span", "mwb-vw"); vw.append(vb, vp);
+  const isLive = () => (B.dataset.tab || "") === "live" || (window.MWB_SEITE || "") === "live";
+  bar.append(mt, vw);
+  function placeTools() {                                      // the sub-tab row - else the status line; the 🔍 of the page joins (639zzzg)
+    vw.hidden = !isLive();
+    // no sub-tabs, no status line (Sim): the first button of the header row on top (on a phone only «🎓»)
+    const ctl = H.querySelector(":scope > .hdr-ctl.mwk") || [...H.querySelectorAll(":scope > .hdr-ctl")].find(x => x.getClientRects().length), host = H.querySelector(":scope > nav.subnav") || H.querySelector(":scope > .chips");
+    if (host) { if (bar.parentNode !== host) host.appendChild(bar); bar.classList.remove("inctl"); return; }
+    if (ctl) { if (bar.parentNode !== ctl) ctl.insertBefore(bar, ctl.firstChild); bar.classList.add("inctl"); return; }    // (639t knows «mwbar»: it stays)
+    if (!bar.parentNode) H.appendChild(bar);
+  }
+  placeTools();
+  // the card «Symbols» for the row in Einstellungen → «Darstellung & Sprache» (639zzzg opens it as its own page)
+  const icCard = E("section", "card mwb-icons"); icCard.id = "mwb-icons-card";
+  const icH = E("h3"), icN = E("p", "mut"); icCard.append(icH, si, icN);
+  function placeIcons() { const S = document.getElementById("settings"); if (S && !icCard.parentNode && (B.dataset.tab || "settings") === "settings") S.appendChild(icCard); }
+  placeIcons();
+  // Simple / Expert of this page (586: /api/ui_simple per page); a page with only one view shows no toggle
   let SIMPLE = true;
   const pageKey = () => { const p = P(); return typeof p.simplePage === "function" ? (p.simplePage() || "") : ""; };
-  function paintSimple() { bS.classList.toggle("on", SIMPLE); bE.classList.toggle("on", !SIMPLE); sm.classList.toggle("dis", !pageKey());
-    sm.title = pageKey() ? tr("Simple: only the important settings. «Expert» shows all of them.") : tr("This page has only one view"); }
+  function paintSimple() { const k = pageKey(); mt.hidden = !k;
+    mt.innerHTML = '<span class="ic">🎓</span><span class="l"></span>'; mt.lastChild.textContent = SIMPLE ? tr("Simple") : tr("Expert");
+    mt.setAttribute("aria-pressed", SIMPLE ? "false" : "true");
+    mt.title = (SIMPLE ? tr("Simple") : tr("Expert")) + " – " + tr("Simple: only the important settings. «Expert» shows all of them."); mt.setAttribute("aria-label", tr("Expert") + ": " + (SIMPLE ? tr("off") : tr("on")));
+    mt.classList.toggle("is", !SIMPLE); }
   async function loadSimple() { const k = pageKey();
     try { const j = await (await fetch("/api/ui_simple" + (k ? "?page=" + encodeURIComponent(k) : ""), {cache: "no-store"})).json();
       SIMPLE = !!j.on; } catch (e) {}
@@ -283,9 +318,10 @@ MWB_JS = r"""<script>
   function setSimple(v) { if (!pageKey() || v === SIMPLE) return; SIMPLE = v; paintSimple(); const p = P();
     if (typeof p.simple === "function") return p.simple(v);
     post("/api/ui_simple", {on: v, page: pageKey()}).then(() => location.reload()); }
-  bS.onclick = () => setSimple(true); bE.onclick = () => setSimple(false);
+  mt.onclick = () => setSimple(!SIMPLE);
   // symbols coloured / plain (per device, like before: mw-icons + body.icplain)
-  function paintIc() { const pl = lsg("mw-icons", "color") === "plain"; bC.classList.toggle("on", !pl); bP.classList.toggle("on", pl); B.classList.toggle("icplain", pl); }
+  function paintIc() { const pl = lsg("mw-icons", "color") === "plain"; bC.classList.toggle("on", !pl); bP.classList.toggle("on", pl); B.classList.toggle("icplain", pl);
+    bC.setAttribute("aria-pressed", pl ? "false" : "true"); bP.setAttribute("aria-pressed", pl ? "true" : "false"); }
   function setIcons(v) { lss("mw-icons", v === "plain" ? "plain" : "color"); paintIc(); }      // the ONE switch for the symbols: "color" | "plain"
   bC.onclick = () => setIcons("color"); bP.onclick = () => setIcons("plain");
   // 3.23 (Elektro 01.11.2026): the switch «On start: groups only» is gone - the start is «My view»; «Groups only» = long press on the middle
@@ -389,8 +425,9 @@ MWB_JS = r"""<script>
   let keySeen = null;
   function labels() {
     if (pageKey() !== keySeen) { keySeen = pageKey(); loadSimple(); }   // the page told its key later (guide 516 loads its data first)
-    bS.textContent = tr("Simple"); bE.textContent = tr("Expert");
-    vb.querySelector(".l").textContent = tr("Display"); vb.title = tr("Display"); vh1.textContent = tr("Symbols"); vh2.textContent = tr("Fold the menus");
+    placeTools(); placeIcons();
+    vb.title = tr("Fold the menus"); vb.setAttribute("aria-label", vb.title);
+    icH.textContent = tr("Symbols"); icN.textContent = tr("Symbols: green dot or green symbol = switched on");
     Object.keys(FB).forEach(k => { FB[k].querySelector(".l").textContent = tr(FB[k].dataset.k); });
     paintSum();
     bC.querySelector(".l").textContent = tr("Symbols coloured"); bP.querySelector(".l").textContent = tr("plain");
@@ -406,23 +443,64 @@ MWB_JS = r"""<script>
 </script>"""
 
 
-# the manual (HELP_PAGE of 540): one paragraph in «Tipps & Tricks», German and English
-for _a, _b in (('<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>',
-                "<p><b>▴ Kopf einklappen und Bedienleiste:</b> Die Reiterzeile und die Statuszeile oben klappst du je mit dem kleinen Pfeil "
-                "▴ ein und mit dem Griff ▾ wieder aus. Jedes Gerät merkt sich das selbst. Ist die Statuszeile eingeklappt und gibt es einen "
-                "Alarm, einen Fehler oder zu wenige Bilder pro Sekunde, zeigt der Griff einen roten Punkt und eine Kurzinfo. Unter den Reitern "
-                "steht auf jeder Seite dieselbe Leiste: links Einfach / Experte, rechts das Menü «Darstellung» mit Symbole farbig / schlicht und "
-                "Alle zuklappen · Meine Ansicht · Nur Gruppen · Alle aufklappen. Was auf einer Seite nichts bewirkt, ist grau. Auf dem Handy "
-                "stehen die Status-Chips in einer Zeile: Schutz-Zustand, das Wichtigste und der Akku – antippen zeigt alle Werte.</p>"),
-               ('<section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>',
-                "<p><b>▴ Fold the header and the bar:</b> fold the tabs and the status line at the top one by one with the small arrow ▴ "
-                "and open them again with the grip ▾. Every device remembers it by itself. With the status line folded, an alarm, an error "
-                "or too few pictures per second show a red dot and a short note on the grip. Under the tabs every page has the same bar: "
-                "Simple / Expert on the left, on the right the menu «Display» with symbols coloured / plain and Collapse all · My view · "
-                "Groups only · Expand all. What does nothing on a page is grey. On a phone the status chips are one line: the protection "
-                "state, the most important thing and the battery - a tap shows all values.</p>")):
-    if _a in HELP_PAGE:
-        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+# the manual: one paragraph in «Tipps & Tricks» - German and English (HELP_PAGE of 540), French, Italian, Romansh (HELP_X of 600)
+MWB_HELP = {
+    "de": ("<p><b>▴ Kopf einklappen, Einfach / Experte und Ansicht:</b> Die Reiterzeile und die Statuszeile oben klappst du je mit dem kleinen "
+           "Pfeil ▴ ein und mit dem Griff ▾ wieder aus. Jedes Gerät merkt sich das selbst. Ist die Statuszeile eingeklappt und gibt es einen "
+           "Alarm, einen Fehler oder zu wenige Bilder pro Sekunde, zeigt der Griff einen roten Punkt und eine Kurzinfo. Rechts in der Zeile mit "
+           "den Unterreitern, neben 🔍, wechselt der Knopf «🎓 Experte» / «Einfach» die Ansicht der Seite (Seiten mit nur einer Ansicht haben "
+           "ihn nicht). Auf Live öffnet «⇕» Alle zuklappen · Meine Ansicht · Alle aufklappen – lange auf «Meine Ansicht» drücken öffnet nur die "
+           "Gruppen. Symbole farbig oder schlicht: Einstellungen → Darstellung &amp; Sprache → Symbole. Auf dem Handy stehen die Status-Chips "
+           "in einer Zeile: Schutz-Zustand, das Wichtigste und der Akku – antippen zeigt alle Werte.</p>"),
+    "en": ("<p><b>▴ Fold the header, Simple / Expert and the view:</b> fold the tabs and the status line at the top one by one with the small "
+           "arrow ▴ and open them again with the grip ▾. Every device remembers it by itself. With the status line folded, an alarm, an error "
+           "or too few pictures per second show a red dot and a short note on the grip. At the right end of the row with the sub-tabs, next to "
+           "🔍, the button «🎓 Expert» / «Simple» switches the view of the page (pages with only one view do not have it). On Live, «⇕» opens "
+           "Collapse all · My view · Expand all - a long press on «My view» opens only the groups. Symbols coloured or plain: Settings → "
+           "Display &amp; language → Symbols. On a phone the status chips are one line: the protection state, the most important thing and "
+           "the battery - a tap shows all values.</p>"),
+    "fr": ("<p><b>▴ Replier l’en-tête, Simple / Expert et la vue :</b> replie les onglets et la ligne d’état en haut un par un avec la petite "
+           "flèche ▴ et rouvre-les avec la poignée ▾. Chaque appareil s’en souvient. Si la ligne d’état est repliée et qu’il y a une alarme, "
+           "une erreur ou trop peu d’images par seconde, la poignée montre un point rouge et une courte info. À droite de la ligne des "
+           "sous-onglets, à côté de 🔍, le bouton «🎓 Expert» / «Simple» change la vue de la page (les pages avec une seule vue ne l’ont pas). "
+           "Sur Direct, «⇕» ouvre Tout replier · Ma vue · Tout déplier – un appui long sur «Ma vue» n’ouvre que les groupes. Symboles en "
+           "couleur ou simples : Réglages → Affichage et langue → Symboles. Sur le téléphone, les puces d’état tiennent sur une ligne : l’état "
+           "de la protection, l’essentiel et la batterie – toucher montre toutes les valeurs.</p>"),
+    "it": ("<p><b>▴ Comprimere l’intestazione, Semplice / Esperto e la vista:</b> comprimi le schede e la riga di stato in alto una per una con "
+           "la piccola freccia ▴ e riaprile con la maniglia ▾. Ogni dispositivo se lo ricorda. Se la riga di stato è compressa e c’è un "
+           "allarme, un errore o troppe poche immagini al secondo, la maniglia mostra un punto rosso e una breve info. A destra nella riga "
+           "delle sotto-schede, accanto a 🔍, il pulsante «🎓 Esperto» / «Semplice» cambia la vista della pagina (le pagine con una sola vista "
+           "non l’hanno). Su Live, «⇕» apre Comprimi tutto · La mia vista · Espandi tutto – una pressione lunga su «La mia vista» apre solo i "
+           "gruppi. Simboli a colori o semplici: Impostazioni → Aspetto e lingua → Simboli. Sul telefono i chip di stato stanno su una riga: "
+           "stato della protezione, la cosa più importante e la batteria – toccare mostra tutti i valori.</p>"),
+    "rm": ("<p><b>▴ Zuppentar il chau, Simpel / Expert e la vista:</b> zuppenta ils registers e la lingia da status sisum mintgin cun la "
+           "pitschna frizza ▴ e avra els puspè cun il manetsch ▾. Mintga apparat sa regorda da quai. Sche la lingia da status è zuppentada e "
+           "sch’i dat in alarm, in sbagl u memia paucs maletgs per secunda, mussa il manetsch in punct cotschen ed ina curta infurmaziun. A "
+           "dretga en la lingia dals sutregisters, sper 🔍, mida il buttun «🎓 Expert» / «Simpel» la vista da la pagina (paginas cun mo ina "
+           "vista n’han betg el). Sin Live avra «⇕» Zuppentar tut · Mia vista · Avrir tut – smatgar ditg sin «Mia vista» avra mo las gruppas. "
+           "Simbols colurads u simpels: Parameters → Preschentaziun e lingua → Simbols. Sin il telefonin stattan ils chips da status en ina "
+           "lingia: il stadi da la protecziun, il pli impurtant e l’accu – tutgar mussa tut las valurs.</p>"),
+}
+
+
+def mwb_help(doc, lang):
+    """the paragraph right under the heading of «Tipps & Tricks» (once; a manual without the section stays as it is)"""
+    if not isinstance(doc, str) or MWB_HELP[lang][:40] in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    j = doc.find("</h2>", i) if i >= 0 else -1
+    return doc[:j + 5] + MWB_HELP[lang] + doc[j + 5:] if j >= 0 else doc
+
+
+try:                                                           # (without the data zip the pages are short stand-ins - nothing to do)
+    _hp_en = HELP_PAGE.find('<div lang="en">')
+    if _hp_en > 0:
+        HELP_PAGE = mwb_help(HELP_PAGE[:_hp_en], "de") + mwb_help(HELP_PAGE[_hp_en:], "en")
+    for _L in ("fr", "it", "rm"):
+        if HELP_X.get(_L):
+            HELP_X[_L] = mwb_help(HELP_X[_L], _L)
+except Exception as _e:
+    print(f"639o help: {_e}")
 
 
 _render_page_before_mwb = render_page
@@ -448,8 +526,13 @@ def _mwb_selftest():
     for L in ("de", "fr", "it", "rm"):
         assert all(tx[L].get(k) for k in _HX_MWB), "639o: text missing in " + L
     assert {"mw-hdr-tabs", "mw-hdr-chips", "mw-hdr-sum"} <= WEB_UI_LOCAL, "639o: header folds must stay per device"
-    for k in ('id = "mwb-view"', 'id = "mwb-vpop"', '"groups", "Groups only"', 'SUM.id = "mwb-sum"', "mw-hdr-sum"):
-        assert k in MWB_JS, "639o (Klar): menu «Display» / status line: " + k
+    for L_ in ("de", "en", "fr", "it", "rm"):
+        assert "🎓" in MWB_HELP[L_] and "⇕" in MWB_HELP[L_], "639o: manual paragraph " + L_
+    if '<section id="tips"' in HELP_PAGE:
+        assert HELP_PAGE.count("🎓 Experte") == 1 and HELP_PAGE.count("🎓 Expert»") >= 1, "639o: manual de / en"
+    for k in ('id = "mwb-mode"', 'id = "mwb-fold"', 'id = "mwb-vpop"', '"groups", "Groups only"', 'icCard.id = "mwb-icons-card"', 'SUM.id = "mwb-sum"', "mw-hdr-sum",
+              'setAttribute("aria-pressed"'):
+        assert k in MWB_JS, "639o (4.x, one row less): toggle / ⇕ / symbols card / status line: " + k
 
 
 SELFTEST_EXTRA.append(("Header folds and bar (639o)", _mwb_selftest))

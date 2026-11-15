@@ -25,7 +25,7 @@ G2_TOURS = {
                 ("#btn-fav", "Favourites", "⭐ keeps a recording for ever; the others are deleted when the memory is full."),
                 ("nav.subnav", "More history", "Night timeline, animal diary, message list and log.")],
     "settings": [("#srch", "Search", "Type a word - every setting is found, sorted by topic."),
-                 ("#mwbar .mwb-mode", "Simple or Expert", "«Simple» shows only the important settings - for this page. «Expert» shows all."),
+                 ("#mwb-mode", "Simple or Expert", "«Simple» shows only the important settings - for this page. «Expert» shows all."),
                  ("#settings", "Topics", "Open a topic to change it. Changes are saved at once."),
                  ("#settings .g2-q", "The «?»", "Next to a setting: what it does and what we recommend."),
                  ("nav.subnav a[href='/cams']", "Cameras", "Choose the camera, add a second one, check the thermal picture.")],

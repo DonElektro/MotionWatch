@@ -777,7 +777,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 4.1.0")
+        self.root.title("MoveEye 4.2.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -925,6 +925,11 @@ class App:
                     sub.add_checkbutton(label=tr(label), variable=v, command=lambda k=key, vv=v: self.set_hidden(k, not vv.get()))
             m.add_cascade(label=tr(g), menu=sub)
         m.add_separator()
+        icv = tk.StringVar(master=self.root, value=tk_icons()); self._mwbar_icv = icv       # 4.x: «Symbols» (before: menu «Display» of the bar)
+        icm = tk.Menu(m, **kw)
+        icm.add_radiobutton(label="🎨 " + tr("Symbols coloured"), variable=icv, value="color", command=lambda: self._set_icons("color"))
+        icm.add_radiobutton(label="◯ " + tr("plain"), variable=icv, value="plain", command=lambda: self._set_icons("plain"))
+        m.add_cascade(label=tr("Symbols"), menu=icm)
         m.add_command(label=tr("Settings") + "   (Ctrl+B)", command=self.toggle_sidebar)
         m.add_command(label=tr("Show all"), command=self.show_all)
         if self.tab == "live":
@@ -1159,7 +1164,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 4.1.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 4.2.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1788,8 +1793,10 @@ class App:
         inner = ttk.Frame(canvas, style="Bg.TFrame"); win = canvas.create_window((0, 0), window=inner, anchor="nw")
         inner.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
         canvas.bind("<Configure>", lambda e: canvas.itemconfigure(win, width=min(e.width, 860)))     # readable lines on a wide screen
-        lb = self._mwbar(right, tab); lb.pack(side="top", fill="x", pady=(0, 8), before=sb)    # 639o: the bar like on every web page
         bar = tk.Frame(right, bg=C["bg"]); bar.pack(side="top", fill="x", pady=(0, 10), before=sb)   # stays at the top while scrolling
+        tg = self._mwbar(bar, tab)                         # 4.x (owner): no bar «Darstellung» - the toggle Simple / Expert at the end of this row
+        if tg is not None:
+            tg.pack(side="right")
         sf = tk.Frame(bar, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"]); sf.pack(side="left", fill="x", expand=True, padx=(0, 8))
         tk.Label(sf, text="⚲", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 11)).pack(side="left", padx=(8, 0))
         self.search_var = tk.StringVar()
@@ -3113,54 +3120,17 @@ class App:
         self._mine_paint()
 
     def _mwbar(self, parent, tab):
-        """639o: the bar of every web page in the window - Simple / Expert · Symbols coloured / plain · On start: groups only ·
-        Collapse all / My view (639r; long press / right click: Groups only) / Expand all (same order, texts and symbols; a narrow window: two lines)"""
-        f = tk.Frame(parent, bg=C["bg"]); small = self._lay[0]
-        r1 = tk.Frame(f, bg=C["bg"]); r1.pack(fill="x")
-        r2 = tk.Frame(f, bg=C["bg"]) if small else r1
-        if small:
-            r2.pack(fill="x", pady=(6, 0))
-
-        def seg(host, items, cur, cmd, dis=False):
-            w = tk.Frame(host, bg=C["line"], padx=1, pady=1)
-            for i, (val, lab) in enumerate(items):
-                on = cur == val
-                l = tk.Label(w, text=lab, font=("DejaVu Sans", 9, "bold"), pady=3, padx=8, cursor="" if dis else "hand2",
-                             bg=C["acc"] if on and not dis else C["field"], fg="#ffffff" if on and not dis else C["mut"])
-                l.pack(side="left", padx=(0 if i == 0 else 1, 0))
-                if not dis:
-                    l.bind("<Button-1>", lambda e, v=val: cmd(v))
-            return w
-        nosimple = tab == "sim"                             # the tab Simulator has only one view (the window shows all its groups)
-        m = seg(r1, ((True, tr("Simple")), (False, tr("Expert"))), page_simple(tab), self._set_simple, nosimple)
-        m.pack(side="left"); Tip(m, tr("This page has only one view") if nosimple else tr("Simple: only the important settings. «Expert» shows all of them."))
-        # 3.88 (Klar stage 1, owner): «Symbols» and the fold buttons are in ONE menu «Display» (like the web bar, 639o);
-        # Simple / Expert stays in the bar. «Groups only» (before: long press on «My view») is its own line of the menu.
-        self._fold_cvs = {}
-        menu = tk.Menu(self.root, tearoff=0, bg=C["panel"], fg=C["txt"], activebackground=C["acc"], activeforeground="#ffffff",
-                       font=("DejaVu Sans", 11 if small else 10))
-        icv = tk.StringVar(master=self.root, value=tk_icons()); self._mwbar_icv = icv
-        menu.add_command(label=tr("Symbols"), state="disabled")
-        menu.add_radiobutton(label="🎨 " + tr("Symbols coloured"), variable=icv, value="color", command=lambda: self._set_icons("color"))
-        menu.add_radiobutton(label="◯ " + tr("plain"), variable=icv, value="plain", command=lambda: self._set_icons("plain"))
-        menu.add_separator()
-        menu.add_command(label=tr("Fold the menus"), state="disabled")
-        menu.add_command(label="⇊ " + tr("Collapse all"), command=lambda: self._fold_all_btn(False))
-        menu.add_command(label="★ " + tr("My view"), command=self._mine_on)
-        menu.add_command(label="▤ " + tr("Groups only"), command=lambda: self._groups_only(save=False))
-        menu.add_command(label="⇈ " + tr("Expand all"), command=lambda: self._fold_all_btn(True))
-        vb = self._fbtn(r2, "⚙ " + tr("Display") + " ▾", lambda: None)
-
-        def _pop(e=None):
-            icv.set(tk_icons())
-            try:
-                menu.tk_popup(vb.winfo_rootx(), vb.winfo_rooty() + vb.winfo_height())
-            finally:
-                menu.grab_release()
-        vb.configure(command=_pop) if isinstance(vb, (tk.Button, ttk.Button)) else vb.bind("<Button-1>", _pop)
-        vb.pack(side="right"); Tip(vb, tr("Symbols: green dot or green symbol = switched on"))
-        self.root.after_idle(self._mine_paint)
-        return f
+        """639o / 4.x (owner): the bar under the tabs is gone - here only the toggle «🎓 Expert» / «Simple» (the same value as the web
+        pages); «Symbols coloured / plain» is in the menu ☰ (_view_menu); folding is not needed (the topics are rows, 639zzzg)"""
+        if tab == "sim":                                    # the tab Simulator has only one view
+            return None
+        simple = page_simple(tab)
+        b = tk.Label(parent, text=tr("Simple") if simple else "🎓 " + tr("Expert"), font=("DejaVu Sans", 9, "bold"), padx=10, pady=5, cursor="hand2",
+                     bg=C["field"] if simple else C["acc"], fg=C["txt"] if simple else "#ffffff", highlightthickness=1, highlightbackground=C["line"])
+        b.bind("<Button-1>", lambda e: self._set_simple(not simple))
+        Tip(b, tr("Simple: only the important settings. «Expert» shows all of them."))
+        self._mwbar_btn = b
+        return b
 
     def _set_icons(self, v):
         """639o: symbols «color» | «plain» - the same value as the web pages (web_ui mw-icons, so every device and the window agree)"""

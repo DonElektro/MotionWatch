@@ -88,7 +88,9 @@ table.gb th{font-size:12px;color:var(--mut);font-weight:600;border-top:0}
 table.gb td.q{white-space:nowrap;color:var(--mut)}table.gb td.n{color:var(--mut);font-size:12px}table.gb td.r{text-align:right;white-space:nowrap}
 table.gb tr.gh td{border-top:0;padding-top:12px;font-weight:700}
 .chk{width:20px;height:20px;accent-color:var(--acc)}
-.lk a{color:var(--acc);margin-right:10px;white-space:nowrap;font-size:12px}
+.lk a{color:var(--acc);margin-right:10px;font-size:12px;overflow-wrap:break-word}td.lk a{white-space:nowrap;margin-right:0}
+#g-files a.fl,.pinfo .lk a{display:block;margin:3px 0;overflow-wrap:anywhere}
+table.gb td,table.gb th{overflow-wrap:break-word}ol.gs .tx{min-width:0}
 .tag{display:inline-block;font-size:11px;border-radius:6px;padding:1px 6px;margin-left:4px;background:var(--line);color:var(--txt)}
 .tag.u{background:#b8860b;color:#fff}.tag.o{background:transparent;border:1px solid var(--line);color:var(--mut)}
 ol.gs{padding-left:0;list-style:none;margin:0}
@@ -111,7 +113,10 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
 #g-msg{margin-top:6px;min-height:16px}
 .fk{border-left:4px solid var(--acc);display:flex;flex-direction:column;gap:8px;padding:10px 12px}.fkr{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
 .fk .fki{font-size:18px}.fk .fkt{flex:1 1 240px;font-size:14px}.fk .seg button{min-height:32px;padding:5px 10px}
-@media (max-width:640px){main{padding:8px 10px 30px}#v3d{height:52vh}.vctl input[type=range]{width:110px}.hide-s{display:none}}
+@media (max-width:640px){main{padding:8px 10px 30px}#v3d{height:52vh}.vctl input[type=range]{width:110px}.hide-s{display:none}
+  .gc{padding:12px 10px}table.gb td.q,table.gb td.r{white-space:normal}table.gb td,table.gb th{padding:6px 3px}
+  #g-buy td:nth-child(3){overflow-wrap:anywhere}}
+.show-n{display:none}@media (max-width:480px){.hide-n{display:none}.show-n{display:block;font-weight:400;margin-top:4px}}
 @media print{header,.tabs,.noprint,#v3d,.vctl,.gtop .vrow{display:none!important}.pane{display:none!important}.pane.on{display:block!important}
   body{background:#fff;color:#000}.gc{border:0;padding:0}a{color:#000}}
 </style></head><body>
@@ -215,6 +220,7 @@ function pfile(datei) {
 // mw-bauen-transport: transport lock (hood 29 + clip 30, protective shell 31–33) – own section in «Printing», not yet tried out;
 // in 3D only with the switch «Show the transport lock» (bau.json «transport»: haube | schale), default off
 const GTR = GB.transport || {};
+const pnr = d => (String(d).match(/^(\d+)_/) || ["", ""])[1];     // part number from the 3MF name (01_Unterteil -> 01)
 const vname = w => { for (const v of GB.varianten || []) for (const o of v.werte) if (o.id === w) return gx(o.name); return w; };
 const chf = n => (Math.round(n * 20) / 20).toFixed(2);
 // ---- «Mein Bau»: the checklist (per user on the Pi, else in this browser)
@@ -341,16 +347,20 @@ function gCsv() {
 function fileLink(f, label) { const a = el("a", "", "⬇ " + (label || f.split("/").pop()) + (GEH_OFF ? " 🌐" : "")); a.href = (GEH_OFF ? GEH_OFF.raw : "/build/datei/") + f.split("/").map(encodeURIComponent).join("/"); if (GEH_OFF) { a.target = "_blank"; a.rel = "noopener"; a.title = t("Needs internet (GitHub)"); } return a; }
 function gPrint() {
   const D = GB.druck || {}, tb = document.getElementById("g-print"); tb.textContent = "";
-  const hd = el("tr"); ["", t("Part"), t("pcs"), t("Infill"), t("Walls"), t("Supports"), t("Layer"), t("lies on"), t("Print time"), ""].forEach((x, i) => hd.appendChild(el("th", i > 5 && i < 9 ? "hide-s" : "", x))); tb.appendChild(hd);
+  // mw-bauen-links: «Nr.» = the number of the 3MF file (01 …, transport 29–33); «Walls» hidden below 480 px (footnote)
+  const hd = el("tr"), hc = ["", "", "", "", "", "hide-n", "", "hide-s", "hide-s", "hide-s", ""];
+  [t("No."), "", t("Part"), t("pcs"), t("Infill"), t("Walls"), t("Supports"), t("Layer"), t("lies on"), t("Print time"), ""].forEach((x, i) => hd.appendChild(el("th", hc[i], x))); tb.appendChild(hd);
   let hrs = 0;
   (D.teile || []).filter(okp).forEach(p => {   // parts of a variant (e.g. v5.2) come from the data by themselves
     const tr = el("tr"), c0 = el("td"); c0.appendChild(chk("d:" + p.datei)); hrs += p.zeit_h;
     const nm = (GB.teile || []).find(x => x.datei === p.datei), dl = el("td", "lk"); dl.appendChild(fileLink(pfile(p.datei), "3MF"));
-    tr.append(c0, el("td", "", nm ? gx(nm.name).replace(/^\d+ /, "") : p.datei), el("td", "q", "× " + p.stueck), el("td", "q", p.fuellung + " %"), el("td", "q", String(p.waende)),
+    tr.append(el("td", "q", pnr(p.datei)), c0, el("td", "", nm ? gx(nm.name).replace(/^\d+ /, "") : p.datei), el("td", "q", "× " + p.stueck), el("td", "q", p.fuellung + " %"), el("td", "q hide-n", String(p.waende)),
       el("td", "q", p.stuetzen ? "✓" : t("none")), el("td", "q hide-s", p.schicht + " mm" + (p.brim ? " · Brim " + p.brim + " mm" : "")), el("td", "n hide-s", gx(p.liegt)), el("td", "q hide-s", fmt(t("about %s h"), p.zeit_h)), dl);
     tb.appendChild(tr);
   });
-  const tr = el("tr", "gh"), a = el("td", "", t("Print time") + ": " + fmt(t("about %s h"), Math.round(hrs * 10) / 10) + " · " + gx(D.zeit_hinweis)); a.colSpan = 10; tr.appendChild(a); tb.appendChild(tr);
+  const tr = el("tr", "gh"), a = el("td", "", t("Print time") + ": " + fmt(t("about %s h"), Math.round(hrs * 10) / 10) + " · " + gx(D.zeit_hinweis)); a.colSpan = 11;
+  a.appendChild(el("div", "mut show-n", t("On a narrow screen the column «Walls» is hidden – turn the phone or open the page on a PC.")));
+  tr.appendChild(a); tb.appendChild(tr);
   const ul = document.getElementById("g-phint"); ul.textContent = ""; (D.hinweise || []).forEach(h => ul.appendChild(el("li", "", gx(h))));
   const fl = document.getElementById("g-files"); fl.textContent = "";
   const all = el("a", "", "⬇ " + t("All print files (ZIP)") + " · v" + GVT()); all.href = "/build/alle.zip?var=" + GVAR();
@@ -359,11 +369,11 @@ function gPrint() {
   const kh = el("div", "mut", t("Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:") + " "); kh.appendChild(kit);
   if (GEH_OFF) { kh.textContent = "🌐 " + t("The print files come from GitHub – this needs internet. Everything else on this page works offline."); }
   fl.append(all, kh, el("h3", "", t("Plates for the X2D (everything on 2 plates)")));
-  (GB.druckdateien || []).filter(f => dirOf(f) === GDIR()).forEach(f => fl.appendChild(fileLink(f)));   // the plates of the chosen case
+  (GB.druckdateien || []).filter(f => dirOf(f) === GDIR()).forEach(f => { const a = fileLink(f); a.classList.add("fl"); fl.appendChild(a); });   // the plates of the chosen case, one below the other (mw-bauen-links: 390 px)
   fl.appendChild(el("h3", "", t("Single parts (3MF)"))); (GB.druckdateien_einzeln || []).filter(f => {
     const datei = f.replace(/^(v5-\d\/)?MoveEye_v5-\d_/, "").replace(/\.3mf$/, ""), p = (D.teile || []).find(x => x.datei === datei);
     return p ? okp(p) && pfile(datei) === f : dirOf(f) === GDIR();
-  }).forEach(f => { fl.appendChild(fileLink(f)); fl.appendChild(el("br")); });
+  }).forEach(f => { const a = fileLink(f); a.classList.add("fl"); fl.appendChild(a); });
   gTrans();
 }
 function gTrans() {
@@ -376,11 +386,11 @@ function gTrans() {
   (GTR.gruppen || []).forEach(g => {
     box.appendChild(el("div", "tg", gx(g.titel)));
     const tb = el("table", "gb"), hd = el("tr");
-    [t("Part"), t("lies on"), t("Print time"), ""].forEach((x, i) => hd.appendChild(el("th", i === 1 ? "hide-s" : "", x))); tb.appendChild(hd);
+    [t("No."), t("Part"), t("lies on"), t("Print time"), ""].forEach((x, i) => hd.appendChild(el("th", i === 2 ? "hide-s" : "", x))); tb.appendChild(hd);
     (GTR.teile || []).filter(p => p.gruppe === g.id).forEach(p => {
       const tr = el("tr"), nm = (GB.teile || []).find(x => x.datei === p.datei), c = el("td", "lk");
       c.appendChild(fileLink(pfile(p.datei), "3MF"));
-      tr.append(el("td", "", nm ? gx(nm.name) : p.datei), el("td", "n hide-s", gx(p.liegt) + (p.brim ? " · Brim " + p.brim + " mm" : "")),
+      tr.append(el("td", "q", pnr(p.datei)), el("td", "", nm ? gx(nm.name).replace(/^\d+ /, "") : p.datei), el("td", "n hide-s", gx(p.liegt) + (p.brim ? " · Brim " + p.brim + " mm" : "")),
         el("td", "q", fmt(t("about %s h"), p.zeit_h)), c);
       tb.appendChild(tr);
     });
@@ -698,12 +708,20 @@ GEH_DL_TX = {                                             # real-download-fix: E
     "Ready-made? Request on the MoveEye homepage": ("Fixfertig kaufen? Anfrage auf der MoveEye-Homepage", "Tout prêt ? Demande sur le site de MoveEye",
         "Già pronto? Richiesta sul sito di MoveEye", "Cumplettamain pront? Dumonda sin la pagina d'internet da MoveEye"),
     "Offline version": ("Offline-Version", "Version hors ligne", "Versione offline", "Versiun offline"),
+    # mw-bauen-links: print table
+    "No.": ("Nr.", "N°", "N.", "Nr."),
+    "On a narrow screen the column «Walls» is hidden – turn the phone or open the page on a PC.": (
+        "Auf einem schmalen Bildschirm ist die Spalte «Wände» ausgeblendet – das Handy quer drehen oder die Seite am PC öffnen.",
+        "Sur un écran étroit, la colonne «Parois» est masquée – tourner le téléphone ou ouvrir la page sur un PC.",
+        "Su uno schermo stretto la colonna «Pareti» è nascosta – girare il telefono o aprire la pagina su un PC.",
+        "Sin in visur stretg è la colonna «Paraids» zuppada – volver il telefonin u avrir la pagina sin in PC."),
 }
 for _k, _v in GEH_DL_TX.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX.setdefault(_L, {}).setdefault(_k, _v[_i + 1])
-GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)", "Needs internet (GitHub)",
+GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)", "Needs internet (GitHub)", "No.",
+    "On a narrow screen the column «Walls» is hidden – turn the phone or open the page on a PC.",
     "Saved only in this browser (offline version).", "The print files come from GitHub – this needs internet. Everything else on this page works offline.", "Offline version", "Ready-made? Request on the MoveEye homepage",
     "Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:"} | {
     "Case", "Step", "Name", "Opened in the simulator.", "Simulator not connected – start it and connect it on the page Simulator."})
