@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test «📶 Mein Handy-Hotspot bevorzugen» (MoveEye Teil 639zzzzf) – mit erfundenem nmcli / iw / ip, nie mit dem echten Netz.
+"""Test «📶 Mein Handy-Hotspot bevorzugen» (MoveEye Teil 639zzzzy) – mit erfundenem nmcli / iw / ip, nie mit dem echten Netz.
 
   Ein Ordner mit eigenen Programmen `nmcli`, `iw`, `ip` steht vorne im PATH; sie lesen und schreiben einen erfundenen Zustand
   (gespeicherte Netze, aktive Verbindung, sichtbare Netze, Geräte im eigenen WLAN, Fehler beim Verbinden) und schreiben jeden

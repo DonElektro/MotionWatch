@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------------------
 class Backup:
     def __init__(self):
-        self.q = queue.Queue(maxsize=200); self.busy = ""        # busy: the file being copied now (639zzzzf waits for it)
+        self.q = queue.Queue(maxsize=200); self.busy = ""        # busy: the file being copied now (639zzzzy waits for it)
         threading.Thread(target=self.loop, daemon=True).start()
 
     def add(self, path, meta=None):

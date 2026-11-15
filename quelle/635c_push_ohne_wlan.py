@@ -60,7 +60,7 @@ def push_no_ssid_selftest():
     keep_l, keep_w, keep_h, keep_p = CFG.get("lang"), STATE.get("wifi"), CFG.get("hotspot_ssid"), CFG.get("hs_prefer_ssid")
     test = "Testnetz-Q7x Müller"
     try:
-        CFG["lang"] = "de"; CFG["hotspot_ssid"] = "MoveEye"; CFG["hs_prefer_ssid"] = ""          # 639zzzzf adds that name
+        CFG["lang"] = "de"; CFG["hotspot_ssid"] = "MoveEye"; CFG["hs_prefer_ssid"] = ""          # 639zzzzy adds that name
         STATE["wifi"] = {"connected": True, "ssid": test, "ip": "192.0.2.5", "dbm": -50}
         now = datetime(2026, 11, 1, 9, 0, 0).isoformat(timespec="seconds")
         P = lambda **kw: dict({"event": "info", "persons": 0, "time": now, "snapshot": None, "rain": False, "wind": "",

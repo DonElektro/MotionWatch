@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639zzzzf: «📶 Mein Handy-Hotspot bevorzugen» – ein gespeichertes Netz als eigener Handy-Hotspot, MoveEye wechselt hin, sobald er da ist. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639zzzzy: «📶 Mein Handy-Hotspot bevorzugen» – ein gespeichertes Netz als eigener Handy-Hotspot, MoveEye wechselt hin, sobald er da ist. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Besitzer 15.11.2026. Ein Schalter (ab Werk aus) und EIN gespeichertes Netz als «Mein Handy-Hotspot» (Karte «WLAN / Hotspot»,
 # Liste der gespeicherten Netze; Fenster: derselbe Abschnitt). Ist der Schalter an, schaut MoveEye alle 30 s nach, ob der
@@ -262,7 +262,7 @@ NetAuto.step = _hsp_netauto_step
 _netauto_pause_base = netauto_pause
 
 
-def netauto_pause():                                       # + 639zzzzf: switched by hand
+def netauto_pause():                                       # + 639zzzzy: switched by hand
     hspref_hand()
     _netauto_pause_base()
 
@@ -270,7 +270,7 @@ def netauto_pause():                                       # + 639zzzzf: switche
 _wifi_connect_base = wifi_connect
 
 
-def wifi_connect(ssid, password="", preferred=True):       # + 639zzzzf: «Connect now» by hand
+def wifi_connect(ssid, password="", preferred=True):       # + 639zzzzy: «Connect now» by hand
     hspref_hand()
     return _wifi_connect_base(ssid, password, preferred)
 
@@ -278,7 +278,7 @@ def wifi_connect(ssid, password="", preferred=True):       # + 639zzzzf: «Conne
 _wifi_status_base = wifi_status
 
 
-def wifi_status():                                         # + 639zzzzf
+def wifi_status():                                         # + 639zzzzy
     st = _wifi_status_base()
     st["hsp"] = hspref_state()
     return st
@@ -287,7 +287,7 @@ def wifi_status():                                         # + 639zzzzf
 _push_ssids_base = push_ssids
 
 
-def push_ssids():                                          # + 639zzzzf: the name of the phone hotspot never leaves the device
+def push_ssids():                                          # + 639zzzzy: the name of the phone hotspot never leaves the device
     out = _push_ssids_base()
     s = str(CFG.get("hs_prefer_ssid") or "").strip()
     return sorted(out + [s], key=len, reverse=True) if len(s) >= 3 and s not in out and s not in _NOSSID_KEEP else out
@@ -305,7 +305,7 @@ HSP_HTML = r"""
 </style>
 <script>
 try { Object.assign(I18N.de, {"Mark as my phone hotspot": "Als meinen Handy-Hotspot markieren", "tap again to remove the mark": "nochmals tippen entfernt die Markierung", "Mark one of the saved networks below with 📶.": "Eines der gespeicherten Netze unten mit 📶 markieren.", "As soon as it is in range, MoveEye switches to it by itself (checks every 30 s) - also from the own Wi-Fi or another network. Not during an alarm and not while a device is connected to the own Wi-Fi.": "Sobald er in Reichweite ist, wechselt MoveEye von selbst hin (prüft alle 30 s) – auch aus dem eigenen WLAN oder einem anderen Netz. Nicht während eines Alarms und nicht, solange ein Gerät mit dem eigenen WLAN verbunden ist."}); } catch (e) {}
-// 639zzzzf «Mein Handy-Hotspot bevorzugen»: a box in the Wi-Fi card, 📶 in the saved networks, painted after wfRender (530)
+// 639zzzzy «Mein Handy-Hotspot bevorzugen»: a box in the Wi-Fi card, 📶 in the saved networks, painted after wfRender (530)
 (function () {
   const tt = (k, o) => { let s = t(k); for (const n in (o || {})) s = s.split("{" + n + "}").join(o[n]); return s; };
   window.hspText = function (h) {
@@ -477,4 +477,4 @@ def hspref_selftest():
     return True
 
 
-SELFTEST_EXTRA.append(("Prefer my phone hotspot (639zzzzf)", hspref_selftest))
+SELFTEST_EXTRA.append(("Prefer my phone hotspot (639zzzzy)", hspref_selftest))
