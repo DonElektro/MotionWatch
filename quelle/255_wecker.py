@@ -109,12 +109,18 @@ def _light(on):
 
 def _ring_sound(now):
     """the melody again every 20 s, a little louder each time (from 40 % up to the set volume in about 2 minutes)"""
+    kind = CFG.get("wake_sound") or "chime"
+    if str(kind).startswith("radio:"):                    # 639zzzzd: a radio station; no sound after 10 s = the melody at once
+        if radio_wake_sound(kind, now):
+            return
+        kind = "chime"
+        if not WAKE.get("radio_fb"):
+            WAKE["radio_fb"] = True; WAKE["snd_t"] = 0.0
     if now - WAKE["snd_t"] < 20.0:
         return
     WAKE["snd_t"] = now
     full = float(CFG.get("wake_volume", 60))
     WAKE["level"] = min(full, max(full * 0.4, WAKE["level"] + full * 0.1)) if WAKE["level"] else full * 0.4
-    kind = CFG.get("wake_sound") or "chime"
     ok, err = sound_play(kind, 12.0 if wake_clap_listens() else 19.0, WAKE["level"], reason="wake-up alarm")
     if not ok:
         WAKE["msg"] = err
@@ -122,7 +128,7 @@ def _ring_sound(now):
 
 def wake_ring(test=False, who="time"):
     with WAKE_LOCK:
-        WAKE.update(state="ring", t0=time.time(), test=bool(test), snd_t=0.0, level=0.0, gest="", until=0.0)
+        WAKE.update(state="ring", t0=time.time(), test=bool(test), snd_t=0.0, level=0.0, gest="", until=0.0, radio_fb=False)
     WAKEG.reset()
     MANUAL["until"] = 0.0                                  # the alarm wins over a hand-moved camera
     _look(bed_view())
@@ -138,6 +144,7 @@ def wake_snooze(who="web"):
     mins = float(CFG.get("wake_snooze", 9))
     with WAKE_LOCK:
         WAKE.update(state="snooze", until=time.time() + mins * 60.0, snoozes=WAKE["snoozes"] + 1, last=f"snooze ({who})")
+    radio_wake_end()                                       # 639zzzzd: a station as alarm is quiet while snoozing
     MANUAL["until"] = 0.0
     _look(away_view())
     log_event("sys", f"Wake-up alarm: snooze {mins:g} min ({who})")
@@ -148,7 +155,7 @@ def wake_stop(who="web"):
     if WAKE["state"] not in ("ring", "snooze", "sleep"):
         return False, "the alarm is not on"
     was = WAKE["state"]
-    sound_stop()
+    sound_stop(); radio_wake_end()                         # 639zzzzd: also a station as alarm
     _light(False)
     with WAKE_LOCK:
         if was in ("ring", "snooze"):

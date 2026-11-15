@@ -49,7 +49,7 @@ MORE_GROUPS_DE = {k: DE.get(k, _HX_KLAR[k][0]) for k in ("On the go", "Help & pr
 # ---- «Mehr» in four groups ----------------------------------------------------------------------------------------------------------
 # (id, English title, the marks of the entries in this group in their order)
 MORE_GROUPS = (
-    ("travel", "On the go", ('href="/tausch"', 'href="/karte"', 'href="/almanach"', 'href="/morse"')),
+    ("travel", "On the go", ('href="/tausch"', 'href="/karte"', 'href="/almanach"', 'href="/morse"', 'href="/radio"')),
     ("play", "Play area", ('href="/play"', 'href="/party"')),
     ("help", "Help & print", ('href="/help"', 'href="/quick"', 'href="/qr"', 'href="/karten"', 'href="/info"')),
     ("device", "Device", ('href="/tools"', 'href="/build"', 'id="m-fb"', 'id="m-about"')),

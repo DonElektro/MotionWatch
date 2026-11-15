@@ -885,12 +885,12 @@ HP_INDEX_HTML = r"""<!doctype html><html lang="de"><head><meta charset="utf-8"><
 <title>MoveEye</title><style>body{margin:0;font:17px system-ui,sans-serif;background:#111418;color:#e8eaed;display:flex;min-height:100vh;align-items:center;justify-content:center}
 main{padding:24px;max-width:420px;width:100%}h1{margin:0 0 20px}a{display:block;margin:12px 0;padding:18px;border-radius:14px;background:#1d2229;color:#e8eaed;text-decoration:none;border:1px solid #2c333c}
 small{display:block;color:#9aa3ad;margin-top:4px}</style></head><body><main><h1>MoveEye</h1>
-<a href="Funk/"><span id="f">📻 Handy-Funkgerät</span><small id="fs">Morse und eigenes Protokoll, geht auch offline</small></a>
+<a href="Funk/"><span id="f">📡 Handy-Funkgerät</span><small id="fs">Morse und eigenes Protokoll, geht auch offline</small></a>
 <a href="Sim/"><span id="s">🎮 Simulator (Demo)</span><small id="ss">Im Browser, ohne Verbindung zu MoveEye · ca. 80 MB</small></a>
-</main><script>(function(){var T={en:["📻 Phone radio","Morse and own protocol, works offline too","🎮 Simulator (demo)","In the browser, without a connection to MoveEye · about 80 MB"],
-fr:["📻 Radio du téléphone","Morse et protocole propre, fonctionne aussi hors ligne","🎮 Simulateur (démo)","Dans le navigateur, sans connexion à MoveEye · env. 80 Mo"],
-it:["📻 Radio del telefono","Morse e protocollo proprio, funziona anche offline","🎮 Simulatore (demo)","Nel browser, senza connessione a MoveEye · ca. 80 MB"],
-rm:["📻 Radio dal telefonin","Morse ed agen protocol, funcziuna er offline","🎮 Simulatur (demo)","En il browser, senza colliaziun cun MoveEye · ca. 80 MB"]};
+</main><script>(function(){var T={en:["📡 Phone radio","Morse and own protocol, works offline too","🎮 Simulator (demo)","In the browser, without a connection to MoveEye · about 80 MB"],
+fr:["📡 Radio du téléphone","Morse et protocole propre, fonctionne aussi hors ligne","🎮 Simulateur (démo)","Dans le navigateur, sans connexion à MoveEye · env. 80 Mo"],
+it:["📡 Radio del telefono","Morse e protocollo proprio, funziona anche offline","🎮 Simulatore (demo)","Nel browser, senza connessione a MoveEye · ca. 80 MB"],
+rm:["📡 Radio dal telefonin","Morse ed agen protocol, funcziuna er offline","🎮 Simulatur (demo)","En il browser, senza colliaziun cun MoveEye · ca. 80 MB"]};
 var l=(navigator.language||"de").slice(0,2).toLowerCase(),t=T[l];if(!t)return;document.documentElement.lang=l;
 ["f","fs","s","ss"].forEach(function(id,i){document.getElementById(id).textContent=t[i];});})();</script></body></html>
 """
