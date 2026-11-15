@@ -76,6 +76,8 @@ static func pi_model() -> String:
 
 static func weak_reason() -> String:
 	"""warum «Automatisch» Lite wählt (leer = starke Hardware)"""
+	if OS.has_feature("web"):
+		return "Browser (WebGL 2)"
 	var m := pi_model()
 	if m.findn("Raspberry Pi") >= 0:
 		return m
