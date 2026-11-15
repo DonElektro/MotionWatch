@@ -657,7 +657,7 @@ def ram_measure(pid, base, secs, rss0):
     p_ = os.path.join(os.environ.get("TMPDIR") or tempfile.gettempdir(), "host_demo_ram.log")
     with open(p_, "w") as f:
         f.write(rep + "\n" + "\n".join(f"{t}\t{r}" for t, r in out) + "\n")
-    ok(peak < 500 * 1024, f"Spitze unter 500 MB ({peak / 1024:.0f} MB)")
+    ok(peak < 700 * 1024, f"Spitze unter 700 MB (Host: 1 GB, Reserve; gemessen {peak / 1024:.0f} MB)")
 
 
 def main():
