@@ -96,6 +96,8 @@ def radio_clean(lst):
             e["uuid"] = x["uuid"]
         if radio_url_ok(x.get("url")):
             e["url"] = x["url"]
+            if x.get("lan") is True:
+                e["lan"] = True                              # «Heimnetz»: only on the loudspeaker
         f = x.get("find")
         if isinstance(f, dict) and _radio_txt(f.get("name")):
             e["find"] = {"name": _radio_txt(f.get("name")), "cc": str(f.get("cc") or "")[:2].upper() if re.match(r"^[A-Za-z]{2}$", str(f.get("cc") or "")) else ""}
@@ -116,16 +118,63 @@ def radio_station(sid):
 
 
 # ---- a small HTTP reader (HTTP/1.0: no chunks; also «ICY 200 OK» of old Shoutcast servers) -------------------------------------
-def _rh_open(url, timeout=8.0, icy=False):
-    """-> (code, headers (lower case), file, socket, final address); follows up to 5 redirects"""
+# Security (review 4.1.0, SSRF): EVERY hop (first address, each redirect, each play-list entry, each HLS play list / segment) is
+# resolved ONCE with getaddrinfo; every address must be global (ipaddress .is_global: no loopback, LAN, link-local / metadata
+# 169.254, Tailscale 100.64/10, multicast, reserved). The connection goes to exactly that checked address (Host header and TLS name
+# stay the name) - a second DNS answer (rebinding) is never asked. Only the first hop of a station the ADMINISTRATOR typed in may be
+# in the home network (10/8, 172.16/12, 192.168/16, fc00::/7 - never loopback / link-local), and such a station plays only on the
+# loudspeaker (owner decision); redirects and play-list entries are always global. ffmpeg never fetches anything itself.
+import ipaddress as _rip
+_RADIO_LAN_NETS = tuple(_rip.ip_network(n) for n in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "fc00::/7"))
+
+
+class RadioBlocked(ValueError):
+    """an address that MoveEye does not fetch (home network / local / metadata)"""
+
+
+def radio_addr_kind(a, lan=False):
+    """"global", "lan" (only with lan=True) or None (refused)"""
+    try:
+        ip = _rip.ip_address(str(a).split("%", 1)[0])
+    except ValueError:
+        return None
+    if ip.version == 6 and ip.ipv4_mapped is not None:
+        ip = ip.ipv4_mapped
+    if ip.is_global and not ip.is_multicast:
+        return "global"
+    if lan and any(ip in n for n in _RADIO_LAN_NETS):
+        return "lan"
+    return None
+
+
+def radio_resolve_host(host, port, lan=False):
+    """-> ([checked addresses], "global" | "lan"); RadioBlocked when ANY address is not allowed"""
+    addrs = list(dict.fromkeys(i[4][0] for i in _rsock.getaddrinfo(host, port, type=_rsock.SOCK_STREAM)))
+    kinds = [radio_addr_kind(a, lan) for a in addrs]
+    if not addrs or any(k is None for k in kinds):
+        raise RadioBlocked("this address is not allowed (local network)")
+    return addrs, ("lan" if "lan" in kinds else "global")
+
+
+def _rh_open(url, timeout=8.0, icy=False, lan=False):
+    """-> (code, headers (lower case), file, socket, final address, "global" | "lan"); follows up to 5 redirects.
+    lan=True: only the FIRST hop may be in the home network (a station the administrator typed in)"""
     import ssl
     from urllib.parse import urlsplit, urljoin, quote
-    for _hop in range(6):
+    for hop in range(6):
         if not radio_url_ok(url):
             raise ValueError("not a valid address")
         u = urlsplit(url)
         port = u.port or (443 if u.scheme.lower() == "https" else 80)
-        s = _rsock.create_connection((u.hostname, port), timeout)
+        addrs, net = radio_resolve_host(u.hostname, port, lan and hop == 0)
+        s, last = None, None
+        for a in addrs:                                      # exactly the checked addresses, never the name again
+            try:
+                s = _rsock.create_connection((a, port), timeout); break
+            except OSError as e:
+                last = e
+        if s is None:
+            raise last or OSError("no connection")
         try:
             if u.scheme.lower() == "https":
                 s = ssl.create_default_context().wrap_socket(s, server_hostname=u.hostname)
@@ -147,12 +196,12 @@ def _rh_open(url, timeout=8.0, icy=False):
             s.close(); raise
         if code in (301, 302, 303, 307, 308) and hdr.get("location"):
             s.close(); url = urljoin(url, hdr["location"]); continue
-        return code, hdr, f, s, url
+        return code, hdr, f, s, url, net
     raise ValueError("too many redirects")
 
 
 def _rh_get(url, timeout=8.0, limit=2 << 20):
-    code, _h, f, s, _u = _rh_open(url, timeout)
+    code, _h, f, s, _u, _n = _rh_open(url, timeout)
     try:
         data = f.read(limit)
     finally:
@@ -160,6 +209,11 @@ def _rh_get(url, timeout=8.0, limit=2 << 20):
     if code != 200:
         raise ValueError("HTTP %d" % code)
     return data
+
+
+def radio_lan_ok(st):
+    """a station the administrator typed in (only an address): its first hop may be in the home network"""
+    return bool(st and st.get("url") and not st.get("uuid") and not st.get("find"))
 
 
 def radio_offline_err(e):
@@ -305,10 +359,11 @@ def radio_playlist_urls(txt, base):
     return out[:10]
 
 
-def radio_open(url, depth=0):
-    """open the stream; a play list is read and its first working entry opened -> dict(kind icy | hls, ...)"""
+def radio_open(url, depth=0, lan=False):
+    """open the stream; a play list is read and its first working entry opened -> dict(kind icy | hls, ...).
+    lan: only the address itself may be in the home network - never its redirects or play-list entries"""
     from urllib.parse import urlsplit
-    code, hdr, f, s, final = _rh_open(url, 10.0, icy=True)
+    code, hdr, f, s, final, net = _rh_open(url, 10.0, icy=True, lan=lan)
     ok = False
     try:
         if code != 200:
@@ -318,7 +373,7 @@ def radio_open(url, depth=0):
         if ct in _RADIO_PL_CT or (ct.startswith("text/") and not ct.startswith("text/html")) or path.endswith((".pls", ".m3u", ".m3u8")):
             txt = f.read(65536).decode("utf-8", "replace")
             if "#EXT-X-" in txt:
-                return {"kind": "hls", "url": final, "ct": ct}
+                return {"kind": "hls", "url": final, "ct": ct, "net": net, "text": txt}
             if depth >= 3:
                 raise ValueError("play list in a play list too often")
             urls = radio_playlist_urls(txt, final)
@@ -327,9 +382,9 @@ def radio_open(url, depth=0):
             last = None
             for u in urls[:3]:
                 try:
-                    return radio_open(u, depth + 1)
+                    return radio_open(u, depth + 1)          # entries: always global
                 except Exception as e:
-                    last = e
+                    last = e if not isinstance(last, RadioBlocked) else last
             raise last
         if ct.startswith("text/html"):
             raise ValueError("this is a web page, not a stream")
@@ -338,10 +393,72 @@ def radio_open(url, depth=0):
         except ValueError:
             mi = 0
         ok = True
-        return {"kind": "icy", "f": f, "sock": s, "url": final, "ct": ct, "metaint": mi}
+        return {"kind": "icy", "f": f, "sock": s, "url": final, "ct": ct, "metaint": mi, "net": net,
+                "icyh": any(k.startswith("icy-") for k in hdr)}
     finally:
         if not ok:
             s.close()
+
+
+def radio_hls_media(txt, base):
+    """a master play list -> the address of its lowest variant (checked later like every hop); a media play list -> None"""
+    from urllib.parse import urljoin
+    best, bw, want = None, None, False
+    for ln in txt.splitlines()[:2000]:
+        s_ = ln.strip()
+        if s_.startswith("#EXT-X-STREAM-INF"):
+            m = re.search(r"BANDWIDTH=(\d+)", s_)
+            want, b_ = True, int(m.group(1)) if m else 0
+            continue
+        if want and s_ and not s_.startswith("#"):
+            u = urljoin(base, s_)
+            if radio_url_ok(u) and (bw is None or b_ < bw):
+                best, bw = u, b_
+            want = False
+    return best
+
+
+def _radio_hls_reader(gen, src, w):
+    """HLS for the loudspeaker: MoveEye fetches the play lists and segments itself (each one checked) and pipes the bytes to
+    ffmpeg - ffmpeg never makes a request of its own"""
+    from urllib.parse import urljoin
+    url, txt = src["url"], src.get("text") or ""
+    try:
+        v = radio_hls_media(txt, url)
+        if v:
+            url, txt = v, _rh_get(v, 10.0, 1 << 20).decode("utf-8", "replace")
+        seen, first, init = set(), True, False
+        while RADIO["gen"] == gen:
+            if re.search(r"#EXT-X-KEY:[^\n]*METHOD=(?!NONE)", txt):
+                RADIO["net_err"] = "encrypted stream (HLS) - not possible"; break
+            m = re.search(r'#EXT-X-MAP:[^\n]*URI="([^"]+)"', txt)
+            if m and not init:
+                w.write(_rh_get(urljoin(url, m.group(1)), 10.0, 4 << 20)); init = True
+            segs = [urljoin(url, x.strip()) for x in txt.splitlines() if x.strip() and not x.strip().startswith("#")]
+            if first:
+                seen.update(segs[:-3]); first = False         # start near «live»
+            for sg in segs:
+                if sg in seen or RADIO["gen"] != gen:
+                    continue
+                seen.add(sg)
+                w.write(_rh_get(sg, 15.0, 16 << 20))
+            if "#EXT-X-ENDLIST" in txt:
+                break
+            m = re.search(r"#EXT-X-TARGETDURATION:(\d+)", txt)
+            time.sleep(max(1.0, min(10.0, (int(m.group(1)) if m else 6) / 2.0)))
+            txt = _rh_get(url, 10.0, 1 << 20).decode("utf-8", "replace")
+            if len(seen) > 2000:
+                seen = set(list(seen)[-500:])
+    except RadioBlocked:
+        RADIO["net_err"] = "this address is not allowed (local network)"
+    except (OSError, ValueError) as e:
+        if RADIO["gen"] == gen:
+            RADIO["net_err"] = RADIO["net_err"] or ("the station stopped sending" if not str(e).startswith("HTTP") else "the station does not answer: " + str(e)[:40])
+    finally:
+        try:
+            w.close()
+        except Exception:
+            pass
 
 
 def radio_icy_title(meta):
@@ -557,7 +674,14 @@ def _radio_once(gen):
         return "fatal", "unknown station"
     RADIO.update(state="connecting", t_audio=0.0, net_err="")
     try:
-        src = radio_open(radio_resolve(st))
+        src = radio_open(radio_resolve(st), lan=radio_lan_ok(st))
+        if src.get("net") == "lan" and not st.get("lan"):
+            with RADIO["lock"]:
+                st["lan"] = True                             # the card says «Heimnetz»
+            save_settings()
+    except RadioBlocked as e:
+        RADIO["offline"] = False
+        return "fatal", str(e)
     except Exception as e:
         RADIO["offline"] = radio_offline_err(e)
         return "fail", "no internet" if RADIO["offline"] else "the station does not answer: " + _radio_txt(e, 100)
@@ -568,12 +692,12 @@ def _radio_once(gen):
         return "stop", ""
     hls = src["kind"] == "hls"
     cmd = ["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-threads", "1"]
-    cmd += (["-user_agent", RADIO_UA, "-i", src["url"]] if hls else (["-f", _RADIO_FMT[src["ct"]]] if src["ct"] in _RADIO_FMT else []) + ["-i", "pipe:0"])
+    cmd += (["-f", _RADIO_FMT[src["ct"]]] if not hls and src["ct"] in _RADIO_FMT else []) + ["-i", "pipe:0"]     # only bytes from MoveEye
     cmd += ["-vn", "-ac", "1", "-ar", str(RADIO_RATE), "-f", "s16le", "pipe:1"]
     errf = tempfile.TemporaryFile()
     _radio_prctl()
     try:
-        dec = subprocess.Popen(cmd, stdin=subprocess.DEVNULL if hls else subprocess.PIPE, stdout=subprocess.PIPE, stderr=errf, preexec_fn=_radio_pre)
+        dec = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=errf, preexec_fn=_radio_pre)
     except OSError as e:
         errf.close()
         if src.get("sock"):
@@ -581,7 +705,9 @@ def _radio_once(gen):
         return "fatal", "ffmpeg: " + str(e)[:100]
     RADIO["dec"] = dec
     mine = []                                                # the loudspeaker processes of this call (only these are ended here)
-    if not hls:
+    if hls:
+        threading.Thread(target=_radio_hls_reader, args=(gen, src, dec.stdin), daemon=True, name="radio-net").start()
+    else:
         RADIO["conn"] = src["sock"]
         threading.Thread(target=_radio_reader, args=(gen, src, dec.stdin), daemon=True, name="radio-net").start()
     t0 = time.time(); first = RADIO_WAKE_S if RADIO["wake"] else RADIO_FIRST_S
@@ -665,6 +791,8 @@ def _radio_once(gen):
         return "fatal", fatal
     if how in ("stop", "held") or RADIO["gen"] != gen or not RADIO["want"]:
         return how if how == "held" else "stop", ""
+    if RADIO["net_err"] == "this address is not allowed (local network)":
+        return "fatal", RADIO["net_err"]                     # an HLS hop into the private network: no new tries
     if RADIO["t_audio"] and time.time() - RADIO["t_audio"] > 30:
         return "drop", RADIO["net_err"] or "the station stopped sending"
     if not RADIO["t_audio"]:
@@ -753,7 +881,8 @@ def radio_state(lang=None, role="admin", perms=None):
           "quiet": bool(CFG.get("noise_alarm") or CFG.get("clap_on")),     # Besitzer: say it on the card and the row
           "spk": bool(out_selected()), "ffmpeg": bool(shutil.which("ffmpeg")), "mic": bool(CFG.get("audio_in")),
           "wake_radio": str(CFG.get("wake_sound") or "").startswith("radio:"),
-          "stations": [{"id": e["id"], "name": e["name"], "sub": e.get("sub", ""), "kind": "url" if ("url" in e and "uuid" not in e and "find" not in e) else "dir"} for e in lst],
+          "stations": [{"id": e["id"], "name": e["name"], "sub": e.get("sub", ""), "kind": "url" if ("url" in e and "uuid" not in e and "find" not in e) else "dir",
+                        "lan": bool(e.get("lan"))} for e in lst],
           "may": {"play": radio_may(role, perms), "edit": radio_may(role, perms, True)}, "max": RADIO_MAX}
     return st
 
@@ -786,6 +915,13 @@ def radio_add(d):
         from urllib.parse import urlsplit
         e = {"id": "u" + hashlib.sha1(url.encode()).hexdigest()[:12], "name": _radio_txt(d.get("name")) or urlsplit(url).hostname[:60],
              "sub": urlsplit(url).hostname[:60], "url": url}
+        try:                                                 # the administrator may name a home-network station (never local / 169.254)
+            if radio_resolve_host(urlsplit(url).hostname, urlsplit(url).port or 80, lan=True)[1] == "lan":
+                e["lan"] = True
+        except RadioBlocked as x:
+            return False, str(x)
+        except OSError:
+            pass                                             # no name now (no internet): checked again when it plays
     if any(x.get("id") == e["id"] for x in lst):
         return False, "the station is already in the list"
     with RADIO["lock"]:
@@ -900,10 +1036,15 @@ def radio_br_src(sid, fresh=False):
 
 def radio_bplay(sid=None):
     sid = sid or CFG.get("radio_last") or ((radio_list() or [{}])[0].get("id"))
+    st = radio_station(sid) if sid else None
+    if st and st.get("lan"):
+        return False, "this station only plays on the MoveEye loudspeaker", None
     try:
         c = radio_br_src(sid, fresh=True)
     except KeyError:
         return False, "unknown station", None
+    except RadioBlocked:
+        return False, ("this station only plays on the MoveEye loudspeaker" if radio_lan_ok(st) else "this address is not allowed (local network)"), None
     except Exception as e:
         return False, "no internet" if radio_offline_err(e) else "the station does not answer: " + _radio_txt(e, 100), None
     if BR["title_sid"] != sid:
@@ -958,10 +1099,14 @@ def radio_br_proxy(sid):
     """-> (HTTP code, English error or content type, generator)"""
     if not _RADIO_ID.match(str(sid or "")) or not radio_station(sid):
         return 404, "unknown station", None
+    if radio_station(sid).get("lan"):
+        return 403, "this station only plays on the MoveEye loudspeaker", None
     try:
         c = radio_br_src(sid)
     except KeyError:
         return 404, "unknown station", None
+    except RadioBlocked:
+        return 403, "this address is not allowed (local network)", None
     except Exception as e:
         return 502, "no internet" if radio_offline_err(e) else "the station does not answer", None
     if c["kind"] != "icy":
@@ -971,13 +1116,22 @@ def radio_br_proxy(sid):
             return 429, "too many listeners through MoveEye (at most 2)", None
         BR["n"] += 1
     try:
-        src = radio_open(c["url"])
+        src = radio_open(c["url"])                           # checked again (every hop global)
     except Exception as e:
         with BR["lock"]:
             BR["n"] -= 1
-        return 502, "no internet" if radio_offline_err(e) else "the station does not answer", None
-    ct = src.get("ct") or c["ct"]
-    ct = ct if (ct.startswith("audio/") or ct == "application/ogg") else "audio/mpeg"
+        return (403, "this address is not allowed (local network)", None) if isinstance(e, RadioBlocked) else \
+            (502, "no internet" if radio_offline_err(e) else "the station does not answer", None)
+    ct = src.get("ct") or ""
+    if src["kind"] != "icy" or not (ct.startswith("audio/") or ct == "application/ogg" or (ct in ("application/octet-stream", "") and src.get("icyh"))):
+        try:
+            src["sock"].close()
+        except (KeyError, OSError):
+            pass
+        with BR["lock"]:
+            BR["n"] -= 1
+        return 415, "this is not an audio stream", None      # only sound passes, never a page / JSON of somewhere
+    ct = ct if ct.startswith("audio/") or ct == "application/ogg" else "audio/mpeg"
 
     return 200, ct, _RadioBrStream(src, sid)
 
@@ -1372,9 +1526,12 @@ section.card h3{margin:0 0 10px}details>summary{cursor:pointer;font-weight:600;m
     $i("ra-edit").hidden = !J.may.edit || !(J.stations || []).length; $i("ra-edit").textContent = edit ? t("Done") : t("Edit");
     (J.stations || []).forEach((s, n) => {
       const li = E("li", on && s.id === sid ? "cur" : ""), r = E("button", "ra-r");
-      r.type = "button"; r.appendChild(E("b", "", s.name)); r.appendChild(E("small", "", s.sub || (s.kind === "url" ? t("own address") : "radio-browser.info")));
+      r.type = "button"; r.appendChild(E("b", "", s.name));
+      r.appendChild(E("small", "", (s.lan ? "🏠 " + t("Home network") + " · " : "") + (s.sub || (s.kind === "url" ? t("own address") : "radio-browser.info"))));
       li.appendChild(E("span", "ra-i", on && s.id === sid ? (br ? "📱" : "🔊") : "📻"));
-      r.disabled = !J.may.play; r.onclick = async () => { if (br) { bplay(s.id); return; } const j = await api({action: "play", id: s.id}); take(j); };
+      r.disabled = !J.may.play; r.onclick = async () => {
+        if (br && s.lan) { B.err = "🏠 " + t("this station only plays on the MoveEye loudspeaker"); paint(); return; }   // owner: home network only via the Pi
+        if (br) { bplay(s.id); return; } const j = await api({action: "play", id: s.id}); take(j); };
       li.appendChild(r);
       if (edit) {
         const B = (txt, lab, f) => { const b = E("button", "sec", txt); b.type = "button"; b.title = lab; b.setAttribute("aria-label", lab); b.onclick = f; li.appendChild(b); };
@@ -1473,6 +1630,14 @@ _HX_RADIO = {
         "«📱 ce navigateur» : le téléphone joue la station, le haut-parleur de MoveEye reste muet. Si la station ne joue pas directement, elle passe par MoveEye (2 auditeurs au plus).",
         "«📱 questo browser»: il telefono riproduce la stazione, l’altoparlante di MoveEye resta muto. Se la stazione non suona direttamente, passa da MoveEye (al massimo 2 ascoltatori).",
         "«📱 quest navigatur»: il telefonin suna l’emettur, l’autpledader da MoveEye resta quiet. Sch’il emettur na suna betg directamain, va el tras MoveEye (maximalmain 2 auditurs)."),
+    "this address is not allowed (local network)": ("diese Adresse ist nicht erlaubt (lokales Netz)", "cette adresse n’est pas autorisée (réseau local)",
+                                                    "questo indirizzo non è consentito (rete locale)", "questa adressa n’è betg lubida (rait locala)"),
+    "this station only plays on the MoveEye loudspeaker": ("Dieser Sender geht nur über den MoveEye-Lautsprecher", "Cette station ne passe que par le haut-parleur de MoveEye",
+                                                           "Questa stazione funziona solo con l’altoparlante di MoveEye", "Quest emettur va mo tras l’autpledader da MoveEye"),
+    "this is not an audio stream": ("das ist kein Ton-Stream", "ce n’est pas un flux audio", "non è uno stream audio", "quai n’è nagin stream da tun"),
+    "encrypted stream (HLS) - not possible": ("verschlüsselter Stream (HLS) – nicht möglich", "flux chiffré (HLS) – impossible", "stream cifrato (HLS) – non possibile",
+                                              "stream criptà (HLS) – betg pussaivel"),
+    "Home network": ("Heimnetz", "Réseau domestique", "Rete di casa", "Rait da chasa"),
     "only the stations of the list": ("nur die Sender der Liste", "seulement les stations de la liste", "solo le stazioni dell’elenco", "mo ils emetturs da la glista"),
     "this stream (HLS) cannot go through MoveEye": ("dieser Stream (HLS) geht nicht über MoveEye", "ce flux (HLS) ne peut pas passer par MoveEye",
                                                     "questo stream (HLS) non può passare da MoveEye", "quest stream (HLS) na po betg ir tras MoveEye"),
@@ -1709,6 +1874,11 @@ def radio_selftest():
     assert all(DE.get(k) and all(TRX[L].get(k) for L in ("fr", "it", "rm")) for k in _HX_RADIO), "texts in 5 languages"
     assert radio_offline_err(_rsock.gaierror(-2, "x")) and not radio_offline_err(ConnectionRefusedError(111, "x"))
     assert len(RADIO_BACKOFF) == 5 and sum(RADIO_BACKOFF) < 200, "no endless tries"
+    for a_ in ("127.0.0.1", "10.1.2.3", "172.16.0.1", "192.168.1.5", "169.254.169.254", "100.64.0.1", "0.0.0.0", "224.0.0.1", "::1", "fe80::1", "fd00::1",
+               "::ffff:192.168.1.1", "240.0.0.1"):
+        assert radio_addr_kind(a_) is None, "SSRF: " + a_
+    assert all(radio_addr_kind(a_, True) is None for a_ in ("127.0.0.1", "169.254.169.254", "100.64.0.1", "fe80::1", "::1")), "never local / metadata"
+    assert [radio_addr_kind(a_, True) for a_ in ("10.1.2.3", "192.168.1.5", "fd00::1")] == ["lan"] * 3 and radio_addr_kind("1.1.1.1") == "global"
     assert role_allows("family", "/radio/stream/pilatus", "GET", {}) and not role_allows("view", "/radio/stream/pilatus", "GET", {}), "the proxy: the right to play"
     assert radio_br_proxy("../x")[0] == 404 and radio_br_proxy("nichtda")[0] == 404 and RADIO_BR_MAX == 2, "the proxy: only stations of the list"
     return "Pilatus by name (no guessed address), addresses, play lists, ICY titles, priority / pause, rights, wake-up sound, texts, back-off"

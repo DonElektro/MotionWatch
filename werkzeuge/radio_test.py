@@ -57,25 +57,32 @@ def ok(bed, text):
 
 
 # ---- test sounds and the fake directory / stations -------------------------------------------------------------------------------
+U_PRIV = {"127.0.0.1": "22222222-2222-4333-8444-000000000001", "10.1.2.3": "22222222-2222-4333-8444-000000000002",
+          "192.168.1.5": "22222222-2222-4333-8444-000000000003", "169.254.169.254": "22222222-2222-4333-8444-000000000004"}
+
+
 def make_sounds(d):
     mp3, ogg = os.path.join(d, "ton.mp3"), os.path.join(d, "ton.ogg")
     subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-f", "lavfi", "-i", "sine=frequency=440:duration=6:sample_rate=44100", "-af", "volume=0.5",
                     "-ac", "1", "-c:a", "libmp3lame", "-b:a", "64k", mp3], check=True)
     subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-f", "lavfi", "-i", "sine=frequency=660:duration=6:sample_rate=44100", "-af", "volume=0.5",
                     "-ac", "1", "-c:a", "libvorbis", "-q:a", "2", ogg], check=True)
-    return open(mp3, "rb").read(), open(ogg, "rb").read()
+    hd = os.path.join(d, "hls"); os.makedirs(hd)
+    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-stream_loop", "3", "-i", mp3, "-c:a", "aac", "-b:a", "48k", "-f", "hls", "-hls_time", "2",
+                    "-hls_list_size", "0", "-hls_segment_filename", os.path.join(hd, "s%03d.ts"), os.path.join(hd, "live.m3u8")], check=True)
+    return open(mp3, "rb").read(), open(ogg, "rb").read(), hd
 
 
 class Srv:
-    def __init__(self, mp3, ogg):
-        self.mp3, self.ogg, self.hits, self.url500, self.conns = mp3, ogg, [], False, {}
+    def __init__(self, mp3, ogg, hls):
+        self.mp3, self.ogg, self.hlsdir, self.hits, self.url500, self.conns = mp3, ogg, hls, [], False, {}
         me = self
         with socket.socket() as s:
             s.bind(("127.0.0.1", 0)); self.dead = s.getsockname()[1]          # a port where nobody listens
         self.httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), self._handler())
         self.httpd.daemon_threads = True
         self.port = self.httpd.server_address[1]
-        self.base = "http://127.0.0.1:%d" % self.port
+        self.base = "http://radio.example:%d" % self.port          # a public name (the test patch maps it to 127.0.0.1)
         B = self.base
         self.db = [{"stationuuid": U_PIL, "name": "Radio Pilatus", "countrycode": "CH", "country": "Switzerland", "codec": "MP3", "bitrate": 64,
                     "tags": "pop", "url": B + "/pilatus.pls", "url_resolved": B + "/pilatus.pls", "lastcheckok": 1},
@@ -89,6 +96,9 @@ class Srv:
                     "url": B + "/hang", "url_resolved": B + "/hang", "lastcheckok": 1},
                    {"stationuuid": U_PX, "name": "Proxy FM", "countrycode": "CH", "country": "Switzerland", "codec": "MP3", "bitrate": 64, "tags": "",
                     "url": B + "/stream_ua.mp3", "url_resolved": B + "/stream_ua.mp3", "lastcheckok": 1}]
+        for ip, u in U_PRIV.items():                       # directory entries that point into a private / local network
+            self.db.append({"stationuuid": u, "name": "Evil " + ip, "countrycode": "XX", "country": "", "codec": "MP3", "bitrate": 64, "tags": "",
+                            "url": "http://%s:%d/stream.mp3" % (ip, self.port), "url_resolved": "http://%s:%d/stream.mp3" % (ip, self.port), "lastcheckok": 1})
         threading.Thread(target=self.httpd.serve_forever, daemon=True).start()
 
     def _handler(self):
@@ -115,7 +125,7 @@ class Srv:
                 me.hits.append((p, self.headers.get("User-Agent") or "", self.headers.get("Icy-MetaData") or "", u.query))
                 B = me.base
                 if p == "/json/servers":
-                    return self.j([{"name": "127.0.0.1:%d" % me.port, "ip": "127.0.0.1"}])
+                    return self.j([{"name": "radio.example:%d" % me.port, "ip": "93.184.216.34"}])
                 if p == "/json/stations/search":
                     name = (q.get("name") or [""])[0].lower(); cc = (q.get("countrycode") or [""])[0]
                     return self.j([s for s in me.db if name in s["name"].lower() and (not cc or s["countrycode"] == cc)])
@@ -136,6 +146,18 @@ class Srv:
                     return self.txt("[playlist]\nFile1=%s/dead\nFile2=/stream.ogg\n" % ("http://127.0.0.1:%d" % me.dead), "audio/x-scpls")
                 if p == "/live.m3u8":
                     return self.txt("#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg1.aac\n", "application/vnd.apple.mpegurl")
+                ip = (q.get("ip") or [""])[0]
+                if p == "/redir_to":                       # a redirect into the private network
+                    self.send_response(302); self.send_header("Location", "http://%s:%d/stream.mp3" % (ip, me.port)); self.end_headers(); return
+                if p == "/pl_to":                          # a play list entry in the private network
+                    return self.txt("[playlist]\nFile1=http://%s:%d/stream.mp3\n" % (ip, me.port), "audio/x-scpls")
+                if p == "/hls_bad.m3u8":                   # an HLS segment in the private network
+                    return self.txt("#EXTM3U\n#EXT-X-TARGETDURATION:2\n#EXTINF:2,\nhttp://10.1.2.3:%d/s000.ts\n#EXT-X-ENDLIST\n" % me.port, "application/vnd.apple.mpegurl")
+                m = re.match(r"^/hls/([a-z0-9]+\.(m3u8|ts))$", p)
+                if m and os.path.isfile(os.path.join(me.hlsdir, m.group(1))):
+                    b = open(os.path.join(me.hlsdir, m.group(1)), "rb").read()
+                    self.send_response(200); self.send_header("Content-Type", "application/vnd.apple.mpegurl" if m.group(2) == "m3u8" else "video/mp2t")
+                    self.send_header("Content-Length", str(len(b))); self.end_headers(); self.wfile.write(b); return
                 if p == "/redir":
                     self.send_response(302); self.send_header("Location", "/stream.mp3"); self.end_headers(); return
                 if p == "/hang":
@@ -212,17 +234,30 @@ while True:
 # the common patches for MoveEye in a test process: only 127.0.0.1, «aplay» = the sink above
 PATCH = r'''
 import socket as _s_, shutil as _sh_, sys as _sy_, os as _o_
+# «radio.example» = a PUBLIC address (93.184.216.34, ipaddress .is_global) whose connections land on the local test server;
+# «lan.example» = a home-network address (192.168.77.5) that also lands there; rebind.example answers from _RT_REBIND (one answer
+# per DNS question). Private literals are resolved as numbers (no DNS); connecting to them is NEVER allowed (recorded in _RT_CC).
 _RT_ALLOW = ("127.0.0.1", "localhost", "::1", "0.0.0.0", None, "")
-_RT_BLOCKED = []
+_RT_NAMES = {"radio.example": "93.184.216.34", "lan.example": "192.168.77.5"}
+_RT_MAP = {"93.184.216.34": "127.0.0.1", "93.184.216.35": "127.0.0.1", "192.168.77.5": "127.0.0.1"}
+_RT_LIT = ("10.1.2.3", "192.168.1.5", "169.254.169.254", "10.0.0.9")
+_RT_BLOCKED, _RT_GA, _RT_CC, _RT_REBIND = [], [], [], []
 _rt_cc, _rt_ga = _s_.create_connection, _s_.getaddrinfo
 def _rt_guard_cc(addr, *a, **k):
-    if addr[0] not in _RT_ALLOW:
-        _RT_BLOCKED.append(str(addr[0])); raise _s_.gaierror(-2, "radio_test: no internet for " + str(addr[0]))
+    h = str(addr[0]); _RT_CC.append(h)
+    if h in _RT_MAP:
+        return _rt_cc((_RT_MAP[h], addr[1]), *a, **k)
+    if h not in ("127.0.0.1", "localhost", "::1"):
+        _RT_BLOCKED.append(h); raise _s_.gaierror(-2, "radio_test: no internet for " + h)
     return _rt_cc(addr, *a, **k)
-def _rt_guard_ga(host, *a, **k):
-    if host not in _RT_ALLOW:
+def _rt_guard_ga(host, port=None, *a, **k):
+    _RT_GA.append(str(host))
+    if host in _RT_ALLOW or host in _RT_LIT or host in _RT_MAP:
+        return _rt_ga(host, port, *a, **k)
+    ip = _RT_REBIND.pop(0) if host == "rebind.example" and _RT_REBIND else _RT_NAMES.get(host)
+    if ip is None:
         _RT_BLOCKED.append(str(host)); raise _s_.gaierror(-2, "radio_test: no internet for " + str(host))
-    return _rt_ga(host, *a, **k)
+    return [(_s_.AF_INET, _s_.SOCK_STREAM, 6, "", (ip, int(port or 0)))]
 _s_.create_connection, _s_.getaddrinfo = _rt_guard_cc, _rt_guard_ga
 _rt_which = _sh_.which
 _sh_.which = lambda c, *a, **k: "/usr/bin/true" if c == "aplay" else _rt_which(c, *a, **k)
@@ -410,10 +445,81 @@ tries = [t for t, _e in R["tries"]]
 s = ns["radio_state"]("de")
 out["nonet"] = [len(tries), [round(b - a_, 1) for a_, b in zip(tries, tries[1:])], s["state"], s["offline"], s["msg"], st_retry and st_retry["retry"], st_retry and st_retry["offline"]]
 time.sleep(2.5); out["nonet_after"] = len(R["tries"])
-c, a = do({"action": "add", "url": "http://127.0.0.1:%d/live" % DEAD, "name": "Tot"}); TOT = [e["id"] for e in ns["radio_list"]() if e["name"] == "Tot"][0]
+c, a = do({"action": "add", "url": "http://radio.example:%d/live" % DEAD, "name": "Tot"}); TOT = [e["id"] for e in ns["radio_list"]() if e["name"] == "Tot"][0]
 R["tries"].clear(); do({"action": "play", "id": TOT}); wait(lambda: not R["want"], 10)
 s = ns["radio_state"]("de"); out["dead"] = [len(R["tries"]), s["state"], s["offline"], s["msg"]]
 ns["RADIO_BACKOFF"] = (5.0, 10.0, 20.0, 40.0, 80.0)
+# 8b SSRF (review 4.1.0): never a private / local address - directly from the directory, after a redirect, from a play list
+PORT = int(B.rsplit(":", 1)[1]); PRIV = list(U_PRIV)
+def blk(f):
+    try:
+        x = f()
+        if isinstance(x, dict) and x.get("sock") is not None: x["sock"].close()
+        return "open"
+    except ns["RadioBlocked"]: return "blocked"
+    except Exception as e: return "other: " + str(e)[:60]
+cc0 = len(ns["_RT_CC"]); ss = {}
+for n, ip in enumerate(PRIV):
+    st_d = {"id": "sd", "name": "x", "uuid": U_PRIV[ip]}
+    r_ = [blk(lambda: ns["radio_open"](ns["radio_resolve"](st_d), lan=ns["radio_lan_ok"](st_d))),
+          blk(lambda: ns["radio_open"](B + "/redir_to?ip=" + ip)), blk(lambda: ns["radio_open"](B + "/pl_to?ip=" + ip)),
+          blk(lambda: ns["radio_open"](B + "/redir_to?ip=" + ip, lan=True)), blk(lambda: ns["radio_open"](B + "/pl_to?ip=" + ip, lan=True))]
+    for k, extra in (("d", {"uuid": U_PRIV[ip]}), ("r", {"url": B + "/redir_to?ip=" + ip}), ("p", {"url": B + "/pl_to?ip=" + ip})):
+        sid = "ss%s%d" % (k, n)
+        C["radio_stations"].append(dict(extra, id=sid, name="SSRF " + sid)); ns["BR"]["src"].pop(sid, None)
+        r_ += [ns["radio_br_proxy"](sid)[0], ns["radio_bplay"](sid)[0]]
+        C["radio_stations"].pop()
+    ss[ip] = r_
+out["ssrf"] = ss
+ns["RADIO_BACKOFF"] = (0.3, 0.3)
+R["tries"].clear(); C["radio_stations"].append({"id": "ssfull", "name": "SSRF full", "uuid": U_PRIV["169.254.169.254"]})
+do({"action": "play", "id": "ssfull"}); wait(lambda: not R["want"], 10)
+out["ssrf_speaker"] = [R["state"], ns["radio_state"]("de")["msg"], kids()]
+C["radio_stations"].pop()
+c, a = do({"action": "add", "url": "http://127.0.0.1:%d/stream.mp3" % PORT}); c2, a2 = do({"action": "add", "url": "http://169.254.169.254/latest/meta-data/"})
+out["ssrf_add"] = [c, a.get("error"), c2, a2.get("error")]
+# a station the administrator typed in, in the home network: on the loudspeaker yes, in the browser / through the proxy never
+c, a = do({"action": "add", "url": "http://lan.example:%d/stream.mp3" % PORT, "name": "Heim-Radio"})
+LAN = [e for e in ns["radio_list"]() if e["name"] == "Heim-Radio"]
+out["lan_add"] = [c, LAN[0].get("lan") if LAN else None, [x["lan"] for x in ns["radio_state"]("de")["stations"] if x["name"] == "Heim-Radio"]]
+LID = LAN[0]["id"] if LAN else "x"
+do({"action": "play", "id": LID}); out["lan_play"] = [wait(lambda: R["state"] == "playing" and R["out"] is not None, 15), "192.168.77.5" in ns["_RT_CC"]]
+do({"action": "stop"})
+c, a = do({"action": "bplay", "id": LID}); out["lan_browser"] = [c, a.get("error"), ns["radio_br_proxy"](LID)[:2]]
+# not a sound: the proxy refuses (JSON of somewhere)
+c, a = do({"action": "add", "url": B + "/json/servers", "name": "JSON"}); JID = [e["id"] for e in ns["radio_list"]() if e["name"] == "JSON"][0]
+out["json"] = list(ns["radio_br_proxy"](JID)[:2]); time.sleep(0.3); out["json_n"] = ns["BR"]["n"]
+# DNS rebinding: public at the first question, private at the second - MoveEye asks once per hop and connects to that address
+ga0 = ns["_RT_GA"].count("rebind.example")
+ns["_RT_REBIND"][:] = ["93.184.216.35", "10.0.0.9"]
+x = blk(lambda: ns["radio_open"]("http://rebind.example:%d/stream.mp3" % PORT))
+out["rebind1"] = [x, ns["_RT_CC"][-1], ns["_RT_GA"].count("rebind.example") - ga0]
+out["rebind2"] = blk(lambda: ns["radio_open"]("http://rebind.example:%d/stream.mp3" % PORT))
+ns["_RT_REBIND"][:] = ["93.184.216.35", "10.0.0.9"]
+C["radio_stations"].append({"id": "rebind", "name": "Rebind", "url": "http://rebind.example:%d/stream.mp3" % PORT})
+ns["BR"]["src"].pop("rebind", None)
+out["rebind_proxy"] = [ns["radio_br_src"]("rebind")["url"].startswith("http://rebind.example"), ns["radio_br_proxy"]("rebind")[:2]]
+C["radio_stations"].pop()
+# HLS on the loudspeaker: MoveEye fetches the play list and the segments, ffmpeg only reads its stdin
+C["radio_stations"].append({"id": "hlsok", "name": "HLS ok", "url": B + "/hls/live.m3u8"})
+do({"action": "play", "id": "hlsok"})
+out["hls_play"] = wait(lambda: R["state"] == "playing" and R["out"] is not None, 20)
+cmd = ""
+for d_ in os.listdir("/proc"):
+    if d_.isdigit():
+        try:
+            if int(open("/proc/%s/stat" % d_).read().rsplit(")", 1)[1].split()[1]) == me:
+                c_ = open("/proc/%s/cmdline" % d_, "rb").read().replace(b"\0", b" ").decode(errors="replace")
+                if "ffmpeg" in c_: cmd = c_
+        except Exception: pass
+out["hls_cmd"] = cmd
+do({"action": "stop"}); C["radio_stations"].pop()
+C["radio_stations"].append({"id": "hlsbad", "name": "HLS bad", "url": B + "/hls_bad.m3u8"})
+R["tries"].clear(); do({"action": "play", "id": "hlsbad"}); wait(lambda: not R["want"], 15)
+out["hls_bad"] = [R["state"], ns["radio_state"]("de")["msg"]]
+C["radio_stations"].pop()
+ns["RADIO_BACKOFF"] = (5.0, 10.0, 20.0, 40.0, 80.0)
+out["ssrf_cc"] = sorted(set(h for h in ns["_RT_CC"][cc0:] if h in PRIV or h == "10.0.0.9"))
 # 9 rights
 ra = ns["role_allows"]
 out["rights"] = {"view_get": ra("view", "/api/radio", "GET", {}), "view_page": ra("view", "/radio", "GET", {}), "view_play": ra("view", "/api/radio", "POST", {"action": "play"}),
@@ -471,7 +577,7 @@ def teil_a(datei, tmp, srv):
     print("A) Radio im eigenen Prozess (falsches Verzeichnis, lokale Testströme)", flush=True)
     home = os.path.join(tmp, "a"); os.makedirs(home)
     env = env_for(tmp, srv, home)
-    code = TEIL_A.replace("U_T1", repr(U_T1)).replace("U_T2", repr(U_T2)).replace("U_SIL", repr(U_SIL))
+    code = TEIL_A.replace("U_T1", repr(U_T1)).replace("U_T2", repr(U_T2)).replace("U_SIL", repr(U_SIL)).replace("U_PRIV", repr(U_PRIV))
     stop = threading.Event()
 
     def url500():                                         # the child switches /json/url to «500» with a file
@@ -543,6 +649,21 @@ def teil_a(datei, tmp, srv):
     ok(n[5] and n[5]["max"] == 4 and n[6], "Karte während der Pause: nächster Versuch / Zähler %s, Hinweis «Kein Internet»" % n[5])
     ok(e["nonet_after"] == 4, "danach keine weiteren Versuche (%d)" % e["nonet_after"])
     ok(e["dead"][1] == "error" and not e["dead"][2] and "antwortet nicht" in e["dead"][3], "Sender aus (Port zu): kein «kein Internet», sondern «%s»" % e["dead"][3])
+    for ip, r_ in e["ssrf"].items():
+        ok(r_ == ["blocked"] * 5 + [403, False] * 3,
+           "%s abgewiesen: Verzeichnis / Weiterleitung / Wiedergabeliste (auch bei eigener Adresse), Proxy + Browser je dreimal: %s" % (ip, r_))
+    ok(e["ssrf_speaker"][0] == "error" and "nicht erlaubt" in e["ssrf_speaker"][1] and not e["ssrf_speaker"][2], "Lautsprecher: Verzeichnis → 169.254.169.254 «%s»" % e["ssrf_speaker"][1])
+    ok(e["ssrf_add"][0] == 400 and e["ssrf_add"][2] == 400 and "nicht erlaubt" in (e["ssrf_add"][1] or "") and "nicht erlaubt" in (e["ssrf_add"][3] or ""),
+       "Administrator: 127.0.0.1 und 169.254.169.254 nicht eintragbar (%s)" % e["ssrf_add"])
+    ok(e["lan_add"] == [200, True, [True]] and e["lan_play"][0] is not None and e["lan_play"][1], "Heimnetz-Sender (Administrator): «Heimnetz», spielt auf dem Lautsprecher (%s)" % e["lan_play"])
+    ok(e["lan_browser"][0] == 400 and "nur über den MoveEye-Lautsprecher" in (e["lan_browser"][1] or "") and e["lan_browser"][2][0] == 403,
+       "Heimnetz-Sender: nicht im Browser / Proxy (%s)" % e["lan_browser"])
+    ok(e["json"] == [415, "this is not an audio stream"] and e["json_n"] == 0, "Proxy: JSON abgewiesen (%s), Platz frei" % e["json"])
+    ok(e["rebind1"] == ["open", "93.184.216.35", 1] and e["rebind2"] == "blocked", "DNS-Rebinding: einmal gefragt, mit der geprüften Adresse verbunden %s; zweite Antwort privat: %s" % (e["rebind1"], e["rebind2"]))
+    ok(e["rebind_proxy"][0] and e["rebind_proxy"][1][0] == 403, "DNS-Rebinding über den Proxy: neu geprüft → %s" % e["rebind_proxy"][1])
+    ok(e["hls_play"] is not None and "pipe:0" in e["hls_cmd"] and "http" not in e["hls_cmd"], "HLS auf dem Lautsprecher: MoveEye holt selbst, ffmpeg nur stdin (%s)" % e["hls_cmd"][:90])
+    ok(e["hls_bad"][0] in ("error", "offline") and "nicht erlaubt" in e["hls_bad"][1], "HLS-Segment im privaten Netz: «%s»" % e["hls_bad"][1])
+    ok(not e["ssrf_cc"], "nie eine Verbindung zu einer privaten Adresse: %s" % e["ssrf_cc"])
     r_ = e["rights"]
     ok(r_ == {"view_get": True, "view_page": True, "view_play": False, "family_play": True, "family_stop": True, "family_add": False, "family_search": False,
               "friend_play": False, "custom_siren": True, "custom_none": False}, "Rechte: %s" % r_)
@@ -761,7 +882,7 @@ def teil_b(datei, tmp, srv, bilder):
                 time.sleep(1)
         time.sleep(2)
         with sync_playwright() as pw:
-            br = pw.chromium.launch(args=["--no-proxy-server"])
+            br = pw.chromium.launch(args=["--no-proxy-server", "--host-resolver-rules=MAP radio.example 127.0.0.1"])
             ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, is_mobile=True, has_touch=True,
                                  color_scheme="dark", http_credentials={"username": "admin", "password": PW}, locale="de-CH")
             pg = ctx.new_page()
@@ -849,6 +970,12 @@ def teil_b(datei, tmp, srv, bilder):
             bad = [stream(pid + "?url=http%3A%2F%2Fexample.com%2F")[0], stream("nichtda")[0], stream("http%3A%2F%2Fexample.com%2Fx")[0],
                    stream(pid, "gast", "gast-pw-123")[0]]
             ok(bad == [400, 404, 404, 403], "kein offener Proxy (fremde Adresse 400, unbekannt 404), Nur ansehen 403: %s" % bad)
+            api({"action": "add", "url": "http://lan.example:%d/stream.mp3" % srv.port, "name": "Heim-Radio"})
+            pg.wait_for_function("() => [...document.querySelectorAll('#ra-list li')].some(x => x.textContent.includes('Heim-Radio'))", timeout=20000)
+            row = pg.locator("#ra-list li", has_text="Heim-Radio")
+            ok("🏠 Heimnetz" in row.inner_text(), "Karte: «%s»" % row.inner_text().replace("\n", " / "))
+            row.locator(".ra-r").click(); pg.wait_for_timeout(500)
+            ok("Dieser Sender geht nur über den MoveEye-Lautsprecher" in pg.locator("#ra-off").inner_text(), "Browser-Modus: %s" % pg.locator("#ra-off").inner_text())
             pg.reload(wait_until="domcontentloaded"); pg.wait_for_timeout(1500)
             ok(pg.locator("#ra-w-br").get_attribute("class").find("sel") >= 0, "Auswahl nach dem Neuladen gemerkt")
             pg.locator("#ra-w-pi").click(); pg.wait_for_timeout(500)
