@@ -733,7 +733,8 @@ def fall_t(L):
         rec = {}
     ok(len(str(rec.get("sha256", ""))) == 64 and rec.get("size") == os.path.getsize(os.path.join(app, cur)),
        "die Notiz hält Grösse und SHA-256 der Datei fest")
-    fremd = os.path.join(app, "webcam_bewegung_3_99_0.py")         # «newer», by name - but not recorded (changed copy)
+    fremd = os.path.join(app, "webcam_bewegung_999_999_999.py")    # «newer», by name - but not recorded (changed copy); never a real
+                                                                   # number (was 3_99_0 = the real old version from 3.99.0 on)
     shutil.copy(os.path.join(app, cur), fremd)
     with open(fremd, "a") as f:
         f.write("\n# verändert - darf nie gestartet werden\n")
@@ -769,7 +770,7 @@ def fall_t(L):
                 os.remove(x)
         L.d.sctl("start", UNIT)
         time.sleep(12)
-        ok(not version_da(L.port) and "3_99_0" not in laeuft_datei(L), "t3: ohne Notiz startet nichts (keine Seite, nicht %s)" % os.path.basename(fremd))
+        ok(not version_da(L.port) and "999_999_999" not in laeuft_datei(L), "t3: ohne Notiz startet nichts (keine Seite, nicht %s)" % os.path.basename(fremd))
         j = L.d.journal(tj)
         if j is None:
             hinweis("t3: kein Journal (lokal) - Meldung des Starters nicht geprüft")

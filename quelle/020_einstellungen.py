@@ -451,6 +451,7 @@ ALERTS_COND = threading.Condition()
 def push_alert(kind, text="", **extra):
     try:
         protect_on_alert(kind)                         # 2.95.105: escalation (light, then the siren unless disarmed)
+        homekit_on_alert(kind)                         # 639zzzo: the motion sensor in Apple Home (only when armed, never raises)
         if CFG.get("sim_on"):                          # 2.97.0: simulator code only in the simulation
             rover_on_alarm(kind)                       # 2.96.7: the rover drives to the alarm (simulator, makeover 17)
     except NameError:
