@@ -45,7 +45,7 @@ def i18n_js(lang, help_=False):
 
 def render_page(page, active):
     """Fill the shared pieces into a page template."""
-    page = page.replace("<head>", "<head>" + ui_seed_script() + i18n_loader(active == "help") + PWA_HEAD.replace(
+    page = page.replace("<head>", "<head>" + ui_seed_script() + i18n_loader(active == "help") + "<script>" + APP_DL_JS + "</script>" + PWA_HEAD.replace(
         '<link rel="apple-touch-icon" href="/apple-touch-icon.png">', apple_icon_link()).replace(      # 3.69.1: inline (500)
         'content="MoveEye">', 'content="' + app_title(host_variant()) + '">').replace(".png\"", ".png?i=" + app_icon_id() + "\"")
         + "<script>window.MW_ICON=" + json.dumps(app_icon_id()) + ";</script>" + makeover_head()
@@ -59,6 +59,31 @@ def render_page(page, active):
                   + ('<span class="badge yel" style="font-size:10px;padding:1px 7px;min-height:0">DEMO</span>' if DEMO["on"] else "") + "</h1>", page, count=1)
     return (page.replace("/*BASECSS*/", BASE_CSS).replace("/*COMMON*/", COMMON_JS).replace("<!--NAV-->", nav_html(active))
             .replace("/*ALERTS*/", HEADER_JS.replace("__APPVER__", APP_VERSION).replace("__BELLY__", _BELLY) + guide_js(active) + ALERT_JS).replace("/*BTJS*/", BT_JS))
+
+
+# Besitzer (15.11.2026): in the home-screen app a download (e.g. Morse mode → «⬇ … for another phone») opened a window without a
+# way back. The share sheet instead (it has «Close» / «Save to Files») - on EVERY page of render_page, not only on those with
+# the header script (/*ALERTS*/: Morse, radio, QR, servo, offline maps, homepage … had none)
+APP_DL_JS = r"""// app mode (home screen): a download opens a page without "back" - instead the file goes to the share sheet (Save to Files)
+(function () {
+const app = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+if (!app || window.__mwAppDl) return; window.__mwAppDl = 1;
+document.addEventListener("click", async e => {
+  const a = e.target.closest && e.target.closest("a[download], a[href*='dl=1'], a[href^='/api/settings/export']");
+  if (!a || !a.href || a.href.startsWith("blob:")) return;
+  e.preventDefault();
+  try {
+    const r = await fetch(a.href); if (!r.ok) throw new Error("HTTP " + r.status);
+    const bl = await r.blob();
+    const name = a.getAttribute("download") || decodeURIComponent((a.href.split("/").pop() || "file").split("?")[0]);
+    const f = new File([bl], name, {type: bl.type || "application/octet-stream"});
+    if (navigator.canShare && navigator.canShare({files: [f]})) { await navigator.share({files: [f], title: name}); return; }
+    const u = URL.createObjectURL(bl), x = document.createElement("a"); x.href = u; x.download = name; document.body.appendChild(x); x.click(); x.remove();
+    setTimeout(() => URL.revokeObjectURL(u), 10000);
+  } catch (err) { if (!(err && err.name === "AbortError")) alert("⚠ " + (err.message || err)); }
+}, true);
+})();
+"""
 
 
 HEADER_JS = r"""
@@ -323,21 +348,7 @@ HEADER_JS = r"""
     const ctl = H.querySelector(".hdr-ctl"); (ctl || H).insertBefore(b, ctl ? ctl.firstChild : null);
     setTimeout(() => { b.title = tx("Reload page"); b.setAttribute("aria-label", b.title); }, 1200);
   }
-  // app mode (home screen): a download opens a page without "back" - instead the file goes to the share sheet (Save to Files)
-  if (app) document.addEventListener("click", async e => {
-    const a = e.target.closest && e.target.closest("a[download], a[href*='dl=1'], a[href^='/api/settings/export']");
-    if (!a || !a.href || a.href.startsWith("blob:")) return;
-    e.preventDefault();
-    try {
-      const r = await fetch(a.href); if (!r.ok) throw new Error("HTTP " + r.status);
-      const bl = await r.blob();
-      const name = a.getAttribute("download") || decodeURIComponent((a.href.split("/").pop() || "file").split("?")[0]);
-      const f = new File([bl], name, {type: bl.type || "application/octet-stream"});
-      if (navigator.canShare && navigator.canShare({files: [f]})) { await navigator.share({files: [f], title: name}); return; }
-      const u = URL.createObjectURL(bl), x = document.createElement("a"); x.href = u; x.download = name; document.body.appendChild(x); x.click(); x.remove();
-      setTimeout(() => URL.revokeObjectURL(u), 10000);
-    } catch (err) { if (!(err && err.name === "AbortError")) alert("⚠ " + (err.message || err)); }
-  }, true);
+  // (app mode: downloads go to the share sheet - APP_DL_JS, on every page of render_page)
   const PAGEVER = "__APPVER__"; let shown = false;
   async function check() {
     if (document.hidden || shown) return;

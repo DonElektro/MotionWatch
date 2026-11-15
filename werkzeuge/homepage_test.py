@@ -9,7 +9,8 @@ Content-Security-Policy (connect-src 'none', script-src ohne 'wasm-unsafe-eval')
 
 Geprüft: nur der Admin (Seite, API, /api/set, Eintrag unter «Mehr»); der Schlüssel steht nirgends ausser in der
 Einstellungs-Datei (Zustand, Status, Protokoll, alle anderen Dateien, Export für Nicht-Admins, Fehlertexte des Servers); alles
-hochgeladen (Startseite, Funk/ = funk/ des Repositorys, Sim/ = sim-web.zip, test.html); nur Geändertes; nur eigene Dateien
+hochgeladen (Funk/ = funk/ des Repositorys, Sim/ = sim-web.zip, test.html; die Startseite nur mit dem Schalter «Startseite mit
+hochladen», ab Werk aus: dann weder hochgeladen noch gelöscht, die Prüfung überspringt sie); nur Geändertes; nur eigene Dateien
 gelöscht; falscher Schlüssel, Platz voll, zu grosse Datei; Wiederholen nach 500; Umleitung beim Hochladen nie befolgt; die
 Prüfung findet 404, Umleitung auf andere Herkunft, falschen Typ, nosniff und die CSP-Sperren; automatisch nur, wenn sich der
 Inhalt geändert hat, nie während eines Alarms; das Paket sim-web.zip nur mit der signierten Prüfsumme (Teil 300 «anhang.web»),
@@ -314,6 +315,7 @@ def lauf(datei, tmp):
 
     print("1) ab Werk, nur der Admin", flush=True)
     ok(CFG["hp_base"] == "https://kevlaschef.com" and CFG["hp_auto"] is True and CFG["hp_key"] == "", "ab Werk: kevlaschef.com, automatisch an, kein Schlüssel")
+    ok(CFG["hp_start_on"] is False and ns["DEFAULTS"]["hp_start_on"] is False, "ab Werk: «Startseite mit hochladen» aus")
     code, j = api()
     ok(code == 200 and j.get("key_set") is False and j.get("base") == "https://kevlaschef.com", f"Admin sieht den Status: {code}")
     for who in ("Anna", "Cus"):
@@ -321,7 +323,8 @@ def lauf(datei, tmp):
         ok(c.get("/homepage", headers=H[who]).status_code == 403, f"{who}: Seite verboten")
         c.post("/api/set", json={"key": "hp_base", "value": "https://boese.example"}, headers=H[who])
         c.post("/api/text", json={"key": "hp_key", "value": "boese-1234"}, headers=H[who])
-        ok(CFG["hp_base"] == "https://kevlaschef.com" and not CFG["hp_key"], f"{who}: /api/set / /api/text gehen nicht")
+        c.post("/api/set", json={"key": "hp_start_on", "value": True}, headers=H[who])
+        ok(CFG["hp_base"] == "https://kevlaschef.com" and not CFG["hp_key"] and CFG["hp_start_on"] is False, f"{who}: /api/set / /api/text gehen nicht")
         ok('href="/homepage"' not in c.get("/more", headers=H[who]).get_data(as_text=True), f"{who}: kein Eintrag unter «Mehr»")
     ok('href="/homepage"' in c.get("/more", headers=H["admin"]).get_data(as_text=True), "Admin: Eintrag «🌐 Homepage» unter «Mehr»")
     pg = c.get("/homepage", headers=H["admin"])
@@ -342,14 +345,43 @@ def lauf(datei, tmp):
     api("admin", {"action": "key", "key": KEY})
     ok(CFG["hp_key"] == KEY, "Schlüssel wieder gesetzt")
 
-    print("3) veröffentlichen (Simulator für den Browser noch nicht veröffentlicht)", flush=True)
+    print("3) veröffentlichen (Simulator für den Browser noch nicht veröffentlicht), Startseite ab Werk aus", flush=True)
+    owner_start = b"<html>Startseite des Besitzers, von Hand hochgeladen</html>"
+    W.files["index.html"] = owner_start                              # schon auf dem Webspace (nicht von MoveEye)
     code, j = api("admin", {"action": "publish"})
     funk = {n: open(os.path.join(REPO, "funk", n), "rb").read() for n in os.listdir(os.path.join(REPO, "funk"))}
     ok(code == 200 and not j.get("err") and fmt(ns, j)["note"].startswith("Der Simulator für den Browser ist noch nicht"), f"ohne Sim-Paket: {fmt(ns, j)['err']} {fmt(ns, j)}")
-    ok(fmt(ns, j)["last"].startswith("Fertig: 9 hochgeladen, 0 unverändert, 0 gelöscht. · "), "Meldung: " + fmt(ns, j)["last"])
+    ok(fmt(ns, j)["last"].startswith("Fertig: 8 hochgeladen, 0 unverändert, 0 gelöscht. · "), "Meldung (Startseite aus): " + fmt(ns, j)["last"])
     ok(all(W.files.get("Funk/" + n) == b for n, b in funk.items()) and len(funk) == 7, "Funk/ = die 7 Dateien von funk/ (Byte für Byte)")
-    ok("index.html" in W.files and "Sim/test.html" in W.files and b"Funk/" in W.files["index.html"], "Startseite + Sim/test.html")
-    ok(len(W.uploads()) == 9, f"9 Dateien hochgeladen ({len(W.uploads())})")
+    ok("Sim/test.html" in W.files, "Sim/test.html bleibt dabei")
+    ok("index.html" not in [x[2] for x in W.uploads()] and W.files.get("index.html") == owner_start, "Startseite aus: index.html nicht hochgeladen, vorhandene bleibt")
+    ok(not any(x[0] == "DELETE" for x in W.log), "Startseite aus: nichts gelöscht")
+    ok(len(W.uploads()) == 8, f"8 Dateien hochgeladen ({len(W.uploads())})")
+    ok(j.get("start_on") is False, "Status: start_on aus")
+    F = fmt(ns, j)
+    rows3 = [r["line"] for r in F["rows"]]
+    ok(rows3 and rows3[0] == "Startseite: nicht hochgeladen (aus)" and not any(r.startswith(("/:", "index.html:")) for r in rows3)
+       and not any(x[0] == "GET" and x[1] in ("/moveeye/", "/moveeye/index.html") for x in W.log), f"Prüfung überspringt die Startseite: {rows3[:3]}")
+    pg = c.get("/homepage", headers=H["admin"]).get_data(as_text=True)
+    ok('id="hp-start"' in pg and "Startseite mit hochladen" in pg, "Schalter «Startseite mit hochladen» auf der Seite")
+    cid_off = ns["hp_content_id"]()
+    code, j = api("admin", {"action": "start_on", "on": True})
+    ok(code == 200 and CFG["hp_start_on"] is True and j.get("start_on") is True and ns["hp_content_id"]() != cid_off, "Schalter an: anderer Inhalt (hp_content_id)")
+    n0 = len(W.uploads())
+    ok(ns["hp_auto_tick"]() is True, "Schalter an: automatisch ein Lauf")
+    warte(HP)
+    j = api("admin")[1]
+    ok([x[2] for x in W.uploads()[n0:]] == ["index.html"] and b"Funk/" in W.files["index.html"] and "index.html" in ns["hp_state"]()["up"],
+       f"Startseite an: index.html hochgeladen ({[x[2] for x in W.uploads()[n0:]]})")
+    ok(any(r["line"].startswith("/: 200") for r in fmt(ns, j)["rows"]), "Startseite an: Prüfung mit /")
+    code, j = api("admin", {"action": "start_on", "on": False})
+    up_before = ns["hp_state"]()["up"].get("index.html")
+    n0, nl = len(W.uploads()), len(W.log)
+    api("admin", {"action": "publish"})
+    ok(len(W.uploads()) == n0 and not any(x[0] == "DELETE" for x in W.log[nl:]) and W.files.get("index.html")
+       and ns["hp_state"]()["up"].get("index.html") == up_before, "wieder aus: eigene index.html nicht gelöscht, Eintrag in der eigenen Liste bleibt")
+    api("admin", {"action": "start_on", "on": True})                  # ab hier wie bisher mit Startseite
+    ok(CFG["hp_start_on"] is True, "Schalter wieder an")
 
     print("4) Paket sim-web.zip nur mit der signierten Prüfsumme (Teil 300 «anhang.web»)", flush=True)
     sha = hashlib.sha256(open(zp, "rb").read()).hexdigest()
