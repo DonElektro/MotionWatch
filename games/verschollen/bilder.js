@@ -7,7 +7,9 @@
      BILD.innen(S)       die Hütte von innen – am Anfang fast schwarz, nur die Glut; je grösser das Feuer, desto mehr sieht man
      BILD.aussen(S)      das Lager vor der Hütte – wächst mit jedem Bau, Leute, Hund, Lichter in der Nacht
      BILD.karte(S)       das Tal von oben (die Knöpfe der Orte setzt ui.js darüber, Lage in K.ORTE: x, y in Prozent)
-     BILD.bild(name, S)  Bilder für Ereignisse: 'aussen', 'ort:see' …, 'livia', 'balz', 'daten'
+     BILD.bild(name, S)  Bilder für Ereignisse: 'aussen', 'ort:see' …, 'livia', 'balz', 'daten'; Kapitel 2: 'innen', 'sturm',
+                         'nachsturm', 'daten2', 'teaser', 'ort:sennerei', 'ort:biwak', 'ort:stollen2'
+     BILD.seite(id)      Kapitel 2: eine Seite aus dem fremden Notizbuch (K.SEITEN)
      BILD.clip(id)       eine wiederhergestellte Aufnahme (mit «REC» und Zeitstempel)
      BILD.kopf(wer)      kleines Bild einer Person für «Leute»
    Jede Funktion gibt den INHALT eines <svg viewBox="0 0 800 450"> zurück (BILD.svg() setzt den Rahmen darum).
@@ -19,7 +21,7 @@
   var B = {};
 
   // ---- Farben ----
-  function hx(c) { return [parseInt(c.substr(1, 2), 16), parseInt(c.substr(3, 2), 16), parseInt(c.substr(5, 2), 16)]; }
+  function hx(c) { if (c.length === 4) c = '#' + c[1] + c[1] + c[2] + c[2] + c[3] + c[3]; return [parseInt(c.substr(1, 2), 16), parseInt(c.substr(3, 2), 16), parseInt(c.substr(5, 2), 16)]; }
   function mix(a, b, t) {
     var x = hx(a), y = hx(b), r = '#';
     for (var i = 0; i < 3; i++) { var v = Math.round(x[i] + (y[i] - x[i]) * t); r += (v < 16 ? '0' : '') + v.toString(16); }
@@ -286,6 +288,8 @@
     s += R(406, 320, 38, 28, nacht ? '#1a1a22' : mix(p.h0, '#000000', 0.35));
     if (S.bau.fenster) s += L('M425 320v28M406 334h38', '#5a3e2a', 3) + R(406, 320, 38, 28, 'none', ' stroke="#5a3e2a" stroke-width="3"');
     else s += L('M404 322l42 24M404 344l42 -20', '#7a5636', 5) + Pa('M410 322l10 8l4 -8z', '#c9dbe8', op(0.6));
+    if (S.bau.laeden) s += R(392, 318, 13, 32, '#7a5636') + R(445, 318, 13, 32, '#7a5636') + L('M394 326h9M394 342h9M447 326h9M447 342h9', '#5a3e2a', 2);
+    if (S.bau.anker) s += L('M318 306l-10 66M482 306l10 66', '#e0b040', 2.4) + L('M352 282l96 0', '#9aa0aa', 1.6, op(0.8));
     return s;
   }
 
@@ -384,6 +388,10 @@
     [[200, 240], [228, 252], [252, 236], [210, 270], [610, 380], [636, 372], [590, 392], [300, 150], [322, 162], [140, 200]].forEach(function (q) { s += tanne(q[0], q[1], 22, '#3e6a46', '#2e5236'); });
     // Kapelle
     s += R(214, 198, 22, 16, '#f2eee4') + Pa('M210 200l15 -12l15 12z', '#9a4a3a') + R(230, 184, 8, 16, '#f2eee4') + Pa('M228 186l6 -8l6 8z', '#9a4a3a');
+    // Kapitel 2: alte Sennerei und Felsturm (erst, wenn man davon weiss)
+    if (S.k2 && S.k2.sennerei) s += R(KX('sennerei') - 13, KY('sennerei') - 2, 26, 14, '#8a7a62') + Pa('M' + (KX('sennerei') - 17) + ' ' + KY('sennerei') + 'l17 -12l17 12z', '#5a4030');
+    if (S.k2 && S.k2.kn === 2) s += Pa('M' + (KX('biwak') - 16) + ' ' + (KY('biwak') + 20) + 'l8 -40l16 0l8 40z', '#4c505c') + R(KX('biwak') - 6, KY('biwak') - 16, 12, 8, '#c8402a');
+    if (S.ende2) s += C(150, 384, 5, '#e8eef4') + glow(150, 384, 16, '#ffffff', 0.8);
     // Geröll unten links, alter Weg hinaus
     s += Pa('M90 352L190 360L210 410L70 418Z', '#9a958c') + C(120, 380, 12, '#7d7870') + C(160, 392, 9, '#b0aaa0') + C(140, 366, 7, '#7d7870');
     s += L('M70 430l40 -36', '#6b5a44', 3, ' stroke-dasharray="6 8"');
@@ -497,6 +505,33 @@
     }
     return s + mensch(560, 410, 1.2, DU) + hund(620, 414, 1, 'sitzt', 'l') + nachtFarbe(p) + licht + wetter(p);
   };
+  ORT.sennerei = function (S, p) {
+    var s = himmel(p) + gestirne(S, p) + wolken(p) + berge(S, p, true);
+    s += Pa('M0 300Q400 270 800 310V450H0Z', p.boden) + Pa('M0 400Q400 380 800 410V450H0Z', p.bodenS);
+    var holz = mix('#7a5a3c', p.h0, 0.1);
+    s += R(300, 250, 220, 110, mix('#8a8378', p.fels, 0.3)) + R(300, 300, 220, 60, holz) + Pa('M280 256L410 196L540 256L520 262L410 214L300 262Z', '#4a3a2a');
+    s += Pa('M330 250L410 214L500 252Z', mix('#4a3a2a', '#000', 0.3), op(0.5)) + R(340, 310, 34, 50, '#3a2a1e') + R(420, 300, 40, 30, '#22262c');
+    s += L('M640 360v-110M640 250q-40 -40 -10 -80M640 250q40 -50 20 -90M640 300q30 -20 50 -10', '#5a4030', 8) + C(612, 170, 30, mix(p.baum, '#b0702a', 0.4)) + C(668, 156, 34, mix(p.baum, '#b0702a', 0.4)) + C(690, 290, 22, mix(p.baum, '#b0702a', 0.4));
+    s += E(150, 380, 40, 14, '#2a2a2e') + R(116, 350, 68, 30, '#3a3a40', ' rx="10"');
+    return s + mensch(250, 420, 1.2, DU) + hund(200, 424, 1.1, 'sitzt', 'r') + nachtFarbe(p) + wetter(p);
+  };
+  ORT.biwak = function (S, p) {
+    var s = himmel(p, 360) + gestirne(S, p) + wolken(p, 30);
+    s += Pa('M0 420L80 360L200 390L320 340L460 380L600 330L800 370V450H0Z', mix(p.fern, p.h1, 0.25));
+    s += Pa('M300 450L360 120L420 70L500 90L540 450Z', p.nah) + Pa('M420 70L500 90L540 450H460Z', p.nahS);
+    s += R(392, 96, 70, 46, '#c8402a', ' rx="6"') + R(392, 96, 70, 46, 'none', ' rx="6" stroke="#7a2418" stroke-width="3"') + R(404, 108, 20, 14, S.k2 && S.k2.sturm ? '#e6eef4' : '#2a2e36');
+    s += L('M380 450q20 -160 40 -310', '#e0b040', 3);
+    return s + mensch(370, 330, 1.1, Object.assign({}, LIVIA)) + mensch(330, 440, 1.2, DU) + hund(270, 444, 1, 'steht', 'r') + nachtFarbe(p) + wetter(p);
+  };
+  ORT.stollen2 = function (S, p) {
+    var s = R(0, 0, 800, 450, '#16130f');
+    s += Pa('M120 450L220 90H580L680 450Z', '#241f19') + Pa('M260 150H540L600 450H200Z', '#0d0b09');
+    s += L('M220 90V450M580 90V450M200 120H600', '#6b4a32', 16) + L('M240 170H560', '#6b4a32', 10, op(0.7));
+    s += R(350, 300, 100, 60, '#3a4048', ' rx="6"') + R(362, 312, 40, 14, '#163a26') + L('M450 340q60 0 80 60', '#2a2a2a', 6) + E(540, 410, 20, 8, '#05050a');
+    s += '<g class="a-blink">' + C(424, 318, 5, '#6dff9a') + glow(424, 318, 22, '#6dff9a', 1) + '</g>' + T(366, 350, 'KANAL 3', 13, '#c9ccd4', ' font-weight="700"');
+    s += glow(300, 320, 200, '#ffe08a', 0.45);
+    return s + mensch(250, 430, 1.25, Object.assign({ lampe: 1 }, DU)) + hund(170, 432, 1.1, 'steht', 'r');
+  };
   B.ort = function (id, S) { return ORT[id](S, pal(S)); };
 
   // ---- Ereignis-Bilder ----
@@ -526,7 +561,57 @@
       d += L('M600 290q30 -10 50 -120', '#ff7a5a', 3, ' stroke-dasharray="5 5"') + C(650, 170, 9, '#ff7a5a') + T(616, 150, '+3 Tage', 20, '#ff9a7a', ' font-weight="700"');
       return d + T(100, 386, 'B-7 · Luftdruck · Wind · Temperatur', 18, '#6dff9a');
     }
+    if (name === 'innen') return B.innen(S);
+    if (name === 'sturm') {
+      p = pal(S, 'nacht', 'sturm');
+      var st = himmel(p) + wolken(p, 30) + berge(S, p, false) + Pa('M0 300Q400 270 800 310V450H0Z', p.boden);
+      st += '<g transform="translate(-40 30) scale(1.1)">' + hutte(S, p) + '</g>' + nachtFarbe(p);
+      st += Pa('M640 0l-30 90l20 0l-36 100l60 -120l-22 0l30 -70z', '#fff8c0', op(0.7));
+      st += R(410, 380, 40, 28, '#ffcf6a', op(0.7)) + glow(430, 392, 70, '#ffb050', 0.8);
+      st += '<g class="a-blink">' + glow(660, 76, 14, '#fffbe0', 1) + '</g>';
+      return st + wetter(p);
+    }
+    if (name === 'nachsturm') {
+      p = pal(S, 'morgen', 'klar');
+      var ns = himmel(p) + gestirne({ t: 15, f: {} }, p) + berge(S, p, true) + stationLicht(S, 660, 62, p) + Pa('M0 300Q400 270 800 310V450H0Z', p.boden);
+      ns += '<g transform="translate(-60 40) scale(1.2)">' + hutte(S, p) + '</g>';
+      [[120, 400, 30], [600, 410, 26], [700, 380, 20], [220, 430, 22]].forEach(function (q) { ns += L('M' + q[0] + ' ' + q[1] + 'l' + q[2] + ' -8M' + (q[0] + 10) + ' ' + (q[1] - 3) + 'l6 -10', '#5a3e2a', 4); });
+      ns += E(300, 420, 60, 8, '#8fb4d0', op(0.6)) + E(560, 432, 40, 6, '#8fb4d0', op(0.6));
+      return ns + hund(520, 430, 1.3, 'steht', 'l');
+    }
+    if (name === 'daten2') {
+      var d2 = R(0, 0, 800, 450, '#10151c') + R(60, 50, 680, 350, '#0b1a12', ' rx="14"') + R(60, 50, 680, 350, 'none', ' rx="14" stroke="#2f4a3a" stroke-width="4"');
+      for (var i2 = 0; i2 < 6; i2++) d2 += L('M100 ' + (100 + i2 * 50) + 'H700', '#1e3a28', 1);
+      d2 += L('M100 260l50 10l50 -30l40 60l40 -120l40 90l60 -20l40 0l40 -6', '#6dff9a', 3);
+      d2 += L('M560 80V360', '#ffd45a', 2, ' stroke-dasharray="6 6"') + T(520, 76, 'heute', 18, '#ffd45a');
+      d2 += L('M560 238q60 0 120 70', '#ff7a5a', 3, ' stroke-dasharray="5 5"') + C(680, 308, 9, '#ff7a5a') + T(600, 344, '+9 Tage', 20, '#ff9a7a', ' font-weight="700"');
+      return d2 + T(100, 386, 'B-7 · Hang: Bewegung', 18, '#6dff9a');
+    }
+    if (name === 'teaser') {
+      p = pal(S, 'abend', 'klar');
+      var te = himmel(p) + berge(S, p, false) + Pa('M0 300Q400 250 800 300V450H0Z', p.boden);
+      te += Pa('M80 450L180 220L300 160L420 150L540 190L660 260L760 450Z', p.fels) + Pa('M420 150L540 190L660 260L760 450L520 450L470 230Z', mix(p.fels, '#000', 0.25));
+      te += Pa('M330 300L470 300L480 450L320 450Z', '#3a3530') + R(352, 318, 100, 132, '#6a7280') + L('M352 318h100M352 318v132M452 318v132', '#c9d2dc', 4) + C(436, 390, 6, '#9aa0aa');
+      te += glow(400, 330, 60, '#ffffff', 0.5);
+      return te + hund(250, 440, 1.3, 'steht', 'r') + mensch(190, 440, 1.3, DU) + nachtFarbe(p);
+    }
     return R(0, 0, 800, 450, '#111');
+  };
+  // ---- Kapitel 2: Seiten aus dem fremden Notizbuch ----
+  B.seite = function (id) {
+    var n = +String(id).slice(1) || 1, rot = [-4, 3, -2, 5, -3, 2][(n - 1) % 6], s = R(0, 0, 800, 450, '#2a2620');
+    s += '<g transform="rotate(' + rot + ' 400 225)">' + R(190, 30, 420, 390, '#efe6cf') + R(190, 30, 420, 390, 'none', ' stroke="#c9bb96" stroke-width="3"');
+    for (var y = 80; y < 380; y += 26) s += L('M215 ' + y + 'H585', '#bfd0e0', 1.4);
+    for (var j = 0; j < 7 + (n % 3); j++) {
+      var y0 = 74 + j * 26, w = 300 - ((j * 37 + n * 13) % 120);
+      var d = 'M222 ' + y0 + 'q10 -7 20 0', m = Math.max(3, Math.round(w / 20));
+      for (var q = 0; q < m; q++) d += 't20 ' + (q % 3 === 1 ? 2 : 0);
+      s += L(d, '#2a3a5a', 2.6);
+    }
+    if (n === 1) s += E(470, 300, 90, 60, '#9ab0c0', op(0.35));
+    if (n === 3) s += C(520, 120, 30, '#a08060', op(0.25));
+    s += C(470, 384, 4, '#2a3a5a') + C(484, 384, 4, '#2a3a5a') + C(498, 384, 4, '#2a3a5a') + L('M510 384h18', '#2a3a5a', 4);
+    return s + '</g>';
   };
 
   // ---- Wiederhergestellte Aufnahmen ----
