@@ -91,6 +91,11 @@ Ende bleibt nach dem Neuladen, «Im Tal bleiben» wird gemerkt; alle Knöpfe ≥
 Ab GS-1.20 Spieltempo: Knopf «⏩ 1×» tippt 1× → 2× → 4×, die Spieluhr läuft gemessen 1× bzw. 4× so schnell (ein Tag bei 4× in
 einem Viertel der Zeit), das Tempo bleibt nach dem Neuladen, eine Karte hält die Zeit an und sagt es, ⏸ hält an und geht
 weiter, geht bei 4× das Feuer aus, springt das Tempo auf 1×, der Test-Spieler kommt auch bei 4× ans Ende.
+Ab GS-1.24 Kapitel 2 «Drei Tage»: Spielstand {v: 2, …}; nach dem Ende von Kapitel 1 wird «Kapitel 2 beginnen» wirklich angetippt
+(Karte «Drei Tage», Zähler «Sturm in 3 Tagen»), der Test-Spieler spielt bis «Ende Kapitel 2 – Fortsetzung folgt» (alle 6 Seiten,
+Sturm vorbei), eine Seite des Notizbuchs wird im Reiter MoveEye angetippt, das Ende bleibt nach dem Neuladen; alte Spielstände
+(Fassung 1, ohne Kapitel-2-Felder): am Ende von Kapitel 1 erscheint einmal das Schlussbild mit «Kapitel 2 beginnen» (das Tagebuch
+bleibt, wie es war), mitten in Kapitel 1 läuft es weiter bis zum Ende von Kapitel 2. Balance Kapitel 2: 8 Läufe, Mitte 15–60 min.
 python3 werkzeuge/spiel_einbauen.py games/verschollen --nach /tmp/t.zip && python3 werkzeuge/spiele_test.py --zip /tmp/t.zip --nur verschollen
 
 Kachel-Texte (ab GS-1.20, Wunsch des Besitzers): jede Kurzbeschreibung (desc und descs in allen fünf Sprachen) höchstens KACHEL_MAX = 40
@@ -1531,8 +1536,8 @@ def verschollen_pruefen(br, pw, base, fehler, bilder, balance=None):
     raw = pg.evaluate("() => localStorage.getItem('mw-verschollen-v1')")
     try:
         sv = json.loads(raw or "null")
-        if not sv or sv.get("v") != 1 or "s" not in sv:
-            f(name, "Spielstand nicht im Format {v: 1, s: …}")
+        if not sv or sv.get("v") != 2 or "s" not in sv:
+            f(name, "Spielstand nicht im Format {v: 2, s: …}")
     except ValueError:
         f(name, "Spielstand ist kein JSON")
     pg.reload(); pg.wait_for_function("() => window.__vb", timeout=10000)
@@ -1603,6 +1608,62 @@ def verschollen_pruefen(br, pw, base, fehler, bilder, balance=None):
     pg.evaluate("() => __vb.tab('moveeye')"); pg.wait_for_timeout(200)
     if not pg.locator("#bEndeZeig").is_visible():
         f(name, "im Reiter MoveEye fehlt «Ende Kapitel 1 ansehen»")
+    # ---- Kapitel 2 (GS-1.24) ----
+    pg.evaluate("() => __vb.tab('huette')"); pg.wait_for_timeout(200)
+    if not pg.locator('#inhalt [data-id="kapitel2"]').count():
+        f(name, "im Reiter Hütte fehlt «Kapitel 2 beginnen»")
+    else:
+        akt(pg, True, "kapitel2", name)
+        pg.wait_for_timeout(400)
+        kt = pg.locator("#karte").inner_text() if pg.locator("#karte").is_visible() else ""
+        if "Drei Tage" not in kt or "kapitel 2" not in kt.lower():
+            f(name, f"«Kapitel 2 beginnen» zeigt nicht die Karte «Drei Tage» ({kt[:80]!r})")
+        else:
+            bild(pg, "8_kapitel2_start")
+            masse(pg, name + " Kapitel 2 Start", 390)
+        tippe(pg, True, "#karte [data-zu]", name); zu(pg); pg.wait_for_timeout(300)
+        if "Sturm in 3 Tagen" not in pg.locator("#vorrat").inner_text():
+            f(name, f"kein Zähler «Sturm in 3 Tagen» ({pg.locator('#vorrat').inner_text()[:120]!r})")
+        pg.evaluate("() => __vb.tab('huette')"); pg.wait_for_timeout(200)
+        if not pg.locator('#inhalt [data-id="bau_laeden"]').count():
+            f(name, "im Reiter Hütte fehlt «Fensterläden» (Sturmfest machen)")
+        bild(pg, "9_kapitel2_huette")
+        # der Sturm als Bild (nur angezeigt), dann der Test-Spieler bis zum Ende von Kapitel 2
+        r2 = pg.evaluate("() => __vb.bot({kapitel: 2, max: 900 + __vb.S().echt})"); zu(pg)
+        pg.evaluate("() => { const S = __vb.S(); S.karten.push({art: 'bild', bild: 'sturm', titel: 'Der Sturm', z: ['Bild-Probe.']}); __vb.step(0.01); }")
+        pg.wait_for_timeout(300); bild(pg, "10_sturm"); zu(pg)
+        r2 = pg.evaluate("() => __vb.bot({kapitel: 2})")
+        pg.wait_for_timeout(500)
+        if not r2.get("ende"):
+            f(name, f"der Test-Spieler erreicht das Ende von Kapitel 2 nicht ({ {k: r2[k] for k in r2 if k != 'zuege'} })")
+        el = pg.locator("#ende")
+        if not el.is_visible() or "Ende Kapitel 2" not in el.inner_text() or "Fortsetzung folgt" not in el.inner_text() or "Kapitel 3" not in el.inner_text():
+            f(name, "kein Schlussbild «Ende Kapitel 2 – Fortsetzung folgt» mit Ausblick auf Kapitel 3")
+        else:
+            bild(pg, "11_ende_kapitel2")
+            masse(pg, name + " Ende 2", 390)
+        if S(pg, "S.k2.seiten.length") != 6 or not S(pg, "S.k2.sturm && S.k2.stationNach"):
+            f(name, "am Ende von Kapitel 2 fehlen Seiten, der Sturm oder der Besuch der Station")
+        pg.reload(); pg.wait_for_function("() => window.__vb", timeout=10000); pg.wait_for_timeout(400)
+        if not S(pg, "S.ende2") or "Ende Kapitel 2" not in (pg.locator("#ende").inner_text() if pg.locator("#ende").is_visible() else ""):
+            f(name, "nach dem Neuladen ist das Ende von Kapitel 2 weg")
+        tippe(pg, True, "#bWeiter", name)
+        pg.reload(); pg.wait_for_function("() => window.__vb", timeout=10000); pg.wait_for_timeout(400)
+        if pg.locator("#ende").is_visible():
+            f(name, "«Im Tal bleiben» nach Kapitel 2 wird nicht gemerkt")
+        tippe(pg, True, '#tabs [data-tab="moveeye"]', name); pg.wait_for_timeout(250)
+        if pg.locator("[data-seite]").count() != 6 or not pg.locator("#bEnde2Zeig").is_visible():
+            f(name, "im Reiter MoveEye fehlen die 6 Seiten oder «Ende Kapitel 2 ansehen»")
+        else:
+            masse(pg, name + " Notizbuch", 390)
+            bild(pg, "12_notizbuch")
+            pg.locator('[data-seite="s6"]').scroll_into_view_if_needed(); pg.wait_for_timeout(200)
+            tippe(pg, True, '[data-seite="s6"]', name); pg.wait_for_timeout(400)
+            if "Unter dem Deckel" not in pg.locator("#karte").inner_text():
+                f(name, "Antippen einer Seite zeigt sie nicht")
+            else:
+                bild(pg, "13_seite")
+            tippe(pg, True, "#karte [data-zu]", name)
     for u in sorted(set(pg.aussen)):
         f(name, f"Anfrage nach aussen {u}")
     # Balance (in der Seite gerechnet, ohne Warten)
@@ -1616,6 +1677,56 @@ def verschollen_pruefen(br, pw, base, fehler, bilder, balance=None):
           f"{min(x[2] for x in m)}–{max(x[2] for x in m)} Spieltage, {min(x[3] for x in m)}–{max(x[3] for x in m)} Aktionen", flush=True)
     if balance is not None:
         balance.extend(ms)
+    m2 = pg.evaluate("() => [1, 2, 3, 4, 5, 6, 7, 8].map(s => { const S = __vb.K.neu(s); __vb.K.bot(S); const r = __vb.K.bot(S, {kapitel: 2}); return [r.k2 ? r.k2.min : 999, r.ende, r.k2 ? r.k2.tage : 0, r.k2 && r.k2.fest]; })")
+    ms2 = sorted(x[0] for x in m2)
+    if not all(x[1] for x in m2):
+        f(name, f"Balance Kapitel 2: nicht jeder Lauf erreicht das Ende ({m2})")
+    if not (15 <= ms2[len(ms2) // 2] <= 60):
+        f(name, f"Balance Kapitel 2: Mitte {ms2[len(ms2) // 2]} min (soll 15–60)")
+    print(f"  {d}: Balance Kapitel 2 – {ms2[0]}–{ms2[-1]} min (Mitte {ms2[len(ms2) // 2]} min), {min(x[2] for x in m2)}–{max(x[2] for x in m2)} Spieltage, "
+          f"Hütte sturmfest in {sum(1 for x in m2 if x[3])} von {len(m2)} Läufen", flush=True)
+    ctx.close()
+
+    # ---- alte Spielstände (Fassung 1 aus Kapitel 1) laufen in Kapitel 2 weiter ----
+    name = "alter Spielstand"
+    ctx, pg = seite(name, {"width": 390, "height": 844}, True)
+    alt = pg.evaluate("""() => { const K = __vb.K, alt = (S) => { delete S.k2; delete S.ende2; S.v = 1; return JSON.stringify({v: 1, s: S, zeit: Date.now()}); };
+      const A = K.neu(7); K.bot(A); A.f.endeGesehen = true;
+      for (let i = 0; i < 3; i++) K.log(A, 'me', 'Ich an deiner Stelle: Die Station misst. Kapitel 1 ist geschafft.');
+      const B = K.neu(8); K.bot(B, {max: 1800}); while (B.karten.length) K.karteZu(B, 0);
+      return [alt(A), alt(B)]; }""")
+    ctx.close()
+    # die Seite speichert beim Verlassen selbst – darum jeden alten Stand in einem frischen Kontext vor dem ersten Laden einsetzen
+    einsetzen = "(() => { if (!sessionStorage.getItem('altGesetzt')) { localStorage.setItem('mw-verschollen-v1', %s); sessionStorage.setItem('altGesetzt', '1'); } })();"
+    ctx, pg = seite(name, {"width": 390, "height": 844}, True, init=einsetzen % json.dumps(alt[0]))
+    pg.wait_for_timeout(500)
+    if not S(pg, "S.ende && S.v === 2 && S.k2 === null"):
+        f(name, "ein Spielstand vom Ende von Kapitel 1 (Fassung 1) wird nicht richtig geladen")
+    if not pg.locator("#bK2").is_visible():
+        f(name, "nach dem Laden eines alten Spielstands fehlt einmal das Schlussbild mit «Kapitel 2 beginnen»")
+    else:
+        bild(pg, "14_alter_stand_angebot")
+        tippe(pg, True, "#bK2", name); pg.wait_for_timeout(300)
+        if not S(pg, "!!S.k2") or "Drei Tage" not in pg.locator("#karte").inner_text():
+            f(name, "«Kapitel 2 beginnen» startet Kapitel 2 nicht")
+    if S(pg, "S.log.filter(e => e.s === 'Ich an deiner Stelle: Die Station misst. Kapitel 1 ist geschafft.').length") != 3:
+        f(name, "das Tagebuch des alten Spielstands wurde verändert")
+    zu(pg)
+    r = pg.evaluate("() => __vb.bot({kapitel: 2})")
+    if not r.get("ende"):
+        f(name, f"vom Ende von Kapitel 1 aus erreicht der Test-Spieler das Ende von Kapitel 2 nicht ({r.get('k2')})")
+    for u in sorted(set(pg.aussen)):
+        f(name, f"Anfrage nach aussen {u}")
+    ctx.close()
+    ctx, pg = seite(name, {"width": 390, "height": 844}, True, init=einsetzen % json.dumps(alt[1]))
+    pg.wait_for_timeout(300)
+    if not S(pg, "S.f.draussen && !S.ende && S.k2 === null"):
+        f(name, "ein Spielstand mitten aus Kapitel 1 (Fassung 1) wird nicht richtig geladen")
+    r = pg.evaluate("() => { const a = __vb.bot(); const b = __vb.bot({kapitel: 2}); return [a.ende, b.ende]; }")
+    if r != [True, True]:
+        f(name, f"von der Mitte von Kapitel 1 aus geht es nicht bis zum Ende von Kapitel 2 ({r})")
+    for u in sorted(set(pg.aussen)):
+        f(name, f"Anfrage nach aussen {u}")
     ctx.close()
 
     # ---- Spieltempo (GS-1.20): ⏩ 1× / 2× / 4×, ⏸, Karten halten die Zeit an, Tempo im Spielstand ----
@@ -1712,6 +1823,79 @@ def verschollen_pruefen(br, pw, base, fehler, bilder, balance=None):
     if an not in ("none", "kein Feuer"):
         f(name, f"«Bewegung reduzieren»: das Feuer flackert trotzdem ({an})")
     ctx.close()
+
+
+# «Gipfeltreffen» (GS-1.23, Quelle games/gipfeltreffen/, Test-Haken window.GT, siehe Ende von index.html)
+def gipfeltreffen_pruefen(br, base, fehler, bilder):
+    """Koop-Spiel, vorerst ein Level: am iPhone (Touch) und am PC Titel ohne Überbreite, «Jedes am eigenen Handy» ist
+    «kommt bald» und startet nichts (auch kein Solo), «Los» startet allein, Antippen lässt laufen, lange Drücken spannt
+    das Seil; der Test-Spieler (GT.bot) schafft das Level mit 2, 3 und 6 Figuren allein und zusammen an einem Gerät;
+    keine Anfrage nach aussen, keine JavaScript-Fehler"""
+    d = "gipfeltreffen"
+    url = f"{base}/g/{d}/index.html"
+
+    def f(name, text):
+        fehler.append(f"{d} {name}: {text}")
+
+    for name, vp, mobil in (("iPhone", {"width": 390, "height": 844}, True), ("PC", {"width": 1280, "height": 800}, False)):
+        ctx = br.new_context(viewport=vp, is_mobile=mobil, has_touch=mobil, device_scale_factor=2 if mobil else 1)
+        aussen = []
+        ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(base) or r.request.url.startswith(("data:", "blob:"))
+                  else (aussen.append(r.request.url[:100]), r.abort()))
+        pg = ctx.new_page()
+        pg.on("pageerror", lambda e, n=name: f(n, f"JavaScript: {str(e)[:300]}"))
+        pg.on("console", lambda m, n=name: f(n, f"console.error: {m.text[:200]}") if m.type == "error" else None)
+        pg.goto(url, wait_until="load", timeout=30000)
+        pg.wait_for_function("() => window.GT && document.querySelectorAll('#figs .fk').length === 6", timeout=10000)
+        if pg.evaluate("document.documentElement.scrollWidth") > vp["width"]:
+            f(name, "Titel breiter als der Bildschirm")
+        klein = pg.evaluate("""() => [...document.querySelectorAll('#titel button, #titel a')].filter(b => { const r = b.getBoundingClientRect();
+            return r.width && (r.width < 44 || r.height < 44); }).length""")
+        if klein:
+            f(name, f"{klein} Knöpfe im Titel kleiner als 44 px")
+        tippe = pg.tap if mobil else pg.click
+        tippe('.modus[data-m="party"]', force=True)   # aria-disabled: «kommt bald»
+        if pg.evaluate("document.querySelector('.modus[data-m=party]').getAttribute('aria-pressed')") != "false" or pg.is_hidden("#partyInfo"):
+            f(name, "«Jedes am eigenen Handy» ist wählbar oder zeigt keinen Hinweis «kommt bald»")
+        tippe("#los")
+        if pg.is_hidden("#spiel"):
+            f(name, "«Los» startet das Spiel nicht (Modus Allein)")
+        pg.evaluate("() => { document.querySelector('#backS').click(); }")
+        tippe('.modus[data-m="party"]', force=True)   # aria-disabled: «kommt bald»
+        tippe("#los")
+        if not pg.is_hidden("#spiel") and pg.evaluate("document.querySelector('.modus[data-m=solo]').getAttribute('aria-pressed')") != "true":
+            f(name, "nach «Jedes am eigenen Handy» startet ein Spiel")
+        pg.evaluate("() => { document.querySelector('#backS').click(); }")
+        tippe('.modus[data-m="solo"]'); tippe("#los")
+        pg.wait_for_timeout(300)
+        pg.evaluate("GT.pause(true)")
+        x, y = pg.evaluate("GT.screen(4, 29)")
+        if mobil:
+            pg.touchscreen.tap(x, y)
+        else:
+            pg.mouse.click(x, y)
+        if not pg.evaluate("GT.state().figs[0].path"):
+            f(name, "Antippen einer Stelle lässt die Figur nicht laufen")
+        pg.evaluate("GT.run(3)")
+        x, y = pg.evaluate("GT.screen(4, 28)")
+        pg.mouse.move(x, y); pg.mouse.down(); pg.wait_for_timeout(650); pg.mouse.up()
+        pg.evaluate("GT.run(2)")
+        if not pg.evaluate("GT.state().bridge"):
+            f(name, "lange Drücken auf die Kluft spannt kein Seil")
+        pg.evaluate("GT.pause(false)")
+        for ids in (["kletterin", "hund"], ["traeger", "lampe", "funker"], ["kletterin", "traeger", "lampe", "spaeherin", "funker", "hund"]):
+            for modus in ("solo", "multi"):
+                s_ = pg.evaluate("([i, m]) => { GT.start(i, m); return GT.bot(); }", [ids, modus])
+                if not s_.get("won"):
+                    f(name, f"Test-Spieler kommt mit {len(ids)} Figuren ({modus}) nicht ins Ziel")
+        if pg.is_hidden("#ende"):
+            f(name, "kein Bild «Alle im Ziel!»")
+        if bilder:
+            pg.wait_for_timeout(1500)
+            pg.screenshot(path=os.path.join(bilder, f"gipfeltreffen_{name}.png"))
+        if aussen:
+            f(name, "Anfrage nach aussen: " + ", ".join(aussen[:3]))
+        ctx.close()
 
 
 def schach_pruefen(br, pw, base, fehler, bilder):
@@ -3450,6 +3634,8 @@ def main():
                     verschollen_pruefen(br, pw, base, fehler, a.bilder)     # GS-1.19: eigenes Aufbau-Abenteuer, Kapitel 1
                 if any(g["dir"] == "schach" for g in spiele):
                     schach_pruefen(br, pw, base, fehler, a.bilder)
+                if any(g["dir"] == "gipfeltreffen" for g in spiele):
+                    gipfeltreffen_pruefen(br, base, fehler, a.bilder)      # GS-1.23: Koop-Spiel, vorerst ein Level
                 if any(g["dir"] == "adarkroom" for g in gj["games"]) and (not nur or "adarkroom" in nur) and "adarkroom" not in ohne:
                     adarkroom_pruefen(pw, base, fehler, a.bilder)      # GS-1.17: am iPhone mit Pfeiltasten (eigener Browser: WebKit, wenn da)
                 br.close()

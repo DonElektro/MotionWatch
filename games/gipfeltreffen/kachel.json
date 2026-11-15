@@ -1,0 +1,29 @@
+{
+ "dir": "gipfeltreffen",
+ "name": "Gipfeltreffen",
+ "desc": "Zusammen vom Zeltplatz zur Hütte.",
+ "icon": "thumb.svg",
+ "start": "index.html",
+ "input": "touch",
+ "names": {
+  "de": "Gipfeltreffen",
+  "en": "Summit Meeting",
+  "fr": "Rendez-vous au sommet",
+  "it": "Incontro in vetta",
+  "rm": "Inscunter sin il piz"
+ },
+ "descs": {
+  "de": "Zusammen vom Zeltplatz zur Hütte.",
+  "en": "Together from the campsite to the hut.",
+  "fr": "Ensemble du camping jusqu’au refuge.",
+  "it": "Insieme dal campeggio alla capanna.",
+  "rm": "Ensemen dal campadi fin tar la chamona."
+ },
+ "lizenz": [
+  "Gipfeltreffen  (gipfeltreffen/)",
+  "  Lizenz: MIT",
+  "  Autor: MoveEye (eigenes Spiel, Idee: der Besitzer)",
+  "  Quelle: https://github.com/DonElektro/MotionWatch",
+  "  Selbst geschrieben und gezeichnet für MoveEye, frei verwendbar (MIT). Keine fremden Texte, Bilder, Töne oder Bibliotheken."
+ ]
+}
