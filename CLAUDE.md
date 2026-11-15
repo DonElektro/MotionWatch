@@ -219,9 +219,9 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
 - Echte Prozess-Tests für Neustart/Pause/Update (`os.execv`, gleiche PID).
 - Fenster ohne Bildschirm: Xvfb, oder notfalls ein Tkinter-Ersatz (nur Rauchtest).
 
-## HP-Testweg (nur bis 16.11.2026, 06:00 Uhr Schweizer Zeit)
+## HP-Testweg (nur bis 20.11.2026, 17:00 Uhr Schweizer Zeit)
 
-Der lokale Container ist mit allen Helfern überlastet: Tests dürfen in dieser Nacht auf dem HP rechnen (Besitzer, 15.11.2026;
+Der lokale Container ist mit allen Helfern überlastet: Tests dürfen bis Freitag 20.11.2026, 17:00 auf dem HP rechnen (Besitzer, 15.11.2026, verlängert;
 Workflow `.github/workflows/hp_helfer.yml`, Fenster `HP_HELFER_BIS` dort auf main; danach hört jeder Lauf sofort auf).
 - **Starten:** der Zweig muss main mit `hp_helfer.yml` enthalten (`git merge origin/main`), dann
   `git push origin HEAD:hp-test/<name>` (`<name>`: A-Z a-z 0-9 . _ -). Was läuft: `hp_test.txt` im Wurzelordner des Zweigs

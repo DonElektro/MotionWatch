@@ -1,5 +1,5 @@
 # HP-Testweg (Helfer): Helfer lassen ihre Tests auf dem HP (self-hosted Runner «moveeye-hp») rechnen statt im lokalen
-# Container (Besitzer, 15.11.2026: nur in der Nacht bis 16.11.2026 06:00 Schweizer Zeit, nie zwei Jobs gleichzeitig).
+# Container (Besitzer, 15.11.2026, verlängert: nur bis Freitag 20.11.2026 17:00 Schweizer Zeit, nie zwei Jobs gleichzeitig).
 #   git push origin HEAD:hp-test/<name>                         # der Zweig muss main mit dieser Datei enthalten
 #   werkzeuge/ci_status.sh hp-test/<name> --warten --fehler     # Ergebnis abwarten (Exit 0 = grün)
 # Was läuft: hp_test.txt im Wurzelordner des Zweigs (eine Zeile pro Befehl, nur erlaubte Formen - werkzeuge/hp_helfer.py),
@@ -34,7 +34,7 @@ concurrency:
   cancel-in-progress: false
 env:
   # Erlaubtes Fenster: danach hört jeder Job sofort auf, ohne etwas zu rechnen. Verlängern nur mit Erlaubnis des Besitzers.
-  HP_HELFER_BIS: "2026-11-16T06:00+01:00"
+  HP_HELFER_BIS: "2026-11-20T17:00+01:00"
   PYTHONUNBUFFERED: "1"
 
 jobs:
@@ -191,13 +191,15 @@ jobs:
           from playwright.sync_api import sync_playwright
           with sync_playwright() as p: b = p.chromium.launch(); b.close(); print('Chromium startet')" \
             || echo "::warning::Chromium startet auf dem HP nicht (Systembibliotheken? am HP: sudo python3 -m playwright install-deps chromium)"
-      - name: Godot 4.3 (nur für godot-Zeilen, Zwischenspeicher wie die anderen HP-Workflows)
+      - name: Godot 4.3 (nur für godot-Zeilen, eigener Zwischenspeicher des HP-Testwegs)
         if: env.GODOT_NOETIG == '1'
         timeout-minutes: 20
         run: |
-          G="$CACHE/godot/Godot_v4.3-stable_linux.x86_64"
+          # eigener Ordner (nicht $CACHE/godot der main-Workflows erkennung_hp / tiere_fps_hp): Helfer-Code aus dem Zweig
+          # kann diese Datei ändern - sie darf nie in Läufe vom Stand main gelangen
+          G="$CACHE/hp_helfer/godot/Godot_v4.3-stable_linux.x86_64"
           if [ ! -x "$G" ]; then
-            mkdir -p "$CACHE/godot" && cd "$CACHE/godot"
+            mkdir -p "$CACHE/hp_helfer/godot" && cd "$CACHE/hp_helfer/godot"
             curl -fsSL --retry 3 -o g.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
             unzip -q -o g.zip && rm g.zip && chmod +x Godot_v4.3-stable_linux.x86_64
             cd "$GITHUB_WORKSPACE"

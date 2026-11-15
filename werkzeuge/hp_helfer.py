@@ -2,7 +2,7 @@
 """HP-Testweg: Helfer lassen ihre Tests auf dem HP (self-hosted Runner «moveeye-hp») rechnen statt im lokalen Container.
 Workflow .github/workflows/hp_helfer.yml (Push auf hp-test/** -> Lauf vom Stand main). Nur Standardbibliothek.
 
-  hp_helfer.py frist --bis 2026-11-16T06:00+01:00      # Exit 0 = im erlaubten Fenster (zeigt die Rest-Minuten), sonst 1
+  hp_helfer.py frist --bis 2026-11-20T17:00+01:00      # Exit 0 = im erlaubten Fenster (zeigt die Rest-Minuten), sonst 1
   hp_helfer.py plan --datei hp_test.txt                # Testliste des Zweigs prüfen -> JSON {"befehle": [...], "godot": bool}
   hp_helfer.py plan --auswahl AUSGABE                  # ohne hp_test.txt: Gruppen aus ci_auswahl.py --auswahl (GITHUB_OUTPUT-Datei)
   hp_helfer.py laufen --befehle JSON --stand DIR --aus DIR --bis ISO [--godot BIN] [--max-min 52]
