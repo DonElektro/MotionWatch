@@ -217,6 +217,7 @@ _RK_TX = {   # english key: (de, fr, it, rm)
                                            "Solo i file adatti sono mostrati", "Mo datotecas che s’adattan èn mussadas"),
     "Choose a file": ("Datei wählen", "Choisir un fichier", "Scegli un file", "Tscherner ina datoteca"),
     "From this device": ("Von diesem Gerät", "Depuis cet appareil", "Da questo dispositivo", "Da quest apparat"),
+    "Name of the download": ("Name des Downloads", "Nom du téléchargement", "Nome del download", "Num dal download"),
     "Downloaded": ("Heruntergeladen", "Téléchargé", "Scaricato", "Telechargià"),
     "Private data – saved only in «My files».": ("Private Daten – nur in «Meine Dateien».", "Données privées – seulement dans «Mes fichiers».",
                                                  "Dati privati – solo in «I miei file».", "Datas privatas – mo en «Mias datotecas»."),
@@ -405,7 +406,8 @@ function exportOf(href) {
 const nameOf = (a, href) => a && a.getAttribute("download") || decodeURIComponent(((href || "").split("?")[0].split("/").pop()) || "datei");
 
 function dialog(title) {
-  css(); const ov = E("div"); ov.id = "rk-ov"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", title);
+  css(); const old = document.getElementById("rk-toast"); if (old) old.remove();
+  const ov = E("div"); ov.id = "rk-ov"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", title);
   const box = E("div", "rk"), hd = E("div", "rk-hd"), x = B("rk-x", "✕"); x.setAttribute("aria-label", t("Cancel"));
   hd.append(E("b", "", title), x); box.appendChild(hd); ov.appendChild(box); document.body.appendChild(ov);
   const back = document.activeElement; let open = true;
@@ -491,8 +493,9 @@ function save(opt) {
     const priv = opt.mode === "private", D = dialog("🎒 " + t("Save in the backpack"));
     let J = {}; try { J = await api("area=all&lang=" + L()); } catch (e) {}
     const F = E("div", "rk-form"), fl = E("div", "rk-file"), th = E("div", "rk-th", KIC[opt.kind] || "📄"), tx = E("div", "rk-tx");
-    tx.append(E("b", "", opt.name || "…"), E("small", "", opt.what || "")); fl.append(th, tx);
-    const lN = E("label", "", t("Name")), iN = E("input"); iN.value = opt.name || ""; iN.maxLength = 200; iN.setAttribute("autocomplete", "off"); lN.appendChild(iN);
+    const tN = E("b", "", opt.name || "…"); tx.append(tN, E("small", "", opt.what || "")); fl.append(th, tx);
+    const lN = E("label", "", t("Name")), iN = E("input"); iN.value = opt.name || ""; iN.placeholder = t("Name of the download");
+    if (opt.nameP) opt.nameP.then(n => { if (n && !iN.value) { iN.value = n; tN.textContent = n; chk(); } }); iN.maxLength = 200; iN.setAttribute("autocomplete", "off"); lN.appendChild(iN);
     const lW = E("label", "", t("Where")), sW = E("select");
     const opts = priv ? [["mine|", "🔒 " + t("My files")]] : [["all|", "🎒 " + t("For everyone")]].concat((J.folders || []).map(d => ["all|" + d.name, "🎒 " + t("For everyone") + " › 📁 " + d.name]), [["mine|", "🔒 " + t("My files")]]);
     opts.forEach(([v, n]) => { const o = E("option", "", n); o.value = v; sW.appendChild(o); });
@@ -543,21 +546,31 @@ function toast(msg, act, off) {
 const hiddenEl = el => el.hidden || el.style.display === "none" || (el.offsetParent === null && getComputedStyle(el).display === "none");
 const isTrigger = el => el && /^(BUTTON|A|LABEL)$/.test(el.tagName) && !el.classList.contains("rk-btn") && !el.classList.contains("rk-mini");
 function pickBtn(inp, like) {
-  const b = B(((like && like.className) || "sec") + " rk-btn", "🎒 " + t("From the backpack")); b.dataset.rkFor = inp.id || "";
+  const b = B(((like && like.className) || "sec") + " rk-btn", "🎒 " + t("From the backpack")); b.dataset.rkFor = inp.id || ""; b.dataset.rkT = "From the backpack";
   b.onclick = e => { e.preventDefault(); pickInto(inp); }; return b;
 }
 function saveBtn(a) {
   const big = /(^|\s)btn(\s|$)/.test(a.className), b = B(big ? a.className.replace(/\bmain\b/, "sec") + " rk-btn" : "rk-mini", big ? "🎒 " + t("Into the backpack") : "🎒");
+  if (big) b.dataset.rkT = "Into the backpack";
   b.title = t("Save in the backpack"); b.setAttribute("aria-label", t("Save in the backpack") + ": " + nameOf(a, a.href));
   b.onclick = e => { e.preventDefault(); e.stopPropagation(); saveFrom(a); }; return b;
 }
+// the name the download would get (Content-Disposition) - asked with HEAD only for small exports (no ZIP, no video)
+function cdName(cd) { const m = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(cd || "") || /filename\s*=\s*"?([^";]+)"?/i.exec(cd || "");
+  if (!m) return ""; try { return decodeURIComponent(m[1].trim()); } catch (e) { return m[1].trim(); } }
 function saveFrom(a, blobP) {
   const href = a.href, ex = exportOf(href), name = nameOf(a, href);
-  if (ex) return save({url: ex.url, name, mode: ex.mode, kind: ex.kind});
+  if (ex) { const own = a.getAttribute && a.getAttribute("download");
+    const np = own ? null : ["archive", "video"].includes(ex.kind) ? Promise.resolve("") :
+      fetch(ex.url, {method: "HEAD", cache: "no-store"}).then(r => r.ok ? cdName(r.headers.get("Content-Disposition")) : "").catch(() => "");
+    return save({url: ex.url, name: own ? name : "", nameP: np, mode: ex.mode, kind: ex.kind}); }
   return save({name, blob: blobP || fetch(href).then(r => r.blob()), kind: ext(name) in {png: 1, jpg: 1, jpeg: 1, webp: 1} ? "image" : "doc"});
 }
+let lastL = "";
 function scan() {
   if (!CAP) return;
+  if (L() !== lastL) { lastL = L(); document.querySelectorAll(".rk-btn[data-rk-t]").forEach(b => { b.textContent = "🎒 " + t(b.dataset.rkT); });
+    document.querySelectorAll(".rk-mini").forEach(b => { b.title = t("Save in the backpack"); }); }
   if (CAP.up) document.querySelectorAll("a[href]").forEach(a => {
     if (a.closest("#rk-ov,#rk-toast,nav,header")) return;
     const fit = !!(exportOf(a.href) || (a.hasAttribute("download") && a.href.startsWith("blob:")));
@@ -607,7 +620,7 @@ HTMLAnchorElement.prototype.click = function () {
 };
 
 window.mwRucksack = {pick, save, toast, pickInto, ver: 1};
-probe.then(c => { if (!c) return; scan(); new MutationObserver(later).observe(document.documentElement, {childList: true, subtree: true, attributes: true, attributeFilter: ["href", "hidden", "download"]}); });
+probe.then(c => { if (!c) return; scan(); new MutationObserver(later).observe(document.documentElement, {childList: true, subtree: true, attributes: true, attributeFilter: ["href", "hidden", "download", "lang"]}); });
 })();
 """
 

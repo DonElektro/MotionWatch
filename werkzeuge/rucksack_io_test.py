@@ -280,13 +280,16 @@ def teil_b(datei, bilder):
                     except Exception:
                         break
                 clean()
-                pg.evaluate("""() => { const a = document.querySelector('a[href="/api/settings/export"]'); const d = a.closest('details'); if (d) d.open = true;
+                pg.wait_for_function("document.documentElement.lang === 'de'", timeout=15000)
+                pg.evaluate("""() => { const a = document.querySelector('a[href="/api/settings/export"]'); const d = a.closest('details');
+                    if (typeof tabOpen === "function") try { tabOpen("sysblk:pw"); } catch (e) {}
+                    if (d) d.open = true;
                     let p = d && d.parentElement; while (p) { if (p.tagName === 'DETAILS') p.open = true; p = p.parentElement; }
                     a.scrollIntoView({block: 'center'}); }""")
                 sb = pg.locator('a[href="/api/settings/export"] + button.rk-btn')
-                ok(sb.count() == 1 and "In den Rucksack" in sb.inner_text(), "Einstellungen: Knopf «🎒 In den Rucksack»")
+                ok(sb.count() == 1 and "In den Rucksack" in sb.inner_text() and sb.is_visible(), f"Einstellungen: Knopf «🎒 In den Rucksack» ({sb.count()}, {sb.all_inner_texts()})")
                 pb = pg.locator('button.rk-btn[data-rk-for="imp-file"]')
-                ok(pb.count() == 1 and "Aus dem Rucksack" in pb.inner_text(), "Einstellungen: Knopf «🎒 Aus dem Rucksack»")
+                ok(pb.count() == 1 and "Aus dem Rucksack" in pb.inner_text() and pb.is_visible(), f"Einstellungen: Knopf «🎒 Aus dem Rucksack» ({pb.count()}, {pb.all_inner_texts()})")
                 shot("1_einstellungen_knoepfe")
                 sb.evaluate("b => b.click()")
                 pg.wait_for_selector("#rk-ov .rk-form")
@@ -294,11 +297,12 @@ def teil_b(datei, bilder):
                 shot("2_einstellungen_speichern")
                 pg.locator("#rk-ov .rk-ft button:not(.sec)").click()
                 pg.wait_for_selector("#rk-toast", timeout=30000)
+                shot("2b_einstellungen_gespeichert")
                 ok("gespeichert" in pg.locator("#rk-toast").inner_text(), "Toast «Im Rucksack gespeichert»")
                 mine = [f["name"] for f in lst("mine")["files"]]
                 ok(sum(n.startswith("moveeye_einstellungen") for n in mine) >= 2, f"Einstellungen in «Meine Dateien»: {mine}")
                 # settings: load from the backpack (the page's own import runs)
-                pg.evaluate("window.__imp = []; const o = window.importSettings; window.importSettings = f => window.__imp.push(f && f.name)")
+                pg.evaluate("() => { window.__imp = []; window.importSettings = f => window.__imp.push(f && f.name); }")
                 pb.evaluate("b => b.click()")
                 pg.wait_for_selector("#rk-ov .rk-row")
                 pg.locator(".rk-tabs button", has_text="Meine Dateien").click()
@@ -306,7 +310,7 @@ def teil_b(datei, bilder):
                 shot("3_einstellungen_waehlen")
                 pg.locator("#rk-ov .rk-ft button:not(.sec)").click()
                 pg.wait_for_function("window.__imp.length > 0", timeout=15000)
-                ok(pg.evaluate("window.__imp[0]") == "moveeye_einstellungen_alt.json", "Einstellungen aus dem Rucksack an importSettings")
+                ok(pg.evaluate("window.__imp") == ["moveeye_einstellungen_alt.json"], f"Einstellungen aus dem Rucksack an importSettings: {pg.evaluate('window.__imp')}")
                 # a file field without a button next to it: the chooser
                 pg.evaluate("""() => { const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*'; i.id = 'rk-test-f'; window.__ch = 0;
                     i.onchange = () => window.__ch++; document.body.appendChild(i); i.hidden = true; i.click(); }""")
@@ -320,6 +324,10 @@ def teil_b(datei, bilder):
                 pg.wait_for_selector("#kt-imp", timeout=30000)
                 clean()
                 kb = pg.locator('button.rk-btn[data-rk-for="kt-file"]')
+                try:
+                    kb.wait_for(state="attached", timeout=10000)
+                except Exception:
+                    pass
                 ok(kb.count() == 1, "Touren: Knopf «🎒 Aus dem Rucksack»")
                 n0 = len(json.loads(req("/api/touren")).get("tours", []))
                 kb.evaluate("b => { b.scrollIntoView({block: 'center'}); b.click(); }")
@@ -339,6 +347,9 @@ def teil_b(datei, bilder):
                 b.evaluate("b => { b.scrollIntoView({block: 'center'}); b.click(); }")
                 pg.wait_for_selector("#rk-ov .rk-form")
                 pg.locator("#rk-ov select").select_option("all|Touren")
+                pg.wait_for_function("document.querySelector('#rk-ov .rk-form input').value.endsWith('.gpx')", timeout=10000)
+                ok(re.fullmatch(r"[0-9a-f]{8,}\.gpx", pg.locator("#rk-ov .rk-form input").input_value()) is None,
+                   f"Name der Tour statt Nummer: {pg.locator('#rk-ov .rk-form input').input_value()}")
                 shot("6_tour_speichern")
                 pg.locator("#rk-ov .rk-ft button:not(.sec)").click()
                 pg.wait_for_selector("#rk-toast", timeout=30000)
