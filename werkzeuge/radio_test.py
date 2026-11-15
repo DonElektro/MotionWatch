@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test «📻 Radio» (MoveEye Teil 639zzzz c) – ohne das echte Internet, ohne Lautsprecher.
+"""Test «📻 Radio» (MoveEye Teil 639zzzzd) – ohne das echte Internet, ohne Lautsprecher.
 
 Ein falsches Verzeichnis (radio-browser.info nachgebaut: /json/servers, /json/stations/search, /json/stations/byuuid, /json/url)
 und lokale Testströme (mit ffmpeg erzeugt: MP3 mit ICY-Titeln, Ogg über «ICY 200 OK» wie alte Shoutcast-Server, .pls / .m3u /
@@ -420,6 +420,9 @@ C["lock_on"] = True; out["rights_lock"] = [do({"action": "remove", "id": T1})[0]
 out["txt"] = {L: [ns["tr"]("Radio as wake-up alarm", L), ns["tr"]("No internet - the radio needs a connection.", L), ns["radio_tr"]("the station does not answer: HTTP 500", L)]
               for L in ("de", "en", "fr", "it", "rm")}
 out["fav"] = [x["k"] for x in ns["radio_fav_items"]("de")]
+q0 = ns["radio_state"]("de")["quiet"]; C["clap_on"] = True; q1 = ns["radio_state"]("de")["quiet"]; C["clap_on"] = False; C["noise_alarm"] = True
+out["quiet"] = [q0, q1, ns["radio_state"]("de")["quiet"]]; C["noise_alarm"] = False
+out["icons"] = ['📡 Phone radio' in ns["MORSE_PAGE"], '📻 Phone radio' in ns["MORSE_PAGE"], "📡 Eigenes Protokoll" in ns["_HELP_MORSE"]["de"]]
 out["help"] = ['id="radio"' in ns["HELP_PAGE"], 'href="/radio"' in ns["MORE_PAGE"]]
 out["selftest"] = ns["radio_selftest"]()
 out["blocked"] = sorted(set(ns["_RT_BLOCKED"]))
@@ -527,6 +530,8 @@ def teil_a(datei, tmp, srv):
         ok(w_ and n_ and s_.endswith(": HTTP 500") and (L == "en" or (w_ != "Radio as wake-up alarm" and not s_.startswith("the station"))), "%s: «%s» · «%s» · «%s»" % (L, w_, n_, s_))
     ok(e["fav"][:2] == ["page:/radio", "radio:on"] and all(k.startswith("radio:play:") for k in e["fav"][2:]) and len(e["fav"]) >= 4, "Favoriten: %s" % e["fav"][:4])
     ok(e["help"] == [True, True], "Anleitung + Zeile unter Mehr")
+    ok(e["quiet"] == [False, True, True], "Hinweis «Geräusch-Alarm / Klatschschalter pausiert» nur, wenn einer davon an ist: %s" % e["quiet"])
+    ok(e["icons"] == [True, False, True], "Handy-Funkgerät jetzt mit 📡 (Morse-Seite, Anleitung): %s" % e["icons"])
     ok(bool(e["selftest"]), "Selbsttest-Funktion: %s" % e["selftest"])
     ok(e["blocked"] == ["nohost.invalid"], "nie das echte Internet (nur nohost.invalid absichtlich abgewiesen): %s" % e["blocked"])
     ok(not e["kids_end"], "am Ende keine Prozesse: %s" % e["kids_end"])
@@ -620,7 +625,7 @@ tk = types.SimpleNamespace(**{n: type(n, (Wd,), {}) for n in ("Toplevel", "Label
 ns["tk"] = tk; ns["GUI_OK"] = True
 part = open(os.environ["MW_RT_PART"], encoding="utf-8").read()
 a0 = part.index("if GUI_OK:\n    def _radio_tk_win"); a1 = part.index("App._radio_win = _radio_tk_win", a0) + len("App._radio_win = _radio_tk_win")
-exec(compile(part[a0:a1], "639zzzzc(fenster)", "exec"), ns)
+exec(compile(part[a0:a1], "639zzzzd(fenster)", "exec"), ns)
 App = ns["App"]
 class Btn(Wd): pass
 def fbtn(self, parent, text, cmd, tip=None, primary=False, **k):
@@ -659,7 +664,7 @@ os._exit(1 if FAIL else 0)
 
 def teil_d(datei, tmp, srv):
     print("D) Pi-Fenster (nachgebautes tkinter), 5 Sprachen", flush=True)
-    part = os.path.join(REPO, "quelle", "639zzzzc_radio.py")
+    part = os.path.join(REPO, "quelle", "639zzzzd_radio.py")
     for L in ("de", "en", "fr", "it", "rm"):
         home = os.path.join(tmp, "d_" + L); os.makedirs(home)
         env = dict(env_for(tmp, srv, home), MW_RT_PART=part)
@@ -695,7 +700,7 @@ def teil_b(datei, tmp, srv, bilder):
     cfg = os.path.join(tmp, "mw"); os.makedirs(cfg)
     st = {"source": "demo", "sim_on": False, "sim_url": "http://127.0.0.1:9", "sim_auto": False, "sim_autostart": False, "sim_autostart_v2": False,
           "sim_autoupd": False, "update_url": "", "lang": "de", "desktop_notice": False, "setup_done": True, "https_extra": False, "news_popup": False,
-          "theme": "dark", "detection_on": False, "track_person": False, "track_motion": False, "patrol": False, "audio_out": "default",
+          "theme": "dark", "clap_on": True, "detection_on": False, "track_person": False, "track_motion": False, "patrol": False, "audio_out": "default",
           "users": [{"name": "gast", "hash": pwhash("gast-pw-123"), "role": "view"}, {"name": "familie", "hash": pwhash("familie-pw-1"), "role": "family"}]}
     json.dump({"cfg": st}, open(os.path.join(cfg, "motionwatch_settings.json"), "w"))
     wrap = os.path.join(tmp, "wrap.py"); open(wrap, "w").write(WRAP)
@@ -743,6 +748,8 @@ def teil_b(datei, tmp, srv, bilder):
             pg.wait_for_function("() => (document.getElementById('ra-tit') || {}).textContent.includes('Test Artist')", timeout=40000)
             pg.wait_for_timeout(600); weg()
             ok("läuft" in pg.locator("#ra-st").inner_text().lower() and pg.locator("#ra-go").inner_text().startswith("⏹"), "Karte: «%s» · «%s»" % (pg.locator("#ra-st").inner_text(), pg.locator("#ra-tit").inner_text()))
+            qn = pg.locator("#ra-qn").inner_text()
+            ok(qn == "🔇 Während Radio: Geräusch-Alarm und Klatschschalter pausiert – Kamera-Alarm läuft normal", "Karte: %s" % qn)
             pg.locator("#ra-sleep button", has_text="30 min").click()
             pg.wait_for_function("() => (document.getElementById('ra-hint') || {}).textContent.includes('aus in')", timeout=10000)
             pg.wait_for_timeout(500); weg()
@@ -768,6 +775,8 @@ def teil_b(datei, tmp, srv, bilder):
             pg.goto(base + "/more", wait_until="domcontentloaded")
             pg.wait_for_function("() => (document.getElementById('m-radio-s') || {}).textContent.includes('Radio Pilatus')", timeout=20000)
             grp = pg.evaluate("() => { const r = document.getElementById('m-radio'); const s = r && r.closest('section'); return s ? s.querySelector('h2').textContent : ''; }")
+            mq = pg.evaluate("() => { const q = document.querySelector('#m-radio small + small'); return q ? q.textContent : ''; }")
+            ok(mq.startswith("🔇 Während Radio: Geräusch-Alarm"), "Mehr-Zeile: %s" % mq)
             ok(grp == "Unterwegs", "Mehr: Zeile «📻 Radio» in «%s» mit «%s»" % (grp, pg.locator("#m-radio-s").inner_text()))
             weg(); pg.locator("#m-radio").scroll_into_view_if_needed(); pg.wait_for_timeout(300)
             pg.screenshot(path=os.path.join(bilder, "radio_mehr.png"))

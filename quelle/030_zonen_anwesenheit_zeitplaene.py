@@ -578,7 +578,7 @@ def text_choice_pairs(key):
                 ("sun-thu", tr("Sunday to Thursday")), ("once", tr("only once (next time)"))]
     if extra == "wake_sounds":
         return [("chime", tr("Soft melody")), ("birds", tr("Birdsong")), ("beeps", tr("Fast beeps")), ("marmot", tr("Marmot whistle"))] + \
-               [("file:" + f, "♪ " + f) for f in own_sounds()] + (radio_wake_pairs() if "radio_wake_pairs" in globals() else [])    # 639zzzzc: a station
+               [("file:" + f, "♪ " + f) for f in own_sounds()] + (radio_wake_pairs() if "radio_wake_pairs" in globals() else [])    # 639zzzzd: a station
     if extra == "siren_on":
         return [("off", tr("off")), ("person", tr("person alarm")), ("alarm", tr("person, thermal and noise alarm")),
                 ("all", tr("every alarm, also the pre-alarm (movement)"))]

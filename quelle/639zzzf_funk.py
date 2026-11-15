@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639zzzf: «Eigenes Protokoll (2 Töne)» des Besitzers im Morse-Modus (senden über den Lautsprecher, lesen über das Mikrofon, Schlüssel nur für den Administrator) und die Seite «📻 Handy-Funkgerät» (/morse/funk, dieselbe Seite als PWA in funk/). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639zzzf: «Eigenes Protokoll (2 Töne)» des Besitzers im Morse-Modus (senden über den Lautsprecher, lesen über das Mikrofon, Schlüssel nur für den Administrator) und die Seite «📡 Handy-Funkgerät» (/morse/funk, dieselbe Seite als PWA in funk/). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Besitzer (14.11.2026): seine Seite «Morse-Funk» (Handy-Lautsprecher / Mikrofon über ein Handfunkgerät) soll mit MoveEye reden.
 # Sein Protokoll, Bit für Bit gleich wie seine Seite:
@@ -1051,30 +1051,30 @@ _MORSE_DE.update({_k: DE.get(_k, _v[0]) for _k, _v in _HX_FUNK.items()})
 
 # ---- the manual: in the section «Morse-Modus» ----------------------------------------------------------------------------------------
 _HELP_FUNK = {
-    "de": ('<li><b>📻 Eigenes Protokoll (2 Töne) und Handy-Funkgerät:</b> im Morse-Modus «Format» → «Eigenes Protokoll (2 Töne)»: Ton A (800 Hz) '
+    "de": ('<li><b>📡 Eigenes Protokoll (2 Töne) und Handy-Funkgerät:</b> im Morse-Modus «Format» → «Eigenes Protokoll (2 Töne)»: Ton A (800 Hz) '
            'trägt Punkt und Strich, Ton B (1400 Hz) kurz = Zeichenende, lang = Start / Ende der Nachricht; 39 Zeichen (A–Z, 0–9, Leerzeichen . ?). '
            'Gesendet wird nur über den Lautsprecher (Licht und IR senden weiter Morse), gelesen über das Mikrofon («mit dem Mikrofon» an). '
-           'Gleich wie die Seite «Handy-Funkgerät» (Morse-Modus → «📻 Handy-Funkgerät»; für ein Handy ohne MoveEye: '
+           'Gleich wie die Seite «Handy-Funkgerät» (Morse-Modus → «📡 Handy-Funkgerät»; für ein Handy ohne MoveEye: '
            '<code>' + FUNK_PAGES_URL + '</code>, «Zum Home-Bildschirm», geht danach ohne Internet). Am iPhone braucht das Mikrofon die sichere '
            'Seite (https, Port + 1): einmal die Zertifikatswarnung bestätigen. <b>Schlüssel</b> (nur Administrator): verschleiert nur – jede Nachricht '
            'nutzt dieselbe Folge, keine starke Verschlüsselung. Im Amateurfunk ist Verschlüsselung verboten (ITU Nr. 25.2A, BAKOM); für PMR446 & Co. die '
            'Regeln des BAKOM beachten. Der Schlüssel steht nie im Protokoll, im Verlauf oder in einer Push; im Verlauf steht nur «entschlüsselt mit Schlüssel».</li>'),
-    "en": ('<li><b>📻 Own protocol (2 tones) and phone radio:</b> in the Morse mode «Format» → «Own protocol (2 tones)»: tone A (800 Hz) carries dot '
+    "en": ('<li><b>📡 Own protocol (2 tones) and phone radio:</b> in the Morse mode «Format» → «Own protocol (2 tones)»: tone A (800 Hz) carries dot '
            'and dash, tone B (1400 Hz) short = end of a character, long = start / end of the message; 39 characters (A–Z, 0–9, space . ?). It is sent only '
            'with the loudspeaker (light and IR keep sending Morse) and read with the microphone («with the microphone» on). The same as the page «Phone radio» '
-           '(Morse mode → «📻 Phone radio»; for a phone without MoveEye: <code>' + FUNK_PAGES_URL + '</code>, «Add to Home Screen», then it works without '
+           '(Morse mode → «📡 Phone radio»; for a phone without MoveEye: <code>' + FUNK_PAGES_URL + '</code>, «Add to Home Screen», then it works without '
            'internet). On an iPhone the microphone needs the secure page (https, port + 1): accept the certificate warning once. <b>Key</b> (administrator only): '
            'it only obscures - every message uses the same sequence, no strong encryption. Encryption is forbidden in amateur radio (ITU No. 25.2A, OFCOM); '
            'for PMR446 & co. follow the rules of OFCOM. The key is never in the log, the history or a push; the history only says «decrypted with the key».</li>'),
-    "fr": ('<li><b>📻 Protocole propre (2 sons) et radio du téléphone :</b> mode morse «Format» → «Protocole propre (2 sons)» : son A (800 Hz) = point et '
+    "fr": ('<li><b>📡 Protocole propre (2 sons) et radio du téléphone :</b> mode morse «Format» → «Protocole propre (2 sons)» : son A (800 Hz) = point et '
            'trait, son B (1400 Hz) court = fin du caractère, long = début / fin ; 39 caractères. Envoyé seulement par le haut-parleur, lu par le microphone. '
            'Téléphone sans MoveEye : <code>' + FUNK_PAGES_URL + '</code>. iPhone : page sécurisée (https). <b>Clé</b> (administrateur) : ne fait que masquer, '
            'pas de chiffrement fort ; chiffrement interdit en radioamateur (UIT n° 25.2A, OFCOM). La clé n’apparaît jamais dans le journal, l’historique ou un push.</li>'),
-    "it": ('<li><b>📻 Protocollo proprio (2 suoni) e radio del telefono:</b> modalità Morse «Formato» → «Protocollo proprio (2 suoni)»: suono A (800 Hz) = '
+    "it": ('<li><b>📡 Protocollo proprio (2 suoni) e radio del telefono:</b> modalità Morse «Formato» → «Protocollo proprio (2 suoni)»: suono A (800 Hz) = '
            'punto e linea, suono B (1400 Hz) corto = fine del carattere, lungo = inizio / fine; 39 caratteri. Inviato solo con l’altoparlante, letto con il '
            'microfono. Telefono senza MoveEye: <code>' + FUNK_PAGES_URL + '</code>. iPhone: pagina sicura (https). <b>Chiave</b> (amministratore): nasconde '
            'soltanto, nessuna cifratura forte; cifratura vietata nel radioamatorismo (UIT n. 25.2A, UFCOM). La chiave non appare mai nel registro, nella cronologia o in un push.</li>'),
-    "rm": ('<li><b>📻 Agen protocol (2 tuns) e radio dal telefonin:</b> modus da morse «Format» → «Agen protocol (2 tuns)»: tun A (800 Hz) = punct e '
+    "rm": ('<li><b>📡 Agen protocol (2 tuns) e radio dal telefonin:</b> modus da morse «Format» → «Agen protocol (2 tuns)»: tun A (800 Hz) = punct e '
            'lingia, tun B (1400 Hz) curt = fin dal caracter, lung = cumenzament / fin; 39 caracters. Tramess mo cun il autpledader, legì cun il microfon. '
            'Telefonin senza MoveEye: <code>' + FUNK_PAGES_URL + '</code>. iPhone: pagina segira (https). <b>Clav</b> (administratur): zuppenta mo, nagin '
            'criptadi ferm; criptadi scumandà en il radioamatur (UIT nr. 25.2A, UFCOM). La clav na cumpara mai en il protocol, la cronologia u in push.</li>'),

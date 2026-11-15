@@ -1096,7 +1096,7 @@ def sound_play(kind=None, seconds=None, volume=None, reason="test"):
         try:
             y = sound_samples(kind, seconds)
             data = (np.clip(y * (vol ** 2), -1, 1) * 32767).astype("<i2").tobytes()     # volume: squared feels linear to the ear
-            radio_yield("voice" if kind == "tts" else "sound")    # 639zzzzc: the radio lets the loudspeaker go first (never waits long)
+            radio_yield("voice" if kind == "tts" else "sound")    # 639zzzzd: the radio lets the loudspeaker go first (never waits long)
             cmd, err = out_cmd(OUT_RATE)                  # Bluetooth: connects first if needed (a few seconds)
             if cmd is None:
                 raise RuntimeError(err)

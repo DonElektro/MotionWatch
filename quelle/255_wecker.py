@@ -110,7 +110,7 @@ def _light(on):
 def _ring_sound(now):
     """the melody again every 20 s, a little louder each time (from 40 % up to the set volume in about 2 minutes)"""
     kind = CFG.get("wake_sound") or "chime"
-    if str(kind).startswith("radio:"):                    # 639zzzzc: a radio station; no sound after 10 s = the melody at once
+    if str(kind).startswith("radio:"):                    # 639zzzzd: a radio station; no sound after 10 s = the melody at once
         if radio_wake_sound(kind, now):
             return
         kind = "chime"
@@ -144,7 +144,7 @@ def wake_snooze(who="web"):
     mins = float(CFG.get("wake_snooze", 9))
     with WAKE_LOCK:
         WAKE.update(state="snooze", until=time.time() + mins * 60.0, snoozes=WAKE["snoozes"] + 1, last=f"snooze ({who})")
-    radio_wake_end()                                       # 639zzzzc: a station as alarm is quiet while snoozing
+    radio_wake_end()                                       # 639zzzzd: a station as alarm is quiet while snoozing
     MANUAL["until"] = 0.0
     _look(away_view())
     log_event("sys", f"Wake-up alarm: snooze {mins:g} min ({who})")
@@ -155,7 +155,7 @@ def wake_stop(who="web"):
     if WAKE["state"] not in ("ring", "snooze", "sleep"):
         return False, "the alarm is not on"
     was = WAKE["state"]
-    sound_stop(); radio_wake_end()                         # 639zzzzc: also a station as alarm
+    sound_stop(); radio_wake_end()                         # 639zzzzd: also a station as alarm
     _light(False)
     with WAKE_LOCK:
         if was in ("ring", "snooze"):

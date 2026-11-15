@@ -312,7 +312,7 @@ def role_allows(role, path, method, d, perms=None):
         return "settings" in P and isinstance(d.get("key"), str) and d.get("key") not in USER_SETTINGS_DENY
     if path == "/api/audio":
         return ("siren" in P and d.get("action") in ("test", "siren", "stop")) or ("talk" in P and d.get("action") == "stop")
-    if path == "/api/radio":                                  # 639zzzzc: play / stop / volume / timer = the right for sounds; the list: administrator
+    if path == "/api/radio":                                  # 639zzzzd: play / stop / volume / timer = the right for sounds; the list: administrator
         return "siren" in P and d.get("action") in RADIO_PLAY_ACTIONS
     if path == "/api/protect":
         return "arm" in P and d.get("action") in PERM_PROTECT_ACTIONS

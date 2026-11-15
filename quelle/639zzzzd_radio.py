@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639zzzzc: «📻 Radio» – Internet-Radio auf dem Lautsprecher (Sender aus dem offenen Verzeichnis radio-browser.info oder eine eigene Adresse), Einschlaf-Timer, Radio als Wecker; Sirene, Ansagen, Morse und Wecker gehen vor. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639zzzzd: «📻 Radio» – Internet-Radio auf dem Lautsprecher (Sender aus dem offenen Verzeichnis radio-browser.info oder eine eigene Adresse), Einschlaf-Timer, Radio als Wecker; Sirene, Ansagen, Morse und Wecker gehen vor. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Wunsch des Besitzers (15.11.2026). Mehr → «📻 Radio» (/radio, /api/radio), Fenster: Mehr → «📻 Radio».
 #  Sender     CFG radio_stations (pro Gerät): {id, name, sub, uuid | url | find}. Ab Werk «Radio Pilatus» (Luzern) als
@@ -747,6 +747,7 @@ def radio_state(lang=None, role="admin", perms=None):
           "vol": int(CFG.get("radio_volume", 40)), "wake": RADIO["wake"], "last": CFG.get("radio_last") or "",
           "sleep": {"min": RADIO["sleep_min"], "left": max(0, int(RADIO["sleep_until"] - now)) if RADIO["sleep_until"] else 0, "opts": list(RADIO_SLEEP)},
           "retry": {"in": max(0, int(RADIO["retry_at"] - now)), "n": RADIO["err_n"], "max": len(RADIO_BACKOFF) + 1} if RADIO["state"] == "retry" else None,
+          "quiet": bool(CFG.get("noise_alarm") or CFG.get("clap_on")),     # Besitzer: say it on the card and the row
           "spk": bool(out_selected()), "ffmpeg": bool(shutil.which("ffmpeg")), "mic": bool(CFG.get("audio_in")),
           "wake_radio": str(CFG.get("wake_sound") or "").startswith("radio:"),
           "stations": [{"id": e["id"], "name": e["name"], "sub": e.get("sub", ""), "kind": "url" if ("url" in e and "uuid" not in e and "find" not in e) else "dir"} for e in lst],
@@ -868,7 +869,7 @@ _smalltv_routes_radio = smalltv_routes
 
 
 # wraps: smalltv_routes
-def smalltv_routes(app, reply, body):                        # + 639zzzzc: the radio page and its API
+def smalltv_routes(app, reply, body):                        # + 639zzzzd: the radio page and its API
     _smalltv_routes_radio(app, reply, body)
     from flask import Response, request, g
 
@@ -1012,6 +1013,7 @@ section.card h3{margin:0 0 10px}details>summary{cursor:pointer;font-weight:600;m
     <div class="ra-tit" id="ra-tit"></div>
     <div class="ra-hint" id="ra-hint"></div>
     <div class="ra-off" id="ra-off" hidden></div>
+    <div class="ra-hint warn" id="ra-qn" hidden></div>
     <button type="button" class="ra-go" id="ra-go">▶</button>
     <div class="ra-sl"><span aria-hidden="true">🔈</span><input type="range" id="ra-vol" min="0" max="100" step="1" aria-label="Volume"><b id="ra-vol-v"></b></div>
     <div class="ra-lab" id="ra-l-sleep">Sleep timer</div>
@@ -1076,6 +1078,7 @@ section.card h3{margin:0 0 10px}details>summary{cursor:pointer;font-weight:600;m
     else if (J.offline) ot = "📡 " + t("No internet - the radio needs a connection.") + (J.retry ? " " + t("Next try in") + " " + J.retry.in + " s (" + J.retry.n + " / " + J.retry.max + ")." : " " + t("MoveEye has stopped trying - tap ▶ again later."));
     else if (bad) ot = (J.msg || t("The station does not answer.")) + (J.retry ? " · " + t("Next try in") + " " + J.retry.in + " s" : "");
     off.textContent = ot; off.hidden = !ot;
+    $i("ra-qn").textContent = J.quiet ? "🔇 " + t("While the radio plays: noise alarm and clap switch paused - the camera alarm works as usual") : ""; $i("ra-qn").hidden = !J.quiet;
     const go = $i("ra-go");
     go.textContent = on ? "⏹ " + t("Stop") : "▶ " + t("Play");
     go.className = "ra-go" + (on ? " sec" : ""); go.disabled = !J.may.play || (!on && !cur);
@@ -1143,13 +1146,15 @@ _ra_anchor = '  <a class="mi" href="/tools">'
 if 'href="/radio"' not in MORE_PAGE and MORE_PAGE.count(_ra_anchor) == 1:
     MORE_PAGE = MORE_PAGE.replace(_ra_anchor, RADIO_MORE_ROW + _ra_anchor, 1)
     MORE_PAGE = MORE_PAGE.replace("/*ALERTS*/", 'fetch("/api/radio", {cache: "no-store"}).then(r => r.json()).then(j => { const s = document.getElementById("m-radio-s"), x = j && j.state; '
-                                  'if (s && x && x.on) { s.removeAttribute("data-i18n"); s.textContent = "▶ " + x.name + (x.title ? " · " + x.title : ""); } }).catch(() => {});\n/*ALERTS*/', 1)
+                                  'if (s && x && x.on) { s.removeAttribute("data-i18n"); s.textContent = "▶ " + x.name + (x.title ? " · " + x.title : ""); } '
+                                  'if (s && x && x.quiet) { const q = document.createElement("small"); q.style.cssText = "display:block;color:var(--yel)"; '
+                                  'q.textContent = "🔇 " + t("While the radio plays: noise alarm and clap switch paused - the camera alarm works as usual"); s.after(q); } }).catch(() => {});\n/*ALERTS*/', 1)
 
 _render_page_radio = render_page
 
 
 # wraps: render_page
-def render_page(page, active):                               # + 639zzzzc: the German texts of the radio page
+def render_page(page, active):                               # + 639zzzzd: the German texts of the radio page
     out = _render_page_radio(page, active)
     if "/*RADIODE*/" in out:
         out = out.replace("/*RADIODE*/", "Object.assign(I18N.de, " + json.dumps(_RADIO_DE, ensure_ascii=False).replace("</", "<\\/") + ");", 1)
@@ -1160,6 +1165,11 @@ def render_page(page, active):                               # + 639zzzzc: the G
 _HX_RADIO = {
     "Radio": ("Radio", "Radio", "Radio", "Radio"),
     "Internet radio on the loudspeaker": ("Internet-Radio auf dem Lautsprecher", "Radio internet sur le haut-parleur", "Radio internet sull’altoparlante", "Radio d’internet sin l’autpledader"),
+    "While the radio plays: noise alarm and clap switch paused - the camera alarm works as usual": (
+        "Während Radio: Geräusch-Alarm und Klatschschalter pausiert – Kamera-Alarm läuft normal",
+        "Pendant la radio : alarme sonore et interrupteur à claquements en pause – l’alarme caméra fonctionne normalement",
+        "Durante la radio: allarme rumore e interruttore a battito di mani in pausa – l’allarme della telecamera funziona normalmente",
+        "Durant il radio: alarm da canera ed interruptur da batter las mauns en pausa – l’alarm da la camera funcziuna normal"),
     "Radio on / off": ("Radio ein / aus", "Radio marche / arrêt", "Radio acceso / spento", "Radio en / ora"),
     "Play": ("Abspielen", "Écouter", "Ascolta", "Tadlar"),
     "Volume": ("Lautstärke", "Volume", "Volume", "Volumen"),
@@ -1286,7 +1296,7 @@ for _k, _v in _HX_RADIO.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 _RADIO_DE = {_k: DE.get(_k, _v[0]) for _k, _v in _HX_RADIO.items()}
 _RADIO_DE.update({k: DE[k] for k in ("More", "Stop", "Wake-up alarm", "No connection to MoveEye.", "not allowed for your user") if DE.get(k)})
-MORE_DE.update({"Radio": "Radio", "Internet radio on the loudspeaker": _HX_RADIO["Internet radio on the loudspeaker"][0]})
+MORE_DE.update({k: _HX_RADIO[k][0] for k in ("Radio", "Internet radio on the loudspeaker", "While the radio plays: noise alarm and clap switch paused - the camera alarm works as usual")})
 
 # ---- the manual: a section «Radio» ----------------------------------------------------------------------------------------------
 _HELP_RADIO = {
@@ -1386,4 +1396,4 @@ def radio_selftest():
     return "Pilatus by name (no guessed address), addresses, play lists, ICY titles, priority / pause, rights, wake-up sound, texts, back-off"
 
 
-SELFTEST_EXTRA.append(("Radio: stations, play lists, ICY, priority, rights (639zzzzc)", radio_selftest))
+SELFTEST_EXTRA.append(("Radio: stations, play lists, ICY, priority, rights (639zzzzd)", radio_selftest))

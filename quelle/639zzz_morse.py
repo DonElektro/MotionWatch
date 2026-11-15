@@ -1181,7 +1181,7 @@ def morse_beep_play(tx):
     def work():
         p = None
         try:
-            radio_yield("morse")                             # 639zzzzc: the radio pauses while Morse / radio signals are sent
+            radio_yield("morse")                             # 639zzzzd: the radio pauses while Morse / radio signals are sent
             cmd, err = out_cmd(OUT_RATE)
             if cmd is None:
                 raise RuntimeError(err)
@@ -1576,7 +1576,7 @@ if GUI_OK:
                 s = morse_state()
                 if s["on"]:
                     st.config(text="⏸ " + tr("Morse mode is running – the protection is PAUSED") + f"  ·  {s['rest'] // 60}:{s['rest'] % 60:02d}"
-                              + ("  ·  📻 " + tr("Own protocol (2 tones)") + (" 🔑" if CFG.get("morse_key") else "") if CFG.get("morse_fmt") == "prot" else ""),
+                              + ("  ·  📡 " + tr("Own protocol (2 tones)") + (" 🔑" if CFG.get("morse_key") else "") if CFG.get("morse_fmt") == "prot" else ""),
                               fg=C.get("org", "#ff9f0a"))
                 else:
                     st.config(text=tr("The Morse mode is off.") + ("  ·  " + tr("Only for the administrator") if not morse_may() else ""), fg=C["txt"])
@@ -1681,7 +1681,7 @@ text-decoration:none;color:var(--acc);font-weight:600;text-align:center;overflow
         <div class="mo-warn" id="mo-key-w"></div>
         <div class="mo-warn" id="mo-legal"></div>
       </div>
-      <div class="mo-row"><a class="mo-lnk" id="mo-funk" href="/morse/funk">📻 Phone radio</a><a class="mo-lnk" id="mo-funk-dl" href="/morse/funk.html" download="Handy-Funkgeraet.html">⬇ File</a></div>
+      <div class="mo-row"><a class="mo-lnk" id="mo-funk" href="/morse/funk">📡 Phone radio</a><a class="mo-lnk" id="mo-funk-dl" href="/morse/funk.html" download="Handy-Funkgeraet.html">⬇ File</a></div>
       <div class="mo-hint" id="mo-funk-h"></div>
       <div class="mo-hint bad" id="mo-fmt-err"></div>
     </div>
@@ -1760,7 +1760,7 @@ text-decoration:none;color:var(--acc);font-weight:600;text-align:center;overflow
   $i("mo-l-key").textContent = t("New key (the same as on the other phone):"); $i("mo-key-set").textContent = "🔑 " + t("Set the key"); $i("mo-key-del").textContent = t("Delete the key");
   $i("mo-key-w").textContent = "⚠ " + t("The key only obscures: every message shifts the characters with the same sequence. This is no strong encryption - whoever hears several messages can decode them.");
   $i("mo-legal").textContent = "§ " + t("Encryption is forbidden in amateur radio (ITU Radio Regulations No. 25.2A; OFCOM: digital transmissions only unencrypted). Never send with a key over amateur radio; for other radios (e.g. PMR446) follow the rules of OFCOM (BAKOM).");
-  $i("mo-funk").textContent = "📻 " + t("Phone radio"); $i("mo-funk-dl").textContent = "⬇ " + t("Download as a file for another phone");
+  $i("mo-funk").textContent = "📡 " + t("Phone radio"); $i("mo-funk-dl").textContent = "⬇ " + t("Download as a file for another phone");
   const fmtSet = async b => { $i("mo-fmt-err").textContent = ""; const j = await api(Object.assign({action: "funk"}, b)); if (j.state) J = j; if (!j.ok) $i("mo-fmt-err").textContent = j.error || ""; paint(); plan(); };
   document.querySelectorAll("#mo-fmt-seg button").forEach(b => { b.onclick = () => fmtSet({fmt: b.dataset.f}); });
   $i("mo-fa").onchange = () => fmtSet({fa: +$i("mo-fa").value}); $i("mo-fb").onchange = () => fmtSet({fb: +$i("mo-fb").value});
@@ -1840,7 +1840,7 @@ text-decoration:none;color:var(--acc);font-weight:600;text-align:center;overflow
       : (sd.live ? sd.live + "  (" + sd.live_wpm + " WPM, " + sd.hz + " Hz)" : sd.hz ? t("a tone at") + " " + sd.hz + " Hz …" : t("listening for a tone or a whistle"))
         + " · " + t("reads up to about") + " " + sd.limit + " WPM. " + t("No sound is stored - only the decoded text."));
     const f = s.funk;                                          // 639zzzf: listening for the protocol (the two tones)
-    if (f && f.fmt === "prot" && sd.on && sd.mic && s.on) se.textContent = "🎤 📻 " + (f.own ? t("MoveEye plays a sound itself - not listening meanwhile.")
+    if (f && f.fmt === "prot" && sd.on && sd.mic && s.on) se.textContent = "🎤 📡 " + (f.own ? t("MoveEye plays a sound itself - not listening meanwhile.")
       : !f.run ? t("The microphone delivers no sound.") + " (" + sd.status + ")" : (f.live || f.sym ? f.live + " " + f.sym.replace(/\./g, "·").replace(/-/g, "–") + "  (" + f.wpm + " WPM)"
       : t("listening for the two tones")) + " · A " + f.fa + " Hz" + (f.a ? " ●" : "") + " · B " + f.fb + " Hz" + (f.b ? " ●" : "")) + " · " + t("No sound is stored - only the decoded text.");
     const pe = $i("mo-peer-r"), p = r.peer;
