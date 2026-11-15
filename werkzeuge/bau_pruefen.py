@@ -90,7 +90,8 @@ def stand_jetzt(bau):
     return {
         "quellcode": {os.path.basename(p): sha(os.path.relpath(p, REPO)) for p in sorted(glob.glob(os.path.join(GEH, "Quellcode", "*.py")))},
         "doku": {d: sha(d) for d in DOKU},
-        "druckdateien": {n: sha(dd + n) for n in list(bau.get("druckdateien") or []) + list(bau.get("druckdateien_einzeln") or [])},
+        "druckdateien": {n: sha(dd + n) for n in list(bau.get("druckdateien") or []) + list(bau.get("druckdateien_einzeln") or [])
+                         + list((bau.get("transport") or {}).get("dateien") or [])},
         "teile": sorted(t["id"] for t in bau.get("teile") or []),
         "bom": sorted(b["id"] for b in bau.get("bom") or []),
         "werte": werte(),
@@ -135,7 +136,7 @@ def pruefen():
     for b in bau.get("bom") or []:
         if not isinstance(b.get("preis"), (int, float)) or b.get("haendler") not in (bau.get("haendler") or {}):
             warn.append(f"Einkauf: {b['id']} ohne Preis-Schätzung oder Händler")
-    druck = {p["datei"] for p in (bau.get("druck") or {}).get("teile") or []}
+    druck = {p["datei"] for p in list((bau.get("druck") or {}).get("teile") or []) + list((bau.get("transport") or {}).get("teile") or [])}
     for t in bau.get("teile") or []:
         if t.get("datei") and t["datei"] not in druck:
             warn.append(f"Drucken: {t['datei']} ohne Druckangaben")

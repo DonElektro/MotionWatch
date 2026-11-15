@@ -1,0 +1,122 @@
+{
+ "_hinweis": "Erzeugt von werkzeuge/gehaeuse_bauen.py --sim – nicht von Hand ändern. Transportsicherung (bau.json «transport»): eigenes Modell, Koordinaten wie gehaeuse.glb; MoveEye BAU3D_GLB_TRANSPORT.",
+ "quelle_sha256": "3551bbdbff0cce549f45bfd21f67a2326159474a3d787a556e50c25d53e7abef",
+ "glb_sha256": "cad9511f3e3269fa99243bb2523b766e88334a820b89372dd55f1fcd43dc14c8",
+ "teile": [
+  {
+   "id": "kappe",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": false,
+   "dreiecke": 3409,
+   "transport": "haube",
+   "mitte": [
+    0.0,
+    0.004,
+    0.0027
+   ],
+   "groesse": [
+    0.1311,
+    0.0549,
+    0.0376
+   ],
+   "explosion": [
+    0.0,
+    0.47,
+    -0.0
+   ]
+  },
+  {
+   "id": "drehsperre",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": false,
+   "dreiecke": 3550,
+   "transport": "haube",
+   "mitte": [
+    0.0,
+    -0.0453,
+    0.0444
+   ],
+   "groesse": [
+    0.0704,
+    0.018,
+    0.0618
+   ],
+   "explosion": [
+    0.0,
+    0.26,
+    -0.0
+   ]
+  },
+  {
+   "id": "schale_vorne",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": false,
+   "dreiecke": 6546,
+   "transport": "schale",
+   "mitte": [
+    -0.0,
+    -0.0032,
+    -0.0221
+   ],
+   "groesse": [
+    0.132,
+    0.108,
+    0.0381
+   ],
+   "explosion": [
+    -0.0,
+    0.52,
+    -0.0
+   ]
+  },
+  {
+   "id": "schale_hinten",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": false,
+   "dreiecke": 10934,
+   "transport": "schale",
+   "mitte": [
+    -0.0,
+    -0.0032,
+    0.0293
+   ],
+   "groesse": [
+    0.1319,
+    0.108,
+    0.0751
+   ],
+   "explosion": [
+    -0.0,
+    0.52,
+    -0.0
+   ]
+  },
+  {
+   "id": "schale_stopfen",
+   "gruppe": "base",
+   "farbe": "#9a9ea3",
+   "aussen": false,
+   "dreiecke": 2476,
+   "transport": "schale",
+   "mitte": [
+    0.0121,
+    -0.0059,
+    -0.0399
+   ],
+   "groesse": [
+    0.0738,
+    0.0872,
+    0.0042
+   ],
+   "explosion": [
+    0.0,
+    0.52,
+    -0.0
+   ]
+  }
+ ]
+}

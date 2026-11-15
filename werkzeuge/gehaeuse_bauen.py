@@ -57,6 +57,12 @@ TEXTE = os.path.join(REPO, "simulator3d", "i18n", "texte.json")
 MW_OUT = os.path.join(REPO, "quelle", "639v_daten_gehaeuse.py")
 LANGS = ("de", "en", "fr", "it", "rm")
 MW3D_OUT = os.path.join(REPO, "quelle", "639vb_daten_bau3d.py")
+# mw-bauen-transport: die Transportsicherung (bau.json «transport», Teile 29–33) als eigenes Modell – nicht in gehaeuse.glb (der
+# Simulator und BAU3D_GLB bleiben gleich, git speichert so pro MoveEye-Version nur den kleinen Unterschied), in MoveEye als
+# BAU3D_GLB_TRANSPORT, geladen erst mit dem Schalter «Transportsicherung zeigen»
+TR_DIR = os.path.join(GEH, "Modelle")
+TR_GLB = os.path.join(TR_DIR, "gehaeuse_transport.glb")
+TR_JSON = os.path.join(TR_DIR, "gehaeuse_transport.json")
 THREE = os.path.join(HIER, "three")
 WEB3D_FILES = ("three.module.min.js", "loaders/GLTFLoader.js", "controls/OrbitControls.js", "utils/BufferGeometryUtils.js")
 BAU_KEYS = ("varianten", "variante_standard", "haendler", "druck", "werkzeug", "schrauben", "sicherheit", "verkabelung", "software",
@@ -119,6 +125,16 @@ GEO = {
     "feet53": ("base", 0.6, 2.0, "#333333", True, -35, 0.3), "feet53_2": ("base", 0.6, 2.0, "#333333", True, -35, 0.3),
     "feet53_3": ("base", 0.6, 2.0, "#333333", True, -35, 0.3), "feet53_4": ("base", 0.6, 2.0, "#333333", True, -35, 0.3),
     "cable_cam1_53": ("base", 0.7, 1.4, "#d9c27a", False, 165, 0.5), "cable_cam0_53": ("base", 0.7, 1.4, "#d9c27a", False, 280, 0.0),
+    # Gehäuse 5.4.0 (geh-transportkappe, 14.11.2026): 29 Transportsicherung aus kappe540.py, aufgesetzt; nicht in der Szene
+    # («aussen» aus); in der Werkstatt nur mit dem Schalter «Transportsicherung zeigen» (bau.json «transport»: haube / schale)
+    "kappe": ("base", 0.6, 2.5, "#9a9ea3", False, 470, 0.0),
+    # 30 Drehsperre-Klammer aus klammer540.py (flach auf dem Deckel, sperrt Pan beim Transport) – ebenso «transport»
+    "drehsperre": ("base", 0.3, 1.6, "#9a9ea3", False, 260, 0.0),
+    # Gehäuse 5.5.0 (geh-schutzschale, 14.11.2026): 31 / 32 Schutzschale und 33 Stopfen aus schale550.py, aufgesetzt; ebenso
+    # «transport» (nur im Rucksack auf dem Gerät)
+    "schale_vorne": ("base", 0.6, 3.5, "#9a9ea3", False, 520, 0.0),
+    "schale_hinten": ("base", 0.6, 3.5, "#9a9ea3", False, 520, 0.0),
+    "schale_stopfen": ("base", 0.4, 2.5, "#9a9ea3", False, 520, 0.0),
 }
 AUSSEN_V52 = ("wide", "irled")      # in der Szene sichtbar, wenn v5.2 gewählt ist (Linse / IR-Modul im Fenster)
 LITE_K = 2.3                         # Lite: Zellen so viel grösser
@@ -234,6 +250,16 @@ def modell():
         P[k] = T([fx, fy, -6.0], v5.part_feet())
     P["cable_cam1_53"] = v52.kabel(v53.cable_cam1_pts())
     P["cable_cam0_53"] = v52.kabel(v53.cable_cam0_pts())
+    # Gehäuse 5.4.0 (kappe540.py): 29 Transportsicherung, aufgesetzt auf das Gerät in Grundstellung (gleiche Koordinaten)
+    import kappe540
+    import klammer540
+    P["kappe"] = kappe540.part_kappe()
+    P["drehsperre"] = klammer540.part_klammer()
+    # Gehäuse 5.5.0 (schale550.py): 31 / 32 Schutzschale mit 33 Stopfen, aufgesetzt (gleiche Koordinaten)
+    import schale550
+    P["schale_vorne"] = schale550.part_vorne()
+    P["schale_hinten"] = schale550.part_hinten()
+    P["schale_stopfen"] = schale550.part_stopfen()
 
     def tilt_frame(n):
         return T([AX, AY, v5.PAN_Z0], R([0, 0, 180.0], T([0, 0, pt.AXZ], n)))
@@ -404,6 +430,7 @@ def baue_sim(nur=None):
     kopf.update({k: v for k, v in farben.items() if k in GEO and isinstance(v, str) and v.startswith("#")})
     os.makedirs(SIMDIR, exist_ok=True)
     normal, lite, meta = [], [], []
+    trp, trp_meta = [], []                                # Transportsicherung: eigenes Modell (TR_GLB)
     t_all = time.time()
     tub_c = None
     for i in ids:
@@ -419,6 +446,12 @@ def baue_sim(nur=None):
             v1, f1 = cluster_qem(v, f, c)
         g = zu_godot(v1, org)
         gv, gn, gf = normalen(g, f1)
+        if rowd[i].get("transport"):                      # nicht in gehaeuse.glb / modelle.json (Simulator)
+            trp.append((i, gv, gn, gf, col))
+            trp_meta.append({"id": i, "gruppe": grp, "farbe": col, "aussen": False, "dreiecke": int(len(gf)), "transport": rowd[i]["transport"],
+                             "mitte": [round(float(x), 4) for x in (g.min(0) + g.max(0)) / 2], "groesse": [round(float(x), 4) for x in g.max(0) - g.min(0)]})
+            print(f"  {i:12s} {len(f):7d} -> {len(gf):6d} Dreiecke (Transportsicherung)  {time.time() - t0:5.1f}s", flush=True)
+            continue
         normal.append((i, gv, gn, gf, col))
         e = {"id": i, "gruppe": grp, "farbe": col, "aussen": aussen, "dreiecke": int(len(gf)),
              "mitte": [round(float(x), 4) for x in (g.min(0) + g.max(0)) / 2], "groesse": [round(float(x), 4) for x in g.max(0) - g.min(0)]}
@@ -439,13 +472,21 @@ def baue_sim(nur=None):
             tub_c = e["mitte"]
         meta.append(e)
         print(f"  {i:12s} {len(f):7d} -> {len(gf):6d} Dreiecke{'  Lite ' + str(e.get('dreiecke_lite')) if aussen else ''}  {time.time() - t0:5.1f}s", flush=True)
-    for e in meta:                                       # Explosion (Werkstatt): Höhe + Streuung vom Mittelpunkt der Gruppe weg
+    for e in meta + trp_meta:                            # Explosion (Werkstatt): Höhe + Streuung vom Mittelpunkt der Gruppe weg
         grp, _h, _c, _col, _a, lvl, spread = GEO[e["id"]]
         if e.get("ersetzt") and e["id"] not in ("tub52", "head52", "plug52", "tub53", "lid53"):                     # v5.2: wie das ersetzte Teil auseinanderfliegen
             grp, _h, _c, _col, _a, lvl, spread = GEO[e["ersetzt"]]
         ax_ = [0.0, 0.0, tub_c[2]] if grp == "base" else [0.0, 0.0, 0.0]
         e["explosion"] = [round((e["mitte"][0] - ax_[0]) * spread, 4), round(lvl / 1000.0, 4), round((e["mitte"][2] - ax_[2]) * spread, 4)]
     schreibe_glb(os.path.join(SIMDIR, "gehaeuse.glb"), normal)
+    if trp:
+        os.makedirs(TR_DIR, exist_ok=True)
+        schreibe_glb(TR_GLB, trp)
+        with open(TR_JSON, "w", encoding="utf-8") as fh:
+            fh.write(json.dumps({"_hinweis": "Erzeugt von werkzeuge/gehaeuse_bauen.py --sim – nicht von Hand ändern. Transportsicherung "
+                                             "(bau.json «transport»): eigenes Modell, Koordinaten wie gehaeuse.glb; MoveEye BAU3D_GLB_TRANSPORT.",
+                                 "quelle_sha256": quelle_sha(), "glb_sha256": sha_datei(TR_GLB), "teile": trp_meta},
+                                ensure_ascii=False, indent=1) + "\n")
     schreibe_glb(os.path.join(SIMDIR, "gehaeuse_lite.glb"), lite)
     for fn in ("gehaeuse.glb", "gehaeuse_lite.glb"):
         with open(os.path.join(SIMDIR, fn + ".import"), "w") as fh:
@@ -516,6 +557,8 @@ def baue_texte():
     L += ["}", "# Teile: [id, Art (druck | teil | kabel | v52), Name, Materialliste-id, Montageschritt (0 = keiner), Druckdatei,",
           "#         ersetzt (v5.2: dieses Teil von v5.1, sonst \"\")]", "const TEILE := ["]
     for t in bau["teile"]:
+        if t.get("transport"):                            # Transportsicherung: nur MoveEye (eigener Abschnitt, eigenes Modell)
+            continue
         if t.get("datei"):
             pairs[t["datei"]] = {Lg: t["datei"] for Lg in LANGS[1:]}
         nm = de(t["name"]) if t.get("name") else tx(bom[t["bom"]]["name"], "de")
@@ -587,12 +630,14 @@ def baue_texte():
     subprocess.run([sys.executable, os.path.join(HIER, "sim_texte.py")], check=True, stdout=subprocess.DEVNULL)   # sortiert, Bericht
     # MoveEye: die Daten (alle Sprachen) und die Texte der Seite /case (englischer Schlüssel -> de / fr / it / rm)
     mw = {"version": bau["version"], "stand": bau["stand"], "masse": bau["masse"], "bom_gruppen": bau["bom_gruppen"],
-          "bom": bau["bom"], "teile": [{k: t[k] for k in ("id", "art", "bom", "schritt", "name", "datei", "farbe", "ersetzt", "wenn", "ohne") if k in t} for t in bau["teile"]],
+          "bom": bau["bom"], "teile": [{k: t[k] for k in ("id", "art", "bom", "schritt", "name", "datei", "farbe", "ersetzt", "wenn", "ohne", "transport") if k in t} for t in bau["teile"]],
           "schritte": bau["schritte"], "druckdateien": bau.get("druckdateien", []), "github": bau.get("github", ""),
           "gehaeuse_v52": bau.get("gehaeuse_v52", {}), "gehaeuse_v53": bau.get("gehaeuse_v53", {}), "farben": bau.get("farben", {})}
     for k in BAU_KEYS:                                   # real-bauen: dazu alles für die Seite «Bauen»
         if k in bau:
             mw[k] = bau[k]
+    if bau.get("transport"):                             # mw-bauen-transport: eigener Abschnitt in Bauen → Drucken (nur MoveEye)
+        mw["transport"] = {k: v for k, v in bau["transport"].items() if not k.startswith("_")}
     ui = bau.get("ui_mw") or {}
     ui2 = {u["en"]: {Lg: u[Lg] for Lg in ("de", "fr", "it", "rm")} for u in bau.get("ui_bauen") or []}
     js = json.dumps(mw, ensure_ascii=False, separators=(",", ":"))
@@ -642,10 +687,19 @@ def baue_web3d(sha):
     with open(os.path.join(SIMDIR, "modelle.json"), encoding="utf-8") as fh:
         man = json.load(fh)
     mod = {"kippachse_ueber_boden_m": man.get("kippachse_ueber_boden_m"), "fuesse_m": man.get("fuesse_m"),
-           "teile": [{k: e[k] for k in ("id", "gruppe", "aussen", "mitte", "explosion", "farbe", "ohne") if k in e} for e in man.get("teile", [])]}
+           "teile": [{k: e[k] for k in ("id", "gruppe", "aussen", "mitte", "explosion", "farbe", "ohne", "transport") if k in e} for e in man.get("teile", [])]}
+    trg, trm = b"", []
+    if os.path.exists(TR_GLB) and os.path.exists(TR_JSON):
+        with open(TR_GLB, "rb") as fh:
+            trg = fh.read()
+        with open(TR_JSON, encoding="utf-8") as fh:
+            trm = [{k: e[k] for k in ("id", "gruppe", "aussen", "mitte", "explosion", "farbe", "transport") if k in e} for e in json.load(fh).get("teile", [])]
     out += ["}", f"BAU3D_GLB = [{hashlib.sha256(glb).hexdigest()!r}, {len(glb)}, {pk(glb)!r}]",
             "# aus simulator3d/inhalte/gehaeuse/modelle.json: Gruppe, aussen, Mitte und Explosion pro Teil (wie die Werkstatt im Simulator)",
-            "BAU3D_MODELLE = json.loads(" + repr(json.dumps(mod, ensure_ascii=False, separators=(",", ":"))) + ")", ""]
+            "BAU3D_MODELLE = json.loads(" + repr(json.dumps(mod, ensure_ascii=False, separators=(",", ":"))) + ")",
+            "# Transportsicherung (hardware/gehaeuse/Modelle/gehaeuse_transport.glb): eigenes Modell, erst mit dem Schalter geladen",
+            f"BAU3D_GLB_TRANSPORT = [{hashlib.sha256(trg).hexdigest()!r}, {len(trg)}, {pk(trg)!r}]" if trg else "BAU3D_GLB_TRANSPORT = []",
+            "BAU3D_MODELLE_TRANSPORT = json.loads(" + repr(json.dumps(trm, ensure_ascii=False, separators=(",", ":"))) + ")", ""]
     with open(MW3D_OUT, "w", encoding="utf-8") as fh:
         fh.write("\n".join(out))
     print(f"3D im Browser: {os.path.getsize(MW3D_OUT) // 1024} KB -> {os.path.relpath(MW3D_OUT, REPO)}")
@@ -669,6 +723,14 @@ def pruefen():
                 probs.append(f"{fn}: fehlt oder verändert")
             if not os.path.exists(p + ".import"):
                 probs.append(f"{fn}.import fehlt (importer keep)")
+    if any(t.get("transport") for t in lade_bau()["teile"]):
+        try:
+            with open(TR_JSON, encoding="utf-8") as fh:
+                tj = json.load(fh)
+            if tj.get("quelle_sha256") != sha or tj.get("glb_sha256") != sha_datei(TR_GLB):
+                probs.append("Modell der Transportsicherung passt nicht zur Quelle – gehaeuse_bauen.py --sim")
+        except (OSError, ValueError):
+            probs.append("hardware/gehaeuse/Modelle/gehaeuse_transport.glb / .json fehlt – gehaeuse_bauen.py --sim")
     for p, needle in ((GD_OUT, f'const QUELLE_SHA := "{sha}"'), (MW_OUT, f"GEH_QUELLE_SHA = {sha!r}")):
         if not os.path.exists(p) or needle not in open(p, encoding="utf-8").read():
             probs.append(os.path.relpath(p, REPO) + " ist nicht aktuell – gehaeuse_bauen.py --texte")
