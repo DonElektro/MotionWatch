@@ -186,6 +186,7 @@ details.px-adv>summary::before{content:"▸ ";}details.px-adv[open]>summary::bef
     hide(rowOf(d, "push_pics"));
     // ---- Wann ----
     root.appendChild(el("div", "px-h", t("When")));
+    { const pp = el("div", ""); pp.id = "pp-push"; root.appendChild(pp); }   // 639zzzzp: «Mitteilungen pausieren»
     ["notify_cooldown", "prealarm_cooldown", "quiet_on"].forEach(k => { const r_ = rowOf(d, k); if (r_) root.appendChild(r_); });
     X.q = quietBox(d); root.appendChild(X.q);
     const qp = rowOf(d, "quiet_persons"); if (qp) { X.q.insertBefore(qp, X.q.firstChild); }
