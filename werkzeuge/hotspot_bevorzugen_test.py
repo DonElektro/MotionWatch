@@ -345,6 +345,8 @@ src = open(D, encoding="utf-8").read()
 i = src.rfind('\nif __name__ == "__main__":')
 patch = """
 hspref_online = lambda secs=40: True
+# the demo blocks /api/wifi (210); here nmcli / iw / ip are invented (PATH), so the test lets it through
+DEMO_BLOCK = tuple(x for x in DEMO_BLOCK if x != "/api/wifi")
 def _hsp_test_loop():                                # the demo has no network automatic: the test runs the look itself
     while True:
         try:
@@ -435,9 +437,15 @@ def teil_b(datei, tmp, bilder):
             # nobody connected any more -> it switches; the card says «verbunden»
             s = json.load(open(os.path.join(tb, "net.json"))); s["clients"] = 0; s["scan_in_ap"] = True
             json.dump(s, open(os.path.join(tb, "net.json"), "w"))
-            pg.wait_for_function("() => (document.getElementById('hsp-st') || {}).textContent.includes('verbunden')", timeout=70000)
+            # («wartet, weil 1 Gerät verbunden ist» also contains «verbunden»: wait for the end of the text)
+            try:
+                pg.wait_for_function("() => /: verbunden$/.test(((document.getElementById('hsp-st') || {}).textContent || '').trim())", timeout=70000)
+            except Exception:
+                pass
             weg(); card.screenshot(path=os.path.join(bilder, "hotspot_karte_verbunden.png"))
-            ok(True, "Karte: «%s»" % pg.locator("#hsp-st").inner_text())
+            txt = pg.locator("#hsp-st").inner_text()
+            h = api()["hsp"]
+            ok(txt == "📶 Hotspot «Elektros iPhone»: verbunden" and h["state"] == "connected", "Karte nach dem Wechsel: «%s» (%s)" % (txt, h["state"]))
             # switch off from the page
             pg.locator("#hsp-on").click(force=True)
             pg.wait_for_function("() => !document.getElementById('hsp-st')", timeout=20000)
