@@ -657,6 +657,8 @@ def qrk_exec(card, img, who="QR card"):
     cmd, p = card["cmd"], card["p"]
     L = norm_lang(CFG.get("lang"))
     nm = card["name"]
+    if cmd == "B":                                          # 639zzzzk: «💬 Blinki listens» (the command exists only with the zip)
+        return blinki_listen("QR card") if "blinki_listen" in globals() else (False, "unknown command")
     if cmd == "P":
         w = WATCH_REF.get("w")
         n = getattr(w, "notifier", None) if w is not None else None

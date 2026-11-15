@@ -41,6 +41,15 @@ def clap_action(n):
     SOUNDEV.update(last_n=n, last_n_t=time.time())
     if wake_clap_listens():                              # 2.98.9: the wake-up alarm rings - clapping = snooze
         SOUNDEV.update(last_act=tr("Snooze"), last_act_t=time.time()); wake_snooze(f"{n}× clapped"); return
+    if n == 2 and blinki_clap_listens() and not (CFG.get("clap_on") and act != "none"):   # 639zzzzk: only when 2× does nothing else
+        SOUNDEV.update(last_act="💬 Blinki", last_act_t=time.time())
+        try:
+            blinki_listen("2× clapped")
+        except Exception as e:
+            log_event("sys", f"Blinki: {type(e).__name__}"[:80])
+        return
+    if not CFG.get("clap_on"):                           # 639zzzzk: the microphone counted only for Blinki - nothing (as before)
+        return
     if act == "none":
         SOUNDEV["last_act"] = ""; return
     label = dict(clap_act_pairs()).get(act, act)
@@ -100,7 +109,7 @@ class SoundEvents:
         threading.Thread(target=self._model_loop, daemon=True, name="sneeze").start()
 
     def feed(self, a, now):
-        if not (CFG.get("clap_on") or CFG.get("sneeze_on") or wake_clap_listens()):
+        if not (CFG.get("clap_on") or CFG.get("sneeze_on") or wake_clap_listens() or blinki_clap_listens()):   # 639zzzzk: Blinki only with its switch
             self.pending.clear(); SOUNDEV["claps"] = []; return
         muted = (AUDIO is not None and now < AUDIO.mute_until) or SOUND["playing"] or now - SERVO_MOVE["t"] < 1.0
         x = a / 32768.0
@@ -129,7 +138,7 @@ class SoundEvents:
         if CFG.get("sneeze_on") and db > max(self.bg + 14.0, -45.0) and t - self.loud_t > 0.7 and not muted:
             self.loud_t = t                                              # something loud: look at it with the model in 0.6 s
             threading.Timer(0.6, self._ask_model, args=(t,)).start()
-        if (CFG.get("clap_on") or wake_clap_listens()) and not muted and loud and before < db - 12.0 and not any(abs(t - p[0]) < 0.12 for p in self.pending):
+        if (CFG.get("clap_on") or wake_clap_listens() or blinki_clap_listens()) and not muted and loud and before < db - 12.0 and not any(abs(t - p[0]) < 0.12 for p in self.pending):
             self.pending.append((t, db))
         for p in list(self.pending):
             if t - p[0] >= 0.16:                                          # 160 ms later: was it short (a clap)?
@@ -211,7 +220,7 @@ def sim_sound_events(evs, last, fresh=False):
         kind, n, db = str(e.get("kind") or ""), int(e.get("n") or 1), float(e.get("db") or -90.0)
         if kind in ("clap", "sneeze") and own_sound_now():
             own_sound_ignored(kind); continue            # 554: MoveEye plays a sound itself (siren …) - like the real microphone
-        if kind == "clap" and (CFG.get("clap_on") or wake_clap_listens()):
+        if kind == "clap" and (CFG.get("clap_on") or wake_clap_listens() or blinki_clap_listens()):
             rise = 26.0 - 1.6 * float(CFG.get("clap_sens", 5))
             if db < max(bg + rise, -42.0):
                 SOUNDEV.update(last_n=n, last_n_t=time.time(), last_act=tr("too quiet")); continue

@@ -426,6 +426,7 @@ def led_button_event(name, ev, src="GPIO"):
         return None
     lv, _arming = led_level()
     what = ""
+    bk_idle = name == "ack" and ev == "long" and not LED.get("alarm") and not (SOUND.get("playing") if "SOUND" in globals() else False)
     if name == "protect":
         if ev == "long" or not CFG.get("armed"):                # switching on: short from «Aus» = Wachsam, long = Voll
             if not CFG.get("btn_allow_arm", True):
@@ -462,6 +463,11 @@ def led_button_event(name, ev, src="GPIO"):
             led_device_notice("siren", src)
     LED["presses"].append({"t": datetime.now().strftime("%H:%M:%S"), "btn": name, "ev": ev, "src": src, "what": what})
     log_event("sys", f"Button «{LED_BTN_NAMES[name]}» {ev} press ({src}{' 🧪' if src == 'simulator' else ''}): {what}")
+    if bk_idle and CFG.get("blinki_btn"):                       # 639zzzzk: «acknowledge» long, nothing to acknowledge = Blinki (off by default)
+        try:
+            blinki_listen("button")
+        except Exception as e:
+            log_event("sys", f"Blinki: {type(e).__name__}"[:80])
     return what
 
 
