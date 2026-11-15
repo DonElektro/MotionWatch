@@ -12,7 +12,9 @@ Startet MoveEye ohne Fenster mit der Demo (eigener Datenordner, synthetisches Bi
      bringt ihn zurück und bleibt aktiv; der erste Besuch («Nur Gruppen» von 639r) klappt sie nicht zu.
   5. PC quer: der Stick im Bild (#lv-joy) bleibt, auch wenn die Zeile zu ist.
   6. Joystick «Nie»: keine Zeile, kein leerer Platz.
-  7. Keine JavaScript-Fehler.
+  7. Servos (PCA9685 im Zustand vorgetäuscht, Joystick «Automatisch»): die «⏹ Stopp»-Zeile (Teil 541) klappt nie mit ein -
+     offen und zu sichtbar, direkt unter der Zeile «🕹 Kopf steuern», vor den Schnellschaltern.
+  8. Keine JavaScript-Fehler.
 
   python3 werkzeuge/joystick_klappen_test.py [--datei X.py] [--bilder ORDNER]   # Bildschirmfotos joyklapp_*.png
 """
@@ -225,11 +227,66 @@ def gemeinsam(pg, base, a, pruef, wo, tippen):
     return z
 
 
+STOPP = """() => { const b = document.getElementById('srv-stop'), hc = document.getElementById('lv-hc'), su = hc && hc.querySelector('summary'), w = document.getElementById('lv-hc-stop');
+  if (!b) return {da: false};
+  const vis = b.getClientRects().length > 0 && (b.checkVisibility ? b.checkVisibility({visibilityProperty: true}) : true);
+  const rb = b.getBoundingClientRect(), rs = su.getBoundingClientRect(), q = document.getElementById('qsw').getBoundingClientRect();
+  return {da: true, sicht: vis, offen: hc.open, innen: !!(w && hc.contains(w)), direkt: !!(w && (hc.open ? w.previousElementSibling === su : hc.nextElementSibling === w)),
+    unter: rb.top >= rs.bottom - 1 && rb.top - rs.bottom < 40, vorQsw: rb.bottom <= q.top + 1, text: b.textContent}; }"""
+
+
+def servos_vortaeuschen(route):
+    """/api/state as with a real pan / tilt head (PCA9685 found, «⏹ Stopp» on) - no hardware needed"""
+    try:
+        r = route.fetch()
+    except Exception:                                    # page reloaded / closed meanwhile
+        return
+    try:
+        j = r.json()
+        s = j.setdefault("state", {})
+        s["servo_backend"] = "pca9685 (test)"
+        sv = s.get("servo") if isinstance(s.get("servo"), dict) else {}
+        sv.update(stop_btn=True, sim=False); sv.setdefault("blocked", ""); sv.setdefault("driver", {})
+        s["servo"] = sv
+        route.fulfill(response=r, body=json.dumps(j), headers=dict(r.headers, **{"content-type": "application/json"}))
+    except Exception:
+        try:
+            route.fulfill(response=r)
+        except Exception:                                # already handled / page gone: nothing to do
+            pass
+
+
+def stopp(pg, base, a, pruef, wo, tippen):
+    pg.route("**/api/state*", servos_vortaeuschen)
+    laden(pg, base, joy="auto"); zeige(pg)
+    if not pg.evaluate("() => document.getElementById('lv-hc').open"):
+        tippen("#lv-hc > summary"); pg.wait_for_timeout(400)
+    warte(pg, lambda: pg.evaluate(STOPP).get("sicht"), 8000)
+    z, k = pg.evaluate(STOPP), pg.evaluate(ZUSTAND)
+    pruef(k["da"] and not k["nohead"], "%s Servos (Automatisch): Zeile «Kopf steuern» da (%s)" % (wo, k))
+    pruef(z.get("sicht") and z.get("offen") and z.get("direkt") and z.get("unter"), "%s offen: «⏹ Stopp» direkt unter der Zeile (%s)" % (wo, z))
+    tippen("#lv-hc > summary"); pg.wait_for_timeout(500)
+    z, k = pg.evaluate(STOPP), pg.evaluate(ZUSTAND)
+    pruef(not k["offen"] and not k["speed"], "%s: zugeklappt (%s)" % (wo, k))
+    pruef(z.get("sicht") and not z.get("innen") and z.get("direkt") and z.get("unter") and z.get("vorQsw"),
+          "%s zu: «⏹ Stopp» bleibt sichtbar, direkt unter der Zeile, vor den Schnellschaltern (%s)" % (wo, z))
+    foto(pg, a, wo + "_stopp_zu")
+    pg.wait_for_timeout(2500)                            # several state polls later still there
+    z = pg.evaluate(STOPP)
+    pruef(z.get("sicht") and z.get("direkt"), "%s zu: «⏹ Stopp» nach weiteren Abfragen noch da (%s)" % (wo, z))
+    tippen("#lv-hc > summary"); pg.wait_for_timeout(500)
+    z = pg.evaluate(STOPP)
+    pruef(z.get("sicht") and z.get("offen") and z.get("direkt"), "%s wieder offen: «⏹ Stopp» direkt unter der Zeile (%s)" % (wo, z))
+    foto(pg, a, wo + "_stopp_offen")
+    pg.unroute("**/api/state*", servos_vortaeuschen)
+
+
 def handy(pg, base, a, pruef):
     tippen = lambda s: (lambda r: pg.touchscreen.tap(r[0], r[1]))(pg.evaluate("s => { const b = document.querySelector(s).getBoundingClientRect(); return [b.x + b.width / 2, b.y + b.height / 2]; }", s))
     gemeinsam(pg, base, a, pruef, "handy", tippen)
     z = pg.evaluate(ZUSTAND)
     pruef(not z["ovon"] and z["stick"] and not z["stickImBild"], "Handy hoch: Joystick in der Karte (%s)" % z)
+    stopp(pg, base, a, pruef, "handy", tippen)
     laden(pg, base, joy="off"); zeige(pg)
     z = pg.evaluate(ZUSTAND)
     pruef(z["nohead"] and not z["da"] and not z["stick"], "Handy Nie: keine Zeile «Kopf steuern», kein Joystick (%s)" % z)
@@ -245,6 +302,7 @@ def pc(pg, base, a, pruef):
     pruef(not z["offen"] and z["ovon"] and z["stickImBild"] and z["stick"], "PC quer zu: Stick im Bild bleibt (%s)" % z)
     print("  info  PC: Pan / Tilt in der Zeile «%s»" % z["pos"])
     tippen("#lv-hc > summary"); pg.wait_for_timeout(300)
+    stopp(pg, base, a, pruef, "pc", tippen)
     laden(pg, base, joy="off")
     z = pg.evaluate(ZUSTAND)
     pruef(z["nohead"] and not z["da"], "PC Nie: keine Zeile (%s)" % z)

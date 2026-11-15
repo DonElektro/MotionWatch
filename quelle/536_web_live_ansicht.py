@@ -115,6 +115,11 @@ body.lv #ctl-left>#lv-hc{flex:1 1 100%;width:100%}
 body.lv-ovon #lv-hc[open]>summary .lv-hc-pos{display:inline}   /* the stick is in the picture: the position is only here */
 #lv-hc>.lv-hc-b{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:12px 18px}
 #lv-hc>.lv-hc-b>*{min-width:0}
+/* the «⏹ Stopp» row (541) stays outside the fold, directly under its row (safety) */
+body.lv #ctl-left>#lv-hc-stop{flex:1 1 100%;width:100%}
+#lv-hc-stop{display:flex;justify-content:center}#lv-hc>#lv-hc-stop{margin:0 0 10px}
+#lv-hc-stop>.sr{display:flex;gap:6px;width:100%;max-width:260px}
+#lv-hc-stop>.sr button{flex:1;min-width:0;padding:7px 4px;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* 3.16 (Elektro 31.10.2026): simulation (body.sim-on = CFG sim_on, the source of the stripe) - no speed, ⇆, 🚜, centre, calibrate, waypoints */
 body.sim-on #ctl-side{display:none!important}
 /* the controls card: wraps instead of overlapping (the old fixed columns pushed «Mittel» under the switches) */
@@ -391,7 +396,7 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
   const hcOwn = () => { try { return localStorage.getItem(HCK) !== "0"; } catch (e) { return true; } };
   document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("#all-close, #all-open, #all-mine"); if (!b || b._long) return;
     const v = b.id === "all-open" ? true : b.id === "all-close" ? false : hcOwn(); if (HC.open !== v) { hcQuiet = true; HC.open = v; } }, true);
-  HC.addEventListener("toggle", () => { hcAria(); if (hcQuiet) { hcQuiet = false; return; } const v = HC.open ? "1" : "0";
+  HC.addEventListener("toggle", () => { hcAria(); hcPlace(); if (hcQuiet) { hcQuiet = false; return; } const v = HC.open ? "1" : "0";
     try { const o = localStorage.getItem(HCK); if (o !== v && !(o === null && v === "1")) localStorage.setItem(HCK, v); } catch (e) {} });
   const hcPos = () => { const p = document.getElementById("spos-txt"), t = p ? p.textContent.trim() : ""; if (HP.textContent !== t) HP.textContent = t; };
   { const p = document.getElementById("spos-txt"); if (p) new MutationObserver(hcPos).observe(p, {childList: true, characterData: true, subtree: true}); }
@@ -405,8 +410,29 @@ body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
     const vis = n => n.parentNode === HB && getComputedStyle(n).display !== "none";
     const show = head && (vis(st) || vis(sd));          // landscape with the simulator: the stick in the picture, no buttons -> no empty row
     if (HC.hidden === show) HC.hidden = !show;
+    hcStop(sd, show);
     hcPos();
   }
+  // safety (Elektro): the «⏹ Stopp» row of part 541 never folds away - always directly under the row «🕹 Kopf steuern»
+  // (open: between the row and the stick, closed: under the closed fold); without the fold back in #ctl-side as before
+  const STP = E("div"); STP.id = "lv-hc-stop"; STP.hidden = true;
+  let stpRow = null;
+  function hcStop(sd, show) {
+    const b = document.getElementById("srv-stop"), row = b && b.closest(".sr");
+    if (!row) return;
+    if (row !== stpRow) { stpRow = row; new MutationObserver(() => hcStop(document.getElementById("ctl-side"), !HC.hidden))
+      .observe(row, {attributes: true, attributeFilter: ["hidden"], subtree: true}); }
+    const out = show && !document.body.classList.contains("sim-on");      // simulation: #ctl-side (and so the stop) stays hidden as before
+    if (out) {
+      if (row.parentNode !== STP) STP.appendChild(row);
+      if (HC.open) { if (STP.parentNode !== HC || STP.previousElementSibling !== HS) HS.after(STP); }
+      else if (STP.parentNode !== HC.parentNode || HC.nextElementSibling !== STP) HC.after(STP);
+    } else if (row.parentNode !== sd) sd.insertBefore(row, sd.firstChild);
+    const h = !out || row.hidden || b.hidden;
+    if (STP.hidden !== h) STP.hidden = h;
+  }
+  { const sd = document.getElementById("ctl-side"); if (sd) new MutationObserver(() => { if (document.getElementById("srv-stop") && !STP.contains(document.getElementById("srv-stop")) && !HC.hidden) hcPlace(); })
+      .observe(sd, {childList: true}); }
   // ---- quick switches: favourites ★, order, hidden (one list; the favourites show in the order of the list) ----
   const qsIds = () => [...document.querySelectorAll("#qsw > button")].filter(b => b.id !== "lv-more" && !b.classList.contains("na")).map(b => b.id.replace(/^qs-/, ""));
   function qorder() {                                   // the order of this device, else the one for all devices, else the favourites first
