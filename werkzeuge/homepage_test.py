@@ -574,6 +574,69 @@ def lauf(datei, tmp):
     code, j = api("admin", {"action": "check", "lang": "fr"}, lang="fr")
     ok(fmt(ns, j, "fr")["sum"] == "toutes les adresses sont en ordre", "Französisch: " + fmt(ns, j, "fr")["sum"])
 
+    print("7b) öffentliche Adresse hp_public, vom Host mit Passwort geschützt (401)", flush=True)
+    PUB = {"log": []}
+
+    class PubH(http.server.BaseHTTPRequestHandler):
+        def log_message(self, *a):
+            pass
+
+        def _do(self):
+            PUB["log"].append((self.command, self.path, self.headers.get("Authorization") or ""))
+            body = b"Authentication required"
+            self.send_response(401)
+            self.send_header("WWW-Authenticate", 'Basic realm="MoveEye"')
+            self.send_header("Content-Type", "text/plain")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        do_GET = do_POST = _do
+    ps = http.server.ThreadingHTTPServer(("127.0.0.1", 0), PubH)
+    threading.Thread(target=ps.serve_forever, daemon=True).start()
+    pub = "http://127.0.0.1:%d/seiten/" % ps.server_address[1]
+    ok(CFG["hp_public"] == "" and ns["DEFAULTS"]["hp_public"] == "" and api()[1].get("public") == base + "/moveeye/", "ab Werk: öffentliche Adresse = <hp_base>/moveeye/")
+    ns["HP_TEST_HTTP"] = False
+    for b in (pub, "http://moveeye.kevlaschef.com/", "https://user:pw@moveeye.kevlaschef.com/", "https://moveeye.kevlaschef.com/?pw=1", "javascript:alert(1)"):
+        code, j = api("admin", {"action": "public", "public": b})
+        ok(code == 400 and CFG["hp_public"] == "" and "nur https" in j.get("error", "").lower(), f"öffentliche Adresse abgewiesen (nur https): {b} {code}")
+    code, j = api("admin", {"action": "public", "public": "https://moveeye.kevlaschef.com"})
+    ok(code == 200 and CFG["hp_public"] == "https://moveeye.kevlaschef.com/" and j.get("public") == "https://moveeye.kevlaschef.com/"
+       and CFG["hp_key"] == KEY and j.get("key_set") is True, "https-Adresse übernommen, Schlüssel bleibt")
+    ns["HP_TEST_HTTP"] = True
+    for who in ("Anna", "Cus"):
+        api(who, {"action": "public", "public": pub}, wait=False)
+        c.post("/api/set", json={"key": "hp_public", "value": pub}, headers=H[who])
+        ok(CFG["hp_public"] == "https://moveeye.kevlaschef.com/", f"{who}: öffentliche Adresse nicht änderbar")
+    code, j = api("admin", {"action": "public", "public": pub})
+    ok(code == 200 and CFG["hp_public"] == pub and CFG["hp_key"] == KEY and j.get("key_set") is True and CFG["hp_base"] == base,
+       "öffentliche Adresse geändert: Schlüssel und Webspace-Adresse bleiben")
+    ok(j.get("public") == pub and j.get("public_set") == pub, f"«Homepage öffnen» zeigt auf hp_public: {j.get('public')}")
+    pg = c.get("/homepage", headers=H["admin"]).get_data(as_text=True)
+    ok('id="hp-pub"' in pg and "MoveEye kennt es nicht und speichert es nie" in pg and 'type="password" id="hp-pub' not in pg,
+       "Feld «Öffentliche Adresse» + Hinweis zum Passwort, kein Passwort-Feld dafür")
+    ns["HP_TEST_HTML"] = old_test.replace("Sim-Test", "Sim-Test P")
+    n0, np0 = len(W.uploads()), len(PUB["log"])
+    code, j = api("admin", {"action": "publish"})
+    ok(not j.get("err") and [x[2] for x in W.uploads()[n0:]] == ["Sim/test.html"] and not any(x[0] == "POST" for x in PUB["log"][np0:]),
+       "Hochladen weiter über hp_base (nichts an die öffentliche Adresse)")
+    ns["HP_TEST_HTML"] = old_test
+    api("admin", {"action": "publish"})
+    np0, nw0 = len(PUB["log"]), len(W.log)
+    code, j = api("admin", {"action": "check"})
+    F = fmt(ns, j)
+    lock = [r for r in F["rows"] if not r["line"].endswith("(aus)")]
+    ok(lock and all("🔒 geschützt (Passwort) ✓" in r["line"] and not r["probs"] for r in lock), "Prüfung: 401 = geschützt ✓, kein Fehler " + str([r["line"] for r in lock[:3]]))
+    ok(F["sum"] == "Alles hinter Passwort – Inhalt nicht prüfbar", "Zusammenfassung: " + F["sum"])
+    ok(len(PUB["log"]) - np0 == len(lock) and all(x[1].startswith("/seiten/") and not x[2] for x in PUB["log"][np0:])
+       and not any(x[0] == "GET" and x[1].startswith("/moveeye/") for x in W.log[nw0:]), "Prüfung über hp_public, ohne Passwort / Schlüssel")
+    ok(ns["hp_state"]()["up"].get("Sim/test.html"), "geschützt: eigene Liste bleibt (nichts als «geändert» vermerkt)")
+    code, j = api("admin", {"action": "check", "lang": "fr"}, lang="fr")
+    ok(fmt(ns, j, "fr")["sum"].startswith("Tout est derrière un mot de passe"), "Französisch: " + fmt(ns, j, "fr")["sum"])
+    code, j = api("admin", {"action": "public", "public": ""})
+    ok(code == 200 and CFG["hp_public"] == "" and j.get("public") == base + "/moveeye/" and CFG["hp_key"] == KEY, "leer: wieder <hp_base>/moveeye/, Schlüssel bleibt")
+    code, j = api("admin", {"action": "check"})
+    ok(fmt(ns, j)["sum"] == "alle Adressen in Ordnung", "alte Adresse: Prüfung wie bisher " + fmt(ns, j)["sum"])
+
     print("8) automatisch nach einem Update - nur wenn sich der Inhalt geändert hat, nie während eines Alarms", flush=True)
     n0 = len(W.uploads())
     ok(ns["hp_auto_tick"]() is False and len(W.uploads()) == n0, "gleicher Inhalt: kein Lauf")

@@ -25,7 +25,8 @@ Features
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
   * 4.4.0: Zwei Teile. (1) Live → «Bedienung»: «🕹 Kopf steuern» lässt sich für sich einklappen; «⏹ Stopp» bleibt immer sichtbar.
     (2) Homepage-Karte: drei Schalter – Startseite, Funkgerät und Simulator einzeln hochladen (aus = nicht hochgeladen und auf
-    dem Webspace nie gelöscht).
+    dem Webspace nie gelöscht); neu «Öffentliche Adresse»
+    (nur https), und eine Seite mit Passwortschutz des Webspace gilt bei der Prüfung als «🔒 geschützt ✓».
   * 4.3.0: Fünf Teile. (1) Produktseite /info/ mit Bildern: echte App-Bilder (Live, Tagebuch, Mehr) und ruhige Beispielbilder; neu «🖼
     Produktseite: Bilder» in der Karte «Homepage» – eigene Fotos für die Seite hochladen (nur Admin; ohne Ortsangaben und
     Kamera-Daten, verkleinert). (2) «📻 Radio» spielt weiter, wenn man
@@ -294,7 +295,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_4_0.zip"
-ZD_SHA256 = "e09f11d4489211b3716980a6531cb4661ac736753ec0299f1c15c00fedc52a05"
+ZD_SHA256 = "6922c6fbab187c5e1c980be6e3a71c51ecfcff5af0a50334dfeb10c7ac60702f"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -103284,8 +103285,13 @@ if "App" in globals():
 
 
 
+
+
+
+
+
 _HP_CFG = {"hp_key": "", "hp_base": "https://kevlaschef.com", "hp_auto": True, "hp_start_on": False, "hp_funk_on": True,
-		   "hp_sim_on": True}
+		   "hp_sim_on": True, "hp_public": ""}
 for _k, _v in _HP_CFG.items():
 	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
 USER_SETTINGS_DENY.update(_HP_CFG)
@@ -103353,6 +103359,26 @@ def hp_base_ok(u):
 	if HP_TEST_HTTP and re.fullmatch(r"http://127\.0\.0\.1:\d{1,5}",u):
 		return u
 	return ""
+
+
+def hp_public_ok(u):
+	""
+	u=str(u or "").strip()
+	m=re.fullmatch(r"(https://[A-Za-z0-9](?:[A-Za-z0-9-]{0,62}\.)+[A-Za-z]{2,63}(?::\d{1,5})?)(/[A-Za-z0-9._~/-]{0,200})?",u)
+	if not m and HP_TEST_HTTP:
+		m=re.fullmatch(r"(http://127\.0\.0\.1:\d{1,5})(/[A-Za-z0-9._~/-]{0,200})?",u)
+	if not m or "//"in(m.group(2)or "")or "/../"in(m.group(2)or "")+"/":
+		return ""
+	return m.group(1)+((m.group(2)or "/").rstrip("/")+"/")
+
+
+def hp_public_url():
+	""
+	pub=hp_public_ok(CFG.get("hp_public"))
+	if pub:
+		return pub
+	base=hp_base_ok(CFG.get("hp_base"))
+	return base+"/moveeye/"if base else ""
 
 
 def _hp_conn(url, timeout=60):
@@ -103815,7 +103841,7 @@ def hp_probe(url, want=None, origin=""):
 			break
 		else:
 			raise HpErr("loop")
-		H={k:_hp_clean(r.getheader(k)or "")[:300]for k in("Content-Type","Content-Length","Content-Security-Policy",
+		H={k:_hp_clean(r.getheader(k)or "")[:300]for k in("Content-Type","Content-Length","Content-Security-Policy","WWW-Authenticate",
 																 "X-Content-Type-Options","Cross-Origin-Embedder-Policy",
 																 "Cross-Origin-Opener-Policy","Cross-Origin-Resource-Policy")}
 		exp=want.get("size")if want else None
@@ -103845,6 +103871,9 @@ def hp_probe(url, want=None, origin=""):
 	fin=re.match(r"^[a-z]+://[^/]+",url)
 	if row["chain"]and fin and fin.group(0)!=origin:
 		P.append(("redirected to another address – fetch() and WebAssembly often fail there",fin.group(0)))
+	if r.status==401 and H["WWW-Authenticate"]:
+		row["locked"]=True
+		return row
 	if r.status!=200:
 		P.append(("answer {code} instead of 200",str(r.status)))
 		return row
@@ -103867,9 +103896,10 @@ def hp_probe(url, want=None, origin=""):
 
 
 def hp_check(items=None):
-	base=hp_base_ok(CFG.get("hp_base"))
-	if not base:
+	pub=hp_public_url()
+	if not pub:
 		raise HpErr("url")
+	origin=re.match(r"^[a-z]+://[^/]+",pub).group(0)
 	if items is None:
 		items=hp_fixed_items()+((hp_sim_items(False)[0]or[{"path":"Sim/"+n,"size":None,"sha":None}for n in HP_SIM_NAMES])
 									if hp_part_on("sim")else[])
@@ -103886,7 +103916,7 @@ def hp_check(items=None):
 		if HP["cancel"]:
 			raise HpErr("cancel")
 		want={"path":it["path"],"size":it.get("size"),"sha":it.get("sha")}if it["path"]and not it["path"].endswith("/")else None
-		row=hp_probe(base+"/moveeye/"+quote(it["path"],safe="/"),want,base)
+		row=hp_probe(pub+quote(it["path"],safe="/"),want,origin)
 		row["path"]=it["path"]or "/"
 		rows.append(row)
 	st=hp_state()
@@ -103908,7 +103938,7 @@ def hp_status():
 			"start_on":hp_part_on("start"),"funk_on":hp_part_on("funk"),"sim_on":hp_part_on("sim"),
 			"busy":HP["busy"],"wait":HP["wait"],"prog":{k:p.get(k)for k in("i","n","bytes","total","file")}if p.get("n")else None,
 			"err":[HP["err"],HP["msg"]]if HP["err"]else None,"cancelled":HP["msg"]=="cancel","last":st.get("last"),
-			"check":st.get("check"),"public":(hp_base_ok(CFG.get("hp_base"))or "")+"/moveeye/",
+			"check":st.get("check"),"public":hp_public_url(),"public_set":hp_public_ok(CFG.get("hp_public")),
 			"sim":{"ver":pk["version"]if pk["size"]else "","ready":bool(pk["size"])and sim3d_ready(pk)}}
 
 
@@ -103938,6 +103968,17 @@ def hp_action(d, lang=None):
 			st=hp_state();st.pop("up",None);st.pop("check",None);hp_save(st)
 			save_settings()
 			log_event("sys","Homepage: address changed, upload key deleted")
+		return True,""
+	if a=="public":
+		v=str(d.get("public")or "").strip()
+		pub=hp_public_ok(v)if v else ""
+		if v and not pub:
+			return False,"Only https addresses, without user name or password."
+		if pub!=(CFG.get("hp_public")or ""):
+			CFG["hp_public"]=pub
+			st=hp_state();st.pop("check",None);hp_save(st)
+			save_settings()
+			log_event("sys","Homepage: public address "+("set"if pub else "cleared"))
 		return True,""
 	if a=="auto":
 		CFG["hp_auto"]=bool(d.get("on"))
@@ -104081,6 +104122,8 @@ for _L in ("fr", "it", "rm"):
 
 
 homepage_selftest = _zd_fn('639zzzh_homepage/homepage_selftest()')
+
+
 
 
 
