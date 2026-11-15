@@ -88,7 +88,9 @@ table.gb th{font-size:12px;color:var(--mut);font-weight:600;border-top:0}
 table.gb td.q{white-space:nowrap;color:var(--mut)}table.gb td.n{color:var(--mut);font-size:12px}table.gb td.r{text-align:right;white-space:nowrap}
 table.gb tr.gh td{border-top:0;padding-top:12px;font-weight:700}
 .chk{width:20px;height:20px;accent-color:var(--acc)}
-.lk a{color:var(--acc);margin-right:10px;white-space:nowrap;font-size:12px}
+.lk a{color:var(--acc);margin-right:10px;font-size:12px;overflow-wrap:break-word}td.lk a{white-space:nowrap}
+#g-files a.fl,.pinfo .lk a{display:block;margin:3px 0;overflow-wrap:anywhere}
+table.gb td,table.gb th{overflow-wrap:break-word}ol.gs .tx{min-width:0}
 .tag{display:inline-block;font-size:11px;border-radius:6px;padding:1px 6px;margin-left:4px;background:var(--line);color:var(--txt)}
 .tag.u{background:#b8860b;color:#fff}.tag.o{background:transparent;border:1px solid var(--line);color:var(--mut)}
 ol.gs{padding-left:0;list-style:none;margin:0}
@@ -111,7 +113,9 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
 #g-msg{margin-top:6px;min-height:16px}
 .fk{border-left:4px solid var(--acc);display:flex;flex-direction:column;gap:8px;padding:10px 12px}.fkr{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
 .fk .fki{font-size:18px}.fk .fkt{flex:1 1 240px;font-size:14px}.fk .seg button{min-height:32px;padding:5px 10px}
-@media (max-width:640px){main{padding:8px 10px 30px}#v3d{height:52vh}.vctl input[type=range]{width:110px}.hide-s{display:none}}
+@media (max-width:640px){main{padding:8px 10px 30px}#v3d{height:52vh}.vctl input[type=range]{width:110px}.hide-s{display:none}
+  table.gb td.q,table.gb td.r{white-space:normal}table.gb td,table.gb th{padding:6px 3px}
+  #g-print td:nth-child(2),#g-buy td:nth-child(3){overflow-wrap:anywhere}}
 @media print{header,.tabs,.noprint,#v3d,.vctl,.gtop .vrow{display:none!important}.pane{display:none!important}.pane.on{display:block!important}
   body{background:#fff;color:#000}.gc{border:0;padding:0}a{color:#000}}
 </style></head><body>
@@ -359,11 +363,11 @@ function gPrint() {
   const kh = el("div", "mut", t("Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:") + " "); kh.appendChild(kit);
   if (GEH_OFF) { kh.textContent = "🌐 " + t("The print files come from GitHub – this needs internet. Everything else on this page works offline."); }
   fl.append(all, kh, el("h3", "", t("Plates for the X2D (everything on 2 plates)")));
-  (GB.druckdateien || []).filter(f => dirOf(f) === GDIR()).forEach(f => fl.appendChild(fileLink(f)));   // the plates of the chosen case
+  (GB.druckdateien || []).filter(f => dirOf(f) === GDIR()).forEach(f => { const a = fileLink(f); a.classList.add("fl"); fl.appendChild(a); });   // the plates of the chosen case, one below the other (mw-bauen-links: 390 px)
   fl.appendChild(el("h3", "", t("Single parts (3MF)"))); (GB.druckdateien_einzeln || []).filter(f => {
     const datei = f.replace(/^(v5-\d\/)?MoveEye_v5-\d_/, "").replace(/\.3mf$/, ""), p = (D.teile || []).find(x => x.datei === datei);
     return p ? okp(p) && pfile(datei) === f : dirOf(f) === GDIR();
-  }).forEach(f => { fl.appendChild(fileLink(f)); fl.appendChild(el("br")); });
+  }).forEach(f => { const a = fileLink(f); a.classList.add("fl"); fl.appendChild(a); });
   gTrans();
 }
 function gTrans() {
