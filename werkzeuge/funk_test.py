@@ -4,14 +4,16 @@
   A) Die Seite: sein Decoder (/*DECODER-START*/ … /*DECODER-END*/), seine Funktionen prepTx und transmit stehen UNVERÄNDERT in
      funk/index.html und in FUNK_PAGE (Prüfsummen seiner Datei); funk/ passt zu quelle/; keine Anfragen nach aussen, kein
      innerHTML; alle Texte in fünf Sprachen.
-  B) Gleich gerechnet: Schlüsselstrom (Python = seine Seite in node), Text -> Zeitplan (MoveEye = sein transmit, auf die Mikrosekunde).
+  B) Gleich gerechnet: V2 (feste Testvektoren: Python = Seite in node; falscher Schlüssel, geändertes Zeichen, jedes Mal neu),
+     Text -> Zeitplan (MoveEye = sein transmit, auf die Mikrosekunde, ohne und mit Schlüssel), Audiodatei der Seite = transmit.
   C) Verträglichkeit, beide Richtungen, ohne / mit Schlüssel, direkt und über den nachgebauten Funkkanal (Bandpass 300-3000 Hz,
      Rauschsperre, Lautstärke-Regelung), Rauschen, Tempo:
        MoveEye -> Seite: der Ton aus MoveEyes Lautsprecher-Code (morse_beep_chunks) -> SEIN Decoder in node (48 kHz, Blöcke 512)
        Seite -> MoveEye: der Ton nach SEINEM transmit -> MoveEyes Empfänger (FunkRx, 16 kHz, Stücke von 0.1 s wie das Mikrofon)
   D) Fremde Eingabe: Rauschen, Dauerton A / B, Pieper, Morse ohne Start-Ton, Unsinn - keine Nachricht, kein Absturz.
   E) MoveEye mit der Demo (--server, auch mit --browser): Format, Töne, Schlüssel (nur setzen / löschen; nie im Zustand, im
-     Protokoll, im Verlauf), Rechte, Senden über den Lautsprecher, Empfang über das «Mikrofon», die Seiten bei 390 px in 5 Sprachen.
+     Protokoll, im Verlauf), Rechte, Senden über den Lautsprecher, Empfang über das «Mikrofon», Audiodateien (MoveEye-WAV -> Seite,
+     Seiten-WAV -> MoveEye, Morse), die Seiten bei 390 px in 5 Sprachen, Audiodatei teilen / einlesen im Browser.
 
   python3 werkzeuge/funk_test.py [--datei X.py] [--server] [--browser] [--messen [--tabelle docs/Funk_Protokoll.md]]
 Braucht node (die Seite des Besitzers läuft darin); ohne node: Fehler (in CI ist node da).
@@ -54,14 +56,76 @@ FUNK_NOTIZEN = """## Was das heisst
 * **Über das Funkgerät** (nachgebaut, mit einer Lautstärke-Regelung, die das Rauschen in den Pausen anhebt – eher schlechter als ein echtes
   Gerät): 15–25 WPM fast immer fehlerfrei; bei 8–12 WPM einzelne falsche Zeichen (lange Pausen: das angehobene Rauschen liegt nahe bei
   einem der Töne und täuscht seinen Ton-Erkenner). Das ist sein Decoder – MoveEye liest absichtlich gleich.
-* **Mit Schlüssel geht ein verlorenes Zeichen weiter:** der Schlüsselstrom zählt die Zeichen; fehlt eines (oder kommt eines dazu), ist der
-  Rest der Nachricht Unsinn. Ohne Schlüssel bleibt es ein einzelner Fehler. Für eine spätere Fassung: Zeichen nummerieren oder neu
-  ansetzen.
-* **Später: echte Verschlüsselung.** Platz dafür, ohne das jetzige Protokoll zu brechen: das erste Zeichen einer Nachricht mit dem Code
-  `.-.-` (kommt in den 39 Zeichen nicht vor) heisst «neueres Format, danach ein Versionsbyte». Seine Seite zeigt dann «□» und Unsinn (kein
-  Absturz), MoveEye zeigt «neueres Format – dieses MoveEye kann es nicht lesen».
-* Der Schlüssel **verschleiert** nur (jede Nachricht nutzt dieselbe Folge) – keine starke Verschlüsselung. Im Amateurfunk ist
-  Verschlüsselung verboten (ITU-Vollzugsordnung Funk Nr. 25.2A; BAKOM: digitale Übertragungen nur unverschlüsselt).
+* **Mit Schlüssel (V2) zählt jedes Zeichen:** fehlt eines oder ist eines falsch, stimmen die Prüfzeichen nicht – die Nachricht heisst dann
+  «falscher Schlüssel oder gestört» (statt Unsinn). Ohne Schlüssel bleibt es ein einzelner falscher Buchstabe. V2 ist 13 Zeichen länger.
+* Im Amateurfunk ist Verschlüsselung verboten (ITU-Vollzugsordnung Funk Nr. 25.2A; BAKOM: digitale Übertragungen nur unverschlüsselt).
+  Mit Schlüssel nie über Amateurfunk senden.
+
+## V2: Nachrichten mit Schlüssel (Besitzer 14.11.2026: «nur noch V2»)
+
+Ohne Schlüssel ändert sich nichts (Bit für Bit seine Seite «Morse-Funk»). Mit Schlüssel geht **jede** Nachricht so (V1, der feste
+SHA-256-Strom seiner Seite, ist weg):
+
+| Teil | Zeichen | Inhalt |
+|---|---|---|
+| Version | 1 | Code `.-.-` (kommt in den 39 Zeichen nicht vor; seine alte Seite zeigt «□») |
+| Nonce | 6 | zufällig aus den 39 Zeichen (Seite: `crypto.getRandomValues`, Bytes < 234 → Byte mod 39; MoveEye: `secrets`) – rund 31.7 Bit |
+| Text | n ≤ 200 | Klartext (nur die 39 Zeichen, vorne / hinten ohne Leerzeichen), Zeichen i um s<sub>i</sub> verschoben |
+| Prüfung | 6 | aus den 38 Zeichen ohne Leerzeichen (der Empfänger kürzt das Ende) – rund 31.5 Bit |
+
+* Schlüssel: `dk = PBKDF2-HMAC-SHA256(Schlüssel als UTF-8, Salz "MoveEye-Funk-v2", 200 000 Runden, 64 Bytes)`, `kE = dk[0:32]`,
+  `kM = dk[32:64]`. Einmal pro Schlüssel gerechnet (Seite: beim Einstellen, MoveEye: im Speicher, nur der SHA-256 als Merkzeichen).
+* Strom: für Zähler c = 0, 1, …: `HMAC-SHA256(kE, Nonce als ASCII ‖ c als 4 Bytes big endian)`; jedes Byte b < 234 gibt `b mod 39`.
+  Geheimtext-Zeichen i = `ALPHA[(Index(Klar i) + s_i) mod 39]`.
+* Prüfung: `h = HMAC-SHA256(kM, 0x02 ‖ Nonce ‖ Geheimtext)` (ASCII); jedes Byte b < 228 gibt `TAG[b mod 38]` (`TAG` = die 39 Zeichen ohne
+  Leerzeichen), bis 6 Zeichen da sind (sonst `h = HMAC-SHA256(kM, h)` und weiter).
+* Empfang: erstes Zeichen = Versionszeichen → Nonce, Geheimtext, Prüfung trennen; Prüfung falsch → «falscher Schlüssel oder gestört»;
+  kein Schlüssel eingestellt → «verschlüsselt – hier ist kein Schlüssel eingestellt». Derselbe Text klingt jedes Mal anders (Nonce).
+* Testvektoren (Seite in node = MoveEye, `funk_test.py` Teil B, Selbsttest `FUNK_V2_VEKTOREN`): Schlüssel `geheim`, Nonce `ABC12.`,
+  Text `TREFFEN UM 15 UHR` → `ABC12.N?.4R8USIXLEETRJ1VONQ0F` (nach dem Versionszeichen).
+* Grenzen: kein geprüftes Verfahren; 6 Prüfzeichen sind rund 32 Bit – genug gegen Störungen und Raten, nicht gegen einen grossen Angriff.
+  Die Nonce ist kurz (31.7 Bit): bei vielen tausend Nachrichten mit demselben Schlüssel kann sie sich wiederholen.
+
+## Audiodateien
+
+* **Als Audiodatei:** die Nachricht als WAV (Mono, 16 Bit, 22 050 Hz, 0.5 s Vorlauf, 0.6 s Nachlauf), genau die Töne von transmit
+  (Seite: `beepsOf` = transmit, geprüft) bzw. von MoveEyes Lautsprecher (`funk_wav_bytes`). iPhone: Teilen-Blatt (`navigator.share`),
+  sonst Herunterladen; in MoveEye der übliche Download (in der App das Teilen-Blatt).
+* **Audiodatei einlesen:** Seite: der Browser dekodiert (`decodeAudioData`, auf 48 kHz umgerechnet; Safari: WAV, M4A/AAC, MP3 –
+  Ogg/Opus meist nicht), dann sein Decoder schneller als Echtzeit (`decodeSamples`). MoveEye: WAV selbst, M4A/MP3/Ogg mit ffmpeg,
+  16 kHz, `FunkRx` bzw. `MorseAudio` wie am Mikrofon. Höchstens 10 Minuten. Im Verlauf mit 📁.
+
+## Mehrton (MFSK): Spezifikation (Besitzer 14.11.2026)
+
+Dritte Art neben Morse und dem 2-Ton-Protokoll, nur über den Ton, auf der Seite (Block `MFSK` in `FUNK_PAGE`) und in MoveEye
+(Teil 639zzzi) Bit für Bit gleich (Testvektoren `MFSK_VEKTOREN`, `funk_test.py` Teil M).
+
+| Vorlage | Töne | Frequenzen | Symbol / Schutz | Bit pro Symbol | roh |
+|---|---|---|---|---|---|
+| 1 | 4 | 800 + i · 250 Hz (800–1550) | 40 ms / 6 ms | 2 | 50 bit/s |
+| 2 | 8 | 650 + i · 200 Hz (650–2050) | 50 ms / 8 ms | 3 | 60 bit/s |
+| 3 | 16 | 500 + i · 150 Hz (500–2750) | 64 ms / 8 ms | 4 | 62.5 bit/s |
+| 0 | Baukasten: 2–32 | Start + Abstand oder Liste, 300–3000 Hz | 10–500 ms (0.5-ms-Schritte) / 0 bis T/2 | floor(log2 n) | |
+
+* **Symbol:** ein Ton für T ms, die Phase läuft durch (keine Klicks); Grenzen bei `round(j · T · Rate)`. Daten nutzen die ersten 2^k Töne,
+  Gray-Code (Wert v → Ton `v ^ (v >> 1)`). Der Empfänger misst nur `[Start + Schutz, Start + T)` mit Hann-Fenster (DFT pro Ton).
+  Prüfung des Baukastens: Abstand < 1/(T − Schutz) → geht nicht; < 2/(T − Schutz) → Warnung; n keine Zweierpotenz → Warnung.
+* **Rahmen:** Vorspann 0.3 s (Ton 0 und Ton n − 1 abwechselnd: öffnet die Rauschsperre, stellt die Lautstärke-Regelung ein) · Sync 12 Symbole
+  (Ton `a · n // 16`, a = 0 15 5 10 3 12 8 1 14 6 11 2) · Kopf 5 Bytes `[0x10 | Vorlage, FEC | Schlüssel << 2 | gepackt << 3, Länge,
+  Prüfwert Baukasten (CRC-8 von "n|f·10;…|T·10|Schutz·10") oder 0, CRC-8]`, immer Faltungscode 1/2 (92 Bit) · Nutzdaten + CRC-16/CCITT-FALSE
+  über Kopf (4 Bytes) und Nutzdaten, mit der gewählten Fehlerkorrektur, verschachtelt (Block: Spalten = ceil(√n), zeilenweise
+  geschrieben, spaltenweise gelesen) · auf k Bit mit Nullen aufgefüllt · Nachlauf 3 Symbole Ton 0.
+* **Fehlerkorrektur:** aus (roh) · leicht = Faltungscode K = 7 (171, 133 oktal) punktiert auf 3/4 (Muster 110110) · stark = derselbe Code,
+  Rate 1/2. 6 Nullbits am Ende, Viterbi mit weichen Entscheidungen: pro Bit (max. Amplitude der Töne mit Bit 1 − mit Bit 0) / max. Amplitude.
+* **Text:** nur die 39 Zeichen → gepackt (3 Zeichen in 2 Bytes: `i0·1521 + i1·39 + i2`; 2 Zeichen: `59319 + i0·39 + i1`; 1 Zeichen: 1 Byte),
+  sonst UTF-8 (Gross / klein, Umlaute, Emoji). Höchstens 200 Zeichen und 255 Bytes Nutzdaten.
+* **Schlüssel (V2 auf Bytes):** dieselben kE / kM (PBKDF2 wie oben); Nonce 4 Bytes zufällig; Strom `HMAC-SHA256(kE, "M" ‖ Nonce ‖ Zähler)`
+  XOR; Prüfung `HMAC-SHA256(kM, 0x03 ‖ Kopf 4 Bytes ‖ Nonce ‖ Geheimtext)[0:4]` (32 Bit). Nutzdaten = Nonce ‖ Geheimtext ‖ Prüfung.
+* **Empfang:** Energien aller Töne alle T/8; Sync = Mittel über die 12 Symbole von (Energie des Sync-Tons / Energie aller Töne) ≥
+  1/n + 0.35 · (1 − 1/n), alle 12 über 1.5 × Rauschboden; das beste von 8 Nachbarn gilt. Takt nachgeführt (früh / spät, ±T/8). Alle
+  Vorlagen gleichzeitig (der Kopf sagt, welche), der Baukasten nur, wenn eingestellt. Kopf falsch → weitersuchen; CRC-16 falsch →
+  «gestört»; Prüfung falsch → «falscher Schlüssel oder gestört»; anderer Baukasten-Prüfwert → «andere Baukasten-Einstellungen».
+
 """
 TEXT = "TREFFEN UM 15 UHR BEI DER BRUECKE?"
 FEHLER = []
@@ -136,20 +200,34 @@ def teil_a(ns):
 # ---------------------------------------------------------------------------------------------------------------------- B
 def teil_b(ns, tmp):
     print("B) Gleich gerechnet wie seine Seite", flush=True)
-    for k in ("geheim", "Zürich 2026!", "x", "ein sehr langer Schlüssel mit Leerzeichen und ÄÖÜ äöü ß € 😀"):
-        ok(node(tmp, "keystream", k, 600) == ns["funk_keystream"](k, 600), f"Schlüsselstrom «{k[:20]}»: gleich (600 Werte)")
+    for key, nonce, plain, body in ns["FUNK_V2_VEKTOREN"] + (("ein sehr langer Schlüssel mit Leerzeichen und ÄÖÜ äöü ß € 😀", "0.?0.?", "Q" * 200, None),):
+        js = node(tmp, "v2seal", key, nonce, plain)
+        py = ns["funk_v2_seal"](plain, key, nonce)
+        ok(js == py and (body is None or js == body) and node(tmp, "v2open", key, js) == {"text": plain, "err": ""} and ns["funk_v2_open"](js, key) == (plain, ""),
+           f"V2 «{key[:12]}» / «{nonce}» / «{plain[:12]}»: Seite = MoveEye = Testvektor ({js[:20]}…)")
+    body = ns["FUNK_V2_VEKTOREN"][0][3]
+    zu = body[:9] + ("A" if body[9] != "A" else "B") + body[10:]
+    r = [node(tmp, "v2open", "falsch", body)["err"], node(tmp, "v2open", "", body)["err"], node(tmp, "v2open", "geheim", zu)["err"],
+         ns["funk_v2_open"](zu, "geheim")[1], node(tmp, "v2open", "geheim", body[:12])["err"]]
+    ok(r == ["bad", "nokey", "bad", "bad", "short"], f"V2: falscher Schlüssel, kein Schlüssel, ein Zeichen geändert, zu kurz: erkannt {r}")
+    a_, b_ = node(tmp, "v2seal", "geheim", "", "SOS"), node(tmp, "v2seal", "geheim", "", "SOS")
+    ok(a_ != b_ and a_[6:-6] != b_[6:-6] and ns["funk_v2_seal"]("SOS", "geheim") != ns["funk_v2_seal"]("SOS", "geheim"),
+       f"V2: derselbe Text zweimal klingt anders (Seite {a_} / {b_})")
     cfg = {"mode": "prot", "fA": 800, "fB": 1400, "wpm": 12, "auto": True, "sens": 10, "vol": 0.8}
     for key, txt, wpm in (("", "Grüsse aus Zürich – ÄÖÜ ß, 100%?", 12), ("geheim", TEXT, 20), ("k", "  zwei  Leer  ", 5), ("", "?.", 35)):
         cfg["wpm"] = wpm
-        bs = node(tmp, "transmit", json.dumps(cfg), key, txt)
-        _p, codes = ns["funk_prep"](txt, ns["funk_keystream"](key))
+        bs = node(tmp, "transmit", json.dumps(cfg), key, txt, "N0NCE?")
+        _p, codes = ns["funk_tx_codes"](txt, key, "N0NCE?")
         t, mine = 0.15, []
         for d, f in ns["funk_timeline"](codes, wpm, 800, 1400):
             if f:
                 mine.append((t, f, d))
             t += d
         same = len(mine) == len(bs) and all(abs(m[0] - b[0]) < 1e-6 and m[1] == b[1] and abs(m[2] - b[2]) < 1e-6 for m, b in zip(mine, bs))
-        ok(same, f"Zeitplan «{txt[:18]}» {wpm} WPM, Schlüssel {'ja' if key else 'nein'}: MoveEye = sein transmit ({len(bs)} Töne)")
+        ok(same, f"Zeitplan «{txt[:18]}» {wpm} WPM, Schlüssel {'ja (V2)' if key else 'nein'}: MoveEye = sein transmit ({len(bs)} Töne)")
+        wb = node(tmp, "beeps", json.dumps(cfg), key, txt, "N0NCE?")
+        ok(len(wb) == len(bs) and all(abs(w[0] - b[0]) < 1e-9 and w[1] == b[1] and abs(w[2] - b[2]) < 1e-9 for w, b in zip(wb, bs)),
+           f"  Audiodatei der Seite (beepsOf) = sein transmit ({len(wb)} Töne)")
     cfg["mode"] = "morse"
     bs = node(tmp, "transmit", json.dumps(cfg), "", "SOS 73")
     _p, codes = ns["funk_prep"]("SOS 73", None, "morse")
@@ -159,8 +237,7 @@ def teil_b(ns, tmp):
 # ---------------------------------------------------------------------------------------------------------------------- C
 def me_ton(ns, text, key, wpm, rate):
     """der Ton, wie MoveEye ihn aus dem Lautsprecher gibt (der echte Code: morse_plan -> morse_beep_chunks), float -1..1"""
-    ks = ns["funk_keystream"](key)
-    _p, codes = ns["funk_prep"](text, ks)
+    _p, codes = ns["funk_tx_codes"](text, key, nonce_fest(wpm))       # (feste Nonce: der Test ist bei jedem Lauf gleich)
     tl = ns["funk_timeline"](codes, wpm, 800, 1400)
     from scipy.signal import resample_poly
     y = np.concatenate(list(ns["morse_beep_chunks"](tl, 22050, 0.4)) + [np.zeros(int(1.5 * 22050), np.float32)]).astype(np.float64)
@@ -169,7 +246,7 @@ def me_ton(ns, text, key, wpm, rate):
 
 def seite_ton(tmp, text, key, wpm, rate, mode="prot"):
     """der Ton nach SEINER Funktion transmit (Oszillator + Lautstärke-Rampen 5 ms)"""
-    bs = node(tmp, "transmit", json.dumps({"mode": mode, "fA": 800, "fB": 1400, "wpm": wpm, "auto": True, "sens": 10, "vol": 0.8}), key, text)
+    bs = node(tmp, "transmit", json.dumps({"mode": mode, "fA": 800, "fB": 1400, "wpm": wpm, "auto": True, "sens": 10, "vol": 0.8}), key, text, nonce_fest(wpm))
     end = max(t + l for t, _f, l, _v in bs) + 1.5
     x = np.zeros(int(end * rate) + 1)
     for t, f, l, v in bs:
@@ -179,6 +256,11 @@ def seite_ton(tmp, text, key, wpm, rate, mode="prot"):
         y[:r] *= np.linspace(0, 1, r); y[-r:] *= np.linspace(1, 0, r)
         x[i0:i0 + n] += y
     return x
+
+
+def nonce_fest(wpm):
+    """V2: eine feste Nonce pro Tempo - sonst klingt jede Nachricht anders und der Funkkanal-Test wäre bei jedem Lauf ein anderer"""
+    return "NONC%02d" % (int(wpm) % 100)
 
 
 def strecke(mt, x, art, snr, seed):
@@ -198,7 +280,7 @@ def strecke(mt, x, art, snr, seed):
 
 
 def seite_hoert(tmp, x16, key, wpm=12):
-    """SEIN Decoder in node: 48 kHz (aus 16 kHz hochgerechnet), Blöcke 512 - wie im iPhone"""
+    """SEIN Decoder in node: 48 kHz (aus 16 kHz hochgerechnet), Blöcke 512 - wie im iPhone; V2 von der Seite geöffnet"""
     from scipy.signal import resample_poly
     y = resample_poly(x16 / 32768.0, 3, 1).astype(np.float32)
     f = os.path.join(tmp, "ton.raw"); y.tofile(f)
@@ -209,12 +291,15 @@ def seite_hoert(tmp, x16, key, wpm=12):
 def me_hoert(ns, x16, key, wpm=12):
     got = []
     rx = ns["FunkRx"](RATE, lambda: {"mode": "prot", "fA": 800, "fB": 1400, "wpm": wpm, "auto": True, "sens": 10},
-                      lambda t, i: got.append(t), strict=True)
-    rx.ks = ns["funk_keystream"](key)
+                      lambda t, i: got.append((t, i)), strict=True)
     pcm = x16.astype(np.int16)
     for i in range(0, pcm.size, 1600):
         rx.feed(pcm[i:i + 1600])
-    return got
+    out = []
+    for t_, i_ in got:                                          # (V2: opened like MoveEye does - funk_rx_message)
+        t, _k, bad = ns["funk_rx_open"](t_, i_["newer"], key)
+        out.append("!" + bad if bad else t)
+    return out
 
 
 def zelle(ns, mt, tmp, richtung, key, wpm, art, snr, n=2, rwpm=None):
@@ -246,7 +331,23 @@ def teil_c(ns, mt, tmp):
                    f"+{snr} dB: {', '.join(f'{w} WPM ' + ('ok' if v == 1 else 'FALSCH') for w, v in res.items())}")
     # ohne den richtigen Schlüssel: Unsinn (aber kein Absturz) - und MoveEye <-> MoveEye
     got = seite_hoert(tmp, strecke(mt, me_ton(ns, TEXT, "geheim", 12, RATE), "", 20, 5), "falsch", 12)
-    ok(got and got != [TEXT], f"falscher Schlüssel: nicht lesbar ({got[:1]})")
+    ok(got == ["!bad"], f"falscher Schlüssel: «falscher Schlüssel oder gestört» statt Unsinn ({got[:1]})")
+    got = seite_hoert(tmp, strecke(mt, me_ton(ns, TEXT, "geheim", 12, RATE), "", 20, 5), "", 12)
+    ok(got == ["!nokey"], f"kein Schlüssel eingestellt: «verschlüsselt – kein Schlüssel» ({got[:1]})")
+    # Rauschen nach der Nachricht (Träger bleibt, die Lautstärke-Regelung hebt es an): sein Decoder las daraus ein «E» als
+    # zweite Nachricht (in rund 15 % der Fälle). Die Seite verwirft solche Stücke ohne Start-Ton (rxJunk) - diese Texte zeigten es.
+    rr = random.Random(7)
+    texte = ["".join(rr.choice(ns["FUNK_ALPHA"]) for _ in range(47)).strip() for _ in range(18)]
+    for i in (4, 7, 12, 17):
+        _p, codes = ns["funk_tx_codes"](texte[i], "")
+        from scipy.signal import resample_poly
+        y = np.concatenate(list(ns["morse_beep_chunks"](ns["funk_timeline"](codes, 15, 800, 1400), 22050, 0.4)) + [np.zeros(int(1.5 * 22050), np.float32)])
+        got = seite_hoert(tmp, strecke(mt, resample_poly(y.astype(np.float64), 320, 441), "ton", 10, 100), "", 15)
+        ok(got == [_p.strip()], f"Rauschen nach der Nachricht (Funkgerät, Träger bleibt): kein «E» danach ({[g[:6] for g in got]})")
+    got = me_hoert(ns, strecke(mt, seite_ton(tmp, TEXT, "geheim", 12, RATE), "", 20, 7), "falsch", 12)
+    ok(got == ["!bad"], f"MoveEye mit falschem Schlüssel: erkannt ({got[:1]})")
+    got = me_hoert(ns, strecke(mt, seite_ton(tmp, TEXT, "", 12, RATE), "", 20, 8), "geheim", 12)
+    ok(got == [TEXT], f"mit Schlüssel eingestellt, Nachricht ohne Schlüssel: lesbar wie sie kam ({got[:1]})")
     got = me_hoert(ns, strecke(mt, me_ton(ns, TEXT, "geheim", 15, RATE), "ptt", 10, 6), "geheim", 15)
     ok(got == [TEXT], "MoveEye -> MoveEye über das Funkgerät, mit Schlüssel")
 
@@ -330,7 +431,131 @@ def teil_d(ns, mt, tmp):
     (np.concatenate([np.zeros(24000)] + [np.sin(2 * np.pi * f_ * np.arange(int(d * 48000)) / 48000) * 0.5 if f_ else np.zeros(int(d * 48000))
                                          for d, f_ in ns["funk_timeline"](codes, 12, 800, 1400)] + [np.zeros(48000)])).astype(np.float32).tofile(f)
     got = node(tmp, "decode", json.dumps({"mode": "prot", "fA": 800, "fB": 1400, "wpm": 12, "auto": True, "sens": 10}), "", f, 48000)
-    ok(got and got[0][0].startswith("□"), f"seine Seite und das neuere Format: «□» und weiter, kein Absturz ({got[:1]})")
+    ok(got == [["!nokey", "prot"]], f"das Versionszeichen ohne Schlüssel auf der Seite: «kein Schlüssel», kein Absturz ({got[:1]})")
+
+
+# ---------------------------------------------------------------------------------------------------------------------- M
+MF_KIT = {"n": 6, "f0": 700, "df": 220, "T": 45, "g": 7}
+
+
+def mf_ton16(ns, text, pid, fec, key="", s=None, seite=None, tmp=None):
+    """der Mehrton-Ton bei 16 kHz (-1..1, Amplitude 0.8): von MoveEye (mfsk_render) oder von der Seite (node mfRender)"""
+    s = s or ns["MFSK_PRESETS"][pid]
+    if seite:
+        f = os.path.join(tmp, "mf_s.raw")
+        node(tmp, "mfwav", text, pid, fec, key, "", json.dumps(s) if pid == 0 else "", RATE, f)
+        y = np.fromfile(f, np.float32).astype(np.float64)
+    else:
+        sym, _e = ns["mfsk_frame"](text, pid, s, fec, key)
+        y = ns["mfsk_render"](sym, s, RATE, 0.8).astype(np.float64)
+    return np.concatenate([np.zeros(RATE // 2), y, np.zeros(RATE)])
+
+
+def mf_me_hoert(ns, x16, key="", custom=None):
+    rx = ns["MfskRx"](RATE, custom, None, lambda: key)
+    pcm = np.clip(x16, -32767, 32767).astype(np.int16)
+    for i in range(0, pcm.size, 1600):
+        rx.feed(pcm[i:i + 1600])
+    return [(r["text"], r["bad"]) for r in rx.got]
+
+
+def mf_seite_hoert(tmp, x16, key="", custom=None):
+    from scipy.signal import resample_poly
+    f = os.path.join(tmp, "mf_in.raw")
+    resample_poly(x16 / 32768.0, 3, 1).astype(np.float32).tofile(f)
+    return [(r["text"], r["bad"]) for r in node(tmp, "mfdecode", f, 48000, key, json.dumps(custom) if custom else "")]
+
+
+def teil_m(ns, mt, tmp):
+    print("M) Mehrton (MFSK): Seite = MoveEye, beide Richtungen, Funkkanal, Schlüssel, Baukasten", flush=True)
+    for text, pid, fec, key, nonce, h in ns["MFSK_VEKTOREN"]:
+        js = node(tmp, "mfframe", text, pid, fec, key, nonce, "")
+        py, _e = ns["mfsk_frame"](text, pid, ns["MFSK_PRESETS"][pid], fec, key, bytes.fromhex(nonce) if nonce else None)
+        hj = hashlib.sha256(",".join(map(str, js)).encode()).hexdigest()[:16]
+        ok(js == py and hj == h, f"Testvektor «{text[:14]}» Vorlage {pid}, FEC {fec}, Schlüssel {'ja' if key else 'nein'}: Seite = MoveEye = {h} ({len(js)} Symbole)")
+    f = os.path.join(tmp, "mf_r.raw")
+    for rate in (16000, 48000):
+        node(tmp, "mfwav", "Hallo 73", 0, 1, "geheim", "01020304", json.dumps(MF_KIT), rate, f)
+        sym, _e = ns["mfsk_frame"]("Hallo 73", 0, ns["mfsk_check"](MF_KIT)[0], 1, "geheim", bytes.fromhex("01020304"))
+        py = ns["mfsk_render"](sym, ns["mfsk_check"](MF_KIT)[0], rate, 0.8); js = np.fromfile(f, np.float32)
+        ok(js.size == py.size and float(np.abs(js - py).max()) * 32767 < 1.0, f"Ton der Seite = Ton von MoveEye ({rate} Hz, Baukasten, Abweichung {float(np.abs(js - py).max()) * 32767:.4f} LSB)")
+    for kit in (MF_KIT, {"n": 8, "f0": 700, "df": 10, "T": 20, "g": 5}, {"n": 4, "f0": 2900, "df": 300, "T": 40, "g": 5}, {"list": [600, 900, 1250, 1700], "T": 30.5, "g": 4},
+                {"n": 40, "f0": 400, "df": 60, "T": 100, "g": 10}, {"n": 8, "f0": 500, "df": 100, "T": 12.25, "g": 3}):
+        j = node(tmp, "mfcheck", json.dumps(kit)); c, err, warn, need = ns["mfsk_check"](kit)
+        ok(bool(j["s"]) == bool(c) and len(j["err"]) == len(err) and len(j["warn"]) == len(warn) and j["need"] == need,
+           f"Baukasten {json.dumps(kit)[:44]}: Prüfung gleich (Fehler {err[:1]}, Warnungen {len(warn)})")
+    T2 = "Grüsse aus Zürich, 15 Uhr!"
+    for pid in (1, 2, 3):
+        for fec in (0, 1, 2):
+            key = "geheim" if fec == 1 else ""
+            r1 = mf_seite_hoert(tmp, ft_strecke(mt, mf_ton16(ns, T2, pid, fec, key), "", 3, 300 + pid), key)
+            r2 = mf_me_hoert(ns, ft_strecke(mt, mf_ton16(ns, T2, pid, fec, key, seite=True, tmp=tmp), "ptt", 10, 400 + pid), key)
+            ok(r1 == [(T2, "")] and r2 == [(T2, "")], f"Vorlage {pid} ({1 << (pid + 1)} Töne), FEC {('aus', 'leicht', 'stark')[fec]}{', Schlüssel' if key else ''}: "
+               f"MoveEye -> Seite direkt +3 dB {r1[:1]}, Seite -> MoveEye über Funk (Sendetaste) +10 dB {r2[:1]}")
+    x = mf_ton16(ns, T2, 2, 2, "geheim") * 3000 / 0.8
+    ok(mf_seite_hoert(tmp, x, "falsch") == [("", "bad")] and mf_me_hoert(ns, x, "") == [("", "nokey")],
+       "falscher Schlüssel / kein Schlüssel: erkannt, kein Unsinn")
+    kit = ns["mfsk_check"](MF_KIT)[0]
+    x = mf_ton16(ns, T2, 0, 2, "", s=kit) * 3000 / 0.8
+    k2 = dict(MF_KIT, g=7.5)
+    r = [mf_seite_hoert(tmp, x, "", MF_KIT), mf_me_hoert(ns, x, "", kit), mf_me_hoert(ns, x, ""), mf_me_hoert(ns, x, "", ns["mfsk_check"](k2)[0])]
+    ok(r[0] == [(T2, "")] and r[1] == [(T2, "")] and r[2] == [] and r[3] in ([("", "settings")], []),
+       f"Baukasten: beide gleich -> gelesen; ohne Baukasten -> nichts; anderer Baukasten -> «andere Einstellungen» {r[3]}")
+    rng = np.random.default_rng(11)
+    t = np.arange(RATE * 20) / RATE
+    for name, x in (("Rauschen 20 s", rng.normal(0, 3000, t.size)), ("Pieper 800 / 1300 Hz", 3000 * np.sin(2 * np.pi * np.where((t * 4) % 2 < 1, 800, 1300) * t)),
+                    ("seine 2 Töne (Protokoll)", seite_ton(tmp, TEXT, "", 15, RATE) * 3000 / 0.8)):
+        ok(not mf_me_hoert(ns, x) and not mf_seite_hoert(tmp, x), f"{name}: kein Mehrton-Rahmen")
+
+
+def ft_strecke(mt, x, art, snr, seed):
+    return strecke(mt, x, art, snr, seed)
+
+
+def mf_messen(ns, mt, tmp, pfad=None, n=3):
+    """Mehrton: Zeichen pro Sekunde und Anteil fehlerfrei je Vorlage und FEC, bei 10 / 5 / 0 / -6 / -10 dB und über das Funkgerät,
+    neben dem 2-Ton-Protokoll (TEXT, ohne Schlüssel; Empfänger MoveEye 16 kHz)"""
+    zeilen = ["<!-- MFSK-MESSUNG -->", "", "## Mehrton (MFSK) – gemessen", "",
+              f"Erzeugt mit `python3 werkzeuge/funk_test.py --mfsk-messen --tabelle docs/Funk_Protokoll.md`. Text «{TEXT}» ({len(TEXT)} Zeichen, gepackt),",
+              f"{n} Läufe pro Feld, ohne Schlüssel. Zeichen/s = Textlänge durch die ganze Sendung (mit Vorspann, Sync, Kopf, CRC). «dB» wie oben",
+              "(Ton zu Rauschen im Band 300–3000 Hz). Funk = nachgebautes FM-Handfunkgerät (Sendetaste für die ganze Nachricht: Rauschsperre 40 ms",
+              "spät, 120 ms Rauschschwanz). Empfänger: MoveEye (16 kHz); die Seite liest gleich (Teil M der Tests).", "",
+              "| Art | Fehlerkorrektur | Zeichen/s | +10 dB | +5 dB | 0 dB | −6 dB | −10 dB | Funk +10 dB | Funk +3 dB |", "|---|---|---|---|---|---|---|---|---|---|"]
+    print("\n".join(zeilen), flush=True)
+    cols = (("", 10), ("", 5), ("", 0), ("", -6), ("", -10), ("ptt", 10), ("ptt", 3))
+    for pid in (1, 2, 3):
+        s = ns["MFSK_PRESETS"][pid]
+        for fec in (0, 1, 2):
+            sym, _e = ns["mfsk_frame"](TEXT, pid, s, fec, "")
+            x = mf_ton16(ns, TEXT, pid, fec)
+            row = []
+            for art, snr in cols:
+                g = sum(mf_me_hoert(ns, strecke(mt, x, art, snr, 900 + k)) == [(TEXT, "")] for k in range(n))
+                row.append(g / float(n))
+            zeilen.append(f"| {s['n']} Töne, {s['T']:g} ms | {('aus', 'leicht', 'stark')[fec]} | {len(TEXT) / (len(sym) * s['T'] / 1000.0):.1f} | "
+                          + " | ".join(f"{v:.2g}" if v not in (0, 1) else str(int(v)) for v in row) + " |")
+            print(zeilen[-1], flush=True)
+    for wpm in (12, 20):
+        x = seite_ton(tmp, TEXT, "", wpm, RATE)
+        row = [sum(me_hoert(ns, strecke(mt, x, art, snr, 900 + k), "", wpm) == [TEXT] for k in range(n)) / float(n) for art, snr in cols]
+        secs = x.size / RATE - 1.5
+        zeilen.append(f"| 2 Töne (Protokoll), {wpm} WPM | – | {len(TEXT) / secs:.1f} | " + " | ".join(f"{v:.2g}" if v not in (0, 1) else str(int(v)) for v in row) + " |")
+        print(zeilen[-1], flush=True)
+    zeilen += ["", "**Was das heisst** (Messung vom 14.11.2026, je 3 Läufe – kleine Stichprobe):",
+               "* Mehrton ist bei gleichem Text 3–6 × schneller als das 2-Ton-Protokoll (3.1–5.7 statt 0.9–1.4 Zeichen/s) und liest noch bei −6 dB,",
+               "  wo das 2-Ton-Protokoll nichts mehr liest (jeder Ton liegt in einem schmalen Band; der Empfänger misst nur dort).",
+               "* Die Fehlerkorrektur kostet Zeit (leicht × 4/3, stark × 2 der Nutzdaten; Vorspann, Sync und Kopf bleiben gleich) und bringt ihren",
+               "  Gewinn nahe an der Grenze: bei −10 dB liest «aus» nichts mehr, «leicht» und «stark» alles. Zwischen leicht und stark zeigt diese",
+               "  Messung keinen Unterschied (stark sollte mehr einzelne Aussetzer aushalten – nicht gemessen). Vorgabe: 8 Töne, leicht.",
+               "* Über das nachgebaute Funkgerät (Sendetaste, Rauschsperre) bei +10 und +3 dB alles fehlerfrei. Nicht gemessen: echte Geräte, Raum, Wind.",
+               "<!-- /MFSK-MESSUNG -->"]
+    txt = "\n".join(zeilen) + "\n"
+    if pfad:
+        d = open(pfad, encoding="utf-8").read()
+        a, e = d.find("<!-- MFSK-MESSUNG -->"), d.find("<!-- /MFSK-MESSUNG -->")
+        d = (d[:a] + txt.rstrip("\n") + d[e + len("<!-- /MFSK-MESSUNG -->"):]) if a >= 0 and e > a else d.rstrip("\n") + "\n\n" + txt
+        open(pfad, "w", encoding="utf-8").write(d)
+    print(txt)
 
 
 WRAP = r"""
@@ -366,6 +591,7 @@ GEHEIM = "Mein-Geheimnis-" + "".join(random.choice("abcdefghjkmnpqrstuvwxyz23456
 def teil_e(datei, ns, browser):
     import base64
     import urllib.error
+    import urllib.parse
     import urllib.request
     from scipy.signal import resample_poly
     print("E) MoveEye mit der Demo: Format, Schlüssel, Rechte, Senden, Empfangen" + (", Seiten im Browser" if browser else ""), flush=True)
@@ -431,6 +657,10 @@ def teil_e(datei, ns, browser):
         page = b.decode("utf-8", "replace")
         ok(c == 200 and "window.MW_FUNK=" in page and '"lang": "fr"' in page and "manifest.webmanifest" not in page and "/*DECODER-START*/" in page,
            "Administrator: /morse/funk = seine Seite in MoveEye (Sprache, Weg zurück, ohne Manifest)")
+        c, b, h = req("/help", raw=True)
+        hp = b.decode("utf-8", "replace")
+        ok(c == 200 and "📡 Eigenes Protokoll (2 Töne) und Handy-Funkgerät" in hp and "📶 Mehrton (MFSK)" in hp and "📡 Own protocol (2 tones)" in hp,
+           "Anleitung: die Absätze zum Protokoll und zum Mehrton stehen drin (de, en)")
         c, b, h = req("/morse/funk.html", raw=True)
         ok(c == 200 and "attachment" in h.get("Content-Disposition", "") and "window.MW_FUNK=" not in b.decode("utf-8", "replace"),
            "«Als Datei herunterladen»: /morse/funk.html als Anhang, ohne MoveEye-Teil")
@@ -477,6 +707,41 @@ def teil_e(datei, ns, browser):
         m = mst()["rx"]["msgs"][0]
         ok(m["text"] == "GRUSS AN MOVEEYE 73" and m["fmt"] == "prot" and m["key"] is True,
            f"SEIN transmit -> MoveEyes Mikrofon: «{m['text']}», Format {m['fmt']}, «entschlüsselt mit Schlüssel» {m['key']}")
+        # Audiodateien (Format Protokoll, mit Schlüssel): MoveEyes WAV -> seine Seite; die WAV der Seite -> MoveEye
+        import io
+        import wave
+        c, b, h = req("/morse/audio.wav?text=" + urllib.parse.quote("Treffen um 15 Uhr") + "&wpm=15&lang=de", raw=True)
+        ok(c == 200 and h.get("Content-Type", "").startswith("audio/wav") and "attachment" in h.get("Content-Disposition", "") and b[:4] == b"RIFF",
+           f"«Als Audiodatei» in MoveEye: WAV als Download ({c}, {h.get('Content-Disposition', '')[:50]})")
+        with wave.open(io.BytesIO(b)) as w_:
+            sr_, pcm_ = w_.getframerate(), np.frombuffer(w_.readframes(w_.getnframes()), "<i2").astype(np.float64)
+        f = os.path.join(tmp, "mw_wav.raw"); resample_poly(pcm_ / 32768.0, 320, 147).astype(np.float32).tofile(f)
+        got = node(tmp, "decode", cf, GEHEIM, f, 48000); got0 = node(tmp, "decode", cf, "", f, 48000)
+        ok(sr_ == 22050 and [t for t, _m in got] == ["TREFFEN UM 15 UHR"] and [t for t, _m in got0] == ["!nokey"],
+           f"  MoveEyes Audiodatei -> «Audiodatei einlesen» der Seite: {got} (ohne Schlüssel {got0})")
+
+        def post_raw(path, data, ctype="audio/wav"):
+            r_ = urllib.request.Request(base + path, data=data, headers={"Authorization": "Basic " + base64.b64encode(f"{A[0]}:{A[1]}".encode()).decode(),
+                                                                         "Content-Type": ctype})
+            try:
+                with op.open(r_, timeout=120) as x_:
+                    return x_.status, json.loads(x_.read())
+            except urllib.error.HTTPError as e_:
+                return e_.code, json.loads(e_.read() or b"{}")
+        fw_ = os.path.join(tmp, "seite.wav")
+        node(tmp, "wav", json.dumps({"mode": "prot", "fA": 800, "fB": 1400, "wpm": 15, "auto": True, "sens": 10, "vol": 0.8}), GEHEIM, "Gruss vom Handy 73", "", fw_)
+        c, j = post_raw("/api/morse/audio?lang=de", open(fw_, "rb").read())
+        m = (j.get("state") or {}).get("rx", {}).get("msgs", [{}])[0]
+        ok(c == 200 and j.get("found") == ["GRUSS VOM HANDY 73"] and m.get("src") == "file" and m.get("key") is True,
+           f"Audiodatei der Seite (V2) -> «Audiodatei einlesen» in MoveEye: {j.get('found')} {m.get('src')} key {m.get('key')} ({j.get('error')})")
+        c, j = post_raw("/api/morse/audio?lang=de", b"kein Ton" * 100, "application/octet-stream")
+        ok(c == 400 and j.get("error"), f"  keine Audiodatei: abgelehnt, kein Absturz ({c} «{(j.get('error') or '')[:60]}»)")
+        r_ = urllib.request.Request(base + "/api/morse/audio", data=b"RIFF", headers={"Authorization": "Basic " + base64.b64encode(b"Anna:anna-pass-1").decode()})
+        try:
+            c = op.open(r_, timeout=30).status
+        except urllib.error.HTTPError as e_:
+            c = e_.code
+        ok(c == 403, f"  Audiodatei einlesen: nur der Administrator ({c})")
         time.sleep(1.5)
         logt = json.dumps(req("/api/log?limit=3000")[1], ensure_ascii=False)
         fotos = [x_ for x_ in (req("/api/recordings?kind=image&limit=100")[1] or {}).get("items", []) if x_.get("name", "").startswith("morse_")]
@@ -502,8 +767,39 @@ def teil_e(datei, ns, browser):
         pcm = np.fromfile(spk, dtype="<i2").astype(np.float64) if os.path.exists(spk) else np.zeros(1)
         sp = np.abs(np.fft.rfft(pcm)); fpk = np.fft.rfftfreq(pcm.size, 1 / 22050.0)[int(np.argmax(sp))] if pcm.size > 100 else 0
         ok(abs(fpk - 660) < 5, f"Morse auf dem Lautsprecher: weiterhin 660 Hz ({fpk:.0f} Hz)")
+        c, b, h = req("/morse/audio.wav?text=SOS%20TEST&wpm=12", raw=True)
+        c2, j = post_raw("/api/morse/audio?lang=de", b) if c == 200 else (c, {})
+        ok(c == 200 and c2 == 200 and j.get("found") == ["SOS TEST"], f"Format Morse: Audiodatei hin und zurück ({c} {c2} {j.get('found')} {j.get('error')})")
+        # Mehrton in MoveEye: Format, Baukasten prüfen, Lautsprecher -> Seite, Audiodatei hin und zurück, Mikrofon
+        c, j = req("/api/morse", {"action": "funk", "mf": {"pid": 0, "custom": {"n": 8, "f0": 700, "df": 10, "T": 20, "g": 5}}, "lang": "de"})
+        ok(c == 400 and "nah" in (j.get("error") or ""), f"Mehrton: unbrauchbarer Baukasten abgelehnt («{j.get('error')}»)")
+        c, j = req("/api/morse", {"action": "funk", "fmt": "mfsk", "mf": {"pid": 2, "fec": 2}})
+        mf_ = ((j.get("state") or {}).get("funk") or {}).get("mf") or {}
+        ok(c == 200 and j["state"]["funk"]["fmt"] == "mfsk" and mf_.get("pid") == 2 and mf_.get("fec") == 2, f"Format «Mehrton», 8 Töne, stark ({c} {j.get('error')})")
+        if os.path.exists(spk):
+            os.remove(spk)
+        time.sleep(6.0)
+        c, j = req("/api/morse", {"action": "send", "text": "Grüsse vom Pi 73!", "outs": ["beep"], "wpm": 12})
+        ok(c == 200 and j["state"]["tx"] and warte(lambda: not mst()["tx"], 90), f"Mehrton: senden über den Lautsprecher ({c} {j.get('error')})")
+        time.sleep(1.0)
+        pcm = np.fromfile(spk, dtype="<i2").astype(np.float64) if os.path.exists(spk) else np.zeros(16)
+        x16 = resample_poly(pcm, 320, 441)
+        r = mf_seite_hoert(tempfile.mkdtemp(prefix="mf_e_", dir=tmp), x16)
+        ok(r == [("Grüsse vom Pi 73!", "")], f"  MoveEyes Lautsprecher -> Mehrton der Seite: {r}")
+        c, b, h = req("/morse/audio.wav?text=" + urllib.parse.quote("Grüsse vom Pi 73!"), raw=True)
+        c2, j = post_raw("/api/morse/audio?lang=de", b) if c == 200 else (c, {})
+        m = ((j.get("state") or {}).get("rx") or {}).get("msgs", [{}])[0]
+        ok(c == 200 and c2 == 200 and j.get("found") == ["Grüsse vom Pi 73!"] and m.get("fmt") == "mfsk" and m.get("src") == "file",
+           f"  Mehrton-Audiodatei hin und zurück ({c} {c2} {j.get('found')} {m.get('fmt')})")
+        x = mf_ton16(ns, "Hallo MoveEye, äöü!", 1, 1, "", seite=True, tmp=tmp)
+        n0 = len(mst()["rx"]["msgs"])
+        (np.clip(x * 3000 / 0.8 + np.random.default_rng(2).normal(0, 60, x.size), -32767, 32767)).astype("<i2").tofile(ton + ".tmp"); os.replace(ton + ".tmp", ton)
+        ok(warte(lambda: len(mst()["rx"]["msgs"]) > n0, x.size / RATE + 20) and mst()["rx"]["msgs"][0]["text"] == "Hallo MoveEye, äöü!" and mst()["rx"]["msgs"][0]["fmt"] == "mfsk",
+           f"  Seite (4 Töne, leicht) -> MoveEyes Mikrofon: «{mst()['rx']['msgs'][0]['text']}»")
+        req("/api/morse", {"action": "funk", "fmt": "morse"})
         if browser:
             teil_g(base, PW, tmp, ns)
+            teil_mg(base, PW, tmp, ns)
     finally:
         try:
             P.send_signal(signal.SIGKILL); P.wait(timeout=10)
@@ -518,10 +814,88 @@ def teil_e(datei, ns, browser):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def teil_mg(base, pw, tmp, ns):
+    """Mehrton im Browser: Modus-Wahl, Baukasten (Warnung), eine Datei mit Mehrton einlesen; Bilder nach FUNK_MF_SHOTS"""
+    from playwright.sync_api import sync_playwright
+    import wave
+    shots = os.environ.get("FUNK_MF_SHOTS", "")
+    if shots:
+        os.makedirs(shots, exist_ok=True)
+    x = mf_ton16(ns, "Treffen um 15 Uhr – bis gleich!", 2, 2, "", seite=False)
+    fw_ = os.path.join(tmp, "mf.wav")
+    with wave.open(fw_, "wb") as w_:
+        w_.setnchannels(1); w_.setsampwidth(2); w_.setframerate(RATE); w_.writeframes((x * 32767).astype("<i2").tobytes())
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), lambda *a: http.server.SimpleHTTPRequestHandler(*a, directory=os.path.join(REPO, "funk")))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    pwa = f"http://127.0.0.1:{srv.server_address[1]}/"
+    with sync_playwright() as pw_:
+        br = pw_.chromium.launch(args=["--no-proxy-server"])
+        ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, device_scale_factor=2, locale="de-CH")
+        ctx.add_init_script("try{localStorage.setItem('morsefunk.lang',JSON.stringify('de'))}catch(e){}")
+        pg = ctx.new_page(); errs = []
+        pg.on("pageerror", lambda e: errs.append(str(e)[:200]))
+        pg.goto(pwa, wait_until="domcontentloaded"); pg.wait_for_timeout(800)
+        pg.locator("#setBtn").click(); pg.locator("#mMf").click(); pg.wait_for_timeout(300)
+        vis = pg.locator("#mfBox").is_visible() and not pg.locator("#twoBox").is_visible()
+        sw = pg.evaluate("() => document.documentElement.scrollWidth")
+        if shots:
+            pg.screenshot(path=os.path.join(shots, "01_modus_mehrton.png"))
+        pg.select_option("#sMfP", "0"); pg.wait_for_timeout(200)
+        pg.locator("#kDf").fill("10"); pg.locator("#kDf").dispatch_event("change"); pg.wait_for_timeout(200)
+        warn = pg.inner_text("#mfWarn") if pg.locator("#mfWarn").is_visible() else ""
+        pg.locator("#kDf").fill("200"); pg.locator("#kDf").dispatch_event("change"); pg.wait_for_timeout(200)
+        pg.locator("#kN").fill("6"); pg.locator("#kN").dispatch_event("change"); pg.wait_for_timeout(200)
+        if shots:
+            pg.locator("#kitBox").scroll_into_view_if_needed(); pg.screenshot(path=os.path.join(shots, "02_baukasten.png"))
+        warn2 = pg.inner_text("#mfWarn") if pg.locator("#mfWarn").is_visible() else ""
+        ok(vis and sw <= 391 and "zu nah" in warn and "Zweierpotenz" in warn2, f"Seite: Modus «Mehrton», Baukasten warnt («{warn[:50]}» / «{warn2[:40]}»), {sw} px")
+        pg.select_option("#sMfP", "2"); pg.wait_for_timeout(200)
+        pg.locator("#shSet [data-close]").first.click(); pg.wait_for_timeout(200)
+        pg.set_input_files("#fileIn", fw_)
+        try:
+            pg.wait_for_function("() => JSON.parse(localStorage.getItem('morsefunk.hist')||'[]').some(h => h.mode === 'mfsk' && h.src === 'file')", timeout=60000)
+            h = pg.evaluate("() => JSON.parse(localStorage.getItem('morsefunk.hist'))[0]")
+        except Exception:
+            h = {}
+        ok(h.get("text") == "Treffen um 15 Uhr – bis gleich!", f"Seite: Mehrton-Datei eingelesen: «{h.get('text')}» ({h.get('mf')})")
+        if shots:
+            pg.screenshot(path=os.path.join(shots, "03_empfangen.png"))
+            pg.locator("#histBtn").click(); pg.wait_for_timeout(400); pg.screenshot(path=os.path.join(shots, "04_verlauf.png"))
+            pg.locator("#shHist [data-close]").first.click()
+        pg.locator("#sendBtn").click(); pg.locator("#txIn").fill("Grüsse aus Zürich!"); pg.wait_for_timeout(1500)
+        prev = pg.inner_text("#txPrev")
+        ok("s" in prev and "Grüsse aus Zürich!" in prev, f"Seite: Mehrton-Vorschau mit Dauer («{prev}»)")
+        if shots:
+            pg.screenshot(path=os.path.join(shots, "05_senden.png"))
+        ok(not errs, f"Seite Mehrton: keine JavaScript-Fehler {errs[:2]}")
+        ctx.close()
+        if shots:
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, device_scale_factor=2,
+                                 http_credentials={"username": "admin", "password": pw}, locale="de-CH")
+            ctx.add_init_script("try{localStorage.setItem('mw-lang','de');localStorage.setItem('mw-tours-seen','[\"live\",\"more\",\"settings\"]')}catch(e){}")
+            pg = ctx.new_page(); pg.goto(base + "/morse", wait_until="domcontentloaded"); pg.wait_for_selector("#mo-fmt-seg button", timeout=20000)
+            try:
+                with pg.expect_navigation(wait_until="domcontentloaded", timeout=30000):
+                    pg.evaluate("k => { langSet(k); }", "de")
+            except Exception:
+                pass
+            pg.wait_for_selector("#mo-fmt-seg button", timeout=20000)
+            pg.locator("#mo-f-mfsk").click(); pg.wait_for_timeout(1200)
+            pg.locator("#mo-fmt").scroll_into_view_if_needed(); pg.screenshot(path=os.path.join(shots, "06_moveeye_mehrton.png"))
+            pg.select_option("#mo-mf-p", "0"); pg.wait_for_timeout(1200)
+            pg.locator("#mo-mf-kit").scroll_into_view_if_needed(); pg.screenshot(path=os.path.join(shots, "07_moveeye_baukasten.png"))
+            pg.select_option("#mo-mf-p", "2"); pg.wait_for_timeout(600)
+            pg.evaluate("() => fetch('/api/morse', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'funk', fmt: 'morse'})})")
+            ctx.close()
+        br.close()
+    srv.shutdown()
+
+
 def teil_g(base, pw, tmp, ns):
     """die Seiten bei 390 px in 5 Sprachen (mit den Schriften, die FONTCONFIG_FILE wählt), Weg zurück, kein waagrechtes Scrollen;
     seine Seite als PWA (funk/) und mit einem «Mikrofon» (Chromium spielt eine WAV-Datei als Mikrofon): sie liest MoveEyes Ton"""
     from playwright.sync_api import sync_playwright
+    from scipy.signal import resample_poly
     import wave
     print("G) Browser", flush=True)
     wav = os.path.join(tmp, "mic.wav")
@@ -590,7 +964,101 @@ def teil_g(base, pw, tmp, ns):
             gehoert = False
         ok(gehoert, "seine Seite im Browser hört MoveEyes Ton über das «Mikrofon»: «HALLO HANDY» im Verlauf (" + pg.inner_text("#live")[:40] + ")")
         ok(not errs, f"PWA: keine JavaScript-Fehler {errs[:2]}")
-        ctx.close(); br.close()
+        ctx.close()
+        # iPhone: getUserMedia zuerst (vor dem AudioContext), bei TypeError ein zweiter Versuch mit {audio:true}, Fehler mit Name + Meldung
+        for art in ("einmal", "immer"):
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, locale="de-CH")
+            ctx.grant_permissions(["microphone"])
+            ctx.add_init_script("""(() => { const md = navigator.mediaDevices, g = md.getUserMedia.bind(md); window.__gum = [];
+              md.getUserMedia = c => { window.__gum.push([JSON.stringify(c), !!window.__ctxDa]);
+                if ('%s' === 'immer' || typeof c.audio === 'object') return Promise.reject(new TypeError('Type error')); return g(c); };
+              const A = window.AudioContext; window.AudioContext = function(o) { window.__ctxDa = true; return new A(o); }; })();""" % art)
+            pg = ctx.new_page(); errs = []
+            pg.on("pageerror", lambda e: errs.append(str(e)[:200]))
+            pg.goto(pwa, wait_until="domcontentloaded"); pg.wait_for_timeout(500)
+            pg.locator("#listen").click(); pg.wait_for_timeout(1500)
+            gum, live, msg = pg.evaluate("() => window.__gum"), pg.evaluate("() => document.getElementById('listen').classList.contains('live')"), pg.inner_text("#msg")
+            if art == "einmal":
+                ok(len(gum) == 2 and not gum[0][1] and gum[1][0] == '{"audio":true}' and live and not msg and not errs,
+                   f"iPhone: Mikrofon vor dem AudioContext, nach TypeError zweiter Versuch {{audio:true}}: hört ({gum}, «{msg[:40]}»)")
+            else:
+                ok(len(gum) == 2 and not live and "TypeError: Type error" in msg and "audio:true" in msg and not errs,
+                   f"iPhone: geht es gar nicht, steht der Fehler mit Name und Meldung da («{msg[-60:]}»)")
+            ctx.close()
+        # V2 + Audiodateien im Browser: «Als Audiodatei» (ohne Teilen-Blatt: Herunterladen), «Audiodatei einlesen» (📁 im Verlauf)
+        shots = os.environ.get("FUNK_SHOTS", "")
+        if shots:
+            os.makedirs(shots, exist_ok=True)
+        fw_ = os.path.join(tmp, "g_v2.wav")
+        node(tmp, "wav", json.dumps({"mode": "prot", "fA": 800, "fB": 1400, "wpm": 12, "auto": True, "sens": 10, "vol": 0.8}), "geheim", "Treffen um 15 Uhr", "", fw_)
+        ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, device_scale_factor=2, locale="de-CH", accept_downloads=True)
+        ctx.add_init_script("try{localStorage.setItem('morsefunk.key',JSON.stringify('geheim'));localStorage.setItem('morsefunk.lang',JSON.stringify('de'))}catch(e){}")
+        pg = ctx.new_page(); errs = []
+        pg.on("pageerror", lambda e: errs.append(str(e)[:200]))
+        pg.goto(pwa, wait_until="domcontentloaded"); pg.wait_for_timeout(1500)
+        pg.locator("#sendBtn").click(); pg.locator("#txIn").fill("Treffen um 15 Uhr"); pg.wait_for_timeout(1200)
+        if shots:
+            pg.screenshot(path=os.path.join(shots, "01_senden_als_audiodatei.png"))
+        try:
+            with pg.expect_download(timeout=20000) as dl:
+                pg.locator("#txWav").click()
+            d_ = os.path.join(tmp, "g_dl.wav"); dl.value.save_as(d_)
+            import wave
+            with wave.open(d_) as w_:
+                okw = w_.getframerate() == 22050 and w_.getnchannels() == 1 and w_.getsampwidth() == 2
+                pcm_ = np.frombuffer(w_.readframes(w_.getnframes()), "<i2").astype(np.float64)
+            got = me_hoert(ns, resample_poly(pcm_, 320, 441), "geheim", 12)
+            name_ = dl.value.suggested_filename
+        except Exception as e_:
+            okw, got, name_ = False, [str(e_)[:80]], ""
+        ok(okw and got == ["TREFFEN UM 15 UHR"] and name_.endswith(".wav"), f"Seite «Als Audiodatei» (V2): {name_} -> MoveEye liest {got}")
+        pg.locator("#shSend [data-close]").first.click(); pg.wait_for_timeout(300)
+        pg.set_input_files("#fileIn", fw_)
+        try:
+            pg.wait_for_function("() => JSON.parse(localStorage.getItem('morsefunk.hist')||'[]').some(h => h.src === 'file' && h.text === 'TREFFEN UM 15 UHR' && h.key)", timeout=60000)
+            gel = True
+        except Exception:
+            gel = False
+        msg = pg.inner_text("#msg")
+        ok(gel and "TREFFEN UM 15 UHR" in msg, f"Seite «Audiodatei einlesen» (V2, Schlüssel): «{msg[:60]}»")
+        if shots:
+            pg.screenshot(path=os.path.join(shots, "02_datei_gelesen.png"))
+            pg.locator("#histBtn").click(); pg.wait_for_timeout(400); pg.screenshot(path=os.path.join(shots, "03_verlauf_aus_datei.png"))
+            pg.locator("#shHist [data-close]").first.click(); pg.wait_for_timeout(200)
+        pg.locator("#keyBtn").click(); pg.locator("#keyIn").fill("falsch"); pg.locator("#keySave").click(); pg.wait_for_timeout(1500)   # (der Schlüssel wie der Bediener)
+        pg.set_input_files("#fileIn", fw_)
+        try:
+            pg.wait_for_function("() => JSON.parse(localStorage.getItem('morsefunk.hist')||'[]')[0].bad === 'bad'", timeout=60000)
+            fal = True
+        except Exception:
+            fal = False
+        ok(fal and "falscher Schlüssel" in pg.inner_text("#msg"), f"  mit falschem Schlüssel: «{pg.inner_text('#msg')[:60]}»")
+        ok(not errs, f"  V2 / Audiodateien: keine JavaScript-Fehler {errs[:2]}")
+        ctx.close()
+        if shots:                                            # MoveEye: Mehr -> Morse, die Knöpfe für Audiodateien
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, device_scale_factor=2,
+                                 http_credentials={"username": "admin", "password": pw}, locale="de-CH")
+            ctx.add_init_script("try{localStorage.setItem('mw-lang','de');localStorage.setItem('mw-tours-seen','[\"live\",\"more\",\"settings\"]')}catch(e){}")
+            pg = ctx.new_page(); pg.goto(base + "/morse", wait_until="domcontentloaded"); pg.wait_for_selector("#mo-fmt-seg button", timeout=20000)
+            pg.evaluate("""async () => { for (const b of [{action: 'funk', fmt: 'prot'}, {action: 'key', key: 'geheim'}])
+              await fetch('/api/morse', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(b)}); }""")
+            try:
+                with pg.expect_navigation(wait_until="domcontentloaded", timeout=30000):
+                    pg.evaluate("k => { langSet(k); }", "de")
+            except Exception:
+                pg.reload(wait_until="domcontentloaded")
+            pg.wait_for_selector("#mo-fmt-seg button", timeout=20000); pg.wait_for_timeout(800)
+            pg.locator("#mo-text").fill("Treffen um 15 Uhr"); pg.wait_for_timeout(1200)
+            pg.locator("#mo-send").scroll_into_view_if_needed(); pg.screenshot(path=os.path.join(shots, "04_moveeye_morse_audiodatei.png"))
+            pg.set_input_files("#mo-file", fw_)
+            try:
+                pg.wait_for_function("() => document.getElementById('mo-file-r').textContent.length > 20", timeout=60000)
+            except Exception:
+                pass
+            pg.locator("#mo-file-r").scroll_into_view_if_needed(); pg.wait_for_timeout(300)
+            pg.screenshot(path=os.path.join(shots, "05_moveeye_datei_gelesen.png"))
+            ctx.close()
+        br.close()
     srv.shutdown()
 
 
@@ -609,6 +1077,7 @@ def main():
     ap.add_argument("--messen", action="store_true")
     ap.add_argument("--tabelle")
     ap.add_argument("--laeufe", type=int, default=2)
+    ap.add_argument("--mfsk-messen", action="store_true")
     a = ap.parse_args()
     if not shutil.which("node"):
         print("node fehlt"); return 1
@@ -618,9 +1087,11 @@ def main():
     try:
         ns = lade(datei, home)
         mt = morse_test_modul()
+        if a.mfsk_messen:
+            mf_messen(ns, mt, tmp, a.tabelle, a.laeufe); return 0
         if a.messen:
             messen(ns, mt, tmp, a.tabelle, a.laeufe); return 0
-        teil_a(ns); teil_b(ns, tmp); teil_c(ns, mt, tmp); teil_d(ns, mt, tmp)
+        teil_a(ns); teil_b(ns, tmp); teil_c(ns, mt, tmp); teil_d(ns, mt, tmp); teil_m(ns, mt, tmp)
         if a.server or a.browser:
             teil_e(datei, ns, a.browser)
     finally:
