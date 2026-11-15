@@ -24,7 +24,7 @@ Features
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
   * 4.9.0: Digitaler Rucksack bei Import und Export: überall eine Datei aus dem Rucksack wählen oder einen Export direkt dort
-    ablegen · Mein Handy-Hotspot bevorzugen: ein gespeichertes Netz markieren, MoveEye wechselt hin, sobald es da ist (Schalter, ab Werk aus)
+    ablegen · Mein Handy-Hotspot bevorzugen: ein gespeichertes Netz markieren, MoveEye wechselt hin, sobald es da ist (Schalter, ab Werk aus) · 📖 Vorlesen und Datei-Ansicht im Digitalen Rucksack: Geschichten (.txt, .md, .epub, .docx, .pdf) mit der Piper-Stimme vorlesen, mit Lesezeichen
   * 4.8.0: Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt
     hoch) · Spielesammlung GS-1.25: «Verschollen im Bergtal» zeigt den Fortschritt pro Kapitel (oben und im Menü) und läuft bis 16× schnell; in «Gipfeltreffen» trifft Antippen am Handy wieder die richtige Stelle
   * 4.7.0: Spielesammlung GS-1.24: neues Spiel «Gipfeltreffen» (erstes Level) und «Verschollen im Bergtal» Kapitel 2 «Drei Tage»
@@ -286,7 +286,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_9_0.zip"
-ZD_SHA256 = "2d38ee0fdff11ac0ae34cd72ac9906a13cb145ece1ed728538cb41c477f2a742"
+ZD_SHA256 = "6c5e582bb4bc863346e7ba09a21a2c3eedb9445a36d8483573a41f3ad44f1ba0"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -115133,6 +115133,1371 @@ rucksack_io_selftest = _zd_fn('639zzzzr_rucksack_io/rucksack_io_selftest()')
 
 
 SELFTEST_EXTRA.append(("Backpack for import / export: export list, private, script (639zzzzr)", rucksack_io_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import html as _vl_html
+import html.parser as _vl_hp
+import posixpath as _vl_pp
+import zipfile as _vl_zip
+import xml.etree.ElementTree as _vl_et
+
+for _k, _v in {"vl_volume": 60}.items():
+	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
+VL_READ_EXT = ("txt", "md", "epub", "docx", "pdf")
+VL_CODE_EXT = {"json", "log", "yaml", "yml", "ini", "toml", "cfg", "conf", "c", "h", "cpp", "hpp", "cc", "java", "kt", "swift", "go", "rs",
+			   "css", "scss", "sql", "tex", "gpx", "kml", "geojson", "srt", "vtt", "diff", "patch", "properties", "env", "tsv"}
+VL_MAX_CHARS = 1_500_000
+VL_ZIP_PART, VL_ZIP_ALL = 8 * 1024 * 1024, 40 * 1024 * 1024
+VL_VIEW_MAX = 2 * 1024 * 1024
+VL_PDF_PAGES = 300
+VL_TON_MB, VL_TON_N = 150, 4000
+VL_ALARM_S = 20.0
+VL_GAP_S = 2.0
+VL_SPEEDS = (0.8, 0.9, 1.0, 1.15, 1.3)
+TZ_TYPES.setdefault("epub", ("application/epub+zip", "doc"))
+for _e in VL_CODE_EXT:
+	TZ_TYPES.setdefault(_e,("text/plain","doc"))
+TZ_TYPES["json"] = ("application/json", "doc")
+for _p in TZ_PERMS:
+	PERM_GET[_p]=tuple(PERM_GET.get(_p,()))+("/vorlesen","/api/vorlesen")
+	PERM_POST[_p]=set(PERM_POST.get(_p,()))|{"/api/vorlesen"}
+VL = {"lock": threading.RLock(), "gen": 0, "want": False, "id": "", "name": "", "who": "", "key": "", "c": 0, "s": 0, "state": "off", "msg": "",
+	  "pause": False, "held": "", "hold_t": 0.0, "hold_why": "", "alarm_t": 0.0, "speed": 1.0, "lang": "", "out": None, "olock": threading.Lock(),
+	  "t0": 0.0, "radio_t": 0.0, "bm": None, "bm_t": 0.0, "q": deque(), "qrun": False, "prune_t": 0.0, "inst": "", "synth": None, "pdf": {}, "books": {}}
+_VL_KAP = re.compile(r"^\s*(kapitel|chapter|chapitre|capitolo|chapitel|teil|part|buch|book)\s+[\w.]{1,8}\b.{0,80}$|^\s*#{1,3}\s+\S.{0,80}$", re.I)
+_VL_SATZ = re.compile(r"([.!?…][»«\"'”’)]*)\s+(?=[«»\"'„“‚(\-–A-ZÄÖÜÀ-ÝÉÈ0-9])")
+_VL_ABK = re.compile(r"\b(z\.\s?B|d\.\s?h|u\.\s?a|bzw|ca|Nr|Dr|Prof|St|usw|etc|vgl|evtl|ggf|Hr|Fr|Mr|Mrs|Ms|M|Mme|Sig|ecc)\.")
+_VL_STOP = {"de": "der die und das ist nicht ein eine ich sie er es mit auf den dem zu sich auch wie", "fr": "le la les et est des une un pas que qui dans pour il elle sur au",
+			"it": "il la che di non una per sono è con del della gli le lo si ma", "en": "the and is of to you that it was he she with for on as at his her",
+			"rm": "il la e da per cun ina in betg ch'el ils las è sco era dal"}
+
+
+
+def vl_saetze(p):
+	""
+	p=re.sub(r"\s+"," ",str(p or "")).strip()
+	if not p:
+		return[]
+	p2=_VL_ABK.sub(lambda m:m.group(0).replace(".","\x00"),p)
+	res=[]
+	for s in(x.replace("\x00",".").strip()for x in _VL_SATZ.sub(lambda m:m.group(1)+"\x01",p2).split("\x01")):
+		while len(s)>280:
+			k=max(s.rfind(c,0,240)for c in ",;:–")
+			if k<60:
+				k=s.rfind(" ",0,240)
+			if k<20:
+				k=240
+			res.append(s[:k+1].strip());s=s[k+1:].strip()
+		if s:
+			res.append(s)
+	return res
+
+
+def vl_decode(b):
+	if b.startswith(b"\xef\xbb\xbf"):
+		b=b[3:]
+	if b[:2]in(b"\xff\xfe",b"\xfe\xff"):
+		return b.decode("utf-16","replace")
+	try:
+		return b.decode("utf-8")
+	except UnicodeDecodeError:
+		return b.decode("cp1252","replace")
+
+
+def vl_from_text(text, md=False):
+	""
+	kap,cur=[],{"t":"","p":[]}
+	for a in re.split(r"\n\s*\n",str(text).replace("\r\n","\n").replace("\r","\n")):
+		a=a.strip("\n")
+		if not a.strip():
+			continue
+		first=a.strip().split("\n",1)[0].strip()
+		if _VL_KAP.match(first):
+			if cur["p"]or cur["t"]:
+				kap.append(cur)
+			cur={"t":re.sub(r"^#+\s*|[*_`]+","",first).strip(),"p":[]}
+			a=a.strip().split("\n",1)[1]if "\n"in a.strip()else ""
+			if not a.strip():
+				continue
+		if md:
+			if re.match(r"^\s*(```|~~~|\|)",a):
+				continue
+			a=re.sub(r"^\s{0,3}(>\s?|[-*+]\s+|\d+[.)]\s+|#{4,6}\s+)","",a,flags=re.M)
+			a=re.sub(r"!\[[^\]]*\]\([^)]*\)","",a);a=re.sub(r"\[([^\]]*)\]\([^)]*\)",r"\1",a);a=re.sub(r"[*_`]{1,3}","",a)
+		a=re.sub(r"\s*\n\s*"," ",a).strip()
+		if a:
+			cur["p"].append(a)
+	if cur["p"]or cur["t"]:
+		kap.append(cur)
+	return kap
+
+
+class _VlHtml(_vl_hp.HTMLParser):
+	BLOCK={"p","div","h1","h2","h3","h4","h5","h6","li","br","tr","blockquote","section","dd","dt","pre","hr"}
+	SKIP={"script","style","head","title","svg","math","noscript","rt","rp"}
+
+	def __init__(self):
+		super().__init__(convert_charrefs=True);self.out,self.buf,self.skip,self.head=[],[],0,""
+
+	def handle_starttag(self,tag,a):
+		if tag in self.SKIP:
+			self.skip+=1
+		elif tag in self.BLOCK:
+			self.flush()
+
+	def handle_endtag(self,tag):
+		if tag in self.SKIP:
+			self.skip=max(0,self.skip-1)
+		elif tag in self.BLOCK:
+			t=self.flush()
+			if tag in("h1","h2","h3")and t and not self.head and len(self.out)==1:
+				self.head=self.out.pop()
+
+	def handle_data(self,d):
+		if not self.skip:
+			self.buf.append(d)
+
+	def flush(self):
+		t=re.sub(r"\s+"," ","".join(self.buf)).strip();self.buf=[]
+		if t:
+			self.out.append(t)
+		return t
+
+
+class _VlZip:
+	""
+	def __init__(self,path):
+		self.z=_vl_zip.ZipFile(path);self.n=0
+
+	def read(self,name,xml=True):
+		i=self.z.getinfo(name)
+		if i.file_size>VL_ZIP_PART or self.n+i.file_size>VL_ZIP_ALL:
+			raise ValueError("too big")
+		b=self.z.read(i);self.n+=len(b)
+		if len(b)>i.file_size:
+			raise ValueError("too big")
+		if xml and b"<!ENTITY"in b[:4096].upper():
+			raise ValueError("entity")
+		return b
+
+
+def _vl_tag(e):
+	return e.tag.rsplit("}",1)[-1]
+
+
+def vl_from_epub(path):
+	""
+	z=_VlZip(path)
+	c=_vl_et.fromstring(z.read("META-INF/container.xml"))
+	opf=next((e.get("full-path")for e in c.iter()if _vl_tag(e)=="rootfile"and e.get("full-path")),"")
+	base=_vl_pp.dirname(opf)
+	o=_vl_et.fromstring(z.read(opf))
+	man={e.get("id"):e for e in o.iter()if _vl_tag(e)=="item"}
+	meta={_vl_tag(e):(e.text or "").strip()for e in o.iter()if _vl_tag(e)in("title","language")and(e.text or "").strip()}
+	spine=[e.get("idref")for e in o.iter()if _vl_tag(e)=="itemref"][:2000]
+	toc={}
+	for it in man.values():
+		props,mt=(it.get("properties")or "").split(),it.get("media-type")or ""
+		if "nav"not in props and mt!="application/x-dtbncx+xml":
+			continue
+		p_=_vl_pp.normpath(_vl_pp.join(base,it.get("href")or ""))
+		try:
+			raw=z.read(p_).decode("utf-8","replace")
+		except(KeyError,ValueError):
+			continue
+		if mt=="application/x-dtbncx+xml":
+			for m_ in re.finditer(r"<navLabel>\s*<text>(.*?)</text>.*?<content[^>]*src=\"([^\"#]+)",raw,re.S):
+				toc.setdefault(_vl_pp.normpath(_vl_pp.join(_vl_pp.dirname(p_),m_.group(2))),_vl_html.unescape(re.sub(r"\s+"," ",m_.group(1))).strip())
+		else:
+			for m_ in re.finditer(r"<a[^>]*href=\"([^\"#]+)[^\"]*\"[^>]*>(.*?)</a>",raw,re.S):
+				toc.setdefault(_vl_pp.normpath(_vl_pp.join(_vl_pp.dirname(p_),m_.group(1))),
+							   _vl_html.unescape(re.sub(r"<[^>]+>|\s+"," ",m_.group(2))).strip())
+	kap,n=[],0
+	for rid in spine:
+		it=man.get(rid)
+		if it is None or "html"not in(it.get("media-type")or "")or "nav"in(it.get("properties")or "").split():
+			continue
+		p_=_vl_pp.normpath(_vl_pp.join(base,it.get("href")or ""))
+		try:
+			h=_VlHtml();h.feed(z.read(p_,xml=False).decode("utf-8","replace"));h.flush()
+		except(KeyError,ValueError):
+			continue
+		if h.out:
+			kap.append({"t":(toc.get(p_)or h.head or "")[:120],"p":h.out});n+=sum(len(x)for x in h.out)
+			if n>VL_MAX_CHARS:
+				break
+	return meta.get("title","")[:160],meta.get("language","")[:2].lower(),kap
+
+
+def vl_from_docx(path):
+	W="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+	d=_vl_et.fromstring(_VlZip(path).read("word/document.xml"))
+	kap,cur,n=[],{"t":"","p":[]},0
+	for p in d.iter(W+"p"):
+		st=p.find(f"{W}pPr/{W}pStyle")
+		s=(st.get(W+"val")if st is not None else "")or ""
+		t="".join((x.text or "")if x.tag==W+"t"else "\t"if x.tag==W+"tab"else " "for x in p.iter()if x.tag in(W+"t",W+"tab",W+"br")).strip()
+		if not t:
+			continue
+		n+=len(t)
+		if n>VL_MAX_CHARS:
+			break
+		if re.match(r"(?i)^(heading|berschrift|titre|titolo|title|titel)\s*[12]?$",re.sub(r"^.*?(heading|berschrift|titre|titolo|title|titel)",r"\1",s))and len(t)<120:
+			if cur["p"]or cur["t"]:
+				kap.append(cur)
+			cur={"t":t,"p":[]}
+		else:
+			cur["p"].append(t)
+	if cur["p"]or cur["t"]:
+		kap.append(cur)
+	return kap
+
+
+def _vl_pdf_absatz(s):
+	""
+	ln=s.split("\n")
+	lens=sorted(len(x.rstrip())for x in ln if x.strip())
+	med=lens[len(lens)*3//4]if lens else 0
+	out=[]
+	for x in ln:
+		out.append(x)
+		if x.strip()and len(x.rstrip())<med*0.8:
+			out.append("")
+	return re.sub(r"(\w)-\n(\w)",r"\1\2","\n".join(out))
+
+
+def vl_tool(name):
+	return shutil.which(name)or ""
+
+
+def vl_from_pdf(path):
+	exe=vl_tool("pdftotext")
+	if not exe:
+		raise LookupError("pdftotext is missing (poppler-utils)")
+	r=subprocess.run([exe,"-enc","UTF-8","-eol","unix",path,"-"],capture_output=True,timeout=90)
+	if r.returncode!=0:
+		raise ValueError("the PDF cannot be read")
+	pages=[_vl_pdf_absatz(x)for x in r.stdout[:VL_MAX_CHARS*2].decode("utf-8","replace").split("\f")]
+	kap=vl_from_text("\n\n".join(pages))
+	if len(kap)<=1:
+		kap=[{"t":"","p":[re.sub(r"\s*\n\s*"," ",a).strip()for a in re.split(r"\n\s*\n",s)if a.strip()],"pg":i}
+			   for i,s in enumerate(pages,1)if s.strip()]
+	return kap
+
+
+def vl_lang_guess(text, default=""):
+	words=re.findall(r"[a-zàâäçéèêëîïôöùûüß']+",str(text)[:6000].lower())
+	best,n=default,4
+	for L,sw in _VL_STOP.items():
+		s=set(sw.split())
+		k=sum(1 for w in words if w in s)
+		if k>n:
+			best,n=L,k
+	return best
+
+
+def vl_root():
+	r=_tz_load()
+	if r is None:
+		return None
+	d=os.path.join(r,"vl")
+	os.makedirs(os.path.join(d,"ton"),exist_ok=True)
+	return d
+
+
+def vl_sig(m):
+	return f"{m.get('size')}|{m.get('t')}|{m.get('ver', 1)}|{m.get('ed_t', '')}|3"
+
+
+def vl_book(m):
+	""
+	d=vl_root()
+	if d is None:
+		raise LookupError("the storage (USB stick / SSD) is not there")
+	cp=os.path.join(d,m["id"]+".json")
+	sig=vl_sig(m)
+	mem=VL["books"].get(m["id"])
+	if mem and mem["sig"]==sig:
+		return mem
+	try:
+		with open(cp,encoding="utf-8")as f:
+			b=json.load(f)
+		if b.get("sig")==sig:
+			return _vl_keep(m["id"],b)
+	except(OSError,ValueError):
+		pass
+	vl_prune()
+	src=os.path.join(TZ["root"],"f",m["id"]+".bin")
+	e=tausch_ext(m["name"])
+	title,lang="",""
+	if e in("txt","md"):
+		with open(src,"rb")as f:
+			kap=vl_from_text(vl_decode(f.read(VL_MAX_CHARS*3))[:VL_MAX_CHARS],md=e=="md")
+	elif e=="epub":
+		title,lang,kap=vl_from_epub(src)
+	elif e=="docx":
+		kap=vl_from_docx(src)
+	elif e=="pdf":
+		kap=vl_from_pdf(src)
+	else:
+		raise ValueError("this kind of file cannot be read aloud")
+	kap=[k for k in kap if k["p"]or k["t"]]
+	if len(kap)>1 and not kap[0]["t"]and len(kap[0]["p"])==1 and len(kap[0]["p"][0])<90:
+		title=title or kap[0]["p"][0];kap=kap[1:]
+	ch,total=[],0
+	for i,k in enumerate(kap):
+		ps=[s for s in(vl_saetze(p)for p in k["p"])if s]
+		if not ps:
+			continue
+		t=k["t"]or(("p. %d"%k["pg"])if k.get("pg")else "")
+		ch.append({"t":t[:120],"p":ps});total+=sum(len(x)for x in ps)
+	if not total:
+		raise ValueError("no text found (a scanned PDF? pictures are not read)")
+	allt=" ".join(x for c in ch[:3]for p in c["p"][:8]for x in p)
+	b={"sig":sig,"title":(title or os.path.splitext(m["name"])[0].replace("_"," "))[:160],"lang":norm_lang(lang)if lang in LANGS else vl_lang_guess(allt),
+		 "ch":ch,"n":[sum(len(x)for x in c["p"])for c in ch],"total":total}
+	try:
+		tmp=cp+".tmp"
+		with open(tmp,"w",encoding="utf-8")as f:
+			json.dump(b,f,ensure_ascii=False,separators=(",",":"))
+		os.replace(tmp,cp)
+	except OSError:
+		pass
+	return _vl_keep(m["id"],b)
+
+
+def _vl_keep(fid, b):
+	""
+	with VL["lock"]:
+		VL["books"].pop(fid,None);VL["books"][fid]=b
+		while len(VL["books"])>3:
+			VL["books"].pop(next(iter(VL["books"])))
+	return b
+
+
+def vl_sentence(b, c, s):
+	""
+	for p in b["ch"][c]["p"]:
+		if s<len(p):
+			return p[s],s==len(p)-1
+		s-=len(p)
+	return "",True
+
+
+def vl_prune(force=False):
+	""
+	now=time.time()
+	if not force and now-VL["prune_t"]<600:
+		return
+	VL["prune_t"]=now
+	d=vl_root()
+	if d is None:
+		return
+	with TZ["lock"]:
+		have=set(TZ["files"]or{})
+	for sub in("","ton"):
+		p_=os.path.join(d,sub)
+		try:
+			names=os.listdir(p_)
+		except OSError:
+			continue
+		for nm in names:
+			fid=nm[:16]
+			if TZ_ID.match(fid)and fid not in have:
+				try:
+					os.remove(os.path.join(p_,nm))
+				except OSError:
+					pass
+
+
+def vl_forget(fid):
+	VL["books"].pop(fid,None)
+	d=vl_root()
+	if d is None or not TZ_ID.match(str(fid or "")):
+		return
+	for sub in("","ton"):
+		try:
+			for nm in os.listdir(os.path.join(d,sub)):
+				if nm.startswith(fid):
+					os.remove(os.path.join(d,sub,nm))
+		except OSError:
+			pass
+
+
+_tausch_delete_vl = tausch_delete
+
+
+
+def tausch_delete(who, fid, lang=None):
+	r=_tausch_delete_vl(who,fid,lang)
+	if tausch_file(fid)is None:
+		vl_forget(fid)
+		if VL["id"]==fid:
+			vl_stop("file deleted")
+	return r
+
+
+
+def vl_pdf_pages(m):
+	k=(m["id"],vl_sig(m))
+	if k in VL["pdf"]:
+		return VL["pdf"][k]
+	n=0
+	exe=vl_tool("pdfinfo")
+	src=os.path.join(TZ["root"],"f",m["id"]+".bin")
+	try:
+		if exe:
+			r=subprocess.run([exe,src],capture_output=True,timeout=20)
+			mm=re.search(rb"^Pages:\s+(\d+)",r.stdout,re.M)
+			n=int(mm.group(1))if mm else 0
+		if not n:
+			with open(src,"rb")as f:
+				n=len(re.findall(rb"/Type\s*/Page[^s]",f.read(60*TZ_MB)))
+	except(OSError,subprocess.SubprocessError,ValueError):
+		n=0
+	VL["pdf"][k]=n
+	return n
+
+
+def vl_pdf_page(m, n):
+	""
+	d=vl_root()
+	exe=vl_tool("pdftoppm")
+	if d is None or not exe or not 1<=n<=VL_PDF_PAGES or m["size"]>200*TZ_MB:
+		return ""
+	p_=os.path.join(d,f"{m['id']}_p{n}.jpg")
+	if os.path.isfile(p_)and os.path.getmtime(p_)>=float(m.get("ed_t")or m.get("t")or 0):
+		return p_
+	tmpd=tempfile.mkdtemp(prefix="mw_vl_")
+	try:
+		r=subprocess.run([exe,"-f",str(n),"-l",str(n),"-scale-to","1400","-jpeg","-singlefile",
+							os.path.join(TZ["root"],"f",m["id"]+".bin"),os.path.join(tmpd,"s")],capture_output=True,timeout=40)
+		img=cv2.imread(os.path.join(tmpd,"s.jpg"),cv2.IMREAD_COLOR)if r.returncode==0 else None
+		if img is None or not _tz_jpg_write(img,p_,1400,82):
+			return ""
+		return p_
+	except(OSError,subprocess.SubprocessError):
+		return ""
+	finally:
+		shutil.rmtree(tmpd,ignore_errors=True)
+
+
+def vl_poppler_install():
+	""
+	if VL["inst"]=="running":
+		return False,"already running"
+	apt=shutil.which("apt-get")
+	if not apt:
+		return False,"no apt-get on this system - install poppler-utils by hand"
+	VL["inst"]="running"
+
+	def work():
+		pre=[]if _is_root()else["sudo","-n"]
+		env=dict(os.environ,DEBIAN_FRONTEND="noninteractive",APT_LISTCHANGES_FRONTEND="none")
+		out,rc="",-1
+		for args in(["install","-y","--no-install-recommends","poppler-utils"],["update"],["install","-y","--no-install-recommends","poppler-utils"]):
+			if args[0]=="update"and(rc==0 or not re.search(r"Unable to locate|no installation candidate|Failed to fetch",out)):
+				continue
+			try:
+				r=subprocess.run(pre+[apt]+args,capture_output=True,text=True,timeout=600,env=env,stdin=subprocess.DEVNULL)
+				rc,out=r.returncode,(r.stdout or "")+(r.stderr or "")
+			except(OSError,subprocess.SubprocessError)as e:
+				rc,out=-1,str(e)
+		ok=bool(vl_tool("pdftoppm")and vl_tool("pdftotext"))
+		low=out.lower()
+		VL["inst"]="done"if ok else("MoveEye has no rights for apt (sudo asks for a password) - in a terminal: sudo apt install poppler-utils"
+										if "password is required"in low or "terminal is required"in low else
+										"apt is busy right now (another installation or update) - try again in a few minutes"
+										if "lock"in low else "no internet for apt - try again with internet"if "resolv"in low or "fetch"in low else
+										(out.strip().splitlines()or["?"])[-1][:120])
+		log_event("sys","Read aloud: poppler-utils "+("installed"if ok else "not installed: "+VL["inst"])[:140])
+	threading.Thread(target=work,daemon=True,name="vl-poppler").start()
+	return True,""
+
+
+
+def vl_view(m, lang=None):
+	""
+	e=tausch_ext(m["name"])
+	src=os.path.join(TZ["root"],"f",m["id"]+".bin")
+	mime,kind,risky=tausch_type(m["name"])
+	if risky:
+		return{"type":"info","risky":True}
+	if e in("txt","md","csv","tsv")or e in VL_CODE_EXT:
+		with open(src,"rb")as f:
+			raw=f.read(VL_VIEW_MAX+1)
+		if b"\x00"in raw[:8192]:
+			return{"type":"info","binary":True}
+		t=vl_decode(raw[:VL_VIEW_MAX])
+		typ="text"if e in("txt","md")else "table"if e in("csv","tsv")else "json"if e in("json","geojson")else "code"
+		return{"type":typ,"text":t,"md":e=="md","cut":len(raw)>VL_VIEW_MAX,"ext":e}
+	if e in("epub","docx","pdf"):
+		out={"type":"book","ext":e,"tool":bool(vl_tool("pdftoppm"))if e=="pdf"else True}
+		if e=="pdf":
+			out["pages"]=min(vl_pdf_pages(m),VL_PDF_PAGES)if out["tool"]else 0
+		try:
+			b=vl_book(m)
+			out.update(title=b["title"],lang=b["lang"],ch=[{"t":c["t"],"p":[" ".join(p)for p in c["p"]]}for c in b["ch"]],total=b["total"])
+		except LookupError as x:
+			out.update(error=tr_err(str(x),lang),need="poppler"if "pdftotext"in str(x)else "")
+		except(ValueError,KeyError,OSError,_vl_zip.BadZipFile,_vl_et.ParseError,subprocess.SubprocessError,StopIteration):
+			out["error"]=tr("This file cannot be read (damaged or protected).",lang)
+		return out
+	if kind=="image":
+		return{"type":"image"}
+	return{"type":"info"}
+
+
+
+def vl_voice(book_lang, ui_lang):
+	""
+	bl,ul=norm_lang(book_lang or ui_lang),norm_lang(ui_lang)
+	if VL["synth"]is not None:
+		return bl,""
+	if piper_ready(bl):
+		return bl,""
+	if bl!=ul and piper_ready(ul):
+		return ul,"No Piper voice loaded for the language of the book - read with the voice of the page."
+	return bl,"No Piper voice loaded - the old voice reads (Settings › Light & sound › Loudspeaker)."
+
+
+def vl_synth(text, lang, speed, out):
+	""
+	f=VL["synth"]
+	if f is not None:
+		return f(text,lang,speed,out)
+	vid=piper_voice_for(lang)
+	if vid and piper_ready(lang):
+		ok,err,_i=piper_synth(text,vid,out,speed)
+		if ok:
+			return True,""
+	return _tts_make_639zzb(text,lang,out)
+
+
+def vl_ton(m, b, c, s, lang, speed=1.0):
+	""
+	d=vl_root()
+	text,_end=vl_sentence(b,c,s)
+	if d is None or not text:
+		return "","unknown sentence"
+	k=hashlib.sha256(f"{lang}|{piper_voice_for(lang)}|{float(speed):.2f}|{text}".encode("utf-8")).hexdigest()[:20]
+	p_=os.path.join(d,"ton",f"{m['id']}_{k}.wav")
+	if os.path.isfile(p_)and os.path.getsize(p_)>100:
+		return p_,""
+	tmp=p_+f".{threading.get_ident()}.tmp.wav"
+	try:
+		ok,err=vl_synth(re.sub(r"[\x00-\x1f]"," ",text),lang,speed,tmp)
+		if not ok or not os.path.isfile(tmp)or os.path.getsize(tmp)<=100:
+			return "",err or "no voice"
+		os.replace(tmp,p_)
+	finally:
+		try:
+			os.remove(tmp)
+		except OSError:
+			pass
+	vl_ton_trim(d)
+	return p_,""
+
+
+def vl_ton_trim(d):
+	try:
+		fs=[(e.stat().st_mtime,e.stat().st_size,e.path)for e in os.scandir(os.path.join(d,"ton"))if e.name.endswith(".wav")]
+	except OSError:
+		return
+	tot=sum(x[1]for x in fs)
+	if len(fs)<=VL_TON_N and tot<=VL_TON_MB*TZ_MB:
+		return
+	for _t,sz,p_ in sorted(fs)[:max(len(fs)-VL_TON_N,len(fs)//5)]:
+		try:
+			os.remove(p_);tot-=sz
+		except OSError:
+			pass
+
+
+def vl_next(b, c, s, n=1):
+	""
+	s+=n
+	while c<len(b["n"])and s>=b["n"][c]:
+		s-=b["n"][c];c+=1
+	return(c,s)if c<len(b["n"])else None
+
+
+def vl_ahead(m, b, c, s, lang, speed=1.0, n=2):
+	""
+	for i in range(1,n+1):
+		nx=vl_next(b,c,s,i)
+		if nx is None:
+			break
+		with VL["lock"]:
+			job=(m["id"],nx[0],nx[1],lang,speed)
+			if job in VL["q"]:
+				continue
+			VL["q"].append(job)
+			while len(VL["q"])>6:
+				VL["q"].popleft()
+	with VL["lock"]:
+		if VL["qrun"]:
+			return
+		VL["qrun"]=True
+
+	def work():
+		try:
+			while True:
+				with VL["lock"]:
+					if not VL["q"]:
+						VL["qrun"]=False
+						return
+					fid,c_,s_,L_,sp=VL["q"].popleft()
+				m_=tausch_file(fid)
+				if m_ is not None:
+					try:
+						vl_ton(m_,vl_book(m_),c_,s_,L_,sp)
+					except Exception:
+						pass
+		except Exception:
+			VL["qrun"]=False
+	threading.Thread(target=work,daemon=True,name="vl-ahead").start()
+
+
+
+def vl_bms():
+	if VL["bm"]is None:
+		d=vl_root()
+		try:
+			with open(os.path.join(d,"lesezeichen.json"),encoding="utf-8")as f:
+				VL["bm"]=json.load(f)
+		except(OSError,ValueError,TypeError):
+			VL["bm"]={}
+	return VL["bm"]
+
+
+def vl_bm_save(key, fid, c, s, now=None, force=False):
+	m=tausch_file(fid)
+	if m is None or not key:
+		return False
+	try:
+		b=vl_book(m)
+		c,s=max(0,min(int(c),len(b["n"])-1)),int(s)
+		s=max(0,min(s,b["n"][c]-1))
+		pct=round(100.0*(sum(b["n"][:c])+s)/max(1,b["total"]))
+	except(LookupError,ValueError,KeyError,OSError,TypeError):
+		return False
+	now=time.time()if now is None else now
+	with VL["lock"]:
+		bm=vl_bms()
+		mine=bm.setdefault(str(key),{})
+		mine[fid]=[c,s,int(now),pct]
+		if len(mine)>300:
+			for k in sorted(mine,key=lambda x:mine[x][2])[:len(mine)-300]:
+				mine.pop(k,None)
+		if not force and now-VL["bm_t"]<8:
+			return True
+		VL["bm_t"]=now
+		d=vl_root()
+		try:
+			_tz_write_json(os.path.join(d,"lesezeichen.json"),bm)
+		except(OSError,TypeError):
+			return False
+	return True
+
+
+def vl_bm_get(key, fid):
+	x=vl_bms().get(str(key),{}).get(fid)
+	return{"c":x[0],"s":x[1],"t":x[2],"pct":x[3]}if x else None
+
+
+def vl_bm_list(who):
+	""
+	out={}
+	for fid,x in list(vl_bms().get(who["key"],{}).items()):
+		m=tausch_file(fid)
+		if m is not None and tausch_can_down(m,who):
+			out[fid]={"c":x[0],"pct":x[3],"t":x[2],"name":m["name"]}
+	return out
+
+
+
+def vl_held(now=None):
+	""
+	now=time.time()if now is None else now
+	try:
+		why=radio_held(now)
+	except Exception:
+		why=""
+	if not why and now-VL["hold_t"]<VL_GAP_S:
+		why=VL["hold_why"]if VL["hold_why"]in _VL_HELD_TXT else "sound"
+	if not why and now-VL["alarm_t"]<VL_ALARM_S:
+		why="alarm"
+	return why
+
+
+_VL_HELD_TXT = {"siren": "Paused: the siren / an alarm sound plays", "sound": "Paused: MoveEye plays a sound", "voice": "Paused: announcement",
+				"talk": "Paused: somebody talks through the loudspeaker", "morse": "Paused: Morse / radio signal is being sent",
+				"mic": "Paused: the microphone receives Morse / radio signals (no feedback)", "wake": "Paused: the wake-up alarm rings",
+				"alarm": "Paused: alarm - it reads on when it is quiet"}
+
+_radio_yield_vl = radio_yield
+
+
+
+def radio_yield(why="sound"):
+	VL["hold_t"]=time.time();VL["hold_why"]=why
+	if VL["want"]:
+		got=VL["olock"].acquire(timeout=0.3)
+		try:
+			p=VL["out"];VL["out"]=None
+		finally:
+			if got:
+				VL["olock"].release()
+		_radio_kill(p)
+	return _radio_yield_vl(why)
+
+
+_push_alert_vl = push_alert
+
+
+
+def push_alert(kind, text="", **extra):
+	try:
+		if kind in("person","warm","noise")and is_armed():
+			VL["alarm_t"]=time.time()
+	except Exception:
+		pass
+	return _push_alert_vl(kind,text,**extra)
+
+
+_radio_play_vl = radio_play
+
+
+
+def radio_play(sid=None, who="web", wake=False, vol=None):
+	if VL["want"]:
+		vl_stop("radio")
+	VL["radio_t"]=time.time()
+	return _radio_play_vl(sid,who,wake,vol)
+
+
+_radio_bplay_vl = radio_bplay
+
+
+
+def radio_bplay(sid=None):
+	if VL["want"]:
+		vl_stop("radio")
+	VL["radio_t"]=time.time()
+	return _radio_bplay_vl(sid)
+
+
+def vl_stop(why="button", quiet=False):
+	with VL["lock"]:
+		was=VL["want"]
+		VL["want"]=False;VL["gen"]+=1
+		p=VL["out"];VL["out"]=None
+	_radio_kill(p)
+	if was:
+		if VL["key"]and VL["id"]:
+			vl_bm_save(VL["key"],VL["id"],VL["c"],VL["s"],force=True)
+		VL.update(state="off",held="",pause=False)
+		if not quiet:
+			log_event("sys",f"Read aloud off ({why})"[:160])
+	return was
+
+
+def vl_pi_play(who, m, c=0, s=0, speed=1.0, lang=None):
+	""
+	if not out_selected():
+		return False,"no loudspeaker selected"
+	try:
+		b=vl_book(m)
+	except LookupError as e:
+		return False,str(e)
+	except Exception:
+		return False,"This file cannot be read (damaged or protected)."
+	vl_stop("another file",quiet=True)
+	if RADIO["want"]:
+		radio_stop("read aloud")
+	BR["sid"]=""
+	c=max(0,min(int(c or 0),len(b["n"])-1));s=max(0,min(int(s or 0),b["n"][c]-1))
+	L,_hint=vl_voice(b["lang"],lang or CFG.get("lang"))
+	with VL["lock"]:
+		VL["gen"]+=1;gen=VL["gen"]
+		VL.update(want=True,id=m["id"],name=b["title"],who=who["name"],key=who["key"],c=c,s=s,state="starting",msg="",pause=False,
+				  held="",speed=max(0.5,min(2.0,float(speed or 1.0))),lang=L,t0=time.time())
+	threading.Thread(target=_vl_session,args=(gen,),daemon=True,name="vorlesen").start()
+	log_event("sys",f"Read aloud: «{m['name']}» on the loudspeaker ({who['name']})"[:160])
+	return True,""
+
+
+def _vl_wav(p_):
+	import wave
+	with wave.open(p_,"rb")as w:
+		if w.getsampwidth()!=2:
+			raise ValueError("wav")
+		rate,ch,data=w.getframerate(),w.getnchannels(),w.readframes(w.getnframes())
+	y=np.frombuffer(data,dtype="<i2")
+	if ch>1:
+		y=y.reshape(-1,ch).mean(axis=1).astype("<i2")
+	return rate,y
+
+
+def _vl_session(gen):
+	alive=lambda:VL["gen"]==gen and VL["want"]
+	mine,o,rate=[],None,0
+	try:
+		while alive():
+			m=tausch_file(VL["id"])
+			if m is None:
+				VL.update(want=False,state="error",msg="unknown file");break
+			b=vl_book(m)
+			c,s=VL["c"],VL["s"]
+			vl_ahead(m,b,c,s,VL["lang"],VL["speed"],1)
+			p_,err=vl_ton(m,b,c,s,VL["lang"],VL["speed"])
+			if not alive():
+				break
+			if not p_:
+				VL.update(want=False,state="error",msg=err or "no voice");break
+			r_,y=_vl_wav(p_)
+			vol=(max(0.0,min(100.0,float(CFG.get("vl_volume",60))))/100.0)**2
+			i,step,done=0,max(1,r_//10),False
+			while alive():
+				why="pause"if VL["pause"]else vl_held()
+				if why:
+					VL["held"]=why;VL["state"]="paused"
+					with VL["olock"]:
+						k_=VL["out"];VL["out"]=None
+					_radio_kill(k_);o=None
+					i=0
+					time.sleep(0.2);continue
+				VL["held"]="";VL["state"]="playing"
+				if o is None or o.poll()is not None or rate!=r_:
+					_radio_kill(o)
+					ocmd,oerr=out_cmd(r_)
+					if ocmd is None:
+						VL.update(want=False,state="error",msg=oerr);return
+					with VL["olock"]:
+						if vl_held()or not alive():
+							continue
+						o=subprocess.Popen(ocmd,stdin=subprocess.PIPE,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,preexec_fn=_radio_pre)
+						VL["out"]=o;mine.append(o);rate=r_
+				if i>=y.size:
+					done=True;break
+				ch=(y[i:i+step].astype(np.float32)*vol)
+				try:
+					o.stdin.write(np.clip(ch,-32768,32767).astype("<i2").tobytes());o.stdin.flush()
+				except(BrokenPipeError,OSError,ValueError):
+					with VL["olock"]:
+						if VL["out"]is o:
+							VL["out"]=None
+					o=None;continue
+				i+=step
+				if AUDIO is not None:
+					AUDIO.mute_until=time.time()+2.0
+			if not done or not alive():
+				continue
+			_t,end=vl_sentence(b,c,s)
+			gap=np.zeros(int(r_*(0.55 if end else 0.22)/max(0.5,VL["speed"])),dtype="<i2")
+			try:
+				if o is not None:
+					o.stdin.write(gap.tobytes());o.stdin.flush()
+			except(BrokenPipeError,OSError,ValueError):
+				o=None
+			with VL["lock"]:
+				if VL["gen"]!=gen or(VL["c"],VL["s"])!=(c,s):
+					continue
+				nx=vl_next(b,c,s)
+				if nx is None:
+					VL.update(want=False,state="done",c=0,s=0)
+					vl_bm_save(VL["key"],m["id"],0,0,force=True)
+					break
+				VL["c"],VL["s"]=nx
+			vl_bm_save(VL["key"],m["id"],nx[0],nx[1])
+	except Exception as e:
+		VL.update(want=False,state="error",msg=str(e)[:160])
+	finally:
+		with VL["olock"]:
+			if VL["out"]in mine:
+				VL["out"]=None
+		for p in mine:
+			try:
+				p.stdin.close()
+			except Exception:
+				pass
+			_radio_kill(p)
+
+
+
+def vl_pi_may(role, perms):
+	return role=="admin"or "siren"in set(perms or())
+
+
+def vl_pi_state(lang=None):
+	L=norm_lang(lang or CFG.get("lang"))
+	h=VL["held"]
+	return{"on":VL["want"],"id":VL["id"],"name":VL["name"],"who":VL["who"],"c":VL["c"],"s":VL["s"],"state":VL["state"],
+			"pause":VL["pause"],"held":tr(_VL_HELD_TXT[h],L)if VL["want"]and h in _VL_HELD_TXT else "",
+			"msg":tr_err(VL["msg"],L)if VL["msg"]else "","vol":int(CFG.get("vl_volume",60)),"speed":VL["speed"],
+			"spk":bool(out_selected())}
+
+
+def vl_get(who, fid, lang=None, role="admin", perms=None):
+	""
+	L=norm_lang(lang or CFG.get("lang"))
+	m=tausch_file(fid)
+	if m is None or not tausch_can_see(m,who):
+		return 404,{"ok":False,"error":tr("unknown file",L)}
+	if not tausch_can_down(m,who):
+		return 403,{"ok":False,"error":tr("You may not download files.",L)}
+	if tausch_ext(m["name"])not in VL_READ_EXT:
+		return 400,{"ok":False,"error":tr("this kind of file cannot be read aloud",L)}
+	try:
+		b=vl_book(m)
+	except LookupError as e:
+		return 400,{"ok":False,"error":tr_err(str(e),L),"need":"poppler"if "pdftotext"in str(e)else ""}
+	except Exception:
+		return 400,{"ok":False,"error":tr("This file cannot be read (damaged or protected).",L)}
+	vl_,hint=vl_voice(b["lang"],L)
+	vid=piper_voice_for(vl_)
+	vname=(PIPER_VOICES.get(vid)or{}).get("name","")if vid and(VL["synth"]is not None or piper_ready(vl_))else ""
+	return 200,{"ok":True,"id":fid,"name":m["name"],"title":b["title"],"lang":b["lang"],"ch":[{"t":c["t"],"p":c["p"]}for c in b["ch"]],
+				 "n":b["n"],"total":b["total"],"bm":vl_bm_get(who["key"],fid),"dl":True,
+				 "voice":{"lang":vl_,"name":vname or tr("old voice",L),"piper":bool(vname),"hint":tr(hint,L)if hint else ""},
+				 "may":{"pi":vl_pi_may(role,perms)},"pi":vl_pi_state(L),"speeds":list(VL_SPEEDS)}
+
+
+def vl_do(who, d, lang=None, role="admin", perms=None):
+	""
+	d=d if isinstance(d,dict)else{}
+	L=norm_lang(lang or d.get("lang")or CFG.get("lang"))
+	a=str(d.get("action")or "")
+	fid=str(d.get("id")or "")
+
+	def out(ok,err="",code=None,**kw):
+		return(code or(200 if ok else 400)),dict({"ok":ok,"error":tr_err(err,L)if err else None,"pi":vl_pi_state(L)},**kw)
+	if a=="poppler":
+		if role!="admin":
+			return out(False,"Only for the administrator",403)
+		return out(*vl_poppler_install())
+	if a in("bm","play","bplay"):
+		m=tausch_file(fid)
+		if m is None or not tausch_can_down(m,who)or tausch_ext(m["name"])not in VL_READ_EXT:
+			return out(False,"unknown file",404)
+		try:
+			c,s=int(d.get("c")or 0),int(d.get("s")or 0)
+		except(TypeError,ValueError):
+			return out(False,"invalid value")
+		if a=="bm":
+			return out(vl_bm_save(who["key"],fid,c,s,force=bool(d.get("now"))))
+		if a=="bplay":
+			if RADIO["want"]:
+				radio_stop("read aloud")
+			BR["sid"]=""
+			vl_bm_save(who["key"],fid,c,s)
+			return out(True,t0=time.time())
+		if not vl_pi_may(role,perms):
+			return out(False,"Reading on the loudspeaker needs the right «Siren / sounds».",403)
+		return out(*vl_pi_play(who,m,c,s,d.get("speed")or 1.0,L))
+	if a in("stop","pause","resume","seek","speed","volume"):
+		if not vl_pi_may(role,perms):
+			return out(False,"Reading on the loudspeaker needs the right «Siren / sounds».",403)
+		if a=="stop":
+			vl_stop("button")
+		elif a in("pause","resume"):
+			VL["pause"]=a=="pause"
+			if VL["key"]and VL["id"]:
+				vl_bm_save(VL["key"],VL["id"],VL["c"],VL["s"],force=True)
+		elif a=="seek":
+			m=tausch_file(VL["id"])
+			if not VL["want"]or m is None:
+				return out(False,"nothing is being read")
+			try:
+				b=vl_book(m)
+				c=max(0,min(int(d.get("c")or 0),len(b["n"])-1));s=max(0,min(int(d.get("s")or 0),b["n"][c]-1))
+			except(TypeError,ValueError,LookupError):
+				return out(False,"invalid value")
+			with VL["lock"]:
+				VL["c"],VL["s"]=c,s
+				p=VL["out"];VL["out"]=None
+			_radio_kill(p)
+		elif a=="speed":
+			try:
+				VL["speed"]=max(0.5,min(2.0,float(d.get("v"))))
+			except(TypeError,ValueError):
+				return out(False,"invalid value")
+		else:
+			try:
+				CFG["vl_volume"]=int(max(0,min(100,float(d.get("v")))))
+			except(TypeError,ValueError):
+				return out(False,"invalid value")
+			save_settings()
+		return out(True)
+	return 400,{"ok":False,"error":"unknown action"}
+
+
+
+_smalltv_routes_vl = smalltv_routes
+
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_vl(app,reply,body)
+	from flask import Response,request,g,send_file
+
+	def ctx():
+		role=getattr(g,"role","admin")
+		return tausch_who(g),role,(None if role=="admin"else user_req_perms(g)),norm_lang(request.args.get("lang")or CFG.get("lang"))
+
+	def fil(who,fid,L):
+		m=tausch_file(fid)
+		if m is None or not tausch_can_see(m,who):
+			return None,reply({"ok":False,"error":tr("unknown file",L)},404)
+		if not tausch_can_down(m,who):
+			return None,reply({"ok":False,"error":tr("You may not download files.",L)},403)
+		return m,None
+
+	@app.route("/vorlesen")
+	def vl_page():
+		who=tausch_who(g)
+		if "files_view"not in who["perms"]:
+			return sx_err(403,"error")
+		return Response(render_page(VL_PAGE,"more"),mimetype="text/html",headers={"Cache-Control":"no-store"})
+
+	@app.route("/api/vorlesen",methods=["GET","POST"])
+	def vl_api():
+		who,role,perms,L=ctx()
+		if request.method=="POST":
+			code,ans=vl_do(who,body(),L,role,perms)
+			return reply(ans,code)
+		a=request.args
+		if a.get("on"):
+			st=vl_pi_state(L)
+			h=vl_held()
+			return reply({"ok":True,"on":VL["want"],"pi":{"on":st["on"],"id":st["id"],"name":st["name"],"c":st["c"],"s":st["s"],"state":st["state"],
+						  "held":st["held"],"pause":st["pause"],"msg":st["msg"],"vol":st["vol"]}if a.get("full")else{"on":st["on"]},
+						  "hold":tr(_VL_HELD_TXT[h],L)if h in _VL_HELD_TXT else "","radio_t":VL["radio_t"],"now":time.time(),"inst":VL["inst"]})
+		if a.get("bms"):
+			return reply({"ok":True,"bms":vl_bm_list(who)})
+		if a.get("last"):
+			bl=vl_bm_list(who)
+			k=max(bl,key=lambda x:bl[x]["t"])if bl else ""
+			return reply({"ok":True,"last":dict(bl[k],id=k)if k else None})
+		code,ans=vl_get(who,str(a.get("id")or ""),L,role,perms)
+		return reply(ans,code)
+
+	@app.route("/api/vorlesen/audio")
+	def vl_audio():
+		who,role,perms,L=ctx()
+		m,bad=fil(who,str(request.args.get("id")or ""),L)
+		if bad is not None:
+			return bad
+		try:
+			b=vl_book(m)
+			c,s=int(request.args.get("c")or 0),int(request.args.get("s")or 0)
+			if not(0<=c<len(b["n"])and 0<=s<b["n"][c]):
+				raise ValueError
+		except(TypeError,ValueError,LookupError):
+			return reply({"ok":False,"error":tr("invalid value",L)},400)
+		vl_,_h=vl_voice(b["lang"],L)
+		p_,err=vl_ton(m,b,c,s,vl_)
+		if not p_:
+			return reply({"ok":False,"error":tr_err(err,L)},503)
+		vl_ahead(m,b,c,s,vl_,1.0,3)
+		r=send_file(p_,mimetype="audio/wav",conditional=True,max_age=0)
+		r.headers["Cache-Control"]="private, max-age=3600"
+		r.headers["X-Content-Type-Options"]="nosniff"
+		return r
+
+	@app.route("/api/tausch/ansicht")
+	def vl_ansicht():
+		who,role,perms,L=ctx()
+		m,bad=fil(who,str(request.args.get("id")or ""),L)
+		if bad is not None:
+			return bad
+		try:
+			v=vl_view(m,L)
+		except OSError:
+			return reply({"ok":False,"error":tr("unknown file",L)},404)
+		return reply(dict(v,ok=True,id=m["id"],name=m["name"],inst=VL["inst"],admin=role=="admin"))
+
+	@app.route("/tausch/seite/<fid>/<int:n>.jpg")
+	def vl_seite(fid,n):
+		who,role,perms,L=ctx()
+		m,bad=fil(who,fid,L)
+		if bad is not None:
+			return bad
+		if tausch_ext(m["name"])!="pdf":
+			return reply({"ok":False},404)
+		p_=vl_pdf_page(m,n)
+		if not p_:
+			return reply({"ok":False,"error":tr("no preview for this file",L)},404)
+		return _tz_send(p_,"image/jpeg",False,cache="private, max-age=600")
+
+
+_tausch_page_html_vl = tausch_page_html
+
+
+
+def tausch_page_html():
+	out=_tausch_page_html_vl()
+	i=out.rfind("</body>")
+	if i<0 or "window.tzCard = function"in out or "tzCard = function"not in VL_TZ_JS:
+		return out
+	js=VL_TZ_JS.replace("/*VLDE*/{}",json.dumps(_VL_DE,ensure_ascii=False).replace("</","<\\/"),1)
+	return out[:i]+js+out[i:]
+
+
+
+VL_SYM_BTN = ('<a class="btn sec ic" id="mwk-read" href="/vorlesen" hidden><span aria-hidden="true">📖</span>'
+			  '<i class="mwr-eq" aria-hidden="true"><b></b><b></b><b></b></i></a>')
+if isinstance(KOPF_JS, str) and KOPF_JS.count('const KNOWN = new Set(["mwk-radio", ') == 1:
+	KOPF_JS=KOPF_JS.replace('const KNOWN = new Set(["mwk-radio", ','const KNOWN = new Set(["mwk-read", "mwk-radio", ',1)
+
+
+def vl_sym(out):
+	if 'id="mwk-read"'in out or out.count(RADIO_SYM_AT)!=1 or "</body>"not in out or "mwk-read"not in VL_SYM_JS:
+		return out
+	k="Reading aloud - to the reader"
+	tx={L:(DE if L=="de"else TRX.get(L,{})).get(k)or k for L in("de","fr","it","rm")}
+	tx["en"]=k.replace(" - "," – ")
+	out=out.replace(RADIO_SYM_AT,VL_SYM_BTN+RADIO_SYM_AT,1)
+	i=out.rfind("</body>")
+	return out[:i]+VL_SYM_JS.replace("/*VSTX*/{}",json.dumps(tx,ensure_ascii=False).replace("</","<\\/"),1)+out[i:]
+
+
+_render_page_vl = render_page
+
+
+
+def render_page(page, active):
+	out=_render_page_vl(page,active)
+	if "/*VLDE*/"in out:
+		out=out.replace("/*VLDE*/{}",json.dumps(_VL_DE,ensure_ascii=False).replace("</","<\\/"),1)
+		out=out.replace("/*VLPLAYER*/",VL_PLAYER_JS,1)
+	return vl_sym(out)
+
+
+
+if GUI_OK:
+	def _vl_tk_win(self):
+		w=getattr(self,"_vl_top",None)
+		if w is not None and w.winfo_exists():
+			w.lift();return
+		w=self._vl_top=tk.Toplevel(self.root);w.title("MoveEye – "+tr("Read aloud"));w.configure(bg=C["bg"]);w.geometry("420x250")
+		st=tk.Label(w,text="",bg=C["bg"],fg=C["txt"],font=("DejaVu Sans",11,"bold"),wraplength=390,justify="left",anchor="w")
+		st.pack(fill="x",padx=12,pady=(10,2))
+		sub=tk.Label(w,text="",bg=C["bg"],fg=C["mut"],font=("DejaVu Sans",9),wraplength=390,justify="left",anchor="w")
+		sub.pack(fill="x",padx=12)
+		bf=tk.Frame(w,bg=C["bg"]);bf.pack(fill="x",padx=12,pady=8)
+		adm={"key":"admin","name":"Admin","admin":True,"perms":set(TZ_PERMS),"is_admin":True}
+		self._fbtn(bf,"⏯ "+tr("Pause"),lambda:vl_do(adm,{"action":"resume"if VL["pause"]else "pause"}),primary=True).pack(side="left",padx=(0,6))
+		self._fbtn(bf,"⏹ "+tr("Stop"),lambda:vl_do(adm,{"action":"stop"})).pack(side="left")
+		vf=tk.Frame(w,bg=C["bg"]);vf.pack(fill="x",padx=12)
+		tk.Label(vf,text="🔈 "+tr("Volume"),bg=C["bg"],fg=C["txt"],font=("DejaVu Sans",10)).pack(side="left")
+		vol=tk.Scale(vf,from_=0,to=100,orient="horizontal",showvalue=True,bg=C["bg"],fg=C["txt"],highlightthickness=0,troughcolor=C["panel"],
+					   command=lambda v:CFG.update(vl_volume=int(float(v))))
+		vol.set(int(CFG.get("vl_volume",60)));vol.bind("<ButtonRelease-1>",lambda _e:save_settings())
+		vol.pack(side="left",fill="x",expand=True,padx=(6,0))
+		self._fbtn(w,"🌐 "+tr("Choose a story (browser)"),lambda:self._open_page("/tausch")).pack(anchor="w",padx=12,pady=6)
+		self._fbtn(w,tr("Close"),w.destroy,primary=True).pack(side="bottom",anchor="e",padx=12,pady=(0,10))
+
+		def tick():
+			try:
+				if not w.winfo_exists():
+					return
+				s=vl_pi_state()
+				st.config(text=("📖 "+s["name"])if s["on"]else tr("Nothing is being read on the loudspeaker."))
+				sub.config(text=s["held"]or s["msg"]or(tr("Chapter")+f" {s['c'] + 1}"if s["on"]else ""))
+				w.after(1000,tick)
+			except Exception:
+				pass
+		tick()
+
+	App._vl_win=_vl_tk_win
+	_vl_tk_more_base=App._tk_more_bar
+
+	def _vl_tk_more_bar(self,parent):
+		f=_vl_tk_more_base(self,parent)
+		row=max([int(x.grid_info().get("row",0))for x in f.grid_slaves()]+[-1])+1
+		self._fbtn(f,"📖 "+tr("Read aloud"),self._vl_win).grid(row=row,column=0,sticky="ew",padx=(0,6),pady=(0,6))
+		return f
+
+
+	App._tk_more_bar=_vl_tk_more_bar
+
+
+
+VL_PLAYER_JS = _zd('639zzzzv_vorlesen/VL_PLAYER_JS', "")
+
+VL_PAGE = _zd('639zzzzv_vorlesen/VL_PAGE', ZD_PAGE)
+
+VL_SYM_JS = _zd('639zzzzv_vorlesen/VL_SYM_JS', "")
+
+
+VL_TZ_JS = _zd('639zzzzv_vorlesen/VL_TZ_JS', "")
+
+
+
+_HX_VL = _zd('639zzzzv_vorlesen/HX_VL', _zd_hx_en((
+	'Read aloud',
+	'Reading aloud - to the reader',
+	'Digital backpack',
+	'The voice does not answer.',
+	'Nothing to read yet. Choose a story in the Digital backpack: «🔊 Read aloud».',
+	'Contents',
+	'Text size',
+	'Speed',
+	'Where',
+	'Phone',
+	'Chapter',
+	'Ch.',
+	'Paragraph',
+	'From the start',
+	'Next chapter',
+	'Bookmark',
+	'MoveEye remembers where you stop - for you, on every device.',
+	'Pause',
+	'Reading on the loudspeaker needs the right «Siren / sounds».',
+	'Plays in this browser - also on the other pages (📖 at the top).',
+	'Plays on the loudspeaker of MoveEye.',
+	'Last read',
+	'Continue',
+	'Data table',
+	'rows',
+	'columns',
+	'only the start',
+	'Word file as text: headings and paragraphs - without pictures, tables and fonts. The original: ⬇',
+	'Page',
+	'Pages',
+	'Text only',
+	'Showing PDF pages needs poppler-utils on MoveEye.',
+	'MoveEye draws the pages as pictures - the PDF itself never runs in the browser.',
+	'The administrator can install it here with one tap.',
+	'Install poppler-utils (about 2 MB)',
+	'installing …',
+	'Installed - open the file again.',
+	'No view for this kind of file yet - open it with an app on your phone or computer.',
+	'No view for this kind of file.',
+	'Kind',
+	'no readable text',
+	'Uploaded',
+	'loading …',
+	'valid',
+	'not valid - shown as it is',
+	'Only the start is shown - download the file for all of it.',
+	'this kind of file cannot be read aloud',
+	'This file cannot be read (damaged or protected).',
+	'old voice',
+	'No Piper voice loaded for the language of the book - read with the voice of the page.',
+	'No Piper voice loaded - the old voice reads (Settings › Light & sound › Loudspeaker).',
+	'Paused: alarm - it reads on when it is quiet',
+	'the storage (USB stick / SSD) is not there',
+	'pdftotext is missing (poppler-utils)',
+	'no text found (a scanned PDF? pictures are not read)',
+	'nothing is being read',
+	'no apt-get on this system - install poppler-utils by hand',
+	'MoveEye has no rights for apt (sudo asks for a password) - in a terminal: sudo apt install poppler-utils',
+	'no voice',
+	'unknown sentence',
+	'Choose a story (browser)',
+	'Nothing is being read on the loudspeaker.',
+)))
+for _k, _v in _HX_VL.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+_VL_DE = {_k: DE.get(_k, _v[0]) for _k, _v in _HX_VL.items()}
+_VL_DE.update({k: DE[k] for k in ("Download", "Close", "Edit", "Name", "Size", "Stop", "Volume", "No connection to MoveEye.",
+								  "No preview for this kind of file (for safety only as download).") if DE.get(k)})
+
+
+_HELP_VL = _zd('639zzzzv_vorlesen/HELP_VL', _ZDDict())
+
+
+def _help_vl(doc, lang):
+	if 'id="vorlesen"'in doc:
+		return doc
+	i=doc.find('<section id="tips"')
+	return doc[:i]+_HELP_VL[lang]+doc[i:]if i>=0 else doc
+
+
+_hp_en_vl = HELP_PAGE.find('<div lang="en">')
+if _hp_en_vl > 0:
+	HELP_PAGE=_help_vl(HELP_PAGE[:_hp_en_vl],"de")+_help_vl(HELP_PAGE[_hp_en_vl:],"en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L]=_help_vl(HELP_X[_L],_L)
+
+
+
+vorlesen_selftest = _zd_fn('639zzzzv_vorlesen/vorlesen_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Read aloud and file view in the Digital backpack (639zzzzv)", vorlesen_selftest))
 
 
 

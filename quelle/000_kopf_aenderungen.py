@@ -651,7 +651,7 @@ Features
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
   * 4.9.0: Digitaler Rucksack bei Import und Export: überall eine Datei aus dem Rucksack wählen oder einen Export direkt dort
-    ablegen · Mein Handy-Hotspot bevorzugen: ein gespeichertes Netz markieren, MoveEye wechselt hin, sobald es da ist (Schalter, ab Werk aus)
+    ablegen · Mein Handy-Hotspot bevorzugen: ein gespeichertes Netz markieren, MoveEye wechselt hin, sobald es da ist (Schalter, ab Werk aus) · 📖 Vorlesen und Datei-Ansicht im Digitalen Rucksack: Geschichten (.txt, .md, .epub, .docx, .pdf) mit der Piper-Stimme vorlesen, mit Lesezeichen
   * 4.8.0: Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt
     hoch) · Spielesammlung GS-1.25: «Verschollen im Bergtal» zeigt den Fortschritt pro Kapitel (oben und im Menü) und läuft bis 16× schnell; in «Gipfeltreffen» trifft Antippen am Handy wieder die richtige Stelle
   * 4.7.0: Spielesammlung GS-1.24: neues Spiel «Gipfeltreffen» (erstes Level) und «Verschollen im Bergtal» Kapitel 2 «Drei Tage»

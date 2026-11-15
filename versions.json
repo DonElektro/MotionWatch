@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-16 00:00",
+ "generated": "2026-11-16 00:21",
  "versions": [
   {
    "version": "4.9.0",
    "file": "webcam_bewegung_4_9_0.py",
    "url": "",
-   "sha256": "c9e0f4e3f1bd2efbf691b4d6c2d8e6606a347a8490b18abef2d1b718c2693c67",
-   "date": "2026-11-16 00:00",
-   "notes": "Digitaler Rucksack bei Import und Export: überall eine Datei aus dem Rucksack wählen oder einen Export direkt dort ablegen · Mein Handy-Hotspot bevorzugen: ein gespeichertes Netz markieren, MoveEye wechselt hin, sobald es da ist (Schalter, ab Werk aus)",
-   "size": 3977610,
-   "sig": "9de5e64119a28279f4ef3e1cf11d6abafe55c6ca7bce7ffe052f2df2e8a6910eab6dba935bfcf9c1bb08ff7f72fe274d3bd48a2be7296c43ac4d247898951a0c",
+   "sha256": "d2b17e3d80291f273ad0bba64f333451d153841315a90672089a0c2f4dc5c970",
+   "date": "2026-11-16 00:21",
+   "notes": "Digitaler Rucksack bei Import und Export: überall eine Datei aus dem Rucksack wählen oder einen Export direkt dort ablegen · Mein Handy-Hotspot bevorzugen: ein gespeichertes Netz markieren, MoveEye wechselt hin, sobald es da ist (Schalter, ab Werk aus) · 📖 Vorlesen und Datei-Ansicht im Digitalen Rucksack: Geschichten (.txt, .md, .epub, .docx, .pdf) mit der Piper-Stimme vorlesen, mit Lesezeichen",
+   "size": 4019435,
+   "sig": "abf02530506bc67b7e9386a8823d98a4389c3a49e8326a0abbfe2c4cb457e92cf473ca7a2638902320f476c6b3787e8b442cf4307c06ce65f0db37b6fbaf6204",
    "data": {
     "file": "moveeye_daten_4_9_0.zip",
     "url": "",
-    "sha256": "2d38ee0fdff11ac0ae34cd72ac9906a13cb145ece1ed728538cb41c477f2a742",
-    "size": 13681557,
-    "sig": "78c4acd47af58bae717466a562ed6643ae7397e322c3545fbb31689fc7f26cd5d318360b6eb169ce33b29efabd6bde633eae0c1740cf294bb7e322e5c5c6f50f"
+    "sha256": "6c5e582bb4bc863346e7ba09a21a2c3eedb9445a36d8483573a41f3ad44f1ba0",
+    "size": 13784446,
+    "sig": "11a8cfef6a2c49640740803f8c28affcafec08e2b84f98f1284873d8c38ed7772047cdf1b42ee7f73a8696f6ee8e1614982a0568183bd238db7559bf8c87e707"
    }
   },
   {
