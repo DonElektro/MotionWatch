@@ -1,15 +1,18 @@
-# Offline-Karten (MoveEye, Teil 639zzq): baut die drei Dateien der Offline-Karte Schweiz mit werkzeuge/karten/paket.py –
-#   karte-ch-N.pmtiles (Protomaps-Build des Tages, mit `pmtiles extract` auf schweiz.geojson zugeschnitten, z14 und z15 gemessen),
-#   karte-web-N.zip (MapLibre, Stil, Schriften, Symbole, Lizenzen; reproduzierbar) und orte-ch-N.sqlite.gz (Ortssuche aus den
-#   OpenStreetMap-Auszügen von Geofabrik) –, testet sie (werkzeuge/karten_test.py, auch mit den echten Dateien im Browser) und
-#   legt sie auf Wunsch als Release an. Assets an «karten-N» (nie «latest»), Probe an «kartenprobe-<Lauf>».
+# Offline-Karten (MoveEye, Teil 639zzq): baut die Dateien der Offline-Karte Schweiz mit werkzeuge/karten/paket.py –
+#   karte-ch-N.pmtiles (Protomaps-Build, mit `pmtiles extract` auf schweiz.geojson zugeschnitten) und orte-ch-N.sqlite.gz
+#   (Ortssuche aus OpenStreetMap) – ab karten-2 bleiben beide am Release «karten-1» (basis = alt: geholt und gegen die Pins
+#   in quelle/639zzq geprüft) –, karte-web-N.zip (MapLibre, vier Stile Standard / Topo hell / dunkel, Schriften, Symbole,
+#   Lizenzen; reproduzierbar), topo-ch-N.pmtiles (Höhenlinien aus swissALTI3D 10 m + Wanderwege aus OpenStreetMap) und
+#   relief-ch-N.pmtiles (Relief, Höhen-Kacheln) –, testet sie (werkzeuge/karten_test.py, auch mit den echten Dateien im
+#   Browser) und legt sie auf Wunsch als Release an. Assets an «karten-N» (nie «latest»), Probe an «kartenprobe-<Lauf>».
 #   Nur bauen + testen + messen:  gh api -X POST repos/DonElektro/MotionWatch/actions/workflows/karten.yml/dispatches -f ref=<zweig>
+#   Ausschnitt (schnell):         … -f 'inputs[bbox]=7.85,46.50,8.15,46.70'   (die Topo-Dateien dann als Artefakt, kein Release)
 #   Probe-Release:                … -f 'inputs[release]=probe'
-#   Echt:                         … -f ref=main -f 'inputs[release]=echt' -f 'inputs[tag]=karten-1'
+#   Echt:                         … -f ref=main -f 'inputs[release]=echt' -f 'inputs[tag]=karten-2'
 #   Probe wegräumen:              … -f 'inputs[loeschen]=kartenprobe-N'
-# Die Karte folgt OpenStreetMap vom Tag des Laufs: die Pins (Grösse + sha256) stehen danach in pins.txt (Release-Notiz und
-# Hinweis im Lauf) und kommen mit `python3 werkzeuge/karten/paket.py --eintragen pins.txt` in quelle/639zzq. Ein Release wird nie
-# überschrieben. Keine Geheimnisse: nur GITHUB_TOKEN.
+# Die Pins (Grösse + sha256 + Tag) stehen danach in pins.txt (Release-Notiz und Hinweis im Lauf) und kommen mit
+# `python3 werkzeuge/karten/paket.py --eintragen pins.txt` in quelle/639zzq. Ein Release wird nie überschrieben. Keine
+# Geheimnisse: nur GITHUB_TOKEN. Jede Datei bleibt unter 2 GiB (Grenze von GitHub pro Release-Datei).
 name: Offline-Karten
 on:
   workflow_dispatch:
@@ -21,14 +24,27 @@ on:
         default: keins
       tag:
         description: "Tag für «echt» (karten-N, = TAG in werkzeuge/karten/paket.py und KQ_TAG in quelle/639zzq)"
-        default: karten-1
+        default: karten-2
+      basis:
+        description: "alt: Karte + Ortssuche vom Release karten-1 (Geräte laden nur das Neue) · neu: alles neu bauen"
+        type: choice
+        options: [alt, neu]
+        default: alt
+      bbox:
+        description: "nur ein Ausschnitt für die Topo-Dateien (Probe, lon0,lat0,lon1,lat1), leer = die ganze Schweiz"
+        default: ""
+      relief_zoom:
+        description: "höchste Zoomstufe des Reliefs (13 = 13 m pro Pixel, 12 = halb so gross)"
+        type: choice
+        options: ["13", "12"]
+        default: "13"
       zoom:
-        description: "höchste Zoomstufe: 15 (Entscheid Besitzer: mehr Details – Wege, Gebäude, kleine Bäche) · 14 · auto (z15 unter 800 MB)"
+        description: "nur bei basis=neu: höchste Zoomstufe der Karte 15 · 14 · auto"
         type: choice
         options: ["15", "14", auto]
         default: "15"
       datum:
-        description: "Protomaps-Build JJJJMMTT (leer = der neueste der letzten 15 Tage)"
+        description: "nur bei basis=neu: Protomaps-Build JJJJMMTT (leer = der neueste der letzten 15 Tage)"
         default: ""
       loeschen:
         description: "Statt bauen: Probe-Release + Tag löschen (nur kartenprobe-N, nur Vorabversion)"
@@ -41,13 +57,15 @@ concurrency:
 env:
   PYTHONUNBUFFERED: "1"
   REL: ${{ inputs.release || 'keins' }}
+  BASIS: ${{ inputs.basis || 'alt' }}
+  BBOX: ${{ inputs.bbox || '' }}
 
 jobs:
   bauen:
-    name: Offline-Karten · ${{ inputs.release || 'keins' }}
+    name: Offline-Karten · ${{ inputs.release || 'keins' }}${{ inputs.bbox != '' && ' · Ausschnitt' || '' }}
     if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen == ''
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 330
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -64,13 +82,14 @@ jobs:
         id: v
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ inputs.tag || 'karten-1' }}
+          TAG: ${{ inputs.tag || 'karten-2' }}
         run: |
           set -e
           sha=$(git rev-parse HEAD)
           ptag=$(sed -n 's/^TAG = "\(karten-[0-9]*\)"$/\1/p' werkzeuge/karten/paket.py)
           qtag=$(sed -n 's/^KQ_TAG = "\(karten-[0-9]*\)"$/\1/p' quelle/639zzq_offline_karten.py)
           [ -n "$ptag" ] && [ "$ptag" = "$qtag" ] || { echo "::error::TAG in paket.py ($ptag) und KQ_TAG in quelle/639zzq ($qtag) passen nicht"; exit 1; }
+          if [ "$REL" != "keins" ] && [ -n "$BBOX" ]; then echo "::error::ein Ausschnitt (bbox) wird nie ein Release"; exit 1; fi
           if [ "$REL" = "echt" ]; then
             [ "$TAG" = "$ptag" ] || { echo "::error::Tag $TAG ist nicht $ptag (paket.py)"; exit 1; }
             msha=$(git ls-remote origin refs/heads/main | cut -f1)
@@ -83,54 +102,106 @@ jobs:
             echo "::error::Release $tag gibt es schon - nie überschreiben"; exit 1
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"; echo "sha=$sha" >> "$GITHUB_OUTPUT"
-      - name: Werkzeuge (pmtiles, osmium, shapely)
+          # die Namen der Dateien (paket.py NAMEN, je nach basis)
+          python3 -I -c "
+          import sys; sys.argv = ['x']; sys.path.insert(0, 'werkzeuge/karten'); import paket
+          if '$BASIS' == 'neu': paket.BASIS.clear(); paket.NAMEN.update(paket.namen())
+          t = paket.tags()
+          for r in paket.ROLLEN: print('n_%s=%s' % (r, paket.NAMEN[r]))
+          print('neu=' + ' '.join(paket.NAMEN[r] for r in paket.ROLLEN if t[r] == paket.TAG))" >> "$GITHUB_OUTPUT"
+          cat "$GITHUB_OUTPUT"
+      - name: Platz (grosse Zwischendateien)
+        run: |
+          df -h / /mnt || true
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || true
+          if [ "$(df -Pm /mnt 2>/dev/null | awk 'NR==2 {print $4}')" -gt "$(df -Pm "$RUNNER_TEMP" | awk 'NR==2 {print $4}')" ] 2>/dev/null; then
+            sudo mkdir -p /mnt/karten && sudo chown "$(id -u):$(id -g)" /mnt/karten && W=/mnt/karten
+          else
+            W="$RUNNER_TEMP/w"; mkdir -p "$W"
+          fi
+          echo "W=$W" >> "$GITHUB_ENV"; echo "Arbeitsordner $W"; df -h / "$W"
+      - name: Werkzeuge (pmtiles, osmium, gdal, tippecanoe, rasterio)
         run: |
           set -e
           go install github.com/protomaps/go-pmtiles@v1.31.2
           ln -sf "$(go env GOPATH)/bin/go-pmtiles" "$RUNNER_TEMP/pmtiles"
           "$RUNNER_TEMP/pmtiles" version || true
-          sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool > /dev/null
-          pip install -q osmium==4.3.1 shapely==2.1.2
-      - name: Karte zuschneiden (Protomaps-Build, z15 und z14 messen)
+          sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool gdal-bin libsqlite3-dev zlib1g-dev > /dev/null
+          gdal_contour --version
+          git -c advice.detachedHead=false clone -q --depth 1 -b 2.79.0 https://github.com/felt/tippecanoe "$RUNNER_TEMP/tippecanoe-src"
+          make -s -C "$RUNNER_TEMP/tippecanoe-src" -j"$(nproc)" tippecanoe > /dev/null 2>&1 || make -C "$RUNNER_TEMP/tippecanoe-src" -j"$(nproc)" tippecanoe
+          ln -sf "$RUNNER_TEMP/tippecanoe-src/tippecanoe" "$RUNNER_TEMP/tippecanoe"
+          "$RUNNER_TEMP/tippecanoe" --version
+          pip install -q osmium==4.3.1 shapely==2.1.2 rasterio==1.4.3 numpy==2.1.3 scipy==1.14.1 pillow==11.0.0
+          python3 -c "import rasterio, scipy, PIL, shapely, osmium; from PIL import features; print('rasterio', rasterio.__version__, rasterio.__gdal_version__, 'webp', features.check('webp'))"
+      - name: OpenStreetMap (Geofabrik Schweiz + Liechtenstein)
         run: |
           set -e
-          python3 -I werkzeuge/karten/paket.py --kacheln --aus "$RUNNER_TEMP/out" --pmtiles "$RUNNER_TEMP/pmtiles" \
-            --zoom "${{ inputs.zoom || '15' }}" ${{ inputs.datum != '' && format('--datum {0}', inputs.datum) || '' }}
-          ls -la "$RUNNER_TEMP/out"
-          rm -f "$RUNNER_TEMP"/out/ch-z1[45].pmtiles
-      - name: Web-Paket (MapLibre, Stil, Schriften, Symbole, Lizenzen)
-        run: python3 -I werkzeuge/karten/paket.py --web --aus "$RUNNER_TEMP/out"
-      - name: Ortssuche aus OpenStreetMap (Geofabrik Schweiz + Liechtenstein)
-        run: |
-          set -e
-          mkdir -p "$RUNNER_TEMP/osm" && cd "$RUNNER_TEMP/osm"
+          mkdir -p "$W/osm" && cd "$W/osm"
           for a in switzerland liechtenstein; do
-            curl -sSfL -o "$a.osm.pbf" "https://download.geofabrik.de/europe/$a-latest.osm.pbf"
-            curl -sSfL -o "$a.md5" "https://download.geofabrik.de/europe/$a-latest.osm.pbf.md5"
+            curl -sSfL --retry 5 -o "$a.osm.pbf" "https://download.geofabrik.de/europe/$a-latest.osm.pbf"
+            curl -sSfL --retry 5 -o "$a.md5" "https://download.geofabrik.de/europe/$a-latest.osm.pbf.md5"
             echo "$(cut -d' ' -f1 "$a.md5")  $a.osm.pbf" | md5sum -c -
-            osmium tags-filter "$a.osm.pbf" n/place n/natural=peak,saddle,volcano n/mountain_pass=yes wr/natural=water,glacier \
-              wr/place=island,islet w/highway=residential,living_street,pedestrian,unclassified,tertiary,secondary,primary,trunk,road \
-              r/boundary=administrative -o "$a.f.osm.pbf" --overwrite
-            ls -la "$a.osm.pbf" "$a.f.osm.pbf"
+            osmium tags-filter "$a.osm.pbf" w/sac_scale r/route=hiking,foot wr/natural=glacier -o "$a.w.osm.pbf" --overwrite
+            if [ "$BASIS" = "neu" ]; then
+              osmium tags-filter "$a.osm.pbf" n/place n/natural=peak,saddle,volcano n/mountain_pass=yes wr/natural=water,glacier \
+                wr/place=island,islet w/highway=residential,living_street,pedestrian,unclassified,tertiary,secondary,primary,trunk,road \
+                r/boundary=administrative -o "$a.f.osm.pbf" --overwrite
+            fi
+            rm -f "$a.osm.pbf"
+            ls -la
           done
-          cd "$GITHUB_WORKSPACE"
-          python3 -I werkzeuge/karten/paket.py --orte --aus "$RUNNER_TEMP/out" --pbf "$RUNNER_TEMP/osm/switzerland.f.osm.pbf" --pbf "$RUNNER_TEMP/osm/liechtenstein.f.osm.pbf"
-      - name: Pins (pins.txt)
+      - name: Karte + Ortssuche (basis ${{ inputs.basis || 'alt' }})
         run: |
           set -e
-          python3 -I werkzeuge/karten/paket.py --pins --aus "$RUNNER_TEMP/out"
+          if [ "$BASIS" = "alt" ]; then
+            python3 -I werkzeuge/karten/paket.py --basis-holen --aus "$RUNNER_TEMP/out"
+          else
+            python3 -I werkzeuge/karten/paket.py --basis neu --kacheln --aus "$RUNNER_TEMP/out" --pmtiles "$RUNNER_TEMP/pmtiles" \
+              --zoom "${{ inputs.zoom || '15' }}" ${{ inputs.datum != '' && format('--datum {0}', inputs.datum) || '' }}
+            rm -f "$RUNNER_TEMP"/out/ch-z1[45].pmtiles
+            python3 -I werkzeuge/karten/paket.py --basis neu --orte --aus "$RUNNER_TEMP/out" --pbf "$W/osm/switzerland.f.osm.pbf" --pbf "$W/osm/liechtenstein.f.osm.pbf"
+          fi
+          ls -la "$RUNNER_TEMP/out"
+      - name: Web-Paket (MapLibre, vier Stile, Schriften, Symbole, Lizenzen)
+        run: python3 -I werkzeuge/karten/paket.py --basis "$BASIS" --web --aus "$RUNNER_TEMP/out"
+      - name: Höhen swissALTI3D 10 m (STAC von swisstopo)
+        timeout-minutes: 120
+        run: python3 -I werkzeuge/karten/paket.py --hoehe10 --aus "$W" ${BBOX:+--bbox "$BBOX"}
+      - name: Relief (Höhen-Kacheln z8–${{ inputs.relief_zoom || '13' }})
+        timeout-minutes: 90
+        run: python3 -I werkzeuge/karten/paket.py --basis "$BASIS" --relief --relief-zoom "${{ inputs.relief_zoom || '13' }}" --aus "$W" --pmtiles "$RUNNER_TEMP/pmtiles"
+      - name: Wanderwege + Gletscher (OpenStreetMap)
+        run: python3 -I werkzeuge/karten/paket.py --wege --aus "$W" --pbf "$W/osm/switzerland.w.osm.pbf" --pbf "$W/osm/liechtenstein.w.osm.pbf" ${BBOX:+--bbox "$BBOX"}
+      - name: Höhenlinien (gdal_contour, Gletscher blau) + Vektor-Kacheln (tippecanoe)
+        timeout-minutes: 120
+        run: |
+          set -e
+          python3 -I werkzeuge/karten/paket.py --hoehenlinien --aus "$W"
+          rm -f "$W/dem10.tif"
+          python3 -I werkzeuge/karten/paket.py --basis "$BASIS" --topo --aus "$W" --pmtiles "$RUNNER_TEMP/pmtiles" --tippecanoe "$RUNNER_TEMP/tippecanoe"
+          mv "$W/${{ steps.v.outputs.n_topo }}" "$W/${{ steps.v.outputs.n_relief }}" "$W/topo.json" "$RUNNER_TEMP/out/"
+          rm -f "$W"/*.geojsonl
+          ls -la "$RUNNER_TEMP/out"; df -h "$W"
+      - name: Pins (pins.txt, jede Datei unter 2 GiB)
+        run: |
+          set -e
+          python3 -I werkzeuge/karten/paket.py --basis "$BASIS" --pins --aus "$RUNNER_TEMP/out"
           while read -r l; do echo "::notice title=Offline-Karten::$l"; done < "$RUNNER_TEMP/out/pins.txt"
-          echo "::notice title=Offline-Karten Messung::$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print("z15=%.1f MB z14=%.1f MB gewaehlt=z%d datum=%s" % (d["z15"]/1e6, d["z14"]/1e6, d["wahl"], d["datum"]))' "$RUNNER_TEMP/out/kacheln.json")"
-          echo "::notice title=Offline-Karten Orte::$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print("anzahl=%d sqlite=%.1f MB arten=%s" % (d["anzahl"], d["sqlite"]/1e6, json.dumps(d["arten"], sort_keys=True)))' "$RUNNER_TEMP/out/orte.json")"
+          for f in "$RUNNER_TEMP"/out/*.pmtiles "$RUNNER_TEMP"/out/*.zip "$RUNNER_TEMP"/out/*.gz; do
+            [ "$(stat -c %s "$f")" -lt 2147483648 ] || { echo "::error::$f ist 2 GiB oder grösser"; exit 1; }
+          done
+          echo "::notice title=Offline-Karten Topo::$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(json.dumps({k: d[k].get("groesse", d[k].get("sekunden")) for k in d}))' "$RUNNER_TEMP/out/topo.json")"
+          echo "::notice title=Offline-Karten Summe::$(du -cb "$RUNNER_TEMP"/out/*.pmtiles "$RUNNER_TEMP"/out/*.zip "$RUNNER_TEMP"/out/*.gz | tail -1 | cut -f1) Bytes"
       - name: MoveEye bauen und die Karte testen (karten_test.py, auch mit den echten Dateien im Browser)
         run: |
           set -e
-          pip install -q opencv-python-headless numpy flask pillow cryptography playwright==1.49.1
+          pip install -q opencv-python-headless flask cryptography playwright==1.49.1
           python3 -m playwright install --with-deps chromium > /dev/null
           python3 werkzeuge/bauen.py | tail -2
           mkdir -p "$RUNNER_TEMP/bilder"
-          python3 -W ignore werkzeuge/karten_test.py --web "$RUNNER_TEMP/out/karte-web-1.zip"
-          python3 -W ignore werkzeuge/karten_test.py --echt "$RUNNER_TEMP/out" --bilder "$RUNNER_TEMP/bilder"
+          python3 -W ignore werkzeuge/karten_test.py --web "$RUNNER_TEMP/out/${{ steps.v.outputs.n_web }}" --bilder "$RUNNER_TEMP/bilder"
+          python3 -W ignore werkzeuge/karten_test.py --echt "$RUNNER_TEMP/out" --bilder "$RUNNER_TEMP/bilder" ${BBOX:+--ausschnitt "$BBOX"}
       - name: Bilder, Pins und Messung als Artefakt
         if: always()
         uses: actions/upload-artifact@v4
@@ -141,44 +212,59 @@ jobs:
             ${{ runner.temp }}/out/pins.txt
             ${{ runner.temp }}/out/kacheln.json
             ${{ runner.temp }}/out/orte.json
+            ${{ runner.temp }}/out/topo.json
           retention-days: 14
           if-no-files-found: ignore
+      - name: Ausschnitt als Artefakt (Topo-Dateien + Web-Paket, zum Ansehen)
+        if: always() && env.BBOX != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: karten-ausschnitt-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/out/${{ steps.v.outputs.n_topo }}
+            ${{ runner.temp }}/out/${{ steps.v.outputs.n_relief }}
+            ${{ runner.temp }}/out/${{ steps.v.outputs.n_web }}
+          retention-days: 3
+          compression-level: 0
       - name: Zusammenfassung
         if: always()
         run: |
-          { echo "### Offline-Karten"; echo '```'; cat "$RUNNER_TEMP/out/pins.txt" 2>/dev/null; cat "$RUNNER_TEMP/out/kacheln.json" 2>/dev/null; cat "$RUNNER_TEMP/out/orte.json" 2>/dev/null; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          { echo "### Offline-Karten"; echo '```'; cat "$RUNNER_TEMP/out/pins.txt" 2>/dev/null; cat "$RUNNER_TEMP/out/topo.json" 2>/dev/null; cat "$RUNNER_TEMP/out/kacheln.json" 2>/dev/null; cat "$RUNNER_TEMP/out/orte.json" 2>/dev/null; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - name: Release anlegen, Assets hochladen, zurücklesen
         if: env.REL == 'probe' || env.REL == 'echt'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.v.outputs.tag }}
           SHA: ${{ steps.v.outputs.sha }}
+          NEU: ${{ steps.v.outputs.neu }}
         run: |
           set -e
           O="$RUNNER_TEMP/out"
-          unzip -p "$O/karte-web-1.zip" LIZENZEN.txt > "$O/LIZENZEN.txt"
+          unzip -p "$O/${{ steps.v.outputs.n_web }}" LIZENZEN.txt > "$O/LIZENZEN.txt"
           {
             if [ "$REL" = "probe" ]; then echo "PROBELAUF (Vorabversion) - nicht für Geräte, wird wieder gelöscht."; echo; fi
-            echo "Offline-Karte Schweiz für MoveEye (Teil 639zzq): Vektorkarte (PMTiles), Web-Paket (MapLibre, Stil, Schriften) und Ortssuche."
-            echo "© OpenStreetMap-Mitwirkende (ODbL). Quellen und Lizenzen: LIZENZEN.txt; gebaut mit"
+            echo "Offline-Karte Schweiz für MoveEye (Teil 639zzq): Web-Paket (MapLibre, Stile Standard / Topo, Schriften), Topo-Ebenen (Höhenlinien, Wanderwege) und Relief."
+            [ "$BASIS" = "alt" ] && echo "Vektorkarte und Ortssuche bleiben am Release karten-1 (die Pins unten nennen den Tag jeder Datei)."
+            echo "© OpenStreetMap-Mitwirkende (ODbL) · © swisstopo (swissALTI3D, OGD). Quellen und Lizenzen: LIZENZEN.txt; gebaut mit"
             echo "https://github.com/$GITHUB_REPOSITORY/blob/$SHA/werkzeuge/karten/paket.py"
             echo
             sed 's/^PIN /pin: /; s/^INFO /info: /' "$O/pins.txt"
             echo "commit: $SHA"
             echo "lauf: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           } > notes.md
-          A="$O/karte-ch-1.pmtiles $O/karte-web-1.zip $O/orte-ch-1.sqlite.gz $O/pins.txt $O/LIZENZEN.txt"
+          A="$O/pins.txt $O/LIZENZEN.txt"
+          for n in $NEU; do A="$A $O/$n"; done
           for i in 1 2 3; do
             if [ "$REL" = "probe" ]; then
               gh release create "$TAG" $A -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Probe · Offline-Karten" --notes-file notes.md --prerelease --latest=false && break
             else
-              gh release create "$TAG" $A -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Offline-Karte Schweiz" --notes-file notes.md --latest=false && break
+              gh release create "$TAG" $A -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Offline-Karte Schweiz (Topo)" --notes-file notes.md --latest=false && break
             fi
             echo "Versuch $i fehlgeschlagen, warte"; sleep 30
             gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 && { echo "::error::Release halb angelegt - bitte von Hand prüfen"; exit 1; }
           done
           mkdir -p "$RUNNER_TEMP/zurueck"
-          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p 'karte-*' -p 'orte-*' -D "$RUNNER_TEMP/zurueck"
+          for n in $NEU; do gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p "$n" -D "$RUNNER_TEMP/zurueck"; done
           for f in "$RUNNER_TEMP"/zurueck/*; do
             s=$(grep " name=$(basename "$f") " "$O/pins.txt" | sed 's/.*sha256=\([0-9a-f]*\).*/\1/'); echo "$s  $f" | sha256sum -c -
           done

@@ -37,7 +37,7 @@ import struct as _kq_struct
 from bisect import bisect_right as _kq_bisect
 from collections import OrderedDict as _KqOD
 
-KQ_TAG = "karten-1"
+KQ_TAG = "karten-2"
 KQ_MAXZOOM = 15
 KQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + KQ_TAG + "/"}   # Tests: lokaler Server
 # Werte aus werkzeuge/karten/paket.py (pins.txt des Workflows «Offline-Karten»); size 0 = noch nicht freigegeben

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""MoveEye: builds the three files of the offline map of Switzerland («Offline-Karte Schweiz», part 639zzq).
+"""MoveEye: builds the files of the offline map of Switzerland («Offline-Karte Schweiz», part 639zzq).
 
-They are release assets at the tag «karten-N» (never in the Git repository, together several hundred MB):
+They are release assets at the tag «karten-N» (never in the Git repository, together about 1.5 GB). A file that did not change
+can stay at an earlier release (BASIS: map + place search of «karten-1» - a device that has them loads only what is new):
 
   karte-ch-N.pmtiles    vector map of Switzerland + Liechtenstein (Protomaps basemap, one PMTiles v3 file), cut from a
                         Protomaps daily build with `pmtiles extract --region schweiz.geojson --maxzoom Z` (range reads, the
@@ -11,11 +12,20 @@ They are release assets at the tag «karten-N» (never in the Git repository, to
                         ranges for de / fr / it / rm / en), sprites, LIZENZEN.txt
   orte-ch-N.sqlite.gz   the offline place search: places, peaks, passes, lakes, glaciers and streets of Switzerland and
                         Liechtenstein from OpenStreetMap (Geofabrik extracts, ODbL) with canton and municipality
+  topo-ch-N.pmtiles     «Topo-Karte» (karten-2): contour lines from swissALTI3D (10 m, © swisstopo) and hiking paths yellow /
+  relief-ch-N.pmtiles   red / blue from OpenStreetMap; the relief as raster-dem tiles - werkzeuge/karten/topo.py
+                        The web package then has four styles: Standard / Topo, each light and dark (werkzeuge/karten/stil.py).
 
   python3 -I werkzeuge/karten/paket.py --web --aus OUT                      # karte-web-N.zip (needs node + internet)
   python3 -I werkzeuge/karten/paket.py --kacheln --aus OUT [--datum JJJJMMTT] [--zoom auto|14|15] [--pmtiles BIN]
   python3 -I werkzeuge/karten/paket.py --orte --aus OUT --pbf a.osm.pbf [--pbf b.osm.pbf]   # needs osmium (pyosmium) + shapely
-  python3 -I werkzeuge/karten/paket.py --pins --aus OUT                     # OUT/pins.txt: «PIN <rolle> name=… size=… sha256=… unpacked=…»
+  python3 -I werkzeuge/karten/paket.py --basis-holen --aus OUT             # map + place search of the BASIS release (checked against quelle/639zzq)
+  python3 -I werkzeuge/karten/paket.py --hoehe10 --aus OUT [--bbox lon0,lat0,lon1,lat1]   # swissALTI3D -> OUT/dem10.tif (rasterio)
+  python3 -I werkzeuge/karten/paket.py --wege --aus OUT --pbf a.osm.pbf     # hiking paths + glaciers (pyosmium)
+  python3 -I werkzeuge/karten/paket.py --hoehenlinien --aus OUT            # gdal_contour (needs dem10.tif, gletscher.geojsonl)
+  python3 -I werkzeuge/karten/paket.py --relief --aus OUT [--relief-zoom 13] --pmtiles BIN   # gdalwarp + raster-dem tiles
+  python3 -I werkzeuge/karten/paket.py --topo --aus OUT --pmtiles BIN      # tippecanoe: contour lines + paths
+  python3 -I werkzeuge/karten/paket.py --pins --aus OUT                     # OUT/pins.txt: «PIN <rolle> name=… size=… sha256=… unpacked=… tag=…»
   python3 -I werkzeuge/karten/paket.py --eintragen OUT/pins.txt             # writes the pins into quelle/639zzq_offline_karten.py
 
 The web ZIP is reproducible (pinned npm packages with their sha512, the assets at a fixed commit, sorted names, fixed time
@@ -44,9 +54,26 @@ import zipfile
 
 HIER = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HIER))
-TAG = "karten-1"
+TAG = "karten-2"
 N = TAG.split("-")[1]
-NAMEN = {"tiles": "karte-ch-%s.pmtiles" % N, "web": "karte-web-%s.zip" % N, "orte": "orte-ch-%s.sqlite.gz" % N}
+BASIS = {"tiles": "karten-1", "orte": "karten-1"}       # unchanged files stay at their release (the same pins as in quelle/639zzq)
+ROLLEN = ("tiles", "web", "orte", "topo", "relief")
+MUSTER = {"tiles": "karte-ch-%s.pmtiles", "web": "karte-web-%s.zip", "orte": "orte-ch-%s.sqlite.gz", "topo": "topo-ch-%s.pmtiles",
+          "relief": "relief-ch-%s.pmtiles"}
+REL_URL = "https://github.com/DonElektro/MotionWatch/releases/download/"
+
+
+def tags(basis=None):
+    """role -> release tag (BASIS, or everything new with basis={})"""
+    b = BASIS if basis is None else basis
+    return {r: b.get(r, TAG) for r in ROLLEN}
+
+
+def namen(basis=None):
+    return {r: MUSTER[r] % t.split("-")[1] for r, t in tags(basis).items()}
+
+
+NAMEN = namen()
 QUELLE_TEIL = os.path.join(REPO, "quelle", "639zzq_offline_karten.py")
 
 NPM = {   # name -> (version, tarball, integrity from the npm registry)
@@ -58,7 +85,7 @@ NPM = {   # name -> (version, tarball, integrity from the npm registry)
 ASSETS = "https://raw.githubusercontent.com/protomaps/basemaps-assets/028c18f713baecad011301ff7a69acc39bcc2ae7/"
 FONTS = ("Noto Sans Regular", "Noto Sans Medium", "Noto Sans Italic")
 RANGES = ("0-255", "256-511", "8192-8447")      # Basic Latin + Latin-1, Latin Extended-A (œ, ŝ …), punctuation (– ’ …)
-SPRITES = ("light.json", "light.png", "light@2x.json", "light@2x.png")
+SPRITES = ("light.json", "light.png", "light@2x.json", "light@2x.png", "dark.json", "dark.png", "dark@2x.json", "dark@2x.png")
 PMTILES_TOOL = "github.com/protomaps/go-pmtiles@v1.31.2"
 BUILD_URL = "https://build.protomaps.com/%s.pmtiles"
 ZOOM_AUTO_MAX = 800 * 1000 * 1000          # «auto»: z15 if the file stays below this, else z14
@@ -360,7 +387,12 @@ def baue_web(aus, maxzoom=15):
             for x in re.findall(r'"(Noto Sans [^"]+)"', json.dumps(f)) if f else []:
                 fonts_used.add(x)
         dateien = {}                                    # name in the ZIP -> bytes
-        dateien["style.json"] = json.dumps(st, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode()
+        sys.path.insert(0, HIER)
+        import stil                                     # werkzeuge/karten/stil.py: Standard / Topo, light / dark
+        stile = stil.alle(st)
+        stil.pruefen(stile)
+        for n_, s_ in stile.items():
+            dateien[n_] = json.dumps(s_, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode()
         for f in ("maplibre-gl.js", "maplibre-gl.css"):
             with open(os.path.join(ml, "dist", f), "rb") as fh:
                 b = fh.read()
@@ -379,7 +411,7 @@ def baue_web(aus, maxzoom=15):
         dateien["LIZENZEN.txt"] = lizenzen(lic, sorted(fonts_used)).encode()
         dateien["karte.json"] = json.dumps({"tag": TAG, "maplibre": NPM["maplibre-gl"][0], "basemaps": NPM["@protomaps/basemaps"][0],
                                             "assets": ASSETS.rstrip("/").rsplit("/", 1)[1], "fonts": list(FONTS), "ranges": list(RANGES),
-                                            "maxzoom": maxzoom}, sort_keys=True).encode()
+                                            "maxzoom": maxzoom, "styles": sorted(stile)}, sort_keys=True).encode()
         os.makedirs(aus, exist_ok=True)
         z = os.path.join(aus, NAMEN["web"])
         with zipfile.ZipFile(z, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -408,9 +440,22 @@ KARTENDATEN (karte-ch-%s.pmtiles) und ORTSSUCHE (orte-ch-%s.sqlite.gz)
   Die Ortssuche stammt aus den OpenStreetMap-Auszügen von Geofabrik (https://download.geofabrik.de, ODbL).
   Anzeige: «© OpenStreetMap-Mitwirkende» steht auf jeder Karte von MoveEye.
 
-KARTENSTIL (style.json): Protomaps basemaps %s – Code BSD-3-Clause (© 2019-2023 Protomaps LLC, Kelso Cartography),
-  Gestaltung CC0 1.0 (Geraldine Sarmiento für Protomaps LLC), Ebenen-Schema nach Tilezen (MIT, © Mapzen / Linux Foundation).
-  Geändert für MoveEye: lokale Ortsnamen («name» statt «name:de»), ohne die Ebene «landcover».
+TOPO-KARTE: HÖHENLINIEN UND RELIEF (topo-ch-%s.pmtiles Ebene «contour», relief-ch-%s.pmtiles)
+  © swisstopo – swissALTI3D (Höhenmodell 2 m, für MoveEye als Mittel über 10 m), freie Geodaten des Bundes (OGD,
+  https://www.swisstopo.admin.ch/de/nutzungsbedingungen-kostenlose-geodaten-ogd): freie Nutzung mit Quellenangabe.
+  Höhenlinien (10 m) mit gdal_contour, Relief als Höhen-Kacheln (terrarium), beides von MoveEye selbst gerechnet; Gletscher
+  (blaue Höhenlinien) aus OpenStreetMap. Anzeige: «© OpenStreetMap-Mitwirkende · © swisstopo» auf der Topo-Karte.
+
+TOPO-KARTE: WANDERWEGE (topo-ch-%s.pmtiles Ebene «wege»)
+  © OpenStreetMap-Mitwirkende (ODbL): Wege mit «sac_scale» oder in einer Wanderroute, gelb / rot / blau nach der
+  Schwierigkeit (SAC-Skala bzw. Farbe der Route). NICHT das offizielle Wanderwegnetz der Schweizer Wanderwege – vor Ort
+  gelten die Wegweiser.
+
+KARTENSTIL (style.json, style_dark.json, style_topo.json, style_topo_dark.json): Protomaps basemaps %s – Code
+  BSD-3-Clause (© 2019-2023 Protomaps LLC, Kelso Cartography), Gestaltung CC0 1.0 (Geraldine Sarmiento für Protomaps LLC),
+  Ebenen-Schema nach Tilezen (MIT, © Mapzen / Linux Foundation).
+  Geändert für MoveEye: lokale Ortsnamen («name» statt «name:de»), ohne die Ebene «landcover»; dunkle Farben und die
+  Topo-Ebenen von MoveEye (werkzeuge/karten/stil.py, gleiche Lizenz).
 
 SYMBOLE (sprites/): protomaps/basemaps-assets, abgeleitet von tangrams/icons – MIT License, © 2017 Mapzen, Linux Foundation.
 
@@ -462,7 +507,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEAL
 Noto Sans – SIL Open Font License 1.1 (OFL.txt)
 ---------------------------------------------------------------------
 %s
-""" % (TAG, N, N, NPM["@protomaps/basemaps"][0], ", ".join(fonts), ", ".join(RANGES), NPM["maplibre-gl"][0],
+""" % (TAG, tags()["tiles"].split("-")[1], tags()["orte"].split("-")[1], N, N, N, NPM["@protomaps/basemaps"][0], ", ".join(fonts), ", ".join(RANGES), NPM["maplibre-gl"][0],
        lic["maplibre"].strip(), lic["ofl"].strip())
 
 
@@ -512,10 +557,39 @@ def baue_kacheln(aus, tool, datum=None, zoom="auto"):
     return mess
 
 
+# ---- the files of an earlier release (BASIS) ------------------------------------------------------------------------------------------
+def quelle_pins(teil=QUELLE_TEIL):
+    """{role: {name, size, sha256, unpacked}} as they stand in quelle/639zzq (KQ_FILES)"""
+    src = open(teil, encoding="utf-8").read()
+    out = {}
+    for m in re.finditer(r'"(\w+)": \{"name": "([^"]*)", "size": (\d+), "sha256": "([0-9a-f]*)", "unpacked": (\d+)\}', src):
+        out[m.group(1)] = {"name": m.group(2), "size": int(m.group(3)), "sha256": m.group(4), "unpacked": int(m.group(5))}
+    return out
+
+
+def basis_holen(aus, basis=None):
+    """the files of BASIS from their release, checked against the pins in quelle/639zzq (never anything else)"""
+    os.makedirs(aus, exist_ok=True)
+    qp = quelle_pins()
+    for rolle, tag in sorted((basis if basis is not None else BASIS).items()):
+        f = qp.get(rolle)
+        if not f or f["name"] != NAMEN[rolle] or not f["size"]:
+            sys.exit("BASIS %s: in quelle/639zzq steht %s, erwartet %s" % (rolle, f and f["name"], NAMEN[rolle]))
+        ziel = os.path.join(aus, f["name"])
+        if not (os.path.isfile(ziel) and os.path.getsize(ziel) == f["size"] and sha256(ziel) == f["sha256"]):
+            url = REL_URL + tag + "/" + f["name"]
+            log("hole", url)
+            subprocess.run(["curl", "-sSfL", "--retry", "5", "-o", ziel, url], check=True)
+        if os.path.getsize(ziel) != f["size"] or sha256(ziel) != f["sha256"]:
+            sys.exit("BASIS %s: Grösse / sha256 passen nicht zu quelle/639zzq" % f["name"])
+        log("BASIS %s: %s %.1f MB, sha256 wie in quelle/639zzq" % (tag, f["name"], f["size"] / 1e6))
+
+
 # ---- pins --------------------------------------------------------------------------------------------------------------------------
 def pins(aus):
     zeilen = []
-    for rolle in ("tiles", "web", "orte"):
+    tg = tags()
+    for rolle in ROLLEN:
         p = os.path.join(aus, NAMEN[rolle])
         if not os.path.isfile(p):
             sys.exit("fehlt: " + p)
@@ -527,7 +601,7 @@ def pins(aus):
             with gzip.open(p, "rb") as g:
                 for b in iter(lambda: g.read(1 << 20), b""):
                     unpacked += len(b)
-        zeilen.append("PIN %s name=%s size=%d sha256=%s unpacked=%d" % (rolle, NAMEN[rolle], os.path.getsize(p), sha256(p), unpacked))
+        zeilen.append("PIN %s name=%s size=%d sha256=%s unpacked=%d tag=%s" % (rolle, NAMEN[rolle], os.path.getsize(p), sha256(p), unpacked, tg[rolle]))
     extra = {}
     for f in ("kacheln.json", "orte.json"):
         q = os.path.join(aus, f)
@@ -537,6 +611,10 @@ def pins(aus):
         zeilen.append("INFO maxzoom=%s datum=%s z15=%s z14=%s" % (extra["wahl"], extra.get("datum"), extra.get("z15"), extra.get("z14")))
     if extra.get("anzahl"):
         zeilen.append("INFO orte=%s osm=%s" % (extra["anzahl"], extra.get("osm", "")))
+    tj = os.path.join(aus, "topo.json")
+    if os.path.isfile(tj):
+        t = json.load(open(tj))
+        zeilen.append("INFO topo=%s" % json.dumps({k: (v.get("groesse") if isinstance(v, dict) else v) for k, v in sorted(t.items())}, sort_keys=True, separators=(",", ":")))
     t = "\n".join(zeilen) + "\n"
     with open(os.path.join(aus, "pins.txt"), "w") as f:
         f.write(t)
@@ -545,15 +623,23 @@ def pins(aus):
 
 
 def eintragen(pins_txt, teil=QUELLE_TEIL):
-    """writes «"name": …, "size": …, "sha256": …, "unpacked": …» of every role into KQ_FILES of quelle/639zzq"""
+    """writes «"name": …, "size": …, "sha256": …, "unpacked": …» of every role into KQ_FILES of quelle/639zzq (+ KQ_FILE_TAG)"""
     src = open(teil, encoding="utf-8").read()
     t = open(pins_txt, encoding="utf-8").read()
-    for m in re.finditer(r"^PIN (\w+) name=(\S+) size=(\d+) sha256=([0-9a-f]{64}) unpacked=(\d+)", t, re.M):
-        rolle, name, size, sha, unp = m.groups()
+    tg = {}
+    for m in re.finditer(r"^PIN (\w+) name=(\S+) size=(\d+) sha256=([0-9a-f]{64}) unpacked=(\d+)(?: tag=(karten-\d+))?", t, re.M):
+        rolle, name, size, sha, unp, tag = m.groups()
         neu = '"%s": {"name": "%s", "size": %s, "sha256": "%s", "unpacked": %s}' % (rolle, name, size, sha, unp)
         src, n = re.subn(r'"%s": \{"name": "[^"]*", "size": \d+, "sha256": "[0-9a-f]*", "unpacked": \d+\}' % rolle, neu, src)
         if n != 1:
             sys.exit("KQ_FILES[%s] nicht genau einmal gefunden" % rolle)
+        tg[rolle] = tag or TAG
+    if set(tg) != set(ROLLEN):
+        sys.exit("pins.txt: nicht alle Dateien (%s)" % ", ".join(sorted(tg)))
+    alt = {r: t_ for r, t_ in tg.items() if t_ != TAG}
+    src, n = re.subn(r"^KQ_FILE_TAG = \{[^\n]*\}", "KQ_FILE_TAG = " + json.dumps(alt, sort_keys=True), src, flags=re.M)
+    if n != 1:
+        sys.exit("KQ_FILE_TAG nicht genau einmal gefunden")
     m = re.search(r"^INFO maxzoom=(\d+)", t, re.M)
     if m:
         src, n = re.subn(r"^KQ_MAXZOOM = \d+", "KQ_MAXZOOM = " + m.group(1), src, flags=re.M)
@@ -567,13 +653,29 @@ def main():
     ap.add_argument("--web", action="store_true")
     ap.add_argument("--kacheln", action="store_true")
     ap.add_argument("--orte", action="store_true")
+    ap.add_argument("--basis-holen", action="store_true")
+    ap.add_argument("--hoehe10", action="store_true")
+    ap.add_argument("--wege", action="store_true")
+    ap.add_argument("--hoehenlinien", action="store_true")
+    ap.add_argument("--relief", action="store_true")
+    ap.add_argument("--topo", action="store_true")
     ap.add_argument("--pins", action="store_true")
     ap.add_argument("--eintragen")
     ap.add_argument("--pbf", action="append", default=[])
     ap.add_argument("--datum")
+    ap.add_argument("--bbox", default="", help="nur ein Ausschnitt (Probe): lon0,lat0,lon1,lat1")
+    ap.add_argument("--relief-zoom", type=int, default=13, choices=(12, 13))
     ap.add_argument("--zoom", default="15", choices=("auto", "14", "15"))   # Besitzer: lieber mehr Details (z15)
     ap.add_argument("--pmtiles", default="pmtiles")
+    ap.add_argument("--tippecanoe", default="tippecanoe")
+    ap.add_argument("--basis", default="alt", choices=("alt", "neu"), help="alt: Karte + Ortssuche bleiben am Release von BASIS; neu: alles an TAG")
     a = ap.parse_args()
+    if a.basis == "neu":
+        BASIS.clear()
+        NAMEN.update(namen())
+    bbox = tuple(float(v) for v in a.bbox.split(",")) if a.bbox else None
+    if a.basis_holen:
+        basis_holen(a.aus)
     if a.kacheln:
         m = baue_kacheln(a.aus, a.pmtiles, a.datum, a.zoom)
         mz = m["wahl"]
@@ -584,6 +686,28 @@ def main():
             mz = json.load(open(kj))["wahl"]
     if a.web:
         baue_web(a.aus, mz)
+    sys.path.insert(0, HIER)
+    tj = os.path.join(a.aus, "topo.json")
+    mess = json.load(open(tj)) if os.path.isfile(tj) else {}
+    if a.hoehe10 or a.wege or a.hoehenlinien or a.relief or a.topo:
+        os.makedirs(a.aus, exist_ok=True)
+        import topo
+        if a.hoehe10:
+            topo.hoehe10(a.aus, bbox)
+            mess["hoehe10"] = json.load(open(os.path.join(a.aus, "hoehe10.json")))
+        if a.wege:
+            if not a.pbf:
+                sys.exit("--wege braucht --pbf")
+            mess["wege"] = topo.wege(a.aus, a.pbf, bbox)
+        dem = os.path.join(a.aus, "dem10.tif")
+        if a.hoehenlinien:
+            mess["hoehenlinien"] = topo.hoehenlinien(a.aus, dem)
+        if a.relief:
+            mess["relief"] = topo.relief(a.aus, dem, NAMEN["relief"], zmax=a.relief_zoom, pmtiles=a.pmtiles)
+        if a.topo:
+            mess["topo"] = topo.topo_pmtiles(a.aus, NAMEN["topo"], a.tippecanoe, a.pmtiles)
+        with open(tj, "w") as f:
+            json.dump(mess, f, indent=1, sort_keys=True)
     if a.orte:
         if not a.pbf:
             sys.exit("--orte braucht --pbf")
