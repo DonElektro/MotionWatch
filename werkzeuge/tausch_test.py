@@ -584,7 +584,7 @@ def teil_b(datei, bilder):
                     req("/api/tausch", {"action": "save", "id": md["id"], "text": MDTXT, "ver": cur0["ver"]}, A)
                 pg = ctx.new_page(); errs = []
                 pg.on("pageerror", lambda e: errs.append(str(e)[:200]))
-                pg.goto(base + "/tausch"); pg.wait_for_selector(".tz-it img", timeout=15000); pg.wait_for_timeout(1500)
+                pg.goto(base + "/tausch#dateien"); pg.wait_for_selector(".tz-it img", timeout=15000); pg.wait_for_timeout(1500)
                 pg.screenshot(path=os.path.join(bilder, f"tausch_{name}.png"), full_page=True)
                 ok("belegt" in pg.inner_text("#tz-qt1"), f"{name}: Quota-Zeile «… von … belegt»")
                 ok(pg.locator("#tz-mkt").is_visible() and pg.locator("#tz-mkc").is_visible(), f"{name}: Neuer Text / Neuer Chat")
@@ -696,7 +696,7 @@ def iphone_upload(pw, br, base, tmp, bilder, req):
             else:
                 route.continue_()
         pg.route("**/api/tausch/chunk**", weg)
-        pg.goto(base + "/tausch"); pg.wait_for_selector("#tz-upb", timeout=15000)
+        pg.goto(base + "/tausch#dateien"); pg.wait_for_selector("#tz-upb", timeout=15000)
         datei_ = os.path.join(tmp, name); inhalt = os.urandom(groesse); open(datei_, "wb").write(inhalt)
         pg.set_input_files("#tz-file", datei_)
         pg.wait_for_selector(".tz-job", timeout=5000)

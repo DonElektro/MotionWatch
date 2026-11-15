@@ -574,7 +574,7 @@ def teil_b(ns, app, home, PW, bilder, tok, echt):
             pg = ctx.new_page(); errs = []
             pg.on("pageerror", lambda e: errs.append(str(e)[:200]))
             pg.on("console", lambda m: errs.append("console: " + m.text[:200]) if m.type == "error" and not KNOWN_403.search(m.text) else None)
-            pg.goto(base + "/tausch"); pg.wait_for_selector(".tz-it img", timeout=15000); pg.wait_for_timeout(800)
+            pg.goto(base + "/tausch#dateien"); pg.wait_for_selector(".tz-it img", timeout=15000); pg.wait_for_timeout(800)
             card = pg.locator(".tz-it", has_text="Loewenzahn_Wiese.jpg")
             ok(card.locator("button[title='Bestimmen']").count() == 1, f"{name}: 🌿 auf der Bild-Karte")
             ok(pg.locator(".tz-it", has_text="Plan.svg").locator("button[title='Bestimmen']").count() == 0, f"{name}: kein 🌿 bei SVG")
@@ -618,7 +618,7 @@ def teil_b(ns, app, home, PW, bilder, tok, echt):
         ctx.add_init_script("try{localStorage.setItem('mw-lang','de');localStorage.setItem('mw-theme','dark')}catch(e){}")
         pg = ctx.new_page(); errs = []
         pg.on("pageerror", lambda e: errs.append(str(e)[:200]))
-        pg.goto(base + "/tausch"); pg.wait_for_selector(".tz-it img", timeout=15000)
+        pg.goto(base + "/tausch#dateien"); pg.wait_for_selector(".tz-it img", timeout=15000)
         pg.locator(".tz-it", has_text="Kaefer.jpg").locator(".th").click()
         pg.wait_for_selector(".tz-lb .tz-biob"); pg.click(".tz-lb .tz-biob")
         pg.wait_for_selector(".tz-bio .act button", timeout=10000); pg.wait_for_timeout(300)
