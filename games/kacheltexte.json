@@ -70,6 +70,13 @@
   "it": "Perso nella valle: sopravvivi.",
   "rm": "Senza memoria en la val: surviver."
  },
+ "gipfeltreffen": {
+  "de": "Zusammen vom Zeltplatz zur Hütte.",
+  "en": "Together from the campsite to the hut.",
+  "fr": "Ensemble du camping jusqu’au refuge.",
+  "it": "Insieme dal campeggio alla capanna.",
+  "rm": "Ensemen dal campadi fin tar la chamona."
+ },
  "schach": {
   "de": "Gegen den Computer oder zu zweit.",
   "en": "Against the computer or for two.",
