@@ -69,6 +69,10 @@ _HX_live2 = {
     'Learn the picture again (after moving the camera)': ('Bild neu lernen (nach dem Verschieben der Kamera)', 'Réapprendre l’image (après avoir déplacé la caméra)', 'Imparare di nuovo l’immagine (dopo aver spostato la camera)', 'Emprender danovamain il maletg (suenter avair spustà la camera)'),
     'Recalibrating - keep the picture empty for a few seconds': ('Kalibriere neu – ein paar Sekunden niemand ins Bild', 'Recalibrage – personne dans l’image pendant quelques secondes', 'Ricalibrazione – nessuno nell’immagine per qualche secondo', 'Calibrar da nov – in pèr secundas nagin en il maletg'),
     'Standard': ('Standard', 'Standard', 'Standard', 'Standard'),
+    # 4.x (Elektro): the head controls as their own fold inside «Bedienung» (536)
+    'Steer the head': ('Kopf steuern', 'Diriger la tête', 'Guidare la testa', 'Guidar il chau'),
+    'Show or hide the head controls': ('Kopf-Steuerung ein- oder ausklappen', 'Afficher ou masquer les commandes de la tête',
+                                       'Mostrare o nascondere i comandi della testa', 'Mussar u zuppentar la direcziun dal chau'),
 }
 for _k, _v in _HX_live2.items():
     DE.setdefault(_k, _v[0])
