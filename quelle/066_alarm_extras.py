@@ -19,6 +19,9 @@
 #     Rahmen gehören), sonst aus dem gespeicherten Bild (alarm_labels/, höchstens 1280 px breit). Rand ALX_ZOOM_PAD um den
 #     Rahmen, Seitenverhältnis bleibt; Rahmen über ALX_ZOOM_MAX der Bildfläche: kein Ausschnitt (gross genug). Das Pi-Fenster
 #     hat keine Karte «Was war das?» – dort nichts.
+# Wunsch Besitzer (15.11.2026, freigegeben – nur diese Karte): «Was war das?» auf Live zuklappbar wie die anderen Karten
+#     (Pfeil, pro Browser gemerkt «mw-open:alx-what», ab Werk offen; «⇕» Alle zuklappen / Meine Ansicht / Alle aufklappen über
+#     639o). Zugeklappt nur die Titelzeile mit der Zahl der offenen Alarme; ein neuer Alarm klappt sie nicht auf.
 # (5 – Zonen nach Art – steht bei den Zonen in Teil 030.)
 # ----------------------------------------------------------------------------
 _ALX_CFG = {"push_actions": True, "alarm_confirm2": False, "arm_announce": True, "back_hold_s": 60,
@@ -844,9 +847,14 @@ ALX_WHAT_JS = r"""(function () {
     "#alx-what-lb img{max-width:100%;max-height:100%;object-fit:contain;border:2px solid #ff453a;border-radius:8px;background:#000}" +
     "#alx-what-lb button{position:absolute;top:max(10px,env(safe-area-inset-top));right:12px;width:44px;height:44px;border-radius:22px;border:0;font-size:22px;line-height:44px;padding:0;background:rgba(255,255,255,.92);color:#000;cursor:pointer}" +
     "#alx-what .aw-b button{padding:7px 12px}#alx-what .aw-b button.on{outline:3px solid var(--acc,#2f81f7)}#alx-what .aw-m{color:var(--mut,#8a96a6);font-size:12.5px}" +
-    "body[data-tab]:not([data-tab=live]) #alx-what{display:none}";
+    "body[data-tab]:not([data-tab=live]) #alx-what{display:none}" +
+    // 15.11.2026 (Besitzer): Live - the card folds like the other cards (639o finds the <details>: «⇕», «My view»)
+    "#alx-what details.aw>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;user-select:none;min-height:28px}" +
+    "#alx-what details.aw>summary::-webkit-details-marker{display:none}#alx-what details.aw>summary::after{content:'▾';margin-left:auto;font-size:13px;transition:transform .15s}" +
+    "#alx-what details.aw:not([open])>summary{margin:0}#alx-what details.aw:not([open])>summary::after{transform:rotate(-90deg)}" +
+    "#alx-what .aw-n{background:#ff453a;color:#fff;border-radius:9px;font-size:12px;line-height:18px;padding:0 7px}#alx-what details[open] .aw-n{display:none}";
   document.head.appendChild(st);
-  var TX = {};
+  var TX = {}, card = null, KO = "mw-open:alx-what";   // Live: one <details> kept across reloads (its open state stays)
   function tx(k) { return TX[k] || k; }
   function E(t, c, s) { var e = document.createElement(t); if (c) e.className = c; if (s != null) e.textContent = s; return e; }
   function zoomBig(src) {                                // the crop large, with «✕» (also a tap beside it, Esc)
@@ -900,10 +908,16 @@ ALX_WHAT_JS = r"""(function () {
     box.textContent = "";
     if (!items.length) { if (Q) Q.skip("what"); return; }
     if (Q && !Q.is("what")) { Q.add("what", "#alx-what .aw", load); return; }     // 639zzs: one thing at a time - after dialogs, tour and banner
-    var c = E("div", "aw"); c.appendChild(E("div", "aw-h", "❓ " + tx("What was it?")));
+    var c = E("div", "aw"), h = "❓ " + tx("What was it?");
+    if (main) {                                          // the title row folds; collapsed: the number of open alarms
+      if (!card) { card = E("details", "aw"); card.dataset.mwbId = "alx-what"; try { card.open = localStorage.getItem(KO) !== "0"; } catch (e) { card.open = true; }
+        card.addEventListener("toggle", function () { try { localStorage.setItem(KO, card.open ? "1" : "0"); } catch (e) {} }); }
+      c = card; c.textContent = ""; var sm = E("summary", "aw-h", h); sm.appendChild(E("span", "aw-n", String(items.length))); c.appendChild(sm);
+    } else c.appendChild(E("div", "aw-h", h));
     items.slice(0, main ? 1 : 8).forEach(function (m) { c.appendChild(item(m)); });
     c.appendChild(E("div", "aw-m", tx("Answers are kept as training pictures (picture + boxes); «Nothing» counts as a false alarm.")));
     box.appendChild(c);
+    if (main && window.MWB && MWB.state) MWB.state();    // 639o: «My view» / the ⇕ buttons know the card
   }
   setTimeout(load, 1200); setInterval(function () { if (!document.hidden) load(); }, 20000);
   setInterval(function () { var lv = onLive(), ch = lv !== wasLive; wasLive = lv; if (lng() !== L || (main && ch)) load(); }, 2000);    // the language was set / switched (or the tab, 639zzs)

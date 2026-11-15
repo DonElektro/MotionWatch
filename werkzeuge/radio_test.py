@@ -943,6 +943,94 @@ def teil_b(datei, tmp, srv, bilder):
             ok("aus in 14:5" in pg.locator("#ra-hint").inner_text(), "Einschlaf-Timer im Browser: %s" % pg.locator("#ra-hint").inner_text())
             pg.locator("#ra-now").scroll_into_view_if_needed(); weg(); pg.evaluate("() => window.scrollTo(0, 0)"); pg.wait_for_timeout(400)
             pg.screenshot(path=os.path.join(bilder, "radio_browser.png"))
+            # Besitzer: the radio plays on while he moves around MoveEye (frame over the radio page), 📻 in the header goes back
+            def fweg():                                   # the tour inside the frame: out of the way
+                pg.evaluate("() => { const d = document.getElementById('ra-frame').contentDocument, g = d.getElementById('gd-card'); if (g) g.style.display = 'none'; "
+                            "['g2-ov', 'g2-spot', 'g2-bub'].forEach(i => { const e = d.getElementById(i); if (e) e.remove(); }); }")
+            ok(pg.locator("#mwk-radio").is_hidden(), "📻 nicht auf der Radio-Seite selbst")
+            t0 = pg.evaluate("() => mwRadioAudio.currentTime")
+            pg.locator("header nav.nav a[href='/protect']").click()
+            pg.wait_for_function("() => { const f = document.getElementById('ra-frame'); try { return f && !f.hidden && f.contentWindow.location.pathname === '/protect' "
+                                 "&& f.contentDocument.getElementById('mwk-radio') && !f.contentDocument.getElementById('mwk-radio').hidden; } catch (e) { return false; } }", timeout=30000)
+            pg.wait_for_timeout(2500)
+            fs = pg.frame_locator("#ra-frame")
+            sym = fs.locator("#mwk-radio")
+            ok(not pg.evaluate("() => mwRadioAudio.paused") and pg.evaluate("() => mwRadioAudio.currentTime") > t0 + 1.5 and pg.evaluate("() => location.pathname") == "/protect",
+               "Schutz geöffnet: Radio spielt weiter (%.1f → %.1f s), Adresse %s" % (t0, pg.evaluate("() => mwRadioAudio.currentTime"), pg.evaluate("() => location.pathname")))
+            ok(sym.get_attribute("aria-label") == "Radio läuft – zum Radio" and sym.get_attribute("href") == "/radio", "📻 im Kopf: «%s»" % sym.get_attribute("aria-label"))
+            pg.evaluate("() => { const b = document.getElementById('ra-frame').contentDocument.querySelector('header>h1 .badge'); if (b) b.remove(); }")   # «DEMO»: not on a real MoveEye
+            pg.wait_for_timeout(200)
+            order = pg.evaluate("() => { const d = document.getElementById('ra-frame').contentDocument, r = d.getElementById('mwk-radio').getBoundingClientRect(), "
+                                "h = [d.getElementById('g2-help'), d.getElementById('mwk-help')].find(x => x && x.offsetWidth).getBoundingClientRect(), g = d.querySelector('header>h1').getBoundingClientRect(); "
+                                "return [r.right <= h.left + 1, Math.abs(r.top - h.top) < 2, r.width, d.documentElement.scrollWidth, r.top < g.bottom]; }")
+            ok(order[0] and order[1] and order[3] <= 390, "📻 links neben ?, %d px breit, keine waagrechte Bildlaufleiste (%d)" % (order[2], order[3]))
+            ok(order[4], "📻 und die Kopf-Knöpfe bleiben in der Zeile des Logos")
+            fweg()
+            pg.wait_for_timeout(300)
+            pg.screenshot(path=os.path.join(bilder, "radio_symbol_schutz_dunkel.png"), clip={"x": 0, "y": 0, "width": 390, "height": 260})
+            fs.locator("header nav.nav a[href='/more']").click()             # inside the frame: Mehr → Einstellungen, the radio still plays
+            pg.wait_for_function("() => { try { return document.getElementById('ra-frame').contentWindow.location.pathname === '/more' "
+                                 "&& document.getElementById('ra-frame').contentDocument.readyState === 'complete'; } catch (e) { return false; } }", timeout=30000)
+            pg.wait_for_timeout(1500)
+            ok(not pg.evaluate("() => mwRadioAudio.paused") and pg.evaluate("() => location.pathname") == "/more", "Mehr im Rahmen: Radio spielt weiter")
+            fweg()
+            fs.locator("#mwk-radio").click()
+            pg.wait_for_function("() => document.getElementById('ra-frame').hidden && location.pathname === '/radio'", timeout=10000)
+            ok(pg.locator("#ra-now").is_visible() and not pg.evaluate("() => mwRadioAudio.paused") and pg.locator("#ra-go").inner_text().startswith("⏹"),
+               "📻 angetippt: zurück auf der Radio-Seite, es spielt (%s)" % pg.locator("#ra-st").inner_text())
+            pg.locator("#ra-back").click()                                     # «‹ Mehr» → Mehr → Radio (the row): the same page, no new start
+            pg.wait_for_function("() => { try { return document.getElementById('ra-frame').contentWindow.location.pathname === '/more' && !document.getElementById('ra-frame').hidden; } catch (e) { return false; } }", timeout=30000)
+            pg.wait_for_timeout(1000)
+            fweg(); fs.locator("#m-radio").click()
+            pg.wait_for_function("() => document.getElementById('ra-frame').hidden", timeout=10000)
+            ok(not pg.evaluate("() => mwRadioAudio.paused"), "Mehr → «📻 Radio» im Rahmen: dieselbe Seite, spielt weiter")
+            pg.locator("header nav.nav a[href='/protect']").click()
+            pg.wait_for_function("() => { try { return !document.getElementById('ra-frame').hidden && document.getElementById('ra-frame').contentWindow.location.pathname === '/protect'; } catch (e) { return false; } }", timeout=30000)
+            pg.go_back()
+            pg.wait_for_function("() => document.getElementById('ra-frame').hidden && location.pathname === '/radio'", timeout=10000)
+            ok(not pg.evaluate("() => mwRadioAudio.paused"), "Zurück-Taste des Browsers: wieder die Radio-Seite, spielt weiter")
+            # light theme: the same header
+            pg.evaluate("() => { localStorage.setItem('mw-theme', 'light'); }")
+            pg.locator("header nav.nav a[href='/protect']").click()
+            pg.wait_for_function("() => { try { const d = document.getElementById('ra-frame').contentDocument; return d.body.classList.contains('light') && !d.getElementById('mwk-radio').hidden; } catch (e) { return false; } }", timeout=30000)
+            pg.wait_for_timeout(2000)
+            fweg(); pg.evaluate("() => { const b = document.getElementById('ra-frame').contentDocument.querySelector('header>h1 .badge'); if (b) b.remove(); }")
+            pg.wait_for_timeout(200)
+            pg.screenshot(path=os.path.join(bilder, "radio_symbol_schutz_hell.png"), clip={"x": 0, "y": 0, "width": 390, "height": 260})
+            pg.evaluate("() => { localStorage.setItem('mw-theme', 'dark'); }")
+            fweg(); fs.locator("#mwk-radio").click()
+            pg.wait_for_function("() => document.getElementById('ra-frame').hidden", timeout=10000)
+            pg.locator("#ra-go").click(); pg.wait_for_timeout(500)                        # stop: no symbol any more
+            pg.locator("header nav.nav a[href='/protect']").click()
+            pg.wait_for_url("**/protect", timeout=30000); pg.wait_for_timeout(1500)
+            ok(pg.evaluate("() => !window.mwRadio") and pg.locator("#mwk-radio").is_hidden(), "gestoppt: Schutz ganz normal geöffnet, kein 📻")
+            # «Unterseiten als Fenster» (mw-fenster): /radio as a frame over the main page - the player lives in the main page
+            pg.goto(base + "/more", wait_until="domcontentloaded"); pg.wait_for_timeout(1500); weg()
+            neu = ("() => { const f = document.createElement('iframe'); f.id = 'fw'; f.src = '/radio?fenster=1'; "
+                   "f.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:0;z-index:500'; document.body.appendChild(f); }")
+            fwweg = "() => { const d = document.getElementById('fw').contentDocument; ['g2-ov', 'g2-spot', 'g2-bub', 'gd-card'].forEach(i => { const e = d.getElementById(i); if (e) e.remove(); }); }"
+            pg.evaluate(neu)
+            fw = pg.frame_locator("#fw")
+            pg.wait_for_function("() => { try { return document.getElementById('fw').contentDocument.getElementById('ra-name').textContent.length > 2; } catch (e) { return false; } }", timeout=30000)
+            pg.wait_for_timeout(500); pg.evaluate(fwweg)
+            fw.locator("#ra-list li", has_text="Radio Pilatus").locator(".ra-r").click()
+            pg.wait_for_function("() => window.mwRadioAudio && !mwRadioAudio.paused && mwRadioAudio.currentTime > 1", timeout=40000)
+            ok(pg.evaluate("() => { const w = document.getElementById('fw').contentWindow; return w.mwRadioAudio === window.mwRadioAudio && !!window.mwRadioP && !w.mwRadioP && w.mwRadioHost() === window; }"),
+               "Rahmen: die Radio-Seite nimmt das Audio der Hauptseite (mwRadioHost)")
+            pg.evaluate("() => document.getElementById('fw').remove()")             # the window closes: the frame is unloaded
+            t1 = pg.evaluate("() => mwRadioAudio.currentTime"); pg.wait_for_timeout(2500)
+            ok(not pg.evaluate("() => mwRadioAudio.paused") and pg.evaluate("() => mwRadioAudio.currentTime") > t1 + 1.5, "Rahmen entladen: das Radio spielt weiter")
+            pg.wait_for_function("() => !document.getElementById('mwk-radio').hidden", timeout=5000)
+            ok(True, "📻 im Kopf der Hauptseite sieht das Audio")
+            pg.evaluate(neu)
+            pg.wait_for_function("() => { try { return document.getElementById('fw').contentDocument.getElementById('ra-go').textContent.startsWith('⏹'); } catch (e) { return false; } }", timeout=30000)
+            ok("läuft" in fw.locator("#ra-st").inner_text().lower(), "wieder geöffnet: die Seite zeigt den laufenden Sender (%s)" % fw.locator("#ra-st").inner_text())
+            pg.wait_for_timeout(500); pg.evaluate(fwweg)
+            fw.locator("#ra-go").click()
+            pg.wait_for_function("() => mwRadioAudio.paused && document.getElementById('mwk-radio').hidden", timeout=10000)
+            ok(True, "⏹ im Rahmen stoppt das Audio der Hauptseite, 📻 weg")
+            pg.goto(base + "/radio", wait_until="domcontentloaded")
+            pg.wait_for_function("() => (document.getElementById('ra-name') || {}).textContent.length > 2", timeout=30000); weg()
             c0, _a = api({"action": "add", "uuid": U_PX})
             pg.wait_for_function("() => [...document.querySelectorAll('#ra-list li')].some(x => x.textContent.includes('Proxy FM'))", timeout=20000)
             pg.locator("#ra-list li", has_text="Proxy FM").locator(".ra-r").click()
@@ -981,6 +1069,20 @@ def teil_b(datei, tmp, srv, bilder):
             pg.locator("#ra-w-pi").click(); pg.wait_for_timeout(500)
             ok(pg.evaluate("() => mwRadioAudio.paused") and pg.evaluate("() => localStorage.getItem('mw-radio-where')") == "pi", "zurück auf 🔊: der Browser hört auf")
             api({"action": "play", "id": "pilatus"}); time.sleep(3)
+            pg.goto(base + "/protect", wait_until="domcontentloaded")         # 🔊 MoveEye loudspeaker plays: 📻 on every page too
+            pg.wait_for_function("() => { const r = document.getElementById('mwk-radio'); return r && !r.hidden; }", timeout=20000)
+            ok(True, "🔊 spielt: 📻 auf Schutz")
+            pg.goto(base + "/", wait_until="domcontentloaded")                # Live: the header only (the page itself stays as it is)
+            pg.wait_for_function("() => { const r = document.getElementById('mwk-radio'); return r && !r.hidden; }", timeout=30000)
+            lv = pg.evaluate("() => { const b = document.querySelector('header>h1 .badge'); if (b) b.remove(); const r = document.getElementById('mwk-radio').getBoundingClientRect(), "
+                             "g = document.querySelector('header>h1').getBoundingClientRect(); return [r.top < g.bottom, r.right <= 390, document.documentElement.scrollWidth]; }")
+            ok(lv[0] and lv[1] and lv[2] <= 390, "Live: 📻 in der Zeile des Logos, keine waagrechte Bildlaufleiste %s" % lv)
+            pg.goto(base + "/protect", wait_until="domcontentloaded")
+            pg.wait_for_function("() => { const r = document.getElementById('mwk-radio'); return r && !r.hidden; }", timeout=20000)
+            pg.wait_for_timeout(1500); weg()
+            pg.locator("#mwk-radio").click(); pg.wait_for_url("**/radio", timeout=20000)
+            pg.wait_for_function("() => (document.getElementById('ra-st') || {}).textContent.length > 1", timeout=20000)
+            ok("läuft" in pg.locator("#ra-st").inner_text().lower() or "verbinde" in pg.locator("#ra-st").inner_text().lower(), "📻 → Radio-Seite: %s" % pg.locator("#ra-st").inner_text())
             # «Mehr»: the row with the station
             pg.goto(base + "/more", wait_until="domcontentloaded")
             pg.wait_for_function("() => (document.getElementById('m-radio-s') || {}).textContent.includes('Radio Pilatus')", timeout=20000)

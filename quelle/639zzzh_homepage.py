@@ -30,8 +30,11 @@
 # und die Content-Security-Policy: «connect-src blockiert fetch()» (das «Load failed» am iPhone), «script-src ohne
 # 'wasm-unsafe-eval'», «ohne 'unsafe-inline'» (Startskript von Godot).
 # Tests: werkzeuge/homepage_test.py (falscher Webspace auf localhost mit derselben Schnittstelle).
+# Auftrag des Besitzers (15.11.2026): «Startseite noch nicht auf der Homepage, aber den Simulator und den Funk» – Schalter
+# hp_start_on («Startseite mit hochladen», ab Werk aus, auch für bestehende Geräte): aus = index.html wird weder hochgeladen
+# noch gelöscht (bleibt in der eigenen Liste, wie sie ist) und die Prüfung überspringt die Startseite; an = wie bisher.
 # ----------------------------------------------------------------------------
-_HP_CFG = {"hp_key": "", "hp_base": "https://kevlaschef.com", "hp_auto": True}
+_HP_CFG = {"hp_key": "", "hp_base": "https://kevlaschef.com", "hp_auto": True, "hp_start_on": False}
 for _k, _v in _HP_CFG.items():
     CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
 USER_SETTINGS_DENY.update(_HP_CFG)
@@ -210,8 +213,15 @@ def _hp_item(path, data):
     return {"path": path, "size": len(data), "sha": hashlib.sha256(data).hexdigest(), "get": lambda d=data: io.BytesIO(d)}
 
 
+HP_START = "index.html"                                    # the start page: only with the switch hp_start_on
+
+
+def hp_start_on():
+    return bool(CFG.get("hp_start_on"))
+
+
 def hp_fixed_items():
-    out = [_hp_item("index.html", HP_INDEX_HTML.encode("utf-8"))]
+    out = [_hp_item(HP_START, HP_INDEX_HTML.encode("utf-8"))] if hp_start_on() else []
     out += [_hp_item("Funk/" + n, b) for n, b in sorted(hp_funk_files().items())]
     return out + [_hp_item("Sim/test.html", HP_TEST_HTML.encode("utf-8"))]
 
@@ -285,10 +295,11 @@ def hp_sim_items(fetch=True):
 
 def hp_content_id():
     """what would be published (without fetching anything): changes with a new Funk page, a new signed browser simulator,
-    another address"""
+    another address, the switch «Startseite mit hochladen» (turning it on uploads the start page)"""
     import hashlib
     sim_manifest_load()
     t = "|".join(it["path"] + ":" + it["sha"] for it in hp_fixed_items()) + "|sim:" + str(SIM3D_WEB.get("sha256") or "")
+    t += "|start:" + ("1" if hp_start_on() else "0")
     return hashlib.sha256((t + "|" + str(CFG.get("hp_base"))).encode("utf-8")).hexdigest()
 
 
@@ -406,7 +417,8 @@ def hp_publish(auto=False):
         st["up"] = up
         hp_save(st)
     paths = {it["path"] for it in items}
-    gone = [p for p in list(up) if p not in paths and _hp_ours(p)]
+    # the start page while the switch is off: never deleted, its entry in the own list stays as it is
+    gone = [p for p in list(up) if p not in paths and _hp_ours(p) and not (p == HP_START and not hp_start_on())]
     for p in gone:
         from urllib.parse import quote
         if p in remote:
@@ -594,8 +606,13 @@ def hp_check(items=None):
         items = hp_fixed_items() + (hp_sim_items(False)[0] or [{"path": "Sim/" + n, "size": None, "sha": None} for n in HP_SIM_NAMES])
     from urllib.parse import quote
     rows = []
-    for i, it in enumerate([{"path": ""}, {"path": "Funk/"}, {"path": "Sim/"}] + list(items)):
-        HP["prog"] = {"i": i + 1, "n": len(items) + 3, "file": it["path"] or "/"}
+    on = hp_start_on()
+    if not on:                                              # switch off: the start page (/ and index.html) is not checked
+        items = [it for it in items if it["path"] != HP_START]
+        rows.append({"path": "/", "off": "start", "url": "", "chain": [], "probs": [], "status": 0, "size": 0, "type": "", "headers": {}})
+    probe = ([{"path": ""}] if on else []) + [{"path": "Funk/"}, {"path": "Sim/"}] + list(items)
+    for i, it in enumerate(probe):
+        HP["prog"] = {"i": i + 1, "n": len(probe), "file": it["path"] or "/"}
         if HP["cancel"]:
             raise HpErr("cancel")
         want = {"path": it["path"], "size": it.get("size"), "sha": it.get("sha")} if it["path"] and not it["path"].endswith("/") else None
@@ -618,6 +635,7 @@ def hp_status():
     """for the page (raw english keys, the page translates and formats them: HP_FMT_JS) - never the key"""
     st, p, pk = hp_state(), HP["prog"], SIM3D_WEB
     return {"ok": True, "key_set": bool(CFG.get("hp_key")), "base": CFG.get("hp_base") or "", "auto": bool(CFG.get("hp_auto")),
+            "start_on": hp_start_on(),
             "busy": HP["busy"], "wait": HP["wait"], "prog": {k: p.get(k) for k in ("i", "n", "bytes", "total", "file")} if p.get("n") else None,
             "err": [HP["err"], HP["msg"]] if HP["err"] else None, "cancelled": HP["msg"] == "cancel", "last": st.get("last"),
             "check": st.get("check"), "public": (hp_base_ok(CFG.get("hp_base")) or "") + "/moveeye/",
@@ -654,6 +672,11 @@ def hp_action(d, lang=None):
     if a == "auto":
         CFG["hp_auto"] = bool(d.get("on"))
         save_settings()
+        return True, ""
+    if a == "start_on":
+        CFG["hp_start_on"] = bool(d.get("on"))
+        save_settings()
+        log_event("sys", "Homepage: start page " + ("on" if CFG["hp_start_on"] else "off"))
         return True, ""
     if a in ("publish", "check"):
         if a == "publish" and not CFG.get("hp_key"):
@@ -860,6 +883,15 @@ HP_TEXTS = {
     "Headers": ("Kopfzeilen", "En-têtes", "Intestazioni", "Lingias da chau"),
     "last": ("zuletzt", "dernière fois", "ultima volta", "l’ultima giada"),
     "automatic": ("automatisch", "automatique", "automatico", "automatic"),
+    "Upload the start page too": ("Startseite mit hochladen", "Envoyer aussi la page d’accueil", "Caricare anche la pagina iniziale",
+                                  "Chargiar era la pagina d’entrada"),
+    "Off: the start page (index.html) is not uploaded – and never deleted on the web space.":
+        ("Aus: die Startseite (index.html) wird nicht hochgeladen – und auf dem Webspace nie gelöscht.",
+         "Désactivé : la page d’accueil (index.html) n’est pas envoyée – et jamais supprimée sur l’espace web.",
+         "Spento: la pagina iniziale (index.html) non viene caricata – e mai cancellata sullo spazio web.",
+         "Deactivà: la pagina d’entrada (index.html) na vegn betg chargiada – e mai stizzada sin il spazi web."),
+    "Start page: not uploaded (off)": ("Startseite: nicht hochgeladen (aus)", "Page d’accueil : pas envoyée (désactivé)",
+                                       "Pagina iniziale: non caricata (spento)", "Pagina d’entrada: betg chargiada (deactivà)"),
 }
 for _k, _v in HP_TEXTS.items():                            # (the table is in the data zip: without it the page is not there either)
     DE.setdefault(_k, _v[0])
@@ -934,7 +966,8 @@ function hpProb(k, d, t) { d = String(d || ""); let [a, b] = d.split("|"); b = b
   if (k.indexOf("{a}") >= 0) { a = hpMB(+a); b = hpMB(+b); }
   if (k.indexOf("{") < 0) return t(k) + (d ? ": " + d : "");
   return t(k).replace("{code}", a).replace("{t}", a).replace("{e}", b).replace("{a}", a).replace("{b}", b); }
-function hpRow(r, t) { return {line: r.path + ": " + (r.status || "–") + " · " + hpMB(r.size) + " · " + (r.type || "?"),
+function hpRow(r, t) { if (r.off) return {line: t("Start page: not uploaded (off)"), probs: [], chain: [], headers: {}, off: true};
+  return {line: r.path + ": " + (r.status || "–") + " · " + hpMB(r.size) + " · " + (r.type || "?"),
   probs: (r.probs || []).map(p => hpProb(p[0], p[1], t)), chain: r.chain || [], headers: r.headers || {}}; }
 function hpErr(e, t) { return e ? t(HP_ERR[e[0]] || "Error: {d}").replace("{d}", e[1] || "") : ""; }
 function hpNote(n, t) { return n && n[0] ? t(n[0]) + (n[1] ? " – " + n[1] : "") : ""; }
@@ -984,6 +1017,8 @@ section.card h3{margin:0 0 10px}
       <button type="button" class="sec" id="hp-stop" hidden></button></div>
     <label class="hp-chk"><input type="checkbox" id="hp-auto"><span id="hp-auto-l"></span></label>
     <div class="hp-hint" id="hp-auto-h"></div>
+    <label class="hp-chk"><input type="checkbox" id="hp-start"><span id="hp-start-l"></span></label>
+    <div class="hp-hint" id="hp-start-h"></div>
     <div class="hp-hint" id="hp-sim"></div>
     <a id="hp-open" href="#" target="_blank" rel="noopener noreferrer"></a>
   </div></section>
@@ -1017,6 +1052,8 @@ section.card h3{margin:0 0 10px}
   $("hp-go").textContent = "⬆ " + t("Publish on the homepage"); $("hp-chk").textContent = "🔍 " + t("Check the addresses"); $("hp-stop").textContent = "⏹ " + t("Cancel");
   $("hp-auto-l").textContent = t("automatically after every update");
   $("hp-auto-h").textContent = t("Only changed files are uploaded, in the background and never during an alarm.");
+  $("hp-start-l").textContent = t("Upload the start page too");
+  $("hp-start-h").textContent = t("Off: the start page (index.html) is not uploaded – and never deleted on the web space.");
   $("hp-acc-t").textContent = t("Access"); $("hp-base-l").textContent = t("Address of the web space"); $("hp-base-b").textContent = t("Save the address");
   $("hp-base-h").textContent = t("A new address deletes the upload key."); $("hp-key-l").textContent = t("Upload key");
   $("hp-key-d").textContent = t("Delete the key"); $("hp-res-t").textContent = t("Result of the check"); $("hp-open").textContent = "↗ " + t("Open the homepage");
@@ -1034,7 +1071,7 @@ section.card h3{margin:0 0 10px}
       if (l.note) st.appendChild(E("div", "hp-hint", hpNote(l.note, t))); (l.ren || []).forEach(x => st.appendChild(E("div", "hp-bad", x))); }
     if (!st.childNodes.length) st.textContent = j.key_set ? "–" : t("No upload key set.");
     $("hp-go").disabled = !!j.busy || !j.key_set; $("hp-chk").disabled = !!j.busy; $("hp-stop").hidden = !j.busy;
-    $("hp-auto").checked = !!j.auto;
+    $("hp-auto").checked = !!j.auto; $("hp-start").checked = !!j.start_on;
     if (document.activeElement !== $("hp-base")) $("hp-base").value = j.base || "";
     $("hp-key-st").textContent = j.key_set ? "🔑 " + t("Upload key is set (never shown again).") : t("No upload key set.");
     $("hp-key-b").textContent = j.key_set ? t("Replace the key") : t("Set the key"); $("hp-key-d").hidden = !j.key_set;
@@ -1043,7 +1080,7 @@ section.card h3{margin:0 0 10px}
     const c = j.check; $("hp-res-c").hidden = !c;
     if (c) { const rows = (c.rows || []).map(r => hpRow(r, t)); $("hp-res-s").textContent = (c.t ? new Date(c.t * 1000).toLocaleString() + " · " : "") + hpSum(rows, t);
       const ul = $("hp-res"); ul.textContent = "";
-      rows.forEach(r => { const li = E("li", r.probs.length ? "bad" : ""); li.appendChild(E("b", "", (r.probs.length ? "✗ " : "✓ ") + r.line));
+      rows.forEach(r => { const li = E("li", r.probs.length ? "bad" : ""); li.appendChild(E("b", "", (r.off ? "– " : r.probs.length ? "✗ " : "✓ ") + r.line));
         if (r.chain.length) li.appendChild(E("div", "hp-hint", r.chain.join(" · ")));
         if (r.probs.length) { const u = E("ul"); r.probs.forEach(p => u.appendChild(E("li", "", p))); li.appendChild(u); }
         const hk = Object.keys(r.headers); if (hk.length) { const d = E("details"), s = E("summary", "", t("Headers")); d.appendChild(s);
@@ -1055,6 +1092,7 @@ section.card h3{margin:0 0 10px}
     if (j && j.ok === false && j.error) $("hp-err2").textContent = j.error; if (j && j.key_set !== undefined) paint(j); if (btn) btn.disabled = false; return j; };
   $("hp-go").onclick = () => act({action: "publish"}, $("hp-go")); $("hp-chk").onclick = () => act({action: "check"}, $("hp-chk"));
   $("hp-stop").onclick = () => act({action: "cancel"}); $("hp-auto").onchange = () => act({action: "auto", on: $("hp-auto").checked});
+  $("hp-start").onchange = () => act({action: "start_on", on: $("hp-start").checked});
   $("hp-base-b").onclick = () => act({action: "base", base: $("hp-base").value.trim()}, $("hp-base-b"));
   $("hp-key-b").onclick = async () => { const k = $("hp-key").value.trim(); if (!k) return; const j = await act({action: "key", key: k}, $("hp-key-b"));
     if (j && j.ok !== false) $("hp-key").value = ""; };
@@ -1066,11 +1104,11 @@ section.card h3{margin:0 0 10px}
 
 # ---- the manual: one point in the section «Morse-Modus» (the phone radio lives there) --------------------------------------------
 HP_HELP_HTML = r"""
-de|<li><b>🌐 Homepage</b> (Mehr → Homepage, nur der Administrator): lädt deine öffentlichen Seiten auf deinen Webspace – Startseite, Handy-Funkgerät (<code>Funk/</code>), Simulator im Browser (<code>Sim/</code>, nur das signierte Paket «sim-web.zip») und <code>Sim/test.html</code>. Adresse ab Werk <code>https://kevlaschef.com</code> (nur https), dazu der Upload-Schlüssel: setzen, ersetzen oder löschen, er wird nie mehr angezeigt und steht nie im Protokoll; eine neue Adresse löscht ihn. Hochgeladen wird nur, was sich geändert hat, im Hintergrund, nie während eines Alarms; «nach jedem Update automatisch» ist ab Werk an. Danach prüft MoveEye jede öffentliche Adresse (Status, Grösse, Typ, Umleitungen, Content-Security-Policy) – z. B. «connect-src sperrt fetch()» erklärt «Load failed» am iPhone.</li>
-en|<li><b>🌐 Homepage</b> (More → Homepage, administrator only): puts your public pages on your web space – start page, phone radio (<code>Funk/</code>), simulator in the browser (<code>Sim/</code>, only the signed package «sim-web.zip») and <code>Sim/test.html</code>. Address by default <code>https://kevlaschef.com</code> (https only), plus the upload key: set, replace or delete it; it is never shown again and never in the log; a new address deletes it. Only changed files are uploaded, in the background, never during an alarm; «automatically after every update» is on by default. Then MoveEye checks every public address (status, size, type, redirects, Content-Security-Policy) – e.g. «connect-src blocks fetch()» explains «Load failed» on the iPhone.</li>
-fr|<li><b>🌐 Page d’accueil</b> (Plus → Page d’accueil, administrateur seulement) : met tes pages publiques sur ton espace web – page d’accueil, radio du téléphone (<code>Funk/</code>), simulateur dans le navigateur (<code>Sim/</code>, seulement le paquet signé «sim-web.zip») et <code>Sim/test.html</code>. Adresse par défaut <code>https://kevlaschef.com</code> (https seulement) et la clé d’envoi : jamais réaffichée, jamais dans le journal ; une nouvelle adresse la supprime. Seuls les fichiers modifiés sont envoyés, jamais pendant une alarme. Ensuite MoveEye vérifie chaque adresse publique (statut, taille, type, redirections, Content-Security-Policy).</li>
-it|<li><b>🌐 Homepage</b> (Altro → Homepage, solo l’amministratore): carica le tue pagine pubbliche sul tuo spazio web – pagina iniziale, radio del telefono (<code>Funk/</code>), simulatore nel browser (<code>Sim/</code>, solo il pacchetto firmato «sim-web.zip») e <code>Sim/test.html</code>. Indirizzo di fabbrica <code>https://kevlaschef.com</code> (solo https) e la chiave di caricamento: mai più mostrata, mai nel registro; un nuovo indirizzo la cancella. Vengono caricati solo i file modificati, mai durante un allarme. Poi MoveEye verifica ogni indirizzo pubblico (stato, dimensione, tipo, reindirizzamenti, Content-Security-Policy).</li>
-rm|<li><b>🌐 Pagina d’entrada</b> (Dapli → Pagina d’entrada, mo l’administratur): chargia tias paginas publicas sin tes spazi web – pagina d’entrada, radio dal telefonin (<code>Funk/</code>), simulatur en il browser (<code>Sim/</code>, mo il pachet signà «sim-web.zip») e <code>Sim/test.html</code>. Adressa da fabrica <code>https://kevlaschef.com</code> (mo https) e la clav da chargiar: mai pli mussada, mai en il protocol; ina nova adressa la stizza. Chargià vegn mo quai ch’è midà, mai durant in alarm. Suenter controllescha MoveEye mintga adressa publica (status, grondezza, tip, deviaziuns, Content-Security-Policy).</li>
+de|<li><b>🌐 Homepage</b> (Mehr → Homepage, nur der Administrator): lädt deine öffentlichen Seiten auf deinen Webspace – Startseite, Handy-Funkgerät (<code>Funk/</code>), Simulator im Browser (<code>Sim/</code>, nur das signierte Paket «sim-web.zip») und <code>Sim/test.html</code>. Adresse ab Werk <code>https://kevlaschef.com</code> (nur https), dazu der Upload-Schlüssel: setzen, ersetzen oder löschen, er wird nie mehr angezeigt und steht nie im Protokoll; eine neue Adresse löscht ihn. Hochgeladen wird nur, was sich geändert hat, im Hintergrund, nie während eines Alarms; «nach jedem Update automatisch» ist ab Werk an. «Startseite mit hochladen» ist ab Werk aus: dann kommen nur <code>Funk/</code> und <code>Sim/</code> hoch, eine vorhandene <code>index.html</code> bleibt auf dem Webspace unberührt (nie gelöscht). Danach prüft MoveEye jede öffentliche Adresse (Status, Grösse, Typ, Umleitungen, Content-Security-Policy) – z. B. «connect-src sperrt fetch()» erklärt «Load failed» am iPhone.</li>
+en|<li><b>🌐 Homepage</b> (More → Homepage, administrator only): puts your public pages on your web space – start page, phone radio (<code>Funk/</code>), simulator in the browser (<code>Sim/</code>, only the signed package «sim-web.zip») and <code>Sim/test.html</code>. Address by default <code>https://kevlaschef.com</code> (https only), plus the upload key: set, replace or delete it; it is never shown again and never in the log; a new address deletes it. Only changed files are uploaded, in the background, never during an alarm; «automatically after every update» is on by default. «Upload the start page too» is off by default: then only <code>Funk/</code> and <code>Sim/</code> go up, an existing <code>index.html</code> on the web space stays untouched (never deleted). Then MoveEye checks every public address (status, size, type, redirects, Content-Security-Policy) – e.g. «connect-src blocks fetch()» explains «Load failed» on the iPhone.</li>
+fr|<li><b>🌐 Page d’accueil</b> (Plus → Page d’accueil, administrateur seulement) : met tes pages publiques sur ton espace web – page d’accueil, radio du téléphone (<code>Funk/</code>), simulateur dans le navigateur (<code>Sim/</code>, seulement le paquet signé «sim-web.zip») et <code>Sim/test.html</code>. Adresse par défaut <code>https://kevlaschef.com</code> (https seulement) et la clé d’envoi : jamais réaffichée, jamais dans le journal ; une nouvelle adresse la supprime. Seuls les fichiers modifiés sont envoyés, jamais pendant une alarme. «Envoyer aussi la page d’accueil» est désactivé par défaut : seuls <code>Funk/</code> et <code>Sim/</code> sont envoyés, une <code>index.html</code> existante reste intacte (jamais supprimée). Ensuite MoveEye vérifie chaque adresse publique (statut, taille, type, redirections, Content-Security-Policy).</li>
+it|<li><b>🌐 Homepage</b> (Altro → Homepage, solo l’amministratore): carica le tue pagine pubbliche sul tuo spazio web – pagina iniziale, radio del telefono (<code>Funk/</code>), simulatore nel browser (<code>Sim/</code>, solo il pacchetto firmato «sim-web.zip») e <code>Sim/test.html</code>. Indirizzo di fabbrica <code>https://kevlaschef.com</code> (solo https) e la chiave di caricamento: mai più mostrata, mai nel registro; un nuovo indirizzo la cancella. Vengono caricati solo i file modificati, mai durante un allarme. «Caricare anche la pagina iniziale» è spento di fabbrica: vengono caricati solo <code>Funk/</code> e <code>Sim/</code>, una <code>index.html</code> esistente resta intatta (mai cancellata). Poi MoveEye verifica ogni indirizzo pubblico (stato, dimensione, tipo, reindirizzamenti, Content-Security-Policy).</li>
+rm|<li><b>🌐 Pagina d’entrada</b> (Dapli → Pagina d’entrada, mo l’administratur): chargia tias paginas publicas sin tes spazi web – pagina d’entrada, radio dal telefonin (<code>Funk/</code>), simulatur en il browser (<code>Sim/</code>, mo il pachet signà «sim-web.zip») e <code>Sim/test.html</code>. Adressa da fabrica <code>https://kevlaschef.com</code> (mo https) e la clav da chargiar: mai pli mussada, mai en il protocol; ina nova adressa la stizza. Chargià vegn mo quai ch’è midà, mai durant in alarm. «Chargiar era la pagina d’entrada» è deactivà da fabrica: lura vegnan chargiads mo <code>Funk/</code> e <code>Sim/</code>, ina <code>index.html</code> existenta resta intacta (mai stizzada). Suenter controllescha MoveEye mintga adressa publica (status, grondezza, tip, deviaziuns, Content-Security-Policy).</li>
 """
 
 
@@ -1108,6 +1146,7 @@ def homepage_selftest():
     assert b'"stego.js"' in f["sw.js"] and b'<script src="stego.js"></script>' in f["index.html"] and b"MWStego" in f["stego.js"]
     assert all(_HP_NAME_RE.match(n) for n in f) and all(_HP_NAME_RE.match(n) for n in HP_SIM_NAMES)
     assert "Funk/" in HP_INDEX_HTML and "Sim/" in HP_INDEX_HTML and "index_audio_worklet.js" in HP_TEST_HTML
+    assert DEFAULTS.get("hp_start_on") is False and "hp_start_on" in USER_SETTINGS_DENY, "start page: off by default, admin only"
     k0 = CFG.get("hp_key")
     try:
         CFG["hp_key"] = "SelbsttestSchluessel123"

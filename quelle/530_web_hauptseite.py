@@ -402,6 +402,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
 .pwr{margin-top:14px;padding-top:10px;border-top:1px solid var(--line)}
 #pw-ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:20px}
 #pw-ov .card,#talk-ov .card,#pwd-ov .card{max-width:440px;width:100%;text-align:center}
+.mw-ovx{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:12px;width:44px;height:44px;min-height:44px;border-radius:22px;padding:0;font-size:20px;line-height:1}
 #pwd-ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:20px}
 #talk-ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:20px}
 .talkbtn{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
@@ -3272,10 +3273,14 @@ function updFit() {
   const h = rows[3].getBoundingClientRect().top - rows[0].getBoundingClientRect().top;
   L.style.maxHeight = (h > 20 ? h + 2 : 260) + "px";
 }
+// a «✕» on the windows that wait for the Pi (update, restart, shut down): without it a home-screen app was stuck behind it
+// when the Pi did not come back (Besitzer 15.11.2026) - the Pi goes on, the page reloads by itself when it is back
+function ovX(ov) { const x = el("button", "sec mw-ovx", "✕"); x.type = "button"; x.title = t("Close"); x.setAttribute("aria-label", x.title);
+  x.onclick = () => ov.remove(); ov.appendChild(x); }
 // update with a progress bar (2.95.30): download (real bytes), check, restart (as long as the last restarts took)
 async function updInstall(v) {
   let ov = $("#pw-ov"); if (!ov) { ov = el("div"); ov.id = "pw-ov"; document.body.appendChild(ov); }
-  ov.textContent = ""; const c = el("div", "card"); c.style.minWidth = "min(340px, 86vw)"; ov.appendChild(c);
+  ov.textContent = ""; ovX(ov); const c = el("div", "card"); c.style.minWidth = "min(340px, 86vw)"; ov.appendChild(c);
   const ttl = el("div", "", t("Switching to version") + " " + v + " …"); ttl.style.cssText = "font-weight:700;margin:4px 0 12px";
   const tr_ = el("div"); tr_.style.cssText = "height:12px;border-radius:6px;background:var(--line);overflow:hidden";
   const fill = el("div"); fill.style.cssText = "height:100%;width:2%;background:var(--acc);border-radius:6px;transition:width .6s linear"; tr_.appendChild(fill);
@@ -3319,7 +3324,7 @@ async function updInstall(v) {
 }
 function updWait(v) {
   let ov = $("#pw-ov"); if (!ov) { ov = el("div"); ov.id = "pw-ov"; document.body.appendChild(ov); }
-  ov.textContent = ""; const c = el("div", "card"); ov.appendChild(c);
+  ov.textContent = ""; ovX(ov); const c = el("div", "card"); ov.appendChild(c);
   c.append(el("div", "", "🔄"), el("div", "", t("Switching to version") + " " + v + " …"), el("div", "mut", t("The page reloads by itself.")));
   c.firstChild.style.fontSize = "40px"; c.children[1].style.fontWeight = "700"; c.children[1].style.margin = "8px 0";
   const t0 = Date.now();
@@ -3353,7 +3358,7 @@ async function pauseAct() {
 function powerOverlay(action) {
   listenStop();
   let ov = $("#pw-ov"); if (!ov) { ov = el("div"); ov.id = "pw-ov"; document.body.appendChild(ov); }
-  ov.textContent = ""; const c = el("div", "card"); ov.appendChild(c);
+  ov.textContent = ""; ovX(ov); const c = el("div", "card"); ov.appendChild(c);
   const ic = el("div", "", action === "poweroff" ? "⏻" : "↻"); ic.style.fontSize = "42px";
   const msg = el("div", "", action === "poweroff" ? t("The Pi is shutting down …") : t("The Pi is restarting …"));
   msg.style.fontWeight = "700"; msg.style.fontSize = "18px"; msg.style.margin = "8px 0";

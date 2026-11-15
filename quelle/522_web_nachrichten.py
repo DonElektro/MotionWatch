@@ -26,6 +26,7 @@ main{padding:16px;max-width:900px;margin:0 auto}
 .st-server{background:rgba(10,132,255,.18);color:var(--blu)}
 #big{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:50}
 #big img{max-width:96vw;max-height:92vh;border-radius:8px}
+#big .x{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:12px;width:44px;height:44px;border-radius:22px;border:0;padding:0;font-size:22px;background:rgba(255,255,255,.92);color:#000;cursor:pointer}
 </style></head><body>
 <header>
   <h1>MoveEye</h1>
@@ -51,10 +52,10 @@ main{padding:16px;max-width:900px;margin:0 auto}
     <div id="list"></div>
   </section>
 </main>
-<div id="big" onclick="this.style.display='none'"><img alt=""></div>
+<div id="big" onclick="this.style.display='none'"><button type="button" class="x" aria-label="Close" title="Close">✕</button><img alt=""></div>
 <script>
 /*COMMON*/
-Object.assign(I18N.de, {"Message list": "Nachrichten", "Everything MoveEye sent to your phone - and the messages on the ntfy server.": "Alles, was MoveEye ans Handy geschickt hat – und die Nachrichten auf dem ntfy-Server.",
+Object.assign(I18N.de, {"Close": "Schliessen", "Message list": "Nachrichten", "Everything MoveEye sent to your phone - and the messages on the ntfy server.": "Alles, was MoveEye ans Handy geschickt hat – und die Nachrichten auf dem ntfy-Server.",
   "From MoveEye": "Von MoveEye", "ntfy server": "ntfy-Server", "last 24 h": "letzte 24 h", "last 7 days": "letzte 7 Tage", "all (as long as the server keeps them)": "alle (solange der Server sie behält)",
   "All": "Alle", "Alarms": "Alarme", "Info": "Info", "Tests": "Tests", "↻ Refresh": "↻ Neu laden", "Clear list": "Liste leeren",
   "sent": "gesendet", "failed": "fehlgeschlagen", "test inbox": "Test-Postfach", "no push channel": "kein Push-Kanal", "on the server": "auf dem Server",
@@ -84,7 +85,9 @@ function paint() {
   });
   document.getElementById("list").innerHTML = h || '<p class="mut">' + t("No messages yet.") + '</p>';
 }
-function big(src) { var b = document.getElementById("big"); b.querySelector("img").src = src; b.style.display = "flex"; }
+function big(src) { var b = document.getElementById("big"), x = b.querySelector(".x"); b.querySelector("img").src = src; b.style.display = "flex";
+  x.title = t("Close"); x.setAttribute("aria-label", x.title); }   // a visible ✕ (the whole picture closes it too, Esc as well)
+addEventListener("keydown", function (e) { if (e.key === "Escape") document.getElementById("big").style.display = "none"; });
 async function load() {
   document.getElementById("cnt").textContent = t("loading …");
   var u = "/api/messages?src=" + SRC + (SRC === "server" ? "&since=" + document.getElementById("since").value : "");
