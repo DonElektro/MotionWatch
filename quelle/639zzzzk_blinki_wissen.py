@@ -147,12 +147,15 @@ BLINKI_RULES = ("You are Blinki, the friendly eye of MoveEye, a camera guard (Ra
                 "Never suggest to switch the protection, the alarm or the camera off. You cannot change settings yourself.")
 
 
-def blinki_messages(mode, q, L, prev=None):
+def blinki_messages(mode, q, L, prev=None, extra=None):
     """(messages, sources, links, fixes) for one question"""
     L = norm_lang(L)
+    if mode in BLINKI_EXTRA_MODES:
+        return blinki_messages_more(mode, q, L, prev, extra or {})
     rules = BLINKI_RULES.format(lang=_BLINKI_LANG_NAME.get(L, "English"))
     sources, links, fixes = [], [], []
     if mode == "fehler":
+        q = q or tr("Does my MoveEye have a problem? Please check it.", L)
         facts, fixes = blinki_diag_facts(L)
         sys_ = rules + " Task: explain the likely cause of the problem in plain words and what the user can check. " \
             "The facts are the self-check and the log of the device right now.\n\nFACTS:\n" + facts
@@ -229,3 +232,74 @@ def blinki_fix(fid, ok, who="web"):
         return False, "this problem is not there any more"
     log_event("sys", f"Blinki: suggestion «{act}» confirmed by {who}")
     return fx_run(act, "Blinki / " + who)
+
+
+# ---- one question: the model when it is there, else the found places of the manual (no model needed) ----------------------------
+BLINKI_MODES = ("frag", "fehler")
+BLINKI_WAIT_MAX = 4                     # questions waiting at the same time (more: «Blinki is busy»)
+
+
+def blinki_offline_ok():
+    """the model of this device can answer (engine + checked model)"""
+    return bool(blinki_engine()) and blinki_model_ok()
+
+
+def blinki_engine_for(mode):
+    """'offline' | 'cloud' | '' (no model: the manual only); 639zzzzk_blinki_cloud adds the cloud"""
+    return "offline" if blinki_offline_ok() else ""
+
+
+def blinki_fallback(mode, L, sources, links, facts=""):
+    """the answer without a model: the places of the manual / the self-check, as they are"""
+    if mode in BLINKI_EXTRA_MODES:
+        return tr("For this Blinki needs the language model on the device (or the cloud). The administrator sets it up here.", L)
+    if mode == "fehler":
+        bad = [ln[2:] for ln in facts.split("\n") if ln.startswith("- [")][:6]
+        return tr("Without the language model Blinki can only show what the self-check finds:", L) + "\n" + (
+            "\n".join("• " + x for x in bad) if bad else "• " + tr("the self-check finds no problem right now", L))
+    if not sources:
+        return tr("I found nothing about this in the manual. Try other words - or open the manual.", L)
+    return tr("Blinki cannot answer freely yet (the language model is missing). These places of the manual fit best:", L)
+
+
+def blinki_ask(mode, q, lang=None, prev=None, who="web", client="", extra=None):
+    """a new question -> (job, '') or (None, English reason)"""
+    L = norm_lang(lang)
+    mode = mode if mode in BLINKI_MODES or mode in BLINKI_EXTRA_MODES else ""
+    q = re.sub(r"[\x00-\x08\x0b-\x1f\x7f]", " ", str(q or "")).strip()[:600]
+    if not mode:
+        return None, "unknown action"
+    if not q and mode not in BLINKI_NOQ_MODES:
+        return None, "the text is empty"
+    if mode == "fehler" and not q:
+        q = tr("Does my MoveEye have a problem? Please check it.", L)
+    with BLINKI["lock"]:
+        for j in BLINKI["jobs"].values():                 # a new question of the same page ends its old one
+            if client and j.get("client") == client and j["state"] in ("wait", "think", "write"):
+                j["stop"] = True
+        waiting = sum(1 for j in BLINKI["jobs"].values() if j["state"] in ("wait", "think", "write") and not j["stop"])
+    if waiting >= BLINKI_WAIT_MAX:
+        return None, "Blinki is busy - try again in a minute"
+    msgs, sources, links, fixes = blinki_messages(mode, q, L, prev, extra)
+    eng = blinki_engine_for(mode)
+    x = {"sources": sources, "links": links, "fixes": fixes, "engine": eng or "manual", "client": client, "who": who}
+    x.update({k: v for k, v in (extra or {}).items() if k in ("kid", "place", "speak", "quiz", "image", "max_tokens", "temp")})
+    if not eng:
+        import queue as _q
+        jid = os.urandom(6).hex()
+        txt = blinki_fallback(mode, L, sources, links, msgs[0]["content"] if mode == "fehler" else "")
+        j = {"id": jid, "t": time.time(), "mode": mode, "q": q, "lang": L, "messages": [], "text": txt, "state": "done", "err": "",
+             "stop": False, "t_first": time.time(), "t_end": time.time(), "n_tok": 0}
+        j.update(x)
+        with BLINKI["lock"]:
+            BLINKI["jobs"][jid] = j; BLINKI["order"].append(jid)
+            while len(BLINKI["order"]) > 30:
+                BLINKI["jobs"].pop(BLINKI["order"].pop(0), None)
+        return j, ""
+    j = blinki_job_new(mode, q, L, msgs, x)
+    log_event("sys", f"Blinki: question ({mode}, {eng}) by {who}")
+    return j, ""
+
+
+BLINKI_EXTRA_MODES = ()                 # 639zzzzk_blinki_mehr: stories, nature guide, quiz
+BLINKI_NOQ_MODES = ("fehler",)          # modes that work without a typed text

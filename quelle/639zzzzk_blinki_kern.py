@@ -9,7 +9,7 @@
 #  Motor      llama.cpp «llama-server» (MIT): zuerst ein vorhandenes (PATH), sonst eines in DATA_DIR/blinki/bin. «Motor einrichten»
 #             baut es einmal aus dem Quelltext einer FESTEN Fassung (Tag + Commit geprüft, BLINKI_LLAMA): apt git / cmake /
 #             build-essential (wie 639zzb mit sudo -n), git clone --depth 1, cmake (statisch, ohne Web-Oberfläche, ohne Netz-
-#             Funktionen), nice 19, 2 Kerne. Fertige Pakete von GitHub sind für Ubuntu 24.04 gebaut (glibc 2.39) und laufen auf
+#             Funktionen; die Optionen wurden im Quelltext von b12000 nachgesehen und hier probehalber gebaut), nice 19, 2 Kerne. Fertige Pakete von GitHub sind für Ubuntu 24.04 gebaut (glibc 2.39) und laufen auf
 #             Raspberry Pi OS Bookworm nicht - darum der Bau. Dauer auf dem Pi 5 geschätzt 15-30 min (nicht gemessen).
 #  Prozess    eigener Prozess (wie Piper): nur 127.0.0.1, freier Port, -t 2 (Antworten schreiben ist durch die Speicher-Bandbreite
 #             begrenzt, 2 Kerne sind am schnellsten), nice 15, auf die letzten 2 Kerne gelegt (die Erkennung behält die ersten),
@@ -37,7 +37,7 @@ BLINKI_MODEL_DEFAULT = "qwen2.5-1.5b-q4_0"
 BLINKI_LLAMA = {"repo": "https://github.com/ggml-org/llama.cpp", "tag": "b12000", "commit": "68d20b884c3878217de79eade0a249efde96ab38"}
 BLINKI_CMAKE = ("-DCMAKE_BUILD_TYPE=Release", "-DBUILD_SHARED_LIBS=OFF", "-DGGML_NATIVE=ON", "-DLLAMA_BUILD_TESTS=OFF",
                 "-DLLAMA_BUILD_EXAMPLES=OFF", "-DLLAMA_BUILD_APP=OFF", "-DLLAMA_BUILD_SERVER=ON", "-DLLAMA_BUILD_UI=OFF",
-                "-DLLAMA_USE_PREBUILT_UI=OFF", "-DLLAMA_OPENSSL=OFF", "-DLLAMA_CURL=OFF", "-DLLAMA_CONNECT=OFF")
+                "-DLLAMA_USE_PREBUILT_UI=OFF", "-DLLAMA_OPENSSL=OFF", "-DLLAMA_CONNECT=OFF")   # options checked in the source of b12000
 BLINKI_APT = ("git", "cmake", "build-essential")
 BLINKI_IDLE_S = 15 * 60
 BLINKI_MAX_TOKENS = 380
@@ -203,7 +203,7 @@ def _blinki_apt(pkgs):
     return False, (out.strip().splitlines() or ["apt failed"])[-1][:140]
 
 
-def _blinki_run(cmd, cwd=None, timeout=3600, progress=False):
+def _blinki_run(cmd, cwd=None, timeout=3600, progress=None):
     """one step of the build (nice 19, the output only read for the percent); (rc, last lines)"""
     tail = []
     try:
@@ -214,26 +214,31 @@ def _blinki_run(cmd, cwd=None, timeout=3600, progress=False):
     t0 = time.time()
     for line in p.stdout:
         tail = (tail + [line.rstrip()])[-6:]
-        if progress:
+        if progress is not None:
             m = re.match(r"\[\s*(\d+)%\]", line)
             if m:
-                BLINKI["pct"] = int(m.group(1))
+                progress["pct"] = int(m.group(1))
         if time.time() - t0 > timeout:
             p.kill(); break
     rc = p.wait()
     return rc, "\n".join(tail)
 
 
-def blinki_install():
-    """«Set up the engine»: build llama-server once from the pinned source (background)"""
-    if BLINKI["install"] == "running":
+# what «set up» builds: name -> (state dict, pinned source, cmake options, target); 639zzzzk_blinki_z_sprache adds whisper.cpp
+BLINKI_BUILDS = {"llm": (BLINKI, BLINKI_LLAMA, BLINKI_CMAKE, "llama-server", "llama.cpp")}
+
+
+def blinki_install(kind="llm"):
+    """«Set up the engine»: build the program once from the pinned source (background)"""
+    st, spec, opts, target, name = BLINKI_BUILDS[kind]
+    if st["install"] == "running" or any(v[0]["install"] == "running" for v in BLINKI_BUILDS.values()):
         return False, "already running"
-    if blinki_engine():
+    if os.access(os.path.join(blinki_dir(), "bin", target), os.X_OK):
         return True, ""
-    BLINKI.update(install="running", step="", pct=0)
+    st.update(install="running", step="", pct=0)
 
     def work():
-        src = os.path.join(blinki_dir(), "src")
+        src = os.path.join(blinki_dir(), "src-" + kind)
         try:
             os.makedirs(blinki_dir(), exist_ok=True)
             if shutil.disk_usage(blinki_dir()).free < 1500 * 1024 * 1024:
@@ -242,33 +247,33 @@ def blinki_install():
             if not ok:
                 raise RuntimeError(why)
             shutil.rmtree(src, ignore_errors=True)
-            BLINKI["step"] = "git clone " + BLINKI_LLAMA["tag"]
-            rc, out = _blinki_run(["git", "clone", "--depth", "1", "--branch", BLINKI_LLAMA["tag"], BLINKI_LLAMA["repo"], src], timeout=1800)
+            st["step"] = "git clone " + spec["tag"]
+            rc, out = _blinki_run(["git", "clone", "--depth", "1", "--branch", spec["tag"], spec["repo"], src], timeout=1800)
             if rc != 0:
                 raise RuntimeError("download of the source failed: " + out[-120:])
             head = subprocess.run(["git", "-C", src, "rev-parse", "HEAD"], capture_output=True, text=True, timeout=30).stdout.strip()
-            if head != BLINKI_LLAMA["commit"]:
+            if head != spec["commit"]:
                 raise RuntimeError("the source is not the pinned version - not built")
-            BLINKI["step"] = "cmake"
-            rc, out = _blinki_run(["cmake", "-B", "build"] + list(BLINKI_CMAKE), cwd=src, timeout=900)
+            st["step"] = "cmake"
+            rc, out = _blinki_run(["cmake", "-B", "build"] + list(opts), cwd=src, timeout=900)
             if rc != 0:
                 raise RuntimeError("cmake: " + out[-140:])
-            BLINKI["step"] = "build"
-            rc, out = _blinki_run(["cmake", "--build", "build", "--target", "llama-server", "-j", "2"], cwd=src, timeout=4 * 3600, progress=True)
-            exe = os.path.join(src, "build", "bin", "llama-server")
+            st["step"] = "build"
+            rc, out = _blinki_run(["cmake", "--build", "build", "--target", target, "-j", "2"], cwd=src, timeout=4 * 3600, progress=st)
+            exe = os.path.join(src, "build", "bin", target)
             if rc != 0 or not os.path.isfile(exe):
                 raise RuntimeError("build failed: " + out[-140:])
             os.makedirs(os.path.join(blinki_dir(), "bin"), exist_ok=True)
-            dst = os.path.join(blinki_dir(), "bin", "llama-server")
+            dst = os.path.join(blinki_dir(), "bin", target)
             shutil.copy2(exe, dst + ".new"); os.chmod(dst + ".new", 0o755); os.replace(dst + ".new", dst)
-            BLINKI["install"] = "done"
-            log_event("sys", f"Blinki: engine llama.cpp {BLINKI_LLAMA['tag']} built")
+            st["install"] = "done"
+            log_event("sys", f"Blinki: engine {name} {spec['tag']} built")
         except Exception as e:
-            BLINKI["install"] = "failed: " + str(e)[:160]
-            log_event("sys", "Blinki: engine not built: " + str(e)[:160])
+            st["install"] = "failed: " + str(e)[:160]
+            log_event("sys", f"Blinki: engine {name} not built: " + str(e)[:160])
         finally:
             shutil.rmtree(src, ignore_errors=True)            # the source (~ 300 MB with the build) is not needed any more
-            BLINKI["step"] = ""
+            st["step"] = ""
     threading.Thread(target=work, daemon=True, name="blinki-install").start()
     return True, ""
 
@@ -294,8 +299,8 @@ def blinki_hold_reason():
         snd = globals().get("SOUND") or {}
         if snd.get("playing") and snd.get("kind") in ("siren", "alarm"):
             return "alarm"
-        pres = set(STATE.get("present") or [])
-        if STATE.get("tracking") or (STATE.get("persons") or 0) > 0 or pres & {"person", "warm"}:
+        pres = set(str(x) for x in (STATE.get("present") or []))
+        if STATE.get("tracking") or (STATE.get("persons") or 0) > 0 or pres & {"person", "warm"} or (STATE.get("warm") or 0) > 0:
             return "motion"
         t = STATE.get("cpu_temp")
         if t is not None:
@@ -471,8 +476,10 @@ def _blinki_worker():
     while True:
         jid = BLINKI["queue"].get()
         j = BLINKI["jobs"].get(jid)
-        if j is None or j["stop"]:
+        if j is None:
             continue
+        if j["stop"]:                                      # stopped while waiting: never «busy» again
+            j.update(state="stopped", t_end=time.time()); continue
         try:
             blinki_answer(j)
         except Exception as e:
@@ -502,9 +509,10 @@ def blinki_answer(j):
 
 def _blinki_stream(j, host, port, path, headers, messages, tls=False, body_extra=None):
     """POST a chat with «stream» and append the pieces to j["text"] (OpenAI-compatible server-sent events)"""
-    body = {"messages": messages, "stream": True, "max_tokens": BLINKI_MAX_TOKENS, "temperature": 0.3, "top_p": 0.9,
-            "cache_prompt": True}
+    body = {"messages": messages, "stream": True, "max_tokens": int(j.get("max_tokens") or BLINKI_MAX_TOKENS), "temperature": float(j.get("temp") or 0.3),
+            "top_p": 0.9, "cache_prompt": True}
     body.update(body_extra or {})
+    body = {k: v for k, v in body.items() if v is not None}
     data = json.dumps(body, ensure_ascii=False).encode()
     c = (_bhttp.HTTPSConnection if tls else _bhttp.HTTPConnection)(host, port, timeout=20)
     W = {"busy": 0.0, "end": False, "why": ""}
@@ -585,7 +593,7 @@ def blinki_job_view(j, start=0):
     st = j["state"]
     out = {"id": j["id"], "state": st, "text": j["text"][start:], "n": len(j["text"]), "held": BLINKI["held"] if st in ("wait", "think", "write") else "",
            "err": j["err"], "links": j.get("links") or [], "sources": j.get("sources") or [], "fixes": j.get("fixes") or [],
-           "secs": round((j["t_end"] or time.time()) - j["t"], 1), "engine": j.get("engine", "offline")}
+           "secs": round((j["t_end"] or time.time()) - j["t"], 1), "engine": j.get("engine", "offline"), "mode": j.get("mode", ""), "q": j.get("q", "")}
     if st == "wait" and not BLINKI["held"]:
         out["queue"] = sum(1 for k in BLINKI["order"] if BLINKI["jobs"].get(k, {}).get("state") == "wait" and k < j["id"] and BLINKI["jobs"][k]["t"] < j["t"])
     return out
