@@ -12,6 +12,13 @@
 #  7  Ansage beim Einschalten über den Lautsprecher: «Akku 80 Prozent, WLAN gut, Kamera frei» oder was fehlt.
 #  8  «Bist du's?»: kommt das Handy des Besitzers zurück, warten Personen-Alarme 60 s und eine Push-Nachricht fragt
 #     «Bist du's?» mit dem Knopf «Aus».
+# Wunsch Besitzer (15.11.2026, freigegeben – nur diese Karte, sonst nichts auf Live): «Was war das?» zeigt neben dem Bild zu
+#     jedem kleinen Rahmen einen vergrösserten Ausschnitt (rechts, wenn Platz ist, sonst darunter; höchstens 3, die grössten),
+#     dünner Rand in der Farbe des Rahmens, antippen = gross mit «✕». Geschnitten wird auf dem Pi (/api/alarmlabel/crop/<id>/<n>)
+#     aus dem Original-Alarmbild in voller Auflösung (das Foto person_<zeit>.jpg in den Aufnahmen – genau das Bild, zu dem die
+#     Rahmen gehören), sonst aus dem gespeicherten Bild (alarm_labels/, höchstens 1280 px breit). Rand ALX_ZOOM_PAD um den
+#     Rahmen, Seitenverhältnis bleibt; Rahmen über ALX_ZOOM_MAX der Bildfläche: kein Ausschnitt (gross genug). Das Pi-Fenster
+#     hat keine Karte «Was war das?» – dort nichts.
 # (5 – Zonen nach Art – steht bei den Zonen in Teil 030.)
 # ----------------------------------------------------------------------------
 _ALX_CFG = {"push_actions": True, "alarm_confirm2": False, "arm_announce": True, "back_hold_s": 60,
@@ -25,6 +32,11 @@ ALX = {"lock": threading.Lock(), "tok": {}, "fails": {}, "ctx": None, "hold_unti
 ALX_TTL = 3600                       # a button of a push message works for one hour
 ALX_ACTS = ("fa", "siren", "off")
 ALX_LABELS = ("person", "animal", "nothing")
+ALX_ZOOM_N = 3                       # «What was it?»: at most 3 zoomed boxes (the largest)
+ALX_ZOOM_MAX = 0.25                  # a box over a quarter of the picture is big enough: no zoom
+ALX_ZOOM_PAD = 0.2                   # margin on each side, share of the box (the crop is 1.4 x the box)
+ALX_ZOOM_ASPECT = (0.5, 2.0)         # narrower / wider boxes get more picture around them (never stretched)
+ALX_ZOOM_OUT = (480, 960)            # height of the crop sent: at least (sharp at 160 px on a 3x screen), at most
 
 
 # ---- 1: one key per message ------------------------------------------------------------------------------------------
@@ -223,6 +235,14 @@ def alx_routes(app, watch, reply, body):
             return Response("not found", 404)
         return send_file(p, mimetype="image/jpeg", max_age=3600)
 
+    @app.route("/api/alarmlabel/crop/<lid>/<int:i>")
+    def api_alarmlabel_crop(lid, i):                     # the zoomed box of «What was it?» (only the administrator, like /img)
+        r = alx_zoom_jpg(lid, i)
+        if r is None:
+            return Response("not found", 404)
+        data, src = r
+        return Response(data, mimetype="image/jpeg", headers={"Cache-Control": "private, max-age=3600", "X-Crop-Src": src})
+
     @app.route("/alx/what.js")
     def alx_what_js():
         return Response(ALX_WHAT_JS, mimetype="application/javascript", headers={"Cache-Control": "no-cache"})
@@ -338,8 +358,98 @@ def alx_label_list(n=10):
         x = _alx_label_load(f[:-5])
         if x and os.path.exists(os.path.join(d, x["id"] + ".jpg")):
             out.append({"id": x["id"], "t": x.get("t"), "label": x.get("label") or "", "boxes": x.get("boxes") or [],
-                        "count": x.get("count", 0), "sim": bool(x.get("sim"))})
+                        "count": x.get("count", 0), "sim": bool(x.get("sim")), "zoom": alx_zoom_list(x)})
     return out
+
+
+def alx_zoom_pick(boxes):
+    """the boxes worth a zoom: their numbers, the largest first - small ones only (up to a quarter of the picture), at most 3"""
+    ok = []
+    for i, b in enumerate(boxes or []):
+        try:
+            x, y, w, h = (float(v) for v in b[:4])
+        except (TypeError, ValueError):
+            continue
+        if all(math.isfinite(v) for v in (x, y, w, h)) and w > 0 and h > 0 and w * h <= ALX_ZOOM_MAX:
+            ok.append((-w * h, i))
+    return [i for _a, i in sorted(ok)[:ALX_ZOOM_N]]
+
+
+def alx_zoom_rect(b, W, H, pad=ALX_ZOOM_PAD, minrel=0.04):
+    """the crop (x, y, w, h in pixels) around a box (0..1) in a W x H picture: the margin, inside the picture; at least 4 % of
+    the shorter side (relative: the same shape in the stored and in the full resolution picture)"""
+    x, y, w, h = float(b[0]) * W, float(b[1]) * H, float(b[2]) * W, float(b[3]) * H
+    cx, cy = x + w / 2, y + h / 2
+    m = max(8.0, minrel * min(W, H))
+    cw, ch = max(w * (1 + 2 * pad), m), max(h * (1 + 2 * pad), m)
+    a0, a1 = ALX_ZOOM_ASPECT
+    if cw / ch < a0:
+        cw = ch * a0
+    elif cw / ch > a1:
+        ch = cw / a1
+    cw, ch = min(cw, W), min(ch, H)
+    x0, y0 = min(max(0.0, cx - cw / 2), W - cw), min(max(0.0, cy - ch / 2), H - ch)
+    xi, yi = int(round(x0)), int(round(y0))
+    return xi, yi, max(1, min(W - xi, int(round(cw)))), max(1, min(H - yi, int(round(ch))))
+
+
+def alx_zoom_list(x):
+    """for the page: [[box number, width / height of its crop], …] - the tile has its size before the crop is loaded"""
+    W, H = int(x.get("w") or 1280), int(x.get("h") or 720)
+    out = []
+    for i in alx_zoom_pick(x.get("boxes")):
+        _x, _y, cw, ch = alx_zoom_rect(x["boxes"][i], W, H)
+        out.append([i, round(cw / max(1, ch), 3)])
+    return out
+
+
+_ALX_ZOOM_PIC = {"key": None, "img": None, "lock": threading.Lock()}
+
+
+def _alx_zoom_read(p):
+    """one picture kept decoded (the 3 crops of one alarm read the big photo once)"""
+    try:
+        key = (p, os.path.getmtime(p))
+    except OSError:
+        return None
+    with _ALX_ZOOM_PIC["lock"]:
+        if _ALX_ZOOM_PIC["key"] != key:
+            _ALX_ZOOM_PIC["key"], _ALX_ZOOM_PIC["img"] = key, cv2.imread(p, cv2.IMREAD_COLOR)
+        return _ALX_ZOOM_PIC["img"]
+
+
+def alx_zoom_src(x):
+    """(picture, «full» | «stored») - the original alarm photo in full resolution when it is still there and bigger"""
+    st = _alx_zoom_read(alx_label_path(x["id"], ".jpg"))
+    full = None
+    try:
+        p = rec_path(str(x.get("snap") or "")) if x.get("snap") else None
+        full = _alx_zoom_read(p) if p else None
+    except NameError:
+        pass
+    if full is not None and (st is None or (full.shape[1] > st.shape[1]
+                                            and abs(full.shape[1] / full.shape[0] - st.shape[1] / st.shape[0]) < 0.02)):
+        return full, "full"
+    return (st, "stored") if st is not None else (None, "")
+
+
+def alx_zoom_jpg(lid, i):
+    """the zoomed box i of an alarm picture as JPEG bytes, and where it was cut from - or None"""
+    x = _alx_label_load(lid) if alx_label_path(lid, ".json") else None
+    if not x or i not in alx_zoom_pick(x.get("boxes")):
+        return None
+    img, src = alx_zoom_src(x)
+    if img is None:
+        return None
+    H, W = img.shape[:2]
+    cx, cy, cw, ch = alx_zoom_rect(x["boxes"][i], W, H)
+    crop = img[cy:cy + ch, cx:cx + cw]
+    lo, hi = ALX_ZOOM_OUT
+    if ch < lo or ch > hi:                               # small: up with Lanczos (sharper than the browser), big: down
+        t = lo if ch < lo else hi
+        crop = cv2.resize(crop, (max(1, int(round(cw * t / ch))), t), interpolation=cv2.INTER_LANCZOS4 if ch < lo else cv2.INTER_AREA)
+    ok, buf = cv2.imencode(".jpg", crop, [cv2.IMWRITE_JPEG_QUALITY, 92])
+    return (buf.tobytes(), src) if ok else None
 
 
 def alx_label(lid, label, who="web"):
@@ -385,7 +495,8 @@ def alx_label(lid, label, who="web"):
 
 def alx_web_texts(lang):
     keys = ("What was it?", "Person", "Animal", "Nothing", "Thanks - MoveEye learns from it.", "Your answer", "Alarm",
-            "Answers are kept as training pictures (picture + boxes); «Nothing» counts as a false alarm.", "simulation")
+            "Answers are kept as training pictures (picture + boxes); «Nothing» counts as a false alarm.", "simulation",
+            "Zoomed box - tap for large", "Close")
     return {k: tr(k, lang) for k in keys}
 
 
@@ -725,12 +836,42 @@ ALX_WHAT_JS = r"""(function () {
     "#alx-what .aw-h{font-weight:700;margin-bottom:6px}#alx-what .aw-i{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-top:8px}" +
     "#alx-what .aw-p{position:relative;width:220px;max-width:100%;flex:none}#alx-what .aw-p img{width:100%;display:block;border-radius:8px;background:#000}" +
     "#alx-what .aw-p i{position:absolute;border:2px solid #ff453a;border-radius:3px}#alx-what .aw-b{display:flex;gap:6px;flex-wrap:wrap;align-items:center}" +
+    // 15.11.2026 (Besitzer): the zoomed boxes - next to the picture (the row wraps: right when there is room, otherwise below)
+    "#alx-what .aw-z{display:flex;gap:8px;flex-wrap:wrap;max-width:100%;flex:0 1 auto}" +
+    "#alx-what .aw-zc{display:block;height:160px;max-width:100%;padding:0;margin:0;border:1.5px solid #ff453a;border-radius:6px;background:#000;overflow:hidden;cursor:zoom-in;box-sizing:content-box;flex:none}" +
+    "#alx-what .aw-zc img{display:block;width:100%;height:100%;object-fit:contain}" +
+    "#alx-what-lb{position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box}" +
+    "#alx-what-lb img{max-width:100%;max-height:100%;object-fit:contain;border:2px solid #ff453a;border-radius:8px;background:#000}" +
+    "#alx-what-lb button{position:absolute;top:max(10px,env(safe-area-inset-top));right:12px;width:44px;height:44px;border-radius:22px;border:0;font-size:22px;line-height:44px;padding:0;background:rgba(255,255,255,.92);color:#000;cursor:pointer}" +
     "#alx-what .aw-b button{padding:7px 12px}#alx-what .aw-b button.on{outline:3px solid var(--acc,#2f81f7)}#alx-what .aw-m{color:var(--mut,#8a96a6);font-size:12.5px}" +
     "body[data-tab]:not([data-tab=live]) #alx-what{display:none}";
   document.head.appendChild(st);
   var TX = {};
   function tx(k) { return TX[k] || k; }
   function E(t, c, s) { var e = document.createElement(t); if (c) e.className = c; if (s != null) e.textContent = s; return e; }
+  function zoomBig(src) {                                // the crop large, with «✕» (also a tap beside it, Esc)
+    var lb = document.getElementById("alx-what-lb"); if (lb) lb.remove();
+    lb = E("div"); lb.id = "alx-what-lb"; lb.setAttribute("role", "dialog"); lb.setAttribute("aria-modal", "true");
+    var im = E("img"); im.src = src; im.alt = tx("Zoomed box - tap for large");
+    var x = E("button", "", "✕"); x.type = "button"; x.setAttribute("aria-label", tx("Close")); x.title = tx("Close");
+    function zu() { lb.remove(); document.removeEventListener("keydown", key); }
+    function key(e) { if (e.key === "Escape") zu(); }
+    x.onclick = zu; lb.onclick = function (e) { if (e.target === lb) zu(); };
+    document.addEventListener("keydown", key);
+    lb.append(im, x); document.body.appendChild(lb); x.focus();
+  }
+  function zoom(m) {                                     // one tile per small box (the server picks at most 3, the largest)
+    if (!m.zoom || !m.zoom.length) return null;
+    var z = E("div", "aw-z");
+    m.zoom.forEach(function (q) {
+      var src = "/api/alarmlabel/crop/" + m.id + "/" + q[0], b = E("button", "aw-zc"), im = E("img");
+      b.type = "button"; b.style.width = Math.round(160 * Math.max(0.3, Math.min(3, +q[1] || 1))) + "px";
+      b.setAttribute("aria-label", tx("Zoomed box - tap for large")); b.title = tx("Zoomed box - tap for large");
+      im.loading = "lazy"; im.src = src; im.alt = ""; b.appendChild(im);
+      b.onclick = function () { zoomBig(src); }; z.appendChild(b);
+    });
+    return z;
+  }
   async function answer(id, lab, row) {
     var r = await fetch("/api/alarmlabel", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({id: id, label: lab, lang: L})})
       .then(function (x) { return x.json(); }).catch(function () { return {ok: false}; });
@@ -747,7 +888,7 @@ ALX_WHAT_JS = r"""(function () {
     var bs = E("div", "aw-b");
     [["person", "🚶 " + tx("Person")], ["animal", "🦊 " + tx("Animal")], ["nothing", "🍃 " + tx("Nothing")]].forEach(function (x) {
       var b = E("button", m.label === x[0] ? "on" : "sec", x[1]); b.type = "button"; b.onclick = function () { answer(m.id, x[0], row); }; bs.appendChild(b); });
-    bd.appendChild(bs); row.append(p, bd); return row;
+    bd.appendChild(bs); var z = zoom(m); if (z) row.append(p, z, bd); else row.append(p, bd); return row;
   }
   async function load() {
     L = lng();

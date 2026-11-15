@@ -57,6 +57,8 @@ _HX_ALARM = {
     'Your answer': ('Deine Antwort', 'Ta réponse', 'La tua risposta', 'Tia resposta'),
     'Alarm': ('Alarm', 'Alarme', 'Allarme', 'Alarm'),
     'simulation': ('Simulation', 'simulation', 'simulazione', 'simulaziun'),
+    'Zoomed box - tap for large': ('Rahmen vergrössert – antippen für gross', 'Cadre agrandi – touche pour l’afficher en grand',
+                                   'Riquadro ingrandito – tocca per vederlo grande', 'Rom engrondì – tutga per vesair grond'),
     'Answers are kept as training pictures (picture + boxes); «Nothing» counts as a false alarm.': (
         'Die Antworten werden als Trainingsbilder gespeichert (Bild + Rahmen); «Nichts» zählt als Fehlalarm.',
         'Les réponses sont gardées comme images d’entraînement (image + cadres) ; «Rien» compte comme fausse alarme.',
