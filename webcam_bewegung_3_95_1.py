@@ -282,7 +282,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_3_95_1.zip"
-ZD_SHA256 = "c00fcff1269008337aca1c29076e28b9d738b8c92666d9bccb822aabd4be7f36"
+ZD_SHA256 = "67bd7961c60f3e2b2dda935521730c9b8bd2ffbe13693fe2e4c2ddd4950c4279"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -106208,6 +106208,350 @@ zf_selftest = _zd_fn('639zzzz_zeitfenster/zf_selftest()')
 
 
 SELFTEST_EXTRA.append(("Window to the past «⏪ Damals / Jetzt» (639zzzz)", zf_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import hashlib as _bild_hashlib
+import hmac as _bild_hmac
+import struct as _bild_struct
+
+try:
+	from cryptography.hazmat.primitives.ciphers.aead import AESGCM as _BildAESGCM
+	_BILD_HAS_AES=True
+except Exception:
+	_BildAESGCM=None
+	_BILD_HAS_AES=False
+
+_BILD_SALT_FIX = b"MoveEye-Bild-v1"
+_BILD_PERM_FIX = b"MoveEye-Bild-v1-perm"
+_BILD_SALT_LEN, _BILD_NONCE_LEN, _BILD_TAG_LEN, _BILD_HDR_LEN = 16, 12, 16, 5
+_BILD_OVERHEAD = _BILD_SALT_LEN + _BILD_NONCE_LEN + (_BILD_HDR_LEN + _BILD_TAG_LEN) + _BILD_TAG_LEN
+
+
+class BildCapacity(Exception):
+	def __init__(self,cap,need):
+		super().__init__("too big")
+		self.capacity=cap
+		self.need=need
+
+
+def _bild_pbkdf2(pw, salt):
+	return _bild_hashlib.pbkdf2_hmac("sha256",pw,_BILD_SALT_FIX+salt,200000,32)
+
+
+def _bild_sub_nonce(nonce, tag):
+	return _bild_hashlib.sha256(nonce+tag).digest()[:_BILD_NONCE_LEN]
+
+
+def _bild_mac_keys(k):
+	return _bild_hashlib.sha256(k+b"enc").digest(),_bild_hashlib.sha256(k+b"mac").digest()
+
+
+def _bild_keystream(ke, nonce, n):
+	out,blk=bytearray(),0
+	while len(out)<n:
+		out+=_bild_hmac.new(ke,nonce+_bild_struct.pack(">I",blk),_bild_hashlib.sha256).digest()
+		blk+=1
+	return bytes(out[:n])
+
+
+def _bild_hmac_enc(k, nonce, pt):
+	ke,km=_bild_mac_keys(k)
+	ks=_bild_keystream(ke,nonce,len(pt))
+	ct=bytes(a^b for a,b in zip(pt,ks))
+	return ct+_bild_hmac.new(km,nonce+ct,_bild_hashlib.sha256).digest()[:_BILD_TAG_LEN]
+
+
+def _bild_hmac_dec(k, nonce, blob):
+	if len(blob)<_BILD_TAG_LEN:
+		raise ValueError("x")
+	ke,km=_bild_mac_keys(k)
+	ct,tag=blob[:-_BILD_TAG_LEN],blob[-_BILD_TAG_LEN:]
+	if not _bild_hmac.compare_digest(_bild_hmac.new(km,nonce+ct,_bild_hashlib.sha256).digest()[:_BILD_TAG_LEN],tag):
+		raise ValueError("tag")
+	ks=_bild_keystream(ke,nonce,len(ct))
+	return bytes(a^b for a,b in zip(ct,ks))
+
+
+def _bild_pack(pw, text, salt=None, nonce=None, force_hmac=False):
+	if isinstance(pw,str):
+		pw=pw.encode("utf-8")
+	msg=text.encode("utf-8")if isinstance(text,str)else text
+	salt=salt if salt is not None else os.urandom(_BILD_SALT_LEN)
+	nonce=nonce if nonce is not None else os.urandom(_BILD_NONCE_LEN)
+	k=_bild_pbkdf2(pw,salt)
+	nH,nB=_bild_sub_nonce(nonce,b"H"),_bild_sub_nonce(nonce,b"B")
+	hdr=bytes([1])+_bild_struct.pack(">I",len(msg))
+	if _BILD_HAS_AES and not force_hmac:
+		hdrct,bodyct=_BildAESGCM(k).encrypt(nH,hdr,None),_BildAESGCM(k).encrypt(nB,msg,None)
+	else:
+		hdrct,bodyct=_bild_hmac_enc(k,nH,hdr),_bild_hmac_enc(k,nB,msg)
+	return salt+nonce+hdrct+bodyct
+
+
+def _bild_unpack(pw, read_bytes, total):
+	if isinstance(pw,str):
+		pw=pw.encode("utf-8")
+	salt,nonce=read_bytes(0,_BILD_SALT_LEN),read_bytes(_BILD_SALT_LEN,_BILD_NONCE_LEN)
+	k=_bild_pbkdf2(pw,salt)
+	nH,nB=_bild_sub_nonce(nonce,b"H"),_bild_sub_nonce(nonce,b"B")
+	off=_BILD_SALT_LEN+_BILD_NONCE_LEN
+	hdrct=read_bytes(off,_BILD_HDR_LEN+_BILD_TAG_LEN)
+	hdr=None
+	if _BILD_HAS_AES:
+		try:
+			hdr=_BildAESGCM(k).decrypt(nH,hdrct,None)
+		except Exception:
+			hdr=None
+	if hdr is None:
+		try:
+			hdr=_bild_hmac_dec(k,nH,hdrct)
+		except Exception:
+			hdr=None
+	if not hdr or len(hdr)!=_BILD_HDR_LEN or hdr[0]!=1:
+		raise ValueError("no message")
+	length=_bild_struct.unpack(">I",hdr[1:5])[0]
+	if _BILD_OVERHEAD+length>total:
+		raise ValueError("no message")
+	bodyct=read_bytes(off+_BILD_HDR_LEN+_BILD_TAG_LEN,length+_BILD_TAG_LEN)
+	body=None
+	if _BILD_HAS_AES:
+		try:
+			body=_BildAESGCM(k).decrypt(nB,bodyct,None)
+		except Exception:
+			body=None
+	if body is None:
+		try:
+			body=_bild_hmac_dec(k,nB,bodyct)
+		except Exception:
+			body=None
+	if body is None:
+		raise ValueError("no message")
+	return body.decode("utf-8")
+
+
+class _BildPrng:
+	def __init__(self,seed):
+		self.seed,self.buf,self.pos,self.ctr=seed,b"",8,0
+
+	def word(self):
+		if self.pos>=8:
+			self.buf=_bild_hashlib.sha256(self.seed+_bild_struct.pack("<Q",self.ctr)).digest()
+			self.ctr+=1
+			self.pos=0
+		o=self.pos*4
+		self.pos+=1
+		return _bild_struct.unpack_from("<I",self.buf,o)[0]
+
+	def below(self,n):
+		if n<=0:
+			return 0
+		limit=(0x100000000//n)*n
+		while True:
+			x=self.word()
+			if x<limit:
+				return x%n
+
+
+def _bild_positions(pw, total, m):
+	if isinstance(pw,str):
+		pw=pw.encode("utf-8")
+	pr=_BildPrng(_bild_hashlib.sha256(_BILD_PERM_FIX+pw).digest())
+	state,out={},[0]*m
+	for i in range(m):
+		j=i+pr.below(total-i)
+		vi,vj=state.get(i,i),state.get(j,j)
+		out[i]=vj
+		state[j]=vi
+		if j!=i:
+			state[i]=vj
+	return out
+
+
+def _bild_slot_count(w, h):
+	return w*h*3
+
+
+def bild_capacity(w, h):
+	return max(0,_bild_slot_count(w,h)//8-_BILD_OVERHEAD)
+
+
+def _bild_embed(rgba, w, h, pw, payload):
+	total,nbits=_bild_slot_count(w,h),len(payload)*8
+	if nbits>total:
+		raise ValueError("too big")
+	pos=_bild_positions(pw,total,nbits)
+	for i in range(nbits):
+		slot=pos[i]
+		idx=(slot//3)*4+(slot%3)
+		rgba[idx]=(rgba[idx]&0xFE)|((payload[i>>3]>>(7-(i&7)))&1)
+
+
+def _bild_reader(rgba, w, h, pw):
+	total,cache=_bild_slot_count(w,h),{"pos":[]}
+
+	def read(byte_off,nbytes):
+		need=(byte_off+nbytes)*8
+		if len(cache["pos"])<need:
+			cache["pos"]=_bild_positions(pw,total,min(total,max(need,len(cache["pos"]))))
+		pos,out=cache["pos"],bytearray(nbytes)
+		for i in range(nbytes*8):
+			slot=pos[byte_off*8+i]
+			idx=(slot//3)*4+(slot%3)
+			out[i>>3]|=(rgba[idx]&1)<<(7-(i&7))
+		return bytes(out)
+
+	return read
+
+
+def _bild_load_rgba(image_bytes):
+	import io
+	from PIL import Image
+	im=Image.open(io.BytesIO(image_bytes)).convert("RGBA")
+	w,h=im.size
+	return bytearray(im.tobytes()),w,h
+
+
+def _bild_save_png(rgba, w, h):
+	import io
+	from PIL import Image
+	buf=io.BytesIO()
+	Image.frombytes("RGBA",(w,h),bytes(rgba)).save(buf,format="PNG",compress_level=6)
+	return buf.getvalue()
+
+
+def bild_hide_image(image_bytes, text, pw, salt=None, nonce=None, force_hmac=False):
+	""
+	rgba,w,h=_bild_load_rgba(image_bytes)
+	need=len(text.encode("utf-8"))if isinstance(text,str)else len(text)
+	cap=bild_capacity(w,h)
+	if need>cap:
+		raise BildCapacity(cap,need)
+	_bild_embed(rgba,w,h,pw,_bild_pack(pw,text,salt=salt,nonce=nonce,force_hmac=force_hmac))
+	return _bild_save_png(rgba,w,h)
+
+
+def bild_reveal_image(image_bytes, pw):
+	""
+	if not pw:
+		return None
+	try:
+		rgba,w,h=_bild_load_rgba(image_bytes)
+	except Exception:
+		return None
+	total=_bild_slot_count(w,h)
+	if total<_BILD_OVERHEAD*8:
+		return None
+	try:
+		return _bild_unpack(pw,_bild_reader(rgba,w,h,pw),total)
+	except Exception:
+		return None
+
+
+
+STEGO_JS = _zd('639zzzzc_bild_stego/STEGO_JS', "")
+
+
+STEGO_CSS = _zd('639zzzzc_bild_stego/STEGO_CSS', "")
+
+
+STEGO_UI = _zd('639zzzzc_bild_stego/STEGO_UI', "")
+
+
+_HX_STEGO = _zd('639zzzzc_bild_stego/HX_STEGO', _zd_hx_en((
+	'Back',
+	'Files',
+	'Message in a picture',
+	'Hide a secret text in a photo - only openable with the key',
+	'Hide a message',
+	'Read a message',
+	'Choose a picture',
+	'Choose a picture.',
+	'Message',
+	'Key',
+	'fits about {n} characters',
+	'{n} characters too many',
+	'The message is too long for this picture (about {n} characters fit).',
+	'Remember on this device',
+	'Hide in the picture',
+	'Read the message',
+	'Enter a key.',
+	'Working …',
+	'Reading …',
+	'Hidden ✓ – the new picture «{f}» is ready.',
+	'Share as a file',
+	'Save in the backpack',
+	'Saved in the backpack: {f}',
+	'Could not save in the backpack.',
+	'no message found or wrong key',
+	'The picture could not be processed.',
+	'The picture could not be opened.',
+	'Send as a file (AirDrop, mail, Signal/WhatsApp «as document»). Sent as a photo, WhatsApp & co. destroy the message.',
+)))
+
+for _k, _v in _HX_STEGO.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+_STEGO_DE = {_k: _v[0] for _k, _v in _HX_STEGO.items()}
+_STEGO_DE["Share photos, videos and documents - for everyone or only for you"] = DE.get(
+	"Share photos, videos and documents - for everyone or only for you", "")
+
+
+TAUSCH_PAGE = TAUSCH_PAGE.replace('<h2>\U0001F4C1 <span data-i18n="File exchange">', '<h2>\U0001F392 <span data-i18n="File exchange">', 1)
+TAUSCH_PAGE = TAUSCH_PAGE.replace('<span style="font-size:28px">\U0001F392</span><span style="flex:1;min-width:0"><b data-i18n="Packing lists">',
+								  '<span style="font-size:28px">\U0001F4CB</span><span style="flex:1;min-width:0"><b data-i18n="Packing lists">', 1)
+
+_STEGO_BLOCK = ("<style>" + STEGO_CSS + "</style>\n<script>\n" + STEGO_JS + "\n</script>\n<script>\n"
+				+ "try{Object.assign(I18N.de, " + json.dumps(_STEGO_DE, ensure_ascii=False) + ");}catch(e){}\n"
+				+ STEGO_UI + "\n</script>")
+if "MWStego" not in TAUSCH_PAGE:
+	TAUSCH_PAGE=TAUSCH_PAGE.replace("</script>\n</body></html>","</script>\n"+_STEGO_BLOCK+"\n</body></html>",1)
+
+
+bild_selftest = _zd_fn('639zzzzc_bild_stego/bild_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Botschaft im Bild: hide/read, encryption, capacity, wrong key, Python↔JS vector (639zzzzc)", bild_selftest))
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")

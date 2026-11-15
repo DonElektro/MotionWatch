@@ -84,6 +84,7 @@ daten | 6 | 1x | python3 werkzeuge/piper_test.py --browser | Piper-Stimme (Tabel
 daten | 6 | -  | python3 werkzeuge/werkstatt_html.py --aus /tmp/werkstatt --test --bilder /tmp/werkstatt && ls -la /tmp/werkstatt | Werkstatt offline (eine HTML-Datei, file://, Netz gesperrt, keine JS-Fehler, Modell, Reiter)
 daten | 5 | -  | python3 werkzeuge/bausatz.py --sprachen de --unsigniert --aus /tmp/bausatz && ls -la /tmp/bausatz | Selbstbau-Paket (bausatz.py, nur Deutsch, ohne Signaturprüfung)
 daten | 6 | -  | python3 werkzeuge/rucksack_smb_test.py --e2e | Digitaler Rucksack im Netzwerk (SMB): ab Werk aus, nur Admin, Passwort nie in Protokoll / Einstellungen / Export, Samba-Datei (kein Gast, SMB2+, ein Benutzer, nur LAN), aus = keine Freigabe, Abgleich Netz ↔ Rucksack, 5 Sprachen (falsche Samba-/sudo-Schicht; echtes smbd nur wenn installiert)
+daten | 6 | -  | python3 werkzeuge/stego_test.py --browser | «🔏 Botschaft im Bild» (Teil 639zzzzc + funk/stego.js): Python ↔ node bitgleich (fester Vektor, AES-256-GCM und HMAC-Ersatz), mehrere Grössen, Kapazitäts-Grenze, falscher Schlüssel, geänderter Bereich → Tag-Fehler, JPEG → PNG, Original unverändert, nichts Geheimes im Protokoll, Seite im Browser bei 390 px; braucht node
 
 # ---------------------------------------------------------------------------------------------------- spiele (nur bei Spiele-Änderungen, auf main immer)
 spiele-1 | 15 | 1x | python3 werkzeuge/spiele_test.py --ohne wasnun | Spielesammlung (Paket, GAMES_PKG, jedes neue Spiel am Handy und PC ohne Internet; «Wobbly Truck», Schach) – ohne «Was nun?»
