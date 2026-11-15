@@ -650,10 +650,13 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
-  * 4.3.0: Zwei Teile. (1) Produktseite /info/ mit Bildern: echte App-Bilder (Live, Tagebuch, Mehr) und ruhige Beispielbilder; neu «🖼
+  * 4.3.0: Fünf Teile. (1) Produktseite /info/ mit Bildern: echte App-Bilder (Live, Tagebuch, Mehr) und ruhige Beispielbilder; neu «🖼
     Produktseite: Bilder» in der Karte «Homepage» – eigene Fotos für die Seite hochladen (nur Admin; ohne Ortsangaben und
     Kamera-Daten, verkleinert). (2) «📻 Radio» spielt weiter, wenn man
-    die Seite verlässt; solange es spielt, steht 📻 oben in der Kopfzeile (antippen = zurück zum Radio).
+    die Seite verlässt; solange es spielt, steht 📻 oben in der Kopfzeile (antippen = zurück zum Radio). (3) Jede Seite und jedes
+    Fenster hat einen Weg zurück, auch als App vom Home-Bildschirm (Handy-Funkgerät, Bild gross, Update / Neustart); Downloads gehen
+    in der App überall ins Teilen-Blatt. (4) «Was war das?» lässt sich auf Live zuklappen. (5) Homepage: neuer Schalter «Startseite mit
+    hochladen» (ab Werk aus – dann bleibt die Startseite auf dem Webspace unberührt).
   * 4.2.0: Zwei Teile. (1) Die Bedienleiste oben ist eine Zeile schmaler: «Einfach / Experte» ist ein Knopf in der Leiste, die
     Zeile «Darstellung» fällt weg, ⇕ klappt alle Karten auf und zu, die Symbole sitzen neu (Fenster und Webseite). (2) Bauen auf
     dem Handy: keine Seite mehr breiter als der Bildschirm, Druckdateien untereinander; in Drucken neu die Spalte «Nr.» (wie im

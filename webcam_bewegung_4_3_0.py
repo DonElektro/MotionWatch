@@ -23,10 +23,13 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
-  * 4.3.0: Zwei Teile. (1) Produktseite /info/ mit Bildern: echte App-Bilder (Live, Tagebuch, Mehr) und ruhige Beispielbilder; neu «🖼
+  * 4.3.0: Fünf Teile. (1) Produktseite /info/ mit Bildern: echte App-Bilder (Live, Tagebuch, Mehr) und ruhige Beispielbilder; neu «🖼
     Produktseite: Bilder» in der Karte «Homepage» – eigene Fotos für die Seite hochladen (nur Admin; ohne Ortsangaben und
     Kamera-Daten, verkleinert). (2) «📻 Radio» spielt weiter, wenn man
-    die Seite verlässt; solange es spielt, steht 📻 oben in der Kopfzeile (antippen = zurück zum Radio).
+    die Seite verlässt; solange es spielt, steht 📻 oben in der Kopfzeile (antippen = zurück zum Radio). (3) Jede Seite und jedes
+    Fenster hat einen Weg zurück, auch als App vom Home-Bildschirm (Handy-Funkgerät, Bild gross, Update / Neustart); Downloads gehen
+    in der App überall ins Teilen-Blatt. (4) «Was war das?» lässt sich auf Live zuklappen. (5) Homepage: neuer Schalter «Startseite mit
+    hochladen» (ab Werk aus – dann bleibt die Startseite auf dem Webspace unberührt).
   * 4.2.0: Zwei Teile. (1) Die Bedienleiste oben ist eine Zeile schmaler: «Einfach / Experte» ist ein Knopf in der Leiste, die
     Zeile «Darstellung» fällt weg, ⇕ klappt alle Karten auf und zu, die Symbole sitzen neu (Fenster und Webseite). (2) Bauen auf
     dem Handy: keine Seite mehr breiter als der Bildschirm, Druckdateien untereinander; in Drucken neu die Spalte «Nr.» (wie im
@@ -290,7 +293,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_3_0.zip"
-ZD_SHA256 = "7a9addc5bf2e138ef58534b8d885f43a06d52db003087dff0b926e39bc14f8b2"
+ZD_SHA256 = "1933635ae4831f4a4cdc5c80c8816cf387de01ef84db2d35a0fb3df6ab674507"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -4920,6 +4923,9 @@ def ntfy_server_messages(since="24h"):
 					"prio":int(m.get("priority")or 3)})
 	out.sort(key=lambda x:-x["t"])
 	return out[:300],""
+
+
+
 
 
 
@@ -40426,7 +40432,7 @@ def i18n_js(lang, help_=False):
 
 def render_page(page, active):
 	""
-	page=page.replace("<head>","<head>"+ui_seed_script()+i18n_loader(active=="help")+PWA_HEAD.replace(
+	page=page.replace("<head>","<head>"+ui_seed_script()+i18n_loader(active=="help")+"<script>"+APP_DL_JS+"</script>"+PWA_HEAD.replace(
 		'<link rel="apple-touch-icon" href="/apple-touch-icon.png">',apple_icon_link()).replace(
 		'content="MoveEye">','content="'+app_title(host_variant())+'">').replace(".png\"",".png?i="+app_icon_id()+"\"")
 		+"<script>window.MW_ICON="+json.dumps(app_icon_id())+";</script>"+makeover_head()
@@ -40440,6 +40446,12 @@ def render_page(page, active):
 				  +('<span class="badge yel" style="font-size:10px;padding:1px 7px;min-height:0">DEMO</span>'if DEMO["on"]else "")+"</h1>",page,count=1)
 	return(page.replace("/*BASECSS*/",BASE_CSS).replace("/*COMMON*/",COMMON_JS).replace("<!--NAV-->",nav_html(active))
 			.replace("/*ALERTS*/",HEADER_JS.replace("__APPVER__",APP_VERSION).replace("__BELLY__",_BELLY)+guide_js(active)+ALERT_JS).replace("/*BTJS*/",BT_JS))
+
+
+
+
+
+APP_DL_JS = _zd('510_web_kopf_alarm/APP_DL_JS', "")
 
 
 HEADER_JS = _zd('510_web_kopf_alarm/HEADER_JS', "")
@@ -103262,7 +103274,10 @@ if "App" in globals():
 
 
 
-_HP_CFG = {"hp_key": "", "hp_base": "https://kevlaschef.com", "hp_auto": True}
+
+
+
+_HP_CFG = {"hp_key": "", "hp_base": "https://kevlaschef.com", "hp_auto": True, "hp_start_on": False}
 for _k, _v in _HP_CFG.items():
 	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
 USER_SETTINGS_DENY.update(_HP_CFG)
@@ -103441,8 +103456,15 @@ def _hp_item(path, data):
 	return{"path":path,"size":len(data),"sha":hashlib.sha256(data).hexdigest(),"get":lambda d=data:io.BytesIO(d)}
 
 
+HP_START = "index.html"
+
+
+def hp_start_on():
+	return bool(CFG.get("hp_start_on"))
+
+
 def hp_fixed_items():
-	out=[_hp_item("index.html",HP_INDEX_HTML.encode("utf-8"))]
+	out=[_hp_item(HP_START,HP_INDEX_HTML.encode("utf-8"))]if hp_start_on()else[]
 	out+=[_hp_item("Funk/"+n,b)for n,b in sorted(hp_funk_files().items())]
 	return out+[_hp_item("Sim/test.html",HP_TEST_HTML.encode("utf-8"))]
 
@@ -103520,6 +103542,7 @@ def hp_content_id():
 	import hashlib
 	sim_manifest_load()
 	t="|".join(it["path"]+":"+it["sha"]for it in hp_fixed_items())+"|sim:"+str(SIM3D_WEB.get("sha256")or "")
+	t+="|start:"+("1"if hp_start_on()else "0")
 	return hashlib.sha256((t+"|"+str(CFG.get("hp_base"))).encode("utf-8")).hexdigest()
 
 
@@ -103637,7 +103660,8 @@ def hp_publish(auto=False):
 		st["up"]=up
 		hp_save(st)
 	paths={it["path"]for it in items}
-	gone=[p for p in list(up)if p not in paths and _hp_ours(p)]
+
+	gone=[p for p in list(up)if p not in paths and _hp_ours(p)and not(p==HP_START and not hp_start_on())]
 	for p in gone:
 		from urllib.parse import quote
 		if p in remote:
@@ -103825,8 +103849,13 @@ def hp_check(items=None):
 		items=hp_fixed_items()+(hp_sim_items(False)[0]or[{"path":"Sim/"+n,"size":None,"sha":None}for n in HP_SIM_NAMES])
 	from urllib.parse import quote
 	rows=[]
-	for i,it in enumerate([{"path":""},{"path":"Funk/"},{"path":"Sim/"}]+list(items)):
-		HP["prog"]={"i":i+1,"n":len(items)+3,"file":it["path"]or "/"}
+	on=hp_start_on()
+	if not on:
+		items=[it for it in items if it["path"]!=HP_START]
+		rows.append({"path":"/","off":"start","url":"","chain":[],"probs":[],"status":0,"size":0,"type":"","headers":{}})
+	probe=([{"path":""}]if on else[])+[{"path":"Funk/"},{"path":"Sim/"}]+list(items)
+	for i,it in enumerate(probe):
+		HP["prog"]={"i":i+1,"n":len(probe),"file":it["path"]or "/"}
 		if HP["cancel"]:
 			raise HpErr("cancel")
 		want={"path":it["path"],"size":it.get("size"),"sha":it.get("sha")}if it["path"]and not it["path"].endswith("/")else None
@@ -103849,6 +103878,7 @@ def hp_status():
 	""
 	st,p,pk=hp_state(),HP["prog"],SIM3D_WEB
 	return{"ok":True,"key_set":bool(CFG.get("hp_key")),"base":CFG.get("hp_base")or "","auto":bool(CFG.get("hp_auto")),
+			"start_on":hp_start_on(),
 			"busy":HP["busy"],"wait":HP["wait"],"prog":{k:p.get(k)for k in("i","n","bytes","total","file")}if p.get("n")else None,
 			"err":[HP["err"],HP["msg"]]if HP["err"]else None,"cancelled":HP["msg"]=="cancel","last":st.get("last"),
 			"check":st.get("check"),"public":(hp_base_ok(CFG.get("hp_base"))or "")+"/moveeye/",
@@ -103885,6 +103915,11 @@ def hp_action(d, lang=None):
 	if a=="auto":
 		CFG["hp_auto"]=bool(d.get("on"))
 		save_settings()
+		return True,""
+	if a=="start_on":
+		CFG["hp_start_on"]=bool(d.get("on"))
+		save_settings()
+		log_event("sys","Homepage: start page "+("on"if CFG["hp_start_on"]else "off"))
 		return True,""
 	if a in("publish","check"):
 		if a=="publish"and not CFG.get("hp_key"):
@@ -104016,6 +104051,7 @@ for _L in ("fr", "it", "rm"):
 
 
 homepage_selftest = _zd_fn('639zzzh_homepage/homepage_selftest()')
+
 
 
 

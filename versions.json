@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-15 12:40",
+ "generated": "2026-11-15 13:05",
  "versions": [
   {
    "version": "4.3.0",
    "file": "webcam_bewegung_4_3_0.py",
    "url": "",
-   "sha256": "c7ef46a5fd3dd87e9a83aaf50bca77c50a1da34314345f749927ebc12c41e63d",
-   "date": "2026-11-15 12:40",
-   "notes": "Zwei Teile. (1) Produktseite /info/ mit Bildern: echte App-Bilder (Live, Tagebuch, Mehr) und ruhige Beispielbilder; neu «🖼 Produktseite: Bilder» in der Karte «Homepage» – eigene Fotos für die Seite hochladen (nur Admin; ohne Ortsangaben und Kamera-Daten, verkleinert). (2) «📻 Radio» spielt weiter, wenn man die Seite verlässt; solange es spielt, steht 📻 oben in der Kopfzeile (antippen = zurück zum Radio).",
-   "size": 3892929,
-   "sig": "b9ccaecb0678f7e05a91a48fb00e2eb7b7118ce8a5c8a4acdc81353786df9d8254fae27f80cc1a9f9f8d011d6d95d62f007df01702664ef72b7b88ac627d370a",
+   "sha256": "2c121b1dcbd7e551f290c8d3dc70d5520487ec3816e3e8c58a247eb5bacbb2ba",
+   "date": "2026-11-15 13:04",
+   "notes": "Fünf Teile. (1) Produktseite /info/ mit Bildern: echte App-Bilder (Live, Tagebuch, Mehr) und ruhige Beispielbilder; neu «🖼 Produktseite: Bilder» in der Karte «Homepage» – eigene Fotos für die Seite hochladen (nur Admin; ohne Ortsangaben und Kamera-Daten, verkleinert). (2) «📻 Radio» spielt weiter, wenn man die Seite verlässt; solange es spielt, steht 📻 oben in der Kopfzeile (antippen = zurück zum Radio). (3) Jede Seite und jedes Fenster hat einen Weg zurück, auch als App vom Home-Bildschirm (Handy-Funkgerät, Bild gross, Update / Neustart); Downloads gehen in der App überall ins Teilen-Blatt. (4",
+   "size": 3894058,
+   "sig": "00fe3c4ebf7acbeb8909a8eef7b7e8dd1d8a075c1661249d55b892702e312fcaa8058f0d9ddc8107ed6f19cc45f7d2f869f65fa9bc8083ba9bfd730e48588005",
    "data": {
     "file": "moveeye_daten_4_3_0.zip",
     "url": "",
-    "sha256": "7a9addc5bf2e138ef58534b8d885f43a06d52db003087dff0b926e39bc14f8b2",
-    "size": 13425195,
-    "sig": "1e1370e02bf10a273418b4841613c1672613c3eb3f32e062de488b5a89c142b94364ba0f04cbafc4c2a948644e799e6ec822ce228c4a9accc35335b84b1e900d"
+    "sha256": "1933635ae4831f4a4cdc5c80c8816cf387de01ef84db2d35a0fb3df6ab674507",
+    "size": 13437024,
+    "sig": "fd5c2ad5f1b76e1b49a57d56c043376de03461af8051e6b5d8d1b1be970f470833a2eb60566a6705c14d0e9925d3e840f41903123047bcb70e5ec6733e3c500e"
    }
   },
   {
