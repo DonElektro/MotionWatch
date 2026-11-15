@@ -8,9 +8,10 @@ extends SceneTree
 ##      Fenster (mindestens 40 % der Breite und 25 % der Höhe), dann passt es ins Bild (über der Leiste) und hat ein
 ##      sichtbares Schliessen (✕ / Schliessen …) von mindestens 44 × 44, das nicht von etwas anderem im Fenster verdeckt ist
 ##   5. die Szenenliste («Vorlagen»): eine Spalte, ✕ sichtbar
-##   cd simulator3d && <godot> --path . --rendering-driver opengl3 --resolution 780x1688 -s "$PWD/../werkzeuge/sim_fenster_handy_test.gd" -- hoch
-##   (quer: --resolution 1688x780 … -- quer; Massstab 2 wie ein Handy; mit Bildschirm (Xvfb), headless rechnet Godot kein Layout
-##   der Ebenen). Ende: «Handy-Fenster-Test OK (…)» (Exit 0) oder «SCRIPT ERROR: Handy-Fenster-Test: …» (Exit 1).
+##   cd simulator3d && <godot> --headless --path . -s "$PWD/../werkzeuge/sim_fenster_handy_test.gd" -- --no-update --no-tour
+##   (oder mit Bildschirm: --rendering-driver opengl3; das Fenster stellt der Test selbst auf 780 × 1688 / 1688 × 780 Pixel,
+##   Massstab 2 wie ein Handy; TEST_HANDY=hoch|quer = nur eine Lage, sonst beide nacheinander).
+##   Ende: «Handy-Fenster-Test OK (…)» (Exit 0) oder «SCRIPT ERROR: Handy-Fenster-Test: …» (Exit 1).
 
 const CLOSE := ["✕", "×", "✖", "Schliessen", "Zu", "Fertig", "OK", "Abbrechen", "Zurück", "Close"]
 const TAP := 43.5                                  # 44 Punkte (Rundung)
@@ -27,11 +28,22 @@ var wait := 0
 var checked := 0
 
 
-func _initialize() -> void:
-	var a := OS.get_cmdline_user_args()
-	if a.size() > 0:
-		tag = a[0]
+var tags: Array = ["hoch", "quer"]
+var wait0 := 240                                   # Bilder bis zur ersten Prüfung (Szene aufbauen)
+
+
+func _orient() -> void:
+	"""das Fenster wie ein Handy (Massstab 2): hoch 780 × 1688 Pixel = 390 × 844 Punkte, quer umgekehrt"""
+	root.size = Vector2i(780, 1688) if tag == "hoch" else Vector2i(1688, 780)
 	root.content_scale_factor = scale
+
+
+func _initialize() -> void:
+	var t := OS.get_environment("TEST_HANDY")          # hoch | quer (ohne: beide nacheinander)
+	if t in ["hoch", "quer"]:
+		tags = [t]
+	tag = tags[0]
+	_orient()
 	main = load("res://main.tscn").instantiate()
 	root.add_child(main)
 
@@ -130,7 +142,35 @@ func _collect(nd: Node, depth: int) -> void:
 			_collect(c, depth + 1)
 
 
+func _texts(nd: Node, out: Array) -> void:
+	for c in nd.get_children():
+		if out.size() >= 3:
+			return
+		if (c is Label or c is Button) and str(c.text).strip_edges() != "":
+			out.append(str(c.text).strip_edges().left(30))
+		_texts(c, out)
+
+
+func _pc_part(c: Node) -> bool:
+	"""kein Fenster: Teile der PC-Oberfläche ohne eigenes Skript in der Ebene des Bedienfelds (Kopf des Bedienfelds,
+	Untermenüs der Leiste - im Handy-Modus weg, «Alle Einstellungen» hat das ✕ von handy.gd), oder leere Rahmen ohne Text,
+	die erst gefüllt gezeigt werden"""
+	if c is Window or c.get_script() != null:
+		return false
+	if main.ui_root != null and c.get_parent() == main.ui_root.get_parent() and c.get_parent() is CanvasLayer:
+		return true
+	var t := []
+	_texts(c, t)
+	return t.is_empty()
+
+
 func _name(c: Node) -> String:
+	var t := []
+	_texts(c, t)
+	return "%s %s" % [_name0(c), t]
+
+
+func _name0(c: Node) -> String:
 	var s = c.get_script()
 	return "%s[%s] in %s" % [c.name, s.resource_path.get_file() if s != null else "", str(c.get_parent().get_path()).get_file()]
 
@@ -154,9 +194,20 @@ func _shut(c: Node) -> void:
 
 
 func _done() -> void:
-	print("Handy-Fenster-Test %s: %d Fenster geprüft, %d Fehler" % [tag, checked, errs.size()])
+	print("Handy-Fenster-Test %s: %d Fenster geprüft, %d Fehler bisher" % [tag, checked, errs.size()])
+	var k := tags.find(tag)
+	if k + 1 < tags.size():                         # nächste Lage (quer): Fenster drehen, warten, von vorn
+		tag = tags[k + 1]
+		_orient()
+		cands.clear()
+		phase = 0
+		i = -1
+		wait = 0
+		n = 0
+		wait0 = 90
+		return
 	if errs.is_empty():
-		print("Handy-Fenster-Test OK (%s, %d Fenster)" % [tag, checked])
+		print("Handy-Fenster-Test OK (%s, %d Fenster)" % [", ".join(tags), checked])
 		quit(0)
 	else:
 		push_error("Handy-Fenster-Test: " + "; ".join(errs.slice(0, 12)))
@@ -166,8 +217,8 @@ func _done() -> void:
 func _process(_dt: float) -> bool:
 	n += 1
 	if n == 5:
-		root.content_scale_factor = scale
-	if n < 240:
+		_orient()
+	if n < wait0:
 		return false
 	var h = main.handy
 	match phase:
@@ -233,7 +284,7 @@ func _process(_dt: float) -> bool:
 			var u := []
 			for c in cands:
 				if not seen.has(c) and c != h.sheet and c != h.big and not (c as Node).has_meta("waechter_aus") and not h.layer.is_ancestor_of(c) \
-						and not c in h._hideables():           # Leisten / Knöpfe, die der Handy-Modus selbst ausblendet
+						and not c in h._hideables() and not _pc_part(c):
 					seen[c] = true
 					u.append(c)
 			cands = u
@@ -289,6 +340,6 @@ func _process(_dt: float) -> bool:
 				_shut(c)
 				i += 1
 		5:
-			_done()
 			phase = 6
+			_done()
 	return false
