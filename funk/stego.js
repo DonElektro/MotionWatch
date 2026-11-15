@@ -1,6 +1,6 @@
 /* MoveEye – «Botschaft im Bild» (Steganographie) – ein eigenständiges Modul, das im Browser (WebCrypto,
    Canvas) und in node (crypto.subtle, zlib) gleich rechnet. Es wird im «Digitalen Rucksack» eingebaut und
-   braucht kein Netz; auf der Seite «Handy-Funkgerät» lädt es erst Phase 2. Für den Besitzer von MoveEye gemacht.
+   braucht kein Netz und läuft auch offline auf der Seite «Handy-Funkgerät» («🔏 Bild»). Für den Besitzer von MoveEye gemacht.
 
    Format (bitgleich zur Python-Seite quelle/639zzzzc_bild_stego.py):
      Schlüssel k = PBKDF2-HMAC-SHA256(Passwort, "MoveEye-Bild-v1"+salt, 200000, 32 Byte)
