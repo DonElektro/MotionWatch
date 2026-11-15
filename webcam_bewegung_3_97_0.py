@@ -282,7 +282,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_3_97_0.zip"
-ZD_SHA256 = "ee996e3f90db5c1f4ff2af174c73692e098048df429fe6e4162b320c59cfcdc2"
+ZD_SHA256 = "5eaebb9c0ed31d87d1a795fb6b49980f75b4f6f885fdc2a71f41da95023f1489"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -102418,7 +102418,10 @@ SELFTEST_EXTRA.append(("Morse: own protocol of the owner, phone radio (639zzzf)"
 
 
 MS_TEXT_JS = _zd('639zzzg_mehr_stil/MS_TEXT_JS', "")
-_MS_T = json.loads(MS_TEXT_JS.replace("@XC", "ex" "change"))
+try:
+	_MS_T=json.loads(MS_TEXT_JS.replace("@XC","ex""change"))
+except ValueError:
+	_MS_T={"hx":{},"dx":{},"en":{},"pages":{}}
 _HX_MS, _DX_MS, _DX_EN, MS_PAGES = ({k: tuple(v) for k, v in _MS_T["hx"].items()}, {k: tuple(v) for k, v in _MS_T["dx"].items()}, _MS_T["en"], _MS_T["pages"])
 for _k, _v in list(_HX_MS.items()) + list(_DX_MS.items()):
 	DE.setdefault(_k,_v[0])
@@ -102465,7 +102468,7 @@ def render_page(page, active):
 		pg=None
 	if pg in("settings","protect")and 'id="settings"'not in out:
 		pg=None
-	if pg and "</body>"in out and "</head>"in out:
+	if pg and MS_PAGES and "</body>"in out and "</head>"in out:
 		out=out.replace("</head>",MS_CSS+"</head>",1)
 		i=out.rfind("</body>")
 		tag=("<script>window.MS_PAGE="+json.dumps(pg)+";window.MS_CONF="+json.dumps(MS_PAGES,ensure_ascii=False)+";window.MS_TX="

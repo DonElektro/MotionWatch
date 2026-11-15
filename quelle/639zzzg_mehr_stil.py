@@ -1676,7 +1676,10 @@ MS_TEXT_JS = r"""{
 ]
 }
 }"""
-_MS_T = json.loads(MS_TEXT_JS.replace("@XC", "ex" "change"))
+try:                                                           # the texts are in the data ZIP: without it (update still loading) no crash,
+    _MS_T = json.loads(MS_TEXT_JS.replace("@XC", "ex" "change"))   # the pages simply stay in the old style
+except ValueError:
+    _MS_T = {"hx": {}, "dx": {}, "en": {}, "pages": {}}
 _HX_MS, _DX_MS, _DX_EN, MS_PAGES = ({k: tuple(v) for k, v in _MS_T["hx"].items()}, {k: tuple(v) for k, v in _MS_T["dx"].items()}, _MS_T["en"], _MS_T["pages"])
 for _k, _v in list(_HX_MS.items()) + list(_DX_MS.items()):
     DE.setdefault(_k, _v[0])
@@ -2041,7 +2044,7 @@ def render_page(page, active):                                 # + 639zzzg: «Me
         pg = None                                              # the other pages of «Verlauf» (timeline, diary …) stay as they are
     if pg in ("settings", "protect") and 'id="settings"' not in out:
         pg = None
-    if pg and "</body>" in out and "</head>" in out:
+    if pg and MS_PAGES and "</body>" in out and "</head>" in out:
         out = out.replace("</head>", MS_CSS + "</head>", 1)
         i = out.rfind("</body>")
         tag = ("<script>window.MS_PAGE=" + json.dumps(pg) + ";window.MS_CONF=" + json.dumps(MS_PAGES, ensure_ascii=False) + ";window.MS_TX="
