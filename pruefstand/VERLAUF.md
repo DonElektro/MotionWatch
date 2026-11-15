@@ -19,6 +19,7 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 | Datum | Motion Watch | Simulator | Testlauf | Pushes richtig / falsch | Personen erkannt | Wärmebild | nah / mittel / weit | Reaktion | Tiere gemeldet | Flackern | Bilder/s | KI | Rechner |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-11-15 10:30 | 4.1.0 | ? · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **3** / **0** | 9 / 10 (**90 %**) | 1 / 1 | 5/6 / 2/2 / 1/1 | 5.1 s | 3 / 3 | 2 | 1.4 | mit KI | GitHub (ubuntu, 4 Kerne) · INTEL(R) XEON(R) PLATINUM 8573C |
 | 2026-11-15 08:24 | 4.0.0 | 3.70.0 · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) | **3** / **0** | 9 / 10 (**90 %**) | 2 / 2 | 5/5 / 2/2 / 0/1 | 1.4 s | 3 / 3 | 9 | 1.7 | mit KI | GitHub (ubuntu, 4 Kerne) · Intel(R) Xeon(R) 6975P-C |
 | 2026-11-15 02:57 | 3.97.0 | ? · Aussehen neu · Tiere Modelle | Kurz (Tag + Nacht) ×3 · Zufall 1,2,3 | **9** / **0** (falsch 0 pro Lauf) | 27 / 28 (**96 %**) (90–100 %) | 4 / 4 | 16/16 / 6/6 / 1/2 | 3.3 s | 9 / 9 | 0 | 1.4 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
 | 2026-11-15 02:57 | 3.97.0 | ? · Aussehen neu · Tiere Modelle | Nacht ×3 · Zufall 1,2,3 | **12** / **2** (falsch 0–1 pro Lauf) | 22 / 23 (**96 %**) (88–100 %) | 16 / 17 | 6/6 / – / – | 2.1 s | 10 / 12 | 30 | 1.5 | mit KI | GitHub (ubuntu, 4 Kerne) · AMD EPYC 7763 |
@@ -336,10 +337,10 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 ## Einzelheiten pro Phase (letzter Lauf)
 
-**Kurz (Tag + Nacht)** – 2026-11-15 08:24, Motion Watch 4.0.0
+**Kurz (Tag + Nacht)** – 2026-11-15 10:30, Motion Watch 4.1.0
 
 | Phase | Pushes richtig / falsch | Personen | Wärmebild | Reaktion | Tiere | Flackern | verpasst, weil … |
 |---|---|---|---|---|---|---|---|
-| Tag, Wind | 2 / 0 | 5 / 6 | – | 1.6 s | 2 / 2 | 1 | 1× zu schnell, 1× zu klein / weit weg |
-| Nacht mit Infrarot | 1 / 0 | 4 / 4 | 2 / 2 | 1.1 s | 1 / 1 | 8 | – |
+| Tag, Wind | 2 / 0 | 5 / 6 | – | 6.2 s | 2 / 2 | 1 | – |
+| Nacht mit Infrarot | 1 / 0 | 4 / 4 | 1 / 1 | 3.9 s | 1 / 1 | 1 | – |
 
