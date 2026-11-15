@@ -1818,6 +1818,8 @@ class App:
         groups = [list(g) for g in TK_GROUPS]
         groups[-1][2] = groups[-1][2] + [x for x in SECTIONS if x not in listed]     # sections added later -> System
         groups = [g for g in groups if TK_GROUP_TAB.get(g[0], "settings") == tab] if tab != "sim" else [list(g) for g in TK_SIM_GROUPS]
+        if getattr(self, "_ms_tk_rows", None) and self._ms_tk_rows(inner, tab, groups):   # 639zzzg: rows -> one topic with «‹ Zurück»
+            return
         for gid, name, items in groups:
             items = [x for x in items if x is None or x in TK_PSEUDO or (x in SECTIONS and self.is_shown("sec:" + x) and (tab == "sim" or not simple_hidden(None, x)))]
             real = [x for x in items if x]

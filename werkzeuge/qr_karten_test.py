@@ -577,7 +577,8 @@ def teil_c(base, bilder, karte, C, zeigen, weg):
         pg.goto(base + "/settings", wait_until="domcontentloaded")
         pg.wait_for_timeout(2500)
         found = pg.evaluate("""() => { const d = [...document.querySelectorAll('details')].find(x => /QR-Befehls-Karten/.test(x.querySelector('summary') ? x.querySelector('summary').textContent : ''));
-            if (!d) return false; d.open = true; d.dispatchEvent(new Event('toggle')); d.scrollIntoView(); return true; }""")
+            if (!d) return false; if (window.msOpen && d.dataset.view) msOpen(d.dataset.view);   // 639zzzg: the topic on its own subpage
+            d.open = true; d.dispatchEvent(new Event('toggle')); d.scrollIntoView(); return true; }""")
         pg.wait_for_timeout(1500)
         ok(found and pg.locator(".qrk-p a[href='/karten']").count() == 1, "Einstellungen → Kameras & Kopf: Abschnitt mit Link zur Werkstatt")
         shot(pg, "qr_karten_einstellungen_iphone.png")
