@@ -1,7 +1,7 @@
 // Service Worker der Seite «Handy-Funkgerät» (erzeugt von werkzeuge/funk_pwa.py): alles aus dem Speicher, damit die Seite
 // nach dem ersten Laden ohne Internet geht. Eine neue Seite = ein neuer Name des Speichers (die alte wird gelöscht).
-const C = 'funk-9a9bcdb8e8c5';
-const TEILE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
+const C = 'funk-a1801d865e1a';
+const TEILE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "stego.js"];
 self.addEventListener('install', e => { e.waitUntil(caches.open(C).then(c => c.addAll(TEILE)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C).map(k => caches.delete(k))))
   .then(() => self.clients.claim())); });

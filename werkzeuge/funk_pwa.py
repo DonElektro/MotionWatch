@@ -27,6 +27,16 @@ def seite():
     raise SystemExit("FUNK_PAGE nicht gefunden")
 
 
+def stego():
+    """das Modul «Botschaft im Bild» (STEGO_JS in quelle/639zzzzc_bild_stego.py, dieselbe Rechnung wie im Digitalen Rucksack):
+    die Seite lädt es als stego.js neben sich, der Service Worker hält es für den Betrieb ohne Netz"""
+    tree = ast.parse(open(os.path.join(REPO, "quelle", "639zzzzc_bild_stego.py"), encoding="utf-8").read())
+    for st in tree.body:
+        if isinstance(st, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "STEGO_JS" for t in st.targets):
+            return st.value.value
+    raise SystemExit("STEGO_JS nicht gefunden")
+
+
 def symbol(n):
     """das Symbol: dunkler Grund, oranger Kreis, Funkwellen (gezeichnet, gleich bei jedem Lauf)"""
     import cv2
@@ -50,12 +60,14 @@ def symbol(n):
 def dateien():
     html = seite()
     assert "window.MW_FUNK=" not in html and "/*MWFUNK*/" in html
-    ver = hashlib.sha256(html.encode("utf-8")).hexdigest()[:12]
+    js = stego()
+    assert '<script src="stego.js"></script>' in html and "MWStego" in js
+    ver = hashlib.sha256((html + js).encode("utf-8")).hexdigest()[:12]
     manifest = {"name": "Handy-Funkgerät", "short_name": "Funk", "description": "Morse und das eigene Protokoll mit zwei Tönen über ein Handfunkgerät (MoveEye)",
                 "lang": "de", "start_url": "./", "scope": "./", "display": "standalone", "background_color": "#111418", "theme_color": "#111418",
                 "icons": [{"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
                           {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}]}
-    teile = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"]
+    teile = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "stego.js"]
     sw = ("// Service Worker der Seite «Handy-Funkgerät» (erzeugt von werkzeuge/funk_pwa.py): alles aus dem Speicher, damit die Seite\n"
           "// nach dem ersten Laden ohne Internet geht. Eine neue Seite = ein neuer Name des Speichers (die alte wird gelöscht).\n"
           "const C = 'funk-" + ver + "';\n"
@@ -68,7 +80,7 @@ def dateien():
           "  e.respondWith(caches.match(r, {ignoreSearch: true}).then(h => h || fetch(r).catch(() => r.mode === 'navigate' ? caches.match('index.html') : Response.error())));\n"
           "});\n")
     return {"index.html": html.encode("utf-8"), "manifest.webmanifest": (json.dumps(manifest, ensure_ascii=False, indent=1) + "\n").encode("utf-8"),
-            "sw.js": sw.encode("utf-8"), "icon-192.png": symbol(192), "icon-512.png": symbol(512), "apple-touch-icon.png": symbol(180)}
+            "sw.js": sw.encode("utf-8"), "stego.js": js.encode("utf-8"), "icon-192.png": symbol(192), "icon-512.png": symbol(512), "apple-touch-icon.png": symbol(180)}
 
 
 def main():

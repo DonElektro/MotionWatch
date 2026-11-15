@@ -9,7 +9,10 @@ Geprüft wird, dass Python und JavaScript bitgleich rechnen und die versprochene
   * falscher Schlüssel → nichts; ein geänderter Pixel-Bereich → der Prüf-Tag schlägt fehl → nichts.
   * JPEG rein → PNG raus; das Original bleibt unverändert.
   * nichts Geheimes (Text, Schlüssel) steht im Modul in der Konsole / im Protokoll.
-  * optional (--browser): die Seite im echten Browser bei 390 px – verstecken und wieder lesen.
+  * die Seite «Handy-Funkgerät» (funk/): Reiter «🔏 Bild», stego.js im Service Worker, MoveEye / Einzeldatei mit
+    eingebettetem Modul, Texte in 5 Sprachen, keine Anfrage nach aussen.
+  * optional (--browser): das Modul im echten Browser bei 390 px, und auf der Funk-Seite (390 px, dunkel): ein Bild
+    wählen, verstecken, herunterladen, wieder lesen, falscher Schlüssel, ein Bild aus Python lesen, 5 Sprachen.
 
 Die Python-Seite wird direkt aus quelle/639zzzzc_bild_stego.py geladen (dieselben Funktionen, die MoveEye
 benutzt), damit der Test wirklich die ausgelieferte Rechnung prüft. node bekommt funk/stego.js.
@@ -203,9 +206,12 @@ def main():
     emb = re.search(r'STEGO_JS = r"""(.*?)"""', part, re.S)
     check("funk/stego.js == eingebettetes Modul", emb and emb.group(1) == js)
 
+    funk_static(js)
+
     if args.browser:
         print("· Browser (390 px)")
         browser_test(args)
+        funk_browser(args, B)
 
     print()
     if FAIL:
@@ -250,6 +256,145 @@ def browser_test(args):
     finally:
         os.unlink(page_file)
 
+
+# ---- die Seite «Handy-Funkgerät» (funk/, Teil 639zzzf): Reiter «🔏 Bild» -------------------------------------------
+FUNK = os.path.join(REPO, "funk")
+TITEL_BILD = {"de": "Botschaft im Bild", "en": "Message in a picture", "fr": "Message dans une image", "it": "Messaggio nell’immagine",
+              "rm": "Messadi en ina maletg"}
+
+
+def funk_page_fn(js):
+    """funk_page() aus 639zzzf (mit Platzhaltern für die MoveEye-Globalen) - die drei Fassungen mw / file / pwa"""
+    import ast
+    src = open(os.path.join(REPO, "quelle", "639zzzf_funk.py"), encoding="utf-8").read()
+    tree = ast.parse(src)
+    page = next(st.value.value for st in tree.body if isinstance(st, ast.Assign) and any(getattr(t, "id", "") == "FUNK_PAGE" for t in st.targets))
+    fn = next(st for st in tree.body if isinstance(st, ast.FunctionDef) and st.name == "funk_page")
+    g = {"FUNK_PAGE": page, "STEGO_JS": js, "json": json, "CFG": {"lang": "de"}, "norm_lang": lambda x: x or "de"}
+    exec(compile(ast.Module(body=[fn], type_ignores=[]), "funk_page", "exec"), g)
+    return g["funk_page"], page
+
+
+def funk_static(js):
+    print("· Seite «Handy-Funkgerät»: Reiter «🔏 Bild»")
+    fp, page = funk_page_fn(js)
+    idx = open(os.path.join(FUNK, "index.html"), encoding="utf-8").read()
+    sw = open(os.path.join(FUNK, "sw.js"), encoding="utf-8").read()
+    check("funk/index.html hat den Reiter «🔏 Bild» und lädt stego.js daneben",
+          'id="imgBtn"' in idx and 'id="shImg"' in idx and '<script src="stego.js"></script>' in idx and idx == page)
+    check("der Service Worker hält stego.js (ohne Netz)", '"stego.js"' in sw)
+    check("funk/stego.js == STEGO_JS (aus funk_pwa.py, --pruefen)", open(os.path.join(FUNK, "stego.js"), encoding="utf-8").read() == js)
+    for v in ("mw", "file"):
+        p = fp(v, "de", 5001)
+        check("Fassung «%s»: Modul eingebettet, keine zweite Datei nötig" % v, "root.MWStego = mod" in p and 'src="stego.js"' not in p)
+    check("Fassung «pwa»: stego.js neben der Seite", '<script src="stego.js"></script>' in fp("pwa", "de"))
+    ui = idx[idx.index("/*STEGO-UI-START*/"):idx.index("/*STEGO-UI-END*/")]
+    check("die Oberfläche: kein fetch / innerHTML / console, Schlüssel nur mit «merken»",
+          not re.search(r"fetch\s*\(|innerHTML|console\.|eval\(", ui) and "store.set('imgkey',k)" in ui and "store.del('imgkey')" in ui)
+    r = subprocess.run(["node", "-e", "const s=require('fs').readFileSync(process.argv[1],'utf8');const i=s.indexOf('const TXT='),j=s.indexOf('};',i);"
+                        "const TXT=eval('('+s.slice(i+10,j+1)+')');const ks=Object.keys(TXT.de).filter(k=>k.startsWith('img'));"
+                        "console.log(JSON.stringify({n:ks.length,miss:Object.keys(TXT).map(l=>ks.filter(k=>!TXT[l][k]).map(k=>l+':'+k)).flat()}))",
+                        os.path.join(FUNK, "index.html")], capture_output=True, text=True, timeout=60)
+    t = json.loads(r.stdout or "{}")
+    check("Texte des Reiters in 5 Sprachen (%s Schlüssel)" % t.get("n"), t.get("n", 0) >= 15 and not t.get("miss"))
+
+
+def funk_browser(args, B):
+    import http.server
+    import threading
+    from playwright.sync_api import sync_playwright
+    print("· Browser: Seite «Handy-Funkgerät» (funk/, 390 px, dunkel)")
+    tmp = tempfile.mkdtemp()
+    src_png = os.path.join(tmp, "zelt.png")
+    open(src_png, "wb").write(png_bytes(240, 180, seed=5))
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), lambda *a: http.server.SimpleHTTPRequestHandler(*a, directory=FUNK))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    base = "http://127.0.0.1:%d/" % srv.server_address[1]
+    msg = "Treffpunkt 06:30 am grünen Zelt – Schlüssel bitte nicht verlieren 😀"
+    shot = lambda pg, n: pg.screenshot(path=os.path.join(args.bilder, n), full_page=False)
+    with sync_playwright() as p:
+        br = p.chromium.launch(args=["--no-proxy-server"])
+
+        def ctx_page(lang):
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, device_scale_factor=2,
+                                 color_scheme="dark", locale="de-CH", accept_downloads=True)
+            ctx.add_init_script("try{localStorage.setItem('morsefunk.lang',JSON.stringify('%s'))}catch(e){}" % lang)
+            pg = ctx.new_page()
+            errs, fremd = [], []
+            pg.on("pageerror", lambda e: errs.append(str(e)[:160]))
+            pg.on("request", lambda r: fremd.append(r.url) if not r.url.startswith(base) and not r.url.startswith(("blob:", "data:")) else None)
+            pg.goto(base, wait_until="load")
+            return ctx, pg, errs, fremd
+
+        ctx, pg, errs, fremd = ctx_page("de")
+        shot(pg, "funk_390_start.png")
+        pg.locator("#imgBtn").click()
+        pg.wait_for_selector("#shImg.open", timeout=5000)
+        pg.set_input_files("#imgIn", src_png)
+        pg.wait_for_function("() => /passt noch ca\\. \\d+ Zeichen/.test(document.getElementById('imgCap').textContent)", timeout=10000)
+        pg.fill("#imgTxt", msg)
+        pg.fill("#imgKey", "grün-7")
+        cap_txt = pg.inner_text("#imgCap")
+        shot(pg, "funk_390_bild_verstecken.png")
+        pg.locator("#imgGo").click()
+        pg.wait_for_selector("#imgDl:not([hidden])", timeout=60000)
+        pg.locator("#imgDl").scroll_into_view_if_needed()
+        shot(pg, "funk_390_bild_versteckt.png")
+        check("verstecken auf der Seite: «%s», neue Datei «zelt_b.png»" % cap_txt,
+              pg.get_attribute("#imgDl", "download") == "zelt_b.png" and "zelt_b.png" in pg.inner_text("#imgOut"))
+        with pg.expect_download() as dl:
+            pg.locator("#imgDl").click()
+        out = os.path.join(tmp, "zelt_b.png")
+        dl.value.save_as(out)
+        made = open(out, "rb").read()
+        check("Herunterladen: PNG, Python liest die Botschaft der Seite", made[:8] == b"\x89PNG\r\n\x1a\n" and B["bild_reveal_image"](made, "grün-7") == msg)
+        check("das gewählte Original bleibt unverändert", open(src_png, "rb").read() == png_bytes(240, 180, seed=5))
+        sw_ = pg.evaluate("() => document.documentElement.scrollWidth")
+        check("390 px: kein waagrechtes Scrollen (%d px)" % sw_, sw_ <= 391)
+        # lesen: falscher Schlüssel, richtiger Schlüssel, ein Bild aus Python (JPEG → PNG)
+        pg.locator("#imgMRead").click()
+        pg.set_input_files("#imgIn", out)
+        pg.fill("#imgKey", "falsch")
+        pg.locator("#imgGo").click()
+        pg.wait_for_function("() => document.getElementById('imgOut').textContent.includes('keine Botschaft gefunden oder falscher Schlüssel')", timeout=60000)
+        check("falscher Schlüssel → «keine Botschaft gefunden oder falscher Schlüssel», kein Text", pg.locator("#imgRes").is_hidden())
+        pg.fill("#imgKey", "grün-7")
+        pg.locator("#imgGo").click()
+        pg.wait_for_selector("#imgRes:not([hidden])", timeout=60000)
+        shot(pg, "funk_390_bild_gelesen.png")
+        check("lesen auf der Seite: der Text erscheint", pg.inner_text("#imgRes") == msg)
+        from PIL import Image
+        jb = io.BytesIO(); Image.new("RGB", (200, 150), (40, 90, 140)).save(jb, "JPEG", quality=88)
+        pyimg = os.path.join(tmp, "python_b.png")
+        open(pyimg, "wb").write(B["bild_hide_image"](jb.getvalue(), "Aus Python für das Handy ✓", "py-key"))
+        pg.set_input_files("#imgIn", pyimg)
+        pg.fill("#imgKey", "py-key")
+        pg.locator("#imgGo").click()
+        pg.wait_for_function("() => document.getElementById('imgRes').textContent === 'Aus Python für das Handy ✓'", timeout=60000)
+        check("die Seite liest ein Bild aus Python (JPEG → PNG)", True)
+        hist = pg.evaluate("() => { try { return localStorage.getItem('morsefunk.hist') || '' } catch (e) { return '' } }")
+        keys = pg.evaluate("() => Object.keys(localStorage).join(',')")
+        check("Text nie im Verlauf / Speicher, Schlüssel ohne «merken» nicht gespeichert",
+              msg not in hist and "imgkey" not in keys and "grün-7" not in pg.evaluate("() => JSON.stringify(localStorage)"))
+        check("keine Anfrage nach aussen, keine JavaScript-Fehler", not fremd and not errs)
+        if fremd or errs:
+            print("      ", fremd[:3], errs[:3])
+        ctx.close()
+        for lang in ("en", "fr", "it", "rm", "de"):
+            ctx, pg, errs, fremd = ctx_page(lang)
+            pg.locator("#imgBtn").click()
+            pg.wait_for_selector("#shImg.open", timeout=5000)
+            pg.wait_for_timeout(250)
+            tt = pg.inner_text('#shImg [data-t="imgTitle"]')
+            sw_ = pg.evaluate("() => document.documentElement.scrollWidth")
+            raus = pg.evaluate("""() => Array.from(document.querySelectorAll('#shImg button, #shImg a, #shImg label, .bottom button'))
+              .filter(e => e.offsetParent && (e.getBoundingClientRect().right > innerWidth + 1 || e.scrollWidth > e.clientWidth + 2)).map(e => e.id || e.textContent.slice(0, 20))""")
+            if lang in ("fr", "rm"):
+                shot(pg, "funk_390_bild_%s.png" % lang)
+            check("Reiter «🔏 Bild» %s: «%s», 390 px passt" % (lang, tt), tt == TITEL_BILD[lang] and sw_ <= 391 and not raus and not errs)
+            ctx.close()
+        br.close()
+    srv.shutdown()
 
 if __name__ == "__main__":
     main()
