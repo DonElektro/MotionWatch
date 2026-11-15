@@ -52,9 +52,10 @@ def appkey_entries():
 
 SHORTCUT_SCOPE = "shortcut"
 SHORTCUT_KEY_NAME = "iPhone shortcuts"
+HOMEKIT_SCOPE = "homekit"        # 639zzzo: the key of Homebridge (Apple Home) - ONLY the local addresses /k/hk/… (want="homekit")
 
 
-def appkey_find(key, api=False):
+def appkey_find(key, api=False, want=""):
     """the entry of this key, or None (compares the hashes in constant time). api=True (the login of 550): a key that only
     opens the shortcut addresses (scope «shortcut») counts as unknown there"""
     if not isinstance(key, str) or not (10 <= len(key) <= 120):
@@ -64,6 +65,8 @@ def appkey_find(key, api=False):
     for e in appkey_entries():
         if hmac.compare_digest(str(e.get("h", "")), h):
             hit = e
+    if hit is not None and (hit.get("scope") == HOMEKIT_SCOPE) != (want == HOMEKIT_SCOPE):
+        return None                                    # the Homebridge key opens nothing else, nothing else opens /k/hk/
     if api and hit is not None and hit.get("scope") == SHORTCUT_SCOPE:
         return None
     return hit
@@ -150,8 +153,8 @@ def appkey_create(name, who="web", scope=""):
     key = APPKEY_PREFIX + secrets.token_urlsafe(24)
     now = int(time.time())
     e = {"id": secrets.token_hex(4), "name": name, "h": _appkey_hash(key), "t0": now, "seen": 0, "ip": ""}
-    if scope == SHORTCUT_SCOPE:
-        e["scope"] = SHORTCUT_SCOPE
+    if scope in (SHORTCUT_SCOPE, HOMEKIT_SCOPE):
+        e["scope"] = scope
     lst.append(e)
     CFG["app_keys"] = lst
     save_settings_now()

@@ -521,7 +521,14 @@ def loop_day(day):
 
 
 # ---- picture for other programs: MJPEG + still picture under a secret address, optional RTSP (mediamtx + ffmpeg) ----
-EXT = {"proc": None, "ff": None, "msg": "", "port": None}
+EXT = {"proc": None, "ff": None, "msg": "", "port": None, "lan": None, "local_tok": secrets.token_urlsafe(18)}
+# 639zzzo (Apple Home): name -> yaml of a reader that may read only from this Pi (password as sha256). Not empty = RTSP
+# runs for it; without «RTSP» for other programs it listens only on 127.0.0.1 and ffmpeg starts on demand (runOnDemand).
+RTSP_LOCAL = {}
+
+
+def rtsp_wanted():
+    return bool(CFG["rtsp_on"] and CFG["ext_on"]) or bool(RTSP_LOCAL)
 
 
 def ext_token():
@@ -570,7 +577,7 @@ def rtsp_stop():
 
 def rtsp_restart():
     rtsp_stop()
-    if CFG["rtsp_on"] and CFG["ext_on"]:
+    if rtsp_wanted():
         threading.Thread(target=rtsp_start, daemon=True, name="rtsp").start()
 
 
@@ -582,13 +589,23 @@ def rtsp_start():
     if not shutil.which("ffmpeg"):
         EXT["msg"] = "ffmpeg is missing (sudo apt install ffmpeg)"; return
     tok = ext_token(); port = int(CFG["rtsp_port"])
+    lan = EXT["lan"] = bool(CFG["rtsp_on"] and CFG["ext_on"])     # False: only for Apple Home (639zzzo) - this Pi only, on demand
     cfg_dir = os.path.join(DATA_DIR, "mediamtx"); os.makedirs(cfg_dir, exist_ok=True)
     yml = os.path.join(cfg_dir, "motionwatch.yml")
+    src = f"http://127.0.0.1:{CFG['web_port']}/x/{tok}/video.mjpg" if lan else f"http://127.0.0.1:{CFG['web_port']}/k/hk/video.mjpg?t={EXT['local_tok']}"
+    if WEB_OPTS.get("https"):
+        src = src.replace("http://", "https://")
+    cmd = ["ffmpeg", "-loglevel", "error", "-tls_verify", "0", "-f", "mjpeg", "-i", src, "-an", "-c:v", "libx264", "-preset", "ultrafast",
+           "-tune", "zerolatency", "-g", "30", "-pix_fmt", "yuv420p", "-f", "rtsp", "-rtsp_transport", "tcp", f"rtsp://127.0.0.1:{port}/motionwatch"]
+    if not WEB_OPTS.get("https"):
+        cmd.remove("-tls_verify"); cmd.remove("0")
     with open(yml, "w") as f:
-        f.write("logLevel: warn\nrtspAddress: :%d\nrtmp: no\nhls: no\nwebrtc: no\nsrt: no\napi: no\nmetrics: no\npprof: no\nplayback: no\n"
+        f.write("logLevel: warn\nrtspAddress: %s:%d\nrtmp: no\nhls: no\nwebrtc: no\nsrt: no\napi: no\nmetrics: no\npprof: no\nplayback: no\n"
                 "authInternalUsers:\n- user: any\n  pass:\n  ips: ['127.0.0.1/32', '::1/128']\n  permissions:\n  - action: publish\n"
-                "- user: motionwatch\n  pass: %s\n  ips: []\n  permissions:\n  - action: read\n    path: motionwatch\n"
-                "paths:\n  motionwatch:\n" % (port, tok))
+                % ("" if lan else "127.0.0.1", port)
+                + ("- user: motionwatch\n  pass: %s\n  ips: []\n  permissions:\n  - action: read\n    path: motionwatch\n" % tok if lan else "")
+                + "".join(RTSP_LOCAL.values()) + "paths:\n  motionwatch:\n"
+                + ("" if lan else "    runOnDemand: %s\n    runOnDemandCloseAfter: 15s\n" % json.dumps(" ".join(cmd))))
     os.chmod(yml, 0o600)
     try:
         EXT["proc"] = subprocess.Popen([mtx, yml], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, cwd=cfg_dir)
@@ -598,13 +615,10 @@ def rtsp_start():
     if EXT["proc"].poll() is not None:
         err = (EXT["proc"].stderr.read() or b"").decode(errors="replace").strip().splitlines()
         EXT["msg"] = ("mediamtx: " + (err[-1] if err else "stopped"))[:160]; EXT["proc"] = None; return
-    src = f"http://127.0.0.1:{CFG['web_port']}/x/{tok}/video.mjpg"
-    if WEB_OPTS.get("https"):
-        src = src.replace("http://", "https://")
-    cmd = ["ffmpeg", "-loglevel", "error", "-tls_verify", "0", "-f", "mjpeg", "-i", src, "-an", "-c:v", "libx264", "-preset", "ultrafast",
-           "-tune", "zerolatency", "-g", "30", "-pix_fmt", "yuv420p", "-f", "rtsp", "-rtsp_transport", "tcp", f"rtsp://127.0.0.1:{port}/motionwatch"]
-    if not WEB_OPTS.get("https"):
-        cmd.remove("-tls_verify"); cmd.remove("0")
+    if not lan:
+        EXT["msg"] = "running"
+        log_event("web", f"RTSP video on 127.0.0.1:{port} (only for Apple Home, on demand)")
+        return
     try:
         EXT["ff"] = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         EXT["msg"] = "running"
@@ -617,8 +631,10 @@ def rtsp_watch():
     """Keeps RTSP running while it is switched on (restarts ffmpeg / mediamtx when they stop)."""
     while True:
         time.sleep(15)
-        want = CFG["rtsp_on"] and CFG["ext_on"]
-        alive = EXT["proc"] is not None and EXT["proc"].poll() is None and EXT["ff"] is not None and EXT["ff"].poll() is None
+        want = rtsp_wanted()
+        lan = bool(CFG["rtsp_on"] and CFG["ext_on"])
+        alive = (EXT["proc"] is not None and EXT["proc"].poll() is None and (not lan or EXT["ff"] is not None and EXT["ff"].poll() is None)
+                 and EXT["lan"] == lan)                  # 639zzzo: another kind (LAN / only this Pi) = start again
         if want and not alive:
             rtsp_restart()
         elif not want and (EXT["proc"] or EXT["ff"]):
