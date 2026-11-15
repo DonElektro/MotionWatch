@@ -347,9 +347,19 @@ async function v2Open(body,k){
   return {text:[...ct].map((c,i)=>ALPHA[(ALPHA.indexOf(c)-s[i]+NA)%NA]).join('').trim(),err:''};
 }
 function v2Track(st,d){
-  // which sign opened the message? (his decoder only says «□» for the version sign): the last sign before the first character
+  // which sign opened the message? (his decoder only says «□» for the version sign): the last sign before the first character.
+  // started: the message began with the long start tone (his decoder: ended -> not ended with nothing read yet)
   if(d.pos===1&&st.lastPos!==1)st.v2=(st.prev===V2.VER);else if(d.pos===0)st.v2=false;
-  if(d.sym)st.prev=d.sym;st.lastPos=d.pos;
+  if(st.wasEnded&&!d.ended)st.started=(d.pos===0&&!d.live);
+  if(d.sym)st.prev=d.sym;st.lastPos=d.pos;st.wasEnded=d.ended;
+}
+function rxJunk(t,mode,started){
+  // hiss after a message (a radio that keeps its carrier, the volume control lifts the noise) gives his decoder single tones
+  // («E», «EEE»): in the protocol a piece WITHOUT the start tone that is short, one sign repeated or mostly E / T is no text
+  // (like MoveEye, which drops every protocol message without the start tone). Real text without the start tone stays.
+  if(mode!=='prot'||started)return false;
+  const p=t.replace(/ /g,'');
+  return p.length<4||new Set(p).size===1||(p.length<12&&[...p].filter(c=>c==='E'||c==='T').length>=0.6*p.length);
 }
 async function txPlan(text,nonce){
   // what goes out: without a key (or in Morse) his prepTx unchanged; with a key V2 (V1 is gone)
@@ -388,12 +398,12 @@ function wavOf(b,sr){
 }
 async function decodeSamples(x,sr,onProgress){
   // a recording (Float32, any rate - the decoder needs about 10.7 ms per block) through his decoder, faster than real time
-  const N=Math.max(64,Math.round(512*sr/48000)),got=[],st={prev:'',v2:false,lastPos:0};
-  const d=makeDecoder({sr,N,getCfg:()=>cfg,onUpdate:dd=>v2Track(st,dd),onMessage:(t,m)=>got.push([t,m,st.v2])});d.ks=null;
+  const N=Math.max(64,Math.round(512*sr/48000)),got=[],st={prev:'',v2:false,lastPos:0,started:false,wasEnded:true};
+  const d=makeDecoder({sr,N,getCfg:()=>cfg,onUpdate:dd=>v2Track(st,dd),onMessage:(t,m)=>{if(!rxJunk(t,m,st.started))got.push([t,m,st.v2]);}});d.ks=null;
   const z=new Float32Array(N),tail=Math.ceil(9*sr/N);
   for(let i=0,k=0;i+N<=x.length;i+=N,k++){d.frame(x.subarray(i,i+N),false);if(onProgress&&k%4000===3999)await onProgress(i/x.length);}
   for(let k=0;k<tail;k++)d.frame(z,false);
-  if(!d.ended&&(d.live.trim()||d.sym)){d.frame(z,true);const t=d.live.trim();if(!d.ended&&t){got.push([t,cfg.mode,st.v2]);d.ended=true;}}
+  if(!d.ended&&(d.live.trim()||d.sym)){d.frame(z,true);const t=d.live.trim();if(!d.ended&&t){if(!rxJunk(t,cfg.mode,st.started))got.push([t,cfg.mode,st.v2]);d.ended=true;}}
   return got;
 }
 /*FUNK-V2-END*/
@@ -628,7 +638,7 @@ let key=store.get('key','')||'';let ks=null;
 let history=store.get('hist',[]);
 let ctx=null,stream=null,proc=null,src=null,dec=null,listening=false,sendingUntil=0,sendNodes=[];
 let dirty=false;
-const V2L={prev:'',v2:false,lastPos:0,shown:''};   // V2 of the live decoder (which message is V2, its opened text)
+const V2L={prev:'',v2:false,lastPos:0,shown:'',started:false,wasEnded:true};   // V2 of the live decoder (which message is V2, its opened text)
 let wavFile=null,wavTm=0;
 if(!cfg.mf||typeof cfg.mf!=='object')cfg.mf={pid:2,fec:1,kit:{n:8,f0:600,df:200,T:50,g:8,list:''}};   // Mehrton (MFSK)
 let mrx=null,mfShown='';
@@ -741,7 +751,7 @@ async function startListen(){
     if(stream){try{stream.getTracks().forEach(t=>t.stop());}catch(_){}stream=null;}
     showMsg(T('micErr')+' ['+step+'] '+errTxt(e));return;}
   const prevLive=dec?{live:dec.live,ended:true}:null;
-  dec=makeDecoder({sr:ctx.sampleRate,N:512,getCfg:()=>cfg,onUpdate:d=>{v2Track(V2L,d);dirty=true;},onMessage:(t,m)=>rxDone(t,m,'',V2L.v2)});
+  dec=makeDecoder({sr:ctx.sampleRate,N:512,getCfg:()=>cfg,onUpdate:d=>{v2Track(V2L,d);dirty=true;},onMessage:(t,m)=>{if(!rxJunk(t,m,V2L.started))rxDone(t,m,'',V2L.v2);}});
   dec.ks=null;if(prevLive&&prevLive.live){dec.live=prevLive.live;}
   src=ctx.createMediaStreamSource(stream);
   proc=ctx.createScriptProcessor(512,1,1);
@@ -754,7 +764,7 @@ async function startListen(){
 }
 function stopListen(){
   if(dec&&!dec.ended&&(dec.live.trim()||dec.sym)){dec.frame(new Float32Array(512),true);/* flush */}
-  if(dec){const t=dec.live.trim();if(!dec.ended&&t){rxDone(t,cfg.mode,'',V2L.v2);dec.ended=true;}}
+  if(dec){const t=dec.live.trim();if(!dec.ended&&t){if(!rxJunk(t,cfg.mode,V2L.started))rxDone(t,cfg.mode,'',V2L.v2);dec.ended=true;}}
   try{proc&&proc.disconnect();src&&src.disconnect();}catch(e){}
   if(stream)stream.getTracks().forEach(t=>t.stop());
   stream=proc=src=mrx=null;listening=false;

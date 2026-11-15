@@ -237,7 +237,7 @@ def teil_b(ns, tmp):
 # ---------------------------------------------------------------------------------------------------------------------- C
 def me_ton(ns, text, key, wpm, rate):
     """der Ton, wie MoveEye ihn aus dem Lautsprecher gibt (der echte Code: morse_plan -> morse_beep_chunks), float -1..1"""
-    _p, codes = ns["funk_tx_codes"](text, key)
+    _p, codes = ns["funk_tx_codes"](text, key, nonce_fest(wpm))       # (feste Nonce: der Test ist bei jedem Lauf gleich)
     tl = ns["funk_timeline"](codes, wpm, 800, 1400)
     from scipy.signal import resample_poly
     y = np.concatenate(list(ns["morse_beep_chunks"](tl, 22050, 0.4)) + [np.zeros(int(1.5 * 22050), np.float32)]).astype(np.float64)
@@ -246,7 +246,7 @@ def me_ton(ns, text, key, wpm, rate):
 
 def seite_ton(tmp, text, key, wpm, rate, mode="prot"):
     """der Ton nach SEINER Funktion transmit (Oszillator + Lautstärke-Rampen 5 ms)"""
-    bs = node(tmp, "transmit", json.dumps({"mode": mode, "fA": 800, "fB": 1400, "wpm": wpm, "auto": True, "sens": 10, "vol": 0.8}), key, text)
+    bs = node(tmp, "transmit", json.dumps({"mode": mode, "fA": 800, "fB": 1400, "wpm": wpm, "auto": True, "sens": 10, "vol": 0.8}), key, text, nonce_fest(wpm))
     end = max(t + l for t, _f, l, _v in bs) + 1.5
     x = np.zeros(int(end * rate) + 1)
     for t, f, l, v in bs:
@@ -256,6 +256,11 @@ def seite_ton(tmp, text, key, wpm, rate, mode="prot"):
         y[:r] *= np.linspace(0, 1, r); y[-r:] *= np.linspace(1, 0, r)
         x[i0:i0 + n] += y
     return x
+
+
+def nonce_fest(wpm):
+    """V2: eine feste Nonce pro Tempo - sonst klingt jede Nachricht anders und der Funkkanal-Test wäre bei jedem Lauf ein anderer"""
+    return "NONC%02d" % (int(wpm) % 100)
 
 
 def strecke(mt, x, art, snr, seed):
@@ -329,6 +334,16 @@ def teil_c(ns, mt, tmp):
     ok(got == ["!bad"], f"falscher Schlüssel: «falscher Schlüssel oder gestört» statt Unsinn ({got[:1]})")
     got = seite_hoert(tmp, strecke(mt, me_ton(ns, TEXT, "geheim", 12, RATE), "", 20, 5), "", 12)
     ok(got == ["!nokey"], f"kein Schlüssel eingestellt: «verschlüsselt – kein Schlüssel» ({got[:1]})")
+    # Rauschen nach der Nachricht (Träger bleibt, die Lautstärke-Regelung hebt es an): sein Decoder las daraus ein «E» als
+    # zweite Nachricht (in rund 15 % der Fälle). Die Seite verwirft solche Stücke ohne Start-Ton (rxJunk) - diese Texte zeigten es.
+    rr = random.Random(7)
+    texte = ["".join(rr.choice(ns["FUNK_ALPHA"]) for _ in range(47)).strip() for _ in range(18)]
+    for i in (4, 7, 12, 17):
+        _p, codes = ns["funk_tx_codes"](texte[i], "")
+        from scipy.signal import resample_poly
+        y = np.concatenate(list(ns["morse_beep_chunks"](ns["funk_timeline"](codes, 15, 800, 1400), 22050, 0.4)) + [np.zeros(int(1.5 * 22050), np.float32)])
+        got = seite_hoert(tmp, strecke(mt, resample_poly(y.astype(np.float64), 320, 441), "ton", 10, 100), "", 15)
+        ok(got == [_p.strip()], f"Rauschen nach der Nachricht (Funkgerät, Träger bleibt): kein «E» danach ({[g[:6] for g in got]})")
     got = me_hoert(ns, strecke(mt, seite_ton(tmp, TEXT, "geheim", 12, RATE), "", 20, 7), "falsch", 12)
     ok(got == ["!bad"], f"MoveEye mit falschem Schlüssel: erkannt ({got[:1]})")
     got = me_hoert(ns, strecke(mt, seite_ton(tmp, TEXT, "", 12, RATE), "", 20, 8), "geheim", 12)

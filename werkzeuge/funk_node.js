@@ -8,7 +8,8 @@
 //   node funk_node.js SEITE beeps     CFG_JSON SCHLUESSEL TEXT [NONCE] -> JSON: beepsOf (die Töne der Audiodatei) [[start, Hz, Länge], ...]
 //   node funk_node.js SEITE wav       CFG_JSON SCHLUESSEL TEXT NONCE DATEI -> schreibt die Audiodatei der Seite (WAV, 22050 Hz)
 //   node funk_node.js SEITE decode    CFG_JSON SCHLUESSEL RAW SR      -> JSON: [[Text, Modus], ...] (RAW = float32, Rate SR; wie «Audiodatei
-//                                                                     einlesen»: decodeSamples, V2 geöffnet; Fehler als «!bad» / «!nokey»)
+//                                                                     einlesen»: decodeSamples, V2 geöffnet; Fehler als «!bad» / «!nokey»;
+//                                                                     SCHLUESSEL «*roh*»: der gelesene Text ungeöffnet)
 //   node funk_node.js SEITE v2seal    SCHLUESSEL NONCE KLARTEXT       -> JSON: die Zeichen nach dem Versionszeichen
 //   node funk_node.js SEITE v2open    SCHLUESSEL ZEICHEN              -> JSON: {text, err}
 //   Mehrton (/*MFSK-START*/ … /*MFSK-END*/):
@@ -79,7 +80,8 @@ const D = ctxObj.__d;
     const x = new Float32Array(buf.buffer, buf.byteOffset, Math.floor(buf.length / 4));
     const got = [];
     for (const [t, m, isV2] of await D.decodeSamples(x, sr)) {
-      if (m === "prot" && isV2 && t[0] === "□") { const r = await D.v2Open(t.slice(1), a2 || ""); got.push([r.err ? "!" + r.err : r.text, m]); }
+      if (a2 === "*roh*") got.push([t, m, isV2]);                // (Fehlersuche: was sein Decoder las, V2 nicht geöffnet)
+      else if (m === "prot" && isV2 && t[0] === "□") { const r = await D.v2Open(t.slice(1), a2 || ""); got.push([r.err ? "!" + r.err : r.text, m]); }
       else got.push([t, m]);
     }
     process.stdout.write(JSON.stringify(got)); return;
