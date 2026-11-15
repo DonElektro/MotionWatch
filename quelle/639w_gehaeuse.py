@@ -11,6 +11,11 @@
 #   * /build/datei/<name>: eine Druckdatei (3MF) aus hardware/gehaeuse/Druckdateien/ – auf dem Pi ohne Repository holt MoveEye
 #     sie selbst von GitHub (Cache ~/.config/motionwatch/druck_cache/, real-download-fix); /build/alle.zip?var=v52|v51: die
 #     Druckdateien der gewählten Variante mit LIESMICH.txt als MoveEye_v5-2_Druck_X.Y.Z.zip.
+#   * /build/transport.zip (mw-bauen-transport, Besitzer 15.11.2026): die Transportsicherung (Haube 29 + Klammer 30, Schutzschale
+#     31–33, bau.json «transport») vor dem Testdruck – eigener Abschnitt «🧳 Transportsicherung (noch nicht erprobt)» in Drucken,
+#     jede Datei einzeln und alle als ZIP; nicht in den ZIP der Varianten. In 3D nur mit dem Schalter «Transportsicherung zeigen»
+#     (aus ab Werk; Haube + Klammer oder Schutzschale): eigenes Modell BAU3D_GLB_TRANSPORT (639vb, /build/gehaeuse_transport.glb),
+#     erst mit dem Schalter geladen – BAU3D_GLB und die Daten des Simulators bleiben ohne diese Teile.
 #   * /api/bau: «Mein Bau» – GET {var, done}, POST {var?, done?}: Variante und erledigte Schritte pro Benutzer (wie «Meine
 #     Ansicht», CFG bau_mein), auf allen Geräten gleich.
 #   * /api/case: GET = ob der Simulator verbunden ist; POST {do: "sim", step?} -> Simulator /control werkstatt (wie bisher).
@@ -101,6 +106,7 @@ pre.cmd{background:#0f141b;color:#d6e2ee;border-radius:8px;padding:8px 10px;font
 .leg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;margin:6px 0}.leg i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:4px;vertical-align:middle}
 .qr{width:150px;height:150px;background:#fff;border-radius:8px;padding:4px}
 .warn{border-left:4px solid #b8860b;padding-left:10px}
+.trs{border-left:4px solid #b8860b}.trs .tg{margin:12px 0 4px;font-weight:700;font-size:14px}.trs table.gb{margin-top:4px}.trs .lk{margin:6px 0}
 details summary{cursor:pointer;font-weight:600;padding:6px 0}
 #g-msg{margin-top:6px;min-height:16px}
 .fk{border-left:4px solid var(--acc);display:flex;flex-direction:column;gap:8px;padding:10px 12px}.fkr{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
@@ -140,7 +146,8 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
     <table class="gb" id="g-buy"></table></div></section>
   <section class="pane" id="p-drucken"><div class="gc"><h2 data-i18n="Printing">Printing</h2><table class="gb" id="g-print"></table></div>
     <div class="gc"><h3 data-i18n="Notes for the Bambu printer">Notes for the Bambu printer</h3><ul id="g-phint" class="mut"></ul></div>
-    <div class="gc lk"><h3 data-i18n="Print files">Print files</h3><div id="g-files"></div></div></section>
+    <div class="gc lk"><h3 data-i18n="Print files">Print files</h3><div id="g-files"></div></div>
+    <div class="gc trs" id="g-trans" hidden></div></section>
   <section class="pane" id="p-montage">
     <div class="gc"><div id="slot-mo"></div>
       <div class="vctl noprint"><button type="button" class="sec" onclick="gStep(G.step - 1)">◀ <span data-i18n="Back">Back</span></button>
@@ -164,6 +171,8 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
   <div class="vctl noprint" id="v3d-ctl"><label><span data-i18n="Explode">Explode</span> <input type="range" min="0" max="1" step="0.01" value="0" id="v-exp"></label>
     <label><input type="checkbox" id="v-xray"> <span data-i18n="Case see-through">Case see-through</span></label>
     <label><input type="checkbox" id="v-inner" checked> <span data-i18n="Show the inside">Show the inside</span></label>
+    <label id="v-trans-l" hidden><input type="checkbox" id="v-trans"> <span data-i18n="Show the transport lock">Show the transport lock</span></label>
+    <span class="seg" id="v-trans-w" hidden></span>
     <button type="button" class="sec" onclick="bv('reset')" data-i18n="Reset the view">Reset the view</button></div>
   <div class="pinfo" id="v3d-info"></div>
 </main>
@@ -178,7 +187,7 @@ const gL = () => LANG || "en";
 const gx = v => v == null ? "" : typeof v === "string" ? v : (v[gL()] || (gL() === "rm" ? v.de : v.en) || v.de || "");
 const fmt = (s, ...a) => { let i = 0; return String(s).replace(/%[sd]/g, () => String(a[i++])); };
 const G = {tab: "uebersicht", step: 0, sel: "", node: "", var: Object.assign({}, GB.variante_standard || {}), done: new Set(), server: false};
-window.BV = {explode: 0, xray: false, inner: true, v52: ["v52", "v53"].includes(G.var.gehaeuse), v53: G.var.gehaeuse === "v53", dev: G.var.akku === "entwicklung", step: 0, sel: "", api: null};   // real-v52-standard: v5.2 is the standard (bau.json variante_standard)
+window.BV = {explode: 0, xray: false, inner: true, transport: "", v52: ["v52", "v53"].includes(G.var.gehaeuse), v53: G.var.gehaeuse === "v53", dev: G.var.akku === "entwicklung", step: 0, sel: "", api: null};   // real-v52-standard: v5.2 is the standard (bau.json variante_standard)
 function bv(what, a) { if (BV.api && BV.api[what]) BV.api[what](a); }
 // real-gehaeuse-v53: v5.3 builds on v5.2 – «wenn: v52» holds for v5.3 too, «wenn: v53» only for v5.3
 const isV53 = () => G.var.gehaeuse === "v53";
@@ -199,10 +208,13 @@ const GEH_OFF = window.MW_OFFLINE || null;
 const sv = s => (isV53() && s.v53) ? Object.assign({}, s, s.v53) : (!isV52() && s.v51) ? Object.assign({}, s, s.v51) : s;
 // the 3MF of a print part: v5.2 -> Druckdateien/v5-2/ (also for parts that exist only there), else the v5.1 file
 function pfile(datei) {
-  const all = GB.druckdateien_einzeln || [], f1 = "MoveEye_v5-1_" + datei + ".3mf", f2 = "v5-2/MoveEye_v5-2_" + datei + ".3mf", f3 = "v5-3/MoveEye_v5-3_" + datei + ".3mf";
+  const all = (GB.druckdateien_einzeln || []).concat(GTR.dateien || []), f1 = "MoveEye_v5-1_" + datei + ".3mf", f2 = "v5-2/MoveEye_v5-2_" + datei + ".3mf", f3 = "v5-3/MoveEye_v5-3_" + datei + ".3mf";
   if (all.includes(f3) && (isV53() || (!all.includes(f2) && !all.includes(f1)))) return f3;   // v5.3: Druckdateien/v5-3/
   return all.includes(f2) && (isV52() || !all.includes(f1)) ? f2 : f1;
 }
+// mw-bauen-transport: transport lock (hood 29 + clip 30, protective shell 31–33) – own section in «Printing», not yet tried out;
+// in 3D only with the switch «Show the transport lock» (bau.json «transport»: haube | schale), default off
+const GTR = GB.transport || {};
 const vname = w => { for (const v of GB.varianten || []) for (const o of v.werte) if (o.id === w) return gx(o.name); return w; };
 const chf = n => (Math.round(n * 20) / 20).toFixed(2);
 // ---- «Mein Bau»: the checklist (per user on the Pi, else in this browser)
@@ -352,6 +364,35 @@ function gPrint() {
     const datei = f.replace(/^(v5-\d\/)?MoveEye_v5-\d_/, "").replace(/\.3mf$/, ""), p = (D.teile || []).find(x => x.datei === datei);
     return p ? okp(p) && pfile(datei) === f : dirOf(f) === GDIR();
   }).forEach(f => { fl.appendChild(fileLink(f)); fl.appendChild(el("br")); });
+  gTrans();
+}
+function gTrans() {
+  const box = document.getElementById("g-trans"); box.textContent = ""; box.hidden = !(GTR.gruppen || []).length;
+  if (box.hidden) return;
+  box.append(el("h3", "", gx(GTR.titel)), el("div", "mut", "⚠ " + gx(GTR.hinweis)));
+  const dl = el("div", "lk");
+  if (!GEH_OFF) { const z = el("a", "", "⬇ " + t("All files of this section (ZIP)")); z.href = "/build/transport.zip"; dl.appendChild(z); }
+  box.appendChild(dl);
+  (GTR.gruppen || []).forEach(g => {
+    box.appendChild(el("div", "tg", gx(g.titel)));
+    const tb = el("table", "gb"), hd = el("tr");
+    [t("Part"), t("lies on"), t("Print time"), ""].forEach((x, i) => hd.appendChild(el("th", i === 1 ? "hide-s" : "", x))); tb.appendChild(hd);
+    (GTR.teile || []).filter(p => p.gruppe === g.id).forEach(p => {
+      const tr = el("tr"), nm = (GB.teile || []).find(x => x.datei === p.datei), c = el("td", "lk");
+      c.appendChild(fileLink(pfile(p.datei), "3MF"));
+      tr.append(el("td", "", nm ? gx(nm.name) : p.datei), el("td", "n hide-s", gx(p.liegt) + (p.brim ? " · Brim " + p.brim + " mm" : "")),
+        el("td", "q", fmt(t("about %s h"), p.zeit_h)), c);
+      tb.appendChild(tr);
+    });
+    box.append(tb, el("div", "mut", gx(g.hinweis)));
+    if (g.montage) { const d = el("details"), sm = el("summary", "", t("How to fit it")); d.append(sm, el("div", "mut", gx(g.montage.text))); box.appendChild(d); }
+  });
+}
+function gTransUi() {
+  const has = (GTR.gruppen || []).length > 0 && (!GEH_OFF || !!GEH_OFF.glbt), w = document.getElementById("v-trans-w"), c = document.getElementById("v-trans");
+  document.getElementById("v-trans-l").hidden = !has; c.checked = !!BV.transport; w.hidden = !has || !BV.transport; w.textContent = "";
+  (GTR.gruppen || []).forEach(g => { const b = el("button", BV.transport === g.id ? "on" : "", t(g.id === "schale" ? "Protective shell" : "Hood + clip")); b.type = "button";
+    b.onclick = () => { BV.transport = g.id; gTransUi(); bv("transport"); }; w.appendChild(b); });
 }
 function stepLi(nr, s, id, cur) {
   const li = el("li", cur ? "cur" : ""), n = el("span", "nr", String(nr)), tx = el("span", "tx");
@@ -476,12 +517,13 @@ function gRender() {
   BV.v52 = isV52(); BV.v53 = isV53(); BV.dev = G.var.akku === "entwicklung"; bv("paint");
   if (BV.v52) document.getElementById("g-ver").textContent = GVT();
   document.getElementById("g-stand").textContent = GEH_VER ? "· " + fmt(t("as of MoveEye %s"), GEH_VER) : "";
-  gVar(); gTabs(); gSummary(); gParts(); gBuy(); gPrint(); gAssembly(); gWire(); gSoftware(); gFix(); gWart(); gInfo(); gProg();
+  gVar(); gTabs(); gSummary(); gParts(); gBuy(); gPrint(); gAssembly(); gWire(); gSoftware(); gFix(); gWart(); gInfo(); gProg(); gTransUi();
   document.getElementById("g-simbox").style.display = SIM_ON ? "" : "none";
 }
 document.getElementById("v-exp").oninput = e => { BV.explode = +e.target.value; bv("paint"); };
 document.getElementById("v-xray").onchange = e => { BV.xray = e.target.checked; bv("paint"); };
 document.getElementById("v-inner").onchange = e => { BV.inner = e.target.checked; bv("paint"); };
+document.getElementById("v-trans").onchange = e => { BV.transport = e.target.checked ? (((GTR.gruppen || [])[0] || {}).id || "") : ""; gTransUi(); bv("transport"); };
 const _gAi = applyI18n;
 applyI18n = function () { _gAi(); try { gRender(); } catch (e) { console.error(e); } };
 (async () => {
@@ -544,7 +586,8 @@ function shown(id) {
   if (art === "v52" && !B.v52) return false;           // real-v52-standard: v5.2 parts in every step (bau.json «schritt»)
   if (art === "v53" && !B.v53) return false;           // real-gehaeuse-v53: the parts of v5.3 (lower part, lid, hatch, duct, holder)
   if (art === "dev" && !B.dev) return false;           // development: socket 13 instead of the UPS HAT
-  if (r.ohne) return false;                            // 12 blind plug: only in the scene (device without the wide camera)
+  if (r.transport) { if (r.transport !== B.transport) return false; }   // transport lock: only with the switch (hood + clip or shell)
+  else if (r.ohne) return false;                       // 12 blind plug: only in the scene (device without the wide camera)
   const by = REPL[id];                                 // replaced by the part of the chosen variant (lower part v5.2, socket ...)
   if (by && parts[by] && ((row(by).art === "v52" && B.v52) || (row(by).art === "v53" && B.v53) || (row(by).art === "dev" && B.dev))) return false;
   const pr = art === "druck" || !!r.datei;
@@ -596,14 +639,26 @@ renderer.domElement.addEventListener("pointerup", e => {
     if (B.mode) { if (X.tap) X.tap(e); } else { B.sel = pick(e); B.onSelect && B.onSelect(B.sel); paint(); } }
   down = null;
 });
-new GLTFLoader().load((window.MW_OFFLINE || {}).glb || "/build/gehaeuse.glb", g => {
+function addParts(g) {
   const FB = GB.farben || {}, farbe = id => (row(id) || {}).farbe || FB[id] || ((FB.grau_teile || []).includes(id) && FB.grau) || (E[id] || {}).farbe || "";   // colours from the data (bau.json / modelle.json), else the model's
   g.scene.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.material.side = THREE.DoubleSide; o.material.roughness = 0.6; o.material.metalness = 0;
     if (farbe(o.name)) o.material.color.set(farbe(o.name)); parts[o.name] = {mesh: o}; } });
-  scene.add(g.scene); msg.textContent = ""; size(); view(145, 24, 0.5); step(B.step);
+  scene.add(g.scene);
+}
+new GLTFLoader().load((window.MW_OFFLINE || {}).glb || "/build/gehaeuse.glb", g => {
+  addParts(g); msg.textContent = ""; size(); view(145, 24, 0.5); step(B.step);
   window.BV_READY = Object.keys(parts).length;
 }, undefined, e => { msg.textContent = "3D: " + (e && e.message || e); });
-B.api = {paint, step, resize: size, select: id => { B.sel = id; B.onSelect && B.onSelect(id); paint(); }, reset: () => { B.explode = 0; document.getElementById("v-exp").value = 0; view(145, 24, 0.5); paint(); }};
+// mw-bauen-transport: the transport lock is an own model (BAU3D_GLB_TRANSPORT), loaded only when the switch is on
+let trLoad = 0;
+function transport() {
+  if (!B.transport || trLoad) { paint(); return; }
+  trLoad = 1; msg.textContent = t("Loading 3D …");
+  new GLTFLoader().load((window.MW_OFFLINE || {}).glbt || "/build/gehaeuse_transport.glb", g => {
+    addParts(g); trLoad = 2; msg.textContent = ""; window.BV_TRANSPORT = Object.keys(parts).length; paint();
+  }, undefined, e => { trLoad = 0; msg.textContent = "3D: " + (e && e.message || e); });
+}
+B.api = {paint, step, transport, resize: size, select: id => { B.sel = id; B.onSelect && B.onSelect(id); paint(); }, reset: () => { B.explode = 0; document.getElementById("v-exp").value = 0; view(145, 24, 0.5); paint(); }};
 /*GEHEINZEL3D*/
 size(); view(145, 24, 0.5);
 }
@@ -660,12 +715,18 @@ def geh_fk():
     return {i: {k: es[i].get(k) for k in ("titel", "text", "schritte", "stufe")} for i in GEH_BAU.get("fehlersuche") or [] if i in es}
 
 
+def geh_m3():
+    """the part data of the 3D model (639vb) - with the transport lock (own model, mw-bauen-transport)"""
+    tm = globals().get("BAU3D_MODELLE_TRANSPORT") or []
+    return dict(BAU3D_MODELLE, teile=list(BAU3D_MODELLE.get("teile") or []) + list(tm)) if tm else BAU3D_MODELLE
+
+
 def geh_page(off=None):
     """the page /build; off = {"raw", "kit", "glb", "imports"}: the same page as one file without the Pi (geh_render_off)"""
     js = "Object.assign(I18N.de, " + json.dumps({k: DE.get(k, k) for k in GEH_KEYS}, ensure_ascii=False) + ");"
     J = lambda o: json.dumps(o, ensure_ascii=False).replace("</", "<\\/")
     return ((geh_render_off(GEH_PAGE, off) if off else render_page(GEH_PAGE, "more")).replace("/*GEHDE*/", js, 1).replace("/*GEHBAU*/null", J(GEH_BAU), 1)
-            .replace("/*GEHFK*/null", J(geh_fk()), 1).replace("/*GEHM3*/null", J(BAU3D_MODELLE), 1)
+            .replace("/*GEHFK*/null", J(geh_fk()), 1).replace("/*GEHM3*/null", J(geh_m3()), 1)
             .replace("/*GEHVER*/\"\"", json.dumps(APP_VERSION), 1)
             .replace("/*GEHSIM*/false", "true" if CFG.get("sim_on") else "false", 1)
             .replace("/*GEHTABS*/", J([list(x) for x in BAU_TABS])).replace("/*GEH3D*/", GEH_3D_JS, 1)
@@ -682,7 +743,7 @@ def geh_render_off(page, off):
     probe = page + COMMON_JS + GEH_3D_JS + str(globals().get("GEH_EINZEL_JS", "")) + str(globals().get("GEH_EINZEL_3D", "")) + fertig_js()
     keys = set(GEH_KEYS) | set(re.findall(r'data-i18n="([^"]+)"', page)) | {k for k in TRX.get("fr", {}) if '"' + k + '"' in probe}
     trx = {L: {k: TRX.get(L, {})[k] for k in sorted(keys) if TRX.get(L, {}).get(k)} for L in ("fr", "it", "rm")}
-    cfg = {k: off[k] for k in ("home", "raw", "kit", "glb") if off.get(k)}
+    cfg = {k: off[k] for k in ("home", "raw", "kit", "glb", "glbt") if off.get(k)}
     head = ("<script>window.MW_OFFLINE=" + J(cfg) + ";window.I18NXA=" + J(trx) + ";\n" + LANG_JS.replace("</", "<\\/") + "\n"
             "(function(){var l='';try{l=localStorage.getItem('mw-lang')||'';}catch(e){}"
             "var nl=((navigator.language||'de').slice(0,2)||'de').toLowerCase();if(['de','fr','it','rm','en'].indexOf(nl)<0)nl='en';"
@@ -713,6 +774,8 @@ def geh_offline_html(homepage=""):
     imports = {("three" if k == "three.module.min.js" else "three/addons/" + k): du(v.encode("utf-8"), "text/javascript") for k, v in src.items()}
     home = str(homepage or (globals().get("FERTIG") or {}).get("homepage_url") or "")   # empty: the hint without a link
     off = {"home": home if home.startswith("https://") else "", "raw": GEH_DRUCK_RAW, "kit": GEH_BAUSATZ_URL, "glb": du(gzip.decompress(bau3d_bytes("glb")), "model/gltf-binary"), "imports": imports}
+    if bau3d_bytes("glbt"):                               # mw-bauen-transport: the transport lock model, inside the file too
+        off["glbt"] = du(gzip.decompress(bau3d_bytes("glbt")), "model/gltf-binary")
     return geh_page(off=off)
 
 
@@ -782,7 +845,13 @@ def geh_druck_dir():
 
 
 def geh_druck_namen():
-    return list(GEH_BAU.get("druckdateien") or []) + list(GEH_BAU.get("druckdateien_einzeln") or [])
+    return list(GEH_BAU.get("druckdateien") or []) + list(GEH_BAU.get("druckdateien_einzeln") or []) + geh_transport_namen()
+
+
+def geh_transport_namen():
+    """mw-bauen-transport: the 3MF of the transport lock (29–33, own section «🧳 Transportsicherung», not yet tried out) –
+    served like the other print files, but not in the ZIP of a case variant"""
+    return list((GEH_BAU.get("transport") or {}).get("dateien") or [])
 
 
 # ---- real-download-fix (01.11.2026): print files on the Pi without the repository ------------------------------------------
@@ -903,7 +972,8 @@ def geh_druck_holen(name, timeout=30):
 def geh_var_namen(var):
     """the print files of a case: v52 -> Druckdateien/v5-2/, v53 -> Druckdateien/v5-3/ (real-gehaeuse-v53), v51 -> the others"""
     d = GEH_VAR_DIR.get(var, "v5-2/")
-    return [n for n in geh_druck_namen() if (n.split("/")[0] + "/" if "/" in n else "") == d]
+    tr_ = set(geh_transport_namen())
+    return [n for n in geh_druck_namen() if (n.split("/")[0] + "/" if "/" in n else "") == d and n not in tr_]
 
 
 GEH_VAR_DIR = {"v51": "", "v52": "v5-2/", "v53": "v5-3/"}     # case -> folder of its print files
@@ -956,12 +1026,30 @@ def _geh_bg_fetch(names):
         _GEH_DL_BG["run"] = False
 
 
-def geh_alle_zip(var=None, budget=None):
+def geh_transport_liesmich(L=None):
+    """the short guide in the ZIP of the transport lock (language of the device)"""
+    L = cur_lang(L)
+    T_ = GEH_BAU.get("transport") or {}
+    out = [tr("MoveEye transport lock – not yet tried out – as of MoveEye %s", L) % APP_VERSION, "", _gx_py(T_.get("hinweis"), L)]
+    nm = {t_.get("datei"): _gx_py(t_.get("name"), L) for t_ in GEH_BAU.get("teile") or [] if t_.get("datei")}
+    for g_ in T_.get("gruppen") or []:
+        out += ["", "== " + _gx_py(g_.get("titel"), L) + " =="]
+        for p in T_.get("teile") or []:
+            if p.get("gruppe") == g_.get("id"):
+                out.append("- %s: %s · %s %s%s · %s ~%s h" % (nm.get(p["datei"], p["datei"]), _gx_py(p.get("liegt"), L), tr("Layer", L),
+                           p["schicht"], " · Brim %s mm" % p["brim"] if p.get("brim") else "", tr("Print time", L), p["zeit_h"]))
+        out += ["", _gx_py(g_.get("hinweis"), L)]
+        if g_.get("montage"):
+            out += ["", tr("How to fit it", L) + ":", _gx_py(g_["montage"].get("text"), L)]
+    return "\r\n".join(out + [""])
+
+
+def geh_alle_zip(var=None, budget=None, transport=False):
     """-> ("zip", bytes, file name) | ("wait", done, total) | ("offline", reason, None): the print files of the chosen case
-    in one ZIP (3MF are compressed already: stored), fetched where missing"""
+    in one ZIP (3MF are compressed already: stored), fetched where missing; transport=True: the files of the transport lock"""
     import io
     var = var if var in GEH_VAR_DIR else geh_var_std()
-    names = geh_var_namen(var)
+    names = geh_transport_namen() if transport else geh_var_namen(var)
     t0, paths = time.time(), {}
     budget = GEH_ZIP_BUDGET if budget is None else budget
     for i, n in enumerate(names):
@@ -975,11 +1063,11 @@ def geh_alle_zip(var=None, budget=None):
         if not p:
             return "offline", why, None
         paths[n] = p
-    zn = geh_zip_name(var)
+    zn = ("MoveEye_Transportsicherung_%s.zip" % APP_VERSION) if transport else geh_zip_name(var)
     top = zn[:-4] + "/"
     b = io.BytesIO()
     with zipfile.ZipFile(b, "w", zipfile.ZIP_STORED) as z:
-        z.writestr(top + "LIESMICH.txt", geh_liesmich(var).encode("utf-8"))
+        z.writestr(top + "LIESMICH.txt", (geh_transport_liesmich() if transport else geh_liesmich(var)).encode("utf-8"))
         for n in names:
             bn = geh_base_name(n)
             z.write(paths[n], top + ("Platten_X2D/" + bn if n in (GEH_BAU.get("druckdateien") or []) else bn))
@@ -1017,6 +1105,11 @@ def bau3d_bytes(key):
             if len(BAU3D_GLB) < 3:                         # Schlank: the model is in the data zip (012) - without it: 503
                 return None
             _BAU3D_CACHE[key] = base64.b64decode(BAU3D_GLB[2])
+        elif key == "glbt":                                # mw-bauen-transport: the model of the transport lock (own entry)
+            gt_ = globals().get("BAU3D_GLB_TRANSPORT") or []
+            if len(gt_) < 3:
+                return None
+            _BAU3D_CACHE[key] = base64.b64decode(gt_[2])
         elif key in BAU3D:
             _BAU3D_CACHE[key] = base64.b64decode(BAU3D[key][1])
         else:
@@ -1058,6 +1151,11 @@ def smalltv_routes(app, reply, body):                     # + 639w: /build, /cas
         b_ = bau3d_bytes("glb")
         return gz(b_, "model/gltf-binary") if b_ else Response("additional data missing", 503)
 
+    @app.route("/build/gehaeuse_transport.glb")
+    def geh_glb_tr():
+        b_ = bau3d_bytes("glbt")
+        return gz(b_, "model/gltf-binary") if b_ else Response("additional data missing", 503)
+
     @app.route("/build/qr.svg")
     def geh_qr():
         return Response(qr_svg(request.host_url), mimetype="image/svg+xml", headers={"Cache-Control": "no-store"})
@@ -1074,13 +1172,15 @@ def smalltv_routes(app, reply, body):                     # + 639w: /build, /cas
             return Response(f_.read(), mimetype="application/octet-stream",
                             headers={"Content-Disposition": f'attachment; filename="{geh_base_name(name)}"', "Cache-Control": "private, max-age=600"})
 
+    @app.route("/build/transport.zip")                    # mw-bauen-transport: the files of the transport lock + LIESMICH.txt
     @app.route("/build/alle.zip")
     def geh_alle():
         var = request.args.get("var") or geh_var_std()
-        st, a_, b_ = geh_alle_zip(var)
+        trp = request.path.endswith("/transport.zip")
+        st, a_, b_ = geh_alle_zip(var, transport=trp)
         if st == "zip":
             return Response(a_, mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{b_}"', "Cache-Control": "no-store"})
-        url = "/build/alle.zip?var=" + (var if var in GEH_VAR_DIR else geh_var_std())
+        url = "/build/transport.zip" if trp else "/build/alle.zip?var=" + (var if var in GEH_VAR_DIR else geh_var_std())
         if st == "wait":
             return Response(geh_dl_page(tr("The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».") % (a_, b_), retry=url, refresh=15), 202, mimetype="text/html")
         return Response(geh_dl_page(tr("The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package."), retry=url), 503, mimetype="text/html")
@@ -1227,8 +1327,17 @@ def geh_check(base=None):
                     probs.append(fn + " changed after the build")
         if (man.get("dateien") or {}).get("gehaeuse.glb") != BAU3D_GLB[0]:
             probs.append("the model of the page /build (639vb) is not simulator3d/inhalte/gehaeuse/gehaeuse.glb - gehaeuse_bauen.py --texte")
-        if {t["id"] for t in man.get("teile", [])} != {t["id"] for t in bau.get("teile", [])}:
-            probs.append("modelle.json and bau.json have different parts")
+        if {t["id"] for t in man.get("teile", [])} != {t["id"] for t in bau.get("teile", []) if not t.get("transport")}:
+            probs.append("modelle.json and bau.json have different parts")   # transport lock: own model (below)
+    tj = os.path.join(base, "hardware", "gehaeuse", "Modelle", "gehaeuse_transport.json")
+    if any(t.get("transport") for t in bau.get("teile", [])) and os.path.isdir(os.path.join(base, "hardware", "gehaeuse")):
+        try:                                              # mw-bauen-transport: the own model of the transport lock
+            with open(tj, encoding="utf-8") as f_:
+                tm_ = json.load(f_)
+            if tm_.get("quelle_sha256") != sha or tm_.get("glb_sha256") != (globals().get("BAU3D_GLB_TRANSPORT") or [""])[0]:
+                probs.append("the transport lock model (639vb) is not hardware/gehaeuse/Modelle/gehaeuse_transport.glb - gehaeuse_bauen.py --sim")
+        except (OSError, ValueError):
+            probs.append("hardware/gehaeuse/Modelle/gehaeuse_transport.json missing - gehaeuse_bauen.py --sim")
     elif os.path.isdir(os.path.join(base, "simulator3d")):
         probs.append("simulator3d/inhalte/gehaeuse/modelle.json missing")
     gd = os.path.join(base, "simulator3d", "scripts", "werkstatt_daten.gd")
@@ -1279,7 +1388,16 @@ def geh_selftest():
     K = B["verkabelung"]["knoten"]
     for v in B["verkabelung"]["verbindungen"]:
         assert v["von"] in K and v["nach"] in K and (not v.get("wenn") or v["wenn"] in vals), ("wiring", v["id"])
-    assert {p["datei"] for p in B["druck"]["teile"]} >= {t_["datei"] for t_ in B["teile"] if t_.get("datei")}, "every print part in the print table"
+    TR_ = B.get("transport") or {}
+    assert {p["datei"] for p in B["druck"]["teile"] + (TR_.get("teile") or [])} >= {t_["datei"] for t_ in B["teile"] if t_.get("datei")}, "every print part in the print table"
+    if TR_:                                       # mw-bauen-transport: own section, not in the variant ZIP, in 3D only with the switch
+        tn = geh_transport_namen()
+        assert tn and all(n in geh_druck_namen() and not any(n in geh_var_namen(v_) for v_ in GEH_VAR_DIR) for n in tn), "transport files"
+        assert all(t_.get("transport") in {g_["id"] for g_ in TR_["gruppen"]} and not t_.get("ohne") for t_ in B["teile"] if t_.get("transport")), "transport parts"
+        assert {p["datei"] for p in TR_["teile"]} == {t_["datei"] for t_ in B["teile"] if t_.get("transport")}, "transport print table"
+        assert not {p["datei"] for p in TR_["teile"]} & {p["datei"] for p in B["druck"]["teile"]}, "transport parts not in the normal print table"
+        lm = geh_transport_liesmich("de")
+        assert "noch nicht erprobt" in lm and all(_gx_py(g_["titel"], "de") in lm for g_ in TR_["gruppen"]), "transport LIESMICH"
     fk = geh_fk()
     assert set(fk) == set(B["fehlersuche"]), "troubleshooting ids in the error catalogue: " + str(set(B["fehlersuche"]) - set(fk))
     for k in GEH_KEYS:
@@ -1299,9 +1417,13 @@ def geh_selftest():
     for x in ('src="/', "/bau3d/", "/build/qr.svg", "/i18n/", "/*GEH", "<!--NAV-->", "/*ALERTS*/"):
         assert x not in off_, ("offline file", x)
     import gzip
-    for k in list(BAU3D) + ["glb"]:
+    for k in list(BAU3D) + ["glb"] + (["glbt"] if len(globals().get("BAU3D_GLB_TRANSPORT") or []) > 2 else []):
         raw = gzip.decompress(bau3d_bytes(k))
-        assert hashlib.sha256(raw).hexdigest() == (BAU3D_GLB[0] if k == "glb" else BAU3D[k][0]), k
+        assert hashlib.sha256(raw).hexdigest() == (BAU3D_GLB[0] if k == "glb" else BAU3D_GLB_TRANSPORT[0] if k == "glbt" else BAU3D[k][0]), k
+    if (GEH_BAU.get("transport") or {}).get("gruppen"):   # mw-bauen-transport: own model with every transport part, not in the main one
+        tri = {t_["id"] for t_ in GEH_BAU["teile"] if t_.get("transport")}
+        assert {e_["id"] for e_ in BAU3D_MODELLE_TRANSPORT} == tri and not tri & {e_["id"] for e_ in BAU3D_MODELLE.get("teile") or []}, "transport model"
+        assert bau3d_bytes("glbt") and "/build/gehaeuse_transport.glb" in geh_page() and '"transport"' in json.dumps(geh_m3()), "transport model served"
     assert gzip.decompress(bau3d_bytes("three.module.min.js")).startswith(b"/**") and bau3d_bytes("x.js") is None
     assert HELP_PAGE.count('<section id="case"') == 2 and all('href="/build"' in (HELP_X.get(L) or "href=\"/build\"") for L in ("fr", "it", "rm")), "manual"
     keep = CFG.get("sim_on"), CFG.get("bau_mein")

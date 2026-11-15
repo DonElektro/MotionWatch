@@ -113,7 +113,7 @@ const plates = () => ((DL || {}).platten || {})[GVAR()] || [];   // real-gehaeus
 const lage = id => ((DL || {}).lage || {})[id];
 const n1 = v => { const r = v >= 20 ? Math.round(v) : Math.round(v * 10) / 10; return String(r).replace(".", gL() === "en" ? "." : ","); };
 const dims = id => { const g = ((DL || {}).masse || {})[id]; return g ? g.map(n1).join(" × ") : ""; };
-const druckOf = d => { const all = (GB.druck || {}).teile || []; return all.find(p => p.datei === d && ok(p.wenn)) || all.find(p => p.datei === d); };
+const druckOf = d => { const all = ((GB.druck || {}).teile || []).concat((GB.transport || {}).teile || []); return all.find(p => p.datei === d && ok(p.wenn)) || all.find(p => p.datei === d); };
 const pname = d => { const p = (GB.teile || []).find(x => x.datei === d && x.name); return p ? gx(p.name) : d.replace(/_/g, " "); };
 function btn(txt, fn, cls) { const b = el("button", cls || "", txt); b.type = "button"; b.onclick = fn; return b; }
 function table(rows) {
@@ -130,7 +130,7 @@ function printRows(datei) {
     [t("Weight"), de.gramm ? fmt(t("about %s g (estimated)"), de.gramm) : ""]];
 }
 function modeUi() {
-  ["v-exp", "v-xray", "v-inner"].forEach(i => { const e = document.getElementById(i); if (e) e.disabled = !!B.mode; });
+  ["v-exp", "v-xray", "v-inner", "v-trans"].forEach(i => { const e = document.getElementById(i); if (e) e.disabled = !!B.mode; });
   const w = document.getElementById("v-whole"), p = document.getElementById("v-plates");
   if (w) w.hidden = !B.mode;
   if (p) p.classList.toggle("on", B.mode === "platten");

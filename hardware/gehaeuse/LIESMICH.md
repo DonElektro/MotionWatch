@@ -151,7 +151,8 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
   Anleitung mit Teileliste, Warnungen und NACHMESSEN [Dokumente/LIESMICH_Montage_v5-3-1.md](Dokumente/LIESMICH_Montage_v5-3-1.md);
   prüfen im Ordner `Quellcode/`: `check531.py`, `printcheck531.py`, `druckcheck531.py`, Bilder `prev531.py`.
 
-- **5.4.0** (14.11.2026, zwei neue Druckteile, kein Teil von v5.3 geändert; passt auch auf v5.1 / v5.2): **Transportsicherung**
+- **5.4.0** (14.11.2026, **noch nicht freigegeben** – `bau.json` bleibt 5.3.1; die Teile liegen schon in MoveEye unter Bauen →
+  Drucken, Abschnitt «🧳 Transportsicherung (noch nicht erprobt)»; zwei neue Druckteile, kein Teil von v5.3 geändert; passt auch auf v5.1 / v5.2): **Transportsicherung**
   aus zwei Teilen, zusammen ca. 22 g. Beide haben eine Öse (Ø 3,6) für eine Schnur.
   - **29 Haube** (37 × 131 × 55 mm, mit Öse): wird von oben über Kopf und Lampen gedrückt (Kopf in Grundstellung) und rastet an
     den beiden Lampenbechern ein. Sie sperrt das **Neigen** (Spiel ± 0,5°).
@@ -164,11 +165,11 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
     [Druckdateien/v5-3/MoveEye_v5-3_30_Drehsperre_Klammer.3mf](Druckdateien/v5-3/MoveEye_v5-3_30_Drehsperre_Klammer.3mf)
     (flach, wie eingebaut), beide ohne Stützen.
   - Anleitung mit Abständen und «Nicht getestet»: [Dokumente/LIESMICH_Montage_v5-4-0.md](Dokumente/LIESMICH_Montage_v5-4-0.md).
-    In `bau.json` Teile «kappe» und «drehsperre», Drucken und Montage «Transportsicherung aufsetzen / abnehmen».
+    In `bau.json` Teile «kappe» und «drehsperre» («transport»: haube), Druckangaben, Dateien und Montage im Abschnitt «transport».
   - Prüfen im Ordner `Quellcode/`: `check540.py`, `printcheck540.py`, `druckcheck540.py`, Bilder `prev540.py`, neu erzeugen
     `export540.py` (STL ausserhalb des Repositorys).
 
-- **5.5.0** (14.11.2026, drei neue Druckteile, kein Teil geändert; passt auch auf v5.1 / v5.2): **Schutzschale** für den
+- **5.5.0** (14.11.2026, **noch nicht freigegeben**, ebenso im Abschnitt «🧳 Transportsicherung»; drei neue Druckteile, kein Teil geändert; passt auch auf v5.1 / v5.2): **Schutzschale** für den
   Rucksack, zu 108 × 132 × 108 mm, zusammen ca. 170 g. Sie umschliesst Kopf, Lampen, Gabel, Arm 2 und Drehteller bis auf den
   Deckel; bis 5 kg obendrauf gehen über Dach (8 Rippen), Wände und Schürzen in den Deckel (Dach 3,4 mm über dem Diffusor;
   Schätzung: Sicherheit 3,2 mit 5 kg auf einer Rippe).
@@ -181,7 +182,7 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
     `…_32_Schutzschale_hinten.3mf` (Rückseite unten), `…_33_Schutzschale_Stopfen.3mf` (Platte unten), alle ohne Stützen.
   - Anleitung mit Abständen, Last und «Nicht getestet»:
     [Dokumente/LIESMICH_Montage_v5-5-0.md](Dokumente/LIESMICH_Montage_v5-5-0.md). In `bau.json` Teile «schale_vorne»,
-    «schale_hinten», «schale_stopfen», Drucken und Montage «Schutzschale aufsetzen / abnehmen».
+    «schale_hinten», «schale_stopfen» («transport»: schale), Druckangaben, Dateien und Montage im Abschnitt «transport».
   - Prüfen im Ordner `Quellcode/`: `check550.py`, `printcheck550.py`, `druckcheck550.py`, Bilder `prev550.py`, neu erzeugen
     `export550.py` (STL ausserhalb des Repositorys).
 
