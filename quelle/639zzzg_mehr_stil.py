@@ -497,6 +497,12 @@ MS_TEXT_JS = r"""{
 "simples",
 "semplici",
 "simpels"
+],
+"Sub-pages": [
+"Unterseiten",
+"Sous-pages",
+"Sottopagine",
+"Sutpaginas"
 ]
 },
 "dx": {
@@ -1027,6 +1033,12 @@ MS_TEXT_JS = r"""{
 "En couleur ou simples, point vert = activé",
 "A colori o semplici, punto verde = attivo",
 "Colurads u simpels, punct verd = activ"
+],
+"d:sheet": [
+"Über der Seite oder als ganze Seite",
+"Par-dessus la page ou en page entière",
+"Sopra la pagina o a pagina intera",
+"Sur la pagina u sco pagina entira"
 ]
 },
 "en": {
@@ -1117,7 +1129,8 @@ MS_TEXT_JS = r"""{
 "d:map": "Recordings on the map",
 "d:zf": "Collect pictures for «then / now»",
 "d:tips": "Short help for this page",
-"d:icons": "Coloured or plain, green dot = on"
+"d:icons": "Coloured or plain, green dot = on",
+"d:sheet": "Over the page or as a full page"
 },
 "pages": {
 "settings": [
@@ -1393,6 +1406,13 @@ MS_TEXT_JS = r"""{
 "icons",
 "🎨",
 "Symbols"
+],
+[
+"#fx-card",
+"d:sheet",
+"sheet",
+"🪟",
+"Sub-pages"
 ],
 [
 "sec:Device & help",
@@ -1809,6 +1829,7 @@ MS_JS = r"""<script>
     mqtt: (c, s) => !c.mqtt_on ? ON(false) : (s.mqtt && s.mqtt.status === "connected" ? [tr("connected"), "on"] : [tr("not connected"), "warn"]),
     security: (c, s) => s.pw_set ? [tr("password set"), ""] : [tr("no password"), "warn"],
     rucksack: c => ON(c.tausch_on),
+    sheet: () => [window.MWFX && MWFX.label ? MWFX.label() : "", ""],
     icons: () => { let v = "color"; try { v = localStorage.getItem("mw-icons") || "color"; } catch (e) {} return [v === "plain" ? tr("plain") : tr("coloured"), ""]; },
     updates: (c, s) => { const n = s.update_new && s.update_new.version; if (n) return [n + " · " + tr("ready to install"), "on"];
       const m = {auto: [tr("automatic"), "on"], dev: [tr("developer"), "on"], off: [tr("by hand"), ""]}[c.update_mode || "off"] || [String(c.update_mode), ""];
@@ -1928,24 +1949,35 @@ MS_JS = r"""<script>
   }
   // ---- one page per topic: the part moves into #ms-page and back to its place ---------------------------------------------
   let mark = null;
+  // 639zzzzx (owner 15.11.2026): with «From below / Middle / From the side» #ms-page is a window over the list (Live and Sim: page)
+  const fxOn = () => PAGE !== "live" && PAGE !== "sim" && !!(window.MWFX && MWFX.on && MWFX.on());
   function open(row, push) {
     const el = row.href ? null : target(row.id); if (!el) return;
+    const was = !!cur, fx = fxOn() || page.classList.contains("fx-win");
     if (cur) close(true);
     const h = list.parentNode; if (h && h !== host) { host.classList.remove("ms-pg"); host = h; }      // Live moves its parts (536): the list's place counts
     if (page.parentNode !== host) host.appendChild(page); if (hideBox.parentNode !== host) host.appendChild(hideBox);
     cur = row; mark = document.createComment("ms"); el.before(mark);
     page.lastChild.appendChild(el); page.querySelector("#ms-bar b").textContent = row.b.textContent || titleOf(el);
     if (el.tagName === "DETAILS") { el.dataset.msWasOpen = el.open ? "1" : ""; el.open = true; }
-    el.hidden = false; host.classList.add("ms-pg"); document.body.classList.add("ms-sub");
-    if (push) { try { history.pushState({ms: row.id}, "", "#s=" + encodeURIComponent(row.id)); } catch (e) {} }
-    window.scrollTo(0, 0);
+    el.hidden = false; document.body.classList.add("ms-sub");
+    if (fx) MWFX.show(page, {bar: page.querySelector("#ms-bar"), x: page.querySelector("#ms-back"), ret: row.r, close: () => page.querySelector("#ms-back").onclick()});
+    else host.classList.add("ms-pg");
+    // a window already open (tabOpen, a hit of 🔍): its content changes, no second window in the history
+    if (push) { try { history[was && fx ? "replaceState" : "pushState"]({ms: row.id}, "", "#s=" + encodeURIComponent(row.id)); } catch (e) {} }
+    if (!fx) window.scrollTo(0, 0);
   }
   function close(keep) {
+    if (!cur) return;
+    if (!keep && page.classList.contains("fx-win")) { const w = cur; MWFX.hide(page, () => { if (cur === w) shut(false, true); }); return; }
+    shut(keep, false);
+  }
+  function shut(keep, fx) {
     if (!cur) return; const el = page.lastChild.firstChild;
     if (el && mark && mark.parentNode) { mark.replaceWith(el); if (el.tagName === "DETAILS" && !el.dataset.msWasOpen) el.open = false; }
     else if (el) hideBox.appendChild(el);
     mark = null; const was = cur; cur = null;
-    if (!keep) { host.classList.remove("ms-pg"); document.body.classList.remove("ms-sub"); paint(); setTimeout(() => was.r.scrollIntoView({block: "center"}), 0);
+    if (!keep) { host.classList.remove("ms-pg"); document.body.classList.remove("ms-sub"); paint(); if (!fx) setTimeout(() => was.r.scrollIntoView({block: "center"}), 0);
       if (location.hash.startsWith("#s=")) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} } }
   }
   window.addEventListener("popstate", e => { const id = e.state && e.state.ms; if (id) { const r = rows.find(x => x.id === id); if (r) open(r, false); } else close(); });
