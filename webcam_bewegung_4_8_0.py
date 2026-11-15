@@ -24,7 +24,7 @@ Features
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
   * 4.8.0: Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt
-    hoch) · Spielesammlung GS-1.25: in «Gipfeltreffen» trifft Antippen am Handy wieder die richtige Stelle
+    hoch) · Spielesammlung GS-1.25: «Verschollen im Bergtal» zeigt den Fortschritt pro Kapitel (oben und im Menü) und läuft bis 16× schnell; in «Gipfeltreffen» trifft Antippen am Handy wieder die richtige Stelle
   * 4.7.0: Spielesammlung GS-1.24: neues Spiel «Gipfeltreffen» (erstes Level) und «Verschollen im Bergtal» Kapitel 2 «Drei Tage»
     · Fehler behoben: der Passwort-Dialog nimmt dem Feld «Wiederholen» den Cursor nicht mehr weg
   * 4.6.0: Mitteilungen pausieren: Push-Pause, die von selbst endet (15 min bis «bis ich zurück bin»), 🔕 auf der Glocke –
@@ -291,7 +291,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_8_0.zip"
-ZD_SHA256 = "57ba02fecdf51398855f18c27910828192869dba1d0be0316010a7166d2929fe"
+ZD_SHA256 = "bb1b8d40de731391cf3bd8be3ed809f3bfdfb6336e433dc77b8e825f406ee99a"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -28803,7 +28803,7 @@ threading.Thread(target=_extra_cams_boot, daemon=True, name="extracams-boot").st
 
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.25", "file": "games/MotionWatch_Spiele.zip", "size": 16050029, "sha256": "cd9a1d5aed0563988bdd44368522fa2825077d13720ffeda867092d2dc165356"}
+GAMES_PKG = {"version": "GS-1.25", "file": "games/MotionWatch_Spiele.zip", "size": 16051126, "sha256": "b0ca13aeb96804b683dc7b290e92b4dcea81ab4a92b606e5399c90673239e566"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
@@ -114770,6 +114770,9 @@ def _px_tk_paint(app):
 
 
 push_pause_selftest = _zd_fn('639zzzzp_push_pause/push_pause_selftest()')
+
+
+
 
 
 

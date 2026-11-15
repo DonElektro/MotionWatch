@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-15 22:47",
+ "generated": "2026-11-15 23:11",
  "versions": [
   {
    "version": "4.8.0",
    "file": "webcam_bewegung_4_8_0.py",
    "url": "",
-   "sha256": "50b1833c9c714f7b6e0c89cf4eb9a10db860ba1e74d31c2afbed3df4f2db7b7d",
-   "date": "2026-11-15 22:47",
-   "notes": "Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt hoch) · Spielesammlung GS-1.25: in «Gipfeltreffen» trifft Antippen am Handy wieder die richtige Stelle",
-   "size": 3957033,
-   "sig": "be57433ba81e5669a86c1350a2850ce244abfe25455b84bfa607bf274e929c50bff9bc252eb62281034c86025e167caf7719829ba3db25d96feb42df5b1b5403",
+   "sha256": "32f445d5d3a34f10c59a97a8416555b430220c51e90975358d21abdd134e4675",
+   "date": "2026-11-15 23:11",
+   "notes": "Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt hoch) · Spielesammlung GS-1.25: «Verschollen im Bergtal» zeigt den Fortschritt pro Kapitel (oben und im Menü) und läuft bis 16× schnell; in «Gipfeltreffen» trifft Antippen am Handy wieder die richtige Stelle",
+   "size": 3957146,
+   "sig": "2fe756367dad01cf2d02bfacb2c0f3f158e6ae1fb22fce48a607cb34071e175c7f7c722c28abd139e57c77d99266bbcbfd003ca4daa10389b9e87b4615724806",
    "data": {
     "file": "moveeye_daten_4_8_0.zip",
     "url": "",
-    "sha256": "57ba02fecdf51398855f18c27910828192869dba1d0be0316010a7166d2929fe",
-    "size": 13603441,
-    "sig": "1152e423e6d94eaae5fd2dbbe2c093c40e4c67e64430b5e529e0dc6b735a620a4fdf4d9a6551d87da5a4b768bc3928b32c2f45126269c843dcc94001ac874c02"
+    "sha256": "bb1b8d40de731391cf3bd8be3ed809f3bfdfb6336e433dc77b8e825f406ee99a",
+    "size": 13603898,
+    "sig": "a5e3df59cc77e94d1cca18d3706f2adfb1fb5a5604ac697ce5fffe70ebf41901a534cf2361bc7e1e2bcd8439994a12fe7a9a2558c4ed666328e31382f577f90d"
    }
   },
   {
