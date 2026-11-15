@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639zzzze: «🖼 Produktseite: Bilder» (Mehr → Werkzeuge, nur Administrator) – die Bilder der Gäste-Seite /info/ (Live-Bild im Handy, «Sieh selbst» Tag / Nacht, Zeitfenster damals / jetzt) durch eigene Fotos ersetzen: zuschneiden auf 16:9, WebP, ohne EXIF / GPS, Markierung mit Text, «Zurück zum Beispiel». Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639zzzze: «🖼 Produktseite: Bilder» (Mehr → Homepage, neben dem Upload-Schlüssel; nur Administrator) – die Bilder der Gäste-Seite /info/ (Live-Bild im Handy, «Sieh selbst» Tag / Nacht, Zeitfenster damals / jetzt) durch eigene Fotos ersetzen: zuschneiden auf 16:9, WebP, ohne EXIF / GPS, Markierung mit Text, «Zurück zum Beispiel». Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Wunsch des Besitzers (11/2026): auf der Produktseite stehen ruhige Beispielbilder (Teil 620, Bildplätze data-pb="…");
 # der Besitzer will später eigene Fotos nehmen. Hier:
@@ -13,6 +13,7 @@
 #   * /produktbilder (Seite), /api/produktbilder (Zustand, Hochladen mit dem Bild als Körper, Markierung, zurück),
 #     /api/produktbilder/bild/<platz> (Vorschau, auch die Beispiele), /info/bild/<platz>.webp (öffentlich wie /info/,
 #     nur wenn die Produktseite eingeschaltet ist). Ändern nur Rolle admin ohne App-Schlüssel; andere: 403.
+#   * Einstieg: Knopf in der Karte «Homepage» (639zzzh) neben dem Upload-Schlüssel (Elektro 11/2026; vorher Mehr → Werkzeuge).
 # Tests: werkzeuge/produktbilder_test.py (hochladen, EXIF weg, zurück, 403, /info/ zeigt das neue Bild, Seite 390 px).
 # ----------------------------------------------------------------------------
 import io
@@ -270,21 +271,16 @@ def smalltv_routes(app, reply, body):                        # + 639zzzze: page,
             return Response(f.read(), mimetype="image/webp", headers={"Cache-Control": "public, max-age=86400", "X-Content-Type-Options": "nosniff"})
 
 
-# ---- Mehr → Werkzeuge: one entry under «Product page for guests» ----------------------------------------------------------------
-_PB_TOOL = ('<a class="tli" data-k="pbild" href="/produktbilder" style="text-decoration:none;color:inherit"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true">'
-            '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/></svg>'
-            '<span class="tln"><b data-i18n="Product page: pictures">Product page: pictures</b><span class="tsum" data-i18n="own photos instead of the examples">'
-            'own photos instead of the examples</span></span><i class="tdot"></i></a>\n  ')
-if 'data-k="pbild"' not in TOOLS_PAGE and '<button type="button" class="tli" data-k="speed"' in TOOLS_PAGE:
-    TOOLS_PAGE = TOOLS_PAGE.replace('<button type="button" class="tli" data-k="speed"', _PB_TOOL + '<button type="button" class="tli" data-k="speed"', 1)
-    TOOLS_PAGE = TOOLS_PAGE.replace('Object.assign(I18N.de, {"All tools"', 'Object.assign(I18N.de, {"Product page: pictures": "Produktseite: Bilder", '
-                                    '"own photos instead of the examples": "eigene Fotos statt Beispiele"});\nObject.assign(I18N.de, {"All tools"', 1)
+# ---- the entry: in the card «Homepage» (639zzzh, only the admin) next to the upload key (Elektro, 11/2026) ------------------------
+_PB_HP_ROW = '<div class="hp-row"><button type="button" id="hp-key-b"></button><button type="button" class="sec" id="hp-key-d"></button></div>'
+_PB_HP_LINK = ('<a class="btn sec" id="hp-pbild" href="/produktbilder" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;'
+               'text-decoration:none;box-sizing:border-box">🖼 <span data-i18n="Product page: pictures">Product page: pictures</span></a>')
+if 'id="hp-pbild"' not in HP_PAGE and HP_PAGE.count(_PB_HP_ROW) == 1:
+    HP_PAGE = HP_PAGE.replace(_PB_HP_ROW, _PB_HP_ROW[:-len("</div>")] + _PB_HP_LINK + "</div>", 1)
 
 # ---- texts (English key: Deutsch, français, italiano, rumantsch) -----------------------------------------------------------------
 _HX_PB = {
     "Product page: pictures": ("Produktseite: Bilder", "Page produit : images", "Pagina prodotto: immagini", "Pagina da product: maletgs"),
-    "own photos instead of the examples": ("eigene Fotos statt Beispiele", "tes photos au lieu des exemples", "le tue foto al posto degli esempi",
-                                           "atgnas fotografias empè dals exempels"),
     "These pictures are shown to guests on the product page (/info/). Your own photos replace the examples.": (
         "Diese Bilder sehen Gäste auf der Produktseite (/info/). Eigene Fotos ersetzen die Beispiele.",
         "Ces images apparaissent aux invités sur la page produit (/info/). Tes propres photos remplacent les exemples.",
@@ -356,6 +352,9 @@ _render_page_639zzzze = render_page
 # wraps: render_page
 def render_page(page, active):                               # + 639zzzze: the German texts of the page
     out = _render_page_639zzzze(page, active)
+    if 'id="hp-pbild"' in out:                              # the German name of the entry on /homepage
+        out = out.replace("</body>", "<script>Object.assign(I18N.de, {\"Product page: pictures\": " + json.dumps(_PB_DE["Product page: pictures"], ensure_ascii=False)
+                          + "});document.querySelectorAll('#hp-pbild [data-i18n]').forEach(e => e.textContent = t(e.dataset.i18n));</script></body>", 1)
     if "/*PBDE*/" in out:
         out = out.replace("/*PBDE*/", "Object.assign(I18N.de, " + json.dumps(_PB_DE, ensure_ascii=False).replace("</", "<\\/") + ");", 1)
     return out
@@ -521,7 +520,7 @@ def produktbilder_selftest():
         for k in PB_SLOTS:
             assert pbild_default(k) and pbild_default(k)[0][:4] == b"RIFF", "example picture in the page: " + k
         assert all(DE.get(k) and all(TRX[L].get(k) for L in ("fr", "it", "rm")) for k in _HX_PB), "texts in 5 languages"
-        assert 'data-k="pbild"' in TOOLS_PAGE
+        assert 'id="hp-pbild" href="/produktbilder"' in HP_PAGE and 'href="/produktbilder"' not in TOOLS_PAGE, "entry in the card Homepage"
     finally:
         DATA_DIR = old
         shutil.rmtree(d, ignore_errors=True)

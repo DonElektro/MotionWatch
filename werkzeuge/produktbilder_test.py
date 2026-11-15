@@ -7,7 +7,7 @@ MoveEye (gebaute Datei, --demo --headless, eigener Daten-Ordner, Passwort, ein B
   * /info/ zeigt das neue Bild (/info/bild/<platz>.webp, ohne Anmeldung), window.PB mit Markierung; «Zurück zum Beispiel»:
     /info/ wieder mit dem Beispiel, /info/bild/… → 404.
   * Rechte: Benutzer «Nur ansehen» → 403 (Seite, Zustand, Hochladen, Vorschau); Administrator → 200.
-  * --browser: Seite /produktbilder bei 390 px (keine waagrechte Bildlaufleiste, keine JS-Fehler) und /info/ mit dem eigenen
+  * --browser: Knopf in der Karte «Homepage» neben dem Upload-Schlüssel, Seite /produktbilder bei 390 px (keine waagrechte Bildlaufleiste, keine JS-Fehler) und /info/ mit dem eigenen
     Bild und der Markierung; --bilder ORDNER: Bildschirmfotos vorher / nachher.
 
   python3 werkzeuge/produktbilder_test.py [--datei X.py] [--browser] [--bilder ORDNER] [--foto BILD]
@@ -127,6 +127,10 @@ def main():
              req("/api/produktbilder?action=reset", json.dumps({"slot": "jetzt"}).encode(), user="gast", pw="gast-pw-123")[0]]
         ok(g == [403] * 5, "Benutzer «Nur ansehen»: Seite / Zustand / Hochladen / Vorschau / zurück → 403 (%s)" % g)
         ok(req("/produktbilder")[0] == 200, "Administrator: Seite /produktbilder 200")
+        c, _t, hp = req("/homepage"); c2, _t, tl = req("/tools")
+        ok(c == 200 and b'id="hp-pbild" href="/produktbilder"' in hp, "Einstieg in der Karte «Homepage» (/homepage)")
+        ok(c2 == 200 and b"/produktbilder" not in tl, "nicht mehr unter Mehr → Werkzeuge")
+        ok(req("/homepage", user="gast", pw="gast-pw-123")[0] == 403, "Benutzer «Nur ansehen»: /homepage 403")
         ok(req("/api/produktbilder", auth=False)[0] == 401, "ohne Anmeldung: 401")
         # upload: JPEG with EXIF / GPS, cut at the left edge, with a mark
         raw = foto_jpeg()
@@ -197,6 +201,18 @@ def browser(base, bilder, tag, slot, foto=""):
                              http_credentials={"username": "admin", "password": PW}, locale="de-CH")
         pg = ctx.new_page(); errs = []
         pg.on("pageerror", lambda e: errs.append(str(e)))
+        # the entry: card «Homepage», next to the upload key
+        pg.goto(base + "/homepage", wait_until="domcontentloaded")
+        pg.wait_for_selector("#hp-pbild", timeout=30000); pg.wait_for_timeout(800)
+        pg.evaluate("() => { const g = document.getElementById('gd-card'); if (g) g.style.display = 'none'; ['g2-ov','g2-spot','g2-bub'].forEach(i => { const e = document.getElementById(i); if (e) e.remove(); }); }")
+        hp = pg.evaluate("() => { const a = document.getElementById('hp-pbild'), k = document.getElementById('hp-key-b'); "
+                         "return [a.textContent.trim(), a.parentElement === k.parentElement, a.getBoundingClientRect().width > 100]; }")
+        ok(hp == ["🖼 Produktseite: Bilder", True, True], "Homepage-Karte: Knopf neben dem Upload-Schlüssel %s" % hp)
+        ok(pg.evaluate("() => document.documentElement.scrollWidth") <= 390, "/homepage: keine waagrechte Bildlaufleiste")
+        if bilder:
+            pg.locator("section.card", has=pg.locator("#hp-key-b")).screenshot(path=os.path.join(bilder, "homepage_karte_%s.png" % tag))
+        pg.locator("#hp-pbild").click(); pg.wait_for_url("**/produktbilder", timeout=20000)
+        ok(pg.url.endswith("/produktbilder"), "Knopf öffnet /produktbilder")
         pg.goto(base + "/produktbilder", wait_until="domcontentloaded")
         pg.wait_for_function("() => document.querySelectorAll('#pb-list .pb-c').length === 5", timeout=30000)
         pg.wait_for_function("() => [...document.querySelectorAll('#pb-list img')].every(i => i.complete && i.naturalWidth > 0)", timeout=30000)
