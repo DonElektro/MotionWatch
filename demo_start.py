@@ -9,6 +9,7 @@ Der Host startet nur diese Datei (Startzeile:  python3 demo_start.py ). Sie
      (MoveEye sperrt dann alles, was nach aussen oder ins System greift: Teil 639zzzzw);
   3. setzt die Demo jede Nacht um 03:30 (Schweizer Zeit) auf Werkseinstellungen zurück (Ordner demo_daten wird geleert,
      MoveEye neu gestartet) – ebenso, wenn der Ordner grösser als 1 GB wird;
+  3b. startet MoveEye mit wenig Speicher-Verschnitt (MALLOC_ARENA_MAX=2 u. a., CHILD_ENV): rund 0.7 statt 1.2 GB;
   4. schaut alle 6 Stunden nach einer neueren signierten Version, lädt sie NUR in den eigenen Ordner, prüft sie und
      beendet sich dann (der Host startet nach 5 s neu, dann läuft die neue Version). Nie etwas Unsigniertes.
 Nur Python-Standardbibliothek. Endet MoveEye von selbst, endet auch diese Datei (der Host startet beides neu).
@@ -37,6 +38,9 @@ CHECK_EVERY = 6 * 3600
 RESET_AT = (3, 30)
 DATA_MAX_BYTES = 1024 ** 3                     # the folder of the host has 1.5 GB
 KEEP_VERSIONS = 2                              # the running one and the one before
+# memory: glibc gives every thread of the web server its own malloc arena - with visitors MoveEye grew from 0.6 to 1.2 GB
+# (measured 16.11.2026); 2 arenas and one thread for the maths libraries keep it at about 0.68 GB (host: 1 GB)
+CHILD_ENV = {"MALLOC_ARENA_MAX": "2", "OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "PYTHONUNBUFFERED": "1"}
 
 
 def log(msg):
@@ -393,7 +397,7 @@ class Child:
 
     def start(self):
         os.makedirs(DATA, exist_ok=True)
-        env = dict(os.environ, PYTHONUNBUFFERED="1")
+        env = dict(os.environ, **CHILD_ENV)
         self.p = subprocess.Popen(child_cmd(self.path), cwd=HERE, env=env)
         log(f"MoveEye started: {os.path.basename(self.path)} (PID {self.p.pid})")
 

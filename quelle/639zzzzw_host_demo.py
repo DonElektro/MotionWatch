@@ -81,14 +81,21 @@ def host_enforce(save=False):
 
 
 def _host_note(what):
-    """log a refused action once per minute (so the log shows what a visitor tried, without filling it)"""
+    """remember a refused action (logged once per minute by _host_loop). Never log_event here: the guards are hit inside
+    code that holds LOCK (e.g. /api/state -> health_check -> dmesg), and log_event takes LOCK too - that was a deadlock."""
     now = time.time()
     if now - HOST["blocked"].get(what, 0.0) > 60:
         HOST["blocked"][what] = now
+        HOST.setdefault("notes", deque(maxlen=50)).append(what)
+
+
+def _host_notes_flush():
+    q = HOST.get("notes")
+    while q:
         try:
-            log_event("sys", f"Host mode: refused {what}"[:200])
+            log_event("sys", f"Host mode: refused {q.popleft()}"[:200])
         except Exception:
-            pass
+            break
 
 
 def _host_ip_ok(host):
@@ -270,6 +277,7 @@ def _host_loop():
     while True:
         time.sleep(2.0)
         try:
+            _host_notes_flush()
             host_enforce(True)
             _host_sim_tick()
         except Exception as e:
@@ -293,18 +301,32 @@ def _host_sim_tick():
             arm(0)
     elif act:
         HOST["gone_t"] = 0.0
-    elif CFG.get("sim_on") and HOST["sim_auto"]:
+    elif HOST["sim_auto"]:
         HOST["gone_t"] = HOST.get("gone_t") or time.time()
         if time.time() - HOST["gone_t"] > 60:
             armed = bool(CFG.get("armed"))
-            sim_set(False, who="automatic: web simulator gone (host)", confirm=True)
             HOST["sim_auto"] = False; HOST["gone_t"] = 0.0
-            CFG["source"] = "demo"
-            w = WATCH_REF.get("w")
-            if w is not None:
-                w.request_source("demo")
-            if armed:
-                arm(0)
+            try:
+                sim_set(False, who="automatic: web simulator gone (host)", confirm=True)
+            except Exception as e:                       # whatever fails there: the drawn scene comes back anyway
+                _host_note(f"(simulation off: {type(e).__name__}: {str(e)[:60]})")
+                CFG["sim_on"] = False
+            _host_back_to_demo(armed)
+    elif not CFG.get("sim_on") and str(STATE.get("source_id") or "").startswith("sim:") and time.time() - HOST.get("back_t", 0.0) > 15:
+        HOST["back_t"] = time.time()                     # the simulation is off, but the picture still comes from it
+        _host_back_to_demo(bool(CFG.get("armed")))
+
+
+def _host_back_to_demo(armed):
+    CFG["source"] = "demo"
+    w = WATCH_REF.get("w")
+    if w is not None:
+        w.request_source("demo")
+    if armed:
+        try:
+            arm(0)
+        except Exception:
+            pass
 
 
 def host_sim_source(spec):

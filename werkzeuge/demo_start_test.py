@@ -44,7 +44,7 @@ def fake_program(folder, ver, host=True, zip_ok=True, extra=""):
            + ('def _args(ap):\n    ap.add_argument("--host-modus")\ndef host_mode_start(a): pass\n' if host else "")
            + "import sys, time, json, os\n"
            + "if __name__ == '__main__':\n"
-           + "    open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'argv.json'), 'w').write(json.dumps(sys.argv[1:]))\n"
+           + "    open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'argv.json'), 'w').write(json.dumps(sys.argv[1:] + ['ENV=' + os.environ.get('MALLOC_ARENA_MAX', '')]))\n"
            + "    time.sleep(120)\n" + extra)
     fn = f"webcam_bewegung_{v_}.py"
     with open(os.path.join(folder, fn), "w") as f:
@@ -79,7 +79,8 @@ def main():
         ok(not ds.sig_ok(e["version"], e["file"], "0" * 64, e["sig"]), "andere Prüfsumme: ungültig")
         ok(not ds.sig_ok("9.9.9", e["file"], e["sha256"], e["sig"]), "andere Nummer: ungültig")
         if os.path.isfile(os.path.join(ROOT, e["file"])):
-            ok(ds.sha256_file(os.path.join(ROOT, e["file"]), ds.UPD_MAX_BYTES) == e["sha256"], f"{e['file']}: Prüfsumme der Datei passt")
+            same = ds.sha256_file(os.path.join(ROOT, e["file"]), ds.UPD_MAX_BYTES) == e["sha256"]
+            print(f"  {'ok  ' if same else 'Hinweis:'} {e['file']}: Prüfsumme der Datei " + ("passt" if same else "anders (neu gebaut, noch nicht signiert)"))
     except (OSError, ValueError) as ex:
         ok(False, f"versions.json lesbar ({ex})")
 
@@ -187,6 +188,7 @@ def main():
         argv = json.load(open(argv_p)) if os.path.exists(argv_p) else []
         ok("--host-modus" in argv and argv[argv.index("--port") + 1] == "5099" and argv[argv.index("--bind") + 1] == "127.0.0.1",
            f"gestartet mit {' '.join(argv)}")
+        ok("ENV=2" in argv, "MoveEye läuft mit MALLOC_ARENA_MAX=2 (Speicher)")
         pr.send_signal(signal.SIGTERM)
         try:
             out, _ = pr.communicate(timeout=40)

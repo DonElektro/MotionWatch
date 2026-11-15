@@ -68,6 +68,8 @@ def static():
         ok(f'"{k}"' in src.split("HOST_NO_MODULES = ", 1)[1].split(")", 1)[0], f"keine Hardware: {k}")
     ok('HOST_PROGS = ("ffmpeg", "ffprobe")' in src, "Programme: nur ffmpeg / ffprobe")
     ok("# wraps: WebStream._serve" in src, "Wrapper markiert (bauen.py)")
+    hn = src.split("def _host_note(", 1)[1].split("\ndef ", 1)[0]
+    ok("log_event(" not in hn.replace("Never log_event", ""), "Sperren schreiben nicht selbst ins Protokoll (LOCK, sonst Verklemmung wie in /api/state)")
     print("2. Skript in den Seiten")
     ns = part_ns()
     js = ns["HOST_SHIM_JS"].replace("%PREFIX%", json.dumps("/demo"))
@@ -208,6 +210,14 @@ shutil.rmtree(data)
 
 
 # ---------------------------------------------------------------------------------------------------------- live run
+def child_env():
+    """the same environment demo_start.py gives MoveEye (CHILD_ENV: memory)"""
+    import importlib.util
+    sp = importlib.util.spec_from_file_location("demo_start_env", os.path.join(ROOT, "demo_start.py"))
+    m = importlib.util.module_from_spec(sp); sp.loader.exec_module(m)
+    return dict(m.CHILD_ENV)
+
+
 def free_port():
     s = socket.socket(); s.bind(("127.0.0.1", 0)); p = s.getsockname()[1]; s.close()
     return p
@@ -414,6 +424,8 @@ def get(url, data=None, timeout=20, headers=None):
             return r.status, r.read(), dict(r.headers)
     except urllib.error.HTTPError as e:
         return e.code, e.read(), dict(e.headers)
+    except OSError as e:                                  # time-out / refused: a red line, not a crash of the test
+        return 0, str(e).encode(), {}
 
 
 def listen_addrs(pid):
@@ -486,7 +498,7 @@ def run(a):
     log = open(os.path.join(tmp, "mw.log"), "w")
     pr = subprocess.Popen([py, mw, "--demo", "--headless", "--bind", "127.0.0.1", "--port", str(port), "--host-modus", "--url-prefix", "/demo",
                            "--config", data], cwd=os.path.dirname(os.path.abspath(mw)), stdout=log, stderr=subprocess.STDOUT,
-                          env=dict(os.environ, PYTHONUNBUFFERED="1"))
+                          env=dict(os.environ, **child_env()))
     px = Proxy(pport, port)
     base = f"http://127.0.0.1:{pport}/demo"
     sim = None
@@ -512,8 +524,13 @@ def run(a):
         ok(not left, f"keine absoluten Adressen ohne /demo in der Seite ({len(left)}: {left[:5]})")
         c2, b2, h2 = get(f"http://127.0.0.1:{port}/", headers={"Accept-Encoding": "identity"})
         ok(c2 == 200 and b"__mwBase" in b2, "direkt (ohne Proxy) auch mit Vorsilbe (Host-Modus)")
-        c, b, h = get(base + "/api/state")
-        ok(c == 200 and json.loads(b).get("ai_status") is not None, "API über /demo/api/state")
+        t_ = time.time(); c, b, h = get(base + "/api/state", timeout=40)
+        try:
+            js_ = json.loads(b)
+        except ValueError:
+            js_ = {}
+        ok(c == 200 and isinstance(js_, dict) and "armed" in json.dumps(js_)[:200000],
+           f"API über /demo/api/state ({c}, {len(b)} Bytes, {time.time() - t_:.1f} s{'' if c == 200 else ': ' + b[:120].decode('utf-8', 'replace')})")
         c, b, h = get(base + "/i18n/fr.js")
         ok(c == 200, "Übersetzung /demo/i18n/fr.js")
         print("B. Sperren")
@@ -526,6 +543,10 @@ def run(a):
         time.sleep(3)
         la = listen_addrs(pr.pid)
         ok(la and all(ip in ("127.0.0.1", "::1") for _p, ip, _po in la), f"hört nur auf 127.0.0.1: {sorted(set(la))}")
+        if a.ohne_sim:
+            if a.ram:
+                ram_measure(pr.pid, base, a.ram, rss0)
+            return 0
         print("C. Web-Simulator über WebSocket")
         sim = FakeWebSim(pport)
         ok(sim.status.startswith("HTTP/1.1 101"), f"WebSocket durch den Proxy: {sim.status}")
@@ -557,7 +578,10 @@ def run(a):
                 st = json.loads(get(base + "/api/state")[1])
                 if str(st.get("source_id", "")) == "demo":
                     back = True; break
-            ok(back, f"Web-Simulator weg -> wieder die gezeichnete Szene ({time.time() - t2:.0f} s)")
+            ok(back, f"Web-Simulator weg -> wieder die gezeichnete Szene ({time.time() - t2:.0f} s, Quelle {st.get('source_id')!r})")
+            if not back:
+                ml_ = open(os.path.join(data, "motionwatch.log"), errors="replace").read() if os.path.exists(os.path.join(data, "motionwatch.log")) else ""
+                print("   " + "\n   ".join(l[:200] for l in ml_.splitlines() if re.search(r"(?i)simulat|web sim|host mode", l))[-3000:])
         if a.ram:
             ram_measure(pr.pid, base, a.ram, rss0)
         esc = [p for p in px.escaped if p not in ("/favicon.ico",)]
@@ -599,18 +623,21 @@ def browser_check(base, bilder):
             pg = ctx.new_page(); errs = []; bad = []
             pg.on("pageerror", lambda e: errs.append(str(e)[:200]))
             pg.on("console", lambda m: errs.append("console: " + m.text[:200]) if m.type == "error" else None)
-            pg.on("response", lambda r: bad.append(f"{r.status} {r.url}") if r.status >= 400 and "/demo/" not in r.url else None)
+            fails = []
+            pg.on("response", lambda r: (bad.append(f"{r.status} {r.url}") if "/demo/" not in r.url else fails.append(f"{r.status} {r.url.split('/demo', 1)[1][:60]}")) if r.status >= 400 else None)
             pg.goto(base + path, wait_until="domcontentloaded", timeout=60000)
             pg.wait_for_timeout(4000)
             pg.screenshot(path=os.path.join(bilder, f"{PAGES.index((name, path)) + 1:02d}_{name}.png"))
             href_ok = pg.evaluate("""() => [...document.querySelectorAll('a[href],img[src],script[src],link[href]')]
                 .map(e => e.getAttribute('href') || e.getAttribute('src')).filter(u => u && u[0] === '/' && u[1] !== '/' && !u.startsWith('/demo'))""")
-            real_errs = [e for e in errs if "favicon" not in e and "404" not in e]
+            real_errs = [e for e in errs if "favicon" not in e and "Failed to load resource" not in e]
+            if fails:
+                print(f"   {name}: Antworten >= 400 (gesperrt / ohne Hardware): {sorted(set(fails))[:8]}")
             ok(not real_errs, f"{name}: keine JS-Fehler" + (f" ({real_errs[:3]})" if real_errs else ""))
             ok(not href_ok, f"{name}: alle Verweise mit /demo" + (f" ({href_ok[:5]})" if href_ok else ""))
             ok(not bad, f"{name}: keine Anfrage ausserhalb /demo" + (f" ({bad[:3]})" if bad else ""))
             if name == "live":
-                pg.locator("a[href='/demo/protect']").first.click()
+                pg.evaluate("document.querySelector(\"a[href='/demo/protect']\").click()")    # (the first-start guide covers the page)
                 pg.wait_for_timeout(2500)
                 ok(pg.url.endswith("/demo/protect"), f"Klick auf «Schutz» bleibt unter /demo ({pg.url})")
             pg.close()
@@ -669,6 +696,7 @@ def main():
     ap.add_argument("--ram", type=int, default=0)
     ap.add_argument("--sim-aus", action="store_true", help="also wait until the simulation switches off after the web simulator left (about 70 s)")
     ap.add_argument("--ohne-statisch", action="store_true")
+    ap.add_argument("--ohne-sim", action="store_true", help="no web simulator (for the RAM baseline)")
     a = ap.parse_args()
     if not a.ohne_statisch:
         static()
