@@ -1,16 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-15 23:11",
+ "generated": "2026-11-15 23:35",
  "versions": [
   {
    "version": "4.8.0",
    "file": "webcam_bewegung_4_8_0.py",
    "url": "",
-   "sha256": "32f445d5d3a34f10c59a97a8416555b430220c51e90975358d21abdd134e4675",
-   "date": "2026-11-15 23:11",
+   "sha256": "fab8aafffe8a17dac270925b1e904580fe8463459500dee630fd06ec02f2a98b",
+   "date": "2026-11-15 23:35",
    "notes": "Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt hoch) · Spielesammlung GS-1.25: «Verschollen im Bergtal» zeigt den Fortschritt pro Kapitel (oben und im Menü) und läuft bis 16× schnell; in «Gipfeltreffen» trifft Antippen am Handy wieder die richtige Stelle",
    "size": 3957146,
-   "sig": "2fe756367dad01cf2d02bfacb2c0f3f158e6ae1fb22fce48a607cb34071e175c7f7c722c28abd139e57c77d99266bbcbfd003ca4daa10389b9e87b4615724806",
+   "sig": "c1c73cddd00bf6615a9df3ae1295343647e3ace0e5e808137c2e78775fffe71b7a348876e26b73ae31f10e35f620da17ca715e1085aac8e7ea157cbfffe20e0b",
    "data": {
     "file": "moveeye_daten_4_8_0.zip",
     "url": "",

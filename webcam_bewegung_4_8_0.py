@@ -28803,7 +28803,7 @@ threading.Thread(target=_extra_cams_boot, daemon=True, name="extracams-boot").st
 
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.25", "file": "games/MotionWatch_Spiele.zip", "size": 16051126, "sha256": "b0ca13aeb96804b683dc7b290e92b4dcea81ab4a92b606e5399c90673239e566"}
+GAMES_PKG = {"version": "GS-1.25", "file": "games/MotionWatch_Spiele.zip", "size": 16051119, "sha256": "73119101c6bd711ad3b41cd8ebf570d3127c507981001dd1a3e9ade46926fc4f"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
