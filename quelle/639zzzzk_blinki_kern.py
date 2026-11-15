@@ -22,7 +22,10 @@
 #             «stream»), die Seite holt ihn alle 0.4 s ab. Höchstens BLINKI_MAX_TOKENS Wörter-Stücke, Zeitlimit.
 # Test: werkzeuge/ki_test.py (Ersatz-llama-server, lokaler Ersatz für Hugging Face, nie das echte Internet).
 # ----------------------------------------------------------------------------
-import signal as _bsig
+# Der Programmtext dieses Teils steht in EINEM Literal (Besitzer / Koordinator 15.11.2026: Hauptdatei klein): werkzeuge/bauen.py
+# legt es in die Zusatz-ZIP, beim Start läuft es hier an seinem Platz (exec in den gemeinsamen Namen). Ohne ZIP gibt es
+# «Blinki fragen» nicht - es gehört nicht zu Start, Schutz oder Alarm. Die ZIP ist über ZD_SHA256 (Teil 012) mit signiert.
+BLINKI_KERN_PY = r'''import signal as _bsig
 import http.client as _bhttp
 
 BLINKI_HF = {"url": "https://huggingface.co/"}           # tests put a local server here
@@ -615,3 +618,6 @@ def blinki_state():
             "server": BLINKI["state"], "err": BLINKI["err"], "held": BLINKI["held"], "busy": _blinki_busy(),
             "ram": {"total": tot, "avail": avail}, "disk_free_mb": free, "speak": bool(CFG.get("blinki_speak")),
             "threads": int(CFG.get("blinki_threads") or 2)}
+'''
+if BLINKI_KERN_PY:
+    exec(compile(BLINKI_KERN_PY, '<639zzzzk_blinki_kern>', "exec"), globals())

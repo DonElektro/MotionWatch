@@ -11,7 +11,10 @@
 #               Vorschläge = die Behebungen des Fehler-Katalogs (fx_run, 639u) – nur Knopf «Vorschlag», ausgeführt erst nach
 #               einem eigenen OK (POST mit ok:true, nur Administrator). Keine Behebung schaltet den Schutz aus (BLINKI_FIX_DENY).
 # ----------------------------------------------------------------------------
-BLINKI_IDX = {}
+# Der Programmtext dieses Teils steht in EINEM Literal (Besitzer / Koordinator 15.11.2026: Hauptdatei klein): werkzeuge/bauen.py
+# legt es in die Zusatz-ZIP, beim Start läuft es hier an seinem Platz (exec in den gemeinsamen Namen). Ohne ZIP gibt es
+# «Blinki fragen» nicht - es gehört nicht zu Start, Schutz oder Alarm. Die ZIP ist über ZD_SHA256 (Teil 012) mit signiert.
+BLINKI_WISSEN_PY = r'''BLINKI_IDX = {}
 BLINKI_FIX_DENY = re.compile(r"protect|schutz|arm|alarm_off|disarm|aus$", re.I)
 _BLINKI_STOP = set("der die das und oder ein eine einen einem eines ist sind wie was wo wann warum ich du er sie es wir ihr mit "
                    "von zu im in am an auf aus bei für fur nicht kann muss soll wird den dem des the a an and or is are how what "
@@ -303,3 +306,6 @@ def blinki_ask(mode, q, lang=None, prev=None, who="web", client="", extra=None):
 
 BLINKI_EXTRA_MODES = ()                 # 639zzzzk_blinki_mehr: stories, nature guide, quiz
 BLINKI_NOQ_MODES = ("fehler",)          # modes that work without a typed text
+'''
+if BLINKI_WISSEN_PY:
+    exec(compile(BLINKI_WISSEN_PY, '<639zzzzk_blinki_wissen>', "exec"), globals())
