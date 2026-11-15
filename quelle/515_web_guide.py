@@ -186,7 +186,7 @@ GUIDE_JS = r"""
   window.mwInline = function (c) {                         // one place for the small cards: right under the bar (else top of the page)
     c.classList.add("mw-inl"); const bar = document.getElementById("mwbar"), m = document.querySelector("main"), vc = document.getElementById("vcard");
     if (vc && vc.parentNode) vc.after(c);                // Live: under the picture - the picture never jumps down
-    else if (bar && bar.parentNode && getComputedStyle(bar).display !== "none") bar.after(c);
+    else if (bar && bar.parentNode && bar.parentNode.tagName === "MAIN" && getComputedStyle(bar).display !== "none") bar.after(c);   // 4.x: the tools sit in the tab row - then the top of the page
     else if (m) m.insertBefore(c, m.firstChild); else document.body.insertBefore(c, document.body.firstChild);
   };
   const queue = []; let busy = false;
