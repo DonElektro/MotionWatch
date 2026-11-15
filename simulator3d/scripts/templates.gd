@@ -67,7 +67,9 @@ const PLACES := [
 func _ready() -> void:
 	visible = false
 	add_theme_stylebox_override("panel", UI.box(Color(UI.BG, 0.97), UI.ACC, 14, 12, 1))
-	custom_minimum_size = Vector2(620, 470)
+	# Handy-Modus / Fenster-Prüfung (Besitzer 15.11.2026): keine feste Mindestgrösse mehr - auf dem Handy (390 Punkte)
+	# lief das Fenster links und rechts aus dem Bild, das ✕ war nicht mehr zu sehen. Jetzt: passt immer ins Bild,
+	# schmal = eine Spalte, Texte brechen um, ✕ 44 × 44.
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 8)
 	add_child(v)
@@ -75,9 +77,14 @@ func _ready() -> void:
 	v.add_child(hd)
 	var t := UI.heading("Vorlagen – fertige Welten und 3D-Modelle")
 	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	t.custom_minimum_size.x = 120
 	hd.add_child(t)
 	var x := Button.new()
 	x.text = "✕"
+	x.custom_minimum_size = Vector2(44, 44)
+	x.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	x.tooltip_text = "Schliessen"
 	x.pressed.connect(func(): visible = false)
 	hd.add_child(x)
 	tabs = TabContainer.new()
@@ -89,7 +96,7 @@ func _ready() -> void:
 	_tab_own()                      # 3D-4.x: the photo of the place is in the window «Gegenstände» (inventar.gd, 3D-4.22)
 	_msg = UI.small("")
 	_msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_msg.custom_minimum_size = Vector2(580, 0)
+	_msg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	v.add_child(_msg)
 	DirAccess.make_dir_recursive_absolute(DIR)
 	_load_placed()
@@ -108,9 +115,16 @@ func toggle(tab := -1) -> void:
 
 func _process(_dt: float) -> void:
 	if visible:
-		var vs := get_viewport_rect().size
-		size = Vector2(minf(680, vs.x - 30), minf(560, vs.y - 60))
-		position = ((vs - size) / 2.0).floor()
+		var fr := Rect2(Vector2.ZERO, get_viewport_rect().size)
+		if main != null and main.get("handy") != null and main.handy.on:
+			fr = main.handy.free_rect()                 # Handy-Modus: über der Leiste
+		var narrow: bool = fr.size.x < 600.0
+		var cols := 1 if narrow else 2
+		if _scene_box != null and _scene_box.columns != cols:
+			_scene_box.columns = cols
+		var m := 8.0 if narrow else 15.0
+		size = Vector2(minf(680, fr.size.x - 2.0 * m), minf(560, fr.size.y - (2.0 * m if narrow else 60.0)))
+		position = (fr.position + (fr.size - size) / 2.0).floor()
 
 
 func _page(title: String, intro: String) -> VBoxContainer:
@@ -124,7 +138,7 @@ func _page(title: String, intro: String) -> VBoxContainer:
 	sc.add_child(v)
 	var l := UI.small(intro)
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	l.custom_minimum_size = Vector2(560, 0)
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	v.add_child(l)
 	return v
 
@@ -141,13 +155,14 @@ func _entry(parent: Control, title: String, text: String, extra: String, btn: St
 	h.add_child(vv)
 	var a := Label.new()
 	a.text = title
+	a.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	a.add_theme_font_size_override("font_size", 15)
 	vv.add_child(a)
 	for s in [text, extra]:
 		if s != "":
 			var b := UI.small(s, UI.MUT if s == text else UI.GRN)
 			b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			b.custom_minimum_size = Vector2(400, 0)
+			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			vv.add_child(b)
 	if btn != "":
 		var bb := Button.new()
@@ -165,6 +180,7 @@ func _tab_scenes() -> void:
 	v.add_child(_search)
 	_scene_box = GridContainer.new()
 	_scene_box.columns = 2
+	_scene_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_scene_box.add_theme_constant_override("h_separation", 8)
 	_scene_box.add_theme_constant_override("v_separation", 8)
 	v.add_child(_scene_box)
@@ -185,15 +201,38 @@ func _paint_scenes() -> void:
 		var info: String = SCENE_INFO.get(id, "")
 		if q != "" and not (s[1].to_lower().contains(q) or info.to_lower().contains(q)):
 			continue
-		var b := Button.new()
-		b.text = ("● " if id == main.scene or (id == W.world_of(main.scene) and not W.is_place(id)) else "") + s[1] + "\n" + info
-		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		b.custom_minimum_size = Vector2(285, 54)
-		b.add_theme_font_size_override("font_size", 12)
-		if id in NEW_SCENES:
-			b.add_theme_color_override("font_color", Color(0.55, 0.95, 0.6))
-		b.pressed.connect(func(): _open_scene(id))
-		_scene_box.add_child(b)
+		var cur: bool = id == main.scene or (id == W.world_of(main.scene) and not W.is_place(id))
+		_scene_box.add_child(scene_card(("● " if cur else "") + s[1], info, id in NEW_SCENES, func(): _open_scene(id)))
+
+
+static func scene_card(title: String, info: String, green: bool, cb: Callable) -> Control:
+	"""one scene: a card the width of its column, name and text wrap (no fixed width - fits on a phone)"""
+	var pc := PanelContainer.new()
+	pc.add_theme_stylebox_override("panel", UI.box(UI.BTN2, UI.LINE, 8, 8))
+	pc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pc.custom_minimum_size = Vector2(0, 54)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 1)
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pc.add_child(v)
+	for i in range(2):
+		var l := Label.new()
+		l.text = title if i == 0 else info
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		l.add_theme_font_size_override("font_size", 13 if i == 0 else 12)
+		l.add_theme_color_override("font_color", Color(0.55, 0.95, 0.6) if green else (UI.TXT if i == 0 else UI.MUT))
+		l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		l.visible = l.text != ""
+		v.add_child(l)
+	var b := Button.new()                                 # over the whole card (a PanelContainer stacks its children)
+	b.flat = true
+	b.focus_mode = Control.FOCUS_NONE
+	b.mouse_filter = Control.MOUSE_FILTER_PASS
+	b.add_theme_stylebox_override("hover", UI.box(Color(UI.ACC, 0.10), UI.ACC, 8, 0))
+	b.add_theme_stylebox_override("pressed", UI.box(Color(UI.ACC, 0.22), UI.ACC, 8, 0))
+	b.pressed.connect(cb)
+	pc.add_child(b)
+	return pc
 
 
 func _open_scene(id: String) -> void:
@@ -228,8 +267,9 @@ func _tab_kits() -> void:
 # ---- tab 4: own file --------------------------------------------------------------------------------------------------
 func _tab_own() -> void:
 	var v := _page("Eigene Datei", "3D-Datei (.glb oder .gltf) laden – mit dem Knopf oder einfach ins Simulator-Fenster ziehen. Sie erscheint in der Szene «Meine Vorlage»; Grösse und Mitte stellt der Simulator selbst ein, Wände und Gegenstände werden zu Hindernissen.")
-	var h := HBoxContainer.new()
-	h.add_theme_constant_override("separation", 8)
+	var h := HFlowContainer.new()                         # schmal: die Knöpfe gehen auf die nächste Zeile
+	h.add_theme_constant_override("h_separation", 8)
+	h.add_theme_constant_override("v_separation", 8)
 	v.add_child(h)
 	var b := Button.new()
 	b.text = "📂 Datei wählen …"
@@ -259,7 +299,7 @@ func _tab_own() -> void:
 
 
 func _pick_file() -> void:
-	_fd.popup_centered()
+	_fd.popup_centered_clamped(Vector2i(760, 480), 0.94)   # kleines Fenster / Handy: ins Bild
 
 
 func _on_drop(files: PackedStringArray) -> void:

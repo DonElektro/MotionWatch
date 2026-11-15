@@ -335,6 +335,8 @@ var waerme_welt                       # waerme_welt.gd (3D-4.26, P3): engines co
 var camphys                           # camphys.gd (3D-4.x P1): exposure / gain / noise / NoIR colours of the Camera Module 3 NoIR
 var szenen                            # szenenplus.gd (3D-4.x): Voller Campingplatz, Tarnen und Kriechen, Velodieb
 var smalltv                           # smalltv.gd (3D-4.19): virtueller Zusatz-Bildschirm GeekMagic SmallTV Ultra (MoveEye 552)
+var handy = null                       # handy.gd: Handy-Modus (Leiste mit 5 Knöpfen, Blätter von unten)
+var waechter = null                    # fenster_waechter.gd: Fenster ins Bild holen, ✕ wenn keines zu sehen ist
 var fenster                           # fenster.gd (Paket «Fenster»): ein Rahmen für alle schwebenden Fenster (ziehen, Grösse, ✕, Liste «Fenster»)
 var gehaeuse                          # gehaeuse.gd (real-gehaeuse): die vereinfachten echten Teile des Gehäuses v5.1 am Gerät
 var werkstatt = null:                 # werkstatt.gd (real-gehaeuse): Mehr → Werkstatt (Gehäuse drehen, zerlegen, Montage)
@@ -706,6 +708,12 @@ func _ready() -> void:
 	fenster.main = self
 	add_child(fenster)
 	fenster.setup_sim()
+	handy = preload("res://scripts/handy.gd").new()      # Handy-Modus (Besitzer 15.11.2026): Leiste, Blätter von unten
+	handy.main = self
+	add_child(handy)
+	waechter = preload("res://scripts/fenster_waechter.gd").new()   # jedes Fenster passt ins Bild und hat ein ✕
+	waechter.main = self
+	add_child(waechter)
 	if entdecken != null:
 		entdecken.join_fenster(fenster)              # 3D-4.27: the Blinki hint in the same frame
 	mwpc.changed.connect(_on_mwpc)

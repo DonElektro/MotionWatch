@@ -280,6 +280,7 @@ func show_news(es := []) -> void:
 		t.text = e[1]
 		t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		t.custom_minimum_size = Vector2(500, 0)
+		_texts.append(t)                                    # Handy (Besitzer 15.11.2026): Breite folgt dem Bild (_process)
 		t.add_theme_font_size_override("font_size", 13)
 		col.add_child(t)
 		var lk := _link(str(e[0]))                         # Links zu Neuerungen
@@ -346,9 +347,16 @@ func close(off: bool) -> void:
 	main._settings_dirty = true
 
 
+var _texts: Array = []
+
+
 func _process(_dt: float) -> void:
 	if visible:
 		var vs := get_viewport_rect().size
+		var tw := clampf(vs.x - 150.0, 180.0, 500.0)       # schmal (Handy): die Texte brechen früher um, das Fenster passt
+		for t in _texts:
+			if is_instance_valid(t) and (t as Control).custom_minimum_size.x != tw:
+				(t as Control).custom_minimum_size.x = tw
 		if _scroll != null and is_instance_valid(_scroll):
 			var room := maxf(120.0, vs.y - 48.0 - (_box.get_combined_minimum_size().y - _scroll.get_combined_minimum_size().y) - 40.0)
 			_scroll.custom_minimum_size = Vector2(_list.get_combined_minimum_size().x + 14.0, minf(_list.get_combined_minimum_size().y, room))

@@ -84,6 +84,7 @@ const S_MIN := 0.55                    # kleinster Massstab der Bilder
 var dock_on := true                    # Fenster automatisch andocken (aus = wie vor dem Paket)
 var tabs_on := true                    # Karte, Kompass, SmallTV und CPU als Reiter
 var tab_active := "map"
+var handy_hide := false               # Handy-Modus (handy.gd): alle Fenster aus, Karte / Gerät / Kamera zeigt handy.gd selbst
 var tab_host: Win = null
 var _tab_btns := {}                    # id -> Button in der Reiterleiste
 var _tab_ph: Label = null              # «SmallTV: sobald MoveEye ein Bild schickt» im leeren Reiter
@@ -1563,6 +1564,8 @@ class Win extends Control:
 		var vis: bool = wants()
 		if grp:                                           # als Reiter: nur der gezeigte, und nur mit dem Seitenfenster
 			vis = vis and group.visible and mgr.tab_active == id
+		if mgr.handy_hide:
+			vis = false
 		if strip.visible == grp:
 			strip.visible = not grp
 		if opts.get("fold", false) and content.visible == folded:
