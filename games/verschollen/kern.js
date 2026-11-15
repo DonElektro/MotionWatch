@@ -11,7 +11,7 @@
    Stücke). Die 13. ist die ganze Nacht des Felssturzes = Ende Kapitel 1.
    SPEICHERN: ui.js legt den Zustand unter «mw-verschollen-v1» ab ({v: VERSION, s: Zustand}); K.migriere() hebt ältere
    Fassungen an. Der Zustand enthält nur Zahlen, Texte, true/false, Listen und einfache Objekte.
-   TEMPO (ab GS-1.20): S.tempo = 1, 2 oder 4 – ui.js lässt die Spieluhr so viel schneller laufen (K.step mit dt × tempo).
+   TEMPO (ab GS-1.20, 8× und 16× ab GS-1.25): S.tempo = 1, 2, 4, 8 oder 16 – ui.js lässt die Spieluhr so viel schneller laufen (K.step mit dt × tempo).
    Weil ALLES hier auf der Spieluhr läuft (Tag und Nacht, Feuer, Abklingzeiten, Ausflüge, Wetter, Erträge, MoveEye-Sprüche),
    bleibt die Balance gleich. S.echt = Spielzeit auf der Spieluhr, S.wirk = wirklich gespielte Sekunden.
    TEST: K.bot() spielt wie ein vernünftiger Mensch (mit Lese- und Denkzeit) und zählt die echte Spielzeit (S.echt);
@@ -28,7 +28,7 @@
   var HUND = 'Maggie';          // Name der Hündin (vom Besitzer) – hier ändern, gilt für das ganze Spiel (die Texte sagen «sie» / «ihr»)
   var VERSION = 2, DAY = 300, START_T = 246;
   K.HUND = HUND; K.VERSION = VERSION; K.DAY = DAY;
-  K.TEMPI = [1, 2, 4];             // Spieltempo (ui.js): die Spieluhr läuft so viel schneller, alle Regeln bleiben gleich
+  K.TEMPI = [1, 2, 4, 8, 16];      // Spieltempo (ui.js): die Spieluhr läuft so viel schneller, alle Regeln bleiben gleich (8× / 16× ab GS-1.25)
 
   var NAME = { holz: 'Holz', wasser: 'Wasser', essen: 'Essen', draht: 'Draht', naegel: 'Nägel', schnur: 'Schnur', stoff: 'Stoff',
     seil: 'Seil', akku: 'Akku', panel: 'Solarpanel', wind: 'Windmesser', logger: 'Datenlogger', schiene: 'Schiene', pickel: 'Pickel' };
@@ -969,6 +969,26 @@
   }
   K.step = function (S, dt) {
     while (dt > 1e-6) { var d = Math.min(dt, 0.5); dt -= d; S.echt += d; tick(S, d); }
+  };
+
+  // ---- Fortschritt pro Kapitel (ab GS-1.25; ui.js zeigt den Balken oben und alle Kapitel im Menü) ----
+  // Kapitel 1: 12 Aufnahmen + die Nacht des Felssturzes = 13 Schritte. Kapitel 2: Sturm-Vorbereitung (3), Sennerei, Messbuch,
+  // Pickel, Stollen, Livias Beichte, Knöchel geheilt, Biwak, Sturm überstanden, Station danach (9) + 6 Notizbuch-Seiten = 18.
+  K.KAPITEL = [{ nr: 1, name: '' }, { nr: 2, name: 'Drei Tage' }, { nr: 3, name: '' }];   // Kapitel 1 hat keinen eigenen Namen
+  K.fortschritt = function (S) {
+    var k = S.k2, l = [];
+    var n1 = Math.min(12, S.clips.length);
+    l.push({ nr: 1, name: K.KAPITEL[0].name, n: S.ende ? 13 : n1, von: 13, fertig: !!S.ende, offen: true });
+    var n2 = 0;
+    if (k) {
+      [S.bau.laeden, S.bau.anker, S.bau.sturmholz, k.sennerei, k.messbuch, S.w.pickel, k.stollen, k.beichte, k.kn >= 2, k.biwak, k.sturm, k.stationNach]
+        .forEach(function (x) { if (x) n2++; });
+      n2 += Math.min(6, (k.seiten || []).length);
+    }
+    l.push({ nr: 2, name: K.KAPITEL[1].name, n: S.ende2 ? 18 : Math.min(17, n2), von: 18, fertig: !!S.ende2, offen: !!k || !!S.ende });
+    l.push({ nr: 3, name: K.KAPITEL[2].name, n: 0, von: 1, fertig: false, offen: false, bald: true });
+    l.forEach(function (e) { e.p = Math.round(100 * e.n / e.von); });
+    return { jetzt: S.k2 || S.ende2 ? 2 : 1, liste: l };
   };
 
   // ---- Was ist als Nächstes dran? (MoveEye-Tipp und Test-Spieler) ----
