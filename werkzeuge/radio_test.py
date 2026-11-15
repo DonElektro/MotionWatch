@@ -47,6 +47,7 @@ U_PIL = "11111111-2222-4333-8444-555555555551"
 U_T1 = "11111111-2222-4333-8444-555555555552"
 U_T2 = "11111111-2222-4333-8444-555555555553"
 U_SIL = "11111111-2222-4333-8444-555555555554"
+U_PX = "11111111-2222-4333-8444-555555555555"            # refuses browsers (only MoveEye gets the stream): the page needs the proxy
 
 
 def ok(bed, text):
@@ -85,7 +86,9 @@ class Srv:
                    {"stationuuid": U_T2, "name": "Test Ogg <script>", "countrycode": "DE", "country": "Germany", "codec": "OGG", "bitrate": 0, "tags": "",
                     "url": B + "/list.m3u", "url_resolved": B + "/list.m3u", "lastcheckok": 1},
                    {"stationuuid": U_SIL, "name": "Silent Test", "countrycode": "CH", "country": "Switzerland", "codec": "MP3", "bitrate": 64, "tags": "",
-                    "url": B + "/hang", "url_resolved": B + "/hang", "lastcheckok": 1}]
+                    "url": B + "/hang", "url_resolved": B + "/hang", "lastcheckok": 1},
+                   {"stationuuid": U_PX, "name": "Proxy FM", "countrycode": "CH", "country": "Switzerland", "codec": "MP3", "bitrate": 64, "tags": "",
+                    "url": B + "/stream_ua.mp3", "url_resolved": B + "/stream_ua.mp3", "lastcheckok": 1}]
         threading.Thread(target=self.httpd.serve_forever, daemon=True).start()
 
     def _handler(self):
@@ -138,15 +141,20 @@ class Srv:
                 if p == "/hang":
                     self.wfile.write(b"HTTP/1.0 200 OK\r\nContent-Type: audio/mpeg\r\n\r\n"); self.wfile.flush()
                     time.sleep(25); return
-                if p in ("/stream.mp3", "/stream.ogg"):
+                if p == "/stream_ua.mp3" and "MoveEye" not in (self.headers.get("User-Agent") or ""):
+                    me.conns["refused"] = me.conns.get("refused", 0) + 1
+                    self.send_response(403); self.send_header("Content-Length", "0"); self.end_headers(); return
+                if p in ("/stream.mp3", "/stream.ogg", "/stream_ua.mp3"):
                     me.conns[p] = me.conns.get(p, 0) + 1
                     return self.stream(p)
                 self.send_response(404); self.end_headers()
 
             def stream(self, p):
-                icy = self.headers.get("Icy-MetaData") == "1" and p == "/stream.mp3"
-                data = me.mp3 if p == "/stream.mp3" else me.ogg
+                icy = self.headers.get("Icy-MetaData") == "1" and p != "/stream.ogg"
+                data = me.ogg if p == "/stream.ogg" else me.mp3
                 mi = 4000
+                if p != "/stream.ogg":
+                    p = "/stream.mp3"
                 if p == "/stream.ogg":                     # an old Shoutcast server: «ICY 200 OK»
                     head = "ICY 200 OK\r\nicy-name:Test Ogg\r\nContent-Type: application/ogg\r\n\r\n"
                 else:
@@ -420,6 +428,21 @@ C["lock_on"] = True; out["rights_lock"] = [do({"action": "remove", "id": T1})[0]
 out["txt"] = {L: [ns["tr"]("Radio as wake-up alarm", L), ns["tr"]("No internet - the radio needs a connection.", L), ns["radio_tr"]("the station does not answer: HTTP 500", L)]
               for L in ("de", "en", "fr", "it", "rm")}
 out["fav"] = [x["k"] for x in ns["radio_fav_items"]("de")]
+# «📱 dieser Browser»: the address for the page, the proxy (only stations of the list, at most 2 listeners)
+c, a = do({"action": "bplay", "id": "pilatus"}); out["bplay"] = [c, a.get("src")]
+c, a = do({"action": "bplay", "id": "pilatus"}, role="view"); out["bplay_view"] = c
+px = [ns["radio_br_proxy"]("pilatus") for _i in range(3)]
+it0 = iter(px[0][2]) if px[0][2] is not None else iter([b""])      # keep the iterator (werkzeug keeps it while it sends)
+first = next(it0)
+out["proxy"] = [[x[0], x[1]] for x in px] + [len(first) > 1000, ns["BR"]["n"]]
+for x in px:
+    if x[2] is not None: x[2].close()
+out["proxy_after"] = ns["BR"]["n"]
+out["proxy_bad"] = [ns["radio_br_proxy"](x)[0] for x in ("nichtda", "../etc", "http://example.com/x", "")]
+C["radio_stations"].append({"id": "hlsx", "name": "HLS", "url": B + "/live.m3u8"})
+out["proxy_hls"] = ns["radio_br_proxy"]("hlsx")[0]; C["radio_stations"].pop()
+time.sleep(0.5); out["proxy_end"] = ns["BR"]["n"]
+do({"action": "bstop"})
 q0 = ns["radio_state"]("de")["quiet"]; C["clap_on"] = True; q1 = ns["radio_state"]("de")["quiet"]; C["clap_on"] = False; C["noise_alarm"] = True
 out["quiet"] = [q0, q1, ns["radio_state"]("de")["quiet"]]; C["noise_alarm"] = False
 out["icons"] = ['📡 Phone radio' in ns["MORSE_PAGE"], '📻 Phone radio' in ns["MORSE_PAGE"], "📡 Eigenes Protokoll" in ns["_HELP_MORSE"]["de"]]
@@ -531,6 +554,13 @@ def teil_a(datei, tmp, srv):
     ok(e["fav"][:2] == ["page:/radio", "radio:on"] and all(k.startswith("radio:play:") for k in e["fav"][2:]) and len(e["fav"]) >= 4, "Favoriten: %s" % e["fav"][:4])
     ok(e["help"] == [True, True], "Anleitung + Zeile unter Mehr")
     ok(e["quiet"] == [False, True, True], "Hinweis «Geräusch-Alarm / Klatschschalter pausiert» nur, wenn einer davon an ist: %s" % e["quiet"])
+    b_ = e["bplay"]
+    ok(b_[0] == 200 and b_[1]["url"] == srv.base + "/stream.mp3" and b_[1]["kind"] == "icy" and b_[1]["proxy"] == "/radio/stream/pilatus" and e["bplay_view"] == 403,
+       "Browser: Adresse vom Pi (Wiedergabeliste aufgelöst) %s, Nur ansehen %s" % (b_[1], e["bplay_view"]))
+    ok(e["proxy"][:3] == [[200, "audio/mpeg"], [200, "audio/mpeg"], [429, "too many listeners through MoveEye (at most 2)"]] and e["proxy"][3] and e["proxy"][4] == 2,
+       "Proxy: 2 Zuhörer, der dritte 429, Ton kommt durch: %s" % e["proxy"])
+    ok(e["proxy_after"] == 0 and e["proxy_end"] == 0, "Proxy: Plätze nach close() wieder frei (auch ohne gesendete Daten)")
+    ok(e["proxy_bad"] == [404, 404, 404, 404] and e["proxy_hls"] == 415, "Proxy: nur Sender der Liste (%s), HLS nicht (%s)" % (e["proxy_bad"], e["proxy_hls"]))
     ok(e["icons"] == [True, False, True], "Handy-Funkgerät jetzt mit 📡 (Morse-Seite, Anleitung): %s" % e["icons"])
     ok(bool(e["selftest"]), "Selbsttest-Funktion: %s" % e["selftest"])
     ok(e["blocked"] == ["nohost.invalid"], "nie das echte Internet (nur nohost.invalid absichtlich abgewiesen): %s" % e["blocked"])
@@ -771,6 +801,59 @@ def teil_b(datei, tmp, srv, bilder):
             c1, _a = api(None, "gast", "gast-pw-123"); c2, _a = api({"action": "stop"}, "gast", "gast-pw-123")
             c3, _a = api({"action": "add", "uuid": U_T2}, "familie", "familie-pw-1"); c4, a4 = api({"action": "volume", "v": 35}, "familie", "familie-pw-1")
             ok([c1, c2, c3, c4] == [200, 403, 403, 200], "Rechte über HTTP: Nur ansehen GET %d / stoppen %d · Familie Liste %d / Lautstärke %d" % (c1, c2, c3, c4))
+            # «📱 dieser Browser»: the page plays itself, the loudspeaker of MoveEye stays silent
+            pg.goto(base + "/radio", wait_until="domcontentloaded")
+            pg.wait_for_function("() => (document.getElementById('ra-name') || {}).textContent.length > 2", timeout=30000); weg()
+            ok(pg.locator("#ra-l-where").inner_text() == "Wo spielen:" and pg.locator("#ra-w-br").inner_text() == "📱 dieser Browser", "Auswahl «Wo spielen: 🔊 / 📱»")
+            pg.locator("#ra-w-br").click()
+            pg.wait_for_timeout(1500)
+            ok(not api()[1]["state"]["on"] and pg.evaluate("() => localStorage.getItem('mw-radio-where')") == "br", "auf «📱» gestellt: MoveEye-Lautsprecher aus, im Browser gemerkt")
+            pg.locator("#ra-list li", has_text="Radio Pilatus").locator(".ra-r").click()
+            pg.wait_for_function("() => window.mwRadioVia === 'direct' && !mwRadioAudio.paused && mwRadioAudio.currentTime > 1.5", timeout=40000)
+            pg.wait_for_function("() => (document.getElementById('ra-tit') || {}).textContent.includes('Test Artist')", timeout=40000)
+            ok(True, "Browser spielt direkt (%.1f s), Titel vom Pi: %s" % (pg.evaluate("() => mwRadioAudio.currentTime"), pg.locator("#ra-tit").inner_text()))
+            ok(pg.locator("#ra-qn").is_hidden(), "kein Hinweis «Geräusch-Alarm pausiert» im Browser-Modus")
+            ok(not children(p.pid), "MoveEye-Lautsprecher still: kein ffmpeg / aplay (%s)" % children(p.pid))
+            mt = pg.evaluate("() => navigator.mediaSession && navigator.mediaSession.metadata ? navigator.mediaSession.metadata.title + ' / ' + navigator.mediaSession.metadata.artist : ''")
+            ok("Test Artist" in mt or "Radio Pilatus" in mt, "Media Session (Sperrbildschirm): %s" % mt)
+            pg.locator("#ra-vol").fill("30"); pg.wait_for_timeout(300)
+            ok(abs(pg.evaluate("() => mwRadioAudio.volume") - 0.3) < 0.01 and pg.evaluate("() => localStorage.getItem('mw-radio-bvol')") == "30", "Lautstärke im Browser")
+            pg.locator("#ra-sleep button", has_text="15 min").click(); pg.wait_for_timeout(1200)
+            ok("aus in 14:5" in pg.locator("#ra-hint").inner_text(), "Einschlaf-Timer im Browser: %s" % pg.locator("#ra-hint").inner_text())
+            pg.locator("#ra-now").scroll_into_view_if_needed(); weg(); pg.evaluate("() => window.scrollTo(0, 0)"); pg.wait_for_timeout(400)
+            pg.screenshot(path=os.path.join(bilder, "radio_browser.png"))
+            c0, _a = api({"action": "add", "uuid": U_PX})
+            pg.wait_for_function("() => [...document.querySelectorAll('#ra-list li')].some(x => x.textContent.includes('Proxy FM'))", timeout=20000)
+            pg.locator("#ra-list li", has_text="Proxy FM").locator(".ra-r").click()
+            pg.wait_for_function("() => window.mwRadioVia === 'proxy' && !mwRadioAudio.paused && mwRadioAudio.currentTime > 1.5", timeout=40000)
+            ok(srv.conns.get("refused", 0) >= 1 and "über moveeye" in pg.locator("#ra-st").inner_text().lower(),
+               "Sender sperrt Browser → über MoveEye (/radio/stream): %s" % pg.locator("#ra-st").inner_text())
+            pid = [s_["id"] for s_ in api()[1]["state"]["stations"] if s_["name"] == "Proxy FM"][0]
+
+            def stream(q="", user="admin", pw_=PW):
+                h = {"Authorization": "Basic " + base64.b64encode((user + ":" + pw_).encode()).decode()}
+                try:
+                    x = op.open(urllib.request.Request(base + "/radio/stream/" + q, headers=h), timeout=20)
+                    return x.status, x
+                except urllib.error.HTTPError as e_:
+                    return e_.code, None
+            s1 = stream(pid)                               # the browser is the first listener, this the second
+            head = s1[1].read(2000) if s1[1] else b""
+            s2 = stream(pid)
+            ok(s1[0] == 200 and len(head) == 2000 and s2[0] == 429, "Zuhörer-Grenze: 2. Zuhörer %d, 3. Zuhörer %d" % (s1[0], s2[0]))
+            s1[1].close(); time.sleep(2.5)
+            s3 = stream(pid, "familie", "familie-pw-1")
+            ok(s3[0] == 200, "Platz wieder frei, Familie darf (%d)" % s3[0])
+            if s3[1]:
+                s3[1].close()
+            bad = [stream(pid + "?url=http%3A%2F%2Fexample.com%2F")[0], stream("nichtda")[0], stream("http%3A%2F%2Fexample.com%2Fx")[0],
+                   stream(pid, "gast", "gast-pw-123")[0]]
+            ok(bad == [400, 404, 404, 403], "kein offener Proxy (fremde Adresse 400, unbekannt 404), Nur ansehen 403: %s" % bad)
+            pg.reload(wait_until="domcontentloaded"); pg.wait_for_timeout(1500)
+            ok(pg.locator("#ra-w-br").get_attribute("class").find("sel") >= 0, "Auswahl nach dem Neuladen gemerkt")
+            pg.locator("#ra-w-pi").click(); pg.wait_for_timeout(500)
+            ok(pg.evaluate("() => mwRadioAudio.paused") and pg.evaluate("() => localStorage.getItem('mw-radio-where')") == "pi", "zurück auf 🔊: der Browser hört auf")
+            api({"action": "play", "id": "pilatus"}); time.sleep(3)
             # «Mehr»: the row with the station
             pg.goto(base + "/more", wait_until="domcontentloaded")
             pg.wait_for_function("() => (document.getElementById('m-radio-s') || {}).textContent.includes('Radio Pilatus')", timeout=20000)
@@ -786,7 +869,7 @@ def teil_b(datei, tmp, srv, bilder):
                 pg.goto(base + "/radio", wait_until="domcontentloaded")
                 try:
                     pg.wait_for_function("w => (document.getElementById('ra-lt') || {}).textContent === w", arg=word, timeout=30000)
-                    ok(True, "%s: «%s»" % (L, word))
+                    ok(True, "%s: «%s» · «%s»" % (L, word, pg.locator("#ra-l-where").inner_text() + " " + pg.locator("#ra-w-br").inner_text()))
                 except Exception:
                     ok(False, "%s: «%s» fehlt (%s)" % (L, word, pg.locator("#ra-lt").inner_text()))
             pg.evaluate("async () => { try { localStorage.setItem('mw-lang', 'de'); } catch (e) {} await fetch('/api/ui', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({set: {'mw-lang': 'de'}})}); }")

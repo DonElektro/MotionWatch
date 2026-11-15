@@ -45,7 +45,9 @@ RADIO_FADE_S = 45.0
 RADIO_SLEEP = (0, 15, 30, 60, 90)
 RADIO_GAP_S = 1.5                       # after a sound of MoveEye the radio waits this long
 RADIO_HELD_DROP_S = 60.0
-RADIO_PLAY_ACTIONS = ("play", "stop", "toggle", "volume", "sleep")
+RADIO_PLAY_ACTIONS = ("play", "stop", "toggle", "volume", "sleep", "bplay", "bstop")      # bplay / bstop: «📱 dieser Browser»
+RADIO_BR_MAX = 2                        # listeners at the same time through /radio/stream/<id> (the Pi passes the stream on)
+RADIO_BR_TTL = 600.0                    # a resolved address for the browser stays this long (the proxy only takes these)
 RADIO_DEF = {"radio_stations": [{"id": "pilatus", "name": "Radio Pilatus", "sub": "Luzern", "find": {"name": "Radio Pilatus", "cc": "CH"}}],
              "radio_volume": 40, "radio_last": "pilatus"}
 for _k, _v in RADIO_DEF.items():
@@ -55,6 +57,7 @@ USER_SETTINGS_DENY.update({"radio_stations", "radio_last"})
 APPKEY_DENY_KEYS.update({"radio_stations"})
 VIEW_GET_PAGES.add("/radio")
 VIEW_GET = VIEW_GET + ("/api/radio",)
+PERM_GET["siren"] = tuple(PERM_GET.get("siren", ())) + ("/radio/stream/",)    # the proxy: the same right as playing
 _RADIO_ID = re.compile(r"^[a-z0-9]{1,16}$")
 _RADIO_UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 _RADIO_PL_CT = ("audio/x-scpls", "audio/scpls", "audio/x-mpegurl", "audio/mpegurl", "application/x-mpegurl", "application/vnd.apple.mpegurl",
@@ -805,6 +808,12 @@ def radio_do(d, who="web", role="admin", perms=None, appkey=None, lang=None):
         return (200 if ok else 400), dict({"ok": ok, "error": radio_tr(err, L) if err else None, "state": radio_state(L, role, perms)}, **kw)
     if a == "toggle":
         a = "stop" if RADIO["want"] else "play"
+    if a == "bplay":                                         # «📱 dieser Browser»: the address for the <audio> of the page
+        ok, err, src = radio_bplay(str(d.get("id") or "") or None)
+        return out(ok, err, src=src)
+    if a == "bstop":
+        BR["sid"] = ""
+        return out(True)
     if a == "play":
         return out(*radio_play(str(d.get("id") or "") or None, who))
     if a == "stop":
@@ -864,6 +873,155 @@ def radio_fav_items(lang=None):
 atexit.register(lambda: radio_stop("program end", quiet=True))
 
 
+# ---- «📱 dieser Browser» (Besitzer, after 3.99.0): the page plays the station itself ------------------------------------------------
+# The Pi resolves the address as for its loudspeaker (directory, play lists); the page tries it directly. Does that fail (http on an
+# https page, the station refuses the browser, a format the browser cannot), it takes /radio/stream/<id>: the Pi passes the stream
+# through unchanged (no decoding, no ffmpeg), at most RADIO_BR_MAX listeners, only addresses resolved for a station of the list -
+# the address never comes from the request (no open proxy). The title comes from the ICY reading of the Pi: the proxy reads it on
+# the way, otherwise a short look every 20 s while the page asks (one block, then closed). The loudspeaker of MoveEye stays silent.
+BR = {"sid": "", "t_poll": 0.0, "title": "", "title_sid": "", "src": {}, "n": 0, "lock": threading.Lock(), "watch": None}
+
+
+def radio_br_src(sid, fresh=False):
+    """the stream address of a station for the browser (play lists resolved) -> dict(url, kind, ct, metaint)"""
+    st = radio_station(sid) if _RADIO_ID.match(str(sid or "")) else None
+    if not st:
+        raise KeyError("unknown station")
+    c = BR["src"].get(sid)
+    if c and not fresh and time.time() - c["t"] < RADIO_BR_TTL:
+        return c
+    src = radio_open(radio_resolve(st))
+    if src.get("sock") is not None:
+        src["sock"].close()
+    c = {"t": time.time(), "url": src["url"], "kind": src["kind"], "ct": src.get("ct") or "", "metaint": int(src.get("metaint") or 0)}
+    BR["src"][sid] = c
+    return c
+
+
+def radio_bplay(sid=None):
+    sid = sid or CFG.get("radio_last") or ((radio_list() or [{}])[0].get("id"))
+    try:
+        c = radio_br_src(sid, fresh=True)
+    except KeyError:
+        return False, "unknown station", None
+    except Exception as e:
+        return False, "no internet" if radio_offline_err(e) else "the station does not answer: " + _radio_txt(e, 100), None
+    if BR["title_sid"] != sid:
+        BR.update(title="", title_sid=sid)
+    BR.update(sid=sid, t_poll=time.time())
+    th = BR["watch"]
+    if th is None or not th.is_alive():
+        BR["watch"] = threading.Thread(target=_radio_br_watch, daemon=True, name="radio-title")
+        BR["watch"].start()
+    return True, "", {"id": sid, "name": radio_station(sid)["name"], "url": c["url"], "kind": c["kind"], "ct": c["ct"], "proxy": "/radio/stream/" + sid}
+
+
+def _radio_icy_peek(url, sid):
+    """one look at the stream: the first title block, then closed"""
+    src = radio_open(url)
+    try:
+        f, mi = src["f"], src["metaint"]
+        if not mi:
+            return False
+        for _i in range(3):
+            if not f.read(mi):
+                break
+            n = f.read(1)
+            if not n:
+                break
+            if n[0]:
+                t_ = radio_icy_title(f.read(n[0] * 16))
+                if t_ is not None and BR["sid"] == sid:
+                    BR.update(title=t_, title_sid=sid)
+                    break
+        return True
+    finally:
+        src["sock"].close()
+
+
+def _radio_br_watch():
+    """the title for the browser while its page asks (stops 20 s after the last question)"""
+    last, wait_ = "", 0.0
+    while BR["sid"] and time.time() - BR["t_poll"] < 20.0:
+        sid = BR["sid"]; c = BR["src"].get(sid)
+        if BR["n"] > 0 or not c or c["kind"] != "icy" or (sid == last and time.time() < wait_):
+            time.sleep(1.0); continue                        # the proxy reads the titles itself / nothing to read / not yet
+        try:
+            has = _radio_icy_peek(c["url"], sid)
+            last, wait_ = sid, time.time() + (20.0 if has else 600.0)
+        except Exception:
+            last, wait_ = sid, time.time() + 30.0
+    BR["watch"] = None
+
+
+def radio_br_proxy(sid):
+    """-> (HTTP code, English error or content type, generator)"""
+    if not _RADIO_ID.match(str(sid or "")) or not radio_station(sid):
+        return 404, "unknown station", None
+    try:
+        c = radio_br_src(sid)
+    except KeyError:
+        return 404, "unknown station", None
+    except Exception as e:
+        return 502, "no internet" if radio_offline_err(e) else "the station does not answer", None
+    if c["kind"] != "icy":
+        return 415, "this stream (HLS) cannot go through MoveEye", None
+    with BR["lock"]:
+        if BR["n"] >= RADIO_BR_MAX:
+            return 429, "too many listeners through MoveEye (at most 2)", None
+        BR["n"] += 1
+    try:
+        src = radio_open(c["url"])
+    except Exception as e:
+        with BR["lock"]:
+            BR["n"] -= 1
+        return 502, "no internet" if radio_offline_err(e) else "the station does not answer", None
+    ct = src.get("ct") or c["ct"]
+    ct = ct if (ct.startswith("audio/") or ct == "application/ogg") else "audio/mpeg"
+
+    return 200, ct, _RadioBrStream(src, sid)
+
+
+class _RadioBrStream:
+    """the stream for one listener: passed on unchanged, titles read on the way; close() (also when nothing was sent, e.g. HEAD)
+    frees the place of the listener exactly once"""
+
+    def __init__(self, src, sid):
+        self.src, self.sid, self.done = src, sid, False
+
+    def __iter__(self):
+        f, mi = self.src["f"], self.src["metaint"]
+        try:
+            while not self.done:
+                data = f.read(mi) if mi else f.read(8192)
+                if not data:
+                    break
+                yield data
+                if mi:
+                    n = f.read(1)
+                    if not n:
+                        break
+                    if n[0]:
+                        t_ = radio_icy_title(f.read(n[0] * 16))
+                        if t_ is not None:
+                            BR.update(title=t_, title_sid=self.sid)
+        except (OSError, ValueError):
+            pass
+        finally:
+            self.close()
+
+    def close(self):
+        with BR["lock"]:
+            if self.done:
+                return
+            self.done = True
+            BR["n"] -= 1
+        try:
+            self.src["sock"].close()
+        except OSError:
+            pass
+
+
 # ---- the web: /radio and /api/radio ---------------------------------------------------------------------------------------------
 _smalltv_routes_radio = smalltv_routes
 
@@ -881,9 +1039,27 @@ def smalltv_routes(app, reply, body):                        # + 639zzzzd: the r
     def api_radio():
         role, perms = who_()
         if request.method == "GET":
-            return reply({"ok": True, "state": radio_state(request.args.get("lang"), role, perms)})
+            st = radio_state(request.args.get("lang"), role, perms)
+            b = request.args.get("b") or ""
+            if b and b == BR["sid"]:                         # «📱 dieser Browser» plays: keep the title reading alive
+                BR["t_poll"] = time.time()
+            st["btitle"] = BR["title"] if b and BR["title_sid"] == b else ""
+            return reply({"ok": True, "state": st})
         code, ans = radio_do(body(), getattr(g, "user", "") or "web", role, perms, getattr(g, "appkey", None))
         return reply(ans, code)
+
+    @app.route("/radio/stream/<sid>")
+    def radio_stream(sid):
+        role, perms = who_()
+        L = norm_lang(request.args.get("lang"))
+        if not radio_may(role, perms):
+            return reply({"ok": False, "error": tr("not allowed for your user", L)}, 403)
+        if set(request.args) - {"t", "lang"}:                # never an address from outside: only the stations of the list
+            return reply({"ok": False, "error": radio_tr("only the stations of the list", L)}, 400)
+        code, ct, gen = radio_br_proxy(sid)
+        if code != 200:
+            return reply({"ok": False, "error": radio_tr(ct, L)}, code)
+        return Response(gen, mimetype=ct, direct_passthrough=True, headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})
 
     @app.route("/radio")
     def radio_page():
@@ -981,7 +1157,8 @@ main{padding:16px;max-width:720px;margin:0 auto;box-sizing:border-box}
 .ra-sl{display:grid;grid-template-columns:auto minmax(0,1fr) 3em;gap:10px;align-items:center}.ra-sl input{width:100%;min-height:40px}.ra-sl b{text-align:right;font-variant-numeric:tabular-nums}
 .ra-lab{font-size:13px;color:var(--mut)}
 .ra-seg{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.ra-seg button{min-height:40px;font:inherit;font-size:14px;padding:0 2px}
-.ra-seg button.sel{outline:2px solid var(--acc);outline-offset:-2px;font-weight:700}
+.ra-seg button.sel,.ra-wh button.sel{outline:2px solid var(--acc);outline-offset:-2px;font-weight:700}
+.ra-wh{display:grid;grid-template-columns:1fr 1fr;gap:6px}.ra-wh button{min-height:44px;font:inherit;font-size:14px;padding:2px 6px;overflow-wrap:anywhere}
 .ra-h{display:flex;align-items:center;gap:8px;margin:0 0 8px}.ra-h h3{margin:0;flex:1}
 .ra-list{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:14px;overflow:hidden}.ra-list:empty{display:none}
 .ra-list li{display:flex;align-items:center;gap:8px;min-height:56px;padding:6px 10px;border-top:1px solid var(--line)}.ra-list li:first-child{border-top:0}
@@ -1008,6 +1185,8 @@ section.card h3{margin:0 0 10px}details>summary{cursor:pointer;font-weight:600;m
   <a class="ra-back" href="/more" id="ra-back">‹ More</a>
   <h2 id="ra-title">📻 Radio</h2>
   <section class="ra-now" id="ra-now">
+    <div class="ra-lab" id="ra-l-where">Where to play</div>
+    <div class="ra-wh" id="ra-where" role="group"><button type="button" class="sec" data-w="pi" id="ra-w-pi">🔊 MoveEye loudspeaker</button><button type="button" class="sec" data-w="br" id="ra-w-br">📱 this browser</button></div>
     <div class="ra-st" id="ra-st"></div>
     <div class="ra-name" id="ra-name">…</div>
     <div class="ra-tit" id="ra-tit"></div>
@@ -1043,6 +1222,14 @@ section.card h3{margin:0 0 10px}details>summary{cursor:pointer;font-weight:600;m
   const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
   const L = () => { try { return LANG || "de"; } catch (e) { return "de"; } };
   let J = null, edit = false, tm = 0, busy = false;
+  // «📱 dieser Browser»: where it plays, remembered per browser; the <audio> of the page plays the station itself
+  const LS = {get: (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } },
+              set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }};
+  let W = LS.get("mw-radio-where", "pi") === "br" ? "br" : "pi", bvol = Math.max(0, Math.min(100, +LS.get("mw-radio-bvol", 70) || 0)), hls = null;
+  const A = new Audio(); A.preload = "none"; window.mwRadioAudio = A;
+  const B = {on: false, sid: "", name: "", st: "off", via: "", err: "", until: 0, min: 0, again: 0, t0: 0};
+  const bv = () => { A.volume = Math.max(0, Math.min(1, bvol / 100 * (B.until ? Math.min(1, (B.until - Date.now()) / 45000) : 1))); };
+  bv();
   const api = async (b) => { try { const r = await fetch("/api/radio", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: L()}, b || {}))});
     return await r.json(); } catch (e) { return {ok: false, error: t("No connection to MoveEye.")}; } };
   document.title = "MoveEye – " + t("Radio");
@@ -1059,10 +1246,101 @@ section.card h3{margin:0 0 10px}details>summary{cursor:pointer;font-weight:600;m
    "While the radio plays, the noise alarm does not listen (like with every sound of MoveEye).",
    "The radio needs internet. Without it MoveEye tries a few times and then stops - tap ▶ again later.",
    "The station address is fetched fresh every time: a station that changes its address keeps working.",
-   "Radio as wake-up alarm: Settings › Wake-up alarm › Wake-up sound. Without internet the alarm takes its tone after 10 s."].forEach(s => $i("ra-how").appendChild(E("li", "", t(s))));
+   "Radio as wake-up alarm: Settings › Wake-up alarm › Wake-up sound. Without internet the alarm takes its tone after 10 s.",
+   "«📱 this browser»: the phone plays the station, the MoveEye loudspeaker stays silent. If the station does not play directly, it runs through MoveEye (at most 2 listeners)."].forEach(s => $i("ra-how").appendChild(E("li", "", t(s))));
   const mm = s => { s = Math.max(0, s | 0); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+  function tryUrl(u, isHls) {
+    return new Promise((res, rej) => {
+      let done = false;
+      const fin = (f, x) => { if (done) return; done = true; clearTimeout(tt); A.removeEventListener("playing", okf); A.removeEventListener("error", erf); f(x); };
+      const okf = () => fin(res), erf = () => fin(rej, new Error("media")), tt = setTimeout(() => fin(rej, new Error("timeout")), 12000);
+      A.addEventListener("playing", okf); A.addEventListener("error", erf);
+      if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
+      if (isHls) { hls = new window.Hls(); hls.loadSource(u); hls.attachMedia(A); } else A.src = u;
+      const p = A.play(); if (p && p.catch) p.catch(e => fin(rej, e));
+    });
+  }
+  async function bplay(id) {
+    if (busy) return; busy = true;
+    const j = await api({action: "bplay", id: id || ""}); busy = false;
+    if (!j.ok || !j.src) { B.st = "error"; B.err = j.error || ""; take(j); return; }
+    const s = j.src; Object.assign(B, {on: true, sid: s.id, name: s.name, st: "connecting", err: "", via: ""}); if (j.state) J = j.state; paint();
+    const tries = [];
+    if (s.kind === "hls") {
+      if (A.canPlayType("application/vnd.apple.mpegurl")) tries.push(["direct", s.url, false]);
+      else if (window.Hls && window.Hls.isSupported && window.Hls.isSupported()) tries.push(["direct", s.url, true]);
+    } else {
+      if (!(location.protocol === "https:" && /^http:/i.test(s.url))) tries.push(["direct", s.url, false]);   // http on an https page: blocked anyway
+      tries.push(["proxy", s.proxy + "?t=" + Date.now(), false]);
+    }
+    for (const [via, u, h] of tries) {
+      if (!B.on || B.sid !== s.id) return;
+      try { await tryUrl(u, h); B.via = via; B.st = "playing"; B.t0 = Date.now(); window.mwRadioVia = via; ms(); paint(); load(); return; } catch (e) {}
+    }
+    if (B.sid !== s.id) return;
+    bstop(true); B.st = "error";
+    B.err = s.kind === "hls" ? t("This station (HLS) cannot play in this browser - use the MoveEye loudspeaker.") : t("The station does not play in this browser.");
+    paint();
+  }
+  function bstop(keep) {
+    const was = B.on; B.on = false; B.st = "off"; B.until = 0; B.min = 0; B.via = ""; if (!keep) B.err = "";
+    if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
+    A.pause(); A.removeAttribute("src"); try { A.load(); } catch (e) {}
+    bv(); if (was) api({action: "bstop"}); ms(); paint();
+  }
+  A.addEventListener("ended", () => again()); A.addEventListener("error", () => { if (B.st === "playing") again(); });
+  function again() {                                       // the stream broke off: at most 3 new tries, then the card says so
+    if (!B.on) return;
+    if (Date.now() - B.t0 > 60000) B.again = 0;
+    if (B.again++ >= 3) { bstop(true); B.st = "error"; B.err = t("The station does not play in this browser."); paint(); return; }
+    const id = B.sid; B.st = "connecting"; paint(); setTimeout(() => { if (B.on && B.sid === id) bplay(id); }, 3000);
+  }
+  setInterval(() => { if (B.on && B.until) { if (Date.now() >= B.until) bstop(); else { bv(); paint(); } } }, 1000);   // the sleep timer of the browser
+  let msSet = false;
+  function ms() {                                          // lock screen (iPhone / Android): title and the buttons
+    if (!("mediaSession" in navigator)) return;
+    try {
+      navigator.mediaSession.metadata = B.on && window.MediaMetadata ? new MediaMetadata({title: (J && J.btitle) || B.name, artist: (J && J.btitle) ? B.name : "MoveEye", album: "MoveEye · " + t("Radio")}) : null;
+      navigator.mediaSession.playbackState = B.on ? "playing" : "none";
+      if (!msSet) {
+        msSet = true;
+        navigator.mediaSession.setActionHandler("play", () => bplay(B.sid || (J && J.last) || ""));
+        ["pause", "stop"].forEach(a => { try { navigator.mediaSession.setActionHandler(a, () => bstop()); } catch (e) {} });
+      }
+    } catch (e) {}
+  }
+  function where(w) {
+    if (w === W) return;
+    W = w; LS.set("mw-radio-where", w);
+    if (w === "br" && J && J.on) api({action: "stop"}).then(take);   // the loudspeaker of MoveEye stays silent
+    if (w === "pi") bstop();
+    paint();
+  }
+  $i("ra-w-pi").onclick = () => where("pi"); $i("ra-w-br").onclick = () => where("br");
+  $i("ra-l-where").textContent = t("Where to play") + ":"; $i("ra-w-pi").textContent = "🔊 " + t("MoveEye loudspeaker"); $i("ra-w-br").textContent = "📱 " + t("this browser");
+  function paintBr() {                                     // the card in «📱 dieser Browser»
+    const box = $i("ra-now"), bad = B.st === "error";
+    box.classList.toggle("on", B.st === "playing"); box.classList.toggle("bad", bad);
+    $i("ra-st").textContent = B.st === "playing" ? "● " + t("on air") + (B.via === "proxy" ? " · " + t("via MoveEye") : "") : B.st === "connecting" ? t("connecting …") : bad ? t("stopped") : t("off");
+    const cur = (J.stations || []).find(x => x.id === (B.on ? B.sid : J.last)) || (J.stations || [])[0];
+    $i("ra-name").textContent = B.on ? B.name : (cur ? cur.name : t("No station yet"));
+    $i("ra-tit").textContent = B.on && J.btitle ? "♪ " + J.btitle : "";
+    $i("ra-hint").textContent = B.until ? "💤 " + t("off in") + " " + mm((B.until - Date.now()) / 1000) : ""; $i("ra-hint").className = "ra-hint";
+    $i("ra-off").textContent = B.err; $i("ra-off").hidden = !B.err;
+    $i("ra-qn").hidden = true;                             // the noise alarm / clap switch keep listening: MoveEye plays nothing
+    const go = $i("ra-go");
+    go.textContent = B.on ? "⏹ " + t("Stop") : "▶ " + t("Play"); go.className = "ra-go" + (B.on ? " sec" : ""); go.disabled = !J.may.play || (!B.on && !cur);
+    const v = $i("ra-vol"); if (document.activeElement !== v) v.value = bvol; $i("ra-vol-v").textContent = v.value + "%"; v.disabled = !J.may.play;
+    const sg = $i("ra-sleep"); sg.textContent = "";
+    J.sleep.opts.forEach(m => { const b = E("button", "sec" + (m === B.min ? " sel" : ""), m ? m + " min" : t("off")); b.type = "button";
+      b.disabled = !J.may.play || (!!m && !B.on); b.onclick = () => { B.min = m; B.until = m ? Date.now() + m * 60000 : 0; bv(); paint(); }; sg.appendChild(b); });
+    return cur;
+  }
   function paint() {
     if (!J) return;
+    $i("ra-w-pi").classList.toggle("sel", W === "pi"); $i("ra-w-br").classList.toggle("sel", W === "br");
+    $i("ra-w-pi").disabled = $i("ra-w-br").disabled = !J.may.play;
+    if (W === "br") { paintBr(); paintList(); return; }
     const on = !!J.on, box = $i("ra-now"), st = J.state, bad = st === "retry" || st === "offline" || st === "error";
     box.classList.toggle("on", on && st === "playing" && !J.held); box.classList.toggle("bad", bad);
     $i("ra-st").textContent = st === "playing" ? (J.held ? "⏸ " + t("paused") : "● " + t("on air")) : st === "connecting" ? t("connecting …") : st === "retry" ? t("trying again") : bad ? t("stopped") : t("off");
@@ -1086,13 +1364,17 @@ section.card h3{margin:0 0 10px}details>summary{cursor:pointer;font-weight:600;m
     const sg = $i("ra-sleep"); sg.textContent = "";
     J.sleep.opts.forEach(m => { const b = E("button", "sec" + (m === J.sleep.min ? " sel" : ""), m ? m + " min" : t("off")); b.type = "button";
       b.disabled = !J.may.play || (!!m && !on); b.onclick = async () => { const j = await api({action: "sleep", min: m}); take(j); }; sg.appendChild(b); });
+    paintList();
+  }
+  function paintList() {
+    const br = W === "br", on = br ? B.on : !!J.on, sid = br ? B.sid : J.sid;
     const ul = $i("ra-list"); ul.textContent = "";
     $i("ra-edit").hidden = !J.may.edit || !(J.stations || []).length; $i("ra-edit").textContent = edit ? t("Done") : t("Edit");
     (J.stations || []).forEach((s, n) => {
-      const li = E("li", on && s.id === J.sid ? "cur" : ""), r = E("button", "ra-r");
+      const li = E("li", on && s.id === sid ? "cur" : ""), r = E("button", "ra-r");
       r.type = "button"; r.appendChild(E("b", "", s.name)); r.appendChild(E("small", "", s.sub || (s.kind === "url" ? t("own address") : "radio-browser.info")));
-      li.appendChild(E("span", "ra-i", on && s.id === J.sid ? "🔊" : "📻"));
-      r.disabled = !J.may.play; r.onclick = async () => { const j = await api({action: "play", id: s.id}); take(j); };
+      li.appendChild(E("span", "ra-i", on && s.id === sid ? (br ? "📱" : "🔊") : "📻"));
+      r.disabled = !J.may.play; r.onclick = async () => { if (br) { bplay(s.id); return; } const j = await api({action: "play", id: s.id}); take(j); };
       li.appendChild(r);
       if (edit) {
         const B = (txt, lab, f) => { const b = E("button", "sec", txt); b.type = "button"; b.title = lab; b.setAttribute("aria-label", lab); b.onclick = f; li.appendChild(b); };
@@ -1109,13 +1391,18 @@ section.card h3{margin:0 0 10px}details>summary{cursor:pointer;font-weight:600;m
   function take(j) { if (j && j.state) J = j.state; $i("ra-err").textContent = j && !j.ok ? (j.error || "") : ""; paint(); clearTimeout(tm); tm = setTimeout(load, 1500); }
   async function load() {
     clearTimeout(tm);
-    try { const j = await (await fetch("/api/radio?lang=" + L(), {cache: "no-store"})).json(); if (j && j.state) J = j.state; } catch (e) {}
-    paint(); tm = setTimeout(load, J && (J.on || J.state === "retry") ? 2000 : 8000);
+    const was = J && J.btitle;
+    try { const j = await (await fetch("/api/radio?lang=" + L() + (W === "br" && B.on ? "&b=" + encodeURIComponent(B.sid) : ""), {cache: "no-store"})).json();
+      if (j && j.state) J = j.state; } catch (e) {}
+    if (J && J.btitle !== was) ms();
+    paint(); tm = setTimeout(load, J && (J.on || J.state === "retry" || (W === "br" && B.on)) ? 2000 : 8000);
   }
-  $i("ra-go").onclick = async () => { if (busy) return; busy = true; $i("ra-go").disabled = true;
+  $i("ra-go").onclick = async () => { if (W === "br") { if (B.on) bstop(); else bplay(J && J.last || ""); return; }
+    if (busy) return; busy = true; $i("ra-go").disabled = true;
     const j = await api(J && J.on ? {action: "stop"} : {action: "play", id: J && J.last || ""}); busy = false; take(j); };
   let vt = 0;
-  $i("ra-vol").oninput = () => { $i("ra-vol-v").textContent = $i("ra-vol").value + "%"; clearTimeout(vt); vt = setTimeout(async () => take(await api({action: "volume", v: +$i("ra-vol").value})), 250); };
+  $i("ra-vol").oninput = () => { $i("ra-vol-v").textContent = $i("ra-vol").value + "%"; clearTimeout(vt);
+    if (W === "br") { bvol = +$i("ra-vol").value; LS.set("mw-radio-bvol", String(bvol)); bv(); return; } vt = setTimeout(async () => take(await api({action: "volume", v: +$i("ra-vol").value})), 250); };
   $i("ra-edit").onclick = () => { edit = !edit; paint(); };
   $i("ra-sf").onsubmit = async (ev) => {
     ev.preventDefault(); const q = $i("ra-q").value.trim(), res = $i("ra-res"); $i("ra-serr").textContent = "";
@@ -1170,6 +1457,27 @@ _HX_RADIO = {
         "Pendant la radio : alarme sonore et interrupteur à claquements en pause – l’alarme caméra fonctionne normalement",
         "Durante la radio: allarme rumore e interruttore a battito di mani in pausa – l’allarme della telecamera funziona normalmente",
         "Durant il radio: alarm da canera ed interruptur da batter las mauns en pausa – l’alarm da la camera funcziuna normal"),
+    "Where to play": ("Wo spielen", "Où écouter", "Dove ascoltare", "Nua tadlar"),
+    "MoveEye loudspeaker": ("MoveEye-Lautsprecher", "Haut-parleur de MoveEye", "Altoparlante di MoveEye", "Autpledader da MoveEye"),
+    "this browser": ("dieser Browser", "ce navigateur", "questo browser", "quest navigatur"),
+    "via MoveEye": ("über MoveEye", "via MoveEye", "tramite MoveEye", "via MoveEye"),
+    "This station (HLS) cannot play in this browser - use the MoveEye loudspeaker.": (
+        "Dieser Sender (HLS) spielt nicht in diesem Browser – den MoveEye-Lautsprecher wählen.",
+        "Cette station (HLS) ne joue pas dans ce navigateur – choisis le haut-parleur de MoveEye.",
+        "Questa stazione (HLS) non suona in questo browser – scegli l’altoparlante di MoveEye.",
+        "Quest emettur (HLS) na suna betg en quest navigatur – tscherna l’autpledader da MoveEye."),
+    "The station does not play in this browser.": ("Der Sender spielt nicht in diesem Browser.", "La station ne joue pas dans ce navigateur.",
+                                                   "La stazione non suona in questo browser.", "L’emettur na suna betg en quest navigatur."),
+    "«📱 this browser»: the phone plays the station, the MoveEye loudspeaker stays silent. If the station does not play directly, it runs through MoveEye (at most 2 listeners).": (
+        "«📱 dieser Browser»: das Handy spielt den Sender, der MoveEye-Lautsprecher bleibt still. Spielt der Sender nicht direkt, läuft er über MoveEye (höchstens 2 Zuhörer).",
+        "«📱 ce navigateur» : le téléphone joue la station, le haut-parleur de MoveEye reste muet. Si la station ne joue pas directement, elle passe par MoveEye (2 auditeurs au plus).",
+        "«📱 questo browser»: il telefono riproduce la stazione, l’altoparlante di MoveEye resta muto. Se la stazione non suona direttamente, passa da MoveEye (al massimo 2 ascoltatori).",
+        "«📱 quest navigatur»: il telefonin suna l’emettur, l’autpledader da MoveEye resta quiet. Sch’il emettur na suna betg directamain, va el tras MoveEye (maximalmain 2 auditurs)."),
+    "only the stations of the list": ("nur die Sender der Liste", "seulement les stations de la liste", "solo le stazioni dell’elenco", "mo ils emetturs da la glista"),
+    "this stream (HLS) cannot go through MoveEye": ("dieser Stream (HLS) geht nicht über MoveEye", "ce flux (HLS) ne peut pas passer par MoveEye",
+                                                    "questo stream (HLS) non può passare da MoveEye", "quest stream (HLS) na po betg ir tras MoveEye"),
+    "too many listeners through MoveEye (at most 2)": ("zu viele Zuhörer über MoveEye (höchstens 2)", "trop d’auditeurs via MoveEye (2 au plus)",
+                                                       "troppi ascoltatori tramite MoveEye (al massimo 2)", "memia blers auditurs via MoveEye (maximalmain 2)"),
     "Radio on / off": ("Radio ein / aus", "Radio marche / arrêt", "Radio acceso / spento", "Radio en / ora"),
     "Play": ("Abspielen", "Écouter", "Ascolta", "Tadlar"),
     "Volume": ("Lautstärke", "Volume", "Volume", "Volumen"),
@@ -1309,6 +1617,10 @@ _HELP_RADIO = {
            '<li><b>Lautstärke</b> eigener Regler (nicht die Sirene). <b>Einschlaf-Timer</b> 15 / 30 / 60 / 90 Minuten, am Ende leiser bis aus.</li>'
            '<li><b>Radio als Wecker:</b> Einstellungen → Wecker → Weckton «📻 …». Kommt nach 10 s kein Ton (kein Internet, Sender gestört), nimmt der Wecker seine Melodie.</li>'
            '<li><b>Ohne Internet:</b> MoveEye versucht es nach 5, 10, 20, 40 und 80 s nochmals und hört dann auf; die Karte sagt es. Später wieder ▶.</li>'
+           '<li><b>📱 Im Browser hören:</b> auf der Karte «Wo spielen» → «📱 dieser Browser» (pro Browser gemerkt). Das Handy spielt den Sender, der '
+           'MoveEye-Lautsprecher bleibt still, Geräusch-Alarm und Klatschschalter hören weiter. Geht der Sender nicht direkt (http auf einer https-Seite, Sender '
+           'sperrt Browser), läuft er unverändert über MoveEye (/radio/stream, höchstens 2 Zuhörer, nur Sender der Liste). Lautstärke und Einschlaf-Timer gelten '
+           'nur in diesem Browser; auf dem Sperrbildschirm erscheinen Titel und Knöpfe.</li>'
            '<li><b>Rechte:</b> abspielen und stoppen darf, wer Töne darf (Recht «Sirene»); die Senderliste nur der Administrator. Im Pi-Fenster: Mehr → «📻 Radio».</li>'
            '</ul></section>\n'),
     "en": ('<section id="radio" data-icon="📻"><h2>Radio</h2><ul>'
@@ -1319,6 +1631,10 @@ _HELP_RADIO = {
            '<li><b>Volume</b> has its own slider (not the siren). <b>Sleep timer</b> 15 / 30 / 60 / 90 minutes, quieter at the end until off.</li>'
            '<li><b>Radio as wake-up alarm:</b> Settings → Wake-up alarm → Wake-up sound «📻 …». No sound after 10 s (no internet, station down): the alarm takes its melody.</li>'
            '<li><b>Without internet:</b> MoveEye tries again after 5, 10, 20, 40 and 80 s and then stops; the card says so. Tap ▶ later.</li>'
+           '<li><b>📱 Listen in the browser:</b> on the card «Where to play» → «📱 this browser» (remembered per browser). The phone plays the station, the '
+           'MoveEye loudspeaker stays silent, the noise alarm and the clap switch keep listening. If the station does not play directly (http on an https page, '
+           'the station refuses browsers), it runs unchanged through MoveEye (/radio/stream, at most 2 listeners, only stations of the list). Volume and sleep timer '
+           'apply only in this browser; the lock screen shows the title and the buttons.</li>'
            '<li><b>Rights:</b> whoever may use sounds (right «siren») may play and stop; the station list only the administrator. Pi window: More → «📻 Radio».</li>'
            '</ul></section>\n'),
     "fr": ('<section id="radio" data-icon="📻"><h2>Radio</h2><ul>'
@@ -1393,6 +1709,8 @@ def radio_selftest():
     assert all(DE.get(k) and all(TRX[L].get(k) for L in ("fr", "it", "rm")) for k in _HX_RADIO), "texts in 5 languages"
     assert radio_offline_err(_rsock.gaierror(-2, "x")) and not radio_offline_err(ConnectionRefusedError(111, "x"))
     assert len(RADIO_BACKOFF) == 5 and sum(RADIO_BACKOFF) < 200, "no endless tries"
+    assert role_allows("family", "/radio/stream/pilatus", "GET", {}) and not role_allows("view", "/radio/stream/pilatus", "GET", {}), "the proxy: the right to play"
+    assert radio_br_proxy("../x")[0] == 404 and radio_br_proxy("nichtda")[0] == 404 and RADIO_BR_MAX == 2, "the proxy: only stations of the list"
     return "Pilatus by name (no guessed address), addresses, play lists, ICY titles, priority / pause, rights, wake-up sound, texts, back-off"
 
 
