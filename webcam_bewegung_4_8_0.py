@@ -23,6 +23,37 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 4.8.0: Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt
+    hoch)
+  * 4.7.0: Spielesammlung GS-1.24: neues Spiel «Gipfeltreffen» (erstes Level) und «Verschollen im Bergtal» Kapitel 2 «Drei Tage»
+    · Fehler behoben: der Passwort-Dialog nimmt dem Feld «Wiederholen» den Cursor nicht mehr weg
+  * 4.6.0: Mitteilungen pausieren: Push-Pause, die von selbst endet (15 min bis «bis ich zurück bin»), 🔕 auf der Glocke –
+    Sabotage, SOS und Akku kommen immer
+  * 4.5.0: Unterseiten öffnen als Fenster über der Seite – ab Werk «Mitte»; wählbar unter Einstellungen: «Von unten», «Mitte»,
+    «Von der Seite» oder wie bisher «Ganze Seite». Dialoge aus dem Fenster (z. B. Passwort, neuer Benutzer) liegen darüber.
+  * 4.4.0: Zwei Teile. (1) Live → «Bedienung»: «🕹 Kopf steuern» lässt sich für sich einklappen; «⏹ Stopp» bleibt immer sichtbar.
+    (2) Homepage-Karte: drei Schalter – Startseite, Funkgerät und Simulator einzeln hochladen (aus = nicht hochgeladen und auf
+    dem Webspace nie gelöscht); neu «Öffentliche Adresse»
+    (nur https), und eine Seite mit Passwortschutz des Webspace gilt bei der Prüfung als «🔒 geschützt ✓».
+  * 4.3.0: Fünf Teile. (1) Produktseite /info/ mit Bildern: echte App-Bilder (Live, Tagebuch, Mehr) und ruhige Beispielbilder; neu «🖼
+    Produktseite: Bilder» in der Karte «Homepage» – eigene Fotos für die Seite hochladen (nur Admin; ohne Ortsangaben und
+    Kamera-Daten, verkleinert). (2) «📻 Radio» spielt weiter, wenn man
+    die Seite verlässt; solange es spielt, steht 📻 oben in der Kopfzeile (antippen = zurück zum Radio). (3) Jede Seite und jedes
+    Fenster hat einen Weg zurück, auch als App vom Home-Bildschirm (Handy-Funkgerät, Bild gross, Update / Neustart); Downloads gehen
+    in der App überall ins Teilen-Blatt. (4) «Was war das?» lässt sich auf Live zuklappen. (5) Homepage: neuer Schalter «Startseite mit
+    hochladen» (ab Werk aus – dann bleibt die Startseite auf dem Webspace unberührt).
+  * 4.2.0: Zwei Teile. (1) Die Bedienleiste oben ist eine Zeile schmaler: «Einfach / Experte» ist ein Knopf in der Leiste, die
+    Zeile «Darstellung» fällt weg, ⇕ klappt alle Karten auf und zu, die Symbole sitzen neu (Fenster und Webseite). (2) Bauen auf
+    dem Handy: keine Seite mehr breiter als der Bildschirm, Druckdateien untereinander; in Drucken neu die Spalte «Nr.» (wie im
+    Dateinamen), «Wände» erst ab 480 px.
+  * 4.1.0: «📻 Radio» auch im Browser: «📱 dieser Browser» spielt den Sender auf dem Handy, der Lautsprecher bleibt still; geht es
+    direkt nicht, läuft der Strom über MoveEye (höchstens 2 Zuhörer). Sicherheit: MoveEye holt Radio-Ströme nur noch von
+    öffentlichen Adressen – auch nach Umleitungen und aus Wiedergabelisten; ein selbst eingetragener Sender im Heimnetz spielt
+    nur über den Lautsprecher.
+  * 4.0.0: MoveEye 4.0: Mehr → Bauen → Drucken zeigt neu «🧳 Transportsicherung (noch nicht erprobt)» – Haube, Drehsperre-Klammer
+    und Schutzschale zum Drucken (einzeln oder als ZIP mit Anleitung), in der 3D-Werkstatt mit einem Schalter einblendbar. Die
+    Gehäuse-Nummer bleibt 5.3.1. Neu auch auf der Seite «Handy-Funkgerät»: Reiter «🔏 Bild» – Botschaft im Bild
+    verstecken und lesen, ganz ohne Netz.
   * 3.99.0: Zwei Teile. (1) «📻 Radio» (Mehr → Unterwegs): Internet-Radio über den Lautsprecher, Sender suchen im offenen
     Verzeichnis radio-browser.info, Einschlaf-Timer, Radio als Wecker; Sirene, Ansagen, Gegensprechen und Morse haben Vorrang.
     (2) «🏠 Apple Home» (Beta, Einstellungen → Netz & Zugang, nur Admin, ab Werk aus): Kamera, Bewegungsmelder, Schutz, Kopf und
@@ -98,32 +129,6 @@ Features
     erst wenn die Schätzung steht, pro Abend einmal (auch über einen Neustart); fast leer meldet weiter sofort. Anzeige am Netz:
     «Netzbetrieb» / «lädt». (3) Unter der Haube: ein Simulator-Test (Privatplatz) hängt nicht mehr vom Zufall ab.
     (4) Der «Datentausch» heisst neu überall «Digitaler Rucksack» (nur der Name: Adressen, Rechte und Ordner bleiben).
-  * 3.84.2: Queen – iPhone-Test, zweite Runde (Test fotaqios-10): «Aufgeben» → «Ja» endet neu mit der Tafel «Spiel beendet» und
-    «Nochmal» statt mit einer Fehlermeldung. Fehler bleiben als Tafel mit «Fehler kopieren» stehen. Die Testseite meldet Start,
-    Ende und Fehler an MoveEye: «Meldungen vom Test» im Kasten des Spiels (nur Administrator). Daten-Abrufe werden wiederholt.
-    Den Test einmal neu installieren.
-  * 3.84.1: Almanach: Neu oben links die Taste «‹ Zurück» – vom Artikel ins Kapitel, vom Kapitel zum Inhalt, vom Inhalt zu
-    «Mehr». Die Zurück-Geste des Handys geht durch dieselben Ansichten, ein vergrössertes Bild hat «✕ Schliessen». «✕» verlässt
-    den Almanach wie bisher mit einem Tipp. Offline-Karte: oben «‹ Mehr».
-  * 3.84.0: Neu für den Besitzer: «Queen – iPhone-Test» (Mehr → Spielecke, im Kasten von «Flight of the Amazon Queen», nur
-    Administrator). Zwei Test-Fassungen A und B für iPhone/iPad – Spieldaten in Stücken, kleineres Programm. Das Spiel selbst
-    bleibt unverändert. Ob der Absturz auf dem iPhone weg ist, zeigt erst das Gerät.
-  * 3.83.4: Packlisten: Auch sehr lange, ungewöhnlich gebaute Texte halten MoveEye beim Einlesen nicht mehr auf (eine Prüfung
-    auf GitHub hatte das bei 3.83.3 gezeigt).
-  * 3.83.3: Unter der Haube: Die Programmdatei ist um rund 370 KB kleiner (Prüf-Code und Almanach-Texte liegen jetzt im
-    Daten-Paket); am Verhalten ändert sich nichts. Ohne Daten-Paket zeigt der Almanach neu wenigstens das Notfall-Kapitel.
-  * 3.83.2: Packlisten: Import versteht jetzt auch Listen aus Apple Notizen und Markdown-Listen (Überschriften wie **KLEIDUNG**,
-    Gewichte wie «550g» direkt am Wort); eigene Kategorien bleiben erhalten; Überschriften in eingefügtem Text werden als
-    Kategorie erkannt; ähnliche Einträge werden beim Import markiert; die Tipp-Karte verdeckt die Eingabezeile nicht mehr. Sehr
-    lange oder absichtlich verdrehte Zeilen in einer Import-Datei können MoveEye nicht mehr aufhalten.
-  * 3.83.1: Almanach: Beschriftungen in den Bildern werden auf keinem Gerät mehr abgeschnitten.
-  * 3.83.0: Überlebens-Almanach neu: Bilder in jedem Kapitel, acht Knoten Schritt für Schritt gezeichnet, neue Kapitel
-    «Tierspuren» und «Essbar oder giftig?», dein Standort für den Notruf (Schweizer Koordinaten), Luftdruck-Trend, «Heute Nacht»
-    mit Sonne und Mond, und eine SOS-Lampe, die auch Gäste im WLAN einschalten können. Erste-Hilfe-Texte mit Schweizer Quellen
-    abgeglichen (Samariter, Rega, SAC, BAG, Tox Info).
-  * 3.82.0: Neu im Datentausch: Packlisten. Listen anlegen oder aus Text, Excel und CSV übernehmen (immer mit Vorschau); pro
-    Gegenstand Gewicht, Anzahl, Kategorie und Foto; Gesamtgewicht mit Ziel, Basisgewicht und Verbrauch getrennt;
-    «Kaufen»-Ansicht; gemeinsam packen von mehreren Handys; Vorlagen, Kopieren, Drucken und Export.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -132,10 +137,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_3_99_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_4_8_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_3_99_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_3_99_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_4_8_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_4_8_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -152,7 +157,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "3.99.0"
+APP_VERSION = "4.8.0"
 
 
 def default_data_dir():
@@ -285,8 +290,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_3_99_0.zip"
-ZD_SHA256 = "04f8f47ecdaee848e9130a8ac3477273ffd2811305ae7ed18939a2e381937c0d"
+ZD_FILE = "moveeye_daten_4_8_0.zip"
+ZD_SHA256 = "f47641cd68d87ccae94f195eca8f69a15fc5099efc44d7ab8ffc45cadbf85616"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -4938,6 +4943,9 @@ def ntfy_server_messages(since="24h"):
 
 
 
+
+
+
 _ALX_CFG = {"push_actions": True, "alarm_confirm2": False, "arm_announce": True, "back_hold_s": 60,
 			"report_strip": True}
 for _k, _v in _ALX_CFG.items():
@@ -4948,6 +4956,7 @@ ALX = {"lock": threading.Lock(), "tok": {}, "fails": {}, "ctx": None, "hold_unti
 	   "g": {"sig": None, "hits": 0, "ok": False, "last_p": 0.0, "pre_t": 0.0, "hold_log": 0.0}}
 ALX_TTL = 3600
 ALX_ACTS = ("fa", "siren", "off")
+ALX_NAMES = {"fa": "False alarm", "siren": "Siren", "off": "Off"}
 ALX_LABELS = ("person", "animal", "nothing")
 ALX_ZOOM_N = 3
 ALX_ZOOM_MAX = 0.25
@@ -4994,7 +5003,7 @@ def alx_buttons(p, lang=None):
 	base=alx_base()
 	with ALX["lock"]:
 		acts=list((ALX["tok"].get(tok)or{}).get("acts")or[])
-	names={"fa":"False alarm","siren":"Siren","off":"Off"}
+	names=ALX_NAMES
 	return[(tr(names[a],lang),f"{base}/na/{tok}/{a}",a!="siren")for a in acts if a in names]
 
 
@@ -5091,7 +5100,7 @@ def alx_routes(app, watch, reply, body):
 		rec=[x for x in ALX["fails"].get(ip,[])if now-x<600]
 		if len(rec)>=20:
 			return sx_err(429,"keys")
-		names={"fa":"False alarm","siren":"Siren","off":"Off"}
+		names=ALX_NAMES
 		if request.method=="GET":
 			with ALX["lock"]:
 				e=ALX["tok"].get(tok)
@@ -28794,7 +28803,7 @@ threading.Thread(target=_extra_cams_boot, daemon=True, name="extracams-boot").st
 
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.22", "file": "games/MotionWatch_Spiele.zip", "size": 16015122, "sha256": "6c4a0558aafbc48faa06346f1704e74328561d739c9022e9bdb8208576585f35"}
+GAMES_PKG = {"version": "GS-1.24", "file": "games/MotionWatch_Spiele.zip", "size": 16049910, "sha256": "a4c42f40dbe62a5fbaa045fa5334c6f627258f0974c22bf27ce3312d972da872"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
@@ -40422,7 +40431,7 @@ def i18n_js(lang, help_=False):
 
 def render_page(page, active):
 	""
-	page=page.replace("<head>","<head>"+ui_seed_script()+i18n_loader(active=="help")+PWA_HEAD.replace(
+	page=page.replace("<head>","<head>"+ui_seed_script()+i18n_loader(active=="help")+"<script>"+APP_DL_JS+"</script>"+PWA_HEAD.replace(
 		'<link rel="apple-touch-icon" href="/apple-touch-icon.png">',apple_icon_link()).replace(
 		'content="MoveEye">','content="'+app_title(host_variant())+'">').replace(".png\"",".png?i="+app_icon_id()+"\"")
 		+"<script>window.MW_ICON="+json.dumps(app_icon_id())+";</script>"+makeover_head()
@@ -40436,6 +40445,12 @@ def render_page(page, active):
 				  +('<span class="badge yel" style="font-size:10px;padding:1px 7px;min-height:0">DEMO</span>'if DEMO["on"]else "")+"</h1>",page,count=1)
 	return(page.replace("/*BASECSS*/",BASE_CSS).replace("/*COMMON*/",COMMON_JS).replace("<!--NAV-->",nav_html(active))
 			.replace("/*ALERTS*/",HEADER_JS.replace("__APPVER__",APP_VERSION).replace("__BELLY__",_BELLY)+guide_js(active)+ALERT_JS).replace("/*BTJS*/",BT_JS))
+
+
+
+
+
+APP_DL_JS = _zd('510_web_kopf_alarm/APP_DL_JS', "")
 
 
 HEADER_JS = _zd('510_web_kopf_alarm/HEADER_JS', "")
@@ -40640,7 +40655,7 @@ G2_TOURS = {
 				("#btn-fav", "Favourites", "⭐ keeps a recording for ever; the others are deleted when the memory is full."),
 				("nav.subnav", "More history", "Night timeline, animal diary, message list and log.")],
 	"settings": [("#srch", "Search", "Type a word - every setting is found, sorted by topic."),
-				 ("#mwbar .mwb-mode", "Simple or Expert", "«Simple» shows only the important settings - for this page. «Expert» shows all."),
+				 ("#mwb-mode", "Simple or Expert", "«Simple» shows only the important settings - for this page. «Expert» shows all."),
 				 ("#settings", "Topics", "Open a topic to change it. Changes are saved at once."),
 				 ("#settings .g2-q", "The «?»", "Next to a setting: what it does and what we recommend."),
 				 ("nav.subnav a[href='/cams']", "Cameras", "Choose the camera, add a second one, check the thermal picture.")],
@@ -50585,7 +50600,7 @@ class App:
 		self.watch=watch
 		self.web=web or WebStream(watch)
 		self.root=tk.Tk()
-		self.root.title("MoveEye 3.99.0")
+		self.root.title("MoveEye 4.8.0")
 		try:
 			import base64
 			self._icon=tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -50733,6 +50748,11 @@ class App:
 					sub.add_checkbutton(label=tr(label),variable=v,command=lambda k=key,vv=v:self.set_hidden(k,not vv.get()))
 			m.add_cascade(label=tr(g),menu=sub)
 		m.add_separator()
+		icv=tk.StringVar(master=self.root,value=tk_icons());self._mwbar_icv=icv
+		icm=tk.Menu(m,**kw)
+		icm.add_radiobutton(label="🎨 "+tr("Symbols coloured"),variable=icv,value="color",command=lambda:self._set_icons("color"))
+		icm.add_radiobutton(label="◯ "+tr("plain"),variable=icv,value="plain",command=lambda:self._set_icons("plain"))
+		m.add_cascade(label=tr("Symbols"),menu=icm)
 		m.add_command(label=tr("Settings")+"   (Ctrl+B)",command=self.toggle_sidebar)
 		m.add_command(label=tr("Show all"),command=self.show_all)
 		if self.tab=="live":
@@ -50967,7 +50987,7 @@ class App:
 			if not small:
 				vl=tk.Label(tl,text=APP_VERSION,bg=C["bg"],fg=C["mut"],font=("DejaVu Sans",8),cursor="hand2");vl.pack(side="left",padx=(8,0),pady=(5,0))
 				vl.bind("<Button-1>",self._ver_tap,add="+");Tip(vl,tr("About MoveEye"))
-			Tip(nm,f"{tr('Build')} 3.99.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm,f"{tr('Build')} 4.8.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps=[]
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>",self._egg_tap,add="+")
@@ -51596,8 +51616,10 @@ class App:
 		inner=ttk.Frame(canvas,style="Bg.TFrame");win=canvas.create_window((0,0),window=inner,anchor="nw")
 		inner.bind("<Configure>",lambda e:canvas.configure(scrollregion=canvas.bbox("all")))
 		canvas.bind("<Configure>",lambda e:canvas.itemconfigure(win,width=min(e.width,860)))
-		lb=self._mwbar(right,tab);lb.pack(side="top",fill="x",pady=(0,8),before=sb)
 		bar=tk.Frame(right,bg=C["bg"]);bar.pack(side="top",fill="x",pady=(0,10),before=sb)
+		tg=self._mwbar(bar,tab)
+		if tg is not None:
+			tg.pack(side="right")
 		sf=tk.Frame(bar,bg=C["panel"],highlightthickness=1,highlightbackground=C["line"]);sf.pack(side="left",fill="x",expand=True,padx=(0,8))
 		tk.Label(sf,text="⚲",bg=C["panel"],fg=C["mut"],font=("DejaVu Sans",11)).pack(side="left",padx=(8,0))
 		self.search_var=tk.StringVar()
@@ -52923,52 +52945,15 @@ class App:
 	def _mwbar(self,parent,tab):
 		"""
 """
-		f=tk.Frame(parent,bg=C["bg"]);small=self._lay[0]
-		r1=tk.Frame(f,bg=C["bg"]);r1.pack(fill="x")
-		r2=tk.Frame(f,bg=C["bg"])if small else r1
-		if small:
-			r2.pack(fill="x",pady=(6,0))
-
-		def seg(host,items,cur,cmd,dis=False):
-			w=tk.Frame(host,bg=C["line"],padx=1,pady=1)
-			for i,(val,lab)in enumerate(items):
-				on=cur==val
-				l=tk.Label(w,text=lab,font=("DejaVu Sans",9,"bold"),pady=3,padx=8,cursor=""if dis else "hand2",
-							 bg=C["acc"]if on and not dis else C["field"],fg="#ffffff"if on and not dis else C["mut"])
-				l.pack(side="left",padx=(0 if i==0 else 1,0))
-				if not dis:
-					l.bind("<Button-1>",lambda e,v=val:cmd(v))
-			return w
-		nosimple=tab=="sim"
-		m=seg(r1,((True,tr("Simple")),(False,tr("Expert"))),page_simple(tab),self._set_simple,nosimple)
-		m.pack(side="left");Tip(m,tr("This page has only one view")if nosimple else tr("Simple: only the important settings. «Expert» shows all of them."))
-
-
-		self._fold_cvs={}
-		menu=tk.Menu(self.root,tearoff=0,bg=C["panel"],fg=C["txt"],activebackground=C["acc"],activeforeground="#ffffff",
-					   font=("DejaVu Sans",11 if small else 10))
-		icv=tk.StringVar(master=self.root,value=tk_icons());self._mwbar_icv=icv
-		menu.add_command(label=tr("Symbols"),state="disabled")
-		menu.add_radiobutton(label="🎨 "+tr("Symbols coloured"),variable=icv,value="color",command=lambda:self._set_icons("color"))
-		menu.add_radiobutton(label="◯ "+tr("plain"),variable=icv,value="plain",command=lambda:self._set_icons("plain"))
-		menu.add_separator()
-		menu.add_command(label=tr("Fold the menus"),state="disabled")
-		menu.add_command(label="⇊ "+tr("Collapse all"),command=lambda:self._fold_all_btn(False))
-		menu.add_command(label="★ "+tr("My view"),command=self._mine_on)
-		menu.add_command(label="▤ "+tr("Groups only"),command=lambda:self._groups_only(save=False))
-		menu.add_command(label="⇈ "+tr("Expand all"),command=lambda:self._fold_all_btn(True))
-		vb=self._fbtn(r2,"⚙ "+tr("Display")+" ▾",lambda:None)
-
-		def _pop(e=None):
-			icv.set(tk_icons())
-			try:
-				menu.tk_popup(vb.winfo_rootx(),vb.winfo_rooty()+vb.winfo_height())
-			finally:
-				menu.grab_release()
-		vb.configure(command=_pop)if isinstance(vb,(tk.Button,ttk.Button))else vb.bind("<Button-1>",_pop)
-		vb.pack(side="right");Tip(vb,tr("Symbols: green dot or green symbol = switched on"))
-		self.root.after_idle(self._mine_paint)
-		return f
+		if tab=="sim":
+			return None
+		simple=page_simple(tab)
+		b=tk.Label(parent,text=tr("Simple")if simple else "🎓 "+tr("Expert"),font=("DejaVu Sans",9,"bold"),padx=10,pady=5,cursor="hand2",
+					 bg=C["field"]if simple else C["acc"],fg=C["txt"]if simple else "#ffffff",highlightthickness=1,highlightbackground=C["line"])
+		b.bind("<Button-1>",lambda e:self._set_simple(not simple))
+		Tip(b,tr("Simple: only the important settings. «Expert» shows all of them."))
+		self._mwbar_btn=b
+		return b
 
 	def _set_icons(self,v):
 		""
@@ -56077,7 +56062,7 @@ _PX_LABELS = {
 	"pushover_user": "User key", "pushover_token": "App token", "msg_keyword_prefix": "Keyword (empty = off)",
 	"email_to": "To (your address)", "email_host": "SMTP server", "email_port": "Port", "email_user": "User name",
 	"email_password": "Password", "email_events": "Which messages", "public_url": "Address of this page for links",
-	"push_pics": "Pictures", "notify_cooldown": "Pause between alarms (s)", "prealarm_cooldown": "Pause between pre-alarms (s)",
+	"push_pics": "Pictures", "notify_cooldown": "Gap between alarms (s)", "prealarm_cooldown": "Gap between pre-alarms (s)",
 }
 
 
@@ -58208,7 +58193,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 321
+INFO_PARTS = 325
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -65853,6 +65838,8 @@ _HX_live2 = _zd('627_uebersetzungen_live2/HX_live2', _zd_hx_en((
 	'Learn the picture again (after moving the camera)',
 	'Recalibrating - keep the picture empty for a few seconds',
 	'Standard',
+	'Steer the head',
+	'Show or hide the head controls',
 )))
 for _k, _v in _HX_live2.items():
 	DE.setdefault(_k,_v[0])
@@ -67926,8 +67913,8 @@ _HX_PUSH = _zd('639a_uebersetzungen_push/HX_PUSH', _zd_hx({
 	'with picture': 'mit',
 	'small picture': 'klein',
 	'without picture': 'ohne',
-	'Pause between alarms (s)': 'Pause zwischen Alarmen (s)',
-	'Pause between pre-alarms (s)': 'Pause zwischen Voralarmen (s)',
+	'Gap between alarms (s)': 'Abstand zwischen Alarmen (s)',
+	'Gap between pre-alarms (s)': 'Abstand zwischen Voralarmen (s)',
 	'Quiet hours (no alarm push)': 'Ruhezeiten (kein Alarm-Push)',
 	'Report persons anyway': 'Personen trotzdem melden',
 	'What is reported': 'Was gemeldet wird',
@@ -69915,7 +69902,7 @@ for _k, _v in _HX_MWB.items():
 		TRX[_L].setdefault(_k,_v[_i+1])
 
 MWB_KEYS = sorted(set(_HX_MWB) | {
-	"Simple", "Expert", "On start: groups only", "Collapse all", "Groups only", "Expand all", "My view",
+	"Simple", "Expert", "on", "off", "On start: groups only", "Collapse all", "Groups only", "Expand all", "My view",
 	"Simple: only the important settings. «Expert» shows all of them.", "Symbols: green dot or green symbol = switched on",
 	"On every start the settings show only the groups. Off: the menus open as you left them."})
 
@@ -69935,9 +69922,27 @@ MWB_JS = _zd('639o_bedienleiste/MWB_JS', "")
 
 
 
-for _a, _b in _zd('639o_bedienleiste/anleitung_HELP_PAGE', ()):
-	if _a in HELP_PAGE:
-		HELP_PAGE=HELP_PAGE.replace(_a,_a+_b,1)
+MWB_HELP = _zd('639o_bedienleiste/MWB_HELP', _ZDDict())
+
+
+def mwb_help(doc, lang):
+	""
+	if not isinstance(doc,str)or MWB_HELP[lang][:40]in doc:
+		return doc
+	i=doc.find('<section id="tips"')
+	j=doc.find("</h2>",i)if i>=0 else-1
+	return doc[:j+5]+MWB_HELP[lang]+doc[j+5:]if j>=0 else doc
+
+
+try:
+	_hp_en=HELP_PAGE.find('<div lang="en">')
+	if _hp_en>0:
+		HELP_PAGE=mwb_help(HELP_PAGE[:_hp_en],"de")+mwb_help(HELP_PAGE[_hp_en:],"en")
+	for _L in("fr","it","rm"):
+		if HELP_X.get(_L):
+			HELP_X[_L]=mwb_help(HELP_X[_L],_L)
+except Exception as _e:
+	print(f"639o help: {_e}")
 
 
 _render_page_before_mwb = render_page
@@ -69956,6 +69961,11 @@ def render_page(page, active):
 
 
 _mwb_selftest = _zd_fn('639o_bedienleiste/_mwb_selftest()')
+
+
+
+
+
 
 
 
@@ -75292,7 +75302,7 @@ SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json
 
 
 
-GEH_QUELLE_SHA = '143217515ac5b3cac7fa040087de0338713210eae3deae6434a32c26677fc9de'
+GEH_QUELLE_SHA = '3551bbdbff0cce549f45bfd21f67a2326159474a3d787a556e50c25d53e7abef'
 GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', '{}'))
 GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Elektro – parametric Python model.": "Eigenes Werk von Elektro – parametrisches Python-Modell.", "Step": "Schritt"}
 GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
@@ -75303,11 +75313,19 @@ GEH_UI2_TRX = _zd('639v_daten_gehaeuse/GEH_UI2_TRX', _ZDDict())
 
 
 
-BAU3D_QUELLE_SHA = '143217515ac5b3cac7fa040087de0338713210eae3deae6434a32c26677fc9de'
+BAU3D_QUELLE_SHA = '3551bbdbff0cce549f45bfd21f67a2326159474a3d787a556e50c25d53e7abef'
 BAU3D = _zd('639vb_daten_bau3d/BAU3D', _ZDDict())
 BAU3D_GLB = _zd('639vb_daten_bau3d/BAU3D_GLB', [])
 
 BAU3D_MODELLE = json.loads(_zd('639vb_daten_bau3d/BAU3D_MODELLE', '{}'))
+
+BAU3D_GLB_TRANSPORT = _zd('639vb_daten_bau3d/BAU3D_GLB_TRANSPORT', [])
+BAU3D_MODELLE_TRANSPORT = json.loads('[{"id":"kappe","gruppe":"base","aussen":false,"mitte":[0.0,0.004,0.0027],"explosion":[0.0,0.47,-0.0],"farbe":"#9a9ea3","transport":"haube"},{"id":"drehsperre","gruppe":"base","aussen":false,"mitte":[0.0,-0.0453,0.0444],"explosion":[0.0,0.26,-0.0],"farbe":"#9a9ea3","transport":"haube"},{"id":"schale_vorne","gruppe":"base","aussen":false,"mitte":[-0.0,-0.0032,-0.0221],"explosion":[-0.0,0.52,-0.0],"farbe":"#9a9ea3","transport":"schale"},{"id":"schale_hinten","gruppe":"base","aussen":false,"mitte":[-0.0,-0.0032,0.0293],"explosion":[-0.0,0.52,-0.0],"farbe":"#9a9ea3","transport":"schale"},{"id":"schale_stopfen","gruppe":"base","aussen":false,"mitte":[0.0121,-0.0059,-0.0399],"explosion":[0.0,0.52,-0.0],"farbe":"#9a9ea3","transport":"schale"}]')
+
+
+
+
+
 
 
 
@@ -75368,7 +75386,8 @@ for _k, _v in GEH_DL_TX.items():
 	DE.setdefault(_k,_v[0])
 	for _i,_L in enumerate(("fr","it","rm")):
 		TRX.setdefault(_L,{}).setdefault(_k,_v[_i+1])
-GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)", "Needs internet (GitHub)",
+GEH_KEYS = sorted(set(GEH_UI_DE) | set(GEH_UI2_DE) | {k for _i, k in BAU_TABS} | {"Complete kit package (GitHub)", "Needs internet (GitHub)", "No.",
+	"On a narrow screen the column «Walls» is hidden – turn the phone or open the page on a PC.",
 	"Saved only in this browser (offline version).", "The print files come from GitHub – this needs internet. Everything else on this page works offline.", "Offline version", "Ready-made? Request on the MoveEye homepage",
 	"Without the repository MoveEye fetches the files from GitHub itself (the first time takes about a minute). Everything in one package:"} | {
 	"Case", "Step", "Name", "Opened in the simulator.", "Simulator not connected – start it and connect it on the page Simulator."})
@@ -75380,12 +75399,18 @@ def geh_fk():
 	return{i:{k:es[i].get(k)for k in("titel","text","schritte","stufe")}for i in GEH_BAU.get("fehlersuche")or[]if i in es}
 
 
+def geh_m3():
+	""
+	tm=globals().get("BAU3D_MODELLE_TRANSPORT")or[]
+	return dict(BAU3D_MODELLE,teile=list(BAU3D_MODELLE.get("teile")or[])+list(tm))if tm else BAU3D_MODELLE
+
+
 def geh_page(off=None):
 	""
 	js="Object.assign(I18N.de, "+json.dumps({k:DE.get(k,k)for k in GEH_KEYS},ensure_ascii=False)+");"
 	J=lambda o:json.dumps(o,ensure_ascii=False).replace("</","<\\/")
 	return((geh_render_off(GEH_PAGE,off)if off else render_page(GEH_PAGE,"more")).replace("/*GEHDE*/",js,1).replace("/*GEHBAU*/null",J(GEH_BAU),1)
-			.replace("/*GEHFK*/null",J(geh_fk()),1).replace("/*GEHM3*/null",J(BAU3D_MODELLE),1)
+			.replace("/*GEHFK*/null",J(geh_fk()),1).replace("/*GEHM3*/null",J(geh_m3()),1)
 			.replace("/*GEHVER*/\"\"",json.dumps(APP_VERSION),1)
 			.replace("/*GEHSIM*/false","true"if CFG.get("sim_on")else "false",1)
 			.replace("/*GEHTABS*/",J([list(x)for x in BAU_TABS])).replace("/*GEH3D*/",GEH_3D_JS,1)
@@ -75402,7 +75427,7 @@ def geh_render_off(page, off):
 	probe=page+COMMON_JS+GEH_3D_JS+str(globals().get("GEH_EINZEL_JS",""))+str(globals().get("GEH_EINZEL_3D",""))+fertig_js()
 	keys=set(GEH_KEYS)|set(re.findall(r'data-i18n="([^"]+)"',page))|{k for k in TRX.get("fr",{})if '"'+k+'"'in probe}
 	trx={L:{k:TRX.get(L,{})[k]for k in sorted(keys)if TRX.get(L,{}).get(k)}for L in("fr","it","rm")}
-	cfg={k:off[k]for k in("home","raw","kit","glb")if off.get(k)}
+	cfg={k:off[k]for k in("home","raw","kit","glb","glbt")if off.get(k)}
 	head=("<script>window.MW_OFFLINE="+J(cfg)+";window.I18NXA="+J(trx)+";\n"+LANG_JS.replace("</","<\\/")+"\n"
 			"(function(){var l='';try{l=localStorage.getItem('mw-lang')||'';}catch(e){}"
 			"var nl=((navigator.language||'de').slice(0,2)||'de').toLowerCase();if(['de','fr','it','rm','en'].indexOf(nl)<0)nl='en';"
@@ -75433,6 +75458,8 @@ def geh_offline_html(homepage=""):
 	imports={("three"if k=="three.module.min.js"else "three/addons/"+k):du(v.encode("utf-8"),"text/javascript")for k,v in src.items()}
 	home=str(homepage or(globals().get("FERTIG")or{}).get("homepage_url")or "")
 	off={"home":home if home.startswith("https://")else "","raw":GEH_DRUCK_RAW,"kit":GEH_BAUSATZ_URL,"glb":du(gzip.decompress(bau3d_bytes("glb")),"model/gltf-binary"),"imports":imports}
+	if bau3d_bytes("glbt"):
+		off["glbt"]=du(gzip.decompress(bau3d_bytes("glbt")),"model/gltf-binary")
 	return geh_page(off=off)
 
 
@@ -75502,7 +75529,13 @@ def geh_druck_dir():
 
 
 def geh_druck_namen():
-	return list(GEH_BAU.get("druckdateien")or[])+list(GEH_BAU.get("druckdateien_einzeln")or[])
+	return list(GEH_BAU.get("druckdateien")or[])+list(GEH_BAU.get("druckdateien_einzeln")or[])+geh_transport_namen()
+
+
+def geh_transport_namen():
+	"""
+"""
+	return list((GEH_BAU.get("transport")or{}).get("dateien")or[])
 
 
 
@@ -75623,7 +75656,8 @@ def geh_druck_holen(name, timeout=30):
 def geh_var_namen(var):
 	""
 	d=GEH_VAR_DIR.get(var,"v5-2/")
-	return[n for n in geh_druck_namen()if(n.split("/")[0]+"/"if "/"in n else "")==d]
+	tr_=set(geh_transport_namen())
+	return[n for n in geh_druck_namen()if(n.split("/")[0]+"/"if "/"in n else "")==d and n not in tr_]
 
 
 GEH_VAR_DIR = {"v51": "", "v52": "v5-2/", "v53": "v5-3/"}
@@ -75676,12 +75710,30 @@ def _geh_bg_fetch(names):
 		_GEH_DL_BG["run"]=False
 
 
-def geh_alle_zip(var=None, budget=None):
+def geh_transport_liesmich(L=None):
+	""
+	L=cur_lang(L)
+	T_=GEH_BAU.get("transport")or{}
+	out=[tr("MoveEye transport lock – not yet tried out – as of MoveEye %s",L)%APP_VERSION,"",_gx_py(T_.get("hinweis"),L)]
+	nm={t_.get("datei"):_gx_py(t_.get("name"),L)for t_ in GEH_BAU.get("teile")or[]if t_.get("datei")}
+	for g_ in T_.get("gruppen")or[]:
+		out+=["","== "+_gx_py(g_.get("titel"),L)+" =="]
+		for p in T_.get("teile")or[]:
+			if p.get("gruppe")==g_.get("id"):
+				out.append("- %s: %s · %s %s%s · %s ~%s h"%(nm.get(p["datei"],p["datei"]),_gx_py(p.get("liegt"),L),tr("Layer",L),
+						   p["schicht"]," · Brim %s mm"%p["brim"]if p.get("brim")else "",tr("Print time",L),p["zeit_h"]))
+		out+=["",_gx_py(g_.get("hinweis"),L)]
+		if g_.get("montage"):
+			out+=["",tr("How to fit it",L)+":",_gx_py(g_["montage"].get("text"),L)]
+	return "\r\n".join(out+[""])
+
+
+def geh_alle_zip(var=None, budget=None, transport=False):
 	"""
 """
 	import io
 	var=var if var in GEH_VAR_DIR else geh_var_std()
-	names=geh_var_namen(var)
+	names=geh_transport_namen()if transport else geh_var_namen(var)
 	t0,paths=time.time(),{}
 	budget=GEH_ZIP_BUDGET if budget is None else budget
 	for i,n in enumerate(names):
@@ -75695,11 +75747,11 @@ def geh_alle_zip(var=None, budget=None):
 		if not p:
 			return "offline",why,None
 		paths[n]=p
-	zn=geh_zip_name(var)
+	zn=("MoveEye_Transportsicherung_%s.zip"%APP_VERSION)if transport else geh_zip_name(var)
 	top=zn[:-4]+"/"
 	b=io.BytesIO()
 	with zipfile.ZipFile(b,"w",zipfile.ZIP_STORED)as z:
-		z.writestr(top+"LIESMICH.txt",geh_liesmich(var).encode("utf-8"))
+		z.writestr(top+"LIESMICH.txt",(geh_transport_liesmich()if transport else geh_liesmich(var)).encode("utf-8"))
 		for n in names:
 			bn=geh_base_name(n)
 			z.write(paths[n],top+("Platten_X2D/"+bn if n in(GEH_BAU.get("druckdateien")or[])else bn))
@@ -75737,6 +75789,11 @@ def bau3d_bytes(key):
 			if len(BAU3D_GLB)<3:
 				return None
 			_BAU3D_CACHE[key]=base64.b64decode(BAU3D_GLB[2])
+		elif key=="glbt":
+			gt_=globals().get("BAU3D_GLB_TRANSPORT")or[]
+			if len(gt_)<3:
+				return None
+			_BAU3D_CACHE[key]=base64.b64decode(gt_[2])
 		elif key in BAU3D:
 			_BAU3D_CACHE[key]=base64.b64decode(BAU3D[key][1])
 		else:
@@ -75778,6 +75835,11 @@ def smalltv_routes(app, reply, body):
 		b_=bau3d_bytes("glb")
 		return gz(b_,"model/gltf-binary")if b_ else Response("additional data missing",503)
 
+	@app.route("/build/gehaeuse_transport.glb")
+	def geh_glb_tr():
+		b_=bau3d_bytes("glbt")
+		return gz(b_,"model/gltf-binary")if b_ else Response("additional data missing",503)
+
 	@app.route("/build/qr.svg")
 	def geh_qr():
 		return Response(qr_svg(request.host_url),mimetype="image/svg+xml",headers={"Cache-Control":"no-store"})
@@ -75794,13 +75856,15 @@ def smalltv_routes(app, reply, body):
 			return Response(f_.read(),mimetype="application/octet-stream",
 							headers={"Content-Disposition":f'attachment; filename="{geh_base_name(name)}"',"Cache-Control":"private, max-age=600"})
 
+	@app.route("/build/transport.zip")
 	@app.route("/build/alle.zip")
 	def geh_alle():
 		var=request.args.get("var")or geh_var_std()
-		st,a_,b_=geh_alle_zip(var)
+		trp=request.path.endswith("/transport.zip")
+		st,a_,b_=geh_alle_zip(var,transport=trp)
 		if st=="zip":
 			return Response(a_,mimetype="application/zip",headers={"Content-Disposition":f'attachment; filename="{b_}"',"Cache-Control":"no-store"})
-		url="/build/alle.zip?var="+(var if var in GEH_VAR_DIR else geh_var_std())
+		url="/build/transport.zip"if trp else "/build/alle.zip?var="+(var if var in GEH_VAR_DIR else geh_var_std())
 		if st=="wait":
 			return Response(geh_dl_page(tr("The print files are being fetched from the internet (%d of %d). This page tries again by itself; you can also tap «Try again».")%(a_,b_),retry=url,refresh=15),202,mimetype="text/html")
 		return Response(geh_dl_page(tr("The print file is not on this MoveEye and could not be fetched from the internet (no connection?). Try again later, or load the complete kit package."),retry=url),503,mimetype="text/html")
@@ -75931,6 +75995,15 @@ geh_check = _zd_fn('639w_gehaeuse/geh_check()')
 
 
 
+
+
+
+
+
+
+
+
+
 bau_infos_veraltet = _zd_fn('639w_gehaeuse/bau_infos_veraltet()')
 
 
@@ -75947,6 +76020,19 @@ bau_infos_veraltet = _zd_fn('639w_gehaeuse/bau_infos_veraltet()')
 
 
 geh_selftest = _zd_fn('639w_gehaeuse/geh_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -102670,6 +102756,9 @@ def funk_page(variant="mw", lang=None, https_port=None):
 		a,e=p.find("<!--PWA-->"),p.find("<!--/PWA-->")
 		if a>=0 and e>a:
 			p=p[:a]+p[e+len("<!--/PWA-->"):]
+	if variant!="pwa":
+		js=globals().get("STEGO_JS")or ""
+		p=p.replace('<script src="stego.js"></script>',("<script>\n"+js+"\n</script>")if "MWStego"in js else "",1)
 	if variant=="mw":
 		mw={"lang":norm_lang(lang or CFG.get("lang")),"back":"/morse","https_port":https_port}
 		p=p.replace("/*MWFUNK*/","window.MW_FUNK="+json.dumps(mw).replace("</","<\\/")+";",1)
@@ -103186,7 +103275,20 @@ if "App" in globals():
 
 
 
-_HP_CFG = {"hp_key": "", "hp_base": "https://kevlaschef.com", "hp_auto": True}
+
+
+
+
+
+
+
+
+
+
+
+
+_HP_CFG = {"hp_key": "", "hp_base": "https://kevlaschef.com", "hp_auto": True, "hp_start_on": False, "hp_funk_on": True,
+		   "hp_sim_on": True, "hp_public": ""}
 for _k, _v in _HP_CFG.items():
 	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
 USER_SETTINGS_DENY.update(_HP_CFG)
@@ -103254,6 +103356,26 @@ def hp_base_ok(u):
 	if HP_TEST_HTTP and re.fullmatch(r"http://127\.0\.0\.1:\d{1,5}",u):
 		return u
 	return ""
+
+
+def hp_public_ok(u):
+	""
+	u=str(u or "").strip()
+	m=re.fullmatch(r"(https://[A-Za-z0-9](?:[A-Za-z0-9-]{0,62}\.)+[A-Za-z]{2,63}(?::\d{1,5})?)(/[A-Za-z0-9._~/-]{0,200})?",u)
+	if not m and HP_TEST_HTTP:
+		m=re.fullmatch(r"(http://127\.0\.0\.1:\d{1,5})(/[A-Za-z0-9._~/-]{0,200})?",u)
+	if not m or "//"in(m.group(2)or "")or "/../"in(m.group(2)or "")+"/":
+		return ""
+	return m.group(1)+((m.group(2)or "/").rstrip("/")+"/")
+
+
+def hp_public_url():
+	""
+	pub=hp_public_ok(CFG.get("hp_public"))
+	if pub:
+		return pub
+	base=hp_base_ok(CFG.get("hp_base"))
+	return base+"/moveeye/"if base else ""
 
 
 def _hp_conn(url, timeout=60):
@@ -103339,17 +103461,19 @@ def hp_list():
 
 
 def hp_funk_files():
-	""
+	"""
+"""
 	import base64
 	import hashlib
 	html=funk_page("pwa").encode("utf-8")
-	ver=hashlib.sha256(html).hexdigest()[:12]
+	js=STEGO_JS.encode("utf-8")
+	ver=hashlib.sha256(html+js).hexdigest()[:12]
 	man={"name":"Handy-Funkgerät","short_name":"Funk","description":"Morse und das eigene Protokoll mit zwei Tönen über ein Handfunkgerät (MoveEye)",
 		   "lang":"de","start_url":"./","scope":"./","display":"standalone","background_color":"#111418","theme_color":"#111418",
 		   "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png"},
 					 {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
 	out={"index.html":html,"manifest.webmanifest":(json.dumps(man,ensure_ascii=False,indent=1)+"\n").encode("utf-8"),
-		   "sw.js":HP_FUNK_SW_JS.replace("@VER@",ver).encode("utf-8")}
+		   "sw.js":HP_FUNK_SW_JS.replace("@VER@",ver).encode("utf-8"),"stego.js":js}
 	try:
 		out.update({k:base64.b64decode(v)for k,v in json.loads(HP_FUNK_PNG).items()})
 	except(ValueError,TypeError):
@@ -103363,10 +103487,33 @@ def _hp_item(path, data):
 	return{"path":path,"size":len(data),"sha":hashlib.sha256(data).hexdigest(),"get":lambda d=data:io.BytesIO(d)}
 
 
+HP_START = "index.html"
+HP_PARTS = ("start", "funk", "sim")
+_HP_PART_DIR = {"start": "", "funk": "Funk/", "sim": "Sim/"}
+
+
+def hp_part_on(part):
+	return bool(CFG.get("hp_"+part+"_on"))
+
+
+def hp_start_on():
+	return hp_part_on("start")
+
+
+def hp_part(p):
+	""
+	return "start"if p==HP_START else "funk"if p.startswith("Funk/")else "sim"if p.startswith("Sim/")else None
+
+
+def hp_any_on():
+	return any(hp_part_on(x)for x in HP_PARTS)
+
+
 def hp_fixed_items():
-	out=[_hp_item("index.html",HP_INDEX_HTML.encode("utf-8"))]
-	out+=[_hp_item("Funk/"+n,b)for n,b in sorted(hp_funk_files().items())]
-	return out+[_hp_item("Sim/test.html",HP_TEST_HTML.encode("utf-8"))]
+	out=[_hp_item(HP_START,HP_INDEX_HTML.encode("utf-8"))]if hp_part_on("start")else[]
+	if hp_part_on("funk"):
+		out+=[_hp_item("Funk/"+n,b)for n,b in sorted(hp_funk_files().items())]
+	return out+([_hp_item("Sim/test.html",HP_TEST_HTML.encode("utf-8"))]if hp_part_on("sim")else[])
 
 
 def hp_sim_check(p):
@@ -103441,7 +103588,9 @@ def hp_content_id():
 """
 	import hashlib
 	sim_manifest_load()
-	t="|".join(it["path"]+":"+it["sha"]for it in hp_fixed_items())+"|sim:"+str(SIM3D_WEB.get("sha256")or "")
+	t="|".join(it["path"]+":"+it["sha"]for it in hp_fixed_items())
+	t+="|sim:"+(str(SIM3D_WEB.get("sha256")or "")if hp_part_on("sim")else "")
+	t+="|on:"+"".join("1"if hp_part_on(x)else "0"for x in HP_PARTS)
 	return hashlib.sha256((t+"|"+str(CFG.get("hp_base"))).encode("utf-8")).hexdigest()
 
 
@@ -103530,7 +103679,7 @@ def hp_publish(auto=False):
 	cid=hp_content_id()
 	HP.update(busy="comparing",prog={},msg="")
 	items=hp_fixed_items()
-	sim,note=hp_sim_items(True)
+	sim,note=hp_sim_items(True)if hp_part_on("sim")else([],None)
 	items+=sim
 	if HP["cancel"]:
 		raise HpErr("cancel")
@@ -103559,7 +103708,8 @@ def hp_publish(auto=False):
 		st["up"]=up
 		hp_save(st)
 	paths={it["path"]for it in items}
-	gone=[p for p in list(up)if p not in paths and _hp_ours(p)]
+
+	gone=[p for p in list(up)if p not in paths and _hp_ours(p)and hp_part_on(hp_part(p))]
 	for p in gone:
 		from urllib.parse import quote
 		if p in remote:
@@ -103610,7 +103760,7 @@ def hp_start(kind, auto=False):
 def hp_auto_tick(now=None):
 	""
 	now=now or time.time()
-	if not(CFG.get("hp_auto")and CFG.get("hp_key")and hp_base_ok(CFG.get("hp_base")))or HP["busy"]or not hp_quiet():
+	if not(CFG.get("hp_auto")and CFG.get("hp_key")and hp_base_ok(CFG.get("hp_base"))and hp_any_on())or HP["busy"]or not hp_quiet():
 		return False
 	st=hp_state()
 	if now-float(st.get("t_man")or 0)>6*3600:
@@ -103688,7 +103838,7 @@ def hp_probe(url, want=None, origin=""):
 			break
 		else:
 			raise HpErr("loop")
-		H={k:_hp_clean(r.getheader(k)or "")[:300]for k in("Content-Type","Content-Length","Content-Security-Policy",
+		H={k:_hp_clean(r.getheader(k)or "")[:300]for k in("Content-Type","Content-Length","Content-Security-Policy","WWW-Authenticate",
 																 "X-Content-Type-Options","Cross-Origin-Embedder-Policy",
 																 "Cross-Origin-Opener-Policy","Cross-Origin-Resource-Policy")}
 		exp=want.get("size")if want else None
@@ -103718,6 +103868,9 @@ def hp_probe(url, want=None, origin=""):
 	fin=re.match(r"^[a-z]+://[^/]+",url)
 	if row["chain"]and fin and fin.group(0)!=origin:
 		P.append(("redirected to another address – fetch() and WebAssembly often fail there",fin.group(0)))
+	if r.status==401 and H["WWW-Authenticate"]:
+		row["locked"]=True
+		return row
 	if r.status!=200:
 		P.append(("answer {code} instead of 200",str(r.status)))
 		return row
@@ -103740,19 +103893,27 @@ def hp_probe(url, want=None, origin=""):
 
 
 def hp_check(items=None):
-	base=hp_base_ok(CFG.get("hp_base"))
-	if not base:
+	pub=hp_public_url()
+	if not pub:
 		raise HpErr("url")
+	origin=re.match(r"^[a-z]+://[^/]+",pub).group(0)
 	if items is None:
-		items=hp_fixed_items()+(hp_sim_items(False)[0]or[{"path":"Sim/"+n,"size":None,"sha":None}for n in HP_SIM_NAMES])
+		items=hp_fixed_items()+((hp_sim_items(False)[0]or[{"path":"Sim/"+n,"size":None,"sha":None}for n in HP_SIM_NAMES])
+									if hp_part_on("sim")else[])
 	from urllib.parse import quote
 	rows=[]
-	for i,it in enumerate([{"path":""},{"path":"Funk/"},{"path":"Sim/"}]+list(items)):
-		HP["prog"]={"i":i+1,"n":len(items)+3,"file":it["path"]or "/"}
+	for x in HP_PARTS:
+		if not hp_part_on(x):
+			rows.append({"path":_HP_PART_DIR[x]or "/","off":x,"url":"","chain":[],"probs":[],"status":0,"size":0,"type":"",
+						 "headers":{}})
+	items=[it for it in items if hp_part(it["path"])is None or hp_part_on(hp_part(it["path"]))]
+	probe=[{"path":_HP_PART_DIR[x]}for x in HP_PARTS if hp_part_on(x)]+list(items)
+	for i,it in enumerate(probe):
+		HP["prog"]={"i":i+1,"n":len(probe),"file":it["path"]or "/"}
 		if HP["cancel"]:
 			raise HpErr("cancel")
 		want={"path":it["path"],"size":it.get("size"),"sha":it.get("sha")}if it["path"]and not it["path"].endswith("/")else None
-		row=hp_probe(base+"/moveeye/"+quote(it["path"],safe="/"),want,base)
+		row=hp_probe(pub+quote(it["path"],safe="/"),want,origin)
 		row["path"]=it["path"]or "/"
 		rows.append(row)
 	st=hp_state()
@@ -103771,9 +103932,10 @@ def hp_status():
 	""
 	st,p,pk=hp_state(),HP["prog"],SIM3D_WEB
 	return{"ok":True,"key_set":bool(CFG.get("hp_key")),"base":CFG.get("hp_base")or "","auto":bool(CFG.get("hp_auto")),
+			"start_on":hp_part_on("start"),"funk_on":hp_part_on("funk"),"sim_on":hp_part_on("sim"),
 			"busy":HP["busy"],"wait":HP["wait"],"prog":{k:p.get(k)for k in("i","n","bytes","total","file")}if p.get("n")else None,
 			"err":[HP["err"],HP["msg"]]if HP["err"]else None,"cancelled":HP["msg"]=="cancel","last":st.get("last"),
-			"check":st.get("check"),"public":(hp_base_ok(CFG.get("hp_base"))or "")+"/moveeye/",
+			"check":st.get("check"),"public":hp_public_url(),"public_set":hp_public_ok(CFG.get("hp_public")),
 			"sim":{"ver":pk["version"]if pk["size"]else "","ready":bool(pk["size"])and sim3d_ready(pk)}}
 
 
@@ -103804,13 +103966,32 @@ def hp_action(d, lang=None):
 			save_settings()
 			log_event("sys","Homepage: address changed, upload key deleted")
 		return True,""
+	if a=="public":
+		v=str(d.get("public")or "").strip()
+		pub=hp_public_ok(v)if v else ""
+		if v and not pub:
+			return False,"Only https addresses, without user name or password."
+		if pub!=(CFG.get("hp_public")or ""):
+			CFG["hp_public"]=pub
+			st=hp_state();st.pop("check",None);hp_save(st)
+			save_settings()
+			log_event("sys","Homepage: public address "+("set"if pub else "cleared"))
+		return True,""
 	if a=="auto":
 		CFG["hp_auto"]=bool(d.get("on"))
 		save_settings()
 		return True,""
+	if a in("start_on","funk_on","sim_on"):
+		CFG["hp_"+a]=bool(d.get("on"))
+		save_settings()
+		log_event("sys","Homepage: "+{"start_on":"start page","funk_on":"phone radio","sim_on":"simulator"}[a]+(
+			" on"if CFG["hp_"+a]else " off"))
+		return True,""
 	if a in("publish","check"):
 		if a=="publish"and not CFG.get("hp_key"):
 			return False,"No upload key set."
+		if a=="publish"and not hp_any_on():
+			return False,"Nothing chosen – switch on at least one part."
 		return(True,"")if hp_start(a)else(False,"busy - try again")
 	if a=="cancel":
 		HP["cancel"]=True
@@ -103938,6 +104119,12 @@ for _L in ("fr", "it", "rm"):
 
 
 homepage_selftest = _zd_fn('639zzzh_homepage/homepage_selftest()')
+
+
+
+
+
+
 
 
 
@@ -110717,6 +110904,7 @@ SELFTEST_EXTRA.append(("Push button «📷 Live öffnen» (639zzzzb)", push_live
 
 
 
+
 import hashlib as _bild_hashlib
 import hmac as _bild_hmac
 import struct as _bild_struct
@@ -111074,6 +111262,16 @@ SELFTEST_EXTRA.append(("Botschaft im Bild: hide/read, encryption, capacity, wron
 
 
 
+
+
+
+
+
+
+
+
+
+
 import socket as _rsock
 
 RADIO_UA = "MoveEye/" + APP_VERSION + " (internet radio; github.com/DonElektro/MotionWatch)"
@@ -111088,7 +111286,9 @@ RADIO_FADE_S = 45.0
 RADIO_SLEEP = (0, 15, 30, 60, 90)
 RADIO_GAP_S = 1.5
 RADIO_HELD_DROP_S = 60.0
-RADIO_PLAY_ACTIONS = ("play", "stop", "toggle", "volume", "sleep")
+RADIO_PLAY_ACTIONS = ("play", "stop", "toggle", "volume", "sleep", "bplay", "bstop")
+RADIO_BR_MAX = 2
+RADIO_BR_TTL = 600.0
 RADIO_DEF = {"radio_stations": [{"id": "pilatus", "name": "Radio Pilatus", "sub": "Luzern", "find": {"name": "Radio Pilatus", "cc": "CH"}}],
 			 "radio_volume": 40, "radio_last": "pilatus"}
 for _k, _v in RADIO_DEF.items():
@@ -111098,6 +111298,7 @@ USER_SETTINGS_DENY.update({"radio_stations", "radio_last"})
 APPKEY_DENY_KEYS.update({"radio_stations"})
 VIEW_GET_PAGES.add("/radio")
 VIEW_GET = VIEW_GET + ("/api/radio",)
+PERM_GET["siren"] = tuple(PERM_GET.get("siren", ())) + ("/radio/stream/",)
 _RADIO_ID = re.compile(r"^[a-z0-9]{1,16}$")
 _RADIO_UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 _RADIO_PL_CT = ("audio/x-scpls", "audio/scpls", "audio/x-mpegurl", "audio/mpegurl", "application/x-mpegurl", "application/vnd.apple.mpegurl",
@@ -111136,6 +111337,8 @@ def radio_clean(lst):
 			e["uuid"]=x["uuid"]
 		if radio_url_ok(x.get("url")):
 			e["url"]=x["url"]
+			if x.get("lan")is True:
+				e["lan"]=True
 		f=x.get("find")
 		if isinstance(f,dict)and _radio_txt(f.get("name")):
 			e["find"]={"name":_radio_txt(f.get("name")),"cc":str(f.get("cc")or "")[:2].upper()if re.match(r"^[A-Za-z]{2}$",str(f.get("cc")or ""))else ""}
@@ -111156,16 +111359,63 @@ def radio_station(sid):
 
 
 
-def _rh_open(url, timeout=8.0, icy=False):
+
+
+
+
+
+
+import ipaddress as _rip
+_RADIO_LAN_NETS = tuple(_rip.ip_network(n) for n in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "fc00::/7"))
+
+
+class RadioBlocked(ValueError):
 	""
+
+
+def radio_addr_kind(a, lan=False):
+	""
+	try:
+		ip=_rip.ip_address(str(a).split("%",1)[0])
+	except ValueError:
+		return None
+	if ip.version==6 and ip.ipv4_mapped is not None:
+		ip=ip.ipv4_mapped
+	if ip.is_global and not ip.is_multicast:
+		return "global"
+	if lan and any(ip in n for n in _RADIO_LAN_NETS):
+		return "lan"
+	return None
+
+
+def radio_resolve_host(host, port, lan=False):
+	""
+	addrs=list(dict.fromkeys(i[4][0]for i in _rsock.getaddrinfo(host,port,type=_rsock.SOCK_STREAM)))
+	kinds=[radio_addr_kind(a,lan)for a in addrs]
+	if not addrs or any(k is None for k in kinds):
+		raise RadioBlocked("this address is not allowed (local network)")
+	return addrs,("lan"if "lan"in kinds else "global")
+
+
+def _rh_open(url, timeout=8.0, icy=False, lan=False):
+	"""
+"""
 	import ssl
 	from urllib.parse import urlsplit,urljoin,quote
-	for _hop in range(6):
+	for hop in range(6):
 		if not radio_url_ok(url):
 			raise ValueError("not a valid address")
 		u=urlsplit(url)
 		port=u.port or(443 if u.scheme.lower()=="https"else 80)
-		s=_rsock.create_connection((u.hostname,port),timeout)
+		addrs,net=radio_resolve_host(u.hostname,port,lan and hop==0)
+		s,last=None,None
+		for a in addrs:
+			try:
+				s=_rsock.create_connection((a,port),timeout);break
+			except OSError as e:
+				last=e
+		if s is None:
+			raise last or OSError("no connection")
 		try:
 			if u.scheme.lower()=="https":
 				s=ssl.create_default_context().wrap_socket(s,server_hostname=u.hostname)
@@ -111187,12 +111437,12 @@ def _rh_open(url, timeout=8.0, icy=False):
 			s.close();raise
 		if code in(301,302,303,307,308)and hdr.get("location"):
 			s.close();url=urljoin(url,hdr["location"]);continue
-		return code,hdr,f,s,url
+		return code,hdr,f,s,url,net
 	raise ValueError("too many redirects")
 
 
 def _rh_get(url, timeout=8.0, limit=2 << 20):
-	code,_h,f,s,_u=_rh_open(url,timeout)
+	code,_h,f,s,_u,_n=_rh_open(url,timeout)
 	try:
 		data=f.read(limit)
 	finally:
@@ -111200,6 +111450,11 @@ def _rh_get(url, timeout=8.0, limit=2 << 20):
 	if code!=200:
 		raise ValueError("HTTP %d"%code)
 	return data
+
+
+def radio_lan_ok(st):
+	""
+	return bool(st and st.get("url")and not st.get("uuid")and not st.get("find"))
 
 
 def radio_offline_err(e):
@@ -111345,10 +111600,11 @@ def radio_playlist_urls(txt, base):
 	return out[:10]
 
 
-def radio_open(url, depth=0):
-	""
+def radio_open(url, depth=0, lan=False):
+	"""
+"""
 	from urllib.parse import urlsplit
-	code,hdr,f,s,final=_rh_open(url,10.0,icy=True)
+	code,hdr,f,s,final,net=_rh_open(url,10.0,icy=True,lan=lan)
 	ok=False
 	try:
 		if code!=200:
@@ -111358,7 +111614,7 @@ def radio_open(url, depth=0):
 		if ct in _RADIO_PL_CT or(ct.startswith("text/")and not ct.startswith("text/html"))or path.endswith((".pls",".m3u",".m3u8")):
 			txt=f.read(65536).decode("utf-8","replace")
 			if "#EXT-X-"in txt:
-				return{"kind":"hls","url":final,"ct":ct}
+				return{"kind":"hls","url":final,"ct":ct,"net":net,"text":txt}
 			if depth>=3:
 				raise ValueError("play list in a play list too often")
 			urls=radio_playlist_urls(txt,final)
@@ -111369,7 +111625,7 @@ def radio_open(url, depth=0):
 				try:
 					return radio_open(u,depth+1)
 				except Exception as e:
-					last=e
+					last=e if not isinstance(last,RadioBlocked)else last
 			raise last
 		if ct.startswith("text/html"):
 			raise ValueError("this is a web page, not a stream")
@@ -111378,10 +111634,72 @@ def radio_open(url, depth=0):
 		except ValueError:
 			mi=0
 		ok=True
-		return{"kind":"icy","f":f,"sock":s,"url":final,"ct":ct,"metaint":mi}
+		return{"kind":"icy","f":f,"sock":s,"url":final,"ct":ct,"metaint":mi,"net":net,
+				"icyh":any(k.startswith("icy-")for k in hdr)}
 	finally:
 		if not ok:
 			s.close()
+
+
+def radio_hls_media(txt, base):
+	""
+	from urllib.parse import urljoin
+	best,bw,want=None,None,False
+	for ln in txt.splitlines()[:2000]:
+		s_=ln.strip()
+		if s_.startswith("#EXT-X-STREAM-INF"):
+			m=re.search(r"BANDWIDTH=(\d+)",s_)
+			want,b_=True,int(m.group(1))if m else 0
+			continue
+		if want and s_ and not s_.startswith("#"):
+			u=urljoin(base,s_)
+			if radio_url_ok(u)and(bw is None or b_<bw):
+				best,bw=u,b_
+			want=False
+	return best
+
+
+def _radio_hls_reader(gen, src, w):
+	"""
+"""
+	from urllib.parse import urljoin
+	url,txt=src["url"],src.get("text")or ""
+	try:
+		v=radio_hls_media(txt,url)
+		if v:
+			url,txt=v,_rh_get(v,10.0,1<<20).decode("utf-8","replace")
+		seen,first,init=set(),True,False
+		while RADIO["gen"]==gen:
+			if re.search(r"#EXT-X-KEY:[^\n]*METHOD=(?!NONE)",txt):
+				RADIO["net_err"]="encrypted stream (HLS) - not possible";break
+			m=re.search(r'#EXT-X-MAP:[^\n]*URI="([^"]+)"',txt)
+			if m and not init:
+				w.write(_rh_get(urljoin(url,m.group(1)),10.0,4<<20));init=True
+			segs=[urljoin(url,x.strip())for x in txt.splitlines()if x.strip()and not x.strip().startswith("#")]
+			if first:
+				seen.update(segs[:-3]);first=False
+			for sg in segs:
+				if sg in seen or RADIO["gen"]!=gen:
+					continue
+				seen.add(sg)
+				w.write(_rh_get(sg,15.0,16<<20))
+			if "#EXT-X-ENDLIST"in txt:
+				break
+			m=re.search(r"#EXT-X-TARGETDURATION:(\d+)",txt)
+			time.sleep(max(1.0,min(10.0,(int(m.group(1))if m else 6)/2.0)))
+			txt=_rh_get(url,10.0,1<<20).decode("utf-8","replace")
+			if len(seen)>2000:
+				seen=set(list(seen)[-500:])
+	except RadioBlocked:
+		RADIO["net_err"]="this address is not allowed (local network)"
+	except(OSError,ValueError)as e:
+		if RADIO["gen"]==gen:
+			RADIO["net_err"]=RADIO["net_err"]or("the station stopped sending"if not str(e).startswith("HTTP")else "the station does not answer: "+str(e)[:40])
+	finally:
+		try:
+			w.close()
+		except Exception:
+			pass
 
 
 def radio_icy_title(meta):
@@ -111597,7 +111915,14 @@ def _radio_once(gen):
 		return "fatal","unknown station"
 	RADIO.update(state="connecting",t_audio=0.0,net_err="")
 	try:
-		src=radio_open(radio_resolve(st))
+		src=radio_open(radio_resolve(st),lan=radio_lan_ok(st))
+		if src.get("net")=="lan"and not st.get("lan"):
+			with RADIO["lock"]:
+				st["lan"]=True
+			save_settings()
+	except RadioBlocked as e:
+		RADIO["offline"]=False
+		return "fatal",str(e)
 	except Exception as e:
 		RADIO["offline"]=radio_offline_err(e)
 		return "fail","no internet"if RADIO["offline"]else "the station does not answer: "+_radio_txt(e,100)
@@ -111608,12 +111933,12 @@ def _radio_once(gen):
 		return "stop",""
 	hls=src["kind"]=="hls"
 	cmd=["ffmpeg","-nostdin","-hide_banner","-loglevel","error","-threads","1"]
-	cmd+=(["-user_agent",RADIO_UA,"-i",src["url"]]if hls else(["-f",_RADIO_FMT[src["ct"]]]if src["ct"]in _RADIO_FMT else[])+["-i","pipe:0"])
+	cmd+=(["-f",_RADIO_FMT[src["ct"]]]if not hls and src["ct"]in _RADIO_FMT else[])+["-i","pipe:0"]
 	cmd+=["-vn","-ac","1","-ar",str(RADIO_RATE),"-f","s16le","pipe:1"]
 	errf=tempfile.TemporaryFile()
 	_radio_prctl()
 	try:
-		dec=subprocess.Popen(cmd,stdin=subprocess.DEVNULL if hls else subprocess.PIPE,stdout=subprocess.PIPE,stderr=errf,preexec_fn=_radio_pre)
+		dec=subprocess.Popen(cmd,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=errf,preexec_fn=_radio_pre)
 	except OSError as e:
 		errf.close()
 		if src.get("sock"):
@@ -111621,7 +111946,9 @@ def _radio_once(gen):
 		return "fatal","ffmpeg: "+str(e)[:100]
 	RADIO["dec"]=dec
 	mine=[]
-	if not hls:
+	if hls:
+		threading.Thread(target=_radio_hls_reader,args=(gen,src,dec.stdin),daemon=True,name="radio-net").start()
+	else:
 		RADIO["conn"]=src["sock"]
 		threading.Thread(target=_radio_reader,args=(gen,src,dec.stdin),daemon=True,name="radio-net").start()
 	t0=time.time();first=RADIO_WAKE_S if RADIO["wake"]else RADIO_FIRST_S
@@ -111705,6 +112032,8 @@ def _radio_once(gen):
 		return "fatal",fatal
 	if how in("stop","held")or RADIO["gen"]!=gen or not RADIO["want"]:
 		return how if how=="held"else "stop",""
+	if RADIO["net_err"]=="this address is not allowed (local network)":
+		return "fatal",RADIO["net_err"]
 	if RADIO["t_audio"]and time.time()-RADIO["t_audio"]>30:
 		return "drop",RADIO["net_err"]or "the station stopped sending"
 	if not RADIO["t_audio"]:
@@ -111793,7 +112122,8 @@ def radio_state(lang=None, role="admin", perms=None):
 		  "quiet":bool(CFG.get("noise_alarm")or CFG.get("clap_on")),
 		  "spk":bool(out_selected()),"ffmpeg":bool(shutil.which("ffmpeg")),"mic":bool(CFG.get("audio_in")),
 		  "wake_radio":str(CFG.get("wake_sound")or "").startswith("radio:"),
-		  "stations":[{"id":e["id"],"name":e["name"],"sub":e.get("sub",""),"kind":"url"if("url"in e and "uuid"not in e and "find"not in e)else "dir"}for e in lst],
+		  "stations":[{"id":e["id"],"name":e["name"],"sub":e.get("sub",""),"kind":"url"if("url"in e and "uuid"not in e and "find"not in e)else "dir",
+						"lan":bool(e.get("lan"))}for e in lst],
 		  "may":{"play":radio_may(role,perms),"edit":radio_may(role,perms,True)},"max":RADIO_MAX}
 	return st
 
@@ -111826,6 +112156,13 @@ def radio_add(d):
 		from urllib.parse import urlsplit
 		e={"id":"u"+hashlib.sha1(url.encode()).hexdigest()[:12],"name":_radio_txt(d.get("name"))or urlsplit(url).hostname[:60],
 			 "sub":urlsplit(url).hostname[:60],"url":url}
+		try:
+			if radio_resolve_host(urlsplit(url).hostname,urlsplit(url).port or 80,lan=True)[1]=="lan":
+				e["lan"]=True
+		except RadioBlocked as x:
+			return False,str(x)
+		except OSError:
+			pass
 	if any(x.get("id")==e["id"]for x in lst):
 		return False,"the station is already in the list"
 	with RADIO["lock"]:
@@ -111848,6 +112185,12 @@ def radio_do(d, who="web", role="admin", perms=None, appkey=None, lang=None):
 		return(200 if ok else 400),dict({"ok":ok,"error":radio_tr(err,L)if err else None,"state":radio_state(L,role,perms)},**kw)
 	if a=="toggle":
 		a="stop"if RADIO["want"]else "play"
+	if a=="bplay":
+		ok,err,src=radio_bplay(str(d.get("id")or "")or None)
+		return out(ok,err,src=src)
+	if a=="bstop":
+		BR["sid"]=""
+		return out(True)
 	if a=="play":
 		return out(*radio_play(str(d.get("id")or "")or None,who))
 	if a=="stop":
@@ -111908,6 +112251,173 @@ atexit.register(lambda: radio_stop("program end", quiet=True))
 
 
 
+
+
+
+
+
+BR = {"sid": "", "t_poll": 0.0, "title": "", "title_sid": "", "src": {}, "n": 0, "lock": threading.Lock(), "watch": None}
+
+
+def radio_br_src(sid, fresh=False):
+	""
+	st=radio_station(sid)if _RADIO_ID.match(str(sid or ""))else None
+	if not st:
+		raise KeyError("unknown station")
+	c=BR["src"].get(sid)
+	if c and not fresh and time.time()-c["t"]<RADIO_BR_TTL:
+		return c
+	src=radio_open(radio_resolve(st))
+	if src.get("sock")is not None:
+		src["sock"].close()
+	c={"t":time.time(),"url":src["url"],"kind":src["kind"],"ct":src.get("ct")or "","metaint":int(src.get("metaint")or 0)}
+	BR["src"][sid]=c
+	return c
+
+
+def radio_bplay(sid=None):
+	sid=sid or CFG.get("radio_last")or((radio_list()or[{}])[0].get("id"))
+	st=radio_station(sid)if sid else None
+	if st and st.get("lan"):
+		return False,"this station only plays on the MoveEye loudspeaker",None
+	try:
+		c=radio_br_src(sid,fresh=True)
+	except KeyError:
+		return False,"unknown station",None
+	except RadioBlocked:
+		return False,("this station only plays on the MoveEye loudspeaker"if radio_lan_ok(st)else "this address is not allowed (local network)"),None
+	except Exception as e:
+		return False,"no internet"if radio_offline_err(e)else "the station does not answer: "+_radio_txt(e,100),None
+	if BR["title_sid"]!=sid:
+		BR.update(title="",title_sid=sid)
+	BR.update(sid=sid,t_poll=time.time())
+	th=BR["watch"]
+	if th is None or not th.is_alive():
+		BR["watch"]=threading.Thread(target=_radio_br_watch,daemon=True,name="radio-title")
+		BR["watch"].start()
+	return True,"",{"id":sid,"name":radio_station(sid)["name"],"url":c["url"],"kind":c["kind"],"ct":c["ct"],"proxy":"/radio/stream/"+sid}
+
+
+def _radio_icy_peek(url, sid):
+	""
+	src=radio_open(url)
+	try:
+		f,mi=src["f"],src["metaint"]
+		if not mi:
+			return False
+		for _i in range(3):
+			if not f.read(mi):
+				break
+			n=f.read(1)
+			if not n:
+				break
+			if n[0]:
+				t_=radio_icy_title(f.read(n[0]*16))
+				if t_ is not None and BR["sid"]==sid:
+					BR.update(title=t_,title_sid=sid)
+					break
+		return True
+	finally:
+		src["sock"].close()
+
+
+def _radio_br_watch():
+	""
+	last,wait_="",0.0
+	while BR["sid"]and time.time()-BR["t_poll"]<20.0:
+		sid=BR["sid"];c=BR["src"].get(sid)
+		if BR["n"]>0 or not c or c["kind"]!="icy"or(sid==last and time.time()<wait_):
+			time.sleep(1.0);continue
+		try:
+			has=_radio_icy_peek(c["url"],sid)
+			last,wait_=sid,time.time()+(20.0 if has else 600.0)
+		except Exception:
+			last,wait_=sid,time.time()+30.0
+	BR["watch"]=None
+
+
+def radio_br_proxy(sid):
+	""
+	if not _RADIO_ID.match(str(sid or ""))or not radio_station(sid):
+		return 404,"unknown station",None
+	if radio_station(sid).get("lan"):
+		return 403,"this station only plays on the MoveEye loudspeaker",None
+	try:
+		c=radio_br_src(sid)
+	except KeyError:
+		return 404,"unknown station",None
+	except RadioBlocked:
+		return 403,"this address is not allowed (local network)",None
+	except Exception as e:
+		return 502,"no internet"if radio_offline_err(e)else "the station does not answer",None
+	if c["kind"]!="icy":
+		return 415,"this stream (HLS) cannot go through MoveEye",None
+	with BR["lock"]:
+		if BR["n"]>=RADIO_BR_MAX:
+			return 429,"too many listeners through MoveEye (at most 2)",None
+		BR["n"]+=1
+	try:
+		src=radio_open(c["url"])
+	except Exception as e:
+		with BR["lock"]:
+			BR["n"]-=1
+		return(403,"this address is not allowed (local network)",None)if isinstance(e,RadioBlocked)else \
+			(502,"no internet"if radio_offline_err(e)else "the station does not answer",None)
+	ct=src.get("ct")or ""
+	if src["kind"]!="icy"or not(ct.startswith("audio/")or ct=="application/ogg"or(ct in("application/octet-stream","")and src.get("icyh"))):
+		try:
+			src["sock"].close()
+		except(KeyError,OSError):
+			pass
+		with BR["lock"]:
+			BR["n"]-=1
+		return 415,"this is not an audio stream",None
+	ct=ct if ct.startswith("audio/")or ct=="application/ogg"else "audio/mpeg"
+
+	return 200,ct,_RadioBrStream(src,sid)
+
+
+class _RadioBrStream:
+	"""
+"""
+
+	def __init__(self,src,sid):
+		self.src,self.sid,self.done=src,sid,False
+
+	def __iter__(self):
+		f,mi=self.src["f"],self.src["metaint"]
+		try:
+			while not self.done:
+				data=f.read(mi)if mi else f.read(8192)
+				if not data:
+					break
+				yield data
+				if mi:
+					n=f.read(1)
+					if not n:
+						break
+					if n[0]:
+						t_=radio_icy_title(f.read(n[0]*16))
+						if t_ is not None:
+							BR.update(title=t_,title_sid=self.sid)
+		except(OSError,ValueError):
+			pass
+		finally:
+			self.close()
+
+	def close(self):
+		with BR["lock"]:
+			if self.done:
+				return
+			self.done=True
+			BR["n"]-=1
+		try:
+			self.src["sock"].close()
+		except OSError:
+			pass
+
+
+
 _smalltv_routes_radio = smalltv_routes
 
 
@@ -111924,9 +112434,29 @@ def smalltv_routes(app, reply, body):
 	def api_radio():
 		role,perms=who_()
 		if request.method=="GET":
-			return reply({"ok":True,"state":radio_state(request.args.get("lang"),role,perms)})
+			if request.args.get("on"):
+				return reply({"ok":True,"on":bool(RADIO["want"])})
+			st=radio_state(request.args.get("lang"),role,perms)
+			b=request.args.get("b")or ""
+			if b and b==BR["sid"]:
+				BR["t_poll"]=time.time()
+			st["btitle"]=BR["title"]if b and BR["title_sid"]==b else ""
+			return reply({"ok":True,"state":st})
 		code,ans=radio_do(body(),getattr(g,"user","")or "web",role,perms,getattr(g,"appkey",None))
 		return reply(ans,code)
+
+	@app.route("/radio/stream/<sid>")
+	def radio_stream(sid):
+		role,perms=who_()
+		L=norm_lang(request.args.get("lang"))
+		if not radio_may(role,perms):
+			return reply({"ok":False,"error":tr("not allowed for your user",L)},403)
+		if set(request.args)-{"t","lang"}:
+			return reply({"ok":False,"error":radio_tr("only the stations of the list",L)},400)
+		code,ct,gen=radio_br_proxy(sid)
+		if code!=200:
+			return reply({"ok":False,"error":radio_tr(ct,L)},code)
+		return Response(gen,mimetype=ct,direct_passthrough=True,headers={"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"})
 
 	@app.route("/radio")
 	def radio_page():
@@ -112019,11 +112549,33 @@ _render_page_radio = render_page
 
 
 
+RADIO_SYM_BTN = ('<a class="btn sec ic" id="mwk-radio" href="/radio" hidden><span aria-hidden="true">📻</span>'
+				 '<i class="mwr-eq" aria-hidden="true"><b></b><b></b><b></b></i></a>')
+RADIO_SYM_AT = '<button class="sec ic" type="button" id="mwk-help"'
+RADIO_SYM_JS = _zd('639zzzzd_radio/RADIO_SYM_JS', "")
+if isinstance(KOPF_JS, str) and KOPF_JS.count('const KNOWN = new Set(["mwk-help", ') == 1:
+	KOPF_JS=KOPF_JS.replace('const KNOWN = new Set(["mwk-help", ','const KNOWN = new Set(["mwk-radio", "mwk-help", ',1)
+
+
+def radio_sym(out):
+	""
+	if 'id="mwk-radio"'in out or out.count(RADIO_SYM_AT)!=1 or "</body>"not in out or "mwk-radio"not in RADIO_SYM_JS:
+		return out
+	k="Radio is playing - to the radio"
+	tx={L:(DE if L=="de"else TRX.get(L,{})).get(k)or k for L in("de","fr","it","rm")}
+	tx["en"]=k.replace(" - "," – ")
+	js=RADIO_SYM_JS.replace("/*RSTX*/{}",json.dumps(tx,ensure_ascii=False).replace("</","<\\/"),1)
+	out=out.replace(RADIO_SYM_AT,RADIO_SYM_BTN+RADIO_SYM_AT,1)
+	i=out.rfind("</body>")
+	return out[:i]+js+out[i:]
+
+
+
 def render_page(page, active):
 	out=_render_page_radio(page,active)
 	if "/*RADIODE*/"in out:
 		out=out.replace("/*RADIODE*/","Object.assign(I18N.de, "+json.dumps(_RADIO_DE,ensure_ascii=False).replace("</","<\\/")+");",1)
-	return out
+	return radio_sym(out)
 
 
 
@@ -112031,6 +112583,22 @@ _HX_RADIO = _zd('639zzzzd_radio/HX_RADIO', _zd_hx_en((
 	'Radio',
 	'Internet radio on the loudspeaker',
 	'While the radio plays: noise alarm and clap switch paused - the camera alarm works as usual',
+	'Where to play',
+	'MoveEye loudspeaker',
+	'this browser',
+	'via MoveEye',
+	'This station (HLS) cannot play in this browser - use the MoveEye loudspeaker.',
+	'The station does not play in this browser.',
+	'«📱 this browser»: the phone plays the station, the MoveEye loudspeaker stays silent. If the station does not play directly, it runs through MoveEye (at most 2 listeners).',
+	'this address is not allowed (local network)',
+	'this station only plays on the MoveEye loudspeaker',
+	'this is not an audio stream',
+	'encrypted stream (HLS) - not possible',
+	'Home network',
+	'only the stations of the list',
+	'this stream (HLS) cannot go through MoveEye',
+	'too many listeners through MoveEye (at most 2)',
+	'Radio is playing - to the radio',
 	'Radio on / off',
 	'Play',
 	'Volume',
@@ -112170,7 +112738,2183 @@ radio_selftest = _zd_fn('639zzzzd_radio/radio_selftest()')
 
 
 
+
+
+
+
+
+
+
+
+
+
 SELFTEST_EXTRA.append(("Radio: stations, play lists, ICY, priority, rights (639zzzzd)", radio_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import io
+import shutil
+
+PB_SLOTS = ("live", "tag", "nacht", "damals", "jetzt")
+PB_BOXED = ("tag", "nacht", "jetzt")
+PB_W, PB_H, PB_BYTES, PB_UPLOAD_MAX, PB_MIN = 1280, 720, 220000, 25 << 20, (640, 360)
+PB_DEFAULT_BOX = {"jetzt": [58, 75.5, 16, 17]}
+_PB_LOCK = threading.Lock()
+_PB_DEF = {}
+
+
+def pbild_dir():
+	return os.path.join(DATA_DIR,"produktseite")
+
+
+def pbild_meta():
+	try:
+		with open(os.path.join(pbild_dir(),"bilder.json"),encoding="utf-8")as f:
+			d=json.load(f)
+	except(OSError,ValueError):
+		return{}
+	return{k:v for k,v in d.items()if k in PB_SLOTS and isinstance(v,dict)and os.path.isfile(os.path.join(pbild_dir(),k+".webp"))}
+
+
+def _pb_write(name, data):
+	os.makedirs(pbild_dir(),exist_ok=True)
+	p=os.path.join(pbild_dir(),name);t=p+".tmp"
+	with open(t,"wb")as f:
+		f.write(data)
+	os.replace(t,p)
+
+
+def _pb_save_meta(m):
+	_pb_write("bilder.json",json.dumps(m,ensure_ascii=False).encode("utf-8"))
+
+
+def pbild_box_clean(box, label):
+	""
+	try:
+		x,y,w,h=[float(v)for v in(box or[])][:4]
+	except(TypeError,ValueError):
+		return None,""
+	x,y=min(max(x,0.0),98.0),min(max(y,0.0),98.0)
+	w,h=min(max(w,2.0),100.0-x),min(max(h,2.0),100.0-y)
+	lab=re.sub(r"[\x00-\x1f<>]","",str(label or "")).strip()[:40]
+	return[round(x,1),round(y,1),round(w,1),round(h,1)],lab
+
+
+def pbild_make(raw, pos=50):
+	""
+	from PIL import Image,ImageOps
+	if len(raw)>PB_UPLOAD_MAX:
+		raise ValueError("The picture is too big (at most 25 MB).")
+	if raw[4:12]in(b"ftypheic",b"ftypheix",b"ftypmif1",b"ftyphevc",b"ftypmsf1"):
+		try:
+			import pillow_heif
+			pillow_heif.register_heif_opener()
+		except Exception:
+			raise ValueError("HEIC cannot be read on this MoveEye. Please choose a JPEG or PNG.")
+	try:
+		im=Image.open(io.BytesIO(raw))
+		if im.size[0]*im.size[1]>80_000_000:
+			raise ValueError("The picture is too big (at most 25 MB).")
+		im=ImageOps.exif_transpose(im)
+		im=im.convert("RGB")
+	except ValueError:
+		raise
+	except Exception:
+		raise ValueError("This picture cannot be read. Please choose a JPEG or PNG.")
+	w,h=im.size
+	if w<PB_MIN[0]or h<PB_MIN[1]:
+		raise ValueError("The picture is too small (at least 640 × 360).")
+	p=min(max(float(pos),0.0),100.0)/100.0
+	if w*9>h*16:
+		cw=h*16//9;box=(int((w-cw)*p),0,int((w-cw)*p)+cw,h)
+	else:
+		ch=w*9//16;box=(0,int((h-ch)*p),w,int((h-ch)*p)+ch)
+	im=im.crop(box)
+	if im.size[0]>PB_W:
+		im=im.resize((PB_W,PB_H),Image.LANCZOS)
+	clean=Image.new("RGB",im.size)
+	clean.paste(im)
+	out=b""
+	for q in(80,72,64,56,48,40):
+		b=io.BytesIO();clean.save(b,"WEBP",quality=q,method=4);out=b.getvalue()
+		if len(out)<=PB_BYTES:
+			break
+	return out
+
+
+def pbild_set(slot, raw, pos=50, box=None, label=""):
+	if slot not in PB_SLOTS:
+		raise ValueError("Unknown picture.")
+	data=pbild_make(raw,pos)
+	with _PB_LOCK:
+		m=pbild_meta()
+		b,lab=pbild_box_clean(box,label)if slot in PB_BOXED else(None,"")
+		_pb_write(slot+".webp",data)
+		m[slot]={"v":int(time.time()*1000),"box":b,"label":lab if b else ""}
+		_pb_save_meta(m)
+	log_event("sys",f"Product page: own picture «{slot}» ({len(data) // 1024} KB)")
+	return m[slot]
+
+
+def pbild_box(slot, box, label):
+	with _PB_LOCK:
+		m=pbild_meta()
+		if slot not in m or slot not in PB_BOXED:
+			raise ValueError("Unknown picture.")
+		b,lab=pbild_box_clean(box,label)if box else(None,"")
+		m[slot].update(box=b,label=lab if b else "")
+		_pb_save_meta(m)
+	return m[slot]
+
+
+def pbild_reset(slot):
+	if slot not in PB_SLOTS:
+		raise ValueError("Unknown picture.")
+	with _PB_LOCK:
+		m=pbild_meta();m.pop(slot,None);_pb_save_meta(m)
+		try:
+			os.remove(os.path.join(pbild_dir(),slot+".webp"))
+		except OSError:
+			pass
+	log_event("sys",f"Product page: picture «{slot}» back to the example")
+
+
+def pbild_default(slot):
+	""
+	key=id(INFO_HTML_GZ)
+	if _PB_DEF.get("_k")!=key:
+		import gzip as _gz,base64 as _b64
+		h=_gz.decompress(_b64.b64decode(INFO_HTML_GZ)).decode("utf-8")
+		tags={m.group(1):m.group(0)for m in re.finditer(r'<img\b[^>]*\bdata-pb="(\w+)"[^>]*>',h)}
+		ids={m.group(2):m.group(1)for m in re.finditer(r'<img\b[^>]*\bsrc="(data:[^"]+)"[^>]*\bid="([\w-]+)"',h)}
+		_PB_DEF.clear();_PB_DEF["_k"]=key
+		for k,t in tags.items():
+			s=re.search(r'\bsrc="(data:[^"]+)"',t);same=re.search(r'\bdata-same="([\w-]+)"',t)
+			u=s.group(1)if s else ids.get(same.group(1),"")if same else ""
+			m=re.match(r"data:(image/[a-z]+);base64,(.*)",u)
+			if m:
+				_PB_DEF[k]=(_b64.b64decode(m.group(2)),m.group(1))
+	return _PB_DEF.get(slot)
+
+
+def pbild_apply(h):
+	""
+	m=pbild_meta()
+	if not m:
+		return h
+	for k,v in m.items():
+		url="/info/bild/%s.webp?v=%s"%(k,int(v.get("v")or 0))
+
+		def tag_(mt,url=url):
+			t=re.sub(r'\s(?:src|data-same|data-alt|alt)="[^"]*"',"",mt.group(0))
+			return t.replace("<img",'<img src="%s" alt="Kamerabild" data-alt="alt_cam"'%url,1)
+		h=re.sub(r'<img\b[^>]*\bdata-pb="%s"[^>]*>'%k,tag_,h,count=1)
+	pb={k:{"box":v.get("box"),"label":v.get("label")or ""}for k,v in m.items()}
+	js="<script>window.PB="+json.dumps(pb,ensure_ascii=False).replace("</","<\\/")+";</script>"
+	return h.replace("</head>",js+"</head>",1)
+
+
+_info_html_639zzzze = info_html
+
+
+
+def info_html():
+	return pbild_apply(_info_html_639zzzze())
+
+
+def pbild_state(lang=None):
+	L=norm_lang(lang or CFG.get("lang"))
+	m=pbild_meta()
+	names={"live":"Live picture (phone)","tag":"See for yourself: day","nacht":"See for yourself: night",
+			 "damals":"Window to the past: then","jetzt":"Window to the past: now"}
+	notes={"nacht":"Night: ideally an infrared picture of MoveEye.","damals":"Then and now: twice the same view, a little changed.",
+			 "jetzt":"Then and now: twice the same view, a little changed."}
+	out=[]
+	for k in PB_SLOTS:
+		v=m.get(k)or{}
+		out.append({"id":k,"name":tr(names[k],L),"note":tr(notes[k],L)if k in notes else "","custom":bool(v),"v":v.get("v")or 0,
+					"box":v.get("box")if v else PB_DEFAULT_BOX.get(k),"label":v.get("label")or "","boxable":k in PB_BOXED})
+	return{"ok":True,"slots":out,"info_on":bool(CFG.get("info_page"))}
+
+
+def pbild_admin(g_):
+	return getattr(g_,"role","admin")=="admin"and not getattr(g_,"appkey",None)
+
+
+_smalltv_routes_639zzzze = smalltv_routes
+
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzzze(app,reply,body)
+	from flask import Response,request,g
+
+	def no_(lang):
+		return reply({"ok":False,"error":tr("Only the administrator can change the pictures of the product page.",lang)},403)
+
+	@app.route("/produktbilder")
+	def pbild_page_():
+		if not pbild_admin(g):
+			return no_(norm_lang(request.args.get("lang")))
+		return Response(render_page(PB_PAGE,"tools"),mimetype="text/html",headers={"Cache-Control":"no-store"})
+
+	@app.route("/api/produktbilder",methods=["GET","POST"])
+	def api_pb():
+		lang=norm_lang(request.args.get("lang")or CFG.get("lang"))
+		if not pbild_admin(g):
+			if(request.content_length or 0)<1<<20:
+				request.get_data()
+			return no_(lang)
+		if request.method=="GET":
+			return reply(pbild_state(lang))
+		a=request.args.get("action")or ""
+		try:
+			if a=="set":
+				if(request.content_length or 0)>PB_UPLOAD_MAX:
+					raise ValueError("The picture is too big (at most 25 MB).")
+				raw=request.get_data(cache=False)
+				box=[v for v in(request.args.get("box")or "").split(",")if v.strip()]
+				pbild_set(request.args.get("slot"),raw,request.args.get("pos")or 50,box if len(box)==4 else None,request.args.get("label")or "")
+			else:
+				d=body();slot=str(d.get("slot")or "")
+				if a=="reset"or d.get("action")=="reset":
+					pbild_reset(slot)
+				elif a=="box"or d.get("action")=="box":
+					pbild_box(slot,d.get("box"),d.get("label"))
+				else:
+					raise ValueError("Unknown picture.")
+		except ValueError as e:
+			return reply(dict(pbild_state(lang),ok=False,error=tr(str(e),lang)),400)
+		return reply(pbild_state(lang))
+
+	@app.route("/api/produktbilder/bild/<slot>")
+	def api_pb_img(slot):
+		if not pbild_admin(g):
+			return no_(norm_lang(request.args.get("lang")))
+		p=os.path.join(pbild_dir(),slot+".webp")
+		if slot in PB_SLOTS and slot in pbild_meta():
+			with open(p,"rb")as f:
+				return Response(f.read(),mimetype="image/webp",headers={"Cache-Control":"no-store"})
+		d=pbild_default(slot)if slot in PB_SLOTS else None
+		return Response(d[0],mimetype=d[1],headers={"Cache-Control":"no-store"})if d else Response("not found",404)
+
+	@app.route("/info/bild/<name>")
+	def info_pb_img(name):
+		slot=name[:-5]if name.endswith(".webp")else ""
+		if not CFG.get("info_page")or slot not in PB_SLOTS or slot not in pbild_meta():
+			return Response("not found",404)
+		with open(os.path.join(pbild_dir(),slot+".webp"),"rb")as f:
+			return Response(f.read(),mimetype="image/webp",headers={"Cache-Control":"public, max-age=86400","X-Content-Type-Options":"nosniff"})
+
+
+
+_PB_HP_ROW = '<div class="hp-row"><button type="button" id="hp-key-b"></button><button type="button" class="sec" id="hp-key-d"></button></div>'
+_PB_HP_LINK = ('<a class="btn sec" id="hp-pbild" href="/produktbilder" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;'
+			   'text-decoration:none;box-sizing:border-box">🖼 <span data-i18n="Product page: pictures">Product page: pictures</span></a>')
+if 'id="hp-pbild"' not in HP_PAGE and HP_PAGE.count(_PB_HP_ROW) == 1:
+	HP_PAGE=HP_PAGE.replace(_PB_HP_ROW,_PB_HP_ROW[:-len("</div>")]+_PB_HP_LINK+"</div>",1)
+
+
+_HX_PB = _zd('639zzzze_produktbilder/HX_PB', _zd_hx_en((
+	'Product page: pictures',
+	'These pictures are shown to guests on the product page (/info/). Your own photos replace the examples.',
+	'No people, number plates or house numbers.',
+	'Location data (EXIF, GPS) is removed. The picture is cut to 16:9 and stored on MoveEye.',
+	'The product page is switched off - guests do not see it at the moment.',
+	'Live picture (phone)',
+	'See for yourself: day',
+	'See for yourself: night',
+	'Window to the past: then',
+	'Window to the past: now',
+	'Night: ideally an infrared picture of MoveEye.',
+	'Then and now: twice the same view, a little changed.',
+	'Example',
+	'Own picture',
+	'Replace',
+	'Back to the example',
+	'Save picture',
+	'Cancel',
+	'Section',
+	'Mark (optional): draw a box on the picture',
+	'Text of the mark, e.g. «new: …»',
+	'Remove the mark',
+	'Change the mark',
+	'Saving …',
+	'Saved.',
+	'Only the administrator can change the pictures of the product page.',
+	'This picture cannot be read. Please choose a JPEG or PNG.',
+	'HEIC cannot be read on this MoveEye. Please choose a JPEG or PNG.',
+	'The picture is too big (at most 25 MB).',
+	'The picture is too small (at least 640 × 360).',
+	'Unknown picture.',
+	'No connection to MoveEye.',
+)))
+for _k, _v in _HX_PB.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+_PB_DE = {_k: DE.get(_k, _v[0]) for _k, _v in _HX_PB.items()}
+
+_render_page_639zzzze = render_page
+
+
+
+def render_page(page, active):
+	out=_render_page_639zzzze(page,active)
+	if 'id="hp-pbild"'in out:
+		out=out.replace("</body>","<script>Object.assign(I18N.de, {\"Product page: pictures\": "+json.dumps(_PB_DE["Product page: pictures"],ensure_ascii=False)
+						  +"});document.querySelectorAll('#hp-pbild [data-i18n]').forEach(e => e.textContent = t(e.dataset.i18n));</script></body>",1)
+	if "/*PBDE*/"in out:
+		out=out.replace("/*PBDE*/","Object.assign(I18N.de, "+json.dumps(_PB_DE,ensure_ascii=False).replace("</","<\\/")+");",1)
+	return out
+
+
+PB_PAGE = _zd('639zzzze_produktbilder/PB_PAGE', ZD_PAGE)
+
+
+produktbilder_selftest = _zd_fn('639zzzze_produktbilder/produktbilder_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Product page: own pictures (16:9, without EXIF, back to the example) (639zzzze)", produktbilder_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SB_LEISTE = ("leiste1", "leiste2", "leiste3", "leiste4", "leiste5", "leiste6")
+SB_SLOTS = ("titel", "grat", "grat_hoch", "lager", "abend", "nacht", "pano") + SB_LEISTE
+
+SB_SPEC = {"titel": (1600, 900, 250000, "w", 600), "grat": (2400, 1200, 400000, "w", 900), "grat_hoch": (1050, 675, 300000, "w", 500),
+		   "lager": (1600, 900, 250000, "w", 600), "abend": (1600, 900, 250000, "w", 600), "nacht": (1600, 900, 250000, "w", 600),
+		   "pano": (2600, 1200, 400000, "w", 1200)}
+SB_SPEC.update({k: (360, 0, 160000, "h", 300) for k in SB_LEISTE})
+SB_VARIANTS = {"A": ("titel", "grat", "grat_hoch", "lager", "abend", "nacht"), "B": ("titel", "pano") + SB_LEISTE}
+SB_FIELDS = {"titel": ("line", "kick", "say"), "grat": ("kick", "say"), "lager": ("kick", "say"), "abend": ("kick", "say"),
+			 "nacht": ("kick", "say"), "pano": ("kick",)}
+SB_CHAPTERS = ("grat", "lager", "abend", "nacht")
+SB_UPLOAD_MAX = 25 << 20
+SB_DIR = "Startbilder"
+_SB_LOCK = threading.Lock()
+_SB_CFG = {"hp_start_variant": "B"}
+for _k, _v in _SB_CFG.items():
+	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
+USER_SETTINGS_DENY.update(_SB_CFG)
+APPKEY_DENY_KEYS.update(_SB_CFG)
+LOCK_DENY_KEYS.update(_SB_CFG)
+APPKEY_DENY_PATHS.update({"/api/startbilder", "/startbilder"})
+LOCK_DENY_PATHS.add("/api/startbilder")
+if isinstance(_HP_TYPES, dict):
+	_HP_TYPES.setdefault("webp",("image/webp",))
+
+
+SB_TX = {
+	"titel.line": ("Dein Wächter fürs Lager draussen.", "Your guard for camp outdoors.", "Ton gardien pour le camp en plein air.",
+				   "Il tuo guardiano per il campo all’aperto.", "Tes guardian per il champ a l’aviert."),
+	"titel.kick": ("Unterwegs", "On the way", "En route", "In cammino", "Sin via"),
+	"titel.say": ("Du gehst los – MoveEye kommt mit.", "You set off – MoveEye comes along.", "Tu pars – MoveEye t’accompagne.",
+				  "Parti – MoveEye viene con te.", "Ti partas – MoveEye vegn cun tai."),
+	"grat.kick": ("Über den Grat", "Along the ridge", "Sur l’arête", "Sulla cresta", "Sur la cresta"),
+	"grat.say": ("Klein und leicht, im Rucksack immer dabei.", "Small and light, always in the backpack.", "Petit et léger, toujours dans le sac.",
+				 "Piccolo e leggero, sempre nello zaino.", "Pitschen e lev, adina en il sac."),
+	"lager.kick": ("Lagerplatz", "Camp", "Campement", "Accampamento", "Champ"),
+	"lager.say": ("Lager aufschlagen, Kopf aufstellen, Schutz an.", "Pitch camp, set up the head, protection on.",
+				  "Monter le camp, poser la tête, protection activée.", "Montare il campo, piazzare la testa, protezione attiva.",
+				  "Far champ, metter si il chau, protecziun activa."),
+	"abend.kick": ("Abend", "Evening", "Soir", "Sera", "Saira"),
+	"abend.say": ("Die Sonne geht. MoveEye schaut sich um.", "The sun goes down. MoveEye looks around.", "Le soleil se couche. MoveEye regarde autour.",
+				  "Il sole tramonta. MoveEye si guarda intorno.", "Il sulegl va da rendiu. MoveEye guarda enturn."),
+	"nacht.kick": ("Nacht", "Night", "Nuit", "Notte", "Notg"),
+	"nacht.say": ("Du schläfst. MoveEye wacht.", "You sleep. MoveEye keeps watch.", "Tu dors. MoveEye veille.", "Tu dormi. MoveEye veglia.",
+				  "Ti dormas. MoveEye fa la guardia."),
+	"pano.kick": ("Umsehen", "Look around", "Regarder autour", "Guardati intorno", "Guardar enturn"),
+	"hint.swipe": ("↔ wischen zum Umsehen", "↔ swipe to look around", "↔ glisser pour regarder autour", "↔ scorri per guardarti intorno",
+				   "↔ stritgar per guardar enturn"),
+	"hint.drag": ("↔ ziehen zum Umsehen", "↔ drag to look around", "↔ tirer pour regarder autour", "↔ trascina per guardarti intorno",
+				  "↔ trair per guardar enturn"),
+	"alt.photo": ("Foto", "Photo", "Photo", "Foto", "Fotografia"),
+	"alt.pano": ("Panorama zum Umsehen", "Panorama to look around", "Panorama à regarder", "Panorama da esplorare", "Panorama per guardar enturn"),
+	"alt.drawn": ("Zeichnung: Berge und ein Zelt", "Drawing: mountains and a tent", "Dessin : montagnes et une tente",
+				  "Disegno: montagne e una tenda", "Dissegn: muntognas ed ina tenda"),
+	"lab.strip": ("Weitere Bilder", "More pictures", "Autres images", "Altre immagini", "Ulteriurs maletgs"),
+	"btn.f": ("📡 Handy-Funkgerät", "📡 Phone radio", "📡 Radio du téléphone", "📡 Radio del telefono", "📡 Radio dal telefonin"),
+	"btn.fs": ("Morse und eigenes Protokoll, geht auch offline", "Morse and own protocol, works offline too",
+			   "Morse et protocole propre, fonctionne aussi hors ligne", "Morse e protocollo proprio, funziona anche offline",
+			   "Morse ed agen protocol, funcziuna er offline"),
+	"btn.s": ("🎮 Simulator (Demo)", "🎮 Simulator (demo)", "🎮 Simulateur (démo)", "🎮 Simulatore (demo)", "🎮 Simulatur (demo)"),
+	"btn.ss": ("Im Browser, ohne Verbindung zu MoveEye · ca. 80 MB", "In the browser, without a connection to MoveEye · about 80 MB",
+			   "Dans le navigateur, sans connexion à MoveEye · env. 80 Mo", "Nel browser, senza connessione a MoveEye · ca. 80 MB",
+			   "En il browser, senza colliaziun cun MoveEye · ca. 80 MB"),
+}
+_SB_LANGS = ("de", "en", "fr", "it", "rm")
+
+
+def sb_dir():
+	return os.path.join(DATA_DIR,"startseite")
+
+
+def _sb_num(v, d=50.0):
+	try:
+		x=float(v)
+	except(TypeError,ValueError):
+		return d
+	return round(min(max(x,0.0),100.0),1)if x==x else d
+
+
+def _sb_clean(t, n=90):
+	return re.sub(r"[\x00-\x1f<>]","",str(t or "")).strip()[:n]
+
+
+def sb_meta():
+	""
+	try:
+		with open(os.path.join(sb_dir(),"bilder.json"),encoding="utf-8")as f:
+			d=json.load(f)
+	except(OSError,ValueError):
+		d={}
+	s=d.get("slots")if isinstance(d,dict)and isinstance(d.get("slots"),dict)else{}
+	t=d.get("texts")if isinstance(d,dict)and isinstance(d.get("texts"),dict)else{}
+	s={k:v for k,v in s.items()if k in SB_SLOTS and isinstance(v,dict)and os.path.isfile(os.path.join(sb_dir(),k+".webp"))}
+	t={k:{f:_sb_clean(x)for f,x in v.items()if f in SB_FIELDS.get(k,())+("alt",)and _sb_clean(x)}
+		 for k,v in t.items()if k in SB_SLOTS and isinstance(v,dict)}
+	return{"slots":s,"texts":{k:v for k,v in t.items()if v}}
+
+
+def _sb_write(name, data):
+	os.makedirs(sb_dir(),exist_ok=True)
+	p=os.path.join(sb_dir(),name);t=p+".tmp"
+	with open(t,"wb")as f:
+		f.write(data)
+	os.replace(t,p)
+
+
+def _sb_save(m):
+	_sb_write("bilder.json",json.dumps(m,ensure_ascii=False).encode("utf-8"))
+
+
+def sb_make(raw, slot):
+	""
+	from PIL import Image,ImageOps
+	big,small,limit,axis,least=SB_SPEC[slot]
+	if len(raw)>SB_UPLOAD_MAX:
+		raise ValueError("The picture is too big (at most 25 MB).")
+	if raw[4:12]in(b"ftypheic",b"ftypheix",b"ftypmif1",b"ftyphevc",b"ftypmsf1"):
+		try:
+			import pillow_heif
+			pillow_heif.register_heif_opener()
+		except Exception:
+			raise ValueError("HEIC cannot be read on this MoveEye. Please choose a JPEG or PNG.")
+	try:
+		im=Image.open(io.BytesIO(raw))
+		if im.size[0]*im.size[1]>80_000_000:
+			raise ValueError("The picture is too big (at most 25 MB).")
+		im=ImageOps.exif_transpose(im)
+		if im.mode in("RGBA","LA","P"):
+			im=im.convert("RGBA")
+			bg=Image.new("RGBA",im.size,(17,20,24,255));bg.alpha_composite(im);im=bg
+		im=im.convert("RGB")
+	except ValueError:
+		raise
+	except Exception:
+		raise ValueError("This picture cannot be read. Please choose a JPEG or PNG.")
+	if(im.size[0]if axis=="w"else im.size[1])<least:
+		raise ValueError("The picture is too small (at least {n} px wide)."if axis=="w"else "The picture is too small (at least {n} px high).")
+	clean=Image.new("RGB",im.size)
+	clean.paste(im)
+
+	def fit(img,lim):
+		w,h=img.size
+		f=lim/float(w if axis=="w"else h)
+		return img.resize((max(1,round(w*f)),max(1,round(h*f))),Image.LANCZOS)if f<1 else img
+
+	def enc(img,maxb):
+		for _round in range(8):
+			for q in(80,74,68,62,56,50):
+				b=io.BytesIO();img.save(b,"WEBP",quality=q,method=4);out=b.getvalue()
+				if len(out)<=maxb:
+					return out,img.size
+			img=img.resize((max(1,round(img.size[0]*.85)),max(1,round(img.size[1]*.85))),Image.LANCZOS)
+		return out,img.size
+	B,bs=enc(fit(clean,big),limit)
+	S,ss=enc(fit(clean,small),int(limit*.4))if small else(b"",(0,0))
+	return B,bs,S,ss
+
+
+def sb_set(slot, raw, fx=50, fy=50):
+	if slot not in SB_SLOTS:
+		raise ValueError("Unknown picture.")
+	B,bs,S,ss=sb_make(raw,slot)
+	with _SB_LOCK:
+		m=sb_meta()
+		_sb_write(slot+".webp",B)
+		if S:
+			_sb_write(slot+"-k.webp",S)
+		else:
+			try:
+				os.remove(os.path.join(sb_dir(),slot+"-k.webp"))
+			except OSError:
+				pass
+		m["slots"][slot]={"v":int(time.time()*1000),"w":bs[0],"h":bs[1],"kw":ss[0],"kh":ss[1],"fx":_sb_num(fx),"fy":_sb_num(fy)}
+		_sb_save(m)
+	log_event("sys",f"Start page: own picture «{slot}» ({len(B) // 1024} KB)")
+	return m["slots"][slot]
+
+
+def sb_focus(slot, fx, fy):
+	with _SB_LOCK:
+		m=sb_meta()
+		if slot not in m["slots"]:
+			raise ValueError("Unknown picture.")
+		m["slots"][slot].update(fx=_sb_num(fx),fy=_sb_num(fy))
+		_sb_save(m)
+	return m["slots"][slot]
+
+
+def sb_texts(slot, d):
+	if slot not in SB_SLOTS or not isinstance(d,dict):
+		raise ValueError("Unknown picture.")
+	with _SB_LOCK:
+		m=sb_meta()
+		t={f:_sb_clean(d.get(f))for f in SB_FIELDS.get(slot,())+("alt",)}
+		t={f:v for f,v in t.items()if v}
+		if t:
+			m["texts"][slot]=t
+		else:
+			m["texts"].pop(slot,None)
+		_sb_save(m)
+
+
+def sb_reset(slot):
+	if slot not in SB_SLOTS:
+		raise ValueError("Unknown picture.")
+	with _SB_LOCK:
+		m=sb_meta();m["slots"].pop(slot,None);_sb_save(m)
+		for n in(slot+".webp",slot+"-k.webp"):
+			try:
+				os.remove(os.path.join(sb_dir(),n))
+			except OSError:
+				pass
+	log_event("sys",f"Start page: picture «{slot}» removed")
+
+
+def sb_variant():
+	return "A"if str(CFG.get("hp_start_variant")or "B").upper()=="A"else "B"
+
+
+def sb_read(slot, small=False):
+	p=os.path.join(sb_dir(),slot+("-k"if small else "")+".webp")
+	if small and not os.path.isfile(p):
+		p=os.path.join(sb_dir(),slot+".webp")
+	with open(p,"rb")as f:
+		return f.read()
+
+
+
+SB_CSS = _zd('639zzzzf_startbilder/SB_CSS', "")
+SB_CSS_A = r""".story{position:relative;margin-top:24px}
+.band{position:relative;margin:0;height:82svh;min-height:420px;overflow:hidden;background:#0b0d10}
+.band img{display:block;width:100%;height:100%;object-fit:cover}
+.band figcaption{position:absolute;left:0;right:0;bottom:0;padding:110px 20px calc(30px + env(safe-area-inset-bottom));
+ background:linear-gradient(to top,rgba(8,10,13,.85) 0%,rgba(8,10,13,.55) 45%,rgba(8,10,13,0) 100%)}
+.fx .story{height:calc(var(--n,4) * 100svh + 40svh)}
+.fx .stage{position:sticky;top:0;height:100svh;overflow:hidden;background:#0b0d10}
+.fx .stage::after{content:"";position:absolute;left:0;right:0;bottom:0;height:min(50svh,440px);pointer-events:none;z-index:2;
+ background:linear-gradient(to top,rgba(8,10,13,.86) 0%,rgba(8,10,13,.55) 40%,rgba(8,10,13,0) 100%)}
+.fx .band{position:absolute;inset:0;height:auto;min-height:0;opacity:0;will-change:opacity}
+.fx .band.first{opacity:1}.fx .band.wait{display:none}
+.fx .band img{transform:scale(var(--z,1.08)) translateY(var(--y,0));will-change:transform}
+.fx .band figcaption{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.caps{display:none}
+.fx .caps{display:block;position:absolute;inset:0;pointer-events:none;z-index:3}
+.fx .cap{position:relative;height:100svh;display:flex;flex-direction:column;justify-content:flex-end;
+ padding:0 max(20px,calc((100vw - 900px)/2)) calc(56px + env(safe-area-inset-bottom));opacity:var(--o,0);transform:translateY(var(--t,24px))}
+.end{height:40px}
+@media (min-width:900px){.band{height:min(82vh,760px)}}
+"""
+SB_CSS_B = r""".pano{position:relative;height:52svh;min-height:300px;max-height:760px;background:#0b0d10}
+.scroller{height:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scroll-snap-type:none;overscroll-behavior-x:contain;
+ scrollbar-width:none;cursor:grab;touch-action:pan-x pan-y}
+.scroller::-webkit-scrollbar,.strip::-webkit-scrollbar{display:none}
+.scroller.drag,.strip.drag{cursor:grabbing}
+.scroller:focus-visible,.strip:focus-visible{outline:3px solid #e8a54b;outline-offset:-3px}
+.scroller img{display:block;height:100%;width:auto;max-width:none;user-select:none;-webkit-user-drag:none}
+.hint{position:absolute;z-index:2;left:50%;bottom:16px;transform:translateX(-50%);pointer-events:none;padding:8px 14px;border-radius:999px;
+ background:rgba(8,10,13,.75);color:#fff;font-size:15px;white-space:nowrap;transition:opacity .8s ease;animation:nudge 2.4s ease-in-out 2}
+.hint.weg{opacity:0}
+@keyframes nudge{0%,100%{transform:translateX(-50%)}50%{transform:translateX(calc(-50% + 10px))}}
+.strip{display:flex;gap:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:none;scrollbar-width:none;cursor:grab;
+ padding:4px 20px calc(40px + env(safe-area-inset-bottom))}
+.strip figure{margin:0;flex:none;height:180px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#0b0d10}
+.strip img{display:block;height:100%;width:auto;user-select:none;-webkit-user-drag:none}
+@media (prefers-reduced-motion:reduce){.hint{animation:none;transition:none}}
+@media (min-width:900px){.pano{height:min(62vh,640px)}
+ .strip{padding-left:max(32px,calc((100vw - 1100px)/2));padding-right:max(32px,calc((100vw - 1100px)/2));padding-top:24px}.strip figure{height:220px}}
+"""
+SB_JS_LANG = r"""(function(){var T=/*T*/,l=(navigator.language||"de").slice(0,2).toLowerCase(),t=T[l];if(!t)return;document.documentElement.lang=l;
+document.querySelectorAll("[data-t]").forEach(function(e){var v=t[e.getAttribute("data-t")];if(v)e.textContent=v;});
+document.querySelectorAll("[data-a]").forEach(function(e){var v=t[e.getAttribute("data-a")];if(v)e.setAttribute("alt",v);});})();"""
+SB_JS_A = r"""(function(){var mq=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)");if(!mq||mq.matches)return;
+var story=document.getElementById("story");if(!story)return;var bands=story.querySelectorAll(".band"),caps=story.querySelectorAll(".cap"),n=bands.length,tick=false;
+document.documentElement.classList.add("fx");story.style.setProperty("--n",n);for(var k=1;k<n;k++)bands[k].classList.add("wait");
+function cl(x){return x<0?0:x>1?1:x;}
+function draw(){tick=false;var p=-story.getBoundingClientRect().top/innerHeight;
+ for(var i=0;i<n;i++){var b=bands[i],d=p-i;if(d>-1.6)b.classList.remove("wait");b.style.opacity=i===0?1:cl((d+0.4)/0.32);
+  b.style.setProperty("--y",(-d*4).toFixed(2)+"%");b.style.setProperty("--z",(1.08-cl(d+1)*0.03).toFixed(4));
+  var v=1-Math.abs(d)*2.2;caps[i].style.setProperty("--o",cl(v).toFixed(3));caps[i].style.setProperty("--t",((1-cl(v))*24).toFixed(1)+"px");}}
+function req(){if(!tick){tick=true;requestAnimationFrame(draw);}}
+addEventListener("scroll",req,{passive:true});addEventListener("resize",req);
+if(mq.addEventListener)mq.addEventListener("change",function(){location.reload();});draw();})();"""
+SB_JS_B = r"""(function(){var $=function(i){return document.getElementById(i);},sc=$("sc"),hint=$("hint");
+function dragger(el,onMove){var down=false,x0=0,s0=0,v=0,lx=0,lt=0,raf=0;
+ el.addEventListener("pointerdown",function(e){if(e.pointerType!=="mouse")return;down=true;x0=lx=e.clientX;s0=el.scrollLeft;lt=performance.now();v=0;cancelAnimationFrame(raf);el.classList.add("drag");el.setPointerCapture(e.pointerId);});
+ el.addEventListener("pointermove",function(e){if(!down)return;var n=performance.now();el.scrollLeft=s0-(e.clientX-x0);v=(lx-e.clientX)/Math.max(1,n-lt);lx=e.clientX;lt=n;if(onMove)onMove();});
+ function up(){if(!down)return;down=false;el.classList.remove("drag");if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  (function glide(){v*=0.94;if(Math.abs(v)<0.02)return;el.scrollLeft+=v*16;raf=requestAnimationFrame(glide);})();}
+ el.addEventListener("pointerup",up);el.addEventListener("pointercancel",up);
+ el.addEventListener("keydown",function(e){var k=e.key==="ArrowRight"?1:e.key==="ArrowLeft"?-1:0;if(k){el.scrollBy({left:k*el.clientWidth*0.4,behavior:"smooth"});if(onMove)onMove();e.preventDefault();}});}
+var st=document.querySelector(".strip");if(st)dragger(st);if(!sc)return;
+var img=sc.querySelector("img"),start=0,gone=false,fx=+(sc.getAttribute("data-fx")||50)/100;
+if(window.matchMedia&&matchMedia("(pointer:fine)").matches&&hint)hint.setAttribute("data-t","hint.drag"),hint.textContent=hint.getAttribute("data-d")||hint.textContent;
+function bye(){if(!gone&&hint){gone=true;hint.classList.add("weg");}}
+function center(){if(sc.scrollWidth>sc.clientWidth){sc.scrollLeft=(sc.scrollWidth-sc.clientWidth)*fx;start=sc.scrollLeft;}else bye();}
+if(img.complete&&img.naturalWidth)center();else img.addEventListener("load",center);
+if("IntersectionObserver" in window){var io=new IntersectionObserver(function(e){if(e[0].isIntersecting){setTimeout(bye,4500);io.disconnect();}},{threshold:.6});io.observe(sc);}else setTimeout(bye,4500);
+sc.addEventListener("scroll",function(){if(Math.abs(sc.scrollLeft-start)>30)bye();},{passive:true});dragger(sc,bye);})();"""
+SB_DRAWN = ('<svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" role="img" aria-label="{alt}" data-a="alt.drawn">'
+			'<defs><linearGradient id="sbs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2a44"/><stop offset=".6" stop-color="#46607f"/>'
+			'<stop offset="1" stop-color="#c98b5a"/></linearGradient></defs><rect width="1600" height="1000" fill="url(#sbs)"/>'
+			'<path d="M0 700 L260 430 L420 560 L640 300 L900 600 L1100 420 L1320 610 L1600 380 L1600 1000 L0 1000Z" fill="#2a3a4c"/>'
+			'<path d="M0 820 L300 640 L560 760 L820 600 L1080 780 L1400 640 L1600 720 L1600 1000 L0 1000Z" fill="#1c2733"/>'
+			'<path d="M1060 860 L1160 740 L1260 860Z" fill="#c4762f"/><path d="M1160 740 L1160 860" stroke="#111418" stroke-width="6"/>'
+			'<circle cx="1180" cy="230" r="46" fill="#f3d9a4" opacity=".85"/></svg>')
+
+
+def _sb_tx(key, L):
+	v=SB_TX.get(key)or()
+	i=_SB_LANGS.index(L)if L in _SB_LANGS else 0
+	return v[i]if len(v)>i and v[i]else(v[0]if v else "")
+
+
+def sb_page_html(variant=None, url=None, meta=None):
+	""
+	import html as _h
+	m=meta if meta is not None else sb_meta()
+	v=variant if variant in SB_VARIANTS else sb_variant()
+	S,TXT=m["slots"],m["texts"]
+	if url is None or not any(k in S for k in SB_VARIANTS[v]):
+		return None
+	e=lambda x:_h.escape(str(x),quote=True)
+	own=set()
+
+	def tx(slot,field):
+		c=(TXT.get(slot)or{}).get(field)
+		if c:
+			own.add(slot+"."+field)
+			return c
+		return _sb_tx(slot+"."+field,"de")
+
+	def alt(slot,key):
+		c=(TXT.get(slot)or{}).get("alt")
+		if c:
+			return 'alt="%s"'%e(c)
+		if "kick"in SB_FIELDS.get(slot,()):
+			return 'alt="%s" data-a="%s.kick"'%(e(tx(slot,"kick")),slot)
+		return 'alt="%s" data-a="%s"'%(e(_sb_tx(key,"de")),key)
+
+	def pos(slot):
+		return "object-position:%s%% %s%%"%(S[slot].get("fx",50),S[slot].get("fy",50))
+
+	def img(slot,vh,lazy=True,alt_of=None,key="alt.photo"):
+		s=S[slot]
+		sizes="(orientation:portrait) %dvh, 100vw"%max(30,round(vh*s["w"]/max(1,s["h"])))
+		srcset=(' srcset="%s %dw, %s %dw" sizes="%s"'%(e(url(slot,True)),s["kw"],e(url(slot,False)),s["w"],sizes))if s.get("kw")else ""
+		return '<img src="%s"%s width="%d" height="%d" %s decoding="async" style="%s" %s>'%(
+			e(url(slot,False)),srcset,s["w"],s["h"],'loading="lazy"'if lazy else 'fetchpriority="high"',pos(slot),alt(alt_of or slot,key))
+
+	css=SB_CSS+(SB_CSS_A if v=="A"else SB_CSS_B)
+	hero='<header class="hero">'+(img("titel",72,lazy=False)if "titel"in S else SB_DRAWN.replace("{alt}",e(_sb_tx("alt.drawn","de"))))
+	hero+=('<div class="top"><h1>MoveEye</h1><p data-t="titel.line">%s</p></div><div class="cap1"><span class="kick" data-t="titel.kick">%s</span>'
+			 '<span class="line" data-t="titel.say">%s</span></div></header>'%(e(tx("titel","line")),e(tx("titel","kick")),e(tx("titel","say"))))
+	btn=('<main><a href="Funk/"><span data-t="btn.f">%s</span><small data-t="btn.fs">%s</small></a>'
+		   '<a href="Sim/"><span data-t="btn.s">%s</span><small data-t="btn.ss">%s</small></a></main>'
+		   %tuple(e(_sb_tx(k,"de"))for k in("btn.f","btn.fs","btn.s","btn.ss")))
+	body,pre,post="","",""
+	if v=="A":
+		ch=[k for k in SB_CHAPTERS if k in S or(k=="grat"and "grat_hoch"in S)]
+		bands,caps=[],[]
+		for i,k in enumerate(ch):
+			kick,say=e(tx(k,"kick")),e(tx(k,"say"))
+			if k=="grat"and "grat"in S and "grat_hoch"in S:
+				hs=S["grat_hoch"]
+				pic=('<picture><source media="(orientation:portrait)" srcset="%s %dw, %s %dw" sizes="100vw">%s</picture>'
+					   %(e(url("grat_hoch",True)),hs["kw"],e(url("grat_hoch",False)),hs["w"],img("grat",100)))
+				css+="@media (orientation:portrait){.band picture img{%s!important}}"%pos("grat_hoch")
+			elif k=="grat"and "grat"not in S:
+				pic=img("grat_hoch",100,alt_of="grat")
+			else:
+				pic=img(k,100)
+			bands.append('<figure class="band%s">%s<figcaption><span class="kick" data-t="%s.kick">%s</span><span class="line" data-t="%s.say">%s</span>'
+						 '</figcaption></figure>'%(" first"if i==0 else "",pic,k,kick,k,say))
+			caps.append('<div class="cap"><span class="kick" data-t="%s.kick">%s</span><span class="line" data-t="%s.say">%s</span></div>'%(k,kick,k,say))
+		if ch:
+			body=('<div class="story" id="story"><div class="stage">'+"".join(bands)+'</div><div class="caps" aria-hidden="true">'
+					+"".join(caps)+'</div></div><div class="end"></div>')
+			post=SB_JS_A
+	else:
+		if "pano"in S:
+			s=S["pano"]
+			r=s["w"]/max(1,s["h"])
+			body+=('<h2 class="lab" id="lab" data-t="pano.kick">%s</h2><section class="pano" aria-labelledby="lab">'
+					 '<div class="scroller" id="sc" tabindex="0" role="region" aria-labelledby="lab" data-fx="%s">'
+					 '<img src="%s" srcset="%s %dw, %s %dw" sizes="(orientation:portrait) %dvh, %dvh" width="%d" height="%d" loading="lazy" '
+					 'decoding="async" draggable="false" %s></div><div class="hint" id="hint" aria-hidden="true" data-t="hint.swipe" data-d="%s">%s</div></section>'
+					 %(e(tx("pano","kick")),s.get("fx",50),e(url("pano",False)),e(url("pano",True)),s["kw"],e(url("pano",False)),s["w"],
+						max(60,round(52*r)),max(60,round(62*r)),s["w"],s["h"],alt("pano","alt.pano"),
+						e(_sb_tx("hint.drag","de")),e(_sb_tx("hint.swipe","de"))))
+		strip=[k for k in SB_LEISTE if k in S]
+		if strip:
+			body+='<div class="strip" tabindex="0" role="region" aria-label="%s">'%e(_sb_tx("lab.strip","de"))+"".join(
+				'<figure><img src="%s" width="%d" height="%d" loading="lazy" decoding="async" draggable="false" style="%s" %s></figure>'
+				%(e(url(k,False)),S[k]["w"],S[k]["h"],pos(k),alt(k,"alt.photo"))for k in strip)+"</div>"
+		pre=SB_JS_B
+	T={L:{k:_sb_tx(k,L)for k in SB_TX if k not in own}for L in _SB_LANGS[1:]}
+	lang=SB_JS_LANG.replace("/*T*/",json.dumps(T,ensure_ascii=False,sort_keys=True).replace("</","<\\/"),1)
+	head=('<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
+			'<title>MoveEye</title><meta name="color-scheme" content="dark"><meta name="theme-color" content="#111418"><style>'+css+"</style></head><body>")
+	return head+hero+btn+body+"<script>"+"\n".join(x for x in(pre,lang,post)if x)+"</script></body></html>\n"
+
+
+def sb_publish_files(meta=None):
+	""
+	import hashlib
+	m=meta if meta is not None else sb_meta()
+	v=sb_variant()
+	names,files={},[]
+	for k in SB_VARIANTS[v]:
+		if k not in m["slots"]:
+			continue
+		try:
+			big=sb_read(k)
+			sm=sb_read(k,True)if m["slots"][k].get("kw")else b""
+		except OSError:
+			continue
+		h=hashlib.sha256(big+sm).hexdigest()[:10]
+		names[(k,False)]="%s/%s-%s.webp"%(SB_DIR,k.replace("_","-"),h)
+		files.append((names[(k,False)],big))
+		if sm:
+			names[(k,True)]="%s/%s-k-%s.webp"%(SB_DIR,k.replace("_","-"),h)
+			files.append((names[(k,True)],sm))
+	if not files:
+		return[]
+	m={"slots":{k:v2 for k,v2 in m["slots"].items()if(k,False)in names},"texts":m["texts"]}
+	page=sb_page_html(v,lambda slot,small:names.get((slot,small))or names[(slot,False)],m)
+	return[(HP_START,page.encode("utf-8"))]+files if page else[]
+
+
+_hp_fixed_items_639zzzzf = hp_fixed_items
+
+
+
+def hp_fixed_items():
+	out=_hp_fixed_items_639zzzzf()
+	if not hp_part_on("start"):
+		return out
+	try:
+		files=sb_publish_files()
+	except Exception as e:
+		log_event("sys","Start page pictures: "+e.__class__.__name__)
+		files=[]
+	if not files:
+		return out
+	return[_hp_item(p,b)for p,b in files]+[it for it in out if it["path"]!=HP_START]
+
+
+_hp_part_639zzzzf = hp_part
+
+
+
+def hp_part(p):
+	return "start"if str(p or "").startswith(SB_DIR+"/")else _hp_part_639zzzzf(p)
+
+
+__hp_ours_639zzzzf = _hp_ours
+
+
+
+def _hp_ours(p):
+	return str(p or "").startswith(SB_DIR+"/")or __hp_ours_639zzzzf(p)
+
+
+_hp_status_639zzzzf = hp_status
+
+
+
+def hp_status():
+	d=_hp_status_639zzzzf()
+	S=sb_meta()["slots"]
+	d.update(start_variant=sb_variant(),start_pics=sum(1 for k in SB_VARIANTS[sb_variant()]if k in S))
+	return d
+
+
+_hp_action_639zzzzf = hp_action
+
+
+
+def hp_action(d, lang=None):
+	if str(d.get("action")or "")=="start_variant":
+		return sb_set_variant(d.get("v"))
+	return _hp_action_639zzzzf(d,lang)
+
+
+def sb_set_variant(v):
+	v=str(v or "").upper()
+	if v not in SB_VARIANTS:
+		return False,"Unknown variant."
+	if v!=CFG.get("hp_start_variant"):
+		CFG["hp_start_variant"]=v
+		save_settings()
+		log_event("sys","Start page: variant "+v)
+	return True,""
+
+
+def sb_state(lang=None):
+	L=norm_lang(lang or CFG.get("lang"))
+	m=sb_meta()
+	names={"titel":"Title picture (A and B)","grat":"A · chapter 2: ridge (computer, landscape)","grat_hoch":"A · chapter 2: ridge (phone, portrait)",
+			 "lager":"A · chapter 3: camp","abend":"A · chapter 4: evening","nacht":"A · chapter 5: night","pano":"B · panorama to look around"}
+	notes={"titel":"Large at the top with «MoveEye», the two buttons below. In A also chapter 1.",
+			 "grat":"Landscape or panorama.","grat_hoch":"Optional: a portrait picture just for phones.",
+			 "pano":"A wide panorama (at least 1200 pixels wide).","leiste":"Small, swipe sideways."}
+	fl={"line":"Title line","kick":"Chapter name","say":"Line on the picture","alt":"Picture description (for screen readers)"}
+	out=[]
+	for k in SB_SLOTS:
+		s=m["slots"].get(k)or{}
+		t=m["texts"].get(k)or{}
+		if k in SB_LEISTE:
+			name=tr("B · strip, picture {n}",L).replace("{n}",k[-1]);note=tr(notes["leiste"],L)
+		else:
+			name=tr(names[k],L);note=tr(notes[k],L)if k in notes else ""
+		LL=L if L in _SB_LANGS else "en"
+		fields=[{"f":f,"label":tr(fl[f],L),"value":t.get(f,""),"def":_sb_tx(k+"."+f,LL)}for f in SB_FIELDS.get(k,())]
+		fields.append({"f":"alt","label":tr(fl["alt"],L),"value":t.get("alt",""),"def":""})
+		big,small,limit,axis,least=SB_SPEC[k]
+		out.append({"id":k,"name":name,"note":note,"custom":bool(s),"v":s.get("v")or 0,"fx":s.get("fx",50),"fy":s.get("fy",50),
+					"w":s.get("w")or 0,"h":s.get("h")or 0,"fields":fields,"use":"".join(x for x in "AB"if k in SB_VARIANTS[x]),
+					"limit":"%d px · ≤ %d KB"%(big,limit//1000)})
+	return{"ok":True,"slots":out,"variant":sb_variant(),"start_on":hp_part_on("start"),
+			"count":{x:sum(1 for k in SB_VARIANTS[x]if k in m["slots"])for x in SB_VARIANTS}}
+
+
+_smalltv_routes_639zzzzf = smalltv_routes
+
+
+
+def smalltv_routes(app, reply, body):
+	_smalltv_routes_639zzzzf(app,reply,body)
+	from flask import Response,request,g
+
+	def no_(lang):
+		return reply({"ok":False,"error":tr("Only the administrator can change the pictures of the start page.",lang)},403)
+
+	@app.route("/startbilder")
+	def sb_page_():
+		if not pbild_admin(g):
+			return no_(norm_lang(request.args.get("lang")))
+		return Response(render_page(SB_UI_PAGE,"more"),mimetype="text/html",headers={"Cache-Control":"no-store"})
+
+	@app.route("/startbilder/vorschau")
+	def sb_preview_():
+		if not pbild_admin(g):
+			return no_(norm_lang(request.args.get("lang")))
+		v=str(request.args.get("v")or sb_variant()).upper()
+		m=sb_meta()
+		h=sb_page_html(v if v in SB_VARIANTS else sb_variant(),lambda s,k:"/api/startbilder/bild/%s?k=%d&v=%s"%(s,1 if k else 0,m["slots"][s].get("v")),m)
+		return Response(h or HP_INDEX_HTML,mimetype="text/html",headers={"Cache-Control":"no-store","X-Robots-Tag":"noindex"})
+
+	@app.route("/api/startbilder",methods=["GET","POST"])
+	def api_sb():
+		lang=norm_lang(request.args.get("lang")or CFG.get("lang"))
+		if not pbild_admin(g):
+			if(request.content_length or 0)<1<<20:
+				request.get_data()
+			return no_(lang)
+		if request.method=="GET":
+			return reply(sb_state(lang))
+		a=request.args.get("action")or ""
+		try:
+			if a=="set":
+				n=request.content_length or 0
+				if n>SB_UPLOAD_MAX:
+					raise ValueError("The picture is too big (at most 25 MB).")
+				slot=request.args.get("slot")or ""
+				if slot not in SB_SLOTS:
+					raise ValueError("Unknown picture.")
+				sb_set(slot,request.get_data(cache=False),request.args.get("fx",50),request.args.get("fy",50))
+			else:
+				d=body();a=a or str(d.get("action")or "");slot=str(d.get("slot")or "")
+				if a=="focus":
+					sb_focus(slot,d.get("fx"),d.get("fy"))
+				elif a=="texts":
+					sb_texts(slot,d.get("texts"))
+				elif a=="reset":
+					sb_reset(slot)
+				elif a=="variant":
+					okv,err=sb_set_variant(d.get("v"))
+					if not okv:
+						raise ValueError(err)
+				else:
+					raise ValueError("Unknown picture.")
+		except ValueError as e:
+			least=SB_SPEC.get(request.args.get("slot")or "",(0,0,0,"w",0))[4]
+			return reply(dict(sb_state(lang),ok=False,error=tr(str(e),lang).replace("{n}",str(least))),400)
+		return reply(sb_state(lang))
+
+	@app.route("/api/startbilder/bild/<slot>")
+	def api_sb_img(slot):
+		if not pbild_admin(g):
+			return no_(norm_lang(request.args.get("lang")))
+		if slot not in SB_SLOTS or slot not in sb_meta()["slots"]:
+			return Response("not found",404)
+		return Response(sb_read(slot,request.args.get("k")=="1"),mimetype="image/webp",headers={"Cache-Control":"no-store"})
+
+
+
+_SB_HP_AT = '<label class="hp-chk"><input type="checkbox" id="hp-start"><span id="hp-start-l"></span></label>'
+_SB_HP_ROW = ('<div class="hp-row" id="hp-sb-row" style="margin:0 0 6px"><select id="hp-sb-var" aria-label="Variant" style="font:inherit;font-size:15px;min-height:44px;'
+			  'border-radius:10px;border:1px solid var(--line);background:var(--field);color:var(--txt);padding:0 8px"><option value="B" data-i18n="B · panorama and strip of pictures">B</option>'
+			  '<option value="A" data-i18n="A · picture story (day to night)">A</option></select><a class="btn sec" id="hp-sbild" href="/startbilder" style="display:inline-flex;align-items:center;'
+			  'justify-content:center;gap:6px;text-decoration:none;box-sizing:border-box">🏞 <span data-i18n="Start page: pictures">Start page: pictures</span></a></div>')
+if 'id="hp-sbild"' not in HP_PAGE and HP_PAGE.count(_SB_HP_AT) == 1:
+	HP_PAGE=HP_PAGE.replace(_SB_HP_AT,_SB_HP_AT+_SB_HP_ROW,1)
+SB_HP_JS = r"""(function(){const s=document.getElementById("hp-sb-var");if(!s)return;
+document.querySelectorAll("#hp-sb-row [data-i18n]").forEach(e=>e.textContent=t(e.dataset.i18n));
+const L=()=>{try{return LANG||"de";}catch(e){return "de";}};
+fetch("/api/startbilder?lang="+L(),{cache:"no-store"}).then(r=>r.json()).then(j=>{if(j&&j.variant)s.value=j.variant;}).catch(()=>{});
+s.onchange=()=>fetch("/api/startbilder?lang="+L(),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"variant",v:s.value})}).catch(()=>{});})();"""
+
+
+_HX_SB = _zd('639zzzzf_startbilder/HX_SB', _zd_hx_en((
+	'Start page: pictures',
+	'A · picture story (day to night)',
+	'B · panorama and strip of pictures',
+	'Variant of the start page',
+	'Your photos for the start page of your homepage. They stay on MoveEye and go to the web space as Startbilder/ when «Start page» is switched on.',
+	'No people, number plates, house numbers or place signs.',
+	'Location data (EXIF, GPS) is removed and the picture is made smaller. Tap the picture: that point stays visible on phones.',
+	'The start page is switched off on the homepage – it is not uploaded at the moment.',
+	'Without own pictures the simple start page stays.',
+	'Preview',
+	'Both variants',
+	'Variant A · picture story',
+	'Variant B · panorama and strip',
+	'Title picture (A and B)',
+	'A · chapter 2: ridge (computer, landscape)',
+	'A · chapter 2: ridge (phone, portrait)',
+	'A · chapter 3: camp',
+	'A · chapter 4: evening',
+	'A · chapter 5: night',
+	'B · panorama to look around',
+	'B · strip, picture {n}',
+	'Large at the top with «MoveEye», the two buttons below. In A also chapter 1.',
+	'Landscape or panorama.',
+	'Optional: a portrait picture just for phones.',
+	'A wide panorama (at least 1200 pixels wide).',
+	'Small, swipe sideways.',
+	'Title line',
+	'Chapter name',
+	'Line on the picture',
+	'Picture description (for screen readers)',
+	'Empty = standard text (in 5 languages). Your own text is shown in every language.',
+	'Save the texts',
+	'Choose a picture',
+	'Remove the picture',
+	'Remove this picture from MoveEye?',
+	'No own picture',
+	'Focus point saved.',
+	'Uploading …',
+	'used in',
+	'Only the administrator can change the pictures of the start page.',
+	'The picture is too small (at least {n} px wide).',
+	'The picture is too small (at least {n} px high).',
+	'Unknown variant.',
+)))
+for _k, _v in _HX_SB.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+_SB_DE = {_k: DE.get(_k, _v[0]) for _k, _v in _HX_SB.items()}
+_SB_UI_KEYS = tuple(_HX_SB) + ("Saved.", "Saving …", "Cancel", "No connection to MoveEye.", "Homepage", "Own picture", "Replace",
+							   "This picture cannot be read. Please choose a JPEG or PNG.", "The picture is too big (at most 25 MB).", "Unknown picture.")
+
+_render_page_639zzzzf = render_page
+
+
+
+def render_page(page, active):
+	out=_render_page_639zzzzf(page,active)
+	if 'id="hp-sbild"'in out:
+		de_={k:_SB_DE[k]for k in("Start page: pictures","A · picture story (day to night)","B · panorama and strip of pictures")}
+		out=out.replace("</body>","<script>Object.assign(I18N.de, "+json.dumps(de_,ensure_ascii=False)+");"+SB_HP_JS+"</script></body>",1)
+	if "/*SBDE*/"in out:
+		de_={k:DE.get(k,k)for k in _SB_UI_KEYS}
+		out=out.replace("/*SBDE*/","Object.assign(I18N.de, "+json.dumps(de_,ensure_ascii=False).replace("</","<\\/")+");",1)
+	return out
+
+
+SB_UI_PAGE = _zd('639zzzzf_startbilder/SB_UI_PAGE', ZD_PAGE)
+
+
+SB_HELP_HTML = _zd('639zzzzf_startbilder/SB_HELP_HTML', ZD_PAGE)
+
+
+def _help_sb(doc, lang):
+	try:
+		li=dict(x.split("|",1)for x in SB_HELP_HTML.strip().split("\n")if "|"in x).get(lang)
+	except ValueError:
+		li=None
+	i=doc.find('<section id="morse"')
+	j=doc.find("</ul></section>",i)
+	return doc if not li or i<0 or j<0 or "🏞 "in doc[i:j]else doc[:j]+li+doc[j:]
+
+
+_sb_en_hp = HELP_PAGE.find('<div lang="en">')
+if _sb_en_hp > 0:
+	HELP_PAGE=_help_sb(HELP_PAGE[:_sb_en_hp],"de")+_help_sb(HELP_PAGE[_sb_en_hp:],"en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L]=_help_sb(HELP_X[_L],_L)
+
+
+
+startbilder_selftest = _zd_fn('639zzzzf_startbilder/startbilder_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Start page: own pictures (A / B, focus, without EXIF, Startbilder/ on the web space) (639zzzzf)", startbilder_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+for _k in ("push_pause", "push_pause_users"):
+	CFG.setdefault(_k,{});DEFAULTS.setdefault(_k,{})
+try:
+	USER_SETTINGS_DENY.update({"push_pause","push_pause_users"})
+except NameError:
+	pass
+VIEW_GET = VIEW_GET + ("/api/pushpause",)
+VIEW_POST.add("/api/pushpause")
+
+PP_DUR = {"15": 15, "30": 30, "60": 60, "120": 120}
+PP_MAX_S = 24 * 3600
+PP_ALARM_EV = ("person", "prealarm", "warm", "noise")
+PP_EXEMPT_TEXTS = ("Battery almost empty: about {pct} % ({hours:.1f} h)", "Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap",
+				   "Battery empty – the Pi shuts down cleanly")
+PP = {"lock": threading.Lock(), "started": False, "logt": {}}
+_PP_TL = threading.local()
+
+_HX_PP = _zd('639zzzzp_push_pause/HX_PP', _zd_hx_en((
+	'Pause notifications',
+	'Notifications paused',
+	'Until tomorrow morning',
+	'Until I am back',
+	'Own time …',
+	'min · h · time',
+	'phone away',
+	'phone at home',
+	'no presence set up',
+	'First enter your phone under Time & presence',
+	'End pause',
+	'Extend:',
+	'until {hm}',
+	'until tomorrow {hm}',
+	'{left} left',
+	'until you are back (at the latest {hm})',
+	'by {who}',
+	'via the bell 🔔',
+	'on the push page',
+	'in the Pi window',
+	'with the push button',
+	'push button',
+	'1 alarm',
+	'{n} alarms',
+	'1 note',
+	'{n} notes',
+	'Held back so far: {what}',
+	'Nothing held back so far.',
+	'During the pause: {what} (in the history)',
+	'During the pause nothing was held back.',
+	'Sabotage, theft, emergency call and «battery almost empty» still come.',
+	'Everything else is only recorded – at the end a short message comes.',
+	'Ends by itself.',
+	'Also with the bell 🔔 at the top and the button in the push message.',
+	'Only your own push messages are paused.',
+	'Sound in the browser',
+	'🔔 Alarm sound in this browser',
+	'Sound settings …',
+	'Duration',
+	'Until a time',
+	'minutes',
+	'hours',
+	'Pause until {hm}',
+	'‹ back',
+	'🔕 Pause 1 h',
+	'🔔 End pause',
+	'Notifications paused until {hm}',
+	'Notifications on again',
+	'🔕 paused until {hm}',
+	'Minutes, hours (e.g. 90 or 1.5 h) or an end time (e.g. 22:30)',
+	'Enter minutes, hours or a time (HH:MM).',
+	'At most 24 hours.',
+	'The presence detection is not set up.',
+	'Only who gets alarm pushes may pause them.',
+	'Notifications paused, {left} left – menu',
+	'1 minute',
+	'{n} minutes',
+	'1 hour',
+	'{n} hours',
+	'No pause is running.',
+	'running',
+	'off',
+)))
+for _k, _v in _HX_PP.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+
+PK_TITLES.setdefault("Notifications paused", ("🔕", "Notifications paused", "info", False))
+PK_TITLES.setdefault("Notifications on again", ("🔔", "Notifications on again", "info", False))
+
+
+
+def _pp_clean(s):
+	""
+	if not isinstance(s,dict):
+		return None
+	try:
+		until,t0=float(s.get("until")or 0),float(s.get("t0")or 0)
+	except(TypeError,ValueError):
+		return None
+	if not(math.isfinite(until)and math.isfinite(t0))or until<=0 or until-t0>PP_MAX_S+3600:
+		return None
+	mode=s.get("mode")if s.get("mode")in("min","morning","home")else "min"
+	via=s.get("via")if s.get("via")in("bell","page","window","push")else "page"
+	return{"until":until,"t0":t0,"mode":mode,"via":via,"by":str(s.get("by")or "")[:40],
+			"held":max(0,int(s.get("held")or 0)),"held_info":max(0,int(s.get("held_info")or 0)),"away":bool(s.get("away"))}
+
+
+def pp_raw(scope=""):
+	""
+	if not scope:
+		return _pp_clean(CFG.get("push_pause"))
+	allu=CFG.get("push_pause_users")if isinstance(CFG.get("push_pause_users"),dict)else{}
+	return _pp_clean(allu.get(scope))
+
+
+def pp_active(scope="", now=None):
+	s=pp_raw(scope)
+	return s if s and(time.time()if now is None else now)<s["until"]else None
+
+
+def _pp_put(scope, s, save=True):
+	with PP["lock"]:
+		if not scope:
+			CFG["push_pause"]=dict(s)if s else{}
+		else:
+			allu=dict(CFG.get("push_pause_users")if isinstance(CFG.get("push_pause_users"),dict)else{})
+			if s:
+				allu[scope]=dict(s)
+			else:
+				allu.pop(scope,None)
+			CFG["push_pause_users"]=allu
+	if save:
+		save_settings()
+
+
+def pp_presence_ready():
+	return bool(CFG.get("presence_hosts")or CFG.get("presence_macs")or CFG.get("presence_bt"))
+
+
+def pp_presence():
+	""
+	try:
+		return presence_home()if pp_presence_ready()else None
+	except Exception:
+		return None
+
+
+def pp_morning_ts(now=None):
+	""
+	now=time.time()if now is None else now
+	hm=str(CFG.get("wake_time")or "07:00")if CFG.get("wake_on")else "07:00"
+	m=re.match(r"^([01]?\d|2[0-3]):([0-5]\d)$",hm.strip())
+	h,mi=(int(m.group(1)),int(m.group(2)))if m else(7,0)
+	d=datetime.fromtimestamp(now)
+	t=d.replace(hour=h,minute=mi,second=0,microsecond=0)
+	if t.timestamp()<=now+60:
+		t=t+timedelta(days=1)
+	return t.timestamp()
+
+
+def pp_morning_hm():
+	return datetime.fromtimestamp(pp_morning_ts()).strftime("%H:%M")
+
+
+def pp_parse(text, now=None):
+	""
+	now=time.time()if now is None else now
+	v=str(text or "").strip().lower().replace(",",".")
+	m=re.fullmatch(r"([01]?\d|2[0-3]):([0-5]\d)",v)
+	if m:
+		d=datetime.fromtimestamp(now)
+		t=d.replace(hour=int(m.group(1)),minute=int(m.group(2)),second=0,microsecond=0)
+		if t.timestamp()<=now:
+			t=t+timedelta(days=1)
+		return t.timestamp(),""
+	m=re.fullmatch(r"(\d+(?:\.\d+)?)\s*(m|min|mins|minuten|minutes|minuti|minutas|h|std|stunden|hours|heures|ore|uras)?",v)
+	m2=re.fullmatch(r"(\d+):([0-5]\d)\s*h",v)
+	if m2:
+		sec=int(m2.group(1))*3600+int(m2.group(2))*60
+	elif m:
+		n=float(m.group(1))
+		sec=n*3600 if(m.group(2)or "")in("h","std","stunden","hours","heures","ore","uras")else n*60
+	else:
+		return 0,"Enter minutes, hours or a time (HH:MM)."
+	if sec<60:
+		return 0,"Enter minutes, hours or a time (HH:MM)."
+	if sec>PP_MAX_S:
+		return 0,"At most 24 hours."
+	return now+sec,""
+
+
+def _pp_log(msg):
+	try:
+		log_event("sys",msg)
+	except Exception:
+		pass
+
+
+def pp_who(who, scope=""):
+	return str(scope or who or "admin")[:40]
+
+
+def pp_start(scope, mode, who="admin", via="page", value=None, now=None, save=True):
+	"""
+"""
+	now=time.time()if now is None else now
+	m_="min"
+	if str(mode)in PP_DUR:
+		until=now+PP_DUR[str(mode)]*60
+	elif mode=="morning":
+		until,m_=pp_morning_ts(now),"morning"
+	elif mode=="home":
+		if not pp_presence_ready():
+			return False,"The presence detection is not set up.",None
+		until,m_=now+PP_MAX_S,"home"
+	elif mode=="own":
+		until,err=pp_parse(value,now)
+		if err:
+			return False,err,None
+	else:
+		return False,"unknown",None
+	old=pp_active(scope,now)
+	s={"until":until,"t0":old["t0"]if old else now,"mode":m_,"via":via,"by":pp_who(who,scope),
+		 "held":old["held"]if old else 0,"held_info":old["held_info"]if old else 0,"away":pp_presence()is False}
+	_pp_put(scope,s,save)
+	_pp_log(f"Push messages paused until {datetime.fromtimestamp(until).strftime('%d.%m. %H:%M')} ({mode}) by {pp_who(who)} ({via})"
+			+(f" - only the own pushes of «{scope}»"if scope else " - for all receivers"))
+	pp_thread()
+	return True,"",s
+
+
+def pp_extend(scope, add_min=0, morning=False, who="admin", via="page", save=True):
+	s=pp_active(scope)
+	if not s:
+		return False,"No pause is running.",None
+	if morning:
+		s["until"],s["mode"]=max(s["until"],pp_morning_ts()),"morning"
+	else:
+		s["until"]=min(s["until"]+max(1,int(add_min))*60,time.time()+PP_MAX_S)
+		if s["mode"]=="home":
+			s["mode"]="min"
+	_pp_put(scope,s,save)
+	_pp_log(f"Push pause extended until {datetime.fromtimestamp(s['until']).strftime('%d.%m. %H:%M')} by {pp_who(who)} ({via})"
+			+(f" - «{scope}»"if scope else ""))
+	return True,"",s
+
+
+def pp_what(held, held_info, lang=None):
+	parts=[]
+	if held:
+		parts.append(tr("1 alarm",lang)if held==1 else trf("{n} alarms",lang,n=held))
+	if held_info:
+		parts.append(tr("1 note",lang)if held_info==1 else trf("{n} notes",lang,n=held_info))
+	return " · ".join(parts)
+
+
+def pp_end(scope, reason="ended", who="admin", via="page", push=True, save=True):
+	""
+	s=pp_raw(scope)
+	if not s:
+		return False,"No pause is running."
+	_pp_put(scope,None,save)
+	_pp_log(f"Push messages on again ({reason}"+(f", {pp_who(who)}, {via}"if reason=="ended"else "")+f") - held back: {s['held']} alarms, "
+			f"{s['held_info']} notes"+(f" - «{scope}»"if scope else ""))
+	if push:
+		pp_end_push(scope,s)
+	return True,""
+
+
+
+def pp_exempt(p):
+	""
+	if not isinstance(p,dict):
+		return True
+	ev=p.get("event")
+	if ev in("tamper","test")or p.get("pp_pass")or p.get("_test")or p.get("fs_tok"):
+		return True
+	if ev=="info":
+		tt=str(p.get("info_title")or "")
+		if "🆘"in tt or "SOS"in tt:
+			return True
+		tx=str(p.get("text")or "")
+		for k in PP_EXEMPT_TEXTS:
+			for L in(None,"en"):
+				pre=tr(k,L).split("{")[0].strip()[:18]
+				if pre and tx.startswith(pre):
+					return True
+	return False
+
+
+def _pp_count(scope, ev):
+	with PP["lock"]:
+		if not scope:
+			s=CFG.get("push_pause")if isinstance(CFG.get("push_pause"),dict)else None
+		else:
+			s=(CFG.get("push_pause_users")or{}).get(scope)
+		if isinstance(s,dict):
+			k="held"if ev in PP_ALARM_EV else "held_info"
+			s[k]=int(s.get(k)or 0)+1
+	t=time.time()
+	if t-PP["logt"].get(scope,0)>30:
+		PP["logt"][scope]=t
+		try:
+			save_settings()
+		except Exception:
+			pass
+
+
+_pp_dispatch_before = Notifier._dispatch
+
+
+def _pp_dispatch(self, p, jpg, fname):
+	""
+	ex=pp_exempt(p)
+	if not ex and pp_active(""):
+		ev=self._event(p)
+		_pp_count("",ev)
+		STATE["notify_status"]="paused (push pause)"
+		try:
+			msglog_add(self._title(p),push_with_map(self._text(p),p," · "),ev,jpg,"none","🔕 Pause")
+		except Exception:
+			pass
+		_pp_log(f"No push message (push pause): {ev}")
+		return None
+	_PP_TL.exempt=ex
+	try:
+		return _pp_dispatch_before(self,p,jpg,fname)
+	finally:
+		_PP_TL.exempt=False
+
+
+
+Notifier._dispatch = _pp_dispatch
+
+_pp_users_dispatch_before = users_push_dispatch
+
+
+
+def users_push_dispatch(title, text, cat, click=""):
+	""
+	_PP_TL.users=True
+	try:
+		return _pp_users_dispatch_before(title,text,cat,click)
+	finally:
+		_PP_TL.users=False
+
+
+_pp_users_wants_before = users_push_wants
+
+
+
+def users_push_wants(name, cat):
+	ok=_pp_users_wants_before(name,cat)
+	if ok and getattr(_PP_TL,"users",False)and cat!="test"and not getattr(_PP_TL,"exempt",False)and pp_active(str(name or "")):
+		_pp_count(str(name),"person"if cat=="alarm"else "info")
+		return False
+	return ok
+
+
+
+def _pp_notifier():
+	try:
+		w=WATCH_REF.get("w")
+		n=getattr(w,"notifier",None)if w is not None else None
+		return n if n is not None and n.configured()and CFG.get("notify_on")else None
+	except Exception:
+		return None
+
+
+def _pp_send_info(title, text, link="", acts=None):
+	n=_pp_notifier()
+	if n is None:
+		return False
+	p={"event":"info","persons":0,"time":datetime.now().isoformat(timespec="seconds"),"text":text,"info_title":"{name}: "+title,
+		 "snapshot":None,"rain":False,"wind":"","source":STATE.get("source_label",""),"link":link,"pp_pass":True}
+	if acts:
+		p["alx_acts"]=tuple(acts)
+	threading.Thread(target=n._dispatch,args=(p,None,""),daemon=True,name="push-pause").start()
+	return True
+
+
+def pp_end_push(scope, s):
+	what=pp_what(s["held"],s["held_info"])
+	text=trf("During the pause: {what} (in the history)",what=what)if what else tr("During the pause nothing was held back.")
+	base=alx_base()
+	link=base+"/recordings"if base else ""
+	if not scope:
+		return _pp_send_info("Notifications on again",text,link)
+	title="🔔 "+tr("Notifications on again")
+	u=user_get(scope)
+	if u and u.get("ntfy"):
+		threading.Thread(target=_users_ntfy_send,args=(u["name"],_users_ntfy_url(u["ntfy"]),title,text,"info",link),
+						 daemon=True,name="push-pause-user").start()
+		return True
+	return False
+
+
+def pp_confirm_push(s):
+	""
+	hm=datetime.fromtimestamp(s["until"]).strftime("%H:%M")
+	return _pp_send_info("Notifications paused",trf("until {hm}",hm=hm).capitalize()+". "
+						 +tr("Sabotage, theft, emergency call and «battery almost empty» still come."),"",("resume",))
+
+
+
+def pp_tick(now=None):
+	now=time.time()if now is None else now
+	scopes=[""]+[k for k in(CFG.get("push_pause_users")or{})if isinstance(k,str)]
+	for sc in scopes:
+		s=pp_raw(sc)
+		if s is None:
+			if sc and sc in(CFG.get("push_pause_users")or{}):
+				_pp_put(sc,None)
+			elif not sc and CFG.get("push_pause"):
+				_pp_put("",None)
+			continue
+		if s["mode"]=="home":
+			h=pp_presence()
+			if h is False and not s["away"]:
+				s["away"]=True;_pp_put(sc,s)
+			elif h is True and s["away"]:
+				pp_end(sc,"back home")
+				continue
+		if now>=s["until"]:
+			pp_end(sc,"time is up")
+
+
+def pp_thread():
+	if PP["started"]:
+		return
+	PP["started"]=True
+
+	def loop():
+		while True:
+			try:
+				pp_tick()
+			except Exception as e:
+				_pp_log(f"Push pause: {e}"[:150])
+			time.sleep(5.0)
+	threading.Thread(target=loop,daemon=True,name="push-pause").start()
+
+
+
+def pp_left_text(sec, short=False):
+	mins=max(1,(max(0,int(sec))+59)//60)
+	if mins<60:
+		return "%d min"%mins
+	h,m=divmod(mins,60)
+	return("%d h %02d"%(h,m))if short else("%d h %d min"%(h,m)if m else "%d h"%h)
+
+
+def pp_badge(sec, mode):
+	""
+	if mode=="morning":
+		return "☾"
+	mins=max(1,(max(0,int(sec))+59)//60)
+	return "%d′"%mins if mins<60 else "%dh"%(mins//60)
+
+
+def pp_left_long(sec, lang=None):
+	""
+	mins=max(1,(max(0,int(sec))+59)//60)
+	h,m=divmod(mins,60)
+	hs=(tr("1 hour",lang)if h==1 else trf("{n} hours",lang,n=h))if h else ""
+	ms=(tr("1 minute",lang)if m==1 else trf("{n} minutes",lang,n=m))if m else ""
+	return(hs+" "+ms).strip()
+
+
+def pp_info(scope="", lang=None, can=True):
+	""
+	L=cur_lang(lang)
+	now=time.time()
+	s=pp_active(scope,now)
+	pres=pp_presence()
+	out={"can":bool(can),"scope":"user"if scope else "all","on":bool(s),"morning":pp_morning_hm(),
+		   "presence":{"ready":pp_presence_ready(),"home":pres,
+						"text":tr("no presence set up",L)if not pp_presence_ready()else tr("phone at home",L)if pres else tr("phone away",L)if pres is False else ""}}
+	if s:
+		hm=datetime.fromtimestamp(s["until"]).strftime("%H:%M")
+		tomorrow=datetime.fromtimestamp(s["until"]).date()!=datetime.fromtimestamp(now).date()
+		left=s["until"]-now
+		if s["mode"]=="home":
+			until=trf("until you are back (at the latest {hm})",L,hm=hm)
+		else:
+			until=trf("until tomorrow {hm}",L,hm=hm)if tomorrow else trf("until {hm}",L,hm=hm)
+		via={"bell":"via the bell 🔔","page":"on the push page","window":"in the Pi window","push":"with the push button"}[s["via"]]
+		who=tr("push button",L)if s["by"]=="push button"else s["by"]
+		what=pp_what(s["held"],s["held_info"],L)
+		out.update(until=s["until"],left=int(left),hm=hm,mode=s["mode"],short=pp_left_text(left,True),badge=pp_badge(left,s["mode"]),
+				   aria=trf("Notifications paused, {left} left – menu",L,left=pp_left_long(left,L)),
+				   line=until+" · "+trf("{left} left",L,left=pp_left_text(left)),
+				   by=trf("by {who}",L,who=who)+" · "+tr(via,L),held=s["held"],held_info=s["held_info"],
+				   held_line=trf("Held back so far: {what}",L,what=what)if what else tr("Nothing held back so far.",L))
+	return out
+
+
+def pp_tx(lang=None):
+	L=cur_lang(lang)
+	keys=list(_HX_PP)+["Sabotage, theft, emergency call and «battery almost empty» still come."]
+	return{k:(EN_SHOW.get(k,k)if L=="en"else tr(k,L))for k in keys}
+
+
+_pp_status_line_before = push_status_line
+
+
+
+def push_status_line(lang=None, ch=None, te=None):
+	out=_pp_status_line_before(lang,ch,te)
+	s=pp_active("")
+	if s and CFG.get("notify_on"):
+		out+=" · "+trf("🔕 paused until {hm}",lang,hm=datetime.fromtimestamp(s["until"]).strftime("%H:%M"))
+	return out
+
+
+_pp_push_info_before = push_info
+
+
+
+def push_info(lang=None):
+	d=_pp_push_info_before(lang)
+	d["pause"]=pp_info("",lang)
+	return d
+
+
+
+ALX_ACTS = tuple(ALX_ACTS) + ("pause", "resume")
+ALX_NAMES.update({"pause": "🔕 Pause 1 h", "resume": "🔔 End pause"})
+_pp_alx_token_before = alx_token
+
+
+
+def alx_token(p):
+	""
+	if isinstance(p,dict)and not p.get("alx_acts")and p.get("event")in PP_ALARM_EV:
+		return _pp_alx_token_before(dict(p,alx_acts=("fa","siren","off","pause")))
+	return _pp_alx_token_before(p)
+
+
+_pp_alx_buttons_before = alx_buttons
+
+
+
+def alx_buttons(p, lang=None):
+	""
+	b=_pp_alx_buttons_before(p,lang)
+	if getattr(_PP_TL,"hide",False):
+		return[x for x in b if not x[1].endswith(("/pause","/resume"))]
+	return b
+
+
+def _pp_extra(p):
+	try:
+		return[x for x in _pp_alx_buttons_before(p)if x[1].endswith(("/pause","/resume"))]
+	except Exception:
+		return[]
+
+
+_pp_ntfy_before = alx_ntfy_actions
+
+
+
+def alx_ntfy_actions(p):
+	_PP_TL.hide=True
+	try:
+		acts=_pp_ntfy_before(p)
+	finally:
+		_PP_TL.hide=False
+	ex=_pp_extra(p)if isinstance(p,dict)and not p.get("fs_tok")else[]
+	if not ex:
+		return acts
+	lst=[a.strip()for a in str(acts or "").split(";")if a.strip()]
+	def url_of(a):
+		x=a.split(",")
+		return x[2].strip()if len(x)>2 else ""
+	for lab,url,_c in ex:
+		if url.endswith("/pause"):
+			lst=[a for a in lst if not url_of(a).endswith("/siren")]
+		lst.append(f"http, {' '.join(lab.replace(',', ' ').replace(';', ' ').split())}, {url}, method=POST, clear=true")
+	if len(lst)>3:
+		lst=[a for a in lst if not url_of(a).endswith("/off")]
+		lst=lst[:2]+lst[-1:]if len(lst)>3 else lst
+	return "; ".join(lst)
+
+
+_pp_tg_before = alx_telegram_markup
+
+
+
+def alx_telegram_markup(p):
+	_PP_TL.hide=True
+	try:
+		mk=_pp_tg_before(p)
+	finally:
+		_PP_TL.hide=False
+	ex=_pp_extra(p)if isinstance(p,dict)and not p.get("fs_tok")else[]
+	if not ex:
+		return mk
+	rows=list((mk or{}).get("inline_keyboard")or[])+[[{"text":lab,"url":url}]for lab,url,_c in ex]
+	return{"inline_keyboard":rows}
+
+
+_pp_alx_do_before = alx_do
+
+
+
+def alx_do(act, e, who="push"):
+	if act=="pause":
+		ok,err,s=pp_start("","60",who="push button",via="push")
+		if not ok:
+			return False,tr_err(err)
+		pp_confirm_push(s)
+		return True,"🔕 "+trf("Notifications paused until {hm}",hm=datetime.fromtimestamp(s["until"]).strftime("%H:%M"))
+	if act=="resume":
+		if not pp_active(""):
+			return True,tr("No pause is running.")
+		pp_end("","ended",who="push button",via="push")
+		return True,"🔔 "+tr("Notifications on again")
+	return _pp_alx_do_before(act,e,who)
+
+
+
+def pp_scope_of(role, user):
+	""
+	if role=="admin":
+		return True,""
+	n=str(user or "")
+	try:
+		u=user_get(n)
+		n=u["name"]if u else n
+		return bool(u and _pp_users_wants_before(n,"alarm")),n
+	except Exception:
+		return False,n
+
+
+def pp_api(d, role, user, method="POST"):
+	""
+	lang=norm_lang((d or{}).get("lang"))
+	can,scope=pp_scope_of(role,user)
+	if method=="GET":
+		out=pp_info(scope,lang,can)
+		if(d or{}).get("tx"):
+			out["tx"]=pp_tx(lang)
+		return out,200
+	if not can:
+		return{"ok":False,"error":tr("Only who gets alarm pushes may pause them.",lang)},403
+	a=str(d.get("action")or "")
+	via=d.get("via")if d.get("via")in("bell","page","window")else "page"
+	who="admin"if role=="admin"else scope
+	if a=="pause":
+		ok,err,_s=pp_start(scope,str(d.get("mode")or ""),who=who,via=via,value=d.get("value"))
+	elif a=="extend":
+		ok,err,_s=pp_extend(scope,add_min=int(d.get("min")or 0)if str(d.get("min")or "0").isdigit()else 0,
+								morning=d.get("mode")=="morning",who=who,via=via)
+	elif a=="end":
+		ok,err=pp_end(scope,"ended",who=who,via=via)
+	else:
+		ok,err=False,"unknown action"
+	if not ok:
+		return{"ok":False,"error":tr_err(err,lang)if err not in _HX_PP else tr(err,lang)},400
+	return dict(pp_info(scope,lang,can),ok=True),200
+
+
+_pp_sx_routes_before = sx_routes
+
+
+def sx_routes(app, watch, reply, body):
+	_pp_sx_routes_before(app,watch,reply,body)
+	from flask import request,g as g_
+	pp_thread()
+
+	@app.route("/api/pushpause",methods=["GET","POST"])
+	def api_pushpause():
+		role,user=getattr(g_,"role","admin"),getattr(g_,"user","")
+		if request.method=="GET":
+			out,code=pp_api({"lang":request.args.get("lang"),"tx":request.args.get("tx")},role,user,"GET")
+		else:
+			out,code=pp_api(body(),role,user,"POST")
+		return reply(out,code)
+
+
+
+PP_JS = _zd('639zzzzp_push_pause/PP_JS', "")
+ALERT_JS = ALERT_JS + PP_JS
+
+
+
+HELP_PP = _zd('639zzzzp_push_pause/HELP_PP', _ZDDict())
+
+
+def _help_pp(doc, lang):
+	i=doc.find('<section id="notify"')
+	if i<0 or 'id="pp-help"'in doc:
+		return doc
+	j=doc.find("</section>",i)
+	return doc[:j]+HELP_PP[lang]+doc[j:]if j>=0 else doc
+
+
+_hp_en_pp = HELP_PAGE.find('<div lang="en">')
+if _hp_en_pp > 0:
+	HELP_PAGE=_help_pp(HELP_PAGE[:_hp_en_pp],"de")+_help_pp(HELP_PAGE[_hp_en_pp:],"en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L]=_help_pp(HELP_X[_L],_L)
+
+
+
+_PP_TK = {"app": None}
+
+
+def _pp_tk_box(app, parent):
+	box=tk.Frame(parent,bg=C["panel"],highlightthickness=1,highlightbackground=C["line"],padx=8,pady=6)
+	box.pack(fill="x",pady=(2,6))
+	S=app._pp={"box":box,"sig":None}
+	_pp_tk_fill(app)
+
+
+def _pp_tk_do(app, fn):
+	try:
+		res=fn()
+	except Exception as e:
+		res=(False,str(e))
+	if res and not res[0]and res[1]:
+		messagebox.showinfo("MoveEye",tr_err(res[1])if res[1]not in _HX_PP else tr(res[1]),parent=app.root)
+	_pp_tk_fill(app,force=True)
+	try:
+		_px_tk_paint(app)
+	except Exception:
+		pass
+
+
+def _pp_tk_own(app):
+	from tkinter import simpledialog
+	v=simpledialog.askstring("MoveEye",tr("Minutes, hours (e.g. 90 or 1.5 h) or an end time (e.g. 22:30)"),parent=app.root)
+	if v:
+		_pp_tk_do(app,lambda:pp_start("","own",who="admin",via="window",value=v)[:2])
+
+
+def _pp_tk_fill(app, force=False):
+	S=getattr(app,"_pp",None)
+	if not S:
+		return
+	try:
+		if not S["box"].winfo_exists():
+			return
+	except Exception:
+		return
+	I=pp_info("")
+	sig=(I["on"],I.get("line"),I.get("held_line"),I["presence"]["ready"],I["presence"]["text"],I["morning"])
+	if sig==S["sig"]and not force:
+		return
+	S["sig"]=sig
+	for c in S["box"].winfo_children():
+		c.destroy()
+	box=S["box"]
+	top=tk.Frame(box,bg=C["panel"]);top.pack(fill="x")
+	tk.Label(top,text="🔕 "+tr("Pause notifications"),bg=C["panel"],fg=C["txt"],font=("DejaVu Sans",9,"bold"),anchor="w").pack(side="left")
+	tk.Label(top,text=tr("running")if I["on"]else tr("off"),bg=C["panel"],fg=C["yel"]if I["on"]else C["mut"]).pack(side="right")
+	if I["on"]:
+		for txt,fg in(("🔕 "+tr("Notifications paused"),C["yel"]),(I["line"],C["txt"]),(I["by"],C["mut"]),(I["held_line"],C["mut"])):
+			tk.Label(box,text=txt,bg=C["panel"],fg=fg,anchor="w",justify="left",wraplength=330).pack(fill="x")
+		ttk.Button(box,text="🔔 "+tr("End pause"),command=lambda:_pp_tk_do(app,lambda:pp_end("","ended",via="window"))).pack(fill="x",pady=(6,2))
+		r=tk.Frame(box,bg=C["panel"]);r.pack(fill="x")
+		tk.Label(r,text=tr("Extend:"),bg=C["panel"],fg=C["mut"]).pack(side="left")
+		for lab,kw in(("+15 min",{"add_min":15}),("+1 h",{"add_min":60}),("🌅 "+I["morning"],{"morning":True})):
+			ttk.Button(r,text=lab,command=lambda kw=kw:_pp_tk_do(app,lambda:pp_extend("",via="window",**kw)[:2])).pack(side="left",padx=2)
+		return
+	g=tk.Frame(box,bg=C["panel"]);g.pack(fill="x",pady=(4,0))
+	for i,(m,lab)in enumerate((("15","15 min"),("30","30 min"),("60","1 h"),("120","2 h"))):
+		g.columnconfigure(i,weight=1)
+		ttk.Button(g,text=lab,command=lambda m=m:_pp_tk_do(app,lambda:pp_start("",m,via="window")[:2])).grid(row=0,column=i,sticky="ew",padx=1)
+	ttk.Button(box,text="🌅 "+tr("Until tomorrow morning")+"  ("+I["morning"]+")",
+			   command=lambda:_pp_tk_do(app,lambda:pp_start("","morning",via="window")[:2])).pack(fill="x",pady=(3,0))
+	hb=ttk.Button(box,text="🏠 "+tr("Until I am back")+"  ("+I["presence"]["text"]+")",
+					command=lambda:_pp_tk_do(app,lambda:pp_start("","home",via="window")[:2]))
+	hb.pack(fill="x",pady=(3,0))
+	if not I["presence"]["ready"]:
+		hb.state(["disabled"])
+		tk.Label(box,text=tr("First enter your phone under Time & presence"),bg=C["panel"],fg=C["mut"],anchor="w",wraplength=330,justify="left").pack(fill="x")
+	ttk.Button(box,text="⏱ "+tr("Own time …"),command=lambda:_pp_tk_own(app)).pack(fill="x",pady=(3,0))
+	tk.Label(box,text=tr("Ends by itself.")+" "+tr("Sabotage, theft, emergency call and «battery almost empty» still come.")+" "
+			 +tr("Everything else is only recorded – at the end a short message comes."),bg=C["panel"],fg=C["mut"],anchor="w",
+			 wraplength=330,justify="left",font=("DejaVu Sans",8)).pack(fill="x",pady=(4,0))
+
+
+_pp_tk_head_before = _px_tk_head
+
+
+
+def _px_tk_head(parent, text):
+	_pp_tk_head_before(parent,text)
+	app=_PP_TK["app"]
+	if text=="When"and app is not None:
+		try:
+			_pp_tk_box(app,parent)
+		except Exception as e:
+			log_event("sys",f"Window: push pause: {e}"[:160])
+
+
+_pp_tk_panel_before = _px_tk_panel
+
+
+
+def _px_tk_panel(app, sbody):
+	_PP_TK["app"]=app
+	try:
+		return _pp_tk_panel_before(app,sbody)
+	finally:
+		_PP_TK["app"]=None
+
+
+_pp_tk_paint_before = _px_tk_paint
+
+
+
+def _px_tk_paint(app):
+	_pp_tk_paint_before(app)
+	try:
+		_pp_tk_fill(app)
+	except Exception:
+		pass
+
+
+
+push_pause_selftest = _zd_fn('639zzzzp_push_pause/push_pause_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Push pause (639zzzzp)", push_pause_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+WEB_UI_LOCAL.add("mw-sheet")
+
+UF_CSS = _zd('639zzzzx_fenster/UF_CSS', "")
+
+UF_JS = _zd('639zzzzx_fenster/UF_JS', "")
+
+UF_TX_JS = _zd('639zzzzx_fenster/UF_TX_JS', "")
+try:
+	UF_TX={k:tuple(v)for k,v in json.loads(UF_TX_JS).items()}
+except ValueError:
+	UF_TX={}
+for _k, _v in UF_TX.items():
+	if len(_v)==5:
+		DE.setdefault(_k,_v[1])
+		for _i,_L in enumerate(("fr","it","rm")):
+			TRX[_L].setdefault(_k,_v[_i+2])
+
+
+def uf_tx():
+	return{L:{k:v[i]for k,v in UF_TX.items()}for i,L in enumerate(("en","de","fr","it","rm"))}
+
+
+
+UF_HELP_JS = _zd('639zzzzx_fenster/UF_HELP_JS', "")
+try:
+	UF_HELP=json.loads(UF_HELP_JS)
+except ValueError:
+	UF_HELP={}
+
+
+def uf_help(doc, lang):
+	""
+	p=UF_HELP.get(lang)
+	if not p or not isinstance(doc,str)or p[:40]in doc:
+		return doc
+	i=doc.find('<section id="tips"')
+	j=doc.find("</h2>",i)if i>=0 else-1
+	return doc[:j+5]+p+doc[j+5:]if j>=0 else doc
+
+
+try:
+	_hp_en_uf=HELP_PAGE.find('<div lang="en">')
+	if _hp_en_uf>0:
+		HELP_PAGE=uf_help(HELP_PAGE[:_hp_en_uf],"de")+uf_help(HELP_PAGE[_hp_en_uf:],"en")
+	for _L in("fr","it","rm"):
+		if HELP_X.get(_L):
+			HELP_X[_L]=uf_help(HELP_X[_L],_L)
+except Exception as _e:
+	print(f"639zzzzx help: {_e}")
+
+
+_render_page_before_uf = render_page
+
+
+
+def render_page(page, active):
+	""
+	out=_render_page_before_uf(page,active)
+	if '<nav class="nav">'not in out or "</body>"not in out or "</head>"not in out:
+		return out
+	out=out.replace("</head>",UF_CSS+"</head>",1)
+	i=out.rfind("</body>")
+	js=UF_JS.replace("/*FXTX*/{}",json.dumps(uf_tx(),ensure_ascii=False).replace("</","<\\/"),1)
+	return out[:i]+js+out[i:]
+
+
+_uf_selftest = _zd_fn('639zzzzx_fenster/_uf_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Sub-pages as a window (639zzzzx)", _uf_selftest))
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")
