@@ -179,6 +179,35 @@ def main():
                   and pg.locator("#ms-page [data-view='sec:Patrol']").count() == 1, "tabOpen: der Inhalt wechselt, kein zweites Fenster (%s)" % w["title"])
             pg.go_back(); pg.wait_for_timeout(700)
             pruef(not W()["win"], "danach: Zurück schliesst das eine Fenster")
+            # 4b. a dialog opened from the window lies above it and takes the tap (Web-Passwort #pwd-ov of the card «Sicherheit»)
+            pg.evaluate("() => msOpen('grp:security')"); pg.wait_for_timeout(900)
+            pruef(W()["win"] and pg.locator("#ms-page #secpanel").count() == 1, "Sicherheit im Fenster")
+            # (this MoveEye has --web-password: the button only shows a toast - that toast must be above the window too)
+            pg.locator("#ms-page #secpanel button", has_text="Web-Passwort").first.click(); pg.wait_for_timeout(500)
+            t = pg.evaluate("() => { const o = document.getElementById('toast'); return o && o.getClientRects().length ? +getComputedStyle(o).zIndex : null; }")
+            pruef(t is None or t > 237, "Meldung (#toast) aus dem Fenster liegt über dem Fenster (z %s)" % t)
+            # a dialog like #pwd-ov (fixed, z-index 200, appended to <body>) opened by a button inside the window
+            pg.evaluate("""() => { const b = document.createElement('button'); b.id = 't-open'; b.type = 'button'; b.textContent = 'Dialog';
+                b.onclick = () => { const o = document.createElement('div'); o.id = 't-ov'; o.style.cssText = 'position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center';
+                  o.innerHTML = '<div class="card"><input id="t-in" type="password"><button id="t-save" type="button">Speichern</button></div>';
+                  o.querySelector('#t-save').onclick = () => { window.__saved = (window.__saved || 0) + 1; o.remove(); };
+                  o.addEventListener('keydown', e => { if (e.key === 'Escape') o.remove(); }); document.body.appendChild(o); o.querySelector('#t-in').focus(); };
+                document.querySelector('#ms-page #secpanel').prepend(b); }""")
+            pg.locator("#t-open").click(); pg.wait_for_timeout(400)
+            d = pg.evaluate("""() => { const o = document.getElementById('t-ov'), w = document.getElementById('ms-page'), b = document.getElementById('t-save'), r = b.getBoundingClientRect();
+                const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+                return {zo: +getComputedStyle(o).zIndex, zw: +getComputedStyle(w).zIndex, hit: hit === b, win: w.classList.contains('fx-win'), focus: document.activeElement && document.activeElement.id}; }""")
+            pruef(d["win"] and d["zo"] > d["zw"] and d["hit"] and d["focus"] == "t-in", "Dialog aus dem Fenster liegt oben, ist klickbar und hat den Fokus (%s)" % d)
+            bild(pg, "dialog_ueber_fenster")
+            pg.keyboard.press("Tab"); pg.keyboard.press("Shift+Tab")
+            pruef(pg.evaluate("() => !!(document.activeElement && document.activeElement.closest('#t-ov'))"), "Tab im Dialog: die Fokusfalle des Fensters lässt ihn")
+            pg.keyboard.press("Escape"); pg.wait_for_timeout(400)
+            pruef(W()["win"] and not pg.evaluate("() => !!document.getElementById('t-ov')"), "Esc schliesst den Dialog, nicht das Fenster darunter")
+            pg.locator("#t-open").click(); pg.wait_for_timeout(400); pg.locator("#t-save").click(); pg.wait_for_timeout(300)
+            pruef(pg.evaluate("() => window.__saved") == 1 and W()["win"], "Tipp auf «Speichern» im Dialog kommt an")
+            pg.locator("#ms-back").click(); pg.wait_for_timeout(700)
+            z = pg.evaluate("() => { const o = document.getElementById('toast'); return o ? o.style.zIndex : ''; }")
+            pruef(not W()["win"] and z == "", "Fenster zu, gehobene Ebenen wieder wie vorher (%r)" % z)
             # 5. the choice
             st = pg.evaluate("""() => { const r = document.querySelector('#ms-list .mi[data-ms="#fx-card"]');
                 return r ? [r.closest('.mg').querySelector('.mgh').textContent, r.querySelector('b').textContent, r.querySelector('.ms-st').textContent] : null; }""")

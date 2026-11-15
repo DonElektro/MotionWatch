@@ -100,9 +100,39 @@ UF_JS = r"""<script>
   function variant(w) { w.classList.remove("fx-bottom", "fx-mid", "fx-side", "fx-full"); w.classList.add("fx-" + (w.dataset.fxForce || mode())); }
   const radioOn = () => { try { const P = window.mwRadioP; return !!(P && P.S && P.S.on); } catch (e) { return false; } };
   const FOC = 'a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),iframe,[tabindex]:not([tabindex="-1"]),summary';
+  // ---- dialogs opened from a window lie above it (Web-Passwort #pwd-ov, «Neuer Benutzer», menus, pickers, toasts …): every overlay
+  // of the page that appears while a window is open (a child of <body> or an overlay anywhere, fixed / absolute, visible, not there
+  // when the window opened) gets 1000 + its z-index (inline, !important) - back when the window closes. One rule for all parts.
+  const OVSEL = '[id$="-ov"],[class*="-ov"],[id$="-pop"],.pop,[role=dialog],[role=alertdialog],[role=menu],[role=listbox],[aria-modal=true],.mwt-ov,.g2m,.modal,dialog,#toast,.toast,'
+    + '#viewer,#big,.tz-lb,.tz-drop,.pl-lb,.prt-wiz,#rs-ed,#langmenu,.sndpop,#lv-menu,#kw-menu,#v3-menu,.mwg-shot,#pv,.pvw.fs';   // (fixed layers of other parts)
+  const DLG = '[id$="-ov"],[class*="-ov"],[role=dialog],[role=alertdialog],[aria-modal=true],.mwt-ov,.g2m,.modal,dialog,#gw';
+  let base = new Set(), up = [], mo = null, raf = 0;
+  const seen = el => { if (!el.getClientRects().length) return false; const cs = getComputedStyle(el);
+    return (cs.position === "fixed" || cs.position === "absolute") && cs.display !== "none" && cs.visibility !== "hidden"; };
+  const cands = () => new Set([...B.children, ...document.querySelectorAll(OVSEL)]);
+  const mine = el => el === dim || el.closest(".fx-win,.fx-park,#fx-dim") || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/.test(el.tagName);
+  function lift() {
+    raf = 0; if (!cur) return;
+    cands().forEach(el => { if (el.dataset.fxUp != null || base.has(el) || mine(el) || !seen(el)) return;
+      const z = parseInt(getComputedStyle(el).zIndex, 10) || 0; el.dataset.fxUp = el.style.getPropertyValue("z-index") || "-";
+      el.style.setProperty("z-index", String(1000 + Math.max(0, z)), "important"); up.push(el); });
+  }
+  function watch() {
+    base = new Set([...cands()].filter(el => !mine(el) && seen(el))); up = [];
+    mo = new MutationObserver(() => { if (!raf) raf = requestAnimationFrame(lift); });
+    mo.observe(B, {childList: true, subtree: true, attributes: true, attributeFilter: ["style", "class", "hidden", "open"]});
+  }
+  function unwatch() {
+    if (mo) mo.disconnect(); mo = null; if (raf) cancelAnimationFrame(raf); raf = 0;
+    up.forEach(el => { const v = el.dataset.fxUp; delete el.dataset.fxUp; if (v === "-") el.style.removeProperty("z-index"); else el.style.setProperty("z-index", v); });
+    up = []; base = new Set();
+  }
+  const dialog = () => !!document.querySelector(".mwt-ov,.g2m,#gw") || up.some(el => el.isConnected && el.matches(DLG) && seen(el));
+  const overlay = t => !!(t && t.closest && t.closest("[data-fx-up]," + OVSEL + ",#g2-bub,#g2-pop,#g2-ov") && !t.closest(".fx-win"));
   function keys(e) {
     if (!cur) return;
-    if (e.key === "Escape") { if (document.querySelector(".mwt-ov,.g2m,#gw")) return; e.preventDefault(); cur.o.close(); return; }
+    if (dialog() || overlay(e.target)) return;                // Esc / Tab belong to the dialog on top
+    if (e.key === "Escape") { e.preventDefault(); cur.o.close(); return; }
     if (e.key !== "Tab") return;
     const f = [...cur.win.querySelectorAll(FOC)].filter(x => x.getClientRects().length && !x.closest("[hidden],#ms-hide"));
     if (!f.length) { e.preventDefault(); cur.win.focus(); return; }
@@ -111,7 +141,7 @@ UF_JS = r"""<script>
     else if (e.shiftKey && (a === first || a === cur.win)) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && a === last) { e.preventDefault(); first.focus(); }
   }
-  function focusIn(e) { if (cur && !cur.win.contains(e.target) && !e.target.closest(".mwt-ov,.g2m,#gw,#g2-bub,#g2-pop,[role=dialog]:not(.fx-win)")) { try { (cur.x || cur.win).focus({preventScroll: true}); } catch (_) {} } }
+  function focusIn(e) { if (cur && !cur.win.contains(e.target) && !overlay(e.target) && !dialog()) { try { (cur.x || cur.win).focus({preventScroll: true}); } catch (_) {} } }
   // drag the grip / the title row: down (from below, middle) or right (from the side) - far or fast enough = close
   function drag(w, bar) {
     if (bar.dataset.fxDrag) return; bar.dataset.fxDrag = "1"; let s = null;
@@ -142,12 +172,12 @@ UF_JS = r"""<script>
     const x = o.x; if (x) { if (x.dataset.fxTxt == null) x.dataset.fxTxt = x.textContent; x.textContent = "✕"; x.classList.add("fx-x"); x.title = tr("Close"); x.setAttribute("aria-label", tr("Close")); }
     cur = {win: w, o, x, ret: o.ret || document.activeElement, done: null, timer: 0};
     D.classList.add("fx-lock"); B.classList.add("fx-open");
-    document.addEventListener("keydown", keys, true); document.addEventListener("focusin", focusIn);
+    document.addEventListener("keydown", keys, true); document.addEventListener("focusin", focusIn); watch();
     setTimeout(() => { try { (x || w).focus({preventScroll: true}); } catch (_) {} }, 30);
   }
   function finish(quick) {
     if (!cur) return; const c = cur; cur = null; clearTimeout(c.timer);
-    document.removeEventListener("keydown", keys, true); document.removeEventListener("focusin", focusIn);
+    document.removeEventListener("keydown", keys, true); document.removeEventListener("focusin", focusIn); unwatch();
     const w = c.win; w.classList.remove("fx-win", "fx-out", "fx-bottom", "fx-mid", "fx-side", "fx-full", "fx-drag", "fx-back"); w.style.transform = "";
     w.removeAttribute("role"); w.removeAttribute("aria-modal"); w.removeAttribute("aria-labelledby");
     if (c.x) { c.x.textContent = c.x.dataset.fxTxt || c.x.textContent; delete c.x.dataset.fxTxt; c.x.classList.remove("fx-x"); c.x.removeAttribute("aria-label"); c.x.removeAttribute("title"); }
