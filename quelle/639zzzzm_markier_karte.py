@@ -68,9 +68,11 @@ class MkDetector:
             return
         self.dic = a.getPredefinedDictionary(a.DICT_4X4_50)
         p = a.DetectorParameters() if hasattr(a, "ArucoDetector") else a.DetectorParameters_create()
+        # minMarkerDistanceRate: OpenCV 4.6 (Pi OS Bookworm) keeps the white edge of the paper as the candidate when the edge is
+        # narrower than one cell and then reads nothing (measured: the printed card has a margin of half a cell)
         for k, v in (("minMarkerPerimeterRate", 0.012), ("adaptiveThreshWinSizeMin", 3), ("adaptiveThreshWinSizeMax", 23),
                      ("adaptiveThreshWinSizeStep", 10), ("polygonalApproxAccuracyRate", 0.05), ("perspectiveRemovePixelPerCell", 8),
-                     ("errorCorrectionRate", 0.6), ("cornerRefinementMethod", getattr(a, "CORNER_REFINE_SUBPIX", 1))):
+                     ("errorCorrectionRate", 0.6), ("minMarkerDistanceRate", 0.01), ("cornerRefinementMethod", getattr(a, "CORNER_REFINE_SUBPIX", 1))):
             try:
                 setattr(p, k, v)
             except (AttributeError, TypeError, cv2.error):
@@ -198,37 +200,31 @@ def mk_card_svg(card, size=None, lang=None):
     n = len(M)
     qy = y0 + MS + 9 * k
     qp = "".join(f"M{x},{y}h1v1h-1z" for y in range(n) for x in range(n) if M[y][x])
-    fol, mark, dusk = mk_range(size)
-    tx = x0 + QS + 7 * k
-    E = lambda s: html_escape(s)
-    T = lambda y, s, fs, w=400, col="#222": (f'<text x="{tx:.1f}" y="{y:.1f}" font-family="DejaVu Sans,Helvetica,Arial,sans-serif" '
-                                             f'font-size="{fs * k:.2f}" font-weight="{w}" fill="{col}">{E(s)}</text>')
-    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}mm" height="{H}mm" viewBox="0 0 {W} {H}">',
-             f'<rect x="0" y="0" width="{W}" height="{H}" fill="#fff"/>', f'<path d="{path}" fill="#000" shape-rendering="crispEdges"/>',
-             f'<g transform="translate({x0:.2f},{qy:.2f}) scale({QS / n:.5f})"><path d="{qp}" fill="#000" shape-rendering="crispEdges"/></g>',
-             T(qy + 6 * k, "📍 " + tr("Marker card", L), 7.2, 700, "#111"),
-             T(qy + 13 * k, f"MoveEye «{CFG.get('device_name') or 'MoveEye'}» · «{card['name']}»", 3.9, 400, "#333"),
-             T(qy + 20 * k, trf("Follows up to about {a} m by day, marks up to {b} m", L, a=fol, b=mark), 3.4, 600, "#111"),
-             T(qy + 27 * k, "1  " + tr("Hold the card in front of MoveEye – it beeps.", L), 3.4),
-             T(qy + 32.5 * k, "2  " + tr("Walk away – the head looks along.", L), 3.4),
-             T(qy + 38 * k, "3  " + tr("Mark a point: stand still, turn the card for 1–2 s,", L), 3.4),
-             T(qy + 43.5 * k, "    " + tr("show it again – a second sound.", L), 3.4),
-             f'<text x="{W / 2}" y="{H - 7 * k:.1f}" font-family="DejaVu Sans,Helvetica,Arial,sans-serif" font-size="{2.9 * k:.2f}" '
-             f'text-anchor="middle" fill="#777">{E("📍 MoveEye · " + tr("Marker card", L) + " · " + str(card["mid"]) + " · " + card["id"] + " · " + size.upper())}</text>',
-             "</svg>"]
-    return "".join(parts)
+    fol, mark, _d = mk_range(size)
+    rows = [(6, "📍 " + tr("Marker card", L), 7.2, 700), (13, f"MoveEye «{CFG.get('device_name') or 'MoveEye'}» · «{card['name']}»", 3.9, 400),
+            (20, trf("Follows up to about {a} m by day, marks up to {b} m", L, a=fol, b=mark), 3.4, 700)]
+    rows += [(27 + 5.5 * i, x, 3.4, 400) for i, x in enumerate(("1  " + tr("Hold the card in front of MoveEye – it beeps.", L),
+             "2  " + tr("Walk away – the head looks along.", L), "3  " + tr("Mark a point: stand still, turn the card for 1–2 s,", L),
+             "    " + tr("show it again – a second sound.", L)))]
+    txt = "".join(f'<text x="{x0 + QS + 7 * k:.1f}" y="{qy + y * k:.1f}" font-size="{fs * k:.2f}" font-weight="{w}">{html_escape(x)}</text>'
+                  for y, x, fs, w in rows)
+    foot = html_escape(f"📍 MoveEye · {tr('Marker card', L)} · {card['mid']} · {card['id']} · {size.upper()}")
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}mm" height="{H}mm" viewBox="0 0 {W} {H}"><style>text{{font-family:DejaVu Sans,'
+            f'Helvetica,Arial,sans-serif;fill:#222}}</style><rect width="{W}" height="{H}" fill="#fff"/><path d="{path}" shape-rendering="crispEdges"/>'
+            f'<g transform="translate({x0:.2f},{qy:.2f}) scale({QS / n:.5f})"><path d="{qp}" shape-rendering="crispEdges"/></g>{txt}'
+            f'<text x="{W / 2}" y="{H - 7 * k:.1f}" font-size="{2.9 * k:.2f}" text-anchor="middle" style="fill:#777">{foot}</text></svg>')
 
 
 def mk_print_page(card, size=None, lang=None):
     L = norm_lang(lang)
     size = size if size in MK_SIZES else card.get("size", "a4")
-    links = " ".join(f'<a href="/karten/markier?id={card["id"]}&amp;size={k}&amp;lang={L}"{" class=on" if k == size else ""}>{k.upper()}</a>'
-                     for k in MK_SIZES)
-    return (MK_PRINT_HTML.replace("{LANG}", L).replace("{TITLE}", html_escape(tr("Marker card", L) + " – " + card["name"]))
-            .replace("{PRINT}", html_escape(tr("Print", L))).replace("{CLOSE}", html_escape(tr("Close", L))).replace("{LINKS}", links)
-            .replace("{NOTE}", html_escape(trf("Print at 100 % on matt paper. Follows up to about {a} m by day ({s}); bigger = further. "
-                                               "The card counts only for this MoveEye.", L, a=mk_range(size)[0], s=size.upper())))
-            .replace("{CARD}", mk_card_svg(card, size, L)))
+    h = MK_PRINT_HTML
+    for k_, v_ in (("{LANG}", L), ("{TITLE}", html_escape(tr("Marker card", L) + " – " + card["name"])), ("{PRINT}", html_escape(tr("Print", L))),
+                   ("{CLOSE}", html_escape(tr("Close", L))), ("{ID}", card["id"]), ("{SIZE}", size),
+                   ("{NOTE}", html_escape(trf("Print at 100 %, matt paper. Up to about {a} m by day ({s}). Only for this MoveEye.", L,
+                                              a=mk_range(size)[0], s=size.upper()))), ("{CARD}", mk_card_svg(card, size, L))):
+        h = h.replace(k_, v_)
+    return h
 
 
 # ---- the session ------------------------------------------------------------------------------------------------------------------
@@ -617,20 +613,6 @@ def smalltv_routes(app, reply, body):                        # + 639zzzzm: /api/
             return reply({"ok": True})
         return reply({"ok": False, "error": "unknown action"}, 400)
 
-    @app.route("/api/mk/card/<cid>.<ext>")
-    def api_mk_card(cid, ext):
-        n = nope()
-        if n is not None:
-            return n
-        c = mk_card(cid)
-        if c is None or ext != "svg":
-            return Response("not found", 404)
-        size = request.args.get("size") if request.args.get("size") in MK_SIZES else None
-        h = {"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"}
-        if request.args.get("dl") == "1":
-            h["Content-Disposition"] = f'attachment; filename="moveeye_markier_{c["mid"]}_{c["id"]}.{ext}"'
-        return Response(mk_card_svg(c, size, request.args.get("lang")), mimetype="image/svg+xml", headers=h)
-
     @app.route("/karten/markier")
     def mk_print():
         n = nope()
@@ -639,8 +621,11 @@ def smalltv_routes(app, reply, body):                        # + 639zzzzm: /api/
         c = mk_card(str(request.args.get("id") or ""))
         if c is None:
             return Response("not found", 404)
-        return Response(mk_print_page(c, request.args.get("size"), request.args.get("lang") or CFG.get("lang")), mimetype="text/html",
-                        headers={"Cache-Control": "no-store"})
+        a_, L = request.args, request.args.get("lang") or CFG.get("lang")
+        if a_.get("svg") == "1":                              # «⬇ SVG»: the card alone
+            return Response(mk_card_svg(c, a_.get("size"), L), mimetype="image/svg+xml", headers={"Cache-Control": "no-store",
+                            "Content-Disposition": f'attachment; filename="moveeye_markier_{c["mid"]}_{c["id"]}.svg"'})
+        return Response(mk_print_page(c, a_.get("size"), L), mimetype="text/html", headers={"Cache-Control": "no-store"})
 
 
 MK_PRINT_HTML = r"""<!doctype html><html lang="{LANG}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -652,9 +637,11 @@ body{font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;margin:0;paddin
 .bar a.on{background:#1f6feb;border-color:#1f6feb;color:#fff}.m{color:#555;margin:0 0 10px;font-size:13px}
 .cv{display:flex;justify-content:center}.cv svg{max-width:100%;height:auto;box-shadow:0 1px 6px rgba(0,0,0,.25)}
 @media print{.bar,.m{display:none}body{padding:0}.cv svg{box-shadow:none;max-width:none}}
-</style></head><body><div class="bar"><button type="button" onclick="print()">🖨 {PRINT}</button>{LINKS}
+</style></head><body><div class="bar"><button type="button" onclick="print()">🖨 {PRINT}</button><a href="?id={ID}&amp;size=a4">A4</a><a href="?id={ID}&amp;size=a5">A5</a>
+<a href="?id={ID}&amp;size={SIZE}&amp;svg=1">⬇ SVG</a>
 <button type="button" onclick="history.length>1?history.back():close()">{CLOSE}</button></div><div class="m">{NOTE}</div>
-<div class="cv">{CARD}</div><script>window.__mwExit = true;</script></body></html>"""
+<div class="cv">{CARD}</div><script>window.__mwExit = true;
+document.querySelectorAll(".bar a").forEach(a => { if (a.search.indexOf("size={SIZE}") > 0 && a.search.indexOf("svg") < 0) a.className = "on"; });</script></body></html>"""
 
 MK_WORKSHOP_JS = r"""<script>
 (function () {                                            // 639zzzzm: «📍 Markier-Karten» in the card workshop
@@ -708,13 +695,13 @@ MK_WORKSHOP_JS = r"""<script>
     if (s.ses) { const x = E("button", "sec", "⏹ " + mt("End")); x.type = "button"; x.onclick = async () => { await api({action: "end"}); load(); }; b.appendChild(x); }
     const box = $i("mk-list"); box.textContent = "";
     J.cards.forEach(c => {
-      const r = E("div", "qk-c"), pv = E("div", "pv"), im = E("img"); im.src = "/api/mk/card/" + c.id + ".svg?lang=" + L(); im.alt = ""; pv.appendChild(im);
+      const r = E("div", "qk-c"), pv = E("div", "pv"), im = E("img"); im.src = "/karten/markier?svg=1&id=" + c.id + "&lang=" + L(); im.alt = ""; pv.appendChild(im);
       const m = E("div"); m.append(E("b", "", c.name)); const tg = E("span", "qk-tag", "📍 " + c.mid); m.appendChild(tg);
       m.appendChild(E("div", "w", c.size.toUpperCase() + " · " + mt("follows up to about") + " " + c.range + " m · " + mt("marks up to") + " " + c.mark + " m"));
       m.appendChild(E("div", "mut", mt("made") + " " + c.made + (c.last ? " · " + mt("last used") + " " + c.last : "") + " · " + (c.n || 0) + " " + mt("points")));
       const bb = E("div", "bb");
       const a = E("a", "btn sec", "🖨 " + t("Print")); a.href = "/karten/markier?id=" + c.id + "&lang=" + L(); bb.appendChild(a);
-      const p = E("a", "btn sec", "⬇ SVG"); p.href = "/api/mk/card/" + c.id + ".svg?dl=1&lang=" + L(); bb.appendChild(p);
+      const p = E("a", "btn sec", "⬇ SVG"); p.href = "/karten/markier?svg=1&id=" + c.id + "&lang=" + L(); bb.appendChild(p);
       const d = E("button", "sec", "🗑"); d.type = "button"; d.onclick = async () => { if (confirm(mt("Delete this card?"))) { await api({action: "delete", id: c.id}); load(); } };
       bb.appendChild(d); m.appendChild(bb); r.append(pv, m); box.appendChild(r);
     });
@@ -742,10 +729,8 @@ TK_SUB_ICONS[MK_SECTION] = "📍"
 for _g in TK_GROUPS:
     if _g[0] == "camera" and MK_SECTION not in _g[2]:
         _g[2].append(MK_SECTION)
-SET_HELP.update({"mk_on": ("Make and print a card in the card workshop (More → Card workshop → «📍 Marker cards»). Hold it in front of the head camera "
-                           "when the protection is off: MoveEye beeps and the head follows the card. Stand still, turn the card for 1–2 s and show it "
-                           "again: the place is saved as a taught point («Point 1» …). Follows up to about 12–15 m by day, marks up to about 9–10 m (A4).",
-                           "off (experimental)")})
+SET_HELP.update({"mk_on": ("Card workshop → «📍 Marker cards»: hold the card in front of the head camera (protection off) - the head follows; "
+                           "turn it for 1–2 s = a taught point.", "off (experimental)")})
 _MK_GRP = '{sec: "QR command cards", title: "QR command cards", ic: "▦"}'
 if _MK_GRP in WEB_PAGE and '{sec: "Marker cards"' not in WEB_PAGE:
     WEB_PAGE = WEB_PAGE.replace(_MK_GRP, _MK_GRP + ', {sec: "Marker cards", title: "Marker cards", ic: "📍"}', 1)
@@ -781,11 +766,16 @@ _HX_MK = {
                                                            "Suit de jour jusqu’à env. {a} m, marque jusqu’à {b} m",
                                                            "Segue di giorno fino a circa {a} m, segna fino a {b} m",
                                                            "Suonda da di fin circa {a} m, marca fin {b} m"),
-    "Print at 100 % on matt paper. Follows up to about {a} m by day ({s}); bigger = further. The card counts only for this MoveEye.": (
-        "Mit 100 % auf mattes Papier drucken. Folgt bei Tag bis etwa {a} m ({s}); grösser = weiter. Die Karte gilt nur für dieses MoveEye.",
-        "Imprimer à 100 % sur papier mat. Suit de jour jusqu’à env. {a} m ({s}) ; plus grand = plus loin. La carte ne vaut que pour ce MoveEye.",
-        "Stampare al 100 % su carta opaca. Segue di giorno fino a circa {a} m ({s}); più grande = più lontano. La carta vale solo per questo MoveEye.",
-        "Stampar cun 100 % sin palpiri mat. Suonda da di fin circa {a} m ({s}); pli grond = pli lunsch. La carta vala mo per quest MoveEye."),
+    "Print at 100 %, matt paper. Up to about {a} m by day ({s}). Only for this MoveEye.": (
+        "Mit 100 % auf mattes Papier drucken. Bei Tag bis etwa {a} m ({s}). Gilt nur für dieses MoveEye.",
+        "Imprimer à 100 %, papier mat. De jour jusqu’à env. {a} m ({s}). Seulement pour ce MoveEye.",
+        "Stampare al 100 %, carta opaca. Di giorno fino a circa {a} m ({s}). Solo per questo MoveEye.",
+        "Stampar cun 100 %, palpiri mat. Da di fin circa {a} m ({s}). Mo per quest MoveEye."),
+    "Card workshop → «📍 Marker cards»: hold the card in front of the head camera (protection off) - the head follows; turn it for 1–2 s = a taught point.": (
+        "Karten-Werkstatt → «📍 Markier-Karten»: Karte vor die Kopf-Kamera halten (Schutz Aus) – der Kopf folgt; 1–2 s umdrehen = Teach-in-Punkt.",
+        "Atelier des cartes → «📍 Cartes de repérage» : tenir la carte devant la caméra de la tête (protection arrêtée) – la tête suit ; la retourner 1–2 s = un point.",
+        "Laboratorio delle carte → «📍 Carte di marcatura»: tenere la carta davanti alla telecamera della testa (protezione spenta) – la testa segue; girarla 1–2 s = un punto.",
+        "Ufficina da cartas → «📍 Cartas da marcar»: tegnair la carta davant la camera dal chau (protecziun deactivada) – il chau suonda; volver 1–2 s = in punct."),
     "OpenCV without ArUco": ("OpenCV ohne ArUco", "OpenCV sans ArUco", "OpenCV senza ArUco", "OpenCV senza ArUco"),
     "the head is parked": ("der Kopf ist geparkt", "la tête est parquée", "la testa è parcheggiata", "il chau è parcà"),
     "at most 10 marker cards": ("höchstens 10 Markier-Karten", "au plus 10 cartes de repérage", "al massimo 10 carte di marcatura",

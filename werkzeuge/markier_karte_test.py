@@ -227,8 +227,10 @@ def teil_b(datei, bilder):
         card = j.get("card") or {}
         ok(c == 200 and card.get("mid") == 40, f"Karte erstellt: Marker {card.get('mid')}")
         c1, pg = req(f"/karten/markier?id={card.get('id')}&size=a5")
-        c3, svg = req(f"/api/mk/card/{card.get('id')}.svg?dl=1")
-        ok(c1 == 200 and b"<svg" in pg and c3 == 200 and b"<svg" in svg and req(f"/api/mk/card/{card.get('id')}.png")[0] == 404, "Druckseite (A5), SVG")
+        c3, svg = req(f"/karten/markier?id={card.get('id')}&svg=1")
+        ok(c1 == 200 and b"<svg" in pg and b"A5" in pg and c3 == 200 and svg[:4] == b"<svg" and req("/karten/markier?id=XXXXX")[0] == 404,
+           "Druckseite (A5), SVG, unbekannte Karte 404")
+        ok(req(f"/karten/markier?id={card.get('id')}", user=Fa)[0] in (401, 403), "Familie: keine Druckseite")
         mid = card.get("mid", 40)
         zeigen(mid)
         time.sleep(3)

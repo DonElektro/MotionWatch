@@ -52,6 +52,7 @@ class MkDetector:
         p.polygonalApproxAccuracyRate = 0.05
         p.perspectiveRemovePixelPerCell = 8
         p.errorCorrectionRate = 0.6
+        p.minMarkerDistanceRate = 0.01    # OpenCV 4.6: else the white paper edge (narrower than a cell) wins and nothing is read
         try:
             p.cornerRefinementMethod = a.CORNER_REFINE_SUBPIX
         except AttributeError:
