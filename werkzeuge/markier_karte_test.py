@@ -11,7 +11,7 @@
   B) MoveEye ohne Fenster mit der Demo-Kamera; der Marker einer Karte (PNG aus der Werkstatt) liegt in der Bildmitte, solange
      die Datei MW_MK_KARTE existiert: Rechte (Familie: keine Werkstatt, keine API), aus = nichts; ein: Sitzung startet (Zustand
      «folgt»), Karte 1,3 s weg und wieder da = «Punkt 1» im Teach-in mit Abstand und in der Runde; kurz weg (0,3 s) = kein Punkt;
-     Schutz ein = Sitzung zu Ende, Karte ignoriert (Zeile im Protokoll); Druckseite / PNG / SVG; Werkstatt mit Abschnitt.
+     Schutz ein = Sitzung zu Ende, Karte ignoriert (Zeile im Protokoll); Druckseite / SVG; Werkstatt mit Abschnitt.
      --bilder ORDNER: Werkstatt und Teach-in in Handy-Breite (390 px, Playwright).
 
   python3 werkzeuge/markier_karte_test.py [--datei X.py] [--py46 PYTHON] [--nur-a] [--bilder ORDNER]
@@ -97,7 +97,7 @@ def teil_a(datei):
         c, err = ns["mk_create"]("Ohne", "a5", "test")
         ok(c is not None and not ns["mk_detector"]().ok, "ohne cv2.aruco: Karte trotzdem erstellbar, Detektor aus")
         ok(ns["mk_pause_reason"]() == "OpenCV without ArUco" and ns["mk_tick"]() == 30.0, "ohne cv2.aruco: Pause «OpenCV without ArUco», kein Lesen")
-        ok("<svg" in ns["mk_card_svg"](c) and ns["mk_card_png"](c)[:4] == b"\x89PNG", "ohne cv2.aruco: Karten-Bild ohne Ausnahme")
+        ok("<svg" in ns["mk_card_svg"](c), "ohne cv2.aruco: Karten-Bild (SVG) ohne Ausnahme")
         st = ns["mk_state"]("de")
         ok(st["aruco"] is False and st["pause_t"] == "OpenCV ohne ArUco", "Zustand für die Werkstatt: " + st["pause_t"])
         ok(ns["mk_selftest"]().startswith("no ArUco"), "Selbsttest ohne ArUco: sauber abgeschaltet")
@@ -191,11 +191,12 @@ def teil_b(datei, bilder):
             time.sleep(0.25)
         return state()
 
-    def zeigen(png, px=150):
-        im = cv2.imdecode(np.frombuffer(png, np.uint8), cv2.IMREAD_COLOR)
-        H, W = im.shape[:2]
-        m = im[int(12 / 297 * H) - 8: int((12 + 180) / 297 * H) + 8, int(15 / 210 * W) - 8: int(195 / 210 * W) + 8]   # the marker with a white edge
-        m = cv2.resize(m, (px, px), interpolation=cv2.INTER_AREA)
+    def zeigen(mid, px=150):
+        a_ = cv2.aruco
+        d_ = a_.getPredefinedDictionary(a_.DICT_4X4_50)
+        m = (a_.generateImageMarker if hasattr(a_, "generateImageMarker") else a_.drawMarker)(d_, int(mid), 600)
+        m = cv2.copyMakeBorder(m, 40, 40, 40, 40, cv2.BORDER_CONSTANT, value=255)          # the white paper around the marker
+        m = cv2.cvtColor(cv2.resize(m, (px, px), interpolation=cv2.INTER_AREA), cv2.COLOR_GRAY2BGR)
         cv2.imwrite(karte + ".tmp.png", m); os.replace(karte + ".tmp.png", karte)
 
     def weg():
@@ -221,15 +222,15 @@ def teil_b(datei, bilder):
         ok(req("/api/mk", user=Fa)[0] == 403 and req("/api/mk", {"action": "create", "name": "x"}, user=Fa)[0] in (401, 403),
            "Familie: keine Markier-Karten (403)")
         code, page = req("/karten")
-        ok(code == 200 and b'id="mk-sec"' in page and "Markier-Karten".encode() in page, "Werkstatt mit Abschnitt «📍 Markier-Karten»")
+        ok(code == 200 and b"639zzzzm" in page and "Markier-Karten".encode() in page, "Werkstatt mit Abschnitt «📍 Markier-Karten» (Skript)")
         c, j = req("/api/mk", {"action": "create", "name": "Zeltplatz", "size": "a4"})
         card = j.get("card") or {}
         ok(c == 200 and card.get("mid") == 40, f"Karte erstellt: Marker {card.get('mid')}")
         c1, pg = req(f"/karten/markier?id={card.get('id')}&size=a5")
-        c2, png = req(f"/api/mk/card/{card.get('id')}.png?size=a4")
-        c3, svg = req(f"/api/mk/card/{card.get('id')}.svg")
-        ok(c1 == 200 and b"<svg" in pg and c2 == 200 and png[:4] == b"\x89PNG" and c3 == 200 and b"<svg" in svg, "Druckseite (A5), PNG, SVG")
-        zeigen(png)
+        c3, svg = req(f"/api/mk/card/{card.get('id')}.svg?dl=1")
+        ok(c1 == 200 and b"<svg" in pg and c3 == 200 and b"<svg" in svg and req(f"/api/mk/card/{card.get('id')}.png")[0] == 404, "Druckseite (A5), SVG")
+        mid = card.get("mid", 40)
+        zeigen(mid)
         time.sleep(3)
         ok(state()["state"]["ses"] is None, "aus: die Karte im Bild startet nichts")
         ok(req("/api/set", {"key": "mk_on", "value": True})[0] == 200, "Markier-Karten einschalten")
@@ -238,7 +239,7 @@ def teil_b(datei, bilder):
            f"({s['state'].get('api')}, {s['state'].get('ms')} ms)")
         time.sleep(2.5)
         n0 = len(punkte())
-        weg(); time.sleep(1.3); zeigen(png)
+        weg(); time.sleep(1.3); zeigen(mid)
         s = warten(lambda s: s["state"]["ses"] and s["state"]["ses"]["marks"] >= 1, 15)
         pts = punkte()
         neu = [x for x in pts if x.get("mk_m")]
@@ -246,7 +247,7 @@ def teil_b(datei, bilder):
            + json.dumps(neu[-1:] , ensure_ascii=False))
         ok(bool(neu) and 0.3 < float(neu[-1]["mk_m"]) < 30.0, f"Abstand geschätzt: ~{neu[-1]['mk_m'] if neu else '?'} m")
         time.sleep(3.5)
-        weg(); time.sleep(0.25); zeigen(png); time.sleep(3)
+        weg(); time.sleep(0.25); zeigen(mid); time.sleep(3)
         ok(len(punkte()) == n0 + 1, "0,25 s weg (jemand geht durchs Bild): kein Punkt")
         req("/api/arm", {"action": "arm_now"})
         s = warten(lambda s: s["state"]["ses"] is None, 10)

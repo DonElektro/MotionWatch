@@ -219,24 +219,6 @@ def mk_card_svg(card, size=None, lang=None):
     return "".join(parts)
 
 
-def mk_card_png(card, size=None, dpmm=8):
-    """the marker and the QR code as a picture (without the texts) - for «⬇ PNG»"""
-    size = size if size in MK_SIZES else card.get("size", "a4")
-    W, H, MS, QS = MK_SIZES[size]
-    img = np.full((int(H * dpmm), int(W * dpmm)), 255, np.uint8)
-    det = mk_detector()
-    x0, y0 = int((W - MS) / 2 * dpmm), int(12 * W / 210 * dpmm)
-    if det.ok:
-        img[y0:y0 + int(MS * dpmm), x0:x0 + int(MS * dpmm)] = det.image(card["mid"], int(MS * dpmm))
-    q = cv2.imdecode(np.frombuffer(qr_png(mk_qr_payload(card), 4), np.uint8), cv2.IMREAD_GRAYSCALE)
-    if q is not None:
-        q = cv2.resize(q, (int(QS * dpmm), int(QS * dpmm)), interpolation=cv2.INTER_NEAREST)
-        qy = y0 + int((MS + 9 * W / 210) * dpmm)
-        img[qy:qy + q.shape[0], x0:x0 + q.shape[1]] = q
-    ok, buf = cv2.imencode(".png", img)
-    return buf.tobytes() if ok else b""
-
-
 def mk_print_page(card, size=None, lang=None):
     L = norm_lang(lang)
     size = size if size in MK_SIZES else card.get("size", "a4")
@@ -384,10 +366,10 @@ def mk_mark(t, obs, pos, img_w=1280):
 def mk_pause_reason():
     if not CFG.get("mk_on"):
         return "off"
-    if not mk_cards():
-        return "no cards yet"
     if not mk_detector().ok:
         return "OpenCV without ArUco"
+    if not mk_cards():
+        return "no cards yet"
     try:
         if toolmode_on():
             return "tool mode"
@@ -641,15 +623,13 @@ def smalltv_routes(app, reply, body):                        # + 639zzzzm: /api/
         if n is not None:
             return n
         c = mk_card(cid)
-        if c is None or ext not in ("svg", "png"):
+        if c is None or ext != "svg":
             return Response("not found", 404)
         size = request.args.get("size") if request.args.get("size") in MK_SIZES else None
         h = {"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"}
         if request.args.get("dl") == "1":
             h["Content-Disposition"] = f'attachment; filename="moveeye_markier_{c["mid"]}_{c["id"]}.{ext}"'
-        if ext == "svg":
-            return Response(mk_card_svg(c, size, request.args.get("lang")), mimetype="image/svg+xml", headers=h)
-        return Response(mk_card_png(c, size), mimetype="image/png", headers=h)
+        return Response(mk_card_svg(c, size, request.args.get("lang")), mimetype="image/svg+xml", headers=h)
 
     @app.route("/karten/markier")
     def mk_print():
@@ -676,27 +656,43 @@ body{font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;margin:0;paddin
 <button type="button" onclick="history.length>1?history.back():close()">{CLOSE}</button></div><div class="m">{NOTE}</div>
 <div class="cv">{CARD}</div><script>window.__mwExit = true;</script></body></html>"""
 
-MK_WORKSHOP_HTML = r"""<section class="card" id="mk-sec"><h3 style="margin:0 0 6px" id="mk-t">📍 Marker cards</h3>
-    <div class="mut" id="mk-intro" style="margin:0 0 8px"></div>
-    <div class="qk-st" id="mk-st">…</div>
-    <div class="qk-f"><label><span id="mk-l-name">Name on the card</span><input type="text" id="mk-name" maxlength="40" autocomplete="off"></label>
-      <label><span id="mk-l-size">Size</span><select id="mk-size"><option value="a4">A4</option><option value="a5">A5</option></select></label>
-      <div class="qk-row"><button type="button" id="mk-go">📍 Make the card</button></div><div class="qk-hint bad" id="mk-err"></div></div>
-    <div class="qk-list" id="mk-list" style="margin-top:10px"></div>
-  </section>
-  """
-
 MK_WORKSHOP_JS = r"""<script>
 (function () {                                            // 639zzzzm: «📍 Markier-Karten» in the card workshop
   const $i = id => document.getElementById(id);
+  // texts only this section uses (en key: de, fr, it, rm) - the rest comes from the table of the part (I18N.de / TRX)
+  const MT = {
+    "intro": ["Ein grosser Marker, den MoveEye von weit her sieht: es piepst, der Kopf folgt der Karte. Stehen bleiben, Karte 1–2 s umdrehen und wieder zeigen = die Stelle wird als «Punkt 1», «Punkt 2» … im Teach-in gespeichert (in der Runde). Nur bei Schutz Aus.",
+      "Un grand repère que MoveEye voit de loin : il bipe, la tête suit la carte. S’arrêter, retourner la carte 1–2 s et la remontrer = l’endroit est enregistré comme «Point 1», «Point 2» … dans le teach-in (dans la ronde). Seulement si la protection est arrêtée.",
+      "Un grande marcatore che MoveEye vede da lontano: emette un bip, la testa segue la carta. Fermarsi, girare la carta per 1–2 s e mostrarla di nuovo = il posto viene salvato come «Punto 1», «Punto 2» … nel teach-in (nel giro). Solo con protezione spenta.",
+      "In grond marcader che MoveEye vesa da lunsch: el pipa, il chau suonda la carta. Star airi, volver la carta 1–2 s e la mussar puspè = il lieu vegn memorisà sco «Punct 1», «Punct 2» … en il teach-in (en la runda). Mo cun protecziun deactivada.",
+      "A big marker that MoveEye sees from far away: it beeps, the head follows the card. Stand still, turn the card for 1–2 s and show it again = the place is saved as «Point 1», «Point 2» … in the teach-in (in the round). Only when the protection is off."],
+    "Size": ["Grösse", "Taille", "Dimensione", "Grondezza"],
+    "Follows the card": ["Folgt der Karte", "Suit la carte", "Segue la carta", "Suonda la carta"],
+    "points": ["Punkte", "points", "punti", "puncts"],
+    "Marker numbers": ["Marker-Nummern", "Numéros de repère", "Numeri del marcatore", "Numers dal marcader"],
+    "only this MoveEye": ["nur dieses MoveEye", "seulement ce MoveEye", "solo questo MoveEye", "mo quest MoveEye"],
+    "follows up to about": ["folgt bis etwa", "suit jusqu’à env.", "segue fino a circa", "suonda fin circa"],
+    "marks up to": ["merkt bis", "marque jusqu’à", "segna fino a", "marca fin"],
+    "made": ["erstellt", "créée", "creata", "creada"],
+    "last used": ["zuletzt", "dernière utilisation", "ultimo uso", "l’ultima giada"],
+    "End": ["Beenden", "Terminer", "Terminare", "Terminar"],
+    "Delete this card?": ["Diese Karte löschen?", "Supprimer cette carte ?", "Eliminare questa carta?", "Stizzar questa carta?"]};
+  const mt = k => { const i = {de: 0, fr: 1, it: 2, rm: 3}[L()]; const v = MT[k]; return v ? (i == null ? (v[4] || k) : v[i]) : t(k); };
+  const anchor = document.querySelector('#qk-list') && document.querySelector('#qk-list').closest("section");
+  if (!anchor || $i("mk-sec")) return;
+  const sec = document.createElement("section"); sec.className = "card"; sec.id = "mk-sec";
+  sec.innerHTML = '<h3 style="margin:0 0 6px" id="mk-t"></h3><div class="mut" id="mk-intro" style="margin:0 0 8px"></div><div class="qk-st" id="mk-st">…</div>'
+    + '<div class="qk-f"><label><span id="mk-l-name"></span><input type="text" id="mk-name" maxlength="40" autocomplete="off"></label>'
+    + '<label><span id="mk-l-size"></span><select id="mk-size"><option value="a4">A4</option><option value="a5">A5</option></select></label>'
+    + '<div class="qk-row"><button type="button" id="mk-go"></button></div><div class="qk-hint bad" id="mk-err"></div></div><div class="qk-list" id="mk-list" style="margin-top:10px"></div>';
+  anchor.parentNode.insertBefore(sec, anchor);
   const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
   const L = () => { try { return LANG || "de"; } catch (e) { return "de"; } };
   const api = async (b) => { try { const r = await fetch("/api/mk", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: L()}, b || {}))});
     return await r.json(); } catch (e) { return {ok: false, error: t("No connection to MoveEye.")}; } };
-  if (!$i("mk-sec")) return;
-  $i("mk-t").textContent = "📍 " + t("Marker cards"); $i("mk-l-name").textContent = t("Name on the card"); $i("mk-l-size").textContent = t("Size");
+  $i("mk-t").textContent = "📍 " + t("Marker cards"); $i("mk-l-name").textContent = t("Name on the card"); $i("mk-l-size").textContent = mt("Size");
   $i("mk-go").textContent = "📍 " + t("Make the card");
-  $i("mk-intro").textContent = t("A big marker that MoveEye sees from far away: it beeps, the head follows the card. Stand still, turn the card for 1–2 s and show it again = the place is saved as «Point 1», «Point 2» … in the teach-in (in the round). Only when the protection is off.");
+  $i("mk-intro").textContent = mt("intro");
   let J = null;
   async function load() {
     try { J = await (await fetch("/api/mk?lang=" + encodeURIComponent(L()), {cache: "no-store"})).json(); } catch (e) { J = null; }
@@ -705,21 +701,21 @@ MK_WORKSHOP_JS = r"""<script>
     const lab = E("label", "qk-sw"), cb = E("input"); cb.type = "checkbox"; cb.checked = !!s.on;
     cb.onchange = async () => { cb.disabled = true; try { await fetch("/api/set", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({key: "mk_on", value: cb.checked})}); } catch (e) {} cb.disabled = false; load(); };
     lab.append(cb, E("span", "", t("Marker cards (experimental)"))); b.appendChild(lab);
-    let st = !s.aruco ? "⚠ " + t("OpenCV without ArUco") : !s.on ? t("Off – nothing is read.") : s.ses ? "▶ " + t("Follows the card") + " «" + s.ses.card + "» · " + s.ses.marks + " " + t("points")
+    let st = !s.aruco ? "⚠ " + t("OpenCV without ArUco") : !s.on ? t("Off – nothing is read.") : s.ses ? "▶ " + mt("Follows the card") + " «" + s.ses.card + "» · " + s.ses.marks + " " + mt("points")
       : s.pause ? "⏸ " + t("Pause") + ": " + s.pause_t : s.armed ? "⏸ " + t("Marker card only when the protection is off") : "▶ " + t("Looking for cards");
     b.appendChild(E("b", "", st));
-    b.appendChild(E("div", "mut", t("Marker numbers") + " " + s.ids[0] + "–" + s.ids[1] + " · " + t("only this MoveEye") + (s.api ? " · " + s.api + (s.ms != null ? " (" + Math.round(s.ms) + " ms)" : "") : "")));
-    if (s.ses) { const x = E("button", "sec", "⏹ " + t("End")); x.type = "button"; x.onclick = async () => { await api({action: "end"}); load(); }; b.appendChild(x); }
+    b.appendChild(E("div", "mut", mt("Marker numbers") + " " + s.ids[0] + "–" + s.ids[1] + " · " + mt("only this MoveEye") + (s.api ? " · " + s.api + (s.ms != null ? " (" + Math.round(s.ms) + " ms)" : "") : "")));
+    if (s.ses) { const x = E("button", "sec", "⏹ " + mt("End")); x.type = "button"; x.onclick = async () => { await api({action: "end"}); load(); }; b.appendChild(x); }
     const box = $i("mk-list"); box.textContent = "";
     J.cards.forEach(c => {
       const r = E("div", "qk-c"), pv = E("div", "pv"), im = E("img"); im.src = "/api/mk/card/" + c.id + ".svg?lang=" + L(); im.alt = ""; pv.appendChild(im);
       const m = E("div"); m.append(E("b", "", c.name)); const tg = E("span", "qk-tag", "📍 " + c.mid); m.appendChild(tg);
-      m.appendChild(E("div", "w", c.size.toUpperCase() + " · " + t("follows up to about") + " " + c.range + " m · " + t("marks up to") + " " + c.mark + " m"));
-      m.appendChild(E("div", "mut", t("made") + " " + c.made + (c.last ? " · " + t("last used") + " " + c.last : "") + " · " + (c.n || 0) + " " + t("points")));
+      m.appendChild(E("div", "w", c.size.toUpperCase() + " · " + mt("follows up to about") + " " + c.range + " m · " + mt("marks up to") + " " + c.mark + " m"));
+      m.appendChild(E("div", "mut", mt("made") + " " + c.made + (c.last ? " · " + mt("last used") + " " + c.last : "") + " · " + (c.n || 0) + " " + mt("points")));
       const bb = E("div", "bb");
       const a = E("a", "btn sec", "🖨 " + t("Print")); a.href = "/karten/markier?id=" + c.id + "&lang=" + L(); bb.appendChild(a);
-      const p = E("a", "btn sec", "⬇ PNG"); p.href = "/api/mk/card/" + c.id + ".png?dl=1"; bb.appendChild(p);
-      const d = E("button", "sec", "🗑"); d.type = "button"; d.onclick = async () => { if (confirm(t("Delete this card?"))) { await api({action: "delete", id: c.id}); load(); } };
+      const p = E("a", "btn sec", "⬇ SVG"); p.href = "/api/mk/card/" + c.id + ".svg?dl=1&lang=" + L(); bb.appendChild(p);
+      const d = E("button", "sec", "🗑"); d.type = "button"; d.onclick = async () => { if (confirm(mt("Delete this card?"))) { await api({action: "delete", id: c.id}); load(); } };
       bb.appendChild(d); m.appendChild(bb); r.append(pv, m); box.appendChild(r);
     });
   }
@@ -733,8 +729,7 @@ MK_WORKSHOP_JS = r"""<script>
 })();
 </script>"""
 
-if "id=\"mk-sec\"" not in QRK_PAGE:
-    QRK_PAGE = QRK_PAGE.replace('<section class="card"><h3 id="qk-list-t"', MK_WORKSHOP_HTML + '<section class="card"><h3 id="qk-list-t"', 1)
+if "639zzzzm" not in QRK_PAGE:
     QRK_PAGE = QRK_PAGE.replace("</body>", MK_WORKSHOP_JS + "</body>", 1)
 
 # ---- the settings: Einstellungen → Kameras & Kopf → «Markier-Karten» ----------------------------------------------------------------
@@ -791,26 +786,6 @@ _HX_MK = {
         "Imprimer à 100 % sur papier mat. Suit de jour jusqu’à env. {a} m ({s}) ; plus grand = plus loin. La carte ne vaut que pour ce MoveEye.",
         "Stampare al 100 % su carta opaca. Segue di giorno fino a circa {a} m ({s}); più grande = più lontano. La carta vale solo per questo MoveEye.",
         "Stampar cun 100 % sin palpiri mat. Suonda da di fin circa {a} m ({s}); pli grond = pli lunsch. La carta vala mo per quest MoveEye."),
-    "A big marker that MoveEye sees from far away: it beeps, the head follows the card. Stand still, turn the card for 1–2 s and show it again = the place is saved as «Point 1», «Point 2» … in the teach-in (in the round). Only when the protection is off.": (
-        "Ein grosser Marker, den MoveEye von weit her sieht: es piepst, der Kopf folgt der Karte. Stehen bleiben, Karte 1–2 s umdrehen und wieder "
-        "zeigen = die Stelle wird als «Punkt 1», «Punkt 2» … im Teach-in gespeichert (in der Runde). Nur bei Schutz Aus.",
-        "Un grand repère que MoveEye voit de loin : il bipe, la tête suit la carte. S’arrêter, retourner la carte 1–2 s et la remontrer = l’endroit "
-        "est enregistré comme «Point 1», «Point 2» … dans le teach-in (dans la ronde). Seulement si la protection est arrêtée.",
-        "Un grande marcatore che MoveEye vede da lontano: emette un bip, la testa segue la carta. Fermarsi, girare la carta per 1–2 s e mostrarla di "
-        "nuovo = il posto viene salvato come «Punto 1», «Punto 2» … nel teach-in (nel giro). Solo con protezione spenta.",
-        "In grond marcader che MoveEye vesa da lunsch: el pipa, il chau suonda la carta. Star airi, volver la carta 1–2 s e la mussar puspè = il lieu "
-        "vegn memorisà sco «Punct 1», «Punct 2» … en il teach-in (en la runda). Mo cun protecziun deactivada."),
-    "Size": ("Grösse", "Taille", "Dimensione", "Grondezza"),
-    "Follows the card": ("Folgt der Karte", "Suit la carte", "Segue la carta", "Suonda la carta"),
-    "points": ("Punkte", "points", "punti", "puncts"),
-    "Marker numbers": ("Marker-Nummern", "Numéros de repère", "Numeri del marcatore", "Numers dal marcader"),
-    "only this MoveEye": ("nur dieses MoveEye", "seulement ce MoveEye", "solo questo MoveEye", "mo quest MoveEye"),
-    "follows up to about": ("folgt bis etwa", "suit jusqu’à env.", "segue fino a circa", "suonda fin circa"),
-    "marks up to": ("merkt bis", "marque jusqu’à", "segna fino a", "marca fin"),
-    "made": ("erstellt", "créée", "creata", "creada"),
-    "last used": ("zuletzt", "dernière utilisation", "ultimo uso", "l’ultima giada"),
-    "End": ("Beenden", "Terminer", "Terminare", "Terminar"),
-    "Delete this card?": ("Diese Karte löschen?", "Supprimer cette carte ?", "Eliminare questa carta?", "Stizzar questa carta?"),
     "OpenCV without ArUco": ("OpenCV ohne ArUco", "OpenCV sans ArUco", "OpenCV senza ArUco", "OpenCV senza ArUco"),
     "the head is parked": ("der Kopf ist geparkt", "la tête est parquée", "la testa è parcheggiata", "il chau è parcà"),
     "at most 10 marker cards": ("höchstens 10 Markier-Karten", "au plus 10 cartes de repérage", "al massimo 10 carte di marcatura",
@@ -892,7 +867,7 @@ def mk_selftest():
         globals()["log_event"] = lambda *a, **k: None
         globals()["sound_play"] = lambda k, *a, **kw: beeps.append(k) or (True, "")
         assert KOPF_PRIO.index("alarm") < KOPF_PRIO.index("marker") < KOPF_PRIO.index("round")
-        assert "mk_cards" in USER_SETTINGS_DENY and "/api/mk" in APPKEY_DENY_PATHS and 'id="mk-sec"' in QRK_PAGE and 'id="markierkarte"' in HELP_PAGE
+        assert "mk_cards" in USER_SETTINGS_DENY and "/api/mk" in APPKEY_DENY_PATHS and '639zzzzm' in QRK_PAGE and 'id="markierkarte"' in HELP_PAGE
         assert tr("Marker card only when the protection is off", "de") == "Markier-Karte nur bei Schutz Aus"
         assert not role_allows("family", "/api/mk", "POST", {"action": "create"}) and not role_allows("family", "/karten/markier", "GET", {})
         CFG.update(mk_cards=[], mk_dist={}, mk_on=True, armed=False, kopf_parked=False)
@@ -904,7 +879,7 @@ def mk_selftest():
         c, err = mk_create("Zelt", "a4", "selftest")
         assert c and c["mid"] == MK_IDS[0] and not err
         assert mk_qr_check(mk_qr_payload(c)) == c and mk_qr_check("MK" + c["id"] + "A" * QRK_MAC_LEN) is None
-        assert "<svg" in mk_card_svg(c) and mk_card_png(c)[:4] == b"\x89PNG"
+        assert "<svg" in mk_card_svg(c) and "<path" in mk_card_svg(c, "a5")
         img = np.full((720, 1280), 120, np.uint8)
         m = det.image(c["mid"], 120)
         img[300:420, 600:720] = 255
