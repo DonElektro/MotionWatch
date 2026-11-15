@@ -456,6 +456,9 @@ ALERT_JS = r"""
   window.mwSpeechOn = () => !!S.speak;
   window.mwSpeechSet = on => { S.speak = !!on; save(); if (on) audio(); connect(); paint(); };
   window.mwSpeechUnlock = () => { if (S.speak) audio(); };
+  window.mwSoundOn = () => !!S.on;                    // 639zzzzp: the bell menu switches the sound and opens this panel
+  window.mwSoundSet = on => { S.on = !!on; save(); if (S.on) { audio(); play("prealarm"); } connect(); paint(); };
+  window.mwSoundPanel = () => { audio(); openPop(); paint(); };
 
   // ---- settings panel ----
   let pop = null;

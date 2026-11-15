@@ -31,6 +31,7 @@ ALX = {"lock": threading.Lock(), "tok": {}, "fails": {}, "ctx": None, "hold_unti
        "g": {"sig": None, "hits": 0, "ok": False, "last_p": 0.0, "pre_t": 0.0, "hold_log": 0.0}}
 ALX_TTL = 3600                       # a button of a push message works for one hour
 ALX_ACTS = ("fa", "siren", "off")
+ALX_NAMES = {"fa": "False alarm", "siren": "Siren", "off": "Off"}     # the labels (639zzzzp adds pause / resume)
 ALX_LABELS = ("person", "animal", "nothing")
 ALX_ZOOM_N = 3                       # «What was it?»: at most 3 zoomed boxes (the largest)
 ALX_ZOOM_MAX = 0.25                  # a box over a quarter of the picture is big enough: no zoom
@@ -77,7 +78,7 @@ def alx_buttons(p, lang=None):
     base = alx_base()
     with ALX["lock"]:
         acts = list((ALX["tok"].get(tok) or {}).get("acts") or [])
-    names = {"fa": "False alarm", "siren": "Siren", "off": "Off"}
+    names = ALX_NAMES
     return [(tr(names[a], lang), f"{base}/na/{tok}/{a}", a != "siren") for a in acts if a in names]
 
 
@@ -174,7 +175,7 @@ def alx_routes(app, watch, reply, body):
         rec = [x for x in ALX["fails"].get(ip, []) if now - x < 600]
         if len(rec) >= 20:
             return sx_err(429, "keys")                   # in the own language (578)
-        names = {"fa": "False alarm", "siren": "Siren", "off": "Off"}
+        names = ALX_NAMES
         if request.method == "GET":                      # a browser (Telegram link): ask first - a link preview must not switch anything
             with ALX["lock"]:
                 e = ALX["tok"].get(tok)
