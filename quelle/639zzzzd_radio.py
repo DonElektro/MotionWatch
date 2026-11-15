@@ -29,6 +29,12 @@
 #  Favoriten  für den Zweig «★ Favoriten» (mw-favoriten, noch nicht auf main): radio_fav_items() liefert
 #             page:/radio · Schalter radio:on (POST /api/radio {"action": "toggle"}) · je Sender radio:play:<id>
 #             (POST /api/radio {"action": "play", "id": <id>}).
+#  Weiterhören (Besitzer 15.11.2026: «höre den Radio nicht mehr, sobald ich die Seite verlasse»): jede Seite von MoveEye ist eine
+#             eigene Seite - ein Seitenwechsel beendete die Radio-Seite und ihr <audio>. Spielt «📱 dieser Browser», öffnen Links /
+#             Reiter / ? die anderen Seiten in einem Rahmen (iframe) über der Radio-Seite; die Seite mit dem <audio> bleibt. Die Adresse
+#             zeigt die Seite im Rahmen, «Zurück» des Browsers und /radio im Rahmen führen zurück. 📻 im Kopf jeder Seite (links von ?)
+#             solange das Radio spielt (Browser: window.mwRadio der Radio-Seite; Lautsprecher: GET /api/radio?on=1 alle 15 s), Tippen =
+#             zur Radio-Seite. Grenze: Sperrbildschirm / Hintergrund entscheidet iOS (Media Session: Titel und Knöpfe dort).
 # Test: werkzeuge/radio_test.py (falsches Verzeichnis, lokaler Teststrom mit ICY, nie das echte Internet).
 # ----------------------------------------------------------------------------
 import socket as _rsock
@@ -1193,6 +1199,8 @@ def smalltv_routes(app, reply, body):                        # + 639zzzzd: the r
     def api_radio():
         role, perms = who_()
         if request.method == "GET":
+            if request.args.get("on"):                       # 📻 in the header of every page: only «does the loudspeaker play?»
+                return reply({"ok": True, "on": bool(RADIO["want"])})
             st = radio_state(request.args.get("lang"), role, perms)
             b = request.args.get("b") or ""
             if b and b == BR["sid"]:                         # «📱 dieser Browser» plays: keep the title reading alive
@@ -1326,6 +1334,8 @@ border:1px solid var(--line);border-radius:10px;padding:6px 10px}.ra-f button{mi
 background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:6px 10px}
 section.card h3{margin:0 0 10px}details>summary{cursor:pointer;font-weight:600;min-height:36px;display:flex;align-items:center}
 .ra-how{margin:0;padding-left:18px;font-size:13px;color:var(--mut)}.ra-how li{margin:0 0 4px}
+#ra-frame{position:fixed;top:0;left:0;width:100%;height:100%;border:0;z-index:200;background:var(--bg)}#ra-frame[hidden]{display:none}
+body.ra-fr{overflow:hidden}body.ra-fr>header,body.ra-fr>main{display:none}
 </style></head><body>
 <header>
   <h1>MoveEye</h1>
@@ -1371,6 +1381,7 @@ section.card h3{margin:0 0 10px}details>summary{cursor:pointer;font-weight:600;m
 /*COMMON*/
 /*RADIODE*/
 (async function () {
+  try { if (window.parent !== window && window.parent.mwRadio) { window.parent.mwRadio.show(); return; } } catch (e) {}   // /radio inside the frame: back to this page
   try { await initAppearance(); } catch (e) {}
   const $i = id => document.getElementById(id);
   const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
@@ -1454,7 +1465,8 @@ section.card h3{margin:0 0 10px}details>summary{cursor:pointer;font-weight:600;m
   function ms() {                                          // lock screen (iPhone / Android): title and the buttons
     if (!("mediaSession" in navigator)) return;
     try {
-      navigator.mediaSession.metadata = B.on && window.MediaMetadata ? new MediaMetadata({title: (J && J.btitle) || B.name, artist: (J && J.btitle) ? B.name : "MoveEye", album: "MoveEye · " + t("Radio")}) : null;
+      navigator.mediaSession.metadata = B.on && window.MediaMetadata ? new MediaMetadata({title: (J && J.btitle) || B.name, artist: (J && J.btitle) ? B.name : "MoveEye", album: "MoveEye · " + t("Radio"),
+        artwork: [{src: "/icon-192.png", sizes: "192x192", type: "image/png"}]}) : null;
       navigator.mediaSession.playbackState = B.on ? "playing" : "none";
       if (!msSet) {
         msSet = true;
@@ -1463,6 +1475,38 @@ section.card h3{margin:0 0 10px}details>summary{cursor:pointer;font-weight:600;m
       }
     } catch (e) {}
   }
+  // Besitzer: the radio plays on while he moves around MoveEye. Every page of MoveEye is its own page - a change of page would end this
+  // page and its <audio>. So while «📱 dieser Browser» plays, the other pages open in a frame over this page (the frame changes pages,
+  // this page with the <audio> stays); 📻 in their header (render_page below) comes back here. Browser back: also back here.
+  let fr = null;
+  const frOn = on => { document.body.classList.toggle("ra-fr", on); if (fr) fr.hidden = !on; };
+  function frGo(u) {
+    if (!fr) {
+      fr = E("iframe"); fr.id = "ra-frame"; fr.title = "MoveEye"; document.body.appendChild(fr);
+      fr.addEventListener("load", () => { try { const l = fr.contentWindow.location; if (l.pathname === "/radio" || fr.hidden) return;
+        document.title = fr.contentDocument.title; history.replaceState({ra: 1}, "", l.pathname + l.search + l.hash); } catch (e) {} });
+    }
+    if (!fr.src) fr.src = u; else try { fr.contentWindow.location.replace(u); } catch (e) { fr.src = u; }   // no extra step back
+    frOn(true); history.pushState({ra: 1}, "", u);
+  }
+  function frBack() {
+    if (!fr || fr.hidden) return;
+    frOn(false); document.title = "MoveEye – " + t("Radio"); history.pushState({}, "", "/radio");
+    try { THEME = localStorage.getItem("mw-theme") || THEME; document.documentElement.classList.toggle("sxnight", localStorage.getItem("mw-night") === "1"); applyTheme(); } catch (e) {}
+    load();
+  }
+  window.mwRadio = {br: () => W === "br" && B.on, show: frBack};
+  addEventListener("popstate", e => { if (fr) { frOn(!!(e.state && e.state.ra)); if (!fr.hidden) return; document.title = "MoveEye – " + t("Radio"); load(); } });
+  document.addEventListener("click", e => {                // capture: before ? (it goes to /help by itself) and the links
+    if (!(W === "br" && B.on) || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || !e.target.closest) return;
+    if (e.target.closest("#mwk-help")) { e.preventDefault(); e.stopImmediatePropagation(); frGo("/help"); return; }
+    const a = e.target.closest("a[href]");
+    if (!a || (a.target && a.target !== "_self") || a.hasAttribute("download")) return;
+    const u = new URL(a.href, location.href);
+    if (u.origin !== location.origin || u.pathname.startsWith("/api/")) return;
+    if (u.pathname === "/radio") { e.preventDefault(); frBack(); return; }
+    e.preventDefault(); e.stopImmediatePropagation(); frGo(u.pathname + u.search + u.hash);
+  }, true);
   function where(w) {
     if (w === W) return;
     W = w; LS.set("mw-radio-where", w);
@@ -1597,12 +1641,57 @@ if 'href="/radio"' not in MORE_PAGE and MORE_PAGE.count(_ra_anchor) == 1:
 _render_page_radio = render_page
 
 
+# 📻 in the header (Besitzer): while the radio plays (MoveEye loudspeaker or «📱 dieser Browser»), left of ?; a tap = the radio page
+RADIO_SYM_BTN = ('<a class="btn sec ic" id="mwk-radio" href="/radio" hidden><span aria-hidden="true">📻</span>'
+                 '<i class="mwr-eq" aria-hidden="true"><b></b><b></b><b></b></i></a>')
+RADIO_SYM_AT = '<button class="sec ic" type="button" id="mwk-help"'
+RADIO_SYM_JS = r"""<style>.hdr-ctl.mwk>#mwk-radio{order:0;position:relative;font-size:17px}#mwk-radio[hidden]{display:none!important}
+#mwk-radio .mwr-eq{position:absolute;right:5px;bottom:7px;display:flex;align-items:flex-end;gap:1px;height:7px}
+@media(max-width:700px){.hdr-ctl.mwk>#mwk-radio{width:34px;min-width:34px}#mwk-radio .mwr-eq{right:2px}}
+#mwk-radio .mwr-eq b{width:2px;height:100%;background:var(--grn);border-radius:1px;transform-origin:bottom;transform:scaleY(.7);animation:mwr-eq 1.8s ease-in-out infinite}
+#mwk-radio .mwr-eq b:nth-child(2){animation-delay:-.6s}#mwk-radio .mwr-eq b:nth-child(3){animation-delay:-1.2s}
+@keyframes mwr-eq{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}@media(prefers-reduced-motion:reduce){#mwk-radio .mwr-eq b{animation:none}}</style>
+<script>(function () {
+  const a = document.getElementById("mwk-radio"), TX = /*RSTX*/{};
+  if (!a || window.mwRadioSym) return; window.mwRadioSym = 1;
+  const L = () => { try { return (typeof LANG !== "undefined" && LANG) || localStorage.getItem("mw-lang") || "de"; } catch (e) { return "de"; } };
+  let P = null, pi = false; try { if (window.parent !== window && window.parent.mwRadio) P = window.parent.mwRadio; } catch (e) {}
+  const home = !P && location.pathname === "/radio";       // the radio page itself: no symbol
+  function paint() {
+    let br = false; try { br = !!(P && P.br()); } catch (e) {}
+    const lab = TX[L()] || TX.en; if (a.title !== lab) { a.title = lab; a.setAttribute("aria-label", lab); }
+    a.hidden = home || !(br || pi);
+  }
+  if (P) document.addEventListener("click", e => { const x = e.target.closest && e.target.closest('a[href="/radio"]');   // in the frame: back to the page that plays
+    if (x && !e.button && !e.metaKey && !e.ctrlKey) { e.preventDefault(); e.stopImmediatePropagation(); P.show(); } }, true);
+  async function poll() { if (home || document.hidden) return;
+    try { const j = await (await fetch("/api/radio?on=1", {cache: "no-store"})).json(); pi = !!(j && j.on); } catch (e) {} paint(); }
+  paint(); setTimeout(poll, 300); setInterval(poll, 15000); if (P) setInterval(paint, 1000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) poll(); });
+})();</script>"""
+if isinstance(KOPF_JS, str) and KOPF_JS.count('const KNOWN = new Set(["mwk-help", ') == 1:     # the header keeps 📻 (not into ☰)
+    KOPF_JS = KOPF_JS.replace('const KNOWN = new Set(["mwk-help", ', 'const KNOWN = new Set(["mwk-radio", "mwk-help", ', 1)
+
+
+def radio_sym(out):
+    """📻 into the header of a page with the one header (639t), once"""
+    if 'id="mwk-radio"' in out or out.count(RADIO_SYM_AT) != 1 or "</body>" not in out or "mwk-radio" not in RADIO_SYM_JS:   # no data ZIP: no 📻
+        return out
+    k = "Radio is playing - to the radio"
+    tx = {L: (DE if L == "de" else TRX.get(L, {})).get(k) or k for L in ("de", "fr", "it", "rm")}
+    tx["en"] = k.replace(" - ", " – ")
+    js = RADIO_SYM_JS.replace("/*RSTX*/{}", json.dumps(tx, ensure_ascii=False).replace("</", "<\\/"), 1)
+    out = out.replace(RADIO_SYM_AT, RADIO_SYM_BTN + RADIO_SYM_AT, 1)
+    i = out.rfind("</body>")
+    return out[:i] + js + out[i:]
+
+
 # wraps: render_page
-def render_page(page, active):                               # + 639zzzzd: the German texts of the radio page
+def render_page(page, active):                               # + 639zzzzd: the German texts of the radio page, 📻 in the header
     out = _render_page_radio(page, active)
     if "/*RADIODE*/" in out:
         out = out.replace("/*RADIODE*/", "Object.assign(I18N.de, " + json.dumps(_RADIO_DE, ensure_ascii=False).replace("</", "<\\/") + ");", 1)
-    return out
+    return radio_sym(out)
 
 
 # ---- texts (English key: Deutsch, français, italiano, rumantsch) -------------------------------------------------------------------
@@ -1643,6 +1732,7 @@ _HX_RADIO = {
                                                     "questo stream (HLS) non può passare da MoveEye", "quest stream (HLS) na po betg ir tras MoveEye"),
     "too many listeners through MoveEye (at most 2)": ("zu viele Zuhörer über MoveEye (höchstens 2)", "trop d’auditeurs via MoveEye (2 au plus)",
                                                        "troppi ascoltatori tramite MoveEye (al massimo 2)", "memia blers auditurs via MoveEye (maximalmain 2)"),
+    "Radio is playing - to the radio": ("Radio läuft – zum Radio", "La radio joue – vers la radio", "La radio è accesa – alla radio", "Il radio suna – al radio"),
     "Radio on / off": ("Radio ein / aus", "Radio marche / arrêt", "Radio acceso / spento", "Radio en / ora"),
     "Play": ("Abspielen", "Écouter", "Ascolta", "Tadlar"),
     "Volume": ("Lautstärke", "Volume", "Volume", "Volumen"),
@@ -1879,6 +1969,9 @@ def radio_selftest():
         assert radio_addr_kind(a_) is None, "SSRF: " + a_
     assert all(radio_addr_kind(a_, True) is None for a_ in ("127.0.0.1", "169.254.169.254", "100.64.0.1", "fe80::1", "::1")), "never local / metadata"
     assert [radio_addr_kind(a_, True) for a_ in ("10.1.2.3", "192.168.1.5", "fd00::1")] == ["lan"] * 3 and radio_addr_kind("1.1.1.1") == "global"
+    h_ = render_page(MORE_PAGE, "more")
+    assert h_.count('id="mwk-radio"') == 1 and "/api/radio?on=1" in h_ and DE.get("Radio is playing - to the radio", "") in h_, "📻 in the header"
+    assert 'aria-hidden="true">📻' in render_page(RADIO_PAGE, "more") and "window.mwRadio" in RADIO_PAGE, "the radio plays on over the other pages (frame)"
     assert role_allows("family", "/radio/stream/pilatus", "GET", {}) and not role_allows("view", "/radio/stream/pilatus", "GET", {}), "the proxy: the right to play"
     assert radio_br_proxy("../x")[0] == 404 and radio_br_proxy("nichtda")[0] == 404 and RADIO_BR_MAX == 2, "the proxy: only stations of the list"
     return "Pilatus by name (no guessed address), addresses, play lists, ICY titles, priority / pause, rights, wake-up sound, texts, back-off"
