@@ -28,8 +28,8 @@ _HX_PUSH = {
     'with picture': ('mit', 'avec', 'con', 'cun'),
     'small picture': ('klein', 'petite', 'piccola', 'pitschen'),
     'without picture': ('ohne', 'sans', 'senza', 'senza'),
-    'Pause between alarms (s)': ('Pause zwischen Alarmen (s)', 'Pause entre les alarmes (s)', 'Pausa tra gli allarmi (s)', 'Pausa tranter alarms (s)'),
-    'Pause between pre-alarms (s)': ('Pause zwischen Voralarmen (s)', 'Pause entre les pré-alarmes (s)', 'Pausa tra i preallarmi (s)', 'Pausa tranter prealarms (s)'),
+    'Gap between alarms (s)': ('Abstand zwischen Alarmen (s)', 'Écart entre les alarmes (s)', 'Intervallo tra gli allarmi (s)', 'Distanza tranter alarms (s)'),   # 639zzzzp: «Pause» is the push pause now
+    'Gap between pre-alarms (s)': ('Abstand zwischen Voralarmen (s)', 'Écart entre les pré-alarmes (s)', 'Intervallo tra i preallarmi (s)', 'Distanza tranter prealarms (s)'),
     'Quiet hours (no alarm push)': ('Ruhezeiten (kein Alarm-Push)', 'Heures calmes (pas de push d’alarme)', 'Ore di quiete (nessun push d’allarme)', 'Uras da paus (nagin push d’alarm)'),
     'Report persons anyway': ('Personen trotzdem melden', 'Signaler quand même les personnes', 'Segnalare comunque le persone', 'Annunziar tuttina persunas'),
     'What is reported': ('Was gemeldet wird', 'Ce qui est signalé', 'Cosa viene segnalato', 'Tge che vegn annunzià'),

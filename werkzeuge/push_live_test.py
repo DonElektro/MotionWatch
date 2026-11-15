@@ -104,7 +104,7 @@ def main():
         ok(TOPIC not in where, "%s: Ziel im Protokoll ohne Thema (%s)" % (ev, where))
         if ev in ("person", "prealarm", "warm", "noise"):
             labs = [x.split(",")[1].strip() for x in acts]
-            ok(labs == [LIVE, "Fehlalarm", "Sirene"], "%s: Live · Fehlalarm · Sirene (%s)" % (ev, labs))
+            ok(labs == [LIVE, "Fehlalarm", "🔕 1 h pausieren"], "%s: Live · Fehlalarm · Pause (639zzzzp: statt Sirene) (%s)" % (ev, labs))
         if ev == "tamper":
             labs = [x.split(",")[1].strip() for x in acts]
             ok(labs == [LIVE, "Fehlalarm", "Aus"], "tamper: Live · Fehlalarm · Aus (%s)" % labs)
@@ -126,7 +126,7 @@ def main():
     print("Telegram")
     mk = ns["alx_telegram_markup"](P("person"))
     ok(mk and mk["inline_keyboard"][0] == [{"text": LIVE, "url": BASE}], "erste Zeile = %s (%s)" % (LIVE, mk and mk["inline_keyboard"][0]))
-    ok(len(mk["inline_keyboard"]) == 2 and len(mk["inline_keyboard"][1]) == 3, "die drei anderen Knöpfe bleiben")
+    ok(len(mk["inline_keyboard"]) == 3 and len(mk["inline_keyboard"][1]) == 3, "die drei anderen Knöpfe bleiben (+ Zeile «Pause», 639zzzzp)")
     ok(ns["alx_telegram_markup"](P("info")) is None, "Info: keine Knöpfe")
     allsent.append(({}, json.dumps(mk, ensure_ascii=False).encode()))
 

@@ -536,7 +536,11 @@ def teil_b(datei, web, bilder, tour=""):
                 ok(pg.locator("#m-karte").is_visible() and "Karte" in pg.inner_text("#m-karte"), f"{name}: «Mehr» zeigt die Kachel «🗺 Karte»")
                 if mob and not tour:
                     pg.locator("#m-karte").scroll_into_view_if_needed(); pg.screenshot(path=os.path.join(bilder, "mehr_kachel_390.png"))
-                tap("#m-karte"); pg.wait_for_url("**/karte", timeout=15000)
+                tap("#m-karte")                                       # 4.5.0: «Mitte» = /karte as a window (frame) over «Mehr»
+                pg.wait_for_function("() => location.pathname === '/karte' || [...document.querySelectorAll('.fx-win iframe')].some(f => (f.getAttribute('src') || '').startsWith('/karte'))", timeout=15000)
+                if not pg.url.split("?")[0].endswith("/karte"):
+                    ok(True, f"{name}: «🗺 Karte» öffnet als Fenster über «Mehr»")
+                    pg.goto(base + "/karte")                             # the rest as the page itself (the same page as in the window)
                 pg.wait_for_function("() => window.KQMAP && KQMAP.loaded()", timeout=60000)
                 pg.wait_for_selector("#kt:not([hidden]) #kt-new", timeout=15000)
                 ok(pg.inner_text("#kt-h") == "Touren" and pg.locator("#kt-imp").is_visible() and pg.evaluate(breit), f"{name}: /karte mit dem Kasten «Touren», nichts ragt hinaus")

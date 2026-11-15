@@ -121,7 +121,11 @@ def teil_web(pg, base, a):
     pruef(not s[0] and s[1] and not s[2], "«‹ Zurück»: wieder die Liste, das Thema an seinem Platz (%s)" % s)
     pg.locator('#ms-list .mi[data-ms="sec:Patrol"]').click(); pg.wait_for_timeout(500); pg.go_back(); pg.wait_for_timeout(700)
     pruef(not pg.evaluate("() => document.body.classList.contains('ms-sub')"), "Browser-Zurück: wieder die Liste")
-    laden(pg, base + "/settings?open=sec:Updates"); pg.wait_for_timeout(1500)
+    laden(pg, base + "/settings?open=sec:Updates")
+    try:                                                       # 4.4.0: «Mitte» opens it as a window with an animation - wait for it
+        pg.wait_for_function("() => document.body.classList.contains('ms-sub') && (document.querySelector('#ms-bar b') || {}).textContent === 'Updates'", timeout=6000)
+    except Exception:
+        pass
     pruef(pg.evaluate("() => document.body.classList.contains('ms-sub') && document.querySelector('#ms-bar b').textContent === 'Updates'"),
           "alter Link ?open=sec:Updates öffnet die Unterseite")
     laden(pg, base + "/settings#s=" + "sec%3APatrol")
