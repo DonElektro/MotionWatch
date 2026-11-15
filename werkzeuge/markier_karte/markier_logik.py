@@ -52,7 +52,8 @@ class MkDetector:
         p.polygonalApproxAccuracyRate = 0.05
         p.perspectiveRemovePixelPerCell = 8
         p.errorCorrectionRate = 0.6
-        p.minMarkerDistanceRate = 0.01    # OpenCV 4.6: else the white paper edge (narrower than a cell) wins and nothing is read
+        if not hasattr(a, "ArucoDetector"):   # OpenCV 4.6: else the white paper edge (narrower than a cell) wins and nothing is read;
+            p.minMarkerDistanceRate = 0.01   # 4.7+: not needed, and with it the corners shrink and jitter
         try:
             p.cornerRefinementMethod = a.CORNER_REFINE_SUBPIX
         except AttributeError:

@@ -68,13 +68,14 @@ class MkDetector:
             return
         self.dic = a.getPredefinedDictionary(a.DICT_4X4_50)
         p = a.DetectorParameters() if hasattr(a, "ArucoDetector") else a.DetectorParameters_create()
-        # minMarkerDistanceRate: OpenCV 4.6 (Pi OS Bookworm) keeps the white edge of the paper as the candidate when the edge is
-        # narrower than one cell and then reads nothing (measured: the printed card has a margin of half a cell)
+        # minMarkerDistanceRate only for the old API (OpenCV 4.6, Pi OS Bookworm): it keeps the white edge of the paper (half a cell)
+        # as the candidate and reads nothing. OpenCV 4.7+ reads fine without it, and with it the corners shrink and jitter (measured)
         for k, v in (("minMarkerPerimeterRate", 0.012), ("adaptiveThreshWinSizeMin", 3), ("adaptiveThreshWinSizeMax", 23),
                      ("adaptiveThreshWinSizeStep", 10), ("polygonalApproxAccuracyRate", 0.05), ("perspectiveRemovePixelPerCell", 8),
-                     ("errorCorrectionRate", 0.6), ("minMarkerDistanceRate", 0.01), ("cornerRefinementMethod", getattr(a, "CORNER_REFINE_SUBPIX", 1))):
+                     ("errorCorrectionRate", 0.6), ("minMarkerDistanceRate", None if hasattr(a, "ArucoDetector") else 0.01), ("cornerRefinementMethod", getattr(a, "CORNER_REFINE_SUBPIX", 1))):
             try:
-                setattr(p, k, v)
+                if v is not None:
+                    setattr(p, k, v)
             except (AttributeError, TypeError, cv2.error):
                 pass
         if hasattr(a, "ArucoDetector"):
