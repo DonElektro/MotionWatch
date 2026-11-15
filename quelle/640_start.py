@@ -25,8 +25,12 @@ if __name__ == "__main__":
                     help="quick checks without camera (with FOLDER: also the signatures in FOLDER/versions.json) and exit")
     ap.add_argument("--helper", action="store_true", help="also work as AI helper for a Raspberry Pi in the network (port 5057, pairing code)")
     ap.add_argument("--demo", action="store_true", help="demo: drawn scene with a person / animals walking by, own settings folder, no changes to the computer")
+    ap.add_argument("--host-modus", action="store_true", help="demo on a web host (639zzzzw, started by demo_start.py): --demo --headless, only 127.0.0.1, every lock on")
+    ap.add_argument("--url-prefix", default=None, help="with --host-modus: path prefix of the page at the host (default /demo, '' = none)")
     ap.add_argument("--paused-until", type=float, default=None, help=argparse.SUPPRESS)   # used by "pause the program"
     a = ap.parse_args()
+    if a.host_modus:                                   # 639zzzzw: always the demo, never the window, never the network
+        a.demo = a.headless = True; a.helper = False; a.bind = "127.0.0.1"
     if a.make_manifest:
         sys.exit(make_manifest(a.make_manifest, a.base_url, a.sign_key))
     if a.self_test is not None:
@@ -42,6 +46,8 @@ if __name__ == "__main__":
     if a.demo:
         DEMO["on"] = True
         set_data_dir(a.config or os.path.join(tempfile.gettempdir(), "motionwatch-demo"))
+        if a.host_modus:
+            host_mode_start(a)                         # 639zzzzw: the locks before any thread starts
     else:
         set_data_dir(a.config or DATA_DIR)
     if not a.demo:
@@ -82,6 +88,7 @@ if __name__ == "__main__":
                    device_name=CFG["device_name"] or "Demo")
         a.source = None; a.cam = None
         print("DEMO MODE - settings in " + DATA_DIR)
+        host_after_settings()                          # 639zzzzw: host mode only (fixed settings, door for the web simulator)
     if not DEMO["on"] and not instance_lock(CFG["web_port"]):          # only one MoveEye at a time
         if a.boot or not instance_takeover(CFG["web_port"], not a.headless):
             sys.exit(0)
