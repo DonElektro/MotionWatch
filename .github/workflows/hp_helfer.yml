@@ -1,0 +1,273 @@
+# HP-Testweg (Helfer): Helfer lassen ihre Tests auf dem HP (self-hosted Runner «moveeye-hp») rechnen statt im lokalen
+# Container (Besitzer, 15.11.2026, verlängert: nur bis Freitag 20.11.2026 17:00 Schweizer Zeit, nie zwei Jobs gleichzeitig).
+#   git push origin HEAD:hp-test/<name>                         # der Zweig muss main mit dieser Datei enthalten
+#   werkzeuge/ci_status.sh hp-test/<name> --warten --fehler     # Ergebnis abwarten (Exit 0 = grün)
+# Was läuft: hp_test.txt im Wurzelordner des Zweigs (eine Zeile pro Befehl, nur erlaubte Formen - werkzeuge/hp_helfer.py),
+# sonst die Gruppen wie im CI (werkzeuge/ci_auswahl.py: basis + was die Änderung betrifft). CLAUDE.md «HP-Testweg».
+# Ablauf (zwei Läufe): Push auf hp-test/** -> Job «Weiterreichen» (GitHub-Rechner) startet diesen Workflow VOM STAND main
+# (workflow_dispatch, zweig + sha). Nur so nimmt der HP den Job an (job_start.sh: nur refs/heads/main), und nur so stammen
+# Workflow, Prüfung der Testliste und Aufräumen sicher von main - nie aus dem gepushten Zweig.
+# Sicherheit (öffentliches Repository): nie bei pull_request, nicht in Forks; contents: read (nur «Weiterreichen» und
+# «Wächter» dürfen Läufe starten / abbrechen, beide auf GitHubs Rechnern); keine Geheimnisse, kein Signierschlüssel;
+# auf dem HP ohne Token im Checkout (persist-credentials: false); Reste-Prozesse und Arbeitsordner werden nach dem Job weggeräumt.
+# Nie zwei Jobs auf dem HP: es gibt genau einen Runner «moveeye-hp» (ein Job aufs Mal). Bewusst KEINE gemeinsame
+# concurrency-Gruppe mit den anderen HP-Workflows: GitHub hält pro Gruppe nur EINEN wartenden Lauf und bricht ältere wartende
+# ab (siehe dauer_hp.yml) - eine gemeinsame Gruppe würde Aufträge still verwerfen. Pro Zweig ersetzt ein neuer Push den noch
+# wartenden Lauf desselben Zweigs. Dauerrechnen (HP) beginnt nichts, solange ein HP-Job wartet (dessen Vorprüfung).
+name: HP-Testweg (Helfer)
+run-name: "HP-Test ${{ github.event_name == 'workflow_dispatch' && format('{0} @{1}', github.event.inputs.zweig, github.event.inputs.sha) || format('{0} (weiterreichen)', github.ref_name) }}"
+on:
+  push:
+    branches: ["hp-test/**"]
+  workflow_dispatch:
+    inputs:
+      zweig:
+        description: "hp-test/<name> (wird sonst vom Push-Job eingetragen)"
+        required: true
+      sha:
+        description: "Commit (40 Zeichen) - muss der Kopf des Zweigs sein"
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: hp-helfer-${{ github.event_name }}-${{ github.event.inputs.zweig || github.ref_name }}
+  cancel-in-progress: false
+env:
+  # Erlaubtes Fenster: danach hört jeder Job sofort auf, ohne etwas zu rechnen. Verlängern nur mit Erlaubnis des Besitzers.
+  HP_HELFER_BIS: "2026-11-20T17:00+01:00"
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  # ---------------------------------------------------------------- Push auf hp-test/** (Workflow-Datei aus dem Zweig)
+  weiterreichen:
+    name: Weiterreichen an den HP (Lauf vom Stand main)
+    if: github.repository_owner == 'DonElektro' && github.event_name == 'push' && startsWith(github.ref, 'refs/heads/hp-test/') && !github.event.deleted
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: write                    # workflow_dispatch of this workflow on main
+    steps:
+      - name: Prüfen und weiterreichen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          R: ${{ github.repository }}
+          ZWEIG: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+        run: |
+          fehler() { echo "::error::$*"; echo "### ⛔ $*" >> "$GITHUB_STEP_SUMMARY"; exit 1; }
+          [[ "$ZWEIG" =~ ^hp-test/[A-Za-z0-9._-]{1,60}$ ]] || fehler "Zweigname: nur hp-test/<name> (A-Z a-z 0-9 . _ -, höchstens 60 Zeichen)"
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || fehler "Commit unlesbar"
+          python3 - "$HP_HELFER_BIS" <<'PY' || fehler "HP-Testweg geschlossen (nur bis $HP_HELFER_BIS) - nichts gestartet"
+          import datetime, sys
+          bis = datetime.datetime.strptime(sys.argv[1], "%Y-%m-%dT%H:%M%z")
+          sys.exit(0 if datetime.datetime.now(datetime.timezone.utc) < bis - datetime.timedelta(minutes=3) else 1)
+          PY
+          gh workflow run hp_helfer.yml -R "$R" --ref main -f zweig="$ZWEIG" -f sha="$SHA" \
+            || fehler "Start auf main ging nicht (ist hp_helfer.yml schon auf main?)"
+          echo "### Weitergereicht: «HP-Test $ZWEIG @$SHA» (Workflow vom Stand main)" >> "$GITHUB_STEP_SUMMARY"
+          echo "Ergebnis: \`werkzeuge/ci_status.sh $ZWEIG --warten --fehler\`" >> "$GITHUB_STEP_SUMMARY"
+
+  # ---------------------------------------------------------------- Lauf vom Stand main (workflow_dispatch)
+  vorpruefung:
+    name: Vorprüfung (Fenster, Zweig, Testliste)
+    if: github.repository_owner == 'DonElektro' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      los: ${{ steps.p.outputs.los }}
+      befehle: ${{ steps.p.outputs.befehle }}
+      godot: ${{ steps.p.outputs.godot }}
+      name: ${{ steps.p.outputs.name }}
+    steps:
+      - name: Werkzeug (Stand main)
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: werkzeuge
+          persist-credentials: false
+      - name: Prüfen
+        id: p
+        env:
+          GH_TOKEN: ${{ github.token }}
+          R: ${{ github.repository }}
+          ZWEIG: ${{ github.event.inputs.zweig }}
+          SHA: ${{ github.event.inputs.sha }}
+        run: |
+          fehler() { echo "::error::$*"; echo "### ⛔ $*" >> "$GITHUB_STEP_SUMMARY"; exit 1; }
+          echo "los=0" >> "$GITHUB_OUTPUT"
+          [[ "$ZWEIG" =~ ^hp-test/[A-Za-z0-9._-]{1,60}$ ]] || fehler "zweig: nur hp-test/<name>"
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || fehler "sha: 40 Zeichen 0-9a-f"
+          python3 werkzeuge/hp_helfer.py frist --bis "$HP_HELFER_BIS" || exit 1
+          # nur der Kopf eines Zweigs DIESES Repositorys (nie ein Commit aus einem Fork über seine Nummer)
+          kopf=$(git ls-remote "https://github.com/$R.git" "refs/heads/$ZWEIG" | cut -f1)
+          [ -n "$kopf" ] || fehler "Zweig $ZWEIG gibt es nicht (mehr)"
+          if [ "$kopf" != "$SHA" ]; then
+            echo "::notice::$ZWEIG steht inzwischen auf ${kopf:0:7} - dieser Lauf (${SHA:0:7}) ist überholt, der neuere Push rechnet"
+            echo "### ⏭️ überholt: $ZWEIG steht inzwischen auf ${kopf:0:7}" >> "$GITHUB_STEP_SUMMARY"; exit 0
+          fi
+          # Testliste: hp_test.txt des Zweigs, sonst die Gruppen wie im CI
+          if gh api "repos/$R/contents/hp_test.txt?ref=$SHA" -H "Accept: application/vnd.github.raw" > "$RUNNER_TEMP/hp_test.txt" 2> "$RUNNER_TEMP/gh.err"; then
+            python3 werkzeuge/hp_helfer.py plan --datei "$RUNNER_TEMP/hp_test.txt" > "$RUNNER_TEMP/plan.json" || exit 1
+          elif grep -q "HTTP 404" "$RUNNER_TEMP/gh.err"; then
+            GITHUB_REF="refs/heads/$ZWEIG" GITHUB_SHA="$SHA" GITHUB_EVENT_NAME=push CI_ALLES=false CI_PROBE="" \
+              GITHUB_OUTPUT="$RUNNER_TEMP/auswahl.txt" python3 werkzeuge/ci_auswahl.py --auswahl > /dev/null
+            python3 werkzeuge/hp_helfer.py plan --auswahl "$RUNNER_TEMP/auswahl.txt" > "$RUNNER_TEMP/plan.json"
+          else
+            cat "$RUNNER_TEMP/gh.err"; fehler "hp_test.txt nicht lesbar (GitHub)"
+          fi
+          python3 - "$RUNNER_TEMP/plan.json" "$ZWEIG" "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY" <<'PY'
+          import json, sys
+          p = json.load(open(sys.argv[1]))
+          with open(sys.argv[3], "a") as f:
+              f.write("befehle=%s\n" % json.dumps(p["befehle"], separators=(",", ":")))
+              f.write("godot=%s\n" % ("1" if p["godot"] else "0"))
+              f.write("name=%s\n" % sys.argv[2].split("/", 1)[1])     # for the artifact name (no «/»)
+          with open(sys.argv[4], "a") as f:
+              f.write("### HP-Test %s – %s\n\n" % (sys.argv[2], p["quelle"]) + "\n".join("- `%s`" % b for b in p["befehle"]) + "\n\n")
+          PY
+          echo "los=1" >> "$GITHUB_OUTPUT"
+
+  test:
+    name: Tests auf dem HP
+    needs: vorpruefung
+    if: github.repository_owner == 'DonElektro' && github.ref == 'refs/heads/main' && needs.vorpruefung.outputs.los == '1'
+    runs-on: [self-hosted, moveeye-hp]
+    timeout-minutes: 60
+    env:
+      BEFEHLE: ${{ needs.vorpruefung.outputs.befehle }}
+      GODOT_NOETIG: ${{ needs.vorpruefung.outputs.godot }}
+      SHA: ${{ github.event.inputs.sha }}
+    steps:
+      - name: Werkzeug (Stand main)
+        uses: actions/checkout@v4
+        with:
+          path: werkzeug
+          sparse-checkout: |
+            werkzeuge/hp_helfer.py
+            werkzeuge/ci_pakete.txt
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - name: Zeitfenster (bis ${{ env.HP_HELFER_BIS }})
+        run: python3 werkzeug/werkzeuge/hp_helfer.py frist --bis "$HP_HELFER_BIS" --mindestens 5
+      - name: Stand des Zweigs
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.sha }}
+          path: stand
+          persist-credentials: false
+      - name: Umgebung (Python + Chromium im Zwischenspeicher des HP, Platz prüfen)
+        timeout-minutes: 20
+        run: |
+          fehler() { echo "::error::$*"; echo "### ⛔ $*" >> "$GITHUB_STEP_SUMMARY"; exit 1; }
+          RH="${MW_RUNNER_HOME:-$HOME}"; C="$RH/cache/hp_helfer"; mkdir -p "$C"
+          T="$RUNNER_TEMP/hp_helfer"; rm -rf "$T"; mkdir -p "$T/tmp" "$T/home" "$T/ergebnis"
+          frei_mb() { df -Pm "$1" | awk 'NR==2 {print $4}'; }
+          echo "$(nproc) Kerne · $(free -m | awk '/^Mem/ {print $7 " MB frei von " $2}') · Platz Cache $(frei_mb "$C") MB · Platz Temp $(frei_mb "$RUNNER_TEMP") MB · Cache hp_helfer $(du -sm "$C" | cut -f1) MB"
+          [ "$(frei_mb "$RUNNER_TEMP")" -ge 2000 ] || fehler "Weniger als 2 GB frei auf dem HP - kein Test (Platz für Dauerrechnen bleibt)"
+          # eigene venv nur für den HP-Testweg (Pakete wie die Web-Jobs im CI, Liste vom Stand main), Chromium daneben
+          H=$(sha256sum werkzeug/werkzeuge/ci_pakete.txt | cut -c1-16)
+          if [ "$(cat "$C/fertig" 2>/dev/null)" != "$H" ] || [ ! -x "$C/venv/bin/python3" ]; then
+            [ "$(frei_mb "$C")" -ge 4000 ] || fehler "Weniger als 4 GB frei - die Test-Umgebung (etwa 1 GB) wird nicht angelegt"
+            rm -rf "$C/venv" "$C/ms-playwright" "$C/fertig"
+            python3 -m venv "$C/venv" || fehler "python3 -m venv geht nicht"
+            "$C/venv/bin/python3" -m pip install -q --no-cache-dir --upgrade pip > /dev/null || true
+            if ! "$C/venv/bin/python3" -m pip install -q --no-cache-dir -r werkzeug/werkzeuge/ci_pakete.txt; then
+              echo "::warning::nicht alle Pakete auf einmal - einzeln"
+              grep -vE '^\s*(#|$)' werkzeug/werkzeuge/ci_pakete.txt | while read -r p; do
+                "$C/venv/bin/python3" -m pip install -q --no-cache-dir "$p" || echo "::warning::Paket $p fehlt auf dem HP"; done
+            fi
+            PLAYWRIGHT_BROWSERS_PATH="$C/ms-playwright" "$C/venv/bin/python3" -m playwright install chromium \
+              || echo "::warning::Chromium nicht installiert - Browser-Tests werden rot"
+            echo "$H" > "$C/fertig"
+          fi
+          echo "$C/venv/bin" >> "$GITHUB_PATH"           # «python3» in werkzeuge/ci_tests.txt = this venv
+          { echo "VENV=$C/venv"; echo "PLAYWRIGHT_BROWSERS_PATH=$C/ms-playwright"
+            echo "T=$T"; echo "TMPDIR=$T/tmp"; echo "HELFER_HOME=$T/home"; echo "CACHE=$RH/cache"; } >> "$GITHUB_ENV"
+          # was auf dem HP fehlt, wird rot - hier steht es vorher
+          w=""; for b in node ffmpeg Xvfb; do command -v "$b" > /dev/null || w="$w $b"; done
+          [ -z "$w" ] || echo "::warning::auf dem HP fehlt:$w (Tests, die das brauchen, werden rot)"
+          PLAYWRIGHT_BROWSERS_PATH="$C/ms-playwright" timeout 60 "$C/venv/bin/python3" -c "
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p: b = p.chromium.launch(); b.close(); print('Chromium startet')" \
+            || echo "::warning::Chromium startet auf dem HP nicht (Systembibliotheken? am HP: sudo python3 -m playwright install-deps chromium)"
+      - name: Godot 4.3 (nur für godot-Zeilen, eigener Zwischenspeicher des HP-Testwegs)
+        if: env.GODOT_NOETIG == '1'
+        timeout-minutes: 20
+        run: |
+          # eigener Ordner (nicht $CACHE/godot der main-Workflows erkennung_hp / tiere_fps_hp): Helfer-Code aus dem Zweig
+          # kann diese Datei ändern - sie darf nie in Läufe vom Stand main gelangen
+          G="$CACHE/hp_helfer/godot/Godot_v4.3-stable_linux.x86_64"
+          if [ ! -x "$G" ]; then
+            mkdir -p "$CACHE/hp_helfer/godot" && cd "$CACHE/hp_helfer/godot"
+            curl -fsSL --retry 3 -o g.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+            unzip -q -o g.zip && rm g.zip && chmod +x Godot_v4.3-stable_linux.x86_64
+            cd "$GITHUB_WORKSPACE"
+          fi
+          echo "GODOT=$G" >> "$GITHUB_ENV"
+          HOME="$HELFER_HOME" timeout 900 "$G" --headless --import --path stand/simulator3d > "$T/ergebnis/godot_import.log" 2>&1 || true
+          tail -3 "$T/ergebnis/godot_import.log"
+      - name: Tests (${{ github.event.inputs.zweig }})
+        run: |
+          HOME="$HELFER_HOME" python3 werkzeug/werkzeuge/hp_helfer.py laufen --befehle "$BEFEHLE" --stand stand \
+            --aus "$T/ergebnis" --bis "$HP_HELFER_BIS" --python "$VENV/bin/python3" --godot "${GODOT:-}" \
+            --max-min 50 --marke "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+      - name: Aufräumen (Reste-Prozesse dieses Jobs, Bilder einsammeln)
+        if: always()
+        run: |
+          [ -n "${T:-}" ] || exit 0
+          python3 werkzeug/werkzeuge/hp_helfer.py aufraeumen --marke "$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --pfad "$T/" \
+            --bilder-aus "$T/tmp" "$T/home" stand --bilder-nach "$T/ergebnis/bilder" || true
+          echo "Stand: \`${SHA:0:7}\` · Protokolle und Bilder: Artefakt «hp-test-${{ needs.vorpruefung.outputs.name }}-${{ github.run_number }}»" >> "$GITHUB_STEP_SUMMARY"
+      - name: Ergebnis als Artefakt
+        if: always() && env.T != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: hp-test-${{ needs.vorpruefung.outputs.name }}-${{ github.run_number }}
+          path: ${{ env.T }}/ergebnis
+          retention-days: 7
+          if-no-files-found: ignore
+      - name: Arbeitsordner leeren
+        if: always()
+        run: |
+          [ -n "${T:-}" ] && [ -d "$T" ] && rm -rf -- "$T"
+          rm -rf -- "$GITHUB_WORKSPACE/stand" "$GITHUB_WORKSPACE/werkzeug"
+          echo "Platz: $(df -h "${MW_RUNNER_HOME:-$HOME}" | awk 'NR==2 {print $4}') frei"
+
+  # Wächter (GitHub-Rechner): übernimmt der HP den Job nicht (aus, offline) oder ist das Fenster vorbei, bevor er drankommt,
+  # wird der Lauf abgebrochen - sonst bliebe er bis zu 24 Std. in der Warteschlange (und hielte Dauerrechnen auf).
+  waechter:
+    name: Wächter (HP übernimmt? Fenster offen?)
+    needs: vorpruefung
+    if: github.repository_owner == 'DonElektro' && needs.vorpruefung.outputs.los == '1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 600
+    permissions:
+      actions: write
+    steps:
+      - name: Auf den HP warten
+        env:
+          GH_TOKEN: ${{ github.token }}
+          R: ${{ github.repository }}
+          RUN: ${{ github.run_id }}
+        run: |
+          bis=$(date -d "$HP_HELFER_BIS" +%s) || { echo "::error::HP_HELFER_BIS unlesbar"; exit 1; }
+          frist=$(( $(date +%s) + 20 * 60 ))
+          abbrechen() { echo "::error::$*"; echo "### ⚠️ $*" >> "$GITHUB_STEP_SUMMARY"; gh api -X POST "repos/$R/actions/runs/$RUN/cancel" > /dev/null || true; exit 1; }
+          while :; do
+            st=$(gh api "repos/$R/actions/runs/$RUN/jobs" --jq '.jobs[] | select(.name == "Tests auf dem HP") | .status' 2>/dev/null | head -n 1 || true)
+            case "$st" in in_progress|completed) echo "Der HP hat den Job übernommen ($st)."; exit 0 ;; esac
+            [ "$(date +%s)" -lt "$bis" ] || abbrechen "Fenster vorbei ($HP_HELFER_BIS), bevor der HP frei wurde - Lauf abgebrochen, nichts gerechnet."
+            besetzt=""
+            for id in $(gh api "repos/$R/actions/runs?status=in_progress&per_page=30" --jq '.workflow_runs[].id' 2>/dev/null || true); do
+              [ "$id" = "$RUN" ] && continue
+              besetzt=$(gh api "repos/$R/actions/runs/$id/jobs" --jq '.jobs[] | select(.status == "in_progress") | select(.labels | index("moveeye-hp")) | .name' 2>/dev/null | head -n 1 || true)
+              [ -n "$besetzt" ] && break
+            done
+            if [ -n "$besetzt" ]; then
+              echo "$(date +%T) HP rechnet gerade «$besetzt» – warte"; frist=$(( $(date +%s) + 20 * 60 ))
+            elif [ "$(date +%s)" -ge "$frist" ]; then
+              abbrechen "Der HP (Runner «moveeye-hp») hat den Job nach 20 Min. nicht übernommen – aus oder offline? Lauf abgebrochen."
+            fi
+            sleep 60
+          done
