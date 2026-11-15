@@ -119,6 +119,16 @@ GEO = {
     "feet53": ("base", 0.6, 2.0, "#333333", True, -35, 0.3), "feet53_2": ("base", 0.6, 2.0, "#333333", True, -35, 0.3),
     "feet53_3": ("base", 0.6, 2.0, "#333333", True, -35, 0.3), "feet53_4": ("base", 0.6, 2.0, "#333333", True, -35, 0.3),
     "cable_cam1_53": ("base", 0.7, 1.4, "#d9c27a", False, 165, 0.5), "cable_cam0_53": ("base", 0.7, 1.4, "#d9c27a", False, 280, 0.0),
+    # Gehäuse 5.4.0 (geh-transportkappe, 14.11.2026): 29 Transportsicherung aus kappe540.py, aufgesetzt; nicht in der Szene
+    # («aussen» aus) und in der Werkstatt ausgeblendet (bau.json «ohne»: betrieb – sie sitzt nur beim Transport auf dem Gerät)
+    "kappe": ("base", 0.6, 2.5, "#9a9ea3", False, 470, 0.0),
+    # 30 Drehsperre-Klammer aus klammer540.py (flach auf dem Deckel, sperrt Pan beim Transport) – ebenfalls «ohne»: betrieb
+    "drehsperre": ("base", 0.3, 1.0, "#9a9ea3", False, 260, 0.0),
+    # Gehäuse 5.5.0 (geh-schutzschale, 14.11.2026): 31 / 32 Schutzschale und 33 Stopfen aus schale550.py, aufgesetzt; ebenfalls
+    # «ohne»: betrieb (nur im Rucksack auf dem Gerät)
+    "schale_vorne": ("base", 0.6, 2.5, "#9a9ea3", False, 520, 0.0),
+    "schale_hinten": ("base", 0.6, 2.5, "#9a9ea3", False, 520, 0.0),
+    "schale_stopfen": ("base", 0.4, 1.5, "#9a9ea3", False, 520, 0.0),
 }
 AUSSEN_V52 = ("wide", "irled")      # in der Szene sichtbar, wenn v5.2 gewählt ist (Linse / IR-Modul im Fenster)
 LITE_K = 2.3                         # Lite: Zellen so viel grösser
@@ -234,6 +244,16 @@ def modell():
         P[k] = T([fx, fy, -6.0], v5.part_feet())
     P["cable_cam1_53"] = v52.kabel(v53.cable_cam1_pts())
     P["cable_cam0_53"] = v52.kabel(v53.cable_cam0_pts())
+    # Gehäuse 5.4.0 (kappe540.py): 29 Transportsicherung, aufgesetzt auf das Gerät in Grundstellung (gleiche Koordinaten)
+    import kappe540
+    import klammer540
+    P["kappe"] = kappe540.part_kappe()
+    P["drehsperre"] = klammer540.part_klammer()
+    # Gehäuse 5.5.0 (schale550.py): 31 / 32 Schutzschale mit 33 Stopfen, aufgesetzt (gleiche Koordinaten)
+    import schale550
+    P["schale_vorne"] = schale550.part_vorne()
+    P["schale_hinten"] = schale550.part_hinten()
+    P["schale_stopfen"] = schale550.part_stopfen()
 
     def tilt_frame(n):
         return T([AX, AY, v5.PAN_Z0], R([0, 0, 180.0], T([0, 0, pt.AXZ], n)))

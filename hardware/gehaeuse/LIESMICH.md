@@ -151,6 +151,40 @@ denselben Reitern: Übersicht · Teile · Einkauf · Drucken · Montage · Verka
   Anleitung mit Teileliste, Warnungen und NACHMESSEN [Dokumente/LIESMICH_Montage_v5-3-1.md](Dokumente/LIESMICH_Montage_v5-3-1.md);
   prüfen im Ordner `Quellcode/`: `check531.py`, `printcheck531.py`, `druckcheck531.py`, Bilder `prev531.py`.
 
+- **5.4.0** (14.11.2026, zwei neue Druckteile, kein Teil von v5.3 geändert; passt auch auf v5.1 / v5.2): **Transportsicherung**
+  aus zwei Teilen, zusammen ca. 22 g. Beide haben eine Öse (Ø 3,6) für eine Schnur.
+  - **29 Haube** (37 × 131 × 55 mm, mit Öse): wird von oben über Kopf und Lampen gedrückt (Kopf in Grundstellung) und rastet an
+    den beiden Lampenbechern ein. Sie sperrt das **Neigen** (Spiel ± 0,5°).
+  - **30 Drehsperre-Klammer** (62 × 70 × 18 mm, flach): wird von hinten über den Deckel geschoben und rastet am Kabelkamin ein;
+    zwei Pfosten an den hinteren Ecken des Gabelbodens sperren das **Schwenken** (Spiel + 0,6° / − 0,5°).
+  - Kamera (auch Weitwinkel), Wärmebild und beide Lampen bleiben vorne ganz frei; kein Teil drückt auf Servos oder Kabel.
+  - Quelle `Quellcode/kappe540.py` und `Quellcode/klammer540.py`, Druck
+    [Druckdateien/v5-3/MoveEye_v5-3_29_Transportsicherung.3mf](Druckdateien/v5-3/MoveEye_v5-3_29_Transportsicherung.3mf)
+    (umgedreht, Dach unten) und
+    [Druckdateien/v5-3/MoveEye_v5-3_30_Drehsperre_Klammer.3mf](Druckdateien/v5-3/MoveEye_v5-3_30_Drehsperre_Klammer.3mf)
+    (flach, wie eingebaut), beide ohne Stützen.
+  - Anleitung mit Abständen und «Nicht getestet»: [Dokumente/LIESMICH_Montage_v5-4-0.md](Dokumente/LIESMICH_Montage_v5-4-0.md).
+    In `bau.json` Teile «kappe» und «drehsperre», Drucken und Montage «Transportsicherung aufsetzen / abnehmen».
+  - Prüfen im Ordner `Quellcode/`: `check540.py`, `printcheck540.py`, `druckcheck540.py`, Bilder `prev540.py`, neu erzeugen
+    `export540.py` (STL ausserhalb des Repositorys).
+
+- **5.5.0** (14.11.2026, drei neue Druckteile, kein Teil geändert; passt auch auf v5.1 / v5.2): **Schutzschale** für den
+  Rucksack, zu 108 × 132 × 108 mm, zusammen ca. 170 g. Sie umschliesst Kopf, Lampen, Gabel, Arm 2 und Drehteller bis auf den
+  Deckel; bis 5 kg obendrauf gehen über Dach (8 Rippen), Wände und Schürzen in den Deckel (Dach 3,4 mm über dem Diffusor;
+  Schätzung: Sicherheit 3,2 mit 5 kg auf einer Rippe).
+  - **31 vorne** und **32 hinten**, Teilung seitlich bei den Lampenbechern; vorne von vorne, hinten von hinten aufschieben,
+    4 gedruckte Steckzapfen Ø 4 und ein Gummiring in der Nut rundum halten sie zusammen. Zwei Rippen hinten am Kopf und die
+    Ausbuchtungen an den Lampenbechern sperren **Neigen und Schwenken** (Spiel + 1,3° / − 0,6° bzw. ± 0,6°).
+  - **33 Stopfen** für das gemeinsame Sichtfenster von Kamera (auch Weitwinkel) und Wärmebild; rastet ein, Öse für die Schnur.
+    Lampen abgedeckt.
+  - Quelle `Quellcode/schale550.py`, Druck `Druckdateien/v5-3/MoveEye_v5-3_31_Schutzschale_vorne.3mf` (Stirnseite unten),
+    `…_32_Schutzschale_hinten.3mf` (Rückseite unten), `…_33_Schutzschale_Stopfen.3mf` (Platte unten), alle ohne Stützen.
+  - Anleitung mit Abständen, Last und «Nicht getestet»:
+    [Dokumente/LIESMICH_Montage_v5-5-0.md](Dokumente/LIESMICH_Montage_v5-5-0.md). In `bau.json` Teile «schale_vorne»,
+    «schale_hinten», «schale_stopfen», Drucken und Montage «Schutzschale aufsetzen / abnehmen».
+  - Prüfen im Ordner `Quellcode/`: `check550.py`, `printcheck550.py`, `druckcheck550.py`, Bilder `prev550.py`, neu erzeugen
+    `export550.py` (STL ausserhalb des Repositorys).
+
 - **Archiv «PanTilt v6» (22.10.2026):** `PanTilt_v6_X2D_alle_Teile.3mf`, 7 Teile mit der alten Nummerierung
   (1_Gehaeuse_Unterteil … 7_Rueckdeckel), Unterteil 122 × 87 × 48 mm. Das ist die **ältere** PanTilt-Linie (v4, geschlossener
   Kopf mit Rückdeckel – der gescheiterte Druck), nicht neuer als v5.1. Nicht im Repository (6,8 MB), nur als Archiv abgelegt.
