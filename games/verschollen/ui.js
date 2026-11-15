@@ -16,7 +16,7 @@
      Tal die Meldung der Station, im Reiter MoveEye das Notizbuch (Seiten antippen = ansehen).
      .knoepfe()         alle sichtbaren Knöpfe mit Lage und Grösse (für den Test der Tipp-Flächen)
      .liste()           alles, was man gerade tun kann (K.liste)      .pausiert()  ⏸ gedrückt?
-   SPIELTEMPO: Knopf «⏩ 1×» oben tippt 1× → 2× → 4× → 1× (S.tempo, im Spielstand); die Spieluhr läuft so viel schneller, alle
+   SPIELTEMPO: Knopf «⏩ 1×» oben tippt 1× → 2× → 4× → 8× → 16× → 1× (S.tempo, im Spielstand); die Spieluhr läuft so viel schneller, alle
      Regeln gleich. Still steht die Zeit bei jeder Karte (Ereignis, Aufnahme, Entscheidung – sie sagt es), im Tagebuch / Menü,
      im Schlussbild und mit ⏸ (gilt bis zum nächsten Tippen, nicht gespeichert). Geht bei 2× / 4× das Feuer aus: zurück auf 1×.      .neu()  Spielstand löschen und neu beginnen */
 (function () {
@@ -346,6 +346,7 @@
   }
   function menuBlatt(schritt) {
     blatt('<h2>Verschollen im Bergtal</h2><p class="leise">Kapitel ' + (S.k2 ? 2 : 1) + ' · Tag ' + K.tagNr(S) + ' · gespielt ' + Math.round(S.echt / 60) + ' min. Das Spiel speichert von selbst.</p>'
+      + kapitelListe()
       + '<div class="kn" style="padding:0"><button type="button" class="knopf" id="bLog">Tagebuch lesen</button>'
       + (schritt ? '<button type="button" class="knopf" id="bNeuJa" style="background:#7a2a22;border-color:#a33">Ja, alles löschen und neu beginnen</button>' : '<button type="button" class="knopf" id="bNeu">Neu beginnen …</button>') + '</div>'
       + '<p class="leise" style="margin-top:12px">Ein eigenes Spiel für MoveEye. Geschichte und Idee: der Besitzer. Bilder, Texte und Programm selbst gemacht, frei verwendbar (MIT). Nichts wird aus dem Internet geladen.</p>');
@@ -367,7 +368,7 @@
   function render() {
     var L = K.liste(S);
     if (tab !== 'huette' && !tabSicht(tab)) tab = 'huette';
-    malUhr(); malTempo(); malTabs(L); malSzene(); malLog(); malVorrat(); malInhalt(L); zeigeKarte();
+    malUhr(); malTempo(); malFortschritt(); malTabs(L); malSzene(); malLog(); malVorrat(); malInhalt(L); zeigeKarte();
     if (S.ende && !endeZu && !S.karten.length && $('ende').hidden && !ansicht) {
       if (S.ende2 && !S.f.ende2Gesehen) zeigeEnde(2);
       else if (!S.ende2 && (!S.f.endeGesehen || (!S.k2 && !S.n.k2Angebot))) zeigeEnde(1);
@@ -405,6 +406,7 @@
     if (t.closest('#tagebuch')) { tagebuchBlatt(); return; }
     if (t.closest('#bMenu')) { menuBlatt(false); return; }
     if (t.closest('#bTempo')) { tempoWechsel(); return; }
+    if (t.closest('#fortschritt')) { menuBlatt(); return; }
     if (t.closest('#bPause') || t.closest('#pauseBand')) { pauseWechsel(); return; }
     if (t.closest('#bLog')) { tagebuchBlatt(); return; }
     if (t.closest('#bNeu')) { menuBlatt(true); return; }
@@ -422,6 +424,21 @@
 
   // ---- Zeit ----
   var letzt = Date.now();
+  // ---- Fortschritt (ab GS-1.25): schmaler Balken unter der Kopfzeile (aktuelles Kapitel), antippen = alle Kapitel im Menü ----
+  function balken(e) { return '<span class="fsb"><i style="width:' + e.p + '%"></i></span>'; }
+  function malFortschritt() {
+    var f = K.fortschritt(S), e = f.liste[f.jetzt - 1], el = $('fortschritt'), txt = e.nr + '|' + e.p;
+    if (el.__t === txt) return; el.__t = txt;
+    el.innerHTML = '<span class="fst">Kapitel ' + e.nr + (e.name ? ' · ' + esc(e.name) : '') + '</span>' + balken(e) + '<span class="fsp">' + e.p + ' %</span>';
+    el.setAttribute('aria-label', 'Fortschritt Kapitel ' + e.nr + ': ' + e.p + ' Prozent. Antippen für alle Kapitel.');
+  }
+  function kapitelListe() {
+    return '<div class="fsl">' + K.fortschritt(S).liste.map(function (e) {
+      return '<div class="fsz' + (e.offen ? '' : ' zu') + '"><div class="fsk"><b>Kapitel ' + e.nr + (e.name ? ' · ' + esc(e.name) : '') + '</b><span>'
+        + (e.fertig ? '✓ geschafft' : e.bald ? 'kommt bald' : e.offen ? e.p + ' %' : '🔒') + '</span></div>' + balken(e) + '</div>';
+    }).join('') + '</div>';
+  }
+
   // ---- Spieltempo: ⏩ 1× / 2× / 4× (im Spielstand) und ⏸ Pause (nur bis zum nächsten Tippen) ----
   function tempo() { var t = +S.tempo; return K.TEMPI.indexOf(t) >= 0 ? t : 1; }
   var pausiert = false;

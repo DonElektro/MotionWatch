@@ -1010,13 +1010,15 @@ function startZoom() { return Math.min(cw, chh) >= 700 ? 1.15 : 1; }
 function starte(ids, m) {
   ids0 = ids.slice(); modus = m;
   baue(ids); $("#titel").hidden = true; $("#spiel").hidden = false; $("#ende").hidden = true; kamZiel = false; bereit = null;
-  groesse(); leiste();
+  leiste(); groesse();
   if (modus === "multi") { const f = fitZoom(); cam.x = f.x; cam.y = f.y + (f.z < .6 ? 0 : 0); cam.z = Math.max(f.z, Math.min(cw, chh) >= 700 ? .62 : .45); folgen = false; uebersicht = true; $("#bKarte").classList.add("an"); }
   else { cam.z = startZoom(); uebersicht = false; folgen = true; const p = figPos(figs[0]); cam.x = p[0]; cam.y = p[1] - 30; }
   tipp(modus === "multi" ? "Zusammen: jedes zieht seine Figur mit dem Finger ans Ziel. Lange drücken = Fähigkeit." : "Bringt alle zur Hütte. Antippen = gehen · Figur antippen = wechseln · lange drücken = Fähigkeit.", 7000);
 }
 document.addEventListener("click", function (e) { const a = e.target.closest && e.target.closest("a"); if (!a || a.closest("#mw-back")) return; if (a.getAttribute("href") !== "../") return; const b = document.querySelector("#mw-back a"); if (b) { e.preventDefault(); e.stopPropagation(); b.click(); } }, true);
 window.addEventListener("resize", () => { if (!$("#spiel").hidden) groesse(); });
+/* Zeichenfläche neu messen, sobald sich ihre Grösse ändert (Leiste unten, Kopfzeile, Vollbild) – sonst sitzt der Klick versetzt. */
+if (window.ResizeObserver) new ResizeObserver(() => { if (!$("#spiel").hidden) groesse(); }).observe(cv);
 
 let last = performance.now();
 function frame(t) {
