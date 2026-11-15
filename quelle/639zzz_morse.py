@@ -1181,6 +1181,7 @@ def morse_beep_play(tx):
     def work():
         p = None
         try:
+            radio_yield("morse")                             # 639zzzzc: the radio pauses while Morse / radio signals are sent
             cmd, err = out_cmd(OUT_RATE)
             if cmd is None:
                 raise RuntimeError(err)

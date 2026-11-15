@@ -464,6 +464,7 @@ def talk_chunk(data, who=""):
         if p is None or p.poll() is not None or TALK["dev"] != dev:
             if SOUND["playing"]:
                 sound_stop()                             # the voice wins over a siren that is still playing
+            radio_yield("talk")                          # 639zzzzc: and over the radio (it plays on afterwards)
             cmd, err = out_cmd(AUDIO_RATE, connect=False)
             if cmd is None:
                 return False, err
