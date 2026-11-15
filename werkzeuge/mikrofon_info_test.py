@@ -102,6 +102,8 @@ def main():
         pruef(hs.get("bad") == cnt.get("bad") and "Mikrofon" not in prot and "No such device" not in prot,
               "zählt nicht als Problem (Kopf %s, Schutz-Ampel ohne Mikrofon)" % hs)
         bad0 = cnt.get("bad", 0)
+        schlecht = lambda: sorted(x.get("id") for x in req("/api/health?lang=de").get("items") or [] if x.get("level") == "bad")
+        bad0_ids = schlecht()
         r = req("/api/set", {"key": "noise_alarm", "value": True})
         pruef(r.get("ok", True) is not False, "Geräusch-Alarm einschalten (%s)" % r)
         mic, cnt, hs, prot = lage("bad")
@@ -109,7 +111,7 @@ def main():
         pruef(cnt.get("bad", 0) == bad0 + 1, "zählt jetzt als Problem (%d -> %d)" % (bad0, cnt.get("bad", 0)))
         req("/api/set", {"key": "noise_alarm", "value": False})
         mic, cnt, hs, prot = lage("off", bad=bad0)              # the count follows a little later than the item (CI)
-        pruef(bool(mic) and mic["level"] == "off" and cnt.get("bad", 0) == bad0, "wieder aus: wieder grau (%s)" % mic)
+        pruef(bool(mic) and mic["level"] == "off" and cnt.get("bad", 0) == bad0, "wieder aus: wieder grau (%s; rot vorher %s, jetzt %s)" % (mic, bad0_ids, schlecht()))
         if p.poll() is not None:
             FEHLER.append("MoveEye ist während des Tests abgestürzt")
     finally:
