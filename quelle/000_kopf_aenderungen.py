@@ -652,7 +652,8 @@ Features
     infrared night picture - persons near the camera are now seen at night).
   * 4.4.0: Zwei Teile. (1) Live → «Bedienung»: «🕹 Kopf steuern» lässt sich für sich einklappen; «⏹ Stopp» bleibt immer sichtbar.
     (2) Homepage-Karte: drei Schalter – Startseite, Funkgerät und Simulator einzeln hochladen (aus = nicht hochgeladen und auf
-    dem Webspace nie gelöscht).
+    dem Webspace nie gelöscht); neu «Öffentliche Adresse»
+    (nur https), und eine Seite mit Passwortschutz des Webspace gilt bei der Prüfung als «🔒 geschützt ✓».
   * 4.3.0: Fünf Teile. (1) Produktseite /info/ mit Bildern: echte App-Bilder (Live, Tagebuch, Mehr) und ruhige Beispielbilder; neu «🖼
     Produktseite: Bilder» in der Karte «Homepage» – eigene Fotos für die Seite hochladen (nur Admin; ohne Ortsangaben und
     Kamera-Daten, verkleinert). (2) «📻 Radio» spielt weiter, wenn man
