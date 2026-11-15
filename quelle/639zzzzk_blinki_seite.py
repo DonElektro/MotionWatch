@@ -125,7 +125,9 @@ details.bkp-card>summary{cursor:pointer;font-weight:700;min-height:36px;display:
     if (S.held) { cls = "held"; tx = S.held_t; }
     else if (S.cloud && S.cloud.on) { cls = "cloud"; tx = t("Cloud") + " · " + (S.cloud.name || ""); }
     else if (S.offline_ok) { cls = "ok"; tx = t("offline on this device") + " · " + S.model.name; }
-    c.className = "bkp-chip " + cls; $i("bk-chip-t").textContent = tx;
+    const sp = S.speech && S.speech.listen;
+    if (sp && sp.on) { cls = "held"; tx = "🎙 " + t("Blinki listens at the device") + " (" + t(sp.why) + ")"; }
+    c.className = "bkp-chip " + cls; $i("bk-chip-t").textContent = tx; mic();
   }
   function modes() {
     const box = $i("bk-modes"); box.textContent = "";
@@ -161,6 +163,36 @@ details.bkp-card>summary{cursor:pointer;font-weight:700;min-height:36px;display:
       if (S.quiz_n) box.appendChild(E("span", "bkp-wait", "🎲 " + S.quiz_n + " " + t("questions of Blinki in the game corner")));
     }
   }
+  // 🎙 hold to talk: the browser records, MoveEye turns it into text (offline whisper.cpp), the answer comes as text + voice
+  let REC = null, STREAM = null;
+  function mic() {
+    const m = $i("bk-mic"), ok = !!(S && S.speech && S.speech.ok && S.modes.some(x => x.m === "frag"));
+    m.classList.toggle("on", ok); m.textContent = "🎙";
+  }
+  const hint = s => { $i("bk-hint").textContent = s || ""; };
+  async function recStart(e) {
+    if (e) e.preventDefault(); if (REC) return;
+    if (!window.isSecureContext || !navigator.mediaDevices || !window.MediaRecorder) {
+      const h = $i("bk-hint"); h.textContent = "🔒 " + t("The microphone of the browser needs a secure connection (https). iPhone: open MoveEye with https://") + " ";
+      if (S && S.https_port) { const a = E("a", "", "https://" + location.hostname + ":" + S.https_port + "/blinki"); a.href = a.textContent; h.appendChild(a); }
+      return; }
+    try { STREAM = STREAM || await navigator.mediaDevices.getUserMedia({audio: {channelCount: 1, noiseSuppression: true, echoCancellation: true}}); }
+    catch (er) { hint("⚠ " + t("No access to the microphone.")); return; }
+    const ch = []; let mime = ["audio/webm;codecs=opus", "audio/mp4", "audio/ogg;codecs=opus", ""].find(x => !x || (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(x)));
+    const r = REC = new MediaRecorder(STREAM, mime ? {mimeType: mime} : undefined);
+    r.ondataavailable = ev => { if (ev.data && ev.data.size) ch.push(ev.data); };
+    r.onstop = async () => { REC = null; $i("bk-mic").classList.remove("rec"); const dur = Date.now() - r.t0;
+      if (dur < 500) { hint(t("Hold the button while you speak.")); return; }
+      const blob = new Blob(ch, {type: r.mimeType || mime || "audio/webm"}); hint("⏳ " + t("Blinki listens to your recording …"));
+      try { const res = await (await fetch("/api/ki/stt?lang=" + L(), {method: "POST", headers: {"Content-Type": blob.type || "application/octet-stream"}, body: blob})).json();
+        if (!res.ok) { hint("⚠ " + (res.error || "")); return; } hint(""); ask(res.text, {voice: true}); }
+      catch (er) { hint("⚠ " + t("No connection to MoveEye.")); } };
+    r.t0 = Date.now(); r.start(); $i("bk-mic").classList.add("rec"); hint("🎙 " + t("Speak now - let go to send"));
+    setTimeout(() => { if (REC === r) r.stop(); }, 15000);
+  }
+  const recStop = e => { if (e) e.preventDefault(); if (REC && REC.state === "recording") REC.stop(); };
+  $i("bk-mic").addEventListener("pointerdown", recStart); ["pointerup", "pointerleave", "pointercancel"].forEach(ev => $i("bk-mic").addEventListener(ev, recStop));
+  $i("bk-mic").addEventListener("contextmenu", e => e.preventDefault());
   function setup() {
     const box = $i("bk-setup"), need = !S.offline_ok && !(S.cloud && S.cloud.on);
     box.hidden = !need; if (!need) return;
@@ -215,6 +247,25 @@ details.bkp-card>summary{cursor:pointer;font-weight:700;min-height:36px;display:
       const k = fld("blinki_cloud_key", t("Key (API key) - only the administrator, never shown again"), "", "password", C.key_set ? "•••••• (" + t("set") + ")" : "");
       if (C.key_set) { const b = E("button", "sec", t("Clear")); b.type = "button"; b.onclick = async () => { const j = await api("/api/ki/set", {key: "blinki_cloud_key", value: ""}); if (j.ok) { S = j.state; k.placeholder = ""; } }; box.appendChild(b); }
     }
+    if (S.speech) {                                      // speaking: recognition, the triggers at the device (off by default)
+      const P = S.speech; box.appendChild(E("b", "", "🎙 " + t("Speaking")));
+      box.appendChild(E("div", "mut", (P.engine ? "✓ " + t("speech recognition ready") + " (" + P.engine + ")" : "✗ " + t("speech recognition missing")) + " · Whisper tiny · "
+        + P.mb + " MB · " + P.licence + (P.dl.running ? " · ⬇ " + Math.round(100 * P.dl.got / Math.max(1, P.dl.total)) + "%" : "") + (P.dl.msg ? " · ⚠ " + P.dl.msg : "")
+        + (P.install === "running" ? " · 🔧 " + (P.step || "") + " " + (P.pct || 0) + "%" : P.install.startsWith("failed") ? " · ⚠ " + P.install : "")));
+      const row = E("div", "row-b"); row.style.display = "flex"; row.style.flexWrap = "wrap"; row.style.gap = "8px";
+      const B = (txt, act) => { const b = E("button", "sec", txt); b.type = "button"; b.onclick = async () => { const j = await api("/api/ki/speech", {action: act}); if (!j.ok) alert(j.error); else { S = j.state; if (document.activeElement) document.activeElement.blur(); adm(); } }; row.appendChild(b); };
+      if (!P.model_ok && !P.dl.running) B("⬇ " + t("Load the speech recognition") + " (" + P.mb + " MB)", "load");
+      if (!P.exe && P.install !== "running") B("🔧 " + t("Set up whisper.cpp"), "engine");
+      if (P.ok) B("🎙 " + t("Listen at the device now (test)"), "listen");
+      box.appendChild(row);
+      sw("blinki_clap", "👏 " + t("Clapping 2× starts Blinki"), P.clap, t("Only when clapping twice does nothing else (clap switch, wake-up alarm stay as they are). Off by default."));
+      sw("blinki_btn", "🔘 " + t("Long press on «Acknowledge» starts Blinki"), P.btn, t("Only when there is nothing to acknowledge - the button acknowledges first as always; the protection button stays as it is. Off by default."));
+      const q = E("div", "mut"); q.appendChild(document.createTextNode("▦ " + t("QR card: in the card workshop the command «💬 Blinki listens».") + " ")); const qa = E("a", "", t("Card workshop") + " ›"); qa.href = "/karten"; q.appendChild(qa); box.appendChild(q);
+      box.appendChild(E("div", "mut", t("Never while an alarm, the siren, Morse / radio reception, the radio or the wake-up alarm runs. Recordings are never stored.")));
+      if (S.cloud && S.cloud.fmt === "openai") { const l = E("label"); l.style.flexDirection = "column"; l.style.alignItems = "stretch"; const i = E("input"); i.type = "text"; i.value = P.cloud_stt; i.id = "bk-c-stt";
+        i.onchange = async () => { const j = await api("/api/ki/set", {key: "blinki_cloud_stt", value: i.value}); if (!j.ok) alert(j.error); else S = j.state; };
+        l.append(E("span", "mut", t("Cloud speech recognition: model name (empty = only offline)")), i); box.appendChild(l); }
+    }
     window.MWBK.hooks.forEach(f => { try { f("settings", box, S, sw); } catch (e) {} });
     if (S.model.ok) { const b = E("button", "sec", "🗑 " + t("Delete the model") + " (" + S.model.mb + " MB)"); b.type = "button";
       b.onclick = async () => { if (confirm(t("Delete the language model? Blinki then only shows the places of the manual."))) { await api("/api/ki/model", {action: "delete"}); load(); } }; box.appendChild(b); }
@@ -228,12 +279,12 @@ details.bkp-card>summary{cursor:pointer;font-weight:700;min-height:36px;display:
   function hm() { const d = new Date(); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
   // the voice: piece after piece of Piper (Blinki only knows its own pieces)
   let VO = null;
-  async function sayBrowser(id, btn) {
+  async function sayBrowser(id, btn, auto) {
     if (VO) { VO.stop = true; VO = null; if (btn) btn.textContent = "🔊 " + t("Read aloud"); return; }
     const me = VO = {stop: false}; if (btn) btn.textContent = "⏹ " + t("Stop");
     for (let n = 0; n < 12 && !me.stop; n++) {
       const j = await api("/api/ki/say", {id: id, n: n});
-      if (!j.ok || me.stop) { if (!j.ok && n === 0) alert(j.error); break; }
+      if (!j.ok || me.stop) { if (!j.ok && n === 0 && !auto) alert(j.error); break; }
       const a = new Audio("/api/ki/voice/" + j.sid + ".wav"); me.a = a;
       await new Promise(r => { a.onended = r; a.onerror = r; a.play().catch(r); const iv = setInterval(() => { if (me.stop) { a.pause(); clearInterval(iv); r(); } }, 200); a.addEventListener("ended", () => clearInterval(iv)); });
       if (!j.more) break;
@@ -279,7 +330,7 @@ details.bkp-card>summary{cursor:pointer;font-weight:700;min-height:36px;display:
     if (S && S.talk) { const sp = E("button", "sec", "📢 " + t("On the loudspeaker")); sp.type = "button"; sp.onclick = async () => { const r = await api("/api/ki/say", {id: j.id, where: "pi"}); if (!r.ok) alert(r.error); }; act.appendChild(sp); }
     const cp = E("button", "sec", "📋 " + t("Copy")); cp.type = "button"; cp.onclick = () => { try { navigator.clipboard.writeText(b.text); cp.textContent = "✓ " + t("Copied"); } catch (e) {} }; act.appendChild(cp);
     say.appendChild(act);
-    if (LS.get("mw-bk-read", "0") === "1" && j.state === "done") sayBrowser(j.id, rd);
+    if ((b.voice || LS.get("mw-bk-read", "0") === "1") && j.state === "done") sayBrowser(j.id, rd, true);
   }
   async function follow(b) {
     const j = await get("/api/ki/job/" + b.job + "?from=" + b.n);
@@ -307,7 +358,7 @@ details.bkp-card>summary{cursor:pointer;font-weight:700;min-height:36px;display:
     $i("bk-go").disabled = true; $i("bk-q").value = ""; grow();
     const j = await api("/api/ki/ask", Object.assign({mode: mode, q: q, client: client, prev: last}, extra || {}));
     if (!j.ok) { $i("bk-go").disabled = false; const b = bubble("", q); b.wait.textContent = ""; b.err.hidden = false; b.err.textContent = "⚠ " + j.error; if (BK) BK.mood(b.f, "normal"); return; }
-    const b = bubble(j.id, q || (j.job && j.job.q) || ""); b.q = q; cur = b; follow(b);
+    const b = bubble(j.id, q || (j.job && j.job.q) || ""); b.q = q; b.voice = !!(extra && extra.voice); cur = b; follow(b);
     return b;
   }
   window.MWBK.ask = ask;

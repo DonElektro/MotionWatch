@@ -13,10 +13,12 @@ liefert ein kleines Test-Modell (GGUF-Kopf) mit fester Grösse und Prüfsumme. M
   D) Pi-Fenster mit nachgebautem tkinter: Frage stellen, Antwort erscheint, Schliessen.
   E) Stufe 2: 🔥 Geschichten (Kinder-Filter, Orte des Platzes), 🦌 Naturführer (Sichtungen), 🎤 Quiz (JSON geprüft, in die Spielecke), Cloud
      (OpenAI-kompatibel + Anthropic Messages, Ersatz-Dienst: Schlüssel nie in Seite / Protokoll / Diagnose / Antwort, Bild nur mit OK, ohne Netz offline).
+  F) Stufe 3: Sprechen – Ersatz-«whisper-cli», Erkennung (Aufnahme nie gespeichert), Handy-Aufnahme webm -> Text, 2× klatschen /
+     Knopf (ab Werk aus; Klatschschalter, Wecker, Quittieren, Schutz-Knopf wie vorher), QR-Karte, ein Satz am Gerät -> Lautsprecher.
   B) --browser: MoveEye (Demo) im Browser: Mehr → «💬 Blinki fragen», Frage → Antwort Stück für Stück mit «Öffnen», Fehlersuche
      mit Vorschlag, Karte «Blinki einrichten» ohne Modell, 390 px dunkel + PC 1280; Rechte über HTTP. --bilder ORDNER.
 
-  python3 werkzeuge/ki_test.py [--datei X.py] [--browser] [--bilder ORDNER] [--nur a,c,d,e,b]
+  python3 werkzeuge/ki_test.py [--datei X.py] [--browser] [--bilder ORDNER] [--nur a,c,d,e,f,b]
 """
 import argparse
 import base64
@@ -504,7 +506,7 @@ def start_mw(datei, tmp, name, extra_cfg=None, model=True):
     st.update(extra_cfg or {})
     json.dump({"cfg": st}, open(os.path.join(cfg, "motionwatch_settings.json"), "w"))
     if model:
-        fake_model(cfg)
+        fake_model(cfg); fake_stt_model(cfg); make_whisper(tmp)
     wrap = os.path.join(tmp, "wrap.py"); open(wrap, "w").write(WRAP)
     with socket.socket() as sk:
         sk.bind(("127.0.0.1", 0)); port = sk.getsockname()[1]
@@ -555,7 +557,7 @@ def teil_b(datei, tmp, bilder, extra=None):
         ok([c1, c2, c3, c4, c5] == [200, 403, 403, 403, 200] and [m["m"] for m in s5["state"]["modes"]] == (["frag", "geschichte", "natur"] if len(s5["state"]["modes"]) > 1 else ["frag"]),
            "Rechte über HTTP: Nur ansehen fragt %d, Fehlersuche %d, Modell %d; Kind %d; Arten für Gast: %s" % (c1, c2, c3, c4, [m["m"] for m in s5["state"]["modes"]]))
         with sync_playwright() as pw:
-            br = pw.chromium.launch(args=["--no-proxy-server"])
+            br = pw.chromium.launch(args=["--no-proxy-server", "--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"])
             for name, vp, mob in (("handy", {"width": 390, "height": 844}, True), ("pc", {"width": 1280, "height": 900}, False)):
                 ctx = br.new_context(viewport=vp, device_scale_factor=2 if mob else 1, is_mobile=mob, has_touch=mob, color_scheme="dark",
                                      http_credentials={"username": "admin", "password": PW}, locale="de-CH")
@@ -789,6 +791,197 @@ def teil_e(datei, tmp):
     FEHLER.extend(json.loads(m.group(1)))
 
 
+# ---- stage 3: speaking -----------------------------------------------------------------------------------------------------------
+STT_SIZE = 77691713
+STT_SHA = "be07e048e1e599ad46341c8d2a135645097a538221678b7acdd1b1919c6e1b21"
+
+
+def fake_whisper(argv):
+    import wave
+    import numpy as np
+    a = {argv[i]: argv[i + 1] for i in range(len(argv) - 1) if argv[i].startswith("-")}
+    with wave.open(a["-f"]) as w:
+        x = np.frombuffer(w.readframes(w.getnframes()), "<i2").astype(np.float32) / 32768.0
+    logp = os.environ.get("FAKE_WHISPER_LOG", "")
+    if logp:
+        with open(logp, "a") as f:
+            f.write(json.dumps({"argv": argv, "secs": round(x.size / 16000.0, 2)}) + "\n")
+    loud = float(np.sqrt(np.mean(x * x))) if x.size else 0.0
+    print(" Wie laut ist die Sirene?" if loud > 0.01 else "[BLANK_AUDIO]")
+
+
+def make_whisper(tmp):
+    b = os.path.join(tmp, "bin"); os.makedirs(b, exist_ok=True)
+    p = os.path.join(b, "whisper-cli")
+    with open(p, "w") as f:
+        f.write("#!%s\nimport sys\nsys.path.insert(0, %r)\nimport ki_test\nki_test.fake_whisper(sys.argv[1:])\n" % (sys.executable, HIER))
+    os.chmod(p, 0o755)
+
+
+def fake_stt_model(d):
+    os.makedirs(os.path.join(d, "blinki"), exist_ok=True)
+    p = os.path.join(d, "blinki", "ggml-tiny.bin")
+    with open(p, "wb") as f:
+        f.write(b"lmgg"); f.truncate(STT_SIZE)
+    with open(p + ".ok", "w") as f:
+        f.write(STT_SHA)
+
+
+TEIL_F = r'''
+import json, os, sys, time, threading, glob
+import numpy as np
+sys.path.insert(0, os.environ["KI_HIER"])
+import ki_test as K
+src = open(sys.argv[1], encoding="utf-8").read()
+i = src.rfind('\nif __name__ == "__main__":')
+ns = {"__name__": "mw_ki_f", "__file__": os.path.abspath(sys.argv[1])}
+exec(compile(src[:i], sys.argv[1], "exec"), ns)
+ok = K.ok
+C = ns["CFG"]; LI = ns["LISTEN"]
+C.update(lang="de")
+def wait(f, s):
+    t = time.time()
+    while time.time() - t < s:
+        if f(): return True
+        time.sleep(0.05)
+    return False
+m = ns["BLINKI_STT_MODELS"]["whisper-tiny"]
+ok(m["size"] == K.STT_SIZE and m["sha256"] == K.STT_SHA and m["rev"] == "98aa99a0a9db05ae2342309f5096248665f7cba3", "Spracherkennung: ggml-tiny mit Revision, Grösse, SHA-256")
+ok(ns["BLINKI_WHISPER"]["commit"] == "d1be6fde11ac6e0407606b4e42fe72d34add8037" and ns["BLINKI_STT_MODELS"]["vosk-small-de"]["size"] == 0,
+   "whisper.cpp v1.9.5 fest; Vosk ohne geprüfte Prüfsumme = wird nie geladen")
+ok(C["blinki_clap"] is False and C["blinki_btn"] is False and ns["DEFAULTS"]["blinki_clap"] is False, "2× klatschen / Knopf für Blinki: ab Werk AUS")
+ok("blinki_clap" in ns["USER_SETTINGS_DENY"] and "blinki_btn" in ns["APPKEY_DENY_KEYS"] and not ns["role_allows"]("family", "/api/ki/set", "POST", {"key": "blinki_clap"}),
+   "Schalter nur für den Administrator")
+K.fake_model(ns["DATA_DIR"]); K.fake_stt_model(ns["DATA_DIR"])
+ok(ns["blinki_stt_engine"]()[0] == "whisper", "whisper-cli (Ersatz) + Modell bereit")
+sr = 16000
+def tone(sec, amp=0.3, f=300.0):
+    t = np.arange(int(sec * sr)) / sr
+    return (amp * np.sin(2 * np.pi * f * t) * 32767).astype("<i2")
+def quiet(sec):
+    return (np.random.RandomState(1).randn(int(sec * sr)) * 30).astype("<i2")
+shm = ns["_bk_tmpdir"]()
+before = set(glob.glob(os.path.join(shm, "bk-*")))
+txt, e = ns["blinki_stt_pcm"](np.concatenate([quiet(0.5), tone(1.2), quiet(0.5)]).tobytes(), "de")
+ok(txt == "Wie laut ist die Sirene?", "Erkennung: «%s»" % txt)
+log = [json.loads(x) for x in open(os.environ["FAKE_WHISPER_LOG"])]
+ok(log[-1]["argv"][log[-1]["argv"].index("-l") + 1] == "de" and "-nt" in log[-1]["argv"], "whisper-cli -l de -nt")
+ok(set(glob.glob(os.path.join(shm, "bk-*"))) == before, "Aufnahme nie gespeichert (Datei sofort gelöscht)")
+txt, e = ns["blinki_stt_pcm"](quiet(2.0).tobytes(), "de")
+ok(txt == "" and e == "nothing understood", "Stille: nichts verstanden")
+import subprocess
+wav = os.path.join(os.environ["KI_TMP"], "rec.webm")
+subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-f", "lavfi", "-i", "sine=frequency=300:duration=1.5:sample_rate=48000", "-c:a", "libopus", wav], check=True)
+txt, e = ns["blinki_stt_upload"](open(wav, "rb").read(), "de")
+ok(txt == "Wie laut ist die Sirene?", "Handy-Aufnahme (webm/opus) -> Text")
+ok(ns["blinki_stt_upload"](b"x" * (ns["BLINKI_STT_MAX_BYTES"] + 1), "de")[1] == "the recording is too long" and ns["blinki_stt_upload"](b"junk" * 100, "de")[0] == "",
+   "zu lang / kaputt: abgelehnt")
+# ---- the triggers: the existing functions stay exactly as they were
+calls = {"listen": [], "light": [], "snooze": [], "protect": [], "ack": []}
+real_listen = ns["blinki_listen"]
+ns["blinki_listen"] = lambda why="": calls["listen"].append(why) or (True, "")
+ns["light_set"] = lambda nm, v: calls["light"].append((nm, v)) or (True, "")
+ns["wake_snooze"] = lambda why="": calls["snooze"].append(why)
+ns["sev_beep"] = lambda *a, **k: None
+def reset():
+    for v in calls.values(): v.clear()
+def clap(n, **cfg):
+    reset(); C.update(cfg); ns["clap_action"](n); return {k: list(v) for k, v in calls.items()}
+ns["WAKE"]["state"] = "off"
+C.update(light_white="off", clap_practice=False, clap_disarmed=False, armed=False)
+r = clap(2, blinki_clap=False, clap_on=True, clap_2="light_white"); ok(r["light"] == [("white", "on")] and not r["listen"], "Klatschschalter wie vorher (Blinki aus)")
+r = clap(2, blinki_clap=True, clap_on=True, clap_2="light_white"); ok(r["light"] == [("white", "on")] and not r["listen"], "Blinki ein, 2× hat schon eine Aufgabe: der Klatschschalter gewinnt")
+r = clap(2, blinki_clap=True, clap_on=True, clap_2="none"); ok(r["listen"] and not r["light"], "Blinki ein, 2× ohne Aufgabe: Blinki hört zu")
+r = clap(3, blinki_clap=True, clap_on=True, clap_3="light_white"); ok(r["light"] == [("white", "on")] and not r["listen"], "3× klatschen: wie vorher")
+r = clap(2, blinki_clap=True, clap_on=False, clap_2="light_white"); ok(r["listen"] and not r["light"], "Klatschschalter aus, Blinki ein: nur Blinki")
+r = clap(3, blinki_clap=True, clap_on=False, clap_3="light_white"); ok(not r["listen"] and not r["light"], "Klatschschalter aus: 3× schaltet nichts (wie vorher)")
+r = clap(2, blinki_clap=False, clap_on=False, clap_2="light_white"); ok(not r["listen"] and not r["light"], "beide aus: nichts")
+ns["WAKE"]["state"] = "ring"
+r = clap(2, blinki_clap=True, clap_on=True, clap_2="none"); ok(r["snooze"] and not r["listen"], "Wecker klingelt: 2× klatschen = Schlummern wie vorher, kein Blinki")
+ns["WAKE"]["state"] = "off"
+# the microphone path: claps with the clap switch off reach Blinki only with its switch
+class A_: mute_until = 0.0
+ns["AUDIO"] = A_()
+ns["SOUND"]["playing"] = False
+ns["SERVO_MOVE"]["t"] = 0.0
+def claps_into(feeder, t0):
+    t = t0
+    for k in range(40):
+        a = (np.random.RandomState(k).randn(1600) * 20).astype(np.int16)
+        if k in (10, 14):
+            a[300:620] = 20000
+        feeder(a, t); t += 0.1
+    return t
+reset(); C.update(blinki_clap=True, clap_on=False, sneeze_on=False)
+se = ns["SoundEvents"](); claps_into(se.feed, 1000.0)
+ok(calls["listen"] == ["2× clapped"], "Mikrofon: 2 Klatscher -> Blinki (Klatschschalter aus): %s" % calls["listen"])
+reset(); C.update(blinki_clap=False, clap_on=False)
+se = ns["SoundEvents"](); claps_into(se.feed, 2000.0)
+ok(not calls["listen"] and not ns["SOUNDEV"]["claps"], "Mikrofon: Blinki-Schalter aus -> es wird nicht einmal gezählt (wie vorher)")
+# the buttons
+ns["protect_set"] = lambda lv, who="": calls["protect"].append(lv)
+ns["led_ack"] = lambda who="": calls["ack"].append(who)
+ns["LED"]["alarm"] = False
+def btn(name, ev, **cfg):
+    reset(); C.update(cfg); ns["led_button_event"](name, ev, "GPIO"); return {k: list(v) for k, v in calls.items()}
+C.update(armed=False, btn_allow_arm=True, btn_allow_ack=True, btn_allow_siren=True)
+r = btn("protect", "short", blinki_btn=True); ok(r["protect"] == ["watch"] and not r["listen"], "Schutz-Knopf unverändert (Blinki-Knopf ein)")
+r = btn("protect", "long", blinki_btn=True); ok(r["protect"] == ["full"] and not r["listen"], "Schutz-Knopf lang unverändert")
+r = btn("ack", "long", blinki_btn=True); ok(r["ack"] and r["listen"] == ["button"], "Quittieren lang, nichts zu quittieren: quittiert wie immer + Blinki")
+r = btn("ack", "short", blinki_btn=True); ok(r["ack"] and not r["listen"], "Quittieren kurz: nur quittieren")
+ns["LED"]["alarm"] = True
+r = btn("ack", "long", blinki_btn=True); ok(r["ack"] and not r["listen"], "Alarm läuft: der Knopf quittiert, kein Blinki")
+ns["LED"]["alarm"] = False
+r = btn("ack", "long", blinki_btn=False); ok(r["ack"] and not r["listen"], "Blinki-Knopf aus: wie vorher")
+# QR card
+card, e = ns["qrk_create"]({"cmd": "B", "name": "Blinki fragen"})
+ok(card is not None and ns["qrk_check"](ns["qrk_payload"](card))[0] == "ok", "QR-Karte «💬 Blinki hört zu» erstellt und gültig")
+reset(); ns["qrk_exec"](card, None)
+ok(calls["listen"] == ["QR card"] and "Blinki" in ns["qrk_what"](card, "de"), "QR-Karte: Blinki hört zu (%s)" % ns["qrk_what"](card, "de"))
+# ---- listening at the device: one sentence, then the answer
+ns["blinki_listen"] = real_listen
+said = []
+ns["tts_say"] = lambda t, L=None, save=False: said.append(t) or (True, "")
+ns["sound_play"] = lambda *a, **k: True
+C.update(audio_in="hw:1")
+ns["LED"]["alarm"] = True
+ok(real_listen("test")[1] == "not now: alarm", "Alarm: hört nicht zu")
+ns["LED"]["alarm"] = False; ns["WAKE"]["state"] = "ring"
+ok(real_listen("test")[1] == "not now: wake", "Wecker: hört nicht zu")
+ns["WAKE"]["state"] = "off"
+ok(real_listen("test")[0], "Auslöser: Blinki hört zu")
+t = time.time()
+for sec, kind in ((0.8, "q"), (1.2, "t"), (1.6, "q")):
+    for _k in range(int(sec * 10)):
+        a = tone(0.1) if kind == "t" else quiet(0.1)
+        ns["blinki_mic_feed"](a, time.time()); time.sleep(0.1)
+ok(wait(lambda: not LI["on"], 60), "ein Satz, dann Ende (Stille-Erkennung)")
+j = ns["BLINKI"]["jobs"].get(LI["jid"])
+ok(j is not None and j["q"] == "Wie laut ist die Sirene?" and j["who"].startswith("device"), "Frage vom Gerät: %s" % (j or {}).get("q"))
+ok(wait(lambda: len(said) >= 2, 30), "Antwort über den Lautsprecher (%d Sätze): %s" % (len(said), said[:1]))
+ok(not LI["buf"], "Ton nach dem Erkennen weg")
+ok(real_listen("test")[0], "nochmals zuhören")
+ns["blinki_mic_feed"](quiet(0.1), time.time() + 1); time.sleep(0.3)
+ns["LED"]["alarm"] = True
+ok(wait(lambda: not LI["on"], 5) and LI["msg"] == "stopped: alarm", "Alarm während des Zuhörens: sofort Schluss")
+ns["LED"]["alarm"] = False
+ns["blinki_stop"]("test")
+print("RESULT " + json.dumps(K.FEHLER))
+'''
+
+
+def teil_f(datei, tmp):
+    print("F) Stufe 3: Sprechen (Handy-Aufnahme, Auslöser am Gerät, alte Funktionen unverändert)", flush=True)
+    make_whisper(tmp)
+    env = dict(env_for(tmp, os.path.join(tmp, "fhome")), KI_HIER=HIER, KI_TMP=tmp, FAKE_WHISPER_LOG=os.path.join(tmp, "whisper.log"))
+    p = subprocess.run([sys.executable, "-c", TEIL_F, datei], capture_output=True, text=True, env=env, cwd=tmp, timeout=900)
+    print("\n".join(x for x in p.stdout.splitlines() if x.startswith("  ")), flush=True)
+    m = re.search(r"^RESULT (.*)$", p.stdout, re.M)
+    if not m:
+        FEHLER.append("Teil F abgebrochen"); print((p.stderr or "")[-3000:]); return
+    FEHLER.extend(json.loads(m.group(1)))
+
+
 def b_extra(pg, name, base, op, bilder):
     """stage 2 + 3 in the browser: the modes, 🎙 hold to talk (Chromium fake microphone), https hint, settings"""
     n = pg.locator("#bk-modes button").count()
@@ -799,12 +992,35 @@ def b_extra(pg, name, base, op, bilder):
     pg.wait_for_function("() => document.querySelectorAll('.bkp-src, .bkp-act').length >= 4 && !document.querySelector('.bkp-say .cur')", timeout=60000)
     pg.wait_for_timeout(500); weg(pg)
     pg.screenshot(path=os.path.join(bilder, "blinki_%s_geschichte.png" % name))
-    if name == "handy":
-        pg.evaluate("() => { document.getElementById('bk-adm').open = true; document.getElementById('bk-adm').scrollIntoView(); }")
-        pg.wait_for_timeout(500); weg(pg)
-        ok("Cloud" in pg.locator("#bk-set").inner_text(), "Einstellungen: Cloud (Format, Adresse, Modell, Schlüssel)")
-        pg.screenshot(path=os.path.join(bilder, "blinki_handy_einstellungen.png"))
-        pg.evaluate("() => window.scrollTo(0, 0)")
+    if name != "handy":
+        return
+    pg.locator("#bk-modes button", has_text="Frag MoveEye").click()
+    mic = pg.locator("#bk-mic")
+    ok(mic.is_visible(), "handy: 🎙 sichtbar (Spracherkennung bereit)")
+    nme = pg.locator(".bkp-me").count()
+    bb = mic.bounding_box()
+    pg.mouse.move(bb["x"] + bb["width"] / 2, bb["y"] + bb["height"] / 2); pg.mouse.down()
+    pg.wait_for_timeout(600)
+    rec = "rec" in (mic.get_attribute("class") or "") and "loslassen" in pg.locator("#bk-hint").inner_text()
+    pg.wait_for_timeout(1800); pg.mouse.up()
+    pg.wait_for_function("(n) => document.querySelectorAll('.bkp-me').length > n", arg=nme, timeout=60000)
+    q = pg.locator(".bkp-me").last.inner_text()
+    ok(rec and "Sirene" in q, "handy: 🎙 gedrückt halten → Aufnahme → Text «%s»" % q.split("\n")[0])
+    pg.wait_for_function("() => !document.querySelector('.bkp-say .cur') && document.querySelectorAll('.bkp-act').length > 0", timeout=60000)
+    pg.wait_for_timeout(600); weg(pg)
+    pg.screenshot(path=os.path.join(bilder, "blinki_handy_sprechen.png"))
+    pg.evaluate("() => Object.defineProperty(window, 'isSecureContext', {get: () => false})")
+    pg.locator("#bk-mic").dispatch_event("pointerdown")
+    pg.wait_for_timeout(300)
+    ok("https" in pg.locator("#bk-hint").inner_text(), "ohne https: klarer Hinweis («%s»)" % pg.locator("#bk-hint").inner_text()[:70])
+    pg.evaluate("() => { document.getElementById('bk-adm').open = true; document.getElementById('bk-adm').scrollIntoView(); }")
+    pg.wait_for_timeout(500); weg(pg)
+    txt = pg.locator("#bk-set").inner_text()
+    ok("2× klatschen startet Blinki" in txt and "Quittieren" in txt and "Cloud" in txt, "Einstellungen: Cloud, 2× klatschen, Knopf (ab Werk aus)")
+    _c, st = http_api(op, base, "/api/ki/state")
+    ok(st["state"]["speech"]["clap"] is False and st["state"]["speech"]["btn"] is False, "Klatschen / Knopf für Blinki ab Werk aus")
+    pg.screenshot(path=os.path.join(bilder, "blinki_handy_einstellungen.png"))
+    pg.evaluate("() => window.scrollTo(0, 0)")
 
 
 def main():
@@ -818,7 +1034,7 @@ def main():
                                                key=lambda p: [int(x) for x in re.findall(r"\d+", os.path.basename(p))])[-1])
     print("KI-Test (Blinki fragen) · " + os.path.basename(datei), flush=True)
     tmp = tempfile.mkdtemp(prefix="mw_ki_")
-    nur = set(a.nur.split(",")) if a.nur else set("acdeb")
+    nur = set(a.nur.split(",")) if a.nur else set("acdefb")
     try:
         if "a" in nur:
             teil_a(datei, tmp)
@@ -828,6 +1044,8 @@ def main():
             teil_d(datei, tmp)
         if "e" in nur:
             teil_e(datei, tmp)
+        if "f" in nur:
+            teil_f(datei, tmp)
         if a.browser and "b" in nur:
             teil_b(datei, tmp, a.bilder, b_extra)
     finally:

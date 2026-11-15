@@ -232,6 +232,67 @@ BKFRAG_TX = {
         "Hum, cette histoire est partie dans la mauvaise direction – Blinki t’en raconte une autre. Touche 🔥 encore !",
         "Hmm, questa storia è andata nella direzione sbagliata – Blinki te ne racconta un’altra. Tocca di nuovo 🔥!",
         "Hm, questa istorgia è ida en la faussa direcziun – Blinki ta raquinta in’autra. Smatga anc ina giada 🔥!"),
+    "Blinki listens at the device": ("Blinki hört am Gerät zu", "Blinki écoute sur l’appareil", "Blinki ascolta sul dispositivo", "Blinki taidla sin l’apparat"),
+    "2× clapped": ("2× geklatscht", "2 claquements", "2 battiti di mani", "2× battì las mauns"),
+    "button": ("Knopf", "bouton", "pulsante", "buttun"),
+    "QR card": ("QR-Karte", "carte QR", "scheda QR", "carta QR"),
+    "web test": ("Test im Browser", "test dans le navigateur", "prova nel browser", "test en il navigatur"),
+    "The microphone of the browser needs a secure connection (https). iPhone: open MoveEye with https://": (
+        "Das Mikrofon des Browsers braucht eine sichere Verbindung (https). iPhone: MoveEye mit https:// öffnen",
+        "Le micro du navigateur exige une connexion sécurisée (https). iPhone : ouvre MoveEye avec https://",
+        "Il microfono del browser richiede una connessione sicura (https). iPhone: apri MoveEye con https://",
+        "Il microfon dal navigatur dovra ina colliaziun segira (https). iPhone: avrir MoveEye cun https://"),
+    "No access to the microphone.": ("Kein Zugriff aufs Mikrofon.", "Pas d’accès au micro.", "Nessun accesso al microfono.", "Nagin access al microfon."),
+    "Hold the button while you speak.": ("Knopf gedrückt halten, während du sprichst.", "Maintiens le bouton pendant que tu parles.",
+                                         "Tieni premuto il pulsante mentre parli.", "Tegna smatgà il buttun durant che ti discurras."),
+    "Blinki listens to your recording …": ("Blinki hört sich deine Aufnahme an …", "Blinki écoute ton enregistrement …", "Blinki ascolta la tua registrazione …",
+                                           "Blinki taidla tia registraziun …"),
+    "Speak now - let go to send": ("Jetzt sprechen – loslassen zum Senden", "Parle maintenant – relâche pour envoyer", "Parla ora – rilascia per inviare",
+                                   "Discurra ussa – laschar liber per trametter"),
+    "Speaking": ("Sprechen", "Parler", "Parlare", "Discurrer"),
+    "speech recognition ready": ("Spracherkennung bereit", "reconnaissance vocale prête", "riconoscimento vocale pronto", "renconuschientscha da vusch pronta"),
+    "speech recognition missing": ("Spracherkennung fehlt", "reconnaissance vocale absente", "riconoscimento vocale mancante", "renconuschientscha da vusch manca"),
+    "Load the speech recognition": ("Spracherkennung laden", "Charger la reconnaissance vocale", "Carica il riconoscimento vocale", "Chargiar la renconuschientscha da vusch"),
+    "Set up whisper.cpp": ("whisper.cpp einrichten", "Installer whisper.cpp", "Installa whisper.cpp", "Endrizzar whisper.cpp"),
+    "Listen at the device now (test)": ("Jetzt am Gerät zuhören (Test)", "Écouter maintenant sur l’appareil (test)", "Ascolta ora sul dispositivo (prova)",
+                                        "Tadlar ussa sin l’apparat (test)"),
+    "Clapping 2× starts Blinki": ("2× klatschen startet Blinki", "2 claquements lancent Blinki", "2 battiti di mani avviano Blinki", "2× batter las mauns avvia Blinki"),
+    "Only when clapping twice does nothing else (clap switch, wake-up alarm stay as they are). Off by default.": (
+        "Nur wenn 2× klatschen sonst nichts tut (Klatschschalter und Wecker bleiben, wie sie sind). Ab Werk aus.",
+        "Seulement si 2 claquements ne font rien d’autre (interrupteur à claquements et réveil restent inchangés). Désactivé d’origine.",
+        "Solo se 2 battiti non fanno nient’altro (interruttore e sveglia restano come sono). Spento di fabbrica.",
+        "Mo sche 2× batter las mauns na fa nagut auter (interruptur e svegliarin restan sco ch’els èn). Da fabrica ora."),
+    "Long press on «Acknowledge» starts Blinki": ("Langer Druck auf «Quittieren» startet Blinki", "Appui long sur «Acquitter» lance Blinki",
+                                                  "Pressione lunga su «Conferma» avvia Blinki", "Smatgar ditg «Quittar» avvia Blinki"),
+    "Only when there is nothing to acknowledge - the button acknowledges first as always; the protection button stays as it is. Off by default.": (
+        "Nur wenn nichts zu quittieren ist – der Knopf quittiert zuerst wie immer; der Schutz-Knopf bleibt, wie er ist. Ab Werk aus.",
+        "Seulement s’il n’y a rien à acquitter – le bouton acquitte d’abord comme toujours ; le bouton de protection reste inchangé. Désactivé d’origine.",
+        "Solo se non c’è niente da confermare – il pulsante conferma prima come sempre; il pulsante protezione resta com’è. Spento di fabbrica.",
+        "Mo sch’i n’ha nagut da quittar – il buttun quittescha l’emprim sco adina; il buttun da protecziun resta sco ch’el è. Da fabrica ora."),
+    "QR card: in the card workshop the command «💬 Blinki listens».": ("QR-Karte: in der Karten-Werkstatt der Befehl «💬 Blinki hört zu».",
+        "Carte QR : dans l’atelier des cartes, la commande «💬 Blinki écoute».", "Scheda QR: nel laboratorio delle schede il comando «💬 Blinki ascolta».",
+        "Carta QR: en l’ufficina da cartas il cumond «💬 Blinki taidla»."),
+    "Card workshop": ("Karten-Werkstatt", "Atelier des cartes", "Laboratorio schede", "Ufficina da cartas"),
+    "Never while an alarm, the siren, Morse / radio reception, the radio or the wake-up alarm runs. Recordings are never stored.": (
+        "Nie während Alarm, Sirene, Morse- / Funk-Empfang, Radio oder Wecker. Aufnahmen werden nie gespeichert.",
+        "Jamais pendant une alarme, la sirène, la réception morse / radio, la radio ou le réveil. Les enregistrements ne sont jamais conservés.",
+        "Mai durante allarme, sirena, ricezione Morse / radio, radio o sveglia. Le registrazioni non vengono mai salvate.",
+        "Mai durant in alarm, la sirena, la recepziun da morse / radio, il radio u il svegliarin. Las registraziuns na vegnan mai memorisadas."),
+    "Cloud speech recognition: model name (empty = only offline)": ("Spracherkennung in der Cloud: Name des Modells (leer = nur offline)",
+        "Reconnaissance vocale cloud : nom du modèle (vide = hors ligne seulement)", "Riconoscimento vocale cloud: nome del modello (vuoto = solo offline)",
+        "Renconuschientscha da vusch en il cloud: num dal model (vid = mo offline)"),
+    "Blinki listens": ("Blinki hört zu", "Blinki écoute", "Blinki ascolta", "Blinki taidla"),
+    "Sorry, I did not understand that.": ("Entschuldigung, das habe ich nicht verstanden.", "Désolé, je n’ai pas compris.", "Scusa, non ho capito.",
+                                          "Perstgisa, quai n’hai jau betg chapì."),
+    "no speech recognition (set it up under Blinki)": ("keine Spracherkennung (unter Blinki einrichten)", "pas de reconnaissance vocale (à configurer sous Blinki)",
+                                                       "nessun riconoscimento vocale (da configurare sotto Blinki)", "nagina renconuschientscha da vusch (endrizzar sut Blinki)"),
+    "the recording is too long": ("die Aufnahme ist zu lang", "l’enregistrement est trop long", "la registrazione è troppo lunga", "la registraziun è memia lunga"),
+    "the recording could not be read": ("die Aufnahme konnte nicht gelesen werden", "l’enregistrement n’a pas pu être lu", "la registrazione non è leggibile",
+                                        "la registraziun n’ha betg pudì vegnir legida"),
+    "nothing understood": ("nichts verstanden", "rien compris", "niente capito", "nagut chapì"),
+    "speech recognition failed": ("Spracherkennung fehlgeschlagen", "échec de la reconnaissance vocale", "riconoscimento vocale non riuscito",
+                                  "la renconuschientscha da vusch n’ha betg funcziunà"),
+    "nothing heard": ("nichts gehört", "rien entendu", "niente sentito", "nagut udì"),
 }
 for _k, _v in BKFRAG_TX.items():
     DE.setdefault(_k, _v[0])
@@ -256,6 +317,7 @@ _HELP_BKFRAG = {
            '<li><b>Rechte:</b> Frag MoveEye dürfen alle angemeldeten Benutzer ausser Kindern; Fehlersuche, Modell und Einstellungen nur der Administrator. '
            'Blinki kann sich irren – im Zweifel gilt die Anleitung. Pi-Fenster: Mehr → «💬 Blinki fragen».</li>'
            '<li><b>Mehr Arten:</b> <b>🔥 Lagerfeuer-Geschichten</b> (für Kinder oder Erwachsene, auf Wunsch an einem Ort deines Platzes; Kinder-Benutzer hören nur die Kinder-Fassung), <b>🦌 Naturführer</b> (erklärt die Tiere, die MoveEye in den letzten 7 Tagen gesehen hat) und <b>🎤 Quizmaster</b> (neue Fragen; geprüfte Fragen kommen mit «In die Spielecke» ins Quiz).</li><li><b>Cloud</b> (Administrator, Blinki einstellen): Format «OpenAI-kompatibel» oder «Anthropic Messages», Adresse, Modell und Schlüssel. Der Schlüssel wird nie mehr angezeigt, steht nie im Protokoll und im Diagnose-Paket nur als «***». Die Frage geht dann übers Internet an diesen Dienst; ein Kamerabild nur im Naturführer und nur mit deinem OK, jedes Mal. Ohne Netz antwortet Blinki offline, wenn das Modell da ist.</li>'
+           '<li><b>Sprechen:</b> 🎙 auf dem Handy gedrückt halten, sprechen, loslassen – die Antwort kommt als Text und Stimme (iPhone: nur über https://). Am Gerät hört Blinki nur nach einem Auslöser einen Satz lang zu: QR-Karte «💬 Blinki hört zu», und – nur wenn der Administrator es einschaltet, ab Werk aus – 2× klatschen (nur wenn 2× klatschen sonst nichts tut) oder die Taste «Alarm quittieren» lange drücken, wenn nichts zu quittieren ist. Nie während Alarm, Sirene, Morse-/Funk-Empfang, Radio oder Wecker. Spracherkennung offline mit whisper.cpp (Modell «tiny», 74 MB, feste Prüfsumme); Aufnahmen werden nie gespeichert.</li>'
            '</ul></section>\n'),
     "en": ('<section id="blinki" data-icon="💬"><h2>Ask Blinki</h2><ul>'
            '<li><b>What:</b> More → Overview → «💬 Ask Blinki». Blinki answers questions about using MoveEye (<b>💬 Ask MoveEye</b>) from this manual and the help of the '
@@ -269,25 +331,29 @@ _HELP_BKFRAG = {
            '<li><b>Rights:</b> every logged-in user except children may ask; troubleshooting, model and settings only the administrator. Blinki can be wrong – the manual counts. '
            'Pi window: More → «💬 Ask Blinki».</li>'
            '<li><b>More modes:</b> <b>🔥 Campfire stories</b> (for children or adults, if you like at a place of your site; child users only hear the children’s version), <b>🦌 Nature guide</b> (explains the animals MoveEye saw in the last 7 days) and <b>🎤 Quizmaster</b> (new questions; checked ones go into the quiz with «Into the game corner»).</li><li><b>Cloud</b> (administrator, Blinki settings): format «OpenAI-compatible» or «Anthropic Messages», address, model and key. The key is never shown again, never in the log and only «***» in the diagnosis package. The question then goes over the internet to this service; a camera picture only in the nature guide and only with your OK, each time. Without network Blinki answers offline when the model is there.</li>'
+           '<li><b>Speaking:</b> hold 🎙 on the phone, speak, let go – the answer comes as text and voice (iPhone: only over https://). At the device Blinki only listens for one sentence after a trigger: the QR card «💬 Blinki listens», and – only when the administrator switches it on, off by default – clapping twice (only when it does nothing else) or a long press on «Acknowledge» when there is nothing to acknowledge. Never during an alarm, the siren, Morse / radio reception, the radio or the wake-up alarm. Recognition offline with whisper.cpp (model «tiny», 74 MB, fixed checksum); recordings are never stored.</li>'
            '</ul></section>\n'),
     "fr": ('<section id="blinki" data-icon="💬"><h2>Demander à Blinki</h2><ul>'
            '<li>Plus → Vue d’ensemble → «💬 Demander à Blinki» : Blinki répond aux questions d’utilisation à partir de ce mode d’emploi ; «Ouvrir» mène au bon endroit. '
            '«🔧 Dépannage» (administrateur) lit l’autodiagnostic et le journal. Blinki ne change rien lui-même : une correction ne se fait qu’après ton OK, jamais la protection n’est coupée.</li>'
            '<li>Hors ligne : le modèle (Qwen 2.5, 1.5 B, Apache-2.0, env. 1 Go) est chargé une fois et vérifié par une somme de contrôle fixe ; le moteur llama.cpp est construit une fois. '
            'Sans modèle, Blinki montre les passages du mode d’emploi.</li>'
-           '<li>La protection passe avant : en cas d’alarme, de mouvement suivi ou au-dessus de 80 °C, Blinki fait une pause.</li></ul></section>\n'),
+           '<li>La protection passe avant : en cas d’alarme, de mouvement suivi ou au-dessus de 80 °C, Blinki fait une pause.</li>'
+           '<li>Aussi : 🔥 histoires au coin du feu, 🦌 guide nature, 🎤 maître du quiz ; cloud (OpenAI-compatible / Anthropic Messages, clé jamais affichée) ; 🎙 parler (iPhone : https://). Sur l’appareil, Blinki n’écoute qu’après un déclencheur (carte QR ; claquements et bouton désactivés d’origine), jamais pendant une alarme.</li></ul></section>\n'),
     "it": ('<section id="blinki" data-icon="💬"><h2>Chiedi a Blinki</h2><ul>'
            '<li>Altro → Panoramica → «💬 Chiedi a Blinki»: Blinki risponde alle domande sull’uso partendo da queste istruzioni; «Apri» porta al punto giusto. '
            '«🔧 Ricerca guasti» (amministratore) legge l’autodiagnosi e il registro. Blinki non cambia niente da solo: una correzione parte solo dopo il tuo OK, mai spegne la protezione.</li>'
            '<li>Offline: il modello (Qwen 2.5, 1.5 B, Apache-2.0, circa 1 GB) viene caricato una volta e verificato con una checksum fissa; il motore llama.cpp viene costruito una volta. '
            'Senza modello Blinki mostra i passaggi delle istruzioni.</li>'
-           '<li>La protezione ha la precedenza: con un allarme, un movimento seguito o sopra 80 °C Blinki si ferma.</li></ul></section>\n'),
+           '<li>La protezione ha la precedenza: con un allarme, un movimento seguito o sopra 80 °C Blinki si ferma.</li>'
+           '<li>Inoltre: 🔥 storie attorno al fuoco, 🦌 guida natura, 🎤 quizmaster; cloud (OpenAI-compatibile / Anthropic Messages, chiave mai mostrata); 🎙 parlare (iPhone: https://). Sul dispositivo Blinki ascolta solo dopo un comando (scheda QR; battiti e pulsante spenti di fabbrica), mai durante un allarme.</li></ul></section>\n'),
     "rm": ('<section id="blinki" data-icon="💬"><h2>Dumandar Blinki</h2><ul>'
            '<li>Dapli → Survista → «💬 Dumandar Blinki»: Blinki respunda a dumondas davart il manaschi ord questa instrucziun; «Avrir» maina al dretg lieu. '
            '«🔧 Tschertga da sbagls» (administratur) legia l’autodiagnosa ed il protocol. Blinki na mida nagut sez: ina correctura cumenza pir suenter tes OK, mai na stizza el la protecziun.</li>'
            '<li>Offline: il model (Qwen 2.5, 1.5 B, Apache-2.0, circa 1 GB) vegn chargià ina giada e controllà cun ina summa da controlla fixa; il motor llama.cpp vegn construì ina giada. '
            'Senza model mussa Blinki ils lieus da l’instrucziun.</li>'
-           '<li>La protecziun ha la precedenza: tar in alarm, in moviment suandà u sur 80 °C fa Blinki pausa.</li></ul></section>\n'),
+           '<li>La protecziun ha la precedenza: tar in alarm, in moviment suandà u sur 80 °C fa Blinki pausa.</li>'
+           '<li>Ultra da quai: 🔥 istorgias al fieu, 🦌 guid da la natira, 🎤 quizmaster; cloud (OpenAI-cumpatibel / Anthropic Messages, la clav na vegn mai mussada); 🎙 discurrer (iPhone: https://). Sin l’apparat taidla Blinki mo suenter in signal (carta QR; batter las mauns e buttun da fabrica ora), mai durant in alarm.</li></ul></section>\n'),
 }
 
 

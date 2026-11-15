@@ -143,7 +143,10 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
   `zd_exec(NAME_PY, "<teil>.py")` (Teil 639zzzzk_blinki_kern). Der Text kommt nur über `_zd` (also nur aus einer ZIP, deren SHA-256
   zu `ZD_SHA256` passt), `compile` mit dem echten Dateinamen + linecache (lesbare Tracebacks). **Nur für Funktionen, die nicht zu
   Start, Schutz, Alarm, Update oder Reparatur gehören** – ohne ZIP fehlen sie einfach; was ohne ZIP gelten muss (z. B. Geheimnis-
-  Schlüssel in `USER_SETTINGS_DENY`, Rückfall-Funktionen, die andere Teile aufrufen) bleibt ausserhalb des Literals. Prüfung:
+  Schlüssel in `USER_SETTINGS_DENY`, Rückfall-Funktionen, die andere Teile aufrufen) bleibt ausserhalb des Literals. Code aus der
+  ZIP **umhüllt keine** Funktion von Schutz / Alarm (Knöpfe, Klatschschalter, QR-Befehle): dort steht ein kleiner Haken in der
+  Hauptdatei, der erst nach dem alten Ablauf und in `try` die ZIP-Funktion ruft (Beispiel Stufe 3: 163a `led_button_event`,
+  250 `clap_action`, 639zzp `qrk_exec` → `blinki_listen`). Prüfung:
   `werkzeuge/ki_test.py` kompiliert jedes `…_PY`-Literal und prüft Texte fr / it / rm, doppelte Namen (Wrapper nur mit Alias), alte Namen.
   **Ablage entlasten (Nov. 2026):** `daten.json` steht **ungepackt** in der ZIP
   (`ZD_GEPACKT = False` in `bauen.py`, rund 10 MB statt 4.9 MB): git speichert so pro Version nur den Unterschied
