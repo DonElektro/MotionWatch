@@ -33,8 +33,12 @@
 #             eigene Seite - ein Seitenwechsel beendete die Radio-Seite und ihr <audio>. Spielt «📱 dieser Browser», öffnen Links /
 #             Reiter / ? die anderen Seiten in einem Rahmen (iframe) über der Radio-Seite; die Seite mit dem <audio> bleibt. Die Adresse
 #             zeigt die Seite im Rahmen, «Zurück» des Browsers und /radio im Rahmen führen zurück. 📻 im Kopf jeder Seite (links von ?)
-#             solange das Radio spielt (Browser: window.mwRadio der Radio-Seite; Lautsprecher: GET /api/radio?on=1 alle 15 s), Tippen =
+#             solange das Radio spielt (Browser: mwRadioHost().mwRadioP.S.on; Lautsprecher: GET /api/radio?on=1 alle 15 s), Tippen =
 #             zur Radio-Seite. Grenze: Sperrbildschirm / Hintergrund entscheidet iOS (Media Session: Titel und Knöpfe dort).
+#             Spieler im Hauptfenster (für «Unterseiten als Fenster», mw-fenster): mwRadioHost() = window.top (gleiche Herkunft) oder
+#             das eigene Fenster. Der Spieler (#ra-player: <audio> window.mwRadioAudio, Zustand, Einschlaf-Timer, Wiederverbinden,
+#             Media Session) läuft als Skript IN diesem Fenster (window.mwRadioP) - wird der Rahmen mit /radio entladen, spielt er
+#             weiter; die Radio-Seite zeigt ihn nur an (P.cb, beim pagehide gelöst).
 # Test: werkzeuge/radio_test.py (falsches Verzeichnis, lokaler Teststrom mit ICY, nie das echte Internet).
 # ----------------------------------------------------------------------------
 import socket as _rsock
@@ -1377,24 +1381,119 @@ body.ra-fr{overflow:hidden}body.ra-fr>header,body.ra-fr>main{display:none}
   </section>
   <section class="card"><h3 id="ra-ht">Good to know</h3><ul class="ra-how" id="ra-how"></ul><div style="margin-top:8px"><a class="btn sec" id="ra-wake" href="/settings?setting=wake_sound">⏰ Radio as wake-up alarm</a></div></section>
 </main>
+<script type="text/plain" id="ra-player">
+// «📱 dieser Browser»: the player. It runs in the window of mwRadioHost() (the main page when /radio is a frame over it, else /radio
+// itself), so it plays on when the radio page is closed; the radio page only shows it (P.cb). window.mwRadioP = {A, S, play, stop, vol, sleep, ms}
+(function () {
+  if (window.mwRadioP) return;
+  const A = window.mwRadioAudio || new Audio(); A.preload = "none"; window.mwRadioAudio = A;
+  const S = {on: false, sid: "", name: "", st: "off", via: "", err: "", until: 0, min: 0, again: 0, t0: 0, vol: 70, btitle: "", last: "", lang: "de"};
+  let hls = null, busy = false, msSet = false;
+  const P = window.mwRadioP = {A: A, S: S, cb: null, tx: {}};
+  const tx = k => P.tx[k] || k;
+  const emit = w => { if (P.cb) try { P.cb(w); } catch (e) { P.cb = null; } };
+  const api = async b => { try { const r = await fetch("/api/radio", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: S.lang}, b))});
+    return await r.json(); } catch (e) { return {ok: false, error: tx("No connection to MoveEye.")}; } };
+  const bv = () => { A.volume = Math.max(0, Math.min(1, S.vol / 100 * (S.until ? Math.min(1, (S.until - Date.now()) / 45000) : 1))); };
+  function tryUrl(u, isHls) {
+    return new Promise((res, rej) => {
+      let done = false;
+      const fin = (f, x) => { if (done) return; done = true; clearTimeout(tt); A.removeEventListener("playing", okf); A.removeEventListener("error", erf); f(x); };
+      const okf = () => fin(res), erf = () => fin(rej, new Error("media")), tt = setTimeout(() => fin(rej, new Error("timeout")), 12000);
+      A.addEventListener("playing", okf); A.addEventListener("error", erf);
+      if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
+      if (isHls) { hls = new window.Hls(); hls.loadSource(u); hls.attachMedia(A); } else A.src = u;
+      const p = A.play(); if (p && p.catch) p.catch(e => fin(rej, e));
+    });
+  }
+  P.play = async function (id) {                           // -> the answer of /api/radio (the page shows its state)
+    if (busy) return null; busy = true;
+    const j = await api({action: "bplay", id: id || ""}); busy = false;
+    if (!j.ok || !j.src) { S.st = "error"; S.err = j.error || ""; emit(); return j; }
+    const s = j.src; Object.assign(S, {on: true, sid: s.id, name: s.name, st: "connecting", err: "", via: "", btitle: ""}); emit();
+    (async () => {
+      const tries = [];
+      if (s.kind === "hls") {
+        if (A.canPlayType("application/vnd.apple.mpegurl")) tries.push(["direct", s.url, false]);
+        else if (window.Hls && window.Hls.isSupported && window.Hls.isSupported()) tries.push(["direct", s.url, true]);
+      } else {
+        if (!(location.protocol === "https:" && /^http:/i.test(s.url))) tries.push(["direct", s.url, false]);   // http on an https page: blocked anyway
+        tries.push(["proxy", s.proxy + "?t=" + Date.now(), false]);
+      }
+      for (const [via, u, h] of tries) {
+        if (!S.on || S.sid !== s.id) return;
+        try { await tryUrl(u, h); S.via = via; S.st = "playing"; S.t0 = Date.now(); window.mwRadioVia = via; P.ms(); emit("playing"); return; } catch (e) {}
+      }
+      if (S.sid !== s.id) return;
+      P.stop(true); S.st = "error";
+      S.err = tx(s.kind === "hls" ? "This station (HLS) cannot play in this browser - use the MoveEye loudspeaker." : "The station does not play in this browser.");
+      emit();
+    })();
+    return j;
+  };
+  P.stop = function (keep) {
+    const was = S.on; S.on = false; S.st = "off"; S.until = 0; S.min = 0; S.via = ""; S.btitle = ""; if (!keep) S.err = "";
+    if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
+    A.pause(); A.removeAttribute("src"); try { A.load(); } catch (e) {}
+    bv(); if (was) api({action: "bstop"}); P.ms(); emit();
+  };
+  P.vol = v => { S.vol = Math.max(0, Math.min(100, +v || 0)); bv(); };
+  P.sleep = m => { S.min = m; S.until = m ? Date.now() + m * 60000 : 0; bv(); emit(); };
+  A.addEventListener("ended", () => again()); A.addEventListener("error", () => { if (S.st === "playing") again(); });
+  function again() {                                       // the stream broke off: at most 3 new tries, then the card says so
+    if (!S.on) return;
+    if (Date.now() - S.t0 > 60000) S.again = 0;
+    if (S.again++ >= 3) { P.stop(true); S.st = "error"; S.err = tx("The station does not play in this browser."); emit(); return; }
+    const id = S.sid; S.st = "connecting"; emit(); setTimeout(() => { if (S.on && S.sid === id) P.play(id); }, 3000);
+  }
+  setInterval(() => { if (S.on && S.until) { if (Date.now() >= S.until) P.stop(); else { bv(); emit(); } } }, 1000);   // the sleep timer
+  setInterval(async () => {                                // the radio page is closed: the title for the lock screen (the open page asks itself)
+    if (P.cb || !S.on || S.st !== "playing") return;
+    try { const j = await (await fetch("/api/radio?lang=" + S.lang + "&b=" + encodeURIComponent(S.sid), {cache: "no-store"})).json();
+      const b = (j && j.state && j.state.btitle) || ""; if (b !== S.btitle) { S.btitle = b; P.ms(); } } catch (e) {}
+  }, 5000);
+  P.ms = function () {                                     // lock screen (iPhone / Android): title and the buttons
+    if (!("mediaSession" in navigator)) return;
+    try {
+      navigator.mediaSession.metadata = S.on && window.MediaMetadata ? new MediaMetadata({title: S.btitle || S.name, artist: S.btitle ? S.name : "MoveEye", album: "MoveEye · " + tx("Radio"),
+        artwork: [{src: "/icon-192.png", sizes: "192x192", type: "image/png"}]}) : null;
+      navigator.mediaSession.playbackState = S.on ? "playing" : "none";
+      if (!msSet) {
+        msSet = true;
+        navigator.mediaSession.setActionHandler("play", () => P.play(S.sid || S.last));
+        ["pause", "stop"].forEach(a => { try { navigator.mediaSession.setActionHandler(a, () => P.stop()); } catch (e) {} });
+      }
+    } catch (e) {}
+  };
+  bv();
+})();
+</script>
 <script>
 /*COMMON*/
 /*RADIODE*/
+window.mwRadioHost = window.mwRadioHost || function () {   // the window that keeps the radio: the main page (same origin) or this one
+  try { const w = window.top; if (w !== window && w.location.origin === location.origin && w.document) return w; } catch (e) {}
+  return window;
+};
 (async function () {
-  try { if (window.parent !== window && window.parent.mwRadio) { window.parent.mwRadio.show(); return; } } catch (e) {}   // /radio inside the frame: back to this page
+  try { if (window.top !== window && window.top.mwRadio) { window.top.mwRadio.show(); return; } } catch (e) {}   // /radio inside our own frame: back to the page
   try { await initAppearance(); } catch (e) {}
   const $i = id => document.getElementById(id);
   const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
   const L = () => { try { return LANG || "de"; } catch (e) { return "de"; } };
   let J = null, edit = false, tm = 0, busy = false;
-  // «📱 dieser Browser»: where it plays, remembered per browser; the <audio> of the page plays the station itself
+  // «📱 dieser Browser»: where it plays, remembered per browser; the player (#ra-player) plays the station in the window of mwRadioHost()
   const LS = {get: (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } },
               set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }};
-  let W = LS.get("mw-radio-where", "pi") === "br" ? "br" : "pi", bvol = Math.max(0, Math.min(100, +LS.get("mw-radio-bvol", 70) || 0)), hls = null;
-  const A = new Audio(); A.preload = "none"; window.mwRadioAudio = A;
-  const B = {on: false, sid: "", name: "", st: "off", via: "", err: "", until: 0, min: 0, again: 0, t0: 0};
-  const bv = () => { A.volume = Math.max(0, Math.min(1, bvol / 100 * (B.until ? Math.min(1, (B.until - Date.now()) / 45000) : 1))); };
-  bv();
+  let W = LS.get("mw-radio-where", "pi") === "br" ? "br" : "pi", bvol = Math.max(0, Math.min(100, +LS.get("mw-radio-bvol", 70) || 0));
+  const H = mwRadioHost();
+  if (!H.mwRadioP) { const sc = H.document.createElement("script"); sc.textContent = $i("ra-player").textContent; H.document.head.appendChild(sc); }
+  const P = H.mwRadioP, A = P.A, B = P.S; window.mwRadioAudio = A;
+  const ptx = () => { B.lang = L(); ["Radio", "No connection to MoveEye.", "The station does not play in this browser.",
+    "This station (HLS) cannot play in this browser - use the MoveEye loudspeaker."].forEach(k => { P.tx[k] = t(k); }); };
+  ptx(); if (!B.on) P.vol(bvol);
+  const mine = w => { if (w === "playing") load(); paint(); };
+  P.cb = mine; addEventListener("pagehide", () => { if (P.cb === mine) P.cb = null; });
   const api = async (b) => { try { const r = await fetch("/api/radio", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: L()}, b || {}))});
     return await r.json(); } catch (e) { return {ok: false, error: t("No connection to MoveEye.")}; } };
   document.title = "MoveEye – " + t("Radio");
@@ -1414,67 +1513,8 @@ body.ra-fr{overflow:hidden}body.ra-fr>header,body.ra-fr>main{display:none}
    "Radio as wake-up alarm: Settings › Wake-up alarm › Wake-up sound. Without internet the alarm takes its tone after 10 s.",
    "«📱 this browser»: the phone plays the station, the MoveEye loudspeaker stays silent. If the station does not play directly, it runs through MoveEye (at most 2 listeners)."].forEach(s => $i("ra-how").appendChild(E("li", "", t(s))));
   const mm = s => { s = Math.max(0, s | 0); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
-  function tryUrl(u, isHls) {
-    return new Promise((res, rej) => {
-      let done = false;
-      const fin = (f, x) => { if (done) return; done = true; clearTimeout(tt); A.removeEventListener("playing", okf); A.removeEventListener("error", erf); f(x); };
-      const okf = () => fin(res), erf = () => fin(rej, new Error("media")), tt = setTimeout(() => fin(rej, new Error("timeout")), 12000);
-      A.addEventListener("playing", okf); A.addEventListener("error", erf);
-      if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
-      if (isHls) { hls = new window.Hls(); hls.loadSource(u); hls.attachMedia(A); } else A.src = u;
-      const p = A.play(); if (p && p.catch) p.catch(e => fin(rej, e));
-    });
-  }
-  async function bplay(id) {
-    if (busy) return; busy = true;
-    const j = await api({action: "bplay", id: id || ""}); busy = false;
-    if (!j.ok || !j.src) { B.st = "error"; B.err = j.error || ""; take(j); return; }
-    const s = j.src; Object.assign(B, {on: true, sid: s.id, name: s.name, st: "connecting", err: "", via: ""}); if (j.state) J = j.state; paint();
-    const tries = [];
-    if (s.kind === "hls") {
-      if (A.canPlayType("application/vnd.apple.mpegurl")) tries.push(["direct", s.url, false]);
-      else if (window.Hls && window.Hls.isSupported && window.Hls.isSupported()) tries.push(["direct", s.url, true]);
-    } else {
-      if (!(location.protocol === "https:" && /^http:/i.test(s.url))) tries.push(["direct", s.url, false]);   // http on an https page: blocked anyway
-      tries.push(["proxy", s.proxy + "?t=" + Date.now(), false]);
-    }
-    for (const [via, u, h] of tries) {
-      if (!B.on || B.sid !== s.id) return;
-      try { await tryUrl(u, h); B.via = via; B.st = "playing"; B.t0 = Date.now(); window.mwRadioVia = via; ms(); paint(); load(); return; } catch (e) {}
-    }
-    if (B.sid !== s.id) return;
-    bstop(true); B.st = "error";
-    B.err = s.kind === "hls" ? t("This station (HLS) cannot play in this browser - use the MoveEye loudspeaker.") : t("The station does not play in this browser.");
-    paint();
-  }
-  function bstop(keep) {
-    const was = B.on; B.on = false; B.st = "off"; B.until = 0; B.min = 0; B.via = ""; if (!keep) B.err = "";
-    if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
-    A.pause(); A.removeAttribute("src"); try { A.load(); } catch (e) {}
-    bv(); if (was) api({action: "bstop"}); ms(); paint();
-  }
-  A.addEventListener("ended", () => again()); A.addEventListener("error", () => { if (B.st === "playing") again(); });
-  function again() {                                       // the stream broke off: at most 3 new tries, then the card says so
-    if (!B.on) return;
-    if (Date.now() - B.t0 > 60000) B.again = 0;
-    if (B.again++ >= 3) { bstop(true); B.st = "error"; B.err = t("The station does not play in this browser."); paint(); return; }
-    const id = B.sid; B.st = "connecting"; paint(); setTimeout(() => { if (B.on && B.sid === id) bplay(id); }, 3000);
-  }
-  setInterval(() => { if (B.on && B.until) { if (Date.now() >= B.until) bstop(); else { bv(); paint(); } } }, 1000);   // the sleep timer of the browser
-  let msSet = false;
-  function ms() {                                          // lock screen (iPhone / Android): title and the buttons
-    if (!("mediaSession" in navigator)) return;
-    try {
-      navigator.mediaSession.metadata = B.on && window.MediaMetadata ? new MediaMetadata({title: (J && J.btitle) || B.name, artist: (J && J.btitle) ? B.name : "MoveEye", album: "MoveEye · " + t("Radio"),
-        artwork: [{src: "/icon-192.png", sizes: "192x192", type: "image/png"}]}) : null;
-      navigator.mediaSession.playbackState = B.on ? "playing" : "none";
-      if (!msSet) {
-        msSet = true;
-        navigator.mediaSession.setActionHandler("play", () => bplay(B.sid || (J && J.last) || ""));
-        ["pause", "stop"].forEach(a => { try { navigator.mediaSession.setActionHandler(a, () => bstop()); } catch (e) {} });
-      }
-    } catch (e) {}
-  }
+  async function bplay(id) { const j = await P.play(id); if (j && j.state) J = j.state; if (j && !j.ok) take(j); else paint(); }
+  const bstop = keep => P.stop(keep);
   // Besitzer: the radio plays on while he moves around MoveEye. Every page of MoveEye is its own page - a change of page would end this
   // page and its <audio>. So while «📱 dieser Browser» plays, the other pages open in a frame over this page (the frame changes pages,
   // this page with the <audio> stays); 📻 in their header (render_page below) comes back here. Browser back: also back here.
@@ -1495,10 +1535,10 @@ body.ra-fr{overflow:hidden}body.ra-fr>header,body.ra-fr>main{display:none}
     try { THEME = localStorage.getItem("mw-theme") || THEME; document.documentElement.classList.toggle("sxnight", localStorage.getItem("mw-night") === "1"); applyTheme(); } catch (e) {}
     load();
   }
-  window.mwRadio = {br: () => W === "br" && B.on, show: frBack};
+  window.mwRadio = {show: frBack};
   addEventListener("popstate", e => { if (fr) { frOn(!!(e.state && e.state.ra)); if (!fr.hidden) return; document.title = "MoveEye – " + t("Radio"); load(); } });
   document.addEventListener("click", e => {                // capture: before ? (it goes to /help by itself) and the links
-    if (!(W === "br" && B.on) || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || !e.target.closest) return;
+    if (!B.on || H !== window || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || !e.target.closest) return;
     if (e.target.closest("#mwk-help")) { e.preventDefault(); e.stopImmediatePropagation(); frGo("/help"); return; }
     const a = e.target.closest("a[href]");
     if (!a || (a.target && a.target !== "_self") || a.hasAttribute("download")) return;
@@ -1531,7 +1571,7 @@ body.ra-fr{overflow:hidden}body.ra-fr>header,body.ra-fr>main{display:none}
     const v = $i("ra-vol"); if (document.activeElement !== v) v.value = bvol; $i("ra-vol-v").textContent = v.value + "%"; v.disabled = !J.may.play;
     const sg = $i("ra-sleep"); sg.textContent = "";
     J.sleep.opts.forEach(m => { const b = E("button", "sec" + (m === B.min ? " sel" : ""), m ? m + " min" : t("off")); b.type = "button";
-      b.disabled = !J.may.play || (!!m && !B.on); b.onclick = () => { B.min = m; B.until = m ? Date.now() + m * 60000 : 0; bv(); paint(); }; sg.appendChild(b); });
+      b.disabled = !J.may.play || (!!m && !B.on); b.onclick = () => P.sleep(m); sg.appendChild(b); });
     return cur;
   }
   function paint() {
@@ -1592,10 +1632,10 @@ body.ra-fr{overflow:hidden}body.ra-fr>header,body.ra-fr>main{display:none}
   function take(j) { if (j && j.state) J = j.state; $i("ra-err").textContent = j && !j.ok ? (j.error || "") : ""; paint(); clearTimeout(tm); tm = setTimeout(load, 1500); }
   async function load() {
     clearTimeout(tm);
-    const was = J && J.btitle;
     try { const j = await (await fetch("/api/radio?lang=" + L() + (W === "br" && B.on ? "&b=" + encodeURIComponent(B.sid) : ""), {cache: "no-store"})).json();
       if (j && j.state) J = j.state; } catch (e) {}
-    if (J && J.btitle !== was) ms();
+    if (J) B.last = J.last || "";
+    if (J && W === "br" && B.on && (J.btitle || "") !== B.btitle) { B.btitle = J.btitle || ""; P.ms(); }
     paint(); tm = setTimeout(load, J && (J.on || J.state === "retry" || (W === "br" && B.on)) ? 2000 : 8000);
   }
   $i("ra-go").onclick = async () => { if (W === "br") { if (B.on) bstop(); else bplay(J && J.last || ""); return; }
@@ -1603,7 +1643,7 @@ body.ra-fr{overflow:hidden}body.ra-fr>header,body.ra-fr>main{display:none}
     const j = await api(J && J.on ? {action: "stop"} : {action: "play", id: J && J.last || ""}); busy = false; take(j); };
   let vt = 0;
   $i("ra-vol").oninput = () => { $i("ra-vol-v").textContent = $i("ra-vol").value + "%"; clearTimeout(vt);
-    if (W === "br") { bvol = +$i("ra-vol").value; LS.set("mw-radio-bvol", String(bvol)); bv(); return; } vt = setTimeout(async () => take(await api({action: "volume", v: +$i("ra-vol").value})), 250); };
+    if (W === "br") { bvol = +$i("ra-vol").value; LS.set("mw-radio-bvol", String(bvol)); P.vol(bvol); return; } vt = setTimeout(async () => take(await api({action: "volume", v: +$i("ra-vol").value})), 250); };
   $i("ra-edit").onclick = () => { edit = !edit; paint(); };
   $i("ra-sf").onsubmit = async (ev) => {
     ev.preventDefault(); const q = $i("ra-q").value.trim(), res = $i("ra-res"); $i("ra-serr").textContent = "";
@@ -1655,10 +1695,14 @@ RADIO_SYM_JS = r"""<style>.hdr-ctl.mwk>#mwk-radio{order:0;position:relative;font
   const a = document.getElementById("mwk-radio"), TX = /*RSTX*/{};
   if (!a || window.mwRadioSym) return; window.mwRadioSym = 1;
   const L = () => { try { return (typeof LANG !== "undefined" && LANG) || localStorage.getItem("mw-lang") || "de"; } catch (e) { return "de"; } };
-  let P = null, pi = false; try { if (window.parent !== window && window.parent.mwRadio) P = window.parent.mwRadio; } catch (e) {}
-  const home = !P && location.pathname === "/radio";       // the radio page itself: no symbol
+  window.mwRadioHost = window.mwRadioHost || function () {   // the window that keeps the radio: the main page (same origin) or this one
+    try { const w = window.top; if (w !== window && w.location.origin === location.origin && w.document) return w; } catch (e) {}
+    return window;
+  };
+  const H = mwRadioHost(), P = H !== window && H.mwRadio, home = location.pathname === "/radio";   // the radio page itself: no symbol
+  let pi = false;
   function paint() {
-    let br = false; try { br = !!(P && P.br()); } catch (e) {}
+    let br = false; try { br = !!(H.mwRadioP && H.mwRadioP.S.on); } catch (e) {}
     const lab = TX[L()] || TX.en; if (a.title !== lab) { a.title = lab; a.setAttribute("aria-label", lab); }
     a.hidden = home || !(br || pi);
   }
@@ -1666,7 +1710,7 @@ RADIO_SYM_JS = r"""<style>.hdr-ctl.mwk>#mwk-radio{order:0;position:relative;font
     if (x && !e.button && !e.metaKey && !e.ctrlKey) { e.preventDefault(); e.stopImmediatePropagation(); P.show(); } }, true);
   async function poll() { if (home || document.hidden) return;
     try { const j = await (await fetch("/api/radio?on=1", {cache: "no-store"})).json(); pi = !!(j && j.on); } catch (e) {} paint(); }
-  paint(); setTimeout(poll, 300); setInterval(poll, 15000); if (P) setInterval(paint, 1000);
+  paint(); setTimeout(poll, 300); setInterval(poll, 15000); setInterval(paint, 1000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) poll(); });
 })();</script>"""
 if isinstance(KOPF_JS, str) and KOPF_JS.count('const KNOWN = new Set(["mwk-help", ') == 1:     # the header keeps 📻 (not into ☰)
@@ -1971,7 +2015,7 @@ def radio_selftest():
     assert [radio_addr_kind(a_, True) for a_ in ("10.1.2.3", "192.168.1.5", "fd00::1")] == ["lan"] * 3 and radio_addr_kind("1.1.1.1") == "global"
     h_ = render_page(MORE_PAGE, "more")
     assert h_.count('id="mwk-radio"') == 1 and "/api/radio?on=1" in h_ and DE.get("Radio is playing - to the radio", "") in h_, "📻 in the header"
-    assert 'aria-hidden="true">📻' in render_page(RADIO_PAGE, "more") and "window.mwRadio" in RADIO_PAGE, "the radio plays on over the other pages (frame)"
+    assert 'aria-hidden="true">📻' in render_page(RADIO_PAGE, "more") and "window.mwRadio" in RADIO_PAGE and "window.mwRadioP = " in RADIO_PAGE and "mwRadioHost" in RADIO_PAGE, "the radio plays on over the other pages (frame)"
     assert role_allows("family", "/radio/stream/pilatus", "GET", {}) and not role_allows("view", "/radio/stream/pilatus", "GET", {}), "the proxy: the right to play"
     assert radio_br_proxy("../x")[0] == 404 and radio_br_proxy("nichtda")[0] == 404 and RADIO_BR_MAX == 2, "the proxy: only stations of the list"
     return "Pilatus by name (no guessed address), addresses, play lists, ICY titles, priority / pause, rights, wake-up sound, texts, back-off"
