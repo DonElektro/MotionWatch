@@ -139,8 +139,8 @@ jobs:
           set -e
           mkdir -p "$W/osm" && cd "$W/osm"
           for a in switzerland liechtenstein; do
-            curl -sSfL --retry 5 -o "$a.osm.pbf" "https://download.geofabrik.de/europe/$a-latest.osm.pbf"
-            curl -sSfL --retry 5 -o "$a.md5" "https://download.geofabrik.de/europe/$a-latest.osm.pbf.md5"
+            curl -sSfL --retry 8 --retry-all-errors --retry-delay 15 -o "$a.osm.pbf" "https://download.geofabrik.de/europe/$a-latest.osm.pbf"
+            curl -sSfL --retry 8 --retry-all-errors --retry-delay 15 -o "$a.md5" "https://download.geofabrik.de/europe/$a-latest.osm.pbf.md5"
             echo "$(cut -d' ' -f1 "$a.md5")  $a.osm.pbf" | md5sum -c -
             osmium tags-filter "$a.osm.pbf" w/sac_scale r/route=hiking,foot wr/natural=glacier -o "$a.w.osm.pbf" --overwrite
             if [ "$BASIS" = "neu" ]; then
