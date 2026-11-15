@@ -11,10 +11,12 @@ liefert ein kleines Test-Modell (GGUF-Kopf) mit fester Grösse und Prüfsumme. M
      OK, nie «Schutz aus», Leerlauf-Ende, ohne Daten-ZIP kein Absturz, Rechte, Texte in 5 Sprachen, Selbsttest-Funktion.
   C) MoveEye wird mit kill -9 beendet – der llama-server geht mit (PR_SET_PDEATHSIG).
   D) Pi-Fenster mit nachgebautem tkinter: Frage stellen, Antwort erscheint, Schliessen.
+  E) Stufe 2: 🔥 Geschichten (Kinder-Filter, Orte des Platzes), 🦌 Naturführer (Sichtungen), 🎤 Quiz (JSON geprüft, in die Spielecke), Cloud
+     (OpenAI-kompatibel + Anthropic Messages, Ersatz-Dienst: Schlüssel nie in Seite / Protokoll / Diagnose / Antwort, Bild nur mit OK, ohne Netz offline).
   B) --browser: MoveEye (Demo) im Browser: Mehr → «💬 Blinki fragen», Frage → Antwort Stück für Stück mit «Öffnen», Fehlersuche
      mit Vorschlag, Karte «Blinki einrichten» ohne Modell, 390 px dunkel + PC 1280; Rechte über HTTP. --bilder ORDNER.
 
-  python3 werkzeuge/ki_test.py [--datei X.py] [--browser] [--bilder ORDNER] [--nur a,c,d,b]
+  python3 werkzeuge/ki_test.py [--datei X.py] [--browser] [--bilder ORDNER] [--nur a,c,d,e,b]
 """
 import argparse
 import base64
@@ -82,8 +84,9 @@ def fake_llama(argv):
             sysm = d["messages"][0]["content"]
             src = re.findall(r"\[([^\]]{4,})\]", sysm)
             q = d["messages"][-1]["content"]
-            if os.environ.get("FAKE_LLAMA_JSON") and "JSON" in sysm:
-                ans = os.environ["FAKE_LLAMA_JSON"]
+            jf = os.environ.get("FAKE_LLAMA_JSON_FILE", "")
+            if jf and os.path.isfile(jf) and "JSON" in sysm:
+                ans = open(jf, encoding="utf-8").read()
             else:
                 ans = "Das geht so:\n1. **%s** öffnen.\n2. Dort die Einstellung prüfen.\nFrage war: %s" % (src[0] if src else "Anleitung", q[:60])
             self.send_response(200); self.send_header("Content-Type", "text/event-stream"); self.send_header("Transfer-Encoding", "chunked")
@@ -152,7 +155,7 @@ class HF:
 
 def env_for(tmp, home):
     e = dict(os.environ, MOTIONWATCH_HOME=home, PATH=make_bin(tmp) + os.pathsep + os.environ.get("PATH", ""), PYTHONPATH=HIER,
-             FAKE_LLAMA_LOG=os.path.join(tmp, "llama.log"), NO_PROXY="127.0.0.1,localhost", no_proxy="127.0.0.1,localhost")
+             FAKE_LLAMA_LOG=os.path.join(tmp, "llama.log"), FAKE_LLAMA_JSON_FILE=os.path.join(tmp, "llama.json"), NO_PROXY="127.0.0.1,localhost", no_proxy="127.0.0.1,localhost")
     os.makedirs(home, exist_ok=True)
     return e
 
@@ -549,7 +552,7 @@ def teil_b(datei, tmp, bilder, extra=None):
         c3, _a = http_api(op, base, "/api/ki/model", {"action": "load"}, "gast", "gast-pw-123")
         c4, _a = http_api(op, base, "/api/ki/ask", {"mode": "frag", "q": "x"}, "kind", "kind-pw-123")
         c5, s5 = http_api(op, base, "/api/ki/state", None, "gast", "gast-pw-123")
-        ok([c1, c2, c3, c4, c5] == [200, 403, 403, 403, 200] and [m["m"] for m in s5["state"]["modes"]] == ["frag"],
+        ok([c1, c2, c3, c4, c5] == [200, 403, 403, 403, 200] and [m["m"] for m in s5["state"]["modes"]] == (["frag", "geschichte", "natur"] if len(s5["state"]["modes"]) > 1 else ["frag"]),
            "Rechte über HTTP: Nur ansehen fragt %d, Fehlersuche %d, Modell %d; Kind %d; Arten für Gast: %s" % (c1, c2, c3, c4, [m["m"] for m in s5["state"]["modes"]]))
         with sync_playwright() as pw:
             br = pw.chromium.launch(args=["--no-proxy-server"])
@@ -564,7 +567,7 @@ def teil_b(datei, tmp, bilder, extra=None):
                 row.click()
                 pg.wait_for_function("() => (document.getElementById('bk-chip-t') || {}).textContent.includes('Offline')", timeout=30000)
                 weg(pg)
-                ok(pg.locator("#bk-face .bk").count() == 1 and pg.locator("#bk-modes button").count() == 2, "%s: Blinki-Figur und 2 Arten" % name)
+                ok(pg.locator("#bk-face .bk").count() == 1 and pg.locator("#bk-modes button").count() >= 2, "%s: Blinki-Figur und die Arten" % name)
                 pg.locator("#bk-modes button", has_text="Frag MoveEye").click()
                 pg.locator("#bk-q").fill("Wie lade ich die Piper-Stimme?")
                 pg.locator("#bk-go").click()
@@ -613,6 +616,197 @@ def teil_b(datei, tmp, bilder, extra=None):
             p.kill()
 
 
+# ---- stage 2: stories, nature guide, quiz, cloud ------------------------------------------------------------------------------------
+class Cloud:
+    """a stand-in for a cloud service: OpenAI-compatible (/v1/chat/completions) and Anthropic Messages (/v1/messages), streaming"""
+    def __init__(self):
+        self.reqs = []
+        me = self
+
+        class H(http.server.BaseHTTPRequestHandler):
+            protocol_version = "HTTP/1.1"
+
+            def log_message(self, *x):
+                pass
+
+            def do_POST(self):
+                n = int(self.headers.get("Content-Length") or 0)
+                raw = self.rfile.read(n)
+                me.reqs.append({"path": self.path, "h": {k.lower(): v for k, v in self.headers.items()}, "raw": raw})
+                if self.path.endswith("/audio/transcriptions"):
+                    b = json.dumps({"text": "Wie laut ist die Sirene?"}).encode()
+                    self.send_response(200); self.send_header("Content-Type", "application/json"); self.send_header("Content-Length", str(len(b))); self.end_headers()
+                    self.wfile.write(b); return
+                key = self.headers.get("x-api-key") or (self.headers.get("Authorization") or "")[7:]
+                if "WRONG" in key:
+                    b = json.dumps({"error": "invalid key " + key}).encode()
+                    self.send_response(401); self.send_header("Content-Length", str(len(b))); self.end_headers(); self.wfile.write(b); return
+                anth = self.path.endswith("/v1/messages")
+                self.send_response(200); self.send_header("Content-Type", "text/event-stream"); self.send_header("Transfer-Encoding", "chunked"); self.end_headers()
+
+                def chunk(s):
+                    b = s.encode(); self.wfile.write(b"%x\r\n%s\r\n" % (len(b), b)); self.wfile.flush()
+                for w in ["Hallo ", "aus ", "der ", "Cloud", "."]:
+                    if anth:
+                        chunk("event: content_block_delta\ndata: " + json.dumps({"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": w}}) + "\n\n")
+                    else:
+                        chunk("data: " + json.dumps({"choices": [{"delta": {"content": w}}]}) + "\n\n")
+                    time.sleep(0.03)
+                chunk("event: message_stop\ndata: {\"type\": \"message_stop\"}\n\n" if anth else "data: [DONE]\n\n")
+                self.wfile.write(b"0\r\n\r\n"); self.wfile.flush()
+        self.httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), H)
+        self.httpd.daemon_threads = True
+        self.url = "http://127.0.0.1:%d/v1" % self.httpd.server_address[1]
+        threading.Thread(target=self.httpd.serve_forever, daemon=True).start()
+
+
+TEIL_E = r'''
+import json, os, sys, time, threading
+import numpy as np
+sys.path.insert(0, os.environ["KI_HIER"])
+import ki_test as K
+src = open(sys.argv[1], encoding="utf-8").read()
+i = src.rfind('\nif __name__ == "__main__":')
+ns = {"__name__": "mw_ki_e", "__file__": os.path.abspath(sys.argv[1])}
+exec(compile(src[:i], sys.argv[1], "exec"), ns)
+ok = K.ok
+C, B = ns["CFG"], ns["BLINKI"]
+C.update(lang="de")
+logs = []
+_lg = ns["log_event"]
+def lg(kind, text):
+    logs.append(str(text)); return _lg(kind, text)
+ns["log_event"] = lg
+def wait(f, s):
+    t = time.time()
+    while time.time() - t < s:
+        if f(): return True
+        time.sleep(0.05)
+    return False
+def run(mode, q="", extra=None, cl="e"):
+    j, e = ns["blinki_ask"](mode, q, "de", None, "test", cl + mode, extra)
+    assert j is not None, e
+    wait(lambda: j["state"] in ("done", "error", "stopped"), 60)
+    return j
+K.fake_model(ns["DATA_DIR"])
+ns["BLINKI_MODE_ICON"]
+ok([m["m"] for m in ns["blinki_modes"]("admin")] == ["frag", "fehler", "geschichte", "natur", "quiz"], "Arten: 💬 🔧 🔥 🦌 🎤")
+ok([m["m"] for m in ns["blinki_modes"]("kid")] == ["geschichte"] and [m["m"] for m in ns["blinki_modes"]("view")] == ["frag", "geschichte", "natur"]
+   and [m["m"] for m in ns["blinki_modes"]("friend")] == ["frag", "geschichte", "quiz"], "Rechte: Kind nur Geschichten, Naturführer = Aufnahmen, Quiz = Spiele")
+# stories with places of the own site
+ns["ZONES"][:] = [{"name": "Feuerstelle", "mode": "alarm", "points": []}]
+ok("Feuerstelle" in ns["blinki_places"](), "Orte des eigenen Platzes: %s" % ns["blinki_places"]())
+j = run("geschichte", "", {"kid": True, "place": "Feuerstelle"})
+req = [json.loads(x) for x in open(os.environ["FAKE_LLAMA_LOG"]) if '"req"' in x][-1]["req"]
+ok(j["state"] == "done" and "children aged 5 to 10" in req["messages"][0]["content"] and "Feuerstelle" in req["messages"][0]["content"] and req["max_tokens"] == 650,
+   "🔥 Kinder-Geschichte an der Feuerstelle (Vorgabe für Kinder, längere Antwort)")
+j = run("geschichte", "", {"kid": True, "place": "48.1,7.2 geheim"})
+req = [json.loads(x) for x in open(os.environ["FAKE_LLAMA_LOG"]) if '"req"' in x][-1]["req"]
+ok("geheim" not in req["messages"][0]["content"], "nur Orte der Liste (kein fremder Text in der Vorgabe)")
+j = run("geschichte", "Ein Drache mit Blut am Messer", {"kid": True})
+v = ns["blinki_job_view"](j)
+ok(v["full"] and "Blut" not in v["text"] and "anderen" in v["text"].lower() or "andere" in v["text"], "Kinder-Filter: unpassendes Wort -> freundlich abgebrochen (%s)" % v["text"][:60])
+j = run("geschichte", "Ein Drache mit Blut am Messer", {"kid": False})
+ok("Blut" in ns["blinki_job_view"](j)["text"], "Erwachsene: kein Kinder-Filter")
+# nature guide
+ns["SIGHT"].update(loaded=True)
+ns["SIGHT"]["list"][:] = [{"id": "s1", "start": (ns["datetime"].now() - ns["timedelta"](hours=5)).isoformat(timespec="seconds"), "label": "fox", "kind": "animal", "dur": 42, "img": "", "conf": 0.8}]
+ns["sight_load"] = lambda: None
+j = run("natur")
+req = [json.loads(x) for x in open(os.environ["FAKE_LLAMA_LOG"]) if '"req"' in x][-1]["req"]
+ok(j["state"] == "done" and "SEEN BY MOVEEYE" in req["messages"][0]["content"] and "(42 s)" in req["messages"][0]["content"], "🦌 Naturführer mit den Sichtungen der letzten 7 Tage")
+# quiz
+open(os.environ["FAKE_LLAMA_JSON_FILE"], "w", encoding="utf-8").write(json.dumps([{"q": "Wie heisst der höchste Berg der Schweiz?", "a": "Dufourspitze"}, {"q": "Welches Tier baut einen Damm?", "a": "Biber"},
+                                            {"q": "Wie viele Beine hat ein Käfer?", "a": "6"}, {"q": "x", "a": "zu kurz"}], ensure_ascii=False))
+n0 = len(ns["QUIZ"])
+j = run("quiz", "", {"n": 5})
+v = ns["blinki_job_view"](j)
+ok([x["a"] for x in v["quiz"]] == ["Biber", "6"], "🎤 Quiz: JSON geprüft (doppelt / zu kurz weg): %s" % [x["a"] for x in v["quiz"]])
+r = ns["blinki_quiz_take"](j["id"], None, "test")
+ok(r[0] and r[2] == 2 and len(ns["QUIZ"]) == n0 + 2 and C["blinki_quiz"][-1]["a"] == "6", "«In die Spielecke»: 2 Fragen im Quiz und gemerkt")
+ok(ns["role_allows"]("friend", "/api/ki/quiz", "POST", {}) and not ns["role_allows"]("view", "/api/ki/quiz", "POST", {}), "Quiz übernehmen: Recht «Spiele»")
+os.remove(os.environ["FAKE_LLAMA_JSON_FILE"])
+# the cloud
+cl = K.Cloud()
+st = ns["blinki_set"]
+ok(st("blinki_cloud_on", True)[0] is False, "Cloud ein geht erst mit Adresse, Modell und Schlüssel")
+ok(st("blinki_cloud_url", "http://api.example.com/v1")[0] is False and st("blinki_cloud_url", "https://u:p@api.example.com")[0] is False
+   and st("blinki_cloud_url", "https://api.example.com/v1")[0], "Adresse: nur https (http nur im eigenen Netz), nie Benutzer:Passwort@")
+KEY = "sk-test-GEHEIM-1234567890abcdef"
+for k_, v_ in (("blinki_cloud_url", cl.url), ("blinki_cloud_model", "test-model-1"), ("blinki_cloud_key", KEY), ("blinki_cloud_fmt", "openai"), ("blinki_cloud_on", True)):
+    ok(st(k_, v_)[0], "einstellen: " + k_)
+ok(ns["role_allows"]("family", "/api/ki/set", "POST", {"key": "blinki_cloud_key"}) is False and "blinki_cloud_key" in ns["USER_SETTINGS_DENY"]
+   and "blinki_cloud_key" in ns["APPKEY_DENY_KEYS"], "Schlüssel nur vom Administrator")
+j = run("frag", "Wie laut ist die Sirene?")
+r0 = cl.reqs[-1]; body = json.loads(r0["raw"])
+ok(j["engine"] == "cloud" and j["text"] == "Hallo aus der Cloud." and r0["path"] == "/v1/chat/completions" and r0["h"].get("authorization") == "Bearer " + KEY
+   and body["model"] == "test-model-1" and body["stream"] and "top_p" not in body and "cache_prompt" not in body, "OpenAI-kompatibel: Stream, Bearer, Modell")
+ok(st("blinki_cloud_fmt", "anthropic")[0], "Format Anthropic Messages")
+j = run("frag", "Was macht der Klatschschalter?")
+r0 = cl.reqs[-1]; body = json.loads(r0["raw"])
+ok(j["text"] == "Hallo aus der Cloud." and r0["path"] == "/v1/messages" and r0["h"].get("x-api-key") == KEY and r0["h"].get("anthropic-version") == "2023-06-01"
+   and body["system"] and all(m["role"] != "system" for m in body["messages"]), "Anthropic Messages: x-api-key, Version, system getrennt")
+# pictures only with the own OK
+class Wt: pass
+w = Wt(); w.frame_raw = np.full((480, 640, 3), 90, np.uint8); ns["WATCH_REF"]["w"] = w
+n_ = len(cl.reqs); j = run("natur", "", {}); b0 = cl.reqs[-1]["raw"]
+ok(b"base64" not in b0 and not ns["blinki_job_view"](j)["image"], "Naturführer ohne OK: kein Bild")
+j = run("natur", "", {"image_ok": "yes"}); ok(b"base64" not in cl.reqs[-1]["raw"], "image_ok muss genau true sein")
+j = run("natur", "Was ist das?", {"image_ok": True}); b1 = cl.reqs[-1]["raw"]
+ok(b'"type": "image"' in b1 or b'"type":"image"' in b1, "Naturführer mit OK: genau dieses eine Bild (Anthropic-Form)")
+ok(j.get("image") is None and ns["blinki_job_view"](j)["image"], "das Bild wird nicht behalten, die Antwort sagt «Bild gesendet»")
+# the key never leaves
+st("blinki_cloud_key", "sk-WRONG-" + KEY[8:])
+j = run("frag", "Test mit falschem Schlüssel")
+WK = "sk-WRONG-" + KEY[8:]
+ok(j["state"] == "error" and WK not in j["err"] and "401" in j["err"], "Fehler des Dienstes geschwärzt: %s" % j["err"][:80])
+st("blinki_cloud_key", KEY)
+ps = json.dumps(ns["blinki_page_state"]("de"))
+import zipfile, io
+z = zipfile.ZipFile(io.BytesIO(ns["diag_zip"]()))
+dz = z.read("settings_without_secrets.json").decode()
+ok(KEY not in ps and WK not in ps and '"key_set": true' in ps, "Seite: Schlüssel nie, nur «gesetzt»")
+ok(KEY not in dz and json.loads(dz)["blinki_cloud_key"] == "***", "Diagnose-Paket: «***»")
+ok(not any(KEY in x or WK in x for x in logs) and not any(KEY in open(f, errors="replace").read() for f in [ns["LOG_FILE"]] if os.path.isfile(f)), "Protokoll: nie der Schlüssel")
+ok(all(KEY not in json.dumps(ns["blinki_job_view"](x)) for x in B["jobs"].values()), "Antworten: nie der Schlüssel")
+# no network: offline instead
+st("blinki_cloud_url", "http://127.0.0.1:9/v1")
+j = run("frag", "Ohne Netz?")
+ok(j["state"] == "done" and j["engine"] == "offline" and "Das geht so" in j["text"], "Cloud nicht erreichbar -> offline (Modell auf dem Gerät)")
+ns["blinki_stop"]("test")
+print("RESULT " + json.dumps(K.FEHLER))
+'''
+
+
+def teil_e(datei, tmp):
+    print("E) Stufe 2: Geschichten, Naturführer, Quiz, Cloud", flush=True)
+    env = dict(env_for(tmp, os.path.join(tmp, "ehome")), KI_HIER=HIER)
+    p = subprocess.run([sys.executable, "-c", TEIL_E, datei], capture_output=True, text=True, env=env, cwd=tmp, timeout=900)
+    print("\n".join(x for x in p.stdout.splitlines() if x.startswith("  ")), flush=True)
+    m = re.search(r"^RESULT (.*)$", p.stdout, re.M)
+    if not m:
+        FEHLER.append("Teil E abgebrochen"); print((p.stderr or "")[-3000:]); return
+    FEHLER.extend(json.loads(m.group(1)))
+
+
+def b_extra(pg, name, base, op, bilder):
+    """stage 2 + 3 in the browser: the modes, 🎙 hold to talk (Chromium fake microphone), https hint, settings"""
+    n = pg.locator("#bk-modes button").count()
+    ok(n == 5, "%s: 5 Arten (%s)" % (name, pg.locator("#bk-modes").inner_text().replace("\n", " · ")))
+    pg.locator("#bk-modes button", has_text="Lagerfeuer").click(); pg.wait_for_timeout(300)
+    ok(pg.locator("#bk-opts .seg button").count() == 2, "%s: 🔥 Kinder / Erwachsene" % name)
+    pg.locator("#bk-go").click()
+    pg.wait_for_function("() => document.querySelectorAll('.bkp-src, .bkp-act').length >= 4 && !document.querySelector('.bkp-say .cur')", timeout=60000)
+    pg.wait_for_timeout(500); weg(pg)
+    pg.screenshot(path=os.path.join(bilder, "blinki_%s_geschichte.png" % name))
+    if name == "handy":
+        pg.evaluate("() => { document.getElementById('bk-adm').open = true; document.getElementById('bk-adm').scrollIntoView(); }")
+        pg.wait_for_timeout(500); weg(pg)
+        ok("Cloud" in pg.locator("#bk-set").inner_text(), "Einstellungen: Cloud (Format, Adresse, Modell, Schlüssel)")
+        pg.screenshot(path=os.path.join(bilder, "blinki_handy_einstellungen.png"))
+        pg.evaluate("() => window.scrollTo(0, 0)")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--datei", default="")
@@ -624,7 +818,7 @@ def main():
                                                key=lambda p: [int(x) for x in re.findall(r"\d+", os.path.basename(p))])[-1])
     print("KI-Test (Blinki fragen) · " + os.path.basename(datei), flush=True)
     tmp = tempfile.mkdtemp(prefix="mw_ki_")
-    nur = set(a.nur.split(",")) if a.nur else set("acdb")
+    nur = set(a.nur.split(",")) if a.nur else set("acdeb")
     try:
         if "a" in nur:
             teil_a(datei, tmp)
@@ -632,8 +826,10 @@ def main():
             teil_c(datei, tmp)
         if "d" in nur:
             teil_d(datei, tmp)
+        if "e" in nur:
+            teil_e(datei, tmp)
         if a.browser and "b" in nur:
-            teil_b(datei, tmp, a.bilder)
+            teil_b(datei, tmp, a.bilder, b_extra)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print("KI-Test: " + ("OK" if not FEHLER else "%d FEHLER" % len(FEHLER)))

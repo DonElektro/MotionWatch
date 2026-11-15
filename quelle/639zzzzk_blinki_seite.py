@@ -50,7 +50,7 @@ main{padding:16px 16px 120px;max-width:760px;margin:0 auto}
 .bkp-hint{max-width:760px;margin:0 auto 6px;font-size:13px;color:var(--mut)}.bkp-hint:empty{display:none}
 details.bkp-card>summary{cursor:pointer;font-weight:700;min-height:36px;display:flex;align-items:center}
 .bkp-set{display:flex;flex-direction:column;gap:10px;margin-top:8px}.bkp-set label{display:flex;gap:10px;align-items:center;font-size:15px}
-.bkp-set select,.bkp-set input[type=text],.bkp-set input[type=password]{min-height:40px;font:inherit;background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:4px 8px;width:100%}
+.bkp-set select,.bkp-set input[type=text],.bkp-set input[type=url],.bkp-set input[type=password]{min-height:40px;font:inherit;background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:4px 8px;width:100%}
 .bkp-set .mut{font-size:13px;color:var(--mut)}
 @media(min-width:900px){main{padding-top:22px}.bkp-me,.bkp-say{font-size:15px}}
 </style></head><body>
@@ -207,7 +207,7 @@ details.bkp-card>summary{cursor:pointer;font-weight:700;min-height:36px;display:
           if (!j.ok) alert(j.error); else { S = j.state; if (type === "password") { i.value = ""; i.placeholder = "•••••• (" + t("set") + ")"; } } };
         l.append(E("span", "mut", label), i); box.appendChild(l); return i; };
       const fl = E("label"); fl.style.flexDirection = "column"; fl.style.alignItems = "stretch"; const fs = E("select"); fs.id = "bk-c-fmt";
-      C.fmts.forEach(x => { const o = E("option", "", x.label); o.value = x.v; if (x.v === C.fmt) o.selected = true; fs.appendChild(o); });
+      C.fmts.forEach(x => { const o = E("option", "", t(x.label)); o.value = x.v; if (x.v === C.fmt) o.selected = true; fs.appendChild(o); });
       fs.onchange = async () => { const j = await api("/api/ki/set", {key: "blinki_cloud_fmt", value: fs.value}); if (j.ok) S = j.state; };
       fl.append(E("span", "mut", t("Format")), fs); box.appendChild(fl);
       fld("blinki_cloud_url", t("Address of the service (https://…)"), C.url, "url", "https://…/v1");

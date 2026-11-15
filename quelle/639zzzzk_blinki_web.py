@@ -321,7 +321,7 @@ if GUI_OK:
 
         def ask(_e=None):
             q = ent.get().strip()
-            if not q and mode.get() != "fehler":
+            if not q and mode.get() not in BLINKI_NOQ_MODES:
                 return
             j, err = blinki_ask(mode.get(), q, CFG.get("lang"), None, "window", "tk")
             if j is None:

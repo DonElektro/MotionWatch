@@ -201,6 +201,8 @@ BKFRAG_TX = {
         "Réponses plus rapides et meilleures – mais la question passe par internet vers le service choisi. Images seulement avec ton OK, à chaque fois.",
         "Risposte più veloci e migliori – ma la domanda va via internet al servizio che scegli. Immagini solo con il tuo OK, ogni volta.",
         "Respostas pli sveltas e meglras – ma la dumonda va sur l’internet al servetsch che ti tschernas. Maletgs mo cun tes OK, mintga giada."),
+    "OpenAI-compatible": ("OpenAI-kompatibel", "Compatible OpenAI", "Compatibile OpenAI", "Cumpatibel cun OpenAI"),
+    "Anthropic Messages": ("Anthropic Messages", "Anthropic Messages", "Anthropic Messages", "Anthropic Messages"),
     "Use the cloud": ("Cloud benutzen", "Utiliser le cloud", "Usa il cloud", "Utilisar il cloud"),
     "Format": ("Format", "Format", "Formato", "Format"),
     "Address of the service (https://…)": ("Adresse des Dienstes (https://…)", "Adresse du service (https://…)", "Indirizzo del servizio (https://…)", "Adressa dal servetsch (https://…)"),
@@ -253,6 +255,7 @@ _HELP_BKFRAG = {
            '<li><b>Vorlesen:</b> 🔊 liest eine Antwort mit der Piper-Stimme im Browser vor, 📢 am Lautsprecher des Geräts (Recht «Gegensprechen»).</li>'
            '<li><b>Rechte:</b> Frag MoveEye dürfen alle angemeldeten Benutzer ausser Kindern; Fehlersuche, Modell und Einstellungen nur der Administrator. '
            'Blinki kann sich irren – im Zweifel gilt die Anleitung. Pi-Fenster: Mehr → «💬 Blinki fragen».</li>'
+           '<li><b>Mehr Arten:</b> <b>🔥 Lagerfeuer-Geschichten</b> (für Kinder oder Erwachsene, auf Wunsch an einem Ort deines Platzes; Kinder-Benutzer hören nur die Kinder-Fassung), <b>🦌 Naturführer</b> (erklärt die Tiere, die MoveEye in den letzten 7 Tagen gesehen hat) und <b>🎤 Quizmaster</b> (neue Fragen; geprüfte Fragen kommen mit «In die Spielecke» ins Quiz).</li><li><b>Cloud</b> (Administrator, Blinki einstellen): Format «OpenAI-kompatibel» oder «Anthropic Messages», Adresse, Modell und Schlüssel. Der Schlüssel wird nie mehr angezeigt, steht nie im Protokoll und im Diagnose-Paket nur als «***». Die Frage geht dann übers Internet an diesen Dienst; ein Kamerabild nur im Naturführer und nur mit deinem OK, jedes Mal. Ohne Netz antwortet Blinki offline, wenn das Modell da ist.</li>'
            '</ul></section>\n'),
     "en": ('<section id="blinki" data-icon="💬"><h2>Ask Blinki</h2><ul>'
            '<li><b>What:</b> More → Overview → «💬 Ask Blinki». Blinki answers questions about using MoveEye (<b>💬 Ask MoveEye</b>) from this manual and the help of the '
@@ -265,6 +268,7 @@ _HELP_BKFRAG = {
            '<li><b>Read aloud:</b> 🔊 reads an answer with the Piper voice in the browser, 📢 on the loudspeaker of the device (right «talk»).</li>'
            '<li><b>Rights:</b> every logged-in user except children may ask; troubleshooting, model and settings only the administrator. Blinki can be wrong – the manual counts. '
            'Pi window: More → «💬 Ask Blinki».</li>'
+           '<li><b>More modes:</b> <b>🔥 Campfire stories</b> (for children or adults, if you like at a place of your site; child users only hear the children’s version), <b>🦌 Nature guide</b> (explains the animals MoveEye saw in the last 7 days) and <b>🎤 Quizmaster</b> (new questions; checked ones go into the quiz with «Into the game corner»).</li><li><b>Cloud</b> (administrator, Blinki settings): format «OpenAI-compatible» or «Anthropic Messages», address, model and key. The key is never shown again, never in the log and only «***» in the diagnosis package. The question then goes over the internet to this service; a camera picture only in the nature guide and only with your OK, each time. Without network Blinki answers offline when the model is there.</li>'
            '</ul></section>\n'),
     "fr": ('<section id="blinki" data-icon="💬"><h2>Demander à Blinki</h2><ul>'
            '<li>Plus → Vue d’ensemble → «💬 Demander à Blinki» : Blinki répond aux questions d’utilisation à partir de ce mode d’emploi ; «Ouvrir» mène au bon endroit. '
