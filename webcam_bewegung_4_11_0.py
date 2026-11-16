@@ -24,7 +24,7 @@ Features
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
   * 4.11.0: MoveEye als Demo im Internet: demo_start.py startet MoveEye auf einem Webhost unter /demo (nur gezeichnete Szene,
-    alle Sperren an, keine Verbindung nach aussen); der Simulator im Browser kann sich mit dieser Demo verbinden
+    alle Sperren an, keine Verbindung nach aussen); der Simulator im Browser kann sich mit dieser Demo verbinden · Homepage: der Simulator im Browser kommt in Teilen (index_pck1… .wasm) – die Prüfung meldet sie nicht mehr als falsch
   * 4.10.0: 💬 Blinki fragen: Blinki beantwortet Fragen zur Bedienung und erklärt Fehler – offline auf dem Gerät (Sprachmodell
     auf Knopfdruck laden), wahlweise mit eigener Cloud; Fragen auch gesprochen (Handy 🎙, am Gerät nach 2× klatschen, Knopf oder
     QR-Karte – ab Werk aus) · 📌 Eigene Orte auf der Offline-Karte (setzen, ziehen, bearbeiten; gespeichert im Digitalen Rucksack, GPX / KML / GeoJSON) · 📍 Markier-Karte (experimentell, ab Werk aus): eine gedruckte Karte vor die Kopf-Kamera halten, der Kopf folgt ihr und merkt sich Punkte
@@ -284,7 +284,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_11_0.zip"
-ZD_SHA256 = "e07b7c9fecc06258f682b5abfba2c2fa8d4dd3f5731bb6141c1dbf45063e9f8c"
+ZD_SHA256 = "7f4c3e5ed342555406a7b2a0f1dfadad2c85bcf54f6e499dcd59d231392db73b"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -103904,7 +103904,7 @@ def hp_probe(url, want=None, origin=""):
 		P.append(("size {a} instead of {b}",f"{row['size']}|{want['size']}"))
 	elif want and small and want.get("sha")and h.hexdigest()!=want["sha"]:
 		P.append(("content differs from the file of MoveEye",""))
-	if ext=="wasm"and head[:4]!=b"\0asm":
+	if ext=="wasm"and head[:4]!=b"\0asm"and not re.search(r"(^|/)index_pck\d{1,2}\.wasm$",want["path"]if want else ""):
 		P.append(("not a WebAssembly file",""))
 	if H["Content-Security-Policy"]and(ext=="html"or ct=="text/html"):
 		P+=hp_csp(H["Content-Security-Policy"],origin)

@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-16 06:30",
+ "generated": "2026-11-16 06:42",
  "versions": [
   {
    "version": "4.11.0",
    "file": "webcam_bewegung_4_11_0.py",
    "url": "",
-   "sha256": "6671921c4213da1bd8b73f19a8583f00f78a52ae1330ffde9e93400a947ad863",
-   "date": "2026-11-16 06:30",
-   "notes": "MoveEye als Demo im Internet: demo_start.py startet MoveEye auf einem Webhost unter /demo (nur gezeichnete Szene, alle Sperren an, keine Verbindung nach aussen); der Simulator im Browser kann sich mit dieser Demo verbinden",
-   "size": 4025796,
-   "sig": "2c3e72208038e557517f3e826877ad12c3977cf98d1dcc4cc646ce3161a651b04795bb993751b2def1dd6bf7c59de825ea3e178ccdcb8d2aef42e9d4b006ff0c",
+   "sha256": "ac39f8e43386e6b20fad482aaa7a0a5bd2201abd96684c70a5e5235605a7b6b8",
+   "date": "2026-11-16 06:41",
+   "notes": "MoveEye als Demo im Internet: demo_start.py startet MoveEye auf einem Webhost unter /demo (nur gezeichnete Szene, alle Sperren an, keine Verbindung nach aussen); der Simulator im Browser kann sich mit dieser Demo verbinden · Homepage: der Simulator im Browser kommt in Teilen (index_pck1… .wasm) – die Prüfung meldet sie nicht mehr als falsch",
+   "size": 4026000,
+   "sig": "b638a746c19395b51909a9415c113a9d4b33a126aa69dace23a6da299faa72802b2a06789a056afdfb2e3fb0521c485a05b993a064bbbefc1308d6954d075b06",
    "data": {
     "file": "moveeye_daten_4_11_0.zip",
     "url": "",
-    "sha256": "e07b7c9fecc06258f682b5abfba2c2fa8d4dd3f5731bb6141c1dbf45063e9f8c",
-    "size": 14202363,
-    "sig": "a2995acb03f6a5475d94363b1fa7e52e92cb22428d79e7e442425b590a4bffafed0f6e1faebaeb5baf61e5824eece0c5d57e99921579584b61f995e3c3eee402"
+    "sha256": "7f4c3e5ed342555406a7b2a0f1dfadad2c85bcf54f6e499dcd59d231392db73b",
+    "size": 14202809,
+    "sig": "516068777a420ab68564d59ce7362378471fe0f1daf883da94deb46e8f59986cf3119fb0b89474ca6f1885b565eb1648e95586821e2a5d427384ead5ed146705"
    }
   },
   {

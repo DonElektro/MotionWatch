@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 14.11.2026 · Version **3.70.0** · MoveEye **3.93.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 16.11.2026 · Version **3.71.0** · MoveEye **4.11.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -31,6 +31,15 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
   (Ziegelreihen / Kies). Wärmezwillinge und Hindernisse unverändert. Luftbild wird jetzt vor den 3D-Gebäuden gesetzt.
 - Seon ohne OSM (Overpass war aus): 117 Häuser, 44 Wohnblöcke, 24 Bauernhäuser, 3 Scheunen, 2 Chalets, 2 Garagen;
   Dachfarbe aus dem Luftbild 130, Palette 62 (Häuser ausserhalb des nahen Luftbilds).
+
+## NEU in 3.71.0 (MoveEye 4.11.0): Sim 3.71.0: Handy-Modus im Browser, offizielles Web-Paket, Verbindung zur Host-Demo, Markier-Karte
+
+- handy.gd / fenster_waechter.gd: Handy-Modus (Leiste, Blätter von unten), hoch und quer; Fenster bleiben im Bild (sim-handy 606babc).
+- quality.gd / Shader: im Browser wieder alle Körper (threaded_cull_minimum_instances.web=1000000), Render-Skalierung min(1, 2/DPR) (5e4abb5).
+- werkzeuge/sim_web_paket.py: Sandbox-Patch, Pack in Teilen zu 12 MB (index_pck1..N.wasm), index.js?v=<sha>, «pruefen»; index.pck bleibt für MoveEye bis 4.7.0.
+- web_moveeye.gd: Schalter «Mit Demo-MoveEye verbinden» (ab Werk an) über /simtun der Host-Demo (sim-host-demo 25d825b, MoveEye 639zzzzw).
+- markierkarte.gd: Markier-Karte als Gegenstand (MoveEye 639zzzzm).
+- i18n: Sprache des Browsers, Rückfall Deutsch.
 
 ## NEU in 3.70.0 (MoveEye 3.93.0): Sim 3.70.0: Leiste «Darstellung», Feineinstellungen erst ab drei, Hilfe-Knopf «?» im Kreis, HP job_ende.sh räumt Reste
 

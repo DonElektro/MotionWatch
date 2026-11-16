@@ -420,7 +420,7 @@ def lauf(datei, tmp):
     code, j = api("admin", {"action": "publish"})
     with zipfile.ZipFile(zp) as z:
         ok(all(W.files.get("Sim/" + n) == z.read(n) for n in z.namelist()), "Sim/ = die 8 Dateien aus sim-web.zip")
-    ok(len(W.uploads()) - n0 == 8 and not j["last"].get("ren"), f"nur die 8 neuen Dateien hochgeladen ({len(W.uploads()) - n0}), keine Umbenennung")
+    ok(len(W.uploads()) - n0 == 10 and not j["last"].get("ren"), f"nur die 10 neuen Dateien (8 + 2 Pack-Teile) hochgeladen ({len(W.uploads()) - n0}), keine Umbenennung")
     ok(all(re.fullmatch(r"[^.]+\.[a-z0-9]+", p.rsplit("/", 1)[-1]) for p in W.files), "jede Datei auf dem Webspace hat genau einen Punkt")
 
     print("5) nur Geändertes", flush=True)
