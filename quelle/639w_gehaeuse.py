@@ -141,7 +141,7 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
     <div class="gc"><div id="slot-ov"></div><div class="mut" style="margin-top:6px"><span data-i18n="Drag = turn · two fingers / wheel = zoom · tap a part = what is it?">Drag = turn · two fingers / wheel = zoom · tap a part = what is it?</span> <span data-i18n="The 3D workshop runs here in the browser – no simulator needed.">The 3D workshop runs here in the browser – no simulator needed.</span></div>
       <div class="noprint" id="g-simbox" style="display:none;margin-top:8px"><button type="button" class="sec" onclick="gSim(0)">🧊 <span data-i18n="View in the simulator">View in the simulator</span></button><div id="g-msg" class="mut"></div></div></div>
     <div class="gc"><div class="sum" id="g-sum"></div></div>
-    <div class="gc warn"><b>⚠ <span data-i18n="Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.">Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.</span></b></div>
+    <div class="gc warn"><b>⚠ <span data-i18n="Measure first: Geekworm X1206 with its cells (model still 90 × 80 × 26 mm) before printing the lower part.">Measure first: Geekworm X1206 with its cells (model still 90 × 80 × 26 mm) before printing the lower part.</span></b></div>
     <div class="gc mut" data-i18n="Own work of Elektro – parametric Python model.">Own work of Elektro – parametric Python model.</div>
   </section>
   <section class="pane" id="p-teile"><div class="gc"><h2 data-i18n="Parts list">Parts list</h2><table class="gb" id="g-bom"></table></div></section>

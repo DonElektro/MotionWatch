@@ -79,6 +79,58 @@ def ups_read_e(addr=0x2D, bus=1):
         os.close(fd)
 
 
+# Geekworm X1206 V2.0 (Besitzer 16.11.2026; X120x boards): 4 x 21700 in PARALLEL (1S4P, 3.0 ... 4.23 V), fuel gauge MAX17043 on
+# I2C 0x36 (big endian: 0x02 VCELL >> 4 x 1.25 mV, 0x04 SOC / 256 %; suptronics/x120x bat.py), no current. Pogo pins on the
+# header: GPIO 6 = PLD (output of the board: high = power at the input), GPIO 16 = charging (low = on, high = off). MoveEye only
+# READS both (pinctrl) and never drives them: the charge LED, the buttons and relays stay off GPIO 6 / 16 once the board is found.
+UPS_X12 = {"seen": False, "probed": False, "warned": set()}
+
+
+def ups_x12_gpio(n):
+    """GPIO n read only (pinctrl, never driven): 1 high / 0 low / None unknown"""
+    rc, txt, _e = _run(["pinctrl", "get", str(n)], timeout=3)
+    m = re.search(r"\|\s*(hi|lo)\b", txt or "") if rc == 0 else None
+    return None if m is None else int(m.group(1) == "hi")
+
+
+def ups_read_x12(addr=0x36, bus=1, gpio=True):
+    """Geekworm X1206: {v (one cell), pct, pld, chg} or None (no chip / implausible)."""
+    import fcntl
+    try:
+        fd = os.open(f"/dev/i2c-{bus}", os.O_RDWR)
+    except OSError:
+        return None
+    try:
+        fcntl.ioctl(fd, I2C_SLAVE, addr)
+        def reg(r):
+            os.write(fd, bytes([r])); b = os.read(fd, 2)
+            return (b[0] << 8) | b[1]
+        v = (reg(0x02) >> 4) * 0.00125; soc = reg(0x04) / 256.0
+        if not (2.5 <= v <= 4.45) or soc > 102:
+            return None                                       # another chip at this address
+    except (OSError, IndexError):
+        return None
+    finally:
+        os.close(fd)
+    return {"v": v, "pct": int(min(100, round(soc))), "pld": ups_x12_gpio(6) if gpio else None, "chg": ups_x12_gpio(16) if gpio else None}
+
+
+def ups_x12_pins():
+    """{6, 16} while a Geekworm X1206 is there (or chosen): these GPIOs belong to the board. Probes 0x36 once at the start, so the
+    charge LED / buttons never drive GPIO 6 / 16 before the first battery reading."""
+    if not UPS_X12["probed"]:
+        UPS_X12["probed"] = True
+        UPS_X12["seen"] = UPS_X12["seen"] or ups_read_x12(gpio=False) is not None
+    return {6, 16} if UPS_X12["seen"] or CFG.get("ups_model") == "x12" else set()
+
+
+def ups_x12_pin_warn(what, pin):
+    """once per use and pin: «Geekworm X1206 uses GPIO 6: the charge LED there stays off»"""
+    if (what, pin) not in UPS_X12["warned"]:
+        UPS_X12["warned"].add((what, pin))
+        log_event("sys", f"Geekworm X1206 owns GPIO {pin}: {what} stays off there - choose another GPIO")
+
+
 class BatteryMonitor:
     """Estimates what is left in the powerbank: capacity (mAh on the label) x 3.7 V x 85 % usable, minus what the Pi used
     since 'Battery full' was pressed. Power = Pi power chip (or an estimate from the CPU load) + extra devices + lights."""
@@ -113,14 +165,16 @@ class BatteryMonitor:
     def ups_tick(self):
         """UPS HAT found: charge from the battery voltage, time left from the measured power. Power cut / back,
         warning at 20 %, shutdown at <ups_shutdown_pct> % so the memory card is not damaged."""
-        model = CFG["ups_model"]
+        model = CFG["ups_model"]; r = None
         if model in ("auto", "e"):
             e = ups_read_e()
             if e is not None:
                 return self.ups_e(e)
-            if model == "e":
-                r = None
-        if model != "e":
+        if model in ("auto", "x12"):                      # Geekworm X1206 (0x36) after the UPS HAT (E), before the INA219
+            x = ups_read_x12()
+            if x is not None:
+                return self.ups_x12(x)
+        if model not in ("e", "x12"):
             try:
                 addr = int(str(CFG["ups_addr"]), 16)
             except ValueError:
@@ -169,6 +223,27 @@ class BatteryMonitor:
             self._cell_warn = True
             log_event("sys", "UPS HAT (E): the cells are uneven (" + " / ".join(f"{c:.2f}" for c in r["cells"]) + " V) - check the batteries")
         return self.ups_events(v, pct, hours, on_batt, 9.0 <= v <= 17.6)
+
+    def ups_x12(self, r):
+        """Geekworm X1206: % and cell voltage from the gauge, power at the input from GPIO 6, no current -> time left from the
+        estimated power, capacity = 4 cells x ups_mah (one cell). Charging: power there, GPIO 16 not high, not yet full."""
+        UPS_X12["seen"] = True
+        if not getattr(self, "_ups_seen", False):
+            self._ups_seen = True
+            log_event("sys", f"Geekworm X1206 found (0x36): cell {r['v']:.2f} V, {r['pct']} %, PLD {r['pld']}")
+        self._ups_miss = 0
+        v, pct, pld, chg = r["v"], r["pct"], r["pld"], r["chg"]
+        on_batt = pld == 0
+        if chg == 1 and not on_batt:
+            ups_x12_pin_warn("charging", 16)
+        full = not on_batt and (pct >= 98 or v >= 4.18)
+        p = self.watts()[0]
+        cap_wh = float(CFG["ups_mah"]) * 4 * 3.6 * 0.9 / 1000.0
+        hours = round(pct / 100.0 * cap_wh / max(0.8, p), 1) if on_batt else None
+        STATE["battery"] = {"on": True, "src": "ups", "model": "x12", "pct": pct, "hours": hours, "cap_wh": round(cap_wh, 1),
+                            "use_w": round(p, 1), "watts": round(p, 1), "volt": round(v, 2), "on_battery": on_batt,
+                            "charging": not on_batt and pld is not None and chg != 1 and not full, "full": full}
+        return self.ups_events(v, pct, hours, on_batt, 2.8 <= v <= 4.4)
 
     def ups_events(self, v, pct, hours, on_batt, volt_ok):
         """Power cut / back, almost empty, clean shutdown - the same for every UPS HAT."""

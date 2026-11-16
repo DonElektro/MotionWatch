@@ -210,6 +210,8 @@ class Hardware:
                 servo_io_error(e)
 
     def _write(self, gpio, on, al):
+        if gpio in ups_x12_pins():                            # 100: GPIO 6 / 16 belong to a Geekworm X1206 - never driven
+            return ups_x12_pin_warn("relay / light", gpio)
         ent = self.outs.get(gpio)
         if self.io == "gpiozero":
             if ent is None or ent["al"] != al:

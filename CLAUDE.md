@@ -248,7 +248,8 @@ Workflow `.github/workflows/hp_helfer.yml`, Fenster `HP_HELFER_BIS` dort auf mai
 
 Pi 5, Camera Module 3 NoIR, Waveshare Thermal-90 (SPI, I2C 0x40, GPIO 7/23/24, Treiber pysenxor – noch nicht mit echtem Modul getestet),
 2 × MG90S an PCA9685 (0x41; Kanal 0 Pan, 1 Tilt), Licht weiss + IR an PCA9685 Kanal 2/3 (nur ein/aus), USB-Mikrofon,
-USB-Soundkarte + PAM8403 + Lautsprecher oder Bluetooth, Waveshare UPS HAT (E) mit 4 × 21700 (I2C 0x2D; ältere UPS HAT mit INA219 0x42 werden weiter erkannt), optional INA219 für Solar (0x44, Shunt 0,01 Ω), oder Powerbank / 12-V-Netzteil. Gehäuse: parametrisches Python-Modell (`Gehaeuse/`).
+USB-Soundkarte + PAM8403 + Lautsprecher oder Bluetooth, Akku ab 16.11.2026 Geekworm X1206 V2.0 (1S4P, 4 × 21700, Füllstand MAX17043 I2C 0x36, PLD GPIO 6 und Laden GPIO 16 – beide
+gehören der Platine, MoveEye liest sie nur; neue Geräte: Lade-LED GPIO 13, Taste «Schutz» GPIO 12), weiter unterstützt Waveshare UPS HAT (E) mit 4 × 21700 (I2C 0x2D; ältere UPS HAT mit INA219 0x42 werden weiter erkannt; Erkennung 0x2D → 0x36 → 0x42), optional INA219 für Solar (0x44, Shunt 0,01 Ω), oder Powerbank / 12-V-Netzteil. Gehäuse: parametrisches Python-Modell (`Gehaeuse/`).
 Push über ntfy (App «NTFY me», Server ntfy-me.com). Fernzugriff über Tailscale.
 
 ## Simulator

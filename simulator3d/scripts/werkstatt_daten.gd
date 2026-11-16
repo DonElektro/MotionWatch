@@ -3,8 +3,8 @@ extends RefCounted
 ## hardware/gehaeuse/bau.json. NICHT VON HAND ÄNDERN (Texte dort ändern, dann «gehaeuse_bauen.py --texte»).
 ## Texte deutsch (T.t übersetzt sie, Übersetzungen kommen aus bau.json in i18n/texte.json).
 
-const QUELLE_SHA := "3551bbdbff0cce549f45bfd21f67a2326159474a3d787a556e50c25d53e7abef"
-const VERSION := "5.3.1"
+const QUELLE_SHA := "2f4e0602060dce296189155274aa348adafb43add64fa803600a3b2106d959ab"
+const VERSION := "5.4.0"
 const KOPF_FARBE := "#f59a4a"   # Kopfteil (dreht / neigt) in MoveEye-Orange
 const KOPF_TEILE := ["turntable", "yoke", "arm2", "head", "side", "lamp1", "lamp2", "head52"]
 const GRAU := "#9a9ea3"   # Unterteil, Deckel, Zwischenboden, Füsse, Stopfen
@@ -23,14 +23,18 @@ const BOM := {
 	"elko": ["1×", "Elko 470 µF / 10 V", "470 µF ≥10 V", "Schwenk-/Neigekopf"],
 	"bbs": ["~30×", "Softair-Kugeln 6 mm (0,20 g)", "BB 6 mm 0,20 g", "Schwenk-/Neigekopf"],
 	"fett": ["1×", "Silikon- oder Lagerfett", "", "Schwenk-/Neigekopf"],
-	"ups": ["1×", "Waveshare UPS HAT (E)", "Waveshare SKU 27966", "Strom"],
-	"cells": ["4×", "Li-Ion-Akku 21700, Flat Top", "Samsung INR21700-50E", "Strom"],
-	"charger": ["1×", "Pololu D36V50F5 (Laden 12–40 V → 5 V)", "Pololu #4091", "Strom"],
-	"buck": ["1×", "Step-Down 6–36 V → 5 V 4 A (Servos, Licht, Verstärker)", "Bastelgarage 424274", "Strom"],
+	"ups": ["1×", "Geekworm X1206 V2.0 (4 × 21700 parallel, 5,1 V / 6 A)", "Geekworm X1206 V2.0", "Strom"],
+	"cells": ["4×", "Li-Ion-Akku 21700, Flat Top, ungeschützt", "Samsung INR21700-50E", "Strom"],
+	"charger": ["1×", "Pololu D36V50F5 (nur ohne Akku: 12–40 V → 5 V an den Pi)", "Pololu #4091", "Strom"],
+	"buck": ["1×", "Step-Down 6–36 V → 5 V 4 A (nur ohne Akku: Servos, Licht, Verstärker)", "Bastelgarage 424274", "Strom"],
 	"gx16": ["1×", "GX16 4-polig: Einbaubuchse + Stecker (Ladebuchse)", "Bastelgarage 420241", "Strom"],
 	"fuse": ["1×", "Sicherungshalter fliegend + Sicherung 5 A", "Mini-Kfz (ATM) 5 A", "Strom"],
-	"fuse2": ["1×", "Flachsicherung 5 A mit Halter (Akku-Leitung B+ → Step-Down)", "Mini-Kfz (ATM) 5 A", "Strom"],
-	"usbc": ["1×", "USB-C-Stecker zum Anlöten (D36V50F5 → UPS HAT)", "USB-C Plug Breakout", "Strom"],
+	"fuse2": ["1×", "Flachsicherung 5 A mit Halter (5,1-V-Ausgang XH des X1206 → Servos, Licht, Verstärker)", "Mini-Kfz (ATM) 5 A", "Strom"],
+	"usbc": ["1×", "USB-C-Stecker zum Anlöten (D36V50F5 → USB-C des Pi, nur ohne Akku)", "USB-C Plug Breakout", "Strom"],
+	"buck_dev": ["1×", "Step-Down 6–36 V → 5 V 4 A (nur ohne Akku: Servos, Licht, Verstärker)", "Bastelgarage 424274", "Strom"],
+	"dcplug": ["1×", "DC-Stecker 5,5/2,1 mm mit Kabel (Sicherung → DC-Eingang des X1206)", "", "Strom"],
+	"xhkabel": ["2×", "Kabel XH2.54 2-polig (5,1-V-Ausgang und PSW des X1206)", "JST XH 2.54", "Strom"],
+	"psw": ["1×", "Taster 12 mm, IP67, Schliesser: Ein/Aus am PSW des X1206 (Reserve-Öffnung hinten statt Blindstopfen 17)", "", "Strom"],
 	"chled": ["1×", "Lade-LED 3 mm + 330 Ω + Lichtleiter", "LED 3 mm grün, 330 Ω, PMMA 3 mm", "Strom"],
 	"ledw": ["1×", "Scheinwerfer-Modul weiss, Ø 18,8 × 14 mm", "Ø 18,8 mm", "Licht an der Gabel"],
 	"ledir": ["1×", "Scheinwerfer-Modul Infrarot 850 nm", "Ø 18,8 mm, 850 nm", "Licht an der Gabel"],
@@ -66,9 +70,9 @@ const BOM := {
 	"camcable2": ["1×", "Kamerakabel Pi 5, 200 mm (CAM1)", "SC1129", "Variante v5.2 (Weitwinkel-Kamera, eigenes Unterteil)"],
 	"psu12": ["1×", "Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet", "", "Strom"],
 	"psu12_dev": ["1×", "Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet – Entwicklung", "", "Strom"],
-	"lader12": ["1×", "Ladequelle: Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet (lädt die Akkus über den D36V50F5)", "", "Strom"],
-	"solar": ["1×", "Solarpanel 30 W, 18 V (Leerlauf unter 25 V), Kabel an GX16-Stecker", "", "Strom"],
-	"solarreg": ["1×", "Solar-Regler (MPPT) zwischen Panel und GX16: Eingang 18 V, Ausgang 12–24 V konstant, mind. 2 A", "", "Strom"],
+	"lader12": ["1×", "Ladequelle: Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet (lädt über den DC-Eingang des X1206, 9–18 V)", "", "Strom"],
+	"solar": ["1×", "Solarpanel 30 W, 18 V – nur über den Regler (Leerlauf über 18 V), Kabel an den Regler", "", "Strom"],
+	"solarreg": ["1×", "Solar-Regler (MPPT) zwischen Panel und GX16: Eingang 18 V, Ausgang 12 V konstant (höchstens 18 V), mind. 2 A", "", "Strom"],
 	"motorhat": ["1×", "Motor-HAT (Adafruit DC & Stepper Motor HAT, I2C 0x60)", "Adafruit 2348", "Mover"],
 	"chassis": ["1×", "Kettenfahrwerk mit 2 DC-Motoren", "", "Mover"],
 	"schrauben": ["1 Set", "Schraubensatz M2 / M2,5 / M3 mit Muttern und Scheiben", "", "Kabel, Druck, Notfall"],
@@ -94,15 +98,15 @@ const TEILE := [
 	["elko", "teil", "Elko 470 µF / 10 V", "elko", 3, "", ""],
 	["pir", "teil", "Mini-PIR AS312", "pir", 3, "", ""],
 	["mic", "teil", "USB-Mikrofon (Mini)", "mic", 3, "", ""],
-	["ups", "teil", "UPS HAT (E) mit 4 Akkus 21700", "ups", 4, "", ""],
+	["ups", "teil", "Geekworm X1206 V2.0 mit 4 Akkus 21700 (Modell zeigt noch das UPS HAT (E) – nachmessen)", "ups", 4, "", ""],
 	["pi", "teil", "Raspberry Pi 5", "pi5", 4, "", ""],
 	["cooler", "teil", "Raspberry Pi Active Cooler (Lüfter)", "cooler", 4, "", ""],
 	["shelf", "druck", "09 Zwischenboden", "petg", 5, "09_Zwischenboden", ""],
-	["charger", "teil", "Pololu D36V50F5 (Laden 12–40 V → 5 V)", "charger", 5, "", ""],
+	["charger", "teil", "Pololu D36V50F5 (nur ohne Akku: 12–40 V → 5 V an den Pi)", "charger", 5, "", ""],
 	["pam", "teil", "Verstärkermodul PAM8403", "pam", 5, "", ""],
 	["ina", "teil", "Strommesser INA219 (optional, Solar)", "ina", 5, "", ""],
 	["mosfet", "teil", "MOSFET-Modul 1-Kanal (2 × AOD4184 parallel), Logic-Level", "mosfet", 6, "", ""],
-	["buck", "teil", "Step-Down 6–36 V → 5 V 4 A (Servos, Licht, Verstärker)", "buck", 6, "", ""],
+	["buck", "teil", "Step-Down 6–36 V → 5 V 4 A (nur ohne Akku: Servos, Licht, Verstärker)", "buck", 6, "", ""],
 	["relay", "teil", "Relaismodul 1-Kanal, 5 V", "relay", 6, "", ""],
 	["hub", "teil", "USB-Hub, 4 Anschlüsse, kompakt", "hub", 6, "", ""],
 	["soundcard", "teil", "USB-Soundkarte", "sound", 6, "", ""],
@@ -148,7 +152,7 @@ const TEILE := [
 	["sdplug", "v52", "16 Stopfen SD-Schlitz v5.2", "petg", 13, "16_Stopfen_SD_v52", ""],
 	["head52", "v52", "06 Kamerakopf v5.2 (Status-LED oben)", "petg", 10, "06_Kamerakopf_v52", "head"],
 	["diff52", "v52", "14 Diffusor «Blinki-Auge» + 15 Pupillenring", "sled", 10, "14_Diffusor_Status_LED", ""],
-	["sockel", "dev", "13 Entwicklungs-Sockel (statt UPS HAT + Akkus)", "petg", 4, "13_Entwicklungs_Sockel", "ups"],
+	["sockel", "dev", "13 Entwicklungs-Sockel (statt Akku-Platine + Akkus)", "petg", 4, "13_Entwicklungs_Sockel", "ups"],
 	["wplug", "v52", "12 Blindstopfen Weitwinkel-Fenster (ohne Weitwinkel-Kamera)", "petg", 3, "12_Blindstopfen_Weitwinkel", ""],
 	["irplug", "v52", "19 Stopfen IR-Modul-Loch (ohne IR-Modul)", "petg", 3, "19_Stopfen_IR_Modul", ""],
 	["thplug", "v52", "18 Stopfen Wärmebild-Fenster (Kopf ohne Wärmebild)", "petg", 10, "18_Stopfen_Waermebild", ""],
@@ -158,7 +162,7 @@ const TEILE := [
 	["llplug", "v52", "24 Stopfen Lichtleiter-Loch (ohne Lade-LED)", "petg", 7, "24_Stopfen_Lichtleiter", ""],
 	["resplug", "v52", "17 Blindstopfen Reserve-Öffnung hinten (GX12)", "petg", 7, "17_Blindstopfen_Reserve", ""],
 	["lampdrv", "v52", "PLATZHALTER Lampentreiber (Feld 30 × 20, 2 × M2,5)", "", 6, "", ""],
-	["fuseh", "v52", "Sicherungshalter 5 A (Akku B+) in der Klammer am Boden", "fuse2", 7, "", ""],
+	["fuseh", "v52", "Sicherungshalter 5 A (5,1-V-Ausgang des X1206) in der Klammer am Boden", "fuse2", 7, "", ""],
 	["tub53", "v53", "01 Unterteil v5.3 (Einsätze, Akkuklappe, Lufteinlass, Ösen)", "petg", 2, "01_Unterteil_v53", "tub52"],
 	["lid53", "v53", "02 Deckel v5.3 (Öse im Kabelkamin)", "petg", 8, "02_Deckel_v53", "lid"],
 	["hatch", "v53", "26 Akkuklappe (Boden, 4 × M3 × 8 in Einsätzen)", "petg", 4, "26_Akkuklappe", ""],
@@ -177,17 +181,17 @@ const SCHRITTE := [
 	["Teile drucken", "Die Druckteile v5.2 in PETG ohne Stützen drucken: Platte A (Unterteil v5.2 mit Weitwinkel-Fenster, Zwischenboden, Stopfen, Füsse) und Platte B (Deckel, Drehteller, Gabel, Arm 2, Kopf 06 v5.2 mit Status-LED, Seitendeckel, Lampenhalter, Diffusor 14, Pupillenring 15). Kopf, Gabel und Seitendeckel mit 5 mm Brim. Stopfen 10 (Service-Fenster) und 16 (SD-Schlitz) braucht jedes Gerät, 17 auch; 12 und 18–24 nur für Teile, die dein Paket nicht hat. Sockel 13 nur für die Entwicklungs-Variante.", "Teile drucken", "Alle 11 Druckteile in PETG ohne Stützen drucken: Platte A (Unterteil, Zwischenboden, Stopfen, Füsse) und Platte B (Deckel und alles für den Kopf). Kopf, Gabel und Seitendeckel mit 5 mm Brim.", "Teile drucken", "Die Druckteile v5.3 in PETG ohne Stützen drucken: Platte A (Unterteil v5.3, Zwischenboden, Stopfen, Füsse, Luftkanal 27), Platte B (Deckel v5.3, Drehteller, Gabel, Arm 2, Kopf 06 v5.2, Seitendeckel, Lampenhalter, Diffusor 14, Pupillenring 15) und Platte C (Halter 25, Akkuklappe 26). Kopf, Gabel und Seitendeckel mit 5 mm Brim. Stopfen 10, 16 und 17 braucht jedes Gerät; 12 und 18–24 nur für Teile, die dein Paket nicht hat."],
 	["Unterteil vorbereiten", "Füsse unter das Unterteil v5.2 kleben und die Stativmutter 1/4\" von innen in die Sechskanttasche drücken. Den Lautsprecher mit 3–4 Tupfen Heisskleber in den Ring über dem Bodengitter kleben.", "Unterteil vorbereiten", "Füsse einkleben und die Stativmutter 1/4\" von innen in die Sechskanttasche drücken. Den Lautsprecher mit 3–4 Tupfen Heisskleber in den Ring über dem Bodengitter kleben.", "Einsätze einschmelzen, Unterteil vorbereiten", "Zuerst die 12 Gewindeeinsätze M3 × 5,7 einschmelzen (Lötkolben mit Einschmelzspitze, 220–230 °C): 6 von oben in die Deckel-Dome, 2 von oben in die Klötze des Zwischenbodens, 4 von unten in die Dome der Akkuklappe (Unterteil auf den Kopf legen). Den Einsatz senkrecht ansetzen, ohne Druck einsinken lassen, bis er 0,2 mm unter der Fläche steht, sofort mit einer flachen kalten Fläche bündig drücken. Dann die Füsse in die vier Ecken kleben (v5.3: weiter aussen, die Akkuklappe liegt dazwischen), die Stativmutter 1/4\" von innen in die Sechskanttasche drücken und den Lautsprecher mit 3–4 Tupfen Heisskleber in den Ring über dem Bodengitter kleben."],
 	["Vorne: Weitwinkel, IR-Modul, PCA9685, PIR, Mikrofon", "Weitwinkel-Kamera (Camera Module 3 Wide) mit 4 × M2 × 6 an die Rippen hinter dem Fenster der Stirnwand schrauben (12° nach unten). Das IR-Modul 120° von innen in die Hülse daneben schieben und mit der Madenschraube M3 sichern. PCA9685 an die 4 Dome der Lüftungswand schrauben (M2,5, Lötbrücke A0 → 0x41), Elko an V+. PIR von innen in die Hülse schieben, das Mikrofon mit Schaumstoff zwischen die Rippen klemmen. Ohne Weitwinkel-Kamera den Blindstopfen 12 von aussen ins Fenster drücken, ohne IR-Modul den Stopfen 19 in die Hülse.", "Vorne: PCA9685, PIR, Mikrofon", "PCA9685 an die 4 Dome der Lüftungswand schrauben (M2,5, Lötbrücke A0 → 0x41), Elko an V+. PIR von innen in die Hülse schieben, das Mikrofon mit Schaumstoff zwischen die Rippen klemmen.", "Vorne: Weitwinkel, IR-Modul, PCA9685, PIR, Mikrofon", "Weitwinkel-Kamera (Camera Module 3 Wide) mit 4 × M2 × 6 an die Rippen hinter dem Fenster der Stirnwand schrauben (12° nach unten). Das IR-Modul 120° von innen in die Hülse daneben schieben und mit der Madenschraube M3 sichern. PCA9685 an die 4 Dome der Lüftungswand schrauben (M2,5, Lötbrücke A0 → 0x41), Elko an V+. PIR von innen in die Hülse schieben, das Mikrofon mit Schaumstoff zwischen die Rippen klemmen. Ohne Weitwinkel-Kamera den Blindstopfen 12 von aussen ins Fenster drücken, ohne IR-Modul den Stopfen 19 in die Hülse."],
-	["Akku, Pi und SD-Verlängerung", "Das UPS HAT (E) mit den 4 Akkus 21700 und dem Pi 5 darauf in den Zaun stellen und mit Klettband fixieren. HDMI und USB-C des Pi zeigen zum Service-Fenster, der Lüfter sitzt auf dem Pi. Die microSD-Verlängerung in den Kartenschlitz des Pi stecken und den Einbau-Kartenhalter mit 2 × M2,5 × 6 an die zwei Dome über dem PCA9685 schrauben.", "Akku und Pi", "Das UPS HAT (E) mit den 4 Akkus und dem Pi 5 darauf in den Zaun stellen und mit Klettband fixieren. HDMI zeigt zum Fenster, der Lüfter sitzt auf dem Pi.", "Akku, Pi, SD-Verlängerung, Akkuklappe", "Das UPS HAT (E) mit dem Pi 5 darauf in den Zaun stellen (Klettband), die 4 Zellen 21700 hängen unter der Platine über der Öffnung im Boden. Die Akkuklappe 26 von unten aufsetzen (Rand in die Öffnung, Kerbe zur Lüftungswand) und mit 4 × M3 × 8 in die Einsätze schrauben. Zum Akkutausch später nur die Klappe öffnen: Deckel und Pi bleiben drin. Die microSD-Verlängerung in den Kartenschlitz des Pi stecken und den Einbau-Kartenhalter mit 2 × M2,5 × 6 an die zwei Dome über dem PCA9685 schrauben – die Karte wechselst du von aussen (Stopfen 16)."],
-	["Zwischenboden", "Den Zwischenboden mit 2 × M3 einschrauben. Darauf mit Schaumklebeband: D36V50F5 (Laden), PAM8403 und optional INA219 (Solar, I2C 0x44, Shunt 0,01 Ω).", "Zwischenboden", "Den Zwischenboden mit 2 × M3 einschrauben. Darauf mit Schaumklebeband: D36V50F5 (Laden), PAM8403 und optional INA219.", "Zwischenboden", "Den Zwischenboden mit 2 × M3 × 8 in die Einsätze schrauben. Darauf mit Schaumklebeband: D36V50F5 (Laden), PAM8403 und optional INA219 (Solar, I2C 0x44, Shunt 0,01 Ω)."],
-	["Module an den Wänden", "MOSFET-Module (Licht weiss, IR, IR-Modul 120°) an die Lüftungswand unter dem PCA9685 kleben, den Step-Down an die Stirnwand links vom PIR, den Lampentreiber auf das Feld darunter (2 × M2,5). Das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden.", "Module an den Wänden", "MOSFET-Modul und Step-Down an die Stirnwand links vom PIR, das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden.", "Module an den Wänden", "MOSFET-Module (Licht weiss, IR, IR-Modul 120°) an die Lüftungswand unter dem PCA9685 kleben, den Step-Down an die Stirnwand links vom PIR, den Lampentreiber auf das Feld darunter (2 × M2,5). Das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden."],
-	["Hinten und unten: Buchsen, Tasten", "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Die 2 Tasten (12 mm, IP67) in die Rückwand, Mutter innen. Die Reserve-Öffnung mit dem Blindstopfen 17 schliessen. Den Sicherungshalter 5 A (Akku B+) in die Klammer am Boden drücken. Den DS18B20 von unten durch das Bodenloch führen und abdichten.", "Hinten und unten", "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Den DS18B20 von unten durch das Bodenloch führen und abdichten.", "Hinten und unten: Buchsen, Tasten, Zugentlastung", "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Zugentlastung: das Kabel der GX16 mit einem Kabelbinder an die Öse über der Buchse binden, das Relais-Kabel an die Öse neben der Relais-Buchse und an die Öse neben dem Relais-Modul (+y-Wand). Die 2 Tasten (12 mm, IP67) in die Rückwand, Mutter innen. Die Reserve-Öffnung mit dem Blindstopfen 17 schliessen. Den Sicherungshalter 5 A (Akku B+) in die Klammer am Boden drücken. Den DS18B20 von unten durch das Bodenloch führen und abdichten."],
+	["Akku, Pi und SD-Verlängerung", "Den Geekworm X1206 V2.0 mit den 4 Akkus 21700 und dem Pi 5 darauf in den Zaun stellen und mit Klettband fixieren. HDMI und USB-C des Pi zeigen zum Service-Fenster, der Lüfter sitzt auf dem Pi. Die microSD-Verlängerung in den Kartenschlitz des Pi stecken und den Einbau-Kartenhalter mit 2 × M2,5 × 6 an die zwei Dome über dem PCA9685 schrauben. Provisorisch: der X1206 ist 108 × 85 mm – Unterteil erst nach dem Nachmessen anpassen.", "Akku und Pi", "Den Geekworm X1206 V2.0 mit den 4 Akkus und dem Pi 5 darauf in den Zaun stellen und mit Klettband fixieren. HDMI zeigt zum Fenster, der Lüfter sitzt auf dem Pi. Provisorisch: der X1206 ist 108 × 85 mm – Unterteil erst nach dem Nachmessen anpassen.", "Akku, Pi, SD-Verlängerung, Akkuklappe", "Den Geekworm X1206 V2.0 mit dem Pi 5 darauf in den Zaun stellen (Klettband), die 4 Zellen 21700 hängen unter der Platine über der Öffnung im Boden. Die Akkuklappe 26 von unten aufsetzen (Rand in die Öffnung, Kerbe zur Lüftungswand) und mit 4 × M3 × 8 in die Einsätze schrauben. Zum Akkutausch später nur die Klappe öffnen: Deckel und Pi bleiben drin. Die microSD-Verlängerung in den Kartenschlitz des Pi stecken und den Einbau-Kartenhalter mit 2 × M2,5 × 6 an die zwei Dome über dem PCA9685 schrauben – die Karte wechselst du von aussen (Stopfen 16). Provisorisch: der X1206 ist 108 × 85 mm – Unterteil erst nach dem Nachmessen anpassen."],
+	["Zwischenboden", "Den Zwischenboden mit 2 × M3 einschrauben. Darauf mit Schaumklebeband: PAM8403 (ohne Akku dazu der D36V50F5) und optional INA219 (Solar, I2C 0x44, Shunt 0,01 Ω).", "Zwischenboden", "Den Zwischenboden mit 2 × M3 einschrauben. Darauf mit Schaumklebeband: PAM8403 (ohne Akku dazu der D36V50F5) und optional INA219.", "Zwischenboden", "Den Zwischenboden mit 2 × M3 × 8 in die Einsätze schrauben. Darauf mit Schaumklebeband: PAM8403 (ohne Akku dazu der D36V50F5) und optional INA219 (Solar, I2C 0x44, Shunt 0,01 Ω)."],
+	["Module an den Wänden", "MOSFET-Module (Licht weiss, IR, IR-Modul 120°) an die Lüftungswand unter dem PCA9685 kleben, ohne Akku den Step-Down an die Stirnwand links vom PIR, den Lampentreiber auf das Feld darunter (2 × M2,5). Das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden.", "Module an den Wänden", "MOSFET-Modul (ohne Akku auch den Step-Down) an die Stirnwand links vom PIR, das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden.", "Module an den Wänden", "MOSFET-Module (Licht weiss, IR, IR-Modul 120°) an die Lüftungswand unter dem PCA9685 kleben, ohne Akku den Step-Down an die Stirnwand links vom PIR, den Lampentreiber auf das Feld darunter (2 × M2,5). Das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden."],
+	["Hinten und unten: Buchsen, Tasten", "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Die 2 Tasten (12 mm, IP67) in die Rückwand, Mutter innen. In die Reserve-Öffnung den Taster 12 mm für PSW des X1206 (provisorisch; ohne Akku: Blindstopfen 17). Den Sicherungshalter 5 A (5,1-V-Ausgang des X1206) in die Klammer am Boden drücken. Den DS18B20 von unten durch das Bodenloch führen und abdichten.", "Hinten und unten", "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Den DS18B20 von unten durch das Bodenloch führen und abdichten.", "Hinten und unten: Buchsen, Tasten, Zugentlastung", "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Zugentlastung: das Kabel der GX16 mit einem Kabelbinder an die Öse über der Buchse binden, das Relais-Kabel an die Öse neben der Relais-Buchse und an die Öse neben dem Relais-Modul (+y-Wand). Die 2 Tasten (12 mm, IP67) in die Rückwand, Mutter innen. In die Reserve-Öffnung den Taster 12 mm für PSW des X1206 (provisorisch; ohne Akku: Blindstopfen 17). Den Sicherungshalter 5 A (5,1-V-Ausgang des X1206) in die Klammer am Boden drücken. Den DS18B20 von unten durch das Bodenloch führen und abdichten."],
 	["Deckel und Drehlager", "Pan-Servo von unten in den Deckel (2 × M2 × 8). Kugeln in die Rille legen, Servo auf Mitte (1500 µs) und den Drehteller mit Horn so aufstecken, dass der Kopf später zur PIR-Seite schaut.", "Deckel und Drehlager", "Pan-Servo von unten in den Deckel (2 × M2 × 8). Kugeln in die Rille legen, Servo auf Mitte (1500 µs) und den Drehteller mit Horn so aufstecken, dass der Kopf später zur PIR-Seite schaut.", "Deckel und Drehlager", "Pan-Servo von unten in den Deckel v5.3 (2 × M2 × 8). Kugeln in die Rille legen, Servo auf Mitte (1500 µs) und den Drehteller mit Horn so aufstecken, dass der Kopf später zur PIR-Seite schaut. Die Öse im Kabelkamin nimmt in Schritt 13 die Kabel vom Drehteller auf."],
 	["Gabel montieren", "Die Gabel mit 4 × M3 × 8 (nicht länger: die Spitze darf nicht in den Laufring ragen) auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben.", "Gabel montieren", "Die Gabel mit 4 × M3 × 8 (nicht länger: die Spitze darf nicht in den Laufring ragen) auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben.", "Gabel montieren", "Die Gabel mit 4 × M3 × 8 (nicht länger: die Spitze darf nicht in den Laufring ragen) auf den Drehteller schrauben. Das Tilt-Horn senkrecht in die Vertiefung innen in Arm 1 legen und festschrauben."],
 	["Kamerakopf v5.2 mit Status-LED", "Die RGB-Status-LED von innen ins Loch im Dach des Kopfs 06 v5.2 schieben (Heisskleber), den Diffusor 14 aussen in die Vertiefung drücken und den Pupillenring 15 oben einsetzen. Thermal-90 (Linse links) und Camera Module 3 NoIR durch die offene Seite einschrauben (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Tilt-Servo auf Mitte einsetzen, alle Kabel (auch die 4 Adern der LED) durch den Schlitz hinten, Seitendeckel mit 3 × M3 × 10 Linsenkopf ISO 7380 zuschrauben (kein Zylinderkopf: der stösst beim Kippen an Arm 2).", "Kamerakopf", "Thermal-90 (Linse links) und Camera Module 3 durch die offene Seite einschrauben (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Tilt-Servo auf Mitte einsetzen, Kabel durch den Schlitz hinten, Seitendeckel mit 3 × M3 × 10 Linsenkopf ISO 7380 zuschrauben (kein Zylinderkopf: der stösst beim Kippen an Arm 2).", "Kamerakopf v5.2 mit Status-LED", "Die RGB-Status-LED von innen ins Loch im Dach des Kopfs 06 v5.2 schieben (Heisskleber), den Diffusor 14 aussen in die Vertiefung drücken und den Pupillenring 15 oben einsetzen. Thermal-90 (Linse links) und Camera Module 3 NoIR durch die offene Seite einschrauben (Camera Module 3: 4 × M2 × 4, Thermal-90: 2 × M2 × 6). Tilt-Servo auf Mitte einsetzen, alle Kabel (auch die 4 Adern der LED) durch den Schlitz hinten, Seitendeckel mit 3 × M3 × 10 Linsenkopf ISO 7380 zuschrauben (kein Zylinderkopf: der stösst beim Kippen an Arm 2)."],
 	["Kopf einsetzen, Arm 2", "Servowelle auf das Horn in Arm 1 stecken (Kopf schaut geradeaus). Arm 2 mit Mutter in die Nut setzen, 2 × M3 von oben, 2–3 Unterlegscheiben, M3 × 12 als Achse nur bis zum Anliegen.", "Kopf einsetzen, Arm 2", "Servowelle auf das Horn in Arm 1 stecken (Kopf schaut geradeaus). Arm 2 mit Mutter in die Nut setzen, 2 × M3 von oben, 2–3 Unterlegscheiben, M3 × 12 als Achse nur bis zum Anliegen.", "Kopf einsetzen, Arm 2", "Servowelle auf das Horn in Arm 1 stecken (Kopf schaut geradeaus). Arm 2 mit Mutter in die Nut setzen, 2 × M3 von oben, 2–3 Unterlegscheiben, M3 × 12 als Achse nur bis zum Anliegen."],
 	["Lampen", "Die zwei Lampenhalter mit je 2 × M3 × 8 mit Unterlegscheibe aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern.", "Lampen", "Die zwei Lampenhalter mit je 2 × M3 × 8 mit Unterlegscheibe aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern.", "Lampen", "Die zwei Lampenhalter mit je 2 × M3 × 8 mit Unterlegscheibe aussen an die Arme schrauben: weiss an Arm 1, IR 850 nm an Arm 2. Module einsetzen und mit Heisskleber oder Madenschraube sichern."],
 	["Kabel, Deckel zu, Stopfen", "Kabel von Kopf, Status-LED und Lampen in einer Schlaufe hinter dem Kopf durch den Kabelkamin führen. Die Kamerakabel in den Kabelkamm an der Lüftungswand legen: Schlitz 1 = CAM1 (Weitwinkel), Schlitz 2 = CAM0 (Kopfkamera). Deckel mit 6 × M3 × 10 zuschrauben (Moosgummi-Dichtband), den Stopfen 10 ins Service-Fenster (HDMI, USB-C) und den Stopfen 16 in den SD-Schlitz drücken.", "Kabel und Deckel zu", "Kabel von Kopf und Lampen in einer Schlaufe hinter dem Kopf durch den Kabelkamin führen. Deckel mit 6 × M3 × 10 zuschrauben (Moosgummi-Dichtband), HDMI-Stopfen einsetzen.", "Luftkanal, Kabel, Deckel zu", "Den Luftkanal 27 auf den Active Cooler setzen (Moosgummi-Streifen unter dem Rand, die Finger greifen seitlich an den Kühler, der Kanal endet an den 3 Einlass-Schlitzen der Lüftungswand) und ein Moosgummi-Pad oben aufkleben (der Deckel hält ihn). Kabel von Kopf, Status-LED und Lampen in einer Schlaufe hinter dem Kopf durch den Kabelkamin führen und mit einem Kabelbinder an der Öse im Kamin sichern (Schlaufe lassen, damit der Kopf drehen kann). Die Kamerakabel flach über das Dach des Luftkanals in den Kabelkamm legen: Schlitz 1 = CAM1 (Weitwinkel), Schlitz 2 = CAM0 (Kopfkamera). Deckel mit 6 × M3 × 10 in die Einsätze schrauben (Moosgummi-Dichtband), Stopfen 10 ins Service-Fenster und Stopfen 16 in den SD-Schlitz drücken."],
-	["Fertig", "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Weitwinkel-Kamera, Tasten und Status-LED im Selbsttest prüfen. Vor dem Druck die Masse «Nachmessen» prüfen (IR-Modul, Linse der Weitwinkel-Kamera, CAM-Buchsen am Pi, UPS HAT (E) mit Akkus).", "Fertig", "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Vor dem Druck des Unterteils die Masse des UPS HAT (E) mit Akkus nachmessen (siehe Anleitung).", "Fertig, Halter montieren", "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Weitwinkel-Kamera, Tasten und Status-LED im Selbsttest prüfen. Halter 25: an der Wand mit 4 Schrauben 4–5 mm, am Baum mit einem Spanngurt 25 mm durch die zwei Schlitzpaare (Rippen am Stamm). Das Gerät mit den vorderen Füssen in die Mulden drücken (rastet ein) und von unten mit der Rändelschraube 1/4\"-20 × 16 mm in die Stativmutter sichern. Die Akkuklappe bleibt auch am Halter erreichbar. Vor dem Druck die Masse «Nachmessen» prüfen."],
+	["Fertig", "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Weitwinkel-Kamera, Tasten und Status-LED im Selbsttest prüfen. Vor dem Druck die Masse «Nachmessen» prüfen (IR-Modul, Linse der Weitwinkel-Kamera, CAM-Buchsen am Pi, Geekworm X1206 mit Akkus).", "Fertig", "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Vor dem Druck des Unterteils die Masse des Geekworm X1206 mit Akkus nachmessen (siehe Anleitung).", "Fertig, Halter montieren", "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Weitwinkel-Kamera, Tasten und Status-LED im Selbsttest prüfen. Halter 25: an der Wand mit 4 Schrauben 4–5 mm, am Baum mit einem Spanngurt 25 mm durch die zwei Schlitzpaare (Rippen am Stamm). Das Gerät mit den vorderen Füssen in die Mulden drücken (rastet ein) und von unten mit der Rändelschraube 1/4\"-20 × 16 mm in die Stativmutter sichern. Die Akkuklappe bleibt auch am Halter erreichbar. Vor dem Druck die Masse «Nachmessen» prüfen."],
 ]
 # Bauen (real-bauen): Varianten, Einkauf, Drucken, Werkzeug, Sicherheit, Verkabeln, Software, Inbetriebnahme, Fehlersuche, Wartung
 const BAU := {
@@ -216,7 +220,7 @@ const BAU := {
 			"werte": [
 				{
 					"id": "ups",
-					"name": "mit Akku (UPS HAT (E), 4 × 21700)"
+					"name": "mit Akku (Geekworm X1206, 4 × 21700)"
 				},
 				{
 					"id": "netz",
@@ -268,6 +272,10 @@ const BAU := {
 		"conrad": {
 			"name": "Conrad.ch",
 			"suche": "https://www.conrad.ch/de/search.html?search={q}"
+		},
+		"geekworm": {
+			"name": "Geekworm",
+			"suche": "https://geekworm.com/search?q={q}"
 		}
 	},
 	"druck": {
@@ -746,7 +754,7 @@ const BAU := {
 	"sicherheit": [
 		{
 			"thema": "akku",
-			"text": "Akkus 21700 sind ungeschützt: nie kurzschliessen, Polung prüfen, 4 gleiche Zellen gleicher Ladung, beschädigte Zellen nicht verwenden, nicht unbeaufsichtigt laden.",
+			"text": "Akkus 21700 sind ungeschützt: nie kurzschliessen, Polung prüfen, 4 gleiche Zellen gleicher Ladung, beschädigte Zellen nicht verwenden, nicht unbeaufsichtigt laden. Beim X1206 liegen die Zellen parallel: nur Zellen mit gleicher Spannung (± 0,05 V) einsetzen.",
 			"wenn": "ups"
 		},
 		{
@@ -755,7 +763,7 @@ const BAU := {
 		},
 		{
 			"thema": "strom",
-			"text": "Den Ausgang jedes Step-Down-Wandlers zuerst ohne Last messen (5,0–5,2 V), erst dann Pi, Servos oder Verstärker anschliessen. Nie unter Strom verkabeln."
+			"text": "Jeden 5-V-Ausgang (XH des X1206, Step-Down) zuerst ohne Last messen (5,0–5,2 V), erst dann Pi, Servos oder Verstärker anschliessen. Nie unter Strom verkabeln."
 		},
 		{
 			"thema": "loeten",
@@ -790,10 +798,11 @@ const BAU := {
 			"d36": {
 				"name": "D36V50F5 (5 V)",
 				"x": 4,
-				"y": 48
+				"y": 48,
+				"wenn": "netz"
 			},
 			"ups": {
-				"name": "UPS HAT (E)",
+				"name": "Geekworm X1206",
 				"x": 4,
 				"y": 68,
 				"wenn": "ups"
@@ -801,7 +810,8 @@ const BAU := {
 			"buck": {
 				"name": "Step-Down 5 V 4 A",
 				"x": 4,
-				"y": 88
+				"y": 88,
+				"wenn": "netz"
 			},
 			"pi": {
 				"name": "Raspberry Pi 5",
@@ -929,9 +939,15 @@ const BAU := {
 				"wenn": "mover"
 			},
 			"fuse2": {
-				"name": "Sicherung 5 A (Akku)",
+				"name": "Sicherung 5 A (5,1 V)",
 				"x": 14,
 				"y": 78,
+				"wenn": "ups"
+			},
+			"psw": {
+				"name": "Taster Ein/Aus (PSW)",
+				"x": 4,
+				"y": 48,
 				"wenn": "ups"
 			}
 		},
@@ -968,16 +984,16 @@ const BAU := {
 				"von": "ups",
 				"nach": "fuse2",
 				"art": "strom",
-				"pins": "Akku-Lötpunkte B+ / B− des UPS HAT (E) (12–16,8 V) → Flachsicherung 5 A in B+ (fliegender Halter, nahe am HAT). Ersatz: USB-A-5-V-Buchse des HAT",
+				"pins": "5,1-V-Ausgang XH2.54 (2-polig) des X1206 → Flachsicherung 5 A (fliegender Halter, nahe am X1206). Der X1206 liefert zusammen 6 A (Pi und alles hier)",
 				"wenn": "ups"
 			},
 			{
 				"id": "akku_buck2",
 				"von": "fuse2",
-				"nach": "buck",
+				"nach": "pca",
 				"art": "strom",
 				"wenn": "ups",
-				"pins": "nach der Sicherung → eigener Step-Down 6–36 V → 5 V (VIN / GND)"
+				"pins": "nach der Sicherung → Klemme V+ / GND des PCA9685 (Servos, Elko 470 µF an V+) und 5 V der Lampen-MOSFETs"
 			},
 			{
 				"id": "servo_strom",
@@ -985,7 +1001,7 @@ const BAU := {
 				"nach": "pca",
 				"art": "strom",
 				"pins": "5 V → Klemme V+ / GND des PCA9685, Elko 470 µF an V+",
-				"wenn": "ups"
+				"wenn": "netz"
 			},
 			{
 				"id": "servo_strom_netz",
@@ -1056,9 +1072,9 @@ const BAU := {
 				"von": "pi",
 				"nach": "tasten",
 				"art": "gpio",
-				"pins": "«Schutz» GPIO 16 (Pin 36) · «Alarm quittieren» GPIO 26 (Pin 37) · je gegen GND, interner Pull-up",
+				"pins": "«Schutz» GPIO 12 (Pin 32) · «Alarm quittieren» GPIO 26 (Pin 37) · je gegen GND, interner Pull-up. Ältere Geräte: «Schutz» GPIO 16 (Pin 36) – mit dem X1206 nie",
 				"code": "btn_gpio",
-				"wert": "16/26",
+				"wert": "12/26",
 				"wenn": "v52"
 			},
 			{
@@ -1161,7 +1177,16 @@ const BAU := {
 				"von": "buck",
 				"nach": "pam",
 				"art": "strom",
-				"pins": "5 V / GND"
+				"pins": "5 V / GND",
+				"wenn": "netz"
+			},
+			{
+				"id": "pam_strom_x12",
+				"von": "fuse2",
+				"nach": "pam",
+				"art": "strom",
+				"wenn": "ups",
+				"pins": "5,1 V nach der Sicherung → 5 V / GND des PAM8403"
 			},
 			{
 				"id": "spk",
@@ -1175,21 +1200,22 @@ const BAU := {
 				"von": "gx16",
 				"nach": "fuse",
 				"art": "strom",
-				"pins": "12–40 V, je 2 Kontakte parallel für + und −"
+				"pins": "Mit Akku (X1206 V2.0): 9–18 V, 12 V empfohlen – keine 24-V-Quellen, kein Solarpanel direkt (Leerlauf über 18 V). Ohne Akku (D36V50F5): 12–40 V. Je 2 Kontakte parallel für + und −"
 			},
 			{
 				"id": "laden2",
 				"von": "fuse",
 				"nach": "d36",
 				"art": "strom",
-				"pins": "Sicherung 5 A → VIN / GND des D36V50F5"
+				"pins": "Sicherung 5 A → VIN / GND des D36V50F5",
+				"wenn": "netz"
 			},
 			{
 				"id": "laden3",
-				"von": "d36",
+				"von": "fuse",
 				"nach": "ups",
 				"art": "strom",
-				"pins": "5 V → USB-C-Stecker (56 kΩ auf CC) → USB-C des UPS HAT (E)",
+				"pins": "12 V nach der Sicherung → DC-Stecker 5,5/2,1 → DC-Eingang des X1206 V2.0 (9–18 V, mind. 3 A). USB-C des X1206 bleibt frei, nie an das USB-C des Pi",
 				"wenn": "ups"
 			},
 			{
@@ -1197,10 +1223,19 @@ const BAU := {
 				"von": "ups",
 				"nach": "pi",
 				"art": "strom",
-				"pins": "5 V / 6 A über Pogo-Pins, Akku-Chip I2C 0x2D",
-				"code": "ups_e_addr",
-				"wert": "0x2D",
+				"pins": "5,1 V / 6 A über Pogo-Pins (der X1206 sitzt unter dem Pi). Akku-Chip MAX17043 auf I2C 0x36; GPIO 6 (Pin 31) = Strom am Eingang, GPIO 16 (Pin 36) = Laden ein/aus – beide gehören dem X1206, dort nichts anderes anschliessen",
+				"code": "ups_x12_addr",
+				"wert": "0x36",
 				"wenn": "ups"
+			},
+			{
+				"id": "psw",
+				"von": "ups",
+				"nach": "psw",
+				"art": "strom",
+				"wenn": "ups",
+				"pins": "Buchse PSW (XH2.54 2-polig) des X1206 → Taster 12 mm in der Reserve-Öffnung hinten (statt Blindstopfen 17)",
+				"unklar": "provisorisch: Lage der Buchse PSW, Tastenfunktion und Jumper AUTO POWER ON am echten X1206 prüfen"
 			},
 			{
 				"id": "netz_pi",
@@ -1215,9 +1250,9 @@ const BAU := {
 				"von": "pi",
 				"nach": "gx16",
 				"art": "gpio",
-				"pins": "GPIO 6 (Pin 31) → 330 Ω → Lade-LED 3 mm grün → GND (Pin 34); Lichtleiter hinten. MoveEye schaltet sie nach dem Lade-Zustand des UPS HAT (E)",
+				"pins": "GPIO 13 (Pin 33) → 330 Ω → Lade-LED 3 mm grün → GND (Pin 34); Lichtleiter hinten. Ältere Geräte (UPS HAT (E)): GPIO 6 (Pin 31) – mit dem X1206 nie. Einstellung «Lade-LED: GPIO»",
 				"code": "charge_led_gpio",
-				"wert": "6"
+				"wert": "13"
 			},
 			{
 				"id": "mover",
@@ -1249,12 +1284,12 @@ const BAU := {
 		},
 		{
 			"titel": "Netzteil-Grenze des Pi 5",
-			"text": "Der UPS HAT (E) und der 5-V-Wandler melden kein USB-PD. Ohne diese Zeile drosselt der Pi 5 USB auf 600 mA und meldet «schwaches Netzteil». Im Editor die Zeile PSU_MAX_CURRENT=5000 ergänzen, speichern, neu starten (schaltet auch usb_max_current_enable ein).",
+			"text": "Der Geekworm X1206 (wie das UPS HAT (E)) und der 5-V-Wandler melden kein USB-PD. Ohne diese Zeile drosselt der Pi 5 USB auf 600 mA und meldet «schwaches Netzteil». Im Editor die Zeile PSU_MAX_CURRENT=5000 ergänzen, speichern, neu starten (schaltet auch usb_max_current_enable ein).",
 			"befehl": "sudo rpi-eeprom-config --edit"
 		},
 		{
 			"titel": "Neu starten und prüfen",
-			"text": "Nach dem Neustart: I2C-Geräte und Kamera prüfen. Erwartet: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), dazu 68 / 76 / 77 / 44 je nach Sensoren.",
+			"text": "Nach dem Neustart: I2C-Geräte und Kamera prüfen. Erwartet: 40 Thermal-90, 41 PCA9685, 36 Geekworm X1206 (ältere Geräte: 2d UPS HAT (E)), dazu 68 / 76 / 77 / 44 je nach Sensoren.",
 			"befehl": "sudo i2cdetect -y 1\nrpicam-hello --list-cameras"
 		},
 		{
@@ -1373,7 +1408,7 @@ const BAU := {
 		{
 			"wenn": "netz",
 			"titel": "Ohne Akku",
-			"text": "Schritt 4 ohne UPS HAT und Akkus: den Pi direkt in den Zaun stellen (Klettband). Der D36V50F5 speist den Pi über USB-C, das 12-V-Netzteil kommt an die GX16-Buchse."
+			"text": "Schritt 4 ohne Akku-Platine und Akkus: den Pi direkt in den Zaun stellen (Klettband). Der D36V50F5 speist den Pi über USB-C, das 12-V-Netzteil kommt an die GX16-Buchse."
 		},
 		{
 			"wenn": "v52",
@@ -1390,7 +1425,7 @@ const BAU := {
 		{
 			"wenn": "entwicklung",
 			"titel": "Entwicklungs-Variante ohne Akku",
-			"text": "Statt UPS HAT (E) und Akkus den Sockel 13 in den Akku-Zaun drücken (Klemmrippen), den Pi mit 4 × M2,5 × 6 auf die Bolzen schrauben – gleiche Lage und Höhe wie mit Akku, HDMI-/USB-C-Fenster und Kamerakabel passen. Der Pi bekommt Strom über sein eigenes USB-C-Netzteil (5,1 V / 5 A) durch das Service-Fenster. Servos, Lampen und Verstärker: das 12-V-Netzteil (mind. 3 A) an die GX16-Ladebuchse (Pins wie beim Laden: 2 Kontakte +, 2 Kontakte −); die 5-A-Sicherung bleibt in der Leitung, dahinter auf den Eingang des Step-down (6–36 V → 5 V). Nur 12 V verwenden, Polung prüfen – es gibt keinen Verpolungsschutz. In dieser Variante zeigen Akku-%, INA219 und Lade-LED nichts."
+			"text": "Statt Akku-Platine und Akkus den Sockel 13 in den Akku-Zaun drücken (Klemmrippen), den Pi mit 4 × M2,5 × 6 auf die Bolzen schrauben – gleiche Lage und Höhe wie mit Akku, HDMI-/USB-C-Fenster und Kamerakabel passen. Der Pi bekommt Strom über sein eigenes USB-C-Netzteil (5,1 V / 5 A) durch das Service-Fenster. Servos, Lampen und Verstärker: das 12-V-Netzteil (mind. 3 A) an die GX16-Ladebuchse (Pins wie beim Laden: 2 Kontakte +, 2 Kontakte −); die 5-A-Sicherung bleibt in der Leitung, dahinter auf den Eingang des Step-down (6–36 V → 5 V). Nur 12 V verwenden, Polung prüfen – es gibt keinen Verpolungsschutz. In dieser Variante zeigen Akku-%, INA219 und Lade-LED nichts."
 		},
 		{
 			"wenn": "v52",
@@ -1606,10 +1641,10 @@ const BAU := {
 			"gruppe": "kopf"
 		},
 		"ups": {
-			"preis": 36.9,
-			"haendler": "bastelgarage",
-			"suche": "USV HAT (E) 21700",
-			"alt": "Waveshare 27966",
+			"preis": 55.0,
+			"haendler": "geekworm",
+			"suche": "X1206",
+			"alt": "V2.0 nehmen (DC-Eingang 9–18 V); V1.1 nimmt nur 5–6 V. Unter den Pi, Pogo-Pins, Akku-Chip I2C 0x36",
 			"wenn": "ups",
 			"gruppe": "strom"
 		},
@@ -1617,7 +1652,7 @@ const BAU := {
 			"preis": 132.92,
 			"haendler": "galaxus",
 			"suche": "Samsung INR21700-50E",
-			"alt": "Molicel P45B; 4 gleiche Zellen aus einer Lieferung",
+			"alt": "ohne Schutzplatine, höchstens 70,5 × 21,1 mm; Molicel P45B. 4 gleiche Zellen aus einer Lieferung, beim Einsetzen gleiche Spannung (± 0,05 V): die Zellen liegen parallel",
 			"wenn": "ups",
 			"gruppe": "strom"
 		},
@@ -1626,6 +1661,7 @@ const BAU := {
 			"haendler": "berrybase",
 			"suche": "Pololu D36V50F5",
 			"alt": "nur bei BerryBase (de) gefunden",
+			"wenn": "netz",
 			"gruppe": "strom"
 		},
 		"buck": {
@@ -1633,6 +1669,7 @@ const BAU := {
 			"haendler": "bastelgarage",
 			"suche": "Step-Down 6-36V 5V 4A",
 			"alt": "Pololu #3782",
+			"wenn": "netz",
 			"gruppe": "strom"
 		},
 		"gx16": {
@@ -1659,6 +1696,36 @@ const BAU := {
 			"haendler": "berrybase",
 			"suche": "USB-C Kabel offenes Ende",
 			"alt": "USB-C-Kabel mit offenem Ende (BerryBase 125190)",
+			"wenn": "netz",
+			"gruppe": "strom"
+		},
+		"buck_dev": {
+			"preis": 6.9,
+			"haendler": "bastelgarage",
+			"suche": "Step-Down 6-36V 5V 4A",
+			"alt": "Pololu #3782",
+			"wenn": "entwicklung",
+			"gruppe": "strom"
+		},
+		"dcplug": {
+			"preis": 3.0,
+			"haendler": "galaxus",
+			"suche": "DC Stecker 5.5 2.1 Kabel",
+			"wenn": "ups",
+			"gruppe": "strom"
+		},
+		"xhkabel": {
+			"preis": 4.0,
+			"haendler": "galaxus",
+			"suche": "JST XH 2.54 2 Pin Kabel",
+			"wenn": "ups",
+			"gruppe": "strom"
+		},
+		"psw": {
+			"preis": 6.0,
+			"haendler": "bastelgarage",
+			"suche": "Taster 12mm IP67",
+			"wenn": "ups",
 			"gruppe": "strom"
 		},
 		"chled": {
@@ -1898,7 +1965,7 @@ const BAU := {
 			"preis": 20,
 			"haendler": "galaxus",
 			"suche": "Netzteil 12V 3A",
-			"alt": "oder Solar (solar + solarreg, optional); an der GX16 dürfen 12–40 V anliegen",
+			"alt": "oder Solar über einen Regler mit 12-V-Ausgang (solar + solarreg, optional). Mit dem X1206 an der GX16 nur 9–18 V: 24-V-Quellen und Solarpanels direkt (Leerlauf über 18 V) passen nicht mehr",
 			"wenn": "ups",
 			"gruppe": "strom"
 		},
@@ -1915,7 +1982,7 @@ const BAU := {
 			"preis": 15,
 			"haendler": "galaxus",
 			"suche": "MPPT Solar Laderegler Modul",
-			"alt": "der D36V50F5 hat keine MPPT-Regelung: ohne Regler bricht die Spannung bei wenig Sonne ein",
+			"alt": "Der X1206 nimmt am DC-Eingang höchstens 18 V: ein Panel direkt oder 24-V-Systeme passen nicht. Grössere Panels nur mit einem Regler, der 12 V liefert",
 			"wenn": "ups",
 			"optional": true,
 			"gruppe": "strom"
@@ -1996,6 +2063,6 @@ const BAU := {
 }
 # Gehäuse-Varianten: id -> {name, teile, ersetzt, druckdateien, anleitung, hinweis, nachmessen (deutsch, T.t übersetzt)}
 const GEHAEUSE_VARIANTEN := {
-	"v52": {"name": "Variante v5.2: Weitwinkel-Kamera im Unterteil", "teile": ["tub52", "wide", "irled", "mosfet52", "cable_cam1", "cable_cam0_52", "buttons", "sled", "plug52", "sdplug", "head52", "diff52", "resplug", "lampdrv", "fuseh"], "ersetzt": {"tub52": "tub", "mosfet52": "mosfet", "cable_cam0_52": "cable_cam", "plug52": "plug", "head52": "head"}, "druckdateien": ["v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf", "v5-2/MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf"], "anleitung": "Dokumente/LIESMICH_Montage_v5-2.md", "hinweis": "Platte A und B v5.2 ersetzen die Platten v5.1 (Unterteil mit Weitwinkel-Fenster, Service-Fenster HDMI/USB-C, SD-Schlitz; Kopf mit Status-LED). Vor dem Druck die Liste «Nachmessen» prüfen.", "nachmessen": ["IR-Modul: Ø 18,8 mm, Länge 14 mm, Linse vorne Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)", "Weitwinkel-Kamera: Linsenhöhe 11,4 mm ab Platine, Linsenmitte 9,5 mm unter der Platinen-Oberkante, Frontlinse Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)", "Lage der Buchsen CAM/DISP 0 und 1 am Pi 5 (Kabelkamm FPC_X0, PI_CAM0_XY, PI_CAM1_XY)", "Abstände: IR-Modul–Kamera-Fenster (Steg 3,2 mm, Trennsteg 2 mm vor der Wand), IR-Modul–Lautsprecher 11 mm, Kabel–Lüfter 4 mm / Ansaugung 8 mm, Kabel–Lüftungsschlitze 9 mm", "UPS HAT (E) mit Akkus (wie v5.1: angenommen 90 × 80 × 26 mm)", "Service-Fenster: Lage USB-C (x 85) und HDMI am Pi 5; SD: microSD-Verlängerung mit Einbau-Kartenhalter (Lochabstand 18 mm, Platine ca. 22 × 15 mm)", "Lampentreiber: noch unbekannt – Feld 30 × 20 mit 2 Domen M2,5 ist ein Platzhalter (DRV_HOLES); Sicherungshalter 30 × 13 × 10 (FUSE_*)"]},
-	"v53": {"name": "Variante v5.3: v5.2 mit Einsätzen, Akkuklappe, Halter, Luftkanal", "teile": ["tub53", "lid53", "hatch", "duct", "holder", "feet53", "feet53_2", "feet53_3", "feet53_4", "cable_cam1_53", "cable_cam0_53"], "ersetzt": {"tub53": "tub52", "lid53": "lid", "feet53": "feet", "feet53_2": "feet2", "feet53_3": "feet3", "feet53_4": "feet4", "cable_cam1_53": "cable_cam1", "cable_cam0_53": "cable_cam0_52"}, "druckdateien": ["v5-3/MotionWatch_v5-3_Platte_A_Unterteil.3mf", "v5-3/MotionWatch_v5-3_Platte_B_Deckel_Kopf.3mf", "v5-3/MotionWatch_v5-3_Platte_C_Halter.3mf"], "anleitung": "Dokumente/LIESMICH_Montage_v5-3.md", "hinweis": "Platten A, B und C v5.3 ersetzen die Platten v5.2 (Unterteil mit Einsätzen, Akkuklappe, Lufteinlass und Ösen; Deckel mit Öse; Halter und Akkuklappe auf Platte C). v5.3 ist Standard (Freigabe Elektro 02.11.2026); v5.2 und v5.1 bleiben wählbar. Vor dem Druck die Liste «Nachmessen» prüfen.", "nachmessen": ["UPS HAT (E): Zellen unter der Platine und von unten entnehmbar? Halter-Enden liegen auf dem Bodenrand (y < 4 und > 76)? (v5.BAT_*, OPEN_*)", "Gewindeeinsatz: Bohrung Ø 4,0 / Länge 5,7 nach Herstellerangabe (ruthex M3 × 5,7) – bei anderem Einsatz INS_D / INS_L anpassen", "Active Cooler: Oberkante z 55,5, Ansaugöffnung 23 × 24 mm, Ausblasrichtung der Rippen (COOL_*, FAN_IN)", "Füsse v5.3 in den Ecken: Gerät steht stabil, Halter-Mulden passen (FEET53)", "Halter: Gurt 25 mm passt durch die Schlitze 4 × 28 mm, Wandschrauben Ø 5"]},
+	"v52": {"name": "Variante v5.2: Weitwinkel-Kamera im Unterteil", "teile": ["tub52", "wide", "irled", "mosfet52", "cable_cam1", "cable_cam0_52", "buttons", "sled", "plug52", "sdplug", "head52", "diff52", "resplug", "lampdrv", "fuseh"], "ersetzt": {"tub52": "tub", "mosfet52": "mosfet", "cable_cam0_52": "cable_cam", "plug52": "plug", "head52": "head"}, "druckdateien": ["v5-2/MotionWatch_v5-2_Platte_A_Unterteil.3mf", "v5-2/MotionWatch_v5-2_Platte_B_Deckel_Kopf.3mf"], "anleitung": "Dokumente/LIESMICH_Montage_v5-2.md", "hinweis": "Platte A und B v5.2 ersetzen die Platten v5.1 (Unterteil mit Weitwinkel-Fenster, Service-Fenster HDMI/USB-C, SD-Schlitz; Kopf mit Status-LED). Vor dem Druck die Liste «Nachmessen» prüfen.", "nachmessen": ["IR-Modul: Ø 18,8 mm, Länge 14 mm, Linse vorne Ø 17 mm (IRW_MOD_D, IRW_MOD_L, IRW_LENS_D)", "Weitwinkel-Kamera: Linsenhöhe 11,4 mm ab Platine, Linsenmitte 9,5 mm unter der Platinen-Oberkante, Frontlinse Ø 6 mm (WC_LENS_H, WC_LENS_FROM_TOP, WC_R0)", "Lage der Buchsen CAM/DISP 0 und 1 am Pi 5 (Kabelkamm FPC_X0, PI_CAM0_XY, PI_CAM1_XY)", "Abstände: IR-Modul–Kamera-Fenster (Steg 3,2 mm, Trennsteg 2 mm vor der Wand), IR-Modul–Lautsprecher 11 mm, Kabel–Lüfter 4 mm / Ansaugung 8 mm, Kabel–Lüftungsschlitze 9 mm", "Geekworm X1206 mit Akkus (108 × 85 mm Platine; Modell noch UPS HAT (E): 90 × 80 × 26 mm)", "Service-Fenster: Lage USB-C (x 85) und HDMI am Pi 5; SD: microSD-Verlängerung mit Einbau-Kartenhalter (Lochabstand 18 mm, Platine ca. 22 × 15 mm)", "Lampentreiber: noch unbekannt – Feld 30 × 20 mit 2 Domen M2,5 ist ein Platzhalter (DRV_HOLES); Sicherungshalter 30 × 13 × 10 (FUSE_*)"]},
+	"v53": {"name": "Variante v5.3: v5.2 mit Einsätzen, Akkuklappe, Halter, Luftkanal", "teile": ["tub53", "lid53", "hatch", "duct", "holder", "feet53", "feet53_2", "feet53_3", "feet53_4", "cable_cam1_53", "cable_cam0_53"], "ersetzt": {"tub53": "tub52", "lid53": "lid", "feet53": "feet", "feet53_2": "feet2", "feet53_3": "feet3", "feet53_4": "feet4", "cable_cam1_53": "cable_cam1", "cable_cam0_53": "cable_cam0_52"}, "druckdateien": ["v5-3/MotionWatch_v5-3_Platte_A_Unterteil.3mf", "v5-3/MotionWatch_v5-3_Platte_B_Deckel_Kopf.3mf", "v5-3/MotionWatch_v5-3_Platte_C_Halter.3mf"], "anleitung": "Dokumente/LIESMICH_Montage_v5-3.md", "hinweis": "Platten A, B und C v5.3 ersetzen die Platten v5.2 (Unterteil mit Einsätzen, Akkuklappe, Lufteinlass und Ösen; Deckel mit Öse; Halter und Akkuklappe auf Platte C). v5.3 ist Standard (Freigabe Elektro 02.11.2026); v5.2 und v5.1 bleiben wählbar. Vor dem Druck die Liste «Nachmessen» prüfen.", "nachmessen": ["Geekworm X1206: Höhe mit Akkus, Lage des Akkuhalters, Löcher für den Pi, Buchsenseite? Platine 108 × 85 mm – grösser als der Akku-Zaun (v5.BAT_*, OPEN_*)", "Gewindeeinsatz: Bohrung Ø 4,0 / Länge 5,7 nach Herstellerangabe (ruthex M3 × 5,7) – bei anderem Einsatz INS_D / INS_L anpassen", "Active Cooler: Oberkante z 55,5, Ansaugöffnung 23 × 24 mm, Ausblasrichtung der Rippen (COOL_*, FAN_IN)", "Füsse v5.3 in den Ecken: Gerät steht stabil, Halter-Mulden passen (FEET53)", "Halter: Gurt 25 mm passt durch die Schlitze 4 × 28 mm, Wandschrauben Ø 5"]},
 }

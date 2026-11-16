@@ -17,9 +17,9 @@
 
 | Teil | Angabe |
 |---|---|
-| Akku | Waveshare **UPS HAT (E)**, 4 × 21700 in Serie, 5 V / 6 A über Pogo-Pins an den Pi, **I2C 0x2D** (ab 2.68.0 unterstützt) |
-| Laden | GX16-4P hinten (je 2 Kontakte parallel), **12–40 V**, Sicherung 5 A → Pololu D36V50F5 (5 V / 5,5 A) → USB-C des UPS HAT. Kein Verpolungsschutz |
-| Servos, Licht, Verstärker | Step-Down 6–36 V → 5 V / 4 A (oder Pololu D36V28F5) aus dem Akkupaket: B+ / B− des UPS HAT (E) → **Flachsicherung 5 A mit Halter in B+** (ab 01.11.2026) → Step-Down |
+| Akku | **Geekworm X1206 V2.0** (Entscheid 16.11.2026), 4 × 21700 **parallel** (3,0–4,2 V), unter dem Pi, 5,1 V / 6 A gesamt über Pogo-Pins, Akku-Chip MAX17043 **I2C 0x36**, GPIO 6 = Strom am Eingang, GPIO 16 = Laden ein/aus (beide nur lesen). Früher: Waveshare UPS HAT (E), 4 × 21700 in Serie, I2C 0x2D – bleibt in MoveEye unterstützt |
+| Laden | GX16-4P hinten (je 2 Kontakte parallel), Sicherung 5 A → DC-Stecker 5,5/2,1 → **DC-Eingang des X1206, 9–18 V** (12 V empfohlen, mind. 3 A). **24-V-Quellen und Solarpanels direkt (Leerlauf über 18 V) passen nicht mehr.** Kein Verpolungsschutz an der GX16. Ohne Akku wie bisher: 12–40 V → Pololu D36V50F5 → USB-C des Pi |
+| Servos, Licht, Verstärker | 5,1-V-Ausgang **XH2.54 des X1206** → **Flachsicherung 5 A** → PCA9685 V+ (Elko 470 µF), Lampen-MOSFETs, PAM8403. Der X1206 liefert zusammen 6 A (Pi und alles hier). Step-Down und Sicherung in B+ entfallen (nur noch ohne Akku: Step-Down am 12-V-Netzteil) |
 | Solar (optional) | Panel an dieselbe GX16-Ladebuchse. **INA219 auf 0x44** (0x40 Thermal, 0x41 PCA9685). Nur mit 12-V-Panel, der INA219 misst bis 26 V |
 
 ## Anschlüsse und Adressen
@@ -28,7 +28,9 @@
 |---|---|
 | PCA9685 | I2C **0x41**: Kanal 0 Pan, 1 Tilt, 2 Licht weiss, 3 Licht IR (über MOSFET) |
 | Thermal-90 | SPI + I2C 0x40, GPIO 7/23/24 |
-| UPS HAT (E) | I2C 0x2D |
+| Geekworm X1206 | I2C 0x36, GPIO 6 (Pin 31) und GPIO 16 (Pin 36) gehören der Platine (ältere Geräte: UPS HAT (E) auf 0x2D) |
+| Ein/Aus (PSW) | Taster 12 mm in der Reserve-Öffnung hinten statt Blindstopfen 17 an der Buchse PSW des X1206 – **provisorisch** |
+| Lade-LED, Taste «Schutz» | Neu GPIO 13 (Pin 33) und GPIO 12 (Pin 32); ältere Geräte GPIO 6 / 16 (Einstellungen) |
 | BME280 (innen, nur Luftdruck / Sturmwarnung) | I2C 0x76 oder 0x77 (Gravity-Modul von DFRobot: 0x77) |
 | MPU-6050 (Bewegt-/Umgefallen-Alarm) | I2C 0x68, flach auf dem Boden kleben |
 | DS18B20 (Temperaturalarm) | 1-Wire GPIO 4, 4,7 kΩ nach 3,3 V. Sonde hängt **unter** dem Gehäuse (Loch Ø 6,5 im Boden) |
@@ -46,6 +48,6 @@
 
 ## Für die Software zu prüfen
 
-- Den UPS HAT (E) auf 0x2D mit `i2cdetect -y 1` bestätigen.
+- Den Geekworm X1206 auf 0x36 mit `i2cdetect -y 1` bestätigen (ältere Geräte: UPS HAT (E) auf 0x2D).
 - In den Texten der Software «Powerbank» oder «UPS HAT 2 × 18650» durch den UPS HAT (E) ersetzen, wo das noch vorkommt.
 - In der Hardware-Prüfung (System → Hilfe) neu auftauchende Teile: Relais-Ausgang, DS18B20 unter dem Gehäuse, INA219 auf 0x44.

@@ -2754,6 +2754,12 @@
   "it": "12 Tappo finestra grandangolare (senza fotocamera grandangolare)",
   "rm": "12 Zaffer fanestra largangulara (senza camera largangulara)"
  },
+ "12 V nach der Sicherung → DC-Stecker 5,5/2,1 → DC-Eingang des X1206 V2.0 (9–18 V, mind. 3 A). USB-C des X1206 bleibt frei, nie an das USB-C des Pi": {
+  "en": "12 V after the fuse → DC plug 5.5/2.1 → DC input of the X1206 V2.0 (9–18 V, at least 3 A). USB-C of the X1206 stays free, never to the USB-C of the Pi",
+  "fr": "12 V après le fusible → fiche DC 5,5/2,1 → entrée DC du X1206 V2.0 (9–18 V, au moins 3 A). L'USB-C du X1206 reste libre, jamais vers l'USB-C du Pi",
+  "it": "12 V dopo il fusibile → spina DC 5,5/2,1 → ingresso DC dell'X1206 V2.0 (9–18 V, almeno 3 A). L'USB-C dell'X1206 resta libero, mai all'USB-C del Pi",
+  "rm": "12 V suenter la segirezza → stecker DC 5,5/2,1 → entrada DC dal X1206 V2.0 (9–18 V, almain 3 A). L'USB-C dal X1206 resta liber, mai a l'USB-C dal Pi"
+ },
  "12 V nach der Sicherung → Step-Down → 5 V an V+ des PCA9685": {
   "en": "12 V after the fuse → step-down → 5 V at V+ of the PCA9685",
   "fr": "12 V après le fusible → abaisseur → 5 V sur V+ du PCA9685",
@@ -2777,6 +2783,12 @@
   "fr": "12–40 V, 2 contacts en parallèle pour + et −",
   "it": "12–40 V, 2 contatti in parallelo per + e −",
   "rm": "12–40 V, mintgamai 2 contacts parallels per + e −"
+ },
+ "13 Entwicklungs-Sockel (statt Akku-Platine + Akkus)": {
+  "en": "13 Development socket (instead of battery board + cells)",
+  "fr": "13 Socle de développement (au lieu de la carte batterie + accus)",
+  "it": "13 Zoccolo di sviluppo (al posto di scheda batteria + batterie)",
+  "rm": "13 Zocla da svilup (empè da la platina d'accu + accus)"
  },
  "13 Entwicklungs-Sockel (statt UPS HAT + Akkus)": {
   "en": "13 Development socket (instead of UPS HAT + cells)",
@@ -3197,6 +3209,24 @@
   "fr": "5 V → fiche USB-C (56 kΩ sur CC) → USB-C de la UPS HAT (E)",
   "it": "5 V → spina USB-C (56 kΩ su CC) → USB-C della UPS HAT (E)",
   "rm": "5 V → stecker USB-C (56 kΩ sin CC) → USB-C da l'UPS HAT (E)"
+ },
+ "5,1 V / 6 A über Pogo-Pins (der X1206 sitzt unter dem Pi). Akku-Chip MAX17043 auf I2C 0x36; GPIO 6 (Pin 31) = Strom am Eingang, GPIO 16 (Pin 36) = Laden ein/aus – beide gehören dem X1206, dort nichts anderes anschliessen": {
+  "en": "5.1 V / 6 A over pogo pins (the X1206 sits under the Pi). Battery chip MAX17043 on I2C 0x36; GPIO 6 (pin 31) = power at the input, GPIO 16 (pin 36) = charging on/off – both belong to the X1206, connect nothing else there",
+  "fr": "5,1 V / 6 A par broches pogo (le X1206 est sous le Pi). Puce batterie MAX17043 sur I2C 0x36 ; GPIO 6 (broche 31) = courant à l'entrée, GPIO 16 (broche 36) = charge marche/arrêt – les deux appartiennent au X1206, n'y rien brancher d'autre",
+  "it": "5,1 V / 6 A tramite pin pogo (l'X1206 sta sotto il Pi). Chip batteria MAX17043 su I2C 0x36; GPIO 6 (pin 31) = corrente all'ingresso, GPIO 16 (pin 36) = carica on/off – entrambi appartengono all'X1206, non collegarvi altro",
+  "rm": "5,1 V / 6 A via pins pogo (il X1206 è sut il Pi). Chip d'accu MAX17043 sin I2C 0x36; GPIO 6 (pin 31) = current a l'entrada, GPIO 16 (pin 36) = chargiar en/ora – omadus appartegnan al X1206, betg colliar nagut auter là"
+ },
+ "5,1 V nach der Sicherung → 5 V / GND des PAM8403": {
+  "en": "5.1 V after the fuse → 5 V / GND of the PAM8403",
+  "fr": "5,1 V après le fusible → 5 V / GND du PAM8403",
+  "it": "5,1 V dopo il fusibile → 5 V / GND del PAM8403",
+  "rm": "5,1 V suenter la segirezza → 5 V / GND dal PAM8403"
+ },
+ "5,1-V-Ausgang XH2.54 (2-polig) des X1206 → Flachsicherung 5 A (fliegender Halter, nahe am X1206). Der X1206 liefert zusammen 6 A (Pi und alles hier)": {
+  "en": "5.1 V output XH2.54 (2-pin) of the X1206 → blade fuse 5 A (inline holder, close to the X1206). The X1206 delivers 6 A in total (Pi and everything here)",
+  "fr": "Sortie 5,1 V XH2.54 (2 broches) du X1206 → fusible plat 5 A (support volant, près du X1206). Le X1206 fournit 6 A au total (Pi et tout ceci)",
+  "it": "Uscita 5,1 V XH2.54 (2 poli) dell'X1206 → fusibile lamellare 5 A (portafusibile volante, vicino all'X1206). L'X1206 fornisce 6 A in tutto (Pi e tutto questo)",
+  "rm": "Sortida 5,1 V XH2.54 (2 pols) dal X1206 → segirezza plata 5 A (purtader liber, datiers dal X1206). Il X1206 furnescha 6 A en tut (Pi e tut quai)"
  },
  "8 Minuten": {
   "en": "8 minutes",
@@ -3810,6 +3840,12 @@
   "fr": "Les cellules 21700 sont non protégées : jamais de court-circuit, vérifier la polarité, 4 cellules identiques de même charge, pas de cellules abîmées, ne pas charger sans surveillance.",
   "it": "Le celle 21700 non sono protette: mai cortocircuitarle, controllare la polarità, 4 celle uguali con la stessa carica, niente celle danneggiate, non caricare senza sorveglianza.",
   "rm": "Las cellas 21700 n'èn betg protegidas: mai far curtcircuit, controllar la polaritad, 4 cellas egualas cun la medema chargia, betg duvrar cellas donnegiadas, betg chargiar senza survegliar."
+ },
+ "Akkus 21700 sind ungeschützt: nie kurzschliessen, Polung prüfen, 4 gleiche Zellen gleicher Ladung, beschädigte Zellen nicht verwenden, nicht unbeaufsichtigt laden. Beim X1206 liegen die Zellen parallel: nur Zellen mit gleicher Spannung (± 0,05 V) einsetzen.": {
+  "en": "The 21700 cells are unprotected: never short them, check the polarity, 4 equal cells with the same charge, do not use damaged cells, do not charge unattended. In the X1206 the cells are in parallel: only insert cells with the same voltage (± 0.05 V).",
+  "fr": "Les cellules 21700 sont non protégées : jamais de court-circuit, vérifier la polarité, 4 cellules identiques de même charge, pas de cellules abîmées, ne pas charger sans surveillance. Dans le X1206, les cellules sont en parallèle : n'insérer que des cellules de même tension (± 0,05 V).",
+  "it": "Le celle 21700 non sono protette: mai cortocircuitarle, controllare la polarità, 4 celle uguali con la stessa carica, niente celle danneggiate, non caricare senza sorveglianza. Nell'X1206 le celle sono in parallelo: inserire solo celle con la stessa tensione (± 0,05 V).",
+  "rm": "Las cellas 21700 n'èn betg protegidas: mai far curtcircuit, controllar la polaritad, 4 cellas egualas cun la medema chargia, betg duvrar cellas donnegiadas, betg chargiar senza survegliar. En il X1206 èn las cellas en parallel: metter mo cellas cun la medema tensiun (± 0,05 V)."
  },
  "Akustikschaum": {
   "en": "Akustikschaum",
@@ -8105,6 +8141,12 @@
   "it": "Libro",
   "rm": "Cudesch"
  },
+ "Buchse PSW (XH2.54 2-polig) des X1206 → Taster 12 mm in der Reserve-Öffnung hinten (statt Blindstopfen 17)": {
+  "en": "Socket PSW (XH2.54 2-pin) of the X1206 → 12 mm button in the reserve opening at the back (instead of blind plug 17)",
+  "fr": "Prise PSW (XH2.54 2 broches) du X1206 → bouton 12 mm dans l'ouverture de réserve arrière (au lieu du bouchon 17)",
+  "it": "Presa PSW (XH2.54 2 poli) dell'X1206 → pulsante 12 mm nell'apertura di riserva dietro (al posto del tappo 17)",
+  "rm": "Bischla PSW (XH2.54 2 pols) dal X1206 → buttun 12 mm en l'avertura da reserva davos (empè dal zaffer 17)"
+ },
  "Bungalow": {
   "en": "Bungalow",
   "fr": "Bungalow",
@@ -9450,6 +9492,18 @@
   "it": "più una resistenza 47 Ω / 0,5 W; oppure un piccolo MOSFET a livello logico (AO3400)",
   "rm": "plus ina resistenza 47 Ω / 0,5 W; u in pitschen MOSFET nivel logic (AO3400)"
  },
+ "DC Stecker 5.5 2.1 Kabel": {
+  "en": "DC Stecker 5.5 2.1 Kabel",
+  "fr": "DC Stecker 5.5 2.1 Kabel",
+  "it": "DC Stecker 5.5 2.1 Kabel",
+  "rm": "DC Stecker 5.5 2.1 Kabel"
+ },
+ "DC-Stecker 5,5/2,1 mm mit Kabel (Sicherung → DC-Eingang des X1206)": {
+  "en": "DC plug 5.5/2.1 mm with cable (fuse → DC input of the X1206)",
+  "fr": "Fiche DC 5,5/2,1 mm avec câble (fusible → entrée DC du X1206)",
+  "it": "Spina DC 5,5/2,1 mm con cavo (fusibile → ingresso DC dell'X1206)",
+  "rm": "Stecker DC 5,5/2,1 mm cun cabel (segirezza → entrada DC dal X1206)"
+ },
  "Deckel und Drehlager": {
   "en": "Lid and turntable bearing",
   "fr": "Couvercle et roulement",
@@ -9726,6 +9780,24 @@
   "it": "Il primo raggio di sole va a ciò che sta in alto ed è libero verso est - non a ciò che sta in una conca.",
   "rm": "L'emprim radi da sulegl survegn quai ch'è aut e liber vers ost - betg quai ch'è en ina foppa."
  },
+ "Den Geekworm X1206 V2.0 mit dem Pi 5 darauf in den Zaun stellen (Klettband), die 4 Zellen 21700 hängen unter der Platine über der Öffnung im Boden. Die Akkuklappe 26 von unten aufsetzen (Rand in die Öffnung, Kerbe zur Lüftungswand) und mit 4 × M3 × 8 in die Einsätze schrauben. Zum Akkutausch später nur die Klappe öffnen: Deckel und Pi bleiben drin. Die microSD-Verlängerung in den Kartenschlitz des Pi stecken und den Einbau-Kartenhalter mit 2 × M2,5 × 6 an die zwei Dome über dem PCA9685 schrauben – die Karte wechselst du von aussen (Stopfen 16). Provisorisch: der X1206 ist 108 × 85 mm – Unterteil erst nach dem Nachmessen anpassen.": {
+  "en": "Put the Geekworm X1206 V2.0 with the Pi 5 on top into the fence (hook-and-loop tape); the 4 cells 21700 hang under the board above the opening in the bottom. Fit the battery hatch 26 from below (rim into the opening, notch towards the vent wall) and screw it into the inserts with 4 × M3 × 8. To swap the cells later, open only the hatch: lid and Pi stay inside. Plug the microSD extension into the card slot of the Pi and screw the panel card holder to the two bosses above the PCA9685 with 2 × M2.5 × 6 – you change the card from outside (plug 16). Provisional: the X1206 is 108 × 85 mm – adapt the lower part only after measuring.",
+  "fr": "Poser le Geekworm X1206 V2.0 avec le Pi 5 dessus dans la clôture (velcro) ; les 4 accus 21700 pendent sous la platine au-dessus de l'ouverture du fond. Poser la trappe 26 par-dessous (rebord dans l'ouverture, encoche côté paroi d'aération) et la visser dans les inserts avec 4 × M3 × 8. Pour changer les accus, ouvrir seulement la trappe : couvercle et Pi restent dedans. Brancher la rallonge microSD dans le Pi et visser le support encastrable avec 2 × M2,5 × 6 sur les deux dômes au-dessus du PCA9685 – la carte se change de l'extérieur (bouchon 16). Provisoire : le X1206 mesure 108 × 85 mm – adapter la partie inférieure seulement après mesure.",
+  "it": "Mettere il Geekworm X1206 V2.0 con il Pi 5 sopra nel recinto (velcro); le 4 batterie 21700 pendono sotto la scheda sopra l'apertura nel fondo. Applicare lo sportello 26 da sotto (bordo nell'apertura, tacca verso la parete di aerazione) e avvitarlo negli inserti con 4 × M3 × 8. Per cambiare le batterie si apre solo lo sportello: coperchio e Pi restano dentro. Inserire la prolunga microSD nel Pi e avvitare il portaschede da incasso con 2 × M2,5 × 6 alle due torrette sopra il PCA9685 – la scheda si cambia da fuori (tappo 16). Provvisorio: l'X1206 misura 108 × 85 mm – adattare la parte inferiore solo dopo la misura.",
+  "rm": "Metter il Geekworm X1206 V2.0 cun il Pi 5 sisura en la saiv (velcro); ils 4 accus 21700 pendan sut la platina sur l'avertura en il fund. Metter si la portina 26 da sut (ur en l'avertura, entaglia vers la paraid da ventilaziun) e la scrauvar en ils inserts cun 4 × M3 × 8. Per midar ils accus pli tard mo avrir la portina: viertgel e Pi restan en. Fitgar la prolungaziun microSD en il Pi e scrauvar il purtader integrà cun 2 × M2,5 × 6 vi dals dus cupels sur il PCA9685 – la carta midas ti da dadora (zaffer 16). Provisoric: il X1206 ha 108 × 85 mm – adattar la part sut pir suenter avair mesirà."
+ },
+ "Den Geekworm X1206 V2.0 mit den 4 Akkus 21700 und dem Pi 5 darauf in den Zaun stellen und mit Klettband fixieren. HDMI und USB-C des Pi zeigen zum Service-Fenster, der Lüfter sitzt auf dem Pi. Die microSD-Verlängerung in den Kartenschlitz des Pi stecken und den Einbau-Kartenhalter mit 2 × M2,5 × 6 an die zwei Dome über dem PCA9685 schrauben. Provisorisch: der X1206 ist 108 × 85 mm – Unterteil erst nach dem Nachmessen anpassen.": {
+  "en": "Put the Geekworm X1206 V2.0 with the 4 21700 cells and the Pi 5 on top into the fence and fix it with hook-and-loop tape. HDMI and USB-C of the Pi face the service window, the fan sits on the Pi. Plug the microSD extension into the card slot of the Pi and screw the panel card holder to the two bosses above the PCA9685 with 2 × M2.5 × 6. Provisional: the X1206 is 108 × 85 mm – adapt the lower part only after measuring.",
+  "fr": "Placer le Geekworm X1206 V2.0 avec les 4 accus 21700 et le Pi 5 dessus dans la clôture et le fixer avec du velcro. Le HDMI et l'USB-C du Pi sont tournés vers la fenêtre de service, le ventilateur est sur le Pi. Brancher la rallonge microSD dans la fente du Pi et visser le support de carte sur les deux dômes au-dessus du PCA9685 avec 2 × M2,5 × 6. Provisoire : le X1206 mesure 108 × 85 mm – adapter la partie inférieure seulement après mesure.",
+  "it": "Mettere il Geekworm X1206 V2.0 con le 4 batterie 21700 e il Pi 5 sopra nel recinto e fissarlo con velcro. HDMI e USB-C del Pi guardano verso la finestra di servizio, la ventola è sul Pi. Inserire la prolunga microSD nella fessura del Pi e avvitare il portaschede alle due torrette sopra il PCA9685 con 2 × M2,5 × 6. Provvisorio: l'X1206 misura 108 × 85 mm – adattare la parte inferiore solo dopo la misura.",
+  "rm": "Metter il Geekworm X1206 V2.0 cun ils 4 accus 21700 ed il Pi 5 survart en la saiv e fixar cun bindel velcro. HDMI ed USB-C dal Pi mussan vers la fanestra da servetsch, il ventilatur è sin il Pi. Metter la prolungaziun microSD en la fessa da carta dal Pi e fixar il tegnacarta cun 2 × M2,5 × 6 vi dals dus doms sur il PCA9685. Provisoric: il X1206 ha 108 × 85 mm – adattar la part sut pir suenter avair mesirà."
+ },
+ "Den Geekworm X1206 V2.0 mit den 4 Akkus und dem Pi 5 darauf in den Zaun stellen und mit Klettband fixieren. HDMI zeigt zum Fenster, der Lüfter sitzt auf dem Pi. Provisorisch: der X1206 ist 108 × 85 mm – Unterteil erst nach dem Nachmessen anpassen.": {
+  "en": "Put the Geekworm X1206 V2.0 with the 4 cells and the Pi 5 on top into the fence and fix it with hook-and-loop tape. HDMI faces the window, the fan sits on the Pi. Provisional: the X1206 is 108 × 85 mm – adapt the lower part only after measuring.",
+  "fr": "Placer le Geekworm X1206 V2.0 avec les 4 accus et le Pi 5 dessus dans la clôture et le fixer avec du velcro. Le HDMI est tourné vers la fenêtre, le ventilateur est sur le Pi. Provisoire : le X1206 mesure 108 × 85 mm – adapter la partie inférieure seulement après mesure.",
+  "it": "Mettere il Geekworm X1206 V2.0 con le 4 batterie e il Pi 5 sopra nel recinto e fissarlo con velcro. L'HDMI guarda verso la finestra, la ventola è sul Pi. Provvisorio: l'X1206 misura 108 × 85 mm – adattare la parte inferiore solo dopo la misura.",
+  "rm": "Metter il Geekworm X1206 V2.0 cun ils 4 accus ed il Pi 5 survart en la saiv e fixar cun bindel velcro. HDMI mussa vers la fanestra, il ventilatur è sin il Pi. Provisoric: il X1206 ha 108 × 85 mm – adattar la part sut pir suenter avair mesirà."
+ },
  "Den Geheimgang finden": {
   "en": "Find the secret passage",
   "fr": "Trouver le passage secret",
@@ -9816,11 +9888,29 @@
   "it": "Avvitare il ripiano con 2 × M3. Sopra, con nastro biadesivo in schiuma: D36V50F5 (ricarica), PAM8403 e opzionale INA219.",
   "rm": "Fixar il palantschieu cun 2 × M3. Survart cun bindel adesiv da spima: D36V50F5 (chargiar), PAM8403 ed opziunal INA219."
  },
+ "Den Zwischenboden mit 2 × M3 einschrauben. Darauf mit Schaumklebeband: PAM8403 (ohne Akku dazu der D36V50F5) und optional INA219 (Solar, I2C 0x44, Shunt 0,01 Ω).": {
+  "en": "Screw in the shelf with 2 × M3. On it, with foam tape: PAM8403 (without battery also the D36V50F5) and optionally INA219 (solar, I2C 0x44, shunt 0.01 Ω).",
+  "fr": "Visser le plancher avec 2 × M3. Dessus, avec du ruban mousse : PAM8403 (sans batterie, aussi le D36V50F5) et en option l'INA219 (solaire, I2C 0x44, shunt 0,01 Ω).",
+  "it": "Avvitare il ripiano con 2 × M3. Sopra, con nastro biadesivo in schiuma: PAM8403 (senza batteria anche il D36V50F5) e opzionale INA219 (solare, I2C 0x44, shunt 0,01 Ω).",
+  "rm": "Fixar il palantschieu cun 2 × M3. Survart cun bindel adesiv da spima: PAM8403 (senza accu er il D36V50F5) ed opziunal INA219 (solar, I2C 0x44, shunt 0,01 Ω)."
+ },
+ "Den Zwischenboden mit 2 × M3 einschrauben. Darauf mit Schaumklebeband: PAM8403 (ohne Akku dazu der D36V50F5) und optional INA219.": {
+  "en": "Screw in the shelf with 2 × M3. On it, with foam tape: PAM8403 (without battery also the D36V50F5) and optionally INA219.",
+  "fr": "Visser le plancher avec 2 × M3. Dessus, avec du ruban mousse : PAM8403 (sans batterie, aussi le D36V50F5) et en option l'INA219.",
+  "it": "Avvitare il ripiano con 2 × M3. Sopra, con nastro biadesivo in schiuma: PAM8403 (senza batteria anche il D36V50F5) e opzionale INA219.",
+  "rm": "Fixar il palantschieu cun 2 × M3. Survart cun bindel adesiv da spima: PAM8403 (senza accu er il D36V50F5) ed opziunal INA219."
+ },
  "Den Zwischenboden mit 2 × M3 × 8 in die Einsätze schrauben. Darauf mit Schaumklebeband: D36V50F5 (Laden), PAM8403 und optional INA219 (Solar, I2C 0x44, Shunt 0,01 Ω).": {
   "en": "Screw the shelf into the inserts with 2 × M3 × 8. On it with foam tape: D36V50F5 (charging), PAM8403 and optionally INA219 (solar, I2C 0x44, shunt 0.01 Ω).",
   "fr": "Visser le plancher dans les inserts avec 2 × M3 × 8. Dessus avec du ruban mousse : D36V50F5 (charge), PAM8403 et en option INA219 (solaire, I2C 0x44, shunt 0,01 Ω).",
   "it": "Avvitare il ripiano negli inserti con 2 × M3 × 8. Sopra con nastro biadesivo: D36V50F5 (carica), PAM8403 e opzionale INA219 (solare, I2C 0x44, shunt 0,01 Ω).",
   "rm": "Scrauvar il palantschieu en ils inserts cun 2 × M3 × 8. Sisura cun bindel da spuma: D36V50F5 (chargiar), PAM8403 ed opziunal INA219 (solar, I2C 0x44, shunt 0,01 Ω)."
+ },
+ "Den Zwischenboden mit 2 × M3 × 8 in die Einsätze schrauben. Darauf mit Schaumklebeband: PAM8403 (ohne Akku dazu der D36V50F5) und optional INA219 (Solar, I2C 0x44, Shunt 0,01 Ω).": {
+  "en": "Screw the shelf into the inserts with 2 × M3 × 8. On it with foam tape: PAM8403 (without battery also the D36V50F5) and optionally INA219 (solar, I2C 0x44, shunt 0.01 Ω).",
+  "fr": "Visser le plancher dans les inserts avec 2 × M3 × 8. Dessus avec du ruban mousse : PAM8403 (sans batterie, aussi le D36V50F5) et en option INA219 (solaire, I2C 0x44, shunt 0,01 Ω).",
+  "it": "Avvitare il ripiano negli inserti con 2 × M3 × 8. Sopra con nastro biadesivo: PAM8403 (senza batteria anche il D36V50F5) e opzionale INA219 (solare, I2C 0x44, shunt 0,01 Ω).",
+  "rm": "Scrauvar il palantschieu en ils inserts cun 2 × M3 × 8. Sisura cun bindel da spuma: PAM8403 (senza accu er il D36V50F5) ed opziunal INA219 (solar, I2C 0x44, shunt 0,01 Ω)."
  },
  "Der 3D-Simulator baut den Platz von MoveEye nach – Personen, Tiere, Wetter, Nacht –, damit MoveEye üben kann, ohne echte Nächte. Der Prüfstand misst jede Version von MoveEye damit, und am Lagerfeuer wird er zum Spiel «Team gegen MoveEye». Gebaut mit Godot 4 – von Elektro zusammen mit Claude (einer KI von Anthropic).": {
   "en": "The 3D simulator rebuilds the place of MoveEye – persons, animals, weather, night – so MoveEye can practise without real nights. The test bench measures every MoveEye version with it, and at the campfire it becomes the game «Team against MoveEye». Built with Godot 4 – by Elektro together with Claude (an AI by Anthropic).",
@@ -10019,6 +10109,12 @@
   "fr": "le renard qui détourne les animaux méchants",
   "it": "la volpe che distrae gli animali cattivi",
   "rm": "la vulp che distrai ils animals nauschs"
+ },
+ "Der Geekworm X1206 (wie das UPS HAT (E)) und der 5-V-Wandler melden kein USB-PD. Ohne diese Zeile drosselt der Pi 5 USB auf 600 mA und meldet «schwaches Netzteil». Im Editor die Zeile PSU_MAX_CURRENT=5000 ergänzen, speichern, neu starten (schaltet auch usb_max_current_enable ein).": {
+  "en": "The Geekworm X1206 (like the UPS HAT (E)) and the 5 V converter do not offer USB PD. Without this line the Pi 5 limits USB to 600 mA and reports a «weak power supply». Add the line PSU_MAX_CURRENT=5000 in the editor, save, restart (also switches on usb_max_current_enable).",
+  "fr": "Le Geekworm X1206 (comme l'UPS HAT (E)) et le convertisseur 5 V n'ont pas d'USB PD. Sans cette ligne, le Pi 5 limite l'USB à 600 mA et signale une «alimentation faible». Ajouter la ligne PSU_MAX_CURRENT=5000 dans l'éditeur, enregistrer, redémarrer (active aussi usb_max_current_enable).",
+  "it": "Il Geekworm X1206 (come l'UPS HAT (E)) e il convertitore 5 V non offrono USB PD. Senza questa riga il Pi 5 limita l'USB a 600 mA e segnala «alimentatore debole». Aggiungere la riga PSU_MAX_CURRENT=5000 nell'editor, salvare, riavviare (attiva anche usb_max_current_enable).",
+  "rm": "Il Geekworm X1206 (sco l'UPS HAT (E)) ed il convertider 5 V n'han nagin USB PD. Senza questa lingia limitescha il Pi 5 l'USB sin 600 mA ed annunzia «alimentaziun flaivla». Agiuntar la lingia PSU_MAX_CURRENT=5000 en l'editur, memorisar, reaviar (activescha er usb_max_current_enable)."
  },
  "Der geheime See": {
   "en": "The secret lake",
@@ -10708,6 +10804,12 @@
   "fr": "La sentinelle siffle, toutes disparaissent dans le terrier – seule la grosse continue de manger. Elle ne court que lorsque les autres ressortent déjà la tête.",
   "it": "La sentinella fischia, tutte spariscono nella tana – solo quella grassa continua a mangiare. Corre solo quando le altre stanno già rimettendo fuori il naso.",
   "rm": "La guardia sivla, tuttas svaneschan en la tana – mo la grassa maglia vinavant. Ella cumenza pir a currer cura che las autras guardan gia puspè or."
+ },
+ "Der X1206 nimmt am DC-Eingang höchstens 18 V: ein Panel direkt oder 24-V-Systeme passen nicht. Grössere Panels nur mit einem Regler, der 12 V liefert": {
+  "en": "The X1206 takes at most 18 V at its DC input: a panel directly or 24 V systems do not fit. Larger panels only with a controller that delivers 12 V",
+  "fr": "Le X1206 accepte au plus 18 V sur son entrée DC : un panneau en direct ou des systèmes 24 V ne conviennent pas. Panneaux plus grands seulement avec un régulateur qui fournit 12 V",
+  "it": "L'X1206 accetta al massimo 18 V all'ingresso DC: un pannello diretto o sistemi a 24 V non vanno. Pannelli più grandi solo con un regolatore che fornisce 12 V",
+  "rm": "Il X1206 prenda a l'entrada DC maximalmain 18 V: in panel directamain u sistems da 24 V na van betg. Panels pli gronds mo cun in regulatur che furnescha 12 V"
  },
  "Der Zaun ist zu hoch. Nur durch das kleine Loch kommt man hinüber.": {
   "en": "The fence is too high. You only get across through the small hole.",
@@ -16466,6 +16568,12 @@
   "it": "piatto, PETG nero",
   "rm": "plat, PETG nair"
  },
+ "Flachsicherung 5 A mit Halter (5,1-V-Ausgang XH des X1206 → Servos, Licht, Verstärker)": {
+  "en": "Blade fuse 5 A with holder (5.1 V XH output of the X1206 → servos, light, amplifier)",
+  "fr": "Fusible plat 5 A avec support (sortie XH 5,1 V du X1206 → servos, lumière, ampli)",
+  "it": "Fusibile lamellare 5 A con portafusibile (uscita XH 5,1 V dell'X1206 → servo, luce, amplificatore)",
+  "rm": "Segirezza plata 5 A cun purtader (sortida XH 5,1 V dal X1206 → servos, glisch, amplificatur)"
+ },
  "Flachsicherung 5 A mit Halter (Akku-Leitung B+ → Step-Down)": {
   "en": "Blade fuse 5 A with holder (battery line B+ → step-down)",
   "fr": "Fusible plat 5 A avec support (ligne batterie B+ → abaisseur)",
@@ -17703,6 +17811,48 @@
   "it": "ladro paziente",
   "rm": "lader paziente"
  },
+ "Geekworm": {
+  "en": "Geekworm",
+  "fr": "Geekworm",
+  "it": "Geekworm",
+  "rm": "Geekworm"
+ },
+ "Geekworm X1206": {
+  "en": "Geekworm X1206",
+  "fr": "Geekworm X1206",
+  "it": "Geekworm X1206",
+  "rm": "Geekworm X1206"
+ },
+ "Geekworm X1206 mit Akkus (108 × 85 mm Platine; Modell noch UPS HAT (E): 90 × 80 × 26 mm)": {
+  "en": "Geekworm X1206 with cells (board 108 × 85 mm; model still UPS HAT (E): 90 × 80 × 26 mm)",
+  "fr": "Geekworm X1206 avec accus (carte 108 × 85 mm ; modèle encore UPS HAT (E) : 90 × 80 × 26 mm)",
+  "it": "Geekworm X1206 con batterie (scheda 108 × 85 mm; modello ancora UPS HAT (E): 90 × 80 × 26 mm)",
+  "rm": "Geekworm X1206 cun accus (platina 108 × 85 mm; model anc UPS HAT (E): 90 × 80 × 26 mm)"
+ },
+ "Geekworm X1206 V2.0": {
+  "en": "Geekworm X1206 V2.0",
+  "fr": "Geekworm X1206 V2.0",
+  "it": "Geekworm X1206 V2.0",
+  "rm": "Geekworm X1206 V2.0"
+ },
+ "Geekworm X1206 V2.0 (4 × 21700 parallel, 5,1 V / 6 A)": {
+  "en": "Geekworm X1206 V2.0 (4 × 21700 parallel, 5,1 V / 6 A)",
+  "fr": "Geekworm X1206 V2.0 (4 × 21700 parallel, 5,1 V / 6 A)",
+  "it": "Geekworm X1206 V2.0 (4 × 21700 parallel, 5,1 V / 6 A)",
+  "rm": "Geekworm X1206 V2.0 (4 × 21700 parallel, 5,1 V / 6 A)"
+ },
+ "Geekworm X1206 V2.0 mit 4 Akkus 21700 (Modell zeigt noch das UPS HAT (E) – nachmessen)": {
+  "en": "Geekworm X1206 V2.0 with 4 cells 21700 (the model still shows the UPS HAT (E) – measure)",
+  "fr": "Geekworm X1206 V2.0 avec 4 accus 21700 (le modèle montre encore l'UPS HAT (E) – à mesurer)",
+  "it": "Geekworm X1206 V2.0 con 4 batterie 21700 (il modello mostra ancora l'UPS HAT (E) – da misurare)",
+  "rm": "Geekworm X1206 V2.0 cun 4 accus 21700 (il model mussa anc l'UPS HAT (E) – mesirar)"
+ },
+ "Geekworm X1206: Höhe mit Akkus, Lage des Akkuhalters, Löcher für den Pi, Buchsenseite? Platine 108 × 85 mm – grösser als der Akku-Zaun (v5.BAT_*, OPEN_*)": {
+  "en": "Geekworm X1206: height with cells, position of the cell holder, holes for the Pi, side of the sockets? Board 108 × 85 mm – larger than the battery fence (v5.BAT_*, OPEN_*)",
+  "fr": "Geekworm X1206 : hauteur avec accus, position du support, trous du Pi, côté des prises ? Carte 108 × 85 mm – plus grande que la clôture (v5.BAT_*, OPEN_*)",
+  "it": "Geekworm X1206: altezza con batterie, posizione del portabatterie, fori del Pi, lato delle prese? Scheda 108 × 85 mm – più grande del recinto (v5.BAT_*, OPEN_*)",
+  "rm": "Geekworm X1206: autezza cun accus, posiziun dal tegnider, fouras dal Pi, vart da las bischlas? Platina 108 × 85 mm – pli gronda che la saiv (v5.BAT_*, OPEN_*)"
+ },
  "Gefunden": {
   "en": "Found",
   "fr": "Trouvé",
@@ -18903,6 +19053,12 @@
   "it": "Edifici di Google Earth (Blender «Maps Models Importer»)",
   "rm": "Edifizis da Google Earth (Blender «Maps Models Importer»)"
  },
+ "GPIO 13 (Pin 33) → 330 Ω → Lade-LED 3 mm grün → GND (Pin 34); Lichtleiter hinten. Ältere Geräte (UPS HAT (E)): GPIO 6 (Pin 31) – mit dem X1206 nie. Einstellung «Lade-LED: GPIO»": {
+  "en": "GPIO 13 (pin 33) → 330 Ω → charging LED 3 mm green → GND (pin 34); light guide at the back. Older devices (UPS HAT (E)): GPIO 6 (pin 31) – never with the X1206. Setting «Charge LED: GPIO»",
+  "fr": "GPIO 13 (broche 33) → 330 Ω → LED de charge 3 mm verte → GND (broche 34) ; guide de lumière à l'arrière. Appareils plus anciens (UPS HAT (E)) : GPIO 6 (broche 31) – jamais avec le X1206. Réglage «LED de charge : GPIO»",
+  "it": "GPIO 13 (pin 33) → 330 Ω → LED di carica 3 mm verde → GND (pin 34); guida di luce dietro. Dispositivi più vecchi (UPS HAT (E)): GPIO 6 (pin 31) – mai con l'X1206. Impostazione «LED di carica: GPIO»",
+  "rm": "GPIO 13 (pin 33) → 330 Ω → LED da chargiar 3 mm verda → GND (pin 34); guida da glisch davos. Apparats pli vegls (UPS HAT (E)): GPIO 6 (pin 31) – mai cun il X1206. Parameter «LED da chargiar: GPIO»"
+ },
  "GPIO 6 (Pin 31) → 330 Ω → Lade-LED 3 mm grün → GND (Pin 34); Lichtleiter hinten. MoveEye schaltet sie nach dem Lade-Zustand des UPS HAT (E)": {
   "en": "GPIO 6 (pin 31) → 330 Ω → charge LED 3 mm green → GND (pin 34); light guide at the back. MoveEye switches it from the charge state of the UPS HAT (E)",
   "fr": "GPIO 6 (broche 31) → 330 Ω → LED de charge 3 mm verte → GND (broche 34) ; guide de lumière à l'arrière. MoveEye l'allume selon l'état de charge du UPS HAT (E)",
@@ -19557,11 +19713,23 @@
   "it": "Avvitare la presa di ricarica GX16-4P (fusibile 5 A dietro) e il pressacavo M12 del relè, inserire la guida luce del LED di ricarica. Montare i 2 pulsanti (12 mm, IP67) nella parete posteriore, dado all'interno. Chiudere l'apertura di riserva con il tappo 17. Premere il portafusibile 5 A (batteria B+) nella clip sul fondo. Far passare il DS18B20 dal foro del fondo da sotto e sigillare.",
   "rm": "Fixar la bischla da chargiar GX16-4P (segirezza 5 A davos) ed il passacabel M12 dal relais, metter la guida da glisch da la LED da chargiar. Metter ils 2 buttuns (12 mm, IP67) en la paraid davos, mutter adintern. Serrar l'avertura da reserva cun il zaffer 17. Smatgar il tegnasegirezza 5 A (accu B+) en la clamma sin il fund. Manar il DS18B20 da sut tras la foura dal fund e stagnar."
  },
+ "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Die 2 Tasten (12 mm, IP67) in die Rückwand, Mutter innen. In die Reserve-Öffnung den Taster 12 mm für PSW des X1206 (provisorisch; ohne Akku: Blindstopfen 17). Den Sicherungshalter 5 A (5,1-V-Ausgang des X1206) in die Klammer am Boden drücken. Den DS18B20 von unten durch das Bodenloch führen und abdichten.": {
+  "en": "Screw in the GX16-4P charging socket (5 A fuse behind it) and the M12 cable gland for the relay, insert the light guide of the charging LED. Fit the 2 buttons (12 mm, IP67) into the back wall, nut inside. Fit the 12 mm button for the PSW of the X1206 into the reserve opening (provisional; without battery: blind plug 17). Press the 5 A fuse holder (5.1 V output of the X1206) into the clip on the floor. Feed the DS18B20 through the floor hole from below and seal it.",
+  "fr": "Visser la prise de charge GX16-4P (fusible 5 A derrière) et le presse-étoupe M12 du relais, insérer le guide de lumière de la LED de charge. Monter les 2 boutons (12 mm, IP67) dans la paroi arrière, écrou à l'intérieur. Monter le bouton 12 mm du PSW du X1206 dans l'ouverture de réserve (provisoire ; sans batterie : bouchon 17). Enfoncer le porte-fusible 5 A (sortie 5,1 V du X1206) dans la pince au fond. Passer le DS18B20 par le trou du fond depuis le dessous et étanchéifier.",
+  "it": "Avvitare la presa di ricarica GX16-4P (fusibile 5 A dietro) e il pressacavo M12 del relè, inserire la guida luce del LED di ricarica. Montare i 2 pulsanti (12 mm, IP67) nella parete posteriore, dado all'interno. Montare il pulsante 12 mm per il PSW dell'X1206 nell'apertura di riserva (provvisorio; senza batteria: tappo 17). Premere il portafusibile 5 A (uscita 5,1 V dell'X1206) nella clip sul fondo. Far passare il DS18B20 dal foro del fondo da sotto e sigillare.",
+  "rm": "Fixar la bischla da chargiar GX16-4P (segirezza 5 A davos) ed il passacabel M12 dal relais, metter la guida da glisch da la LED da chargiar. Metter ils 2 buttuns (12 mm, IP67) en la paraid davos, mutter adintern. Metter il buttun 12 mm per il PSW dal X1206 en l'avertura da reserva (provisoric; senza accu: zaffer 17). Smatgar il tegnasegirezza 5 A (sortida 5,1 V dal X1206) en la clamma sin il fund. Manar il DS18B20 da sut tras la foura dal fund e stagnar."
+ },
  "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Zugentlastung: das Kabel der GX16 mit einem Kabelbinder an die Öse über der Buchse binden, das Relais-Kabel an die Öse neben der Relais-Buchse und an die Öse neben dem Relais-Modul (+y-Wand). Die 2 Tasten (12 mm, IP67) in die Rückwand, Mutter innen. Die Reserve-Öffnung mit dem Blindstopfen 17 schliessen. Den Sicherungshalter 5 A (Akku B+) in die Klammer am Boden drücken. Den DS18B20 von unten durch das Bodenloch führen und abdichten.": {
   "en": "Screw in the GX16-4P charging jack (5 A fuse behind it) and the M12 cable gland for the relay, insert the light pipe of the charging LED. Strain relief: tie the GX16 cable with a cable tie to the mount above the jack, the relay cable to the mount beside the relay jack and to the mount beside the relay module (+y wall). Put the 2 buttons (12 mm, IP67) into the rear wall, nut inside. Close the reserve opening with blind plug 17. Press the 5 A fuse holder (battery B+) into the clip on the bottom. Lead the DS18B20 through the hole in the bottom from below and seal it.",
   "fr": "Visser la prise de charge GX16-4P (fusible 5 A derrière) et le presse-étoupe M12 du relais, poser le guide de lumière de la LED de charge. Serre-câbles : attacher le câble de la GX16 à l'œillet au-dessus de la prise, le câble du relais à l'œillet à côté de la prise relais et à l'œillet à côté du module relais (paroi +y). Les 2 boutons (12 mm, IP67) dans la paroi arrière, écrou à l'intérieur. Fermer l'ouverture de réserve avec le bouchon 17. Presser le porte-fusible 5 A (accu B+) dans la pince du fond. Passer le DS18B20 par le trou du fond et étancher.",
   "it": "Avvitare la presa di carica GX16-4P (fusibile 5 A dietro) e il pressacavo M12 del relè, inserire la guida di luce del LED di carica. Fermacavi: legare il cavo della GX16 con una fascetta all'occhiello sopra la presa, il cavo del relè all'occhiello accanto alla presa del relè e all'occhiello accanto al modulo relè (parete +y). I 2 pulsanti (12 mm, IP67) nella parete posteriore, dado dentro. Chiudere l'apertura di riserva con il tappo 17. Premere il portafusibile 5 A (batteria B+) nella clip sul fondo. Far passare il DS18B20 dal foro nel fondo e sigillare.",
   "rm": "Scrauvar la bustga da chargiar GX16-4P (segirezza 5 A davos) e la passada M12 dal relais, metter il manader da glisch da la LED. Distensiun: liar il cabel da la GX16 cun in ligiader a l'ögl sur la bustga, il cabel dal relais a l'ögl sper la bustga dal relais ed a l'ögl sper il modul dal relais (paraid +y). Ils 2 buttuns (12 mm, IP67) en la paraid davos, mutter en l'intern. Serrar l'avertura da reserva cun il zaffer 17. Smatgar il tegnider da la segirezza 5 A (accu B+) en la clip dal fund. Manar il DS18B20 da sut tras la fora dal fund e stagnar."
+ },
+ "GX16-4P-Ladebuchse (Sicherung 5 A dahinter) und die Kabelverschraubung M12 für das Relais einschrauben, Lichtleiter der Lade-LED einsetzen. Zugentlastung: das Kabel der GX16 mit einem Kabelbinder an die Öse über der Buchse binden, das Relais-Kabel an die Öse neben der Relais-Buchse und an die Öse neben dem Relais-Modul (+y-Wand). Die 2 Tasten (12 mm, IP67) in die Rückwand, Mutter innen. In die Reserve-Öffnung den Taster 12 mm für PSW des X1206 (provisorisch; ohne Akku: Blindstopfen 17). Den Sicherungshalter 5 A (5,1-V-Ausgang des X1206) in die Klammer am Boden drücken. Den DS18B20 von unten durch das Bodenloch führen und abdichten.": {
+  "en": "Screw in the GX16-4P charging jack (5 A fuse behind it) and the M12 cable gland for the relay, insert the light pipe of the charging LED. Strain relief: tie the GX16 cable with a cable tie to the mount above the jack, the relay cable to the mount beside the relay jack and to the mount beside the relay module (+y wall). Put the 2 buttons (12 mm, IP67) into the rear wall, nut inside. Fit the 12 mm button for the PSW of the X1206 into the reserve opening (provisional; without battery: blind plug 17). Press the 5 A fuse holder (5.1 V output of the X1206) into the clip on the bottom. Lead the DS18B20 through the hole in the bottom from below and seal it.",
+  "fr": "Visser la prise de charge GX16-4P (fusible 5 A derrière) et le presse-étoupe M12 du relais, poser le guide de lumière de la LED de charge. Serre-câbles : attacher le câble de la GX16 à l'œillet au-dessus de la prise, le câble du relais à l'œillet à côté de la prise relais et à l'œillet à côté du module relais (paroi +y). Les 2 boutons (12 mm, IP67) dans la paroi arrière, écrou à l'intérieur. Monter le bouton 12 mm du PSW du X1206 dans l'ouverture de réserve (provisoire ; sans batterie : bouchon 17). Presser le porte-fusible 5 A (sortie 5,1 V du X1206) dans la pince du fond. Passer le DS18B20 par le trou du fond et étancher.",
+  "it": "Avvitare la presa di carica GX16-4P (fusibile 5 A dietro) e il pressacavo M12 del relè, inserire la guida di luce del LED di carica. Fermacavi: legare il cavo della GX16 con una fascetta all'occhiello sopra la presa, il cavo del relè all'occhiello accanto alla presa del relè e all'occhiello accanto al modulo relè (parete +y). I 2 pulsanti (12 mm, IP67) nella parete posteriore, dado dentro. Montare il pulsante 12 mm per il PSW dell'X1206 nell'apertura di riserva (provvisorio; senza batteria: tappo 17). Premere il portafusibile 5 A (uscita 5,1 V dell'X1206) nella clip sul fondo. Far passare il DS18B20 dal foro nel fondo e sigillare.",
+  "rm": "Scrauvar la bustga da chargiar GX16-4P (segirezza 5 A davos) e la passada M12 dal relais, metter il manader da glisch da la LED. Distensiun: liar il cabel da la GX16 cun in ligiader a l'ögl sur la bustga, il cabel dal relais a l'ögl sper la bustga dal relais ed a l'ögl sper il modul dal relais (paraid +y). Ils 2 buttuns (12 mm, IP67) en la paraid davos, mutter en l'intern. Metter il buttun 12 mm per il PSW dal X1206 en l'avertura da reserva (provisoric; senza accu: zaffer 17). Smatgar il tegnider da la segirezza 5 A (sortida 5,1 V dal X1206) en la clip dal fund. Manar il DS18B20 da sut tras la fora dal fund e stagnar."
  },
  "GY-521": {
   "en": "GY-521",
@@ -22117,6 +22285,12 @@
   "it": "IN GPIO 22 (pin 15) · VCC 5 V · GND",
   "rm": "IN GPIO 22 (pin 15) · VCC 5 V · GND"
  },
+ "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Vor dem Druck des Unterteils die Masse des Geekworm X1206 mit Akkus nachmessen (siehe Anleitung).": {
+  "en": "In MoveEye limit tilt to ±60° and pan to ±90°. Before printing the lower part, measure the Geekworm X1206 with its cells (see the guide).",
+  "fr": "Dans MoveEye, limiter le tilt à ±60° et le pan à ±90°. Avant d'imprimer la partie inférieure, mesurer l'Geekworm X1206 avec ses accus (voir la notice).",
+  "it": "In MoveEye limitare il tilt a ±60° e il pan a ±90°. Prima di stampare la parte inferiore misurare l'Geekworm X1206 con le batterie (vedi istruzioni).",
+  "rm": "En MoveEye limitar il tilt sin ±60° ed il pan sin ±90°. Avant che stampar la part sut, mesirar l'Geekworm X1206 cun ils accus (vesair l'instrucziun)."
+ },
  "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Vor dem Druck des Unterteils die Masse des UPS HAT (E) mit Akkus nachmessen (siehe Anleitung).": {
   "en": "In MoveEye limit tilt to ±60° and pan to ±90°. Before printing the lower part, measure the UPS HAT (E) with its cells (see the guide).",
   "fr": "Dans MoveEye, limiter le tilt à ±60° et le pan à ±90°. Avant d'imprimer la partie inférieure, mesurer l'UPS HAT (E) avec ses accus (voir la notice).",
@@ -22128,6 +22302,12 @@
   "fr": "Dans MoveEye, limiter le tilt à ±60° et le pan à ±90°. Contrôler caméra grand-angle, boutons et LED d'état dans l'autotest. Support 25 : au mur avec 4 vis 4–5 mm, à un arbre avec une sangle 25 mm passée dans les deux paires de fentes (nervures contre le tronc). Enfoncer l'appareil avec les pieds avant dans les creux (il s'enclenche) et le fixer par-dessous avec la vis moletée 1/4\"-20 × 16 mm dans l'écrou de trépied. La trappe reste accessible sur le support. Vérifier les cotes «à mesurer» avant l'impression.",
   "it": "In MoveEye limitare il tilt a ±60° e il pan a ±90°. Controllare fotocamera grandangolare, pulsanti e LED di stato nell'autotest. Supporto 25: al muro con 4 viti 4–5 mm, a un albero con una cinghia 25 mm passata nelle due coppie di fessure (nervature contro il tronco). Premere l'apparecchio con i piedini anteriori negli incavi (scatta) e fissarlo da sotto con la vite zigrinata 1/4\"-20 × 16 mm nel dado treppiede. Lo sportello resta raggiungibile sul supporto. Prima di stampare controllare le misure «da misurare».",
   "rm": "En MoveEye limitar il tilt a ±60° ed il pan a ±90°. Controllar la camera da grondangul, ils buttuns e la LED da status en l'autotest. Tegnider 25: vi da la paraid cun 4 scrauvs 4–5 mm, vi d'ina planta cun ina tschinta da 25 mm tras ils dus pèrs da fessas (costas vi dal bist). Smatgar l'apparat cun ils peis davant en las fossas (el s'engrappa) e l'assegurar da sut cun la scrauva 1/4\"-20 × 16 mm en la mutter dal stativ. La portina resta cuntanschibla sin il tegnider. Avant la stampa controllar las mesiras «mesirar»."
+ },
+ "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Weitwinkel-Kamera, Tasten und Status-LED im Selbsttest prüfen. Vor dem Druck die Masse «Nachmessen» prüfen (IR-Modul, Linse der Weitwinkel-Kamera, CAM-Buchsen am Pi, Geekworm X1206 mit Akkus).": {
+  "en": "In MoveEye limit tilt to ±60° and pan to ±90°. Check the wide-angle camera, buttons and status LED in the self-test. Before printing check the «measure first» dimensions (IR module, lens of the wide-angle camera, CAM sockets on the Pi, Geekworm X1206 with its cells).",
+  "fr": "Dans MoveEye, limiter le tilt à ±60° et le pan à ±90°. Vérifier la caméra grand-angle, les boutons et la LED d'état dans l'autotest. Avant l'impression, vérifier les cotes « à mesurer » (module IR, objectif de la caméra grand-angle, prises CAM du Pi, Geekworm X1206 avec ses accus).",
+  "it": "In MoveEye limitare il tilt a ±60° e il pan a ±90°. Controllare fotocamera grandangolare, pulsanti e LED di stato nell'autotest. Prima di stampare controllare le misure «da misurare» (modulo IR, obiettivo della fotocamera grandangolare, prese CAM del Pi, Geekworm X1206 con le batterie).",
+  "rm": "En MoveEye limitar il tilt sin ±60° ed il pan sin ±90°. Controllar la camera largangulara, ils buttuns e la LED da status en l'autotest. Avant la stampa controllar las mesiras «mesirar» (modul IR, lentilla da la camera largangulara, bischlas CAM dal Pi, Geekworm X1206 cun ils accus)."
  },
  "In MoveEye Tilt auf ±60° und Pan auf ±90° begrenzen. Weitwinkel-Kamera, Tasten und Status-LED im Selbsttest prüfen. Vor dem Druck die Masse «Nachmessen» prüfen (IR-Modul, Linse der Weitwinkel-Kamera, CAM-Buchsen am Pi, UPS HAT (E) mit Akkus).": {
   "en": "In MoveEye limit tilt to ±60° and pan to ±90°. Check the wide-angle camera, buttons and status LED in the self-test. Before printing check the «measure first» dimensions (IR module, lens of the wide-angle camera, CAM sockets on the Pi, UPS HAT (E) with its cells).",
@@ -22695,6 +22875,12 @@
   "it": "Ogni stagione è una valle con i suoi pericoli. Scegline una.",
   "rm": "Mintga stagiun è ina atgna val cun atgns privels. Tscherna ina."
  },
+ "Jeden 5-V-Ausgang (XH des X1206, Step-Down) zuerst ohne Last messen (5,0–5,2 V), erst dann Pi, Servos oder Verstärker anschliessen. Nie unter Strom verkabeln.": {
+  "en": "Measure every 5 V output (XH of the X1206, step-down) without load first (5.0–5.2 V), only then connect the Pi, servos or amplifier. Never wire while powered.",
+  "fr": "Mesurer d'abord chaque sortie 5 V (XH du X1206, abaisseur) à vide (5,0–5,2 V), seulement ensuite brancher le Pi, les servos ou l'ampli. Jamais câbler sous tension.",
+  "it": "Misurare prima ogni uscita 5 V (XH dell'X1206, step-down) a vuoto (5,0–5,2 V), solo dopo collegare Pi, servo o amplificatore. Mai cablare sotto tensione.",
+  "rm": "Mesirar l'emprim mintga sortida 5 V (XH dal X1206, step-down) senza chargia (5,0–5,2 V), pir lura attaccar il Pi, ils servos u l'amplificatur. Mai cablar sut current."
+ },
  "Jeden Testlauf so oft:": {
   "en": "Each test run this often:",
   "fr": "Chaque test autant de fois :",
@@ -22875,6 +23061,18 @@
   "it": "Jonas, escursionista",
   "rm": "Jonas, viandant"
  },
+ "JST XH 2.54": {
+  "en": "JST XH 2.54",
+  "fr": "JST XH 2.54",
+  "it": "JST XH 2.54",
+  "rm": "JST XH 2.54"
+ },
+ "JST XH 2.54 2 Pin Kabel": {
+  "en": "JST XH 2.54 2 Pin Kabel",
+  "fr": "JST XH 2.54 2 Pin Kabel",
+  "it": "JST XH 2.54 2 Pin Kabel",
+  "rm": "JST XH 2.54 2 Pin Kabel"
+ },
  "Juhu, ein neues Abzeichen!": {
   "en": "Yay, a new badge!",
   "fr": "Youpi, un nouvel insigne !",
@@ -22970,6 +23168,12 @@
   "fr": "Passer les câbles de la tête, de la LED d'état et des lampes en boucle derrière la tête par la cheminée de câbles. Poser les câbles des caméras dans le peigne de la paroi d'aération : fente 1 = CAM1 (grand-angle), fente 2 = CAM0 (caméra de la tête). Visser le couvercle avec 6 × M3 × 10 (joint en mousse), enfoncer le bouchon 10 dans la fenêtre de service (HDMI, USB-C) et le bouchon 16 dans la fente SD.",
   "it": "Far passare i cavi della testa, del LED di stato e delle lampade in un'ansa dietro la testa attraverso il camino dei cavi. Posare i cavi delle fotocamere nel pettine sulla parete di ventilazione: fessura 1 = CAM1 (grandangolo), fessura 2 = CAM0 (fotocamera della testa). Avvitare il coperchio con 6 × M3 × 10 (guarnizione in gomma), premere il tappo 10 nella finestra di servizio (HDMI, USB-C) e il tappo 16 nella fessura SD.",
   "rm": "Manar ils cabels dal chau, da la LED da status e da las lampas en ina stgaglia davos il chau tras il chamin da cabels. Metter ils cabels da las cameras en il pettan vi da la paraid da ventilaziun: fessa 1 = CAM1 (grondangul), fessa 2 = CAM0 (camera dal chau). Serrar il viertgel cun 6 × M3 × 10 (bindel da stagnar), smatgar il zaffer 10 en la fanestra da servetsch (HDMI, USB-C) ed il zaffer 16 en la fessa SD."
+ },
+ "Kabel XH2.54 2-polig (5,1-V-Ausgang und PSW des X1206)": {
+  "en": "Cable XH2.54 2-pin (5.1 V output and PSW of the X1206)",
+  "fr": "Câble XH2.54 2 broches (sortie 5,1 V et PSW du X1206)",
+  "it": "Cavo XH2.54 2 poli (uscita 5,1 V e PSW dell'X1206)",
+  "rm": "Cabel XH2.54 2 pols (sortida 5,1 V e PSW dal X1206)"
  },
  "Kabel, Deckel zu, Stopfen": {
   "en": "Cables, close the lid, plugs",
@@ -25415,6 +25619,12 @@
   "it": "Fonte di ricarica: alimentatore 12 V, almeno 3 A, saldato alla spina GX16 (carica le batterie tramite il D36V50F5)",
   "rm": "Funtauna da chargiar: alimentaziun 12 V, almain 3 A, lotada vi dal stecker GX16 (chargia ils accus via il D36V50F5)"
  },
+ "Ladequelle: Netzteil 12 V, mind. 3 A, mit GX16-Stecker verlötet (lädt über den DC-Eingang des X1206, 9–18 V)": {
+  "en": "Charging source: power supply 12 V, at least 3 A, soldered to the GX16 plug (charges via the DC input of the X1206, 9–18 V)",
+  "fr": "Source de charge : alimentation 12 V, au moins 3 A, soudée à la fiche GX16 (charge par l'entrée DC du X1206, 9–18 V)",
+  "it": "Fonte di ricarica: alimentatore 12 V, almeno 3 A, saldato alla spina GX16 (carica tramite l'ingresso DC dell'X1206, 9–18 V)",
+  "rm": "Funtauna da chargiar: alimentaziun 12 V, almain 3 A, lotada vi dal stecker GX16 (chargia via l'entrada DC dal X1206, 9–18 V)"
+ },
  "Ladung jetzt": {
   "en": "Charge now",
   "fr": "Charge actuelle",
@@ -26014,6 +26224,12 @@
   "fr": "Accu Li-ion 21700, flat top",
   "it": "Batteria Li-ion 21700, flat top",
   "rm": "Accu Li-ion 21700, flat top"
+ },
+ "Li-Ion-Akku 21700, Flat Top, ungeschützt": {
+  "en": "Li-ion cell 21700, flat top, unprotected",
+  "fr": "Accu Li-ion 21700, flat top, non protégé",
+  "it": "Batteria Li-ion 21700, flat top, non protetta",
+  "rm": "Accu Li-ion 21700, flat top, betg protegì"
  },
  "Licht": {
   "en": "Light",
@@ -27751,11 +27967,23 @@
   "it": "Parlare con %s",
   "rm": "Discurrer cun %s"
  },
+ "mit Akku (Geekworm X1206, 4 × 21700)": {
+  "en": "with battery (Geekworm X1206, 4 × 21700)",
+  "fr": "avec batterie (Geekworm X1206, 4 × 21700)",
+  "it": "con batteria (Geekworm X1206, 4 × 21700)",
+  "rm": "cun accu (Geekworm X1206, 4 × 21700)"
+ },
  "mit Akku (UPS HAT (E), 4 × 21700)": {
   "en": "with battery (UPS HAT (E), 4 × 21700)",
   "fr": "avec batterie (UPS HAT (E), 4 × 21700)",
   "it": "con batteria (UPS HAT (E), 4 × 21700)",
   "rm": "cun accu (UPS HAT (E), 4 × 21700)"
+ },
+ "Mit Akku (X1206 V2.0): 9–18 V, 12 V empfohlen – keine 24-V-Quellen, kein Solarpanel direkt (Leerlauf über 18 V). Ohne Akku (D36V50F5): 12–40 V. Je 2 Kontakte parallel für + und −": {
+  "en": "With battery (X1206 V2.0): 9–18 V, 12 V recommended – no 24 V sources, no solar panel directly (open circuit above 18 V). Without battery (D36V50F5): 12–40 V. 2 contacts each in parallel for + and −",
+  "fr": "Avec batterie (X1206 V2.0) : 9–18 V, 12 V recommandé – pas de sources 24 V, pas de panneau solaire en direct (à vide au-dessus de 18 V). Sans batterie (D36V50F5) : 12–40 V. 2 contacts en parallèle pour + et −",
+  "it": "Con batteria (X1206 V2.0): 9–18 V, consigliati 12 V – niente fonti a 24 V, niente pannello solare diretto (a vuoto sopra 18 V). Senza batteria (D36V50F5): 12–40 V. 2 contatti in parallelo per + e −",
+  "rm": "Cun accu (X1206 V2.0): 9–18 V, 12 V recumandà – naginas funtaunas da 24 V, nagin panel solar directamain (vid sur 18 V). Senza accu (D36V50F5): 12–40 V. Mintgamai 2 contacts en parallel per + e −"
  },
  "mit Beute": {
   "en": "with the loot",
@@ -28327,6 +28555,12 @@
   "it": "Modulo MOSFET",
   "rm": "Modul MOSFET"
  },
+ "MOSFET-Modul (ohne Akku auch den Step-Down) an die Stirnwand links vom PIR, das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden.": {
+  "en": "Stick the MOSFET module (without battery also the step-down) to the front wall left of the PIR, the relay above the hub tray. USB hub onto the tray with 2 cable ties, sound card into the hub, MPU-6050 flat on the floor.",
+  "fr": "Coller le module MOSFET (sans batterie aussi l'abaisseur) sur la paroi avant à gauche du PIR, le relais au-dessus du support du hub. Hub USB sur le support avec 2 colliers, carte son dans le hub, MPU-6050 à plat sur le fond.",
+  "it": "Incollare il modulo MOSFET (senza batteria anche lo step-down) sulla parete frontale a sinistra del PIR, il relè sopra il ripiano dell'hub. Hub USB sul ripiano con 2 fascette, scheda audio nell'hub, MPU-6050 piatto sul fondo.",
+  "rm": "Tatgar il modul MOSFET (senza accu er il step-down) vi da la paraid davant a sanestra dal PIR, il relais sur la deposita dal hub. Hub USB cun 2 ligiaments sin la deposita, carta da tun en il hub, MPU-6050 plat sin il fund."
+ },
  "MOSFET-Modul (v5.2: Lüftungswand unter dem PCA9685)": {
   "en": "MOSFET module (v5.2: vent wall below the PCA9685)",
   "fr": "Module MOSFET (v5.2 : paroi d'aération sous le PCA9685)",
@@ -28356,6 +28590,12 @@
   "fr": "Coller les modules MOSFET (lumière blanche, IR, module IR 120°) sur la paroi d'aération sous le PCA9685, l'abaisseur sur la paroi avant à gauche du PIR, le driver de lampe sur le champ en dessous (2 × M2,5). Coller le relais au-dessus du support du hub. Hub USB sur le support avec 2 colliers, carte son dans le hub, MPU-6050 à plat sur le fond.",
   "it": "Incollare i moduli MOSFET (luce bianca, IR, modulo IR 120°) sulla parete di ventilazione sotto il PCA9685, lo step-down sulla parete frontale a sinistra del PIR, il driver della lampada sul campo sotto (2 × M2,5). Incollare il relè sopra il ripiano dell'hub. Hub USB sul ripiano con 2 fascette, scheda audio nell'hub, MPU-6050 piatto sul fondo.",
   "rm": "Tatgar ils moduls MOSFET (glisch alva, IR, modul IR 120°) vi da la paraid da ventilaziun sut il PCA9685, il step-down vi da la paraid davant a sanestra dal PIR, il driver da la lampa sin il champ sutvart (2 × M2,5). Tatgar il relais sur la deposita dal hub. Hub USB cun 2 ligiaments sin la deposita, carta da tun en il hub, MPU-6050 plat sin il fund."
+ },
+ "MOSFET-Module (Licht weiss, IR, IR-Modul 120°) an die Lüftungswand unter dem PCA9685 kleben, ohne Akku den Step-Down an die Stirnwand links vom PIR, den Lampentreiber auf das Feld darunter (2 × M2,5). Das Relais über die Hub-Ablage kleben. USB-Hub mit 2 Kabelbindern auf die Ablage, Soundkarte in den Hub, MPU-6050 flach auf den Boden.": {
+  "en": "Stick the MOSFET modules (white light, IR, 120° IR module) to the vent wall below the PCA9685, without battery the step-down to the front wall left of the PIR, the lamp driver onto the field below it (2 × M2.5). Stick the relay above the hub tray. USB hub onto the tray with 2 cable ties, sound card into the hub, MPU-6050 flat on the floor.",
+  "fr": "Coller les modules MOSFET (lumière blanche, IR, module IR 120°) sur la paroi d'aération sous le PCA9685, sans batterie l'abaisseur sur la paroi avant à gauche du PIR, le driver de lampe sur le champ en dessous (2 × M2,5). Coller le relais au-dessus du support du hub. Hub USB sur le support avec 2 colliers, carte son dans le hub, MPU-6050 à plat sur le fond.",
+  "it": "Incollare i moduli MOSFET (luce bianca, IR, modulo IR 120°) sulla parete di ventilazione sotto il PCA9685, senza batteria lo step-down sulla parete frontale a sinistra del PIR, il driver della lampada sul campo sotto (2 × M2,5). Incollare il relè sopra il ripiano dell'hub. Hub USB sul ripiano con 2 fascette, scheda audio nell'hub, MPU-6050 piatto sul fondo.",
+  "rm": "Tatgar ils moduls MOSFET (glisch alva, IR, modul IR 120°) vi da la paraid da ventilaziun sut il PCA9685, senza accu il step-down vi da la paraid davant a sanestra dal PIR, il driver da la lampa sin il champ sutvart (2 × M2,5). Tatgar il relais sur la deposita dal hub. Hub USB cun 2 ligiaments sin la deposita, carta da tun en il hub, MPU-6050 plat sin il fund."
  },
  "Motor HAT": {
   "en": "Motor HAT",
@@ -29690,6 +29930,12 @@
   "it": "Dopo il riavvio: controllare i dispositivi I2C e la fotocamera. Atteso: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), più 68 / 76 / 77 / 44 secondo i sensori.",
   "rm": "Suenter il reaviar: controllar ils apparats I2C e la camera. Spetgà: 40 Thermal-90, 41 PCA9685, 2d UPS HAT (E), plus 68 / 76 / 77 / 44 tenor ils sensurs."
  },
+ "Nach dem Neustart: I2C-Geräte und Kamera prüfen. Erwartet: 40 Thermal-90, 41 PCA9685, 36 Geekworm X1206 (ältere Geräte: 2d UPS HAT (E)), dazu 68 / 76 / 77 / 44 je nach Sensoren.": {
+  "en": "After the restart: check the I2C devices and the camera. Expected: 40 Thermal-90, 41 PCA9685, 36 Geekworm X1206 (older devices: 2d UPS HAT (E)), plus 68 / 76 / 77 / 44 depending on the sensors.",
+  "fr": "Après le redémarrage : vérifier les appareils I2C et la caméra. Attendu : 40 Thermal-90, 41 PCA9685, 36 Geekworm X1206 (appareils plus anciens : 2d UPS HAT (E)), plus 68 / 76 / 77 / 44 selon les capteurs.",
+  "it": "Dopo il riavvio: controllare i dispositivi I2C e la fotocamera. Atteso: 40 Thermal-90, 41 PCA9685, 36 Geekworm X1206 (dispositivi più vecchi: 2d UPS HAT (E)), più 68 / 76 / 77 / 44 secondo i sensori.",
+  "rm": "Suenter il reaviar: controllar ils apparats I2C e la camera. Spetgà: 40 Thermal-90, 41 PCA9685, 36 Geekworm X1206 (apparats pli vegls: 2d UPS HAT (E)), plus 68 / 76 / 77 / 44 tenor ils sensurs."
+ },
  "Nach dem Regen ziehen schwarze Alpensalamander im Gänsemarsch über den Weg. Einer kommt ihnen entgegen, stösst mit der Nase an – und kehrt um. Im Wärmebild sieht man sie kaum: sie sind so kalt wie der Boden.": {
   "en": "After the rain, black alpine salamanders cross the path in single file. One comes the other way, bumps noses – and turns round. In the thermal picture you hardly see them: they are as cold as the ground.",
   "fr": "Après la pluie, des salamandres noires traversent le chemin à la queue leu leu. L’une arrive en sens inverse, se cogne le nez – et fait demi-tour. Dans l’image thermique on les voit à peine : elles sont aussi froides que le sol.",
@@ -29701,6 +29947,12 @@
   "fr": "après le fusible → abaisseur 6–36 V → 5 V (VIN / GND)",
   "it": "dopo il fusibile → step-down 6–36 V → 5 V (VIN / GND)",
   "rm": "suenter la segirezza → step-down 6–36 V → 5 V (VIN / GND)"
+ },
+ "nach der Sicherung → Klemme V+ / GND des PCA9685 (Servos, Elko 470 µF an V+) und 5 V der Lampen-MOSFETs": {
+  "en": "after the fuse → terminal V+ / GND of the PCA9685 (servos, capacitor 470 µF at V+) and 5 V of the lamp MOSFETs",
+  "fr": "après le fusible → borne V+ / GND du PCA9685 (servos, condensateur 470 µF sur V+) et 5 V des MOSFET des lampes",
+  "it": "dopo il fusibile → morsetto V+ / GND del PCA9685 (servo, condensatore 470 µF su V+) e 5 V dei MOSFET delle lampade",
+  "rm": "suenter la segirezza → clamma V+ / GND dal PCA9685 (servos, condensatur 470 µF a V+) e 5 V dals MOSFET da las lampas"
  },
  "Nach einem Regen auf dem Schluchtweg unterhalb der Alp auf den Boden schauen.": {
   "en": "After rain, look at the ground on the gorge path below the alp.",
@@ -31679,6 +31931,12 @@
   "it": "oppure solare (solar + solarreg, opzionale); la GX16 accetta 12–40 V",
   "rm": "u solar (solar + solarreg, opziunal); la GX16 accepta 12–40 V"
  },
+ "oder Solar über einen Regler mit 12-V-Ausgang (solar + solarreg, optional). Mit dem X1206 an der GX16 nur 9–18 V: 24-V-Quellen und Solarpanels direkt (Leerlauf über 18 V) passen nicht mehr": {
+  "en": "or solar via a controller with 12 V output (solar + solarreg, optional). With the X1206 only 9–18 V at the GX16: 24 V sources and solar panels directly (open circuit above 18 V) no longer fit",
+  "fr": "ou solaire via un régulateur à sortie 12 V (solar + solarreg, en option). Avec le X1206, seulement 9–18 V sur la GX16 : les sources 24 V et les panneaux solaires en direct (tension à vide au-dessus de 18 V) ne conviennent plus",
+  "it": "oppure solare tramite un regolatore con uscita 12 V (solar + solarreg, opzionale). Con l'X1206 alla GX16 solo 9–18 V: fonti a 24 V e pannelli solari diretti (a vuoto sopra 18 V) non vanno più",
+  "rm": "u solar via in regulatur cun sortida da 12 V (solar + solarreg, opziunal). Cun il X1206 a la GX16 mo 9–18 V: funtaunas da 24 V e panels solars directamain (vid sur 18 V) na van betg pli"
+ },
  "offen": {
   "en": "open",
   "fr": "ouvert",
@@ -31846,6 +32104,12 @@
   "fr": "Sans sac de couchage, la nuit était glaciale - à peine dormi.",
   "it": "Senza sacco a pelo la notte era gelida - dormito pochissimo.",
   "rm": "Senza sac da durmir era la notg fraida sco glatsch - strusch durmì."
+ },
+ "ohne Schutzplatine, höchstens 70,5 × 21,1 mm; Molicel P45B. 4 gleiche Zellen aus einer Lieferung, beim Einsetzen gleiche Spannung (± 0,05 V): die Zellen liegen parallel": {
+  "en": "without protection board, at most 70.5 × 21.1 mm; Molicel P45B. 4 equal cells from one delivery, the same voltage when inserted (± 0.05 V): the cells are in parallel",
+  "fr": "sans circuit de protection, au plus 70,5 × 21,1 mm ; Molicel P45B. 4 cellules identiques d'une même livraison, même tension à la mise en place (± 0,05 V) : les cellules sont en parallèle",
+  "it": "senza circuito di protezione, al massimo 70,5 × 21,1 mm; Molicel P45B. 4 celle uguali della stessa fornitura, stessa tensione all'inserimento (± 0,05 V): le celle sono in parallelo",
+  "rm": "senza platina da protecziun, maximalmain 70,5 × 21,1 mm; Molicel P45B. 4 cellas egualas d'ina furniziun, la medema tensiun cur ch'ins las metta en (± 0,05 V): las cellas èn en parallel"
  },
  "Ohne Stirnlampe war es nach Sonnenuntergang stockdunkel.": {
   "en": "Without a head lamp it was pitch dark after sunset.",
@@ -32820,6 +33084,12 @@
   "it": "Pololu D36V50F5 (ricarica 12–40 V → 5 V)",
   "rm": "Pololu D36V50F5 (chargiar 12–40 V → 5 V)"
  },
+ "Pololu D36V50F5 (nur ohne Akku: 12–40 V → 5 V an den Pi)": {
+  "en": "Pololu D36V50F5 (only without battery: 12–40 V → 5 V to the Pi)",
+  "fr": "Pololu D36V50F5 (seulement sans batterie : 12–40 V → 5 V vers le Pi)",
+  "it": "Pololu D36V50F5 (solo senza batteria: 12–40 V → 5 V al Pi)",
+  "rm": "Pololu D36V50F5 (mo senza accu: 12–40 V → 5 V al Pi)"
+ },
  "Poly Haven": {
   "en": "Poly Haven",
   "fr": "Poly Haven",
@@ -33023,6 +33293,12 @@
   "fr": "Provisions :",
   "it": "Provviste:",
   "rm": "Provianda:"
+ },
+ "provisorisch: Lage der Buchse PSW, Tastenfunktion und Jumper AUTO POWER ON am echten X1206 prüfen": {
+  "en": "provisional: check the position of the PSW socket, the button function and the AUTO POWER ON jumper on the real X1206",
+  "fr": "provisoire : vérifier la position de la prise PSW, la fonction du bouton et le cavalier AUTO POWER ON sur le vrai X1206",
+  "it": "provvisorio: verificare la posizione della presa PSW, la funzione del pulsante e il ponticello AUTO POWER ON sul vero X1206",
+  "rm": "provisoric: controllar la posiziun da la bischla PSW, la funcziun dal buttun ed il jumper AUTO POWER ON vi dal X1206 vair"
  },
  "Prüfe die Datei …": {
   "en": "Checking the file …",
@@ -35338,6 +35614,12 @@
   "it": "Passo 3 di 3 · oggetti e nascondigli",
   "rm": "Pass 3 da 3 · objects e zuppaders"
  },
+ "Schritt 4 ohne Akku-Platine und Akkus: den Pi direkt in den Zaun stellen (Klettband). Der D36V50F5 speist den Pi über USB-C, das 12-V-Netzteil kommt an die GX16-Buchse.": {
+  "en": "Step 4 without battery board and cells: put the Pi straight into the fence (hook-and-loop tape). The D36V50F5 feeds the Pi over USB-C, the 12 V power supply goes to the GX16 socket.",
+  "fr": "Étape 4 sans carte batterie ni cellules : poser le Pi directement dans l'enclos (velcro). Le D36V50F5 alimente le Pi par USB-C, l'alimentation 12 V va à la prise GX16.",
+  "it": "Passo 4 senza scheda batteria e celle: mettere il Pi direttamente nel recinto (velcro). Il D36V50F5 alimenta il Pi via USB-C, l'alimentatore 12 V va alla presa GX16.",
+  "rm": "Pass 4 senza platina d'accu ed accus: metter il Pi directamain en la saiv (velcro). Il D36V50F5 alimentescha il Pi via USB-C, l'alimentaziun 12 V va a la bischla GX16."
+ },
  "Schritt 4 ohne UPS HAT und Akkus: den Pi direkt in den Zaun stellen (Klettband). Der D36V50F5 speist den Pi über USB-C, das 12-V-Netzteil kommt an die GX16-Buchse.": {
   "en": "Step 4 without UPS HAT and cells: put the Pi straight into the fence (hook-and-loop tape). The D36V50F5 feeds the Pi over USB-C, the 12 V power supply goes to the GX16 socket.",
   "fr": "Étape 4 sans UPS HAT ni cellules : poser le Pi directement dans l'enclos (velcro). Le D36V50F5 alimente le Pi par USB-C, l'alimentation 12 V va à la prise GX16.",
@@ -36186,6 +36468,12 @@
   "it": "Fusibile 5 A",
   "rm": "Segirezza 5 A"
  },
+ "Sicherung 5 A (5,1 V)": {
+  "en": "Fuse 5 A (5.1 V)",
+  "fr": "Fusible 5 A (5,1 V)",
+  "it": "Fusibile 5 A (5,1 V)",
+  "rm": "Segirezza 5 A (5,1 V)"
+ },
  "Sicherung 5 A (Akku)": {
   "en": "Fuse 5 A (battery)",
   "fr": "Fusible 5 A (batterie)",
@@ -36209,6 +36497,12 @@
   "fr": "Sauvegarde : {z}",
   "it": "Backup: {z}",
   "rm": "Copia da segirezza: {z}"
+ },
+ "Sicherungshalter 5 A (5,1-V-Ausgang des X1206) in der Klammer am Boden": {
+  "en": "Fuse holder 5 A (5.1 V output of the X1206) in the floor clip",
+  "fr": "Porte-fusible 5 A (sortie 5,1 V du X1206) dans le clip au fond",
+  "it": "Portafusibile 5 A (uscita 5,1 V dell'X1206) nella clip sul fondo",
+  "rm": "Purtader da segirezza 5 A (sortida 5,1 V dal X1206) en la clip sin il fund"
  },
  "Sicherungshalter 5 A (Akku B+) in der Klammer am Boden": {
   "en": "Fuse holder 5 A (battery B+) in the floor clip",
@@ -36588,6 +36882,12 @@
   "it": "Software",
   "rm": "Software"
  },
+ "Solar-Regler (MPPT) zwischen Panel und GX16: Eingang 18 V, Ausgang 12 V konstant (höchstens 18 V), mind. 2 A": {
+  "en": "Solar controller (MPPT) between panel and GX16: input 18 V, constant output 12 V (at most 18 V), at least 2 A",
+  "fr": "Régulateur solaire (MPPT) entre panneau et GX16 : entrée 18 V, sortie constante 12 V (au plus 18 V), au moins 2 A",
+  "it": "Regolatore solare (MPPT) tra pannello e GX16: ingresso 18 V, uscita costante 12 V (al massimo 18 V), almeno 2 A",
+  "rm": "Regulatur solar (MPPT) tranter panel e GX16: entrada 18 V, sortida constanta 12 V (maximalmain 18 V), almain 2 A"
+ },
  "Solar-Regler (MPPT) zwischen Panel und GX16: Eingang 18 V, Ausgang 12–24 V konstant, mind. 2 A": {
   "en": "Solar controller (MPPT) between panel and GX16: input 18 V, constant output 12–24 V, at least 2 A",
   "fr": "Régulateur solaire (MPPT) entre panneau et GX16 : entrée 18 V, sortie constante 12–24 V, au moins 2 A",
@@ -36611,6 +36911,12 @@
   "fr": "Panneau solaire 30 W, 18 V (tension à vide sous 25 V), câble vers la fiche GX16",
   "it": "Pannello solare 30 W, 18 V (a vuoto sotto 25 V), cavo alla spina GX16",
   "rm": "Panel solar 30 W, 18 V (vid sut 25 V), cabel al stecker GX16"
+ },
+ "Solarpanel 30 W, 18 V – nur über den Regler (Leerlauf über 18 V), Kabel an den Regler": {
+  "en": "Solar panel 30 W, 18 V – only via the controller (open circuit above 18 V), cable to the controller",
+  "fr": "Panneau solaire 30 W, 18 V – seulement via le régulateur (tension à vide au-dessus de 18 V), câble vers le régulateur",
+  "it": "Pannello solare 30 W, 18 V – solo tramite il regolatore (a vuoto sopra 18 V), cavo al regolatore",
+  "rm": "Panel solar 30 W, 18 V – mo via il regulatur (vid sur 18 V), cabel al regulatur"
  },
  "Solarpanel 30W 18V": {
   "en": "Solarpanel 30W 18V",
@@ -37572,6 +37878,12 @@
   "it": "Stativschraube 1/4 Zoll 16mm",
   "rm": "Stativschraube 1/4 Zoll 16mm"
  },
+ "Statt Akku-Platine und Akkus den Sockel 13 in den Akku-Zaun drücken (Klemmrippen), den Pi mit 4 × M2,5 × 6 auf die Bolzen schrauben – gleiche Lage und Höhe wie mit Akku, HDMI-/USB-C-Fenster und Kamerakabel passen. Der Pi bekommt Strom über sein eigenes USB-C-Netzteil (5,1 V / 5 A) durch das Service-Fenster. Servos, Lampen und Verstärker: das 12-V-Netzteil (mind. 3 A) an die GX16-Ladebuchse (Pins wie beim Laden: 2 Kontakte +, 2 Kontakte −); die 5-A-Sicherung bleibt in der Leitung, dahinter auf den Eingang des Step-down (6–36 V → 5 V). Nur 12 V verwenden, Polung prüfen – es gibt keinen Verpolungsschutz. In dieser Variante zeigen Akku-%, INA219 und Lade-LED nichts.": {
+  "en": "Instead of the battery board and cells press socket 13 into the battery fence (clamp ribs) and screw the Pi onto the posts with 4 × M2.5 × 6 – same position and height as with the battery, HDMI/USB-C window and camera cables fit. The Pi gets power from its own USB-C power supply (5.1 V / 5 A) through the service window. Servos, lamps and amplifier: the 12 V power supply (at least 3 A) to the GX16 charging socket (pins as for charging: 2 contacts +, 2 contacts −); the 5 A fuse stays in the line, then to the input of the step-down (6–36 V → 5 V). Use 12 V only and check the polarity – there is no reverse-polarity protection. In this variant battery %, INA219 and the charging LED show nothing.",
+  "fr": "Au lieu de la carte batterie et des accus, enfoncer le socle 13 dans l'enclos (nervures de serrage) et visser le Pi sur les colonnes avec 4 × M2,5 × 6 – même position et hauteur qu'avec la batterie. Le Pi est alimenté par son propre bloc USB-C (5,1 V / 5 A) par la fenêtre de service. Servos, lampes et ampli : l'alimentation 12 V (au moins 3 A) sur la prise GX16 (broches comme pour la charge : 2 +, 2 −) ; le fusible 5 A reste dans la ligne, puis l'entrée de l'abaisseur (6–36 V → 5 V). Uniquement 12 V, vérifier la polarité – pas de protection. Dans cette variante, % batterie, INA219 et LED de charge n'affichent rien.",
+  "it": "Al posto della scheda batteria e delle batterie premere lo zoccolo 13 nel recinto (nervature di bloccaggio) e avvitare il Pi sulle colonnine con 4 × M2,5 × 6 – stessa posizione e altezza che con la batteria. Il Pi è alimentato dal suo alimentatore USB-C (5,1 V / 5 A) attraverso la finestra di servizio. Servo, lampade e amplificatore: l'alimentatore 12 V (almeno 3 A) alla presa GX16 (pin come per la carica: 2 +, 2 −); il fusibile 5 A resta nella linea, poi all'ingresso dello step-down (6–36 V → 5 V). Solo 12 V, controllare la polarità – non c'è protezione. In questa variante % batteria, INA219 e LED di carica non mostrano nulla.",
+  "rm": "Empè da la platina d'accu e dals accus smatgar la zocla 13 en il chasté (costas da serrar) e fixar il Pi cun 4 × M2,5 × 6 – medema posiziun ed autezza sco cun l'accu. Il Pi survegn current da ses agen alimentader USB-C (5,1 V / 5 A) tras la fanestra da servetsch. Servos, lampas ed amplificatur: l'alimentaziun da 12 V (almain 3 A) a la bischla GX16 (pins sco per chargiar: 2 +, 2 −); la segirezza da 5 A resta en la lingia, lura a l'entrada dal step-down (6–36 V → 5 V). Mo 12 V, controllar la polaritad – i na dat nagina protecziun. En questa variante mussan % d'accu, INA219 e LED da chargiar nagut."
+ },
  "Statt UPS HAT (E) und Akkus den Sockel 13 in den Akku-Zaun drücken (Klemmrippen), den Pi mit 4 × M2,5 × 6 auf die Bolzen schrauben – gleiche Lage und Höhe wie mit Akku, HDMI-/USB-C-Fenster und Kamerakabel passen. Der Pi bekommt Strom über sein eigenes USB-C-Netzteil (5,1 V / 5 A) durch das Service-Fenster. Servos, Lampen und Verstärker: das 12-V-Netzteil (mind. 3 A) an die GX16-Ladebuchse (Pins wie beim Laden: 2 Kontakte +, 2 Kontakte −); die 5-A-Sicherung bleibt in der Leitung, dahinter auf den Eingang des Step-down (6–36 V → 5 V). Nur 12 V verwenden, Polung prüfen – es gibt keinen Verpolungsschutz. In dieser Variante zeigen Akku-%, INA219 und Lade-LED nichts.": {
   "en": "Instead of the UPS HAT (E) and cells press socket 13 into the battery fence (clamp ribs) and screw the Pi onto the posts with 4 × M2.5 × 6 – same position and height as with the battery, HDMI/USB-C window and camera cables fit. The Pi gets power from its own USB-C power supply (5.1 V / 5 A) through the service window. Servos, lamps and amplifier: the 12 V power supply (at least 3 A) to the GX16 charging socket (pins as for charging: 2 contacts +, 2 contacts −); the 5 A fuse stays in the line, then to the input of the step-down (6–36 V → 5 V). Use 12 V only and check the polarity – there is no reverse-polarity protection. In this variant battery %, INA219 and the charging LED show nothing.",
   "fr": "Au lieu de l'UPS HAT (E) et des accus, enfoncer le socle 13 dans l'enclos (nervures de serrage) et visser le Pi sur les colonnes avec 4 × M2,5 × 6 – même position et hauteur qu'avec la batterie. Le Pi est alimenté par son propre bloc USB-C (5,1 V / 5 A) par la fenêtre de service. Servos, lampes et ampli : l'alimentation 12 V (au moins 3 A) sur la prise GX16 (broches comme pour la charge : 2 +, 2 −) ; le fusible 5 A reste dans la ligne, puis l'entrée de l'abaisseur (6–36 V → 5 V). Uniquement 12 V, vérifier la polarité – pas de protection. Dans cette variante, % batterie, INA219 et LED de charge n'affichent rien.",
@@ -37830,6 +38142,12 @@
   "fr": "Step-Down 6-36V 5V 4A",
   "it": "Step-Down 6-36V 5V 4A",
   "rm": "Step-Down 6-36V 5V 4A"
+ },
+ "Step-Down 6–36 V → 5 V 4 A (nur ohne Akku: Servos, Licht, Verstärker)": {
+  "en": "Step-down 6–36 V → 5 V 4 A (only without battery: servos, light, amplifier)",
+  "fr": "Abaisseur 6–36 V → 5 V 4 A (seulement sans batterie : servos, lumière, ampli)",
+  "it": "Step-down 6–36 V → 5 V 4 A (solo senza batteria: servo, luce, amplificatore)",
+  "rm": "Step-down 6–36 V → 5 V 4 A (mo senza accu: servos, glisch, amplificatur)"
  },
  "Step-Down 6–36 V → 5 V 4 A (Servos, Licht, Verstärker)": {
   "en": "Step-down 6–36 V → 5 V 4 A (servos, light, amplifier)",
@@ -38857,11 +39175,23 @@
   "it": "Pulsante 12 mm, IP67",
   "rm": "Buttun 12 mm, IP67"
  },
+ "Taster 12 mm, IP67, Schliesser: Ein/Aus am PSW des X1206 (Reserve-Öffnung hinten statt Blindstopfen 17)": {
+  "en": "Push button 12 mm, IP67, normally open: on/off at the PSW of the X1206 (reserve opening at the back instead of blind plug 17)",
+  "fr": "Bouton-poussoir 12 mm, IP67, contact à fermeture : marche/arrêt sur le PSW du X1206 (ouverture de réserve arrière au lieu du bouchon 17)",
+  "it": "Pulsante 12 mm, IP67, normalmente aperto: acceso/spento al PSW dell'X1206 (apertura di riserva dietro al posto del tappo 17)",
+  "rm": "Buttun 12 mm, IP67, serrader: en/ora al PSW dal X1206 (avertura da reserva davos empè dal zaffer 17)"
+ },
  "Taster 12mm IP67": {
   "en": "Taster 12mm IP67",
   "fr": "Taster 12mm IP67",
   "it": "Taster 12mm IP67",
   "rm": "Taster 12mm IP67"
+ },
+ "Taster Ein/Aus (PSW)": {
+  "en": "Button on/off (PSW)",
+  "fr": "Bouton marche/arrêt (PSW)",
+  "it": "Pulsante acceso/spento (PSW)",
+  "rm": "Buttun en/ora (PSW)"
  },
  "Tatsächlich, ein junger! Das muss ich gleich melden.": {
   "en": "Indeed, a young one! I must report that right away.",
@@ -40610,6 +40940,12 @@
   "it": "Spina USB-C da saldare (D36V50F5 → UPS HAT)",
   "rm": "Stecker USB-C da lotar (D36V50F5 → UPS HAT)"
  },
+ "USB-C-Stecker zum Anlöten (D36V50F5 → USB-C des Pi, nur ohne Akku)": {
+  "en": "USB-C plug to solder (D36V50F5 → USB-C of the Pi, only without battery)",
+  "fr": "Fiche USB-C à souder (D36V50F5 → USB-C du Pi, seulement sans batterie)",
+  "it": "Spina USB-C da saldare (D36V50F5 → USB-C del Pi, solo senza batteria)",
+  "rm": "Stecker USB-C da lotar (D36V50F5 → USB-C dal Pi, mo senza accu)"
+ },
  "USB-Hub": {
   "en": "USB hub",
   "fr": "Hub USB",
@@ -40669,6 +41005,12 @@
   "fr": "USV HAT (E) 21700",
   "it": "USV HAT (E) 21700",
   "rm": "USV HAT (E) 21700"
+ },
+ "V2.0 nehmen (DC-Eingang 9–18 V); V1.1 nimmt nur 5–6 V. Unter den Pi, Pogo-Pins, Akku-Chip I2C 0x36": {
+  "en": "take V2.0 (DC input 9–18 V); V1.1 takes only 5–6 V. Under the Pi, pogo pins, battery chip I2C 0x36",
+  "fr": "prendre la V2.0 (entrée DC 9–18 V) ; la V1.1 ne prend que 5–6 V. Sous le Pi, broches pogo, puce batterie I2C 0x36",
+  "it": "prendere la V2.0 (ingresso DC 9–18 V); la V1.1 accetta solo 5–6 V. Sotto il Pi, pin pogo, chip batteria I2C 0x36",
+  "rm": "prender la V2.0 (entrada DC 9–18 V); la V1.1 prenda mo 5–6 V. Sut il Pi, pins pogo, chip d'accu I2C 0x36"
  },
  "v5.1 (ohne Weitwinkel)": {
   "en": "v5.1 (without wide angle)",
@@ -45625,6 +45967,12 @@
   "fr": "«Là-haut sur l'arête ça se couvre. Fais attention à la météo.»",
   "it": "«Su in cresta si sta coprendo. Attento al tempo.»",
   "rm": "«Si sin la creesta sa stgirenta. Fa attenziun a l'aura.»"
+ },
+ "«Schutz» GPIO 12 (Pin 32) · «Alarm quittieren» GPIO 26 (Pin 37) · je gegen GND, interner Pull-up. Ältere Geräte: «Schutz» GPIO 16 (Pin 36) – mit dem X1206 nie": {
+  "en": "«Protection» GPIO 12 (pin 32) · «Acknowledge alarm» GPIO 26 (pin 37) · each to GND, internal pull-up. Older devices: «Protection» GPIO 16 (pin 36) – never with the X1206",
+  "fr": "«Protection» GPIO 12 (broche 32) · «Acquitter l'alarme» GPIO 26 (broche 37) · chacun vers GND, pull-up interne. Appareils plus anciens : «Protection» GPIO 16 (broche 36) – jamais avec le X1206",
+  "it": "«Protezione» GPIO 12 (pin 32) · «Conferma allarme» GPIO 26 (pin 37) · ciascuno verso GND, pull-up interno. Dispositivi più vecchi: «Protezione» GPIO 16 (pin 36) – mai con l'X1206",
+  "rm": "«Protecziun» GPIO 12 (pin 32) · «Quittar l'alarm» GPIO 26 (pin 37) · mintgin vers GND, pull-up intern. Apparats pli vegls: «Protecziun» GPIO 16 (pin 36) – mai cun il X1206"
  },
  "«Schutz» GPIO 16 (Pin 36) · «Alarm quittieren» GPIO 26 (Pin 37) · je gegen GND, interner Pull-up": {
   "en": "«Protection» GPIO 16 (pin 36) · «Acknowledge alarm» GPIO 26 (pin 37) · each to GND, internal pull-up",

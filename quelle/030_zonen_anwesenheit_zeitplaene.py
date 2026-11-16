@@ -532,7 +532,7 @@ def text_choice_pairs(key):
         return [("alarm_dark", tr("at an alarm, only at night")), ("alarm", tr("at an alarm, day and night")),
                 ("dark", tr("the whole night (sunset to sunrise)"))]
     if extra == "ups_model":
-        return [("auto", tr("automatic")), ("e", "UPS HAT (E) – 4 × 21700, I2C 0x2D"), ("ina", "UPS HAT (A / B / C) – INA219")]
+        return [("auto", tr("automatic")), ("e", "UPS HAT (E) – 4 × 21700, I2C 0x2D"), ("x12", "Geekworm X1206 – 4 × 21700, I2C 0x36"), ("ina", "UPS HAT (A / B / C) – INA219")]
     if extra == "species_model":
         cur = str(CFG.get("species_model") or "")
         ms = species_models() + ([cur] if cur and cur not in species_models() else [])
@@ -614,7 +614,7 @@ def _i2c_active(key, cfg=None):
     pca_on = c.get("servo_driver") == "pca9685" or (c.get("servo_driver") == "auto" and str(STATE.get("servo_backend", "")).startswith("pca9685"))
     return {"_thermal": bool(c.get("thermal_on")) and str(c.get("thermal_source", "")).startswith("senxor"),
             "pca_address": pca_on, "solar_addr": bool(c.get("solar_on")), "mover_addr": c.get("mover_mode") != "off",
-            "ups_addr": bool(c.get("ups_on")) and c.get("ups_model") != "e"}.get(key, False)   # UPS HAT (E): own chip on 0x2D
+            "ups_addr": bool(c.get("ups_on")) and c.get("ups_model") not in ("e", "x12")}.get(key, False)   # (E) 0x2D, X1206 0x36: own chips
 
 
 def i2c_conflicts(cfg=None):

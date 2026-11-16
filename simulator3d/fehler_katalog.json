@@ -1767,28 +1767,28 @@
    "schritte": {
     "de": [
      "Pogo-Pins sauber unter dem Pi? Akkus richtig herum und geladen?",
-     "«sudo i2cdetect -y 1»: 2d muss erscheinen.",
-     "Einstellungen → Stromversorgung: Modell «UPS HAT (E)» wählen."
+     "«sudo i2cdetect -y 1»: 2d (UPS HAT (E)) oder 36 (X1206) muss erscheinen.",
+     "Einstellungen → Stromversorgung: Modell «automatisch» wählen."
     ],
     "en": [
      "Pogo pins clean under the Pi? Cells the right way round and charged?",
-     "«sudo i2cdetect -y 1»: 2d must show up.",
-     "Settings → Power supply: choose the model «UPS HAT (E)»."
+     "«sudo i2cdetect -y 1»: 2d (UPS HAT (E)) or 36 (X1206) must show up.",
+     "Settings → Power supply: choose the model «automatic»."
     ],
     "fr": [
      "Broches pogo propres sous le Pi ? Cellules dans le bon sens et chargées ?",
-     "«sudo i2cdetect -y 1» : 2d doit apparaître.",
-     "Réglages → Alimentation : choisir le modèle «UPS HAT (E)»."
+     "«sudo i2cdetect -y 1» : 2d (UPS HAT (E)) ou 36 (X1206) doit apparaître.",
+     "Réglages → Alimentation : choisir le modèle «automatique»."
     ],
     "it": [
      "Pin pogo puliti sotto il Pi? Celle nel verso giusto e cariche?",
-     "«sudo i2cdetect -y 1»: deve comparire 2d.",
-     "Impostazioni → Alimentazione: scegliere il modello «UPS HAT (E)»."
+     "«sudo i2cdetect -y 1»: deve comparire 2d (UPS HAT (E)) o 36 (X1206).",
+     "Impostazioni → Alimentazione: scegliere il modello «automatico»."
     ],
     "rm": [
      "Pins pogo nets sut il Pi? Cellas endretg e chargiadas?",
-     "«sudo i2cdetect -y 1»: 2d sto cumparair.",
-     "Parameters → Alimentaziun: tscherner il model «UPS HAT (E)»."
+     "«sudo i2cdetect -y 1»: 2d (UPS HAT (E)) u 36 (X1206) sto cumparair.",
+     "Parameters → Alimentaziun: tscherner il model «automatic»."
     ]
    }
   },

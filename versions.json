@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-16 10:03",
+ "generated": "2026-11-16 19:41",
  "versions": [
+  {
+   "version": "4.13.0",
+   "file": "webcam_bewegung_4_13_0.py",
+   "url": "",
+   "sha256": "e3fbd12044c90093eb841ed1ee28dac2ef12958c0a323f89fced47f825027d25",
+   "date": "2026-11-16 19:41",
+   "notes": "Akku: Geekworm X1206 V2.0 wird erkannt (I2C 0x36, nach dem UPS HAT (E)); GPIO 6 und 16 gehören dann der Platine und werden nie geschaltet; neue Geräte: Lade-LED GPIO 13, Taste «Schutz» GPIO 12 (ältere Einstellungen behalten 6 / 16)",
+   "size": 4036602,
+   "sig": "7a839fb3db7e1bc978a4bda44a5ef1d3d5a220904674cb82777a831eba9c161db01c66cff5e3a9fff5ac37fea669b9a91cda659b27105dee76ef2997b56a4a07",
+   "data": {
+    "file": "moveeye_daten_4_13_0.zip",
+    "url": "",
+    "sha256": "f1e41a9c3f50b9c502ee82276f94e7ce0aa4913ffc2ab2fde152297889a3e4c6",
+    "size": 14249994,
+    "sig": "0d6e6aff888f73d615dfb5aa3347d3712e24f39cfa1353f0fab4bec9200e467c773c48797bb2729637052421240430b01652b0085c14ed80ed05113096687e07"
+   }
+  },
   {
    "version": "4.12.0",
    "file": "webcam_bewegung_4_12_0.py",
@@ -136,23 +153,6 @@
     "sha256": "9d4ab8c1922fc4809be491aad0ac1656246e7664a6818fe4e1f25791bd0a41fb",
     "size": 13501844,
     "sig": "23f09de986ac2b7565d72981c673bccd6a09dd38eafe0fb62ae86fed780d36fe586babe642671f20cbdb07632a6efcca3f811b1c97b86ff60054cb368f80bd00"
-   }
-  },
-  {
-   "version": "4.4.0",
-   "file": "webcam_bewegung_4_4_0.py",
-   "url": "",
-   "sha256": "9b966de14c0db823504d290d108db95a5ebde2919e26ac98e2fa21ca3001f784",
-   "date": "2026-11-15 15:33",
-   "notes": "Zwei Teile. (1) Live → «Bedienung»: «🕹 Kopf steuern» lässt sich für sich einklappen; «⏹ Stopp» bleibt immer sichtbar. (2) Homepage-Karte: drei Schalter – Startseite, Funkgerät und Simulator einzeln hochladen (aus = nicht hochgeladen und auf dem Webspace nie gelöscht); neu «Öffentliche Adresse» (nur https), und eine Seite mit Passwortschutz des Webspace gilt bei der Prüfung als «🔒 geschützt ✓».",
-   "size": 3896364,
-   "sig": "9a6cd6542637ef0e94e7ca4af3faf2fce6f05a166d443447ad40c34cc6136090dfc6e104b2265d8fac7ebda34d4f96f7ede84202e1d131d9a5a058cea914a30f",
-   "data": {
-    "file": "moveeye_daten_4_4_0.zip",
-    "url": "",
-    "sha256": "6922c6fbab187c5e1c980be6e3a71c51ecfcff5af0a50334dfeb10c7ac60702f",
-    "size": 13459358,
-    "sig": "3df74a644ad25f39528f1d385f9788033d1d9558a6ac21c338e23d172caba655da11168cf4fb4ddf5582ff83ff4475d5f7958dc689d031007f93ae017a0b5407"
    }
   },
   {

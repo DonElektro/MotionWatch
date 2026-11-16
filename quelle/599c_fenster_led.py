@@ -412,8 +412,8 @@ _LED_HELP = (
      "während des Countdowns «atmet» die Farbe). Nach einem Alarm blinkt sie rot, bis jemand quittiert – Taste «Alarm quittieren», Knopf "
      "auf dieser Seite oder im Fenster, oder Schutz aus. Störungen (Akku schwach, Unterspannung, Kamera weg, Servo-Störung) zeigt ein "
      "kurzes violettes Pulsieren. Alle paar Minuten zwinkert sie zweimal kurz – «alles ok»; Blinki in der Kopfzeile zwinkert im selben "
-     "Moment. Nachts gedimmt oder aus. Zwei Tasten am Gerät (GPIO gegen Masse, interner Pull-up, entprellt; Standard GPIO 16 = Pin 36 "
-     "«Schutz», GPIO 26 = Pin 37 «Alarm quittieren»): «Schutz» kurz = Wachsam ↔ Aus, lang (1,5 s) = Voll; «Alarm quittieren» stoppt "
+     "Moment. Nachts gedimmt oder aus. Zwei Tasten am Gerät (GPIO gegen Masse, interner Pull-up, entprellt; Standard GPIO 12 = Pin 32 "
+     "«Schutz» (ältere Geräte 16), GPIO 26 = Pin 37 «Alarm quittieren»): «Schutz» kurz = Wachsam ↔ Aus, lang (1,5 s) = Voll; «Alarm quittieren» stoppt "
      "Sirene und Eskalation – dasselbe wie der Knopf «Alarm quittieren» im Alarmfenster. Jeder Druck steht im Protokoll. Die Tasten "
      "dürfen alles, auch mit einer PIN zum Ausschalten; jede Aufgabe (Einschalten, Ausschalten, Sirene stoppen, Quittieren) lässt sich "
      "einzeln ausschalten. Jedes Ausschalten und jedes Sirene-Stoppen am Gerät steht im Protokoll und kommt als Push-Nachricht "
@@ -426,8 +426,8 @@ _LED_HELP = (
      "adjustable; during the countdown the colour «breathes»). After an alarm it blinks red until somebody acknowledges – button "
      "«Acknowledge alarm», the button on this page or in the window, or protection off. Faults (battery low, under-voltage, camera lost, "
      "servo fault) show as a short violet pulse. Every few minutes it blinks twice shortly – «all is well»; Blinki in the header blinks "
-     "at the same moment. Dimmed or off at night. Two buttons on the device (GPIO to ground, internal pull-up, debounced; default GPIO 16 = "
-     "pin 36 «Protection», GPIO 26 = pin 37 «Acknowledge alarm»): «Protection» short = Watchful ↔ Off, long (1.5 s) = Full; «Acknowledge "
+     "at the same moment. Dimmed or off at night. Two buttons on the device (GPIO to ground, internal pull-up, debounced; default GPIO 12 = "
+     "pin 32 «Protection» (older devices 16), GPIO 26 = pin 37 «Acknowledge alarm»): «Protection» short = Watchful ↔ Off, long (1.5 s) = Full; «Acknowledge "
      "alarm» stops siren and escalation – the same as the button «Acknowledge alarm» in the alarm window. Every press is in the log. The "
      "buttons may do everything, also with a PIN for disarming; each job (switching on, switching off, stopping the siren, acknowledging) "
      "can be switched off on its own. Every switching off and every siren stop at the device is in the log and sent as a push message "
@@ -560,7 +560,7 @@ def led_selftest():
         keep_w = WATCH_REF.get("w"); WATCH_REF["w"] = _W()
         keep_snd = SOUND.get("playing")
         try:
-            assert CFG["btn_gpio_protect"] == "16" and CFG["btn_gpio_ack"] == "26", "default GPIO 16 / 26 (GPIO 5 = PIR)"
+            assert DEFAULTS["btn_gpio_protect"] == "12" and DEFAULTS["btn_gpio_ack"] == "26", "default GPIO 12 / 26 (GPIO 5 = PIR, 6 / 16 Geekworm X1206)"
             assert all(CFG[k] for k in ("btn_allow_arm", "btn_allow_disarm", "btn_allow_siren", "btn_allow_ack", "btn_notify_off"))
             CFG.update(armed=False, protect_pin="x$y")
             led_button_event("protect", "short", "GPIO 16")
@@ -622,13 +622,13 @@ def led_selftest():
         assert any(_LEDS in g[2] for g in TK_GROUPS if g[0] == "lightsound"), "window group Licht & Ton"
         assert '"Test LED": "LED testen"' in WEB_PAGE, "German texts of the web panel"
         assert "Status-LED und Tasten" in HELP_PAGE and "Status LED and buttons" in HELP_PAGE
-        assert text_choice_pairs("led_col_watch")[1][0] == "orange" and dict(text_choice_pairs("btn_gpio_protect")).get("16") == "GPIO 16"
+        assert text_choice_pairs("led_col_watch")[1][0] == "orange" and dict(text_choice_pairs("btn_gpio_protect")).get(str(CFG["btn_gpio_protect"])) == "GPIO " + str(CFG["btn_gpio_protect"])
         L = iface_list()
         if L is not None:
             assert "led" in L["state"] and "buttons" in L["world_reply"]
         sd = sim_state()
         assert sd["led"]["rgb"].startswith("#") and "hb" in sd["led"]
-        return "priority, night, heartbeat, buttons (GPIO 16 / 26, may do everything, each switchable, push at disarm / siren stop), PCA9685 channels 5-7, simulator buttons, acknowledge in the alarm card"
+        return "priority, night, heartbeat, buttons (GPIO 12 / 26, may do everything, each switchable, push at disarm / siren stop), PCA9685 channels 5-7, simulator buttons, acknowledge in the alarm card"
     finally:
         for k, v in keep_g.items():
             G[k] = v
