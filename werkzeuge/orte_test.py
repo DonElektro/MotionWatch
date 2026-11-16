@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """MoveEye: Test «📌 Eigene Orte» auf der Offline-Karte (Teil 639zzzzo, mit 639zzx kt_parse und dem Digitalen Rucksack 639zzc).
 
-  python3 werkzeuge/orte_test.py [--web karte-web-1.zip] [--bilder ORDNER] [--ohne-browser] [--datei X.py]
+  python3 werkzeuge/orte_test.py [--web karte-web-2.zip] [--bilder ORDNER] [--ohne-browser] [--datei X.py]
 
 A) im Prozess (Test-Client): Selbsttest; Rechte (Admin, files_admin, Familie, Kind, «Nur ansehen»): alle sehen die Orte,
    nur Admin / files_admin ändern; «Meine Orte.geojson» im Ordner «🗺️ Karte» des Rucksacks (wird angelegt), hinzufügen /
@@ -298,8 +298,8 @@ def teil_b(datei, web, bilder):
     P, rel, pins, tiles = KA.dateien_bauen(tmp, web)
     srv = Srv()
     for r_, f in pins.items():
-        srv.files["/karten-1/" + f["name"]] = open(os.path.join(rel, f["name"]), "rb").read()
-    d2 = KA.gepatcht(datei, tmp, pins, srv.url + "karten-1/")
+        srv.files["/" + f["tag"] + "/" + f["name"]] = open(os.path.join(rel, f["name"]), "rb").read()   # 639zzq Topo: each file at its release
+    d2 = KA.gepatcht(datei, tmp, pins, srv.url)
     with socket.socket() as sk:
         sk.bind(("127.0.0.1", 0)); port = sk.getsockname()[1]
     PW = "Orte-" + os.urandom(4).hex()

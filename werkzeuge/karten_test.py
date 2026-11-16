@@ -186,9 +186,11 @@ def _dir_bytes(entries):
     return gzip.compress(out, mtime=0)
 
 
-def pmtiles_schreiben(path, tiles, leaf_size=6, bounds=(7.9, 47.2, 8.4, 47.5), center=(SEON[1], SEON[0], 12)):
-    """tiles: {(z, x, y): raw MVT} -> PMTiles v3 (gzip tiles, gzip directories, leaf directories of «leaf_size» entries)"""
-    items = sorted(((tileid(z, x, y), gzip.compress(b, mtime=0)) for (z, x, y), b in tiles.items()), key=lambda t: t[0])
+def pmtiles_schreiben(path, tiles, leaf_size=6, bounds=(7.9, 47.2, 8.4, 47.5), center=(SEON[1], SEON[0], 12), ttype=1):
+    """tiles: {(z, x, y): raw MVT} -> PMTiles v3 (gzip tiles, gzip directories, leaf directories of «leaf_size» entries);
+    ttype 4: WebP tiles as they are (no compression)"""
+    zip_ = (lambda b: gzip.compress(b, mtime=0)) if ttype == 1 else (lambda b: b)
+    items = sorted(((tileid(z, x, y), zip_(b)) for (z, x, y), b in tiles.items()), key=lambda t: t[0])
     data, entries = b"", []
     for tid, b in items:
         entries.append((tid, len(data), len(b), 1)); data += b
@@ -202,12 +204,12 @@ def pmtiles_schreiben(path, tiles, leaf_size=6, bounds=(7.9, 47.2, 8.4, 47.5), c
     off_root = 127; off_meta = off_root + len(rootb); off_leaf = off_meta + len(meta); off_data = off_leaf + len(leaves)
     h = b"PMTiles" + bytes([3]) + struct.pack("<11Q", off_root, len(rootb), off_meta, len(meta), off_leaf, len(leaves), off_data, len(data),
                                               len(entries), len(entries), len(entries))
-    h += struct.pack("<6B", 1, 2, 2, 1, min(zs), max(zs)) + struct.pack("<4i", *[int(v * 1e7) for v in bounds])
+    h += struct.pack("<6B", 1, 2, 2 if ttype == 1 else 1, ttype, min(zs), max(zs)) + struct.pack("<4i", *[int(v * 1e7) for v in bounds])
     h += struct.pack("<B2i", center[2], int(center[0] * 1e7), int(center[1] * 1e7))
     assert len(h) == 127
     with open(path, "wb") as f:
         f.write(h + rootb + meta + leaves + data)
-    return {k: gzip.compress(v, mtime=0) for k, v in tiles.items()}
+    return {k: zip_(v) for k, v in tiles.items()}
 
 
 def _px(lat, lon, z, tx, ty):
@@ -253,6 +255,45 @@ def test_karte(path):
     return pmtiles_schreiben(path, tiles)
 
 
+def test_topo(path):
+    """contour lines (one on a glacier) and hiking paths around Seon, z11-14"""
+    tiles = {}
+    for z in range(11, 15):
+        _, x0, y0 = _tile_of(SEON[0], SEON[1], z)
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                tx, ty = x0 + dx, y0 + dy
+                P = lambda la, lo: _px(la, lo, z, tx, ty)
+                hk = [(2, [[P(47.3475 + 0.002 * i, 8.12), P(47.3485 + 0.002 * i, 8.20)]], {"ele": 450 + 10 * i, "lvl": 50 if i % 5 == 0 else 10})
+                      for i in range(-6, 7)]
+                hk.append((2, [[P(47.36, 8.13), P(47.362, 8.17)]], {"ele": 600, "lvl": 100, "gl": 1}))
+                wege = [(2, [[P(47.345, 8.15), P(47.352, 8.17)]], {"g": 1}), (2, [[P(47.343, 8.15), P(47.349, 8.175)]], {"g": 2}),
+                        (2, [[P(47.341, 8.15), P(47.347, 8.18)]], {"g": 3})]
+                tiles[(z, tx, ty)] = mvt({"contour": hk, "wege": wege})
+    return pmtiles_schreiben(path, tiles)
+
+
+def test_relief(path):
+    """raster-dem tiles (terrarium, WebP) around Seon: a hill of 600 m on a plain of 450 m, z8-13"""
+    import numpy as np
+    sys.path.insert(0, os.path.join(HIER, "karten"))
+    import topo as T
+    tiles = {}
+    for z in range(8, 14):
+        _, x0, y0 = _tile_of(SEON[0], SEON[1], z)
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                tx, ty = x0 + dx, y0 + dy
+                n = 2 ** z
+                px = (np.arange(256) + 0.5) / 256
+                lon = (tx + px) / n * 360 - 180
+                lat = np.degrees(np.arctan(np.sinh(np.pi * (1 - 2 * (ty + px) / n))))
+                LO, LA = np.meshgrid(lon, lat)
+                h = 450 + 150 * np.exp(-(((LO - SEON[1]) / 0.02) ** 2 + ((LA - SEON[0]) / 0.014) ** 2))
+                tiles[(z, tx, ty)] = T.webp(T.terrarium(h))
+    return pmtiles_schreiben(path, tiles, ttype=4)
+
+
 TEST_ORTE = [
     {"name": "Seon", "alts": [], "kind": "village", "lat": 47.3475, "lon": 8.1602, "kt": "AG", "gem": None, "pop": 5300},
     {"name": "Seengen", "alts": [], "kind": "village", "lat": 47.3165, "lon": 8.1912, "kt": "AG", "gem": None, "pop": 3900},
@@ -272,19 +313,22 @@ NORM_PROBEN = ["Zürich", "Genève", "La Chaux-de-Fonds", "Sant’Antonio", "Gro
 
 
 def dateien_bauen(tmp, web_zip):
-    """the three test files + their pins"""
+    """the five test files + their pins (with the tag of their release, like pins.txt)"""
     P = paket_modul()
     out = os.path.join(tmp, "rel"); os.makedirs(out, exist_ok=True)
-    tiles = test_karte(os.path.join(out, "karte-ch-1.pmtiles"))
+    tiles = test_karte(os.path.join(out, P.NAMEN["tiles"]))
+    test_topo(os.path.join(out, P.NAMEN["topo"]))
+    test_relief(os.path.join(out, P.NAMEN["relief"]))
     sq = os.path.join(tmp, "orte.sqlite")
     P.index_bauen(TEST_ORTE, sq, {"tag": P.TAG, "quelle": "Test"})
-    P.gz_fest(sq, os.path.join(out, "orte-ch-1.sqlite.gz"))
+    P.gz_fest(sq, os.path.join(out, P.NAMEN["orte"]))
     if web_zip:
-        shutil.copyfile(web_zip, os.path.join(out, "karte-web-1.zip"))
+        shutil.copyfile(web_zip, os.path.join(out, P.NAMEN["web"]))
     else:
-        print("  (karte-web-1.zip wird gebaut: paket.py --web, braucht node und Internet)", flush=True)
+        print("  (%s wird gebaut: paket.py --web, braucht node und Internet)" % P.NAMEN["web"], flush=True)
         P.baue_web(out, 14)
     pins = {}
+    tg = P.tags()
     for r_, n in P.NAMEN.items():
         p = os.path.join(out, n)
         unp = 0
@@ -293,7 +337,7 @@ def dateien_bauen(tmp, web_zip):
                 unp = sum(i.file_size for i in z.infolist())
         elif r_ == "orte":
             unp = os.path.getsize(sq)
-        pins[r_] = {"name": n, "size": os.path.getsize(p), "sha256": P.sha256(p), "unpacked": unp}
+        pins[r_] = {"name": n, "size": os.path.getsize(p), "sha256": P.sha256(p), "unpacked": unp, "tag": tg[r_]}
     return P, out, pins, tiles
 
 
@@ -345,18 +389,21 @@ def teil_a(datei, P, rel, pins, tiles):
 
     srv = Srv()
     for r_, f in pins.items():
-        srv.files["/" + ns["KQ_TAG"] + "/" + f["name"]] = open(os.path.join(rel, f["name"]), "rb").read()
-    ns["KQ_BASE"]["url"] = srv.url + ns["KQ_TAG"] + "/"
+        srv.files["/" + f["tag"] + "/" + f["name"]] = open(os.path.join(rel, f["name"]), "rb").read()
+    ns["KQ_BASE"]["url"] = srv.url
+    ok(all(ns["kq_tag"](r_) == f["tag"] for r_, f in pins.items()), "Tag jeder Datei wie paket.py (Karte + Ortssuche: %s)" % pins["tiles"]["tag"])
     echt = {r_: dict(f) for r_, f in KF.items()}                 # ab 3.81.0 stehen die echten Pins (Release karten-1) in der Datei
-    ok(ns["kq_pinned"]() or not any(f["size"] for f in echt.values()),
-       "Pins in der gebauten Datei: %s" % ("echt, %.1f MB" % (sum(f["size"] for f in echt.values()) / 1e6) if ns["kq_pinned"]() else "noch keine"))
+    neu_r = [r_ for r_ in echt if r_ not in ns["KQ_FILE_TAG"]]
+    ok(ns["kq_pinned"]() or not any(echt[r_]["size"] for r_ in neu_r),
+       "Pins in der gebauten Datei: %s" % ("echt, %.1f MB" % (sum(f["size"] for f in echt.values()) / 1e6) if ns["kq_pinned"]()
+                                           else "%s noch keine (Stufe 1), %s von früher" % (", ".join(neu_r), ", ".join(sorted(ns["KQ_FILE_TAG"])))))
     for f in KF.values():
         f.update(size=0, sha256="", unpacked=0)
     ns["KQ_RT"]["ok_t"] = 0
     st0 = ns["kq_state"]()
     ok(not st0["pinned"] and not st0["on"] and ns["kq_download"]()[0] is False, "ohne Pins: «kommt mit einem Update», nichts installiert, kein Laden")
     for r_, f in pins.items():
-        KF[r_].update(f)
+        KF[r_].update({k: v for k, v in f.items() if k != "tag"})
     ns["KQ_RT"]["ok_t"] = 0
     CFG.update(https_extra=False, lang="de", tausch_free_gb=0.02)
     PW = "Admin-Karte-123"
@@ -393,7 +440,7 @@ def teil_a(datei, P, rel, pins, tiles):
     ok(code == 400 and "Platz" in str(j.get("error")) and not DL["running"] and not srv.hits, f"zu wenig Platz: abgelehnt, nichts geladen ({code} {j.get('error')})")
     ok(not j["space_ok"], "Zustand meldet zu wenig Platz (Knopf gesperrt)")
     CFG["tausch_free_gb"] = 0.02
-    pfad = "/" + ns["KQ_TAG"] + "/" + pins["tiles"]["name"]
+    pfad = "/" + pins["tiles"]["tag"] + "/" + pins["tiles"]["name"]
     srv.tamper.add(pfad)
     api({"action": "install"}); warten()
     ok(not ns["kq_installed"]() and "checksum" in DL["msg"], f"veränderte Karte abgelehnt ({DL['msg']})")
@@ -436,6 +483,35 @@ def teil_a(datei, P, rel, pins, tiles):
        f"Stil: {len(st['layers'])} Ebenen, ohne «landcover», lokale Namen")
     lic = c.get("/karte/web/LIZENZEN.txt", headers=H).get_data(as_text=True)
     ok("OpenStreetMap-Mitwirkende" in lic and "ODbL" in lic and "BSD-3" in lic and "Open Font License" in lic and "CC0" in lic, "LIZENZEN.txt: ODbL, BSD-3, OFL, CC0")
+    ok("swisstopo" in lic and "swissALTI3D" in lic and "nicht das offizielle" in lic.lower(), "LIZENZEN.txt: swisstopo (swissALTI3D), Wanderwege nicht offiziell")
+    sys.path.insert(0, os.path.join(HIER, "karten"))
+    import stil
+    stile = {n: c.get("/karte/web/" + n, headers=H).get_json() for n in ns["KQ_STYLES"]}
+    ok(all(stile.values()) and stil.pruefen(stile), "vier Stile im Web-Paket: Standard / Topo, hell / dunkel (stil.pruefen)")
+    ok(stile["style_topo_dark.json"]["sources"]["relief"]["encoding"] == "terrarium" and any(l["id"] == "topo_wege_23" for l in stile["style_topo.json"]["layers"]),
+       "Topo-Stil: Relief (terrarium), Höhenlinien, Wanderwege")
+    stt = ns["kq_state"]()
+    ok(stt["on"] and stt["full"] and stt["topo"] and set(stt["layers"]) == {"ch", "topo", "relief"} and stt["styles"] == list(ns["KQ_STYLES"]) and stt["def"] == "topo",
+       "Zustand: Karte + Topo an, drei Schichten, vier Stile, Vorgabe Topo")
+    LY = stt["layers"]
+    r = c.get(f"/karte/t/{LY['ch']['key']}/ch/14/{x_}/{y_}.mvt", headers=HA)
+    ok(r.status_code == 200 and gzip.decompress(r.data) == gzip.decompress(tiles[(14, x_, y_)]), "Basiskarte über die neue Adresse /karte/t/<sha12>/ch/…")
+    r = c.get(f"/karte/t/{LY['topo']['key']}/topo/14/{x_}/{y_}.mvt", headers=HA)
+    ok(r.status_code == 200 and r.headers.get("Content-Encoding") == "gzip" and set(mvt_layers(gzip.decompress(r.data))) == {"contour", "wege"},
+       "Topo-Kachel: Ebenen contour + wege")
+    _, rx, ry = _tile_of(SEON[0], SEON[1], 13)
+    r = c.get(f"/karte/t/{LY['relief']['key']}/relief/13/{rx}/{ry}.webp", headers=HA)
+    hm = None
+    if r.status_code == 200:
+        from PIL import Image
+        import numpy as np
+        import topo as TP
+        hm = TP.terrarium_zurueck(np.asarray(Image.open(io.BytesIO(r.data)).convert("RGB")))
+    ok(r.status_code == 200 and r.mimetype == "image/webp" and "Content-Encoding" not in r.headers and hm is not None and 440 < hm.min() and 590 < hm.max() < 610,
+       "Relief-Kachel: WebP, Höhen %s–%s m (terrarium)" % (None if hm is None else round(float(hm.min())), None if hm is None else round(float(hm.max()))))
+    ok(c.get(f"/karte/t/{LY['relief']['key']}/relief/13/1/1.webp", headers=H).status_code == 204, "fehlende Relief-Kachel: 204")
+    ok(c.get(f"/karte/t/000000000000/topo/14/{x_}/{y_}.mvt", headers=H).status_code == 404 and c.get(f"/karte/t/{LY['topo']['key']}/xx/14/{x_}/{y_}.mvt", headers=H).status_code == 404,
+       "falsche Prüfsumme / Schicht: 404")
 
     def such(q, h=H):
         r = c.get("/api/karte/suche?q=" + urllib.request.quote(q), headers=h)
@@ -469,6 +545,39 @@ def teil_a(datei, P, rel, pins, tiles):
     code, j = api({"action": "delete"})
     ok(code == 200 and not ns["kq_installed"]() and not os.path.exists(ns["kq_dir"]()), "Entfernen löscht alles")
     ok(such("Seon") == [] and c.get(f"/karte/t/{T}/14/{x_}/{y_}.mvt", headers=H).status_code == 404, "danach: keine Suche, keine Kachel")
+    # a device with the map of karten-1 (base map, place search, the old web package): the map stays on, «Topo-Karte ergänzen»
+    # loads only the new files, the old ones are linked into the new folder
+    kd = ns["kq_dir"]()
+    os.makedirs(os.path.join(kd, "web"))
+    shutil.copyfile(os.path.join(rel, pins["tiles"]["name"]), os.path.join(kd, "ch.pmtiles"))
+    with gzip.open(os.path.join(rel, pins["orte"]["name"])) as g_, open(os.path.join(kd, "orte.sqlite"), "wb") as o_:
+        shutil.copyfileobj(g_, o_)
+    with zipfile.ZipFile(os.path.join(rel, pins["web"]["name"])) as z:
+        for n in z.namelist():
+            if not n.startswith("style_") and n != "karte.json":
+                z.extract(n, os.path.join(kd, "web"))
+    json.dump({"tag": "karten-1"}, open(os.path.join(kd, "web", "karte.json"), "w"))
+    json.dump({"tag": "karten-1", "sha256": {"tiles": pins["tiles"]["sha256"], "orte": pins["orte"]["sha256"], "web": "1" * 64}}, open(os.path.join(kd, "karte.ok"), "w"))
+    ino = os.stat(os.path.join(kd, "ch.pmtiles")).st_ino
+    ns["KQ_RT"]["ok_t"] = 0
+    code, j = api()
+    neu = sum(pins[r_]["size"] for r_ in ("web", "topo", "relief"))
+    ok(j["on"] and not j["full"] and not j["topo"] and j["add"] and j["size"] == neu and j["styles"] == ["style.json"] and list(j["layers"]) == ["ch"],
+       f"karten-1 da: Karte an (Standard), «Topo-Karte ergänzen» lädt nur {neu / 1e3:.0f} KB (Web, Topo, Relief)")
+    ok(c.get(f"/karte/t/{T}/14/{x_}/{y_}.mvt", headers=H).status_code == 200 and such("Seon"), "karten-1 da: Kacheln und Suche wie bisher")
+    ok(c.get(f"/karte/t/{pins['topo']['sha256'][:12]}/topo/14/{x_}/{y_}.mvt", headers=H).status_code == 404, "karten-1 da: noch keine Topo-Kacheln")
+    h = c.get("/karte", headers=H).get_data(as_text=True)
+    ok('"topo": false' in h and '"on": true' in h, "/karte: Karte an, Topo noch nicht")
+    srv.hits.clear()
+    code, j = api({"action": "install"}); warten()
+    geholt = sorted({os.path.basename(h_[0]) for h_ in srv.hits})
+    ok(code == 200 and ns["kq_installed"]() and not DL["msg"] and geholt == sorted(pins[r_]["name"] for r_ in ("web", "topo", "relief")),
+       "ergänzt: nur %s geladen" % ", ".join(geholt))
+    ok(os.stat(os.path.join(kd, "ch.pmtiles")).st_ino == ino, "die Karte von karten-1 wurde verlinkt, nicht kopiert oder neu geladen")
+    code, j = api()
+    ok(j["full"] and j["topo"] and len(j["styles"]) == 4 and j["size"] == 0, "danach: Topo an, vier Stile, nichts mehr zu laden")
+    code, j = api({"action": "delete"})
+    ok(code == 200 and not os.path.exists(kd), "Entfernen löscht alles (auch nach dem Ergänzen)")
     shutil.rmtree(home, ignore_errors=True)
     return srv
 
@@ -481,9 +590,9 @@ def gepatcht(datei, tmp, pins, url):
         neu = '"%s": {"name": "%s", "size": %d, "sha256": "%s", "unpacked": %d}' % (r_, f["name"], f["size"], f["sha256"], f["unpacked"])
         src, n = re.subn(r'"%s": \{"name": "[^"]*", "size": \d+, "sha256": "[0-9a-f]*", "unpacked": \d+\}' % r_, neu, src)
         assert n == 1, r_
-    alt = '"https://github.com/DonElektro/MotionWatch/releases/download/" + KQ_TAG + "/"'
-    assert src.count(alt + "}") >= 1
-    src = src.replace(alt + "}", json.dumps(url) + "}; bio_free_need = lambda: 20 << 20   # test: little room on the test machine (the guard: part A)", 1)
+    alt = 'KQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"}'
+    assert src.count(alt) == 1
+    src = src.replace(alt, 'KQ_BASE = {"url": %s}; bio_free_need = lambda: 20 << 20   # test: little room on the test machine (the guard: part A)' % json.dumps(url), 1)
     ziel = os.path.join(tmp, os.path.basename(datei))
     open(ziel, "w", encoding="utf-8").write(src)
     for z in glob.glob(os.path.join(os.path.dirname(datei), "moveeye_daten_*.zip")):
@@ -504,7 +613,7 @@ def starte(datei, tmp, port, pw, extra=None):
     return p, cfg
 
 
-def teil_b(datei, P, rel, pins, bilder, echt=False):
+def teil_b(datei, P, rel, pins, bilder, echt=False, ausschnitt=""):
     from playwright.sync_api import sync_playwright
     sys.path.insert(0, HIER)
     from piper_test import Srv
@@ -515,8 +624,8 @@ def teil_b(datei, P, rel, pins, bilder, echt=False):
     srv = Srv()
     if not echt:
         for r_, f in pins.items():
-            srv.files["/karten-1/" + f["name"]] = open(os.path.join(rel, f["name"]), "rb").read()
-    d2 = gepatcht(datei, tmp, pins, srv.url + "karten-1/")
+            srv.files["/" + f["tag"] + "/" + f["name"]] = open(os.path.join(rel, f["name"]), "rb").read()
+    d2 = gepatcht(datei, tmp, pins, srv.url)
     rd = os.path.join(tmp, "recordings"); os.makedirs(rd)
     im = np.full((480, 640, 3), (60, 110, 60), np.uint8); cv2.circle(im, (320, 240), 90, (230, 230, 230), -1)
     cv2.imwrite(os.path.join(rd, "snapshot_20261110_120000.jpg"), im)
@@ -554,8 +663,9 @@ def teil_b(datei, P, rel, pins, bilder, echt=False):
                 z.extractall(os.path.join(kd, "web"))
             with gzip.open(os.path.join(rel, pins["orte"]["name"])) as g_, open(os.path.join(kd, "orte.sqlite"), "wb") as o_:
                 shutil.copyfileobj(g_, o_)
-            os.symlink(os.path.abspath(os.path.join(rel, pins["tiles"]["name"])), os.path.join(kd, "ch.pmtiles"))
-            json.dump({"tag": "karten-1", "sha256": {r_: f["sha256"] for r_, f in pins.items()}}, open(os.path.join(kd, "karte.ok"), "w"))
+            for r_, n_ in (("tiles", "ch.pmtiles"), ("topo", "topo.pmtiles"), ("relief", "relief.pmtiles")):
+                os.symlink(os.path.abspath(os.path.join(rel, pins[r_]["name"])), os.path.join(kd, n_))
+            json.dump({"tag": P.TAG, "sha256": {r_: f["sha256"] for r_, f in pins.items()}}, open(os.path.join(kd, "karte.ok"), "w"))
             time.sleep(2.5)
         with sync_playwright() as pw:
             br = pw.chromium.launch(args=ARGS)
@@ -651,6 +761,7 @@ def teil_b(datei, P, rel, pins, bilder, echt=False):
                     ok(pg.evaluate("() => KQMAP.getCenter().lng") > c0, "iphone: ein Finger verschiebt die Karte")
                     cdp.detach()
                 ok(not errs, f"{name}: keine JS-Fehler auf /karte" + (": " + " | ".join(errs[:3]) if errs else ""))
+                topo_im_browser(pg, base, name, bilder, mob, echt, ausschnitt=ausschnitt)
                 if not echt:
                     # Settings -> location: background, attribution, tap saves the coordinates, the install box
                     pg = ctx.new_page(); errs2 = []
@@ -725,6 +836,8 @@ def teil_b(datei, P, rel, pins, bilder, echt=False):
                     ok(re.match(r"^47\.347\d+, 8\.160\d+, Seon$", v) is not None, f"{name}: «Diesen Ort laden» schickt «{v}» an den Simulator")
                     ok(not errs4, f"{name}: keine JS-Fehler (Simulator)" + (": " + " | ".join(errs4[:3]) if errs4 else ""))
                 ctx.close()
+            if echt:
+                topo_bilder(br, base, PW, bilder, ausschnitt)
             ok(len(aussen) == n0 == 0, "keine Anfrage nach aussen" + (": " + ", ".join(sorted(set(aussen))[:5]) if aussen else ""))
             # a user without admin rights: map and search yes, no install / remove, no «Als Standort setzen»
             ctx = kontext(True, ("Anna", "anna-pass-1")); pg = ctx.new_page()
@@ -744,14 +857,91 @@ def teil_b(datei, P, rel, pins, bilder, echt=False):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def topo_im_browser(pg, base, name, bilder, mob, echt, ansicht=None, ausschnitt=""):
+    """the switch «Standard / Topo», light / dark like the page, the credit with swisstopo, the colours of the paths, own layers
+    (tours) survive a change of the style"""
+    la, lo, z = ansicht or (SEON[0], SEON[1], 13.6)
+    errs, kach = [], {}
+    pg.on("pageerror", lambda e: errs.append(str(e)[:200]))
+    pg.on("response", lambda r: kach.setdefault(r.url.split("/karte/t/")[1].split("/")[1], []).append(r.status) if "/karte/t/" in r.url and r.url.count("/") > 8 else None)
+    pg.goto(base + f"/karte?lat={la}&lon={lo}&z={z}")
+    fertig = "() => window.KQMAP && KQMAP.isStyleLoaded() && KQMAP.loaded() && KQMAP.areTilesLoaded()"
+    pg.wait_for_function(fertig, timeout=90000)
+    # the page as dark (an earlier context may have left another theme on the server: the header follows it)
+    pg.evaluate("() => { THEME = 'dark'; document.documentElement.classList.remove('sxnight'); applyTheme(); KQ.restyle(); }")
+    pg.wait_for_function(fertig, timeout=60000)
+    pg.evaluate("() => document.querySelectorAll('.maplibregl-marker').forEach(m => m.remove())")
+    pg.wait_for_timeout(700)
+    f0 = pg.evaluate("() => KQ.file()")
+    ok(f0 == "style_topo_dark.json", f"{name}: Vorgabe Topo, dunkel wie die Seite ({f0})")
+    ok(pg.locator(".kq-sw").is_visible() and pg.locator(".kq-sw button.on").inner_text() == "Topo", f"{name}: Schalter «Standard | Topo» sichtbar, Topo an")
+    at = pg.inner_text("#kq-at")
+    ok("OpenStreetMap-Mitwirkende" in at and "swisstopo" in at, f"{name}: Quellenangabe Topo «{at}»")
+    leg = pg.locator(".kq-leg")
+    ok(leg.is_visible() and "nicht das offizielle Netz" in leg.inner_text() and "Bergwanderweg" in leg.inner_text(), f"{name}: Farben der Wege + «nicht das offizielle Netz»")
+    ok((ausschnitt or (kach.get("topo") and kach.get("relief"))) and all(s_ in (200, 204) for v in kach.values() for s_ in v),
+       f"{name}: Kacheln {', '.join('%s %d' % (k, len(v)) for k, v in sorted(kach.items()))}")
+    ok(pg.evaluate("() => ['topo_relief', 'topo_hk', 'topo_wege_23'].every(i => KQMAP.getLayer(i))"), f"{name}: Relief, Höhenlinien, Wege auf der Karte")
+    pg.screenshot(path=os.path.join(bilder, f"topo_dunkel_{name}.png"))
+    pg.evaluate("""() => { KQMAP.addSource('probe', {type: 'geojson', data: {type: 'FeatureCollection', features: [{type: 'Feature', properties: {},
+        geometry: {type: 'LineString', coordinates: [[%f, %f], [%f, %f]]}}]}});
+        KQMAP.addLayer({id: 'probe-l', type: 'line', source: 'probe', paint: {'line-color': '#e0281e', 'line-width': 4}}); }""" % (lo - 0.01, la, lo + 0.01, la + 0.005))
+    pg.locator(".kq-sw button[data-v=std]").click()
+    pg.wait_for_function("() => KQ.file() === 'style_dark.json' && KQMAP.isStyleLoaded() && !KQMAP.getLayer('topo_hk')", timeout=30000)
+    pg.wait_for_function(fertig, timeout=60000); pg.wait_for_timeout(500)
+    ok(pg.evaluate("() => !!KQMAP.getLayer('probe-l') && !!KQMAP.getSource('probe')"), f"{name}: eigene Ebene (z. B. Tour) bleibt beim Wechsel")
+    ok("swisstopo" not in pg.inner_text("#kq-at") and not pg.locator(".kq-leg").is_visible(), f"{name}: Standard: Quellenangabe nur OpenStreetMap, keine Wege-Legende")
+    pg.screenshot(path=os.path.join(bilder, f"standard_dunkel_{name}.png"))
+    pg.evaluate("() => toggleTheme()")                     # dark -> light (the button of the header, also when it is folded away)
+    pg.wait_for_function("() => KQ.file() === 'style.json' && KQMAP.isStyleLoaded()", timeout=30000)
+    pg.locator(".kq-sw button[data-v=topo]").click()
+    pg.wait_for_function("() => KQ.file() === 'style_topo.json' && KQMAP.isStyleLoaded() && !!KQMAP.getLayer('topo_hk')", timeout=30000)
+    pg.wait_for_function(fertig, timeout=60000); pg.wait_for_timeout(700)
+    ok(pg.evaluate("() => KQMAP.getStyle().layers[0].paint['background-color']") in ("#f6f4ee",), f"{name}: hell: Topo hell")
+    pg.screenshot(path=os.path.join(bilder, f"topo_hell_{name}.png"))
+    ok(pg.evaluate("() => localStorage.getItem('mw-kq-style')") == "topo", f"{name}: Wahl im Browser gemerkt")
+    pg.evaluate("() => { toggleTheme(); toggleTheme(); }")  # light -> red -> dark (as before)
+    pg.wait_for_timeout(1500)                              # let a saved theme reach the server before the context closes
+    ok(not errs, f"{name}: keine JS-Fehler beim Wechsel" + (": " + " | ".join(errs[:3]) if errs else ""))
+
+
+ANSICHTEN = {"scheidegg_z14.5": (46.586, 7.961, 14.5), "grindelwald_z12.6": (46.605, 8.015, 12.6), "eiger_z13.5": (46.58, 8.00, 13.5),
+             "aletsch_z13": (46.47, 8.04, 13.0)}
+
+
+def topo_bilder(br, base, pw_, bilder, ausschnitt):
+    """screenshots at 390 px (deviceScaleFactor 2): Topo light / dark, Standard, at a few places in the mountains"""
+    ans = dict(ANSICHTEN)
+    if ausschnitt:
+        b_ = [float(v) for v in ausschnitt.split(",")]
+        ans = {k: v for k, v in ans.items() if b_[0] <= v[1] <= b_[2] and b_[1] <= v[0] <= b_[3]} or {"mitte_z13.5": ((b_[1] + b_[3]) / 2, (b_[0] + b_[2]) / 2, 13.5)}
+    for theme in ("dark", "light"):
+        for stilw in ("topo", "std"):
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, device_scale_factor=2,
+                                 http_credentials={"username": "admin", "password": pw_}, locale="de-CH")
+            ctx.add_init_script("try{localStorage.setItem('mw-lang','de');localStorage.setItem('mw-theme','%s');localStorage.setItem('mw-kq-style','%s');"
+                                "localStorage.setItem('mw-tours-seen','[\"live\",\"more\",\"guest\",\"settings\",\"rec\",\"history\",\"sim\",\"protect\",\"zones\",\"cams\",\"place\",\"tools\"]')}catch(e){}" % (theme, stilw))
+            pg = ctx.new_page()
+            for k, (la, lo, z) in ans.items():
+                pg.goto(base + f"/karte?lat={la}&lon={lo}&z={z}")
+                pg.wait_for_function("() => window.KQMAP && KQMAP.isStyleLoaded() && KQMAP.loaded() && KQMAP.areTilesLoaded()", timeout=120000)
+                pg.evaluate("() => { document.querySelectorAll('.maplibregl-marker').forEach(m => m.remove()); document.getElementById('kq-map').scrollIntoView(); }")
+                pg.wait_for_timeout(1200)
+                pg.screenshot(path=os.path.join(bilder, f"ansicht_{k}_{stilw}_{'dunkel' if theme == 'dark' else 'hell'}.png"))
+            ctx.close()
+    print("  Ansichten:", ", ".join(ans), flush=True)
+
+
 # ---- the real files --------------------------------------------------------------------------------------------------------------------
-def teil_echt(datei, aus, bilder, browser):
+def teil_echt(datei, aus, bilder, browser, ausschnitt=""):
     P = paket_modul()
     tx = open(os.path.join(aus, "pins.txt"), encoding="utf-8").read()
     pins = {}
-    for m in re.finditer(r"^PIN (\w+) name=(\S+) size=(\d+) sha256=([0-9a-f]{64}) unpacked=(\d+)", tx, re.M):
-        pins[m.group(1)] = {"name": m.group(2), "size": int(m.group(3)), "sha256": m.group(4), "unpacked": int(m.group(5))}
-    ok(set(pins) == {"tiles", "web", "orte"}, "pins.txt: drei Dateien")
+    for m in re.finditer(r"^PIN (\w+) name=(\S+) size=(\d+) sha256=([0-9a-f]{64}) unpacked=(\d+)(?: tag=(karten-\d+))?", tx, re.M):
+        pins[m.group(1)] = {"name": m.group(2), "size": int(m.group(3)), "sha256": m.group(4), "unpacked": int(m.group(5)), "tag": m.group(6) or P.TAG}
+    ok(set(pins) == set(P.ROLLEN), "pins.txt: fünf Dateien (%s)" % ", ".join(f"{f['name']} @{f['tag']}" for f in pins.values()))
+    ok(all(f["size"] < 2 ** 31 for f in pins.values()), "jede Datei unter 2 GiB (GitHub)")
+    ok(sum(f["size"] for f in pins.values()) < 2.2e9, "zusammen %.2f GB (Freigabe: etwa 1.7 GB, Grenze 5 GB)" % (sum(f["size"] for f in pins.values()) / 1e9))
     print("E) echte Dateien: " + ", ".join(f"{f['name']} {f['size'] / 1e6:.1f} MB" for f in pins.values()), flush=True)
     for r_, f in pins.items():
         p = os.path.join(aus, f["name"])
@@ -776,6 +966,34 @@ def teil_echt(datei, aus, bilder, browser):
         tt = pm.tile(*_tile_of(la, lo, 13))
         ok(tt is not None, f"Kachel z13 bei {nm}")
     pm.close()
+    # the topo files: contour lines + paths (vector), relief (WebP terrarium)
+    if ausschnitt:
+        b_ = [float(v) for v in ausschnitt.split(",")]
+        pt = ((b_[1] + b_[3]) / 2, (b_[0] + b_[2]) / 2, "Mitte des Ausschnitts")
+    else:
+        pt = (46.586, 7.961, "Kleine Scheidegg")
+    tp = ns["KqPMTiles"](os.path.join(aus, pins["topo"]["name"]))
+    ok(tp.ttype == 1 and tp.tcomp == 2 and tp.minz == 11 and tp.maxz == 14, f"Topo: z{tp.minz}–{tp.maxz}, gzip-MVT, Grenzen {[round(b, 2) for b in tp.bounds]}")
+    t14 = tp.tile(*_tile_of(pt[0], pt[1], 14))
+    lay = mvt_layers(gzip.decompress(t14)) if t14 else []
+    ok("contour" in lay, f"Topo z14 bei {pt[2]}: Ebenen {', '.join(lay)}")
+    ok("wege" in lay or ausschnitt == "", f"Topo z14 bei {pt[2]}: Wanderwege da")
+    tp.close()
+    rp = ns["KqPMTiles"](os.path.join(aus, pins["relief"]["name"]))
+    ok(rp.ttype in (2, 4) and rp.tcomp == 1 and rp.minz == 8 and rp.maxz in (12, 13), f"Relief: z{rp.minz}–{rp.maxz}, Kacheltyp {rp.ttype} (4 = WebP)")
+    rb = rp.tile(*_tile_of(pt[0], pt[1], rp.maxz))
+    hm = None
+    if rb:
+        from PIL import Image
+        import numpy as np
+        sys.path.insert(0, os.path.join(HIER, "karten"))
+        import topo as TP
+        im = Image.open(io.BytesIO(rb))
+        hm = TP.terrarium_zurueck(np.asarray(im.convert("RGB")))
+        ok(im.size == (256, 256) and 300 < float(hm.min()) and float(hm.max()) < 4700, f"Relief z{rp.maxz} bei {pt[2]}: {im.size[0]} px, Höhen {hm.min():.0f}–{hm.max():.0f} m")
+    else:
+        ok(False, f"Relief-Kachel bei {pt[2]}")
+    rp.close()
     import sqlite3
     sq = os.path.join(home, "orte.sqlite")
     with gzip.open(os.path.join(aus, pins["orte"]["name"])) as g_, open(sq, "wb") as o_:
@@ -784,7 +1002,7 @@ def teil_echt(datei, aus, bilder, browser):
     os.makedirs(os.path.join(home, "karte", "web"))
     shutil.move(sq, os.path.join(home, "karte", "orte.sqlite"))
     ns["DATA_DIR"] = home
-    ns["kq_installed"] = lambda: True
+    ns["kq_installed"] = ns["kq_on"] = lambda: True
     S = ns["kq_search"]
     t0 = time.time()
     s = S("Seon")
@@ -808,14 +1026,15 @@ def teil_echt(datei, aus, bilder, browser):
     ns["kq_close"]()
     shutil.rmtree(home, ignore_errors=True)
     if browser:
-        teil_b(datei, P, aus, pins, bilder, echt=True)
+        teil_b(datei, P, aus, pins, bilder, echt=True, ausschnitt=ausschnitt)
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--datei", default="")
-    ap.add_argument("--web", default="", help="karte-web-1.zip (sonst wird es mit paket.py --web gebaut)")
-    ap.add_argument("--echt", default="", help="Ausgabe von paket.py (die drei Dateien + pins.txt)")
+    ap.add_argument("--web", default="", help="karte-web-N.zip (sonst wird es mit paket.py --web gebaut)")
+    ap.add_argument("--echt", default="", help="Ausgabe von paket.py (die fünf Dateien + pins.txt)")
+    ap.add_argument("--ausschnitt", default="", help="mit --echt: die Topo-Dateien sind nur ein Ausschnitt (lon0,lat0,lon1,lat1)")
     ap.add_argument("--bilder", default="")
     ap.add_argument("--ohne-browser", action="store_true")
     a = ap.parse_args()
@@ -823,7 +1042,7 @@ def main():
     bilder = a.bilder or tempfile.mkdtemp(prefix="karten_bilder_")
     print(f"Offline-Karte · {os.path.basename(datei)}", flush=True)
     if a.echt:
-        teil_echt(datei, a.echt, bilder, not a.ohne_browser)
+        teil_echt(datei, a.echt, bilder, not a.ohne_browser, a.ausschnitt)
     else:
         tmp = tempfile.mkdtemp(prefix="mw_karten_")
         try:

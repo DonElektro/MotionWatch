@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """MoveEye: Test «🥾 Touren» auf der Offline-Karte (Teil 639zzx, werkzeuge/karten/hoehe.py).
 
-  python3 werkzeuge/touren_test.py [--web karte-web-1.zip] [--bilder ORDNER] [--ohne-browser] [--datei X.py]
+  python3 werkzeuge/touren_test.py [--web karte-web-2.zip] [--bilder ORDNER] [--ohne-browser] [--datei X.py]
   python3 werkzeuge/touren_test.py --hoehe-echt ORDNER     # das echte Höhenpaket (Ausgabe von hoehe.py): Kopf, bekannte Höhen, Abdeckung
   python3 werkzeuge/touren_test.py --tour DATEI.kml --bilder ORDNER   # eine eigene Tour im Browser (nur lokal; nichts davon kommt ins Repository)
 
@@ -473,9 +473,9 @@ def teil_b(datei, web, bilder, tour=""):
     hdata = open(hp, "rb").read()
     srv = Srv()
     for r_, f in pins.items():
-        srv.files["/karten-1/" + f["name"]] = open(os.path.join(rel, f["name"]), "rb").read()
+        srv.files["/" + f["tag"] + "/" + f["name"]] = open(os.path.join(rel, f["name"]), "rb").read()   # 639zzq Topo: each file at its release
     srv.files["/hoehen-1/hoehe-ch-1.bin"] = hdata
-    d2 = KA.gepatcht(datei, tmp, pins, srv.url + "karten-1/")
+    d2 = KA.gepatcht(datei, tmp, pins, srv.url)
     src = open(d2, encoding="utf-8").read()
     alt = '"https://github.com/DonElektro/MotionWatch/releases/download/" + KH_TAG + "/"'
     src, n1 = re.subn(r'^KH_FILE = \{"name": "[^"]*", "size": \d+, "sha256": "[0-9a-f]*"\}', 'KH_FILE = {"name": "hoehe-ch-1.bin", "size": %d, "sha256": "%s"}' % (len(hdata), hashlib.sha256(hdata).hexdigest()), src, flags=re.M)
