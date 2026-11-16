@@ -293,6 +293,32 @@ BKFRAG_TX = {
     "speech recognition failed": ("Spracherkennung fehlgeschlagen", "échec de la reconnaissance vocale", "riconoscimento vocale non riuscito",
                                   "la renconuschientscha da vusch n’ha betg funcziunà"),
     "nothing heard": ("nichts gehört", "rien entendu", "niente sentito", "nagut udì"),
+    "Chat freely": ("Plaudern", "Bavarder", "Chiacchierare", "Discurrer"),
+    "Ask Blinki anything - knowledge, ideas, small talk": ("Frag Blinki, was du willst – Wissen, Ideen, Plaudern", "Demande ce que tu veux à Blinki – savoir, idées, bavardage",
+                                                           "Chiedi a Blinki quello che vuoi – sapere, idee, chiacchiere", "Dumonda Blinki tut – savida, ideas, discurs"),
+    "Ask me anything …": ("Frag mich, was du willst …", "Demande-moi ce que tu veux …", "Chiedimi quello che vuoi …", "Dumonda mai tut quai che ti vuls …"),
+    "Why is the sky blue?": ("Warum ist der Himmel blau?", "Pourquoi le ciel est-il bleu ?", "Perché il cielo è blu?", "Pertge è il tschiel blau?"),
+    "A game for a rainy day?": ("Ein Spiel für einen Regentag?", "Un jeu pour un jour de pluie ?", "Un gioco per una giornata di pioggia?", "In gieu per in di da plievgia?"),
+    "How far away is the moon?": ("Wie weit ist der Mond weg?", "À quelle distance est la Lune ?", "Quanto è lontana la luna?", "Quant lontan è la glina?"),
+    "Tell me a joke": ("Erzähl mir einen Witz", "Raconte-moi une blague", "Raccontami una barzelletta", "Raquinta in spass"),
+    "Let's chat! Ask me anything - I keep your last questions in mind for a while. I do not know today's news, and I can be wrong.": (
+        "Lass uns plaudern! Frag mich, was du willst – deine letzten Fragen merke ich mir eine Weile. Die Nachrichten von heute kenne ich nicht, und ich kann mich irren.",
+        "Bavardons ! Demande-moi ce que tu veux – je garde tes dernières questions en tête un moment. Je ne connais pas les nouvelles du jour, et je peux me tromper.",
+        "Chiacchieriamo! Chiedimi quello che vuoi – ricordo per un po’ le tue ultime domande. Non conosco le notizie di oggi e posso sbagliare.",
+        "Discurrain! Dumonda mai tut – jau ma regord in temp da tias ultimas dumondas. Las novitads dad oz na enconusch jau betg, e jau poss m’enganar."),
+    "New conversation": ("Neues Gespräch", "Nouvelle conversation", "Nuova conversazione", "Nov discurs"),
+    "Blinki remembers the last %n questions, only in memory - gone after %m min without a question.": (
+        "Blinki merkt sich die letzten %n Fragen, nur im Speicher – nach %m Min. ohne Frage ist alles weg.",
+        "Blinki retient les %n dernières questions, seulement en mémoire – effacées après %m min sans question.",
+        "Blinki ricorda le ultime %n domande, solo in memoria – cancellate dopo %m min senza domande.",
+        "Blinki sa regorda da las ultimas %n dumondas, mo en la memoria – davent suenter %m min senza dumonda."),
+    "Small offline model - it can be wrong. The cloud gives better answers.": (
+        "Kleines Offline-Modell – es kann sich irren. Mit der Cloud sind die Antworten besser.",
+        "Petit modèle hors ligne – il peut se tromper. Le cloud donne de meilleures réponses.",
+        "Piccolo modello offline – può sbagliare. Con il cloud le risposte sono migliori.",
+        "Pitschen model offline – el po sa sbagliar. Il cloud dat meglras respostas."),
+    "At the device Blinki answers as": ("Am Gerät antwortet Blinki als", "Sur l’appareil, Blinki répond en mode", "Sul dispositivo Blinki risponde come",
+                                        "Sin l’apparat respunda Blinki sco"),
 }
 for _k, _v in BKFRAG_TX.items():
     DE.setdefault(_k, _v[0])
@@ -316,7 +342,7 @@ _HELP_BKFRAG = {
            '<li><b>Vorlesen:</b> 🔊 liest eine Antwort mit der Piper-Stimme im Browser vor, 📢 am Lautsprecher des Geräts (Recht «Gegensprechen»).</li>'
            '<li><b>Rechte:</b> Frag MoveEye dürfen alle angemeldeten Benutzer ausser Kindern; Fehlersuche, Modell und Einstellungen nur der Administrator. '
            'Blinki kann sich irren – im Zweifel gilt die Anleitung. Pi-Fenster: Mehr → «💬 Blinki fragen».</li>'
-           '<li><b>Mehr Arten:</b> <b>🔥 Lagerfeuer-Geschichten</b> (für Kinder oder Erwachsene, auf Wunsch an einem Ort deines Platzes; Kinder-Benutzer hören nur die Kinder-Fassung), <b>🦌 Naturführer</b> (erklärt die Tiere, die MoveEye in den letzten 7 Tagen gesehen hat) und <b>🎤 Quizmaster</b> (neue Fragen; geprüfte Fragen kommen mit «In die Spielecke» ins Quiz).</li><li><b>Cloud</b> (Administrator, Blinki einstellen): Format «OpenAI-kompatibel» oder «Anthropic Messages», Adresse, Modell und Schlüssel. Der Schlüssel wird nie mehr angezeigt, steht nie im Protokoll und im Diagnose-Paket nur als «***». Die Frage geht dann übers Internet an diesen Dienst; ein Kamerabild nur im Naturführer und nur mit deinem OK, jedes Mal. Ohne Netz antwortet Blinki offline, wenn das Modell da ist.</li>'
+           '<li><b>Mehr Arten:</b> <b>🔥 Lagerfeuer-Geschichten</b> (für Kinder oder Erwachsene, auf Wunsch an einem Ort deines Platzes; Kinder-Benutzer hören nur die Kinder-Fassung), <b>🦌 Naturführer</b> (erklärt die Tiere, die MoveEye in den letzten 7 Tagen gesehen hat) und <b>🎤 Quizmaster</b> (neue Fragen; geprüfte Fragen kommen mit «In die Spielecke» ins Quiz).</li><li><b>💬 Plaudern:</b> frag Blinki, was du willst – nicht nur zu MoveEye, getippt oder gesprochen. Kurze, freundliche Antworten, familientauglich (Kinder ab 10 lesen mit); keine Nachrichten von heute, keine Arzt-, Rechts- oder Geldberatung, nie eine Anleitung, Schutz, Alarm oder Kamera auszuschalten. Das kleine Offline-Modell kann sich irren – mit der Cloud sind die Antworten besser. Blinki merkt sich die letzten 4 Fragen nur im Speicher; nach 15 Minuten ohne Frage oder mit «🆕 Neues Gespräch» ist alles weg. Am Gerät wählt der Administrator, ob der Auslöser «Frag MoveEye» oder «Plaudern» fragt (ab Werk «Plaudern»).</li><li><b>Cloud</b> (Administrator, Blinki einstellen): Format «OpenAI-kompatibel» oder «Anthropic Messages», Adresse, Modell und Schlüssel. Der Schlüssel wird nie mehr angezeigt, steht nie im Protokoll und im Diagnose-Paket nur als «***». Die Frage geht dann übers Internet an diesen Dienst; ein Kamerabild nur im Naturführer und nur mit deinem OK, jedes Mal. Ohne Netz antwortet Blinki offline, wenn das Modell da ist.</li>'
            '<li><b>Sprechen:</b> 🎙 auf dem Handy gedrückt halten, sprechen, loslassen – die Antwort kommt als Text und Stimme (iPhone: nur über https://). Am Gerät hört Blinki nur nach einem Auslöser einen Satz lang zu: QR-Karte «💬 Blinki hört zu», und – nur wenn der Administrator es einschaltet, ab Werk aus – 2× klatschen (nur wenn 2× klatschen sonst nichts tut) oder die Taste «Alarm quittieren» lange drücken, wenn nichts zu quittieren ist. Nie während Alarm, Sirene, Morse-/Funk-Empfang, Radio oder Wecker. Spracherkennung offline mit whisper.cpp (Modell «tiny», 74 MB, feste Prüfsumme); Aufnahmen werden nie gespeichert.</li>'
            '</ul></section>\n'),
     "en": ('<section id="blinki" data-icon="💬"><h2>Ask Blinki</h2><ul>'
@@ -330,7 +356,7 @@ _HELP_BKFRAG = {
            '<li><b>Read aloud:</b> 🔊 reads an answer with the Piper voice in the browser, 📢 on the loudspeaker of the device (right «talk»).</li>'
            '<li><b>Rights:</b> every logged-in user except children may ask; troubleshooting, model and settings only the administrator. Blinki can be wrong – the manual counts. '
            'Pi window: More → «💬 Ask Blinki».</li>'
-           '<li><b>More modes:</b> <b>🔥 Campfire stories</b> (for children or adults, if you like at a place of your site; child users only hear the children’s version), <b>🦌 Nature guide</b> (explains the animals MoveEye saw in the last 7 days) and <b>🎤 Quizmaster</b> (new questions; checked ones go into the quiz with «Into the game corner»).</li><li><b>Cloud</b> (administrator, Blinki settings): format «OpenAI-compatible» or «Anthropic Messages», address, model and key. The key is never shown again, never in the log and only «***» in the diagnosis package. The question then goes over the internet to this service; a camera picture only in the nature guide and only with your OK, each time. Without network Blinki answers offline when the model is there.</li>'
+           '<li><b>More modes:</b> <b>🔥 Campfire stories</b> (for children or adults, if you like at a place of your site; child users only hear the children’s version), <b>🦌 Nature guide</b> (explains the animals MoveEye saw in the last 7 days) and <b>🎤 Quizmaster</b> (new questions; checked ones go into the quiz with «Into the game corner»).</li><li><b>💬 Chat freely:</b> ask Blinki anything – not only about MoveEye, typed or spoken. Short, friendly answers, family-friendly (children from 10 read along); no news of today, no medical, legal or financial advice, never instructions to switch the protection, the alarm or the camera off. The small offline model can be wrong – the cloud gives better answers. Blinki remembers the last 4 questions only in memory; after 15 minutes without a question or with «🆕 New conversation» everything is gone. At the device the administrator chooses whether the trigger asks «Ask MoveEye» or «Chat freely» (by default «Chat freely»).</li><li><b>Cloud</b> (administrator, Blinki settings): format «OpenAI-compatible» or «Anthropic Messages», address, model and key. The key is never shown again, never in the log and only «***» in the diagnosis package. The question then goes over the internet to this service; a camera picture only in the nature guide and only with your OK, each time. Without network Blinki answers offline when the model is there.</li>'
            '<li><b>Speaking:</b> hold 🎙 on the phone, speak, let go – the answer comes as text and voice (iPhone: only over https://). At the device Blinki only listens for one sentence after a trigger: the QR card «💬 Blinki listens», and – only when the administrator switches it on, off by default – clapping twice (only when it does nothing else) or a long press on «Acknowledge» when there is nothing to acknowledge. Never during an alarm, the siren, Morse / radio reception, the radio or the wake-up alarm. Recognition offline with whisper.cpp (model «tiny», 74 MB, fixed checksum); recordings are never stored.</li>'
            '</ul></section>\n'),
     "fr": ('<section id="blinki" data-icon="💬"><h2>Demander à Blinki</h2><ul>'
@@ -339,6 +365,7 @@ _HELP_BKFRAG = {
            '<li>Hors ligne : le modèle (Qwen 2.5, 1.5 B, Apache-2.0, env. 1 Go) est chargé une fois et vérifié par une somme de contrôle fixe ; le moteur llama.cpp est construit une fois. '
            'Sans modèle, Blinki montre les passages du mode d’emploi.</li>'
            '<li>La protection passe avant : en cas d’alarme, de mouvement suivi ou au-dessus de 80 °C, Blinki fait une pause.</li>'
+           '<li>💬 Bavarder : demande ce que tu veux, tapé ou parlé ; réponses courtes et adaptées aux familles, pas d’actualités ; le petit modèle hors ligne peut se tromper. Les 4 dernières questions restent seulement en mémoire (effacées après 15 min ou avec «Nouvelle conversation»).</li>'
            '<li>Aussi : 🔥 histoires au coin du feu, 🦌 guide nature, 🎤 maître du quiz ; cloud (OpenAI-compatible / Anthropic Messages, clé jamais affichée) ; 🎙 parler (iPhone : https://). Sur l’appareil, Blinki n’écoute qu’après un déclencheur (carte QR ; claquements et bouton désactivés d’origine), jamais pendant une alarme.</li></ul></section>\n'),
     "it": ('<section id="blinki" data-icon="💬"><h2>Chiedi a Blinki</h2><ul>'
            '<li>Altro → Panoramica → «💬 Chiedi a Blinki»: Blinki risponde alle domande sull’uso partendo da queste istruzioni; «Apri» porta al punto giusto. '
@@ -346,6 +373,7 @@ _HELP_BKFRAG = {
            '<li>Offline: il modello (Qwen 2.5, 1.5 B, Apache-2.0, circa 1 GB) viene caricato una volta e verificato con una checksum fissa; il motore llama.cpp viene costruito una volta. '
            'Senza modello Blinki mostra i passaggi delle istruzioni.</li>'
            '<li>La protezione ha la precedenza: con un allarme, un movimento seguito o sopra 80 °C Blinki si ferma.</li>'
+           '<li>💬 Chiacchierare: chiedi quello che vuoi, scritto o parlato; risposte brevi e adatte alle famiglie, niente notizie di oggi; il piccolo modello offline può sbagliare. Le ultime 4 domande restano solo in memoria (cancellate dopo 15 min o con «Nuova conversazione»).</li>'
            '<li>Inoltre: 🔥 storie attorno al fuoco, 🦌 guida natura, 🎤 quizmaster; cloud (OpenAI-compatibile / Anthropic Messages, chiave mai mostrata); 🎙 parlare (iPhone: https://). Sul dispositivo Blinki ascolta solo dopo un comando (scheda QR; battiti e pulsante spenti di fabbrica), mai durante un allarme.</li></ul></section>\n'),
     "rm": ('<section id="blinki" data-icon="💬"><h2>Dumandar Blinki</h2><ul>'
            '<li>Dapli → Survista → «💬 Dumandar Blinki»: Blinki respunda a dumondas davart il manaschi ord questa instrucziun; «Avrir» maina al dretg lieu. '
@@ -353,6 +381,7 @@ _HELP_BKFRAG = {
            '<li>Offline: il model (Qwen 2.5, 1.5 B, Apache-2.0, circa 1 GB) vegn chargià ina giada e controllà cun ina summa da controlla fixa; il motor llama.cpp vegn construì ina giada. '
            'Senza model mussa Blinki ils lieus da l’instrucziun.</li>'
            '<li>La protecziun ha la precedenza: tar in alarm, in moviment suandà u sur 80 °C fa Blinki pausa.</li>'
+           '<li>💬 Discurrer: dumonda tut quai che ti vuls, tippà u discurrì; respostas curtas e adattadas per famiglias, naginas novitads dad oz; il pitschen model offline po sa sbagliar. Las ultimas 4 dumondas restan mo en la memoria (davent suenter 15 min u cun «Nov discurs»).</li>'
            '<li>Ultra da quai: 🔥 istorgias al fieu, 🦌 guid da la natira, 🎤 quizmaster; cloud (OpenAI-cumpatibel / Anthropic Messages, la clav na vegn mai mussada); 🎙 discurrer (iPhone: https://). Sin l’apparat taidla Blinki mo suenter in signal (carta QR; batter las mauns e buttun da fabrica ora), mai durant in alarm.</li></ul></section>\n'),
 }
 
@@ -390,7 +419,12 @@ def bkfrag_selftest():
     assert all(BLINKI_FIX_DENY.search(a) for a in ("protect_off", "disarm", "schutz_aus", "alarm_off")), "never the protection off"
     assert blinki_piece({"choices": [{"delta": {"content": "Hi"}}]}) == "Hi" and blinki_piece({"type": "content_block_delta", "delta": {"text": "Yo"}}) == "Yo"
     assert all(DE.get(k) and all(TRX[L].get(k) for L in ("fr", "it", "rm")) for k in BKFRAG_TX), "texts in 5 languages"
-    return "pins, search, rights, fix only with OK, stream pieces, texts"
+    assert blinki_mode_ok("plaudern", "view") and not blinki_mode_ok("plaudern", "kid") and "plaudern" in BLINKI_EXTRA_MODES, "💬 Plaudern: rights"
+    for k_ in range(6):
+        blinki_chat_add("selftest", "q%d" % k_, "a")
+    assert [x[0] for x in blinki_chat_turns("selftest")] == ["q2", "q3", "q4", "q5"] and blinki_chat_forget("selftest") == 1 and not blinki_chat_turns("selftest"), "chat history"
+    assert all(x in BLINKI_CHAT_RULES for x in ("at most 8 sentences", "children from 10", "current events", "protection", "Health, law and money")), "chat rules"
+    return "pins, search, rights, fix only with OK, stream pieces, texts, chat"
 
 
 SELFTEST_EXTRA.append(("Blinki fragen: pins, search, rights (639zzzzk)", bkfrag_selftest))
