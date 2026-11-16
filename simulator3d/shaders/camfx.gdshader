@@ -5,7 +5,8 @@
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_test_disabled, depth_draw_never, cull_disabled, shadows_disabled;
 
-uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap;
+// Browser (WebGL 2): ohne Mipmaps - das Erzeugen der Mipmaps des Bildschirms bricht dort ab (schwarzes Bild); gelesen wird nur Stufe 0
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform sampler2D prev_tex : filter_linear;
 // 3D-4.27 Foto-Modus (fotomodus.gd): where the picture is not the photo, a simulated figure stands - fit it to the photo
 // (brightness, white balance, softness, noise like the photo). Off (foto_on 0) everywhere else.

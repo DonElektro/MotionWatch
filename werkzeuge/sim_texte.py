@@ -34,7 +34,7 @@ SCRIPTS = os.path.join(SIM, "scripts")
 OUT = os.path.join(SIM, "i18n", "texte.json")
 REPORT = os.path.join(SIM, "i18n", "abdeckung.txt")
 LANGS = ("en", "fr", "it", "rm")
-SKIP_FILES = {"neu_data.gd", "i18n.gd", "ui_gemeinsam.gd", "fehler_hilfe.gd"}   # ui_gemeinsam.gd: nur Prüf-Meldungen fürs Log (P1); fehler_hilfe.gd: Texte aus fehler_katalog.json (5 Sprachen)
+SKIP_FILES = {"neu_data.gd", "i18n.gd", "ui_gemeinsam.gd", "fehler_hilfe.gd", "web_demo.gd"}   # ui_gemeinsam.gd: nur Prüf-Meldungen fürs Log (P1); fehler_hilfe.gd: Texte aus fehler_katalog.json (5 Sprachen); web_demo.gd: eigene Tabelle TX (5 Sprachen)
 
 # short German words that appear as pieces of composed texts (an / aus …) - kept, marked «dynamisch»
 DE_SHORT = {"an", "aus", "ein", "und", "oder", "von", "bis", "mit", "ohne", "nein", "ja", "keine", "kein", "zu", "offen",
@@ -59,7 +59,7 @@ BEFORE_SKIP = re.compile(r"""(==|!=|\bin|\.get|\.has|\bhas|get_node|get_node_or_
     \.name\s*=|\bname\s*=|tkey\s*=|\bmatch|play|\.animation\s*=|OS\.\w+|ProjectSettings\.\w+|Engine\.\w+|ClassDB\.\w+|
     \.is_class|JSON\.\w+|\.queue_free|get_setting|set_setting|Marshalls\.\w+|\.substr|request|_send|_ws_send|http_get|_get|
     \.has_signal|add_user_signal|tween_property|tween_method|\.bind|\.rpc|\.rpc_id|create_timer|instantiate|
-    action_add_event|InputMap\.\w+|keys|\.lstrip|\.rstrip|\.strip_edges|\.format_ignore)\s*\(?\s*$""", re.X)
+    action_add_event|InputMap\.\w+|JavaScriptBridge\.\w+|keys|\.lstrip|\.rstrip|\.strip_edges|\.format_ignore)\s*\(?\s*$""", re.X)
 DEBUG_CALL = re.compile(r"\b(print|printerr|prints|printraw|print_debug|push_warning|push_error|assert|_log|log_line|_dbg|debug)\s*\(")
 HTML_RE = re.compile(r"</?[a-zA-Z][a-zA-Z0-9]*[\s>/]|function\s*\(|=>|document\.|\{\s*margin|;\s*\}|var\(--|getElementById")
 SHADER_RE = re.compile(r"\b(uniform|varying|shader_type|render_mode|vec[234]|void\s+\w+\()")

@@ -37,6 +37,7 @@ basis | 3  | -  | python3 werkzeuge/versionen.py --test > /dev/null && python3 w
 basis | 12 | -  | python3 werkzeuge/update_uebergang_test.py --nur uebergang | Update-Übergang: ältestes Gerät und Brücke holen die neu gebaute Version (HTTPS, ZIP fehlt, USB, falsche Signatur; Wegwerf-Schlüssel; Teil U: Ablage «url» mit Asset-Server und Umleitung)
 basis | 10 | -  | python3 werkzeuge/update_uebergang_test.py --nur stand $CI_STRENG | Veröffentlichter Stand: jede Datei in versions.json da, Prüfsumme, echte Signatur; alte Geräte holen die neueste Version
 basis | 10 | 1x | python3 werkzeuge/update_neustart_test.py --datei "$MW" --limit 90 | Update und Neustart: Webseite kommt nach dem Update wieder (Web-«Update» alt -> neu mit os.execv, Port kurz belegt durch ein übrig gebliebenes Kind, kein «systemctl stop» des eigenen Dienstes, Start-Wächter, geteilte Steckdose vor execv)
+basis | 2  | -  | python3 werkzeuge/sim_web_sandbox_test.py | Simulator im Browser: Godot-Web-Export läuft auch in einer Sandbox ohne allow-same-origin (sim_web_sandbox.py, ohne Export)
 
 # ---------------------------------------------------------------------------------------------------- kern (Web)
 kern | 15 | -  | python3 werkzeuge/web_rauchtest.py --browser | Web-Rauchtest (alle Adressen ohne / mit Anmeldung, jede Seite im Browser)
@@ -120,4 +121,5 @@ pidienst | 10 | - | echo "Teste $MW mit den Paketen von Bookworm" && python3 -m 
 pidienst | 15 | - | sudo -E env "PATH=$PATH" python3 werkzeuge/pi_dienst_test.py --ci | Pi-Dienst: quelle/ gebaut (ALT+1, ALT+2) als echter systemd-Dienst (Test-Benutzer mit linger) - kalter Start, kill -9 / stop, Stromausfall, Start-Wächter, ohne Zusatzdatei, Update mit belegtem Port (13.11.2026), zweites Update bei offenem Live-Bild, Neustart des Pi; System-Dienst (--install-service): alte Unit wird beim Update einmal umgestellt, Neustart bringt die neue Version, Start-Wächter, gleiche Unit wie neu eingerichtet
 
 # ---------------------------------------------------------------------------------------------------- hand (nicht im CI)
-# (zurzeit leer - Beispiel:  hand | - | - | python3 werkzeuge/xyz_test.py | braucht ein echtes Gerät am USB)
+# (Beispiel:  hand | - | - | python3 werkzeuge/xyz_test.py | braucht ein echtes Gerät am USB)
+hand | - | - | python3 werkzeuge/sim_web_handy_test.py --ordner EXPORT | braucht einen Godot-Web-Export des Simulators (Vorlagen «Web»), Chromium mit WebGL und einige Minuten: Handy hoch/quer, 3D zeichnet Körper, Handy-Modus, Schärfe

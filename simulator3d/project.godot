@@ -36,6 +36,9 @@ renderer/rendering_method.arm64="gl_compatibility"
 anti_aliasing/quality/msaa_3d=1
 textures/vram_compression/import_etc2_astc=true
 environment/defaults/default_clear_color=Color(0.05, 0.06, 0.08, 1)
+; Browser (Godot 4.3 Web ohne Threads): ab 1000 Dingen in der Welt sortiert Godot «mit Threads» aus - ohne Threads bleibt
+; dann gar nichts übrig (nur Himmel und Boden zu sehen, Besitzer 15.11.2026 iPhone). Im Browser darum nie mit Threads.
+limits/spatial_indexer/threaded_cull_minimum_instances.web=1000000
 
 [physics]
 

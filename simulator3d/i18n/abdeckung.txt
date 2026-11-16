@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7769 (Stellen: 10799)
-Übersetzt: en 7769, fr 7769, it 7769, rm 7769
-Unsicher markiert: 50
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 525 Stellen
+Texte gesamt: 7802 (Stellen: 10869)
+Übersetzt: en 7802, fr 7802, it 7802, rm 7802
+Unsicher markiert: 53
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 529 Stellen
 Nicht mehr im Code (noch in texte.json): 354
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 27835, schlüssel 21160, keine Wörter 13112, index 9983, technisch 3666, doc 2439, einheit 341, log 175, englisch 143, pfad 125, stringname 103, html 68, klasse 36, shader 6
+Übersprungen (Grund: Anzahl): kennung 28058, schlüssel 21231, keine Wörter 13227, index 10007, technisch 3671, doc 2456, einheit 341, log 194, englisch 144, pfad 125, stringname 103, html 68, klasse 40, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       533     4
@@ -30,7 +30,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   spieltest.gd              99    20
   bergtal_aussicht.gd       94     4
   testrun.gd                94     3
-  templates.gd              93     6
+  templates.gd              94     6
   toolbar.gd                89     3
   ferienpark.gd             89     0
   maggie_hund.gd            85     0
@@ -59,6 +59,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   entdecken.gd              57     0
   quick.gd                  55     2
   bergtal_erleben_b.gd      55     0
+  handy.gd                  53     2
   karte.gd                  49    10
   abenteuer_rucksack.gd     48     3
   explore.gd                48     4
@@ -72,8 +73,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   ferienpark_leben.gd       43     2
   geo.gd                    43     9
   protokoll.gd              42    16
+  update.gd                 42     4
   sicherung.gd              42     1
-  update.gd                 41     4
   pir.gd                    41     0
   statisten.gd              41     7
   werkstatt_einzel.gd       41     5
@@ -133,10 +134,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   thermsensor.gd            18     0
   gamelearn.gd              18     0
   grafik_hoch.gd            18     1
+  quality.gd                17     1
   kompakt_hof.gd            17     0
   szenenplus.gd             17     1
   gameturnier.gd            17     0
-  quality.gd                16     1
   devtool_kapitel.gd        16     0
   weitwinkel.gd             16     0
   main_start.gd             16     2
@@ -146,6 +147,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   home_editor.gd            14     3
   zimmertiere.gd            14     0
   abenteuer_inventar.gd     13     0
+  bedienleiste.gd           13     0
   life.gd                   13     0
   fahrzeuge.gd              13     1
   gamekihilfe.gd            13     4
@@ -161,7 +163,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamenacht.gd              11     0
   recorder.gd               11     2
   schnittstelle.gd          10     7
-  bedienleiste.gd           10     0
   headpad.gd                10     2
   fassaden.gd                9     0
   tier_modell.gd             9     1
@@ -177,6 +178,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   tiere.gd                   7     0
   gamexp.gd                  7     0
   nachtlauf.gd               7     0
+  fenster_waechter.gd        6     2
   kopf.gd                    6     2
   devtool_extra.gd           6     0
   devtool_schalter.gd        6     0
@@ -224,6 +226,7 @@ Unsicher:
   '🦆 Lockvogel: Wer will, wählt auf dem Handy «Lockvogel». Er lässt sich absichtlich sehen, lockt die Kamera weg und holt Teampunkte.': rm: Lockvogel
   "🦊 So geht's: Jeder wählt auf dem Handy einen Lockvogel und bewegt ihn vor der Kamera. Der Pfeil zeigt zur Kamera 📷. Die Dinge haben einen eigenen Knopf (Windstoss, Schwenken, Steigen, Fallen, Schwärmen).": rm: Lockvogel/Schwenken
   'Welche Lockvögel sind erlaubt?': rm: Lockvogel
+  'Kamera von MoveEye': rm automatisch
   'PS5-Controller per Bluetooth koppeln, Liste mit Akku, Trennen, Vergessen': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
   'Öffnet den Browser über dem Simulator. Der Simulator hält solange an. Zurück: Leiste oben oder Ctrl+Alt+Z': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
   'Herunterfahren, neu starten oder neu starten ins BIOS – mit Rückfrage': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
@@ -253,12 +256,14 @@ Unsicher:
   'Lockvogel erlaubt (lockt die Kamera weg, Teampunkte)': rm: Lockvogel
   '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n': technisch (HTTP) – nicht umhüllen
   '&vo=1': technisch – nicht umhüllen
+  'Browser (WebGL 2)': rm automatisch
   '%s: «%s» wird gesendet, steht aber nicht in schnittstelle.json': Entwickler-Meldung (Log) – nicht umhüllen
   '%s: «%s» steht in schnittstelle.json, wird aber nicht gesendet': Entwickler-Meldung (Log) – nicht umhüllen
   'control: MoveEye braucht «%s», main.gd _control kennt es nicht': Entwickler-Meldung (Log) – nicht umhüllen
   'Schnittstelle: OK (%d Antwort-Felder, %d Info-Felder, %d Aktionen wie in schnittstelle.json)': Log-Zeile, die Tests suchen («Schnittstelle: OK») – nicht umhüllen
   'Schnittstelle: ': Log-Zeile – nicht umhüllen
   '-Servo blockiert': dynamisch angehängt («Schwenk»+…) – Phase 2: ganze Vorlage
+  'Im Browser: die Seite bringt die neue Version': rm automatisch
   '!Download liess sich nicht starten.': «!» am Anfang ist ein Fehler-Merker (behalten)
   'MoveEye Sim · 3D %s': Gerätename an MoveEye (/info) – nicht umhüllen
   'Wide camera (NoIR Wide)': Kameraname an MoveEye (/info) – nicht umhüllen
@@ -373,7 +378,9 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   abenteuer_rucksack.gd:218  'keine Wunschliste: '
   abenteuer_rucksack.gd:424  ' und '
   abenteuer_rucksack.gd:480  'Fertig'
-  quality.gd:111  ' und '
+  quality.gd:113  ' und '
+  fenster_waechter.gd:14  'Fertig'
+  fenster_waechter.gd:14  'Zu'
   tour.gd:188  'Fertig'
   werkstatt_daten.gd:190  'Fertig'
   werkstatt_daten.gd:190  'Fertig'
@@ -467,16 +474,16 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   hp_kiosk.gd:157  'aus'
   hp_kiosk.gd:197  'aus'
   licht.gd:42  'aus'
-  main.gd:759  ' (Port %d)'
-  main.gd:1663  '  %.0f Mbit/s'
-  main.gd:2321  ' (von MoveEye)'
-  main.gd:2354  'Der Simulator ist belegt: '
-  main.gd:3192  'aus'
-  main.gd:3192  'ein'
-  main.gd:3269  'Sabotage-Test: '
-  main.gd:3269  'aus'
-  main.gd:3323  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3326  '\n🚨 Bewacht und weg: '
+  main.gd:769  ' (Port %d)'
+  main.gd:1673  '  %.0f Mbit/s'
+  main.gd:2331  ' (von MoveEye)'
+  main.gd:2364  'Der Simulator ist belegt: '
+  main.gd:3202  'aus'
+  main.gd:3202  'ein'
+  main.gd:3279  'Sabotage-Test: '
+  main.gd:3279  'aus'
+  main.gd:3333  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3336  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
@@ -660,6 +667,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   geo.gd:1585  ' (Fluss)'
   geo.gd:1681  'Ort: %s (%.5f, %.5f)\n%s\n'
   grafik_hoch.gd:310  'Hoch gewählt, aber aus: '
+  handy.gd:518  '● MoveEye (Demo) · '
+  handy.gd:522  '● MoveEye · '
   headpad.gd:117  '\nAuslöser: Bildmitte (Kreis) auf einen Spieler, dann der runde Knopf im Bild oder R2 am Controller.'
   headpad.gd:119  '\nController: '
   toolbar.gd:180  '\nController: '
@@ -708,9 +717,9 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   maggie_modell.gd:166  'BackLowerLeg.'
   tier_modell.gd:123  'Modell fehlt: '
   main_menues.gd:324  'Blinde Flecken: '
-  main_menues.gd:859  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main_start.gd:364  'Autostart: '
-  main_start.gd:375  'Autologon: '
+  main_menues.gd:860  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main_start.gd:395  'Autostart: '
+  main_start.gd:406  'Autologon: '
   main_steuerung.gd:454  'Dein Platz: '
   mwpc.gd:22  'Aus'
   mwpc.gd:75  'MoveEye hat sich beendet. Protokoll: '
@@ -773,19 +782,19 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   simint.gd:507  '-Servo blockiert'
   surprise.gd:113  'Überraschung: '
   szenenplus.gd:768  'Spiel zur Szene: '
-  templates.gd:225  'Lizenz: '
-  templates.gd:296  'Datei nicht lesbar: '
-  templates.gd:300  'Kann nicht speichern: '
-  templates.gd:308  'Datei nicht lesbar: '
-  templates.gd:317  'Umwandeln ging nicht: '
-  templates.gd:322  'Datei enthält kein 3D-Modell: '
+  templates.gd:264  'Lizenz: '
+  templates.gd:336  'Datei nicht lesbar: '
+  templates.gd:340  'Kann nicht speichern: '
+  templates.gd:348  'Datei nicht lesbar: '
+  templates.gd:357  'Umwandeln ging nicht: '
+  templates.gd:362  'Datei enthält kein 3D-Modell: '
   zwilling.gd:104  'Bild nicht lesbar: '
   zwilling.gd:114  'Kann nicht speichern: '
   zwilling.gd:180  'Foto fehlt: '
   testrun.gd:775  ' (nur Wärmebild)'
   testrun.gd:900  ' (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).'
   testrun.gd:951  'FALSCH: '
-  update.gd:112  '\n\n(Im Godot-Editor wird nicht aktualisiert.)'
-  update.gd:116  '\n\nDer Simulator startet nach dem Update neu. Läuft MoveEye auf diesem PC, danach bitte wieder starten.'
-  update.gd:128  '\n\nWird in %d s automatisch installiert, danach startet der Simulator neu.'
-  update.gd:313  'Update hat nicht geklappt: '
+  update.gd:115  '\n\n(Im Godot-Editor wird nicht aktualisiert.)'
+  update.gd:119  '\n\nDer Simulator startet nach dem Update neu. Läuft MoveEye auf diesem PC, danach bitte wieder starten.'
+  update.gd:131  '\n\nWird in %d s automatisch installiert, danach startet der Simulator neu.'
+  update.gd:316  'Update hat nicht geklappt: '
