@@ -167,6 +167,20 @@ jobs:
           [ "$(frei_mb "$RUNNER_TEMP")" -ge 2000 ] || fehler "Weniger als 2 GB frei auf dem HP - kein Test (Platz für Dauerrechnen bleibt)"
           # eigene venv nur für den HP-Testweg (Pakete wie die Web-Jobs im CI, Liste vom Stand main), Chromium daneben
           H=$(sha256sum werkzeug/werkzeuge/ci_pakete.txt | cut -c1-16)
+          # bereit = onnxruntime und playwright lassen sich laden und Chromium ist da (sonst werden die Browser- / Bild-Tests rot)
+          bereit() { [ -x "$C/venv/bin/python3" ] && PLAYWRIGHT_BROWSERS_PATH="$C/ms-playwright" timeout 60 "$C/venv/bin/python3" -c "
+          import onnxruntime
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p: p.chromium.launch().close()" > /dev/null 2>&1; }
+          if [ "$(cat "$C/fertig" 2>/dev/null)" = "$H" ] && ! bereit; then
+            echo "::warning::Test-Umgebung unvollständig (onnxruntime / Chromium) - wird nachgezogen"
+            "$C/venv/bin/python3" -m pip install -q --no-cache-dir -r werkzeug/werkzeuge/ci_pakete.txt || \
+              grep -vE '^\s*(#|$)' werkzeug/werkzeuge/ci_pakete.txt | while read -r p; do
+                "$C/venv/bin/python3" -m pip install -q --no-cache-dir "$p" || echo "::warning::Paket $p fehlt auf dem HP"; done
+            PLAYWRIGHT_BROWSERS_PATH="$C/ms-playwright" "$C/venv/bin/python3" -m playwright install chromium \
+              || echo "::warning::Chromium nicht installiert - Browser-Tests werden rot"
+            bereit || rm -f "$C/fertig"                    # beim nächsten Lauf nochmals versuchen
+          fi
           if [ "$(cat "$C/fertig" 2>/dev/null)" != "$H" ] || [ ! -x "$C/venv/bin/python3" ]; then
             [ "$(frei_mb "$C")" -ge 4000 ] || fehler "Weniger als 4 GB frei - die Test-Umgebung (etwa 1 GB) wird nicht angelegt"
             rm -rf "$C/venv" "$C/ms-playwright" "$C/fertig"
@@ -179,7 +193,7 @@ jobs:
             fi
             PLAYWRIGHT_BROWSERS_PATH="$C/ms-playwright" "$C/venv/bin/python3" -m playwright install chromium \
               || echo "::warning::Chromium nicht installiert - Browser-Tests werden rot"
-            echo "$H" > "$C/fertig"
+            if bereit; then echo "$H" > "$C/fertig"; else echo "::warning::Test-Umgebung unvollständig - beim nächsten Lauf nochmals"; fi
           fi
           echo "$C/venv/bin" >> "$GITHUB_PATH"           # «python3» in werkzeuge/ci_tests.txt = this venv
           { echo "VENV=$C/venv"; echo "PLAYWRIGHT_BROWSERS_PATH=$C/ms-playwright"
