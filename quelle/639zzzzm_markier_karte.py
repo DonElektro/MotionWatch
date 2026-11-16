@@ -38,7 +38,25 @@
 # Versprochen wird nur das: A4 folgt bis etwa 10 m, merkt sicher bis etwa 6 m, bei gutem Licht oft weiter; A5 etwa 0,7 × so weit.
 # Werkzeuge: werkzeuge/markier_karte/ (Messung, synthetische Sequenz, Probe gegen den Simulator); Test werkzeuge/markier_karte_test.py.
 # ----------------------------------------------------------------------------
-MK_IDS = tuple(range(40, 50))
+# Der Programmtext dieses Teils steht in EINEM Literal (Koordinator 16.11.2026: Hauptdatei klein, wie 639zzzzk / 639zzzzo):
+# werkzeuge/bauen.py legt es in die Zusatz-ZIP, beim Start läuft es hier an seinem Platz (zd_exec, Zeilennummern wie in dieser
+# Datei). Ohne ZIP gibt es die Markier-Karte nicht - sie gehört nicht zu Start, Schutz, Alarm, Update oder Reparatur (sie
+# umhüllt nur kopf_claims / kopf_track_blocked / teach_list / teach_edit / qrk_seen / walktest_draw / smalltv_routes; ohne
+# sie laufen diese wie vorher). Die ZIP ist über ZD_SHA256 (Teil 012) mit signiert.
+if "zd_exec" not in globals():
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+MK_PY = r'''MK_IDS = tuple(range(40, 50))
 MK_SIZES = {"a4": (210, 297, 180, 42), "a5": (148, 210, 128, 34)}     # paper w, h, marker side, QR side (mm)
 MK_RANGE = {"a4": (10, 6, 4), "a5": (7, 4, 3)}                         # m: follow by day, mark reliably, dusk (Sim, see the head)
 MK_GAP_MIN, MK_GAP_MAX = 0.6, 3.0
@@ -919,3 +937,5 @@ def mk_selftest():
 
 
 SELFTEST_EXTRA.append(("Marker card «📍 Markier-Karte» (639zzzzm)", mk_selftest))
+'''
+zd_exec(MK_PY and "\n" * 58 + MK_PY, "639zzzzm_markier_karte.py")   # MK_PY starts on line 59

@@ -75,11 +75,35 @@ def ohne_aruco(cv2mod):
 
 
 # ---------------------------------------------------------------------------------------------------------------------- A
+def statisch(datei):
+    """the part runs from ONE literal MK_PY in the data zip (zd_exec): the main file only keeps the small stub"""
+    import ast
+    q = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "quelle", "639zzzzm_markier_karte.py")
+    src = open(q, encoding="utf-8").read()
+    t = ast.parse(src)
+    lit = [n for n in t.body if isinstance(n, ast.Assign) and getattr(n.targets[0], "id", "") == "MK_PY"]
+    top = [type(n).__name__ for n in t.body]
+    code = lit[0].value.value if lit else ""
+    ok(len(lit) == 1 and top == ["If", "Assign", "Expr"] and "'''" not in code and len(code) > 40000,
+       "Quelle: ein Literal MK_PY, darum nur zd_exec-Helfer und Aufruf")
+    try:
+        compile("\n" * (lit[0].lineno - 1) + code, "639zzzzm_markier_karte.py", "exec")
+        good = True
+    except SyntaxError as e:
+        good = False
+        print("   ", e)
+    ok(good, "MK_PY lässt sich übersetzen (mit den Zeilennummern des Teils)")
+    built = open(datei, encoding="utf-8").read()
+    ok("MK_PY = _zd('639zzzzm_markier_karte/MK_PY', \"\")" in built and "def mk_tick" not in built and "def mk_selftest" not in built,
+       "Hauptdatei: MK_PY kommt aus der ZIP (geprüft über ZD_SHA256), kein Code der Markier-Karte in der Hauptdatei")
+
+
 def teil_a(datei):
     import cv2
     home = tempfile.mkdtemp(prefix="mw_mk_a_")
     try:
         ns = lade(datei, home)
+        ok(ns["ZD"]["ok"] and callable(ns.get("mk_tick")), "Teil läuft aus der ZIP (zd_exec)")
         det = ns["mk_detector"]()
         print(f"A) im eigenen Prozess (OpenCV {cv2.__version__}, ArUco: {det.api or det.why})", flush=True)
         r = ns["mk_selftest"]()
@@ -303,6 +327,7 @@ def main():
     ap.add_argument("--bilder", default="")
     a = ap.parse_args()
     datei = os.path.abspath(a.datei or neueste())
+    statisch(datei)
     teil_a(datei)
     if a.py46:
         print("A) noch einmal mit " + a.py46, flush=True)

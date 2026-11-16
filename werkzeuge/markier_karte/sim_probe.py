@@ -2,7 +2,7 @@
 """«Markier-Karte» against a running MoveEye Sim (prop markierkarte.gd): this script plays MoveEye - it reads the head
 camera (/cam/0/snapshot.jpg), finds the marker, steers the head over POST /state (servo pan_deg / tilt_deg, like part 290)
 and marks points when the card is turned away. A person carries the A4 card from 3 m to ~14 m and turns it there (beyond the
-promised range: expected NO point and no false point), walks to ~7 m and ~5.4 m and marks there (promised: up to ~6 m, both must
+promised range: a correct point is allowed, a wrong one or a second one fails), walks to ~7 m and ~5.4 m and marks there (promised: up to ~6 m, both must
 give a point within 2.5°). Usage: sim_probe.py http://127.0.0.1:PORT [--shots DIR]"""
 import json, math, os, sys, time, urllib.request
 import numpy as np
@@ -145,12 +145,17 @@ def main():
         t_ = tr[k_]
         rows.append(dict(m, stop=k_, true=t_, dpan=round(m["pan"] - t_["pan"], 2), dtilt=round(m["tilt"] - t_["tilt"], 2),
                          ddist_pct=round(100 * (m["dist"] / t_["dist"] - 1), 1)))
-    good = lambda r: abs(r["dpan"]) < 2.5 and abs(r["dtilt"]) < 2.5
-    # stop 0 = ~14 m (beyond range): no point; stops 1 and 2 (~7 m, ~5.4 m, promised): exactly one good point each; no other point
-    checks = {"far_no_point": len(tr) == 3 and not [r for r in rows if r["stop"] == 0],
+    good = lambda r: abs(r["dpan"]) < 2.5 and abs(r["dtilt"]) < 2.5 and abs(r["ddist_pct"]) < 15.0
+    per_stop = [len([r for r in rows if r["stop"] == k]) for k in range(len(tr))]
+    # stop 0 = ~14 m, beyond the promised range: a CORRECT point there is fine (coordinator 16.11.2026), a wrong one is not.
+    # stops 1 and 2 (~7 m, ~5.4 m, promised): exactly one good point each. Every point must be in the right place
+    # (2.5° pan / tilt, 15 % distance) and no stop may get two points.
+    checks = {"three_stops": len(tr) == 3,
+              "far_no_wrong_point": all(good(r) for r in rows if r["stop"] == 0),
               "mid_7m_point": len([r for r in rows if r["stop"] == 1 and good(r)]) == 1,
               "near_5m_point": len([r for r in rows if r["stop"] == 2 and good(r)]) == 1,
-              "no_false_point": len(rows) == len([r for r in rows if r["stop"] in (1, 2) and good(r)])}
+              "no_false_point": all(good(r) for r in rows),
+              "no_duplicate": all(c <= 1 for c in per_stop)}
     ctl({"action": "markierkarte", "do": "off"})
     res = {"cam": [W, H, HF], "frames": n, "fps_sim": round(n / max(t, 1), 1), "tempo": tempo, "seen_pct": round(100 * nseen / max(n, 1), 1),
            "centre_err_deg_median": round(float(np.median(err)), 2) if err else None,
