@@ -465,7 +465,7 @@ def teil_b(datei, web, bilder):
               window.tzCard({id: id, name: 'Rundweg Seon.gpx', folder: ''}, it, tx, th);
               const a = tx.querySelector('a.eo-bdg');
               const opened = window.tzOpen({id: id, name: 'Rundweg Seon.gpx', dl: true}, {});
-              const notGeo = window.tzOpen({id: id, name: 'x.jpg'}, {});
+              const notGeo = window.tzOpen({id: id, name: 'x.jpg', kind: 'image', ext: 'jpg', dl: true}, {});   // like 639zzc (kind set): 639zzzzv keeps pictures for the preview
               return {other, href: a && a.getAttribute('href'), th: th.textContent, opened, notGeo, sheet: !!document.getElementById('eo-sheet')}; }""", g1)
             ok(r["other"] == 1 and r["href"] == "/karte?orte=" + g1 and r["th"] == "🗺️" and r["opened"] is True and r["notGeo"] is False and r["sheet"],
                f"Rucksack: tzCard verkettet (der andere Haken läuft mit), Abzeichen → /karte?orte=…, tzOpen zeigt das Blatt nur für Dateien mit Orten {r}")
