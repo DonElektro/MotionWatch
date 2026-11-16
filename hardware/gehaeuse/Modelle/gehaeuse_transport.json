@@ -1,6 +1,6 @@
 {
  "_hinweis": "Erzeugt von werkzeuge/gehaeuse_bauen.py --sim – nicht von Hand ändern. Transportsicherung (bau.json «transport»): eigenes Modell, Koordinaten wie gehaeuse.glb; MoveEye BAU3D_GLB_TRANSPORT.",
- "quelle_sha256": "8aae24cd5b862d5e1842a63636025c817b5ff58e58636d3b5e4e18a8f676e02f",
+ "quelle_sha256": "2f4e0602060dce296189155274aa348adafb43add64fa803600a3b2106d959ab",
  "glb_sha256": "cad9511f3e3269fa99243bb2523b766e88334a820b89372dd55f1fcd43dc14c8",
  "teile": [
   {
