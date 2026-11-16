@@ -15,30 +15,37 @@
  },
  "pi": {
   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.70.0",
-  "size": 37996552,
-  "sha256": "968626cb36812e53946f27bac3375c92bf1f9a533804779669a17cf0677d0b2c",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.70.0/MoveEyeSim3D_Pi.zip"
+  "ver": "3.71.0",
+  "size": 38100578,
+  "sha256": "a252341c09e97be7ebc0f254481340fe6a8de46b6c2519810577d8116bb9cce3",
+  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.71.0/MoveEyeSim3D_Pi.zip"
  },
  "anhang": {
-  "ver": "3.70.0",
-  "version": "3D-5.70.0",
-  "name": "MoveEye Sim 3.70.0",
-  "notes": "Leiste «Darstellung», Feineinstellungen erst ab drei, Hilfe «?» im Kreis; HP räumt Test-Reste vor dem Kiosk",
+  "ver": "3.71.0",
+  "version": "3D-5.71.0",
+  "name": "MoveEye Sim 3.71.0",
+  "notes": "Handy-Modus im Browser (hoch und quer), Web-Paket in Teilen, Verbindung zur MoveEye-Demo, Markier-Karte",
   "mw_min": "3.55.0",
   "win": {
    "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
-   "ver": "3.70.0",
-   "size": 54463597,
-   "sha256": "928242bfac422062b2c4ea65efbb27423b768a5ffb7220e35917c77fcd85a40b",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.70.0/MotionWatch3D_Simulator.zip"
+   "ver": "3.71.0",
+   "size": 54562072,
+   "sha256": "aef64ba501d142a8e59c2090d1deeb065d8f38d8f81b04933f9275630bc56e11",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.71.0/MotionWatch3D_Simulator.zip"
   },
   "linux": {
    "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
-   "ver": "3.70.0",
-   "size": 48515500,
-   "sha256": "e241223293bbda224a3436a2efa5390df95fda9a6d9cdb0705e08d3bfa96cafe",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.70.0/MoveEyeSim3D_Linux.zip"
+   "ver": "3.71.0",
+   "size": 48612387,
+   "sha256": "fc43772683af10d6abb0a2fc410f3e4c4eeccac63220f1ae9d6b432a19a0a2d9",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.71.0/MoveEyeSim3D_Linux.zip"
+  },
+  "web": {
+   "file": "simulator3d/anhang/sim-web.zip",
+   "ver": "3.71.0",
+   "size": 68278692,
+   "sha256": "14ee4cafd1b18f681f341f171f874cd6f1f0394d667fb953227e7495289cdea5",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.71.0/sim-web.zip"
   }
  }
 }
