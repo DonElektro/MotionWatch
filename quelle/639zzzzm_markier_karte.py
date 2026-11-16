@@ -520,10 +520,13 @@ _kopf_claims_mk = kopf_claims
 # wraps: kopf_claims
 def kopf_claims():                                           # + 639zzzzm: the marker card holds the head
     c = _kopf_claims_mk()
-    if mk_active():
-        if "alarm" in c and not (KOPF["alarm"] or KOPF["tamper"] or KOPF["back"]):
-            c.discard("alarm")                               # only «following a person» (paused, decision 3)
-        c.add("marker")
+    try:                                                     # a fault here never takes the head from the old rules
+        if mk_active():
+            if "alarm" in c and not (KOPF["alarm"] or KOPF["tamper"] or KOPF["back"]):
+                c.discard("alarm")                           # only «following a person» (paused, decision 3)
+            c.add("marker")
+    except Exception:
+        return _kopf_claims_mk()
     return c
 
 
@@ -532,7 +535,12 @@ _kopf_track_blocked_mk = kopf_track_blocked
 
 # wraps: kopf_track_blocked
 def kopf_track_blocked():                                    # + 639zzzzm: no following of the person with the card
-    return mk_active() or _kopf_track_blocked_mk()
+    try:
+        if mk_active():
+            return True
+    except Exception:
+        pass
+    return _kopf_track_blocked_mk()
 
 
 # ---- taught points: the distance travels with the name ------------------------------------------------------------------------------
@@ -542,10 +550,13 @@ _teach_list_mk = teach_list
 # wraps: teach_list
 def teach_list(lang=None):                                   # + 639zzzzm: «📍 ~7.4 m» for points of a marker card
     out = _teach_list_mk(lang)
-    dd = CFG.get("mk_dist") or {}
-    for p in out:
-        if p["name"] and p["name"] in dd:
-            p["mk_m"] = dd[p["name"]]
+    try:
+        dd = CFG.get("mk_dist") or {}
+        for p in out:
+            if p["name"] and p["name"] in dd:
+                p["mk_m"] = dd[p["name"]]
+    except Exception:
+        pass
     return out
 
 
@@ -554,8 +565,19 @@ _teach_edit_mk = teach_edit
 
 # wraps: teach_edit
 def teach_edit(op, i, value=None, who="web"):                # + 639zzzzm: rename / delete carry the distance
-    old = wp_name(WAYPOINTS[int(i)]) if str(i).lstrip("-").isdigit() and 0 <= int(i) < len(WAYPOINTS) else ""
+    try:
+        old = wp_name(WAYPOINTS[int(i)]) if str(i).lstrip("-").isdigit() and 0 <= int(i) < len(WAYPOINTS) else ""
+    except Exception:
+        old = ""
     r = _teach_edit_mk(op, i, value, who)
+    try:
+        _mk_teach_move(r, op, i, old)
+    except Exception:
+        pass
+    return r
+
+
+def _mk_teach_move(r, op, i, old):
     dd = CFG.get("mk_dist") or {}
     if r[0] and old in dd:
         names = {wp_name(w) for w in WAYPOINTS}
@@ -565,7 +587,6 @@ def teach_edit(op, i, value=None, who="web"):                # + 639zzzzm: renam
             if new:
                 dd[new] = m
             save_settings()
-    return r
 
 
 SERVO_PAGE = SERVO_PAGE.replace('(p.home ? " · 🏠 " + t("home") : "")', '(p.home ? " · 🏠 " + t("home") : "") + (p.mk_m ? " · 📍 ~" + p.mk_m + " m" : "")', 1)
@@ -576,12 +597,15 @@ _qrk_seen_mk = qrk_seen
 
 # wraps: qrk_seen
 def qrk_seen(cam, text, pts, img, src=None, now=None):        # + 639zzzzm: «MK…» = the QR code of an own marker card
-    c = mk_qr_check(text)
-    if c is not None:
-        if MK["ses"] and MK["ses"]["card"]["id"] == c["id"]:
-            MK["ses"]["qr"] = True
-        qrk_show(cam, pts, "ok", "📍 " + c["name"], src)
-        return "marker"
+    try:
+        c = mk_qr_check(text)
+        if c is not None:
+            if MK["ses"] and MK["ses"]["card"]["id"] == c["id"]:
+                MK["ses"]["qr"] = True
+            qrk_show(cam, pts, "ok", "📍 " + c["name"], src)
+            return "marker"
+    except Exception:
+        pass
     return _qrk_seen_mk(cam, text, pts, img, src, now)
 
 
@@ -592,8 +616,11 @@ _walktest_draw_mk = walktest_draw
 # wraps: walktest_draw
 def walktest_draw(frame):                                    # + 639zzzzm: start the marker thread
     _walktest_draw_mk(frame)
-    if MK["thread"] is None:
-        mk_start()
+    try:
+        if MK["thread"] is None:
+            mk_start()
+    except Exception:
+        pass
 
 
 # ---- the web: workshop section, API, print page -------------------------------------------------------------------------------------
@@ -604,7 +631,10 @@ _smalltv_routes_mk = smalltv_routes
 def smalltv_routes(app, reply, body):                        # + 639zzzzm: /api/mk, card pictures, print page (administrator)
     _smalltv_routes_mk(app, reply, body)
     from flask import Response, request, g
-    mk_start()
+    try:
+        mk_start()
+    except Exception as e:
+        log_event("sys", f"Marker card: {type(e).__name__}"[:80])
 
     def nope():
         if not qrk_admin_ok(g):
