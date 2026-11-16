@@ -1,0 +1,3 @@
+godot werkzeuge/sim_fenster_handy_test.gd
+python3 werkzeuge/web_moveeye_test.py
+python3 werkzeuge/sim_texte.py --pruefen
