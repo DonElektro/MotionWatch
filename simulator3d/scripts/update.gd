@@ -63,6 +63,9 @@ func check(current: String, url := "") -> void:
 	if OS.get_name() == "Linux" and Engine.get_architecture_name().begins_with("arm"):
 		result = "Auf dem Pi bringt MoveEye die neue Version"   # 3D-3.43: the package here is for Windows
 		return
+	if OS.has_feature("web"):
+		result = "Im Browser: die Seite bringt die neue Version"   # Browser-Demo: kein Herunterladen, kein Neustart
+		return
 	_remove_old()
 	if not quiet:
 		_build_ui()

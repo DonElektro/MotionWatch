@@ -7,6 +7,14 @@ im Paket jede Datei genau einen Punkt, und die Verweise darauf sind angepasst:
   index.audio.worklet.js      → index_audio_worklet.js       (index.js: `${loadPath}.audio.worklet.js` → `${loadPath}_audio_worklet.js`)
   index.icon.png              → index_icon.png               (index.html: href)
   index.apple-touch-icon.png  → index_apple-touch-icon.png   (index.html: href)
+Dazu (offizielles Paket, wie die vom Besitzer geprüfte Fassung «sim_fix3»):
+  - Sandbox-Patch aus sim_web_sandbox.py (index.js / index.html): läuft auch, wenn der Webspace die Seite in einer Sandbox
+    ohne allow-same-origin ausliefert (iPhone: «Service Worker is disabled …»).
+  - index.pck zusätzlich in Teilen zu 12 MB: index_pck1.wasm … index_pckN.wasm. Der Webspace liefert grosse Dateien in der
+    Sandbox ohne CORS aus; die Teile lädt index.html selbst (fetch, Fortschritt), setzt sie zusammen und gibt sie Godot als
+    index.pck (preloadFile + --main-pack). index.pck bleibt im Paket, weil MoveEye bis 4.6.0 (Teil 639zzzh, HP_SIM_NAMES)
+    es als Pflichtdatei verlangt; die Seite lädt es nicht mehr.
+  - Cache-Buster: index.html lädt «index.js?v=<Prüfsumme>», damit ein Handy nach dem Update nicht das alte index.js nimmt.
 Die Dateien liegen ohne Ordner in der ZIP (so lädt MoveEye sie nach Sim/ hoch). Nur der Release-Workflow «Sim-Pakete»
 (.github/workflows/sim_pi.yml, Paket «web») und die Tests rufen das auf; MoveEye nimmt das Paket nur mit der signierten
 Prüfsumme aus versions.json «sim.anhang.web» an (Teil 300).
@@ -14,10 +22,14 @@ Prüfsumme aus versions.json «sim.anhang.web» an (Teil 300).
   python3 werkzeuge/sim_web_paket.py packen EXPORTORDNER ZIEL.zip
   python3 werkzeuge/sim_web_paket.py pruefen PAKET.zip            # Exit 0 = gut (auch für versionen.paket_inhalt «web»)
 """
+import hashlib
 import os
 import re
 import sys
 import zipfile
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import sim_web_sandbox  # noqa: E402
 
 PFLICHT = ("index.html", "index.js", "index.wasm", "index.pck", "index_audio_worklet.js")
 NAME_RE = re.compile(r"^[A-Za-z0-9_-]{1,60}\.[a-z0-9]{1,12}$")        # genau ein Punkt: der Webspace ändert nichts mehr
@@ -25,6 +37,40 @@ MAX_DATEI = 100 * 1024 * 1024                                         # Grenze d
 MAX_SUMME = 400 * 1024 * 1024                                         # Platz: 500 MB, dazu Startseite / Funk
 WORKLET_ALT = "`${loadPath}.audio.worklet.js`"
 WORKLET_NEU = "`${loadPath}_audio_worklet.js`"
+TEIL = 12000000                                                       # Bytes pro Teil von index.pck
+TEIL_NAME = "index_pck%d.wasm"
+TEIL_RE = re.compile(r"^index_pck(\d{1,2})\.wasm$")
+JS_TAG_RE = re.compile(r'<script src="index\.js(?:\?v=[0-9a-z]+)?"></script>')
+LADER_MARKE = "/*mw-teile*/"
+LADER_ALT_RE = re.compile(r"\t\tsetStatusMode\('progress'\);\n\t\tengine\.startGame\(\{.*?\}, displayFailureNotice\);\n", re.S)
+LADER_NEU = r"""		setStatusMode('progress');
+		/*mw-teile*/ // Webspace des Besitzers: grosse Dateien kommen in der Sandbox ohne CORS - das Pack liegt in Teilen zu 12 MB
+		const PARTS = %(parts)s;
+		const TOTAL = %(total)d;
+		let done = 0;
+		const prog = (n) => { done += n; statusProgress.value = done; statusProgress.max = TOTAL; };
+		const getPart = (f) => fetch(f).then((r) => {
+			if (!r.ok) { throw new Error(f + ': ' + r.status); }
+			if (!r.body || !r.body.getReader) { return r.arrayBuffer().then((b) => { prog(b.byteLength); return new Uint8Array(b); }); }
+			const rd = r.body.getReader(); const chunks = []; let len = 0;
+			const pump = () => rd.read().then(({ done: d, value }) => {
+				if (d) { const out = new Uint8Array(len); let o = 0; for (const c of chunks) { out.set(c, o); o += c.length; } return out; }
+				chunks.push(value); len += value.length; prog(value.length); return pump();
+			});
+			return pump();
+		});
+		const packP = PARTS.reduce((p, f) => p.then((acc) => getPart(f).then((u) => { acc.push(u); return acc; })), Promise.resolve([])).then((list) => {
+			let len = 0; for (const u of list) { len += u.length; }
+			if (len !== %(pck)d) { throw new Error('index.pck: ' + len + ' statt %(pck)d Bytes'); }
+			const all = new Uint8Array(len); let o = 0; for (const u of list) { all.set(u, o); o += u.length; }
+			return all.buffer;
+		});
+		engine.config.update({ 'onProgress': function (current, total) { if (current > 0) { statusProgress.value = done + current; statusProgress.max = TOTAL; } } });
+		engine.config.args = ['--main-pack', 'index.pck'].concat(engine.config.args);
+		Promise.all([engine.init('index'), packP.then((buf) => engine.preloadFile(buf, 'index.pck'))])
+			.then(() => engine.start())
+			.then(() => { setStatusMode('hidden'); }, displayFailureNotice);
+"""
 
 
 def neuer_name(n):
@@ -42,11 +88,27 @@ def packen(ordner, ziel):
     js = daten.get("index.js", b"").decode("utf-8")
     if js.count(WORKLET_ALT) != 1:
         raise SystemExit("index.js: %s nicht genau einmal (andere Godot-Fassung?)" % WORKLET_ALT)
-    daten["index.js"] = js.replace(WORKLET_ALT, WORKLET_NEU).encode("utf-8")
-    html = daten.get("index.html", b"").decode("utf-8")
+    js = sim_web_sandbox.patch_js(js.replace(WORKLET_ALT, WORKLET_NEU))
+    daten["index.js"] = js.encode("utf-8")
+    html = sim_web_sandbox.patch_html(daten.get("index.html", b"").decode("utf-8"))
     for alt, neu in umben.items():
         if alt != neu and alt.endswith(".png"):
             html = html.replace('"%s"' % alt, '"%s"' % neu)
+    pck = daten.get("index.pck", b"")
+    if not pck:
+        raise SystemExit("index.pck fehlt")
+    teile = [TEIL_NAME % (i + 1) for i in range((len(pck) + TEIL - 1) // TEIL)]
+    for i, n in enumerate(teile):
+        daten[n] = pck[i * TEIL:(i + 1) * TEIL]
+    if len(JS_TAG_RE.findall(html)) != 1:
+        raise SystemExit("index.html: <script src=\"index.js\"> nicht genau einmal")
+    v = hashlib.sha256(daten["index.js"]).hexdigest()[:12]
+    html = JS_TAG_RE.sub('<script src="index.js?v=%s"></script>' % v, html)
+    if len(LADER_ALT_RE.findall(html)) != 1:
+        raise SystemExit("index.html: engine.startGame nicht genau einmal (andere Godot-Fassung?)")
+    lader = LADER_NEU % {"parts": "[" + ", ".join("'%s'" % n for n in teile) + "]",
+                         "total": len(pck) + len(daten.get("index.wasm", b"")), "pck": len(pck)}
+    html = LADER_ALT_RE.sub(lambda m: lader, html)
     daten["index.html"] = html.encode("utf-8")
     tmp = ziel + ".neu"
     with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
@@ -92,6 +154,19 @@ def pruefen(pfad):
                     f.append("index.html verweist auf einen Namen mit zwei Punkten")
                 if z.read("index.wasm")[:4] != b"\0asm":
                     f.append("index.wasm ist kein WebAssembly")
+                if sim_web_sandbox.MARKE_JS not in js or sim_web_sandbox.MARKE_HTML not in html:
+                    f.append("Sandbox-Patch fehlt")
+                m = re.search(r'<script src="index\.js\?v=([0-9a-f]{12})"></script>', html)
+                if not m or m.group(1) != hashlib.sha256(z.read("index.js")).hexdigest()[:12]:
+                    f.append("index.html lädt index.js nicht mit ?v=<Prüfsumme>")
+                nr = sorted(int(TEIL_RE.match(n).group(1)) for n in namen if TEIL_RE.match(n))
+                pck = z.read("index.pck")
+                teile = [TEIL_NAME % i for i in nr]
+                if not nr or nr != list(range(1, len(nr) + 1)) or b"".join(z.read(n) for n in teile) != pck \
+                        or any(z.getinfo(n).file_size > TEIL for n in teile):
+                    f.append("index_pck1..N.wasm fehlen oder ergeben nicht index.pck")
+                elif LADER_MARKE not in html or "const PARTS = [%s];" % ", ".join("'%s'" % n for n in teile) not in html:
+                    f.append("index.html lädt die Teile index_pck1..N.wasm nicht")
     except (OSError, zipfile.BadZipFile, KeyError) as e:
         f.append("keine gültige ZIP (%s)" % e.__class__.__name__)
     return f

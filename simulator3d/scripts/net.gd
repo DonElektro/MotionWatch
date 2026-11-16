@@ -51,10 +51,15 @@ func start(p: int) -> void:
 
 
 func stop() -> void:
-	"""sending off: no more pictures, no more "here is a simulator" messages - MoveEye does not see the simulator"""
+	"""sending off: no more pictures, no more "here is a simulator" messages - MoveEye does not see the simulator
+	(the channels of the demo MoveEye in the browser, web_moveeye.gd, stay: they are not this server)"""
+	var keep: Array = []
 	for c in clients:
-		c["peer"].disconnect_from_host()
-	clients = []
+		if c["peer"] is StreamPeerTCP:
+			c["peer"].disconnect_from_host()
+		else:
+			keep.append(c)
+	clients = keep
 	server.stop()
 	listening = false
 	error_text = ""
@@ -70,27 +75,35 @@ func _send_beacon() -> void:
 		beacon.put_packet(msg)
 
 
+func add_peer(peer) -> void:
+	"""a connection from MoveEye: a StreamPeerTCP of the server, or (browser, web_moveeye.gd) one channel of the WebSocket
+	to the demo MoveEye at the host - same methods (poll, get_status, get_available_bytes, get_data, put_partial_data,
+	disconnect_from_host, get_connected_host)"""
+	clients.append({"peer": peer, "buf": PackedByteArray(), "out": PackedByteArray(), "stream_cam": -1, "fps": 0.0,
+			"last_sent": 0.0, "last_frame": -1, "close_after": false, "t0": Time.get_ticks_msec()})
+
+
 func _process(_dt: float) -> void:
-	if not listening:
+	if not listening and clients.is_empty():
 		return
-	var tnow := Time.get_ticks_msec() / 1000.0
-	if tnow - beacon_t > 2.0:
-		beacon_t = tnow
-		_send_beacon()
-	while server.is_connection_available():
-		var peer: StreamPeerTCP = server.take_connection()
-		peer.set_no_delay(true)
-		clients.append({"peer": peer, "buf": PackedByteArray(), "out": PackedByteArray(), "stream_cam": -1, "fps": 0.0,
-				"last_sent": 0.0, "last_frame": -1, "close_after": false, "t0": Time.get_ticks_msec()})
+	if listening:
+		var tnow := Time.get_ticks_msec() / 1000.0
+		if tnow - beacon_t > 2.0:
+			beacon_t = tnow
+			_send_beacon()
+		while server.is_connection_available():
+			var tp: StreamPeerTCP = server.take_connection()
+			tp.set_no_delay(true)
+			add_peer(tp)
 	var keep: Array = []
 	for c in clients:
-		var peer: StreamPeerTCP = c["peer"]
+		var peer = c["peer"]                     # StreamPeerTCP or a channel of web_moveeye.gd (duck typed)
 		peer.poll()
-		var st := peer.get_status()
+		var st: int = peer.get_status()
 		if st != StreamPeerTCP.STATUS_CONNECTED and st != StreamPeerTCP.STATUS_CONNECTING:
 			continue
 		if c["stream_cam"] < 0:
-			var n := peer.get_available_bytes()
+			var n: int = peer.get_available_bytes()
 			if n > 0:
 				var r: Array = peer.get_data(n)
 				if r[0] == OK:

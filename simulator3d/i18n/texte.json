@@ -1087,6 +1087,12 @@
   "it": "%d immagini - ora da valutare.",
   "rm": "%d maletgs - ussa evaluar."
  },
+ "%d Besucher da": {
+  "en": "%d visitors here",
+  "fr": "%d visiteurs présents",
+  "it": "%d visitatori presenti",
+  "rm": "%d visitaders qua"
+ },
  "%d bewegen sich": {
   "en": "%d are moving",
   "fr": "%d bougent",
@@ -3811,6 +3817,12 @@
   "it": "Akustikschaum",
   "rm": "Akustikschaum"
  },
+ "ALARM": {
+  "en": "ALARM",
+  "fr": "ALARME",
+  "it": "ALLARME",
+  "rm": "ALARM"
+ },
  "Alarm": {
   "en": "Alarm",
   "fr": "Alarme",
@@ -3840,6 +3852,12 @@
   "fr": "Alarme de MoveEye",
   "it": "Allarme di MoveEye",
   "rm": "Alarm da MoveEye"
+ },
+ "ALARM – Person erkannt": {
+  "en": "ALARM – person detected",
+  "fr": "ALARME – personne détectée",
+  "it": "ALLARME – persona rilevata",
+  "rm": "ALARM – persuna reconuschida"
  },
  "Alarm-Rückblick": {
   "en": "Alarm review",
@@ -3918,6 +3936,12 @@
   "fr": "Toutes les scènes intégrées. Clic = charger la scène (les visiteurs viennent d’eux-mêmes). Vert = nouveau.",
   "it": "Tutte le scene integrate. Clic = caricare la scena (i visitatori arrivano da soli). Verde = nuovo.",
   "rm": "Tut las scenas integradas. Clic = chargiar la scena (visitaders vegnan da sasez). Verd = nov."
+ },
+ "Alle Einstellungen": {
+  "en": "All settings",
+  "fr": "Tous les réglages",
+  "it": "Tutte le impostazioni",
+  "rm": "Tut ils parameters"
  },
  "alle Einstellungen und Regler, die Fensteranordnung, die Controller-Rollen, der Zuhause-Bausatz, der Echt-Abgleich": {
   "en": "all settings and sliders, the window layout, the controller roles, the home kit, the real-world match",
@@ -4152,6 +4176,12 @@
   "fr": "Seul",
   "it": "Da solo",
   "rm": "Sulet"
+ },
+ "Alles": {
+  "en": "Everything",
+  "fr": "Tout",
+  "it": "Tutto",
+  "rm": "Tut"
  },
  "Alles ausräumen": {
   "en": "Empty everything",
@@ -6064,6 +6094,12 @@
   "it": "Autologon: ",
   "rm": "Autologon: "
  },
+ "Automatisch": {
+  "en": "Automatic",
+  "fr": "Automatique",
+  "it": "Automatico",
+  "rm": "Automatic"
+ },
  "automatisch (Dämmerung, teils Zeitschaltung)": {
   "en": "automatic (dusk, some with a timer)",
   "fr": "automatique (crépuscule, en partie avec minuterie)",
@@ -7138,6 +7174,12 @@
   "it": "Visita dal cancello del giardino (Giardino)",
   "rm": "Visita vegn tras la porta dal curtin (Curtin)"
  },
+ "Besuch schicken": {
+  "en": "Send a visitor",
+  "fr": "Envoyer un visiteur",
+  "it": "Inviare un visitatore",
+  "rm": "Trametter ina visita"
+ },
  "Besuch setzt sich auf die Bank (Lustiger Platz)": {
   "en": "Visitor sits down on the bench (Funny place)",
   "fr": "Un visiteur s’assied sur le banc (Lieu amusant)",
@@ -7990,6 +8032,13 @@
   "it": "Browser",
   "rm": "Navigatur"
  },
+ "Browser (WebGL 2)": {
+  "en": "Browser (WebGL 2)",
+  "fr": "Navigateur (WebGL 2)",
+  "it": "Browser (WebGL 2)",
+  "rm": "Navigatur (WebGL 2)",
+  "?": "rm automatisch"
+ },
  "Browser liess sich nicht starten: ": {
   "en": "Browser could not be started: ",
   "fr": "Le navigateur n’a pas pu démarrer : ",
@@ -8319,6 +8368,12 @@
   "fr": "Chäschessi",
   "it": "Chäschessi",
   "rm": "Chäschessi"
+ },
+ "Close": {
+  "en": "Close",
+  "fr": "Fermer",
+  "it": "Chiudi",
+  "rm": "Serrar"
  },
  "Code (6 Ziffern)": {
   "en": "Code (6 digits)",
@@ -8687,6 +8742,12 @@
   "it": "Dentro c'è una seconda pagina del libro dell'ospizio:",
   "rm": "Lien è ina segunda pagina dal cudesch da l'ospizi:"
  },
+ "Darstellung": {
+  "en": "Display",
+  "fr": "Affichage",
+  "it": "Visualizzazione",
+  "rm": "Preschentaziun"
+ },
  "Darum sah ihn MoveEyes Kamera nicht: dunkler Mantel, dichter Nebel, kein Licht. Das Wärmebild schon. Die Spuren sind von ihm, und den Rucksack hat er aus dem Bach geholt.": {
   "en": "That is why MoveEye's camera did not see him: dark coat, thick fog, no light. The thermal camera did. The tracks are his, and he pulled the backpack out of the stream.",
   "fr": "Voilà pourquoi la caméra de MoveEye ne l'a pas vu : manteau sombre, brouillard épais, aucune lumière. L'image thermique, si. Les traces sont les siennes, et il a repêché le sac à dos dans le ruisseau.",
@@ -8704,6 +8765,12 @@
   "fr": "La vallée manque – l’histoire a besoin de la scène Bergtal.",
   "it": "Manca la valle – la storia ha bisogno della scena Bergtal.",
   "rm": "La val manca – l’istorgia dovra la scena Bergtal."
+ },
+ "Das Bild dieses Simulators geht an das Demo-MoveEye auf dieser Homepage.": {
+  "en": "The picture of this simulator goes to the demo MoveEye on this homepage.",
+  "fr": "L’image de ce simulateur est envoyée au MoveEye de démo de ce site.",
+  "it": "L’immagine di questo simulatore va al MoveEye demo su questa homepage.",
+  "rm": "Il maletg da quest simulatur va al MoveEye da demo sin questa pagina d’internet."
  },
  "Das bleibt:": {
   "en": "These stay:",
@@ -8752,6 +8819,12 @@
   "fr": "Le caquelon !",
   "it": "Il set da fonduta!",
   "rm": "Il set da fondue!"
+ },
+ "das ganze Bedienfeld (Einfach / Experte)": {
+  "en": "the whole control panel (Simple / Expert)",
+  "fr": "tout le panneau de commande (Simple / Expert)",
+  "it": "tutto il pannello di comando (Semplice / Esperto)",
+  "rm": "l'entir panel da commando (Simpel / Expert)"
  },
  "Das geht an diesem PC nicht.": {
   "en": "That does not work on this PC.",
@@ -9574,6 +9647,42 @@
   "fr": "Découvertes de démo au camping",
   "it": "Scoperte demo nel campeggio",
   "rm": "Scuvertas da demo sin il plaz da campadi"
+ },
+ "Demo-MoveEye": {
+  "en": "Demo MoveEye",
+  "fr": "MoveEye de démo",
+  "it": "MoveEye demo",
+  "rm": "MoveEye da demo"
+ },
+ "Demo-MoveEye: aus": {
+  "en": "Demo MoveEye: off",
+  "fr": "MoveEye de démo : désactivé",
+  "it": "MoveEye demo: spento",
+  "rm": "MoveEye da demo: deactivà"
+ },
+ "Demo-MoveEye: ein anderes Fenster ist verbunden": {
+  "en": "Demo MoveEye: another window is connected",
+  "fr": "MoveEye de démo : une autre fenêtre est connectée",
+  "it": "MoveEye demo: è collegata un’altra finestra",
+  "rm": "MoveEye da demo: ina autra fanestra è colliada"
+ },
+ "Demo-MoveEye: nicht erreichbar": {
+  "en": "Demo MoveEye: not reachable",
+  "fr": "MoveEye de démo : inaccessible",
+  "it": "MoveEye demo: non raggiungibile",
+  "rm": "MoveEye da demo: betg cuntanschibel"
+ },
+ "Demo-MoveEye: verbinde …": {
+  "en": "Demo MoveEye: connecting …",
+  "fr": "MoveEye de démo : connexion …",
+  "it": "MoveEye demo: collegamento …",
+  "rm": "MoveEye da demo: collia …"
+ },
+ "Demo-MoveEye: verbunden": {
+  "en": "Demo MoveEye: connected",
+  "fr": "MoveEye de démo : connecté",
+  "it": "MoveEye demo: collegato",
+  "rm": "MoveEye da demo: collià"
  },
  "Den alten Holzsteg im Riedmoos flicken (Ersatzteil, 15 Min.) - dann trockene Füsse": {
   "en": "Repair the old wooden footbridge in the Riedmoos (spare part, 15 min) - then dry feet",
@@ -11565,6 +11674,12 @@
   "fr": "La station aval du téléphérique de matériel",
   "it": "La stazione a valle della teleferica",
   "rm": "La staziun giusut da la funicula da material"
+ },
+ "Die Tasten gehen wie die echten Tasten am Gerät an MoveEye.": {
+  "en": "The buttons work like the real buttons on the device and go to MoveEye.",
+  "fr": "Les touches fonctionnent comme les vraies touches de l'appareil et vont à MoveEye.",
+  "it": "I tasti funzionano come i veri tasti del dispositivo e vanno a MoveEye.",
+  "rm": "Ils buttuns funcziunan sco ils buttuns vers da l'apparat e van a MoveEye."
  },
  "Die Tiere": {
   "en": "The animals",
@@ -16147,6 +16262,12 @@
   "it": "Scene pronte",
   "rm": "Scenas finidas"
  },
+ "Fertige Szenen, ganze Orte, Bausätze, eigene Datei": {
+  "en": "Ready scenes, whole places, kits, own file",
+  "fr": "Scènes prêtes, lieux entiers, kits, fichier personnel",
+  "it": "Scene pronte, luoghi interi, kit, file proprio",
+  "rm": "Scenas prontas, lieus entirs, kits, atgna datoteca"
+ },
  "feste Punkte (mit der Maus gesetzt)": {
   "en": "fixed points (set with the mouse)",
   "fr": "points fixes (placés à la souris)",
@@ -17983,6 +18104,12 @@
   "fr": "APPAREIL",
   "it": "DISPOSITIVO",
   "rm": "APPARAT"
+ },
+ "Gerät": {
+  "en": "Device",
+  "fr": "Appareil",
+  "it": "Dispositivo",
+  "rm": "Apparat"
  },
  "Gerät & Hilfe": {
   "en": "Device & help",
@@ -21389,6 +21516,13 @@
   "it": "Aprire http://<IP del Pi>:5000/ nel browser (Wi-Fi proprio del Pi: http://10.42.0.1:5000/) e impostare subito una password. Il codice QR qui sotto porta a questa pagina.",
   "rm": "Avrir http://<IP dal Pi>:5000/ en il navigatur (WLAN agen dal Pi: http://10.42.0.1:5000/) e metter immediatamain in pled-clav. Il code QR sutvart maina sin questa pagina."
  },
+ "Im Browser: die Seite bringt die neue Version": {
+  "en": "In the browser: the page brings the new version",
+  "fr": "Dans le navigateur : la page apporte la nouvelle version",
+  "it": "Nel browser: la pagina porta la nuova versione",
+  "rm": "En il navigatur: la pagina porta la nova versiun",
+  "?": "rm automatisch"
+ },
  "Im Bunker beim Pass soll es nachts ein Büro für Murmeltiere geben. Ich glaube kein Wort.": {
   "en": "They say there's an office for marmots in the bunker by the pass at night. I don't believe a word.",
   "fr": "Il paraît que dans le bunker près du col, il y a la nuit un bureau pour marmottes. Je n'en crois pas un mot.",
@@ -23028,6 +23162,13 @@
   "fr": "Aligner la caméra",
   "it": "Allineare la fotocamera",
   "rm": "Drizzar la camera"
+ },
+ "Kamera von MoveEye": {
+  "en": "MoveEye camera",
+  "fr": "Caméra de MoveEye",
+  "it": "Telecamera di MoveEye",
+  "rm": "Camera da MoveEye",
+  "?": "rm automatisch"
  },
  "Kamera wackelt im Wind (Mast, Stange)": {
   "en": "Camera shakes in the wind (mast, pole)",
@@ -27322,6 +27463,12 @@
   "it": "Menu: ✚ / stick sinistro scegliere · A selezionare · B indietro · Start chiudere",
   "rm": "Menu: ✚ / stick sanester tscherner · A tscherner · B enavos · Start serrar"
  },
+ "Menüs auf- und zuklappen": {
+  "en": "Fold the menus",
+  "fr": "Ouvrir et fermer les menus",
+  "it": "Aprire e chiudere i menu",
+  "rm": "Avrir e serrar ils menus"
+ },
  "Message: ": {
   "en": "Message: ",
   "fr": "Message: ",
@@ -27693,6 +27840,12 @@
   "fr": "Plus reconnu avec le vélo dans les mains.",
   "it": "Non più riconosciuto con la bici in mano.",
   "rm": "Cun il velo en ils mauns betg pli renconuschì."
+ },
+ "Mit Demo-MoveEye verbinden": {
+  "en": "Connect to the demo MoveEye",
+  "fr": "Se connecter au MoveEye de démo",
+  "it": "Collegarsi al MoveEye demo",
+  "rm": "Colliar cun il MoveEye da demo"
  },
  "Mit der alten Materialseilbahn über den Tüfelsschlund": {
   "en": "With the old cable way over the Tüfelsschlund",
@@ -31598,6 +31751,12 @@
   "it": "Senza prendere: percorri i confini delle tue zone e i sentieri intorno alla tenda. Il telefonino dice di continuo se MoveEye ti vede – ogni punto dove non ti segnala finisce sulla mappa dei punti ciechi.",
   "rm": "Senza tschiffar: va lung ils cunfins da tias zonas e las vias enturn la tenda. Il telefonin di cuntinuadamain, sche MoveEye vesa tai – mintga lieu, nua ch’el n’annunzia betg tai, vegn sin la charta dals puncts orbs."
  },
+ "Ohne Gerät-Fenster nicht verfügbar.": {
+  "en": "Not available without the device window.",
+  "fr": "Indisponible sans la fenêtre de l'appareil.",
+  "it": "Non disponibile senza la finestra del dispositivo.",
+  "rm": "Betg disponibel senza la fanestra da l'apparat."
+ },
  "Ohne GitHub-Schlüssel: die ZIP liegt hier: %s\nSo kommt sie ins Training: 1. GitHub → Releases → «ki-daten» → Edit → ZIP hineinziehen → Update release ": {
   "en": "Without GitHub key: the ZIP is here: %s\nHow it gets into the training: 1. GitHub → Releases → «ki-daten» → Edit → drag the ZIP in → Update release ",
   "fr": "Sans clé GitHub : le ZIP se trouve ici : %s\nPour l’entraînement : 1. GitHub → Releases → «ki-daten» → Edit → glisser le ZIP → Update release ",
@@ -35209,6 +35368,18 @@
   "it": "Protezione",
   "rm": "Protecziun"
  },
+ "Schutz an": {
+  "en": "Protection on",
+  "fr": "Protection activée",
+  "it": "Protezione attiva",
+  "rm": "Protecziun activada"
+ },
+ "Schutz aus": {
+  "en": "Protection off",
+  "fr": "Protection désactivée",
+  "it": "Protezione spenta",
+  "rm": "Protecziun deactivada"
+ },
  "Schutz kurz": {
   "en": "Protection short",
   "fr": "Protection court",
@@ -35232,6 +35403,18 @@
   "fr": "Protection «Vigilant», une nuit entière, regarder l'historique le matin ; téléverser le rapport dans feedback/.",
   "it": "Protezione «Vigile», una notte intera, al mattino guardare la cronologia; caricare il rapporto in feedback/.",
   "rm": "Protecziun «Attent», laschar ir ina notg, la damaun guardar l'istorgia; chargiar il rapport en feedback/."
+ },
+ "Schutz: Voll (lang, 1,5 s)": {
+  "en": "Protection: Full (long, 1.5 s)",
+  "fr": "Protection : complète (long, 1,5 s)",
+  "it": "Protezione: completa (lungo, 1,5 s)",
+  "rm": "Protecziun: cumplaina (lung, 1,5 s)"
+ },
+ "Schutz: Wachsam ↔ Aus (kurz)": {
+  "en": "Protection: Watching ↔ Off (short)",
+  "fr": "Protection : vigilant ↔ désactivée (court)",
+  "it": "Protezione: vigile ↔ spenta (breve)",
+  "rm": "Protecziun: attent ↔ deactivada (curt)"
  },
  "Schutzbrille, gut gelüfteter Platz": {
   "en": "Safety glasses, a well ventilated place",
@@ -38152,6 +38335,12 @@
   "it": "swisstopo swissALTI3D",
   "rm": "swisstopo swissALTI3D"
  },
+ "Symbole": {
+  "en": "Symbols",
+  "fr": "Symboles",
+  "it": "Simboli",
+  "rm": "Simbols"
+ },
  "Symbole farbig": {
   "en": "Symbols coloured",
   "fr": "Symboles en couleur",
@@ -38212,6 +38401,12 @@
   "it": "Cercare una scena …",
   "rm": "Tschertgar ina scena …"
  },
+ "Szene wählen": {
+  "en": "Choose a scene",
+  "fr": "Choisir une scène",
+  "it": "Scegli una scena",
+  "rm": "Tscherner ina scena"
+ },
  "Szene «%s» geladen.": {
   "en": "Scene «%s» loaded.",
   "fr": "Scène «%s» chargée.",
@@ -38265,6 +38460,12 @@
   "fr": "Tablette",
   "it": "Tablet",
   "rm": "Tablet"
+ },
+ "Tablet-PC": {
+  "en": "Tablet / PC",
+  "fr": "Tablette / PC",
+  "it": "Tablet / PC",
+  "rm": "Tablet / PC"
  },
  "Tag": {
   "en": "Day",
@@ -38439,6 +38640,12 @@
   "fr": "Heure du scénario (repérage de jour, retour la nuit) – sinon l’heure actuelle",
   "it": "Ora dello scenario (sopralluogo di giorno, ritorno di notte) – altrimenti l’ora attuale",
   "rm": "Ura dal scenari (spiunar dal di, turnar la notg) – uschiglio l’ura actuala"
+ },
+ "Tageszeit und Wetter": {
+  "en": "Time of day and weather",
+  "fr": "Heure et météo",
+  "it": "Ora del giorno e meteo",
+  "rm": "Temp dal di ed aura"
  },
  "Tags: ": {
   "en": "Tags: ",
@@ -38938,6 +39145,12 @@
   "it": "Testare",
   "rm": "Testar"
  },
+ "Testen · Lernen · Spielen": {
+  "en": "Test · Learn · Play",
+  "fr": "Tester · Apprendre · Jouer",
+  "it": "Testare · Imparare · Giocare",
+  "rm": "Testar · Emprender · Giugar"
+ },
  "Testen → Prüfstand": {
   "en": "Testing → test bench",
   "fr": "Tester → banc d’essai",
@@ -39045,6 +39258,12 @@
   "fr": "Test terminé · ",
   "it": "Test finito · ",
   "rm": "Test finì · "
+ },
+ "Testlauf, Prüfstand, blinde Flecken": {
+  "en": "Test run, test bench, blind spots",
+  "fr": "Essai, banc d'essai, angles morts",
+  "it": "Prova, banco di prova, punti ciechi",
+  "rm": "Test, banc da test, puncts tschorvs"
  },
  "Testlauf: Personen %d/%d, Pushes %s, Flackern %d": {
   "en": "Test run: persons %d/%d, pushes %s, flicker %d",
@@ -39309,6 +39528,12 @@
   "fr": "Touche un module : ses liaisons s'allument.",
   "it": "Tocca un modulo: i suoi collegamenti si illuminano.",
   "rm": "Tocca in modul: sias colliaziuns glischan."
+ },
+ "Tippen = Szene laden (Besucher kommen von selbst). Grün = neu.": {
+  "en": "Tap = load the scene (visitors come by themselves). Green = new.",
+  "fr": "Toucher = charger la scène (les visiteurs viennent seuls). Vert = nouveau.",
+  "it": "Tocca = carica la scena (i visitatori arrivano da soli). Verde = nuovo.",
+  "rm": "Tutgar = chargiar la scena (visitaders vegnan sezs). Verd = nov."
  },
  "Tipps und Wildkamera-Aufgaben": {
   "en": "Tips and camera-trap tasks",
@@ -41483,6 +41708,12 @@
   "it": "Modelli – mondi pronti e modelli 3D",
   "rm": "Models – munds finids e models 3D"
  },
+ "Vorlagen, echte Orte, eigene 3D-Datei …": {
+  "en": "Templates, real places, own 3D file …",
+  "fr": "Modèles, lieux réels, fichier 3D personnel …",
+  "it": "Modelli, luoghi reali, file 3D proprio …",
+  "rm": "Models, lieus reals, atgna datoteca 3D …"
+ },
  "Vorlesen stoppen": {
   "en": "Stop reading",
   "fr": "Arrêter la lecture",
@@ -41608,6 +41839,12 @@
   "fr": "W A S D : conduire le rover · glisser la souris / Q E : tourner la tête · espace ou double-clic : «Trouvé !» · G : lumière · Esc : menu",
   "it": "W A S D: guidare il rover · trascinare il mouse / Q E: girare la testa · spazio o doppio clic: «Trovato!» · G: luce · Esc: menu",
   "rm": "W A S D: manischar il rover · trair la mieur / Q E: volver il chau · spazi u dubel clic: «Chattà!» · G: glisch · Esc: menu"
+ },
+ "Wachsam": {
+  "en": "Watching",
+  "fr": "Vigilant",
+  "it": "Vigile",
+  "rm": "Attent"
  },
  "Wahrheit: sichtbar für die Kopfkamera": {
   "en": "Truth: visible to the head camera",
@@ -46134,6 +46371,18 @@
   "it": "● Avviare la registrazione (chi cammina dove, ora, meteo – al massimo 5 minuti)",
   "rm": "● Cumenzar la registraziun (tgi va nua, temp, aura – il pli bler 5 minutas)"
  },
+ "● MoveEye (Demo) · ": {
+  "en": "● MoveEye (demo) · ",
+  "fr": "● MoveEye (démo) · ",
+  "it": "● MoveEye (demo) · ",
+  "rm": "● MoveEye (demo) · "
+ },
+ "● MoveEye · ": {
+  "en": "● MoveEye · ",
+  "fr": "● MoveEye · ",
+  "it": "● MoveEye · ",
+  "rm": "● MoveEye · "
+ },
  "☀ Solarpanel (Watt bei voller Sonne)": {
   "en": "☀ Solar panel (watts in full sun)",
   "fr": "☀ Panneau solaire (watts en plein soleil)",
@@ -48788,23 +49037,5 @@
   "fr": "🪨 Lance une pierre : «Lancer» (PC : F) – la caméra regarde vers le bruit, pas vers toi",
   "it": "🪨 Lancia un sasso: «Lanciare» (PC: F) – la telecamera guarda verso il rumore, non verso di te",
   "rm": "🪨 Bitta in crap: «Bittar» (PC: F) – la camera guarda vers la canera, betg vers tai"
- },
- "Darstellung": {
-  "en": "Display",
-  "fr": "Affichage",
-  "it": "Visualizzazione",
-  "rm": "Preschentaziun"
- },
- "Symbole": {
-  "en": "Symbols",
-  "fr": "Symboles",
-  "it": "Simboli",
-  "rm": "Simbols"
- },
- "Menüs auf- und zuklappen": {
-  "en": "Fold the menus",
-  "fr": "Ouvrir et fermer les menus",
-  "it": "Aprire e chiudere i menu",
-  "rm": "Avrir e serrar ils menus"
  }
 }

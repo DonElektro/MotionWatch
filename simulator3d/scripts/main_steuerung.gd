@@ -590,6 +590,10 @@ func _control(d: Dictionary) -> Dictionary:
 		if main.sleeper == null:
 			return {"ok": false, "error": "no sleeper"}
 		return main.sleeper.command(d)
+	elif a == "handy":                                 # Handy-Modus (handy.gd): info / mode / sheet / close / win / panel
+		return main.handy.control(d) if main.handy != null else {"ok": false, "error": "no handy"}
+	elif a == "waechter":                              # fenster_waechter.gd: info (welche Fenster eingepasst wurden)
+		return main.waechter.info() if main.waechter != null else {"ok": false, "error": "no waechter"}
 	elif a == "fenster":                               # Paket «Fenster» (fenster.gd): info / drag / resize / close / list / check / reset
 		return main.fenster.control(d) if main.fenster != null else {"ok": false, "error": "no fenster"}
 	elif a == "smalltv":                               # 3D-4.19: virtueller SmallTV - Zähler, letztes Bild (Tests, Prüfstand)

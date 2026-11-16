@@ -181,7 +181,8 @@ func _build_led() -> void:
 func led_state() -> Dictionary:
 	"""what MoveEye sent (empty while not connected)"""
 	if main.now() - main.mw_t > 3.0:
-		return {}
+		var wd = main.get("web_demo")                     # Browser-Demo (web_demo.gd): die LED des kleinen eingebauten MoveEye
+		return wd.led() if wd != null else {}
 	var l = main.mw.get("led", null)
 	return l if typeof(l) == TYPE_DICTIONARY else {}
 
