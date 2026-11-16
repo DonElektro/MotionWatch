@@ -45,7 +45,7 @@ HOST_BLOCK = ("/api/homepage", "/api/tunnel", "/api/helper", "/api/nettest", "/a
               "/api/sim/upload", "/api/own_model", "/api/fehler/fix", "/api/turbo", "/api/radio", "/api/dev", "/api/simhub",
               "/api/simintern", "/api/webpush", "/api/update", "/api/fbx/flush", "/api/relay", "/api/disco", "/api/light",
               "/api/tausch/smb", "/api/storm_test", "/api/seclogin", "/api/push")
-HOST_FPS = 5.0                            # pictures per second of the drawn scene (normally 15): the host gives half a core
+HOST_FPS = 4.0                            # pictures per second of the drawn scene (normally 15): the host gives half a core
 HOST_SIM_DOOR = 18765                     # the same door as the tunnel of 180 (sim_url http://127.0.0.1:18765, _tun_reclaim)
 HOST_WS_MAX = 8 * 1024 * 1024             # one WebSocket message of the simulator (a camera picture is ~100 KB)
 HOST_WS_LINES = 4                         # simulator windows at the same time (the newest one is used)
@@ -279,9 +279,25 @@ def host_after_settings():
     threading.Thread(target=_host_loop, daemon=True, name="hostmode").start()
 
 
+def _host_trim():
+    """give freed memory back to the system (glibc malloc_trim; measured: 0.77 -> ~0.7 GB without the CPU cost of fixed
+    mmap thresholds). Every 30 s, a few ms."""
+    try:
+        import ctypes
+        if "trim" not in HOST:
+            HOST["trim"] = ctypes.CDLL("libc.so.6").malloc_trim
+        HOST["trim"](0)
+    except (OSError, AttributeError):
+        HOST["trim"] = lambda _n: 0
+
+
 def _host_loop():
+    n = 0
     while True:
         time.sleep(2.0)
+        n += 1
+        if n % 15 == 0:
+            _host_trim()
         try:
             _host_notes_flush()
             host_enforce(True)
@@ -627,9 +643,8 @@ def _host_segs(flask_app):
             s = str(r.rule).split("/")[1] if str(r.rule).startswith("/") else ""
             if s and "<" not in s:
                 segs.add(s)
-        _HOST_RW["segs"] = sorted(segs, key=len, reverse=True)
-        alt = "|".join(re.escape(s) for s in _HOST_RW["segs"]) or "api"
-        _HOST_RW["rx"] = re.compile(r"""(["'`]|url\()/(?=(?:%s)(?:[/?#"'`)\\]|$))""" % alt)
+        _HOST_RW["segs"] = frozenset(segs)
+        _HOST_RW["rx"] = re.compile(r"""(["'`]|url\()/([A-Za-z0-9_.~-]+)(?=[/?#"'`)\\]|$)""")   # segment checked in a set: 3x faster than one alternation
         _HOST_RW["root"] = re.compile(r"""(\b(?:href|src|action)\s*=\s*\\?["']|location(?:\.href)?\s*=\s*["']|location\.(?:assign|replace)\(\s*["']|"(?:start_url|scope)"\s*:\s*")/(?=\\?["'?#])""")
     return _HOST_RW["rx"], _HOST_RW["root"]
 
@@ -638,7 +653,8 @@ def host_rewrite(text, prefix, flask_app, html=False):
     """the absolute addresses of a page / script / style with the prefix in front (twice is never done: «/demo/…» is no
     segment of the server)"""
     rx, root = _host_segs(flask_app)
-    text = rx.sub(lambda m: m.group(1) + prefix + "/", text)
+    segs = _HOST_RW["segs"]
+    text = rx.sub(lambda m: m.group(1) + prefix + "/" + m.group(2) if m.group(2) in segs else m.group(0), text)
     text = root.sub(lambda m: m.group(1) + prefix + "/", text)
     if html:
         tag = "<script>" + HOST_SHIM_JS.replace("%PREFIX%", json.dumps(prefix)) + "</script>"
@@ -715,7 +731,7 @@ class _HostPrefix:
             new = host_rewrite(body.decode("utf-8", "surrogateescape"), P, self.flask_app, st["ctype"] == "text/html").encode("utf-8", "surrogateescape")
             if gz and len(new) > 2048:
                 import gzip as _gz
-                new = _gz.compress(new, 6)
+                new = _gz.compress(new, 1)                   # level 1: a fraction of the CPU (half a core)
             if len(body) > 16384:
                 _HOST_RW["cache"][key] = new; _HOST_RW["order"].append(key)
                 while len(_HOST_RW["order"]) > 6:

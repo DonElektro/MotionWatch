@@ -40,8 +40,7 @@ DATA_MAX_BYTES = 1024 ** 3                     # the folder of the host has 1.5 
 KEEP_VERSIONS = 2                              # the running one and the one before
 # memory: glibc gives every thread of the web server its own malloc arena - with visitors MoveEye grew from 0.6 to 1.2 GB
 # (measured 16.11.2026); 2 arenas and one thread for the maths libraries keep it at about 0.68 GB (host: 1 GB)
-CHILD_ENV = {"MALLOC_ARENA_MAX": "2", "MALLOC_MMAP_THRESHOLD_": "131072", "MALLOC_TRIM_THRESHOLD_": "131072",
-             "OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "PYTHONUNBUFFERED": "1"}   # big page texts back to the system at once
+CHILD_ENV = {"MALLOC_ARENA_MAX": "2", "OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "PYTHONUNBUFFERED": "1"}
 
 
 def log(msg):
