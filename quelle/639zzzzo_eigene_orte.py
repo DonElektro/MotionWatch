@@ -31,7 +31,23 @@
 #   * Kein KMZ (Entscheid 15.11.2026).
 # Selbsttest eo_selftest; Tests werkzeuge/orte_test.py.
 # ----------------------------------------------------------------------------
-EO_FOLDER = "🗺️ Karte"
+# Der Programmtext dieses Teils steht in EINEM Literal (Koordinator 16.11.2026: Hauptdatei klein, wie «Blinki fragen» 639zzzzk):
+# werkzeuge/bauen.py legt es in die Zusatz-ZIP, beim Start läuft es hier an seinem Platz (zd_exec). Ohne ZIP gibt es «Eigene Orte»
+# nicht - es gehört nicht zu Start, Schutz, Alarm, Update oder Reparatur. Die ZIP ist über ZD_SHA256 (Teil 012) mit signiert.
+if "zd_exec" not in globals():
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+EO_PY = r'''EO_FOLDER = "🗺️ Karte"
 EO_FILE = "Meine Orte.geojson"
 EO_EXT = ("gpx", "kml", "geojson")
 EO_MAX_PLACES = 500                                       # places in «Meine Orte»
@@ -1303,3 +1319,5 @@ def eo_selftest():
 
 
 SELFTEST_EXTRA.append(("Own places on the map (639zzzzo)", eo_selftest))
+'''
+zd_exec(EO_PY, "639zzzzo_eigene_orte.py")

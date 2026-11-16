@@ -291,7 +291,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_8_0.zip"
-ZD_SHA256 = "bb1b8d40de731391cf3bd8be3ed809f3bfdfb6336e433dc77b8e825f406ee99a"
+ZD_SHA256 = "88530840aa9c643c6ea85c4f1ede54070999db7ac0c7334db93df2a682109ddd"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -98515,8 +98515,9 @@ def _kt_coords(text, sep):
 	return out
 
 
-def kt_parse(data, fname=""):
+def kt_parse(data, fname="", need_route=True):
 	"""
+
 """
 	if len(data)>KT_IMPORT_MAX:
 		raise KTError("The file is too big.")
@@ -98608,8 +98609,10 @@ def kt_parse(data, fname=""):
 	except(_ET.ParseError,ValueError,LookupError):
 		raise KTError("This file could not be read.")
 	pts=[p for s in segs for p in s]or rte
+	if len(pts)<2 and(need_route or not wps):
+		raise KTError("No route was found in this file."if need_route else "No places were found in this file.")
 	if len(pts)<2:
-		raise KTError("No route was found in this file.")
+		pts=[]
 	thinned=False
 	if len(pts)>KT_MAX_PTS:
 		step=(len(pts)+KT_MAX_PTS-1)//KT_MAX_PTS
@@ -113921,6 +113924,56 @@ startbilder_selftest = _zd_fn('639zzzzf_startbilder/startbilder_selftest()')
 
 
 SELFTEST_EXTRA.append(("Start page: own pictures (A / B, focus, without EXIF, Startbilder/ on the web space) (639zzzzf)", startbilder_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if "zd_exec" not in globals():
+	def zd_exec(src,name):
+		"""
+
+"""
+		if not src:
+			return False
+		import linecache
+		linecache.cache[name]=(len(src),None,src.splitlines(True),name)
+		exec(compile(src,name,"exec"),globals())
+		return True
+
+
+EO_PY = _zd('639zzzzo_eigene_orte/EO_PY', "")
+zd_exec(EO_PY, "639zzzzo_eigene_orte.py")
 
 
 
