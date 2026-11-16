@@ -33,6 +33,8 @@ def part_ns():
           "math": math, "secrets": secrets, "CFG": {"source": "demo", "sim_on": False, "notify_on": True, "sim_url": "http://x:1",
                                                     "hp_key": "k", "record_dir": "/x", "update_mode": "dev"},
           "DATA_DIR": "/nonexistent-data", "DEMO_BLOCK": ("/api/power",), "WebStream": type("WebStream", (), {"_serve": lambda *a: None}),
+          "DemoSource": type("DemoSource", (), {"__init__": lambda self: setattr(self, "fps", 15.0),
+                                                "set_fps": lambda self, f: setattr(self, "fps", float(f) if f else 15.0)}),
           "log_event": lambda k, t: None, "save_settings": lambda: None}
     src = open(PART, encoding="utf-8").read()
     exec(compile(src, PART, "exec"), ns)
@@ -58,7 +60,7 @@ def static():
     i_lock, i_thr = st.find("host_mode_start(a)"), st.find("threading.Thread(target=clock_guard_loop")
     ok(0 < i_lock < i_thr, "Sperren vor dem ersten Faden")
     d210 = open(os.path.join(ROOT, "quelle", "210_demo.py"), encoding="utf-8").read()
-    ok('DEMO["on"] and not host_sim_source(spec)' in d210, "210: Simulator-Bild nur im Host-Modus mit verbundenem Web-Simulator")
+    ok('DEMO["on"] and not (HOST["on"] and host_sim_source(spec))' in d210, "210: Simulator-Bild nur im Host-Modus mit verbundenem Web-Simulator")
     for k in ("/api/homepage", "/api/tunnel", "/api/helper", "/api/webpush", "/api/update", "/api/dev", "/api/relay", "/api/fehler/fix"):
         ok(k in src.split("HOST_BLOCK = ", 1)[1].split(")", 1)[0], f"HOST_BLOCK: {k}")
     d = open(os.path.join(ROOT, "quelle", "210_demo.py"), encoding="utf-8").read().split("DEMO_BLOCK = ", 1)[1].split(")", 1)[0]
@@ -68,6 +70,8 @@ def static():
         ok(f'"{k}"' in src.split("HOST_NO_MODULES = ", 1)[1].split(")", 1)[0], f"keine Hardware: {k}")
     ok('HOST_PROGS = ("ffmpeg", "ffprobe")' in src, "Programme: nur ffmpeg / ffprobe")
     ok("# wraps: WebStream._serve" in src, "Wrapper markiert (bauen.py)")
+    ok("host needs the data zip" in st or "host mode needs the data zip" in st, "640: ohne Zusatzdatei kein Host-Modus (sicher zu)")
+    ok(src.count("HOST_PY = r\'\'\'") == 1 and "exec(compile(HOST_PY" in src, "Programmtext als ein Literal (Hauptdatei klein)")
     hn = src.split("def _host_note(", 1)[1].split("\ndef ", 1)[0]
     ok("log_event(" not in hn.replace("Never log_event", ""), "Sperren schreiben nicht selbst ins Protokoll (LOCK, sonst Verklemmung wie in /api/state)")
     print("2. Skript in den Seiten")
@@ -100,6 +104,12 @@ window.fetch=function(){};window.open=function(){};window.WebSocket=function(){}
         ok("FIX OK" in r.stdout, "Adressen im Browser (fix): " + (r.stdout + r.stderr).strip()[:400])
     else:
         print("  (node fehlt - Skript nicht geprüft)")
+    d_ = ns["DemoSource"](); ns["HOST"]["on"] = True; d2 = ns["DemoSource"](); d2.set_fps(None); ns["HOST"]["on"] = False; d3 = ns["DemoSource"]()
+    ok(d2.fps == ns["HOST_FPS"] and d3.fps == 15.0, f"Demo-Szene im Host-Modus {d2.fps} statt 15 Bilder/s, sonst unverändert ({d3.fps})")
+    fx = ns["_host_fixed"]()
+    ns["CFG"].update(web_quality=75, web_width=1280, proc_width=480, ai_every=3, sim_fps=6, sim_eco=True, loop_on=False, timelapse_on=False)
+    fx = ns["_host_fixed"]()
+    ok(fx.get("web_quality") == 60 and fx.get("web_width") == 640 and fx.get("proc_width") == 320, "Live-Bild kleiner im Host-Modus (CPU)")
     print("3. Umschreiben auf dem Server")
     app = FakeApp(["/", "/api/state", "/api/x/<y>", "/sim", "/protect", "/i18n/<l>.js", "/sw.js", "/g/<tok>", "/simtun", "/static/<path:f>"])
     rw = lambda t, html=False: ns["host_rewrite"](t, "/demo", app, html)

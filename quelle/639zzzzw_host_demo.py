@@ -33,7 +33,10 @@
 # Tests: werkzeuge/host_demo_test.py (static + a short run behind a proxy that strips «/demo»), werkzeuge/demo_start_test.py.
 # ----------------------------------------------------------------------------
 HOST = {"on": False, "prefix": "", "data": "", "roots": (), "door": "", "sim_auto": False, "ws": 0, "blocked": {}, "fixed_t": 0.0}
-HOST_PROGS = ("ffmpeg", "ffprobe")
+# Main file small (coordinator 16.11.2026): the code of this part is ONE literal - werkzeuge/bauen.py moves it into the data
+# zip, it runs here at its place. The zip is vouched for by ZD_SHA256 of this signed file. Without the zip there is no host
+# mode at all: 640 refuses --host-modus (fail closed) - nothing of start, protection, alarm, update or repair is in here.
+HOST_PY = r'''HOST_PROGS = ("ffmpeg", "ffprobe")
 HOST_NO_MODULES = ("RPi", "gpiozero", "lgpio", "pigpio", "smbus", "smbus2", "spidev", "picamera2", "libcamera", "senxor", "pysenxor",
                    "board", "busio", "digitalio", "adafruit_pca9685", "adafruit_servokit", "adafruit_blinka", "bluetooth", "dbus",
                    "pydbus", "gi", "serial", "usb", "evdev", "pyaudio", "sounddevice", "alsaaudio", "paramiko", "pysftp")
@@ -42,6 +45,7 @@ HOST_BLOCK = ("/api/homepage", "/api/tunnel", "/api/helper", "/api/nettest", "/a
               "/api/sim/upload", "/api/own_model", "/api/fehler/fix", "/api/turbo", "/api/radio", "/api/dev", "/api/simhub",
               "/api/simintern", "/api/webpush", "/api/update", "/api/fbx/flush", "/api/relay", "/api/disco", "/api/light",
               "/api/tausch/smb", "/api/storm_test", "/api/seclogin", "/api/push")
+HOST_FPS = 5.0                            # pictures per second of the drawn scene (normally 15): the host gives half a core
 HOST_SIM_DOOR = 18765                     # the same door as the tunnel of 180 (sim_url http://127.0.0.1:18765, _tun_reclaim)
 HOST_WS_MAX = 8 * 1024 * 1024             # one WebSocket message of the simulator (a camera picture is ~100 KB)
 HOST_WS_LINES = 4                         # simulator windows at the same time (the newest one is used)
@@ -55,7 +59,9 @@ def _host_fixed():
          "sim_auto": False, "sim_autostart": False, "hotspot_on": False, "mqtt_on": False, "backup_type": "off", "backup_url": "",
          "fleet": [], "helper_serve": False, "helper_use": False, "helper_url": "", "tunnel_on": False, "notify_on": False,
          "email_on": False, "sms_on": False, "webpush_on": False, "hp_base": "", "hp_key": "", "hp_auto": False, "hp_public": "",
-         "web_password": "", "web_pw_hash": "", "map_online": False, "ai_own_url": "", "lock_on": False, "source": None}
+         "web_password": "", "web_pw_hash": "", "map_online": False, "ai_own_url": "", "lock_on": False, "source": None,
+         "web_quality": 60, "web_width": 640, "proc_width": 320, "ai_every": 3, "sim_fps": 4, "sim_eco": True, "loop_on": False,
+         "timelapse_on": False}                    # half a core: fewer / smaller pictures (measured with werkzeuge/host_demo_test.py --ram)
     return {k: v for k, v in d.items() if k in CFG}
 
 
@@ -712,7 +718,7 @@ class _HostPrefix:
                 new = _gz.compress(new, 6)
             if len(body) > 16384:
                 _HOST_RW["cache"][key] = new; _HOST_RW["order"].append(key)
-                while len(_HOST_RW["order"]) > 12:
+                while len(_HOST_RW["order"]) > 6:
                     _HOST_RW["cache"].pop(_HOST_RW["order"].popleft(), None)
         heads = [(k, v) for k, v in heads if k.lower() not in ("content-length", "content-encoding")]
         if gz and new[:2] == b"\x1f\x8b":
@@ -739,3 +745,28 @@ def _host_serve(self, app, ctx):                        # wraps: WebStream._serv
 
 # wraps: WebStream._serve
 WebStream._serve = _host_serve
+_DemoSource_set_fps_base = DemoSource.set_fps
+
+
+def _host_demo_fps(self, fps):                         # wraps: DemoSource.set_fps (host mode: at most HOST_FPS)
+    _DemoSource_set_fps_base(self, fps)
+    if HOST["on"]:
+        self.fps = min(self.fps, HOST_FPS)
+
+
+DemoSource.set_fps = _host_demo_fps
+_DemoSource_init_base = DemoSource.__init__
+
+
+def _host_demo_init(self):                             # wraps: DemoSource.__init__
+    _DemoSource_init_base(self)
+    if HOST["on"]:
+        self.fps = min(self.fps, HOST_FPS)
+
+
+DemoSource.__init__ = _host_demo_init
+'''
+if HOST_PY:
+    import linecache as _hlc
+    _hlc.cache["639zzzzw_host_demo.py"] = (len(HOST_PY), None, HOST_PY.splitlines(True), "639zzzzw_host_demo.py")
+    exec(compile(HOST_PY, "639zzzzw_host_demo.py", "exec"), globals())

@@ -47,6 +47,8 @@ if __name__ == "__main__":
         DEMO["on"] = True
         set_data_dir(a.config or os.path.join(tempfile.gettempdir(), "motionwatch-demo"))
         if a.host_modus:
+            if "host_mode_start" not in globals():     # 639zzzzw comes from the data zip: without it no host mode (fail closed)
+                sys.exit("host mode needs the data zip moveeye_daten_X_Y_Z.zip next to the program")
             host_mode_start(a)                         # 639zzzzw: the locks before any thread starts
     else:
         set_data_dir(a.config or DATA_DIR)
@@ -88,7 +90,8 @@ if __name__ == "__main__":
                    device_name=CFG["device_name"] or "Demo")
         a.source = None; a.cam = None
         print("DEMO MODE - settings in " + DATA_DIR)
-        host_after_settings()                          # 639zzzzw: host mode only (fixed settings, door for the web simulator)
+        if HOST["on"]:
+            host_after_settings()                      # 639zzzzw: fixed settings, door for the web simulator
     if not DEMO["on"] and not instance_lock(CFG["web_port"]):          # only one MoveEye at a time
         if a.boot or not instance_takeover(CFG["web_port"], not a.headless):
             sys.exit(0)
