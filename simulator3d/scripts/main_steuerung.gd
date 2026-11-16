@@ -538,6 +538,8 @@ func _control(d: Dictionary) -> Dictionary:
 	elif a == "prop":                                  # 3D-3.72: test aids {name: Velo | Zelt | Tisch | Kühlboxen | Grill, on}
 		main.set_prop(str(d.get("name", "")), bool(d.get("on", true)))
 		return {"ok": true, "props": main.test_props.keys()}
+	elif a == "markierkarte":                          # Vorschau «📍 Markier-Karte»: {do: on | hide | walk | yaw | info | off} (markierkarte.gd)
+		return preload("res://scripts/markierkarte.gd").control(main, d)
 	elif a == "sabotage":                              # {cover: bool, turn: degrees}
 		main.set_sabotage(d.get("cover", null), d.get("turn", null))
 		return {"ok": true, "cover": main.sabotage_cover, "turn": rad_to_deg(main.sabotage_turn)}
