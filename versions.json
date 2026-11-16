@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-16 19:41",
+ "generated": "2026-11-16 20:32",
  "versions": [
+  {
+   "version": "4.14.0",
+   "file": "webcam_bewegung_4_14_0.py",
+   "url": "",
+   "sha256": "893c86d62b3a3b5e13b97ddeb964c771343175abb150642f6ab4b926b228a90c",
+   "date": "2026-11-16 20:32",
+   "notes": "💬 Plaudern mit Blinki: frei fragen, was man will (getippt oder gesprochen), mit kurzem Verlauf nur im Speicher; der Auslöser am Gerät fragt ab Werk «Plaudern»",
+   "size": 4036511,
+   "sig": "b2ae4bdb62cb787ee83448d1985de2bfc22cba2edb63f6aa73fcde90cfa925b3ad975065abe9b353be29f757896f98f3f133efdede0e3463dcd55490e26a0109",
+   "data": {
+    "file": "moveeye_daten_4_14_0.zip",
+    "url": "",
+    "sha256": "7c9ef6b5288d89d3c3871bc486e72c6e427c0e0e47b0d4f2ba4ff6d002f68cc4",
+    "size": 14270212,
+    "sig": "c2b8dc7d5062c03a69ee4bd7db7b6bedae6ca81d156af538b066eba16ed2f75e7b626b3a11d8e4230ecfe915a2d049d97060b452ab8d2dfd6b12d0c5fb0b1b0f"
+   }
+  },
   {
    "version": "4.13.0",
    "file": "webcam_bewegung_4_13_0.py",
@@ -136,23 +153,6 @@
     "sha256": "bdebaa214646c56d7254328527dbc48944368120769cd8954d025a96f6689ec3",
     "size": 13554056,
     "sig": "89a32903ab8e16322f8f01bfda960f08838b85a187d385a3e70be41c8ccf47620eef2e5c0bc764a5ce1bf8c41f45e06092ef76aaa13b8ed87ad1a15407e57c0b"
-   }
-  },
-  {
-   "version": "4.5.0",
-   "file": "webcam_bewegung_4_5_0.py",
-   "url": "",
-   "sha256": "471139bfd8617139921cee3bc1f9b124707a76f770cdfbce8a1b5e8b701f23f3",
-   "date": "2026-11-15 17:58",
-   "notes": "Unterseiten öffnen als Fenster über der Seite – ab Werk «Mitte»; wählbar unter Einstellungen: «Von unten», «Mitte», «Von der Seite» oder wie bisher «Ganze Seite». Dialoge aus dem Fenster (z. B. Passwort, neuer Benutzer) liegen darüber.",
-   "size": 3898199,
-   "sig": "be5218fce25456762c6bceab157ed0b56039f5302f89c9d07327308206c2bfb91233ab6ec89289b0b05034ec8fba43bb08dd3b95878f35f839953f9df85c4b01",
-   "data": {
-    "file": "moveeye_daten_4_5_0.zip",
-    "url": "",
-    "sha256": "9d4ab8c1922fc4809be491aad0ac1656246e7664a6818fe4e1f25791bd0a41fb",
-    "size": 13501844,
-    "sig": "23f09de986ac2b7565d72981c673bccd6a09dd38eafe0fb62ae86fed780d36fe586babe642671f20cbdb07632a6efcca3f811b1c97b86ff60054cb368f80bd00"
    }
   },
   {
