@@ -1908,7 +1908,8 @@ Object.assign(I18N.de, /*TZDE*/{});
     if (f.thumb) { const im = el("img"); im.loading = "lazy"; im.alt = ""; im.src = "/tausch/thumb/" + f.id + ".jpg"; im.onerror = () => { im.remove(); th.textContent = KIC[f.kind] || "📦"; }; th.appendChild(im); }
     else th.textContent = f.thumb === null ? "⏳" : (KIC[f.kind] || "📦");
     if (f.kind === "video" && f.thumb) th.appendChild(el("span", "play", "▶"));
-    th.onclick = () => f.kind === "text" ? openText(f) : f.kind === "chat" ? openChat(f) : preview(f);
+    th.onclick = () => (window.tzOpen && window.tzOpen(f, {openText: x => openText(x), preview: x => preview(x), load: () => load()})) ||   // 639zzzzv: the viewer
+      (f.kind === "text" ? openText(f) : f.kind === "chat" ? openChat(f) : preview(f));
     tx.append(el("div", "nm", f.name), el("div", "mt", (f.by ? (f.mine ? t("you") : f.by) + " · " : "") + when(f.t) + " · " + fmt(f.size)));
     tx.firstChild.title = f.name;
     const ac = el("div", "ac");
@@ -1917,6 +1918,7 @@ Object.assign(I18N.de, /*TZDE*/{});
       b.onclick = async () => { if (!confirm(t("Delete this file? It cannot be undone.") + "\n" + f.name)) return;
         const r = await post("/api/tausch", {action: "delete", id: f.id, lang: LANG}); if (!r.ok) msg("⚠ " + (r.error || "error"), true); else toast("🗑 " + f.name); load(); };
       ac.appendChild(b); }
+    if (window.tzCard) try { window.tzCard(f, it, tx, th); } catch (e) {}   // 639zzzzv: «🔊 Vorlesen»
     it.append(th, tx); if (ac.children.length) it.appendChild(ac);
     return it;
   }

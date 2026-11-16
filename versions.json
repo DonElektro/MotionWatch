@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-15 23:35",
+ "generated": "2026-11-16 01:15",
  "versions": [
+  {
+   "version": "4.9.0",
+   "file": "webcam_bewegung_4_9_0.py",
+   "url": "",
+   "sha256": "eba8cef06b86f2eacf7d189740a952c36af097ddb8e117f9a50f8ca01b891a20",
+   "date": "2026-11-16 01:15",
+   "notes": "Digitaler Rucksack bei Import und Export: überall eine Datei aus dem Rucksack wählen oder einen Export direkt dort ablegen · Mein Handy-Hotspot bevorzugen: ein gespeichertes Netz markieren, MoveEye wechselt hin, sobald es da ist (Schalter, ab Werk aus) · 📖 Vorlesen und Datei-Ansicht im Digitalen Rucksack: Geschichten (.txt, .md, .epub, .docx, .pdf) mit der Piper-Stimme vorlesen, mit Lesezeichen",
+   "size": 4019435,
+   "sig": "e53228c6fbae55995bb7152a4bd8c9c0e6d75afa63d29a4e6facd94d8124205a2d9c870c0012dc1195ff579bbf7a180d21ca0b4e2919ca4caae7bae03beaa307",
+   "data": {
+    "file": "moveeye_daten_4_9_0.zip",
+    "url": "",
+    "sha256": "8361333f0fe863f2fbd855e0853be107bb1ef451c72a17e9e7ba23e3b11924ba",
+    "size": 13784611,
+    "sig": "5faf9e4b288ad1e12eca17c984b75d2b50079f18768e695efedeb94fe903e9922affda64051c6f34dce394c942f57865d7fc571af2eafc3c7f402a5564f8c902"
+   }
+  },
   {
    "version": "4.8.0",
    "file": "webcam_bewegung_4_8_0.py",
@@ -41,7 +58,7 @@
    "file": "webcam_bewegung_4_6_0.py",
    "url": "",
    "sha256": "7adcf5804cce76713fca42310ab066d5f8efbe6298ea22fe6b01628264e2b607",
-   "date": "2026-11-15 19:08",
+   "date": "2026-11-15 23:45",
    "notes": "Mitteilungen pausieren: Push-Pause, die von selbst endet (15 min bis «bis ich zurück bin»), 🔕 auf der Glocke – Sabotage, SOS und Akku kommen immer",
    "size": 3922499,
    "sig": "188bf90363bd4a1d0058174cd7c164e53a4c0a8286a95611829db4b46015876dccd35d89a026c97df0b41523505669d5173186f72f5c8e9fabf0c108f10b6009",
@@ -126,7 +143,7 @@
    "file": "webcam_bewegung_4_1_0.py",
    "url": "",
    "sha256": "8212ea3db915989af3d4ebac90df495f67e2b1562a48b7ed0e2db2dd16faee42",
-   "date": "2026-11-15 15:14",
+   "date": "2026-11-16 01:11",
    "notes": "«📻 Radio» auch im Browser: «📱 dieser Browser» spielt den Sender auf dem Handy, der Lautsprecher bleibt still; geht es direkt nicht, läuft der Strom über MoveEye (höchstens 2 Zuhörer). Sicherheit: MoveEye holt Radio-Ströme nur noch von öffentlichen Adressen – auch nach Umleitungen und aus Wiedergabelisten; ein selbst eingetragener Sender im Heimnetz spielt nur über den Lautsprecher.",
    "size": 3880846,
    "sig": "6aa3c0f44c2750b62c75dc47b4ee915e69fc08c74abe3b07d5e2f1cd4ae4f824921a24e6fcbbcc7db830357bcd0d6d8648245711dad91ff1d0911c56870c3d0b",
@@ -136,23 +153,6 @@
     "sha256": "04c891b6057959b5c687dcffbd7e2aef31eae7d0d05d4196179834a6882b1682",
     "size": 13376205,
     "sig": "7d29e5b35885f51b33628ff8920d63a447dd9a207d874cc7a41634f51549780420523e3122515400cea6a2be2700f6306906a3eb82233c1f3e451fff2d27c90b"
-   }
-  },
-  {
-   "version": "4.0.0",
-   "file": "webcam_bewegung_4_0_0.py",
-   "url": "",
-   "sha256": "75ba60493d2b1edbf4132da9656947ff8c93361bf3de501a292c5209f227e2da",
-   "date": "2026-11-15 15:14",
-   "notes": "MoveEye 4.0: Mehr → Bauen → Drucken zeigt neu «🧳 Transportsicherung (noch nicht erprobt)» – Haube, Drehsperre-Klammer und Schutzschale zum Drucken (einzeln oder als ZIP mit Anleitung), in der 3D-Werkstatt mit einem Schalter einblendbar. Die Gehäuse-Nummer bleibt 5.3.1. Neu auch auf der Seite «Handy-Funkgerät»: Reiter «🔏 Bild» – Botschaft im Bild verstecken und lesen, ganz ohne Netz.",
-   "size": 3870627,
-   "sig": "03e70ca6c992683bb0c64c1907588aedd8a3e1b4720486063ad2feffc7fe30999c56262f5e7607a66a305e9ee652110ef6b30f247d1acc7b38f7a1833940f20f",
-   "data": {
-    "file": "moveeye_daten_4_0_0.zip",
-    "url": "",
-    "sha256": "da29d79e3b7f11319d093a0b4c42c654f77d98ed9118bfa8a26ca50bdcc14212",
-    "size": 13351123,
-    "sig": "144d825d48bfb659dedcbca9d4ae80f93ff04e903898e8ce1bab336991c217a7d68e513603434e27063accdf7b57ffc88cffdd56ab1a4fd6e3fe208b53579b04"
    }
   },
   {

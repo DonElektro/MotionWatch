@@ -283,7 +283,7 @@ def teil_b(datei, browser, bilder):
         js = [f for f in fs if f["name"].endswith(".json")]
         ok(len([f for f in fs if f["name"].endswith(".jpg")]) >= 5 and len(js) >= 5, f"Datentausch «Funde»: {len(fs)} Dateien")
         c, b = req(f"/tausch/dl/{js[0]['id']}") if js else (0, b"{}")
-        r = json.loads(b) if c == 200 else {}
+        r = (b if isinstance(b, dict) else json.loads(b)) if c == 200 else {}   # ab 4.9.0 (639zzzzv): .json kommt als application/json
         ok(r.get("location", {}).get("lat") == 46.95 and "objects" in r and "time" in r, f"JSON mit Ort, Zeit, Objekten ({str(r)[:100]})")
         if browser:
             teil_c(base, gp, bilder, tmp)
