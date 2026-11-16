@@ -204,9 +204,10 @@ def _kt_coords(text, sep):
     return out
 
 
-def kt_parse(data, fname=""):
+def kt_parse(data, fname="", need_route=True):
     """a KML or GPX file -> {"name", "pts": [(lat, lon, height | None)], "wps": [{"name", "lat", "lon", "ele"}], "thinned", "src"}.
-    Raises KTError with a text for the user."""
+    Raises KTError with a text for the user. need_route=False (639zzzzo, places on the map): a file with only waypoints is
+    fine too («pts» may then be empty)."""
     if len(data) > KT_IMPORT_MAX:
         raise KTError("The file is too big.")
     if data[:3] == b"\xef\xbb\xbf":
@@ -297,8 +298,10 @@ def kt_parse(data, fname=""):
     except (_ET.ParseError, ValueError, LookupError):       # ValueError / LookupError: a declared encoding Python does not read here (UTF-7 …)
         raise KTError("This file could not be read.")
     pts = [p for s in segs for p in s] or rte
+    if len(pts) < 2 and (need_route or not wps):
+        raise KTError("No route was found in this file." if need_route else "No places were found in this file.")
     if len(pts) < 2:
-        raise KTError("No route was found in this file.")
+        pts = []
     thinned = False
     if len(pts) > KT_MAX_PTS:
         step = (len(pts) + KT_MAX_PTS - 1) // KT_MAX_PTS
