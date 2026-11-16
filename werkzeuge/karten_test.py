@@ -761,7 +761,7 @@ def teil_b(datei, P, rel, pins, bilder, echt=False, ausschnitt=""):
                     ok(pg.evaluate("() => KQMAP.getCenter().lng") > c0, "iphone: ein Finger verschiebt die Karte")
                     cdp.detach()
                 ok(not errs, f"{name}: keine JS-Fehler auf /karte" + (": " + " | ".join(errs[:3]) if errs else ""))
-                topo_im_browser(pg, base, name, bilder, mob, echt)
+                topo_im_browser(pg, base, name, bilder, mob, echt, ausschnitt=ausschnitt)
                 if not echt:
                     # Settings -> location: background, attribution, tap saves the coordinates, the install box
                     pg = ctx.new_page(); errs2 = []
@@ -857,7 +857,7 @@ def teil_b(datei, P, rel, pins, bilder, echt=False, ausschnitt=""):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
-def topo_im_browser(pg, base, name, bilder, mob, echt, ansicht=None):
+def topo_im_browser(pg, base, name, bilder, mob, echt, ansicht=None, ausschnitt=""):
     """the switch «Standard / Topo», light / dark like the page, the credit with swisstopo, the colours of the paths, own layers
     (tours) survive a change of the style"""
     la, lo, z = ansicht or (SEON[0], SEON[1], 13.6)
@@ -879,7 +879,7 @@ def topo_im_browser(pg, base, name, bilder, mob, echt, ansicht=None):
     ok("OpenStreetMap-Mitwirkende" in at and "swisstopo" in at, f"{name}: Quellenangabe Topo «{at}»")
     leg = pg.locator(".kq-leg")
     ok(leg.is_visible() and "nicht das offizielle Netz" in leg.inner_text() and "Bergwanderweg" in leg.inner_text(), f"{name}: Farben der Wege + «nicht das offizielle Netz»")
-    ok(kach.get("topo") and kach.get("relief") and all(s_ in (200, 204) for v in kach.values() for s_ in v),
+    ok((ausschnitt or (kach.get("topo") and kach.get("relief"))) and all(s_ in (200, 204) for v in kach.values() for s_ in v),
        f"{name}: Kacheln {', '.join('%s %d' % (k, len(v)) for k, v in sorted(kach.items()))}")
     ok(pg.evaluate("() => ['topo_relief', 'topo_hk', 'topo_wege_23'].every(i => KQMAP.getLayer(i))"), f"{name}: Relief, Höhenlinien, Wege auf der Karte")
     pg.screenshot(path=os.path.join(bilder, f"topo_dunkel_{name}.png"))
