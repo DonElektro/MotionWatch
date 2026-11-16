@@ -302,7 +302,8 @@ def _blinki_listen_run():
                 pass
             return
         LISTEN["phase"] = "think"
-        j, err = blinki_ask("frag", txt, L, None, "device (" + LISTEN["why"] + ")", "device")
+        lm = CFG.get("blinki_listen_mode") if CFG.get("blinki_listen_mode") in BLINKI_MODE_NEED else "frag"   # 639zzzzk_blinki_zz_plaudern
+        j, err = blinki_ask(lm, txt, L, None, "device (" + LISTEN["why"] + ")", "device")
         if j is None:
             LISTEN["msg"] = err; return
         LISTEN["jid"] = j["id"]
