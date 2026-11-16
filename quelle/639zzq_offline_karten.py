@@ -59,10 +59,10 @@ KQ_FILE_TAG = {"orte": "karten-1", "tiles": "karten-1"}   # Dateien, die an eine
 # Werte aus werkzeuge/karten/paket.py (pins.txt des Workflows «Offline-Karten»); size 0 = noch nicht freigegeben
 KQ_FILES = {
     "tiles": {"name": "karte-ch-1.pmtiles", "size": 655187450, "sha256": "ea71c54bcf1c91585106a6d3dcb7d5757f219761f3c0ebbbf54c5df487fde185", "unpacked": 0},
-    "web": {"name": "karte-web-2.zip", "size": 0, "sha256": "", "unpacked": 0},
+    "web": {"name": "karte-web-2.zip", "size": 1495338, "sha256": "c72953b5c74c5c9dc839aaa48da67eafd8fb04922ad9584ae187d5519a42b227", "unpacked": 2604659},
     "orte": {"name": "orte-ch-1.sqlite.gz", "size": 11211798, "sha256": "1e9f1e574a92a324b789768fb18c1deff2bf3716942d725d0dc1d3999330eb00", "unpacked": 28307456},
-    "topo": {"name": "topo-ch-2.pmtiles", "size": 0, "sha256": "", "unpacked": 0},
-    "relief": {"name": "relief-ch-2.pmtiles", "size": 0, "sha256": "", "unpacked": 0},
+    "topo": {"name": "topo-ch-2.pmtiles", "size": 381431763, "sha256": "9e8a74a87ab1a7d486ac933ccbc4e22a20b7cf97e63893afd6856dd45e937a7c", "unpacked": 0},
+    "relief": {"name": "relief-ch-2.pmtiles", "size": 226169173, "sha256": "31a369ba638b330d943e9f7797402ae596d72b55eb904ba292c206c74994a579", "unpacked": 0},
 }
 KQ_MAX = {"tiles": 2000 * 1000 * 1000, "web": 60 * 1000 * 1000, "orte": 300 * 1000 * 1000, "topo": 2000 * 1000 * 1000,
           "relief": 2000 * 1000 * 1000}                     # harte Obergrenzen (auch entpackt; GitHub: unter 2 GiB pro Datei)

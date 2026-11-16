@@ -1,5 +1,0 @@
-{
- "version": "4.12.0",
- "grund": "Topo-Karte: der Workflow «Offline-Karten» muss von main laufen und legt das Release karten-2 an; dessen Prüfsummen kommen danach in die signierte Fassung 4.12.0.",
- "bis": "2026-11-18"
-}
