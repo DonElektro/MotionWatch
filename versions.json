@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-16 01:58",
+ "generated": "2026-11-16 06:30",
  "versions": [
+  {
+   "version": "4.11.0",
+   "file": "webcam_bewegung_4_11_0.py",
+   "url": "",
+   "sha256": "6671921c4213da1bd8b73f19a8583f00f78a52ae1330ffde9e93400a947ad863",
+   "date": "2026-11-16 06:30",
+   "notes": "MoveEye als Demo im Internet: demo_start.py startet MoveEye auf einem Webhost unter /demo (nur gezeichnete Szene, alle Sperren an, keine Verbindung nach aussen); der Simulator im Browser kann sich mit dieser Demo verbinden",
+   "size": 4025796,
+   "sig": "2c3e72208038e557517f3e826877ad12c3977cf98d1dcc4cc646ce3161a651b04795bb993751b2def1dd6bf7c59de825ea3e178ccdcb8d2aef42e9d4b006ff0c",
+   "data": {
+    "file": "moveeye_daten_4_11_0.zip",
+    "url": "",
+    "sha256": "e07b7c9fecc06258f682b5abfba2c2fa8d4dd3f5731bb6141c1dbf45063e9f8c",
+    "size": 14202363,
+    "sig": "a2995acb03f6a5475d94363b1fa7e52e92cb22428d79e7e442425b590a4bffafed0f6e1faebaeb5baf61e5824eece0c5d57e99921579584b61f995e3c3eee402"
+   }
+  },
   {
    "version": "4.10.0",
    "file": "webcam_bewegung_4_10_0.py",
@@ -136,23 +153,6 @@
     "sha256": "1933635ae4831f4a4cdc5c80c8816cf387de01ef84db2d35a0fb3df6ab674507",
     "size": 13437024,
     "sig": "fd5c2ad5f1b76e1b49a57d56c043376de03461af8051e6b5d8d1b1be970f470833a2eb60566a6705c14d0e9925d3e840f41903123047bcb70e5ec6733e3c500e"
-   }
-  },
-  {
-   "version": "4.2.0",
-   "file": "webcam_bewegung_4_2_0.py",
-   "url": "",
-   "sha256": "a33d28ab1c2b79025c4c47dc981392ca3a26d2281e633993ad9dd07f8d963fb8",
-   "date": "2026-11-15 15:14",
-   "notes": "Zwei Teile. (1) Die Bedienleiste oben ist eine Zeile schmaler: «Einfach / Experte» ist ein Knopf in der Leiste, die Zeile «Darstellung» fällt weg, ⇕ klappt alle Karten auf und zu, die Symbole sitzen neu (Fenster und Webseite). (2) Bauen auf dem Handy: keine Seite mehr breiter als der Bildschirm, Druckdateien untereinander; in Drucken neu die Spalte «Nr.» (wie im Dateinamen), «Wände» erst ab 480 px.",
-   "size": 3880239,
-   "sig": "68dd7f84683361778017934409314d6d91e7bee5c62cf40f088c8821f271d83491b73d1dcf70cb02b898d3b8cf53e8669e75891aeca00a95049c83e3892f8106",
-   "data": {
-    "file": "moveeye_daten_4_2_0.zip",
-    "url": "",
-    "sha256": "93682b3709998523985c73b927e45448ee481c803ccc3ae5336334aaa3fec115",
-    "size": 13387561,
-    "sig": "d9c4778b3d38d516bfa7c29f688e1bc601a9c03a248e2646fc08878e4de3df4886497e8e2cc75acf83384d0ea0f74962797095d9a81f423883f41986c76af80d"
    }
   },
   {
