@@ -74,9 +74,15 @@ static func tx(k: String) -> String:
 	return str(d.get(T.lang(), d.get("en", d.get("de", k))))
 
 
+func still() -> bool:
+	"""das Demo-MoveEye der Homepage ist verbunden (web_moveeye.gd): dann schweigt dieses kleine eingebaute MoveEye"""
+	var wm = main.get_meta("web_moveeye") if main != null and main.has_meta("web_moveeye") else null
+	return wm != null and wm.verbunden()
+
+
 func led() -> Dictionary:
 	"""für statusled.gd (solange kein echtes MoveEye verbunden ist): die LED wie MoveEye sie schicken würde"""
-	if not _built:
+	if not _built or still():
 		return {}
 	if alarm:
 		return {"on": true, "rgb": "#ff2a2a", "br": 1.0 if fmod(_t * 2.0, 1.0) < 0.5 else 0.05, "text": "LED: " + tx("alarm") + " (Demo)"}
@@ -99,6 +105,12 @@ func _process(dt: float) -> void:
 	if _hide_t <= 0.0:
 		_hide_t = 1.0
 		_hide_pc()
+	var ruhig := still()
+	_layer.visible = not ruhig                         # verbunden: Bild, Rahmen, Alarm und Kopf kommen vom echten Demo-MoveEye
+	if ruhig:
+		alarm = false
+		dets = []
+		return
 	_det_t -= dt
 	if _det_t <= 0.0:
 		_det_t = 0.2

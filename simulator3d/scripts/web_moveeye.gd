@@ -12,6 +12,7 @@ extends Node
 ## Wird von web.gd (nur im Browser) angelegt:  var wm = preload("res://scripts/web_moveeye.gd").new(); wm.main = main; main.add_child(wm)
 ## Zustand für die Oberfläche: state() -> {"on", "status": "aus|verbinde|verbunden|besetzt|fehler", "url", "kanaele"}.
 
+const T = preload("res://scripts/i18n.gd")
 const PATH := "/demo/simtun"
 const MAX_OUT := 2 * 1024 * 1024           # nicht mehr in die Leitung, solange so viel noch nicht weg ist (net.gd überspringt Bilder)
 
@@ -66,10 +67,18 @@ class Kanal extends RefCounted:
 		pass
 
 
+const CFG_DATEI := "user://web_moveeye.cfg"
+
+
 func _ready() -> void:
 	inst = "%d-%d" % [int(Time.get_unix_time_from_system()), randi() % 100000]
+	if main != null:
+		main.set_meta("web_moveeye", self)           # web_demo.gd / handy.gd fragen danach (kein Feld in main.gd nötig)
 	if _url == "":
 		_url = adresse()
+	var cf := ConfigFile.new()
+	if cf.load(CFG_DATEI) == OK:
+		on = bool(cf.get_value("demo", "verbinden", true))    # der Schalter im Handy-Menü «Mehr» (ab Werk an)
 	if OS.has_feature("web"):
 		var q = JavaScriptBridge.eval("new URLSearchParams(location.search).get('moveeye') || ''", true)
 		if typeof(q) == TYPE_STRING and str(q).to_lower() in ["aus", "off", "0", "nein", "no"]:
@@ -86,7 +95,12 @@ func adresse() -> String:
 	return ("wss://" + str(o).substr(8) if str(o).begins_with("https://") else "ws://" + str(o).substr(7)) + PATH
 
 
-func set_on(v: bool) -> void:
+func set_on(v: bool, merken := false) -> void:
+	if merken:
+		var cf := ConfigFile.new()
+		cf.load(CFG_DATEI)
+		cf.set_value("demo", "verbinden", v)
+		cf.save(CFG_DATEI)
 	on = v
 	_fails = 0
 	_next = 0.0
@@ -98,6 +112,22 @@ func set_on(v: bool) -> void:
 
 func state() -> Dictionary:
 	return {"on": on, "status": status, "url": _url, "kanaele": chans.size()}
+
+
+func status_text() -> String:
+	"""der Zustand für die Oberfläche, übersetzt"""
+	if not on:
+		return T.t("Demo-MoveEye: aus")
+	match status:
+		"verbunden":
+			return T.t("Demo-MoveEye: verbunden")
+		"verbinde":
+			return T.t("Demo-MoveEye: verbinde …")
+		"besetzt":
+			return T.t("Demo-MoveEye: ein anderes Fenster ist verbunden")
+		"fehler":
+			return T.t("Demo-MoveEye: nicht erreichbar")
+	return T.t("Demo-MoveEye: aus")
 
 
 func verbunden() -> bool:
@@ -121,7 +151,7 @@ func schliessen(id: int, sagen: bool) -> void:
 	if k != null:
 		k.open = false
 	if sagen and verbunden():
-		ws.send_text("CLOSE %d" % id)
+		_ws_send("CLOSE %d" % id)
 
 
 func _trennen(neu: String) -> void:
@@ -162,7 +192,7 @@ func _process(_dt: float) -> void:
 		return
 	if not _hello:
 		_hello = true
-		ws.send_text("MWTUN2 demo " + inst)
+		_ws_send("MWTUN2 demo " + inst)
 	while ws.get_available_packet_count() > 0:
 		var pkt := ws.get_packet()
 		if ws.was_string_packet():
@@ -205,7 +235,13 @@ func _text(m: String, t: float) -> void:
 			if w.size() >= 2 and w[1].is_valid_int():
 				schliessen(int(w[1]), false)
 		"PING":
-			ws.send_text("PONG")
+			_ws_send("PONG")
+
+
+func _ws_send(t: String) -> void:
+	"""Protokoll-Text an MoveEye (kein Text für die Oberfläche: sim_texte.py übergeht _ws_send)"""
+	if ws != null:
+		ws.send_text(t)
 
 
 func _fehler(t: float, war_verbunden := false) -> void:

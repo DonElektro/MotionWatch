@@ -8766,6 +8766,12 @@
   "it": "Manca la valle – la storia ha bisogno della scena Bergtal.",
   "rm": "La val manca – l’istorgia dovra la scena Bergtal."
  },
+ "Das Bild dieses Simulators geht an das Demo-MoveEye auf dieser Homepage.": {
+  "en": "The picture of this simulator goes to the demo MoveEye on this homepage.",
+  "fr": "L’image de ce simulateur est envoyée au MoveEye de démo de ce site.",
+  "it": "L’immagine di questo simulatore va al MoveEye demo su questa homepage.",
+  "rm": "Il maletg da quest simulatur va al MoveEye da demo sin questa pagina d’internet."
+ },
  "Das bleibt:": {
   "en": "These stay:",
   "fr": "Ceci reste :",
@@ -9641,6 +9647,42 @@
   "fr": "Découvertes de démo au camping",
   "it": "Scoperte demo nel campeggio",
   "rm": "Scuvertas da demo sin il plaz da campadi"
+ },
+ "Demo-MoveEye": {
+  "en": "Demo MoveEye",
+  "fr": "MoveEye de démo",
+  "it": "MoveEye demo",
+  "rm": "MoveEye da demo"
+ },
+ "Demo-MoveEye: aus": {
+  "en": "Demo MoveEye: off",
+  "fr": "MoveEye de démo : désactivé",
+  "it": "MoveEye demo: spento",
+  "rm": "MoveEye da demo: deactivà"
+ },
+ "Demo-MoveEye: ein anderes Fenster ist verbunden": {
+  "en": "Demo MoveEye: another window is connected",
+  "fr": "MoveEye de démo : une autre fenêtre est connectée",
+  "it": "MoveEye demo: è collegata un’altra finestra",
+  "rm": "MoveEye da demo: ina autra fanestra è colliada"
+ },
+ "Demo-MoveEye: nicht erreichbar": {
+  "en": "Demo MoveEye: not reachable",
+  "fr": "MoveEye de démo : inaccessible",
+  "it": "MoveEye demo: non raggiungibile",
+  "rm": "MoveEye da demo: betg cuntanschibel"
+ },
+ "Demo-MoveEye: verbinde …": {
+  "en": "Demo MoveEye: connecting …",
+  "fr": "MoveEye de démo : connexion …",
+  "it": "MoveEye demo: collegamento …",
+  "rm": "MoveEye da demo: collia …"
+ },
+ "Demo-MoveEye: verbunden": {
+  "en": "Demo MoveEye: connected",
+  "fr": "MoveEye de démo : connecté",
+  "it": "MoveEye demo: collegato",
+  "rm": "MoveEye da demo: collià"
  },
  "Den alten Holzsteg im Riedmoos flicken (Ersatzteil, 15 Min.) - dann trockene Füsse": {
   "en": "Repair the old wooden footbridge in the Riedmoos (spare part, 15 min) - then dry feet",
@@ -27798,6 +27840,12 @@
   "fr": "Plus reconnu avec le vélo dans les mains.",
   "it": "Non più riconosciuto con la bici in mano.",
   "rm": "Cun il velo en ils mauns betg pli renconuschì."
+ },
+ "Mit Demo-MoveEye verbinden": {
+  "en": "Connect to the demo MoveEye",
+  "fr": "Se connecter au MoveEye de démo",
+  "it": "Collegarsi al MoveEye demo",
+  "rm": "Colliar cun il MoveEye da demo"
  },
  "Mit der alten Materialseilbahn über den Tüfelsschlund": {
   "en": "With the old cable way over the Tüfelsschlund",

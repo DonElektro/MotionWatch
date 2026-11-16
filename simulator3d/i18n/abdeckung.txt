@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7802 (Stellen: 10869)
-Übersetzt: en 7802, fr 7802, it 7802, rm 7802
+Texte gesamt: 7810 (Stellen: 10883)
+Übersetzt: en 7810, fr 7810, it 7810, rm 7810
 Unsicher markiert: 53
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 529 Stellen
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 534 Stellen
 Nicht mehr im Code (noch in texte.json): 354
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 28058, schlüssel 21231, keine Wörter 13227, index 10007, technisch 3671, doc 2456, einheit 341, log 194, englisch 144, pfad 125, stringname 103, html 68, klasse 40, shader 6
+Übersprungen (Grund: Anzahl): kennung 28097, schlüssel 21247, keine Wörter 13240, index 10009, technisch 3673, doc 2461, einheit 341, log 196, englisch 144, pfad 127, stringname 103, html 68, klasse 40, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       533     4
@@ -57,9 +57,9 @@ Pro Datei (Texte / davon dynamische Stellen):
   spielbereich.gd           58     0
   abenteuer_zwei_team.gd    57     0
   entdecken.gd              57     0
+  handy.gd                  56     2
   quick.gd                  55     2
   bergtal_erleben_b.gd      55     0
-  handy.gd                  53     2
   karte.gd                  49    10
   abenteuer_rucksack.gd     48     3
   explore.gd                48     4
@@ -172,6 +172,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   realism.gd                 8     0
   camphys.gd                 8     1
   maggie_helfer.gd           8     0
+  web_moveeye.gd             7     5
   abgleich.gd                7     4
   tunnel.gd                  7     2
   servo.gd                   7     0
@@ -346,6 +347,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   gamewiz.gd:776  '⚠ Nicht übernommen: '
   gamewiz.gd:1120  'Wie letztes Mal: '
   gamewiz.gd:1219  ' Regeln (%d)'
+  web_moveeye.gd:21  'aus'
+  web_moveeye.gd:84  'aus'
+  web_moveeye.gd:84  'nein'
+  web_moveeye.gd:108  'aus'
+  web_moveeye.gd:110  'aus'
   karte.gd:250  ' – ist der PC mit dem Internet verbunden?'
   karte.gd:250  'Karte: '
   karte.gd:335  'Nichts gefunden'
@@ -667,8 +673,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   geo.gd:1585  ' (Fluss)'
   geo.gd:1681  'Ort: %s (%.5f, %.5f)\n%s\n'
   grafik_hoch.gd:310  'Hoch gewählt, aber aus: '
-  handy.gd:518  '● MoveEye (Demo) · '
-  handy.gd:522  '● MoveEye · '
+  handy.gd:534  '● MoveEye (Demo) · '
+  handy.gd:538  '● MoveEye · '
   headpad.gd:117  '\nAuslöser: Bildmitte (Kreis) auf einen Spieler, dann der runde Knopf im Bild oder R2 am Controller.'
   headpad.gd:119  '\nController: '
   toolbar.gd:180  '\nController: '
@@ -734,7 +740,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   mwpc.gd:340  'Die Pakete liessen sich nicht installieren: '
   mwpc.gd:365  'Unerwartete Datei in versions.json: '
   symbole.gd:27  'Aus'
-  net.gd:432  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
+  net.gd:445  '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n'
   news.gd:258  'MOVEEYE SIM · '
   padroles.gd:129  'Spiel am PC – '
   padtest.gd:44  '  roh %.2f / %.2f'
@@ -782,12 +788,12 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   simint.gd:507  '-Servo blockiert'
   surprise.gd:113  'Überraschung: '
   szenenplus.gd:768  'Spiel zur Szene: '
-  templates.gd:264  'Lizenz: '
-  templates.gd:336  'Datei nicht lesbar: '
-  templates.gd:340  'Kann nicht speichern: '
-  templates.gd:348  'Datei nicht lesbar: '
-  templates.gd:357  'Umwandeln ging nicht: '
-  templates.gd:362  'Datei enthält kein 3D-Modell: '
+  templates.gd:266  'Lizenz: '
+  templates.gd:338  'Datei nicht lesbar: '
+  templates.gd:342  'Kann nicht speichern: '
+  templates.gd:350  'Datei nicht lesbar: '
+  templates.gd:359  'Umwandeln ging nicht: '
+  templates.gd:364  'Datei enthält kein 3D-Modell: '
   zwilling.gd:104  'Bild nicht lesbar: '
   zwilling.gd:114  'Kann nicht speichern: '
   zwilling.gd:180  'Foto fehlt: '

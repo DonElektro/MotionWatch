@@ -59,6 +59,10 @@ static func start(main: Node) -> void:
 	demo.main = main
 	main.web_demo = demo
 	main.add_child(demo)
+	var wm = preload("res://scripts/web_moveeye.gd").new()     # Demo beim Host: mit dem Demo-MoveEye der Homepage (Schalter «Mehr»)
+	wm.name = "WebMoveEye"
+	wm.main = main
+	main.add_child(wm)
 	if q.has("test"):                               # Tests in Chromium: window.mwControl (web_bruecke.gd)
 		var wt = preload("res://scripts/web_bruecke.gd").new()
 		wt.name = "WebTest"

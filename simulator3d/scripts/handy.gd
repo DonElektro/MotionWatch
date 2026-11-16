@@ -528,7 +528,7 @@ func _paint() -> void:
 func _state() -> Array:
 	"""[text, kind] for the pill at the top: alarm / armed / off / demo"""
 	var wd = main.get("web_demo")
-	if wd != null:
+	if wd != null and not wd.still():                 # verbunden mit dem Demo-MoveEye: dessen Zustand (unten)
 		if bool(wd.get("alarm")):
 			return ["⚠ " + T.t("ALARM – Person erkannt") + " · " + T.t("tippen"), "alarm"]
 		return ["● MoveEye (Demo) · " + (T.t("Wachsam") if bool(wd.get("armed")) else T.t("Schutz aus")), "ok"]
@@ -798,6 +798,20 @@ func _press(k: String, s: float) -> void:
 
 
 func _fill_more() -> void:
+	var wm = main.get_meta("web_moveeye") if main.has_meta("web_moveeye") else null
+	if wm != null:                                     # nur im Browser: das Demo-MoveEye auf der Homepage
+		_section("Demo-MoveEye")
+		var cb := CheckButton.new()
+		cb.text = T.t("Mit Demo-MoveEye verbinden")
+		cb.button_pressed = bool(wm.on)
+		cb.custom_minimum_size = Vector2(0, 52)
+		cb.focus_mode = Control.FOCUS_NONE
+		cb.add_theme_font_size_override("font_size", 16)
+		cb.toggled.connect(func(v: bool): wm.set_on(v, true); _sheet("more"))
+		sheet_body.add_child(cb)
+		var st := UI.small(wm.status_text() + " · " + T.t("Das Bild dieses Simulators geht an das Demo-MoveEye auf dieser Homepage."), UI.MUT)
+		st.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		sheet_body.add_child(st)
 	_section("Welt")
 	_row(sheet_body, "Gegenstände", "Zelt, Velo, 80 Dinge", func(): close(); main.inventar.toggle())
 	_row(sheet_body, "Echter Ort", "Karte der Welt", func(): close(); main.open_map())

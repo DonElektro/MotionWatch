@@ -132,6 +132,7 @@ func _process(dt):
 		log.append(line)
 		print("ZUSTAND " + line)
 	if t > 14.0:
+		print("TEXT " + wm.status_text())
 		quit()
 	return false
 '''
@@ -153,8 +154,9 @@ def main():
     try:
         sd = os.path.join(tmp, "scripts"); os.makedirs(sd)
         open(os.path.join(tmp, "project.godot"), "w").write('config_version=5\n[application]\nconfig/name="t"\n')
-        for f in ("web_moveeye.gd", "net.gd"):
+        for f in ("web_moveeye.gd", "net.gd", "i18n.gd"):
             shutil.copy(os.path.join(ROOT, "simulator3d", "scripts", f), sd)
+        shutil.copytree(os.path.join(ROOT, "simulator3d", "i18n"), os.path.join(tmp, "i18n"))
         for f in ("abgleich.gd", "trailer.gd", "versionen.gd"):
             open(os.path.join(sd, f), "w").write("extends Node\nstatic func label(_v) -> String:\n\treturn \"x\"\n"
                                                  "static func wav_bytes(_a = null, _b = null, _c = null) -> PackedByteArray:\n\treturn PackedByteArray()\n")
@@ -184,6 +186,8 @@ def main():
         ok(any(z.startswith("verbunden|2") for z in zs), "zwei Kanäle offen")
         ok(zs and zs[-1] == "besetzt|0|false", f"TAKEN -> besetzt, Kanäle zu, stream_on wie vorher ({zs[-1] if zs else '-'})")
         ok(res.get("reconnect") is False, "nach TAKEN keine neue Verbindung von selbst")
+        ok(any(l.startswith("TEXT ") and "Demo-MoveEye" in l for l in out.splitlines()), "Zustandstext für die Oberfläche: "
+           + next((l[5:] for l in out.splitlines() if l.startswith("TEXT ")), "-"))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print("FEHLER: " + "; ".join(FAIL) if FAIL else "web_moveeye: alles gut")
