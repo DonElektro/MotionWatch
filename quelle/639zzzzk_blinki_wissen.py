@@ -286,7 +286,7 @@ def blinki_ask(mode, q, lang=None, prev=None, who="web", client="", extra=None):
     msgs, sources, links, fixes = blinki_messages(mode, q, L, prev, extra)
     eng = blinki_engine_for(mode)
     x = {"sources": sources, "links": links, "fixes": fixes, "engine": eng or "manual", "client": client, "who": who}
-    x.update({k: v for k, v in (extra or {}).items() if k in ("kid", "place", "speak", "quiz", "image", "sent_image", "max_tokens", "temp")})
+    x.update({k: v for k, v in (extra or {}).items() if k in ("kid", "place", "speak", "quiz", "image", "sent_image", "max_tokens", "temp", "chat")})
     if not eng:
         import queue as _q
         jid = os.urandom(6).hex()

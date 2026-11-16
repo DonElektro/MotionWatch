@@ -15,10 +15,12 @@ liefert ein kleines Test-Modell (GGUF-Kopf) mit fester Grösse und Prüfsumme. M
      (OpenAI-kompatibel + Anthropic Messages, Ersatz-Dienst: Schlüssel nie in Seite / Protokoll / Diagnose / Antwort, Bild nur mit OK, ohne Netz offline).
   F) Stufe 3: Sprechen – Ersatz-«whisper-cli», Erkennung (Aufnahme nie gespeichert), Handy-Aufnahme webm -> Text, 2× klatschen /
      Knopf (ab Werk aus; Klatschschalter, Wecker, Quittieren, Schutz-Knopf wie vorher), QR-Karte, ein Satz am Gerät -> Lautsprecher.
+  P) 💬 Plaudern (639zzzzk_blinki_zz_plaudern): Art und Rechte, eigene Vorgabe, Verlauf (4 Runden, 15 min, «Neu», nur im Speicher), Hinweis
+     offline, Cloud (OpenAI / Anthropic, mit Verlauf, kein Alarm), Auslöser am Gerät + Handy-Aufnahme, 5 Sprachen.
   B) --browser: MoveEye (Demo) im Browser: Mehr → «💬 Blinki fragen», Frage → Antwort Stück für Stück mit «Öffnen», Fehlersuche
      mit Vorschlag, Karte «Blinki einrichten» ohne Modell, 390 px dunkel + PC 1280; Rechte über HTTP. --bilder ORDNER.
 
-  python3 werkzeuge/ki_test.py [--datei X.py] [--browser] [--bilder ORDNER] [--nur a,c,d,e,f,b]
+  python3 werkzeuge/ki_test.py [--datei X.py] [--browser] [--bilder ORDNER] [--nur a,c,d,e,f,p,b]
 """
 import argparse
 import base64
@@ -89,6 +91,8 @@ def fake_llama(argv):
             jf = os.environ.get("FAKE_LLAMA_JSON_FILE", "")
             if jf and os.path.isfile(jf) and "JSON" in sysm:
                 ans = open(jf, encoding="utf-8").read()
+            elif "chatting with the user" in sysm:            # 💬 Plaudern
+                ans = next((v for k, v in CHAT_ANTWORT if re.search(k, q, re.I)), "Gute Frage! Ganz sicher bin ich mir nicht – frag lieber nach, wenn es wichtig ist.")
             else:
                 ans = "Das geht so:\n1. **%s** öffnen.\n2. Dort die Einstellung prüfen.\nFrage war: %s" % (src[0] if src else "Anleitung", q[:60])
             self.send_response(200); self.send_header("Content-Type", "text/event-stream"); self.send_header("Transfer-Encoding", "chunked")
@@ -106,6 +110,11 @@ def fake_llama(argv):
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", port), H)
     srv.daemon_threads = True
     srv.serve_forever()
+
+
+CHAT_ANTWORT = (("abend|rot", "Am Abend steht die Sonne tief. Ihr Licht geht einen langen Weg durch die Luft, das Blau wird unterwegs weggestreut – übrig bleiben **Rot und Orange**."),
+                ("himmel|blau", "Das Sonnenlicht besteht aus allen Farben. Die Luft streut das **blaue Licht** viel stärker als das rote – darum sieht der Himmel blau aus."),
+                ("witz", "Was macht ein Pirat am Computer? – Er drückt die **Enter**-Taste!"))
 
 
 def make_bin(tmp):
@@ -547,6 +556,7 @@ def teil_b(datei, tmp, bilder, extra=None):
     print("B) Browser (MoveEye Demo)", flush=True)
     from playwright.sync_api import sync_playwright
     os.makedirs(bilder, exist_ok=True)
+    B_TMP["tmp"] = tmp
     p, base, op = start_mw(datei, tmp, "bcfg")
     try:
         c1, a1 = http_api(op, base, "/api/ki/ask", {"mode": "frag", "q": "Wie laut ist die Sirene?"}, "gast", "gast-pw-123")
@@ -554,7 +564,7 @@ def teil_b(datei, tmp, bilder, extra=None):
         c3, _a = http_api(op, base, "/api/ki/model", {"action": "load"}, "gast", "gast-pw-123")
         c4, _a = http_api(op, base, "/api/ki/ask", {"mode": "frag", "q": "x"}, "kind", "kind-pw-123")
         c5, s5 = http_api(op, base, "/api/ki/state", None, "gast", "gast-pw-123")
-        ok([c1, c2, c3, c4, c5] == [200, 403, 403, 403, 200] and [m["m"] for m in s5["state"]["modes"]] == (["frag", "geschichte", "natur"] if len(s5["state"]["modes"]) > 1 else ["frag"]),
+        ok([c1, c2, c3, c4, c5] == [200, 403, 403, 403, 200] and [m["m"] for m in s5["state"]["modes"]] == (["frag", "plaudern", "geschichte", "natur"] if len(s5["state"]["modes"]) > 1 else ["frag"]),
            "Rechte über HTTP: Nur ansehen fragt %d, Fehlersuche %d, Modell %d; Kind %d; Arten für Gast: %s" % (c1, c2, c3, c4, [m["m"] for m in s5["state"]["modes"]]))
         with sync_playwright() as pw:
             br = pw.chromium.launch(args=["--no-proxy-server", "--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"])
@@ -693,9 +703,9 @@ def run(mode, q="", extra=None, cl="e"):
     return j
 K.fake_model(ns["DATA_DIR"])
 ns["BLINKI_MODE_ICON"]
-ok([m["m"] for m in ns["blinki_modes"]("admin")] == ["frag", "fehler", "geschichte", "natur", "quiz"], "Arten: 💬 🔧 🔥 🦌 🎤")
-ok([m["m"] for m in ns["blinki_modes"]("kid")] == ["geschichte"] and [m["m"] for m in ns["blinki_modes"]("view")] == ["frag", "geschichte", "natur"]
-   and [m["m"] for m in ns["blinki_modes"]("friend")] == ["frag", "geschichte", "quiz"], "Rechte: Kind nur Geschichten, Naturführer = Aufnahmen, Quiz = Spiele")
+ok([m["m"] for m in ns["blinki_modes"]("admin")] == ["frag", "plaudern", "fehler", "geschichte", "natur", "quiz"], "Arten: 💬 💬 🔧 🔥 🦌 🎤")
+ok([m["m"] for m in ns["blinki_modes"]("kid")] == ["geschichte"] and [m["m"] for m in ns["blinki_modes"]("view")] == ["frag", "plaudern", "geschichte", "natur"]
+   and [m["m"] for m in ns["blinki_modes"]("friend")] == ["frag", "plaudern", "geschichte", "quiz"], "Rechte: Kind nur Geschichten, Naturführer = Aufnahmen, Quiz = Spiele")
 # stories with places of the own site
 ns["ZONES"][:] = [{"name": "Feuerstelle", "mode": "alarm", "points": []}]
 ok("Feuerstelle" in ns["blinki_places"](), "Orte des eigenen Platzes: %s" % ns["blinki_places"]())
@@ -984,14 +994,302 @@ def teil_f(datei, tmp):
     FEHLER.extend(json.loads(m.group(1)))
 
 
+# ---- 💬 Plaudern (639zzzzk_blinki_zz_plaudern) ------------------------------------------------------------------------------------
+TEIL_P = r'''
+import json, os, sys, time, glob
+import numpy as np
+sys.path.insert(0, os.environ["KI_HIER"])
+import ki_test as K
+src = open(sys.argv[1], encoding="utf-8").read()
+i = src.rfind('\nif __name__ == "__main__":')
+ns = {"__name__": "mw_ki_p", "__file__": os.path.abspath(sys.argv[1])}
+exec(compile(src[:i], sys.argv[1], "exec"), ns)
+ok = K.ok
+C, B, CH = ns["CFG"], ns["BLINKI"], ns["BLINKI_CHAT"]
+C.update(lang="de")
+logs = []
+_lg = ns["log_event"]
+def lg(kind, text):
+    logs.append(str(text)); return _lg(kind, text)
+ns["log_event"] = lg
+def wait(f, s):
+    t = time.time()
+    while time.time() - t < s:
+        if f(): return True
+        time.sleep(0.05)
+    return False
+def reqs():
+    return [json.loads(x)["req"] for x in open(os.environ["FAKE_LLAMA_LOG"]) if '"req"' in x]
+def run(q, cl="p1", L="de", who="test"):
+    j, e = ns["blinki_ask"]("plaudern", q, L, ["ALTFRAGE-X", "ALTANTWORT-Y"], who, cl)
+    assert j is not None, e
+    wait(lambda: j["state"] in ("done", "error", "stopped"), 60)
+    return j
+# --- the mode
+ok([m["m"] for m in ns["blinki_modes"]("admin")][:2] == ["frag", "plaudern"] and ns["blinki_modes"]("admin")[1]["icon"] == "💬", "Art «💬 Plaudern» gleich nach «Frag MoveEye»")
+ra = ns["role_allows"]
+ok(ra("view", "/api/ki/ask", "POST", {"mode": "plaudern"}) and ra("family", "/api/ki/ask", "POST", {"mode": "plaudern"}) and not ra("kid", "/api/ki/ask", "POST", {"mode": "plaudern"})
+   and ra("view", "/api/ki/new", "POST", {}), "Rechte wie «Frag MoveEye»: alle angemeldeten ausser Kinder; «Neu» darf jeder")
+j, e = ns["blinki_ask"]("plaudern", "", "de")
+ok(j is None and e == "the text is empty", "Plaudern braucht eine Frage")
+j, e = ns["blinki_ask"]("plaudern", "Warum ist der Himmel blau?", "de", None, "test", "p0")
+ok(j and j["engine"] == "manual" and "Sprachmodell" in j["text"], "ohne Modell: Hinweis «braucht das Sprachmodell» (%s)" % (j or {}).get("text", "")[:50])
+ns["blinki_chat_forget"]()
+# --- the prompt (offline)
+K.fake_model(ns["DATA_DIR"])
+j = run("Warum ist der Himmel blau?")
+r = reqs()[-1]; sm = r["messages"][0]["content"]
+ok(j["state"] == "done" and j["engine"] == "offline" and "blaue" in j["text"], "offline: Antwort vom Modell auf dem Gerät (%s)" % j["text"][:50])
+for need, what in (("at most 8 sentences", "kurz (≤ 8 Sätze)"), ("Answer in German", "in der Sprache des Benutzers"), ("say so honestly", "ehrlich, wenn unsicher"),
+                   ("without any internet", "offline: kein Internet"), ("nothing about current events", "keine aktuellen Ereignisse"),
+                   ("Never give instructions to switch off", "nie Schutz / Alarm / Kamera aus"), ("Health, law and money: only general information", "keine Arzt- / Rechts- / Geldberatung"),
+                   ("children from 10", "familientauglich ab 10"), ("Politely refuse adult", "Erwachsenen- / gefährliche Themen höflich ablehnen"), ("«Frag MoveEye»", "verweist für MoveEye auf «Frag MoveEye»")):
+    ok(need in sm, "Vorgabe: %s" % what)
+ok(r["max_tokens"] == 420 and len(r["messages"]) == 2 and "FACTS FROM THE MANUAL" not in sm and "ALTFRAGE-X" not in json.dumps(r["messages"]), "erste Frage: nur Vorgabe + Frage (kein «prev» der Seite, keine Anleitung)")
+v = ns["blinki_job_view"](j)
+ok(v["note"] == "Kleines Offline-Modell – es kann sich irren. Mit der Cloud sind die Antworten besser." and v["turns"] == 1, "offline: Hinweis-Zeile in der Antwort (%s)" % v["note"])
+# --- the history: the last 4 turns, per conversation
+for k_ in range(2, 7):
+    run("Frage %d: Wie weit ist der Mond weg?" % k_)
+ms = reqs()[-1]["messages"]
+qs = [m["content"] for m in ms if m["role"] == "user"]
+ok(len(ms) == 1 + 2 * 4 + 1 and qs[0].startswith("Frage 2") and qs[-1].startswith("Frage 6") and [m["role"] for m in ms[1:3]] == ["user", "assistant"],
+   "Verlauf: höchstens 4 frühere Fragen + Antworten (%d Nachrichten, älteste «%s»)" % (len(ms), qs[0][:8]))
+ok(len(CH["conv"]["web|test|p1"]["turns"]) == 4, "im Speicher: 4 Runden")
+run("Hallo", cl="p2")
+ok(len(reqs()[-1]["messages"]) == 2, "anderes Gespräch (andere Seite): kein fremder Verlauf")
+run("Hallo", cl="p1", who="anna")
+ok(len(reqs()[-1]["messages"]) == 2, "anderer Benutzer mit derselben Seiten-Kennung: kein fremder Verlauf")
+# --- idle reset: 15 min without a question
+ok(ns["BLINKI_CHAT_IDLE_S"] == 900, "Leerlauf-Grenze 15 min")
+CH["conv"]["web|test|p1"]["t"] -= 901
+jold = [x for x in B["jobs"].values() if x.get("chat") == "web|test|p1"]
+for x in jold:
+    x["t_end"] -= 901
+n_ = ns["blinki_chat_forget"](None, True)
+ok(n_ >= 1 and "web|test|p1" not in CH["conv"] and not any(x.get("chat") == "web|test|p1" for x in B["jobs"].values()),
+   "nach 15 min ohne Frage: Verlauf und Antworten weg (%d alte Antworten entfernt)" % len(jold))
+run("Und jetzt?")
+ok(len(reqs()[-1]["messages"]) == 2, "danach: neues Gespräch ohne Verlauf")
+run("Noch eine?")
+CH["conv"]["web|test|p1"]["t"] -= 901
+run("Nach der Pause")
+ok(len(reqs()[-1]["messages"]) == 2, "Leerlauf auch ohne Aufräum-Faden: beim nächsten Fragen vergessen")
+ok(CH["sweeper"] is not None and CH["sweeper"].is_alive() and CH["sweeper"].daemon, "Aufräum-Faden läuft (alle 30 s)")
+# --- «Neu»
+run("Eins"); run("Zwei")
+ok(ns["blinki_chat_forget"]("web|test|p1") == 1 and not any(x.get("chat") == "web|test|p1" for x in B["jobs"].values()), "«Neu»: Verlauf und Antworten dieses Gesprächs weg")
+ok("web|test|p2" in CH["conv"], "«Neu» lässt andere Gespräche stehen")
+run("Drei")
+ok(len(reqs()[-1]["messages"]) == 2, "nach «Neu»: ohne Verlauf")
+# --- nothing on the disk / in the log
+secret = "Mein Geheimnis ist Zitronenkuchen"
+run(secret)
+D = ns["DATA_DIR"]; hits = []
+for root, _d, files in os.walk(D):
+    for f in files:
+        pth = os.path.join(root, f)
+        try:
+            if os.path.getsize(pth) < 5e6 and b"Zitronenkuchen" in open(pth, "rb").read():
+                hits.append(pth)
+        except OSError:
+            pass
+ok(not any("Zitronenkuchen" in x for x in logs) and not hits, "Frage und Antwort nie im Protokoll, nie auf der Karte (%s)" % hits[:2])
+ok(any("question (plaudern, offline)" in x for x in logs), "Protokoll nur die Zeile «Blinki: question (plaudern, offline)» (wie bisher)")
+# --- the 5 languages
+want = {"de": ("Plaudern", "German", "Frag MoveEye", "Kleines Offline-Modell"), "fr": ("Bavarder", "French", "Demande à MoveEye", "Petit modèle"),
+        "it": ("Chiacchierare", "Italian", "Chiedi a MoveEye", "Piccolo modello"), "rm": ("Discurrer", "Romansh", "Dumonda MoveEye", "Pitschen model"),
+        "en": ("Chat freely", "English", "Ask MoveEye", "Small offline model")}
+for L, (lab, lname, frag, note) in want.items():
+    j = run("Erzähl mir einen Witz", cl="lang-" + L, L=L)
+    sm = reqs()[-1]["messages"][0]["content"]
+    lb = next(m["label"] for m in ns["blinki_modes"]("admin", lang=L) if m["m"] == "plaudern")
+    v = ns["blinki_job_view"](j)
+    ok(lb == lab and ("Answer in " + lname) in sm and ("«%s»" % frag) in sm and v["note"].startswith(note), "%s: «%s», Antwort auf %s, Hinweis «%s…»" % (L, lb, lname, v["note"][:22]))
+tx = ns["BKFRAG_TX"]
+neu = ["Chat freely", "Ask Blinki anything - knowledge, ideas, small talk", "Ask me anything …", "New conversation", "Small offline model - it can be wrong. The cloud gives better answers.",
+       "Blinki remembers the last %n questions, only in memory - gone after %m min without a question.", "At the device Blinki answers as"]
+ok(all(k in tx and ns["DE"].get(k) and all(ns["TRX"][L].get(k) for L in ("fr", "it", "rm")) for k in neu) and not [k for k in tx if "ß" in ns["DE"].get(k, "")],
+   "neue Texte in 5 Sprachen, Deutsch ohne «ß»")
+ok("Plaudern" in ns["HELP_PAGE"] and "Chat freely" in ns["HELP_PAGE"] and all("💬" in ns["HELP_X"][L].split('id="blinki"')[1][:2000] and ("Bavarder", "Chiacchierare", "Discurrer")[i] in ns["HELP_X"][L]
+   for i, L in enumerate(("fr", "it", "rm"))), "Anleitung: Plaudern in 5 Sprachen")
+# --- the cloud
+cl = K.Cloud()
+st = ns["blinki_set"]
+for k_, v_ in (("blinki_cloud_url", cl.url), ("blinki_cloud_model", "test-model-1"), ("blinki_cloud_key", "sk-test-PLAUDERN-1234567890"), ("blinki_cloud_fmt", "openai"), ("blinki_cloud_on", True)):
+    st(k_, v_)
+nl = len(reqs())
+j = run("Warum ist der Himmel blau?", cl="c1")
+body = json.loads(cl.reqs[-1]["raw"]); sm = body["messages"][0]["content"]
+v = ns["blinki_job_view"](j)
+ok(j["engine"] == "cloud" and j["text"] == "Hallo aus der Cloud." and len(reqs()) == nl and "cannot browse the web" in sm and "without any internet" not in sm and v["note"] == "",
+   "Cloud-Schalter ein: Frage an die Cloud (Vorgabe «kann nicht im Netz suchen», kein Offline-Hinweis), nicht ans Gerät")
+j = run("Und am Abend?", cl="c1")
+body = json.loads(cl.reqs[-1]["raw"])
+ok([m["role"] for m in body["messages"]] == ["system", "user", "assistant", "user"] and body["messages"][2]["content"] == "Hallo aus der Cloud.", "Cloud: mit dem Verlauf")
+ok(st("blinki_cloud_fmt", "anthropic")[0], "Format Anthropic")
+j = run("Noch was?", cl="c1")
+body = json.loads(cl.reqs[-1]["raw"])
+ok(cl.reqs[-1]["path"] == "/v1/messages" and "chatting with the user" in body["system"] and [m["role"] for m in body["messages"]] == ["user", "assistant", "user", "assistant", "user"],
+   "Anthropic Messages: Vorgabe als «system», Verlauf als Nachrichten")
+# no answer during an alarm (the cloud too)
+ns["blinki_ensure"]()
+ns["LED"]["alarm"] = True
+ok(wait(lambda: B["held"] == "alarm", 5), "Alarm: Blinki hält an")
+n0 = len(cl.reqs)
+j, e = ns["blinki_ask"]("plaudern", "Während des Alarms?", "de", None, "test", "c2")
+time.sleep(1.5)
+ok(j["state"] == "wait" and len(cl.reqs) == n0 and ns["blinki_job_view"](j)["held"] == "alarm", "Cloud: während des Alarms keine Antwort (wartet)")
+ns["LED"]["alarm"] = False
+ok(wait(lambda: j["state"] == "done", 30) and len(cl.reqs) == n0 + 1, "nach dem Alarm (3 s ruhig): Antwort kommt")
+# no network: offline instead, with the hint
+st("blinki_cloud_url", "http://127.0.0.1:9/v1"); st("blinki_cloud_fmt", "openai")
+j = run("Ohne Netz?", cl="c3")
+ok(j["engine"] == "offline" and j["state"] == "done" and ns["blinki_job_view"](j)["note"], "Cloud nicht erreichbar: offline mit Hinweis-Zeile")
+st("blinki_cloud_on", False)
+# --- speaking: the device trigger asks «Plaudern» when the administrator chooses it
+ok(C["blinki_listen_mode"] == "frag" and ns["DEFAULTS"]["blinki_listen_mode"] == "frag" and "blinki_listen_mode" in ns["USER_SETTINGS_DENY"] and "blinki_listen_mode" in ns["APPKEY_DENY_KEYS"],
+   "Auslöser am Gerät: ab Werk «Frag MoveEye» (wie bisher), nur der Administrator")
+ok(st("blinki_listen_mode", "bogus")[0] is False and st("blinki_listen_mode", "plaudern")[0], "Auslöser-Art: nur frag / plaudern")
+K.fake_stt_model(ns["DATA_DIR"])
+said = []
+ns["tts_say"] = lambda t, L=None, save=False: said.append(t) or (True, "")
+ns["sound_play"] = lambda *a, **k: True
+C.update(audio_in="hw:1")
+class A_: mute_until = 0.0; sim_t = 0.0
+ns["AUDIO"] = A_(); ns["SOUND"]["playing"] = False; ns["WAKE"]["state"] = "off"
+sr = 16000
+def tone(sec, amp=0.3, f=300.0):
+    t = np.arange(int(sec * sr)) / sr
+    return (amp * np.sin(2 * np.pi * f * t) * 32767).astype("<i2")
+def quiet(sec):
+    return (np.random.RandomState(1).randn(int(sec * sr)) * 30).astype("<i2")
+LI = ns["LISTEN"]
+def listen_once():
+    said.clear()
+    ok_, e_ = ns["blinki_listen"]("test")
+    if not ok_:
+        print("  (listen: %s)" % e_)
+    for sec, kind in ((0.8, "q"), (1.2, "t"), (1.6, "q")):
+        for _k in range(int(sec * 10)):
+            ns["blinki_mic_feed"](tone(0.1) if kind == "t" else quiet(0.1), time.time()); time.sleep(0.1)
+    wait(lambda: not LI["on"], 60)
+    jj = B["jobs"].get(LI["jid"])
+    wait(lambda: bool(said), 30)
+    return jj
+jd = listen_once()
+ok(jd is not None and jd["mode"] == "plaudern" and jd["chat"] == "device" and jd["q"] == "Wie laut ist die Sirene?", "Gerät: gesprochene Frage geht an «Plaudern» (%s)" % (jd or {}).get("mode"))
+ok(said and "Hinweis" not in " ".join(said) and "Offline-Modell" not in " ".join(said), "Gerät: Antwort über den Lautsprecher (ohne die Hinweis-Zeile): %s" % [x[:50] for x in said[:1]])
+jd2 = listen_once()
+ok(jd2 is not None and len(jd2["messages"]) == 4, "Gerät: zweite gesprochene Frage mit Verlauf (%d Nachrichten)" % len((jd2 or {}).get("messages", [])))
+st("blinki_listen_mode", "frag")
+jd3 = listen_once()
+ok(jd3 is not None and jd3["mode"] == "frag", "Auslöser wieder «Frag MoveEye»: wie vorher")
+ns["LED"]["alarm"] = True
+ok(ns["blinki_listen"]("test")[1] == "not now: alarm", "Alarm: hört nicht zu (unverändert)")
+ns["LED"]["alarm"] = False
+# phone: the recording (webm) -> text -> the question in «Plaudern»
+import subprocess
+wav = os.path.join(os.environ["KI_TMP"], "rec_p.webm")
+subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-f", "lavfi", "-i", "sine=frequency=300:duration=1.5:sample_rate=48000", "-c:a", "libopus", wav], check=True)
+txt, e = ns["blinki_stt_upload"](open(wav, "rb").read(), "de")
+j = run(txt, cl="phone")
+ok(txt and j["state"] == "done" and j["mode"] == "plaudern" and j["q"] == txt, "Handy: Aufnahme -> Text -> Frage in «Plaudern»")
+ok(ns["blinki_say"](j["id"], "browser", 0, "de")[1] != "unknown action", "Handy: Antwort vorlesen (Piper im Browser) kennt die Antwort")
+# --- the window (tk) has its own conversation
+ok(ns["blinki_chat_key"]("window", "tk") == "tk" and ns["blinki_chat_key"]("x", "device") == "device" and ns["blinki_chat_key"]("gast", "abc").startswith("web|gast|"),
+   "Gespräche: Gerät, Fenster, Seite (Benutzer + Seite) getrennt")
+f = next(f for n, f in ns["SELFTEST_EXTRA"] if "Blinki fragen" in n)
+try:
+    ok("chat" in f(), "Selbsttest-Funktion mit Plaudern")
+except AssertionError as e_:
+    ok(False, "Selbsttest-Funktion: %s" % e_)
+ns["blinki_stop"]("test")
+print("RESULT " + json.dumps(K.FEHLER))
+'''
+
+
+def teil_p(datei, tmp):
+    print("P) 💬 Plaudern: Art, Vorgabe, Verlauf (4 Runden, 15 min, «Neu»), Cloud, Sprechen, 5 Sprachen", flush=True)
+    make_whisper(tmp)
+    env = dict(env_for(tmp, os.path.join(tmp, "phome")), KI_HIER=HIER, KI_TMP=tmp, FAKE_WHISPER_LOG=os.path.join(tmp, "whisper_p.log"),
+               FAKE_LLAMA_LOG=os.path.join(tmp, "llama_p.log"))
+    p = subprocess.run([sys.executable, "-c", TEIL_P, datei], capture_output=True, text=True, env=env, cwd=tmp, timeout=900)
+    print("\n".join(x for x in p.stdout.splitlines() if x.startswith("  ")), flush=True)
+    m = re.search(r"^RESULT (.*)$", p.stdout, re.M)
+    if not m:
+        FEHLER.append("Teil P abgebrochen"); print((p.stderr or "")[-3000:]); return
+    FEHLER.extend(json.loads(m.group(1)))
+
+
+B_TMP = {}
+
+
+def b_plaudern(pg, name, base, op, bilder):
+    """💬 Plaudern in the browser: the chooser, a short chat with the offline hint, «New conversation»"""
+    pg.evaluate("() => window.scrollTo(0, 0)")
+    chip = pg.locator("#bk-modes button", has_text="Plaudern")
+    ok(chip.count() == 1, "%s: Art «💬 Plaudern» (%s)" % (name, chip.inner_text() if chip.count() else "-"))
+    chip.click(); pg.wait_for_timeout(300)
+    ok(pg.locator("#bk-new").is_visible() and "Plaudern" in pg.locator("#bk-modes button.sel").inner_text() and "Frag mich" in (pg.locator("#bk-q").get_attribute("placeholder") or ""),
+       "%s: Plaudern gewählt, «Neues Gespräch», Platzhalter" % name)
+    pg.locator("#bk-new").click(); pg.wait_for_timeout(400); weg(pg)
+    if name == "handy":
+        pg.evaluate("() => { document.getElementById('bk-modes').scrollLeft = 0; window.scrollTo(0, 0); }"); pg.wait_for_timeout(200)
+        pg.screenshot(path=os.path.join(bilder, "plaudern_handy_auswahl.png"))
+    logp = os.path.join(B_TMP.get("tmp", ""), "llama.log")
+    for q in ("Warum ist der Himmel blau?", "Und warum ist er am Abend rot?"):
+        n0 = pg.locator(".bkp-act").count()
+        pg.locator("#bk-q").fill(q); pg.locator("#bk-go").click()
+        pg.wait_for_function("(n) => document.querySelectorAll('.bkp-act').length > n && !document.querySelector('.bkp-say .cur')", arg=n0, timeout=60000)
+    pg.wait_for_timeout(400); weg(pg)
+    notes = pg.locator(".bkp-note")
+    ok(notes.count() == 2 and "Offline-Modell" in notes.last.inner_text() and "Cloud" in notes.last.inner_text(), "%s: Hinweis-Zeile «%s»" % (name, notes.last.inner_text() if notes.count() else "-"))
+    rq = [json.loads(x)["req"] for x in open(logp) if '"req"' in x] if os.path.isfile(logp) else []
+    ok(rq and [m["role"] for m in rq[-1]["messages"]] == ["system", "user", "assistant", "user"] and "Himmel" in rq[-1]["messages"][1]["content"],
+       "%s: zweite Frage mit dem Verlauf der ersten" % name)
+    ok("Rot und Orange" in pg.locator(".bkp-say").last.inner_text(), "%s: Antwort im Chat" % name)
+    w = pg.evaluate("() => document.documentElement.scrollWidth")
+    ok(w <= pg.viewport_size["width"], "%s: keine waagrechte Bildlaufleiste (%d)" % (name, w))
+    if name == "handy":
+        pg.screenshot(path=os.path.join(bilder, "plaudern_handy_chat.png"))
+        pg.locator(".bkp-note").last.scroll_into_view_if_needed(); pg.wait_for_timeout(300); weg(pg)
+        pg.screenshot(path=os.path.join(bilder, "plaudern_handy_hinweis.png"))
+        pg.screenshot(path=os.path.join(bilder, "plaudern_handy_ganz.png"), full_page=True)
+    pg.locator("#bk-new").click(); pg.wait_for_timeout(500)
+    ok(pg.locator(".bkp-say").count() == 0 and pg.locator("#bk-intro").is_visible(), "%s: «Neues Gespräch» leert den Chat" % name)
+    pg.locator("#bk-q").fill("Erzähl mir einen Witz"); pg.locator("#bk-go").click()
+    pg.wait_for_function("() => document.querySelectorAll('.bkp-act').length > 0 && !document.querySelector('.bkp-say .cur')", timeout=60000)
+    rq = [json.loads(x)["req"] for x in open(logp) if '"req"' in x] if os.path.isfile(logp) else []
+    ok(rq and len(rq[-1]["messages"]) == 2, "%s: nach «Neu» ohne Verlauf (auch im Speicher von MoveEye)" % name)
+    if name == "handy":                                 # 🎙 in «Plaudern»: the spoken question goes to this mode
+        mic = pg.locator("#bk-mic"); n0 = pg.locator(".bkp-me").count()
+        bb = mic.bounding_box()
+        pg.mouse.move(bb["x"] + bb["width"] / 2, bb["y"] + bb["height"] / 2); pg.mouse.down(); pg.wait_for_timeout(2200); pg.mouse.up()
+        pg.wait_for_function("(n) => document.querySelectorAll('.bkp-me').length > n", arg=n0, timeout=60000)
+        pg.wait_for_function("() => !document.querySelector('.bkp-say .cur') && document.querySelectorAll('.bkp-note').length > 0", timeout=60000)
+        rq = [json.loads(x)["req"] for x in open(logp) if '"req"' in x]
+        ok("chatting with the user" in rq[-1]["messages"][0]["content"] and rq[-1]["messages"][-1]["content"] == "Wie laut ist die Sirene?" and len(rq[-1]["messages"]) == 4,
+           "handy: 🎙 in «Plaudern» → Frage an Plaudern, mit Verlauf")
+        pg.evaluate("() => { document.getElementById('bk-adm').open = true; }"); pg.wait_for_timeout(300)
+        ok(pg.locator("#bk-lm").count() == 1 and pg.locator("#bk-lm").input_value() == "frag", "Einstellung «Am Gerät antwortet Blinki als» (ab Werk Frag MoveEye)")
+        pg.locator("#bk-lm").scroll_into_view_if_needed(); pg.evaluate("() => window.scrollBy(0, 200)"); pg.wait_for_timeout(300); weg(pg)
+        pg.screenshot(path=os.path.join(bilder, "plaudern_handy_geraet.png"))
+        pg.evaluate("() => { document.getElementById('bk-adm').open = false; }")
+        pg.locator("#bk-new").click(); pg.wait_for_timeout(300)
+    pg.locator("#bk-modes button", has_text="Frag MoveEye").click(); pg.wait_for_timeout(200)
+
+
 def b_extra(pg, name, base, op, bilder):
     """stage 2 + 3 in the browser: the modes, 🎙 hold to talk (Chromium fake microphone), https hint, settings"""
     n = pg.locator("#bk-modes button").count()
-    ok(n == 5, "%s: 5 Arten (%s)" % (name, pg.locator("#bk-modes").inner_text().replace("\n", " · ")))
+    ok(n == 6, "%s: 6 Arten (%s)" % (name, pg.locator("#bk-modes").inner_text().replace("\n", " · ")))
+    b_plaudern(pg, name, base, op, bilder)
     pg.locator("#bk-modes button", has_text="Lagerfeuer").click(); pg.wait_for_timeout(300)
     ok(pg.locator("#bk-opts .seg button").count() == 2, "%s: 🔥 Kinder / Erwachsene" % name)
+    n0 = pg.locator(".bkp-act").count()                 # b_plaudern ends with «New conversation»: count from here
     pg.locator("#bk-go").click()
-    pg.wait_for_function("() => document.querySelectorAll('.bkp-src, .bkp-act').length >= 4 && !document.querySelector('.bkp-say .cur')", timeout=60000)
+    pg.wait_for_function("(n) => document.querySelectorAll('.bkp-act').length > n && !document.querySelector('.bkp-say .cur')", arg=n0, timeout=60000)
     pg.wait_for_timeout(500); weg(pg)
     pg.screenshot(path=os.path.join(bilder, "blinki_%s_geschichte.png" % name))
     if name != "handy":
@@ -1048,7 +1346,7 @@ def main():
                                                key=lambda p: [int(x) for x in re.findall(r"\d+", os.path.basename(p))])[-1])
     print("KI-Test (Blinki fragen) · " + os.path.basename(datei), flush=True)
     tmp = tempfile.mkdtemp(prefix="mw_ki_")
-    nur = set(a.nur.split(",")) if a.nur else set("acdefb")
+    nur = set(a.nur.split(",")) if a.nur else set("acdefpb")
     try:
         if "a" in nur:
             teil_a(datei, tmp)
@@ -1060,6 +1358,8 @@ def main():
             teil_e(datei, tmp)
         if "f" in nur:
             teil_f(datei, tmp)
+        if "p" in nur:
+            teil_p(datei, tmp)
         if a.browser and "b" in nur:
             teil_b(datei, tmp, a.bilder, b_extra)
     finally:

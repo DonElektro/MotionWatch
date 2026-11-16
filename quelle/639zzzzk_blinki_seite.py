@@ -97,15 +97,17 @@ details.bkp-card>summary{cursor:pointer;font-weight:700;min-height:36px;display:
   $i("bk-back").textContent = "‹ " + t("More"); $i("bk-title").textContent = t("Ask Blinki");
   $i("bk-go").setAttribute("aria-label", t("Send")); $i("bk-mic").setAttribute("aria-label", t("Hold to speak"));
   const SUB = {frag: "Questions about MoveEye - answers from the manual", fehler: "Blinki reads the log and the self-check - and only suggests",
-               geschichte: "A story for the campfire - for children or adults", natur: "About the animals MoveEye saw near the camp", quiz: "New questions for the quiz of the game corner"};
-  const PH = {frag: "Ask something about MoveEye …", fehler: "What does not work? (or just send)", geschichte: "What about? (or just send)",
+               plaudern: "Ask Blinki anything - knowledge, ideas, small talk", geschichte: "A story for the campfire - for children or adults", natur: "About the animals MoveEye saw near the camp", quiz: "New questions for the quiz of the game corner"};
+  const PH = {frag: "Ask something about MoveEye …", fehler: "What does not work? (or just send)", plaudern: "Ask me anything …", geschichte: "What about? (or just send)",
               natur: "Which animal? (or just send)", quiz: "Topic? (or just send)"};
   const EX = {frag: ["How loud is the siren?", "What does the clap switch do?", "How do I set up push messages?", "Why does it alarm at night?"],
               fehler: ["Why are there no push messages?", "The picture is black", "Check everything"],
+              plaudern: ["Why is the sky blue?", "A game for a rainy day?", "How far away is the moon?", "Tell me a joke"],
               geschichte: ["A fox who wants to camp", "The night the stars went out", "Blinki and the lost tent peg"],
               natur: ["What did MoveEye see this week?", "How do I watch foxes without disturbing them?"],
               quiz: ["Animals of the Alps", "Stars and moon", "Switzerland"]};
-  const INTRO = {geschichte: "Lean back - I tell you a story. Choose for whom, and if you like a place of your site.",
+  const INTRO = {plaudern: "Let's chat! Ask me anything - I keep your last questions in mind for a while. I do not know today's news, and I can be wrong.",
+                 geschichte: "Lean back - I tell you a story. Choose for whom, and if you like a place of your site.",
                  natur: "I look at what MoveEye saw in the last 7 days and tell you about these animals.",
                  quiz: "I write new questions for the quiz of the game corner. You check them and take the good ones."};
   const OPT = {kid: LS.get("mw-bk-kid", "1") === "1", place: "", n: 8, img: false};
@@ -147,8 +149,14 @@ details.bkp-card>summary{cursor:pointer;font-weight:700;min-height:36px;display:
     window.MWBK.hooks.forEach(f => { try { f("intro", mode, S); } catch (e) {} });
   }
   function opts() {
-    const box = $i("bk-opts"); box.textContent = ""; box.hidden = !["geschichte", "natur", "quiz"].includes(mode); if (box.hidden || !S) return;
-    if (mode === "geschichte") {
+    const box = $i("bk-opts"); box.textContent = ""; box.hidden = !["geschichte", "natur", "quiz", "plaudern"].includes(mode); if (box.hidden || !S) return;
+    if (mode === "plaudern") {                           // the conversation lives only in the memory of MoveEye; «New» forgets it
+      const nb = E("button", "sec", "🆕 " + t("New conversation")); nb.type = "button"; nb.id = "bk-new";
+      nb.onclick = async () => { if (cur) api("/api/ki/stop", {id: cur.job}); await api("/api/ki/new", {client: client}); $i("bk-chat").textContent = ""; last = null; cur = null; $i("bk-go").disabled = false; intro(); };
+      box.appendChild(nb);
+      const C = S.chat || {turns: 4, idle_min: 15};
+      box.appendChild(E("span", "bkp-wait", "🧠 " + t("Blinki remembers the last %n questions, only in memory - gone after %m min without a question.").replace("%n", C.turns).replace("%m", C.idle_min)));
+    } else if (mode === "geschichte") {
       if (!S.kid_only) { const sg = E("div", "seg"); [["1", "🧒 " + t("Children")], ["0", "🧑 " + t("Adults")]].forEach(([v, l]) => { const b = E("button", "sec" + ((OPT.kid ? "1" : "0") === v ? " sel" : ""), l); b.type = "button";
         b.onclick = () => { OPT.kid = v === "1"; LS.set("mw-bk-kid", v); opts(); }; sg.appendChild(b); }); box.appendChild(sg); }
       if ((S.places || []).length) { const sel = E("select"); sel.setAttribute("aria-label", t("Place"));
@@ -258,6 +266,10 @@ details.bkp-card>summary{cursor:pointer;font-weight:700;min-height:36px;display:
       if (!P.exe && P.install !== "running") B("🔧 " + t("Set up whisper.cpp"), "engine");
       if (P.ok) B("🎙 " + t("Listen at the device now (test)"), "listen");
       box.appendChild(row);
+      if (S.chat) { const l = E("label"), sel = E("select"); sel.id = "bk-lm";
+        [["frag", "💬 " + t("Ask MoveEye")], ["plaudern", "💬 " + t("Chat freely")]].forEach(([v, x]) => { const o = E("option", "", x); o.value = v; if (v === S.chat.listen_mode) o.selected = true; sel.appendChild(o); });
+        sel.onchange = async () => { const j = await api("/api/ki/set", {key: "blinki_listen_mode", value: sel.value}); if (!j.ok) alert(j.error); else S = j.state; };
+        l.append(E("span", "", t("At the device Blinki answers as")), sel); box.appendChild(l); }
       sw("blinki_clap", "👏 " + t("Clapping 2× starts Blinki"), P.clap, t("Only when clapping twice does nothing else (clap switch, wake-up alarm stay as they are). Off by default."));
       sw("blinki_btn", "🔘 " + t("Long press on «Acknowledge» starts Blinki"), P.btn, t("Only when there is nothing to acknowledge - the button acknowledges first as always; the protection button stays as it is. Off by default."));
       const q = E("div", "mut"); q.appendChild(document.createTextNode("▦ " + t("QR card: in the card workshop the command «💬 Blinki listens».") + " ")); const qa = E("a", "", t("Card workshop") + " ›"); qa.href = "/karten"; q.appendChild(qa); box.appendChild(q);
@@ -324,6 +336,7 @@ details.bkp-card>summary{cursor:pointer;font-weight:700;min-height:36px;display:
       const ac = E("div", "bkp-act"); ac.appendChild(tk); say.appendChild(ac);
     } else if (j.mode === "quiz" && j.state === "done") { b.err.hidden = false; b.err.textContent = "⚠ " + t("No usable questions - try again."); }
     if (j.image) say.appendChild(E("div", "bkp-src", "📷 " + t("one camera picture was sent to the cloud")));
+    if (j.note) say.appendChild(E("div", "bkp-src bkp-note", "ℹ️ " + j.note));
     window.MWBK.hooks.forEach(f => { try { f("done", b, j); } catch (e) {} });
     if (!b.text) return;
     const act = E("div", "bkp-act"), rd = E("button", "sec", "🔊 " + t("Read aloud")); rd.type = "button"; rd.onclick = () => sayBrowser(j.id, rd); act.appendChild(rd);
