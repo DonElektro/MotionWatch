@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-16 19:32",
+ "generated": "2026-11-16 19:41",
  "versions": [
   {
    "version": "4.13.0",
    "file": "webcam_bewegung_4_13_0.py",
    "url": "",
    "sha256": "e3fbd12044c90093eb841ed1ee28dac2ef12958c0a323f89fced47f825027d25",
-   "date": "2026-11-16 19:32",
+   "date": "2026-11-16 19:41",
    "notes": "Akku: Geekworm X1206 V2.0 wird erkannt (I2C 0x36, nach dem UPS HAT (E)); GPIO 6 und 16 gehören dann der Platine und werden nie geschaltet; neue Geräte: Lade-LED GPIO 13, Taste «Schutz» GPIO 12 (ältere Einstellungen behalten 6 / 16)",
    "size": 4036602,
    "sig": "7a839fb3db7e1bc978a4bda44a5ef1d3d5a220904674cb82777a831eba9c161db01c66cff5e3a9fff5ac37fea669b9a91cda659b27105dee76ef2997b56a4a07",
