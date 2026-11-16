@@ -955,7 +955,7 @@ ns["blinki_listen"] = real_listen
 said = []
 ns["tts_say"] = lambda t, L=None, save=False: said.append(t) or (True, "")
 ns["sound_play"] = lambda *a, **k: True
-C.update(audio_in="hw:1")
+C.update(audio_in="hw:1", blinki_listen_mode="frag")             # the «Frag MoveEye» path (default «Plaudern»: Teil P)
 ns["LED"]["alarm"] = True
 ok(real_listen("test")[1] == "not now: alarm", "Alarm: hört nicht zu")
 ns["LED"]["alarm"] = False; ns["WAKE"]["state"] = "ring"
@@ -1148,9 +1148,9 @@ j = run("Ohne Netz?", cl="c3")
 ok(j["engine"] == "offline" and j["state"] == "done" and ns["blinki_job_view"](j)["note"], "Cloud nicht erreichbar: offline mit Hinweis-Zeile")
 st("blinki_cloud_on", False)
 # --- speaking: the device trigger asks «Plaudern» when the administrator chooses it
-ok(C["blinki_listen_mode"] == "frag" and ns["DEFAULTS"]["blinki_listen_mode"] == "frag" and "blinki_listen_mode" in ns["USER_SETTINGS_DENY"] and "blinki_listen_mode" in ns["APPKEY_DENY_KEYS"],
-   "Auslöser am Gerät: ab Werk «Frag MoveEye» (wie bisher), nur der Administrator")
-ok(st("blinki_listen_mode", "bogus")[0] is False and st("blinki_listen_mode", "plaudern")[0], "Auslöser-Art: nur frag / plaudern")
+ok(C["blinki_listen_mode"] == "plaudern" and ns["DEFAULTS"]["blinki_listen_mode"] == "plaudern" and "blinki_listen_mode" in ns["USER_SETTINGS_DENY"] and "blinki_listen_mode" in ns["APPKEY_DENY_KEYS"],
+   "Auslöser am Gerät: ab Werk «Plaudern» (Besitzer 16.11.2026), nur der Administrator")
+ok(st("blinki_listen_mode", "bogus")[0] is False and C["blinki_listen_mode"] == "plaudern", "Auslöser-Art: nur frag / plaudern")
 K.fake_stt_model(ns["DATA_DIR"])
 said = []
 ns["tts_say"] = lambda t, L=None, save=False: said.append(t) or (True, "")
@@ -1184,7 +1184,7 @@ jd2 = listen_once()
 ok(jd2 is not None and len(jd2["messages"]) == 4, "Gerät: zweite gesprochene Frage mit Verlauf (%d Nachrichten)" % len((jd2 or {}).get("messages", [])))
 st("blinki_listen_mode", "frag")
 jd3 = listen_once()
-ok(jd3 is not None and jd3["mode"] == "frag", "Auslöser wieder «Frag MoveEye»: wie vorher")
+ok(jd3 is not None and jd3["mode"] == "frag", "Administrator stellt um: Auslöser fragt «Frag MoveEye»")
 ns["LED"]["alarm"] = True
 ok(ns["blinki_listen"]("test")[1] == "not now: alarm", "Alarm: hört nicht zu (unverändert)")
 ns["LED"]["alarm"] = False
@@ -1272,7 +1272,7 @@ def b_plaudern(pg, name, base, op, bilder):
         ok("chatting with the user" in rq[-1]["messages"][0]["content"] and rq[-1]["messages"][-1]["content"] == "Wie laut ist die Sirene?" and len(rq[-1]["messages"]) == 4,
            "handy: 🎙 in «Plaudern» → Frage an Plaudern, mit Verlauf")
         pg.evaluate("() => { document.getElementById('bk-adm').open = true; }"); pg.wait_for_timeout(300)
-        ok(pg.locator("#bk-lm").count() == 1 and pg.locator("#bk-lm").input_value() == "frag", "Einstellung «Am Gerät antwortet Blinki als» (ab Werk Frag MoveEye)")
+        ok(pg.locator("#bk-lm").count() == 1 and pg.locator("#bk-lm").input_value() == "plaudern", "Einstellung «Am Gerät antwortet Blinki als» (ab Werk Plaudern)")
         pg.locator("#bk-lm").scroll_into_view_if_needed(); pg.evaluate("() => window.scrollBy(0, 200)"); pg.wait_for_timeout(300); weg(pg)
         pg.screenshot(path=os.path.join(bilder, "plaudern_handy_geraet.png"))
         pg.evaluate("() => { document.getElementById('bk-adm').open = false; }")

@@ -13,7 +13,7 @@
 #  Motor      offline das Modell auf dem Gerät, mit dem Cloud-Schalter die Cloud (wie die anderen Arten). Pausen wie bisher
 #             (Kern: SIGSTOP bei Alarm / Bewegung / Hitze); mit der Cloud beginnt eine Antwort erst, wenn kein Alarm läuft.
 #  Sprechen   🎙 auf dem Handy wie bei «Frag MoveEye»; am Gerät wählt der Administrator, welche Art der Auslöser fragt
-#             (blinki_listen_mode: frag | plaudern, ab Werk «frag» = wie bisher).
+#             (blinki_listen_mode: frag | plaudern, ab Werk «plaudern» – Besitzer 16.11.2026).
 #  Rechte     wie «Frag MoveEye»: alle angemeldeten Benutzer ausser Kindern.
 # ----------------------------------------------------------------------------
 # Der Programmtext dieses Teils steht in EINEM Literal (Hauptdatei klein): werkzeuge/bauen.py legt es in die Zusatz-ZIP, beim
@@ -31,7 +31,7 @@ BLINKI_MODE_NEED.setdefault("plaudern", "")
 BLINKI_MODE_ICON["plaudern"] = ("💬", "Chat freely")
 BLINKI_EXTRA_MODES = BLINKI_EXTRA_MODES + ("plaudern",)
 BLINKI_USER_POST = BLINKI_USER_POST + ("/api/ki/new",)
-CFG.setdefault("blinki_listen_mode", "frag"); DEFAULTS.setdefault("blinki_listen_mode", "frag")
+CFG.setdefault("blinki_listen_mode", "plaudern"); DEFAULTS.setdefault("blinki_listen_mode", "plaudern")
 USER_SETTINGS_DENY.add("blinki_listen_mode"); APPKEY_DENY_KEYS.add("blinki_listen_mode")
 BLINKI_SET["blinki_listen_mode"] = lambda v: (True, v) if v in ("frag", "plaudern") else (False, "invalid value")
 BLINKI_CHAT_RULES = (
@@ -178,7 +178,7 @@ _blinki_state_chat = blinki_state
 # wraps: blinki_state
 def blinki_state():                                             # + 639zzzzk_blinki_zz_plaudern
     st = _blinki_state_chat()
-    st["chat"] = {"turns": BLINKI_CHAT_TURNS, "idle_min": BLINKI_CHAT_IDLE_S // 60, "listen_mode": CFG.get("blinki_listen_mode") or "frag"}
+    st["chat"] = {"turns": BLINKI_CHAT_TURNS, "idle_min": BLINKI_CHAT_IDLE_S // 60, "listen_mode": CFG.get("blinki_listen_mode") or "plaudern"}
     return st
 
 
