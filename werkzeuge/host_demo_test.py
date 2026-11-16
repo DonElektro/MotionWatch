@@ -571,7 +571,11 @@ def run(a):
         for path, d in (("/api/ki/state", None), ("/api/ki/model", {"action": "load"}), ("/api/tausch/bio", {"action": "load"}),
                         ("/api/untersuchen", {"cam": "head"}), ("/api/piper", {"action": "load"})):
             c, b, h = get(base + path, json.dumps(d).encode() if d else None, headers={"Origin": f"http://127.0.0.1:{pport}"})
-            ok(c == 403 and b"not available on the host" in b, f"KI auf dem Host nicht verfügbar: {path} {c}")
+            try:
+                er = json.loads(b).get("error")
+            except ValueError:
+                er = b[:80]
+            ok(c == 403 and er in ("not available on the host", "auf dem Host nicht verfügbar"), f"KI auf dem Host nicht verfügbar: {path} {c} {er!r}")
         c, b, h = get(base + "/api/tausch?lang=de")
         ok(c == 200, f"Digitaler Rucksack geht (4.15.0, echte MoveEye): {c}")
         try:
@@ -610,6 +614,8 @@ def run(a):
             os.makedirs(bilder, exist_ok=True); cv2.imwrite(os.path.join(bilder, "00_websim_kamerabild.jpg"), img)
         if a.browser:
             browser_check(base, bilder)
+        if a.ram:
+            ram_measure(pr.pid, base, a.ram, rss0)          # 4.15.0: with the web simulator connected (its camera is the picture)
         sim.close()
         if a.sim_aus:
             t2 = time.time(); back = False; act = None
@@ -622,15 +628,15 @@ def run(a):
                 c, b, h = get(base + "/snapshot.jpg")
                 im = cv2.imdecode(np.frombuffer(b, np.uint8), cv2.IMREAD_COLOR) if c == 200 else None
                 mg = im is not None and (lambda m: m[0] > 120 and m[2] > 120 and m[1] < 90)(im.reshape(-1, 3).mean(0))
-                if act != "demo" and not str(act or "").startswith("sim:") and act is not None and not mg:
+                lg = os.path.join(data, "motionwatch.log")
+                nocam = os.path.exists(lg) and "Video source 'Automatic' not available" in open(lg, errors="replace").read()
+                if act != "demo" and im is not None and not mg and nocam:      # 4.15.0: «no camera» (the last source id may stay)
                     back = True; break
             st = {"source_id": act}
             ok(back, f"Web-Simulator weg -> wieder «keine Kamera» ({time.time() - t2:.0f} s, Quelle {st.get('source_id')!r})")
             if not back:
                 ml_ = open(os.path.join(data, "motionwatch.log"), errors="replace").read() if os.path.exists(os.path.join(data, "motionwatch.log")) else ""
                 print("   " + "\n   ".join(l[:200] for l in ml_.splitlines() if re.search(r"(?i)simulat|web sim|host mode", l))[-3000:])
-        if a.ram:
-            ram_measure(pr.pid, base, a.ram, rss0)
         esc = [p for p in px.escaped if p not in ("/favicon.ico",)]
         ok(not esc, f"keine Anfrage an der Vorsilbe vorbei ({px.n} Anfragen; daneben: {sorted(set(esc))[:10]})")
         if "/favicon.ico" in px.escaped:
