@@ -19,6 +19,7 @@
 #     siren stop at the device is in the log and goes out as a push message (btn_notify_off): «Schutz am Gerät
 #     ausgeschaltet» / «Sirene am Gerät gestoppt». (Before: «btn_pin_rule» - with a PIN only switching on; migrated in 599c.)
 #     GPIO 16 «Schutz» (pin 36) and GPIO 26 «Alarm quittieren» (pin 37) - GPIO 5 is the PIR of the housing.
+#     Besitzer 16.11.2026 (Geekworm X1206 has GPIO 16): new devices «Schutz» on GPIO 12 (pin 32), older settings keep 16 (639zzzzu).
 #   * simulator (sim_on and it answers): the LED is the one on the simulated head (sim_state «led», 599c) and the presses
 #     come from the simulator's buttons (world_reply «buttons», 599c) - the real GPIO / PCA channels rest meanwhile.
 # Settings, web page, window, simulator hooks, self-test: 599c. Texts: 639f.
@@ -28,7 +29,7 @@ LED_DEFAULTS = {
     "led_col_off": "green", "led_col_watch": "orange", "led_col_full": "red",
     "led_night": "dim", "led_night_bright": 8, "led_alarm_blink": True, "led_fault_pulse": True, "led_det_flash": False,
     "led_heartbeat": True, "led_hb_min": 5,
-    "btn_on": False, "btn_gpio_protect": "16", "btn_gpio_ack": "26", "btn_long_s": 1.5, "btn_debounce_ms": 50,
+    "btn_on": False, "btn_gpio_protect": "12", "btn_gpio_ack": "26", "btn_long_s": 1.5, "btn_debounce_ms": 50,
     "btn_allow_arm": True, "btn_allow_disarm": True, "btn_allow_siren": True, "btn_allow_ack": True, "btn_notify_off": True,
 }
 for _k, _v in LED_DEFAULTS.items():
@@ -521,7 +522,9 @@ def led_gpio_pins():
     out = {}
     for name, k in (("protect", "btn_gpio_protect"), ("ack", "btn_gpio_ack")):
         v = str(CFG.get(k) or "")
-        if v.isdigit():
+        if v.isdigit() and int(v) in ups_x12_pins():          # 100: a Geekworm X1206 owns GPIO 6 / 16 - no pull-up there
+            ups_x12_pin_warn("button «" + name + "»", int(v))
+        elif v.isdigit():
             out[name] = int(v)
     return out
 

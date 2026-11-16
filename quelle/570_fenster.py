@@ -2662,7 +2662,7 @@ class App:
         b = st.get("battery") or {}
         press = tr("Press 'Battery is full now' after charging.")
         if b.get("src") == "ups":
-            self._status("Battery", f"🔋 {tr('UPS HAT')}{' (E)' if b.get('model') == 'e' else ''}: {b['pct']} % · {b['volt']} V · " + (
+            self._status("Battery", f"🔋 {'Geekworm X1206' if b.get('model') == 'x12' else tr('UPS HAT')}{' (E)' if b.get('model') == 'e' else ''}: {b['pct']} % · {b['volt']} V · " + (
                 f"⚡ {tr('on battery')} · {b['hours'] or 0:.1f} h {tr('left')} · {b['watts']} W" if b.get("on_battery")
                 else ("🔌 " + (tr("fast charging" if b.get("fast") else "charging") if b.get("charging") else tr("mains power"))))
                 + (("\n" + tr("Cells") + ": " + " / ".join(f"{c:.2f}" for c in b["cells"]) + " V") if b.get("cells") else ""))

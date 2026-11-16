@@ -125,7 +125,7 @@ CFG = {
     "diary_on": True, "diary_keep_days": 90,      # note animals / persons / noises (animal diary + night report)
     "guest_token": "", "guest_until": 0.0,        # guest access: link /g/<token>, 0 = no time limit
     "ups_on": True, "ups_addr": "0x42", "ups_mah": 3450,   # Waveshare UPS HAT (INA219, 2 x 18650 in series): mAh of ONE cell
-    "ups_model": "auto",         # auto | e (UPS HAT (E), I2C 0x2D) | ina (UPS HAT A/B/C with INA219)
+    "ups_model": "auto",         # auto | e (UPS HAT (E), I2C 0x2D) | x12 (Geekworm X1206, I2C 0x36, 100) | ina (UPS HAT A/B/C with INA219)
     "ups_shutdown_pct": 8, "ups_push": True, "ups_invert": False,
     "batt_mah": 0, "batt_extra_w": 1.5, "batt_used_wh": 0.0, "batt_full_t": 0.0, "batt_warned": False,   # powerbank estimate
     "notify_network": True,      # push message with the page address when the Pi joins a network (e.g. the phone hotspot)

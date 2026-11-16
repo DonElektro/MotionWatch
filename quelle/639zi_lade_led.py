@@ -1,6 +1,7 @@
-#@ MoveEye – Teil 639zi: Lade-LED an GPIO 6 (Pin 31, 330 Ω, Lichtleiter hinten): leuchtet beim Laden, blinkt langsam = Akku voll und Strom da, schnell = Akku fast leer, sonst aus; nachts / beim Akku-Sparen gedimmt oder aus wie die Status-LED; Schalter «Lade-LED» unter Strom → Akku (Experte); im Simulator im Fenster «Gerät»; Selbsttest. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639zi: Lade-LED an GPIO 13 (Pin 33; ältere Geräte GPIO 6 = Pin 31; Einstellung «charge_led_gpio»; 330 Ω, Lichtleiter hinten): leuchtet beim Laden, blinkt langsam = Akku voll und Strom da, schnell = Akku fast leer, sonst aus; nachts / beim Akku-Sparen gedimmt oder aus wie die Status-LED; Schalter «Lade-LED» unter Strom → Akku (Experte); im Simulator im Fenster «Gerät»; Selbsttest. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Auftrag Besitzer (01.11.2026), Bau-Infos hardware/gehaeuse/bau.json «ladeled»: GPIO 6 (pin 31) -> 330 Ω -> green 3 mm LED -> GND.
+# Besitzer 16.11.2026 (Geekworm X1206, its PLD is on GPIO 6): the GPIO is a setting, new devices 13 (pin 33), older ones keep 6.
 #   * what it shows (the first that applies wins), from STATE["battery"] (100: UPS HAT (E) / INA219, 285: the simulated HAT):
 #       on    the battery charges (UPS HAT (E): state bit «charging», INA219: current into the battery)
 #       fast  the battery is almost empty - the same limit as the warning «Battery almost empty» (100: BATT_LOW_PCT_UPS on the
@@ -10,14 +11,14 @@
 #   * brightness like the status LED (163a): led_bright by day; at night (is_dark) led_night «dim» = led_night_bright, «off» =
 #     dark, «normal» = as by day; while the battery saver runs (105) always dimmed (never off: the fast blink is the warning)
 #   * output: gpiozero PWMLED (lgpio on the Pi 5, like the buttons in 163a) in its own thread, 20 × a second. Only on a
-#     Raspberry Pi; on a PC, without gpiozero or while a sensor uses GPIO 6 nothing is switched (STATE «charge_led» hw says why).
+#     Raspberry Pi; on a PC, without gpiozero or while a sensor uses its GPIO (or a Geekworm X1206 owns it, 100) nothing is switched (STATE «charge_led» hw says why).
 #     With the 3D simulator connected the real GPIO rests; the simulator shows it in the window «Gerät» (statusled.gd, sim_state
 #     «charge_led»: mode on / slow / fast / off, br - the blinking runs in the simulator itself).
 # ----------------------------------------------------------------------------
-CHARGE_LED_GPIO = 6
+CHARGE_LED_GPIO = 13                                     # factory default (Besitzer 16.11.2026, Geekworm X1206 has GPIO 6): GPIO 13 = pin 33
 CHARGE_LED_HZ = {"slow": 0.5, "fast": 4.0}               # slow: 1 s on / 1 s off; fast: 4 blinks a second
 CHARGE_LED_FULL_PCT = 98
-for _k, _v in {"charge_led_on": True}.items():
+for _k, _v in {"charge_led_on": True, "charge_led_gpio": str(CHARGE_LED_GPIO)}.items():   # older devices: "6" (migration below)
     CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)   # 636 took its copy before this part
 CHARGE_LED = {"mode": "off", "why": "", "t0": 0.0, "hw": "none", "dev": None, "thread": None, "last": None, "pi": None, "err_t": 0.0}
 CHARGE_LED_WHY = {"charging": "charging", "low": "battery almost empty", "full": "full, power at the input", "": "",
@@ -89,7 +90,7 @@ def charge_led_tick(now=None):
     br = charge_led_bright(dark, saving) if mode != "off" else 0.0
     lvl = charge_led_level(now, mode, br)
     STATE["charge_led"] = {"on": bool(CFG.get("charge_led_on", True)), "mode": mode, "why": why, "br": round(br, 3), "lvl": round(lvl, 3),
-                           "night": dark and CFG.get("led_night", "dim") != "normal", "saving": saving, "hw": CHARGE_LED["hw"], "gpio": CHARGE_LED_GPIO}
+                           "night": dark and CFG.get("led_night", "dim") != "normal", "saving": saving, "hw": CHARGE_LED["hw"], "gpio": charge_led_pin()}
     return lvl
 
 
@@ -118,13 +119,19 @@ def charge_led_is_pi():
     return CHARGE_LED["pi"]
 
 
+def charge_led_pin():
+    """the GPIO of the charge LED (setting «charge_led_gpio»; new devices 13, older ones 6), None = none"""
+    v = str(CFG.get("charge_led_gpio") or "")
+    return int(v) if v.isdigit() else None
+
+
 def charge_led_gpio_taken():
-    """GPIO 6 used by a sensor, a light, a relay or the buttons -> True (then the charge LED stays off)"""
+    """its GPIO used by a sensor, a light, a relay or the buttons -> True (then the charge LED stays off)"""
     try:
         u = set(_sens_used_gpios_cl_base(None))
     except Exception:
         u = set()
-    return CHARGE_LED_GPIO in u
+    return charge_led_pin() in u
 
 
 def _charge_led_close():
@@ -145,7 +152,7 @@ def charge_led_start():
 
 
 def _charge_led_loop():
-    """20 × a second: the level to GPIO 6 (gpiozero PWMLED). Nothing on a PC, without gpiozero, while the simulator is connected."""
+    """20 × a second: the level to its GPIO (gpiozero PWMLED). Nothing on a PC, without gpiozero, while the simulator is connected."""
     while True:
         try:
             lvl = charge_led_tick()
@@ -153,16 +160,24 @@ def _charge_led_loop():
                 _charge_led_close()
                 CHARGE_LED["hw"] = "sim" if CFG.get("charge_led_on", True) else "off"
                 time.sleep(0.5); continue
+            pin = charge_led_pin()
+            if CHARGE_LED["dev"] is not None and (pin != CHARGE_LED.get("pin") or pin in ups_x12_pins()):
+                _charge_led_close()                          # GPIO changed, or a Geekworm X1206 owns it (100): never drive 6 / 16
             if CHARGE_LED["dev"] is None:
+                if pin is None:
+                    CHARGE_LED["hw"] = "no GPIO"; time.sleep(2); continue
+                if pin in ups_x12_pins():
+                    ups_x12_pin_warn("charge LED", pin)
+                    CHARGE_LED["hw"] = "X1206"; time.sleep(10); continue
                 if not charge_led_is_pi():
                     CHARGE_LED["hw"] = "none"; time.sleep(30); continue
                 if charge_led_gpio_taken():
                     CHARGE_LED["hw"] = "conflict"; time.sleep(10); continue
                 try:
                     from gpiozero import PWMLED
-                    CHARGE_LED["dev"] = PWMLED(CHARGE_LED_GPIO, frequency=200)
-                    CHARGE_LED["hw"] = "gpio"
-                    log_event("sys", f"Charge LED on GPIO {CHARGE_LED_GPIO} (pin 31)")
+                    CHARGE_LED["dev"] = PWMLED(pin, frequency=200)
+                    CHARGE_LED["hw"] = "gpio"; CHARGE_LED["pin"] = pin
+                    log_event("sys", f"Charge LED on GPIO {pin}")
                 except Exception as e:
                     CHARGE_LED["hw"] = f"no GPIO ({type(e).__name__})"
                     time.sleep(60); continue
@@ -193,10 +208,10 @@ _sens_used_gpios_cl_base = sens_used_gpios
 
 
 # wraps: sens_used_gpios
-def sens_used_gpios(skip=None):                           # + 639zi: GPIO 6 belongs to the charge LED while it is switched on
+def sens_used_gpios(skip=None):                           # + 639zi: its GPIO belongs to the charge LED while it is switched on
     u = _sens_used_gpios_cl_base(skip)
-    if CFG.get("charge_led_on", True):
-        u = set(u) | {CHARGE_LED_GPIO}
+    if CFG.get("charge_led_on", True) and charge_led_pin() is not None:
+        u = set(u) | {charge_led_pin()}
     return u
 
 
@@ -217,22 +232,22 @@ def sim_state():                                          # + 639zi: «charge_le
 
 
 # ---- the switch: Settings → Power supply → Battery (expert: not in SIMPLE_KEYS) ------------------------------------------------
-_CL_LABEL = "Charge LED (GPIO 6, pin 31): on while charging, blinks slowly when full, fast when the battery is almost empty"
+_CL_LABEL = "Charge LED: on while charging, blinks slowly when full, fast when the battery is almost empty"
 _bi = max([i for i, x in enumerate(TOGGLES) if x[0] == "Battery"] or [len(TOGGLES) - 1])
 TOGGLES.insert(_bi + 1, ("Battery", "charge_led_on", _CL_LABEL))
-SET_HELP["charge_led_on"] = ("The small green LED at the back of the device (GPIO 6, pin 31): on while the battery charges, blinks slowly "
+SET_HELP["charge_led_on"] = ("The small green LED at the back of the device (setting «Charge LED: GPIO»): on while the battery charges, blinks slowly "
                              "when it is full and power is at the input, blinks fast when the battery is almost empty (the same limit as "
                              "the warning), otherwise off. At night and while the battery saver runs it is dimmed (or off at night, like "
                              "the status LED). On a PC nothing is switched; with the simulator it shows in the window «Gerät».", "On.")
 
 _CL_HELP = (
     ("Einstellungen → Licht &amp; Ton → Status-LED &amp; Tasten.</p>",
-     "<p><b>🔋 Lade-LED:</b> Die kleine grüne LED hinten am Gerät (GPIO 6 = Pin 31, 330 Ω) leuchtet, solange der Akku lädt, "
+     "<p><b>🔋 Lade-LED:</b> Die kleine grüne LED hinten am Gerät (GPIO 13, ältere Geräte 6; 330 Ω) leuchtet, solange der Akku lädt, "
      "blinkt langsam, wenn er voll ist und Strom anliegt, und blinkt schnell, wenn der Akku fast leer ist (dieselbe Schwelle wie die "
      "Warnung «Akku fast leer»); sonst ist sie aus. Nachts und beim Akku-Sparen gedimmt (nachts aus, wenn die Status-LED nachts aus "
      "ist). Mit dem 3D-Simulator zeigt sie das Fenster «Gerät» (🧪). Einstellungen → Strom → Akku → «Lade-LED» (Experte).</p>"),
     ("sound → Status LED &amp; buttons.</p>",
-     "<p><b>🔋 Charge LED:</b> the small green LED at the back of the device (GPIO 6 = pin 31, 330 Ω) is on while the battery "
+     "<p><b>🔋 Charge LED:</b> the small green LED at the back of the device (GPIO 13, older devices 6; 330 Ω) is on while the battery "
      "charges, blinks slowly when it is full and power is at the input, and blinks fast when the battery is almost empty (the same "
      "limit as the warning «Battery almost empty»); otherwise it is off. Dimmed at night and while the battery saver runs (off at "
      "night when the status LED is off at night). With the 3D simulator it shows in the window «Gerät» (🧪). Settings → Power "
@@ -243,24 +258,24 @@ for _a, _b in _CL_HELP:
         HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
 
 _HX_CHARGELED = {
-    _CL_LABEL: ("Lade-LED (GPIO 6, Pin 31): leuchtet beim Laden, blinkt langsam bei vollem Akku, schnell bei fast leerem Akku",
-                "LED de charge (GPIO 6, broche 31) : allumée pendant la charge, clignote lentement quand la batterie est pleine, vite quand elle est presque vide",
-                "LED di carica (GPIO 6, pin 31): accesa durante la carica, lampeggia lentamente a batteria piena, velocemente a batteria quasi scarica",
-                "LED da chargiar (GPIO 6, pin 31): glischa durant chargiar, cliegna plaunsieu cun accu plain, svelt cun accu bunamain vid"),
+    _CL_LABEL: ("Lade-LED: leuchtet beim Laden, blinkt langsam bei vollem Akku, schnell bei fast leerem Akku",
+                "LED de charge : allumée pendant la charge, clignote lentement quand la batterie est pleine, vite quand elle est presque vide",
+                "LED di carica: accesa durante la carica, lampeggia lentamente a batteria piena, velocemente a batteria quasi scarica",
+                "LED da chargiar: glischa durant chargiar, cliegna plaunsieu cun accu plain, svelt cun accu bunamain vid"),
     SET_HELP["charge_led_on"][0]:
-        ("Die kleine grüne LED hinten am Gerät (GPIO 6, Pin 31): leuchtet, solange der Akku lädt, blinkt langsam, wenn er voll ist und "
+        ("Die kleine grüne LED hinten am Gerät (Einstellung «Lade-LED: GPIO»): leuchtet, solange der Akku lädt, blinkt langsam, wenn er voll ist und "
          "Strom anliegt, blinkt schnell, wenn der Akku fast leer ist (dieselbe Schwelle wie die Warnung), sonst aus. Nachts und beim "
          "Akku-Sparen gedimmt (nachts aus wie die Status-LED, falls so eingestellt). Auf einem PC wird nichts geschaltet; mit dem "
          "Simulator zeigt sie das Fenster «Gerät».",
-         "La petite LED verte à l’arrière de l’appareil (GPIO 6, broche 31) : allumée pendant la charge de la batterie, clignote "
+         "La petite LED verte à l’arrière de l’appareil (réglage «LED de charge : GPIO») : allumée pendant la charge de la batterie, clignote "
          "lentement quand elle est pleine et que le courant est branché, clignote vite quand la batterie est presque vide (même seuil "
          "que l’avertissement), sinon éteinte. Atténuée la nuit et pendant l’économie de batterie (éteinte la nuit comme la LED d’état, "
          "si réglé ainsi). Sur un PC rien n’est commuté ; avec le simulateur elle apparaît dans la fenêtre «Gerät».",
-         "Il piccolo LED verde sul retro del dispositivo (GPIO 6, pin 31): acceso mentre la batteria si carica, lampeggia lentamente "
+         "Il piccolo LED verde sul retro del dispositivo (impostazione «LED di carica: GPIO»): acceso mentre la batteria si carica, lampeggia lentamente "
          "quando è piena e c’è corrente, lampeggia velocemente quando la batteria è quasi scarica (stessa soglia dell’avviso), "
          "altrimenti spento. Attenuato di notte e durante il risparmio batteria (spento di notte come il LED di stato, se impostato "
          "così). Su un PC non viene commutato nulla; con il simulatore appare nella finestra «Gerät».",
-         "La pitschna LED verda davos sin l’apparat (GPIO 6, pin 31): glischa durant che l’accu chargia, cliegna plaunsieu cur ch’el "
+         "La pitschna LED verda davos sin l’apparat (parameter «LED da chargiar: GPIO»): glischa durant che l’accu chargia, cliegna plaunsieu cur ch’el "
          "è plain e la current è avant maun, cliegna svelt cur che l’accu è bunamain vid (il medem limit sco l’avertiment), "
          "uschiglio stizzada. La notg e durant spargnar accu sfiarada (la notg stizzada sco la LED da status, sche uschia "
          "definì). Sin in PC na vegn nagut stizzà; cun il simulatur sa mussa ella en la fanestra «Gerät»."),
@@ -283,12 +298,12 @@ for _k, _v in _HX_CHARGELED.items():
 
 # ---- self-test: the logic with made-up battery values and a fake clock --------------------------------------------------------
 def charge_led_selftest():
-    keys = ("charge_led_on", "led_bright", "led_night", "led_night_bright")
+    keys = ("charge_led_on", "charge_led_gpio", "led_bright", "led_night", "led_night_bright")
     keep_cfg = {k: CFG.get(k) for k in keys}
     keep_cl = dict(CHARGE_LED)
     keep_bat = STATE.get("battery")
     try:
-        CFG.update(charge_led_on=True, led_bright=60, led_night="dim", led_night_bright=8)
+        CFG.update(charge_led_on=True, charge_led_gpio="13", led_bright=60, led_night="dim", led_night_bright=8)
         ups = lambda **kw: dict({"on": True, "src": "ups", "model": "e", "pct": 60, "on_battery": False, "charging": False, "full": False}, **kw)
         M = lambda b: charge_led_mode(b)[0]
         # the four states (UPS HAT (E))
@@ -327,7 +342,7 @@ def charge_led_selftest():
         STATE["battery"] = ups(on_battery=True, pct=10)
         charge_led_tick(500.0)
         s = STATE["charge_led"]
-        assert s["mode"] == "fast" and CHARGE_LED["t0"] == 500.0 and s["gpio"] == 6, s
+        assert s["mode"] == "fast" and CHARGE_LED["t0"] == 500.0 and s["gpio"] == 13, s
         charge_led_tick(500.2)
         assert CHARGE_LED["t0"] == 500.0, "same mode: the phase keeps running"
         assert charge_led_label("de").startswith("Lade-LED: blinkt schnell (Akku fast leer)"), charge_led_label("de")
@@ -336,8 +351,8 @@ def charge_led_selftest():
         assert charge_led_label("de").startswith("Lade-LED: an (lädt)"), charge_led_label("de")
         for L_ in ("fr", "it", "rm"):
             assert tr(_CL_LABEL, L_) != _CL_LABEL and tr("blinks slowly", L_) != "blinks slowly", L_
-        # GPIO 6 is taken while the switch is on; the switch in Settings → Battery, expert; simulator field
-        assert 6 in sens_used_gpios() and 6 not in sens_free_gpios()
+        # its GPIO is taken while the switch is on; the switch in Settings → Battery, expert; simulator field
+        assert 13 in sens_used_gpios() and 13 not in sens_free_gpios() and CHARGE_LED_GPIO == 13
         assert any(x[1] == "charge_led_on" and x[0] == "Battery" for x in TOGGLES) and "charge_led_on" not in SIMPLE_KEYS
         assert "Lade-LED" in HELP_PAGE and "Charge LED" in HELP_PAGE
         sd = sim_state()
@@ -345,7 +360,7 @@ def charge_led_selftest():
         L = iface_list()
         if L is not None:
             assert "charge_led" in L["state"], "schnittstelle.json «charge_led»"
-        return "on / slow / fast / off from made-up UPS HAT (E), INA219 and powerbank values, limits 20 / 15 %, night and saver, blinking, GPIO 6, simulator"
+        return "on / slow / fast / off from made-up UPS HAT (E), INA219 and powerbank values, limits 20 / 15 %, night and saver, blinking, GPIO 13 (setting), simulator"
     finally:
         CFG.update(keep_cfg)
         CHARGE_LED.clear(); CHARGE_LED.update(keep_cl)
@@ -356,4 +371,4 @@ def charge_led_selftest():
         STATE.pop("charge_led", None)
 
 
-SELFTEST_EXTRA.append(("Charge LED on GPIO 6: charging / full / almost empty, night, simulator (639zi)", charge_led_selftest))
+SELFTEST_EXTRA.append(("Charge LED on its GPIO: charging / full / almost empty, night, simulator (639zi)", charge_led_selftest))

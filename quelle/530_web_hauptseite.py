@@ -1307,7 +1307,7 @@ function paintExtras(s) {
   }
   const b = s.battery || {}, bl = $("#batt-line"), bfb = $("#batt-full-btn");
   if (bfb) bfb.hidden = b.src === "ups";
-  if (bl && b.src === "ups") bl.textContent = "🔋 " + t("UPS HAT") + (b.model === "e" ? " (E)" : "") + ": " + b.pct + " % · " + b.volt + " V · "
+  if (bl && b.src === "ups") bl.textContent = "🔋 " + (b.model === "x12" ? "Geekworm X1206" : t("UPS HAT") + (b.model === "e" ? " (E)" : "")) + ": " + b.pct + " % · " + b.volt + " V · "
     + (b.on_battery ? "⚡ " + t("on battery") + " · " + t("about") + " " + fmtH(b.hours) + " " + t("left") + " · " + b.watts + " W"
        : (b.charging ? "🔌 " + t(b.fast ? "fast charging" : "charging") + (b.full_min ? " · " + t("full in") + " " + fmtH(b.full_min / 60) : "") : "🔌 " + t("mains power")))
     + (b.cells ? "\n" + t("Cells") + ": " + b.cells.map(c => c.toFixed(2)).join(" / ") + " V" + (b.vbus ? " · USB-C " + b.vbus + " V" : "") : "");
