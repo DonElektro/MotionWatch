@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """«Markier-Karte» against a running MoveEye Sim (prop markierkarte.gd): this script plays MoveEye - it reads the head
 camera (/cam/0/snapshot.jpg), finds the marker, steers the head over POST /state (servo pan_deg / tilt_deg, like part 290)
-and marks points when the card is turned away. A person carries the A4 card from 3 m to ~14 m, marks there, walks to the
-side, marks again. Usage: sim_probe.py http://127.0.0.1:PORT [--shots DIR]"""
+and marks points when the card is turned away. A person carries the A4 card from 3 m to ~14 m and turns it there (beyond the
+promised range: expected NO point and no false point), walks to ~7 m and ~5.4 m and marks there (promised: up to ~6 m, both must
+give a point within 2.5°). Usage: sim_probe.py http://127.0.0.1:PORT [--shots DIR]"""
 import json, math, os, sys, time, urllib.request
 import numpy as np
 import cv2
@@ -75,7 +76,7 @@ def main():
     print(f"round {L:.2f} s real -> tempo {tempo:.3f}", flush=True)
     c0 = ctl({"action": "markierkarte", "do": "info"})["clock"]
     # event driven: the owner walks, stops (carrier stands 2.5 s), turns the card, walks on
-    plan = [("hide", 1.5), ("walk", P(9.0, -3.0)), ("hide", 1.0), ("walk", P(5.0, 2.0)), ("hide", 2.0), ("end", 0)]
+    plan = [("hide", 1.5), ("walk", P(6.8, -2.2)), ("hide", 1.0), ("walk", P(5.0, 2.0)), ("hide", 2.0), ("end", 0)]
     END = 110.0
     still_since, last_pos, ev_t = None, None, 0.0
     rt = []
@@ -140,15 +141,22 @@ def main():
         tr.append({"pan": round(az, 2), "tilt": round(el + 6.0, 2), "dist": round(ki["dist"], 2)})   # MoveEye tilt = elevation + 6 (main.gd)
     rows = []
     for m in ses.marks:
-        t_ = min(tr, key=lambda x: abs(x["pan"] - m["pan"]) + abs(x["dist"] - m["dist"]))
-        rows.append(dict(m, true=t_, dpan=round(m["pan"] - t_["pan"], 2), dtilt=round(m["tilt"] - t_["tilt"], 2),
+        k_ = min(range(len(tr)), key=lambda i: abs(tr[i]["pan"] - m["pan"]) + abs(tr[i]["dist"] - m["dist"]))
+        t_ = tr[k_]
+        rows.append(dict(m, stop=k_, true=t_, dpan=round(m["pan"] - t_["pan"], 2), dtilt=round(m["tilt"] - t_["tilt"], 2),
                          ddist_pct=round(100 * (m["dist"] / t_["dist"] - 1), 1)))
+    good = lambda r: abs(r["dpan"]) < 2.5 and abs(r["dtilt"]) < 2.5
+    # stop 0 = ~14 m (beyond range): no point; stops 1 and 2 (~7 m, ~5.4 m, promised): exactly one good point each; no other point
+    checks = {"far_no_point": len(tr) == 3 and not [r for r in rows if r["stop"] == 0],
+              "mid_7m_point": len([r for r in rows if r["stop"] == 1 and good(r)]) == 1,
+              "near_5m_point": len([r for r in rows if r["stop"] == 2 and good(r)]) == 1,
+              "no_false_point": len(rows) == len([r for r in rows if r["stop"] in (1, 2) and good(r)])}
     ctl({"action": "markierkarte", "do": "off"})
     res = {"cam": [W, H, HF], "frames": n, "fps_sim": round(n / max(t, 1), 1), "tempo": tempo, "seen_pct": round(100 * nseen / max(n, 1), 1),
            "centre_err_deg_median": round(float(np.median(err)), 2) if err else None,
            "max_dist_seen": max([x["dist_true"] for x in log if x["seen"]] or [0]),
            "detect_ms_median": round(1000 * float(np.median(det.ms)), 1), "beeps": ses.events, "marks": rows, "truth": tr,
-           "pass": len(ses.marks) >= 2 and all(abs(r["dpan"]) < 2.5 and abs(r["dtilt"]) < 2.5 for r in rows)}
+           "checks": checks, "pass": all(checks.values())}
     json.dump(log, open(os.path.join(SHOTS or ".", "sim_log.json"), "w"))
     print(json.dumps(res, indent=1, ensure_ascii=False))
     return 0 if res["pass"] else 1

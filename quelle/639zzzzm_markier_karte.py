@@ -33,13 +33,14 @@
 #     mit dem Joystick bewegen beendet das Parken). Läuft auch in der Simulation (Test mit dem Requisit markierkarte.gd).
 #   * OpenCV: ab 4.7 cv2.aruco.ArucoDetector, Raspberry Pi OS Bookworm (python3-opencv 4.6 mit contrib) detectMarkers; ohne aruco
 #     (pip opencv-python-headless < 4.7) schaltet sich die Funktion ab und sagt warum (mk_state «no_aruco»).
-# Reichweite (Messung, Kopf-Kamera 66°, 1280 × 720, A4 / Marker 180 mm, Testbilder und Simulator - nicht echte Kamera): Folgen bei
-# Tag bis etwa 12–15 m, Punkt merken sicher bis etwa 9–10 m, Dämmerung etwa 5 m; A5 etwa 0,7 × so weit.
+# Reichweite (Kopf-Kamera 66°, 1280 × 720, A4 / Marker 180 mm, Simulator - nicht echte Kamera; sim_probe.py, 3 Läufe 16.11.2026):
+# 7,2 m und 5,4 m 3 von 3 gemerkt (Fehler < 0,5°, Abstand ±5 %), 14,3 m 1 von 3 (richtig); Folgen bis etwa 10 m (darüber zeitweise verloren).
+# Versprochen wird nur das: A4 folgt bis etwa 10 m, merkt sicher bis etwa 6 m, bei gutem Licht oft weiter; A5 etwa 0,7 × so weit.
 # Werkzeuge: werkzeuge/markier_karte/ (Messung, synthetische Sequenz, Probe gegen den Simulator); Test werkzeuge/markier_karte_test.py.
 # ----------------------------------------------------------------------------
 MK_IDS = tuple(range(40, 50))
 MK_SIZES = {"a4": (210, 297, 180, 42), "a5": (148, 210, 128, 34)}     # paper w, h, marker side, QR side (mm)
-MK_RANGE = {"a4": (12, 9, 5), "a5": (8, 6, 3.5)}                       # m: follow by day, mark, dusk (measured, see the head)
+MK_RANGE = {"a4": (10, 6, 4), "a5": (7, 4, 3)}                         # m: follow by day, mark reliably, dusk (Sim, see the head)
 MK_GAP_MIN, MK_GAP_MAX = 0.6, 3.0
 MK_STILL_DEG = 0.8
 MK_LOST_S, MK_END_S = 6.0, 90.0
@@ -203,7 +204,7 @@ def mk_card_svg(card, size=None, lang=None):
     qp = "".join(f"M{x},{y}h1v1h-1z" for y in range(n) for x in range(n) if M[y][x])
     fol, mark, _d = mk_range(size)
     rows = [(6, "📍 " + tr("Marker card", L), 7.2, 700), (13, f"MoveEye «{CFG.get('device_name') or 'MoveEye'}» · «{card['name']}»", 3.9, 400),
-            (20, trf("Follows up to about {a} m by day, marks up to {b} m", L, a=fol, b=mark), 3.4, 700)]
+            (20, trf("Follows up to about {a} m, marks reliably up to about {b} m", L, a=fol, b=mark), 3.4, 700)]
     rows += [(27 + 5.5 * i, x, 3.4, 400) for i, x in enumerate(("1  " + tr("Hold the card in front of MoveEye – it beeps.", L),
              "2  " + tr("Walk away – the head looks along.", L), "3  " + tr("Mark a point: stand still, turn the card for 1–2 s,", L),
              "    " + tr("show it again – a second sound.", L)))]
@@ -660,7 +661,7 @@ MK_WORKSHOP_JS = r"""<script>
     "Marker numbers": ["Marker-Nummern", "Numéros de repère", "Numeri del marcatore", "Numers dal marcader"],
     "only this MoveEye": ["nur dieses MoveEye", "seulement ce MoveEye", "solo questo MoveEye", "mo quest MoveEye"],
     "follows up to about": ["folgt bis etwa", "suit jusqu’à env.", "segue fino a circa", "suonda fin circa"],
-    "marks up to": ["merkt bis", "marque jusqu’à", "segna fino a", "marca fin"],
+    "marks reliably up to about": ["merkt sicher bis etwa", "marque sûrement jusqu’à env.", "segna con sicurezza fino a circa", "marca segir fin circa"],
     "made": ["erstellt", "créée", "creata", "creada"],
     "last used": ["zuletzt", "dernière utilisation", "ultimo uso", "l’ultima giada"],
     "End": ["Beenden", "Terminer", "Terminare", "Terminar"],
@@ -698,7 +699,7 @@ MK_WORKSHOP_JS = r"""<script>
     J.cards.forEach(c => {
       const r = E("div", "qk-c"), pv = E("div", "pv"), im = E("img"); im.src = "/karten/markier?svg=1&id=" + c.id + "&lang=" + L(); im.alt = ""; pv.appendChild(im);
       const m = E("div"); m.append(E("b", "", c.name)); const tg = E("span", "qk-tag", "📍 " + c.mid); m.appendChild(tg);
-      m.appendChild(E("div", "w", c.size.toUpperCase() + " · " + mt("follows up to about") + " " + c.range + " m · " + mt("marks up to") + " " + c.mark + " m"));
+      m.appendChild(E("div", "w", c.size.toUpperCase() + " · " + mt("follows up to about") + " " + c.range + " m · " + mt("marks reliably up to about") + " " + c.mark + " m"));
       m.appendChild(E("div", "mut", mt("made") + " " + c.made + (c.last ? " · " + mt("last used") + " " + c.last : "") + " · " + (c.n || 0) + " " + mt("points")));
       const bb = E("div", "bb");
       const a = E("a", "btn sec", "🖨 " + t("Print")); a.href = "/karten/markier?id=" + c.id + "&lang=" + L(); bb.appendChild(a);
@@ -763,10 +764,10 @@ _HX_MK = {
                                                             "Marcar in punct: star airi, volver la carta 1–2 s,"),
     "show it again – a second sound.": ("wieder zeigen – zweiter Ton.", "la remontrer – deuxième son.", "mostrarla di nuovo – secondo suono.",
                                         "la mussar puspè – segund tun."),
-    "Follows up to about {a} m by day, marks up to {b} m": ("Folgt bei Tag bis etwa {a} m, merkt Punkte bis {b} m",
-                                                           "Suit de jour jusqu’à env. {a} m, marque jusqu’à {b} m",
-                                                           "Segue di giorno fino a circa {a} m, segna fino a {b} m",
-                                                           "Suonda da di fin circa {a} m, marca fin {b} m"),
+    "Follows up to about {a} m, marks reliably up to about {b} m": ("Folgt bis ca. {a} m, merkt Punkte sicher bis ca. {b} m",
+                                                                    "Suit jusqu’à env. {a} m, marque sûrement jusqu’à env. {b} m",
+                                                                    "Segue fino a circa {a} m, segna con sicurezza fino a circa {b} m",
+                                                                    "Suonda fin circa {a} m, marca segir fin circa {b} m"),
     "Print at 100 %, matt paper. Up to about {a} m by day ({s}). Only for this MoveEye.": (
         "Mit 100 % auf mattes Papier drucken. Bei Tag bis etwa {a} m ({s}). Gilt nur für dieses MoveEye.",
         "Imprimer à 100 %, papier mat. De jour jusqu’à env. {a} m ({s}). Seulement pour ce MoveEye.",
@@ -802,8 +803,8 @@ _HELP_MK = {
            '<b>Punkt merken:</b> stehen bleiben, die Karte 1–2 s umdrehen und wieder zeigen – zweiter Ton. Die Stelle steht als «Punkt 1», «Punkt 2» … im Teach-in '
            '(Einstellungen → Servos → Positionen) mit dem geschätzten Abstand, gleich in der Runde; umbenennen wie jeden Punkt. Ein tiefer Ton heisst «verloren» (6 s ohne Karte, der Kopf bleibt stehen); '
            'nach 90 s ohne Karte endet die Sitzung.</li>'
-           '<li><b>Abstand:</b> gemessen mit der Kopf-Kamera in Testbildern und im Simulator (nicht mit echter Kamera): A4 folgt bei Tag bis etwa 12–15 m, Punkte merken sicher bis etwa 9–10 m, '
-           'in der Dämmerung etwa 5 m; A5 etwa 0,7 × so weit. Karte gerade und ruhig halten, nicht spiegelnd.</li></ul></section>\n'),
+           '<li><b>Abstand:</b> geprüft im Simulator (nicht mit echter Kamera): A4 folgt bis etwa 10 m und merkt Punkte sicher bis etwa 5–6 m; bei gutem Licht geht es oft weiter, '
+           'in der Dämmerung weniger weit; A5 etwa 0,7 × so weit. Karte gerade und ruhig halten, nicht spiegelnd.</li></ul></section>\n'),
     "en": ('<section id="markierkarte" data-icon="📍"><h2>Marker card (experimental)</h2><ul>'
            '<li><b>What:</b> a printed card with a big marker (and a small QR code). MoveEye sees it from far away, beeps and follows it with the head. '
            'Walk over the place and save spots the head should look at later – without a joystick.</li>'
@@ -815,20 +816,20 @@ _HELP_MK = {
            '<b>Mark a point:</b> stand still, turn the card for 1–2 s and show it again – a second sound. The spot is saved as «Point 1», «Point 2» … in the teach-in '
            '(Settings → Servos → Positions) with its estimated distance, in the round; rename it like any point. A low sound means «lost» (6 s without the card, the head stays); '
            'after 90 s without the card the session ends.</li>'
-           '<li><b>Distance:</b> measured with the head camera in test pictures and in the simulator (not with a real camera): A4 follows by day up to about 12–15 m, marks reliably up to about 9–10 m, '
-           'about 5 m at dusk; A5 about 0.7 × as far. Hold the card straight and still, not shiny.</li></ul></section>\n'),
+           '<li><b>Distance:</b> checked in the simulator (not with a real camera): A4 follows up to about 10 m and marks points reliably up to about 5–6 m; in good light it often works further, '
+           'less far at dusk; A5 about 0.7 × as far. Hold the card straight and still, not shiny.</li></ul></section>\n'),
     "fr": ('<section id="markierkarte" data-icon="📍"><h2>Carte de repérage (expérimental)</h2><ul><li>Une carte imprimée avec un grand repère : MoveEye la voit de loin, bipe '
            'et la suit avec la tête. S’arrêter, retourner la carte 1–2 s et la remontrer : l’endroit est enregistré comme «Point 1», «Point 2» … dans le teach-in (avec la distance, dans la ronde). '
-           'Seulement si la protection est arrêtée. Créer et imprimer : Plus → Atelier des cartes → Cartes de repérage. Distance (tests et simulateur) : A4 suit de jour jusqu’à env. 12–15 m, '
-           'marque jusqu’à env. 9–10 m ; crépuscule env. 5 m ; A5 env. 0,7 ×.</li></ul></section>\n'),
+           'Seulement si la protection est arrêtée. Créer et imprimer : Plus → Atelier des cartes → Cartes de repérage. Distance (simulateur) : A4 suit jusqu’à env. 10 m, '
+           'marque sûrement jusqu’à env. 5–6 m ; par bonne lumière souvent plus loin, au crépuscule moins ; A5 env. 0,7 ×.</li></ul></section>\n'),
     "it": ('<section id="markierkarte" data-icon="📍"><h2>Carta di marcatura (sperimentale)</h2><ul><li>Una carta stampata con un grande marcatore: MoveEye la vede da lontano, emette '
            'un bip e la segue con la testa. Fermarsi, girare la carta per 1–2 s e mostrarla di nuovo: il posto viene salvato come «Punto 1», «Punto 2» … nel teach-in (con la distanza, nel giro). '
-           'Solo con protezione spenta. Creare e stampare: Altro → Laboratorio delle carte → Carte di marcatura. Distanza (test e simulatore): A4 segue di giorno fino a circa 12–15 m, '
-           'segna fino a circa 9–10 m; crepuscolo circa 5 m; A5 circa 0,7 ×.</li></ul></section>\n'),
+           'Solo con protezione spenta. Creare e stampare: Altro → Laboratorio delle carte → Carte di marcatura. Distanza (simulatore): A4 segue fino a circa 10 m, '
+           'segna con sicurezza fino a circa 5–6 m; con buona luce spesso oltre, al crepuscolo meno; A5 circa 0,7 ×.</li></ul></section>\n'),
     "rm": ('<section id="markierkarte" data-icon="📍"><h2>Carta da marcar (experimental)</h2><ul><li>Ina carta stampada cun in grond marcader: MoveEye la vesa da lunsch, pipa '
            'e la suonda cun il chau. Star airi, volver la carta 1–2 s e la mussar puspè: il lieu vegn memorisà sco «Punct 1», «Punct 2» … en il teach-in (cun la distanza, en la runda). '
-           'Mo cun protecziun deactivada. Crear e stampar: Dapli → Ufficina da cartas → Cartas da marcar. Distanza (tests e simulatur): A4 suonda da di fin circa 12–15 m, '
-           'marca fin circa 9–10 m; crepuscul circa 5 m; A5 circa 0,7 ×.</li></ul></section>\n'),
+           'Mo cun protecziun deactivada. Crear e stampar: Dapli → Ufficina da cartas → Cartas da marcar. Distanza (simulatur): A4 suonda fin circa 10 m, '
+           'marca segir fin circa 5–6 m; cun bun glisch savens pli lunsch, en il crepuscul main; A5 circa 0,7 ×.</li></ul></section>\n'),
 }
 
 
