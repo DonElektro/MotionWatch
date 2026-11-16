@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-16 20:32",
+ "generated": "2026-11-16 23:05",
  "versions": [
+  {
+   "version": "4.15.0",
+   "file": "webcam_bewegung_4_15_0.py",
+   "url": "",
+   "sha256": "56ef4aef8b4ce60078d3b525218e126046982cd91bd41e2acc5c001b48a4d83e",
+   "date": "2026-11-16 23:05",
+   "notes": "MoveEye beim Host: eine echte MoveEye statt der Demo – der Simulator auf der Homepage ist die Kamera, Einstellungen und Aufnahmen bleiben, nur Bewegungserkennung, keine KI-Modelle; Aufnahme: fehlt ein Video-Encoder (z. B. kein Hardware-Encoder), nimmt MoveEye mit einem anderen auf",
+   "size": 4037175,
+   "sig": "3507a720b1fc8c11e66a9a31a6984d8ac6ed7fd5f288b36ae3090aea0335972398d9ee21734fe53cf9d39230a95fdb3ebce8002dd145b6bdefd310e345bde70d",
+   "data": {
+    "file": "moveeye_daten_4_15_0.zip",
+    "url": "",
+    "sha256": "5049b5302b0d44c6b4c5adbe6b69a00f8c3f9322189f6a34ff8ea6b7f6396004",
+    "size": 14274531,
+    "sig": "fc42ce455383a246f40084029aee0c607da766f9705cfb55d6b32f074b1a4439b257e597fc249ad7432d6dd7f8c8a12668a93fb8e9d2a10ea64824dd8647510f"
+   }
+  },
   {
    "version": "4.14.0",
    "file": "webcam_bewegung_4_14_0.py",
@@ -136,23 +153,6 @@
     "sha256": "1aa6fbe919ca42e0a09de3514fd42dc119531253724e701b97fa63dfb271b50c",
     "size": 13554493,
     "sig": "64dea4af48be5e5e533f1ea2e60b6b15c21c9ab625b2665d9bf183c4db809eb7c68a5be0dba059fc940ac78f4eeb6dfa7171e173295f4825ff32801e55e10401"
-   }
-  },
-  {
-   "version": "4.6.0",
-   "file": "webcam_bewegung_4_6_0.py",
-   "url": "",
-   "sha256": "7adcf5804cce76713fca42310ab066d5f8efbe6298ea22fe6b01628264e2b607",
-   "date": "2026-11-16 07:27",
-   "notes": "Mitteilungen pausieren: Push-Pause, die von selbst endet (15 min bis «bis ich zurück bin»), 🔕 auf der Glocke – Sabotage, SOS und Akku kommen immer",
-   "size": 3922499,
-   "sig": "188bf90363bd4a1d0058174cd7c164e53a4c0a8286a95611829db4b46015876dccd35d89a026c97df0b41523505669d5173186f72f5c8e9fabf0c108f10b6009",
-   "data": {
-    "file": "moveeye_daten_4_6_0.zip",
-    "url": "",
-    "sha256": "bdebaa214646c56d7254328527dbc48944368120769cd8954d025a96f6689ec3",
-    "size": 13554056,
-    "sig": "89a32903ab8e16322f8f01bfda960f08838b85a187d385a3e70be41c8ccf47620eef2e5c0bc764a5ce1bf8c41f45e06092ef76aaa13b8ed87ad1a15407e57c0b"
    }
   },
   {

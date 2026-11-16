@@ -118,19 +118,34 @@ _TRANSCODE_SEM = threading.Semaphore(1)                     # one conversion at 
 
 
 # ---- encoder: ffmpeg pipe (hardware H.264 on Pi 3/4, x264 elsewhere) ------------------------------------------
-_ENC = {"hw": None}
+_ENC = {"hw": None, "logged": ""}
+
+
+def _ffmpeg_enc_ok(enc):
+    """can this ffmpeg really encode with enc? Tried once with a few test frames (4.14.1: also libx264 - ffmpeg opens the encoder
+    only with the first frame, so a missing encoder would end a recording right after its start)"""
+    k = "hw" if enc == "h264_v4l2m2m" else "ok_" + enc
+    if _ENC.get(k) is None:
+        try:
+            r = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i", "testsrc=size=320x240:rate=10",
+                                "-frames:v", "5", "-c:v", enc, "-pix_fmt", "yuv420p", "-f", "null", "-"],
+                               capture_output=True, timeout=20)
+            _ENC[k] = r.returncode == 0
+        except Exception:
+            _ENC[k] = False
+    return _ENC[k]
 
 
 def _ffmpeg_hw_ok():
-    if _ENC["hw"] is None:
-        try:
-            r = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i", "testsrc=size=320x240:rate=10",
-                                "-frames:v", "5", "-c:v", "h264_v4l2m2m", "-pix_fmt", "yuv420p", "-f", "null", "-"],
-                               capture_output=True, timeout=20)
-            _ENC["hw"] = r.returncode == 0
-        except Exception:
-            _ENC["hw"] = False
-    return _ENC["hw"]
+    return _ffmpeg_enc_ok("h264_v4l2m2m")
+
+
+def _rec_enc_chosen(name, failed):
+    """STATE + one log line when the encoder in use changes after others failed (4.14.1: a fallback is never silent, never repeated)"""
+    STATE["recording_enc"] = name
+    if failed and _ENC.get("logged") != name:
+        _ENC["logged"] = name
+        log_event("rec", f"Video encoder: {', '.join(failed)} not available - recording with {name}")
 
 
 class FfmpegWriter:
@@ -197,19 +212,24 @@ def open_writer(path, fps, size):
         pass
     if not os.access(d_, os.W_OK):
         return None, ""                                       # the folder (USB disk?) is missing / read-only: not the encoders' fault
+    failed = []
     if CFG["record_encoder"] == "auto" and "ffmpeg" not in _BAD_CODECS and shutil.which("ffmpeg"):
         for hw in ((True, False) if _ffmpeg_hw_ok() else (False,)):
             if hw and ("ffmpeg_hw" in _BAD_CODECS or size[0] > 1920 or size[1] > 1088):
                 continue                                      # the Pi hardware encoder: max 1920x1088, or it died lately
+            if not hw and not _ffmpeg_enc_ok("libx264"):
+                failed.append("ffmpeg x264")
+                continue                                      # this ffmpeg has no libx264: straight to OpenCV
             try:
                 w = FfmpegWriter(path, fps, size, hw)
                 time.sleep(0.2)
                 if w.isOpened():
-                    STATE["recording_enc"] = "ffmpeg h264_v4l2m2m (hardware)" if hw else "ffmpeg x264"
+                    _rec_enc_chosen("ffmpeg h264_v4l2m2m (hardware)" if hw else "ffmpeg x264", failed)
                     return w, "h264"
                 w.release()
             except Exception:
                 pass
+            failed.append("ffmpeg h264_v4l2m2m" if hw else "ffmpeg x264")
             try:
                 os.remove(path)
             except OSError:
@@ -223,8 +243,9 @@ def open_writer(path, fps, size):
         except Exception:
             w = None
         if w is not None and w.isOpened():
-            STATE["recording_enc"] = "OpenCV " + cc
+            _rec_enc_chosen("OpenCV " + cc, failed)
             return w, cc
+        failed.append("OpenCV " + cc)
         _BAD_CODECS.add(cc)
         if w is not None:
             w.release()

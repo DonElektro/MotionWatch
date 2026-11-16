@@ -25,12 +25,13 @@ if __name__ == "__main__":
                     help="quick checks without camera (with FOLDER: also the signatures in FOLDER/versions.json) and exit")
     ap.add_argument("--helper", action="store_true", help="also work as AI helper for a Raspberry Pi in the network (port 5057, pairing code)")
     ap.add_argument("--demo", action="store_true", help="demo: drawn scene with a person / animals walking by, own settings folder, no changes to the computer")
-    ap.add_argument("--host-modus", action="store_true", help="demo on a web host (639zzzzw, started by demo_start.py): --demo --headless, only 127.0.0.1, every lock on")
+    ap.add_argument("--host-modus", action="store_true", help="MoveEye on a web host (639zzzzw, started by demo_start.py; 4.15.0: a real MoveEye, the web simulator is the camera): --headless, only 127.0.0.1, every lock on")
     ap.add_argument("--url-prefix", default=None, help="with --host-modus: path prefix of the page at the host (default /demo, '' = none)")
     ap.add_argument("--paused-until", type=float, default=None, help=argparse.SUPPRESS)   # used by "pause the program"
     a = ap.parse_args()
-    if a.host_modus:                                   # 639zzzzw: always the demo, never the window, never the network
-        a.demo = a.headless = True; a.helper = False; a.bind = "127.0.0.1"
+    if a.host_modus:                                   # 639zzzzw: never the window, never the network (4.15.0: no longer the demo)
+        a.headless = True; a.helper = False; a.bind = "127.0.0.1"
+    nosys = a.demo or a.host_modus                     # demo / web host: nothing of the computer (watchdog, drives, Wi-Fi, autostart ...)
     if a.make_manifest:
         sys.exit(make_manifest(a.make_manifest, a.base_url, a.sign_key))
     if a.self_test is not None:
@@ -46,15 +47,15 @@ if __name__ == "__main__":
     if a.demo:
         DEMO["on"] = True
         set_data_dir(a.config or os.path.join(tempfile.gettempdir(), "motionwatch-demo"))
-        if a.host_modus:
-            if "host_mode_start" not in globals():     # 639zzzzw comes from the data zip: without it no host mode (fail closed)
-                sys.exit("host mode needs the data zip moveeye_daten_X_Y_Z.zip next to the program")
-            host_mode_start(a)                         # 639zzzzw: the locks before any thread starts
     else:
         set_data_dir(a.config or DATA_DIR)
-    if not a.demo:
+    if a.host_modus:
+        if "host_mode_start" not in globals():         # 639zzzzw comes from the data zip: without it no host mode (fail closed)
+            sys.exit("host mode needs the data zip moveeye_daten_X_Y_Z.zip next to the program")
+        host_mode_start(a)                             # 639zzzzw: the locks before any thread starts
+    if not nosys:
         start_watchdog_arm()                                       # 3.87.1: the web page must come up (140, under systemd)
-    took = prepare_settings_file() if not a.demo else ""
+    took = prepare_settings_file() if not nosys else ""
     threading.Thread(target=clock_guard_loop, daemon=True, name="clockguard").start()
     threading.Thread(target=outbox_loop, daemon=True, name="outbox").start()
     threading.Thread(target=guard_watch_loop, daemon=True, name="guardwatch").start()
@@ -64,10 +65,10 @@ if __name__ == "__main__":
                   + ("the backup copy was used" if STATE.get("settings_from_backup") else "no usable backup: default settings!"))
     testopt_load()
     threading.Thread(target=testopt_nightly_loop, daemon=True, name="testnight").start()
-    if not a.demo and not a.helper:
+    if not nosys and not a.helper:
         threading.Thread(target=tunnel_start, daemon=True).start()   # 2.95.54: simulators behind a firewall connect out to here
     STATE["helper_arg"] = bool(a.helper)                 # 2.98.29: started as AI helper (by the simulator on the PC)
-    if (a.helper or CFG.get("helper_serve")) and not a.demo:
+    if (a.helper or CFG.get("helper_serve")) and not nosys:
         if a.helper and not CFG.get("helper_serve"):
             CFG["helper_serve"] = True; save_settings()
         helper_server_start()
@@ -90,9 +91,11 @@ if __name__ == "__main__":
                    device_name=CFG["device_name"] or "Demo")
         a.source = None; a.cam = None
         print("DEMO MODE - settings in " + DATA_DIR)
-        if HOST["on"]:
-            host_after_settings()                      # 639zzzzw: fixed settings, door for the web simulator
-    if not DEMO["on"] and not instance_lock(CFG["web_port"]):          # only one MoveEye at a time
+    if HOST["on"]:
+        CFG.update(setup_done=True, dev_phase_done=True)
+        a.source = None; a.cam = None
+        host_after_settings()                          # 639zzzzw: fixed settings, door for the web simulator
+    if not nosys and not instance_lock(CFG["web_port"]):          # only one MoveEye at a time
         if a.boot or not instance_takeover(CFG["web_port"], not a.headless):
             sys.exit(0)
     start_guard()                                     # after an update: go back if the new version keeps crashing
@@ -119,7 +122,7 @@ if __name__ == "__main__":
             ap.error("--source must be auto, usb:N, pi:N or an rtsp:// / http:// URL")
     elif a.cam is not None:
         CFG["source"] = f"usb:{a.cam}"
-    if not DEMO["on"]:
+    if not nosys:
         storage_apply(start=True)                                   # recordings on the chosen SSD / USB drive (if there)
     LOOPREC = LoopRecorder()
     threading.Thread(target=rtsp_watch, daemon=True, name="rtsp-watch").start()
@@ -131,16 +134,18 @@ if __name__ == "__main__":
     arm_tick()
     if DEMO["on"]:
         threading.Timer(3.0, lambda: arm(0)).start()                  # the demo starts armed
-    else:
+    elif not nosys:
         NetAuto()
-    if a.boot and CFG["net_mode"] == "hotspot" and not DEMO["on"]:                    # started by the autostart: own Wi-Fi on
+    if nosys:
+        pass                                                       # demo / web host: no Wi-Fi of its own
+    elif a.boot and CFG["net_mode"] == "hotspot":                    # started by the autostart: own Wi-Fi on
         boot_hotspot()
     elif a.boot and CFG["net_mode"] == "client" and CFG["hotspot_on"]:
         CFG["hotspot_on"] = False
     elif CFG["hotspot_on"] and not a.boot:                         # e.g. camping: the own Wi-Fi comes back after a restart
         hotspot_switch_later(True, 3.0)
     try:
-        if not DEMO["on"]:
+        if not nosys:
             autostart_follow_version(); autostart_check_boot(); autostart_refresh()
     except Exception:
         pass
@@ -158,7 +163,7 @@ if __name__ == "__main__":
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:
-        if CFG["desktop_notice"] and not DEMO["on"]:      # started in the background: tell the person at the Pi
+        if CFG["desktop_notice"] and not nosys:      # started in the background: tell the person at the Pi
             desktop_notice(tr("MoveEye is running"),
                            tr("Started in the background.") + (" " + tr("Page") + ": " + page_address(ip) if ip and CFG["web_stream"] else ""),
                            wait=300 if a.boot else 30)
