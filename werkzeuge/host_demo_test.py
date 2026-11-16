@@ -221,7 +221,7 @@ shutil.rmtree(data)
             "import_gpio": "ModuleNotFoundError", "import_smbus": "ModuleNotFoundError", "write_out": "PermissionError",
             "write_home": "PermissionError", "write_data": "ok", "remove_out": "PermissionError", "rmtree_out": "PermissionError",
             "execv_other": "PermissionError", "read_out": "ok", "system": 127 << 8,
-            "nice_ffmpeg": "ok" if shutil.which("ffmpeg") and shutil.which("nice") else "FileNotFoundError",   # 4.14.1: recording / conversion
+            "nice_ffmpeg": "ok" if shutil.which("nice") else "FileNotFoundError",   # 4.15.0: let through (without ffmpeg nice just ends with 127)
             "nice_sh": "FileNotFoundError", "nice_bare": "FileNotFoundError"}
     for k, v in want.items():
         ok(res.get(k) == v, f"{k}: {res.get(k)} (soll {v})")
