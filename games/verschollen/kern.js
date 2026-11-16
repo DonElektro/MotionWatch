@@ -1,4 +1,4 @@
-/* «Verschollen im Bergtal» – Kapitel 1. Eigenes Spiel für MoveEye (MIT), Geschichte und Idee: der Besitzer.
+/* «Verschollen im Bergtal» – Kapitel 1 und 2. Eigenes Spiel für MoveEye (MIT), Geschichte und Idee: der Besitzer.
 
    kern.js = die Regeln, ohne Bildschirm: Zustand, Zeit, Feuer, Wetter, Bauen, Erkunden, Geschichte, Aufnahmen.
    Läuft im Browser (window.VB) und in node (module.exports) – so kann der Balance-Test ohne Browser rechnen.
@@ -11,20 +11,27 @@
    Stücke). Die 13. ist die ganze Nacht des Felssturzes = Ende Kapitel 1.
    SPEICHERN: ui.js legt den Zustand unter «mw-verschollen-v1» ab ({v: VERSION, s: Zustand}); K.migriere() hebt ältere
    Fassungen an. Der Zustand enthält nur Zahlen, Texte, true/false, Listen und einfache Objekte.
-   TEMPO (ab GS-1.20): S.tempo = 1, 2 oder 4 – ui.js lässt die Spieluhr so viel schneller laufen (K.step mit dt × tempo).
+   TEMPO (ab GS-1.20, 8× und 16× ab GS-1.25): S.tempo = 1, 2, 4, 8 oder 16 – ui.js lässt die Spieluhr so viel schneller laufen (K.step mit dt × tempo).
    Weil ALLES hier auf der Spieluhr läuft (Tag und Nacht, Feuer, Abklingzeiten, Ausflüge, Wetter, Erträge, MoveEye-Sprüche),
    bleibt die Balance gleich. S.echt = Spielzeit auf der Spieluhr, S.wirk = wirklich gespielte Sekunden.
-   TEST: K.bot() spielt wie ein vernünftiger Mensch (mit Lese- und Denkzeit) und zählt die echte Spielzeit (S.echt). */
+   TEST: K.bot() spielt wie ein vernünftiger Mensch (mit Lese- und Denkzeit) und zählt die echte Spielzeit (S.echt);
+   K.bot(S, {kapitel: 2}) spielt weiter bis zum Ende von Kapitel 2.
+   KAPITEL 2 «Drei Tage» (ab GS-1.24): beginnt nach dem Ende von Kapitel 1 mit «Kapitel 2 beginnen» (S.k2 = Zustand des Kapitels,
+   null vorher). Der Messwert aus der Zukunft sagt einen Sturm in drei Tagen voraus (S.k2.d = Tag des Sturms, er kommt am Abend
+   dieses Tages – vorbereitet oder nicht, niemand kommt zu Schaden). Kleine neue Regel: die Station misst jetzt – jeden Morgen
+   meldet sie das Wetter für den Nachmittag (S.k2.wn), so lassen sich Ausflüge planen. Statt Aufnahmen gibt es sechs Seiten aus
+   einem fremden Notizbuch (K.SEITEN, S.k2.seiten). Ende: alle Seiten, Sturm vorbei, Station danach besucht -> Karte «ende2»,
+   S.ende2. Spielstände aus Kapitel 1 (Fassung 1) laufen weiter: K.migriere ergänzt die neuen Felder. */
 (function (G) {
   'use strict';
   var K = {};
   var HUND = 'Maggie';          // Name der Hündin (vom Besitzer) – hier ändern, gilt für das ganze Spiel (die Texte sagen «sie» / «ihr»)
-  var VERSION = 1, DAY = 300, START_T = 246;
+  var VERSION = 2, DAY = 300, START_T = 246;
   K.HUND = HUND; K.VERSION = VERSION; K.DAY = DAY;
-  K.TEMPI = [1, 2, 4];             // Spieltempo (ui.js): die Spieluhr läuft so viel schneller, alle Regeln bleiben gleich
+  K.TEMPI = [1, 2, 4, 8, 16];      // Spieltempo (ui.js): die Spieluhr läuft so viel schneller, alle Regeln bleiben gleich (8× / 16× ab GS-1.25)
 
   var NAME = { holz: 'Holz', wasser: 'Wasser', essen: 'Essen', draht: 'Draht', naegel: 'Nägel', schnur: 'Schnur', stoff: 'Stoff',
-    seil: 'Seil', akku: 'Akku', panel: 'Solarpanel', wind: 'Windmesser', logger: 'Datenlogger' };
+    seil: 'Seil', akku: 'Akku', panel: 'Solarpanel', wind: 'Windmesser', logger: 'Datenlogger', schiene: 'Schiene', pickel: 'Pickel' };
   var RES = ['holz', 'wasser', 'essen'], ITEMS = ['draht', 'naegel', 'schnur', 'stoff'];
   K.NAME = NAME; K.RES = RES; K.ITEMS = ITEMS;
 
@@ -50,10 +57,11 @@
       v: VERSION, t: START_T, echt: 0, seed: (seed || (Date.now() % 1000003) + 7) | 0,
       feuer: 0, fz: 0, r: { holz: 0, wasser: 0, essen: 0 }, it: { draht: 0, naegel: 0, schnur: 0, stoff: 0 },
       w: {}, bau: {}, f: {}, n: {}, orte: {}, station: 0, leute: { livia: 0, balz: 0 }, clips: [], log: [], karten: [],
-      cd: {}, cdl: {}, wetter: 'sturm', muede: false, trip: null, ende: false, acc: {}, wahl: {}, meT: 0, meI: {}, logN: 0, tempo: 1, wirk: 0
+      cd: {}, cdl: {}, wetter: 'sturm', muede: false, trip: null, ende: false, acc: {}, wahl: {}, meT: 0, meI: {}, logN: 0, tempo: 1, wirk: 0,
+      k2: null, ende2: false
     };
   };
-  K.migriere = function (d) {               // ältere Spielstände anheben (heute gibt es nur Fassung 1)
+  K.migriere = function (d) {               // ältere Spielstände anheben (Fassung 1 = Kapitel 1: bekommt k2 = null, ende2 = false)
     if (!d || typeof d !== 'object' || !d.s || typeof d.s !== 'object') return null;
     var s = d.s, n = K.neu(s.seed);
     for (var k in n) if (!(k in s)) s[k] = n[k];
@@ -131,6 +139,23 @@
     karte(S, { art: 'clip', id: id, nr: S.clips.length });
     log(S, 'n', 'MoveEye stellt eine Aufnahme wieder her: «' + CLIPS[id].titel + '».');
   }
+  // ---- Kapitel 2: sechs Seiten aus einem fremden Notizbuch (kleine, ordentliche Schrift; unterschrieben mit · · · —) ----
+  var SEITEN = {
+    s1: { titel: 'Eine nasse Seite', z: ['«Die Station misst wieder zu früh. Genau drei Tage, wie damals.»', '«Niemand darf das sehen, bevor ich weiss, warum.»', 'Darunter ein Zeichen: drei Punkte und ein Strich.'] },
+    s2: { titel: 'Im Messbuch', z: ['«Das Messbuch des Senns. Herbst 1986, dieselbe Kurve, drei Tage zu früh. Er hat es gewusst und geschwiegen.»', '«Ich verstehe ihn. Ich lasse das Buch hier. Es gehört ihm.»'] },
+    s3: { titel: 'Beim Messgerät', z: ['«Kanal 3: Der Hang wandert. Vier Millimeter am Tag, seit dem Felssturz mehr.»', '«Wenn der Sturm kommt, ist das Wasser im Berg das Problem. Nicht der Wind.»'] },
+    s4: { titel: 'Unter der Tasse', z: ['«Sie sind zu zweit heraufgekommen, mit dem Hund. Sie wollten die Station prüfen. Gut.»', '«Schlecht: Sie standen in der Nacht vor der Hütte, als der Hang kam.»'] },
+    s5: { titel: 'Noch eine Seite', z: ['«Ich hätte es ihnen erklären sollen. Stattdessen habe ich gesagt: Sie dürfen die Daten nicht finden. Noch nicht.»', '«Ich meinte nicht die beiden.»'] },
+    s6: { titel: 'Unter dem Deckel', z: ['«Danke, dass ihr sie repariert habt. Sie hat im Sturm alles gemessen.»', '«Ich gehe jetzt über den Grat. Wer wissen will, warum sie zu früh misst: Der Anfang liegt unter dem alten Weg.»', '· · · —'] }
+  };
+  K.SEITEN = SEITEN;
+  function seite(S, id) {
+    if (!S.k2 || S.k2.seiten.indexOf(id) >= 0) return;
+    S.k2.seiten.push(id);
+    karte(S, { art: 'seite', id: id, nr: S.k2.seiten.length });
+    log(S, 'n', 'Eine Seite aus einem fremden Notizbuch: «' + SEITEN[id].titel + '». (' + S.k2.seiten.length + ' von 6)');
+  }
+
   K.stufe = function (S) { var n = S.clips.length; return n <= 2 ? 0 : n <= 5 ? 1 : n <= 9 ? 2 : 3; };
 
   // ---- MoveEye: Sprüche je Vertrautheit (Stufe 0 knapp … Stufe 3 mit Meinung) ----
@@ -144,7 +169,18 @@
     ['Meine Meinung zur Station: hinauf, reparieren und dann ganz genau hinschauen.', 'Früher hätte ich nur «Speicher voll» gesagt. Jetzt sage ich: Danke, dass du mich mitnimmst.',
       'Was auch immer auf der Station ist – wir finden es zusammen heraus. Du, ich und ' + HUND + '.', 'Ich habe beschlossen, dass ich Nebel nicht mag. Man sieht nichts. Als Kamera nehme ich das persönlich.']
   ];
+  var ME_IDLE2 = ['Ich bekomme jetzt jeden Morgen Daten von der Station. Ich fühle mich sehr wichtig. Bitte nicht stören.',
+    'Drei Tage. Ich zähle mit. Ich zähle ja immer mit, aber jetzt mit Absicht.',
+    HUND + ' hat zweimal in meine Linse geniest. Ich werte das als Zuneigung.',
+    'Wenn der Sturm kommt, stell mich bitte ans Fenster. Ich will das sehen. Aus sicherer Entfernung.',
+    'Die Person mit der Kapuze hat dich gerettet. Ich habe mir das Bild hundertmal angesehen. Das Gesicht bleibt hell.',
+    'Livia summt wieder dieses Lied. Ich habe es in meinen Aufnahmen gefunden: Du hast es auch gesummt.',
+    'Ich habe beschlossen, dass ich Stürme auch nicht mag. Nebel bleibt aber auf Platz eins.'];
   function meIdle(S) {
+    if (S.k2) {                                   // Kapitel 2: jeder Spruch einmal, dann ist MoveEye still (bis Neues passiert)
+      var j = S.k2.idle || 0; if (j >= ME_IDLE2.length) return;
+      S.k2.idle = j + 1; me(S, ME_IDLE2[j]); return;
+    }
     var st = K.stufe(S), l = ME_IDLE[st], i = S.meI[st] || 0;
     S.meI[st] = i + 1;
     me(S, l[i % l.length]);
@@ -153,22 +189,37 @@
   // ---- Wetter ----
   var WT = { klar: 'Klarer Himmel über den Felsen.', wolkig: 'Wolken hängen an den Gipfeln.', regen: 'Es regnet. Die Felsen glänzen nass.',
     nebel: 'Nebel liegt im Tal. Man sieht kaum zum See.', sturm: 'Sturm! Der Wind heult um die Hütte.' };
-  function wetterWechsel(S) {
+  function wZiehen(S, n, jetzt) {
+    var g = { klar: 32, wolkig: 30, regen: 16, nebel: 14, sturm: jetzt === 'sturm' || n < 6 || S.k2 ? 0 : 8 }, sum = 0, x, w;
+    for (x in g) sum += g[x];
+    var r = zufall(S) * sum;
+    for (x in g) { r -= g[x]; if (r < 0) { w = x; break; } }
+    return w || 'klar';
+  }
+  function wetterWechsel(S, mittag) {
     var n = S.n.wetterN = (S.n.wetterN || 0) + 1, w;
     if (n === 1) w = 'nebel'; else if (n === 2) w = 'wolkig';
-    else {
-      var g = { klar: 32, wolkig: 30, regen: 16, nebel: 14, sturm: S.wetter === 'sturm' || n < 6 ? 0 : 8 }, sum = 0, x;
-      for (x in g) sum += g[x];
-      var r = zufall(S) * sum;
-      for (x in g) { r -= g[x]; if (r < 0) { w = x; break; } }
-      w = w || 'klar';
-    }
+    else w = wZiehen(S, n, S.wetter);
+    if (mittag && S.k2 && S.k2.wn) { w = S.k2.wn; S.k2.wn = ''; }      // Kapitel 2: so, wie die Station es gemeldet hat
     if (w === S.wetter) return;
     S.wetter = w;
     log(S, 'w', WT[w]);
     if (w === 'sturm') me(S, wahl(S, ['Sturm. Ich schlage vor: drinnen bleiben, Feuer füttern, ' + HUND + ' kraulen.', 'Bei dem Wind fliegt sogar meine Laune weg. Bleib in der Nähe der Hütte.']));
     if (w === 'nebel' && S.f.karte) me(S, 'Nebel. Wer jetzt losgeht, braucht länger. ' + HUND + ' findet zum Glück immer heim.');
   }
+  // Kapitel 2: die Station meldet am Morgen das Wetter für den Nachmittag (am Tag des Sturms: den Sturm)
+  K.WETTER_VOR = { klar: 'klarer Himmel', wolkig: 'Wolken', regen: 'Regen', nebel: 'Nebel', sturm: 'Sturm' };
+  function vorhersage(S) {
+    var k = S.k2;
+    if (!k.sturm && tagNr(S) === k.d) {
+      k.wn = 'wolkig';
+      me(S, 'Station B-7 meldet: Der Luftdruck fällt wie ein Stein. Heute Abend kommt der Sturm.');
+      return;
+    }
+    k.wn = wZiehen(S, 99, '');
+    me(S, 'Station B-7 meldet für heute Nachmittag: ' + K.WETTER_VOR[k.wn] + '.');
+  }
+  K.sturmIn = function (S) { return S.k2 && !S.k2.sturm ? Math.max(0, S.k2.d - tagNr(S)) : -1; };
 
   // ---- Tageswechsel ----
   function leuteN(S) { return (S.leute.livia === 2 ? 1 : 0) + (S.leute.balz === 2 ? 1 : 0); }
@@ -185,7 +236,26 @@
       else { log(S, 'n', 'Zu wenig zu essen oder zu trinken. Du bist heute müde – alles geht langsamer.'); if (!war) me(S, 'Kleiner Tipp aus der Kameraperspektive: Ein Vorrat an Essen und Wasser macht morgens bessere Laune.'); }
     }
     if (S.bau.unterstand && S.f.balzTraf && S.leute.balz < 2) balzKommt(S);
+    if (S.k2) morgen2(S, tg);
   }
+  function morgen2(S, tg) {
+    var k = S.k2;
+    if (k.nass) { k.nass = 0; S.muede = true; log(S, 'n', 'Alles ist klamm vom Sturm. Heute geht alles etwas langsamer.'); }
+    if (k.sturm === 1) {
+      k.sturm = 2; gib(S, 'holz', 8);
+      karte(S, { art: 'bild', bild: 'nachsturm', titel: 'Nach dem Sturm', z: ['Das Tal glänzt nass. Überall liegen abgebrochene Äste – Brennholz für Tage. (+8 Holz)',
+        'Oben am Grat blinkt die Station grün. Sie steht noch.',
+        'MoveEye: «Heute Nacht um 02:09 hat jemand die Station ausgelesen. Der Logger hat es mir verraten. Er ist ein Plappermaul.»'] });
+    }
+    if (S.w.schiene && k.kn < 2 && tg >= k.schieneTag + 2) {
+      k.kn = 2;
+      karte(S, { art: 'bild', bild: 'aussen', titel: 'Livia steht auf', z: ['Livia macht vor der Hütte ein paar Schritte. Dann noch ein paar. Dann hüpft sie, nur ein bisschen.',
+        '«Er hält!», ruft sie. ' + HUND + ' rennt bellend um sie herum.',
+        '«Und jetzt zeige ich dir etwas: Am Felsturm über dem Wasserfall hat heute Nacht ein Licht gebrannt. Ich kenne den Weg hinauf.»'] });
+    }
+    vorhersage(S);
+  }
+  function liviaDa(S) { return S.leute.livia === 2 && !(S.trip && S.trip.mit === 'livia'); }
   function abend(S) {
     if (S.f.draussen) log(S, 'w', 'Die Sonne sinkt hinter die Felsen.');
     if (S.f.draussen && !S.w.laterne && !S.n.abendTipp) { S.n.abendTipp = 1; me(S, 'Bald ist es dunkel. Ohne Licht kannst du nachts nur ruhen und das Feuer hüten.'); }
@@ -202,7 +272,7 @@
     S.fz += dt;
     while (S.fz >= iv && S.feuer > 0) {
       S.fz -= iv;
-      if (S.leute.livia === 2 && S.feuer <= 2 && S.r.holz >= 1) { S.r.holz--; S.n.liviaFeuer = (S.n.liviaFeuer || 0) + 1; continue; }   // Livia legt nach
+      if (liviaDa(S) && S.feuer <= 2 && S.r.holz >= 1) { S.r.holz--; S.n.liviaFeuer = (S.n.liviaFeuer || 0) + 1; continue; }   // Livia legt nach
       S.feuer--;
       if (S.feuer === 1) log(S, 'n', 'Das Feuer wird klein.');
       if (S.feuer === 0) {
@@ -218,7 +288,7 @@
   function acc(S, k, dt, iv, fn) { S.acc[k] = (S.acc[k] || 0) + dt; while (S.acc[k] >= iv) { S.acc[k] -= iv; fn(); } }
   function passiv(S, dt) {
     if (S.bau.tonne) acc(S, 'tonne', dt, S.wetter === 'regen' || S.wetter === 'sturm' ? 15 : 80, function () { gib(S, 'wasser', 1); });
-    if (S.leute.livia === 2 && !nacht(S)) acc(S, 'livia', dt, 40, function () { gib(S, 'holz', 1); });
+    if (liviaDa(S) && !nacht(S)) acc(S, 'livia', dt, 40, function () { gib(S, 'holz', 1); });
     if (S.leute.balz === 2 && !nacht(S)) acc(S, 'balz', dt, 40, function () { gib(S, 'essen', 1); });
   }
 
@@ -276,6 +346,18 @@
         me(S, 'Erst verstehen, dann erzählen. Das hätte ich auch gesagt. Ab jetzt behaupte ich, dass ich es gesagt habe.');
         ende(S);
       } }
+    ],
+    livia2: [
+      { t: '«Danke, dass du es mir sagst.»', fn: function (S) {
+        S.wahl.livia2 = 'danke'; S.k2.beichte = true;
+        log(S, 'p', 'Livia: «Ich hätte es früher sagen sollen.» Sie lächelt schief und wischt sich übers Gesicht.');
+        me(S, 'Ich habe es übrigens geahnt. Grüner Ärmel. Ich bin eine sehr gute Kamera.');
+      } },
+      { t: '«Und wer war die Person mit der Kapuze?»', fn: function (S) {
+        S.wahl.livia2 = 'frage'; S.k2.beichte = true;
+        log(S, 'p', 'Livia: «Ich weiss es nicht. Ehrlich. Aber ich habe sie schon einmal gesehen – im Dorf, am Abend bevor wir aufgestiegen sind.»');
+        me(S, 'Gute Frage. Ich hätte sie auch gestellt. Mit mehr Zoom.');
+      } }
     ]
   };
   K.WAHL = WAHL;
@@ -298,16 +380,38 @@
     { wenn: function (S) { return S.leute.livia === 2; }, s: '«Die Livia … nein, ich sage nichts. Ist nicht meine Geschichte.»' },
     { wenn: function (S) { return S.station >= 4; }, s: '«Wenn du sie neu startest, dann bei klarem Wetter. Sonst misst sie nur Wolken.»' }
   ];
+  // Kapitel 2
+  var LIVIA2 = [
+    { s: '«Drei Tage. Weisst du, was ich in drei Tagen alles schaffe? Mit dem Knöchel: nicht viel.» Sie grinst.' },
+    { wenn: function (S) { return S.w.schiene; }, s: '«Setz dich. Bitte. Ich muss dir etwas sagen.»', fn: function (S) {
+      karte(S, { art: 'wahl', id: 'livia2', bild: 'innen', titel: 'Livia erzählt', z: ['Livia legt das Schnitzmesser weg. «Schon lange wollte ich das sagen.»',
+        '«Wir sind zusammen heraufgekommen. Du, ich und ' + HUND + '. Wegen der Station. Der grüne Ärmel in deiner Aufnahme – das war ich.»',
+        '«Nach dem Hang habe ich dich gesucht. Als ich dich fand, hast du mich angeschaut wie eine Fremde. Ich wollte dich nicht erschrecken.»'] });
+    } },
+    { wenn: function (S) { return S.k2.biwak; }, s: '«Ein Fernglas auf unsere Hütte. Ich weiss nicht, ob ich mich beobachtet oder beschützt fühlen soll.»' },
+    { wenn: function (S) { return S.k2.sturm; }, s: '«Die Hütte steht noch. Du hast schon früher so gebaut – als wäre jeder Nagel ein Versprechen.»' }
+  ];
+  var LIVIA_RUHE2 = ['Livia übt mit der Schiene Treppensteigen. Auf einer einzigen Stufe.', 'Livia prüft das Seil, Meter für Meter.', 'Livia summt das Lied. Diesmal summst du mit, ohne zu wissen, woher du es kennst.'];
+  var BALZ2 = [
+    { s: '«Drei Tage, sagt die Station? Meine Knie sagen dasselbe. Und die Knie waren zuerst da.»' },
+    { s: '«1984 haben sie im Stollen gesprengt. Zwei Jahre später kam der Hang. Man sagte: Zufall.» Er schweigt lange. «Mein altes Messbuch liegt oben in der Sennerei. Hol es.»',
+      fn: function (S) { S.k2.sennerei = true; } },
+    { wenn: function (S) { return S.k2.messbuch; }, s: '«Du hast es gesehen. Dieselbe Kurve, drei Tage vor dem Hang. Ich habe es damals niemandem gezeigt. Man hätte mich ausgelacht.»' },
+    { wenn: function (S) { return S.k2.stollen; }, s: '«Ein Messgerät im Berg? Dann misst jemand den Hang. Und wer misst, der weiss etwas.»' },
+    { wenn: function (S) { return S.k2.sturm; }, s: '«Der Sturm ist durch. Du bist ein besserer Zimmermann als Senn. Das ist ein Kompliment.»' }
+  ];
+  var BALZ_RUHE2 = ['Balz flickt seinen Hut. Der Hut hat das nicht verdient, sagt er.', 'Balz hält den nassen Finger in den Wind. Dann fragt er MoveEye nach der Station. Dann brummt er.', '«Holz hacken wärmt zweimal», brummt Balz.'];
   var BALZ_RUHE = ['Balz schneidet Käse für alle. ' + HUND + ' sitzt sehr, sehr brav daneben.', 'Balz schaut lange zum Grat. Dann stopft er seine Pfeife, ohne sie anzuzünden.', '«Holz hacken wärmt zweimal», brummt Balz.'];
+  function redeListe(S, wer) { return S.k2 ? (wer === 'livia' ? LIVIA2 : BALZ2) : (wer === 'livia' ? LIVIA : BALZ); }
   K.neueRede = function (S, wer) {
-    var L = wer === 'livia' ? LIVIA : BALZ, i = S.n['rede_' + wer] || 0;
+    var L = redeListe(S, wer), i = S.n['rede_' + wer + (S.k2 ? '2' : '')] || 0;
     return i < L.length && (!L[i].wenn || L[i].wenn(S));
   };
   function rede(S, wer, L, R) {
-    var k = 'rede_' + wer, i = S.n[k] || 0;
+    var k = 'rede_' + wer + (S.k2 ? '2' : ''), i = S.n[k] || 0;
     for (var j = i; j < L.length; j++) {
       if (!L[j].wenn || L[j].wenn(S)) {
-        if (j === i) { S.n[k] = i + 1; log(S, 'p', (wer === 'livia' ? 'Livia: ' : 'Balz: ') + L[j].s); return; }
+        if (j === i) { S.n[k] = i + 1; log(S, 'p', (wer === 'livia' ? 'Livia: ' : 'Balz: ') + L[j].s); if (L[j].fn) L[j].fn(S); return; }
         break;
       }
     }
@@ -332,6 +436,12 @@
   function hundSucht(S) {
     var n = S.n.hund = (S.n.hund || 0) + 1, it = bedarfItems(S);
     if (n === 1) it = 'draht';
+    if (S.k2 && S.k2.seiten.indexOf('s1') < 0) {
+      log(S, 'n', HUND + ' zieht dich am Seeweg zu einem Busch. Daran klebt etwas Weisses, nass vom Tau.');
+      seite(S, 's1');
+      me(S, 'Papier. Handschrift. Und ' + HUND + ' wedelt, als hätte sie die Person schon einmal gerochen.');
+      return;
+    }
     var r = zufall(S);
     if (it && (r < 0.72 || n <= 2)) {
       gib(S, it, 1);
@@ -393,7 +503,18 @@
     { id: 'angel', tab: 'lager', gr: 'Werkbank', name: 'Angel bauen', k: { holz: 4, schnur: 1 }, info: 'Fischen am See.', werk: 1,
       sicht: function (S) { return S.bau.werkbank && S.orte.see; }, fertig: 'Eine einfache Angel. Der See wartet.' },
     { id: 'steigeisen', tab: 'lager', gr: 'Werkbank', name: 'Steigeisen schmieden', k: { holz: 8, draht: 2, naegel: 3 }, info: 'Für den harten Schnee des Lawinenkegels.', werk: 1,
-      sicht: function (S) { return S.bau.werkbank && S.f.balzTraf; }, fertig: 'Grobe Steigeisen aus Nägeln und Draht. Sie beissen ins Eis.' }
+      sicht: function (S) { return S.bau.werkbank && S.f.balzTraf; }, fertig: 'Grobe Steigeisen aus Nägeln und Draht. Sie beissen ins Eis.' },
+    // Kapitel 2
+    { id: 'laeden', tab: 'huette', gr: 'Sturmfest machen', name: 'Fensterläden', k: { holz: 20, naegel: 3 }, info: 'Hält Wind und Hagel draussen.',
+      sicht: function (S) { return S.k2 && !S.k2.sturm; }, fertig: 'Zwei Fensterläden aus dicken Brettern. Sie klappern nicht einmal.' },
+    { id: 'anker', tab: 'huette', gr: 'Sturmfest machen', name: 'Dach verankern', k: { holz: 12, draht: 2, schnur: 1 }, info: 'Mit Livias Seil und Draht: Das Dach bleibt, wo es ist.',
+      sicht: function (S) { return S.k2 && !S.k2.sturm; }, fertig: 'Seil und Draht halten das Dach fest am Fels. Balz zieht daran und nickt.' },
+    { id: 'sturmholz', tab: 'huette', gr: 'Sturmfest machen', name: 'Holz für die Sturmnacht', k: { holz: 30 }, info: 'Ein Vorrat drinnen, der die ganze Nacht reicht.',
+      sicht: function (S) { return S.k2 && !S.k2.sturm; }, fertig: 'Drinnen stapelt sich trockenes Holz bis unter die Decke.' },
+    { id: 'schiene', tab: 'lager', gr: 'Werkbank', name: 'Schiene für Livia', k: { holz: 4, stoff: 1, schnur: 1 }, info: 'Damit heilt ihr Knöchel in zwei Nächten.', werk: 1,
+      sicht: function (S) { return S.k2 && S.bau.werkbank; }, fertig: 'Eine Schiene aus Holz und Stoff. Livia flucht leise und bedankt sich laut.' },
+    { id: 'pickel', tab: 'lager', gr: 'Werkbank', name: 'Pickel schmieden', k: { holz: 6, draht: 1, naegel: 2 }, info: 'Für die Verschalung hinten im Stollen.', werk: 1,
+      sicht: function (S) { return S.k2 && S.bau.werkbank; }, fertig: 'Ein Pickel – schwer, krumm und genau richtig.' }
   ];
   K.BAU = BAU;
   function gebaut(S, b) {
@@ -404,8 +525,13 @@
     if (b.id === 'werkbank') me(S, 'Eine Werkbank! Ich bin begeistert. Innerlich. Äusserlich bin ich eine Kamera.');
     if (b.id === 'laterne' && !S.f.spuren) me(S, 'Mit Licht sieht man uns nachts von weit her. Nur so ein Gedanke.');
     if (b.id === 'laterne' && S.f.spuren) me(S, 'Mit Licht und einem grossen Feuer sieht man uns im ganzen Tal. Die Spuren am See …?');
+    if (b.id === 'schiene') { S.k2.schieneTag = tagNr(S); me(S, 'Zwei Nächte, dann sollte der Knöchel halten. Ich habe das nachgelesen. In meinem Kopf. Er ist leer, aber ich habe gesucht.'); }
+    if (S.k2 && !S.k2.sturm && S.bau.laeden && S.bau.anker && S.bau.sturmholz && (b.id === 'laeden' || b.id === 'anker' || b.id === 'sturmholz'))
+      me(S, 'Die Hütte ist sturmfest. Ich gebe ihr vier von vier Sternen. Den fünften bekommt sie, wenn sie den Sturm übersteht.');
     if (b.clip) clip(S, b.clip);
   }
+  function sturmfest(S) { return !!(S.bau.laeden && S.bau.anker && S.bau.sturmholz); }
+  K.sturmfest = sturmfest;
 
   // ---- Orte im Tal ----
   var ORTE = {
@@ -415,7 +541,9 @@
     kapelle: { name: 'Alte Kapelle', x: 28, y: 46, dauer: 75, k: { essen: 3, wasser: 2 }, info: 'Ein weisses Kirchlein zwischen Lärchen.' },
     stollen: { name: 'Alter Stollen', x: 10, y: 26, dauer: 70, k: { essen: 2, wasser: 2 }, info: 'Ein verrammelter Eingang in der Felswand.' },
     lawine: { name: 'Lawinenkegel', x: 47, y: 28, dauer: 85, k: { essen: 3, wasser: 3 }, info: 'Harter Altschnee unter der Rinne zum Grat.' },
-    station: { name: 'Wetterstation', x: 68, y: 10, dauer: 85, k: { essen: 3, wasser: 3 }, info: 'Station B-7 auf dem Grat.' }
+    station: { name: 'Wetterstation', x: 68, y: 10, dauer: 85, k: { essen: 3, wasser: 3 }, info: 'Station B-7 auf dem Grat.' },
+    sennerei: { name: 'Alte Sennerei', x: 30, y: 18, dauer: 70, k: { essen: 2, wasser: 2 }, info: 'Balz’ alte Alp, oben hinter dem Stollen.' },
+    biwak: { name: 'Felsturm', x: 90, y: 12, dauer: 80, k: { essen: 3, wasser: 2 }, info: 'Eine rote Biwakschachtel klebt am Fels über dem Wasserfall.' }
   };
   K.ORTE = ORTE;
   var ST_SCHRITT = [
@@ -433,6 +561,8 @@
     if (id === 'lawine') return !!S.f.balzTraf;
     if (id === 'station') return !!S.orte.lawine;
     if (id === 'stollen') return !!S.f.balzTraf;
+    if (id === 'sennerei') return !!(S.k2 && S.k2.sennerei);
+    if (id === 'biwak') return !!(S.k2 && S.k2.kn === 2);
     return false;
   }
   function ortKosten(S, id) {
@@ -444,11 +574,17 @@
   function ortSperre(S, id) {
     if (S.wetter === 'sturm') return 'Im Sturm bleibst du besser bei der Hütte.';
     if (nacht(S) && !S.w.laterne) return 'Ohne Licht verirrst du dich in der Nacht.';
+    if (S.k2 && !S.k2.sturm && tagNr(S) >= S.k2.d && phase(S) >= 0.5) return 'Der Sturm kommt heute Abend. Bleib bei der Hütte.';
+    if (id === 'biwak') {
+      if (nacht(S)) return 'Nachts klettert niemand am Felsturm.';
+      if (S.wetter === 'regen' || S.wetter === 'nebel') return 'Bei Regen oder Nebel ist der Fels zu gefährlich. Frag die Station nach dem Wetter.';
+    }
+    if (id === 'station' && S.k2 && S.wetter === 'nebel') return 'Im Nebel findest du den Grat nicht. Die Station meldet morgens, wann es aufklart.';
     if (id === 'stollen' && !S.w.laterne) return 'Im Stollen ist es stockdunkel. Ohne Laterne geht das nicht.';
     if (id === 'lawine' && !S.w.steigeisen) return 'Ohne Steigeisen rutschst du auf dem harten Schnee ab.';
     if ((id === 'lawine' || id === 'station') && S.wetter === 'regen') return 'Bei Regen kommen Steine aus der Rinne. Warte auf trockenes Wetter.';
     if (id === 'station') {
-      if (S.station >= 5) return 'Die Station misst. Hier gibt es nichts mehr zu tun.';
+      if (S.station >= 5) return S.k2 && S.k2.sturm && !S.k2.stationNach ? '' : 'Die Station misst. Hier gibt es nichts mehr zu tun.';
       if (S.station === 1 && !(S.w.panel && S.w.wind)) return S.w.panel ? 'Es fehlt noch der Windmesser.' : 'Es fehlt noch das Solarpanel.';
       if (S.station === 2 && !S.w.akku) return 'Ohne Akku läuft die Station nachts nicht. Wo gäbe es einen?';
       if (S.station === 3 && !S.w.logger) return 'Es fehlt der Datenlogger. Wer hat ihn wohl?';
@@ -460,6 +596,7 @@
   function ortDauer(S, id) { return Math.round(ORTE[id].dauer * (nacht(S) ? 1.5 : 1) * (S.wetter === 'nebel' ? 1.4 : 1)); }
   function aufbrechen(S, id) {
     S.trip = { ort: id, ab: S.t, bis: S.t + ortDauer(S, id) };
+    if (id === 'biwak') { S.trip.mit = 'livia'; log(S, 'n', 'Du brichst mit Livia auf: ' + ORTE[id].name + '. ' + HUND + ' läuft voraus, Balz hütet das Feuer.'); return; }
     log(S, 'n', 'Du brichst auf: ' + ORTE[id].name + '. ' + HUND + ' läuft voraus.');
   }
   function ortKarte(S, id, titel, z, extra) { karte(S, { art: 'bild', bild: 'ort:' + id, titel: titel, z: z }); if (extra) extra(); }
@@ -472,7 +609,8 @@
           'Aus dem Geröll ragt ein Wegweiser: «Bergtal 3 h». Daneben ein zersplitterter Zaun.',
           HUND + ' schnüffelt an einem Handschuh zwischen den Steinen. Er ist zu klein für deine Hand.', 'Du nimmst Nägel aus dem Zaun und den Handschuh mit. (+2 Nägel, +1 Stoff)']);
         me(S, 'Kein Durchkommen. Wir sind eine Insel. Eine Insel mit Hündin – immerhin.');
-      } else { g = gib(S, 'holz', 5); log(S, 'n', 'Am Geröll sammelst du gesplittertes Zaunholz. (+' + g + ' Holz) Der Berg schweigt.'); }
+      } else if (S.ende2) { g = gib(S, 'holz', 5); log(S, 'n', 'Unter dem Geröll glänzt die Stahlkante. Ohne schweres Werkzeug kommst du nicht weiter. (+' + g + ' Holz)'); }
+      else { g = gib(S, 'holz', 5); log(S, 'n', 'Am Geröll sammelst du gesplittertes Zaunholz. (+' + g + ' Holz) Der Berg schweigt.'); }
     } else if (id === 'see') {
       if (n === 1) {
         gib(S, 'schnur', 1); S.f.spuren = true;
@@ -505,6 +643,14 @@
         clip(S, 'c7');
       } else if (S.leute.balz < 2) log(S, 'p', 'Balz: «Bau mir unten ein Dach, dann komme ich. Mit Käse. Und mit etwas, das du brauchst.»');
       else { gib(S, 'stoff', 1); log(S, 'n', 'Die Kapelle ist leer. In der Sakristei findest du eine alte Decke. (+1 Stoff)'); }
+    } else if (id === 'stollen' && S.k2 && !S.k2.stollen) {
+      if (S.w.pickel) {
+        S.k2.stollen = true;
+        ortKarte(S, 'stollen2', 'Hinter der Verschalung', ['Mit dem Pickel lockerst du die Bretter am Ende des Stollens. Dahinter geht der Gang weiter – frisch abgestützt.',
+          'Ganz hinten steht ein Gerät, so gross wie eine Schuhschachtel. Ein Kabel läuft in ein Bohrloch, Richtung alter Weg.',
+          'Auf dem Gehäuse: «Neigung · Kanal 3». Ein Lämpchen blinkt: dreimal kurz, einmal lang.']);
+        seite(S, 's3');
+      } else { S.k2.verschalung = true; log(S, 'n', 'Hinten im Stollen ist eine Verschalung aus frischen Brettern. Dahinter tropft es – und etwas summt. Ohne Pickel kommst du nicht durch.'); }
     } else if (id === 'stollen') {
       if (!S.w.akku && S.station < 3) {
         S.w.akku = true; gib(S, 'draht', 2);
@@ -553,10 +699,81 @@
           'MoveEye: «Entweder ist meine Uhr kaputt – oder diese Station weiss etwas, das wir noch nicht wissen. Ich hoffe auf die Uhr.»'] });
         if (S.leute.livia === 2) karte(S, { art: 'wahl', id: 'daten', bild: 'livia', titel: 'Livias Bitte', z: ['Livia hat dich gebeten, ihr zuerst zu zeigen, was auf der Station ist.', 'Was tust du?'] });
         else ende(S);
+      } else if (S.k2 && S.k2.sturm && !S.k2.stationNach) {
+        S.k2.stationNach = true;
+        ortKarte(S, id, 'Die Station nach dem Sturm', ['Die Station steht. Der Mast ist ein wenig schief, aber er hält.',
+          'Der Windmesser zeigt die Spitze der Nacht: 142 km/h. Genau der Wert aus der Zukunft.',
+          'Unter dem Deckel des Loggers klemmt ein gefaltetes Blatt.']);
+        seite(S, 's6');
+        karte(S, { art: 'bild', bild: 'daten2', titel: 'Ein neuer letzter Wert', z: ['Die Station hat einen neuen letzten Wert gespeichert. Wieder mit einem Datum, das noch nicht war: in neun Tagen.',
+          'Diesmal steht nur eine Zeile da: «Hang: Bewegung».',
+          'MoveEye: «Ich hoffe wieder auf die Uhr. Aber die Uhr und ich sind uns nicht mehr ganz einig.»'] });
+      } else log(S, 'n', 'Die Station summt zufrieden vor sich hin. Dreimal kurz, einmal lang.');
+    } else if (id === 'sennerei') {
+      if (!S.k2.messbuch) {
+        S.k2.messbuch = true; gib(S, 'naegel', 2); gib(S, 'draht', 1);
+        ortKarte(S, id, 'Die alte Sennerei', ['Hinter dem Stollen, beim krummen Ahorn, steht die Sennerei. Das Dach hängt durch, der Kessi ist noch da.',
+          'Im Wandschrank, wo Balz gesagt hat: ein Messbuch mit Wachstuch-Einband. Herbst 1986. Eine Zeile ist mit Bleistift eingekreist – ein Druckwert, viel zu tief, datiert drei Tage später.',
+          'Darunter, in Balz’ Schrift: «Am dritten Tag kam der Hang.» Im Buch steckt ein Blatt, das nicht dazugehört. (+2 Nägel, +1 Draht)']);
+        seite(S, 's2');
+        me(S, 'Dieselbe Kurve wie heute. Vierzig Jahre Abstand. Ich bin nur eine Kamera, aber mir wird kalt in der Linse.');
+      } else if (!S.k2.kaese) {
+        S.k2.kaese = true; g = gib(S, 'essen', 4);
+        log(S, 'n', 'Im Keller der Sennerei: ein uralter Käselaib. Balz wird später sagen: «Der ist von 1983. Ein guter Jahrgang.» ' + HUND + ' findet ihn auch gut. (+' + g + ' Essen)');
+      } else { g = gib(S, 'holz', 4); gib(S, 'stoff', 1); log(S, 'n', 'Von der Sennerei bringst du alte Bretter und einen Melkschurz mit. (+' + g + ' Holz, +1 Stoff)'); }
+    } else if (id === 'biwak') {
+      if (!S.k2.biwak) {
+        S.k2.biwak = true;
+        ortKarte(S, id, 'Die Biwakschachtel', ['Livia klettert voraus, als hätte sie nie einen kaputten Knöchel gehabt. Das Seil läuft sauber durch ihre Hände.',
+          'Oben klebt eine rote Biwakschachtel am Fels. Drinnen: ein Schlafsack, ein Kocher, noch lauwarm. Ein Fernglas – auf eure Hütte gerichtet.',
+          'Unter einer Tasse liegen zwei Seiten aus dem Notizbuch. Livia: «Wer immer hier schläft – wir haben die Person knapp verpasst.»']);
+        seite(S, 's4'); seite(S, 's5');
+      } else {
+        g = gib(S, 'wasser', 3);
+        log(S, 'n', S.k2.sturm ? 'Die Biwakschachtel ist leer. Jemand hat «Danke» in den Reif am Fenster geschrieben. (+' + g + ' Wasser)' : 'Niemand da. Der Kocher ist kalt. Livia füllt die Flaschen am Schmelzwasser. (+' + g + ' Wasser)');
       }
     }
   }
   function ende(S) { if (!S.f.endeKarte) { S.f.endeKarte = true; karte(S, { art: 'ende' }); } }
+
+  // ---- Kapitel 2: Beginn, Sturm, Ende ----
+  function k2Start(S) {
+    S.k2 = { d: tagNr(S) + 3, sturm: 0, fest: false, seiten: [], kn: 0, schieneTag: 0, wn: '', idle: 0, t0: S.echt, tag0: tagNr(S) };
+    S.meT = S.t;
+    karte(S, { art: 'bild', bild: 'daten', ueber: 'Kapitel 2', titel: 'Drei Tage', z: ['Am Morgen sitzen alle um MoveEye herum. Auf dem kleinen Bildschirm: der letzte Messwert der Station.',
+      'Luftdruck fällt wie ein Stein. Wind 140 km/h. Gemessen an einem Tag, der noch nicht war – in drei Tagen.',
+      'Balz reibt sich die Knie. «Vor vierzig Jahren sah das genau so aus. Damals kam der Hang.»',
+      S.wahl.daten === 'selbst' ? 'Livia schaut dich lange an. «Du hättest es mir zuerst zeigen sollen. Aber gut. Drei Tage. Fangen wir an.»' : 'Livia: «Drei Tage. Das reicht – wenn wir jetzt anfangen.»',
+      'MoveEye: «Vorschlag: die Hütte sturmfest machen, Livias Knöchel flicken – und herausfinden, wer uns in jener Nacht gerettet hat.»'] });
+    log(S, 'n', 'Kapitel 2 beginnt: Drei Tage.');
+    if (phase(S) < 0.4) vorhersage(S);
+  }
+  function sturmKommt(S) {
+    var k = S.k2, fest = sturmfest(S);
+    k.sturm = 1; k.fest = fest; S.wetter = 'sturm'; S.trip = null;
+    log(S, 'w', WT.sturm);
+    if (fest) {
+      S.feuer = Math.max(S.feuer, 4); S.fz = 0;
+      karte(S, { art: 'bild', bild: 'sturm', titel: 'Der Sturm', z: ['Dann kommt er. Der Wind heult über den Grat, Hagel trommelt auf die Fensterläden. Die Hütte ächzt – und hält.',
+        'Drinnen brennt das Feuer die ganze Nacht. Balz schnarcht. Livia hält ' + HUND + ' im Arm. Niemand hat Angst. Fast niemand.',
+        'Gegen zwei Uhr sieht MoveEye durch einen Spalt im Laden ein Licht am Grat, bei der Station. Dreimal kurz, einmal lang. Dann ist es weg.'] });
+    } else {
+      var h = Math.floor(S.r.holz / 2); S.r.holz -= h; S.feuer = Math.max(1, Math.min(S.feuer, 2)); k.nass = 1;
+      karte(S, { art: 'bild', bild: 'sturm', titel: 'Der Sturm', z: ['Dann kommt er. Der Wind reisst an der Hütte, durchs Fenster pfeift es, das Dach klappert die ganze Nacht.',
+        'Ihr rückt alle eng um den Ofen. Der Wind holt sich einen Teil vom Holz draussen. (−' + h + ' Holz) Niemand schläft viel – aber allen geht es gut.',
+        'Gegen zwei Uhr sieht MoveEye durchs Fenster ein Licht am Grat, bei der Station. Dreimal kurz, einmal lang. Dann ist es weg.'] });
+    }
+    me(S, fest ? 'Fünf von fünf Sternen für die Hütte. Und ein Fragezeichen für das Licht dort oben.' : 'Das war knapp gebaut. Aber wir sind alle da. Das zählt mehr als Holz. Und das Licht dort oben …?');
+  }
+  function pruefeEnde2(S) {
+    var k = S.k2;
+    if (k.endeK || !k.sturm || !k.stationNach || !k.messbuch || !k.stollen || !k.biwak || !k.beichte || k.seiten.length < 6) return;
+    k.endeK = true;
+    karte(S, { art: 'bild', bild: 'teaser', titel: 'Unter dem alten Weg', z: ['Am Abend bleibt ' + HUND + ' am verschütteten Weg stehen und bellt den Hang an.',
+      'Der Sturm hat ein Stück Geröll weggespült. Darunter glänzt etwas, das nicht aus Fels ist: eine Kante aus Stahl.',
+      'MoveEye: «Ich sage es ungern. Aber das sieht aus wie eine Tür.»'] });
+    karte(S, { art: 'ende2' });
+  }
   function tripEnde(S) {
     var id = S.trip.ort; S.trip = null;
     besuch(S, id);
@@ -598,7 +815,9 @@
       sperre: function (S) { return nacht(S) && !S.w.laterne ? HUND + ' rollt sich ein. Nachts sucht sie nicht.' : S.wetter === 'sturm' ? HUND + ' will bei dem Sturm nicht hinaus.' : ''; } },
     { id: 'livia', tab: 'leute', name: 'Mit Livia reden', cd: 4, sicht: function (S) { return S.leute.livia === 2; } },
     { id: 'balz', tab: 'leute', name: 'Mit Balz reden', cd: 4, sicht: function (S) { return S.leute.balz === 2; } },
-    { id: 'tipp', tab: 'moveeye', name: 'MoveEye fragen: Was jetzt?', cd: 2, sicht: function (S) { return S.f.me; } }
+    { id: 'tipp', tab: 'moveeye', name: 'MoveEye fragen: Was jetzt?', cd: 2, sicht: function (S) { return S.f.me; } },
+    { id: 'kapitel2', tab: 'huette', gr: 'Kapitel 2', name: 'Kapitel 2 beginnen', cd: 1, sicht: function (S) { return S.ende && !S.k2 && S.f.draussen; },
+      info: function () { return 'Drei Tage. Die Geschichte geht weiter.'; } }
   ];
   function holzMenge(S) { return 2 + (S.w.axt ? 2 : 0) + (S.bau.schopf ? 1 : 0) - (S.wetter === 'regen' && !S.bau.schopf ? 1 : 0); }
   function val(v, S) { return typeof v === 'function' ? v(S) : v; }
@@ -704,9 +923,10 @@
         if (nacht(S)) S.f.liviaT = S.t + 20;
         break;
       case 'hund': hundSucht(S); break;
-      case 'livia': rede(S, 'livia', LIVIA, LIVIA_RUHE); break;
-      case 'balz': rede(S, 'balz', BALZ, BALZ_RUHE); break;
+      case 'livia': if (S.k2) rede(S, 'livia', LIVIA2, LIVIA_RUHE2); else rede(S, 'livia', LIVIA, LIVIA_RUHE); break;
+      case 'balz': if (S.k2) rede(S, 'balz', BALZ2, BALZ_RUHE2); else rede(S, 'balz', BALZ, BALZ_RUHE); break;
       case 'tipp': me(S, K.tipp(S)); break;
+      case 'kapitel2': k2Start(S); break;
     }
     return true;
   };
@@ -728,6 +948,7 @@
       return;
     }
     if (c.art === 'ende') { S.karten.shift(); S.ende = true; return; }
+    if (c.art === 'ende2') { S.karten.shift(); S.ende2 = true; return; }
     S.karten.shift();
   };
 
@@ -735,23 +956,48 @@
   function tick(S, d) {
     var p0 = phase(S); S.t += d; var p1 = phase(S);
     if (p1 < p0) morgen(S);
-    if (p0 < 0.4 && p1 >= 0.4) wetterWechsel(S);
+    if (p0 < 0.4 && p1 >= 0.4) wetterWechsel(S, true);
     if (p0 < 0.68 && p1 >= 0.68) abend(S);
     if (p0 < 0.78 && p1 >= 0.78) nachtBeginn(S);
     feuerStep(S, d);
     passiv(S, d);
     if (S.trip && S.t >= S.trip.bis) tripEnde(S);
     if (S.f.liviaT && S.leute.livia === 0 && S.t >= S.f.liviaT && !S.trip && !S.karten.length) liviaKommt(S);
+    if (S.k2 && !S.k2.sturm && !S.trip && !S.karten.length && (tagNr(S) > S.k2.d || (tagNr(S) === S.k2.d && phase(S) >= 0.62))) sturmKommt(S);
+    if (S.k2 && !S.k2.endeK && !S.trip && !S.karten.length) pruefeEnde2(S);
     if (S.f.me && !S.trip && !S.karten.length && S.t - S.meT > 140) { S.meT = S.t; meIdle(S); }
   }
   K.step = function (S, dt) {
     while (dt > 1e-6) { var d = Math.min(dt, 0.5); dt -= d; S.echt += d; tick(S, d); }
   };
 
+  // ---- Fortschritt pro Kapitel (ab GS-1.25; ui.js zeigt den Balken oben und alle Kapitel im Menü) ----
+  // Kapitel 1: 12 Aufnahmen + die Nacht des Felssturzes = 13 Schritte. Kapitel 2: Sturm-Vorbereitung (3), Sennerei, Messbuch,
+  // Pickel, Stollen, Livias Beichte, Knöchel geheilt, Biwak, Sturm überstanden, Station danach (9) + 6 Notizbuch-Seiten = 18.
+  K.KAPITEL = [{ nr: 1, name: '' }, { nr: 2, name: 'Drei Tage' }, { nr: 3, name: '' }];   // Kapitel 1 hat keinen eigenen Namen
+  K.fortschritt = function (S) {
+    var k = S.k2, l = [];
+    var n1 = Math.min(12, S.clips.length);
+    l.push({ nr: 1, name: K.KAPITEL[0].name, n: S.ende ? 13 : n1, von: 13, fertig: !!S.ende, offen: true });
+    var n2 = 0;
+    if (k) {
+      [S.bau.laeden, S.bau.anker, S.bau.sturmholz, k.sennerei, k.messbuch, S.w.pickel, k.stollen, k.beichte, k.kn >= 2, k.biwak, k.sturm, k.stationNach]
+        .forEach(function (x) { if (x) n2++; });
+      n2 += Math.min(6, (k.seiten || []).length);
+    }
+    l.push({ nr: 2, name: K.KAPITEL[1].name, n: S.ende2 ? 18 : Math.min(17, n2), von: 18, fertig: !!S.ende2, offen: !!k || !!S.ende });
+    l.push({ nr: 3, name: K.KAPITEL[2].name, n: 0, von: 1, fertig: false, offen: false, bald: true });
+    l.forEach(function (e) { e.p = Math.round(100 * e.n / e.von); });
+    return { jetzt: S.k2 || S.ende2 ? 2 : 1, liste: l };
+  };
+
   // ---- Was ist als Nächstes dran? (MoveEye-Tipp und Test-Spieler) ----
   K.ziel = function (S) {
     var f = S.f;
     function z(id, t) { return { id: id, t: t }; }
+    if (S.ende2) return z('fertig2', 'Kapitel 2 ist geschafft. Was unter dem alten Weg liegt, erzählt Kapitel 3.');
+    if (S.k2) return ziel2(S, z);
+    if (S.ende) return z('kapitel2', 'Die Station misst. Kapitel 1 ist geschafft. Unter «Hütte» wartet Kapitel 2.');
     if (!f.feuerAn) return z('anblasen', 'Da glimmt noch etwas im Ofen. Hineinblasen?');
     if ((S.n.tasten || 0) < 3) return z('tasten', 'Taste dich im Dunkeln um. Vielleicht findest du Holz.');
     if (!f.offen) return z('rucksack', 'Da ist ein Rucksack. Öffne ihn.');
@@ -778,6 +1024,26 @@
     if (S.station < 5) return z('ort_station', 'Zur Wetterstation: ' + ST_SCHRITT[S.station].name + '.');
     return z('fertig', 'Die Station misst. Kapitel 1 ist geschafft.');
   };
+  function ziel2(S, z) {
+    var k = S.k2, n = K.sturmIn(S), wann = n === 0 ? 'heute Abend' : n === 1 ? 'morgen' : 'in ' + n + ' Tagen';
+    if (!S.w.schiene) return z('bau_schiene', 'An der Werkbank eine Schiene für Livias Knöchel bauen. Dann heilt er in zwei Nächten.');
+    if (!k.sturm) {
+      if (!S.bau.laeden) return z('bau_laeden', 'Der Sturm kommt ' + wann + '. Zuerst Fensterläden – unter «Hütte».');
+      if (!S.bau.anker) return z('bau_anker', 'Das Dach verankern. Der Sturm kommt ' + wann + '.');
+      if (!S.bau.sturmholz) return z('bau_sturmholz', 'Holz für die Sturmnacht einlagern. Viel Holz. Der Sturm kommt ' + wann + '.');
+    }
+    if (!k.sennerei) return z('balz', 'Balz schaut dauernd zur alten Sennerei hinauf. Red mit ihm.');
+    if (!k.messbuch) return z('ort_sennerei', 'Zur alten Sennerei: Balz’ Messbuch von damals holen.');
+    if (k.seiten.indexOf('s1') < 0) return z('hund', HUND + ' schnüffelt dauernd am Seeweg. Lass sie suchen.');
+    if (!S.w.pickel) return z('bau_pickel', 'Einen Pickel schmieden. Im Stollen geht es hinter der Verschalung weiter.');
+    if (!k.stollen) return z('ort_stollen', 'Mit Pickel und Laterne in den Stollen, hinter die Verschalung.');
+    if (!k.beichte) return z('livia', 'Livia will dir etwas sagen. Red mit ihr.');
+    if (k.kn < 2) return z('warten', 'Livias Knöchel heilt. Noch ' + (tagNr(S) >= k.schieneTag + 1 ? 'eine Nacht.' : 'zwei Nächte.') + (n >= 0 ? ' Der Sturm kommt ' + wann + '.' : ''));
+    if (!k.biwak) return z('ort_biwak', 'Mit Livia zum Felsturm. Nur bei Tag und trockenem Wetter – die Station sagt dir, wann.');
+    if (!k.sturm) return z('warten', 'Alles ist bereit. Der Sturm kommt ' + wann + '. Feuer hüten, Vorrat halten.');
+    if (!k.stationNach) return z('ort_station', 'Zur Station: Wer war heute Nacht dort oben?');
+    return z('warten', 'Gleich ist das Kapitel fertig. Ich spüre es in der Linse.');
+  }
   var TIPP_VOR = ['Analyse: ', '', 'Mein Vorschlag: ', 'Ich an deiner Stelle: '];
   K.tipp = function (S) {
     var z = K.ziel(S), e = K.eintrag(S, z.id), t = TIPP_VOR[K.stufe(S)] + z.t;
@@ -789,8 +1055,9 @@
 
   // ---- Test-Spieler: spielt wie ein vernünftiger Mensch (liest, denkt, wartet) ----
   function worte(s) { return String(s).split(/\s+/).length; }
-  K.botWahl = function (S) {
-    if (S.trip || S.karten.length || S.ende) return null;
+  K.botWahl = function (S, kap) {
+    if (S.trip || S.karten.length || S.ende2 || (S.ende && (kap || 1) < 2)) return null;
+    if (S.ende && !S.k2) return K.eintrag(S, 'kapitel2') && !K.eintrag(S, 'kapitel2').sperre ? 'kapitel2' : null;
     var L = K.liste(S), M = {}, i;
     for (i = 0; i < L.length; i++) M[L[i].id] = L[i];
     function geht(id) { var e = M[id]; return e && !e.sperre && e.bereit >= 1; }
@@ -847,14 +1114,14 @@
   };
   K.bot = function (S, o) {
     o = o || {};
-    var max = o.max || 4 * 3600, denk = o.denk === undefined ? 2 : o.denk, lese = o.lese === undefined ? 3.5 : o.lese, n = 0, letzt = S.logN, zug = [];
-    while (!S.ende && S.echt < max) {
+    var kap = o.kapitel || 1, max = o.max || (kap > 1 ? 7 : 4) * 3600, denk = o.denk === undefined ? 2 : o.denk, lese = o.lese === undefined ? 3.5 : o.lese, n = 0, letzt = S.logN, zug = [];
+    while (!(kap > 1 ? S.ende2 : S.ende) && S.echt < max) {
       if (S.karten.length) {
-        var c = S.karten[0], w = c.art === 'clip' ? CLIPS[c.id].z.join(' ') : (c.z || []).join(' ');
+        var c = S.karten[0], w = c.art === 'clip' ? CLIPS[c.id].z.join(' ') : c.art === 'seite' ? SEITEN[c.id].z.join(' ') : (c.z || []).join(' ');
         K.step(S, 6 + worte(w) / lese);
         K.karteZu(S, 0); continue;
       }
-      var a = K.botWahl(S);
+      var a = K.botWahl(S, kap);
       if (a) {
         K.tun(S, a); n++; if (o.zuege) zug.push([Math.round(S.echt), a]);
         var wl = 0; for (var i = 0; i < S.log.length; i++) if (S.log[i].n > letzt) wl += worte(S.log[i].s);
@@ -862,7 +1129,8 @@
         K.step(S, denk + wl / lese);
       } else K.step(S, 1);
     }
-    return { echt: Math.round(S.echt), tage: tagNr(S), aktionen: n, ende: S.ende, zuege: zug };
+    return { echt: Math.round(S.echt), tage: tagNr(S), aktionen: n, ende: kap > 1 ? S.ende2 : S.ende, zuege: zug,
+      k2: S.k2 ? { min: Math.round((S.echt - S.k2.t0) / 60), tage: tagNr(S) - S.k2.tag0, fest: S.k2.fest, seiten: S.k2.seiten.length } : null };
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = K;

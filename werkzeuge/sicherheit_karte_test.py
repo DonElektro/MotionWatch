@@ -217,12 +217,40 @@ def lauf(br, a, pruef, geheim):
         pruef(bool(v) and wort in v["text"], "Karte zeigt «%s»" % wort)
     foto(pg, "1_ohne_passwort")
     # ---- 3. Passwort über die Karte setzen ------------------------------------------------------------------------------------
+    # 4.5.0 (CI «rechte», wackelig seit den Fenstern 639zzzzx): der Dialog setzte den Fokus 50 ms nach dem Öffnen auf das
+    # erste Feld, auch wenn schon «Wiederholen» den Fokus hatte – kam der Zeitgeber zwischen Fokus und Eingabe von fill(),
+    # landete das zweite Passwort im ersten Feld («die beiden Passwörter sind nicht gleich»). Behoben in Teil 530; der Test
+    # wartet zusätzlich, bis der Dialog bereit ist (Fokus gesetzt, über dem Fenster), prüft beide Felder vor «Speichern»
+    # und schreibt bei einem Fehler auf, was mit Fokus und Feldern geschah (nur Längen, nie Werte).
+    pg.evaluate("""() => { if (window.__pwSpy) return; window.__pwSpy = []; const T0 = performance.now();
+        const n = e => (e && (e.placeholder || e.id || e.className || e.tagName) || '') + '';
+        const log = (...a) => { __pwSpy.push([Math.round(performance.now() - T0), ...a]); if (__pwSpy.length > 60) __pwSpy.shift(); };
+        ['focusin', 'input'].forEach(k => document.addEventListener(k, e => { if (e.target.closest && e.target.closest('#pwd-ov')) log(k, n(e.target)); }, true));
+        new MutationObserver(m => m.forEach(r => [...r.addedNodes].forEach(x => { if (x.id === 'pwd-ov' || (x.closest && x.closest('#pwd-ov'))) log('neu', n(x)); })))
+          .observe(document.body, {childList: true, subtree: true}); }""")
+    BEREIT = """() => { const o = document.getElementById('pwd-ov'); if (!o) return false;
+        const i = [...o.querySelectorAll('input[type=password]')], s = [...o.querySelectorAll('button')].find(b => b.textContent.includes('Speichern'));
+        return i.length === 2 && i.every(x => x.getClientRects().length) && !!s && o.contains(document.activeElement)
+          && (!document.querySelector('.fx-win') || o.dataset.fxUp != null); }"""
+
+    def pw_lage():
+        return pg.evaluate("""() => { const o = document.getElementById('pwd-ov'), a = document.activeElement;
+            return JSON.stringify({laengen: o ? [...o.querySelectorAll('input[type=password]')].map(i => i.value.length) : null,
+              fokus: a ? ((a.placeholder || a.id || a.className || a.tagName) + '') : '', fenster: !!document.querySelector('.fx-win'),
+              ueber: o ? o.dataset.fxUp != null : null, z: o ? getComputedStyle(o).zIndex : '', spur: (window.__pwSpy || []).slice(-20)}); }""")
+
     weg(pg)
     pg.locator(KARTE + " #secpanel button", has_text="Web-Passwort").first.click()
-    pg.wait_for_selector("#pwd-ov input[type=password]", timeout=5000)
+    pg.wait_for_selector("#pwd-ov input[type=password]", timeout=10000)
+    try:
+        pg.wait_for_function(BEREIT, timeout=10000)
+    except Exception:
+        print("  (Hinweis: Passwort-Dialog in 10 s nicht bereit: %s)" % pw_lage(), flush=True)
     ein = pg.locator("#pwd-ov input[type=password]")
     ein.nth(0).fill(ADMIN_PW); ein.nth(1).fill(ADMIN_PW)
     weg(pg)
+    gleich = ein.nth(0).input_value() == ADMIN_PW and ein.nth(1).input_value() == ADMIN_PW
+    pruef(gleich, "Passwort-Dialog: beide Felder enthalten das Passwort vor «Speichern» %s" % ("" if gleich else pw_lage()))
     # Bedingung statt fester Zeit: die Antwort von MoveEye auf POST /api/password. MoveEye setzt das Passwort im selben
     # Aufruf, bevor es antwortet (040 web_pw_set: Prüfsumme, Speichern mit fsync) – danach kommt ohne Anmeldung sofort 401.
     antwort, info = None, ""
@@ -231,7 +259,7 @@ def lauf(br, a, pruef, geheim):
             pg.locator("#pwd-ov button", has_text="Speichern").first.click()
         antwort = ri.value
     except Exception as e:                                   # kein POST: was lag auf der Seite? (für die nächste Fehlersuche)
-        info = "%s · %s" % (type(e).__name__, schlange(pg))
+        info = "%s · %s · %s" % (type(e).__name__, schlange(pg), pw_lage())
     pruef(antwort is not None, "Klick auf «Speichern» schickt das Passwort an MoveEye %s" % (info or ""))
     j = {}
     if antwort is not None:

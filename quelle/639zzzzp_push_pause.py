@@ -1048,9 +1048,12 @@ def push_pause_selftest():
         assert datetime.fromtimestamp(pp_parse("23:15", now)[0]).strftime("%d %H:%M") == "15 23:15"
         assert datetime.fromtimestamp(pp_parse("21:00", now)[0]).strftime("%d %H:%M") == "16 21:00"
         assert pp_parse("25 h", now)[1] and pp_parse("abc", now)[1] and pp_parse("0", now)[1]
-        ok, err, s = pp_start("", "60", now=now, save=False)
-        assert ok and s["until"] == now + 3600 and pp_active("", now + 10) and not pp_active("", now + 3601)
-        assert not pp_start("", "home", now=now, save=False)[0], "home needs the presence"
+        # pp_start starts the clock thread (pp_tick on the real clock): a pause from the fixed «now» above would be ended at
+        # once after 15.11.2026 23:00 - so this part starts the pause at the real time
+        t = time.time()
+        ok, err, s = pp_start("", "60", now=t, save=False)
+        assert ok and s["until"] == t + 3600 and pp_active("", t + 10) and not pp_active("", t + 3601)
+        assert not pp_start("", "home", now=t, save=False)[0], "home needs the presence"
         for p, ex in (({"event": "person"}, False), ({"event": "prealarm"}, False), ({"event": "info", "text": "Update"}, False),
                       ({"event": "tamper"}, True), ({"event": "test"}, True), ({"event": "info", "info_title": "{name}: 🆘 SOS"}, True),
                       ({"event": "info", "text": trf("Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap", pct=9, hours=0.5)}, True),

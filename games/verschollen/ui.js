@@ -3,16 +3,20 @@
    Reiter: Hütte · Lager · Tal · Leute · MoveEye (erscheinen nach und nach). Oben das Bild (wächst mit dem Spiel), darunter
    das Tagebuch (antippen = alles), der Vorrat, die Reiter und die Knöpfe. Ereignisse, Aufnahmen und Entscheidungen kommen
    als Karte über allem; solange eine Karte offen ist, steht die Zeit still.
-   SPEICHERN: localStorage «mw-verschollen-v1» = {v: 1, s: Zustand, zeit: ms}; alle 4 s, nach jedem Tun und beim Verlassen.
+   SPEICHERN: localStorage «mw-verschollen-v1» = {v: 2, s: Zustand, zeit: ms} (Fassung 1 aus Kapitel 1 wird beim Laden angehoben); alle 4 s, nach jedem Tun und beim Verlassen.
    Kommt man zurück, laufen höchstens 5 Minuten weiter (Feuer brennt herunter, Tonne / Leute sammeln) – mehr nicht.
    TEST-HAKEN (nur mit «?test=1» in der Adresse; sonst gibt es window.__vb nicht):
      ?test=1            fester Startwert 4242, kein Weiterlaufen beim Zurückkommen
      ?tempo=N           die Zeit läuft N-mal so schnell (nur mit ?test=1)
      window.__vb.S()    der Zustand          .tun(id)  wie Antippen      .step(s) s Sekunden vorspulen
      .bot({max})        der Test-Spieler spielt bis zum Ende von Kapitel 1 (rechnet ohne Warten) -> {echt, tage, aktionen}
+     .bot({kapitel: 2}) … bis zum Ende von Kapitel 2 (-> dazu k2: {min, tage, fest, seiten})
+   KAPITEL 2: nach «Ende Kapitel 1» der Knopf «Kapitel 2 beginnen» (Schlussbild und Reiter Hütte); wer Kapitel 1 schon früher
+     beendet hat, sieht das Schlussbild beim nächsten Öffnen einmal mit diesem Knopf. Oben ein Zähler «Sturm in N Tagen», im Reiter
+     Tal die Meldung der Station, im Reiter MoveEye das Notizbuch (Seiten antippen = ansehen).
      .knoepfe()         alle sichtbaren Knöpfe mit Lage und Grösse (für den Test der Tipp-Flächen)
      .liste()           alles, was man gerade tun kann (K.liste)      .pausiert()  ⏸ gedrückt?
-   SPIELTEMPO: Knopf «⏩ 1×» oben tippt 1× → 2× → 4× → 1× (S.tempo, im Spielstand); die Spieluhr läuft so viel schneller, alle
+   SPIELTEMPO: Knopf «⏩ 1×» oben tippt 1× → 2× → 4× → 8× → 16× → 1× (S.tempo, im Spielstand); die Spieluhr läuft so viel schneller, alle
      Regeln gleich. Still steht die Zeit bei jeder Karte (Ereignis, Aufnahme, Entscheidung – sie sagt es), im Tagebuch / Menü,
      im Schlussbild und mit ⏸ (gilt bis zum nächsten Tippen, nicht gespeichert). Geht bei 2× / 4× das Feuer aus: zurück auf 1×.      .neu()  Spielstand löschen und neu beginnen */
 (function () {
@@ -75,6 +79,7 @@
     for (var i = 0; i < L.length; i++) if (L[i].tab === t && !g[L[i].id]) return true;
     if (t === 'leute' && ((S.leute.livia === 2 && K.neueRede(S, 'livia')) || (S.leute.balz === 2 && K.neueRede(S, 'balz')))) return true;
     if (t === 'moveeye' && (gesehen.clips || 0) < S.clips.length) return true;
+    if (t === 'moveeye' && S.k2 && (gesehen.seiten || 0) < S.k2.seiten.length) return true;
     return false;
   }
   function malTabs(L) {
@@ -173,6 +178,8 @@
     ['seil', 'akku', 'panel', 'wind', 'logger'].forEach(function (x) { if (S.w[x]) d.push(K.NAME[x]); });
     if (d.length) h += '<span class="chip ding">' + d.join(' · ') + '</span>';
     if (S.muede) h += '<span class="chip ding">müde</span>';
+    var si = K.sturmIn(S);
+    if (si >= 0) h += '<span class="chip sturm">' + (si === 0 ? 'Sturm heute Abend' : si === 1 ? 'Sturm morgen' : 'Sturm in ' + si + ' Tagen') + (K.sturmfest(S) ? ' · Hütte bereit' : '') + '</span>';
     if (h !== merk.vorrat) { merk.vorrat = h; $('vorrat').innerHTML = h; }
   }
 
@@ -198,7 +205,7 @@
     return h;
   }
   function malInhalt(L) {
-    var sig = tab + '|' + gewOrt + '|' + S.clips.length + '|' + S.leute.livia + S.leute.balz + '|' + K.stufe(S) + '|' + (S.trip ? 1 : 0) + '|' + S.ende + '|' + L.map(function (e) { return e.tab === tab ? e.id + e.name + e.sperre + e.info + JSON.stringify(e.kosten) + (e.kosten ? kostenHtml(e.kosten) : '') : ''; }).join(';');
+    var sig = tab + '|' + gewOrt + '|' + S.clips.length + '|' + (S.k2 ? S.k2.seiten.length + '|' + S.k2.kn + '|' + S.k2.wn + (K.phase(S) < 0.4) + '|' + S.ende2 : '') + '|' + S.leute.livia + S.leute.balz + '|' + K.stufe(S) + '|' + (S.trip ? 1 : 0) + '|' + S.ende + '|' + L.map(function (e) { return e.tab === tab ? e.id + e.name + e.sperre + e.info + JSON.stringify(e.kosten) + (e.kosten ? kostenHtml(e.kosten) : '') : ''; }).join(';');
     if (sig !== merk.inhalt) {
       merk.inhalt = sig;
       var h = '';
@@ -212,7 +219,7 @@
       $('inhalt').innerHTML = h;
       var g = gesehen[tab] = gesehen[tab] || {};
       L.forEach(function (e) { if (e.tab === tab) g[e.id] = 1; });
-      if (tab === 'moveeye') gesehen.clips = S.clips.length;
+      if (tab === 'moveeye') { gesehen.clips = S.clips.length; gesehen.seiten = S.k2 ? S.k2.seiten.length : 0; }
     }
     // Abklingzeit
     var bs = $('inhalt').querySelectorAll('.akt[data-id]');
@@ -232,6 +239,7 @@
   }
   function malTal(L) {
     var h = '<p class="leise">Tippe einen Ort auf der Karte an oder wähle unten. Jeder Ausflug kostet Essen und Wasser – und Zeit.</p>';
+    if (S.k2 && S.k2.wn && K.phase(S) < 0.4) h += '<p class="meldung">Station B-7 meldet für heute Nachmittag: <b>' + esc(K.WETTER_VOR[S.k2.wn]) + '</b></p>';
     L.filter(function (e) { return e.art === 'ort'; }).forEach(function (e) {
       var o = K.ORTE[e.ort];
       h += '<div class="ort' + (gewOrt === e.ort ? ' gew' : '') + '" id="ort-' + e.ort + '"><div class="kopfz"><b>' + esc(e.name) + '</b><span class="b">' + (e.besucht ? 'besucht ×' + e.besucht : 'noch nie dort') + ' · ' + e.dauer + ' s</span></div>'
@@ -244,7 +252,7 @@
     var M = {}; L.forEach(function (e) { M[e.id] = e; });
     var h = '<div class="person">' + kopf('hund') + '<div class="r"><b>' + HUND + '</b><p>Deine Hündin. Sie weiss, wer du bist – auch wenn du es nicht weisst.</p><div class="gitter">'
       + (M.streicheln ? knopf(M.streicheln) : '') + (M.hund ? knopf(M.hund) : '') + '</div></div></div>';
-    if (S.leute.livia === 2) h += '<div class="person">' + kopf('livia') + '<div class="r"><b>Livia</b><p>Kletterin, grüne Jacke, verstauchter Knöchel. Sie hält das Feuer in Gang, wenn du weg bist, und sammelt Holz.</p><div class="gitter">' + (M.livia ? knopf(M.livia) : '') + '</div></div></div>';
+    if (S.leute.livia === 2) h += '<div class="person">' + kopf('livia') + '<div class="r"><b>Livia</b><p>' + (S.k2 && S.k2.kn === 2 ? 'Kletterin, grüne Jacke. Der Knöchel hält wieder.' : 'Kletterin, grüne Jacke, verstauchter Knöchel.') + ' Sie hält das Feuer in Gang, wenn du weg bist, und sammelt Holz.</p><div class="gitter">' + (M.livia ? knopf(M.livia) : '') + '</div></div></div>';
     if (S.leute.balz === 2) h += '<div class="person">' + kopf('balz') + '<div class="r"><b>Balz</b><p>Alter Senn. Bringt Käse und Beeren. Weiss mehr, als er sagt.</p><div class="gitter">' + (M.balz ? knopf(M.balz) : '') + '</div></div></div>';
     if (S.leute.livia < 2 || S.leute.balz < 2) h += '<div class="person leer"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#1d2834"/><text x="32" y="42" text-anchor="middle" font-size="30" fill="#4a5a6c" font-family="system-ui">?</text></svg><div class="r"><p>' + (S.leute.livia < 2 ? 'Ist noch jemand im Tal?' : 'Livia spricht manchmal von einem alten Mann bei der Kapelle.') + '</p></div></div>';
     return h;
@@ -253,13 +261,21 @@
     var M = {}; L.forEach(function (e) { M[e.id] = e; });
     var st = K.stufe(S), n = S.clips.filter(function (c) { return c !== 'ganz'; }).length, alle = Object.keys(K.CLIPS);
     var h = '<div class="person">' + kopf('moveeye') + '<div class="r"><b>MoveEye<span class="stufe">' + [0, 1, 2, 3].map(function (i) { return '<i class="' + (st >= i ? 'an' : '') + '"></i>'; }).join('') + '</span></b>'
-      + '<p>' + ['Wortkarg. Speicher fast leer.', 'Taut langsam auf.', 'Plaudert gern. Mag ' + HUND + '.', 'Hat zu allem eine Meinung.'][st] + ' Jede Reparatur und jeder neue Ort bringt ein Stück Aufnahme zurück.</p>'
+      + '<p>' + ['Wortkarg. Speicher fast leer.', 'Taut langsam auf.', 'Plaudert gern. Mag ' + HUND + '.', 'Hat zu allem eine Meinung.'][st] + (S.k2 ? ' Liest jeden Morgen die Station aus und meldet dir das Wetter.' : ' Jede Reparatur und jeder neue Ort bringt ein Stück Aufnahme zurück.') + '</p>'
       + '<div class="gitter">' + (M.tipp ? knopf(M.tipp) : '') + '</div></div></div>';
     h += '<h3>Aufnahmen · ' + n + ' von ' + (alle.length - 1) + (S.clips.indexOf('ganz') >= 0 ? ' · ganz' : '') + '</h3><div class="clips">';
     S.clips.forEach(function (id) { h += '<button type="button" class="clipk" data-clip="' + id + '">' + BILD.svg(BILD.clip(id), K.CLIPS[id].titel) + '<span>' + esc(K.CLIPS[id].titel) + '</span></button>'; });
     for (var i = S.clips.length; i < alle.length; i++) h += '<div class="clipk zu">?</div>';
     h += '</div>';
-    if (S.ende) h += '<p style="margin-top:12px"><button type="button" class="knopf haupt" id="bEndeZeig">Ende Kapitel 1 ansehen</button></p>';
+    if (S.k2) {
+      var sn = S.k2.seiten, ids = Object.keys(K.SEITEN);
+      h += '<h3>Fremdes Notizbuch · ' + sn.length + ' von ' + ids.length + '</h3><div class="clips">';
+      sn.forEach(function (id) { h += '<button type="button" class="clipk" data-seite="' + id + '">' + BILD.svg(BILD.seite(id), K.SEITEN[id].titel) + '<span>' + esc(K.SEITEN[id].titel) + '</span></button>'; });
+      for (var j = sn.length; j < ids.length; j++) h += '<div class="clipk zu">?</div>';
+      h += '</div>';
+    }
+    if (S.ende) h += '<p style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px"><button type="button" class="knopf' + (S.k2 ? '' : ' haupt') + '" id="bEndeZeig">Ende Kapitel 1 ansehen</button>'
+      + (S.ende2 ? '<button type="button" class="knopf haupt" id="bEnde2Zeig">Ende Kapitel 2 ansehen</button>' : '') + '</p>';
     return h;
   }
 
@@ -275,9 +291,15 @@
       cls += ' clip'; bild = BILD.clip(c.id); titel = cl.titel; z = cl.z;
       ueber = c.id === 'ganz' ? 'Alle Stücke zusammengesetzt' : 'Aufnahme wiederhergestellt · ' + (c.nr || '') + ' von ' + (Object.keys(K.CLIPS).length - 1);
       kn = '<button type="button" class="haupt" data-zu="0">Weiter</button>';
-    } else if (c.art === 'ende') { zeigeEnde(); S.karten.shift(); S.ende = true; endeZu = false; sichern(); merk.karte = null; render(); return; }
+    } else if (c.art === 'seite') {
+      var se = K.SEITEN[c.id];
+      cls += ' seite'; bild = BILD.seite(c.id); titel = se.titel; z = se.z;
+      ueber = 'Seite aus einem fremden Notizbuch · ' + (c.nr || '') + ' von ' + Object.keys(K.SEITEN).length;
+      kn = '<button type="button" class="haupt" data-zu="0">Weiter</button>';
+    } else if (c.art === 'ende') { zeigeEnde(1); S.karten.shift(); S.ende = true; endeZu = false; sichern(); merk.karte = null; render(); return; }
+    else if (c.art === 'ende2') { zeigeEnde(2); S.karten.shift(); S.ende2 = true; endeZu = false; sichern(); merk.karte = null; render(); return; }
     else {
-      bild = BILD.bild(c.bild || 'aussen', S); titel = c.titel; z = c.z || [];
+      bild = BILD.bild(c.bild || 'aussen', S); titel = c.titel; z = c.z || []; ueber = c.ueber || '';
       if (c.art === 'wahl') {
         ueber = 'Entscheidung';
         kn = K.wahlTexte(c.id).map(function (t, i) { return '<button type="button" class="' + (i ? '' : 'haupt') + '" data-zu="' + i + '">' + esc(t) + '</button>'; }).join('');
@@ -292,16 +314,30 @@
     if (ansicht) { ansicht = null; merk.karte = null; zeigeKarte(); return; }
     K.karteZu(S, i); merk.karte = null; sichern(); render();
   }
-  function zeigeEnde() {
+  function zeigeEnde(kap) {
+    if (kap === 2) return zeigeEnde2();
+    if (S.f.endeGesehen && !S.k2) S.n.k2Angebot = 1;      // wer Kapitel 1 schon früher beendet hat, sieht es einmal mit «Kapitel 2 beginnen»
     var el = $('ende'), m = Math.round(S.echt / 60), hh = Math.floor(m / 60);
     el.innerHTML = '<div class="kk" role="dialog" aria-modal="true" aria-label="Ende Kapitel 1"><div class="bild">' + BILD.svg(BILD.clip('ganz'), 'Die ganze Nacht') + '</div><div class="txt">'
-      + '<h1>Ende Kapitel 1</h1><div class="fs">Fortsetzung folgt</div>'
+      + '<h1>Ende Kapitel 1</h1><div class="fs">' + (S.k2 ? 'Weiter in Kapitel 2' : 'Fortsetzung folgt: Kapitel 2 ist da') + '</div>'
       + '<p>Die Station misst wieder. Ihr letzter Wert stammt aus einem Tag, der noch nicht war – und neben dir stand in jener Nacht jemand, dessen Gesicht im Licht verborgen bleibt.</p>'
       + '<p class="stat">Tag ' + K.tagNr(S) + ' · Spielzeit ' + (hh ? hh + ' h ' : '') + (m % 60) + ' min' + (S.wirk && Math.round(S.wirk / 60) < m - 1 ? ' (wirklich ' + Math.round(S.wirk / 60) + ' min)' : '') + ' · ' + S.clips.filter(function (c) { return c !== 'ganz'; }).length + ' von ' + (Object.keys(K.CLIPS).length - 1) + ' Aufnahmen und die ganze Nacht<br>Dein Spielstand bleibt gespeichert.</p>'
-      + '</div><div class="kn"><button type="button" class="haupt" id="bWeiter">Im Tal bleiben</button><button type="button" id="bClips">Aufnahmen ansehen</button></div></div>';
+      + '</div><div class="kn">' + (S.k2 ? '' : '<button type="button" class="haupt" id="bK2">Kapitel 2 beginnen</button>')
+      + '<button type="button"' + (S.k2 ? ' class="haupt"' : '') + ' id="bWeiter">' + (S.k2 ? 'Zurück ins Tal' : 'Im Tal bleiben') + '</button><button type="button" id="bClips">Aufnahmen ansehen</button></div></div>';
     el.hidden = false;
   }
-  function endeSchliessen() { $('ende').hidden = true; endeZu = true; S.f.endeGesehen = true; sichern(); }
+  function zeigeEnde2() {
+    var el = $('ende'), k = S.k2, m = Math.round((S.echt - (k.t0 || 0)) / 60), hh = Math.floor(m / 60);
+    el.innerHTML = '<div class="kk" role="dialog" aria-modal="true" aria-label="Ende Kapitel 2"><div class="bild">' + BILD.svg(BILD.bild('teaser', S), 'Unter dem alten Weg') + '</div><div class="txt">'
+      + '<h1>Ende Kapitel 2</h1><div class="fs">Fortsetzung folgt</div>'
+      + '<p>' + (k.fest ? 'Die Hütte hat den Sturm gehalten' : 'Ihr habt den Sturm überstanden') + ', und das fremde Notizbuch ist ganz. Wer es geschrieben hat, ist über den Grat gegangen – und am verschütteten Weg glänzt unter dem Geröll etwas, das nicht aus Fels ist.</p>'
+      + '<p class="fs3">Kapitel 3: Unter dem alten Weg</p>'
+      + '<p class="stat">Tag ' + K.tagNr(S) + ' · Kapitel 2 in ' + (hh ? hh + ' h ' : '') + (m % 60) + ' min · ' + k.seiten.length + ' von ' + Object.keys(K.SEITEN).length + ' Seiten<br>Dein Spielstand bleibt gespeichert.</p>'
+      + '</div><div class="kn"><button type="button" class="haupt" id="bWeiter">Im Tal bleiben</button><button type="button" id="bSeiten">Notizbuch ansehen</button></div></div>';
+    el.hidden = false;
+  }
+  function endeSchliessen() { $('ende').hidden = true; endeZu = true; S.f.endeGesehen = true; S.n.k2Angebot = 1; if (S.ende2) S.f.ende2Gesehen = true; sichern(); }
+  function kapitel2() { endeSchliessen(); if (K.tun(S, 'kapitel2')) { tab = 'huette'; merk.inhalt = ''; } sichern(); render(); }
 
   // ---- Blatt: Tagebuch, Menü ----
   function blatt(h) { var el = $('blatt'); el.innerHTML = '<div class="kk"><div class="txt">' + h + '</div><div class="kn"><button type="button" class="haupt" data-blattzu="1">Schliessen</button></div></div>'; el.hidden = false; }
@@ -309,14 +345,15 @@
     blatt('<h2>Tagebuch</h2><div class="log">' + S.log.slice().reverse().map(function (e) { return '<div class="k-' + e.k + '">' + esc(e.s) + '</div>'; }).join('') + '</div>');
   }
   function menuBlatt(schritt) {
-    blatt('<h2>Verschollen im Bergtal</h2><p class="leise">Kapitel 1 · Tag ' + K.tagNr(S) + ' · gespielt ' + Math.round(S.echt / 60) + ' min. Das Spiel speichert von selbst.</p>'
+    blatt('<h2>Verschollen im Bergtal</h2><p class="leise">Kapitel ' + (S.k2 ? 2 : 1) + ' · Tag ' + K.tagNr(S) + ' · gespielt ' + Math.round(S.echt / 60) + ' min. Das Spiel speichert von selbst.</p>'
+      + kapitelListe()
       + '<div class="kn" style="padding:0"><button type="button" class="knopf" id="bLog">Tagebuch lesen</button>'
       + (schritt ? '<button type="button" class="knopf" id="bNeuJa" style="background:#7a2a22;border-color:#a33">Ja, alles löschen und neu beginnen</button>' : '<button type="button" class="knopf" id="bNeu">Neu beginnen …</button>') + '</div>'
       + '<p class="leise" style="margin-top:12px">Ein eigenes Spiel für MoveEye. Geschichte und Idee: der Besitzer. Bilder, Texte und Programm selbst gemacht, frei verwendbar (MIT). Nichts wird aus dem Internet geladen.</p>');
   }
   function neuBeginnen() {
     try { localStorage.removeItem(KEY); } catch (e) {}
-    S = K.neu(TEST ? 4242 : 0); tab = 'huette'; gesehen = {}; ansicht = null; endeZu = false;
+    S = K.neu(TEST ? 4242 : 0); tab = 'huette'; gesehen = {}; ansicht = null; endeZu = false; $('ende').innerHTML = '';
     merk = { szene: '', inhalt: '', log: -1, tabs: '', vorrat: '', karte: null, uhr: '' };
     $('blatt').hidden = true; $('ende').hidden = true; $('karte').hidden = true;
     sichern(); render();
@@ -331,8 +368,11 @@
   function render() {
     var L = K.liste(S);
     if (tab !== 'huette' && !tabSicht(tab)) tab = 'huette';
-    malUhr(); malTempo(); malTabs(L); malSzene(); malLog(); malVorrat(); malInhalt(L); zeigeKarte();
-    if (S.ende && !endeZu && !S.karten.length && $('ende').hidden && !S.f.endeGesehen) zeigeEnde();
+    malUhr(); malTempo(); malFortschritt(); malTabs(L); malSzene(); malLog(); malVorrat(); malInhalt(L); zeigeKarte();
+    if (S.ende && !endeZu && !S.karten.length && $('ende').hidden && !ansicht) {
+      if (S.ende2 && !S.f.ende2Gesehen) zeigeEnde(2);
+      else if (!S.ende2 && (!S.f.endeGesehen || (!S.k2 && !S.n.k2Angebot))) zeigeEnde(1);
+    }
   }
 
   // ---- Eingaben ----
@@ -360,18 +400,23 @@
       return;
     }
     var z = t.closest('[data-zu]'); if (z) { karteZu(+z.getAttribute('data-zu')); return; }
+    var sc = t.closest('[data-seite]'); if (sc) { var sid = sc.getAttribute('data-seite'); ansicht = { art: 'seite', id: sid, nr: S.k2.seiten.indexOf(sid) + 1 }; zeigeKarte(); return; }
     var cl = t.closest('[data-clip]'); if (cl) { ansicht = { art: 'clip', id: cl.getAttribute('data-clip'), nr: S.clips.indexOf(cl.getAttribute('data-clip')) + 1 }; zeigeKarte(); return; }
     if (t.closest('[data-blattzu]')) { $('blatt').hidden = true; return; }
     if (t.closest('#tagebuch')) { tagebuchBlatt(); return; }
     if (t.closest('#bMenu')) { menuBlatt(false); return; }
     if (t.closest('#bTempo')) { tempoWechsel(); return; }
+    if (t.closest('#fortschritt')) { menuBlatt(); return; }
     if (t.closest('#bPause') || t.closest('#pauseBand')) { pauseWechsel(); return; }
     if (t.closest('#bLog')) { tagebuchBlatt(); return; }
     if (t.closest('#bNeu')) { menuBlatt(true); return; }
     if (t.closest('#bNeuJa')) { neuBeginnen(); return; }
     if (t.closest('#bWeiter')) { endeSchliessen(); return; }
     if (t.closest('#bClips')) { endeSchliessen(); waehle('moveeye'); return; }
-    if (t.closest('#bEndeZeig')) { zeigeEnde(); return; }
+    if (t.closest('#bEndeZeig')) { zeigeEnde(1); return; }
+    if (t.closest('#bEnde2Zeig')) { zeigeEnde(2); return; }
+    if (t.closest('#bK2')) { kapitel2(); return; }
+    if (t.closest('#bSeiten')) { endeSchliessen(); waehle('moveeye'); return; }
   });
   document.addEventListener('keydown', function (ev) {
     if (ev.key === 'Escape' && !$('blatt').hidden) $('blatt').hidden = true;
@@ -379,6 +424,21 @@
 
   // ---- Zeit ----
   var letzt = Date.now();
+  // ---- Fortschritt (ab GS-1.25): schmaler Balken unter der Kopfzeile (aktuelles Kapitel), antippen = alle Kapitel im Menü ----
+  function balken(e) { return '<span class="fsb"><i style="width:' + e.p + '%"></i></span>'; }
+  function malFortschritt() {
+    var f = K.fortschritt(S), e = f.liste[f.jetzt - 1], el = $('fortschritt'), txt = e.nr + '|' + e.p;
+    if (el.__t === txt) return; el.__t = txt;
+    el.innerHTML = '<span class="fst">Kapitel ' + e.nr + (e.name ? ' · ' + esc(e.name) : '') + '</span>' + balken(e) + '<span class="fsp">' + e.p + ' %</span>';
+    el.setAttribute('aria-label', 'Fortschritt Kapitel ' + e.nr + ': ' + e.p + ' Prozent. Antippen für alle Kapitel.');
+  }
+  function kapitelListe() {
+    return '<div class="fsl">' + K.fortschritt(S).liste.map(function (e) {
+      return '<div class="fsz' + (e.offen ? '' : ' zu') + '"><div class="fsk"><b>Kapitel ' + e.nr + (e.name ? ' · ' + esc(e.name) : '') + '</b><span>'
+        + (e.fertig ? '✓ geschafft' : e.bald ? 'kommt bald' : e.offen ? e.p + ' %' : '🔒') + '</span></div>' + balken(e) + '</div>';
+    }).join('') + '</div>';
+  }
+
   // ---- Spieltempo: ⏩ 1× / 2× / 4× (im Spielstand) und ⏸ Pause (nur bis zum nächsten Tippen) ----
   function tempo() { var t = +S.tempo; return K.TEMPI.indexOf(t) >= 0 ? t : 1; }
   var pausiert = false;
@@ -409,7 +469,7 @@
     if (jetzt - sichernT > 4000) sichern();
   }
   function zurueck(zeit) {      // höchstens 5 Minuten laufen weiter, während man weg war
-    if (TEST || !zeit || !S.f.draussen || S.ende || S.karten.length) return;
+    if (TEST || !zeit || !S.f.draussen || (S.ende && !S.k2) || S.ende2 || S.karten.length) return;
     var weg = Math.min(300, Math.max(0, (Date.now() - zeit) / 1000 * tempo()));    // höchstens 5 Minuten Spieluhr
     if (weg < 20) return;
     var r0 = { holz: S.r.holz, wasser: S.r.wasser, essen: S.r.essen };
@@ -425,7 +485,7 @@
   if (S.f.draussen) tab = 'lager';
   render();
   L0();
-  function L0() { var L = K.liste(S); L.forEach(function (e) { (gesehen[e.tab] = gesehen[e.tab] || {})[e.id] = 1; }); gesehen.clips = S.clips.length; merk.tabs = ''; render(); }
+  function L0() { var L = K.liste(S); L.forEach(function (e) { (gesehen[e.tab] = gesehen[e.tab] || {})[e.id] = 1; }); gesehen.clips = S.clips.length; gesehen.seiten = S.k2 ? S.k2.seiten.length : 0; merk.tabs = ''; render(); }
   setInterval(lauf, 250);
   document.addEventListener('visibilitychange', function () { if (document.hidden) sichern(); else letzt = Date.now(); });
   window.addEventListener('pagehide', sichern);

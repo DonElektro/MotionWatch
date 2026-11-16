@@ -2568,7 +2568,9 @@ function pwDialog(first) {
   const later = el("button", "sec", first ? t("Later") : t("Cancel")); later.type = "button";
   later.onclick = () => { try { sessionStorage.setItem("mw-pw-later", "1"); } catch (e) {} ov.remove(); };
   b.appendChild(later); c.appendChild(b);
-  setTimeout(() => i1.focus(), 50);
+  // first field gets the focus - but never taken away from a field of the dialog the user (or a password manager) is
+  // already in: the timer comes late on a busy page and moved the caret from «Repeat» to «New password» (4.5.0 CI «rechte»)
+  setTimeout(() => { if (i1.isConnected && !ov.contains(document.activeElement)) i1.focus(); }, 50);
 }
 let pwAsked = false;
 function updateSecurity(s) {
