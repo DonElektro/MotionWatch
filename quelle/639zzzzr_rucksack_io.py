@@ -567,8 +567,9 @@ function saveFrom(a, blobP) {
   return save({name, blob: blobP || fetch(href).then(r => r.blob()), kind: ext(name) in {png: 1, jpg: 1, jpeg: 1, webp: 1} ? "image" : "doc"});
 }
 let lastL = "";
+const onLive = () => (document.body.dataset.tab || "") === "live";               // the Live tab stays as it is (no buttons, no sheet)
 function scan() {
-  if (!CAP) return;
+  if (!CAP || onLive()) return;
   if (L() !== lastL) { lastL = L(); document.querySelectorAll(".rk-btn[data-rk-t]").forEach(b => { b.textContent = "🎒 " + t(b.dataset.rkT); });
     document.querySelectorAll(".rk-mini").forEach(b => { b.title = t("Save in the backpack"); }); }
   if (CAP.up) document.querySelectorAll("a[href]").forEach(a => {
@@ -590,7 +591,7 @@ let sch = 0; const later = () => { if (!sch) sch = requestAnimationFrame(() => {
 // a file field opened by a script without a button next to it: ask first «from this device / from the backpack»
 const oClick = HTMLInputElement.prototype.click;
 HTMLInputElement.prototype.click = function () {
-  if (this.type === "file" && CAP && CAP.pick && !["btn", "no"].includes(this.dataset.rk) && !NO_PICK.includes(this.id) && !this.closest("#rk-ov")) { chooser(this); return; }
+  if (this.type === "file" && CAP && CAP.pick && !onLive() && !["btn", "no"].includes(this.dataset.rk) && !NO_PICK.includes(this.id) && !this.closest("#rk-ov")) { chooser(this); return; }
   return oClick.apply(this, arguments);
 };
 function chooser(inp) {
