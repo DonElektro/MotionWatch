@@ -1,13 +1,47 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-16 01:15",
+ "generated": "2026-11-16 06:42",
  "versions": [
+  {
+   "version": "4.11.0",
+   "file": "webcam_bewegung_4_11_0.py",
+   "url": "",
+   "sha256": "ac39f8e43386e6b20fad482aaa7a0a5bd2201abd96684c70a5e5235605a7b6b8",
+   "date": "2026-11-16 06:41",
+   "notes": "MoveEye als Demo im Internet: demo_start.py startet MoveEye auf einem Webhost unter /demo (nur gezeichnete Szene, alle Sperren an, keine Verbindung nach aussen); der Simulator im Browser kann sich mit dieser Demo verbinden · Homepage: der Simulator im Browser kommt in Teilen (index_pck1… .wasm) – die Prüfung meldet sie nicht mehr als falsch",
+   "size": 4026000,
+   "sig": "b638a746c19395b51909a9415c113a9d4b33a126aa69dace23a6da299faa72802b2a06789a056afdfb2e3fb0521c485a05b993a064bbbefc1308d6954d075b06",
+   "data": {
+    "file": "moveeye_daten_4_11_0.zip",
+    "url": "",
+    "sha256": "7f4c3e5ed342555406a7b2a0f1dfadad2c85bcf54f6e499dcd59d231392db73b",
+    "size": 14202809,
+    "sig": "516068777a420ab68564d59ce7362378471fe0f1daf883da94deb46e8f59986cf3119fb0b89474ca6f1885b565eb1648e95586821e2a5d427384ead5ed146705"
+   }
+  },
+  {
+   "version": "4.10.0",
+   "file": "webcam_bewegung_4_10_0.py",
+   "url": "",
+   "sha256": "28c87c3996911ea7a83f076d7f3175a80907dc617e87370442e1986d7ea5b1ef",
+   "date": "2026-11-16 01:58",
+   "notes": "💬 Blinki fragen: Blinki beantwortet Fragen zur Bedienung und erklärt Fehler – offline auf dem Gerät (Sprachmodell auf Knopfdruck laden), wahlweise mit eigener Cloud; Fragen auch gesprochen (Handy 🎙, am Gerät nach 2× klatschen, Knopf oder QR-Karte – ab Werk aus) · 📌 Eigene Orte auf der Offline-Karte (setzen, ziehen, bearbeiten; gespeichert im Digitalen Rucksack, GPX / KML / GeoJSON) · 📍 Markier-Karte (experimentell, ab Werk aus): eine gedruckte Karte vor die Kopf-Kamera halten, der Kopf folgt ihr und merkt sich Punkte",
+   "size": 4024875,
+   "sig": "42d71804af5016402db1f0873595bb0544785c07d24fc84b98314cf71f358a79cb1c0605d1371a2af0b776fa9b4840cd592269bac45326978bd24d21329bb805",
+   "data": {
+    "file": "moveeye_daten_4_10_0.zip",
+    "url": "",
+    "sha256": "97814075cadc8ad92c85dfeae94e2ca54099f1ff0a48388e4cae07eddddd875d",
+    "size": 14159525,
+    "sig": "9440b47a651ba6896525762f6fd2c54ba8bddcb06b443fe27e5c902a5957be0376079b0096f345ab378c3ddb144bf643a8ad05c96aabaafbb8348248428b6405"
+   }
+  },
   {
    "version": "4.9.0",
    "file": "webcam_bewegung_4_9_0.py",
    "url": "",
    "sha256": "eba8cef06b86f2eacf7d189740a952c36af097ddb8e117f9a50f8ca01b891a20",
-   "date": "2026-11-16 01:15",
+   "date": "2026-11-16 01:45",
    "notes": "Digitaler Rucksack bei Import und Export: überall eine Datei aus dem Rucksack wählen oder einen Export direkt dort ablegen · Mein Handy-Hotspot bevorzugen: ein gespeichertes Netz markieren, MoveEye wechselt hin, sobald es da ist (Schalter, ab Werk aus) · 📖 Vorlesen und Datei-Ansicht im Digitalen Rucksack: Geschichten (.txt, .md, .epub, .docx, .pdf) mit der Piper-Stimme vorlesen, mit Lesezeichen",
    "size": 4019435,
    "sig": "e53228c6fbae55995bb7152a4bd8c9c0e6d75afa63d29a4e6facd94d8124205a2d9c870c0012dc1195ff579bbf7a180d21ca0b4e2919ca4caae7bae03beaa307",
@@ -24,7 +58,7 @@
    "file": "webcam_bewegung_4_8_0.py",
    "url": "",
    "sha256": "fab8aafffe8a17dac270925b1e904580fe8463459500dee630fd06ec02f2a98b",
-   "date": "2026-11-15 23:35",
+   "date": "2026-11-16 01:46",
    "notes": "Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt hoch) · Spielesammlung GS-1.25: «Verschollen im Bergtal» zeigt den Fortschritt pro Kapitel (oben und im Menü) und läuft bis 16× schnell; in «Gipfeltreffen» trifft Antippen am Handy wieder die richtige Stelle",
    "size": 3957146,
    "sig": "c1c73cddd00bf6615a9df3ae1295343647e3ace0e5e808137c2e78775fffe71b7a348876e26b73ae31f10e35f620da17ca715e1085aac8e7ea157cbfffe20e0b",
@@ -119,40 +153,6 @@
     "sha256": "1933635ae4831f4a4cdc5c80c8816cf387de01ef84db2d35a0fb3df6ab674507",
     "size": 13437024,
     "sig": "fd5c2ad5f1b76e1b49a57d56c043376de03461af8051e6b5d8d1b1be970f470833a2eb60566a6705c14d0e9925d3e840f41903123047bcb70e5ec6733e3c500e"
-   }
-  },
-  {
-   "version": "4.2.0",
-   "file": "webcam_bewegung_4_2_0.py",
-   "url": "",
-   "sha256": "a33d28ab1c2b79025c4c47dc981392ca3a26d2281e633993ad9dd07f8d963fb8",
-   "date": "2026-11-15 15:14",
-   "notes": "Zwei Teile. (1) Die Bedienleiste oben ist eine Zeile schmaler: «Einfach / Experte» ist ein Knopf in der Leiste, die Zeile «Darstellung» fällt weg, ⇕ klappt alle Karten auf und zu, die Symbole sitzen neu (Fenster und Webseite). (2) Bauen auf dem Handy: keine Seite mehr breiter als der Bildschirm, Druckdateien untereinander; in Drucken neu die Spalte «Nr.» (wie im Dateinamen), «Wände» erst ab 480 px.",
-   "size": 3880239,
-   "sig": "68dd7f84683361778017934409314d6d91e7bee5c62cf40f088c8821f271d83491b73d1dcf70cb02b898d3b8cf53e8669e75891aeca00a95049c83e3892f8106",
-   "data": {
-    "file": "moveeye_daten_4_2_0.zip",
-    "url": "",
-    "sha256": "93682b3709998523985c73b927e45448ee481c803ccc3ae5336334aaa3fec115",
-    "size": 13387561,
-    "sig": "d9c4778b3d38d516bfa7c29f688e1bc601a9c03a248e2646fc08878e4de3df4886497e8e2cc75acf83384d0ea0f74962797095d9a81f423883f41986c76af80d"
-   }
-  },
-  {
-   "version": "4.1.0",
-   "file": "webcam_bewegung_4_1_0.py",
-   "url": "",
-   "sha256": "8212ea3db915989af3d4ebac90df495f67e2b1562a48b7ed0e2db2dd16faee42",
-   "date": "2026-11-16 01:11",
-   "notes": "«📻 Radio» auch im Browser: «📱 dieser Browser» spielt den Sender auf dem Handy, der Lautsprecher bleibt still; geht es direkt nicht, läuft der Strom über MoveEye (höchstens 2 Zuhörer). Sicherheit: MoveEye holt Radio-Ströme nur noch von öffentlichen Adressen – auch nach Umleitungen und aus Wiedergabelisten; ein selbst eingetragener Sender im Heimnetz spielt nur über den Lautsprecher.",
-   "size": 3880846,
-   "sig": "6aa3c0f44c2750b62c75dc47b4ee915e69fc08c74abe3b07d5e2f1cd4ae4f824921a24e6fcbbcc7db830357bcd0d6d8648245711dad91ff1d0911c56870c3d0b",
-   "data": {
-    "file": "moveeye_daten_4_1_0.zip",
-    "url": "",
-    "sha256": "04c891b6057959b5c687dcffbd7e2aef31eae7d0d05d4196179834a6882b1682",
-    "size": 13376205,
-    "sig": "7d29e5b35885f51b33628ff8920d63a447dd9a207d874cc7a41634f51549780420523e3122515400cea6a2be2700f6306906a3eb82233c1f3e451fff2d27c90b"
    }
   },
   {

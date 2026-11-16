@@ -201,11 +201,15 @@ def fake_sim_zip(ordner, wasm_extra=b""):
     ex = os.path.join(ordner, "export")
     shutil.rmtree(ex, ignore_errors=True)
     os.makedirs(ex)
+    import sim_web_sandbox as sb                          # die Stellen der Godot-4.3-Fassung, die das Paket patcht
     files = {"index.html": '<html><head><link rel="icon" href="index.icon.png"><link rel="apple-touch-icon" href="index.apple-touch-icon.png"></head>'
-                           '<body><script src="index.js"></script><script>start()</script></body></html>',
-             "index.js": "function locate(path){ if (path.endsWith('.audio.worklet.js')) {\n return `${loadPath}.audio.worklet.js`;\n} }",
+                           '<body><script src="index.js"></script><script>\n' + sb.HTML_ALT + "\t}\n\tif (x) {\n\t} else {\n"
+                           "\t\tsetStatusMode('progress');\n\t\tengine.startGame({\n\t\t\t'onProgress': function () {},\n"
+                           "\t\t}).then(() => {\n\t\t\tsetStatusMode('hidden');\n\t\t}, displayFailureNotice);\n\t}\n</script></body></html>",
+             "index.js": "function locate(path){ if (path.endsWith('.audio.worklet.js')) {\n return `${loadPath}.audio.worklet.js`;\n} }\n"
+                         + "".join(a for a, _ in sb.JS_ERSATZ),
              "index.audio.worklet.js": "class W extends AudioWorkletProcessor{}", "index.wasm": b"\0asm\x01\0\0\0" + os.urandom(3000) + wasm_extra,
-             "index.pck": os.urandom(5000), "index.png": b"\x89PNG-boot", "index.icon.png": b"\x89PNG-icon", "index.apple-touch-icon.png": b"\x89PNG-apple"}
+             "index.pck": os.urandom(12000000 + 5000), "index.png": b"\x89PNG-boot", "index.icon.png": b"\x89PNG-icon", "index.apple-touch-icon.png": b"\x89PNG-apple"}
     for n, d in files.items():
         with open(os.path.join(ex, n), "wb") as f:
             f.write(d.encode() if isinstance(d, str) else d)
@@ -270,7 +274,10 @@ def lauf(datei, tmp):
         js = z.read("index.js").decode()
         html = z.read("index.html").decode()
     ok(names == sorted(["index.html", "index.js", "index.wasm", "index.pck", "index_audio_worklet.js", "index.png", "index_icon.png",
-                        "index_apple-touch-icon.png"]), f"8 Dateien, je ein Punkt: {names}")
+                        "index_apple-touch-icon.png", "index_pck1.wasm", "index_pck2.wasm"]), f"8 Dateien + 2 Teile, je ein Punkt: {names}")
+    ok("/*mw-sandbox*/" in js and "/*mw-sandbox*/" in html, "Sandbox-Patch in index.js und index.html")
+    ok("const PARTS = ['index_pck1.wasm', 'index_pck2.wasm'];" in html and "engine.startGame" not in html
+       and re.search(r'<script src="index\.js\?v=[0-9a-f]{12}"></script>', html), "index.html: lädt die Teile selbst, index.js?v=…")
     ok("`${loadPath}_audio_worklet.js`" in js and ".audio.worklet.js`" not in js, "index.js lädt index_audio_worklet.js")
     ok('"index_icon.png"' in html and '"index_apple-touch-icon.png"' in html and "index.icon.png" not in html, "index.html: Symbole mit einem Punkt")
     bad = os.path.join(tmp, "bad.zip")
@@ -413,7 +420,7 @@ def lauf(datei, tmp):
     code, j = api("admin", {"action": "publish"})
     with zipfile.ZipFile(zp) as z:
         ok(all(W.files.get("Sim/" + n) == z.read(n) for n in z.namelist()), "Sim/ = die 8 Dateien aus sim-web.zip")
-    ok(len(W.uploads()) - n0 == 8 and not j["last"].get("ren"), f"nur die 8 neuen Dateien hochgeladen ({len(W.uploads()) - n0}), keine Umbenennung")
+    ok(len(W.uploads()) - n0 == 10 and not j["last"].get("ren"), f"nur die 10 neuen Dateien (8 + 2 Pack-Teile) hochgeladen ({len(W.uploads()) - n0}), keine Umbenennung")
     ok(all(re.fullmatch(r"[^.]+\.[a-z0-9]+", p.rsplit("/", 1)[-1]) for p in W.files), "jede Datei auf dem Webspace hat genau einen Punkt")
 
     print("5) nur Geändertes", flush=True)

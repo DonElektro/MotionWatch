@@ -353,6 +353,9 @@ static func _draw_group_icon(d: Control, kind: String) -> void:
 			d.draw_rect(Rect2(c + Vector2(-8, -5), Vector2(16, 11)), col, false, w)
 			d.draw_rect(Rect2(c + Vector2(-4, -8), Vector2(6, 3)), col, true)
 			d.draw_arc(c + Vector2(0, 0.5), 3.2, 0, TAU, 16, col, w, true)
+		"shield":                                     # Schutz (Handy-Modus)
+			d.draw_polyline(P.call([Vector2(0, -8), Vector2(7, -5), Vector2(6, 2), Vector2(0, 8), Vector2(-6, 2), Vector2(-7, -5), Vector2(0, -8)]), col, w, true)
+			d.draw_polyline(P.call([Vector2(-3, 0), Vector2(-0.5, 2.5), Vector2(3.5, -2.5)]), col, w, true)
 		"tools":                                      # spanner
 			d.draw_line(c + Vector2(-6, 6), c + Vector2(2, -2), col, 2.6, true)
 			d.draw_arc(c + Vector2(4, -4), 4.0, PI * 0.95, PI * 2.55, 14, col, w, true)

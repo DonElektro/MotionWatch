@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.70.0"
+const VERSION := "3.71.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -93,6 +93,7 @@ var game_kiguard := false            # 3D-4.x: «MoveEye als KI-Wächter» (game
 var localplay                         # 3D-3.77: localplay.gd - play here at the PC
 var headpad                           # 3D-3.77: headpad.gd - steer the head of MoveEye
 var kopf_selbst = null                # kopf_selbst.gd: without MoveEye «Kopf steuern» turns the head of the simulator itself
+var web_demo = null                    # web_demo.gd: nur im Browser - das kleine eingebaute MoveEye der Demo (web.gd)
 var templates                         # 3D-3.82: templates.gd - «Vorlagen»: scenes, places, kits, own 3D files
 var game_tasks := true                # a task for every round of the game (bonus) - 3D-3.27
 var daily_life := true                # visitors at their own times, the postman and the neighbour every day
@@ -335,6 +336,8 @@ var waerme_welt                       # waerme_welt.gd (3D-4.26, P3): engines co
 var camphys                           # camphys.gd (3D-4.x P1): exposure / gain / noise / NoIR colours of the Camera Module 3 NoIR
 var szenen                            # szenenplus.gd (3D-4.x): Voller Campingplatz, Tarnen und Kriechen, Velodieb
 var smalltv                           # smalltv.gd (3D-4.19): virtueller Zusatz-Bildschirm GeekMagic SmallTV Ultra (MoveEye 552)
+var handy = null                       # handy.gd: Handy-Modus (Leiste mit 5 Knöpfen, Blätter von unten)
+var waechter = null                    # fenster_waechter.gd: Fenster ins Bild holen, ✕ wenn keines zu sehen ist
 var fenster                           # fenster.gd (Paket «Fenster»): ein Rahmen für alle schwebenden Fenster (ziehen, Grösse, ✕, Liste «Fenster»)
 var gehaeuse                          # gehaeuse.gd (real-gehaeuse): die vereinfachten echten Teile des Gehäuses v5.1 am Gerät
 var werkstatt = null:                 # werkstatt.gd (real-gehaeuse): Mehr → Werkstatt (Gehäuse drehen, zerlegen, Montage)
@@ -451,7 +454,7 @@ func _ready() -> void:
 	var t := Time.get_datetime_dict_from_system()
 	hour0 = t.hour + t.minute / 60.0
 	var port := 8765
-	var args := OS.get_cmdline_args() + OS.get_cmdline_user_args()
+	var args := OS.get_cmdline_args() + OS.get_cmdline_user_args() + preload("res://scripts/web.gd").args()   # Browser: aus der Adresse
 	for i in range(args.size()):
 		if args[i] == "--port" and i + 1 < args.size():
 			port = int(args[i + 1])
@@ -464,6 +467,7 @@ func _ready() -> void:
 		elif args[i] == "--solo":
 			welt_solo = true                         # 3D-4.x: the old scenes alone, without their world (Prüfstand)
 	_lite_auto_ok = not "--quality" in args
+	preload("res://scripts/web.gd").start(self)   # Browser: Bilder pro Sekunde in die Konsole
 	set_process(false)
 	set_process_unhandled_input(false)
 	if _vm_needs_angle(args):
@@ -706,6 +710,12 @@ func _ready() -> void:
 	fenster.main = self
 	add_child(fenster)
 	fenster.setup_sim()
+	handy = preload("res://scripts/handy.gd").new()      # Handy-Modus (Besitzer 15.11.2026): Leiste, Blätter von unten
+	handy.main = self
+	add_child(handy)
+	waechter = preload("res://scripts/fenster_waechter.gd").new()   # jedes Fenster passt ins Bild und hat ein ✕
+	waechter.main = self
+	add_child(waechter)
 	if entdecken != null:
 		entdecken.join_fenster(fenster)              # 3D-4.27: the Blinki hint in the same frame
 	mwpc.changed.connect(_on_mwpc)

@@ -3,7 +3,8 @@
 // into their own SubViewports - they never see this (checked pixel by pixel, werkzeuge/farbstimmung_pruefen.gd).
 shader_type canvas_item;
 
-uniform sampler2D screen : hint_screen_texture, filter_linear_mipmap;
+// Browser (WebGL 2): ohne Mipmaps (wie camfx.gdshader); gelesen wird nur Stufe 0
+uniform sampler2D screen : hint_screen_texture, filter_linear;
 uniform float amt = 1.0;
 uniform vec3 tint = vec3(1.0);       // time of day: warm in the golden hour, a little blue at dusk / night
 uniform float sat = 1.06;

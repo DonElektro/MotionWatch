@@ -103,7 +103,7 @@ def open_source(spec, thermal=False):
     label = source_label(spec)
     try:
         kind, _, arg = spec.partition(":")
-        if spec == "demo" or DEMO["on"]:
+        if spec == "demo" or (DEMO["on"] and not (HOST["on"] and host_sim_source(spec))):      # 639zzzzw: the web simulator in host mode
             return DemoSource(), "demo", "Demo", ""
         if kind == "sim":                                  # the separate simulation program (simulator connection)
             if arg == "thermal":

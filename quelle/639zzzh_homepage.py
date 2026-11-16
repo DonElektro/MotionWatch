@@ -641,7 +641,7 @@ def hp_probe(url, want=None, origin=""):
         P.append(("size {a} instead of {b}", f"{row['size']}|{want['size']}"))
     elif want and small and want.get("sha") and h.hexdigest() != want["sha"]:
         P.append(("content differs from the file of MoveEye", ""))
-    if ext == "wasm" and head[:4] != b"\0asm":
+    if ext == "wasm" and head[:4] != b"\0asm" and not re.search(r"(^|/)index_pck\d{1,2}\.wasm$", want["path"] if want else ""):   # pack parts (sim_web_paket.py): .wasm only for the type
         P.append(("not a WebAssembly file", ""))
     if H["Content-Security-Policy"] and (ext == "html" or ct == "text/html"):
         P += hp_csp(H["Content-Security-Policy"], origin)
