@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test für demo_start.py («Demo beim Host», Teil 639zzzzw) – ohne Netz, ohne Browser, mit einem Wegwerf-Schlüssel.
+"""Test für demo_start.py («MoveEye beim Host», Teil 639zzzzw) – ohne Netz, ohne Browser, mit einem Wegwerf-Schlüssel.
 
   1. Gleiche Signatur-Prüfung wie MoveEye: öffentlicher Schlüssel, Ed25519, Nachricht, Dateimuster = Teil 380.
   2. Echte Signatur: die neueste Datei in versions.json des Repositorys ist gültig signiert; verändert = ungültig.
@@ -7,7 +7,7 @@
      ZIP, falsche ZIP, ohne Host-Modus, Brücke = nie.
   4. Update (GitHub nachgestellt): holt Datei + ZIP nur in den eigenen Ordner, falsche Prüfsumme bleibt nicht liegen,
      nur https-Adressen von GitHub, alte Versionen aufgeräumt (höchstens 2), kein Update auf eine ältere / gleiche.
-  5. Werkseinstellungen: nur demo_daten wird geleert; nächster Zeitpunkt 03:30 Schweizer Zeit.
+  5. Daten bleiben: kein Zurücksetzen, nichts wird geleert (4.15.0: echte MoveEye beim Host); Start ohne --demo.
   6. Echter Lauf: demo_start.py startet eine nachgemachte Version mit den richtigen Optionen und beendet sie auf SIGTERM.
 python3 werkzeuge/demo_start_test.py
 """
@@ -162,22 +162,11 @@ def main():
         man["versions"].insert(0, entry("6.4.0", fe, se))
         ok(d.update("6.2.0") == "" and not os.path.exists(os.path.join(work, fe)), "ohne Host-Modus: nicht benutzt, gelöscht")
         man["versions"].pop(0)
-        print("5. Werkseinstellungen, Zeitpunkt")
-        os.makedirs(os.path.join(d.DATA, "recordings")); open(os.path.join(d.DATA, "recordings", "a.mp4"), "w").write("x")
-        open(os.path.join(work, "bleibt.txt"), "w").write("x")
-        d.reset_data()
-        ok(os.listdir(d.DATA) == [] and os.path.exists(os.path.join(work, "bleibt.txt")), "nur demo_daten geleert")
-        nr = d.next_reset()
-        ok(0 < nr - time.time() <= 86400 + 3600, "nächstes Zurücksetzen innerhalb eines Tages")
-        try:
-            from zoneinfo import ZoneInfo
-            from datetime import datetime
-            t = datetime.fromtimestamp(nr, ZoneInfo("Europe/Zurich"))
-            ok((t.hour, t.minute) == (3, 30), f"um 03:30 Schweizer Zeit ({t:%Y-%m-%d %H:%M %Z})")
-        except Exception as ex:
-            print(f"  (Zeitzonen-Daten fehlen: {ex})")
+        print("5. Daten bleiben (4.15.0: echte MoveEye, kein Zurücksetzen)")
+        ok(not hasattr(d, "reset_data") and not hasattr(d, "next_reset") and "rmtree" not in open(os.path.join(ROOT, "demo_start.py")).read(),
+           "kein nächtliches Zurücksetzen, nichts wird geleert")
         cmd = d.child_cmd(os.path.join(work, fc))
-        ok(cmd[2:] == ["--demo", "--headless", "--bind", "127.0.0.1", "--port", str(int(os.environ.get("PORT") or 5000)), "--host-modus",
+        ok(cmd[2:] == ["--headless", "--bind", "127.0.0.1", "--port", str(int(os.environ.get("PORT") or 5000)), "--host-modus",
                        "--url-prefix", "/demo", "--config", d.DATA], "Startoptionen: " + " ".join(cmd[2:]))
         print("6. echter Lauf (Prozess)")
         env = dict(os.environ, PORT="5099")

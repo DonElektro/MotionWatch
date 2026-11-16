@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
-"""MoveEye «Demo beim Host» – fester Startpunkt auf dem Webspace des Besitzers (moveeye.kevlaschef.com/demo/).
+"""MoveEye beim Host – fester Startpunkt auf dem Webspace des Besitzers (moveeye.kevlaschef.com/demo/).
+Ab MoveEye 4.15.0 (Besitzer 16.11.2026) eine ECHTE MoveEye, keine Demo mehr: der Simulator auf der Homepage ist ihre Kamera,
+Einstellungen und Aufnahmen bleiben (Ordner demo_daten, Name beibehalten: nichts geht beim Update verloren).
 
 Der Host startet nur diese Datei (Startzeile:  python3 demo_start.py ). Sie
   1. sucht in ihrem eigenen Ordner die neueste veröffentlichte, richtig signierte webcam_bewegung_X_Y_Z.py samt
      moveeye_daten_X_Y_Z.zip (Signatur Ed25519 über «MotionWatch|ver|file|sha256» mit dem öffentlichen Schlüssel von
      MoveEye, Teil 380; die ZIP über ZD_SHA256 in der signierten Datei) – fehlt sie, holt sie sie von GitHub;
-  2. startet sie mit  --demo --headless --bind 127.0.0.1 --port $PORT --host-modus --url-prefix /demo --config demo_daten
-     (MoveEye sperrt dann alles, was nach aussen oder ins System greift: Teil 639zzzzw);
-  3. setzt die Demo jede Nacht um 03:30 (Schweizer Zeit) auf Werkseinstellungen zurück (Ordner demo_daten wird geleert,
-     MoveEye neu gestartet) – ebenso, wenn der Ordner grösser als 1 GB wird;
+  2. startet sie mit  --headless --bind 127.0.0.1 --port $PORT --host-modus --url-prefix /demo --config demo_daten
+     (MoveEye sperrt dann alles, was nach aussen oder ins System greift: Teil 639zzzzw; der Ordner bleibt unter ~1 GB,
+     weil MoveEye selbst die ältesten Aufnahmen löscht – kein nächtliches Zurücksetzen mehr);
   3b. startet MoveEye mit wenig Speicher-Verschnitt (MALLOC_ARENA_MAX=2 u. a., CHILD_ENV): rund 0.7 statt 1.2 GB;
   4. schaut alle 6 Stunden nach einer neueren signierten Version, lädt sie NUR in den eigenen Ordner, prüft sie und
      beendet sich dann (der Host startet nach 5 s neu, dann läuft die neue Version). Nie etwas Unsigniertes.
 Nur Python-Standardbibliothek. Endet MoveEye von selbst, endet auch diese Datei (der Host startet beides neu).
 
-  python3 demo_start.py            Demo starten und überwachen (das macht der Host)
+  python3 demo_start.py            MoveEye starten und überwachen (das macht der Host)
   python3 demo_start.py --pruefen  nur zeigen, welche Version starten würde (holt sie, wenn nötig), dann Ende
-Umgebung: PORT (5000), MW_DEMO_PREFIX (/demo), MW_DEMO_TZ (Europe/Zurich).
+Umgebung: PORT (5000), MW_DEMO_PREFIX (/demo).
 Tests: werkzeuge/demo_start_test.py
 """
-import hashlib, json, os, re, shutil, signal, subprocess, sys, time, urllib.request
-from datetime import datetime, timedelta
+import hashlib, json, os, re, signal, subprocess, sys, time, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "demo_daten")
@@ -35,8 +35,6 @@ VER_RE = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}$")
 UPD_MAX_BYTES = 32 * 1024 * 1024               # like UPD_MAX_BYTES (390)
 ZIP_MAX_BYTES = 64 * 1024 * 1024               # like _zd_read (012)
 CHECK_EVERY = 6 * 3600
-RESET_AT = (3, 30)
-DATA_MAX_BYTES = 1024 ** 3                     # the folder of the host has 1.5 GB
 KEEP_VERSIONS = 2                              # the running one and the one before
 # memory: glibc gives every thread of the web server its own malloc arena - with visitors MoveEye grew from 0.6 to 1.2 GB
 # (measured 16.11.2026); 2 arenas and one thread for the maths libraries keep it at about 0.68 GB (host: 1 GB)
@@ -352,43 +350,8 @@ def cleanup(keep_newest):
 
 
 def child_cmd(path):
-    return [sys.executable, path, "--demo", "--headless", "--bind", "127.0.0.1", "--port", str(int(os.environ.get("PORT") or 5000)),
+    return [sys.executable, path, "--headless", "--bind", "127.0.0.1", "--port", str(int(os.environ.get("PORT") or 5000)),
             "--host-modus", "--url-prefix", os.environ.get("MW_DEMO_PREFIX", "/demo"), "--config", DATA]
-
-
-def reset_data():
-    """factory settings: the demo folder emptied (only that folder, never anything else)"""
-    if os.path.basename(DATA) != "demo_daten" or os.path.dirname(DATA) != HERE:
-        raise RuntimeError("unexpected demo folder")
-    if os.path.isdir(DATA) and not os.path.islink(DATA):
-        shutil.rmtree(DATA, ignore_errors=True)
-    os.makedirs(DATA, exist_ok=True)
-
-
-def dir_bytes(path):
-    n = 0
-    for root, _d, files in os.walk(path):
-        for f in files:
-            try:
-                n += os.lstat(os.path.join(root, f)).st_size
-            except OSError:
-                pass
-    return n
-
-
-def next_reset(now=None):
-    """the next 03:30 in Swiss time (or the local time of the host without the time zone data) as a unix time"""
-    tz = None
-    try:
-        from zoneinfo import ZoneInfo
-        tz = ZoneInfo(os.environ.get("MW_DEMO_TZ", "Europe/Zurich"))
-    except Exception:
-        pass
-    t = datetime.fromtimestamp(now if now is not None else time.time(), tz)
-    n = t.replace(hour=RESET_AT[0], minute=RESET_AT[1], second=0, microsecond=0)
-    if n <= t:
-        n = (n + timedelta(days=1)).replace(hour=RESET_AT[0], minute=RESET_AT[1])
-    return n.timestamp()
 
 
 class Child:
@@ -438,7 +401,7 @@ def main(argv):
         stop["now"] = True
     signal.signal(signal.SIGTERM, on_term)
     signal.signal(signal.SIGINT, on_term)
-    t_reset = next_reset(); t_check = time.time() + CHECK_EVERY; t_size = 0.0
+    t_check = time.time() + CHECK_EVERY
     child.start()
     while True:
         time.sleep(1.0)
@@ -449,15 +412,6 @@ def main(argv):
             log(f"MoveEye ended (code {rc}) - the host starts it again")
             return 0 if rc == 0 else 1
         now = time.time()
-        if now >= t_size:
-            t_size = now + 600
-            if dir_bytes(DATA) > DATA_MAX_BYTES:
-                log("demo folder over 1 GB - back to factory settings")
-                t_reset = now
-        if now >= t_reset:
-            log("back to factory settings (every night)")
-            child.stop(); reset_data(); child.start()
-            t_reset = next_reset(now + 60)
         if now >= t_check:
             t_check = now + CHECK_EVERY
             try:

@@ -35,7 +35,9 @@ def part_ns():
           "DATA_DIR": "/nonexistent-data", "DEMO_BLOCK": ("/api/power",), "WebStream": type("WebStream", (), {"_serve": lambda *a: None}),
           "DemoSource": type("DemoSource", (), {"__init__": lambda self: setattr(self, "fps", 15.0),
                                                 "set_fps": lambda self, f: setattr(self, "fps", float(f) if f else 15.0)}),
-          "log_event": lambda k, t: None, "save_settings": lambda: None}
+          "log_event": lambda k, t: None, "save_settings": lambda: None, "DEMO": {"on": False},
+          "open_source": lambda spec, thermal=False: ("base", spec, spec, ""), "source_label": lambda s: str(s),
+          "DE": {}, "TRX": {"fr": {}, "it": {}, "rm": {}}}
     src = open(PART, encoding="utf-8").read()
     exec(compile(src, PART, "exec"), ns)
     return ns
@@ -56,7 +58,8 @@ def static():
     src = open(PART, encoding="utf-8").read()
     st = open(os.path.join(ROOT, "quelle", "640_start.py"), encoding="utf-8").read()
     ok('"--host-modus"' in st and "host_mode_start(a)" in st and "host_after_settings()" in st, "640: --host-modus, Sperren vor jedem Faden")
-    ok("a.demo = a.headless = True" in st and 'a.bind = "127.0.0.1"' in st, "640: Host-Modus = Demo, ohne Fenster, nur 127.0.0.1")
+    ok("a.demo = a.headless = True" not in st and 'a.headless = True; a.helper = False; a.bind = "127.0.0.1"' in st
+       and "nosys = a.demo or a.host_modus" in st, "640: Host-Modus = echte MoveEye (4.15.0, keine Demo), ohne Fenster, nur 127.0.0.1")
     i_lock, i_thr = st.find("host_mode_start(a)"), st.find("threading.Thread(target=clock_guard_loop")
     ok(0 < i_lock < i_thr, "Sperren vor dem ersten Faden")
     d210 = open(os.path.join(ROOT, "quelle", "210_demo.py"), encoding="utf-8").read()
@@ -189,6 +192,9 @@ tr("udp_bcast", lambda: u.sendto(b"x", ("255.255.255.255", 8764)))
 tr("udp_lo", lambda: u.sendto(b"x", ("127.0.0.1", 9)))
 tr("nmcli", lambda: subprocess.run(["nmcli", "radio"]))
 tr("sudo", lambda: subprocess.run(["sudo", "reboot"]))
+tr("nice_ffmpeg", lambda: subprocess.run(["nice", "-n", "5", "ffmpeg", "-hide_banner", "-version"], capture_output=True))
+tr("nice_sh", lambda: subprocess.run(["nice", "-n", "5", "sh", "-c", "true"]))
+tr("nice_bare", lambda: subprocess.run(["nice"]))
 tr("shell", lambda: subprocess.run("echo hi", shell=True))
 tr("check_output", lambda: subprocess.check_output(["/usr/bin/systemctl", "reboot"]))
 r["system"] = os.system("echo hi")
@@ -214,7 +220,9 @@ shutil.rmtree(data)
             "nmcli": "FileNotFoundError", "sudo": "FileNotFoundError", "shell": "FileNotFoundError", "check_output": "FileNotFoundError",
             "import_gpio": "ModuleNotFoundError", "import_smbus": "ModuleNotFoundError", "write_out": "PermissionError",
             "write_home": "PermissionError", "write_data": "ok", "remove_out": "PermissionError", "rmtree_out": "PermissionError",
-            "execv_other": "PermissionError", "read_out": "ok", "system": 127 << 8}
+            "execv_other": "PermissionError", "read_out": "ok", "system": 127 << 8,
+            "nice_ffmpeg": "ok" if shutil.which("nice") else "FileNotFoundError",   # 4.15.0: let through (without ffmpeg nice just ends with 127)
+            "nice_sh": "FileNotFoundError", "nice_bare": "FileNotFoundError"}
     for k, v in want.items():
         ok(res.get(k) == v, f"{k}: {res.get(k)} (soll {v})")
 
@@ -470,6 +478,17 @@ def listen_addrs(pid):
     return out
 
 
+def threads_n(pid):
+    """threads of the MoveEye process (4.15.0: the host had a limit of 64)"""
+    try:
+        for l in open(f"/proc/{pid}/status"):
+            if l.startswith("Threads:"):
+                return int(l.split()[1])
+    except OSError:
+        pass
+    return 0
+
+
 def rss_kb(pid):
     tot = 0
     for p in [pid] + [int(x) for x in subprocess.run(["pgrep", "-P", str(pid)], capture_output=True, text=True).stdout.split()]:
@@ -506,7 +525,7 @@ def run(a):
     port, pport = free_port(), free_port()
     data = os.path.join(tmp, "demo_daten")
     log = open(os.path.join(tmp, "mw.log"), "w")
-    pr = subprocess.Popen([py, mw, "--demo", "--headless", "--bind", "127.0.0.1", "--port", str(port), "--host-modus", "--url-prefix", "/demo",
+    pr = subprocess.Popen([py, mw, "--headless", "--bind", "127.0.0.1", "--port", str(port), "--host-modus", "--url-prefix", "/demo",
                            "--config", data], cwd=os.path.dirname(os.path.abspath(mw)), stdout=log, stderr=subprocess.STDOUT,
                           env=dict(os.environ, **child_env()))
     px = Proxy(pport, port)
@@ -549,6 +568,21 @@ def run(a):
                         ("/api/autostart", {"on": True}), ("/api/helper", {"on": True})):
             c, b, h = get(base + path, json.dumps(d).encode(), headers={"Origin": f"http://127.0.0.1:{pport}"})
             ok(c == 403, f"POST {path}: {c}")
+        for path, d in (("/api/ki/state", None), ("/api/ki/model", {"action": "load"}), ("/api/tausch/bio", {"action": "load"}),
+                        ("/api/untersuchen", {"cam": "head"}), ("/api/piper", {"action": "load"})):
+            c, b, h = get(base + path, json.dumps(d).encode() if d else None, headers={"Origin": f"http://127.0.0.1:{pport}"})
+            try:
+                er = json.loads(b).get("error")
+            except ValueError:
+                er = b[:80]
+            ok(c == 403 and er in ("not available on the host", "auf dem Host nicht verfügbar"), f"KI auf dem Host nicht verfügbar: {path} {c} {er!r}")
+        c, b, h = get(base + "/api/tausch?lang=de")
+        ok(c == 200, f"Digitaler Rucksack geht (4.15.0, echte MoveEye): {c}")
+        try:
+            act0 = json.loads(get(base + "/api/sources")[1]).get("active")
+        except ValueError:
+            act0 = None
+        ok(act0 != "demo", f"ohne Web-Simulator keine gezeichnete Szene (Quelle {act0!r})")
         c, b, h = get(base + "/api/set", json.dumps({"key": "notify_url", "value": "https://ntfy.sh/x"}).encode(), headers={"Origin": f"http://127.0.0.1:{pport}"})
         time.sleep(3)
         la = listen_addrs(pr.pid)
@@ -580,6 +614,8 @@ def run(a):
             os.makedirs(bilder, exist_ok=True); cv2.imwrite(os.path.join(bilder, "00_websim_kamerabild.jpg"), img)
         if a.browser:
             browser_check(base, bilder)
+        if a.ram:
+            ram_measure(pr.pid, base, a.ram, rss0)          # 4.15.0: with the web simulator connected (its camera is the picture)
         sim.close()
         if a.sim_aus:
             t2 = time.time(); back = False; act = None
@@ -592,15 +628,15 @@ def run(a):
                 c, b, h = get(base + "/snapshot.jpg")
                 im = cv2.imdecode(np.frombuffer(b, np.uint8), cv2.IMREAD_COLOR) if c == 200 else None
                 mg = im is not None and (lambda m: m[0] > 120 and m[2] > 120 and m[1] < 90)(im.reshape(-1, 3).mean(0))
-                if act == "demo" and im is not None and not mg:
+                lg = os.path.join(data, "motionwatch.log")
+                nocam = os.path.exists(lg) and "Video source 'Automatic' not available" in open(lg, errors="replace").read()
+                if act != "demo" and im is not None and not mg and nocam:      # 4.15.0: «no camera» (the last source id may stay)
                     back = True; break
             st = {"source_id": act}
-            ok(back, f"Web-Simulator weg -> wieder die gezeichnete Szene ({time.time() - t2:.0f} s, Quelle {st.get('source_id')!r})")
+            ok(back, f"Web-Simulator weg -> wieder «keine Kamera» ({time.time() - t2:.0f} s, Quelle {st.get('source_id')!r})")
             if not back:
                 ml_ = open(os.path.join(data, "motionwatch.log"), errors="replace").read() if os.path.exists(os.path.join(data, "motionwatch.log")) else ""
                 print("   " + "\n   ".join(l[:200] for l in ml_.splitlines() if re.search(r"(?i)simulat|web sim|host mode", l))[-3000:])
-        if a.ram:
-            ram_measure(pr.pid, base, a.ram, rss0)
         esc = [p for p in px.escaped if p not in ("/favicon.ico",)]
         ok(not esc, f"keine Anfrage an der Vorsilbe vorbei ({px.n} Anfragen; daneben: {sorted(set(esc))[:10]})")
         if "/favicon.ico" in px.escaped:
@@ -688,15 +724,15 @@ def ram_measure(pid, base, secs, rss0):
     th = [threading.Thread(target=visitor, daemon=True) for _ in range(2)] + [threading.Thread(target=stream, daemon=True)]
     for t in th:
         t.start()
-    out = []; c0 = cpu_s(pid); t0 = time.time(); peak = 0
+    out = []; c0 = cpu_s(pid); t0 = time.time(); peak = 0; th0 = threads_n(pid); thp = th0
     while time.time() - t0 < secs:
-        r = rss_kb(pid); peak = max(peak, r); out.append((round(time.time() - t0), r))
+        r = rss_kb(pid); peak = max(peak, r); out.append((round(time.time() - t0), r)); thp = max(thp, threads_n(pid))
         time.sleep(5)
     stop.set()
     cpu = (cpu_s(pid) - c0) / max(1.0, time.time() - t0) * 100
     avg = sum(x[1] for x in out) / max(1, len(out))
     rep = (f"RSS beim Start {rss0 / 1024:.0f} MB, Spitze {peak / 1024:.0f} MB, Mittel {avg / 1024:.0f} MB über {secs} s; "
-           f"CPU im Mittel {cpu:.0f} % eines Kerns; {n['p']} Seitenaufrufe + Live-Bild")
+           f"CPU im Mittel {cpu:.0f} % eines Kerns; {n['p']} Seitenaufrufe + Live-Bild; Threads {th0} am Anfang, höchstens {thp}")
     print("   " + rep)
     p_ = os.path.join(os.environ.get("TMPDIR") or tempfile.gettempdir(), "host_demo_ram.log")
     with open(p_, "w") as f:

@@ -1,19 +1,24 @@
 #@ MoveEye – Teil 639zzzzw: «Demo beim Host» (--host-modus): die Demo auf dem Webspace des Besitzers (moveeye.kevlaschef.com/demo/) – Sperren (kein Netz nach aussen, keine Programme, keine Hardware, Dateien nur im eigenen Ordner), Pfad-Vorsilbe «/demo» (Server + kleines Skript in jeder Seite), Simulator über eine WebSocket-Leitung (/simtun). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Wish of Besitzer (15.11.2026, approved): a public demo of MoveEye on the web host behind the Basic Auth of the homepage.
-#   Started by demo_start.py (repository root) with  --demo --headless --bind 127.0.0.1 --port $PORT --host-modus
-#   --url-prefix /demo --config <folder>/demo_daten. demo_start.py picks the newest signed version, resets the demo every
-#   night (03:30) and updates it every 6 h (only signed files) - this part is what MoveEye itself does in host mode:
+#   4.15.0 (Besitzer 16.11.2026): no longer a demo but a REAL MoveEye on the host - the web simulator of the homepage is its
+#   camera; without it the normal «no camera» picture (with --demo still the drawn scene). Settings and recordings stay
+#   (no nightly reset; the folder stays under ~1 GB through the normal clean-up, oldest recordings first: _host_fixed);
+#   motion detection only, no AI model (person detector, BioCLIP, Blinki, voices: «not available on the host», RAM); no push.
+#   Started by demo_start.py (repository root) with  --headless --bind 127.0.0.1 --port $PORT --host-modus
+#   --url-prefix /demo --config <folder>/demo_daten. demo_start.py picks the newest signed version and updates it every
+#   6 h (only signed files) - this part is what MoveEye itself does in host mode:
 #   * Locks (central, so no single function can forget them; they hold for every visitor, also the administrator):
 #       - network: no connection out of this computer (socket connect / sendto) and no listening on the network (bind only
 #         127.0.0.1 / ::1). That switches off push (ntfy, Telegram, e-mail, web push, webhooks, MQTT), the homepage upload,
 #         the tunnel listener, the AI helper server, the game servers on 0.0.0.0, the simulator beacon / UDP search and
 #         every download.
-#       - programs: subprocess only ffmpeg / ffprobe (no shell, nmcli, sudo, systemctl, reboot, shutdown, ...); os.system
+#       - programs: subprocess only ffmpeg / ffprobe, also behind «nice -n N» (no shell, nmcli, sudo, systemctl, ...); os.system
 #         is off; os.exec* only restarts this same program file.
 #       - hardware: the modules for GPIO / I2C / SPI / Pi camera / Bluetooth / D-Bus / serial / audio are not importable.
 #       - files: writing, deleting and renaming only inside the demo folder (--config) and the temporary folder.
-#       - the web page refuses (403 «not possible in the demo») the routes in HOST_BLOCK on top of DEMO_BLOCK (210).
+#       - the web page refuses (403 «not available on the host», host_guard) the routes in HOST_BLOCK and DEMO_BLOCK (210)
+#         except the backpack (/api/tausch, with small limits), and every AI route (HOST_AI, /untersuchen, /tausch/bio).
 #       - settings that reach outside or the system are put back after every request and every 2 s (_host_fixed).
 #   * Path prefix: the host passes the requests WITHOUT «/demo». With a prefix (--url-prefix, or the header
 #     X-Forwarded-Prefix) a small WSGI layer (_HostPrefix) puts it in front of every absolute address the page uses:
@@ -28,7 +33,7 @@
 #     needs no new connection per request - MoveEye posts /state 10 times a second). The code is not checked in host mode
 #     (every visitor is administrator); the newest simulator window wins, the older one gets «TAKEN». MoveEye reaches it
 #     through the local door 127.0.0.1:18765 (sim_url, as with the tunnel); connected, the simulation switches on by itself
-#     (sim_set, armed again), gone for 60 s it switches off (the drawn demo scene again).
+#     (sim_set, armed again), gone for 60 s it switches off («no camera» again; with --demo the drawn scene).
 #   * RAM / CPU: nothing new runs in the background except one small thread (every 2 s). The rewritten pages are cached.
 # Tests: werkzeuge/host_demo_test.py (static + a short run behind a proxy that strips «/demo»), werkzeuge/demo_start_test.py.
 # ----------------------------------------------------------------------------
@@ -54,7 +59,8 @@ _HOST_REAL = {}
 
 def _host_fixed():
     """settings that never change in host mode (those that reach outside, the system or other folders)"""
-    d = {"record_dir": os.path.join(HOST["data"] or DATA_DIR, "recordings"), "record_max_gb": 0.3, "rec_keep_days": 1,
+    d = {"record_dir": os.path.join(HOST["data"] or DATA_DIR, "recordings"), "record_max_gb": 0.5, "ai_enabled": False,
+         "tausch_total_gb": 0.2, "tausch_user_gb": 0.2, "tausch_file_mb": 50.0,    # 4.15.0: the folder stays under ~1 GB (oldest first)
          "update_mode": "off", "update_url": "", "update_token": "", "update_unsigned": False, "sim_url": f"http://127.0.0.1:{HOST_SIM_DOOR}",
          "sim_auto": False, "sim_autostart": False, "hotspot_on": False, "mqtt_on": False, "backup_type": "off", "backup_url": "",
          "fleet": [], "helper_serve": False, "helper_use": False, "helper_url": "", "tunnel_on": False, "notify_on": False,
@@ -66,14 +72,14 @@ def _host_fixed():
 
 
 def host_enforce(save=False):
-    """put the fixed settings back (after every request and every 2 s); «source» stays demo or the web simulator"""
+    """put the fixed settings back (after every request and every 2 s); «source» stays the web simulator or «no camera»"""
     if not HOST["on"]:
         return 0
     n = 0
     for k, v in _host_fixed().items():
         if k == "source":
-            if not (CFG["source"] == "demo" or (CFG.get("sim_on") and str(CFG["source"]).startswith("sim:"))):
-                CFG["source"] = "demo"; n += 1
+            if not (CFG["source"] == host_idle_source() or (CFG.get("sim_on") and str(CFG["source"]).startswith("sim:"))):
+                CFG["source"] = host_idle_source(); n += 1
             continue
         if CFG.get(k) != v:
             CFG[k] = v; n += 1
@@ -163,8 +169,13 @@ def _host_guard_programs():
 
     class HostPopen(real):
         def __init__(self, args, *a, **k):
-            prog = args if isinstance(args, (str, bytes, os.PathLike)) else (list(args)[:1] or [""])[0]
-            name = os.path.basename(os.fsdecode(prog)).lower()
+            al = [args] if isinstance(args, (str, bytes, os.PathLike)) else list(args)
+            name = os.path.basename(os.fsdecode((al[:1] or [""])[0])).lower()
+            if name == "nice" and not k.get("shell"):          # 4.14.1: «nice -n N ffmpeg …» (recording, conversion, time-lapse)
+                i = 1
+                while i < len(al) and str(al[i]).startswith("-"):
+                    i += 2 if str(al[i]) == "-n" else 1
+                name = os.path.basename(os.fsdecode(al[i])).lower() if i < len(al) else "nice"
             if k.get("shell") or name not in HOST_PROGS:
                 _host_note(f"the program {name[:40] or '?'}")
                 raise FileNotFoundError(_er.ENOENT, "host mode: this program is not allowed", name)
@@ -273,7 +284,7 @@ def host_after_settings():
     """640, after the demo settings: the fixed values, then the small watcher (every 2 s) and the door for the web simulator"""
     if not HOST["on"]:
         return
-    CFG["source"] = "demo"
+    CFG["source"] = host_idle_source()
     host_enforce(True)
     host_door_start()
     threading.Thread(target=_host_loop, daemon=True, name="hostmode").start()
@@ -339,11 +350,16 @@ def _host_sim_tick():
         _host_back_to_demo(bool(CFG.get("armed")))
 
 
+def host_idle_source():
+    """the source while no web simulator is connected: the drawn scene only with --demo, else «auto» = «no camera» (4.15.0)"""
+    return "demo" if DEMO["on"] else "auto"
+
+
 def _host_back_to_demo(armed):
-    CFG["source"] = "demo"
+    CFG["source"] = host_idle_source()
     w = WATCH_REF.get("w")
     if w is not None:
-        w.request_source("demo")
+        w.request_source(CFG["source"])
     if armed:
         try:
             arm(0)
@@ -354,6 +370,24 @@ def _host_back_to_demo(armed):
 def host_sim_source(spec):
     """210 open_source: in host mode the simulator cameras are allowed while the web simulator is connected"""
     return bool(HOST["on"]) and str(spec).startswith("sim:") and bool(CFG.get("sim_on")) and host_ws_active()
+
+
+_open_source_host_base = open_source
+
+
+def open_source(spec, thermal=False):                    # wraps: open_source (host mode without --demo: only the web simulator)
+    if HOST["on"] and not DEMO["on"] and spec != "demo" and not host_sim_source(spec):
+        return None, spec, source_label(spec), "no camera - open the simulator on the homepage"
+    return _open_source_host_base(spec, thermal)
+
+
+HOST_NA = "not available on the host"
+HOST_AI = ("/api/ki/", "/api/tausch/bio", "/api/ai_model", "/api/own_model", "/api/piper")   # 4.15.0: no AI model on the host (RAM)
+for _k, _v in {HOST_NA: ("auf dem Host nicht verfügbar", "non disponible sur l'hébergeur", "non disponibile sull'host",
+                         "betg disponibel sin il host")}.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 
 
 def host_door_start():
@@ -541,6 +575,16 @@ def host_routes(app):
     """the WebSocket of the web simulator (only in host mode; the TCP tunnel of 180 stays off)"""
     from flask import request, Response
     import base64 as _b64
+
+    @app.before_request
+    def host_guard():                                    # 4.15.0: without --demo the demo guard of 550 is off - the same routes here
+        p = request.path
+        ai = p.startswith(HOST_AI) or "/untersuchen" in p or "/tausch/bio" in p
+        sysp = not DEMO["on"] and request.method == "POST" and p.startswith(tuple(x for x in DEMO_BLOCK if x != "/api/tausch"))
+        if not (ai or sysp):
+            return None
+        L = norm_lang(request.args.get("lang") or CFG.get("lang"))
+        return Response(json.dumps({"ok": False, "error": tr(HOST_NA, L)}), 403, mimetype="application/json")
 
     @app.route("/simtun", websocket=True)
     def host_simtun():
