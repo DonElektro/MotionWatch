@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7810 (Stellen: 10883)
-Übersetzt: en 7810, fr 7810, it 7810, rm 7810
+Texte gesamt: 7811 (Stellen: 10884)
+Übersetzt: en 7811, fr 7811, it 7811, rm 7811
 Unsicher markiert: 53
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 534 Stellen
 Nicht mehr im Code (noch in texte.json): 354
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 68 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1
-Übersprungen (Grund: Anzahl): kennung 28097, schlüssel 21247, keine Wörter 13240, index 10009, technisch 3673, doc 2461, einheit 341, log 196, englisch 144, pfad 127, stringname 103, html 68, klasse 40, shader 6
+Übersprungen (Grund: Anzahl): kennung 28135, schlüssel 21280, keine Wörter 13249, index 10015, technisch 3673, doc 2462, einheit 341, log 196, englisch 145, pfad 127, stringname 103, html 68, klasse 40, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       533     4
@@ -211,6 +211,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   blindmap.gd                1     0
   devtool_kamera.gd          1     0
   devzugang.gd               1     0
+  markierkarte.gd            1     0
   minimap.gd                 1     0
   net.gd                     1     1
 

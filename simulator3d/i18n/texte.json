@@ -7492,6 +7492,12 @@
   "it": "Fino a %d giocatori si avvicinano di soppiatto al traguardo con il telefonino (%s). «Start» apre il gioco – oppure aprire l’assistente.",
   "rm": "Fin a %d giugaders sa stulan cun il telefonin betg vis a la finala (%s). «Start» avra il gieu – u avrir l’assistent."
  },
+ "bits: n × n (4 … 12)": {
+  "en": "bits: n × n (4 … 12)",
+  "fr": "bits : n × n (4 … 12)",
+  "it": "bit: n × n (4 … 12)",
+  "rm": "bits: n × n (4 … 12)"
+ },
  "Bitte den Simulator neu starten – das Wiederherstellen geschieht beim nächsten Start.": {
   "en": "Please restart the simulator – the restore happens at the next start.",
   "fr": "Veuillez redémarrer le simulateur – la restauration se fera au prochain démarrage.",
