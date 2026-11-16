@@ -267,7 +267,8 @@ def teil_b(datei, bilder):
 
                 # Live: nothing of the backpack visible
                 pg.goto(base + "/", wait_until="domcontentloaded")
-                pg.wait_for_function("window.mwRucksack && document.querySelector('.rk-btn')", timeout=30000)
+                pg.wait_for_function("window.mwRucksack", timeout=30000)   # ab e2405f5: auf Live baut das Skript gar keine Knöpfe
+                pg.wait_for_timeout(1500)
                 vis = pg.evaluate("[...document.querySelectorAll('.rk-btn,.rk-mini')].filter(b => b.offsetParent !== null).length")
                 ok(vis == 0, f"Live: kein 🎒 sichtbar ({vis})")
                 # settings: save into the backpack
