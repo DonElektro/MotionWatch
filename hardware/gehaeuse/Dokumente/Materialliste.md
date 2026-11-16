@@ -27,14 +27,17 @@ Status aus der abhakbaren Liste: ✅ vorhanden · 🚚 bestellt · ☐ fehlt. Oh
 
 | | Menge | Teil | Teilenummer / Bestellnummer | Hinweis |
 |---|---|---|---|---|
-| ☐ | 1× | Waveshare UPS HAT (E) | Waveshare SKU 27966 | 56 × 88 mm, 5 V / 6 A über Pogo-Pins, USB-C-Laden bis 40 W. Ohne Akkus geliefert. [Link](https://www.waveshare.com/ups-hat-e.htm) |
-| ☐ | 4× | Li-Ion-Akku 21700, Flat Top | Samsung INR21700-50E, Digitec 12822871 | 4 gleiche Zellen aus derselben Lieferung. Bei Digitec ca. CHF 33/Stk; bei akkuteile.de deutlich günstiger. Alternative: Molicel P45B. [Link](https://www.digitec.ch/en/s1/product/samsung-battery-inr21700-50e-max-15a-1-pcs-21700-5000-mah-batteries-12822871) |
-| ☐ | 1× | Pololu D36V50F5 (Laden: 12–40 V → 5 V / 5,5 A) | Pololu #4091 | [Link](https://www.pololu.com/product/4091/specs) |
-| ☐ | 1× | Step-Down 6–36 V → 5 V 4 A (Akku → Servos, Licht, Verstärker) | Bastelgarage 424274, oder Pololu #3782 | Akku liefert 12–16,8 V, passt. |
-| ☐ | 1 Paar | GX16 4-polig: Einbaubuchse + Kabelstecker | Bastelgarage 420241 | Ladebuchse hinten (je 2 Kontakte parallel für Plus und Minus). |
+| ☐ | 1× | Geekworm X1206 V2.0 (UPS, 4 × 21700 parallel) | Geekworm X1206 V2.0 | Ersetzt das UPS HAT (E) (Entscheid 16.11.2026; das UPS HAT (E) bleibt in MoveEye unterstützt). Platine 108 × 85 mm unter dem Pi, Pogo-Pins, 5,1 V / 6 A gesamt, Akku-Chip I2C 0x36, DC-Eingang 9–18 V (V1.1 nur 5–6 V – V2.0 bestellen). Ohne Akkus geliefert. **Masse mit Akkus nachmessen – das Unterteil ist noch für das UPS HAT (E) gezeichnet.** [Link](https://geekworm.com/products/x1206) |
+| ☐ | 4× | Li-Ion-Akku 21700, Flat Top, ungeschützt | Samsung INR21700-50E, Digitec 12822871 | 4 gleiche Zellen aus derselben Lieferung, höchstens 70,5 × 21,1 mm, ohne Schutzplatine. Die Zellen liegen im X1206 **parallel**: nur mit gleicher Spannung (± 0,05 V) einsetzen. Bei Digitec ca. CHF 33/Stk; bei akkuteile.de deutlich günstiger. Alternative: Molicel P45B. [Link](https://www.digitec.ch/en/s1/product/samsung-battery-inr21700-50e-max-15a-1-pcs-21700-5000-mah-batteries-12822871) |
+| ☐ | 1× | Pololu D36V50F5 (nur ohne Akku: 12–40 V → 5 V / 5,5 A an den Pi) | Pololu #4091 | Mit dem X1206 nicht mehr nötig: geladen wird direkt am DC-Eingang des X1206. [Link](https://www.pololu.com/product/4091/specs) |
+| ☐ | 1× | Step-Down 6–36 V → 5 V 4 A (nur ohne Akku: Servos, Licht, Verstärker) | Bastelgarage 424274, oder Pololu #3782 | Mit dem X1206 entfällt er: die Zellen liefern nur 3,0–4,2 V (parallel), Servos, Licht und Verstärker hängen am 5,1-V-Ausgang des X1206. |
+| ☐ | 1 Paar | GX16 4-polig: Einbaubuchse + Kabelstecker | Bastelgarage 420241 | Ladebuchse hinten (je 2 Kontakte parallel für Plus und Minus). **Mit dem X1206: 9–18 V (12 V empfohlen) – 24-V-Quellen und Solarpanels direkt (Leerlauf über 18 V) passen nicht mehr.** Ohne Akku: 12–40 V. |
 | ☐ | 1× | Sicherungshalter fliegend + Sicherung 5 A | Mini-Kfz (ATM) 5 A | Direkt hinter der GX12-Buchse. |
-| ☐ | 1× | Flachsicherung 5 A mit Halter (2. Sicherung) | Mini-Kfz (ATM) 5 A | In der Akku-Leitung B+ des UPS HAT (E) zum Step-Down (Servos, Licht, Verstärker), nahe am HAT. Neu 01.11.2026. |
-| ☐ | 1× | USB-C-Stecker (male) zum Anlöten | USB-C Plug Breakout | Verbindet den D36V50F5 mit dem UPS HAT. Eine Variante mit 56-kΩ-Widerstand auf CC nehmen. |
+| ☐ | 1× | Flachsicherung 5 A mit Halter (2. Sicherung) | Mini-Kfz (ATM) 5 A | In der 5,1-V-Leitung vom XH-Ausgang des X1206 zu Servos (PCA9685 V+), Lampen-MOSFETs und PAM8403, nahe am X1206. Ersetzt die Sicherung in B+ des UPS HAT (E) (16.11.2026). |
+| ☐ | 1× | USB-C-Stecker (male) zum Anlöten | USB-C Plug Breakout | Nur ohne Akku: verbindet den D36V50F5 mit dem USB-C des Pi. Eine Variante mit 56-kΩ-Widerstand auf CC nehmen. |
+| ☐ | 1× | DC-Stecker 5,5/2,1 mm mit Kabel | – | Mit Akku: 12 V nach der Sicherung → DC-Eingang des X1206 (9–18 V, mind. 3 A). |
+| ☐ | 2× | Kabel XH2.54 2-polig | JST XH 2.54 | Mit Akku: 5,1-V-Ausgang und PSW des X1206 (Stecker am echten X1206 prüfen). |
+| ☐ | 1× | Taster 12 mm, IP67, Schliesser (Ein/Aus) | – | Mit Akku: an PSW des X1206, in der Reserve-Öffnung hinten statt Blindstopfen 17. **Provisorisch – erst nach dem Nachmessen festlegen.** |
 | ☐ | 1× | Lade-LED 3 mm + Vorwiderstand + Lichtleiter | LED 3 mm grün, PMMA-Rundstab 3 mm | Lichtleiter hinten neben der Ladebuchse. |
 
 ## Licht an der Gabel
@@ -95,7 +98,7 @@ Status aus der abhakbaren Liste: ✅ vorhanden · 🚚 bestellt · ☐ fehlt. Oh
 
 | Art.-Nr. | Artikel | Menge | CHF | Hinweis |
 |---|---|---|---|---|
-| 424020 | USV HAT (E) 6A 4x21700 Akkuboard | 1 | 36.90 | Waveshare 27966 |
+| 424020 | USV HAT (E) 6A 4x21700 Akkuboard | 1 | 36.90 | Waveshare 27966 – ersetzt durch den Geekworm X1206 V2.0 (bei Geekworm, ca. 53 USD + Versand) |
 | 420309 | TowerPro Micro Servo MG90S | 2 | 15.80 | nur falls nicht vorhanden |
 | 423487 | Raspberry Pi 5 Aktiv Kühler mit Lüfter | 1 | 10.90 | DFRobot, nicht der offizielle; passt |
 | 420448 | Micro PIR Bewegungsmelder (AS312) | 1 | 5.90 | Gehäuse v5.1 darauf angepasst (Linse Ø12,2) |
@@ -107,7 +110,7 @@ Status aus der abhakbaren Liste: ✅ vorhanden · 🚚 bestellt · ☐ fehlt. Oh
 | 421925 | Fermion 3W Mini Audio Stereo Verstärker | 1 | 9.90 | ist ein PAM8403 |
 | 420241 | GX16-4P Stecker mit Einbaustecker | 1 | 8.90 | Ladebuchse (Gehäuse v5.1 auf GX16 umgestellt) |
 | 420032 | Kabelverschraubung M12 / IP68 | 1 | 1.50 | Relais-Ausgang hinten |
-| 424274 | 6-36V → 5V 4A DC-DC Step-Down | 1 | 6.90 | ersetzt D36V28F5 (Servos/Licht) |
+| 424274 | 6-36V → 5V 4A DC-DC Step-Down | 1 | 6.90 | ersetzt D36V28F5 (Servos/Licht); mit dem X1206 nur noch ohne Akku |
 | 421203 | PETG Grau 1,75 mm 1 kg eSun | 1 | 13.90 |  |
 | 420416 | Elko 1000 µF 25 V | 1 | 0.95 | statt 470 µF |
 | 420548 | Lautsprecher 4 Ohm 3 W 40 mm | 1 | 8.90 | ausverkauft – vormerken |
@@ -117,8 +120,8 @@ Status aus der abhakbaren Liste: ✅ vorhanden · 🚚 bestellt · ☐ fehlt. Oh
 
 | Art.-Nr. | Artikel | Menge | Preis | Hinweis |
 |---|---|---|---|---|
-| POL4091 | Pololu D36V50F5 5V 5.5A Step-Down (berrybase.de) | 1 | € 34.95 | Ladewandler bis 40 V; in der Schweiz nicht gefunden |
-| 125190 | USB-C Kabel mit offenem Ende, 0,2 m (berrybase.ch) | 1 | 1.70 | Wandler → UPS HAT |
+| POL4091 | Pololu D36V50F5 5V 5.5A Step-Down (berrybase.de) | 1 | € 34.95 | Ladewandler bis 40 V; in der Schweiz nicht gefunden; mit dem X1206 nur noch ohne Akku |
+| 125190 | USB-C Kabel mit offenem Ende, 0,2 m (berrybase.ch) | 1 | 1.70 | Wandler → Pi (nur ohne Akku) |
 | RPI4-HDMI2 | Offizielles Micro-HDMI-Kabel 1 m (berrybase.ch) | 1 | 5.00 | Notfall |
 
 ### 3 · Digitec / Galaxus CHF 132.92

@@ -20,6 +20,8 @@ LID_SCREW_HOLE = 2.6                     # M3 selbstschneidend
 AX, AY = 40.0, 46.0                      # Pan-Achse
 
 # Akkublock UPS HAT (E) + 4 x 21700 (GESCHÄTZT – bitte nachmessen!)
+# X1206: nachmessen (Besitzer 16.11.2026: Geekworm X1206 V2.0 statt UPS HAT (E); Platine 108 x 85 mm, Höhe mit Akkus, Lage des
+# Akkuhalters und der Pi-Löcher unbekannt). Die Werte unten gelten noch für das UPS HAT (E) – das CAD bleibt bis zum Nachmessen.
 BAT_X0 = 73.0
 BAT_L, BAT_W, BAT_H = 90.0, 80.0, 26.0   # Länge (x), Breite (y), Höhe
 FENCE_H, FENCE_T = 8.0, 1.6

@@ -20,7 +20,8 @@ Der **Seitendeckel des Kopfs** bleibt selbstschneidend (M3 × 10 ISO 7380): sein
 
 ## Akkuklappe – warum unten
 
-Die vier Zellen 21700 hängen unter der Platine des UPS HAT (E), der Pi sitzt darauf (Annahme wie in v5.1/v5.2). Von unten
+Die vier Zellen 21700 hängen unter der Platine des UPS HAT (E), der Pi sitzt darauf (Annahme wie in v5.1/v5.2). Neu (16.11.2026):
+Akku Geekworm X1206 V2.0 – Platine 108 × 85 mm, Masse mit Akkus erst nachmessen, das Unterteil ist noch für das UPS HAT (E) gezeichnet. Von unten
 liegen die Zellen also frei: eine Öffnung im Boden unter dem Akku-Zaun reicht, um jede Zelle zur Feder zu drücken und
 herauszukippen – **Deckel, Kopf, Pi, Zwischenboden und Lautsprecher bleiben drin**. Eine seitliche Klappe ginge nicht: die
 Zellen liegen quer, ihre Halter-Enden stehen vor der Wand. Der Stativdom (x 62) und der Lautsprecher (x 30) liegen ausserhalb

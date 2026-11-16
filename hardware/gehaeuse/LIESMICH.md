@@ -1,7 +1,7 @@
 # MoveEye Gehäuse v5.1
 
 Das 3D-Gehäuse für MoveEye (früher MotionWatch): Raspberry Pi 5 mit Schwenk-/Neigekopf (2 × MG90S), Camera Module 3 NoIR,
-Thermal-90, UPS HAT (E) mit 4 × 21700, Lampen weiss + IR, Lautsprecher, PIR, Mikrofon. Stand 30.10.2026.
+Thermal-90, Akku Geekworm X1206 V2.0 mit 4 × 21700 (früher UPS HAT (E), siehe unten), Lampen weiss + IR, Lautsprecher, PIR, Mikrofon. Stand 30.10.2026.
 
 - **Unterteil:** 183 × 97 × 71,5 mm (mit Füssen 77,5 mm), **Gesamthöhe** ca. 161 mm, Kopf 58 × 58 mm
 - **Drucker:** Bambu Lab X2D, PETG, alle Teile ohne Stützen
@@ -36,6 +36,24 @@ Thermal-90, UPS HAT (E) mit 4 × 21700, Lampen weiss + IR, Lautsprecher, PIR, Mi
 
 Vor dem Druck des Unterteils bitte die Masse des **UPS HAT (E) mit Akkus** nachmessen (angenommen 90 × 80 × 26 mm,
 Parameter `BAT_L/BAT_W/BAT_H` und `PI_Z_ABOVE_FLOOR` oben in `Quellcode/v5.py`).
+
+## Akku: Geekworm X1206 V2.0 statt UPS HAT (E) (Entscheid des Besitzers 16.11.2026) – Gehäuse noch unverändert
+
+- **Akku-Platine:** Geekworm X1206 V2.0, 4 × 21700 **parallel** (3,0–4,2 V), unter dem Pi (Pogo-Pins), 5,1 V / 6 A gesamt,
+  Akku-Chip I2C **0x36**, GPIO 6 = Strom am Eingang, GPIO 16 = Laden ein / aus (gehören der Platine). Zellen Flat Top, ohne
+  Schutzplatine, höchstens 70,5 × 21,1 mm, aus einer Lieferung und beim Einsetzen mit gleicher Spannung. Das UPS HAT (E) bleibt
+  in MoveEye unterstützt (automatisch 0x2D → 0x36 → 0x42).
+- **Laden:** GX16 → Sicherung 5 A → DC-Eingang des X1206, **9–18 V** (12 V empfohlen). **24-V-Quellen und Solarpanels direkt
+  (Leerlauf über 18 V) passen nicht mehr** – Solar nur über einen Regler mit 12-V-Ausgang. D36V50F5 und USB-C-Ladeweg entfallen
+  (bleiben nur für die Variante ohne Akku).
+- **Servos, Licht, Verstärker:** 5,1-V-Ausgang XH des X1206 → Flachsicherung 5 A → PCA9685 V+, Lampen-MOSFETs, PAM8403. Step-Down
+  und Sicherung in B+ entfallen (die Zellen liefern nur 3,0–4,2 V).
+- **Ein / Aus:** Taster 12 mm an der Buchse PSW des X1206 in der Reserve-Öffnung hinten statt Blindstopfen 17 – **provisorisch**.
+- **Lade-LED und Taste «Schutz»:** neu GPIO 13 (Pin 33) und GPIO 12 (Pin 32); ältere Geräte behalten GPIO 6 / 16.
+- **Das CAD bleibt vorerst unverändert:** die Platine (108 × 85 mm) ist grösser als der Akku-Zaun (90 × 80) und stösst je nach
+  Lage an PCA9685, USB-Hub, Tasten, Relais-Buchse und Zwischenboden. Erst nach dem Nachmessen des echten X1206 mit Akkus
+  (Höhe, Lage des Akkuhalters, Löcher für den Pi, Buchsenseite, Jumper AUTO POWER ON) werden `v5.BAT_*`, Zaun, Akkuklappe und
+  Zwischenboden angepasst («X1206: nachmessen» in `Quellcode/v5.py`).
 
 ## Eine Quelle: neu bauen
 
