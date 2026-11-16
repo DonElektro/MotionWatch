@@ -867,6 +867,9 @@ def topo_im_browser(pg, base, name, bilder, mob, echt, ansicht=None):
     pg.goto(base + f"/karte?lat={la}&lon={lo}&z={z}")
     fertig = "() => window.KQMAP && KQMAP.isStyleLoaded() && KQMAP.loaded() && KQMAP.areTilesLoaded()"
     pg.wait_for_function(fertig, timeout=90000)
+    # the page as dark (an earlier context may have left another theme on the server: the header follows it)
+    pg.evaluate("() => { THEME = 'dark'; document.documentElement.classList.remove('sxnight'); applyTheme(); KQ.restyle(); }")
+    pg.wait_for_function(fertig, timeout=60000)
     pg.evaluate("() => document.querySelectorAll('.maplibregl-marker').forEach(m => m.remove())")
     pg.wait_for_timeout(700)
     f0 = pg.evaluate("() => KQ.file()")
@@ -898,6 +901,7 @@ def topo_im_browser(pg, base, name, bilder, mob, echt, ansicht=None):
     pg.screenshot(path=os.path.join(bilder, f"topo_hell_{name}.png"))
     ok(pg.evaluate("() => localStorage.getItem('mw-kq-style')") == "topo", f"{name}: Wahl im Browser gemerkt")
     pg.evaluate("() => { toggleTheme(); toggleTheme(); }")  # light -> red -> dark (as before)
+    pg.wait_for_timeout(1500)                              # let a saved theme reach the server before the context closes
     ok(not errs, f"{name}: keine JS-Fehler beim Wechsel" + (": " + " | ".join(errs[:3]) if errs else ""))
 
 
@@ -998,7 +1002,7 @@ def teil_echt(datei, aus, bilder, browser, ausschnitt=""):
     os.makedirs(os.path.join(home, "karte", "web"))
     shutil.move(sq, os.path.join(home, "karte", "orte.sqlite"))
     ns["DATA_DIR"] = home
-    ns["kq_installed"] = lambda: True
+    ns["kq_installed"] = ns["kq_on"] = lambda: True
     S = ns["kq_search"]
     t0 = time.time()
     s = S("Seon")
