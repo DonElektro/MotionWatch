@@ -1,39 +1,39 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-16 00:43",
+ "generated": "2026-11-16 01:58",
  "versions": [
   {
    "version": "4.10.0",
    "file": "webcam_bewegung_4_10_0.py",
    "url": "",
-   "sha256": "105a3fdc18ec9e8880a2f1e5482c33b24c53d3caa9f12d2ee3a5224edcf7a5df",
-   "date": "2026-11-16 00:43",
-   "notes": "💬 Blinki fragen: Blinki beantwortet Fragen zur Bedienung und erklärt Fehler – offline auf dem Gerät (Sprachmodell auf Knopfdruck laden), wahlweise mit eigener Cloud; Fragen auch gesprochen (Handy 🎙, am Gerät nach 2× klatschen, Knopf oder QR-Karte – ab Werk aus)",
-   "size": 4023668,
-   "sig": "6f404afb50a925dccec9be7ac95496d0d647271a22342a869ade9379bcc3d85c2fecf4361300c76bf4b639393354a4bb8955d379f140b9887803cc6fbeccb000",
+   "sha256": "28c87c3996911ea7a83f076d7f3175a80907dc617e87370442e1986d7ea5b1ef",
+   "date": "2026-11-16 01:58",
+   "notes": "💬 Blinki fragen: Blinki beantwortet Fragen zur Bedienung und erklärt Fehler – offline auf dem Gerät (Sprachmodell auf Knopfdruck laden), wahlweise mit eigener Cloud; Fragen auch gesprochen (Handy 🎙, am Gerät nach 2× klatschen, Knopf oder QR-Karte – ab Werk aus) · 📌 Eigene Orte auf der Offline-Karte (setzen, ziehen, bearbeiten; gespeichert im Digitalen Rucksack, GPX / KML / GeoJSON) · 📍 Markier-Karte (experimentell, ab Werk aus): eine gedruckte Karte vor die Kopf-Kamera halten, der Kopf folgt ihr und merkt sich Punkte",
+   "size": 4024875,
+   "sig": "42d71804af5016402db1f0873595bb0544785c07d24fc84b98314cf71f358a79cb1c0605d1371a2af0b776fa9b4840cd592269bac45326978bd24d21329bb805",
    "data": {
     "file": "moveeye_daten_4_10_0.zip",
     "url": "",
-    "sha256": "c31b540f8be2e6db590fb40593c0710c084d1728b22d6b5d1c061ec654f2fbc9",
-    "size": 13993088,
-    "sig": "8c89b4c1299081c10d602587f5e8635f1b6346d4ce3d1f81b16a34b47f31b42a80953e9c93e11cb91880db5d2003330dc25e28dbc360e5eb2ec5a31140d0f406"
+    "sha256": "97814075cadc8ad92c85dfeae94e2ca54099f1ff0a48388e4cae07eddddd875d",
+    "size": 14159525,
+    "sig": "9440b47a651ba6896525762f6fd2c54ba8bddcb06b443fe27e5c902a5957be0376079b0096f345ab378c3ddb144bf643a8ad05c96aabaafbb8348248428b6405"
    }
   },
   {
    "version": "4.9.0",
    "file": "webcam_bewegung_4_9_0.py",
    "url": "",
-   "sha256": "d2b17e3d80291f273ad0bba64f333451d153841315a90672089a0c2f4dc5c970",
-   "date": "2026-11-16 00:21",
+   "sha256": "eba8cef06b86f2eacf7d189740a952c36af097ddb8e117f9a50f8ca01b891a20",
+   "date": "2026-11-16 01:45",
    "notes": "Digitaler Rucksack bei Import und Export: überall eine Datei aus dem Rucksack wählen oder einen Export direkt dort ablegen · Mein Handy-Hotspot bevorzugen: ein gespeichertes Netz markieren, MoveEye wechselt hin, sobald es da ist (Schalter, ab Werk aus) · 📖 Vorlesen und Datei-Ansicht im Digitalen Rucksack: Geschichten (.txt, .md, .epub, .docx, .pdf) mit der Piper-Stimme vorlesen, mit Lesezeichen",
    "size": 4019435,
-   "sig": "abf02530506bc67b7e9386a8823d98a4389c3a49e8326a0abbfe2c4cb457e92cf473ca7a2638902320f476c6b3787e8b442cf4307c06ce65f0db37b6fbaf6204",
+   "sig": "e53228c6fbae55995bb7152a4bd8c9c0e6d75afa63d29a4e6facd94d8124205a2d9c870c0012dc1195ff579bbf7a180d21ca0b4e2919ca4caae7bae03beaa307",
    "data": {
     "file": "moveeye_daten_4_9_0.zip",
     "url": "",
-    "sha256": "6c5e582bb4bc863346e7ba09a21a2c3eedb9445a36d8483573a41f3ad44f1ba0",
-    "size": 13784446,
-    "sig": "11a8cfef6a2c49640740803f8c28affcafec08e2b84f98f1284873d8c38ed7772047cdf1b42ee7f73a8696f6ee8e1614982a0568183bd238db7559bf8c87e707"
+    "sha256": "8361333f0fe863f2fbd855e0853be107bb1ef451c72a17e9e7ba23e3b11924ba",
+    "size": 13784611,
+    "sig": "5faf9e4b288ad1e12eca17c984b75d2b50079f18768e695efedeb94fe903e9922affda64051c6f34dce394c942f57865d7fc571af2eafc3c7f402a5564f8c902"
    }
   },
   {
@@ -41,7 +41,7 @@
    "file": "webcam_bewegung_4_8_0.py",
    "url": "",
    "sha256": "fab8aafffe8a17dac270925b1e904580fe8463459500dee630fd06ec02f2a98b",
-   "date": "2026-11-15 23:35",
+   "date": "2026-11-16 01:46",
    "notes": "Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt hoch) · Spielesammlung GS-1.25: «Verschollen im Bergtal» zeigt den Fortschritt pro Kapitel (oben und im Menü) und läuft bis 16× schnell; in «Gipfeltreffen» trifft Antippen am Handy wieder die richtige Stelle",
    "size": 3957146,
    "sig": "c1c73cddd00bf6615a9df3ae1295343647e3ace0e5e808137c2e78775fffe71b7a348876e26b73ae31f10e35f620da17ca715e1085aac8e7ea157cbfffe20e0b",

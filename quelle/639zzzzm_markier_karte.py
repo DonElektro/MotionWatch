@@ -43,7 +43,8 @@
 # Datei). Ohne ZIP gibt es die Markier-Karte nicht - sie gehört nicht zu Start, Schutz, Alarm, Update oder Reparatur (sie
 # umhüllt nur kopf_claims / kopf_track_blocked / teach_list / teach_edit / qrk_seen / walktest_draw / smalltv_routes; ohne
 # sie laufen diese wie vorher). Die ZIP ist über ZD_SHA256 (Teil 012) mit signiert.
-if "zd_exec" not in globals():
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
     def zd_exec(src, name):
         """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
         012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +

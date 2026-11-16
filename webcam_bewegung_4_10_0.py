@@ -25,7 +25,7 @@ Features
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
   * 4.10.0: 💬 Blinki fragen: Blinki beantwortet Fragen zur Bedienung und erklärt Fehler – offline auf dem Gerät (Sprachmodell
     auf Knopfdruck laden), wahlweise mit eigener Cloud; Fragen auch gesprochen (Handy 🎙, am Gerät nach 2× klatschen, Knopf oder
-    QR-Karte – ab Werk aus)
+    QR-Karte – ab Werk aus) · 📌 Eigene Orte auf der Offline-Karte (setzen, ziehen, bearbeiten; gespeichert im Digitalen Rucksack, GPX / KML / GeoJSON) · 📍 Markier-Karte (experimentell, ab Werk aus): eine gedruckte Karte vor die Kopf-Kamera halten, der Kopf folgt ihr und merkt sich Punkte
   * 4.9.0: Digitaler Rucksack bei Import und Export: überall eine Datei aus dem Rucksack wählen oder einen Export direkt dort
     ablegen · Mein Handy-Hotspot bevorzugen: ein gespeichertes Netz markieren, MoveEye wechselt hin, sobald es da ist (Schalter, ab Werk aus) · 📖 Vorlesen und Datei-Ansicht im Digitalen Rucksack: Geschichten (.txt, .md, .epub, .docx, .pdf) mit der Piper-Stimme vorlesen, mit Lesezeichen
   * 4.8.0: Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt
@@ -285,7 +285,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_10_0.zip"
-ZD_SHA256 = "c31b540f8be2e6db590fb40593c0710c084d1728b22d6b5d1c061ec654f2fbc9"
+ZD_SHA256 = "97814075cadc8ad92c85dfeae94e2ca54099f1ff0a48388e4cae07eddddd875d"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -98532,8 +98532,9 @@ def _kt_coords(text, sep):
 	return out
 
 
-def kt_parse(data, fname=""):
+def kt_parse(data, fname="", need_route=True):
 	"""
+
 """
 	if len(data)>KT_IMPORT_MAX:
 		raise KTError("The file is too big.")
@@ -98625,8 +98626,10 @@ def kt_parse(data, fname=""):
 	except(_ET.ParseError,ValueError,LookupError):
 		raise KTError("This file could not be read.")
 	pts=[p for s in segs for p in s]or rte
+	if len(pts)<2 and(need_route or not wps):
+		raise KTError("No route was found in this file."if need_route else "No places were found in this file.")
 	if len(pts)<2:
-		raise KTError("No route was found in this file.")
+		pts=[]
 	thinned=False
 	if len(pts)>KT_MAX_PTS:
 		step=(len(pts)+KT_MAX_PTS-1)//KT_MAX_PTS
@@ -114133,6 +114136,118 @@ def blinki_clap_listens():
 	return False
 BLINKI_SPRACHE_PY = _zd('639zzzzk_blinki_z_sprache/BLINKI_SPRACHE_PY', "")
 zd_exec(BLINKI_SPRACHE_PY, '639zzzzk_blinki_z_sprache.py')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if "zd_exec" not in globals():
+
+	def zd_exec(src,name):
+		"""
+
+"""
+		if not src:
+			return False
+		import linecache
+		linecache.cache[name]=(len(src),None,src.splitlines(True),name)
+		exec(compile(src,name,"exec"),globals())
+		return True
+
+
+MK_PY = _zd('639zzzzm_markier_karte/MK_PY', "")
+zd_exec(MK_PY and "\n" * 58 + MK_PY, "639zzzzm_markier_karte.py")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if "zd_exec" not in globals():
+
+	def zd_exec(src,name):
+		"""
+
+"""
+		if not src:
+			return False
+		import linecache
+		linecache.cache[name]=(len(src),None,src.splitlines(True),name)
+		exec(compile(src,name,"exec"),globals())
+		return True
+
+
+EO_OFF_KEY = "The file exchange is switched off."
+EO_PY = _zd('639zzzzo_eigene_orte/EO_PY', "")
+zd_exec(EO_PY, "639zzzzo_eigene_orte.py")
 
 
 

@@ -34,7 +34,8 @@
 # Der Programmtext dieses Teils steht in EINEM Literal (Koordinator 16.11.2026: Hauptdatei klein, wie «Blinki fragen» 639zzzzk):
 # werkzeuge/bauen.py legt es in die Zusatz-ZIP, beim Start läuft es hier an seinem Platz (zd_exec). Ohne ZIP gibt es «Eigene Orte»
 # nicht - es gehört nicht zu Start, Schutz, Alarm, Update oder Reparatur. Die ZIP ist über ZD_SHA256 (Teil 012) mit signiert.
-if "zd_exec" not in globals():
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
     def zd_exec(src, name):
         """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
         012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
@@ -47,6 +48,7 @@ if "zd_exec" not in globals():
         return True
 
 
+EO_OFF_KEY = "The file exchange is switched off."             # the key of 639zzc (shown as «Digitaler Rucksack …», 639zzy)
 EO_PY = r'''EO_FOLDER = "🗺️ Karte"
 EO_FILE = "Meine Orte.geojson"
 EO_EXT = ("gpx", "kml", "geojson")
@@ -318,7 +320,7 @@ def _eo_load_own(root, m):
 def _eo_save(root, m, data, who, lang=None):
     """write the bytes of «Meine Orte» as a new version of the backpack file (the last TZ_HIST stay) or as a new file; -> meta"""
     if not CFG.get("tausch_on", True):
-        raise EOError("The file exchange is switched off.")
+        raise EOError(EO_OFF_KEY)
     if tausch_root()[2] == "ro":
         raise EOError("The memory card is write-protected (overlay) - files would be lost at the next restart. Use a USB stick.")
     err = _tz_extra_room(len(data), "admin", lang)
@@ -445,7 +447,7 @@ def eo_action(who, d, lang=None):
             return True, "", {}, 200
         if a == "prep":                                     # before a photo is uploaded: the folder «🗺️ Karte»
             if not CFG.get("tausch_on", True):
-                raise EOError("The file exchange is switched off.")
+                raise EOError(EO_OFF_KEY)
             with TZ["lock"]:
                 return True, "", {"folder": eo_folder(root)}, 200
         with TZ["lock"]:
