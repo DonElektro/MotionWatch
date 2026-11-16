@@ -586,6 +586,18 @@ def basis_holen(aus, basis=None):
 
 
 # ---- pins --------------------------------------------------------------------------------------------------------------------------
+def topo_info(v):
+    """one value per step of topo.json for the INFO line: the size of the file, for «wege» the paths per colour (that step
+    writes no file of its own - it was «null» in the run of karten-2)"""
+    if not isinstance(v, dict):
+        return v
+    if "groesse" in v:
+        return v["groesse"]
+    if "wege" in v:
+        return {k: v.get(k) for k in ("wege", "g1", "g2", "g3", "gletscher")}
+    return v.get("sekunden")
+
+
 def pins(aus):
     zeilen = []
     tg = tags()
@@ -614,7 +626,7 @@ def pins(aus):
     tj = os.path.join(aus, "topo.json")
     if os.path.isfile(tj):
         t = json.load(open(tj))
-        zeilen.append("INFO topo=%s" % json.dumps({k: (v.get("groesse") if isinstance(v, dict) else v) for k, v in sorted(t.items())}, sort_keys=True, separators=(",", ":")))
+        zeilen.append("INFO topo=%s" % json.dumps({k: topo_info(v) for k, v in sorted(t.items())}, sort_keys=True, separators=(",", ":")))
     t = "\n".join(zeilen) + "\n"
     with open(os.path.join(aus, "pins.txt"), "w") as f:
         f.write(t)
