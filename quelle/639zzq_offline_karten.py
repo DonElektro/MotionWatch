@@ -30,27 +30,56 @@
 #     nichts; der Selbsttest prüft jeden Haken), die Rechte über VIEW_GET (ansehen / suchen für alle Angemeldeten, laden
 #     und entfernen nur der Admin).
 #   * Quellenangabe «© OpenStreetMap-Mitwirkende» sichtbar auf jeder Karte (eigene Zeile, nicht die einklappbare von MapLibre).
+# «🗺️ Topo-Karte» (Entscheid des Besitzers 15.11.2026, Option c der Vorschau): die Karte von heute + eigene Höhenlinien und
+# Relief aus swissALTI3D (10 m, © swisstopo) + Wanderwege gelb / rot / blau aus OpenStreetMap (nicht das offizielle Netz).
+#   * Release «karten-2»: karte-web-2.zip (vier Stile: Standard / Topo, je hell / dunkel – werkzeuge/karten/stil.py),
+#     topo-ch-2.pmtiles (Vektor: Ebenen «contour» mit ele / lvl / gl=1 auf Gletschern und «wege» mit g 1 / 2 / 3) und
+#     relief-ch-2.pmtiles (Raster: Höhen als terrarium-WebP z8–13, MapLibre schattiert selbst). Karte und Ortssuche bleiben am
+#     Release «karten-1» (KQ_FILE_TAG): ein Gerät, das sie hat, lädt nur das Neue (rund 0.8 GB), die alten Dateien werden in den
+#     neuen Ordner verlinkt (gleiche Prüfsumme, nichts doppelt auf der Karte). Bis dahin bleibt die alte Karte an (kq_on).
+#   * Kacheln: /karte/t/<sha12>/<schicht>/<z>/<x>/<y>.<mvt|webp> (Schichten ch / topo / relief, der Anfang der Prüfsumme statt
+#     des Tags: der Browser-Cache gilt pro Datei); die alte Adresse /karte/t/<tag>/<z>/<x>/<y>.mvt bleibt für die Basiskarte.
+#   * Stil: Schalter «Standard / Topo» oben links auf /karte (pro Browser gemerkt, mw-kq-style), Vorgabe für alle in den
+#     Einstellungen → Standort «Topo-Karte» (map_topo, Web und Fenster, Standard an). Hell / dunkel folgt dem Aussehen der Seite
+#     (Klasse «light» am body); ein Wechsel stellt jede Karte der Seite um und behält eigene Ebenen (Touren 639zzx).
+#   * Quellenangabe der Topo-Karte «© OpenStreetMap-Mitwirkende · © swisstopo»; unter der grossen Karte die Farben der Wege und
+#     «aus OpenStreetMap – nicht das offizielle Netz».
 # Selbsttest kq_selftest; Tests werkzeuge/karten_test.py (Laden gut / falsch, Platz, Byte-Bereiche, Seiten im Browser in
-# iPhone-Breite ohne Anfrage nach aussen, Suche, Standort per Tipp, Quellenangabe, Rechte; --echt mit den Release-Dateien).
+# iPhone-Breite ohne Anfrage nach aussen, Suche, Standort per Tipp, Quellenangabe, Rechte, Stile, Ergänzen von karten-1;
+# --echt mit den Release-Dateien).
 # ----------------------------------------------------------------------------
 import struct as _kq_struct
 from bisect import bisect_right as _kq_bisect
 from collections import OrderedDict as _KqOD
 
-KQ_TAG = "karten-1"
+KQ_TAG = "karten-2"
 KQ_MAXZOOM = 15
-KQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + KQ_TAG + "/"}   # Tests: lokaler Server
+KQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"}   # + <tag>/<name>; Tests: lokaler Server
+KQ_FILE_TAG = {"orte": "karten-1", "tiles": "karten-1"}   # Dateien, die an einem früheren Release bleiben (paket.py BASIS)
 # Werte aus werkzeuge/karten/paket.py (pins.txt des Workflows «Offline-Karten»); size 0 = noch nicht freigegeben
 KQ_FILES = {
     "tiles": {"name": "karte-ch-1.pmtiles", "size": 655187450, "sha256": "ea71c54bcf1c91585106a6d3dcb7d5757f219761f3c0ebbbf54c5df487fde185", "unpacked": 0},
-    "web": {"name": "karte-web-1.zip", "size": 1434333, "sha256": "31f13e157ba0918d71df97b99f1cfdf70a1ad1a3560c91c16d83935e35cfdfa2", "unpacked": 2350250},
+    "web": {"name": "karte-web-2.zip", "size": 0, "sha256": "", "unpacked": 0},
     "orte": {"name": "orte-ch-1.sqlite.gz", "size": 11211798, "sha256": "1e9f1e574a92a324b789768fb18c1deff2bf3716942d725d0dc1d3999330eb00", "unpacked": 28307456},
+    "topo": {"name": "topo-ch-2.pmtiles", "size": 0, "sha256": "", "unpacked": 0},
+    "relief": {"name": "relief-ch-2.pmtiles", "size": 0, "sha256": "", "unpacked": 0},
 }
-KQ_MAX = {"tiles": 2000 * 1000 * 1000, "web": 60 * 1000 * 1000, "orte": 300 * 1000 * 1000}   # harte Obergrenzen (auch entpackt)
-KQ_NAME_RE = {"tiles": r"karte-ch-\d{1,3}\.pmtiles", "web": r"karte-web-\d{1,3}\.zip", "orte": r"orte-ch-\d{1,3}\.sqlite\.gz"}
+KQ_MAX = {"tiles": 2000 * 1000 * 1000, "web": 60 * 1000 * 1000, "orte": 300 * 1000 * 1000, "topo": 2000 * 1000 * 1000,
+          "relief": 2000 * 1000 * 1000}                     # harte Obergrenzen (auch entpackt; GitHub: unter 2 GiB pro Datei)
+KQ_NAME_RE = {"tiles": r"karte-ch-\d{1,3}\.pmtiles", "web": r"karte-web-\d{1,3}\.zip", "orte": r"orte-ch-\d{1,3}\.sqlite\.gz",
+              "topo": r"topo-ch-\d{1,3}\.pmtiles", "relief": r"relief-ch-\d{1,3}\.pmtiles"}
+KQ_DISK = {"tiles": "ch.pmtiles", "topo": "topo.pmtiles", "relief": "relief.pmtiles", "orte": "orte.sqlite", "web": "web"}   # in DATA_DIR/karte
+KQ_LAYER = {"ch": "tiles", "topo": "topo", "relief": "relief"}       # /karte/t/<key>/<schicht>/… -> Datei
+KQ_TTYPE = {"tiles": (1,), "topo": (1,), "relief": (2, 4)}          # PMTiles-Kacheltyp: 1 MVT, 2 PNG, 4 WebP
+KQ_MIME = {1: "application/x-protobuf", 2: "image/png", 3: "image/jpeg", 4: "image/webp"}
+KQ_EXT = {1: "mvt", 2: "png", 3: "jpg", 4: "webp"}
+KQ_ORDER = ("web", "orte", "topo", "relief", "tiles")          # laden: klein zuerst (eine kaputte Verbindung fällt früh auf)
+KQ_STYLES = ("style.json", "style_dark.json", "style_topo.json", "style_topo_dark.json")
 KQ_LEAF_CACHE = 48
 KQ_DL = {"running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
-KQ_RT = {"pm": None, "db": None, "lock": threading.Lock(), "ok_t": 0.0, "ok": False}
+KQ_RT = {"pm": {}, "db": None, "lock": threading.Lock(), "ok_t": 0.0, "have": {}}
+for _k, _v in {"map_topo": True}.items():
+    CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)   # 636 took its copy before this part
 
 
 def kq_dir():
@@ -61,50 +90,101 @@ def kq_dl_dir():
     return os.path.join(DATA_DIR, "karte_dl")
 
 
+def kq_tag(r_):
+    return KQ_FILE_TAG.get(r_, KQ_TAG)
+
+
+def kq_url(r_):
+    return KQ_BASE["url"] + kq_tag(r_) + "/" + KQ_FILES[r_]["name"]
+
+
+def kq_key(r_):
+    """the part of the tile address that changes with the file (browser cache per file)"""
+    return (KQ_FILES[r_].get("sha256") or "0" * 12)[:12]
+
+
 def kq_pinned():
     """every file with exact size, sha256 and name - nothing else is ever downloaded"""
     for r_, f in KQ_FILES.items():
         if not (isinstance(f.get("size"), int) and 0 < f["size"] <= KQ_MAX[r_] and re.fullmatch(r"[0-9a-f]{64}", str(f.get("sha256") or ""))
-                and isinstance(f.get("unpacked"), int) and 0 <= f["unpacked"] <= KQ_MAX[r_] and re.fullmatch(KQ_NAME_RE[r_], f.get("name") or "")):
+                and isinstance(f.get("unpacked"), int) and 0 <= f["unpacked"] <= KQ_MAX[r_] and re.fullmatch(KQ_NAME_RE[r_], f.get("name") or "")
+                and re.fullmatch(r"karten-\d{1,3}", kq_tag(r_)) and f["name"].split("-")[-1].split(".")[0] == kq_tag(r_).split("-")[1]):
             return False
     return KQ_FILES["web"]["unpacked"] > 0 and KQ_FILES["orte"]["unpacked"] > 0
 
 
 def kq_total():
-    return sum(f["size"] for f in KQ_FILES.values())
+    """bytes still to download (a device with the files of karten-1 loads only what is new)"""
+    have = kq_have()
+    return sum(f["size"] for r_, f in KQ_FILES.items() if not have.get(r_))
 
 
 def kq_need_disk():
-    """bytes on the card after the install: the map file, the unpacked web package and the unpacked place index"""
-    return KQ_FILES["tiles"]["size"] + KQ_FILES["web"]["unpacked"] + KQ_FILES["orte"]["unpacked"]
+    """bytes on the card after the install: the map files, the unpacked web package and the unpacked place index"""
+    return sum(f["size"] for r_, f in KQ_FILES.items() if r_ not in ("web", "orte")) + KQ_FILES["web"]["unpacked"] + KQ_FILES["orte"]["unpacked"]
+
+
+def kq_have():
+    """{role: True} for every file that is installed with exactly the pinned checksum (marker karte.ok of the download: tag +
+    every sha256, the file still there with its size) - checked at most every 2 s"""
+    now = time.time()
+    if now - KQ_RT["ok_t"] < 2.0:
+        return KQ_RT["have"]
+    have = {}
+    d_ = kq_dir()
+    try:
+        with open(os.path.join(d_, "karte.ok"), encoding="utf-8") as fh:
+            m = json.load(fh)
+        sh = m.get("sha256") if isinstance(m, dict) else None
+        sh = sh if isinstance(sh, dict) else {}
+        for r_, f in KQ_FILES.items():
+            if not f.get("sha256") or sh.get(r_) != f["sha256"]:
+                continue
+            p_ = os.path.join(d_, KQ_DISK[r_])
+            if r_ == "web":
+                ok = all(os.path.isfile(os.path.join(p_, x)) for x in ("maplibre-gl.js", "maplibre-gl.css", "style.json"))
+            elif r_ == "orte":
+                ok = os.path.isfile(p_) and os.path.getsize(p_) == f["unpacked"]
+            else:
+                ok = os.path.isfile(p_) and os.path.getsize(p_) == f["size"]
+            if ok:
+                have[r_] = True
+    except (OSError, ValueError):
+        have = {}
+    KQ_RT["have"], KQ_RT["ok_t"] = have, now
+    return have
 
 
 def kq_installed():
-    """checked once after the download (marker karte.ok: tag + every sha256), the files still there with their size"""
-    now = time.time()
-    if now - KQ_RT["ok_t"] < 2.0:
-        return KQ_RT["ok"]
-    ok = False
-    if kq_pinned():
-        d_ = kq_dir()
-        try:
-            with open(os.path.join(d_, "karte.ok"), encoding="utf-8") as fh:
-                m = json.load(fh)
-            ok = (isinstance(m, dict) and m.get("tag") == KQ_TAG and m.get("sha256") == {r_: f["sha256"] for r_, f in KQ_FILES.items()}
-                  and os.path.getsize(os.path.join(d_, "ch.pmtiles")) == KQ_FILES["tiles"]["size"]
-                  and os.path.getsize(os.path.join(d_, "orte.sqlite")) == KQ_FILES["orte"]["unpacked"]
-                  and all(os.path.isfile(os.path.join(d_, "web", f)) for f in ("maplibre-gl.js", "maplibre-gl.css", "style.json")))
-        except (OSError, ValueError):
-            ok = False
-    KQ_RT["ok"], KQ_RT["ok_t"] = ok, now
-    return ok
+    """everything of KQ_TAG is there (also the topo map)"""
+    return kq_pinned() and all(kq_have().get(r_) for r_ in KQ_FILES)
+
+
+def kq_on():
+    """the map can be shown: the base map and the place search with their pinned checksum, a web package (also the older one
+    of karten-1 until the topo map is added)"""
+    h_ = kq_have()
+    return bool(h_.get("tiles") and h_.get("orte") and os.path.isfile(os.path.join(kq_dir(), "web", "style.json"))
+                and os.path.isfile(os.path.join(kq_dir(), "web", "maplibre-gl.js")))
+
+
+def kq_styles():
+    """the styles of the installed web package (karte-web-1 had only style.json)"""
+    if not kq_on():
+        return []
+    return [s_ for s_ in KQ_STYLES if os.path.isfile(os.path.join(kq_dir(), "web", s_))]
+
+
+def kq_topo_on():
+    h_ = kq_have()
+    return bool(kq_on() and h_.get("topo") and h_.get("relief") and "style_topo.json" in kq_styles())
 
 
 def kq_close():
     with KQ_RT["lock"]:
-        for k in ("pm", "db"):
-            o = KQ_RT[k]
-            KQ_RT[k] = None
+        pms, KQ_RT["pm"] = KQ_RT["pm"], {}
+        db_, KQ_RT["db"] = KQ_RT["db"], None
+        for o in list(pms.values()) + [db_]:
             try:
                 if o is not None:
                     o.close()
@@ -148,7 +228,7 @@ class KqPMTiles:
              self.data_len, self.n_addr, self.n_entries, self.n_contents) = _kq_struct.unpack_from("<11Q", h, 8)
             self.clustered, self.icomp, self.tcomp, self.ttype, self.minz, self.maxz = _kq_struct.unpack_from("<6B", h, 96)
             self.bounds = [v / 1e7 for v in _kq_struct.unpack_from("<4i", h, 102)]
-            if self.icomp not in (1, 2) or self.ttype != 1 or self.root_len > 1 << 20:
+            if self.icomp not in (1, 2) or self.ttype not in KQ_MIME or self.root_len > 1 << 20:
                 raise ValueError("unsupported PMTiles (compression %d, tile type %d)" % (self.icomp, self.ttype))
             self.size = os.fstat(self.fd).st_size
             self.leaves = _KqOD()
@@ -224,7 +304,7 @@ class KqPMTiles:
         return d
 
     def tile(self, z, x, y):
-        """the bytes of the tile as stored (gzip for the Protomaps builds) or None"""
+        """the bytes of the tile as stored (gzip for the vector tiles, WebP / PNG as they are) or None"""
         if z < self.minz or z > self.maxz:
             return None
         tid = kq_tileid(z, x, y)
@@ -242,11 +322,12 @@ class KqPMTiles:
         return None
 
 
-def kq_pm():
+def kq_pm(r_="tiles"):
     with KQ_RT["lock"]:
-        if KQ_RT["pm"] is None:
-            KQ_RT["pm"] = KqPMTiles(os.path.join(kq_dir(), "ch.pmtiles"))
-        return KQ_RT["pm"]
+        pm = KQ_RT["pm"].get(r_)
+        if pm is None:
+            pm = KQ_RT["pm"][r_] = KqPMTiles(os.path.join(kq_dir(), KQ_DISK[r_]))
+        return pm
 
 
 # ---- the place search (SQLite, read-only) ---------------------------------------------------------------------------------------
@@ -284,7 +365,7 @@ def kq_search(q, n=8):
     """[{name, also, kind, lat, lon, gem, kt, ele, z}] best first: exact name, then the beginning of the name, then a later
     word; within that the importance (city > town > village …, population, height, area)"""
     k = kq_norm(q)[:60]
-    if len(k) < 2 or not kq_installed():
+    if len(k) < 2 or not kq_on():
         return []
     try:
         n = max(1, min(20, int(n or 8)))
@@ -374,18 +455,32 @@ def kq_free():
 
 
 def kq_space_ok():
-    """enough free space on the memory card for what is still to load + the unpacked files + the reserve"""
+    """enough free space on the memory card for what is still to load + the unpacked files + the reserve (files that stay
+    from an earlier install are linked, they need no room)"""
     dd = kq_dl_dir()
-    have = 0
-    for f in KQ_FILES.values():
+    have, h_ = 0, kq_have()
+    for r_, f in KQ_FILES.items():
+        if h_.get(r_):
+            continue
         for p in (os.path.join(dd, f["name"]), os.path.join(dd, f["name"]) + ".part"):
             if os.path.isfile(p):
                 have += os.path.getsize(p)
-    return kq_free() - (kq_total() - have + KQ_FILES["web"]["unpacked"] + KQ_FILES["orte"]["unpacked"]) >= bio_free_need()
+    unp = sum(KQ_FILES[r_]["unpacked"] for r_ in ("web", "orte") if not h_.get(r_))
+    return kq_free() - (kq_total() - have + unp) >= bio_free_need()
+
+
+def _kq_keep(src, dst, moved):
+    """a file of the old install into the new folder: a hard link (no room needed, the old map stays until the switch),
+    else moved (remembered: back on an error)"""
+    try:
+        os.link(src, dst)
+    except OSError:
+        os.replace(src, dst)
+        moved.append((dst, src))
 
 
 def kq_download(wait=False):
-    """load the three files, check them, switch the map on (background); (ok, error)"""
+    """load what is missing, check it, switch the map on (background); (ok, error)"""
     if not kq_pinned():
         return False, "comes with an update"
     if KQ_DL["running"]:
@@ -397,25 +492,36 @@ def kq_download(wait=False):
     KQ_DL.update(running=True, got=0, total=kq_total(), msg="", stop=False, done=False, phase="load")
 
     def work():
-        dd, tmp = kq_dl_dir(), kq_dir() + ".new"
+        dd, tmp, old = kq_dl_dir(), kq_dir() + ".new", kq_dir()
+        have = dict(kq_have())
+        moved = []
         try:
             os.makedirs(dd, exist_ok=True)
-            for r_ in ("web", "orte", "tiles"):                  # small first: a broken connection is found early
+            for r_ in KQ_ORDER:                                   # small first: a broken connection is found early
+                if have.get(r_):
+                    continue
                 f = KQ_FILES[r_]
                 dest = os.path.join(dd, f["name"])
                 if os.path.isfile(dest) and piper_check_file(dest, f)[0]:
                     KQ_DL["got"] += f["size"]
                 else:
-                    bio_fetch(KQ_BASE["url"] + f["name"], dest, f, KQ_DL)    # 639zzd: resume, exact size + sha256 before use
+                    bio_fetch(kq_url(r_), dest, f, KQ_DL)          # 639zzd: resume, exact size + sha256 before use
             KQ_DL["phase"] = "unpack"
             shutil.rmtree(tmp, ignore_errors=True)
-            os.makedirs(os.path.join(tmp, "web"))
-            _kq_unzip(os.path.join(dd, KQ_FILES["web"]["name"]), os.path.join(tmp, "web"), KQ_FILES["web"]["unpacked"])
+            os.makedirs(tmp)
+            if have.get("web"):
+                shutil.copytree(os.path.join(old, "web"), os.path.join(tmp, "web"))
+            else:
+                os.makedirs(os.path.join(tmp, "web"))
+                _kq_unzip(os.path.join(dd, KQ_FILES["web"]["name"]), os.path.join(tmp, "web"), KQ_FILES["web"]["unpacked"])
             with open(os.path.join(tmp, "web", "karte.json"), encoding="utf-8") as fh:
                 man = json.load(fh)
-            if man.get("tag") != KQ_TAG:
-                raise ValueError("the package is not " + KQ_TAG)
-            _kq_gunzip(os.path.join(dd, KQ_FILES["orte"]["name"]), os.path.join(tmp, "orte.sqlite"), KQ_FILES["orte"]["unpacked"])
+            if man.get("tag") != kq_tag("web"):
+                raise ValueError("the package is not " + kq_tag("web"))
+            if have.get("orte"):
+                _kq_keep(os.path.join(old, "orte.sqlite"), os.path.join(tmp, "orte.sqlite"), moved)
+            else:
+                _kq_gunzip(os.path.join(dd, KQ_FILES["orte"]["name"]), os.path.join(tmp, "orte.sqlite"), KQ_FILES["orte"]["unpacked"])
             import sqlite3
             c_ = sqlite3.connect("file:" + os.path.join(tmp, "orte.sqlite") + "?mode=ro", uri=True)
             try:
@@ -423,24 +529,42 @@ def kq_download(wait=False):
                 c_.execute("SELECT k, id, w, r FROM such LIMIT 1").fetchall()
             finally:
                 c_.close()
-            os.replace(os.path.join(dd, KQ_FILES["tiles"]["name"]), os.path.join(tmp, "ch.pmtiles"))
-            KqPMTiles(os.path.join(tmp, "ch.pmtiles")).close()                # a real PMTiles v3 vector file
+            for r_ in ("tiles", "topo", "relief"):
+                dst = os.path.join(tmp, KQ_DISK[r_])
+                if have.get(r_):
+                    _kq_keep(os.path.join(old, KQ_DISK[r_]), dst, moved)
+                else:
+                    os.replace(os.path.join(dd, KQ_FILES[r_]["name"]), dst)
+                pm = KqPMTiles(dst)                              # a real PMTiles v3 file of the right kind
+                try:
+                    if pm.ttype not in KQ_TTYPE[r_]:
+                        raise ValueError("%s: wrong tile type %d" % (KQ_FILES[r_]["name"], pm.ttype))
+                finally:
+                    pm.close()
             with open(os.path.join(tmp, "karte.ok"), "w", encoding="utf-8") as fh:
-                json.dump({"tag": KQ_TAG, "sha256": {r_: f["sha256"] for r_, f in KQ_FILES.items()}}, fh)
+                json.dump({"tag": KQ_TAG, "sha256": {r_: f["sha256"] for r_, f in KQ_FILES.items()},
+                           "tags": {r_: kq_tag(r_) for r_ in KQ_FILES}}, fh)
             kq_close()
-            shutil.rmtree(kq_dir(), ignore_errors=True)
-            os.replace(tmp, kq_dir())
+            moved.clear()
+            shutil.rmtree(old, ignore_errors=True)
+            os.replace(tmp, old)
             shutil.rmtree(dd, ignore_errors=True)
             KQ_DL["done"] = True
             KQ_RT["ok_t"] = 0.0
-            log_event("sys", f"Offline map of Switzerland installed ({KQ_TAG}, {round(kq_total() / 1e6)} MB)")
+            log_event("sys", f"Offline map of Switzerland installed ({KQ_TAG}, {round(kq_need_disk() / 1e6)} MB)")
         except InterruptedError:
             KQ_DL["msg"] = "cancelled"
         except Exception as e:
             KQ_DL["msg"] = str(getattr(e, "reason", "") or e)[:160] or e.__class__.__name__
             log_event("sys", f"Offline map not installed: {KQ_DL['msg']}")
         finally:
+            for dst, src in moved:                               # an error after moving: the old map gets its files back
+                try:
+                    os.replace(dst, src)
+                except OSError:
+                    pass
             shutil.rmtree(tmp, ignore_errors=True)
+            KQ_RT["ok_t"] = 0.0
             KQ_DL.update(running=False, phase="")
     if wait:
         work()
@@ -484,15 +608,33 @@ def kq_sim_ok():
 def kq_maxzoom():
     """the highest zoom level in the file itself (MapLibre zooms the tiles of that level further in)"""
     try:
-        return int(kq_pm().maxz) if kq_installed() else KQ_MAXZOOM
+        return int(kq_pm().maxz) if kq_on() else KQ_MAXZOOM
     except (OSError, ValueError):
         return KQ_MAXZOOM
 
 
+def kq_layers():
+    """{schicht: {key, z: [min, max], bounds, ext}} of the files that are there (for the styles in the browser)"""
+    out = {}
+    h_ = kq_have()
+    for sch, r_ in KQ_LAYER.items():
+        if not h_.get(r_) or (r_ != "tiles" and not kq_topo_on()):
+            continue
+        try:
+            pm = kq_pm(r_)
+            out[sch] = {"key": kq_key(r_), "z": [int(pm.minz), int(pm.maxz)], "bounds": [round(v, 5) for v in pm.bounds],
+                        "ext": KQ_EXT.get(pm.ttype, "mvt")}
+        except (OSError, ValueError):
+            pass
+    return out
+
+
 def kq_state():
-    on = kq_installed()
-    return {"on": on, "tag": KQ_TAG, "maxzoom": kq_maxzoom(), "pinned": kq_pinned(), "admin": kq_role() == "admin", "sim": kq_sim_ok(),
-            "size": kq_total(), "disk": kq_need_disk(), "free": kq_free(), "free_need": bio_free_need(), "space_ok": True if on else kq_space_ok(),
+    on, full = kq_on(), kq_installed()
+    return {"on": on, "full": full, "topo": kq_topo_on(), "add": bool(on and not full and kq_pinned()), "tag": KQ_TAG,
+            "maxzoom": kq_maxzoom(), "pinned": kq_pinned(), "admin": kq_role() == "admin", "sim": kq_sim_ok(),
+            "styles": kq_styles(), "layers": kq_layers(), "def": "topo" if CFG.get("map_topo", True) else "std",
+            "size": kq_total(), "disk": kq_need_disk(), "free": kq_free(), "free_need": bio_free_need(), "space_ok": True if full else kq_space_ok(),
             "dl": {k: KQ_DL[k] for k in ("running", "got", "total", "msg", "done", "phase")}}
 
 
@@ -512,12 +654,9 @@ def smalltv_routes(app, reply, body):                     # + 639zzq: /karte, /k
     def kq_page_():
         return Response(kq_page(), mimetype="text/html")
 
-    @app.route("/karte/t/<tag>/<int:z>/<int:x>/<int:y>.mvt")
-    def kq_tile_(tag, z, x, y):
-        if tag != KQ_TAG or not kq_installed():
-            return nope()
+    def tile_reply(r_, z, x, y):
         try:
-            pm = kq_pm()
+            pm = kq_pm(r_)
             b_ = pm.tile(z, x, y)
         except (ValueError, OSError):
             return nope()
@@ -526,13 +665,26 @@ def smalltv_routes(app, reply, body):                     # + 639zzq: /karte, /k
         h_ = {"Cache-Control": "public, max-age=2592000, immutable"}
         if pm.tcomp == 2:
             h_["Content-Encoding"] = "gzip"
-        return Response(b_, mimetype="application/x-protobuf", headers=h_)
+        return Response(b_, mimetype=KQ_MIME.get(pm.ttype, "application/octet-stream"), headers=h_)
+
+    @app.route("/karte/t/<tag>/<int:z>/<int:x>/<int:y>.mvt")
+    def kq_tile_(tag, z, x, y):                             # the address up to karten-1 (base map only)
+        if tag not in (KQ_TAG, kq_tag("tiles")) or not kq_on():
+            return nope()
+        return tile_reply("tiles", z, x, y)
+
+    @app.route("/karte/t/<key>/<sch>/<int:z>/<int:x>/<int:y>.<ext>")
+    def kq_tile2_(key, sch, z, x, y, ext):
+        r_ = KQ_LAYER.get(sch)
+        if not r_ or not kq_on() or key != kq_key(r_) or not kq_have().get(r_) or (r_ != "tiles" and not kq_topo_on()):
+            return nope()
+        return tile_reply(r_, z, x, y)
 
     @app.route("/karte/fonts/<path:fp>")
     def kq_font_(fp):
         """glyphs: a missing font or range = an empty answer (MapLibre then leaves those letters out, nothing breaks)"""
         h_ = {"Cache-Control": "public, max-age=2592000"}
-        if not kq_installed():
+        if not kq_on():
             return nope()
         m_ = re.fullmatch(r"([A-Za-z0-9 ,]{1,120})/(\d{1,5}-\d{1,5})\.pbf", fp)
         if m_:
@@ -546,7 +698,7 @@ def smalltv_routes(app, reply, body):                     # + 639zzq: /karte, /k
 
     @app.route("/karte/web/<path:fp>")
     def kq_web_(fp):
-        if not kq_installed() or not re.fullmatch(r"[A-Za-z0-9._@/-]{1,120}", fp) or fp.endswith(".gz") or fp == "karte.json":
+        if not kq_on() or not re.fullmatch(r"[A-Za-z0-9._@/-]{1,120}", fp) or fp.endswith(".gz") or fp == "karte.json":
             return nope()
         base = os.path.realpath(os.path.join(kq_dir(), "web"))
         p_ = os.path.realpath(os.path.join(base, fp))
@@ -596,6 +748,7 @@ VIEW_GET = tuple(VIEW_GET) + tuple(p for p in ("/karte", "/karte/", "/api/karte"
 
 
 # ---- texts (English key: Deutsch, français, italiano, rumantsch) -------------------------------------------------------------------
+_KQ_TOPO_LABEL = "Offline map: topo map (contour lines, relief, hiking paths) instead of the standard map"
 _HX_KQ = {
     "OpenStreetMap contributors": ("OpenStreetMap-Mitwirkende", "contributeurs d’OpenStreetMap", "contributori di OpenStreetMap", "contribuents d’OpenStreetMap"),
     "Offline map of Switzerland": ("Offline-Karte Schweiz", "Carte hors ligne de la Suisse", "Mappa offline della Svizzera", "Charta offline da la Svizra"),
@@ -655,8 +808,32 @@ _HX_KQ = {
     "kind-saddle": ("Sattel", "col", "sella", "sella"), "kind-pass": ("Pass", "col", "passo", "pass"),
     "kind-lake": ("See", "lac", "lago", "lai"), "kind-reservoir": ("Stausee", "lac de barrage", "bacino", "lai artifizial"),
     "kind-glacier": ("Gletscher", "glacier", "ghiacciaio", "glatscher"), "kind-street": ("Strasse", "rue", "via", "via"),
+    # 639zzq Topo (karten-2)
+    "Map style": ("Kartenstil", "Style de carte", "Stile della mappa", "Stil da la charta"),
+    "Standard": ("Standard", "Standard", "Standard", "Standard"),
+    "Topo": ("Topo", "Topo", "Topo", "Topo"),
+    "hiking trail": ("Wanderweg", "chemin de randonnée", "sentiero escursionistico", "senda da viandar"),
+    "mountain trail": ("Bergwanderweg", "chemin de randonnée de montagne", "sentiero di montagna", "senda da viandar da muntogna"),
+    "alpine trail": ("Alpinwanderweg", "chemin de randonnée alpine", "sentiero alpino", "senda da viandar alpina"),
+    "Hiking paths from OpenStreetMap – not the official network.": (
+        "Wanderwege aus OpenStreetMap – nicht das offizielle Netz.", "Sentiers d’OpenStreetMap – pas le réseau officiel.",
+        "Sentieri da OpenStreetMap – non la rete ufficiale.", "Sendas da OpenStreetMap – betg la rait uffiziala."),
+    "Add the topo map": ("Topo-Karte ergänzen", "Ajouter la carte topo", "Aggiungi la mappa topo", "Agiuntar la charta topo"),
+    "Contour lines, relief and hiking paths for the map.": ("Höhenlinien, Relief und Wanderwege für die Karte.",
+                                                            "Courbes de niveau, relief et sentiers pour la carte.",
+                                                            "Curve di livello, rilievo e sentieri per la mappa.",
+                                                            "Lingias d’autezza, relief e sendas per la charta."),
+    "kq-ask-topo": ("Topo-Karte jetzt ergänzen? %s MB von GitHub (danach %s MB auf der Speicherkarte, %s GB bleiben frei). Die Karte bleibt solange an.",
+                    "Ajouter maintenant la carte topo ? %s Mo depuis GitHub (ensuite %s Mo sur la carte, %s Go restent libres). La carte reste disponible pendant ce temps.",
+                    "Aggiungere adesso la mappa topo? %s MB da GitHub (poi %s MB sulla scheda, %s GB restano liberi). La mappa resta disponibile nel frattempo.",
+                    "Agiuntar uss la charta topo? %s MB da GitHub (lura %s MB sin la carta, %s GB restan libers). La charta resta dentant disponibla."),
+    _KQ_TOPO_LABEL: ("Offline-Karte: Topo-Karte (Höhenlinien, Relief, Wanderwege) statt Standard",
+                     "Carte hors ligne : carte topo (courbes de niveau, relief, sentiers) au lieu de la carte standard",
+                     "Mappa offline: mappa topo (curve di livello, rilievo, sentieri) invece di quella standard",
+                     "Charta offline: charta topo (lingias d’autezza, relief, sendas) empè da la charta standard"),
 }
 _KQ_EN = {"kq-ask": "Load the offline map of Switzerland now? %s MB from GitHub (then %s MB on the memory card, %s GB stay free).",
+          "kq-ask-topo": "Add the topo map now? %s MB from GitHub (then %s MB on the memory card, %s GB stay free). The map stays on meanwhile.",
           "kq-del": "Remove the offline map? Then the maps come from the internet again (if switched on).",
           "kind-city": "city", "kind-town": "town", "kind-village": "village", "kind-suburb": "quarter", "kind-quarter": "quarter",
           "kind-neighbourhood": "quarter", "kind-hamlet": "hamlet", "kind-locality": "locality", "kind-isolated_dwelling": "farmstead",
@@ -667,6 +844,10 @@ for _k, _v in _HX_KQ.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
+
+# the setting «Topo-Karte» (Settings → Location, web and window): the style of every map unless the browser chose one on /karte
+_kq_i = max([i for i, x in enumerate(TOGGLES) if x[1] == "map_online"] or [len(TOGGLES) - 1])
+TOGGLES.insert(_kq_i + 1, ("Setup", "map_topo", _KQ_TOPO_LABEL))
 
 
 def kq_tx():
@@ -684,21 +865,68 @@ KQ_HEAD_JS = r"""<script>
   const K = window.KQ = /*KQSTATE*/{}, TX = /*KQTX*/{};
   const L = () => { try { return LANG || "de"; } catch (e) { return "de"; } };
   const T = window.kqT = k => (TX[L()] || {})[k] || (TX.en || {})[k] || k;
-  K.attr = () => '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">' + T("OpenStreetMap contributors") + "</a>";
-  let libP = null, styleP = null;
+  const OSM = () => '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">' + T("OpenStreetMap contributors") + "</a>";
+  // 639zzq Topo: «Standard» or «Topo» (this browser: mw-kq-style, else the setting map_topo), light / dark like the page
+  K.pref = () => { try { const v = localStorage.getItem("mw-kq-style"); if (v === "topo" || v === "std") return v; } catch (e) {} return K.def || "topo"; };
+  K.isTopo = () => !!K.topo && K.pref() === "topo";
+  K.dark = () => !(document.body && document.body.classList.contains("light"));
+  K.file = () => { const st = K.styles || ["style.json"], f = (K.isTopo() ? "style_topo" : "style") + (K.dark() ? "_dark" : "") + ".json";
+    return st.indexOf(f) >= 0 ? f : (K.isTopo() && st.indexOf("style_topo.json") >= 0 ? "style_topo.json" : "style.json"); };
+  K.attr = () => OSM() + (K.isTopo() ? ' · © <a href="https://www.swisstopo.admin.ch" target="_blank" rel="noopener">swisstopo</a>' : "");
+  let libP = null; const SP = {};
+  K.maps = [];
   K.lib = () => libP || (libP = new Promise((ok, no) => {
     const c = document.createElement("link"); c.rel = "stylesheet"; c.href = "/karte/web/maplibre-gl.css"; document.head.appendChild(c);
     const s = document.createElement("script"); s.src = "/karte/web/maplibre-gl.js"; s.onload = () => ok(window.maplibregl); s.onerror = () => { libP = null; no(new Error("maplibre")); };
     document.head.appendChild(s); }));
-  K.style = () => styleP || (styleP = fetch("/karte/web/style.json").then(r => r.json()).then(s => {
+  const LY = K.layers || {}, tilesOf = (sch, ext) => location.origin + "/karte/t/" + LY[sch].key + "/" + sch + "/{z}/{x}/{y}." + ext;
+  K.styleOf = f => SP[f] || (SP[f] = fetch("/karte/web/" + f).then(r => r.json()).then(s => {
     const o = location.origin, src = s.sources.protomaps;
-    src.tiles = [o + "/karte/t/" + K.tag + "/{z}/{x}/{y}.mvt"]; src.maxzoom = K.maxzoom || 15; delete src.attribution;
-    s.glyphs = o + "/karte/fonts/{fontstack}/{range}.pbf"; s.sprite = o + "/karte/web/sprites/light"; return s; }));
-  K.make = (box, opt) => Promise.all([K.lib(), K.style()]).then(([ml, st]) => {
+    src.tiles = LY.ch ? [tilesOf("ch", "mvt")] : [o + "/karte/t/" + K.tag + "/{z}/{x}/{y}.mvt"]; src.maxzoom = K.maxzoom || 15; delete src.attribution;
+    [["topo", "mvt"], ["relief", ""]].forEach(([n, ext]) => { const q = s.sources[n]; if (!q) return; const L_ = LY[n]; delete q.attribution;
+      if (!L_) { q.tiles = []; return; }
+      q.tiles = [tilesOf(n, ext || L_.ext)]; q.minzoom = L_.z[0]; q.maxzoom = L_.z[1]; q.bounds = L_.bounds; });
+    s.glyphs = o + "/karte/fonts/{fontstack}/{range}.pbf"; s.sprite = o + "/karte/web/sprites/" + (/dark$/.test(s.sprite || "") ? "dark" : "light"); return s; })
+    .catch(e => { delete SP[f]; throw e; }));
+  K.style = () => K.styleOf(K.file());
+  K.make = (box, opt) => { const f = K.file(); return Promise.all([K.lib(), K.styleOf(f)]).then(([ml, st]) => {
     const m = new ml.Map(Object.assign({container: box, style: JSON.parse(JSON.stringify(st)), attributionControl: false, fadeDuration: 0,
       dragRotate: false, pitchWithRotate: false, touchPitch: false, maxPitch: 0, renderWorldCopies: false}, opt || {}));
     try { m.touchZoomRotate.disableRotation(); m.keyboard.disableRotation(); } catch (e) {}
-    return m; });
+    m.__kqF = f; m.__kqL = new Set(st.layers.map(l => l.id)); m.__kqS = new Set(Object.keys(st.sources)); K.maps.push(m);
+    return m; }); };
+  // another style for every map of the page: own layers and sources (e.g. the tours of 639zzx) stay on top
+  K.restyle = () => {
+    const f = K.file();
+    K.maps.forEach(m => { if (m.__kqF === f) return; m.__kqF = f;
+      K.styleOf(f).then(st => { if (m.__kqF !== f) return; const oL = m.__kqL, oS = m.__kqS;
+        m.__kqL = new Set(st.layers.map(l => l.id)); m.__kqS = new Set(Object.keys(st.sources));
+        m.setStyle(JSON.parse(JSON.stringify(st)), {diff: false, transformStyle: (prev, next) => { if (!prev) return next;
+          Object.keys(prev.sources || {}).forEach(k => { if (!oS.has(k) && !(k in next.sources)) next.sources[k] = prev.sources[k]; });
+          (prev.layers || []).forEach(l => { if (!oL.has(l.id) && !next.layers.some(x => x.id === l.id)) next.layers.push(l); });
+          return next; }}); }).catch(() => {}); });
+    document.querySelectorAll(".kq-attr").forEach(a => { a.innerHTML = K.attr(); });
+    document.querySelectorAll(".kq-sw").forEach(w => K.paintSwitch(w));
+    document.querySelectorAll(".kq-leg").forEach(l => { l.hidden = !K.isTopo(); });
+  };
+  K.setPref = v => { try { localStorage.setItem("mw-kq-style", v); } catch (e) {} K.restyle(); };
+  // the switch «Standard | Topo» (on the big map)
+  K.paintSwitch = w => { w.querySelectorAll("button").forEach(b => { const on = (b.dataset.v === "topo") === K.isTopo(); b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false"); }); };
+  K.switchUI = host => { if (!K.topo) return null; const w = document.createElement("div"); w.className = "kq-sw"; w.setAttribute("role", "group"); w.setAttribute("aria-label", T("Map style"));
+    [["std", "Standard"], ["topo", "Topo"]].forEach(([v, n]) => { const b = document.createElement("button"); b.type = "button"; b.dataset.v = v; b.textContent = T(n);
+      b.onclick = e => { e.stopPropagation(); K.setPref(v); }; w.appendChild(b); });
+    K.paintSwitch(w); host.appendChild(w); return w; };
+  // the colours of the hiking paths and where they come from (under the big map, only with Topo)
+  K.legend = () => { const d = document.createElement("div"); d.className = "kq-leg"; d.hidden = !K.isTopo();
+    [["#e3a800", "hiking trail", ""], ["#d83a22", "mountain trail", "d"], ["#2b63d0", "alpine trail", "d"]].forEach(([c, k, dash]) => {
+      const i = document.createElement("span"); i.className = "kq-li"; const sw = document.createElement("i"); sw.className = "kq-swatch" + (dash ? " kq-dash" : ""); sw.style.setProperty("--c", c);
+      i.append(sw, T(k)); d.appendChild(i); });
+    const n = document.createElement("span"); n.className = "kq-lnote"; n.textContent = T("Hiking paths from OpenStreetMap – not the official network."); d.appendChild(n);
+    return d; };
+  const watch = () => { let last = K.dark(); const mo = new MutationObserver(() => { const d = K.dark(); if (d !== last) { last = d; K.restyle(); } });
+    mo.observe(document.body, {attributes: true, attributeFilter: ["class"]}); };
+  if (document.body) watch(); else document.addEventListener("DOMContentLoaded", watch);
+  window.addEventListener("storage", e => { if (e.key === "mw-kq-style") K.restyle(); });
   K.at = el => { el.classList.add("kq-attr"); el.innerHTML = K.attr(); el.hidden = false; return el; };
   // background of the maps that MoveEye draws itself (pins, gestures stay theirs): same centre and scale (256 px tiles -> zoom - 1)
   window.kqBg = function (host, cx, cy, z) {
@@ -706,7 +934,7 @@ KQ_HEAD_JS = r"""<script>
     let b = host.__kq;
     if (!b) {
       b = host.__kq = {w: document.createElement("div")};
-      b.w.className = "kq-bg"; b.w.style.cssText = "position:absolute;inset:0;pointer-events:none;z-index:0;background:#e2dfd6";
+      b.w.className = "kq-bg"; b.w.style.cssText = "position:absolute;inset:0;pointer-events:none;z-index:0;background:" + (K.dark() ? "#1d2125" : "#e2dfd6");
       const c = document.createElement("div"); c.style.cssText = "position:absolute;inset:0"; b.w.appendChild(c); host.insertBefore(b.w, host.firstChild);
       K.make(c, {interactive: false}).then(m => { b.m = m; if (b.v) m.jumpTo(b.v);
         if (window.ResizeObserver) new ResizeObserver(() => { m.resize(); if (b.v) m.jumpTo(b.v); }).observe(b.w); })
@@ -724,7 +952,7 @@ KQ_HEAD_JS = r"""<script>
     if (!K.on || !gps || !anchor) { if (box) box.hidden = true; return; }
     const ll = [+gps[1], +gps[0]];
     if (!box) {
-      box = document.createElement("div"); box.id = "kq-small"; box.style.cssText = "position:relative;height:170px;margin-top:8px;border-radius:10px;overflow:hidden;border:1px solid var(--line,#334);background:#e2dfd6";
+      box = document.createElement("div"); box.id = "kq-small"; box.style.cssText = "position:relative;height:170px;margin-top:8px;border-radius:10px;overflow:hidden;border:1px solid var(--line,#334);background:" + (K.dark() ? "#1d2125" : "#e2dfd6");
       const c = document.createElement("div"); c.style.cssText = "position:absolute;inset:0"; box.appendChild(c);
       box.appendChild(K.at(document.createElement("div")));
       const big = document.createElement("a"); big.className = "kq-big"; big.textContent = "🗺 " + T("Big map"); box.appendChild(big); box.__big = big;
@@ -777,14 +1005,22 @@ KQ_HEAD_JS = r"""<script>
         const sp = document.createElement("span"); sp.textContent = D.phase === "unpack" ? "⏳ " + T("checking and unpacking …") : "⏳ " + MB(D.got) + " / " + MB(D.total) + " MB";
         const cb = document.createElement("button"); cb.type = "button"; cb.className = "sec"; cb.textContent = T("Cancel"); cb.onclick = () => act("cancel");
         row.append(sp, p, cb);
-        tm = setTimeout(() => get().then(S2 => { if (S2.on && !K.on) location.reload(); else paint(S2); }).catch(() => {}), 1500);
+        tm = setTimeout(() => get().then(S2 => { if ((S2.on && !K.on) || (S2.full && !S2.dl.running && K.on && !K.full)) location.reload(); else paint(S2); }).catch(() => {}), 1500);
+      } else if (S.on && S.add) {                              // karten-1 is there: only the topo map (and the new web package) is missing
+        const ok = document.createElement("span"); ok.textContent = "✓ " + T("installed");
+        const ib = document.createElement("button"); ib.type = "button"; ib.className = "kq-install kq-add"; ib.textContent = "⬇ " + T("Add the topo map") + " (" + MB(S.size) + " MB)";
+        ib.disabled = !S.space_ok;
+        ib.onclick = () => { if (confirm(T("kq-ask-topo").replace("%s", MB(S.size)).replace("%s", MB(S.disk)).replace("%s", Math.round(S.free_need / 1e9)))) act("install"); };
+        const tx2 = document.createElement("div"); tx2.className = "mut"; tx2.textContent = T("Contour lines, relief and hiking paths for the map.");
+        row.append(ok, ib); w.appendChild(tx2);
+        if (!S.space_ok) { const n = document.createElement("span"); n.className = "kq-warn"; n.textContent = "⚠ " + T("not enough free space on the memory card"); row.appendChild(n); }
       } else if (S.on) {
         const ok = document.createElement("span"); ok.textContent = "✓ " + T("installed") + " · " + MB(S.disk) + " MB";
         const a = document.createElement("a"); a.className = "btn sec"; a.href = "/karte"; a.textContent = "🗺 " + T("Big map");
         const db = document.createElement("button"); db.type = "button"; db.className = "sec kq-del"; db.textContent = "🗑 " + T("Remove");
         db.onclick = () => { if (confirm(T("kq-del"))) act("delete").then(() => location.reload()); };
         row.append(ok, a, db);
-        if (!K.on) setTimeout(() => location.reload(), 300);
+        if (!K.on || (S.full && !K.full)) setTimeout(() => location.reload(), 300);
       } else if (!S.pinned) {
         const m = document.createElement("span"); m.className = "mut"; m.textContent = T("comes with an update"); row.appendChild(m);
       } else {
@@ -834,7 +1070,14 @@ KQ_HEAD_JS = r"""<script>
     + ".kq-attr a{color:#222}.kq-res{display:flex;flex-direction:column;gap:4px;margin:4px 0}.kq-hit{text-align:left;display:block;width:100%}"
     + ".kq-hit .mut{font-size:12px}.kq-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}.kq-row progress{flex:1 1 120px}"
     + ".kq-inst{margin-top:10px;padding:10px 12px;border:1px solid var(--line,#334);border-radius:12px}.kq-warn{color:var(--warn,#e9a23b);font-weight:600}"
-    + ".kq-big{position:absolute;left:6px;top:6px;z-index:4;background:rgba(255,255,255,.9);color:#123;border-radius:8px;padding:3px 8px;font-size:13px;text-decoration:none}";
+    + ".kq-big{position:absolute;left:6px;top:6px;z-index:4;background:rgba(255,255,255,.9);color:#123;border-radius:8px;padding:3px 8px;font-size:13px;text-decoration:none}"
+    + ".kq-sw{position:absolute;left:8px;top:8px;z-index:4;display:flex;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.35)}"
+    + ".kq-sw button{all:unset;cursor:pointer;min-height:36px;min-width:44px;padding:0 12px;font:600 13px/36px system-ui,sans-serif;text-align:center;background:rgba(255,255,255,.92);color:#123}"
+    + ".kq-sw button+button{border-left:1px solid rgba(0,0,0,.15)}.kq-sw button.on{background:#2f7cf6;color:#fff}.kq-sw button:focus-visible{outline:2px solid #2f7cf6;outline-offset:-2px}"
+    + ".kq-leg{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;margin:6px 2px 0;font-size:12px;color:var(--mut,#8a93a0)}.kq-leg[hidden]{display:none}"
+    + ".kq-li{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.kq-swatch{display:inline-block;width:22px;height:4px;border-radius:2px;background:var(--c)}"
+    + ".kq-dash{background:repeating-linear-gradient(90deg,var(--c) 0 7px,transparent 7px 10px)}.kq-lnote{flex-basis:100%}"
+    + "body:not(.light) .kq-attr{color:#dfe3e8;background:rgba(22,25,28,.78)}body:not(.light) .kq-attr a{color:#dfe3e8}";
   document.head.appendChild(st);
 })();
 </script>
@@ -843,7 +1086,7 @@ KQ_HEAD_JS = r"""<script>
 
 def kq_head():
     s_ = kq_state()
-    st = {k: s_[k] for k in ("on", "tag", "maxzoom", "pinned", "admin", "sim")}
+    st = {k: s_[k] for k in ("on", "full", "topo", "tag", "maxzoom", "pinned", "admin", "sim", "styles", "layers", "def")}
     return (KQ_HEAD_JS.replace("/*KQSTATE*/{}", json.dumps(st), 1)
             .replace("/*KQTX*/{}", json.dumps(kq_tx(), ensure_ascii=False).replace("</", "<\\/"), 1))
 
@@ -921,6 +1164,7 @@ main{padding:12px;max-width:980px;margin:0 auto}
 .kq-top{display:flex;gap:6px;align-items:center}.kq-top input{flex:1;min-width:0;padding:9px 11px;border-radius:10px;border:1px solid var(--line);background:var(--field,var(--panel));color:var(--txt)}
 #kq-map{position:relative;height:min(64vh,620px);min-height:300px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#e2dfd6;margin-top:6px;touch-action:none}
 #kq-c{position:absolute;inset:0}
+body:not(.light) #kq-map{background:#1d2125}
 .kq-info{margin:8px 2px;font-size:14px}.kq-btns{display:flex;gap:8px;flex-wrap:wrap}
 .kq-none{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--panel)}
 .kq-back{color:var(--acc2);text-decoration:none;font-weight:600;min-height:44px;min-width:44px;display:inline-flex;align-items:center;white-space:nowrap}
@@ -961,7 +1205,8 @@ main{padding:12px;max-width:980px;margin:0 auto}
   $("#kq-wrap").hidden = false; $("#kq-q").placeholder = T("Search a place …"); $("#kq-lic").textContent = "ⓘ " + T("Sources and licences");
   $("#kq-set span").textContent = T("Set as location of MoveEye"); $("#kq-sim span").textContent = T("Open in the simulator");
   $("#kq-set").hidden = !K.admin; $("#kq-sim").hidden = !K.sim;
-  K.at($("#kq-at"));
+  K.at($("#kq-at")); K.switchUI($("#kq-map"));
+  if (K.topo) $("#kq-map").after(K.legend());
   let G = {}; try { G = await (await fetch("/api/gps", {cache: "no-store"})).json(); } catch (e) {}
   const me = G.gps ? [G.gps.lon, G.gps.lat] : (G.lat != null && !G.factory ? [G.lon, G.lat] : null);
   const la = parseFloat(P.get("lat")), lo = parseFloat(P.get("lon")), zz = parseFloat(P.get("z"));
@@ -1003,11 +1248,11 @@ def kq_page():
 
 # ---- the manual: one point in the section about the settings / location (5 languages) ---------------------------------------------
 _HELP_KQ = {
-    "de": ("🗺 Offline-Karte Schweiz", "(Einstellungen → Standort, nur der Admin): Karte und Ortssuche der ganzen Schweiz einmal von GitHub laden (feste Prüfsumme; vorher wird der freie Platz auf der Speicherkarte geprüft), danach ohne Internet: Standort auf der Karte antippen oder suchen («Zurich» findet Zürich), Orte der Aufnahmen, grosse Karte /karte, «🎮 Im Simulator öffnen» und «Ort von der Karte» im Simulator. «🗑 Entfernen» löscht sie wieder. Daten © OpenStreetMap-Mitwirkende (ODbL)."),
-    "en": ("🗺 Offline map of Switzerland", "(Settings → Location, administrator only): load the map and the place search of all of Switzerland once from GitHub (fixed checksum; the free space on the memory card is checked first), then without internet: tap or search the location (“Zurich” finds Zürich), the places of the recordings, the big map /karte, “🎮 Open in the simulator” and “Place from the map” in the simulator. “🗑 Remove” deletes it again. Data © OpenStreetMap contributors (ODbL)."),
-    "fr": ("🗺 Carte hors ligne de la Suisse", "(Réglages → Emplacement, administrateur seulement) : charger une fois depuis GitHub la carte et la recherche de lieux de toute la Suisse (somme de contrôle fixe ; l’espace libre sur la carte mémoire est vérifié d’abord), ensuite sans Internet : toucher ou chercher l’emplacement (« Zurich » trouve Zürich), les lieux des enregistrements, la grande carte /karte, « 🎮 Ouvrir dans le simulateur » et « Lieu sur la carte » dans le simulateur. « 🗑 Supprimer » l’efface. Données © contributeurs d’OpenStreetMap (ODbL)."),
-    "it": ("🗺 Mappa offline della Svizzera", "(Impostazioni → Posizione, solo l’amministratore): caricare una volta da GitHub la mappa e la ricerca di luoghi di tutta la Svizzera (somma di controllo fissa; prima viene controllato lo spazio libero sulla scheda di memoria), poi senza Internet: toccare o cercare la posizione («Zurich» trova Zürich), i luoghi delle registrazioni, la mappa grande /karte, «🎮 Apri nel simulatore» e «Luogo dalla mappa» nel simulatore. «🗑 Rimuovi» la cancella. Dati © contributori di OpenStreetMap (ODbL)."),
-    "rm": ("🗺 Charta offline da la Svizra", "(Parameters → Lieu, mo l’administratur): chargiar ina giada da GitHub la charta e la tschertga da lieus da tut la Svizra (summa da controlla fixa; avant vegn controllà il spazi liber sin la carta da memoria), lura senza internet: tutgar u tschertgar il lieu («Zurich» chatta Zürich), ils lieus da las registraziuns, la charta gronda /karte, «🎮 Avrir en il simulatur» e «Lieu da la charta» en il simulatur. «🗑 Allontanar» la stizza. Datas © contribuents d’OpenStreetMap (ODbL)."),
+    "de": ("🗺 Offline-Karte Schweiz", "(Einstellungen → Standort, nur der Admin): Karte und Ortssuche der ganzen Schweiz einmal von GitHub laden (feste Prüfsumme; vorher wird der freie Platz auf der Speicherkarte geprüft), danach ohne Internet: Standort auf der Karte antippen oder suchen («Zurich» findet Zürich), Orte der Aufnahmen, grosse Karte /karte, «🎮 Im Simulator öffnen» und «Ort von der Karte» im Simulator. «🗑 Entfernen» löscht sie wieder. Daten © OpenStreetMap-Mitwirkende (ODbL). Topo-Karte (Vorgabe, Schalter «Standard / Topo» auf /karte): Höhenlinien und Relief aus swissALTI3D (© swisstopo), Wanderwege gelb / rot / blau aus OpenStreetMap (nicht das offizielle Netz); hell oder dunkel wie die Seite."),
+    "en": ("🗺 Offline map of Switzerland", "(Settings → Location, administrator only): load the map and the place search of all of Switzerland once from GitHub (fixed checksum; the free space on the memory card is checked first), then without internet: tap or search the location (“Zurich” finds Zürich), the places of the recordings, the big map /karte, “🎮 Open in the simulator” and “Place from the map” in the simulator. “🗑 Remove” deletes it again. Data © OpenStreetMap contributors (ODbL). Topo map (default, switch “Standard / Topo” on /karte): contour lines and relief from swissALTI3D (© swisstopo), hiking paths yellow / red / blue from OpenStreetMap (not the official network); light or dark like the page."),
+    "fr": ("🗺 Carte hors ligne de la Suisse", "(Réglages → Emplacement, administrateur seulement) : charger une fois depuis GitHub la carte et la recherche de lieux de toute la Suisse (somme de contrôle fixe ; l’espace libre sur la carte mémoire est vérifié d’abord), ensuite sans Internet : toucher ou chercher l’emplacement (« Zurich » trouve Zürich), les lieux des enregistrements, la grande carte /karte, « 🎮 Ouvrir dans le simulateur » et « Lieu sur la carte » dans le simulateur. « 🗑 Supprimer » l’efface. Données © contributeurs d’OpenStreetMap (ODbL). Carte topo (par défaut, bouton « Standard / Topo » sur /karte) : courbes de niveau et relief de swissALTI3D (© swisstopo), sentiers jaunes / rouges / bleus d’OpenStreetMap (pas le réseau officiel) ; claire ou sombre comme la page."),
+    "it": ("🗺 Mappa offline della Svizzera", "(Impostazioni → Posizione, solo l’amministratore): caricare una volta da GitHub la mappa e la ricerca di luoghi di tutta la Svizzera (somma di controllo fissa; prima viene controllato lo spazio libero sulla scheda di memoria), poi senza Internet: toccare o cercare la posizione («Zurich» trova Zürich), i luoghi delle registrazioni, la mappa grande /karte, «🎮 Apri nel simulatore» e «Luogo dalla mappa» nel simulatore. «🗑 Rimuovi» la cancella. Dati © contributori di OpenStreetMap (ODbL). Mappa topo (predefinita, interruttore «Standard / Topo» su /karte): curve di livello e rilievo da swissALTI3D (© swisstopo), sentieri gialli / rossi / blu da OpenStreetMap (non la rete ufficiale); chiara o scura come la pagina."),
+    "rm": ("🗺 Charta offline da la Svizra", "(Parameters → Lieu, mo l’administratur): chargiar ina giada da GitHub la charta e la tschertga da lieus da tut la Svizra (summa da controlla fixa; avant vegn controllà il spazi liber sin la carta da memoria), lura senza internet: tutgar u tschertgar il lieu («Zurich» chatta Zürich), ils lieus da las registraziuns, la charta gronda /karte, «🎮 Avrir en il simulatur» e «Lieu da la charta» en il simulatur. «🗑 Allontanar» la stizza. Datas © contribuents d’OpenStreetMap (ODbL). Charta topo (predefinida, cumutatur «Standard / Topo» sin /karte): lingias d’autezza e relief da swissALTI3D (© swisstopo), sendas melnas / cotschnas / blauas da OpenStreetMap (betg la rait uffiziala); clera u stgira sco la pagina."),
 }
 
 
@@ -1037,13 +1282,17 @@ for _L in ("fr", "it", "rm"):
 
 # ---- self-test (without the files; werkzeuge/karten_test.py tests loading, tiles, search and the pages in the browser) ----------------
 def kq_selftest():
-    assert KQ_BASE["url"] == "https://github.com/DonElektro/MotionWatch/releases/download/" + KQ_TAG + "/"
-    assert re.fullmatch(r"karten-\d{1,3}", KQ_TAG) and KQ_MAXZOOM in (14, 15)
-    n_ = KQ_TAG.split("-")[1]
-    assert KQ_FILES["tiles"]["name"] == "karte-ch-%s.pmtiles" % n_ and KQ_FILES["web"]["name"] == "karte-web-%s.zip" % n_
-    assert KQ_FILES["orte"]["name"] == "orte-ch-%s.sqlite.gz" % n_
-    pins = [bool(f["size"]) for f in KQ_FILES.values()]
-    assert all(pins) == kq_pinned() and (all(pins) or not any(pins)), "either all pins or none"
+    assert KQ_BASE["url"] == "https://github.com/DonElektro/MotionWatch/releases/download/"
+    assert re.fullmatch(r"karten-\d{1,3}", KQ_TAG) and KQ_MAXZOOM in (14, 15) and set(KQ_FILES) == set(KQ_DISK) == set(KQ_MAX) == set(KQ_NAME_RE)
+    for r_, f in KQ_FILES.items():
+        n_ = kq_tag(r_).split("-")[1]
+        assert re.fullmatch(KQ_NAME_RE[r_], f["name"]) and f["name"].split("-")[-1].split(".")[0] == n_, (r_, f["name"])
+        assert kq_url(r_) == KQ_BASE["url"] + kq_tag(r_) + "/" + f["name"]
+        assert int(kq_tag(r_).split("-")[1]) <= int(KQ_TAG.split("-")[1])
+    # the files of an earlier release are pinned; those of KQ_TAG: all or none (none = «comes with an update», stage 1)
+    assert all(KQ_FILES[r_]["size"] for r_ in KQ_FILE_TAG), "files of an earlier release without pins"
+    pins = [bool(f["size"]) for r_, f in KQ_FILES.items() if r_ not in KQ_FILE_TAG]
+    assert all(pins) == kq_pinned() and (all(pins) or not any(pins)), "either all pins of " + KQ_TAG + " or none"
     bad = [k for k, v in KQ_HOOKED.items() if not v]
     assert not bad, "hooks not found: " + "; ".join(n + ": " + a[:50] for n, a in bad)
     for nm in ("WEB_PAGE", "REC_PAGE", "SIM_PAGE"):
@@ -1053,18 +1302,27 @@ def kq_selftest():
     assert kq_tileid(2, 0, 0) == 5 and kq_tileid(14, 8580, 5745) > kq_tileid(13, 8191, 8191)
     assert kq_norm("Zürich") == "zurich" and kq_norm("Zürich", True) == "zuerich" and kq_norm("La Chaux-de-Fonds") == "la chaux de fonds"
     assert kq_norm("Grossmünster") == kq_norm("Großmünster") and kq_norm("Sant’Antonio") == "santantonio"
-    for p in ("/karte", "/karte/t/x/1/1/1.mvt", "/api/karte", "/api/karte/suche"):
+    for p in ("/karte", "/karte/t/x/1/1/1.mvt", "/karte/t/0123456789ab/relief/8/133/90.webp", "/api/karte", "/api/karte/suche"):
         assert role_allows("view", p, "GET", {}, []), p
     assert not role_allows("view", "/api/karte", "POST", {"action": "install"}, list(USER_PERMS)), "only the administrator loads the map"
     html = render_page(REC_PAGE, "rec")
     assert html.count("window.KQ =") == 1 and html.find("window.KQ =") < html.find("<body"), "the map script stands in <head>"
     assert "window.KQ =" not in render_page("<html><head></head><body><main>x</main></body></html>", "live")
-    if not kq_installed():
-        assert kq_search("Seon") == [] and '"on": false' in kq_head()
+    if not kq_on():
+        assert kq_search("Seon") == [] and '"on": false' in kq_head() and not kq_topo_on() and kq_layers() == {}
     tx = kq_tx()
     assert all(tx[L_]["OpenStreetMap contributors"] for L_ in ("de", "fr", "it", "rm")) and tx["de"]["OpenStreetMap contributors"] == "OpenStreetMap-Mitwirkende"
+    assert all(tx[L_][k] for L_ in ("de", "fr", "it", "rm") for k in ("kq-ask", "kq-ask-topo", "Map style", "Hiking paths from OpenStreetMap – not the official network."))
+    assert tx["en"]["kq-ask"] and tx["en"]["kq-ask-topo"]
     assert all("ß" not in v[0] for v in _HX_KQ.values()) and all(k in DE for k in _HX_KQ)
-    assert _HELP_KQ["de"][0] in HELP_PAGE and _HELP_KQ["en"][0] in HELP_PAGE
+    assert _HELP_KQ["de"][0] in HELP_PAGE and _HELP_KQ["en"][0] in HELP_PAGE and "Topo" in _HELP_KQ["de"][1]
+    # Topo: the setting (web + window), the styles, the credit, the switch
+    assert ("Setup", "map_topo", _KQ_TOPO_LABEL) in TOGGLES and CFG.get("map_topo") in (True, False) and _KQ_TOPO_LABEL in DE
+    assert all(_KQ_TOPO_LABEL in TRX[L_] for L_ in ("fr", "it", "rm"))
+    assert KQ_STYLES[0] == "style.json" and set(KQ_LAYER.values()) == {"tiles", "topo", "relief"} and KQ_TTYPE["relief"] == (2, 4)
+    for frag in ("swisstopo.admin.ch", "K.switchUI", "K.legend", "K.restyle", "mw-kq-style", "transformStyle", "MutationObserver"):
+        assert frag in KQ_HEAD_JS, frag
+    assert "K.switchUI($(\"#kq-map\"))" in KQ_PAGE and "K.legend()" in KQ_PAGE
     return True
 
 
