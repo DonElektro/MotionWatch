@@ -570,7 +570,7 @@ function partyPaint() {
   rr.appendChild(el("div", "mut", R.on ? t("until") + " " + new Date(R.until * 1000).toLocaleTimeString(LOCALE || undefined, {hour: "2-digit", minute: "2-digit"}) + " · " + t("rest-note-on") : t("rest-note")));
   const rb = el("button", R.on ? "" : "sec", R.on ? "👁 " + t("Watch again now") : "😴 " + t("Rest mode: only game server")); rb.type = "button"; rb.style.marginTop = "8px";
   rb.onclick = () => { if (!R.on && R.armed && !confirm(t("rest-armed"))) return; const hs = box.querySelector("select"); partyDo({action: "rest", on: !R.on, hours: hs ? +hs.value : 6}); };
-  rr.appendChild(rb); box.appendChild(rr);
+  rr.appendChild(rb); if (!P.no_rest) box.appendChild(rr);          // 639zzzzw: not on the host
   if (P.lan_url) { const lr = el("div", "mut"); lr.style.margin = "8px 0"; lr.append(t("Without login in your own Wi-Fi:") + " "); const la = el("a", "", P.lan_url); la.href = P.lan_url; la.target = "_blank"; lr.appendChild(la); box.appendChild(lr); }
   const h = el("h3", "", "🕹 " + t("Game collection")); h.style.margin = "16px 0 6px"; box.appendChild(h);
   const gl = (P.games || []).filter(x => x.dir !== "fotaq");     // 639zzg: FOTAQ has its own box below (not part of the collection ZIP)

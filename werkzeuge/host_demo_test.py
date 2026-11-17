@@ -37,7 +37,9 @@ def part_ns():
                                                 "set_fps": lambda self, f: setattr(self, "fps", float(f) if f else 15.0)}),
           "log_event": lambda k, t: None, "save_settings": lambda: None, "DEMO": {"on": False},
           "open_source": lambda spec, thermal=False: ("base", spec, spec, ""), "source_label": lambda s: str(s),
-          "DE": {}, "TRX": {"fr": {}, "it": {}, "rm": {}}}
+          "DE": {}, "TRX": {"fr": {}, "it": {}, "rm": {}}, "simwait_texts": lambda r, lang=None: {"hint": "PC", "hint2": "bat"},
+          "sim_cam_fps": lambda c: 4, "tr": lambda k, L=None: k, "norm_lang": lambda L: L or "de", "cur_lang": lambda: "de",
+          "bio_free_need": lambda: 2 << 30, "games_install": lambda: None}
     src = open(PART, encoding="utf-8").read()
     exec(compile(src, PART, "exec"), ns)
     return ns
@@ -207,6 +209,27 @@ tr("remove_out", lambda: os.remove("/etc/hostname"))
 tr("rmtree_out", lambda: shutil.rmtree("/usr/share/doc"))
 tr("execv_other", lambda: os.execv("/bin/sh", ["/bin/sh", "-c", "true"]))
 tr("read_out", lambda: open("/etc/hostname").read())
+ns["HOST"].setdefault("gh_ips", set()).add("203.0.113.5")       # 4.15.1: as if getaddrinfo had resolved a GitHub name
+import threading
+def in_thread(name, f):
+    out = {}
+    def run():
+        try:
+            f(); out["r"] = "ok"
+        except Exception as e:
+            out["r"] = type(e).__name__
+    th = threading.Thread(target=run, name=name); th.start(); th.join(10)
+    return out.get("r")
+def gh(ip, port):
+    s = socket.socket(); s.settimeout(0.5)
+    try:
+        s.connect((ip, port))
+    finally:
+        s.close()
+r["gh_dl"] = in_thread("fspiele-dl", lambda: gh("203.0.113.5", 443))
+r["gh_other_thread"] = in_thread("x-thread", lambda: gh("203.0.113.5", 443))
+r["gh_dl_port80"] = in_thread("fspiele-dl", lambda: gh("203.0.113.5", 80))
+r["dl_other_ip"] = in_thread("fspiele-dl", lambda: gh("198.51.100.7", 443))
 print(json.dumps(r))
 shutil.rmtree(data)
 """ % os.path.dirname(os.path.abspath(__file__))
@@ -222,7 +245,9 @@ shutil.rmtree(data)
             "write_home": "PermissionError", "write_data": "ok", "remove_out": "PermissionError", "rmtree_out": "PermissionError",
             "execv_other": "PermissionError", "read_out": "ok", "system": 127 << 8,
             "nice_ffmpeg": "ok" if shutil.which("nice") else "FileNotFoundError",   # 4.15.0: let through (without ffmpeg nice just ends with 127)
-            "nice_sh": "FileNotFoundError", "nice_bare": "FileNotFoundError"}
+            "nice_sh": "FileNotFoundError", "nice_bare": "FileNotFoundError",
+            "gh_other_thread": "PermissionError", "gh_dl_port80": "PermissionError", "dl_other_ip": "PermissionError"}
+    ok(res.get("gh_dl") not in (None, "PermissionError"), f"Spiele-Download zu GitHub (443, eigener Faden) durchgelassen: {res.get('gh_dl')}")
     for k, v in want.items():
         ok(res.get(k) == v, f"{k}: {res.get(k)} (soll {v})")
 
@@ -408,7 +433,7 @@ class FakeWebSim:
                 try:
                     while cid in self.ch and not self.closed:
                         self.out(cid, b"--mwsimframe\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n" % len(self.jpg) + self.jpg + b"\r\n")
-                        time.sleep(0.2)
+                        time.sleep(8.0)            # 4.15.1: like the real web simulator behind a slow line - the stream piles up
                 except OSError:
                     pass
             threading.Thread(target=stream, daemon=True).start(); return
@@ -578,6 +603,19 @@ def run(a):
             ok(c == 403 and er in ("not available on the host", "auf dem Host nicht verfügbar"), f"KI auf dem Host nicht verfügbar: {path} {c} {er!r}")
         c, b, h = get(base + "/api/tausch?lang=de")
         ok(c == 200, f"Digitaler Rucksack geht (4.15.0, echte MoveEye): {c}")
+        c, b, h = get(base + "/api/party?lang=de")
+        try:
+            pj = json.loads(b)
+        except ValueError:
+            pj = {}
+        ok(c == 200 and pj.get("lan_url") == "" and pj.get("no_rest") is True,
+           f"Spiele auf dem Host: kein «Ohne Login im eigenen WLAN», kein Ruhemodus ({c}, {pj.get('lan_url')!r}, {pj.get('no_rest')})")
+        fq = pj.get("fotaq") or {}
+        if "free" in fq and "free_need" in fq:
+            left = fq["free"] - fq["free_need"]
+            ok(0 <= left <= 400 * 1024 * 1024, f"Platz für Spiele = Rest der 400 MB, nicht die ganze Platte ({left / 1048576:.0f} MB)")
+        else:
+            ok(False, f"Spiele-Zustand ohne free / free_need ({sorted(fq)[:12]})")
         try:
             act0 = json.loads(get(base + "/api/sources")[1]).get("active")
         except ValueError:
@@ -610,6 +648,12 @@ def run(a):
                         mag = True; break
         ok("/state" in sim.reqs, f"MoveEye fragt den Web-Simulator ({len(sim.reqs)} Anfragen: {sorted(set(sim.reqs))[:8]})")
         ok(mag, f"Kamerabild kommt durch die WebSocket-Leitung ({time.time() - t1:.0f} s)")
+        time.sleep(25)                                 # 4.15.1: the stream of the fake piles up (8 s per picture) - no matter
+        lg_ = os.path.join(data, "motionwatch.log")
+        lgt = open(lg_, errors="replace").read() if os.path.exists(lg_) else ""
+        ok(sim.reqs.count("/cam/0/snapshot.jpg") >= 10 and "/cam/0/video.mjpg" not in sim.reqs,
+           f"Host-Modus: Einzelbilder statt Strom ({sim.reqs.count('/cam/0/snapshot.jpg')} × snapshot, Strom {'/cam/0/video.mjpg' in sim.reqs})")
+        ok("Camera stopped delivering frames" not in lgt, "Kamera reisst nicht ab, auch wenn die Leitung langsam ist (kein Neuverbinden)")
         if bilder and img is not None:
             os.makedirs(bilder, exist_ok=True); cv2.imwrite(os.path.join(bilder, "00_websim_kamerabild.jpg"), img)
         if a.browser:
