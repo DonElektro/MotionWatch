@@ -364,6 +364,7 @@ SIMWAIT_JS = r"""
     const h = q("#simwait .sw-h"); h.hidden = !W.hint; h.textContent = W.hint || "";
     if (W.hint2) { const sm = document.createElement("small"); sm.textContent = W.hint2; h.appendChild(sm); }
     q("#simwait .sw-a").textContent = W.link; q("#simwait .sw-b").textContent = W.help;
+    if (W.url) q("#simwait .sw-a").setAttribute("href", W.url);          // 639zzzzw: on the host the simulator of the homepage
   }
   window.simPaint = function (s) { base(s); try { paint(s); } catch (e) {} };
 })();

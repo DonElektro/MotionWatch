@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-16 23:05",
+ "generated": "2026-11-17 18:49",
  "versions": [
   {
-   "version": "4.15.0",
-   "file": "webcam_bewegung_4_15_0.py",
+   "version": "4.15.1",
+   "file": "webcam_bewegung_4_15_1.py",
    "url": "",
-   "sha256": "56ef4aef8b4ce60078d3b525218e126046982cd91bd41e2acc5c001b48a4d83e",
-   "date": "2026-11-16 23:05",
-   "notes": "MoveEye beim Host: eine echte MoveEye statt der Demo – der Simulator auf der Homepage ist die Kamera, Einstellungen und Aufnahmen bleiben, nur Bewegungserkennung, keine KI-Modelle; Aufnahme: fehlt ein Video-Encoder (z. B. kein Hardware-Encoder), nimmt MoveEye mit einem anderen auf",
-   "size": 4037175,
-   "sig": "3507a720b1fc8c11e66a9a31a6984d8ac6ed7fd5f288b36ae3090aea0335972398d9ee21734fe53cf9d39230a95fdb3ebce8002dd145b6bdefd310e345bde70d",
+   "sha256": "aaa204ccec8a5f4bcf6e307f399f9269116b0557a8a15c475d670b142418ed49",
+   "date": "2026-11-17 18:49",
+   "notes": "Beim Host: das Bild des Simulators kommt als Einzelbilder durch die Leitung (kein Stau mehr, kein «Simulator nicht erreichbar»), Hinweis auf den Simulator der Homepage · Spiele beim Host: Spielesammlung, Amazon Queen und die anderen fertigen Spiele lassen sich laden (nur von GitHub, mit Prüfsumme, bis 400 MB)",
+   "size": 4036222,
+   "sig": "97e687131886477db66dbc7d7e3c134e2d6f9f9a72c570fb715b0530b11394aab191102c83123622c1d8694d46dd8df3b19a7ed0426738968ee041345135fb07",
    "data": {
-    "file": "moveeye_daten_4_15_0.zip",
+    "file": "moveeye_daten_4_15_1.zip",
     "url": "",
-    "sha256": "5049b5302b0d44c6b4c5adbe6b69a00f8c3f9322189f6a34ff8ea6b7f6396004",
-    "size": 14274531,
-    "sig": "fc42ce455383a246f40084029aee0c607da766f9705cfb55d6b32f074b1a4439b257e597fc249ad7432d6dd7f8c8a12668a93fb8e9d2a10ea64824dd8647510f"
+    "sha256": "6a3dc45182934c3003d2ed8d4a6d6d26c6d99f2a43ff24c95551e117ee961cf2",
+    "size": 14284135,
+    "sig": "5873124887c78b9e6769a69795360586c1a0c66fe190b4678e13bf0bc3a28e0f0815ede2e998a19091c0f47d4d86bb4ed7e11a0ddfce04249ee3f7153ec0940d"
    }
   },
   {

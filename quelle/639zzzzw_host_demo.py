@@ -132,15 +132,26 @@ def _host_guard_sockets():
     import socket as _s, errno as _er
     if "connect" in _HOST_REAL:
         return
-    _HOST_REAL.update(connect=_s.socket.connect, connect_ex=_s.socket.connect_ex, sendto=_s.socket.sendto, bind=_s.socket.bind)
+    _HOST_REAL.update(connect=_s.socket.connect, connect_ex=_s.socket.connect_ex, sendto=_s.socket.sendto, bind=_s.socket.bind,
+                      getaddrinfo=_s.getaddrinfo)
+
+    def getaddrinfo(host, port, *a, **k):              # 4.15.1: remember the addresses of GitHub for the game downloads
+        r = _HOST_REAL["getaddrinfo"](host, port, *a, **k)
+        if str(host or "").lower().rstrip(".") in HOST_GH and _host_dl_thread():
+            HOST.setdefault("gh_ips", set()).update(str(x[4][0]) for x in r)
+        return r
 
     def connect(self, addr):
+        if _host_inet(self) and _host_net_ok(addr):
+            return _HOST_REAL["connect"](self, addr)
         if _host_inet(self) and not _host_ip_ok(addr[0] if isinstance(addr, tuple) else addr):
             _host_note(f"a connection to {str(addr)[:60]}")
             raise PermissionError(_er.EACCES, "host mode: no connections out of this computer")
         return _HOST_REAL["connect"](self, addr)
 
     def connect_ex(self, addr):
+        if _host_inet(self) and _host_net_ok(addr):
+            return _HOST_REAL["connect_ex"](self, addr)
         if _host_inet(self) and not _host_ip_ok(addr[0] if isinstance(addr, tuple) else addr):
             _host_note(f"a connection to {str(addr)[:60]}")
             return _er.EACCES
@@ -159,6 +170,26 @@ def _host_guard_sockets():
             raise PermissionError(_er.EACCES, "host mode: listening only on 127.0.0.1")
         return _HOST_REAL["bind"](self, addr)
     _s.socket.connect, _s.socket.connect_ex, _s.socket.sendto, _s.socket.bind = connect, connect_ex, sendto, bind
+    _s.getaddrinfo = getaddrinfo
+
+
+# 4.15.1 (Besitzer 17.11.2026): games on the host - the game downloads (collection, Amazon Queen, the other ready games) may
+# reach GitHub: only these host names, only https (443), only from their own download threads; the files keep their fixed
+# checksums (320 / 639zzg / 639zzn). Everything else stays blocked.
+HOST_GH = ("github.com", "raw.githubusercontent.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com",
+           "codeload.github.com")
+HOST_DL_THREADS = ("games-dl", "fspiele-dl", "fotaq-dl")
+_HOST_TL = threading.local()
+
+
+def _host_dl_thread():
+    return bool(getattr(_HOST_TL, "dl", False)) or threading.current_thread().name in HOST_DL_THREADS
+
+
+def _host_net_ok(addr):
+    if not (isinstance(addr, tuple) and len(addr) >= 2 and addr[1] == 443 and _host_dl_thread()):
+        return False
+    return str(addr[0]).split("%")[0] in HOST.get("gh_ips", ())
 
 
 def _host_guard_programs():
@@ -378,13 +409,142 @@ _open_source_host_base = open_source
 def open_source(spec, thermal=False):                    # wraps: open_source (host mode without --demo: only the web simulator)
     if HOST["on"] and not DEMO["on"] and spec != "demo" and not host_sim_source(spec):
         return None, spec, source_label(spec), "no camera - open the simulator on the homepage"
+    arg = str(spec).partition(":")[2]
+    if HOST["on"] and str(spec).startswith("sim:") and arg.isdigit() and not thermal:
+        src = HostSimSnap(int(arg))                     # 4.15.1: single pictures through /simtun instead of the MJPEG stream
+        ok, _f = src.read()
+        if ok:
+            return src, spec, source_label(spec), ""
+        src.release()
+        return None, spec, source_label(spec), "simulator not reachable - is it running?"
     return _open_source_host_base(spec, thermal)
+
+
+class HostSimSnap:
+    """host mode (4.15.1): the camera of the web simulator as single pictures (/cam/<n>/snapshot.jpg) through the door. An MJPEG
+    stream piles up in the WebSocket of the browser when its upload or its drawing is slower than the stream - then the pictures
+    came seconds late, MoveEye reconnected every 6 s and /state waited behind them («simulator not reachable»). One request
+    at a time can never pile up: the rate follows the line by itself (at most sim_fps)."""
+
+    def __init__(self, cam):
+        self.cam = cam; self.c = None; self.t = 0.0; self.size = None
+        self.gap = 1.0 / max(1.0, float(sim_cam_fps(cam)))
+
+    def _get(self):
+        import http.client
+        if self.c is None:
+            self.c = http.client.HTTPConnection("127.0.0.1", HOST_SIM_DOOR, timeout=20)
+        self.c.request("GET", f"/cam/{self.cam}/snapshot.jpg", headers={"Connection": "keep-alive"})
+        r = self.c.getresponse(); b = r.read()
+        if r.status != 200 or not b:
+            raise OSError(f"snapshot {r.status}")
+        return b
+
+    def read(self):
+        w = self.gap - (time.time() - self.t)
+        if w > 0:
+            time.sleep(w)
+        self.t = time.time()
+        try:
+            b = self._get()
+        except Exception:
+            self.release()
+            return False, None
+        f = cv2.imdecode(np.frombuffer(b, np.uint8), cv2.IMREAD_COLOR)
+        if f is None:
+            return False, None
+        self.size = (f.shape[1], f.shape[0])
+        return True, f
+
+    def set_fps(self, fps):
+        self.gap = 1.0 / max(1.0, float(fps or sim_cam_fps(self.cam)))
+
+    def release(self):
+        c, self.c = self.c, None
+        if c is not None:
+            try:
+                c.close()
+            except Exception:
+                pass
+
+
+HOST_GAMES_BYTES = 400 * 1024 * 1024                   # 4.15.1 (Besitzer): games up to 400 MB on the host
+_HOST_GU = {"t": 0.0, "n": 0}
+
+
+def _host_games_used():
+    """bytes of the games in the data folder (collection, ready games, Amazon Queen, their downloads) - at most every 10 s"""
+    if time.time() - _HOST_GU["t"] < 10:
+        return _HOST_GU["n"]
+    n = 0
+    for d in (games_dir(), fs_root(), fs_dl_dir(), fotaq_dir(), fotaq_dl_dir()):
+        for root, _ds, fs in os.walk(d):
+            for f in fs:
+                try:
+                    n += os.lstat(os.path.join(root, f)).st_size
+                except OSError:
+                    pass
+    _HOST_GU.update(t=time.time(), n=n)
+    return n
+
+
+_bio_free_need_host_base = bio_free_need
+
+
+def bio_free_need():                                     # wraps: bio_free_need (639zzd) - on the host the games budget counts
+    """«free - need < bio_free_need()» = «need > what is left of the 400 MB» (never more than the disk really has)"""
+    if not HOST["on"]:
+        return _bio_free_need_host_base()
+    try:
+        free = shutil.disk_usage(DATA_DIR).free
+    except OSError:
+        free = 0
+    left = max(0, min(HOST_GAMES_BYTES - _host_games_used(), free - 64 * 1024 * 1024))
+    return free - left
+
+
+_games_install_host_base = games_install
+
+
+def games_install():                                     # wraps: games_install (340) - the collection may reach GitHub
+    _HOST_TL.dl = True
+    try:
+        return _games_install_host_base()
+    finally:
+        _HOST_TL.dl = False
+        _HOST_GU["t"] = 0.0
+
+
+def host_public_base():
+    """the address of MoveEye as the visitor sees it (https://<homepage>/demo) - for links and QR codes"""
+    from flask import request
+    proto = (request.headers.get("X-Forwarded-Proto") or "https").split(",")[0].strip()
+    host = (request.headers.get("X-Forwarded-Host") or request.host or "").split(",")[0].strip()
+    return f"{proto}://{host}{HOST['prefix']}"
+
+
+HOST_SIM_HINT = "Open the simulator on moveeye.kevlaschef.com/Sim/ (same browser or phone)"
+HOST_SIM_LINK = "Open the simulator"
+_simwait_texts_host_base = simwait_texts
+
+
+def simwait_texts(r, lang=None):                        # wraps: simwait_texts (639y) - on the host no «simulator on the PC»
+    d = _simwait_texts_host_base(r, lang)
+    if HOST["on"]:
+        L = norm_lang(lang) if lang else cur_lang()
+        d.update(hint=tr(HOST_SIM_HINT, L), hint2="", link=tr(HOST_SIM_LINK, L), url="../Sim/")
+    return d
 
 
 HOST_NA = "not available on the host"
 HOST_AI = ("/api/ki/", "/api/tausch/bio", "/api/ai_model", "/api/own_model", "/api/piper")   # 4.15.0: no AI model on the host (RAM)
 for _k, _v in {HOST_NA: ("auf dem Host nicht verfügbar", "non disponible sur l'hébergeur", "non disponibile sull'host",
-                         "betg disponibel sin il host")}.items():
+                         "betg disponibel sin il host"),
+               HOST_SIM_HINT: ("Öffne den Simulator auf moveeye.kevlaschef.com/Sim/ (gleicher Browser oder Handy)",
+                               "Ouvre le simulateur sur moveeye.kevlaschef.com/Sim/ (même navigateur ou téléphone)",
+                               "Apri il simulatore su moveeye.kevlaschef.com/Sim/ (stesso browser o telefono)",
+                               "Avra il simulatur sin moveeye.kevlaschef.com/Sim/ (il medem navigatur u il telefonin)"),
+               HOST_SIM_LINK: ("Simulator öffnen", "Ouvrir le simulateur", "Apri il simulatore", "Avrir il simulatur")}.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
@@ -575,6 +735,22 @@ def host_routes(app):
     """the WebSocket of the web simulator (only in host mode; the TCP tunnel of 180 stays off)"""
     from flask import request, Response
     import base64 as _b64
+
+    @app.after_request
+    def host_party(resp):                                # 4.15.1: the game page on the host - right links, no rest mode
+        if request.path != "/api/party" or resp.mimetype != "application/json":
+            return resp
+        try:
+            d = json.loads(resp.get_data())
+            d["lan_url"] = ""                            # «without login in your own Wi-Fi» does not exist on the host
+            d["no_rest"] = True                          # the game server of the rest mode has its own port - not reachable here
+            if d.get("url") and "/p/" in d["url"]:
+                d["url"] = host_public_base() + "/p/" + d["url"].split("/p/", 1)[1]
+                d["qr"] = qr_svg(d["url"])
+            resp.set_data(json.dumps(d))
+        except Exception:
+            pass
+        return resp
 
     @app.before_request
     def host_guard():                                    # 4.15.0: without --demo the demo guard of 550 is off - the same routes here
