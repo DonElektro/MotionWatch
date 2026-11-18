@@ -8,6 +8,9 @@ extends Node
 ##   MoveEye -> «OPEN <id> 8765»: eine neue Verbindung (wie TCP zu Port 8765) – hier ein Kanal, den net.gd wie einen
 ##             StreamPeerTCP behandelt (add_peer); beide Richtungen: Binär = 4 Byte Kanal (big endian) + Bytes; «CLOSE <id>»
 ##   «PING» / «PONG» (Text); «TAKEN»: ein neueres Simulator-Fenster hat übernommen – nicht von selbst neu verbinden.
+##   «VIS hidden» / «VIS visible» (Text, Sim 3.72.0): der Tab dieses Simulators ist im Hintergrund / wieder sichtbar. Im
+##             Hintergrund zeichnet der Browser nichts (requestAnimationFrame steht, Godot rechnet nicht) - MoveEye 4.16.0 behält
+##             dann das letzte Bild, fragt nichts und verbindet nicht neu; die Leitung hält (der Browser beantwortet Pings selbst).
 ## Verbunden: main.stream_on = true (main.connected() / Bilder wie mit einem echten MoveEye), getrennt: wieder wie vorher.
 ## Wird von web.gd (nur im Browser) angelegt:  var wm = preload("res://scripts/web_moveeye.gd").new(); wm.main = main; main.add_child(wm)
 ## Zustand für die Oberfläche: state() -> {"on", "status": "aus|verbinde|verbunden|besetzt|fehler", "url", "kanaele"}.
@@ -27,6 +30,7 @@ var _next := 0.0
 var _fails := 0
 var _was_stream := false
 var _url := ""
+var _vis_cb = null                           # JavaScriptBridge-Rückruf für «visibilitychange» (muss am Leben bleiben)
 
 
 class Kanal extends RefCounted:
@@ -83,6 +87,28 @@ func _ready() -> void:
 		var q = JavaScriptBridge.eval("new URLSearchParams(location.search).get('moveeye') || ''", true)
 		if typeof(q) == TYPE_STRING and str(q).to_lower() in ["aus", "off", "0", "nein", "no"]:
 			on = false
+		# der Rückruf läuft im Ereignis des Browsers - auch wenn der Tab gerade verschwindet und Godot danach still steht
+		_vis_cb = JavaScriptBridge.create_callback(_vis_changed)
+		var doc = JavaScriptBridge.get_interface("document")
+		if doc != null:
+			doc.addEventListener("visibilitychange", _vis_cb)
+
+
+func im_hintergrund() -> bool:
+	"""der Tab ist nicht sichtbar (document.visibilityState) - ausserhalb des Browsers nie"""
+	if not OS.has_feature("web"):
+		return false
+	return str(JavaScriptBridge.eval("document.visibilityState", true)) == "hidden"
+
+
+func _vis_changed(_args) -> void:
+	_vis_senden()
+
+
+func _vis_senden() -> void:
+	"""MoveEye sagen, ob der Tab sichtbar ist (gleich beim Wechsel, ohne auf den nächsten Godot-Frame zu warten)"""
+	if verbunden():
+		_ws_send("VIS " + ("hidden" if im_hintergrund() else "visible"))
 
 
 func adresse() -> String:
@@ -218,6 +244,7 @@ func _text(m: String, t: float) -> void:
 				_was_stream = bool(main.stream_on)
 				main.stream_on = true                # main.connected(): wie mit einem echten MoveEye (Bilder nur, wenn es fragt)
 			print("web: mit dem Demo-MoveEye verbunden (%s)" % _url)
+			_vis_senden()                            # 3.72.0: gleich sagen, ob der Tab sichtbar ist
 		"NO":
 			_trennen("fehler")
 			_fehler(t)

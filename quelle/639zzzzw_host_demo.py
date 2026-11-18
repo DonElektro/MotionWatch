@@ -5,6 +5,10 @@
 #   camera; without it the normal «no camera» picture (with --demo still the drawn scene). Settings and recordings stay
 #   (no nightly reset; the folder stays under ~1 GB through the normal clean-up, oldest recordings first: _host_fixed);
 #   motion detection only, no AI model (person detector, BioCLIP, Blinki, voices: «not available on the host», RAM); no push.
+#   4.16.0 (Besitzer 18.11.2026, the host has 1.5 GB RAM / 2 GB disk): the AI detection (person / animal / vehicle) is back -
+#   its model only from its fixed source with fixed checksums, from its own thread (host_ai_download); Blinki, BioCLIP and
+#   the voices stay off. Continuous recording + time-lapse together at most 300 MB (host_media_trim). The tab of the web
+#   simulator in the background («VIS hidden»): the last picture stays, nothing is asked, the line holds, no watchdog banner.
 #   Started by demo_start.py (repository root) with  --headless --bind 127.0.0.1 --port $PORT --host-modus
 #   --url-prefix /demo --config <folder>/demo_daten. demo_start.py picks the newest signed version and updates it every
 #   6 h (only signed files) - this part is what MoveEye itself does in host mode:
@@ -46,7 +50,7 @@ HOST_NO_MODULES = ("RPi", "gpiozero", "lgpio", "pigpio", "smbus", "smbus2", "spi
                    "board", "busio", "digitalio", "adafruit_pca9685", "adafruit_servokit", "adafruit_blinka", "bluetooth", "dbus",
                    "pydbus", "gi", "serial", "usb", "evdev", "pyaudio", "sounddevice", "alsaaudio", "paramiko", "pysftp")
 HOST_BLOCK = ("/api/homepage", "/api/tunnel", "/api/helper", "/api/nettest", "/api/notify_test", "/api/report/send", "/api/sms",
-              "/api/storage", "/api/usb", "/api/stick", "/api/soundev", "/api/talk", "/api/piper", "/api/homekit", "/api/smalltv",
+              "/api/storage", "/api/usb", "/api/soundev", "/api/talk", "/api/piper", "/api/homekit", "/api/smalltv",
               "/api/sim/upload", "/api/own_model", "/api/fehler/fix", "/api/turbo", "/api/radio", "/api/dev", "/api/simhub",
               "/api/simintern", "/api/webpush", "/api/update", "/api/fbx/flush", "/api/relay", "/api/disco", "/api/light",
               "/api/tausch/smb", "/api/storm_test", "/api/seclogin", "/api/push")
@@ -54,20 +58,25 @@ HOST_FPS = 4.0                            # pictures per second of the drawn sce
 HOST_SIM_DOOR = 18765                     # the same door as the tunnel of 180 (sim_url http://127.0.0.1:18765, _tun_reclaim)
 HOST_WS_MAX = 8 * 1024 * 1024             # one WebSocket message of the simulator (a camera picture is ~100 KB)
 HOST_WS_LINES = 4                         # simulator windows at the same time (the newest one is used)
+HOST_AI_EVERY = 3                         # the AI looks at every 3rd picture (4.16.0: measured with --kern 0.5, the live picture keeps its rate)
+HOST_MEDIA_BYTES = 300 * 1024 * 1024      # 4.16.0: continuous recording + time-lapse together (oldest first), apart from the 0.5 GB of
+                                          # the alarm recordings, the 400 MB of the games and the 0.2 GB of the backpack
 _HOST_REAL = {}
 
 
 def _host_fixed():
     """settings that never change in host mode (those that reach outside, the system or other folders)"""
-    d = {"record_dir": os.path.join(HOST["data"] or DATA_DIR, "recordings"), "record_max_gb": 0.5, "ai_enabled": False,
+    d = {"record_dir": os.path.join(HOST["data"] or DATA_DIR, "recordings"), "record_max_gb": 0.5,
          "tausch_total_gb": 0.2, "tausch_user_gb": 0.2, "tausch_file_mb": 50.0,    # 4.15.0: the folder stays under ~1 GB (oldest first)
          "update_mode": "off", "update_url": "", "update_token": "", "update_unsigned": False, "sim_url": f"http://127.0.0.1:{HOST_SIM_DOOR}",
          "sim_auto": False, "sim_autostart": False, "hotspot_on": False, "mqtt_on": False, "backup_type": "off", "backup_url": "",
          "fleet": [], "helper_serve": False, "helper_use": False, "helper_url": "", "tunnel_on": False, "notify_on": False,
          "email_on": False, "sms_on": False, "webpush_on": False, "hp_base": "", "hp_key": "", "hp_auto": False, "hp_public": "",
          "web_password": "", "web_pw_hash": "", "map_online": False, "ai_own_url": "", "lock_on": False, "source": None,
-         "web_quality": 60, "web_width": 640, "proc_width": 320, "ai_every": 3, "sim_fps": 4, "sim_eco": True, "loop_on": False,
-         "timelapse_on": False}                    # half a core: fewer / smaller pictures (measured with werkzeuge/host_demo_test.py --ram)
+         "web_quality": 60, "web_width": 640, "proc_width": 320, "ai_every": HOST_AI_EVERY, "sim_fps": 4, "sim_eco": True,
+         "timelapse_max_gb": HOST_MEDIA_BYTES / 1024 ** 3}   # half a core: fewer / smaller pictures (measured with werkzeuge/host_demo_test.py --ram)
+    # 4.16.0 (Besitzer 18.11.2026, the host has 1.5 GB RAM / 2 GB disk): AI detection (person / animal / vehicle), continuous
+    # recording and time-lapse are free again (ai_enabled, loop_on, timelapse_on no longer fixed); loop + time-lapse share 300 MB
     return {k: v for k, v in d.items() if k in CFG}
 
 
@@ -137,8 +146,9 @@ def _host_guard_sockets():
 
     def getaddrinfo(host, port, *a, **k):              # 4.15.1: remember the addresses of GitHub for the game downloads
         r = _HOST_REAL["getaddrinfo"](host, port, *a, **k)
-        if str(host or "").lower().rstrip(".") in HOST_GH and _host_dl_thread():
-            HOST.setdefault("gh_ips", set()).update(str(x[4][0]) for x in r)
+        kind = _host_dl_kind()                           # 4.16.0: and of the fixed source of the AI model for its own thread
+        if kind and str(host or "").lower().rstrip(".") in HOST_DL_HOSTS[kind]:
+            HOST.setdefault(kind, set()).update(str(x[4][0]) for x in r)
         return r
 
     def connect(self, addr):
@@ -179,17 +189,30 @@ def _host_guard_sockets():
 HOST_GH = ("github.com", "raw.githubusercontent.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com",
            "codeload.github.com")
 HOST_DL_THREADS = ("games-dl", "fspiele-dl", "fotaq-dl")
+# 4.16.0 (Besitzer 18.11.2026): the AI model (SSD MobileNet V2) from its one fixed source, only from its own thread «ai-model»,
+# with fixed checksums (host_ai_download) - the same gate as the games: host names, https, thread, then the addresses it resolved
+HOST_AI_THREAD = "ai-model"
+HOST_DL_HOSTS = {"gh_ips": HOST_GH, "ai_ips": ("storage.googleapis.com", "raw.githubusercontent.com")}
 _HOST_TL = threading.local()
 
 
+def _host_dl_kind():
+    """which download may go out of this thread: "gh_ips" (games), "ai_ips" (AI model) or "" (none)"""
+    n = threading.current_thread().name
+    if getattr(_HOST_TL, "dl", False) or n in HOST_DL_THREADS:
+        return "gh_ips"
+    return "ai_ips" if n == HOST_AI_THREAD else ""
+
+
 def _host_dl_thread():
-    return bool(getattr(_HOST_TL, "dl", False)) or threading.current_thread().name in HOST_DL_THREADS
+    return bool(_host_dl_kind())
 
 
 def _host_net_ok(addr):
-    if not (isinstance(addr, tuple) and len(addr) >= 2 and addr[1] == 443 and _host_dl_thread()):
+    kind = _host_dl_kind()
+    if not (isinstance(addr, tuple) and len(addr) >= 2 and addr[1] == 443 and kind):
         return False
-    return str(addr[0]).split("%")[0] in HOST.get("gh_ips", ())
+    return str(addr[0]).split("%")[0] in HOST.get(kind, ())
 
 
 def _host_guard_programs():
@@ -341,6 +364,10 @@ def _host_loop():
         if n % 15 == 0:
             _host_trim()
         try:
+            if n % 15 == 7:
+                host_media_trim()                        # 4.16.0: continuous recording + time-lapse at most 300 MB
+            if n == 15:
+                _host_ai_auto()                          # 4.16.0: the AI model once, 30 s after the start (if it is missing)
             _host_notes_flush()
             host_enforce(True)
             _host_sim_tick()
@@ -445,15 +472,22 @@ class HostSimSnap:
         if w > 0:
             time.sleep(w)
         self.t = time.time()
+        if host_sim_hidden():                           # 4.16.0: the tab of the simulator is in the background (the browser
+            f = HOST.get("snap", {}).get(self.cam)      # draws nothing there): its last picture, no request, no reconnecting
+            return (True, f.copy()) if f is not None else (False, None)
+        HOST["snap_busy"] = time.time()
         try:
             b = self._get()
         except Exception:
             self.release()
             return False, None
+        finally:
+            HOST["snap_busy"] = 0.0
         f = cv2.imdecode(np.frombuffer(b, np.uint8), cv2.IMREAD_COLOR)
         if f is None:
             return False, None
         self.size = (f.shape[1], f.shape[0])
+        HOST.setdefault("snap", {})[self.cam] = f.copy()
         return True, f
 
     def set_fps(self, fps):
@@ -515,6 +549,281 @@ def games_install():                                     # wraps: games_install 
         _HOST_GU["t"] = 0.0
 
 
+# ---- 4.16.0: the AI model (SSD MobileNet V2: person, animal, vehicle) from its one fixed source ----------------------------
+HOST_AI_TGZ = "https://storage.googleapis.com/download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz"
+HOST_AI_TGZ_SHA1 = "69c93d29e292bc9682396a5c78355b1dfe481b61"      # the checksums OpenCV pins for this archive and its model
+HOST_AI_PB_SHA1 = "35d571ac314f1d32ae678a857f87cc0ef6b220e8"       # (opencv_extra testdata/dnn/download_models.py)
+HOST_AI_PBTXT = "https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
+HOST_AI_PBTXT_SHA256 = "cfbecf9447c384403ef5cf695f4cd0bb4840c1312938280350639a9a8e82d303"
+HOST_AI_TGZ_MAX = 260 * 1024 * 1024                                # (the archive has 187 MB, the model 67 MB)
+HOST_AI_PB_MAX = 120 * 1024 * 1024
+
+
+class _HostHashReader:
+    """the archive while it arrives: checksum and size on the way (it is never written to the disk)"""
+    def __init__(self, r, limit):
+        self.r = r; self.h = hashlib.sha1(); self.n = 0; self.limit = limit
+        self.total = int(r.headers.get("Content-Length") or 0)
+
+    def read(self, n=-1):
+        b = self.r.read(n if n and n > 0 else 1 << 16)
+        self.n += len(b)
+        if self.n > self.limit:
+            raise RuntimeError("the file is bigger than expected")
+        self.h.update(b)
+        AI_MODEL["pct"] = min(89, int(self.n * 90 / self.total)) if self.total else min(89, self.n // (2 * 1024 * 1024))
+        return b
+
+
+def host_ai_download():
+    """the AI model on the host: only HOST_AI_TGZ and HOST_AI_PBTXT, the archive streamed (no 190 MB on the disk), used only
+    with the right checksums; its own thread «ai-model» is the only one that may reach these two addresses (_host_net_ok)"""
+    if AI_MODEL["busy"]:
+        return False, "already running"
+    AI_MODEL.update(busy=True, msg="downloading", pct=0)
+
+    def run():
+        import tarfile, urllib.request as _u
+        dst = os.path.join(DATA_DIR, "models")
+        pb_tmp, tx_tmp = os.path.join(dst, AIDetector.PB + ".part"), os.path.join(dst, AIDetector.PBTXT + ".part")
+        op = _u.build_opener(_u.ProxyHandler({}))
+        hd = {"User-Agent": "MotionWatch/" + APP_VERSION}
+        try:
+            os.makedirs(dst, exist_ok=True)
+            got = None
+            with op.open(_u.Request(HOST_AI_TGZ, headers=hd), timeout=60) as r:
+                rd = _HostHashReader(r, HOST_AI_TGZ_MAX)
+                with tarfile.open(fileobj=rd, mode="r|gz") as tf_:
+                    for m in tf_:
+                        if got is None and m.isfile() and m.name.endswith("/" + AIDetector.PB):
+                            if m.size > HOST_AI_PB_MAX:
+                                raise RuntimeError("the model file is bigger than expected")
+                            src, ph = tf_.extractfile(m), hashlib.sha1()
+                            with open(pb_tmp, "wb") as f:
+                                while True:
+                                    b = src.read(1 << 16)
+                                    if not b:
+                                        break
+                                    f.write(b); ph.update(b)
+                            got = ph.hexdigest()
+                while rd.read(1 << 16):                  # the rest of the archive: its checksum counts too
+                    pass
+            if got is None:
+                raise RuntimeError("model file missing in the archive")
+            if rd.h.hexdigest() != HOST_AI_TGZ_SHA1 or got != HOST_AI_PB_SHA1:
+                raise RuntimeError("the checksum of the model is wrong")
+            with op.open(_u.Request(HOST_AI_PBTXT, headers=hd), timeout=60) as r:
+                txt = r.read(2 * 1024 * 1024)
+            if hashlib.sha256(txt).hexdigest() != HOST_AI_PBTXT_SHA256:
+                raise RuntimeError("the checksum of the description file is wrong")
+            with open(tx_tmp, "wb") as f:
+                f.write(txt)
+            AI_MODEL["pct"] = 95
+            os.replace(pb_tmp, os.path.join(dst, AIDetector.PB)); os.replace(tx_tmp, os.path.join(dst, AIDetector.PBTXT))
+            CFG["ai_enabled"] = True; save_settings()
+            w = WATCH_REF.get("w")
+            if w is not None:
+                w.ai = AIDetector()
+            AI_MODEL.update(msg="ready", pct=100)
+            log_event("ai", "AI model downloaded (fixed source, checksums right) and switched on - host mode")
+        except Exception as e:
+            AI_MODEL.update(msg=f"failed: {tr(str(e))}"[:120], pct=0)
+            log_event("ai", f"AI model download failed: {e}"[:200])
+        finally:
+            AI_MODEL["busy"] = False
+            for p_ in (pb_tmp, tx_tmp):
+                try:
+                    os.remove(p_)
+                except OSError:
+                    pass
+    threading.Thread(target=run, daemon=True, name=HOST_AI_THREAD).start()
+    return True, ""
+
+
+_ai_model_download_host_base = ai_model_download
+
+
+def ai_model_download():                                 # wraps: ai_model_download (170) - on the host only the fixed source
+    if HOST["on"]:
+        return host_ai_download()
+    return _ai_model_download_host_base()
+
+
+def _host_ai_auto():
+    """once, 30 s after the start: the AI model if it is missing (Besitzer: AI detection on the host). MW_HOST_KI_AUTO=0: not
+    (werkzeuge/host_demo_test.py without --ki: no 190 MB download in every test run)"""
+    if HOST.get("ai_auto") or os.environ.get("MW_HOST_KI_AUTO", "1") == "0":
+        return
+    HOST["ai_auto"] = True
+    if not ai_model_paths()[0] and not AI_MODEL["busy"]:
+        ai_model_download()
+
+
+# ---- 4.16.0: continuous recording + time-lapse together at most 300 MB ------------------------------------------------
+def host_media_trim(limit=None):
+    """the pieces of the continuous recording and the photos / videos of the time-lapse together at most HOST_MEDIA_BYTES:
+    the oldest go first (the piece being written and starred photos stay) -> bytes afterwards"""
+    limit = HOST_MEDIA_BYTES if limit is None else limit
+    lr = globals().get("LOOPREC")
+    cur = str(getattr(lr, "cur", "") or "")
+    files = []
+    for p in glob.glob(os.path.join(loop_dir(), "*", "*.mp4")):
+        files.append((p, "loop"))
+    try:
+        files += [(os.path.join(tl_dir(), n), "tl") for n in os.listdir(tl_dir()) if TL_PHOTO_RE.match(n) or TL_VIDEO_RE.match(n)]
+    except OSError:
+        pass
+    items = []
+    for p, k in files:
+        try:
+            st = os.stat(p)
+        except OSError:
+            continue
+        items.append((st.st_mtime, st.st_size, p, k))
+    items.sort()
+    total = sum(x[1] for x in items); removed = 0
+    for _mt, sz, p, k in items:
+        if total <= limit:
+            break
+        rel = os.path.relpath(p, rec_dir()).replace(os.sep, "/")
+        if rel == cur or rel in LIVE_RECS or os.path.basename(p) in LIVE_RECS:
+            continue
+        if k == "tl" and _read_sidecar("timelapse/" + os.path.basename(p)).get("fav"):
+            continue
+        try:
+            os.remove(p); total -= sz; removed += 1
+        except OSError:
+            pass
+    HOST["media_mb"] = total // (1024 * 1024)
+    if removed:
+        log_event("rec", f"Host mode: {removed} old file(s) of the continuous recording / time-lapse deleted, "
+                         f"now {total // 1048576} of {limit // 1048576} MB")
+    return total
+
+
+_LoopRecorder_clean_host_base = LoopRecorder._clean
+
+
+def _host_loop_clean(self):                              # wraps: LoopRecorder._clean (420) - host: the 300 MB, not «1 GB free»
+    """on the host (2 GB disk) «keep 1 GB free» would delete every piece at once: the hours, then the common 300 MB"""
+    if not HOST["on"]:
+        return _LoopRecorder_clean_host_base(self)
+    now = time.time()
+    if now - self.last_clean < 60:
+        return
+    self.last_clean = now
+    keep = float(CFG["loop_hours"]) * 3600
+    for p in glob.glob(os.path.join(loop_dir(), "*", "*.mp4")):
+        try:
+            if os.path.relpath(p, rec_dir()).replace(os.sep, "/") != self.cur and now - os.path.getmtime(p) > keep:
+                os.remove(p)
+        except OSError:
+            pass
+    for dp in glob.glob(os.path.join(loop_dir(), "*")):
+        try:
+            if os.path.isdir(dp) and not os.listdir(dp) and not self.cur.startswith("loop/" + os.path.basename(dp) + "/"):
+                os.rmdir(dp)
+        except OSError:
+            pass
+    try:
+        low = shutil.disk_usage(rec_dir()).free < 150 * 1024 * 1024
+    except OSError:
+        low = False
+    host_media_trim(0 if low else None)                  # the disk almost full: only the piece being written stays
+
+
+# wraps: LoopRecorder._clean
+LoopRecorder._clean = _host_loop_clean
+
+
+# ---- 4.16.0: the simulator tab in the background, the watchdog, the password note ----------------------------------------
+HOST_HIDDEN = "The simulator tab is in the background – picture paused"
+HOST_HIDDEN_TIP = "Tip: open the simulator in its own window next to this one"
+HOST_PW = "Password comes from the host (Basic Auth)"
+
+
+def host_sim_hidden():
+    """the web simulator is connected, but its tab is in the background (it says so: «VIS hidden», Sim 3.72.0)"""
+    m = HOST.get("mux")
+    return bool(m is not None and getattr(m, "hidden", False) and host_ws_active())
+
+
+def host_cam_waits():
+    """the camera loop waits for the web simulator (tab in the background, a picture on its way, not connected) - no hang"""
+    if not (CFG.get("sim_on") or str(CFG.get("source") or "").startswith("sim:")):
+        return False
+    w = WATCH_REF.get("w")
+    return (host_sim_hidden() or not host_ws_active() or float(HOST.get("snap_busy") or 0.0) > 0.0
+            or w is None or getattr(w, "cap", None) is None)
+
+
+_servo_inhibit_host_base = _servo_inhibit
+
+
+def _servo_inhibit(code, on, now):                       # wraps: _servo_inhibit (072) - host: waiting for the web simulator is no hang
+    if on and code == "wd_cam" and HOST["on"] and host_cam_waits():
+        on = False
+    return _servo_inhibit_host_base(code, on, now)
+
+
+_SimLink_tick_host_base = SimLink.tick
+
+
+def _host_simlink_tick(self):                            # wraps: SimLink.tick (350) - host: the tab in the background stays connected
+    if HOST["on"] and host_sim_hidden():
+        SIM.update(t=time.time(), ok=True, msg="connected - the simulator tab is in the background (picture paused)")
+        time.sleep(0.5)
+        return
+    return _SimLink_tick_host_base(self)
+
+
+_host_simlink_tick.__wrapped__ = _SimLink_tick_host_base   # (the self-tests 558 / 558l read the source of SimLink.tick)
+# wraps: SimLink.tick
+SimLink.tick = _host_simlink_tick
+_simwait_reason_host_base = simwait_reason
+
+
+def simwait_reason(now=None):                            # wraps: simwait_reason (639y) - the tab in the background is no lost line
+    if HOST["on"] and CFG.get("sim_on") and str(CFG.get("source") or "").startswith("sim:") and host_sim_hidden():
+        now = time.time() if now is None else now
+        SIMWAIT["why"] = "hidden"
+        return {"why": "hidden", "ver": "", "pct": None, "s": int(max(0.0, now - float(getattr(HOST.get("mux"), "hidden_t", now))))}
+    if SIMWAIT.get("why") == "hidden":
+        SIMWAIT["why"] = None
+    return _simwait_reason_host_base(now)
+
+
+_health_check_host_base = health_check
+
+
+def health_check(lang=None):                             # wraps: health_check - on the host the Basic Auth of the homepage protects
+    out = _health_check_host_base(lang)
+    if not HOST["on"] or web_pw_active():
+        return out
+    items = out.get("items") if isinstance(out, dict) else out
+    if not isinstance(items, list):
+        return out
+    L = norm_lang(lang) if lang else cur_lang()
+    for x in items:
+        if isinstance(x, dict) and x.get("id") == "pw":
+            x.update(level="ok", text=tr(HOST_PW, L), tip="")
+    if isinstance(out, dict) and isinstance(out.get("count"), dict):
+        out["count"] = {k: sum(1 for x in items if isinstance(x, dict) and x.get("level") == k) for k in HEALTH_ORDER}
+    return out
+
+
+_security_check_host_base = security_check
+
+
+def security_check():                                    # wraps: security_check (300) - the same on the tools page
+    r = _security_check_host_base()
+    if HOST["on"] and not web_pw_active():
+        for x in TOOLS["sec"].get("items") or []:
+            if str(x.get("text") or "").startswith("Web password"):
+                x.update(level="ok", text=HOST_PW, tip="")
+    return r
+
+
 def host_public_base():
     """the address of MoveEye as the visitor sees it (https://<homepage>/demo) - for links and QR codes"""
     from flask import request
@@ -525,26 +834,49 @@ def host_public_base():
 
 HOST_SIM_HINT = "Open the simulator on moveeye.kevlaschef.com/Sim/ (same browser or phone)"
 HOST_SIM_LINK = "Open the simulator"
+HOST_SIM_URL = "/Sim/"              # 4.16.0: the simulator of the homepage - absolute, and never given the prefix (HOST_OUTSIDE)
+HOST_OUTSIDE = ("/Sim/",)           # addresses of the homepage itself: the prefix layer and the page script leave them alone
 _simwait_texts_host_base = simwait_texts
 
 
 def simwait_texts(r, lang=None):                        # wraps: simwait_texts (639y) - on the host no «simulator on the PC»
+    L = norm_lang(lang) if lang else cur_lang()
+    if HOST["on"] and r.get("why") == "hidden":          # 4.16.0: the tab of the simulator is in the background
+        return {"title": tr(HOST_HIDDEN, L), "sub": tr("for {t}", L).replace("{t}", _mmss(r.get("s") or 0)),
+                "hint": tr(HOST_HIDDEN_TIP, L), "hint2": "", "link": tr(HOST_SIM_LINK, L), "help": tr("Help", L), "url": HOST_SIM_URL}
     d = _simwait_texts_host_base(r, lang)
     if HOST["on"]:
-        L = norm_lang(lang) if lang else cur_lang()
-        d.update(hint=tr(HOST_SIM_HINT, L), hint2="", link=tr(HOST_SIM_LINK, L), url="../Sim/")
+        d.update(hint=tr(HOST_SIM_HINT, L), hint2="", link=tr(HOST_SIM_LINK, L), url=HOST_SIM_URL)
     return d
 
 
 HOST_NA = "not available on the host"
-HOST_AI = ("/api/ki/", "/api/tausch/bio", "/api/ai_model", "/api/own_model", "/api/piper")   # 4.15.0: no AI model on the host (RAM)
+HOST_AI = ("/api/ki/", "/api/tausch/bio", "/api/own_model", "/api/piper")   # 4.15.0: no Blinki, BioCLIP, own model, voices (RAM)
+HOST_AI_OK = ("/api/ai_model", "/api/tausch")   # 4.16.0: the AI detection (fixed source) and the backpack go (in DEMO_BLOCK)
+
+
+def host_path_in(p, prefixes):
+    """p is one of the addresses or below it («/api/time» is not «/api/timelapse»; «/api/ki/» ends with / - all below)"""
+    for x in prefixes:
+        if p == x.rstrip("/") or p.startswith(x if x.endswith("/") else x + "/"):
+            return True
+    return False
 for _k, _v in {HOST_NA: ("auf dem Host nicht verfügbar", "non disponible sur l'hébergeur", "non disponibile sull'host",
                          "betg disponibel sin il host"),
                HOST_SIM_HINT: ("Öffne den Simulator auf moveeye.kevlaschef.com/Sim/ (gleicher Browser oder Handy)",
                                "Ouvre le simulateur sur moveeye.kevlaschef.com/Sim/ (même navigateur ou téléphone)",
                                "Apri il simulatore su moveeye.kevlaschef.com/Sim/ (stesso browser o telefono)",
                                "Avra il simulatur sin moveeye.kevlaschef.com/Sim/ (il medem navigatur u il telefonin)"),
-               HOST_SIM_LINK: ("Simulator öffnen", "Ouvrir le simulateur", "Apri il simulatore", "Avrir il simulatur")}.items():
+               HOST_SIM_LINK: ("Simulator öffnen", "Ouvrir le simulateur", "Apri il simulatore", "Avrir il simulatur"),
+               HOST_HIDDEN: ("Simulator-Tab ist im Hintergrund – Bild pausiert", "L'onglet du simulateur est en arrière-plan – image en pause",
+                             "La scheda del simulatore è in secondo piano – immagine in pausa",
+                             "Il tab dal simulatur è en il fund – maletg en pausa"),
+               HOST_HIDDEN_TIP: ("Tipp: Simulator in einem eigenen Fenster daneben öffnen",
+                                 "Astuce : ouvre le simulateur dans sa propre fenêtre à côté",
+                                 "Consiglio: apri il simulatore in una finestra propria accanto",
+                                 "Tip: avra il simulatur en ina atgna fanestra sper questa"),
+               HOST_PW: ("Passwort kommt vom Host (Basic Auth)", "Le mot de passe vient de l'hébergeur (Basic Auth)",
+                         "La password viene dall'host (Basic Auth)", "Il pled-clav vegn dal host (Basic Auth)")}.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
@@ -569,7 +901,7 @@ def host_door_start():
         while True:
             cl, _a = srv.accept()
             m = HOST.get("mux")
-            if m is None or m.closed:
+            if m is None or m.closed or m.hidden:         # 4.16.0: a tab in the background answers nothing - at once, not after 20 s
                 cl.close(); continue
             threading.Thread(target=m.channel, args=(cl,), daemon=True, name="hostch").start()
     threading.Thread(target=loop, daemon=True, name="hostdoor").start()
@@ -585,6 +917,7 @@ class _HostWsMux:
     def __init__(self, sock, peer, inst):
         self.s = sock; self.peer = peer; self.inst = inst; self.closed = False; self.seen = time.time()
         self.lock = threading.Lock(); self.ch = {}; self.next = 1; self.bytes = 0
+        self.hidden = False; self.hidden_t = 0.0                # 4.16.0: «VIS hidden|visible» of the simulator (its tab)
 
     def _exact(self, n):
         out = b""
@@ -622,6 +955,7 @@ class _HostWsMux:
                     raise OSError("closed by the simulator")
                 if op == 9:
                     self.send(10, data)
+                self.seen = time.time()                         # 4.16.0: a pong of the browser (also from a tab in the background)
                 continue
             if op:
                 first = op
@@ -683,7 +1017,7 @@ class _HostWsMux:
             try:
                 op, data = self.message()
             except TimeoutError:
-                idle += 1
+                idle = 0 if time.time() - self.seen < 25 else idle + 1    # the browser answered the last ping: still there
                 if idle >= 4:
                     break                                       # 80 s without anything: gone (closed tab, lost network)
                 try:
@@ -710,7 +1044,20 @@ class _HostWsMux:
                         self.text("PONG")
                     except OSError:
                         break
+                elif t[:1] == ["VIS"] and len(t) == 2:
+                    self.set_hidden(t[1] == "hidden")
         self.close()
+
+    def set_hidden(self, h):
+        """the tab of the simulator went to the background (the browser draws nothing there, so no picture and no answer
+        comes) or back: keep the line, the last picture stays (HostSimSnap), no reconnecting; running requests end at once"""
+        if h == self.hidden:
+            return
+        self.hidden = h; self.hidden_t = time.time()
+        if h:
+            for cid in list(self.ch):
+                self.drop(cid, tell=True)
+        log_event("sys", "Web simulator: its tab is in the background - picture paused" if h else "Web simulator: its tab is visible again")
 
     def close(self, why=""):
         if why:
@@ -754,13 +1101,35 @@ def host_routes(app):
 
     @app.before_request
     def host_guard():                                    # 4.15.0: without --demo the demo guard of 550 is off - the same routes here
-        p = request.path
-        ai = p.startswith(HOST_AI) or "/untersuchen" in p or "/tausch/bio" in p
-        sysp = not DEMO["on"] and request.method == "POST" and p.startswith(tuple(x for x in DEMO_BLOCK if x != "/api/tausch"))
+        p = request.path                                 # 4.16.0: whole address parts (before, «/api/stick» = the joystick of
+        ai = host_path_in(p, HOST_AI) or "/untersuchen" in p or "/tausch/bio" in p      # the head was refused as a USB stick,
+        sysp = not DEMO["on"] and request.method == "POST" and host_path_in(p, tuple(x for x in DEMO_BLOCK if x not in HOST_AI_OK))   # «/api/time» the time-lapse)
         if not (ai or sysp):
             return None
         L = norm_lang(request.args.get("lang") or CFG.get("lang"))
         return Response(json.dumps({"ok": False, "error": tr(HOST_NA, L)}), 403, mimetype="application/json")
+
+    @app.before_request
+    def host_simview():                                  # 4.16.0: the simulator tab in the background - the calm picture at once
+        if request.path != "/sim/view.jpg" or not CFG.get("sim_on") or not host_sim_hidden():
+            return None
+        cj = simwait_jpeg(request.args.get("w") or 960)
+        if not cj:
+            return Response("simulator tab in the background", 503, {"Retry-After": "2"})
+        return Response(cj, mimetype="image/jpeg", headers={"Cache-Control": "no-store", "X-MW-Wait": "1"})
+
+    @app.after_request
+    def host_simview_live(resp):                         # 4.16.0: no view of the web simulator - the picture of the Live page
+        if request.path != "/sim/view.jpg" or host_sim_hidden() or not (resp.status_code >= 500 or resp.headers.get("X-MW-Wait")):
+            return resp
+        w = WATCH_REF.get("w")
+        f = getattr(w, "frame_out", None) if w is not None else None
+        if f is None or not sim_picture_ok():
+            return resp
+        ok, buf = cv2.imencode(".jpg", f, [cv2.IMWRITE_JPEG_QUALITY, 70])
+        if not ok:
+            return resp
+        return Response(buf.tobytes(), mimetype="image/jpeg", headers={"Cache-Control": "no-store", "X-MW-Live": "1"})
 
     @app.route("/simtun", websocket=True)
     def host_simtun():
@@ -809,8 +1178,9 @@ _HOST_RW = {"segs": None, "rx": None, "cache": {}, "order": deque()}
 HOST_RW_TYPES = ("text/html", "text/javascript", "application/javascript", "application/x-javascript", "text/css", "application/manifest+json")
 
 HOST_SHIM_JS = r"""(function(){
-var P=%PREFIX%;if(!P||window.__mwBase!==undefined)return;window.__mwBase=P;
-function has(p){return p===P||p.indexOf(P+"/")===0||p.indexOf(P+"?")===0||p.indexOf(P+"#")===0;}
+var P=%PREFIX%,OUT=%OUTSIDE%;if(!P||window.__mwBase!==undefined)return;window.__mwBase=P;
+function out(p){for(var i=0;i<OUT.length;i++){var o=OUT[i];if(p===o.slice(0,-1)||p.indexOf(o)===0)return true;}return false;}
+function has(p){return p===P||p.indexOf(P+"/")===0||p.indexOf(P+"?")===0||p.indexOf(P+"#")===0||out(p);}
 function fix(u){
  if(u instanceof URL)u=u.href;
  if(typeof u!=="string")return u;
@@ -874,10 +1244,11 @@ def host_rewrite(text, prefix, flask_app, html=False):
     segment of the server)"""
     rx, root = _host_segs(flask_app)
     segs = _HOST_RW["segs"]
-    text = rx.sub(lambda m: m.group(1) + prefix + "/" + m.group(2) if m.group(2) in segs else m.group(0), text)
+    text = rx.sub(lambda m: m.group(1) + prefix + "/" + m.group(2) if m.group(2) in segs and "/" + m.group(2) + "/" not in HOST_OUTSIDE
+                  else m.group(0), text)
     text = root.sub(lambda m: m.group(1) + prefix + "/", text)
     if html:
-        tag = "<script>" + HOST_SHIM_JS.replace("%PREFIX%", json.dumps(prefix)) + "</script>"
+        tag = "<script>" + HOST_SHIM_JS.replace("%OUTSIDE%", json.dumps(list(HOST_OUTSIDE))).replace("%PREFIX%", json.dumps(prefix)) + "</script>"
         m = re.search(r"<head\b[^>]*>", text[:4000], re.I) or re.search(r"<html\b[^>]*>", text[:4000], re.I) or re.search(r"<!doctype[^>]*>", text[:400], re.I)
         text = text[:m.end()] + tag + text[m.end():] if m else tag + text
     return text

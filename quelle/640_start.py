@@ -160,7 +160,9 @@ if __name__ == "__main__":
     apply_theme()
     ip = local_ip()
     print(f"MoveEye {APP_VERSION} started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
-    if CFG["web_stream"] and not web_pw_active():
+    if CFG["web_stream"] and not web_pw_active() and HOST["on"]:
+        print("   Password comes from the host (Basic Auth of the homepage)")      # 4.16.0: no false «no password» on the host
+    elif CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:
         if CFG["desktop_notice"] and not nosys:      # started in the background: tell the person at the Pi
