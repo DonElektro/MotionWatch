@@ -81,15 +81,17 @@ def main():
             except Exception:
                 time.sleep(1)
 
-        def lage(want_level, t_max=40, bad=None):          # bad: also wait until the head counts this many problems
+        def lage(want_level, t_max=40, bad=None):          # bad: also wait until the head counts the problems of the list
             t_ = time.time() + t_max; mic = None; s = {}
             while time.time() < t_:
                 h = req("/api/health?lang=de")
                 mic = next((x for x in h.get("items") or [] if x.get("id") == "mic"), None)
                 s = req("/api/state")
-                if mic and mic.get("level") == want_level and mic.get("mic_none") and (bad is None or (h.get("count") or {}).get("bad", 0) == bad):
+                rot_ = [x.get("id") for x in h.get("items") or [] if x.get("level") == "bad"]
+                if mic and mic.get("level") == want_level and mic.get("mic_none") and (bad is None or (h.get("count") or {}).get("bad", 0) == len(rot_)):
                     break
                 time.sleep(1)
+            lage.rot = sorted(x.get("id") for x in h.get("items") or [] if x.get("level") == "bad")   # 4.16.1: from the same answer
             st_ = s.get("state") or {}
             prot = " ".join(x.get("text", "") for x in ((st_.get("protect") or {}).get("items") or []))
             return mic, h.get("count") or {}, (st_.get("health") or {}), prot
@@ -108,10 +110,13 @@ def main():
         pruef(r.get("ok", True) is not False, "Geräusch-Alarm einschalten (%s)" % r)
         mic, cnt, hs, prot = lage("bad")
         pruef(bool(mic) and mic["level"] == "bad" and "Geräusch-Alarm" in mic["text"], "Geräusch-Alarm an: rot, nennt die Funktion (%s)" % mic)
-        pruef(cnt.get("bad", 0) == bad0 + 1, "zählt jetzt als Problem (%d -> %d)" % (bad0, cnt.get("bad", 0)))
+        # 4.16.1: «ai» / «cam» can still change by themselves right after the start (CI) - so the mic line is compared, and the
+        # count with the list of the same answer
+        pruef("mic" in lage.rot and cnt.get("bad", 0) == len(lage.rot), "zählt jetzt als Problem (%d -> %d, %s)" % (bad0, cnt.get("bad", 0), lage.rot))
         req("/api/set", {"key": "noise_alarm", "value": False})
-        mic, cnt, hs, prot = lage("off", bad=bad0)              # the count follows a little later than the item (CI)
-        pruef(bool(mic) and mic["level"] == "off" and cnt.get("bad", 0) == bad0, "wieder aus: wieder grau (%s; rot vorher %s, jetzt %s)" % (mic, bad0_ids, schlecht()))
+        mic, cnt, hs, prot = lage("off", bad=True)              # the count follows a little later than the item (CI)
+        pruef(bool(mic) and mic["level"] == "off" and "mic" not in lage.rot and cnt.get("bad", 0) == len(lage.rot),
+              "wieder aus: wieder grau (%s; rot vorher %s, jetzt %s)" % (mic, bad0_ids, lage.rot))
         if p.poll() is not None:
             FEHLER.append("MoveEye ist während des Tests abgestürzt")
     finally:
