@@ -1,0 +1,2 @@
+# MoveEye 4.16.0: Speicher / CPU mit KI auf einem halben Kern (KI-Modell von der festen Quelle)
+python3 werkzeuge/host_demo_test.py --lauf --ohne-statisch --ram 600 --kern 0.5 --ki
