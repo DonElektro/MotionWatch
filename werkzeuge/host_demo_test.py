@@ -44,7 +44,7 @@ def part_ns():
           "ai_model_download": lambda: (False, "base"), "LoopRecorder": type("LoopRecorder", (), {"_clean": lambda self: None}),
           "_servo_inhibit": lambda code, on, now: None, "SimLink": type("SimLink", (), {"tick": lambda self: None}),
           "simwait_reason": lambda now=None: None, "health_check": lambda lang=None: {"items": [], "count": {}},
-          "security_check": lambda: True}
+          "security_check": lambda: True, "ai_model_dirs": lambda: ["/prog"]}
     src = open(PART, encoding="utf-8").read()
     exec(compile(src, PART, "exec"), ns)
     return ns
@@ -774,7 +774,7 @@ def run(a):
         threading.Thread(target=sim.run, daemon=True).start()
         t1 = time.time(); mag = False; img = None
         import cv2, numpy as np
-        while time.time() - t1 < 60:
+        while time.time() - t1 < 90:
             time.sleep(2)
             c, b, h = get(base + "/snapshot.jpg")
             if c == 200:
@@ -782,7 +782,9 @@ def run(a):
                 if img is not None:
                     m = img.reshape(-1, 3).mean(0)
                     if m[0] > 120 and m[2] > 120 and m[1] < 90:
-                        mag = True; break
+                        mag = True
+            if mag and "/state" in sim.reqs:              # (on half a core the first /state can come after the picture)
+                break
         ok("/state" in sim.reqs, f"MoveEye fragt den Web-Simulator ({len(sim.reqs)} Anfragen: {sorted(set(sim.reqs))[:8]})")
         ok(mag, f"Kamerabild kommt durch die WebSocket-Leitung ({time.time() - t1:.0f} s)")
         time.sleep(25)                                 # 4.15.1: the stream of the fake piles up (8 s per picture) - no matter
@@ -812,7 +814,12 @@ def run(a):
                 ai_ = json.loads(get(base + "/api/health?lang=de", timeout=40)[1])
             except ValueError:
                 ai_ = {}
-            print("   KI-Zeile:", [x for x in (ai_.get("items") or []) if x.get("id") == "ai"][:1])
+            ail = [x for x in (ai_.get("items") or []) if x.get("id") == "ai"][:1]
+            print("   KI-Zeile:", ail)
+            lg = open(os.path.join(data, "motionwatch.log"), errors="replace").read() if os.path.exists(os.path.join(data, "motionwatch.log")) else ""
+            print("   " + "\n   ".join([l[:220] for l in lg.splitlines() if "[ai]" in l][-8:]))
+            ok(bool(ail) and ail[0].get("level") == "ok", f"KI läuft ({ail[0].get('text') if ail else '-'})")
+            ok(os.path.isfile(os.path.join(data, "models", "frozen_inference_graph.pb")), "Modell im Datenordner (geprüfter Download)")
         if bilder and img is not None:
             os.makedirs(bilder, exist_ok=True); cv2.imwrite(os.path.join(bilder, "00_websim_kamerabild.jpg"), img)
         if a.browser:

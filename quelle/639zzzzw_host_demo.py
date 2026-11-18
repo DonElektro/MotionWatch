@@ -640,6 +640,17 @@ def host_ai_download():
     return True, ""
 
 
+_ai_model_dirs_host_base = ai_model_dirs
+
+
+def ai_model_dirs():                                     # wraps: ai_model_dirs (170) - on the host only the checked download
+    """host mode: only the models folder of the data folder (host_ai_download puts only checked files there) - never a
+    file that happens to lie next to the program"""
+    if HOST["on"]:
+        return [os.path.join(DATA_DIR, "models")]
+    return _ai_model_dirs_host_base()
+
+
 _ai_model_download_host_base = ai_model_download
 
 
