@@ -1,0 +1,2 @@
+python3 werkzeuge/host_demo_test.py --lauf --ohne-statisch --ram 600 --kern 0.5 --ki --python /usr/bin/python3
+python3 werkzeuge/host_demo_test.py --lauf --ohne-statisch --ohne-sim
