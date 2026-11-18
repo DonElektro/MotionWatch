@@ -802,7 +802,7 @@ func _fill_more() -> void:
 	if wm != null:                                     # nur im Browser: das Demo-MoveEye auf der Homepage
 		_section("Demo-MoveEye")
 		var cb := CheckButton.new()
-		cb.text = T.t("Mit Demo-MoveEye verbinden")
+		cb.text = T.t("Mit MoveEye auf der Homepage verbinden")
 		cb.button_pressed = bool(wm.on)
 		cb.custom_minimum_size = Vector2(0, 52)
 		cb.focus_mode = Control.FOCUS_NONE

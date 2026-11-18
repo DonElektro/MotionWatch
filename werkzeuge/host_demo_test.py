@@ -39,7 +39,12 @@ def part_ns():
           "open_source": lambda spec, thermal=False: ("base", spec, spec, ""), "source_label": lambda s: str(s),
           "DE": {}, "TRX": {"fr": {}, "it": {}, "rm": {}}, "simwait_texts": lambda r, lang=None: {"hint": "PC", "hint2": "bat"},
           "sim_cam_fps": lambda c: 4, "tr": lambda k, L=None: k, "norm_lang": lambda L: L or "de", "cur_lang": lambda: "de",
-          "bio_free_need": lambda: 2 << 30, "games_install": lambda: None}
+          "bio_free_need": lambda: 2 << 30, "games_install": lambda: None,
+          # 4.16.0: AI model, continuous recording, watchdog, simulator link, health list, tools page
+          "ai_model_download": lambda: (False, "base"), "LoopRecorder": type("LoopRecorder", (), {"_clean": lambda self: None}),
+          "_servo_inhibit": lambda code, on, now: None, "SimLink": type("SimLink", (), {"tick": lambda self: None}),
+          "simwait_reason": lambda now=None: None, "health_check": lambda lang=None: {"items": [], "count": {}},
+          "security_check": lambda: True, "ai_model_dirs": lambda: ["/prog"]}
     src = open(PART, encoding="utf-8").read()
     exec(compile(src, PART, "exec"), ns)
     return ns
@@ -81,7 +86,7 @@ def static():
     ok("log_event(" not in hn.replace("Never log_event", ""), "Sperren schreiben nicht selbst ins Protokoll (LOCK, sonst Verklemmung wie in /api/state)")
     print("2. Skript in den Seiten")
     ns = part_ns()
-    js = ns["HOST_SHIM_JS"].replace("%PREFIX%", json.dumps("/demo"))
+    js = ns["HOST_SHIM_JS"].replace("%OUTSIDE%", json.dumps(list(ns["HOST_OUTSIDE"]))).replace("%PREFIX%", json.dumps("/demo"))
     node = shutil.which("node")
     if node:
         with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as f:
@@ -95,6 +100,8 @@ t("/api/state","/demo/api/state");t("/demo/api/state","/demo/api/state");t("/dem
 t("//cdn.example/x","//cdn.example/x");t("https://other.example/api","https://other.example/api");
 t("http://h.example:8090/api/x","http://h.example:8090/demo/api/x");t("ws://h.example:8090/simtun","ws://h.example:8090/demo/simtun");
 t("wss://h.example:8090/demo/simtun","wss://h.example:8090/demo/simtun");t("/demox","/demo/demox");t("#top","#top");t("?a=1","?a=1");
+t("/Sim/","/Sim/");t("/Sim","/Sim");t("/Sim/index.html?x=1","/Sim/index.html?x=1");t("http://h.example:8090/Sim/","http://h.example:8090/Sim/");
+t("/Simx","/demo/Simx");t("/sim","/demo/sim");
 console.log(c.length?"FEHLER "+c.join("; "):"FIX OK");})();"""
         stub = r"""var window=globalThis;var location={host:"h.example:8090",origin:"http://h.example:8090",pathname:"/demo/"};
 function Noop(){};var XMLHttpRequest=function(){};XMLHttpRequest.prototype.open=function(){};var history={pushState:function(){},replaceState:function(){}};
@@ -115,6 +122,100 @@ window.fetch=function(){};window.open=function(){};window.WebSocket=function(){}
     ns["CFG"].update(web_quality=75, web_width=1280, proc_width=480, ai_every=3, sim_fps=6, sim_eco=True, loop_on=False, timelapse_on=False)
     fx = ns["_host_fixed"]()
     ok(fx.get("web_quality") == 60 and fx.get("web_width") == 640 and fx.get("proc_width") == 320, "Live-Bild kleiner im Host-Modus (CPU)")
+    print("2b. 4.16.0: Sperren nach ganzen Adressteilen, Passwort, Simulator-Tab, Watchdog, KI, 300 MB")
+    hp = ns["host_path_in"]
+    ok(hp("/api/time", ("/api/time",)) and hp("/api/ki/ask", ("/api/ki/",)) and hp("/api/talk/stop", ("/api/talk",))
+       and not hp("/api/timelapse", ("/api/time",)) and not hp("/api/stick", ("/api/stick2",)) and not hp("/api/pushpause", ("/api/push",)),
+       "Sperren nach ganzen Adressteilen (/api/time sperrt nicht /api/timelapse)")
+    ok("/api/stick" not in ns["HOST_BLOCK"], "Joystick des Kopfs (/api/stick) nicht mehr gesperrt")
+    ok("/api/ai_model" not in ns["HOST_AI"] and "/api/ai_model" in ns["HOST_AI_OK"] and "/api/ki/" in ns["HOST_AI"] and "/api/piper" in ns["HOST_AI"]
+       and "/api/tausch/bio" in ns["HOST_AI"] and "/api/own_model" in ns["HOST_AI"], "KI-Erkennung frei, Blinki / BioCLIP / eigenes Modell / Stimmen gesperrt")
+    ns["CFG"].update(ai_enabled=True, loop_on=True, timelapse_on=True, timelapse_max_gb=2.0)
+    fx = ns["_host_fixed"]()
+    ok("ai_enabled" not in fx and "loop_on" not in fx and "timelapse_on" not in fx and abs(fx["timelapse_max_gb"] * 1024 - 300) < 1e-6,
+       f"KI, Daueraufnahme, Zeitraffer frei; Zeitraffer höchstens 300 MB ({fx.get('timelapse_max_gb')})")
+    ok(ns["HOST_DL_HOSTS"]["ai_ips"] == ("storage.googleapis.com", "raw.githubusercontent.com") and ns["HOST_AI_THREAD"] == "ai-model"
+       and ns["HOST_AI_TGZ"].startswith("https://storage.googleapis.com/") and len(ns["HOST_AI_PBTXT_SHA256"]) == 64
+       and len(ns["HOST_AI_PB_SHA1"]) == 40 and len(ns["HOST_AI_TGZ_SHA1"]) == 40, "KI-Modell: eine feste Quelle mit festen Prüfsummen")
+    ns["HOST"]["on"] = True
+    ns.update(web_pw_active=lambda: False, HEALTH_ORDER=("bad", "warn", "ok", "off"))
+    ns["_health_check_host_base"] = lambda lang=None: {"items": [{"id": "pw", "level": "bad", "text": "no password", "tip": "x"},
+                                                                {"id": "cpu", "level": "ok", "text": "", "tip": ""}],
+                                                      "count": {"bad": 1, "warn": 0, "ok": 1, "off": 0}}
+    h = ns["health_check"]("de")
+    pw = [x for x in h["items"] if x["id"] == "pw"][0]
+    ok(pw["level"] == "ok" and "Basic Auth" in pw["text"] and h["count"]["bad"] == 0 and h["count"]["ok"] == 2,
+       f"Host: «Passwort kommt vom Host (Basic Auth)» statt «kein Passwort» ({pw}, {h['count']})")
+    ns["HOST"]["on"] = False
+    h = ns["health_check"]("de")
+    ok([x for x in h["items"] if x["id"] == "pw"][0]["level"] == "bad", "normales Gerät: «kein Passwort» bleibt")
+    ns["HOST"]["on"] = True
+    tx = ns["simwait_texts"]({"why": "connect", "s": 3}, "de")
+    ok(tx.get("url") == "/Sim/", f"Link «Simulator öffnen» absolut /Sim/ ({tx.get('url')!r})")
+    ns["_mmss"] = lambda s: f"0:{int(s):02d}"
+    tx = ns["simwait_texts"]({"why": "hidden", "s": 25}, "de")
+    ok(tx["title"] == ns["HOST_HIDDEN"] and tx["hint"] == ns["HOST_HIDDEN_TIP"] and tx["url"] == "/Sim/" and "0:25" in tx["sub"],
+       f"Simulator-Tab im Hintergrund: eigener Text, kein «Verbinde …» ({tx['title']!r})")
+    rw_ = ns["host_rewrite"]('<a href="/Sim/">x</a> fetch("/api/state")', "/demo", FakeApp(["/api/state", "/Sim/<p>"]))
+    ok('href="/Sim/"' in rw_ and '"/demo/api/state"' in rw_, f"Server: /Sim/ bleibt ohne Vorsilbe ({rw_!r})")
+    ns["_HOST_RW"]["segs"] = None                         # (the segments of the next fake server)
+    # the line of the web simulator: «VIS hidden» keeps it, the last picture stays, the watchdog waits
+    import numpy as np
+    class FakeSock:
+        def __init__(self): self.out = []
+        def sendall(self, b): self.out.append(b)
+        def shutdown(self, n): pass
+    ns.update(log_event=lambda k, t: None, WATCH_REF={"w": type("W", (), {"cap": object()})()}, STATE={}, SIM={}, SIMWAIT={"why": None},
+              cv2=type("cv2", (), {"imdecode": staticmethod(lambda b, f: np.zeros((4, 4, 3), np.uint8)), "IMREAD_COLOR": 1}), np=np)
+    m = ns["_HostWsMux"](FakeSock(), "peer", "x"); ns["HOST"]["mux"] = m
+    ok(not ns["host_sim_hidden"](), "sichtbar: kein Hintergrund")
+    sn = ns["HostSimSnap"](0); sn.gap = 0.0
+    sn._get = lambda: b"jpg"
+    ok(sn.read()[0], "Bild vom sichtbaren Simulator")
+    m.set_hidden(True)
+    ok(ns["host_sim_hidden"]() and m.hidden_t > 0, "«VIS hidden»: Tab im Hintergrund")
+    sn._get = lambda: (_ for _ in ()).throw(OSError("no answer"))
+    r1, f1 = sn.read()
+    ok(r1 and f1 is not None and f1.shape == (4, 4, 3), "im Hintergrund: das letzte Bild, keine Anfrage, kein Neuverbinden")
+    ns["CFG"].update(sim_on=True, source="sim:0")
+    ok(ns["simwait_reason"]()["why"] == "hidden", "Ruhebild-Grund «hidden»")
+    seen = {}
+    ns["_servo_inhibit_host_base"] = lambda code, on, now: seen.update(on=on)
+    ns["_servo_inhibit"]("wd_cam", True, 0.0)
+    ok(seen.get("on") is False, "Watchdog-Banner nicht, solange der Simulator-Tab im Hintergrund ist")
+    m.set_hidden(False)
+    ns["_servo_inhibit"]("wd_cam", True, 0.0)
+    ok(seen.get("on") is True, "echtes Hängen (Simulator sichtbar, kein Bild unterwegs): Watchdog bleibt")
+    ns["HOST"]["snap_busy"] = time.time()
+    ns["_servo_inhibit"]("wd_cam", True, 0.0)
+    ok(seen.get("on") is False, "ein Bild ist zum Web-Simulator unterwegs: kein Watchdog-Banner")
+    ns["HOST"]["snap_busy"] = 0.0
+    ns["_servo_inhibit"]("uv", True, 0.0)
+    ok(seen.get("on") is True, "andere Gründe (Unterspannung) unverändert")
+    ns["HOST"]["mux"] = None; ns["HOST"]["on"] = False; ns["CFG"].update(sim_on=False, source="demo")
+    # 300 MB: continuous recording + time-lapse together, oldest first
+    md = tempfile.mkdtemp(prefix="hostmedia_")
+    try:
+        rec = os.path.join(md, "rec"); os.makedirs(os.path.join(rec, "loop", "2026-11-18")); os.makedirs(os.path.join(rec, "timelapse"))
+        ns.update(rec_dir=lambda: rec, loop_dir=lambda: os.path.join(rec, "loop"), tl_dir=lambda: os.path.join(rec, "timelapse"),
+                  glob=__import__("glob"), LIVE_RECS=set(), _read_sidecar=lambda n: {"fav": n.endswith("_000300.jpg")},
+                  TL_PHOTO_RE=re.compile(r"^tl_(\d{8})_(\d{6})\.jpg$"), TL_VIDEO_RE=re.compile(r"^tlv_[0-9A-Za-z_\-]{1,40}\.mp4$"),
+                  LOOPREC=type("L", (), {"cur": "loop/2026-11-18/10-50.mp4"})())
+        made = []
+        for i, (rel, sz) in enumerate([("loop/2026-11-18/10-00.mp4", 6), ("timelapse/tl_20261118_000100.jpg", 2), ("loop/2026-11-18/10-10.mp4", 6),
+                                       ("timelapse/tl_20261118_000300.jpg", 2), ("timelapse/tlv_2026-11-18.mp4", 4), ("loop/2026-11-18/10-50.mp4", 6),
+                                       ("timelapse/notes.txt", 9)]):
+            fp = os.path.join(rec, rel)
+            with open(fp, "wb") as f:
+                f.write(b"x" * sz * 1024 * 1024)
+            os.utime(fp, (1000 + i, 1000 + i)); made.append(fp)
+        left = ns["host_media_trim"](12 * 1024 * 1024)
+        have = sorted(os.path.relpath(x, rec) for x in made if os.path.exists(x))
+        ok(have == ["loop/2026-11-18/10-50.mp4", "timelapse/notes.txt", "timelapse/tl_20261118_000300.jpg", "timelapse/tlv_2026-11-18.mp4"]
+           and left == 12 * 1024 * 1024, f"300 MB gemeinsam: das Älteste zuerst, laufendes Stück und Stern bleiben ({have}, {left >> 20} MB)")
+        ok(ns["HOST_MEDIA_BYTES"] == 300 * 1024 * 1024, "Grenze 300 MB")
+    finally:
+        shutil.rmtree(md, ignore_errors=True)
     print("3. Umschreiben auf dem Server")
     app = FakeApp(["/", "/api/state", "/api/x/<y>", "/sim", "/protect", "/i18n/<l>.js", "/sw.js", "/g/<tok>", "/simtun", "/static/<path:f>"])
     rw = lambda t, html=False: ns["host_rewrite"](t, "/demo", app, html)
@@ -230,6 +331,11 @@ r["gh_dl"] = in_thread("fspiele-dl", lambda: gh("203.0.113.5", 443))
 r["gh_other_thread"] = in_thread("x-thread", lambda: gh("203.0.113.5", 443))
 r["gh_dl_port80"] = in_thread("fspiele-dl", lambda: gh("203.0.113.5", 80))
 r["dl_other_ip"] = in_thread("fspiele-dl", lambda: gh("198.51.100.7", 443))
+ns["HOST"].setdefault("ai_ips", set()).add("203.0.113.9")       # 4.16.0: as if the thread «ai-model» had resolved the model source
+r["ai_dl"] = in_thread("ai-model", lambda: gh("203.0.113.9", 443))
+r["ai_to_github_ip"] = in_thread("ai-model", lambda: gh("203.0.113.5", 443))
+r["games_to_ai_ip"] = in_thread("fspiele-dl", lambda: gh("203.0.113.9", 443))
+r["ai_ip_other_thread"] = in_thread("hostmode", lambda: gh("203.0.113.9", 443))
 print(json.dumps(r))
 shutil.rmtree(data)
 """ % os.path.dirname(os.path.abspath(__file__))
@@ -246,13 +352,31 @@ shutil.rmtree(data)
             "execv_other": "PermissionError", "read_out": "ok", "system": 127 << 8,
             "nice_ffmpeg": "ok" if shutil.which("nice") else "FileNotFoundError",   # 4.15.0: let through (without ffmpeg nice just ends with 127)
             "nice_sh": "FileNotFoundError", "nice_bare": "FileNotFoundError",
-            "gh_other_thread": "PermissionError", "gh_dl_port80": "PermissionError", "dl_other_ip": "PermissionError"}
+            "gh_other_thread": "PermissionError", "gh_dl_port80": "PermissionError", "dl_other_ip": "PermissionError",
+            "ai_to_github_ip": "PermissionError", "games_to_ai_ip": "PermissionError", "ai_ip_other_thread": "PermissionError"}
+    ok(res.get("ai_dl") not in (None, "PermissionError"), f"KI-Modell (443, Faden «ai-model», Adresse der festen Quelle) durchgelassen: {res.get('ai_dl')}")
     ok(res.get("gh_dl") not in (None, "PermissionError"), f"Spiele-Download zu GitHub (443, eigener Faden) durchgelassen: {res.get('gh_dl')}")
     for k, v in want.items():
         ok(res.get(k) == v, f"{k}: {res.get(k)} (soll {v})")
 
 
 # ---------------------------------------------------------------------------------------------------------- live run
+def throttle(pid, share):
+    """«half a core» like the quota of the host: one core (affinity above) and only share of each 100 ms (SIGSTOP / SIGCONT)"""
+    import signal
+
+    def run():
+        while True:
+            try:
+                os.kill(pid, signal.SIGCONT); time.sleep(0.1 * share)
+                os.kill(pid, signal.SIGSTOP); time.sleep(0.1 * (1 - share))
+            except OSError:
+                return
+        # (the process ended: nothing more to do)
+    threading.Thread(target=run, daemon=True, name="throttle").start()
+    print(f"   CPU: ein Kern, davon {share:.0%} (SIGSTOP/SIGCONT alle 100 ms)")
+
+
 def child_env():
     """the same environment demo_start.py gives MoveEye (CHILD_ENV: memory)"""
     import importlib.util
@@ -354,6 +478,7 @@ class FakeWebSim:
         self.status = resp.split(b"\r\n", 1)[0].decode("latin-1")
         self.rest = resp.partition(b"\r\n\r\n")[2]
         self.lock = threading.Lock(); self.ch = {}; self.reqs = []; self.closed = False; self.texts = []
+        self.last_state = {}; self.pause = False          # 4.16.0: what MoveEye sent last (/state); a tab in the background answers nothing
 
     def _exact(self, n):
         out = self.rest[:n]; self.rest = self.rest[n:]
@@ -416,6 +541,8 @@ class FakeWebSim:
             self.send(2, cid.to_bytes(4, "big") + b[i:i + 60000])
 
     def serve(self, cid):
+        if self.pause:
+            return
         buf = self.ch.get(cid, b"")
         if b"\r\n\r\n" not in buf:
             return
@@ -438,7 +565,13 @@ class FakeWebSim:
                     pass
             threading.Thread(target=stream, daemon=True).start(); return
         if path.startswith("/state"):
-            body = json.dumps({"ok": True, "pid": 4242, "dark": False, "ambient_c": 14.0}).encode()
+            try:
+                self.last_state = json.loads(rest[:ln] or b"{}")
+            except ValueError:
+                pass
+            sv = self.last_state.get("servo") or {}                      # the head of the simulator follows (like net.gd)
+            body = json.dumps({"ok": True, "pid": 4242, "dark": False, "ambient_c": 14.0,
+                               "head_deg": [sv.get("pan_deg", 0.0), sv.get("tilt_deg", 0.0)]}).encode()
         elif path.startswith("/info"):
             body = json.dumps({"name": "Web-Sim (Test)", "version": "3.99.0", "ver": "3.99.0", "cams": 2}).encode()
         elif "/snapshot.jpg" in path:
@@ -545,14 +678,21 @@ def run(a):
         print(f"  Hinweis: {py} ist auf diesem Rechner nicht vorhanden - Lauf damit nicht möglich"); WARN.append(f"{py} fehlt")
         return 0
     print(f"Lauf: {os.path.basename(mw)} mit {py} ({subprocess.run([py, '-V'], capture_output=True, text=True).stdout.strip()})")
+    cvv = subprocess.run([py, "-c", "import cv2; print(cv2.__version__, 'TF-Import' if hasattr(cv2.dnn, 'readNetFromTensorflow') else 'OHNE TF-Import')"],
+                         capture_output=True, text=True)
+    print(f"   OpenCV: {(cvv.stdout or cvv.stderr).strip()[-120:]}")
     tmp = tempfile.mkdtemp(prefix="hostdemo_")
     bilder = os.path.join(os.environ.get("TMPDIR") or tempfile.gettempdir(), "host_demo_bilder") if a.browser else ""
     port, pport = free_port(), free_port()
     data = os.path.join(tmp, "demo_daten")
     log = open(os.path.join(tmp, "mw.log"), "w")
+    cpu1 = sorted(os.sched_getaffinity(0))[:1]
     pr = subprocess.Popen([py, mw, "--headless", "--bind", "127.0.0.1", "--port", str(port), "--host-modus", "--url-prefix", "/demo",
                            "--config", data], cwd=os.path.dirname(os.path.abspath(mw)), stdout=log, stderr=subprocess.STDOUT,
-                          env=dict(os.environ, **child_env()))
+                          env=dict(os.environ, **child_env(), MW_HOST_KI_AUTO="1" if a.ki else "0"),
+                          preexec_fn=(lambda: os.sched_setaffinity(0, set(cpu1))) if a.kern else None)
+    if a.kern:
+        throttle(pr.pid, a.kern)
     px = Proxy(pport, port)
     base = f"http://127.0.0.1:{pport}/demo"
     sim = None
@@ -637,7 +777,7 @@ def run(a):
         threading.Thread(target=sim.run, daemon=True).start()
         t1 = time.time(); mag = False; img = None
         import cv2, numpy as np
-        while time.time() - t1 < 60:
+        while time.time() - t1 < 90:
             time.sleep(2)
             c, b, h = get(base + "/snapshot.jpg")
             if c == 200:
@@ -645,7 +785,9 @@ def run(a):
                 if img is not None:
                     m = img.reshape(-1, 3).mean(0)
                     if m[0] > 120 and m[2] > 120 and m[1] < 90:
-                        mag = True; break
+                        mag = True
+            if mag and "/state" in sim.reqs:              # (on half a core the first /state can come after the picture)
+                break
         ok("/state" in sim.reqs, f"MoveEye fragt den Web-Simulator ({len(sim.reqs)} Anfragen: {sorted(set(sim.reqs))[:8]})")
         ok(mag, f"Kamerabild kommt durch die WebSocket-Leitung ({time.time() - t1:.0f} s)")
         time.sleep(25)                                 # 4.15.1: the stream of the fake piles up (8 s per picture) - no matter
@@ -654,6 +796,33 @@ def run(a):
         ok(sim.reqs.count("/cam/0/snapshot.jpg") >= 10 and "/cam/0/video.mjpg" not in sim.reqs,
            f"Host-Modus: Einzelbilder statt Strom ({sim.reqs.count('/cam/0/snapshot.jpg')} × snapshot, Strom {'/cam/0/video.mjpg' in sim.reqs})")
         ok("Camera stopped delivering frames" not in lgt, "Kamera reisst nicht ab, auch wenn die Leitung langsam ist (kein Neuverbinden)")
+        head_checks(base, pport, sim)
+        hidden_checks(base, sim, data)
+        if a.ki:
+            print("C4. KI-Modell von der festen Quelle (4.16.0)")
+            t4 = time.time(); am = {}
+            while time.time() - t4 < 900:
+                try:
+                    am = json.loads(get(base + "/api/ai_model")[1])
+                except ValueError:
+                    am = {}
+                if am.get("present") and not am.get("busy"):
+                    break
+                if str(am.get("msg") or "").startswith("failed") and not am.get("busy"):
+                    break
+                time.sleep(5)
+            ok(am.get("present") is True and am.get("msg") == "ready", f"KI-Modell geladen und an ({time.time() - t4:.0f} s, {am})")
+            time.sleep(20)
+            try:
+                ai_ = json.loads(get(base + "/api/health?lang=de", timeout=40)[1])
+            except ValueError:
+                ai_ = {}
+            ail = [x for x in (ai_.get("items") or []) if x.get("id") == "ai"][:1]
+            print("   KI-Zeile:", ail)
+            lg = open(os.path.join(data, "motionwatch.log"), errors="replace").read() if os.path.exists(os.path.join(data, "motionwatch.log")) else ""
+            print("   " + "\n   ".join([l[:220] for l in lg.splitlines() if "[ai]" in l][-8:]))
+            ok(bool(ail) and ail[0].get("level") == "ok", f"KI läuft ({ail[0].get('text') if ail else '-'})")
+            ok(os.path.isfile(os.path.join(data, "models", "frozen_inference_graph.pb")), "Modell im Datenordner (geprüfter Download)")
         if bilder and img is not None:
             os.makedirs(bilder, exist_ok=True); cv2.imwrite(os.path.join(bilder, "00_websim_kamerabild.jpg"), img)
         if a.browser:
@@ -709,6 +878,123 @@ PAGES = [("live", "/"), ("schutz", "/protect"), ("verlauf", "/timeline"), ("eins
          ("tagebuch", "/diary"), ("hilfe", "/help")]
 
 
+def head_checks(base, pport, sim):
+    """4.16.0: the head of the web simulator follows MoveEye (arrows, joystick, teach-in, follow, patrol) and reports back"""
+    print("C2. Kopf über die WebSocket-Leitung (4.16.0)")
+    H = {"Origin": f"http://127.0.0.1:{pport}"}
+
+    def post(path, d):
+        c, b, h = get(base + path, json.dumps(d).encode(), headers=H)
+        try:
+            return c, json.loads(b)
+        except ValueError:
+            return c, {"raw": b[:120]}
+    g0 = float((sim.last_state.get("servo") or {}).get("pan_goal") or 0.0)
+    c, j = post("/api/move", {"dir": "right", "step": 20})
+    ok(c == 200 and j.get("ok"), f"Kopf: Pfeil nach rechts ({c} {j})")
+    c, j = post("/api/stick", {"x": 0.0, "y": 0.8, "speed": 60})
+    ok(c == 200 and j.get("ok"), f"Kopf: Joystick (/api/stick) geht ({c} {j})")
+    time.sleep(1.5)
+    post("/api/stick", {"x": 0.0, "y": 0.0, "speed": 60})
+    t3 = time.time(); sv = {}
+    while time.time() - t3 < 20:
+        sv = sim.last_state.get("servo") or {}
+        if float(sv.get("pan_goal") or 0) > g0 + 5 and float(sv.get("pan_deg") or 0) > g0 + 5:
+            break
+        time.sleep(0.5)
+    ok(float(sv.get("pan_goal") or 0) > g0 + 5 and float(sv.get("pan_deg") or 0) > g0 + 5 and not sv.get("estop"),
+       f"die Ziele kommen beim Web-Simulator an (pan_goal {g0:.1f} -> {sv.get('pan_goal')}, pan_deg {sv.get('pan_deg')}, "
+       f"tilt_goal {sv.get('tilt_goal')}, estop {sv.get('estop')})")
+    time.sleep(1.0)
+    c, b, h = get(base + "/api/servo?lang=de")
+    try:
+        js = json.loads(b)
+    except ValueError:
+        js = {}
+    hd = js.get("sim_head")
+    ok(isinstance(hd, list) and len(hd) == 2 and abs(float(hd[0]) - float(sv.get("pan_deg") or 0)) < 15,
+       f"der Web-Simulator meldet den Kopf zurück, MoveEye zeigt ihn (sim_head {hd})")
+    ok(not js.get("blocked") and not js.get("inhibit"), f"Servos nicht gestoppt (blocked {js.get('blocked')!r}, inhibit {js.get('inhibit')!r})")
+    c, j = post("/api/follow", {"on": True})
+    ok(c == 200 and j.get("on"), f"Folgen an ({c} {j})")
+    time.sleep(1.5)
+    ok((sim.last_state.get("servo") or {}).get("track") is True, "Folgen kommt beim Web-Simulator an")
+    post("/api/follow", {"on": False})
+    c, j = post("/api/servo", {"op": "add", "name": "Tor"})
+    ok(c == 200 and j.get("ok"), f"Teach-in-Punkt gespeichert ({c} {j})")
+    post("/api/move", {"dir": "left", "step": 40})
+    time.sleep(0.5)
+    c2, j2 = post("/api/servo", {"op": "goto", "i": j.get("i", 0)})
+    ok(c2 == 200 and j2.get("ok"), f"Teach-in-Punkt anfahren ({c2} {j2})")
+    c, j = post("/api/quick", {"action": "patrol"})
+    ok(c == 200 and j.get("ok") and j.get("patrol"), f"Patrouille an ({c} {j})")
+    for _ in range(3):
+        if not j.get("patrol"):
+            break
+        c, j = post("/api/quick", {"action": "patrol"})
+    ok(not j.get("patrol"), f"Patrouille wieder aus ({j})")
+
+
+def _st(b):
+    """the state of /api/state (it sits under «state»)"""
+    try:
+        j = json.loads(b)
+    except ValueError:
+        return {}
+    return j.get("state", j) if isinstance(j, dict) else {}
+
+
+def hidden_checks(base, sim, data):
+    """4.16.0: the tab of the web simulator in the background - no «connecting …», no reconnecting, no watchdog banner"""
+    print("C3. Simulator-Tab im Hintergrund (4.16.0)")
+    sim.send(1, b"VIS hidden"); sim.pause = True
+    time.sleep(4)
+    n0 = len(sim.reqs)
+    time.sleep(6)
+    t_ = time.time(); c, b, h = get(base + "/api/state?lang=de", timeout=40)
+    ok(c == 200 and time.time() - t_ < 10, f"/api/state antwortet, auch wenn der Tab im Hintergrund ist ({c}, {time.time() - t_:.1f} s)")
+    st = _st(b)
+    sw = st.get("simwait") or {}
+    if not ok(sw.get("why") == "hidden" and "Hintergrund" in str(sw.get("title")) and sw.get("url") == "/Sim/",
+              f"Hinweis «Simulator-Tab ist im Hintergrund – Bild pausiert» ({sw.get('why')!r}: {sw.get('title')!r}, {sw.get('hint')!r})"):
+        lg = open(os.path.join(data, "motionwatch.log"), errors="replace").read() if os.path.exists(os.path.join(data, "motionwatch.log")) else ""
+        print("   sim:", json.dumps(st.get("sim"))[:300], "| source", st.get("source_id"), st.get("source"), "|", b[:200])
+        print("   " + "\n   ".join([l[:160] for l in lg.splitlines() if re.search(r"(?i)simulat|host mode", l)][-8:]))
+    c, b, h = get(base + "/snapshot.jpg")
+    ok(c == 200 and len(b) > 1000, "Live-Bild bleibt (das letzte Bild des Simulators)")
+    c, b, h = get(base + "/sim/view.jpg?w=320")
+    ok(c == 200 and h.get("X-MW-Wait") == "1", f"Simulator-Ansicht: Ruhebild «im Hintergrund» ({c}, {h.get('X-MW-Wait')})")
+    time.sleep(35)
+    ok(len(sim.reqs) - n0 <= 1, f"im Hintergrund fragt MoveEye nichts ({len(sim.reqs) - n0} Anfragen in 41 s)")
+    try:
+        st = _st(get(base + "/api/state?lang=de", timeout=40)[1])
+    except ValueError:
+        st = {}
+    lg = open(os.path.join(data, "motionwatch.log"), errors="replace").read() if os.path.exists(os.path.join(data, "motionwatch.log")) else ""
+    ok("Web simulator gone" not in lg and (st.get("simwait") or {}).get("why") == "hidden",
+       f"die Leitung hält 45 s im Hintergrund (Protokoll ohne «gone», Grund {(st.get('simwait') or {}).get('why')!r})")
+    ok("camera loop hangs" not in lg, "kein Watchdog-Banner «die Kamera-Schleife hängt»")
+    c, b, h = get(base + "/api/servo?lang=de")
+    try:
+        inh = json.loads(b).get("inhibit")
+    except ValueError:
+        inh = "?"
+    ok(not inh, f"Servos nicht gestoppt ({inh!r})")
+    sim.pause = False; sim.send(1, b"VIS visible")
+    t5 = time.time(); n1 = sim.reqs.count("/cam/0/snapshot.jpg"); sw = {"why": "?"}
+    while time.time() - t5 < 30:
+        time.sleep(2)
+        try:
+            sw = _st(get(base + "/api/state?lang=de", timeout=40)[1]).get("simwait") or {}
+        except ValueError:
+            sw = {"why": "?"}
+        if sim.reqs.count("/cam/0/snapshot.jpg") > n1 + 3 and not sw:
+            break
+    ok(sim.reqs.count("/cam/0/snapshot.jpg") > n1 + 3 and not sw, f"wieder sichtbar: Bilder kommen, kein Hinweis ({time.time() - t5:.0f} s, {sw})")
+    c, b, h = get(base + "/sim/view.jpg?w=320")
+    ok(c == 200 and h.get("X-MW-Live") == "1", f"Simulator-Ansicht ohne Bild des Simulator-Fensters: das Bild der Live-Seite ({c}, {sorted(h)[:6]})")
+
+
 def browser_check(base, bilder):
     print("D. Browser (390 px)")
     from playwright.sync_api import sync_playwright
@@ -743,7 +1029,7 @@ def browser_check(base, bilder):
 
 def ram_measure(pid, base, secs, rss0):
     print(f"E. Speicher und CPU über {secs} s (mit Besuchern)")
-    stop = threading.Event(); n = {"p": 0}
+    stop = threading.Event(); n = {"p": 0, "f": 0}
 
     def visitor():
         pages = ["/", "/protect", "/timeline", "/settings", "/sim", "/more", "/api/state", "/api/state", "/snapshot.jpg"]
@@ -761,9 +1047,11 @@ def ram_measure(pid, base, secs, rss0):
                 with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(base + "/video_feed", timeout=30) as r:
                     t0 = time.time()
                     while not stop.is_set() and time.time() - t0 < 60:
-                        if not r.read(65536):
+                        b = r.read1(65536) if hasattr(r, "read1") else r.read(65536)
+                        if not b:
                             break
-            except OSError:
+                        n["f"] += b.count(b"Content-Type: image/jpeg")       # 4.16.0: pictures of the live view
+            except Exception:                                 # (OSError, http.client.IncompleteRead at the end of a stream)
                 stop.wait(2)
     th = [threading.Thread(target=visitor, daemon=True) for _ in range(2)] + [threading.Thread(target=stream, daemon=True)]
     for t in th:
@@ -775,15 +1063,17 @@ def ram_measure(pid, base, secs, rss0):
     stop.set()
     cpu = (cpu_s(pid) - c0) / max(1.0, time.time() - t0) * 100
     avg = sum(x[1] for x in out) / max(1, len(out))
+    fps = n["f"] / max(1.0, time.time() - t0)
     rep = (f"RSS beim Start {rss0 / 1024:.0f} MB, Spitze {peak / 1024:.0f} MB, Mittel {avg / 1024:.0f} MB über {secs} s; "
-           f"CPU im Mittel {cpu:.0f} % eines Kerns; {n['p']} Seitenaufrufe + Live-Bild; Threads {th0} am Anfang, höchstens {thp}")
+           f"CPU im Mittel {cpu:.0f} % eines Kerns; {n['p']} Seitenaufrufe + Live-Bild {fps:.1f} Bilder/s; Threads {th0} am Anfang, höchstens {thp}")
     print("   " + rep)
     p_ = os.path.join(os.environ.get("TMPDIR") or tempfile.gettempdir(), "host_demo_ram.log")
     with open(p_, "w") as f:
         f.write(rep + "\n" + "\n".join(f"{t}\t{r}" for t, r in out) + "\n")
-    ok(peak < 1024 * 1024, f"Spitze unter 1 GB, der Grenze des Hosts ({peak / 1024:.0f} MB)")
-    if peak > 700 * 1024:
-        WARN.append(f"Speicher-Spitze {peak / 1024:.0f} MB - über dem Ziel von etwa 700 MB (Reserve)")
+    ok(peak < 1200 * 1024, f"Spitze unter 1.2 GB (4.16.0: der Host hat 1.5 GB) ({peak / 1024:.0f} MB)")
+    if peak > 1000 * 1024:
+        WARN.append(f"Speicher-Spitze {peak / 1024:.0f} MB - über 1 GB (Reserve bis 1.5 GB)")
+    ok(fps >= 1.0, f"Live-Bild läuft weiter ({fps:.1f} Bilder/s)")
 
 
 def main():
@@ -796,6 +1086,8 @@ def main():
     ap.add_argument("--sim-aus", action="store_true", help="also wait until the simulation switches off after the web simulator left (about 70 s)")
     ap.add_argument("--ohne-statisch", action="store_true")
     ap.add_argument("--ohne-sim", action="store_true", help="no web simulator (for the RAM baseline)")
+    ap.add_argument("--ki", action="store_true", help="4.16.0: MoveEye fetches the AI model from its fixed source (internet) and measures with AI")
+    ap.add_argument("--kern", type=float, default=0.0, help="4.16.0: only this share of one core (0.5 = like the host)")
     a = ap.parse_args()
     if not a.ohne_statisch:
         static()

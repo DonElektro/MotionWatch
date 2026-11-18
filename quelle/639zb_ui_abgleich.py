@@ -344,10 +344,17 @@ def health_check(lang=None):                              # + 639zb: the lines o
     if not (CFG.get("sim_on") and SIM.get("ok") and time.time() - float(SIM.get("t") or 0) < 5):
         return out
     L = norm_lang(lang) if lang else cur_lang()
-    out += ui_pair_items(L)
+    # 4.16.0: health_check gives {"items": [...], "count": {...}} - «out += …» on the dict was a TypeError every 30 s in the guard
+    # watch («unsupported operand type(s) for +=: 'dict' and 'list'») whenever a simulator was connected
+    items = out.get("items") if isinstance(out, dict) else out
+    if not isinstance(items, list):
+        return out
+    items += ui_pair_items(L)
     for x in UIS["sim_diag"] or []:
-        out.append({"id": "sim:" + str(x.get("id", "")), "icon": "🎮", "title": tr("Simulator", L) + ": " + str(x.get("title", "")),
-                    "level": str(x.get("level", "off")), "text": str(x.get("text", "")), "tip": str(x.get("tip", ""))})
+        items.append({"id": "sim:" + str(x.get("id", "")), "icon": "🎮", "title": tr("Simulator", L) + ": " + str(x.get("title", "")),
+                      "level": str(x.get("level", "off")), "text": str(x.get("text", "")), "tip": str(x.get("tip", ""))})
+    if isinstance(out, dict) and isinstance(out.get("count"), dict):
+        out["count"] = {k: sum(1 for x in items if x.get("level") == k) for k in HEALTH_ORDER}
     return out
 
 
@@ -640,5 +647,20 @@ def ui_more_selftest():
     return f"{len(order)} entries of «Mehr» in both programs in the same order: " + " · ".join(order)
 
 
+def ui_health_selftest():
+    """4.16.0: with a connected simulator health_check stays a dict and gets the simulator lines (was a TypeError)"""
+    keep = (CFG.get("sim_on"), dict(SIM), list(UIS.get("sim_diag") or []))
+    try:
+        CFG["sim_on"] = True; SIM.update(ok=True, t=time.time()); UIS["sim_diag"] = [{"id": "x", "title": "T", "level": "warn", "text": "t"}]
+        h = health_check("de")
+        assert isinstance(h, dict) and isinstance(h.get("items"), list), type(h)
+        assert any(x.get("id") == "sim:x" for x in h["items"]), "the line of the simulator"
+        assert h["count"].get("warn", 0) >= 1, h["count"]
+    finally:
+        CFG["sim_on"] = keep[0]; SIM.clear(); SIM.update(keep[1]); UIS["sim_diag"] = keep[2]
+    return "health list with a connected simulator: a dict with its lines and counts"
+
+
+SELFTEST_EXTRA.append(("Health list with a connected simulator (639zb)", ui_health_selftest))
 SELFTEST_EXTRA.append(("View shared with the simulator (ui, 639zb)", ui_sync_selftest))
 SELFTEST_EXTRA.append(("«Mehr» in the same order MoveEye ↔ simulator (ui_gemeinsam.json «more», 639zb)", ui_more_selftest))

@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 16.11.2026 · Version **3.71.0** · MoveEye **4.11.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 18.11.2026 · Version **3.72.0** · MoveEye **4.16.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -31,6 +31,11 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
   (Ziegelreihen / Kies). Wärmezwillinge und Hindernisse unverändert. Luftbild wird jetzt vor den 3D-Gebäuden gesetzt.
 - Seon ohne OSM (Overpass war aus): 117 Häuser, 44 Wohnblöcke, 24 Bauernhäuser, 3 Scheunen, 2 Chalets, 2 Garagen;
   Dachfarbe aus dem Luftbild 130, Palette 62 (Häuser ausserhalb des nahen Luftbilds).
+
+## NEU in 3.72.0 (MoveEye 4.16.0): Tab im Hintergrund, Schalter «Mit MoveEye auf der Homepage verbinden»
+
+- web_moveeye.gd: «VIS hidden» / «VIS visible» über /simtun (visibilitychange per JavaScriptBridge-Rückruf, gleich beim Wechsel; nach «OK» der aktuelle Zustand). MoveEye ab 4.16.0 behält im Hintergrund das letzte Bild, fragt nichts und verbindet nicht neu; ältere MoveEye übergehen den Text.
+- handy.gd: Schalter «Mit MoveEye auf der Homepage verbinden» (vorher «Mit Demo-MoveEye verbinden»), Texte in texte.json.
 
 ## NEU in 3.71.0 (MoveEye 4.11.0): Sim 3.71.0: Handy-Modus im Browser, offizielles Web-Paket, Verbindung zur Host-Demo, Markier-Karte
 

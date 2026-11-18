@@ -83,6 +83,8 @@ def server(port, res, ready):
         op, d = p.msg()
         if op == 2 and len(d) >= 4:
             got[int.from_bytes(d[:4], "big")] = got.get(int.from_bytes(d[:4], "big"), b"") + d[4:]
+        elif op == 1:
+            res.setdefault("texts", []).append(d.decode("utf-8", "replace").strip())   # Sim 3.72.0: «VIS visible» after «OK»
     res["resp1"], res["resp2"] = got[1].decode("latin-1"), got[2].decode("latin-1")
     p.send(1, b"CLOSE 1")
     time.sleep(1.0)
@@ -180,6 +182,7 @@ def main():
         ok("SCRIPT ERROR" not in out and "Parse Error" not in out, "Skripte laden ohne Fehler" + ("" if "SCRIPT ERROR" not in out else ": " + out[-800:]))
         ok(res.get("path") == "/demo/simtun", f"Adresse {res.get('path')}")
         ok(str(res.get("hello", "")).startswith("MWTUN2 demo "), f"Anmeldung: {res.get('hello')}")
+        ok("VIS visible" in (res.get("texts") or []), f"nach «OK»: «VIS visible» (der Tab ist sichtbar; Sim 3.72.0) ({res.get('texts')})")
         ok(any(z.startswith("verbunden|") and z.endswith("|true") for z in zs), "verbunden, stream_on an")
         ok("404" in res.get("resp1", "") and "unknown path" in res.get("resp1", ""), "Kanal 1: Antwort von net.gd durch die Leitung")
         ok("unknown path" in res.get("resp2", ""), "Kanal 2 gleichzeitig")
