@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.71.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.72.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -487,6 +487,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.72.0
+3.72.0: Im Browser sagt der Simulator MoveEye auf der Homepage, wenn sein Tab in den Hintergrund geht (der Browser zeichnet
+dort nichts): MoveEye zeigt dann «Simulator-Tab ist im Hintergrund – Bild pausiert», behält das letzte Bild und die
+Verbindung (kein «Verbinde …», kein Neuverbinden). Der Schalter heisst jetzt «Mit MoveEye auf der Homepage verbinden».
+So testest du: Homepage → Sim/ und /demo/ in zwei Tabs, zum MoveEye-Tab wechseln: der Hinweis erscheint, zurück zum
+Simulator: das Bild läuft gleich weiter. Tipp: beide in eigenen Fenstern nebeneinander.
 
 NEU IN 3.71.0
 3.71.0: Der Simulator läuft jetzt auch auf dem Handy im Browser – hoch und quer, mit eigener Leiste und Blättern, die von
