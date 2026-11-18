@@ -275,7 +275,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_16_0.zip"
-ZD_SHA256 = "43324686e2e1ecec9b9c5ca81d65696940c7c90c8eabf2e8b09d7a0d1cd8464d"
+ZD_SHA256 = "8f2b07f6c7fdf3a8db4e0e2e66041bfd931d11378990dd1a2f4939121ea6bc80"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 

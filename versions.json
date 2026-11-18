@@ -1,7 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-17 18:49",
+ "generated": "2026-11-18 20:22",
  "versions": [
+  {
+   "version": "4.16.0",
+   "file": "webcam_bewegung_4_16_0.py",
+   "url": "",
+   "sha256": "4eb6e483ae89d1c3f12e3888918ab5850dbebff5d8515a699ec81b3cfbd7ba53",
+   "date": "2026-11-18 20:22",
+   "notes": "Beim Host: KI-Erkennung (Person, Tier, Fahrzeug; Modell nur von der festen Quelle mit Prüfsumme), Daueraufnahme und Zeitraffer (zusammen bis 300 MB), Kopf, Joystick, Teach-in und Patrouille steuern den Simulator der Homepage, Simulator-Tab im Hintergrund = «Bild pausiert» statt «Verbinde …», kein Watchdog-Banner beim Warten, Link «Simulator öffnen» richtig, «Passwort kommt vom Host (Basic Auth)» · Fehlerkorrektur auf allen Geräten: «guard watch: unsupported operand type(s) for +=» mit verbundenem Simulator",
+   "size": 4036865,
+   "sig": "d02bcacd48d50bf26e7f8666258759771e8e06b7fa3a24a1a9f6e4f730bbbe02f899ddf24f49f11fa4c8b0b2c56809d3fc39802a604445a0ccd0810c5c7c9109",
+   "data": {
+    "file": "moveeye_daten_4_16_0.zip",
+    "url": "",
+    "sha256": "8f2b07f6c7fdf3a8db4e0e2e66041bfd931d11378990dd1a2f4939121ea6bc80",
+    "size": 14308172,
+    "sig": "5bc67d2a5e13b259b97b1aa8ea25fb2defd903c89abf56e3356c81c91c019beb549ba89d6875d939213e0c1b27f75264d3574b89378591f99de11fb90b3c6a06"
+   }
+  },
   {
    "version": "4.15.1",
    "file": "webcam_bewegung_4_15_1.py",
@@ -136,23 +153,6 @@
     "sha256": "bb1b8d40de731391cf3bd8be3ed809f3bfdfb6336e433dc77b8e825f406ee99a",
     "size": 13603898,
     "sig": "a5e3df59cc77e94d1cca18d3706f2adfb1fb5a5604ac697ce5fffe70ebf41901a534cf2361bc7e1e2bcd8439994a12fe7a9a2558c4ed666328e31382f577f90d"
-   }
-  },
-  {
-   "version": "4.7.0",
-   "file": "webcam_bewegung_4_7_0.py",
-   "url": "",
-   "sha256": "4e42f8b7cc8707eb20aa5062e4f2835660d9a39f0f5fa33f952552abdc1ca082",
-   "date": "2026-11-15 21:17",
-   "notes": "Spielesammlung GS-1.24: neues Spiel «Gipfeltreffen» (erstes Level) und «Verschollen im Bergtal» Kapitel 2 «Drei Tage» · Fehler behoben: der Passwort-Dialog nimmt dem Feld «Wiederholen» den Cursor nicht mehr weg",
-   "size": 3922385,
-   "sig": "a2111ec4e557a566859f82ec65253d5ceb23e1cf31d405e865e6f23e712d1ae95591c2a354f837eee1fb06633ef345271fc8bd0dd592cfecbe800319bc13cd03",
-   "data": {
-    "file": "moveeye_daten_4_7_0.zip",
-    "url": "",
-    "sha256": "1aa6fbe919ca42e0a09de3514fd42dc119531253724e701b97fa63dfb271b50c",
-    "size": 13554493,
-    "sig": "64dea4af48be5e5e533f1ea2e60b6b15c21c9ab625b2665d9bf183c4db809eb7c68a5be0dba059fc940ac78f4eeb6dfa7171e173295f4825ff32801e55e10401"
    }
   },
   {
