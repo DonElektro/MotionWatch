@@ -678,6 +678,9 @@ def run(a):
         print(f"  Hinweis: {py} ist auf diesem Rechner nicht vorhanden - Lauf damit nicht möglich"); WARN.append(f"{py} fehlt")
         return 0
     print(f"Lauf: {os.path.basename(mw)} mit {py} ({subprocess.run([py, '-V'], capture_output=True, text=True).stdout.strip()})")
+    cvv = subprocess.run([py, "-c", "import cv2; print(cv2.__version__, 'TF-Import' if hasattr(cv2.dnn, 'readNetFromTensorflow') else 'OHNE TF-Import')"],
+                         capture_output=True, text=True)
+    print(f"   OpenCV: {(cvv.stdout or cvv.stderr).strip()[-120:]}")
     tmp = tempfile.mkdtemp(prefix="hostdemo_")
     bilder = os.path.join(os.environ.get("TMPDIR") or tempfile.gettempdir(), "host_demo_bilder") if a.browser else ""
     port, pport = free_port(), free_port()
