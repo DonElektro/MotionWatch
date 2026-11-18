@@ -44,6 +44,11 @@ def ai_model_download():
         return False, "already running"
     if DEMO["on"]:
         return False, "not in the demo"
+    if not hasattr(cv2.dnn, "readNetFromTensorflow"):              # 4.16.1: OpenCV 5.x cannot read the SSD model - no 70 MB for nothing
+        why = f'OpenCV {cv2.__version__} cannot read this model - pip install "opencv-python-headless<5"'
+        AI_MODEL.update(msg=f"failed: {why}"[:120], pct=0)
+        log_event("ai", f"AI model not downloaded: {why}")
+        return False, why
     AI_MODEL.update(busy=True, msg="downloading", pct=0)
 
     def run():

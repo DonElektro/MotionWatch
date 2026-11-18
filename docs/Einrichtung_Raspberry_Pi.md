@@ -42,6 +42,10 @@ sudo apt install python3-numpy python3-opencv python3-pil python3-pil.imagetk py
   openssl bluez pulseaudio-utils curl espeak-ng
 ```
 
+**OpenCV bleibt bei 4.x:** `python3-opencv` aus Raspberry Pi OS ist 4.x. Wer OpenCV mit pip installiert (venv, PC), nimmt
+`pip install "opencv-python-headless>=4.8,<5"` – OpenCV 5 hat keinen TensorFlow-Import mehr und kann das KI-Modell (SSD)
+nicht lesen (MoveEye meldet dann «OpenCV 5.x cannot read this model»).
+
 `espeak-ng` braucht die **Piper-Stimme** (natürliche Ansagen, ab 3.62.0) für die Lautschrift. Die Laufzeit `onnxruntime`
 (pip, MIT, etwa 15 MB) und die Stimme selbst (etwa 60 MB, feste Prüfsumme) lädt MoveEye auf Knopfdruck: Einstellungen →
 Licht & Ton → Lautsprecher → «Piper installieren» / «Stimme laden». Ohne Internet beim Einrichten spricht die alte Stimme.

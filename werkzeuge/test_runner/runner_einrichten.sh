@@ -172,7 +172,7 @@ fi
 schritt "3b. Python-Umgebung $RH/venv (Pakete wie im CI)"
 [ -x "$RH/venv/bin/python" ] || als_ru python3 -m venv --system-site-packages "$RH/venv" || warn "venv"
 if [ -x "$RH/venv/bin/python" ]; then
-	als_ru "$RH/venv/bin/python" -m pip install -q --upgrade opencv-python-headless numpy flask pillow cryptography psutil \
+	als_ru "$RH/venv/bin/python" -m pip install -q --upgrade "opencv-python-headless>=4.8,<5" numpy flask pillow cryptography psutil \
 		|| echo "  pip ging nicht - es gelten die Pakete von Ubuntu (python3-opencv usw.)"
 	als_ru "$RH/venv/bin/python" -c "import cv2, numpy, flask, PIL, cryptography, psutil; print('  Python', __import__('sys').version.split()[0], 'opencv', cv2.__version__)" \
 		|| warn "Python-Pakete fehlen"

@@ -103,7 +103,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb libgl1 libgl1-mesa-dri libglu1-mesa libxcursor1 libxinerama1 libxrandr2 libxi6 libasound2t64 >/dev/null || \
           sudo apt-get install -y -qq xvfb libgl1 libgl1-mesa-dri libglu1-mesa libxcursor1 libxinerama1 libxrandr2 libxi6 >/dev/null
-          pip install -q opencv-python-headless numpy flask pillow cryptography psutil
+          pip install -q "opencv-python-headless>=4.8,<5" numpy flask pillow cryptography psutil
       - name: Simulator-PC (HP) vorbereiten – Python, Simulator aus dem Linux-Paket, KI-Modell aus dem Zwischenspeicher
         if: env.HP == '1'
         run: |

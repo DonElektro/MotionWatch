@@ -343,7 +343,7 @@ jobs:
       - name: Weg von MoveEye (Programm aus quelle/ gebaut - urllib mit _upd_request und der Umleitungs-Regel aus Teil 390)
         run: |
           set -e
-          pip install -q opencv-python-headless numpy flask pillow cryptography
+          pip install -q "opencv-python-headless>=4.8,<5" numpy flask pillow cryptography
           python3 werkzeuge/bauen.py | tail -1
           MW=$(ls webcam_bewegung_*.py | sort -t_ -k3,3n -k4,4n -k5,5n | tail -n 1)
           MOTIONWATCH_HOME="$RUNNER_TEMP/mwhome" python3 - "$MW" "${{ steps.a.outputs.url }}" "${{ steps.a.outputs.sha }}" <<'PY'

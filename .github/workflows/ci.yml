@@ -87,7 +87,7 @@ jobs:
         with:
           node-version: "20"
       - name: Pakete
-        run: pip install -q opencv-python-headless numpy flask pillow cryptography
+        run: pip install -q "opencv-python-headless>=4.8,<5" numpy flask pillow cryptography
       - name: Testliste vollständig (jede werkzeuge/*_test.py steht in werkzeuge/ci_tests.txt)
         run: python3 werkzeuge/ci_lauf.py --pruefen
       - name: Grundprüfungen (Gruppe «basis» aus werkzeuge/ci_tests.txt – Zeit je Test in der Zusammenfassung)
@@ -355,7 +355,7 @@ jobs:
           cache: pip
           cache-dependency-path: werkzeuge/ci_pakete.txt
       - name: Pakete
-        run: pip install -q opencv-python-headless numpy flask pillow cryptography
+        run: pip install -q "opencv-python-headless>=4.8,<5" numpy flask pillow cryptography
       - name: Godot 4.3 (Cache)
         id: gcache
         uses: actions/cache@v4

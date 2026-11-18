@@ -25,7 +25,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Pakete
-        run: pip install -q opencv-python-headless numpy flask pillow cryptography
+        run: pip install -q "opencv-python-headless>=4.8,<5" numpy flask pillow cryptography
       - name: KI-Modell (SSD MobileNet V2, wie im Prüfstand)
         run: |
           mkdir -p ki && cd ki

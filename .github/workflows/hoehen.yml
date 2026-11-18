@@ -121,7 +121,7 @@ jobs:
       - name: MoveEye bauen und das Paket prüfen (touren_test.py --hoehe-echt, Abdeckung Liechtenstein / Ecken der Schweiz / Ausland)
         run: |
           set -euo pipefail
-          pip install -q opencv-python-headless flask pillow cryptography
+          pip install -q "opencv-python-headless>=4.8,<5" flask pillow cryptography
           python3 werkzeuge/bauen.py | tail -2
           python3 -W ignore werkzeuge/touren_test.py --hoehe-echt "$RUNNER_TEMP/out" | tee "$RUNNER_TEMP/test.txt"
           grep -q 'ABDECKUNG' "$RUNNER_TEMP/test.txt" || { echo "::error::die Prüfung hat keine Abdeckung gemeldet"; exit 1; }

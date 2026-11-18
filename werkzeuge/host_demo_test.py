@@ -84,6 +84,19 @@ def static():
     ok(src.count("HOST_PY = r\'\'\'") == 1 and "exec(compile(HOST_PY" in src, "Programmtext als ein Literal (Hauptdatei klein)")
     hn = src.split("def _host_note(", 1)[1].split("\ndef ", 1)[0]
     ok("log_event(" not in hn.replace("Never log_event", ""), "Sperren schreiben nicht selbst ins Protokoll (LOCK, sonst Verklemmung wie in /api/state)")
+    # 4.16.1 (coordinator): OpenCV 5.x cannot read the SSD model - every pip install of OpenCV stays below 5
+    req = open(os.path.join(ROOT, "requirements.txt"), encoding="utf-8").read()
+    ok("opencv-python-headless>=4.8,<5" in req, "requirements.txt: opencv-python-headless>=4.8,<5 (der Host installiert sie)")
+    loose = []
+    for f in sorted(glob.glob(os.path.join(ROOT, ".github", "workflows", "*.yml"))) + [os.path.join(ROOT, "werkzeuge", "ci_pakete.txt"),
+                                                                                    os.path.join(ROOT, "werkzeuge", "test_runner", "runner_einrichten.sh")]:
+        for i, l in enumerate(open(f, encoding="utf-8"), 1):
+            if l.lstrip().startswith("#"):
+                continue
+            for m in re.finditer(r"opencv-python(?:-headless)?([^\s\"']*)", l):
+                if not (m.group(1).startswith("==4") or "<5" in m.group(1)):
+                    loose.append(f"{os.path.basename(f)}:{i}")
+    ok(not loose, f"OpenCV überall unter 5 gepinnt (CI, Prüfsatz, HP-venv, Runner) {loose[:6]}")
     print("2. Skript in den Seiten")
     ns = part_ns()
     js = ns["HOST_SHIM_JS"].replace("%OUTSIDE%", json.dumps(list(ns["HOST_OUTSIDE"]))).replace("%PREFIX%", json.dumps("/demo"))

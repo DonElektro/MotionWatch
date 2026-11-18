@@ -259,7 +259,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>Fenster:</b> Knöpfe «QR-Code …» bei Gast-Zugang, Web-Stream, Benachrichtigungen, Simulator (Tunnel) und beim App-Schlüssel; unter Einrichtung «Alle QR-Codes …». Dort auch «Bild speichern …» und – wenn ein Drucker eingerichtet ist – «Drucken».</li></ul></section>
 <section id="setup" data-icon="🧰"><h2>Einrichtung auf dem Raspberry Pi</h2>
 <pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils espeak-ng
-pip install opencv-python numpy pillow flask psutil</pre>
+pip install &quot;opencv-python&lt;5&quot; numpy pillow flask psutil</pre>
 <ul><li>I2C und SPI einschalten (<code>sudo raspi-config</code>), in <code>/boot/firmware/config.txt</code> unter <code>[all]</code>: <code>dtoverlay=spi0-0cs</code>.</li>
 <li>Einmalig: <code>sudo python3 webcam_bewegung_X.py --allow-wifi</code> (WLAN, Uhrzeit, Autostart, Ausschalten, Watchdog).</li>
 <li>Starten: <code>python3 webcam_bewegung_X.py</code> (Fenster + Webseite) oder <code>--headless</code> (nur Webseite).</li>
@@ -484,7 +484,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>Window:</b> buttons «QR code …» at guest access, web stream, notifications, simulator (tunnel) and the app key; under Setup «All QR codes …». There also «Save picture …» and – when a printer is set up – «Print».</li></ul></section>
 <section id="setup" data-icon="🧰"><h2>Setup on the Raspberry Pi</h2>
 <pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils espeak-ng
-pip install opencv-python numpy pillow flask psutil</pre>
+pip install &quot;opencv-python&lt;5&quot; numpy pillow flask psutil</pre>
 <ul><li>Switch on I2C and SPI (<code>sudo raspi-config</code>); in <code>/boot/firmware/config.txt</code> under <code>[all]</code>: <code>dtoverlay=spi0-0cs</code>.</li>
 <li>Once: <code>sudo python3 webcam_bewegung_X.py --allow-wifi</code> (Wi-Fi, clock, autostart, shut down, watchdog).</li>
 <li>Start: <code>python3 webcam_bewegung_X.py</code> (window + web page) or <code>--headless</code> (web page only).</li>
