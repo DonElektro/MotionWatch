@@ -15,37 +15,37 @@
  },
  "pi": {
   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.71.0",
-  "size": 38100578,
-  "sha256": "a252341c09e97be7ebc0f254481340fe6a8de46b6c2519810577d8116bb9cce3",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.71.0/MoveEyeSim3D_Pi.zip"
+  "ver": "3.72.0",
+  "size": 38112326,
+  "sha256": "71fb1372cc478672c48aef7d71d7ca5745802987e035afdce9b829ae63567f43",
+  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.72.0/MoveEyeSim3D_Pi.zip"
  },
  "anhang": {
-  "ver": "3.71.0",
-  "version": "3D-5.71.0",
-  "name": "MoveEye Sim 3.71.0",
-  "notes": "Handy-Modus im Browser (hoch und quer), Web-Paket in Teilen, Verbindung zur MoveEye-Demo, Markier-Karte",
+  "ver": "3.72.0",
+  "version": "3D-5.72.0",
+  "name": "MoveEye Sim 3.72.0",
+  "notes": "Tab im Hintergrund: MoveEye auf der Homepage behält das Bild; Schalter «Mit MoveEye auf der Homepage verbinden»",
   "mw_min": "3.55.0",
   "win": {
    "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
-   "ver": "3.71.0",
-   "size": 54562072,
-   "sha256": "aef64ba501d142a8e59c2090d1deeb065d8f38d8f81b04933f9275630bc56e11",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.71.0/MotionWatch3D_Simulator.zip"
+   "ver": "3.72.0",
+   "size": 54579305,
+   "sha256": "5e0fe298455ed1a191f5c7fb4ef6178e255c4b34c6ea808d2864a5f57d535490",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.72.0/MotionWatch3D_Simulator.zip"
   },
   "linux": {
    "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
-   "ver": "3.71.0",
-   "size": 48612387,
-   "sha256": "fc43772683af10d6abb0a2fc410f3e4c4eeccac63220f1ae9d6b432a19a0a2d9",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.71.0/MoveEyeSim3D_Linux.zip"
+   "ver": "3.72.0",
+   "size": 48626836,
+   "sha256": "aea7de796d5d0a2468e1ee9452d841cd33b2a678d98091b84e60a33e9142021d",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.72.0/MoveEyeSim3D_Linux.zip"
   },
   "web": {
    "file": "simulator3d/anhang/sim-web.zip",
-   "ver": "3.71.0",
-   "size": 68278692,
-   "sha256": "14ee4cafd1b18f681f341f171f874cd6f1f0394d667fb953227e7495289cdea5",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.71.0/sim-web.zip"
+   "ver": "3.72.0",
+   "size": 68299743,
+   "sha256": "3b89a65f7ce0387411c5173f34ad03ab55803a972789a56b7fd44c0dc60a126a",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.72.0/sim-web.zip"
   }
  }
 }
