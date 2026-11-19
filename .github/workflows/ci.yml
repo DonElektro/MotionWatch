@@ -101,7 +101,7 @@ jobs:
     # (!cancelled: also runs when the selection itself broke - then with every group)
     if: ${{ !cancelled() && needs.auswahl.outputs.web != 'false' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
@@ -121,21 +121,53 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-1.55.0-chromium
+      # 4.16.1: apt of the runner hung several times for 6-10 min (mirror / dpkg lock) - every apt call retries, waits at most
+      # 3 min for the lock and gives up a slow mirror after 30 s; each try has its own time limit, then the next one
+      - name: apt robuster (Wiederholen, Zeitgrenzen)
+        run: |
+          printf '%s\n' 'Acquire::Retries "5";' 'Acquire::http::Timeout "30";' 'Acquire::https::Timeout "30";' \
+            'DPkg::Lock::Timeout "180";' | sudo tee /etc/apt/apt.conf.d/80-mw-robust > /dev/null
       - name: Chromium installieren
-        timeout-minutes: 10
+        timeout-minutes: 20
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          if [ "${{ steps.pwcache.outputs.cache-hit }}" = "true" ]; then python3 -m playwright install-deps chromium
-          else python3 -m playwright install --with-deps chromium; fi
+          for i in 1 2 3; do
+            if [ "${{ steps.pwcache.outputs.cache-hit }}" = "true" ]; then timeout 360 python3 -m playwright install-deps chromium && break
+            else timeout 360 python3 -m playwright install --with-deps chromium && break; fi
+            echo "::warning::Chromium: Versuch $i ging nicht - nochmal"; sudo apt-get update -qq || true
+          done
+          python3 -c "from playwright.sync_api import sync_playwright as s; p = s().start(); b = p.chromium.launch(); b.close(); p.stop()"
+      - name: ffmpeg (Cache)
+        if: ${{ matrix.gruppe == 'kern' }}
+        id: ffcache
+        uses: actions/cache@v4
+        with:
+          path: ~/ffmpeg-static
+          key: ffmpeg-static-btbn-gpl-1
       - name: ffmpeg (nur «kern» – radio_test.py braucht ein echtes ffmpeg, 3.99.0)
         if: ${{ matrix.gruppe == 'kern' }}
-        timeout-minutes: 6
+        timeout-minutes: 15
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt-get install -y -qq --no-install-recommends ffmpeg > /dev/null 2>&1 \
-            || { sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg; }
+          # 4.16.1: the static build (BtbN, GitHub) once into the cache - then no apt at all; apt with retries only if that fails
+          F=~/ffmpeg-static
+          if [ ! -x "$F/ffmpeg" ]; then
+            mkdir -p "$F"
+            ( cd "$RUNNER_TEMP" && curl -fsSL --retry 3 --max-time 300 -o ff.tar.xz \
+                https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz \
+              && tar -xJf ff.tar.xz --wildcards --strip-components=2 -C "$F" '*/bin/ffmpeg' '*/bin/ffprobe'; rm -f ff.tar.xz ) \
+              || echo "::warning::statischer ffmpeg-Build nicht geholt - apt"
+          fi
+          if [ ! -x "$F/ffmpeg" ]; then
+            rm -rf "$F"
+            for i in 1 2; do
+              timeout 240 sudo apt-get install -y -qq --no-install-recommends ffmpeg > /dev/null 2>&1 && break
+              timeout 180 sudo apt-get update -qq || true
+            done
+          fi
+          if [ -x "$F/ffmpeg" ]; then echo "$F" >> "$GITHUB_PATH"; export PATH="$F:$PATH"; fi
           ffmpeg -hide_banner -version | head -1
       - name: Tests der Gruppe «${{ matrix.gruppe }}» (werkzeuge/ci_tests.txt – Zeit je Test in der Zusammenfassung)
         env:
