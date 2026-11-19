@@ -404,23 +404,28 @@ FEHLER_KATALOG = json.loads(r"""{
    "schritte": {
     "de": [
      "Internet prüfen (ca. 70 MB werden geladen).",
-     "Auf «KI-Modell herunterladen» tippen und warten."
+     "Auf «KI-Modell herunterladen» tippen und warten.",
+     "Meldung «OpenCV 5.x cannot read this model»: OpenCV 5 liest das Modell nicht → pip install \"opencv-python-headless<5\""
     ],
     "en": [
      "Check the internet (about 70 MB are downloaded).",
-     "Tap «Download the AI model» and wait."
+     "Tap «Download the AI model» and wait.",
+     "Message «OpenCV 5.x cannot read this model»: OpenCV 5 cannot read the model → pip install \"opencv-python-headless<5\""
     ],
     "fr": [
      "Vérifiez Internet (environ 70 Mo).",
-     "Touchez « Télécharger le modèle IA » et patientez."
+     "Touchez « Télécharger le modèle IA » et patientez.",
+     "Message « OpenCV 5.x cannot read this model » : OpenCV 5 ne lit pas le modèle → pip install \"opencv-python-headless<5\""
     ],
     "it": [
      "Controlla Internet (circa 70 MB).",
-     "Tocca «Scarica il modello IA» e attendi."
+     "Tocca «Scarica il modello IA» e attendi.",
+     "Messaggio «OpenCV 5.x cannot read this model»: OpenCV 5 non legge il modello → pip install \"opencv-python-headless<5\""
     ],
     "rm": [
      "Controllar l'internet (var 70 MB vegnan telechargiads).",
-     "Smatga «Telechargiar il model IA» e spetga."
+     "Smatga «Telechargiar il model IA» e spetga.",
+     "Messadi «OpenCV 5.x cannot read this model»: OpenCV 5 na legia betg il model → pip install \"opencv-python-headless<5\""
     ]
    },
    "aktion": "ki_laden"

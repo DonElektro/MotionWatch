@@ -63,7 +63,7 @@ jobs:
       - name: Pakete (PyTorch nur für CPU, Ultralytics, OpenCV)
         run: |
           pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-          pip install ultralytics onnx onnxslim opencv-python-headless
+          pip install ultralytics onnx onnxslim "opencv-python-headless>=4.8,<5"
       - name: Prüfen der Eingaben
         run: |
           case "$EPOCHEN" in ''|*[!0-9]*) echo "Epochen: nur eine Zahl"; exit 1;; esac

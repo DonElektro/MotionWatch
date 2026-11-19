@@ -86,7 +86,7 @@ jobs:
         if: inputs.nur == 'alle'
         run: |
           set -e
-          pip install -q opencv-python-headless numpy flask cryptography pillow
+          pip install -q "opencv-python-headless>=4.8,<5" numpy flask cryptography pillow
           python3 werkzeuge/bauen.py > /dev/null
           f=$(ls webcam_bewegung_*.py | sort -V | tail -1)
           python3 werkzeuge/bioclip_test.py --datei "$f" --info "$RUNNER_TEMP/info/bioclip-info-1.sqlite"

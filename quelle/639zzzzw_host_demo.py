@@ -581,7 +581,7 @@ def host_ai_download():
     if AI_MODEL["busy"]:
         return False, "already running"
     if not hasattr(getattr(cv2, "dnn", None), "readNetFromTensorflow"):     # OpenCV 5.x has no TensorFlow import (measured on
-        why = f"OpenCV {cv2.__version__} cannot read this model (no TensorFlow import) - OpenCV 4.x is needed"   # the HP: 5.1.0)
+        why = f'OpenCV {cv2.__version__} cannot read this model - pip install "opencv-python-headless<5"'      # the HP: 5.1.0)
         AI_MODEL.update(msg=f"failed: {why}"[:120], pct=0)
         log_event("ai", f"AI model not downloaded: {why}"[:200])
         return False, why

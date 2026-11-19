@@ -23,6 +23,9 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 4.16.1: OpenCV bleibt bei 4.x (opencv-python-headless>=4.8,<5 in requirements.txt, CI, Prüfsatz, HP und Einrichtung): OpenCV
+    5 kann das KI-Modell nicht lesen – klare Meldung «OpenCV 5.x cannot read this model» mit Hinweis pip install
+    "opencv-python-headless<5" in der Fehlerhilfe
   * 4.16.0: Beim Host: KI-Erkennung (Person, Tier, Fahrzeug; Modell nur von der festen Quelle mit Prüfsumme), Daueraufnahme und
     Zeitraffer (zusammen bis 300 MB), Kopf, Joystick, Teach-in und Patrouille steuern den Simulator der Homepage, Simulator-Tab
     im Hintergrund = «Bild pausiert» statt «Verbinde …», kein Watchdog-Banner beim Warten, Link «Simulator öffnen» richtig,
@@ -108,11 +111,6 @@ Features
   * 3.92.0: Design «Klar», Etappe 1: ruhigere Kopfzeile mit aufklappbarer Statuszeile, klarere Gast-Seiten (ein Knopf «Digitaler
     Rucksack»), aufgeräumte Menüs in Web und Fenster; «Mehr» in vier Gruppen (Unterwegs · Spielen · Hilfe & Drucken · Gerät).
     «Einrichtung» und «Werkseinstellungen» stehen jetzt unter Einstellungen → System.
-  * 3.91.0: Zwei Teile. (1) «🔍 Lupe» im Live-Bild: nur das Bild vergrössern, nicht die ganze Seite – Rahmen ziehen oder mit zwei
-    Fingern zoomen; der Ausschnitt kommt scharf aus der vollen Auflösung der Kamera, Privatsphäre-Zonen bleiben schwarz; mit
-    Kopf-Recht dreht der Kopf den Bereich in die Mitte. Bei eingeschaltetem Schutz nur auf Wunsch (höchstens alle 10 s). Auch im
-    Pi-Fenster. (2) Morse-Modus, Schritt 2: Empfang auch über das Mikrofon (ab Werk aus, es wird kein Ton gespeichert), IR-Test
-    zwischen zwei MoveEye, «Gegenstelle testen» in Web und Fenster.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -121,10 +119,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_4_16_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_4_16_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_4_16_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_4_16_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_4_16_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_4_16_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -141,7 +139,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "4.16.0"
+APP_VERSION = "4.16.1"
 
 
 def default_data_dir():
@@ -274,8 +272,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_4_16_0.zip"
-ZD_SHA256 = "8f2b07f6c7fdf3a8db4e0e2e66041bfd931d11378990dd1a2f4939121ea6bc80"
+ZD_FILE = "moveeye_daten_4_16_1.zip"
+ZD_SHA256 = "1b94d5e5de4bd5ce503e9cfe484bb32534ae75e4cdf5db192a2303a4084799c6"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -17373,6 +17371,11 @@ def ai_model_download():
 		return False,"already running"
 	if DEMO["on"]:
 		return False,"not in the demo"
+	if not hasattr(cv2.dnn,"readNetFromTensorflow"):
+		why=f'OpenCV {cv2.__version__} cannot read this model - pip install "opencv-python-headless<5"'
+		AI_MODEL.update(msg=f"failed: {why}"[:120],pct=0)
+		log_event("ai",f"AI model not downloaded: {why}")
+		return False,why
 	AI_MODEL.update(busy=True,msg="downloading",pct=0)
 
 	def run():
@@ -18370,6 +18373,8 @@ class AIDetector:
 				log_event("ai","AI model SSD MobileNet V2 loaded")
 			except Exception as e:
 				STATE["ai_status"]="load error"
+				if not hasattr(cv2.dnn,"readNetFromTensorflow"):
+					e=f'OpenCV {cv2.__version__} cannot read this model - pip install "opencv-python-headless<5"'
 				log_event("ai",f"AI model could not be loaded: {e}")
 		else:
 			CFG["ai_enabled"]=False
@@ -50706,7 +50711,7 @@ class App:
 		self.watch=watch
 		self.web=web or WebStream(watch)
 		self.root=tk.Tk()
-		self.root.title("MoveEye 4.16.0")
+		self.root.title("MoveEye 4.16.1")
 		try:
 			import base64
 			self._icon=tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -51093,7 +51098,7 @@ class App:
 			if not small:
 				vl=tk.Label(tl,text=APP_VERSION,bg=C["bg"],fg=C["mut"],font=("DejaVu Sans",8),cursor="hand2");vl.pack(side="left",padx=(8,0),pady=(5,0))
 				vl.bind("<Button-1>",self._ver_tap,add="+");Tip(vl,tr("About MoveEye"))
-			Tip(nm,f"{tr('Build')} 4.16.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm,f"{tr('Build')} 4.16.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps=[]
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>",self._egg_tap,add="+")
@@ -73078,23 +73083,28 @@ FEHLER_KATALOG = json.loads(r"""{
    "schritte": {
     "de": [
      "Internet prüfen (ca. 70 MB werden geladen).",
-     "Auf «KI-Modell herunterladen» tippen und warten."
+     "Auf «KI-Modell herunterladen» tippen und warten.",
+     "Meldung «OpenCV 5.x cannot read this model»: OpenCV 5 liest das Modell nicht → pip install \"opencv-python-headless<5\""
     ],
     "en": [
      "Check the internet (about 70 MB are downloaded).",
-     "Tap «Download the AI model» and wait."
+     "Tap «Download the AI model» and wait.",
+     "Message «OpenCV 5.x cannot read this model»: OpenCV 5 cannot read the model → pip install \"opencv-python-headless<5\""
     ],
     "fr": [
      "Vérifiez Internet (environ 70 Mo).",
-     "Touchez « Télécharger le modèle IA » et patientez."
+     "Touchez « Télécharger le modèle IA » et patientez.",
+     "Message « OpenCV 5.x cannot read this model » : OpenCV 5 ne lit pas le modèle → pip install \"opencv-python-headless<5\""
     ],
     "it": [
      "Controlla Internet (circa 70 MB).",
-     "Tocca «Scarica il modello IA» e attendi."
+     "Tocca «Scarica il modello IA» e attendi.",
+     "Messaggio «OpenCV 5.x cannot read this model»: OpenCV 5 non legge il modello → pip install \"opencv-python-headless<5\""
     ],
     "rm": [
      "Controllar l'internet (var 70 MB vegnan telechargiads).",
-     "Smatga «Telechargiar il model IA» e spetga."
+     "Smatga «Telechargiar il model IA» e spetga.",
+     "Messadi «OpenCV 5.x cannot read this model»: OpenCV 5 na legia betg il model → pip install \"opencv-python-headless<5\""
     ]
    },
    "aktion": "ki_laden"

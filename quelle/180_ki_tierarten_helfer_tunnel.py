@@ -932,6 +932,8 @@ class AIDetector:
                 log_event("ai", "AI model SSD MobileNet V2 loaded")
             except Exception as e:
                 STATE["ai_status"] = "load error"
+                if not hasattr(cv2.dnn, "readNetFromTensorflow"):     # 4.16.1: OpenCV 5.x has no TensorFlow import
+                    e = f'OpenCV {cv2.__version__} cannot read this model - pip install "opencv-python-headless<5"'
                 log_event("ai", f"AI model could not be loaded: {e}")
         else:
             CFG["ai_enabled"] = False
