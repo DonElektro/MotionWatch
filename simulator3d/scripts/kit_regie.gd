@@ -311,7 +311,7 @@ func _eintrag(e: Dictionary, sprung: bool) -> void:
 			if not sprung:
 				kit.sag(kit.tx(str(e["text"])), str(e.get("wer", "erzaehler")), float(e.get("d", 0.0)))
 		"zug":
-			var w := kit.par.welt(float(e["s"]), float(e["q"]))
+			var w: Vector3 = kit.par.welt(float(e["s"]), float(e["q"]))
 			_zuege.append([str(e.get("wer", "figur")), w, sprung])
 			kit.zug(str(e.get("wer", "figur")), w, sprung)
 		"ton":

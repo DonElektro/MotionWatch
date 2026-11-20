@@ -28,6 +28,10 @@ extends Node
 ##     Blitz (main.lightning_strike), Feuer knistert an jeder Feuerstelle in der Nähe (Lichter in main.lamps mit Feuerfarbe),
 ##     Schritte der Spielfigur (Maggie, Spieler 2) auf Gras, Kies oder Schnee (wie anim_spuren.gd).
 ## Steuerbefehl: {"action": "spielton", "do": "info" | "test" (art) | "erleben" (id)} (main.gd → control()).
+## Abenteuer-Kit (Grossvater neu, 20.11.2026): Kontext «kit» (kit_abenteuer.gd läuft) mit einer Musik-Zustandsmaschine
+##   musik_zustand(z): explore (Jahreszeiten-Stück) · spannung · action · entdeckung – je ein Stamm (Platzhalter aus den
+##   vorhandenen Klängen: KIT_MUSIK), Wechsel mit Überblendung (in 4 s / aus 2.5 s wie bisher), «entdeckung» kehrt nach
+##   einem Durchlauf von selbst zu «explore» zurück. kit_ton(name): kurze Effekte der Figur (KIT_TON); Schritte der Figur.
 
 const Ton = preload("res://scripts/trailer_ton.gd")
 const ORDNER := "res://klang/"
@@ -46,6 +50,11 @@ const MOMENT_DB := {"fund": -4.0, "fanfare": -5.0, "kapitel": -4.0, "tusch": -3.
 const MUSIK_DB := -4.0                 # the loops are quiet already (−26 LUFS); with the bus at 35 % about −39 LUFS
 const ECHT := {"wind": "wind", "rain": "regen", "water": "wasser"}   # mikrofon.gd kinds -> recordings of klang/
 const ECHT_DB := -6.0
+# Abenteuer-Kit: the music states -> stems (placeholders until the orchestra / alpine stems exist: sp_kit_<zustand>.ogg wins)
+const KIT_MUSIK := {"explore": "", "spannung": "pad_dunkel", "action": "ostinato", "entdeckung": "pad_hell"}
+const KIT_TON := {"sprung": ["whoosh", -14.0, 1.25], "landen": ["schritte", -10.0, 0.8], "klettern": ["rascheln", -8.0, 1.0],
+		"greifen": ["knacken", -8.0, 1.3], "platsch": ["wasser", -2.0, 1.4], "fund": ["sp_fund", -4.0, 1.0],
+		"abzeichen": ["sp_fanfare", -5.0, 1.0], "riegel": ["knacken", -4.0, 0.7], "einsturz": ["boom", -2.0, 0.8]}
 
 static var inst = null
 
@@ -79,6 +88,8 @@ var _feuer_t := 0.0
 var _gv_step_t := 0.0
 var _t := 0.0
 var _dirty := false
+var kit_zustand := "explore"           # Abenteuer-Kit: explore | spannung | action | entdeckung
+var _kit_ent_bis := 0.0
 
 
 # =============================================================================================================================
@@ -322,6 +333,8 @@ func kontext_neu() -> String:
 	var m = main
 	if m == null or still():
 		return ""
+	if m.get("kit") != null and bool(m.kit.get("running")):
+		return "kit"
 	if m.get("maggie") != null and bool(m.maggie.get("running")):
 		return "maggie"
 	if m.get("horror") != null and bool(m.horror.get("running")):
@@ -381,7 +394,7 @@ func _stream(nm: String, ersatz := true) -> Array:
 		var alt := str(ERSATZ.get(nm, nm))
 		var w = Ton.get_snd(alt)
 		if w != null:
-			var lp := nm.begins_with("musik_") or nm in ["wirbel", "puls"]
+			var lp := nm.begins_with("musik_") or nm.begins_with("kit_") or nm in ["wirbel", "puls"] or nm in KIT_MUSIK.values()
 			if w is AudioStreamWAV and lp:
 				var wv := (w as AudioStreamWAV).duplicate() as AudioStreamWAV
 				wv.loop_mode = AudioStreamWAV.LOOP_FORWARD
@@ -528,7 +541,39 @@ func musik_wahl() -> String:
 			return "musik_" + jahreszeit()
 		"spiel":
 			return "musik_" + jahreszeit()
+		"kit":
+			var z := kit_zustand
+			if z == "entdeckung" and _t > _kit_ent_bis:
+				kit_zustand = "explore"
+				z = "explore"
+			if FileAccess.file_exists(ORDNER + "sp_kit_" + z + ".ogg"):
+				return "kit_" + z
+			var nm := str(KIT_MUSIK.get(z, ""))
+			return nm if nm != "" else "musik_" + jahreszeit()
 	return ""
+
+
+func musik_zustand(z: String) -> void:
+	"""Abenteuer-Kit: explore | spannung | action | entdeckung ('' = as before)"""
+	if z == "":
+		z = "explore"
+	if z != kit_zustand:
+		_merke("kit_musik:" + z)
+	kit_zustand = z
+	if z == "entdeckung":
+		_kit_ent_bis = _t + 9.0
+
+
+func kit_ton(nm: String) -> void:
+	"""Abenteuer-Kit: a short sound of the figure (jump, landing, grab, splash …)"""
+	if not _spielt() or not KIT_TON.has(nm):
+		return
+	var e: Array = KIT_TON[nm]
+	var pl := _eins(str(e[0]), float(e[1]), "Effekte", float(e[2]))
+	if pl != null:
+		_merke("kit:" + nm)
+		if pl.stream.get("loop") == true:
+			_step.append([pl, _t + 1.3])                    # a loop as a short sound (water): stopped by _schritte_tick
 
 
 func _musik_tick(dt: float) -> void:
@@ -610,6 +655,9 @@ func spannung() -> float:
 # ---- steps of the own figure ------------------------------------------------------------------------------------------------
 func _figuren() -> Array:
 	var out := []
+	if kontext == "kit" and main.kit.get("figur") != null and main.kit.figur.ok():
+		out.append(main.kit.figur.a)
+		return out
 	if kontext == "maggie" and main.maggie.has_method("spieler"):
 		var f = main.maggie.spieler()
 		if f != null:

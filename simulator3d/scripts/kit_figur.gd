@@ -156,16 +156,16 @@ func _fuehrung(mv: Vector2) -> Vector2:
 			best = q
 			tan = (pts[i + 1] - pts[i]).normalized()
 	var w := float(kit.daten.WEG_BREITE)
-	var to_w := kit.tal_dir_welt(best - v)
-	var tan_w := kit.tal_dir_welt(tan)
+	var to_w: Vector2 = kit.tal_dir_welt(best - v)
+	var tan_w: Vector2 = kit.tal_dir_welt(tan)
 	if bd > w and mv.length() > 0.05:
 		var k := clampf((bd - w) / 2.5, 0.0, 1.0)
-		var pull := to_w.normalized()
+		var pull: Vector2 = to_w.normalized()
 		if mv.normalized().dot(pull) < 0.0:               # going away from the way: slower and turned back a little
 			mv = (mv * (1.0 - 0.7 * k) + pull * mv.length() * 0.8 * k)
 	elif mv.length() > 0.2 and bd < w:
 		var d := mv.normalized()
-		var tw := tan_w.normalized() * (1.0 if d.dot(tan_w) >= 0.0 else -1.0)
+		var tw: Vector2 = tan_w.normalized() * (1.0 if d.dot(tan_w) >= 0.0 else -1.0)
 		if d.dot(tw) > 0.87:                             # nearly along the way: a little onto it
 			mv = d.lerp(tw, 0.2).normalized() * mv.length()
 	return mv.limit_length(1.0)
@@ -357,7 +357,7 @@ func _aktion_start() -> void:
 			var e: Dictionary = akt["e"]
 			var c: Vector2 = e["c"]
 			var sqc: Vector2 = par.sq(c)
-			var base := par.welt_abs(sqc.x - 0.38, sqc.y, 0.0)
+			var base: Vector3 = par.welt_abs(sqc.x - 0.38, sqc.y, 0.0)
 			a.position = Vector3(base.x, y, base.z)
 			a.heading = par.yaw_achse()
 			a.rotation.y = a.heading
@@ -408,7 +408,7 @@ func _kante_start(id: String) -> void:
 		sgn = 1.0
 	var ts := bs - sgn * (float(d.get("ls", 0.5)) - 0.45)
 	var tq := clampf(me.y, float(d["q"]) - float(d.get("lq", 0.5)) + 0.3, float(d["q"]) + float(d.get("lq", 0.5)) - 0.3)
-	var ziel := par.welt_abs(ts, tq, float(e["top"]))
+	var ziel: Vector3 = par.welt_abs(ts, tq, float(e["top"]))
 	akt = {"von": pos(), "nach": ziel, "dauer": 1.5}
 	var dd: Vector3 = ziel - pos()
 	a.heading = atan2(-dd.x, -dd.z)
@@ -436,7 +436,7 @@ func _klettern(dt: float) -> void:
 
 func _leiter(dt: float, ein: Dictionary) -> void:
 	var e: Dictionary = akt["e"]
-	var top := par.top_welt(str(akt["d"]["ding"]))
+	var top: float = par.top_welt(str(akt["d"]["ding"]))
 	var v := float(ein.get("vor", 0.0))
 	if absf(v) > 0.15:
 		y += v * 1.2 * dt
@@ -465,11 +465,11 @@ func _balance_start(d: Dictionary) -> void:
 	var ls := float(e["d"]["ls"])
 	var me: Vector2 = par.sq_von(pos())
 	var sgn := 1.0 if me.x < sqc.x else -1.0
-	var a0 := par.welt_abs(sqc.x - sgn * ls, sqc.y, float(e["top"]))
-	var a1 := par.welt_abs(sqc.x + sgn * ls, sqc.y, float(e["top"]))
+	var a0: Vector3 = par.welt_abs(sqc.x - sgn * ls, sqc.y, float(e["top"]))
+	var a1: Vector3 = par.welt_abs(sqc.x + sgn * ls, sqc.y, float(e["top"]))
 	akt = {"d": d, "a0": a0, "a1": a1, "u": 0.0, "ding": str(d["ding"])}
 	balance = 0.0
-	var dd := a1 - a0
+	var dd: Vector3 = a1 - a0
 	a.heading = atan2(-dd.x, -dd.z)
 	a.rotation.y = a.heading
 	a.position = Vector3(a0.x, a0.y, a0.z)
@@ -522,15 +522,15 @@ func _seil(dt: float, ein: Dictionary) -> void:
 	var d: Dictionary = akt["d"]
 	var e: Dictionary = akt["e"]
 	var dd: Dictionary = e["d"]
-	var von := par.tal(float(dd["von"][0]), float(dd["von"][1]))
-	var nach := par.tal(float(dd["nach"][0]), float(dd["nach"][1]))
-	var top := float(e["top"])
+	var von: Vector2 = par.tal(float(dd["von"][0]), float(dd["von"][1]))
+	var nach: Vector2 = par.tal(float(dd["nach"][0]), float(dd["nach"][1]))
+	var top: float = float(e["top"])
 	akt["u"] = clampf(float(akt["u"]) + float(akt["dir"]) * dt / 1.5, 0.0, 1.0)
 	var u := float(akt["u"])
 	var k := (1.0 - cos(PI * u)) * 0.5
-	var v := von.lerp(nach, k)
+	var v: Vector2 = von.lerp(nach, k)
 	var feet_tal := top + 0.15 - 1.0 * sin(PI * k)
-	var w := par.welt_abs(par.sq(v).x, par.sq(v).y, feet_tal)
+	var w: Vector3 = par.welt_abs(par.sq(v).x, par.sq(v).y, feet_tal)
 	a.position.x = w.x
 	a.position.z = w.z
 	y = w.y
@@ -538,7 +538,7 @@ func _seil(dt: float, ein: Dictionary) -> void:
 	a.aktion("schwingen", 0.3)
 	par.seil_zu(str(d["ding"]), v, feet_tal + 2.05)
 	if (bool(ein.get("sprung", false)) or (kinder and u > 0.85)) and _seil_fenster():
-		var ziel := par.welt_abs(float(dd["nach"][0]), float(dd["nach"][1]), top)
+		var ziel: Vector3 = par.welt_abs(float(dd["nach"][0]), float(dd["nach"][1]), top)
 		_absprung = {"p": pos(), "top": y + 1.0, "ding": ""}
 		var T := 0.45
 		var dz: Vector3 = ziel - pos()
@@ -554,7 +554,7 @@ func _seil(dt: float, ein: Dictionary) -> void:
 		akt["dir"] = -1.0                                 # missed: back again (no fall, no penalty)
 		kit.sag(kit.tx("Zu spät – nochmals!"), "blinki")
 	elif u <= 0.0 and float(akt["dir"]) < 0.0:
-		var st := par.welt_abs(float(dd["von"][0]), float(dd["von"][1]), top)
+		var st: Vector3 = par.welt_abs(float(dd["von"][0]), float(dd["von"][1]), top)
 		y = st.y
 		a.position = st
 		par.seil_zu(str(d["ding"]), von, top + 1.6)

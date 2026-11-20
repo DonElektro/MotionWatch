@@ -694,11 +694,29 @@ func _tick_leg(dt: float) -> void:
 		var wa: Vector3 = b.WG(ahead.x, ahead.y, 1.7)
 		if not fast:
 			_fly_view(wp, wa)
-	if Engine.get_process_frames() % 10 == 0:
+	_hud_t -= dt
+	if _hud_t <= 0.0:                                    # 20.11.2026: not every 10 frames - only when the shown values changed
+		_hud_t = 0.5
 		_karte_update()
-		_paint_hud()
+		var sig := _hud_sig()
+		if sig != _hud_sig_alt:
+			_hud_sig_alt = sig
+			_paint_hud()
 	if f >= 1.0:
 		_end_leg()
+
+
+var _hud_t := 0.0
+var _hud_sig_alt := ""
+
+
+func _hud_sig() -> String:
+	"""what _paint_hud shows, rounded as it is shown (bars in whole %, the clock in 5 minutes, the log length)"""
+	if R.is_empty():
+		return ""
+	return "%d|%d|%d|%d|%d|%s|%s|%d|%s" % [int(R.get("stamina", 0.0)), int(R.get("food", 0.0)), int(float(R.get("water", 0.0)) * 10.0),
+		int(main.hour() * 12.0), int(R.get("stage", 0)), str(R.get("now", "")), str(R.get("walking", false)), (R.get("log", []) as Array).size(),
+		str((R.get("pending", {}) as Dictionary).get("title", ""))]
 
 
 func _along(pts: Array, f: float) -> Vector2:
@@ -1303,7 +1321,9 @@ func _tick_night(dt: float) -> void:
 					elif not R["events_done"].has("nsnap%d" % int(id)):
 						R["events_done"]["nsnap%d" % int(id)] = true
 						_snap_later(T.t("Nacht: %s") % T.t(_kind_name(str(rec["kind"]))), "cam")
-		if Engine.get_process_frames() % 15 == 0:
+		_hud_t -= dt
+		if _hud_t <= 0.0:                                # 20.11.2026: twice a second instead of every 15 frames
+			_hud_t = 0.5
 			_paint_hud()
 	elif not (R["night"] as Dictionary).is_empty() and not R["night"].has("done") and str(n.last.get("id", "")) == str(R["night"].get("run", {}).get("id", "x")):
 		R["night"]["done"] = true
@@ -2214,6 +2234,7 @@ func _paint_chapter() -> void:
 	row.add_child(mapbox)
 	_karte_in(mapbox, 300.0)
 	_paint_slots(left)                                   # A6: Spielstand-Plätze, Weiterspielen
+	_paint_neu(left)                                     # Neubau (20.11.2026): der neue Spielmodus als Probe, hinter einem Schalter
 	var L: Dictionary = SS.level(main)                   # A6: ein Level für alles
 	var lv := int(L["lv"])
 	var g := _group(T.t("Stufe %d · %d Erfahrung") % [lv, int(L["xp"])], left)
@@ -2253,6 +2274,39 @@ func _paint_chapter() -> void:
 			zweit.team.paint_chapter(left)             # Zwei-Spieler-Bausteine: Reisetagebuch
 	if geheim != null:
 		geheim.paint_chapter(left)                       # erst wenn etwas gefunden ist
+
+
+var _neu_rolle := "enkelin"
+var _neu_name := ""
+
+
+func _paint_neu(parent: Control) -> void:
+	"""Neubau «im Uncharted-Stil» (Besitzer 20.11.2026): eigene Figur, Kamera-Regie, schlanker Bildschirm (kit_abenteuer.gd).
+	Der alte Ablauf bleibt der Standard, bis der neue freigegeben ist; der Schalter merkt sich die Wahl (fortschritt.json)."""
+	var g := _group(T.t("Neuer Spielmodus (Probe)"), parent)
+	var on := bool(P.get("neu_modus", false))
+	_toggle_row(g, T.t("Als eigene Figur spielen (Kapitel 2, Probe)"), on, func(v): P["neu_modus"] = v; _save(); _changed())
+	if not on:
+		return
+	g.add_child(_lab(T.t("Wer bist du? (14–16 Jahre)"), 12, Color(0.6, 0.66, 0.74)))
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 8)
+	g.add_child(row)
+	for r in [["enkelin", "Enkelin"], ["enkel", "Enkel"], ["tochter", "Tochter"], ["sohn", "Sohn"]]:
+		var rr: String = r[0]
+		_btn(row, T.t(str(r[1])), func(): _neu_rolle = rr; _changed(), rr == _neu_rolle)
+	var le := LineEdit.new()
+	le.placeholder_text = T.t("Dein Name")
+	le.text = _neu_name
+	le.max_length = 16
+	le.text_changed.connect(func(t): _neu_name = t)
+	g.add_child(le)
+	_btn(g, T.t("Probe starten ›"), func(): neu_starten(), true)
+
+
+func neu_starten() -> void:
+	close_ab()
+	preload("res://scripts/kit_abenteuer.gd").ensure(main).start({"rolle": _neu_rolle, "name": _neu_name})
 
 
 func _paint_slots(parent: Control) -> void:

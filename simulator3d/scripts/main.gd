@@ -2308,6 +2308,8 @@ func busy_with(except_ := "") -> String:
 		w = "Wiedergabe"
 	elif horror != null and horror.running:
 		w = "Horror-Modus"                             # the nights of «Das Hospiz» (bergtal_horror.gd)
+	elif kit != null and bool(kit.running):
+		w = "Die Karte des Grossvaters (neu)"         # Abenteuer-Kit (kit_abenteuer.gd)
 	elif maggie != null and maggie.running:
 		w = "Maggie-Geschichte"                        # «Maggie und der Bergkristall» (maggie_story.gd)
 	elif has_meta("trailer") and preload("res://scripts/trailer.gd").busy(self):
@@ -3131,6 +3133,7 @@ func world_reply() -> Dictionary:
 
 
 var schnitt = null                     # schnittstelle.gd (Aufräumen 2)
+var kit = null                         # kit_abenteuer.gd: Abenteuer-Kit «Die Karte des Grossvaters» neu (eigene Figur, Kamera-Regie; Probe)
 var maggie = null                      # maggie_story.gd: «Maggie und der Bergkristall» (API für maggie_hund / maggie_gefahr)
 var horror = null                      # bergtal_horror.gd: Bergtal · Horror-Modus (Hook für die Stimmungswahl: horror.mood_slot / open_from_mood)
 var spieltest = null                   # spieltest.gd: Spieltest-Assistent (Haken für Spiele: Spieltest.ereignis(modus, art, daten))
@@ -4904,6 +4907,8 @@ func _fly(dt: float) -> void:
 		return                                   # keys go to the phone
 	if explore != null and (explore.on or explore.fly):
 		return                                   # exploring: W A S D drive the rover (Entwicklertool: the fly camera, explore.gd)
+	if kit != null and bool(kit.running):
+		return                                   # Abenteuer-Kit: the keys move the own figure (kit_abenteuer.gd)
 	if maggie != null and maggie.walking():
 		return                                   # «Maggie und der Bergkristall»: W A S D move the figure (maggie_story.gd)
 	if typing():
