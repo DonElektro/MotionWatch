@@ -18,6 +18,13 @@ var _ziel_y = null                   # valley height to keep (on a ledge)
 var tempo := 0.0
 
 
+func G(x: float, z: float, dy := 0.0) -> Vector3:
+	"""the ground of the kit (its own gorge), else the valley"""
+	if kit != null and kit.par != null:
+		return kit.par.G(x, z, dy)
+	return super.G(x, z, dy)
+
+
 func starten(k) -> bool:
 	kit = k
 	story = k
@@ -151,7 +158,7 @@ func steuern(mv_welt: Vector2, dt: float) -> void:
 		return
 	var np := hp + Vector3(tal_d.x, 0, tal_d.z).normalized() * spd * dt
 	var hy = kit.maggie_boden(Vector2(hp.x, hp.z), Vector2(np.x, np.z))
-	if hy == false:
+	if typeof(hy) == TYPE_BOOL:
 		stop(hund, dt)
 		tempo = 0.0
 		return

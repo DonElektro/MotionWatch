@@ -1043,6 +1043,10 @@ func gy(x: float, z: float) -> float:
 		var q: Vector2 = (Vector2(p.x, p.z) - (d[0] as Vector2)).rotated(-float(d[2]))
 		if absf(q.x) < (d[1] as Vector2).x and absf(q.y) < (d[1] as Vector2).y:
 			return float(d[3]) - h0
+	if boden_fn.is_valid():                                  # Abenteuer-Kit: an own ground (the gorge of kit_schlucht.gd)
+		var hb = boden_fn.call(p.x, p.z)
+		if hb != null:
+			return float(hb) - h0
 	for ic in ice:                                           # winter: on the frozen lake
 		var e := _ell(Vector2(p.x, p.z), ic[0])
 		if e < 1.0 and e >= float(ic[1]):
@@ -1051,6 +1055,7 @@ func gy(x: float, z: float) -> float:
 
 
 var ice: Array = []                          # [lake, ice from (ellipse radius), water level] - walkable in winter
+var boden_fn := Callable()                   # Abenteuer-Kit (kit_schlucht.gd): (x, z) valley -> valley height or null (21.11.2026)
 var orte = null                              # bergtal_orte.gd: the places to explore (buildings with their inside …)
 var landschaft = null                        # bergtal_landschaft.gd: «wie auf den Fotos» (karst, rock teeth, lake, sky)
 var ziele = null                             # bergtal_ziele.gd: Tuffwasserfall, Chalchstock

@@ -165,6 +165,7 @@ func start(o := {}) -> void:
 	figur.kinder = kinder
 	var cp: Array = daten.CHECKPOINTS["start"]
 	figur.bauen(rolle, par.welt(float(cp[0]), float(cp[1])), par.yaw_achse())
+	figur.geh_zu("boden")
 	hund = Hund.new()
 	hund.main = main
 	bt.s.root.add_child(hund)
@@ -514,7 +515,8 @@ func eingabe(dt: float) -> Dictionary:
 	zoom = _zoom
 	_zoom = 0.0
 	if not _test.is_empty():
-		if uhr < float(_test["bis"]):
+		if uhr < float(_test["bis"]) or not bool(_test.get("_used", false)):
+			_test["_used"] = true                         # (at least one frame, even when a frame is longer than the wish)
 			var te: Dictionary = _test["ein"]
 			if te.has("mv"):
 				k = Vector2(float(te["mv"][0]), float(te["mv"][1]))
@@ -698,7 +700,7 @@ func film_haengen(sv: float, qv: float) -> void:
 	var top: float = par.top_welt(id) if id != "" else par.welt(sv, qv).y
 	var me: Vector3 = par.welt(sv, qv)
 	film_hang_p = Vector3(me.x, top, me.z)
-	var inner: Vector3 = par.welt(sv - 0.8, qv)
+	var inner: Vector3 = par.welt(sv, qv - 0.8)
 	film_hang_auf = Vector3(inner.x, top, inner.z)
 	film_hang = true
 	figur.akt = {"griff": film_hang_p, "auf": film_hang_auf, "art": "rand", "von": {}}
@@ -907,7 +909,10 @@ static func control(m, d: Dictionary) -> Dictionary:
 			k._test = {"ein": e, "bis": k.uhr + float(d.get("s", 0.5))}
 			return {"ok": true}
 		"setzen":
+			if k.steuer_maggie:
+				k._maggie_steuern(false)
 			k.figur_setzen(float(d.get("s", 0.0)), float(d.get("q", 0.0)))
+			k.figur.geh_zu("boden")
 			if d.has("blick"):
 				k.figur.a.heading = float(d["blick"])
 				k.figur.a.rotation.y = k.figur.a.heading

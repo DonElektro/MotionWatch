@@ -12,6 +12,7 @@ const FELS := Color(0.47, 0.45, 0.42)
 const FELS2 := Color(0.4, 0.39, 0.37)
 const HOLZ := Color(0.45, 0.31, 0.19)
 const WASSER := Color(0.12, 0.28, 0.32)
+const Schlucht = preload("res://scripts/kit_schlucht.gd")
 
 var daten                            # the chapter data (script with ACHSE, DINGE, AKTIONEN, WEG …)
 var ax0 := Vector2.ZERO
@@ -25,6 +26,20 @@ var erledigt := {}                   # action id -> true
 var _decks: Array = []               # what we added to bt.decks
 var _wf: Array = []                  # waterfall materials (time)
 var _glanz: Array = []               # [node, base y] of finds
+var schlucht = null                  # kit_schlucht.gd: the own gorge (its ground wins over bergtal.H)
+
+
+func _H(x: float, z: float) -> float:
+	"""the ground (valley y): the own gorge, else the valley"""
+	if schlucht != null:
+		var h = schlucht.boden(x, z)
+		if h != null:
+			return float(h)
+	return Bt.H(x, z)
+
+
+func G(x: float, z: float, dy := 0.0) -> Vector3:
+	return Vector3(x, _H(x, z) + dy, z)
 
 
 func _part() -> String:
@@ -54,6 +69,11 @@ func binden(m_, daten_) -> bool:
 
 
 func aufraeumen() -> void:
+	if schlucht != null:
+		schlucht.aufraeumen()
+		if bt != null and bt.get("boden_fn") != null:
+			bt.boden_fn = Callable()
+	schlucht = null
 	if bt != null:
 		for d in _decks:
 			bt.decks.erase(d)
@@ -117,6 +137,10 @@ func yaw_achse() -> float:
 
 # ---- building ------------------------------------------------------------------------------------------------------------
 func bauen() -> void:
+	if daten.get_script_constant_map().has("SCHLUCHT"):
+		schlucht = Schlucht.new(bt, daten.SCHLUCHT)
+		schlucht.bauen(holder, m, lite)
+		bt.boden_fn = func(x: float, z: float): return schlucht.boden(x, z)
 	for d in daten.DINGE:
 		_ding(d)
 	for a in daten.AKTIONEN:
@@ -131,7 +155,7 @@ func _deck(c: Vector2, hq: float, hs: float, top_abs: float) -> Array:
 
 
 func _box(c: Vector2, hq: float, hs: float, top_abs: float, col: Color, tk = "stone", tief := 3.0) -> MeshInstance3D:
-	var h := tief + (top_abs - Bt.H(c.x, c.y))
+	var h := tief + (top_abs - _H(c.x, c.y))
 	var n := node(holder, Vector3(c.x, top_abs - h * 0.5, c.y), -rot)
 	return part(n, boxm(hq * 2.0, h, hs * 2.0), Vector3.ZERO, col, tk)
 
@@ -143,7 +167,8 @@ func _ding(d: Dictionary) -> void:
 	var c := tal(sv, qv)
 	var ls := float(d.get("ls", 0.5))
 	var lq := float(d.get("lq", 0.5))
-	var top := Bt.H(c.x, c.y) + float(d.get("top", 0.0))
+	var vorn := tal(sv - ls, qv)
+	var top := _H(vorn.x, vorn.y) + float(d.get("top", 0.0))
 	var e := {"d": d, "c": c, "top": top, "decks": [], "node": null}
 	match str(d["art"]):
 		"stein":
@@ -163,7 +188,7 @@ func _ding(d: Dictionary) -> void:
 			e["decks"].append(_deck(c, lq, ls, top))
 			var piv := node(holder, Vector3(0, 0, 0), 0.0)
 			var a0 := c - ax_q * lq
-			piv.position = Vector3(a0.x, Bt.H(c.x, c.y), a0.y)
+			piv.position = Vector3(a0.x, _H(c.x, c.y), a0.y)
 			piv.rotation.y = -rot
 			for i in range(5):
 				part(piv, boxm(lq * 2.0 / 5.0 - 0.04, float(d.get("top", 2.0)), 0.08), Vector3(lq * 2.0 * (i + 0.5) / 5.0, float(d.get("top", 2.0)) * 0.5, 0), HOLZ.darkened(0.08 * (i % 2)), "tree")
@@ -178,7 +203,7 @@ func _ding(d: Dictionary) -> void:
 			part(n3, cylm(0.2, 0.24, ls * 2.0 + 0.4, 10), Vector3.ZERO, Color(0.36, 0.27, 0.18), "tree", Vector3(PI * 0.5, 0, 0))
 			e["node"] = n3
 		"leiter":
-			var base := Bt.H(c.x, c.y)
+			var base := _H(c.x, c.y)
 			var h2 := float(d.get("top", 4.0))
 			var n4 := node(holder, Vector3(c.x, base, c.y), -rot)
 			for sx in [-0.25, 0.25]:
@@ -190,6 +215,9 @@ func _ding(d: Dictionary) -> void:
 			e["node"] = n4
 			e["top"] = base + h2
 		"seil":
+			var vt := tal(float(d["von"][0]), float(d["von"][1]))
+			top = _H(vt.x, vt.y)
+			e["top"] = top
 			var anker := Vector3(c.x, top + 4.0, c.y)
 			var n5 := node(holder, anker, 0.0)
 			part(holder, boxm(0.25, 0.25, 4.6), Vector3(c.x, top + 4.1, c.y), HOLZ.darkened(0.25), "tree", Vector3(0, -rot, 0))
@@ -204,7 +232,7 @@ func _ding(d: Dictionary) -> void:
 		"wasser", "spalt":
 			gefahren.append({"id": id, "art": str(d["art"]), "c": c, "hs": ls, "hq": lq})
 			if str(d["art"]) == "wasser":
-				var n6 := node(holder, Vector3(c.x, Bt.H(c.x, c.y) + 0.06, c.y), -rot)
+				var n6 := node(holder, Vector3(c.x, _H(c.x, c.y) + 0.06, c.y), -rot)
 				var wm := StandardMaterial3D.new()
 				wm.albedo_color = Color(WASSER, 0.9)
 				wm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -256,12 +284,12 @@ func _wand(e: Dictionary, c: Vector2, lq: float, ls: float, top: float) -> void:
 		var qm := (float(p[0]) + float(p[1])) * 0.5
 		var hq := (float(p[1]) - float(p[0])) * 0.5
 		var cc := tal(sv, qm)
-		var t := Bt.H(cc.x, cc.y) + hoch
+		var t := _H(cc.x, cc.y) + hoch
 		e["decks"].append(_deck(cc, hq, ls, t))
 		if str(p[2]) == "voll":
 			_box(cc, hq, ls, t, FELS)
 		else:                                             # the window: rock below and above the hole
-			var sims_top := Bt.H(cc.x, cc.y) + 1.5
+			var sims_top := _H(cc.x, cc.y) + 1.5
 			_box(cc, hq, ls, sims_top, FELS)
 			var n := node(holder, Vector3(cc.x, sims_top + 0.6 + (t - sims_top - 0.6) * 0.5, cc.y), -rot)
 			part(n, boxm(hq * 2.0, t - sims_top - 0.6, ls * 2.0), Vector3.ZERO, FELS, "stone")
@@ -283,7 +311,7 @@ void fragment() {
 
 
 func _fall(e: Dictionary, c: Vector2, h: float, w: float) -> void:
-	var g := Bt.H(c.x, c.y)
+	var g := _H(c.x, c.y)
 	var sh := Shader.new()
 	sh.code = FALL_SHADER
 	var sm := ShaderMaterial.new()

@@ -444,6 +444,10 @@ func _maggie_koerper(a) -> void:
 		ch.queue_free()
 	a.legs.clear()
 	a.lights.clear()
+	var tm = a.get_node_or_null("tier_modell")         # 21.11.2026: the generic dog model (tier_modell.gd) of actor.gd - its parts
+	if tm != null:                                     # were just freed above; without this it played on freed nodes (SCRIPT ERROR)
+		a.remove_child(tm)
+		tm.queue_free()
 	br.scale = Vector3.ONE * MAGGIE_SKALA
 	var k := Node3D.new()                        # alles darin in echten Metern (Boden y = 0, vorne = -z)
 	k.name = "maggie_koerper"

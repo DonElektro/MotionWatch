@@ -7,9 +7,10 @@ extends RefCounted
 ##   {name} Name der Spielfigur · {bezug} «Grossvater» / «Vater» · {jahr} 1974 / 2000 · {lia_bezug} «Enkelin» / «Tochter»
 ##   (Lia ist Tonis Enkelin bzw. Tochter, gleich wie die Spielfigur zum Grossvater / Vater steht).
 ##
-## Ort: die Bachschlucht unterhalb der Alphütte (Tal-Koordinaten von bergtal.gd: x = Osten, z = Süden). Alles im Parcours
-## wird über die ACHSE gesetzt: [s, q] = s m entlang der Schlucht (bachabwärts), q m quer dazu (+ = rechts bachabwärts).
-## Höhen «h» relativ zum Boden in der Mitte des Dings (bergtal.H), «top» = Oberkante über dem Boden.
+## Ort: eine eigene Schlucht westlich der Alphütte (SCHLUCHT, gebaut von kit_schlucht.gd – unabhängig vom Bach-Einschnitt
+## von bergtal.gd). Tal-Koordinaten von bergtal.gd: x = Osten, z = Süden. Alles im Parcours wird über die ACHSE gesetzt:
+## [s, q] = s m entlang der Schlucht (bachaufwärts, so geht man), q m quer dazu (+ = rechts in Gehrichtung).
+## «top» = Oberkante über dem Boden an der Vorderkante des Dings (s − ls: von dort kommt man); Boden = Schlucht-Gelände.
 ##
 ## Dinge (Parcours): art = stein | block | wand | tor | balken | leiter | seil | wasser | spalt | fund | fall (Wasserfall)
 ##   Gemeinsam: id, s, q, ls (halbe Länge entlang), lq (halbe Breite quer), top (m über Boden), dreh (Grad, zusätzlich)
@@ -27,9 +28,17 @@ const KAPITEL := 2
 const TITEL := "Wo der Bach zweimal fällt"
 
 # the gorge axis: origin (valley x, z) and direction (downstream)
-const ACHSE := [Vector2(66.0, -4.0), Vector2(-0.33, -0.944)]
-# the place of MoveEye / the camp for this chapter (bergtal «frei»): on the west rim above the gorge
-const LAGER := Vector2(40.0, -24.0)
+const ACHSE := [Vector2(-40.0, -40.0), Vector2(-0.055, 0.998)]
+# the place of MoveEye / the camp for this chapter (bergtal «frei»): on the rim above the gorge
+const LAGER := Vector2(-22.0, -9.0)
+# the gorge set (kit_schlucht.gd): centre and axis like ACHSE; s from … to, half width of the whole set (q);
+# boden = floor height (valley y) along s; breite = half width of the floor; kanal = [s0, s1, q0, q1, floor y] (the cleft
+# of the stream in the upper terrace - only the rope gets you across)
+const SCHLUCHT := {"mitte": Vector2(-40.0, -40.0), "achse": Vector2(-0.055, 0.998), "s": [-14.0, 66.0], "q": 30.0,
+		"boden": [[-14.0, 127.6], [0.0, 128.0], [12.0, 128.3], [13.0, 128.4], [19.5, 128.4], [24.0, 128.6], [25.95, 128.7],
+			[26.05, 130.2], [37.0, 130.5], [39.5, 130.6], [43.2, 130.6], [44.5, 130.7], [44.65, 134.7], [60.0, 135.5], [66.0, 136.0]],
+		"breite": [[-14.0, 5.0], [0.0, 7.5], [16.0, 9.5], [30.0, 8.0], [37.0, 9.0], [42.0, 9.5], [46.0, 9.0], [56.0, 7.0], [66.0, 6.0]],
+		"kanal": [[44.6, 60.0, -0.8, 2.6, 132.6]]}
 
 const ROLLEN := ["enkelin", "enkel", "tochter", "sohn"]
 const ROLLE_NAME := {"enkelin": "Enkelin", "enkel": "Enkel", "tochter": "Tochter", "sohn": "Sohn"}
@@ -54,7 +63,6 @@ const DINGE := [
 	{"id": "stein4", "art": "stein", "s": 19.3, "q": -0.2, "ls": 0.45, "lq": 0.5, "top": 0.35},
 	# the rock step (climb up, then down two steps)
 	{"id": "stufe", "art": "block", "s": 26.0, "q": 0.0, "ls": 1.0, "lq": 9.0, "top": 1.5, "kante": true, "von": [[24.4, -1.5], [24.4, 1.5]]},
-	{"id": "stufe2", "art": "block", "s": 28.0, "q": 0.0, "ls": 1.0, "lq": 9.0, "top": 0.8},
 	# scene 3: the gate with the bolt; the side ledge with the window for Maggie
 	{"id": "riegelwand", "art": "wand", "s": 37.0, "q": 0.0, "ls": 0.3, "lq": 9.0, "top": 2.6, "fenster": [-5.6, 0.5]},
 	{"id": "tor", "art": "tor", "s": 37.0, "q": 0.8, "ls": 0.12, "lq": 1.3, "top": 2.0},
@@ -65,13 +73,12 @@ const DINGE := [
 	{"id": "fallwand", "art": "wand", "s": 45.0, "q": 0.0, "ls": 0.6, "lq": 9.0, "top": 4.0},
 	{"id": "absatz", "art": "block", "s": 43.9, "q": -3.2, "ls": 0.55, "lq": 0.9, "top": 1.4, "kante": true, "von": [[43.0, -3.2]]},
 	{"id": "leiter", "art": "leiter", "s": 44.35, "q": -3.2, "top": 4.0},
-	{"id": "oben_a", "art": "block", "s": 46.1, "q": -4.4, "ls": 1.5, "lq": 3.6, "top": 4.0, "rand": true},
-	{"id": "spalt", "art": "spalt", "s": 46.1, "q": 0.9, "ls": 1.5, "lq": 1.7},
-	{"id": "oben_b", "art": "block", "s": 46.1, "q": 5.4, "ls": 1.5, "lq": 2.8, "top": 4.0, "rand": true},
-	{"id": "seil", "art": "seil", "s": 46.1, "q": 0.9, "von": [46.1, -1.4], "nach": [46.1, 3.3], "top": 4.0},
-	{"id": "wasserfall", "art": "fall", "s": 46.6, "q": 0.9, "top": 4.0, "breite": 1.4},
+	{"id": "spalt", "art": "spalt", "s": 52.3, "q": 0.9, "ls": 7.7, "lq": 1.7},
+	{"id": "seil", "art": "seil", "s": 46.1, "q": 0.9, "von": [46.1, -1.4], "nach": [46.1, 3.3]},
+	{"id": "wasserfall", "art": "fall", "s": 44.3, "q": 0.9, "top": 4.0, "breite": 1.4},
+	{"id": "wasserfall2", "art": "fall", "s": 59.6, "q": 0.9, "top": 16.0, "breite": 2.2},
 	# scene 5: the carabiner
-	{"id": "karabiner", "art": "fund", "s": 46.4, "q": 6.2, "top": 4.0, "name": "Karabiner «G+T {jahr_kurz}»"},
+	{"id": "karabiner", "art": "fund", "s": 46.4, "q": 6.2, "top": 0.0, "name": "Karabiner «G+T {jahr_kurz}»"},
 ]
 
 # context actions (trigger volumes): id, art, [s, q] where you stand, r (m), plus what the action needs
