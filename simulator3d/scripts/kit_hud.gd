@@ -344,9 +344,10 @@ func tick(real_dt: float) -> void:
 	_foto_btn.position = _pause_btn.position - Vector2(_foto_btn.get_combined_minimum_size().x + 10.0, 0)
 	_skip_btn.visible = film
 	var pr: String = kit.figur.prompt() if spiel else ""
-	if not kit.qte.is_empty():
-		pr = str(kit.qte["text"])
-	if pr != "":
+	var ist_qte: bool = not kit.qte.is_empty()
+	if ist_qte:
+		pr = str(kit.qte["text"]) + ("" if touch else "  [" + T.t("Leertaste") + "]")
+	if pr != "" and not ist_qte:
 		pr = (T.t("Aktion") + ": " if not touch else "") + T.t(pr)
 		if not touch and kit.figur.zustand == "boden":
 			pr = "[E] " + T.t(kit.figur.prompt()) if kit.figur.prompt() != "Springen!" else "[" + T.t("Leertaste") + "] " + T.t("Springen!")
@@ -444,6 +445,7 @@ func karte(on: bool) -> void:
 	if _karte == null:
 		_karte = Control.new()
 		_karte.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_karte.clip_contents = true
 		_karte.draw.connect(_karte_draw)
 		root.add_child(_karte)
 	_karte.visible = on

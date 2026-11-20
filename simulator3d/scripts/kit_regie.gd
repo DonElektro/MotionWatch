@@ -239,16 +239,28 @@ func _shot_xform(dt: float) -> Transform3D:
 	return Transform3D(Basis.IDENTITY, at).looking_at(lk, Vector3.UP)
 
 
-func frei_ziehen(at: Vector3, lk: Vector3) -> Vector3:
-	"""no rock between the camera and what it looks at: pull the camera in front of the last blocker (and above ground)"""
-	at.y = maxf(at.y, main.ground_y(at.x, at.z) + 0.35)
-	var n := 8 if Quality.lite() else 16
+func _blocker(at: Vector3, lk: Vector3, n: int) -> float:
 	var last := -1.0
 	for i in range(1, n):
 		var f := float(i) / float(n)
 		var q := at.lerp(lk, f)
 		if main.ground_y(q.x, q.z) + 0.2 > q.y:
 			last = f
+	return last
+
+
+func frei_ziehen(at: Vector3, lk: Vector3) -> Vector3:
+	"""no rock between the camera and what it looks at: pull the camera in front of the last blocker (and above ground)"""
+	at.y = maxf(at.y, main.ground_y(at.x, at.z) + 0.35)
+	var n := 8 if Quality.lite() else 16
+	var last := _blocker(at, lk, n)
+	var up := 0.0
+	while last > 0.0 and up < 4.0:                         # first: a little higher (keeps the framing)
+		up += 1.0
+		last = _blocker(at + Vector3(0, up, 0), lk, n)
+	if last <= 0.0:
+		return at + Vector3(0, up, 0)
+	last = _blocker(at, lk, n)
 	if last > 0.0:
 		at = at.lerp(lk, minf(last + 1.5 / maxf(at.distance_to(lk), 0.5), 0.9))
 		at.y = maxf(at.y, main.ground_y(at.x, at.z) + 0.35)

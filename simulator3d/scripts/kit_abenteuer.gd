@@ -266,6 +266,8 @@ func touch_an() -> bool:
 # scenes and steps (data of the chapter)
 # =======================================================================================================================
 func szene_starten(n: int) -> void:
+	if karte_an:
+		karte_ende(false)
 	szene_i = clampi(n, 0, daten.SZENEN.size() - 1)
 	var sz: Dictionary = daten.SZENEN[szene_i]
 	_log("szene:" + str(sz["id"]))
@@ -296,6 +298,8 @@ func _naechster_schritt() -> void:
 		return
 	schritt = (L[schritt_i] as Dictionary).duplicate()
 	if schritt.has("film"):
+		if karte_an:
+			karte_ende(false)
 		phase = "film"
 		figur.geh_zu("film")
 		regie.spiele(schritt["film"], func(): _film_fertig())

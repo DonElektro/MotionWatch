@@ -234,7 +234,7 @@ const SZENEN := [
 		{"film": [
 			{"t": 0.0, "k": "musik", "z": "action"},
 			{"t": 0.0, "k": "zeitlupe", "f": 0.35, "s": 2.4},
-			{"t": 0.0, "k": "shot", "art": "fix", "s": 51.5, "q": -4.5, "h": 3.0, "blick": [54.0, 2.0, 0.0], "d": 2.6},
+			{"t": 0.0, "k": "shot", "art": "fix", "s": 50.8, "q": -4.2, "h": 2.2, "blick": [54.0, 1.0, 4.4], "d": 2.6},
 			{"t": 0.1, "k": "bruecke_einsturz", "ding": "bruecke", "ab_q": 0.6},
 			{"t": 0.2, "k": "ton", "name": "einsturz"},
 			{"t": 0.3, "k": "zug", "wer": "figur", "s": 54.0, "q": -4.2},
