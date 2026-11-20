@@ -261,7 +261,7 @@ func _layout() -> void:
 	var hoch := s.y > s.x
 	var kw := minf(s.x * (0.5 if hoch else 0.36), 420.0)
 	_kompass.size = Vector2(kw, 30.0 * maxf(k, 0.85))
-	_kompass.position = Vector2((s.x - kw) * 0.5, pad + (34.0 * k if hoch else 0.0))
+	_kompass.position = Vector2((s.x - kw) * 0.5, pad + (58.0 * maxf(k, 0.85) if hoch else 0.0))   # portrait: under the goal line
 	_ziel_box.position = Vector2(pad, pad)
 	_ziel.custom_minimum_size = Vector2(minf(s.x * (0.62 if hoch else 0.3), 380.0), 0)
 	_ziel_box.size = Vector2.ZERO
@@ -274,7 +274,7 @@ func _layout() -> void:
 	var sub_w := minf(s.x - 2.0 * pad, 900.0)
 	_sub_box.size = Vector2(sub_w, 0)
 	_sub.custom_minimum_size = Vector2(sub_w, 0)
-	var unten := pad + (220.0 * k if touch else 30.0)
+	var unten := pad + (270.0 * maxf(k, 0.85) if touch else 30.0)
 	if touch and not hoch:
 		unten = pad + 60.0 * k
 	_sub_box.position = Vector2((s.x - sub_w) * 0.5, s.y - unten - 90.0 * maxf(k, 0.85))
@@ -298,6 +298,10 @@ func _layout() -> void:
 	_btn_akt.position = _btn_sprung.position + Vector2(-b2 - pad * 0.8, b1 - b2 - r * 0.55)
 	for b in [_btn_akt, _btn_sprung]:
 		b.add_theme_font_size_override("font_size", int(15.0 * maxf(k, 0.9)))
+		for st in ["normal", "hover", "pressed", "focus"]:
+			var sb = b.get_theme_stylebox(st)
+			if sb is StyleBoxFlat:
+				(sb as StyleBoxFlat).set_corner_radius_all(int(b.size.x * 0.5))   # (999 drew a seam)
 	_menu.position = (s - _menu.get_combined_minimum_size()) * 0.5
 	_last = {}
 

@@ -8,8 +8,8 @@ extends "res://scripts/bergtal_erleben_base.gd"
 
 const Bt = preload("res://scripts/bergtal.gd")
 
-const FELS := Color(0.47, 0.45, 0.42)
-const FELS2 := Color(0.4, 0.39, 0.37)
+const FELS := Color(0.64, 0.53, 0.42)               # warm rock like the walls of the gorge (kit_schlucht.gd)
+const FELS2 := Color(0.56, 0.46, 0.37)
 const HOLZ := Color(0.45, 0.31, 0.19)
 const WASSER := Color(0.12, 0.28, 0.32)
 const Schlucht = preload("res://scripts/kit_schlucht.gd")
@@ -248,6 +248,8 @@ func _ding(d: Dictionary) -> void:
 				e["node"] = n6
 		"fall":
 			_fall(e, c, float(d.get("top", 4.0)), float(d.get("breite", 1.2)))
+		"bach":
+			_bach(e, d)
 		"fund":
 			var n7 := node(holder, Vector3(c.x, top + 0.12, c.y), 0.0)
 			light_part(n7, sphm(0.09, -1.0, 8), Vector3.ZERO, glow_mat(Color(1.0, 0.9, 0.6), 2.5))
@@ -308,6 +310,45 @@ void fragment() {
 	ALPHA = (0.45 + 0.45 * n) * edge;
 }
 """
+
+
+const BACH_SHADER := """
+shader_type spatial;
+render_mode unshaded, cull_disabled, depth_draw_never, shadows_disabled;
+void fragment() {
+	float st = fract(UV.y * 0.6 - TIME * 0.9 + sin(UV.x * 9.0 + UV.y * 2.0) * 0.12);
+	float n = smoothstep(0.0, 0.4, st) * (1.0 - smoothstep(0.45, 1.0, st));
+	float edge = smoothstep(0.0, 0.25, UV.x) * smoothstep(1.0, 0.75, UV.x);
+	ALBEDO = mix(vec3(0.24, 0.42, 0.46), vec3(0.78, 0.88, 0.9), n * 0.6);
+	ALPHA = (0.55 + 0.3 * n) * edge;
+}
+"""
+
+
+func _bach(e: Dictionary, d: Dictionary) -> void:
+	"""the stream: a flowing strip along the floor (one draw call per part)"""
+	var sh := Shader.new()
+	sh.code = BACH_SHADER
+	var sm := ShaderMaterial.new()
+	sm.shader = sh
+	var qv := float(d.get("q", 0.0))
+	var w := float(d.get("breite", 1.6)) * 0.5
+	for t in d["teile"]:
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
+		var sv := float(t[0])
+		while sv <= float(t[1]) + 0.01:
+			for side in [-1.0, 1.0]:
+				var p := tal(sv, qv + side * w)
+				var pc := tal(sv, qv)
+				st.set_uv(Vector2(0.5 + side * 0.5, sv))
+				st.add_vertex(Vector3(p.x, _H(pc.x, pc.y) + 0.05, p.y))
+			sv += 1.0
+		var mi := MeshInstance3D.new()
+		mi.mesh = st.commit()
+		mi.material_override = sm
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		holder.add_child(mi)
 
 
 func _fall(e: Dictionary, c: Vector2, h: float, w: float) -> void:

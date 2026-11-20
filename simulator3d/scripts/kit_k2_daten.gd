@@ -56,6 +56,7 @@ static func bezug(rolle: String) -> Dictionary:
 # =======================================================================================================================
 const DINGE := [
 	# scene 2: the pool with stepping stones
+	{"id": "bach", "art": "bach", "s": 0.0, "q": 0.6, "breite": 1.6, "teile": [[-14.0, 25.9], [26.1, 44.3], [44.7, 59.4]]},
 	{"id": "gumpe", "art": "wasser", "s": 16.2, "q": 0.0, "ls": 3.1, "lq": 9.0},
 	{"id": "stein1", "art": "stein", "s": 13.4, "q": 0.5, "ls": 0.55, "lq": 0.6, "top": 0.45},
 	{"id": "stein2", "art": "stein", "s": 15.5, "q": -0.4, "ls": 0.5, "lq": 0.55, "top": 0.5},
