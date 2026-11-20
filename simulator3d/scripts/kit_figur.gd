@@ -376,6 +376,11 @@ func _aktion_start() -> void:
 			kit.fund(str(d["ding"]))
 		"steine":
 			kit.sag(kit.tx("Springen: von Stein zu Stein."), "blinki")
+		"karte":
+			kit.karte_start(d)
+			kit._karte["t0"] = kit.uhr
+		"ir":
+			kit.ir_umschalten()
 		_:
 			kit.aktion_fertig(str(ak["id"]))
 
@@ -386,7 +391,8 @@ func prompt() -> String:
 		var ak: Dictionary = par.aktion_bei(a.global_position)
 		if not ak.is_empty():
 			return {"kante": "Hochklettern", "leiter": "Leiter", "balance": "Balancieren", "seil": "Seil packen",
-				"maggie_heben": "Maggie hochheben", "fund": "Aufheben", "steine": "Springen!"}.get(str(ak["art"]), "Aktion")
+				"maggie_heben": "Maggie hochheben", "fund": "Aufheben", "steine": "Springen!", "karte": "Kartenstück hochhalten",
+				"ir": "IR-Licht ein / aus"}.get(str(ak["art"]), "Aktion")
 	elif zustand == "haengen":
 		return "Hochziehen!"
 	elif zustand == "seil" and _seil_fenster():

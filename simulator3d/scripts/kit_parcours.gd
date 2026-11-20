@@ -27,6 +27,59 @@ var _decks: Array = []               # what we added to bt.decks
 var _wf: Array = []                  # waterfall materials (time)
 var _glanz: Array = []               # [node, base y] of finds
 var schlucht = null                  # kit_schlucht.gd: the own gorge (its ground wins over bergtal.H)
+var _nur_ir: Array = []              # things only seen with the IR light
+var _planken: Array = []             # the bridge: [q, node, deck]
+
+
+func ir_sichtbar(on: bool) -> void:
+	for n in _nur_ir:
+		if is_instance_valid(n):
+			(n as Node3D).visible = on
+
+
+func _bruecke(e: Dictionary, d: Dictionary, c: Vector2, sv: float, qv: float, ls: float, lq: float, top: float) -> void:
+	"""an old suspension bridge: planks across the cleft (each one a deck), two hand ropes, posts at both ends"""
+	var q := qv - lq + 0.25
+	while q <= qv + lq - 0.2:
+		var pc := tal(sv, q)
+		var dk := _deck(pc, 0.24, ls, top)
+		e["decks"].append(dk)
+		var n := node(holder, Vector3(pc.x, top - 0.04, pc.y), -rot)
+		part(n, boxm(0.44, 0.06, ls * 2.0), Vector3.ZERO, HOLZ.darkened(randf() * 0.15), "tree", Vector3(0, 0, randf_range(-0.03, 0.03)))
+		_planken.append([q, n, dk])
+		q += 0.5
+	for side in [-1.0, 1.0]:
+		var a := tal(sv + side * ls, qv - lq - 0.3)
+		var b := tal(sv + side * ls, qv + lq + 0.3)
+		for p in [a, b]:
+			part(holder, cylm(0.06, 0.07, 1.4, 6), Vector3(p.x, top + 0.55, p.y), HOLZ.darkened(0.2), "tree")
+		var mid := (a + b) * 0.5
+		var seil := part(holder, cylm(0.02, 0.02, a.distance_to(b), 5), Vector3(mid.x, top + 0.95, mid.y), Color(0.75, 0.66, 0.45), "tree",
+				Vector3(PI * 0.5, 0, 0))
+		seil.get_parent().remove_child(seil)
+		var hn := node(holder, Vector3(mid.x, top + 0.95, mid.y), -rot + PI * 0.5)
+		hn.add_child(seil)
+		seil.position = Vector3.ZERO
+		_planken.append([999.0, hn, null])
+
+
+func bruecke_einsturz(ab_q: float) -> void:
+	"""the planks behind (q > ab_q) and the ropes fall into the cleft"""
+	for pl in _planken:
+		if float(pl[0]) <= ab_q:
+			continue
+		if pl[2] != null:
+			bt.decks.erase(pl[2])
+			_decks.erase(pl[2])
+			for id in dinge:
+				(dinge[id]["decks"] as Array).erase(pl[2])
+		var n: Node3D = pl[1]
+		if not is_instance_valid(n):
+			continue
+		var tw := n.create_tween().set_parallel(true)
+		var delay := clampf((float(pl[0]) - ab_q) * 0.05, 0.0, 0.4) if float(pl[0]) < 900.0 else 0.15
+		tw.tween_property(n, "position:y", n.position.y - 9.0, 1.3).set_delay(delay).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		tw.tween_property(n, "rotation:x", randf_range(-1.5, 1.5), 1.3).set_delay(delay)
 
 
 func _H(x: float, z: float) -> float:
@@ -144,7 +197,8 @@ func bauen() -> void:
 	for d in daten.DINGE:
 		_ding(d)
 	for a in daten.AKTIONEN:
-		aktionen.append({"id": str(a["id"]), "art": str(a["art"]), "p": tal(float(a["s"]), float(a["q"])), "r": float(a.get("r", 1.2)), "d": a})
+		var ap := Vector2(float(a["tal"][0]), float(a["tal"][1])) if a.has("tal") else tal(float(a["s"]), float(a["q"]))
+		aktionen.append({"id": str(a["id"]), "art": str(a["art"]), "p": ap, "r": float(a.get("r", 1.2)), "d": a})
 
 
 func _deck(c: Vector2, hq: float, hs: float, top_abs: float) -> Array:
@@ -179,10 +233,16 @@ func _ding(d: Dictionary) -> void:
 	var id := str(d["id"])
 	var sv := float(d.get("s", 0.0))
 	var qv := float(d.get("q", 0.0))
+	if d.has("tal"):                                       # placed in valley coordinates (at the camp on the rim)
+		var sqt := sq(Vector2(float(d["tal"][0]), float(d["tal"][1])))
+		sv = sqt.x
+		qv = sqt.y
 	var c := tal(sv, qv)
 	var ls := float(d.get("ls", 0.5))
 	var lq := float(d.get("lq", 0.5))
 	var vorn := tal(sv - ls, qv)
+	if d.has("boden_bei"):
+		vorn = tal(float(d["boden_bei"][0]), float(d["boden_bei"][1]))
 	var top := _H(vorn.x, vorn.y) + float(d.get("top", 0.0))
 	var e := {"d": d, "c": c, "top": top, "decks": [], "node": null}
 	match str(d["art"]):
@@ -269,12 +329,42 @@ func _ding(d: Dictionary) -> void:
 			_fall(e, c, float(d.get("top", 4.0)), float(d.get("breite", 1.2)))
 		"bach":
 			_bach(e, d)
+		"bruecke":
+			_bruecke(e, d, c, sv, qv, ls, lq, top)
+		"steinmann":
+			var n8 := node(holder, Vector3(c.x, top, c.y), 0.0)
+			var yy := 0.0
+			for i in range(6):
+				var r := 0.42 - i * 0.055
+				fels(part(n8, sphm(1.0, -1.0, 8), Vector3(randf_range(-0.04, 0.04), yy + r * 0.32, randf_range(-0.04, 0.04)), FELS, "stone",
+						Vector3(0, randf() * 3.0, 0), Vector3(r, r * 0.62, r * 0.9)))
+				yy += r * 0.6
+			e["node"] = n8
+		"findling":
+			var n9 := node(holder, Vector3(c.x, top, c.y), 0.0)
+			fels(part(n9, sphm(1.0, -1.0, 10), Vector3(0, 0.45, 0), FELS, "stone", Vector3(0, 0.6, 0), Vector3(float(d.get("r", 0.9)), 0.75, float(d.get("r", 0.9)) * 0.8)))
+			e["node"] = n9
+		"zelt":
+			var n10 := node(holder, Vector3(c.x, top, c.y), deg_to_rad(float(d.get("dreh", 0.0))))
+			var zc := Color(0.86, 0.4, 0.22)
+			for sd in [-1.0, 1.0]:
+				part(n10, boxm(1.25, 0.04, 2.1), Vector3(sd * 0.42, 0.5, 0), zc, "tent", Vector3(0, 0, sd * 0.86))
+			part(n10, boxm(0.06, 1.1, 0.06), Vector3(0, 0.55, 1.0), Color(0.3, 0.3, 0.32), 8.0)
+			e["node"] = n10
+		"buch":
+			var n11 := node(holder, Vector3(c.x, top + 0.03, c.y), 0.4)
+			part(n11, boxm(0.34, 0.035, 0.24), Vector3.ZERO, Color(0.36, 0.22, 0.14), 14.0)
+			part(n11, boxm(0.32, 0.012, 0.22), Vector3(0, 0.024, 0), Color(0.93, 0.9, 0.8), 14.0, Vector3(0, 0, 0.05))
+			e["node"] = n11
 		"fund":
 			var n7 := node(holder, Vector3(c.x, top + 0.12, c.y), 0.0)
 			light_part(n7, sphm(0.09, -1.0, 8), Vector3.ZERO, glow_mat(Color(1.0, 0.9, 0.6), 2.5))
 			part(n7, cylm(0.035, 0.035, 0.12, 6), Vector3(0, 0.02, 0), Color(0.6, 0.62, 0.66), 10.0, Vector3(0, 0, 0.5))
 			e["node"] = n7
 			_glanz.append([n7, n7.position.y])
+			if bool(d.get("nur_ir", false)):                # only seen in MoveEye's infrared light
+				n7.visible = false
+				_nur_ir.append(n7)
 	dinge[id] = e
 
 
@@ -457,7 +547,9 @@ func aktion_bei(w: Vector3, nur_offen := true) -> Dictionary:
 	var best := {}
 	var bd := 1.0e9
 	for a in aktionen:
-		if float(a["r"]) <= 0.0 or (nur_offen and erledigt.has(a["id"]) and str(a["art"]) in ["maggie_heben", "fund"]):
+		if float(a["r"]) <= 0.0 or (nur_offen and erledigt.has(a["id"]) and str(a["art"]) in ["maggie_heben", "fund", "karte"]):
+			continue
+		if str(a["art"]) == "fund" and dinge.has(str(a["d"].get("ding", ""))) and not (dinge[str(a["d"]["ding"])]["node"] as Node3D).is_visible_in_tree():
 			continue
 		var dd: float = v.distance_to(a["p"])
 		if dd < float(a["r"]) and dd < bd:

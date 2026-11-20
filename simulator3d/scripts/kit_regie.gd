@@ -183,10 +183,15 @@ func shot(sh: Dictionary, schnitt := true) -> void:
 
 
 func _p(sh: Dictionary, key_s := "s", key_q := "q", key_h := "h") -> Vector3:
+	if sh.has("tal"):
+		return kit.par.W(kit.par.G(float(sh["tal"][0]), float(sh["tal"][1]), float(sh.get(key_h, 0.0))))
 	return kit.par.welt(float(sh.get(key_s, 0.0)), float(sh.get(key_q, 0.0)), float(sh.get(key_h, 0.0)))
 
 
 func _blick(sh: Dictionary) -> Vector3:
+	var bt_ = sh.get("blick_tal", null)
+	if bt_ is Array:
+		return kit.par.W(kit.par.G(float(bt_[0]), float(bt_[1]), float(bt_[2])))
 	var b = sh.get("blick", null)
 	if b is Array:
 		return kit.par.welt(float(b[0]), float(b[1]), float(b[2]))
@@ -220,7 +225,7 @@ func _shot_xform(dt: float) -> Transform3D:
 			to.y = 0.0
 			at = p0.lerp(p0 - to.normalized() * 2.5 + Vector3(0, 3.2, 0), u)
 			lk = (p0 + to.normalized() * 2.0 + Vector3(0, 0.2, 0)).lerp(b0, smoothstep(0.0, 0.8, u))
-		"nah":
+		"nah", "nah_tal":
 			var c := _p(sh)
 			var ang := u * 0.7
 			at = c + Vector3(sin(ang) * 1.1, 0.45, cos(ang) * 1.1)
@@ -367,7 +372,7 @@ func _eintrag(e: Dictionary, sprung: bool) -> void:
 		"abzeichen_merken":
 			kit.merke(str(e["id"]))
 		_:
-			pass
+			kit.film_eintrag(e, sprung)
 
 
 func zug_fertig(wer: String) -> void:

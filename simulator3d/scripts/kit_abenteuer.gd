@@ -66,6 +66,13 @@ var log_: Array = []
 var fps_log: Array = []
 var _fps_t := 0.0
 var steuer_maggie := false
+var _halt_t := 0.0
+var qte := {}                        # a quick press in a film: {id, text, bis}
+var personen := {}                   # film figures: id -> actor (puppet)
+var _person_ziel := {}               # id -> world point it walks to
+var karte_an := false
+var _karte := {}
+var fotos := 0
 
 
 static func ensure(m):
@@ -262,9 +269,10 @@ func szene_starten(n: int) -> void:
 	szene_i = clampi(n, 0, daten.SZENEN.size() - 1)
 	var sz: Dictionary = daten.SZENEN[szene_i]
 	_log("szene:" + str(sz["id"]))
-	if sz.has("start") and szene_i > 0:
+	if sz.has("start") and szene_i > 0 and (sz["start"] as Array).size() >= 2:
 		var st: Array = sz["start"]
-		figur_setzen(float(st[0]), float(st[1]))
+		if figur.pos().distance_to(par.welt(float(st[0]), float(st[1]))) > 8.0:   # only when far away (else: just go on)
+			figur_setzen(float(st[0]), float(st[1]))
 		regie.hinter_figur()
 	schritt_i = -1
 	_naechster_schritt()
@@ -277,10 +285,12 @@ func _naechster_schritt() -> void:
 	var L: Array = sz["schritte"]
 	schritt_i += 1
 	if schritt_i >= L.size():
+		if phase == "ende":
+			return
 		if szene_i + 1 < daten.SZENEN.size() and not bool(daten.SZENEN[szene_i + 1].get("offen", false)):
 			szene_starten(szene_i + 1)
 		else:
-			ziel_text = tx("Fortsetzung folgt (Szenen 6–12 kommen als Nächstes).")
+			ziel_text = tx("Ende von Kapitel 2 – Fortsetzung folgt.")
 			_ziel_p = null
 			schritt = {}
 		return
@@ -304,6 +314,22 @@ func _naechster_schritt() -> void:
 	elif schritt.has("checkpoint"):
 		checkpoint_setzen(str(schritt["checkpoint"]))
 		_naechster_schritt()
+	elif schritt.has("abzeichen"):
+		var w := str(schritt.get("wenn", ""))
+		var ok := true
+		if w == "trocken":
+			ok = int(figur.nass) == 0
+		elif w.begins_with("nicht:"):
+			ok = not merker.has(w.substr(6))
+		elif w.begins_with("merker:"):
+			ok = merker.has(w.substr(7))
+		if ok:
+			abzeichen_geben(str(schritt["abzeichen"]))
+		_naechster_schritt()
+	elif schritt.has("maggie"):
+		if hund != null and str(schritt["maggie"]) == "riechen":
+			hund.riechen(par.welt(float(schritt["s"]), float(schritt["q"])))
+		_naechster_schritt()
 	else:
 		_naechster_schritt()
 
@@ -316,10 +342,16 @@ func _film_fertig() -> void:
 		phase = "spiel"
 	if figur.zustand == "film":
 		figur.geh_zu("haengen" if film_hang else "boden")
+	if hund != null and hund.has_meta("sprung_ende"):          # Maggie jumped into the arms: back on her own feet
+		hund.remove_meta("sprung_ende")
+		hund.setzen_welt(figur.pos() + figur.vorne().cross(Vector3.UP) * 0.8)
 	_naechster_schritt()
 
 
 func _bis_ort(b: String):
+	if b.begins_with("ort_tal:"):
+		var pt := b.substr(8).split(",")
+		return par.W(par.G(float(pt[0]), float(pt[1]), 1.0))
 	if b.begins_with("ort:"):
 		var p := b.substr(4).split(",")
 		return par.welt(float(p[0]), float(p[1]), 1.0)
@@ -345,12 +377,23 @@ func _schritt_tick() -> void:
 		var p := b.substr(4).split(",")
 		var me: Vector2 = par.sq_von(figur.pos())
 		fertig = me.distance_to(Vector2(float(p[0]), float(p[1]))) < float(p[2]) and figur.zustand == "boden"
+	elif b.begins_with("ort_tal:"):
+		var pt := b.substr(8).split(",")
+		var me2: Vector2 = par.tal_von(figur.pos())
+		fertig = me2.distance_to(Vector2(float(pt[0]), float(pt[1]))) < float(pt[2]) and figur.zustand == "boden"
 	elif b.begins_with("aktion:"):
 		fertig = erledigt.has(b.substr(7))
 	elif b.begins_with("fund:"):
 		fertig = funde.has(b.substr(5))
 	elif b.begins_with("zeit:"):
 		fertig = uhr > float(schritt.get("_t0", uhr)) + float(b.substr(5))
+	if schritt.has("merke_halt") and par.ding_bei(figur.pos()) == str(schritt["merke_halt"]):   # stopping on the bridge
+		if float(figur.a.cur_speed) < 0.3:
+			_halt_t += get_process_delta_time()
+			if _halt_t > 0.6:
+				merke(str(schritt["merke_halt"]) + "_halt")
+		else:
+			_halt_t = 0.0
 	if fertig:
 		_naechster_schritt()
 
@@ -373,7 +416,10 @@ func checkpoint_setzen(id: String) -> void:
 	if cp == null:
 		return
 	checkpoint_id = id
-	checkpoint = par.welt(float(cp[0]), float(cp[1]))
+	if cp is Dictionary:
+		checkpoint = par.W(par.G(float(cp["tal"][0]), float(cp["tal"][1])))
+	else:
+		checkpoint = par.welt(float(cp[0]), float(cp[1]))
 	_log("checkpoint:" + id)
 
 
@@ -409,7 +455,8 @@ func _process(dt: float) -> void:
 		if fps_log.size() > 30:
 			fps_log.pop_front()
 	var ein := eingabe(dt)
-	if phase == "pause":
+	set_meta("_roh_sprung", phase == "film" and (bool(ein.get("sprung", false)) or bool(ein.get("aktion", false))))
+	if phase in ["pause", "ende"]:
 		ein = {}
 	if steuer_maggie and hund != null:
 		var mv: Vector2 = ein.get("mv", Vector2.ZERO)
@@ -417,6 +464,20 @@ func _process(dt: float) -> void:
 		if bool(ein.get("aktion", false)):
 			_maggie_ziel_pruefen()
 		ein = {}
+	_personen_tick(dt)
+	if not qte.is_empty():
+		if bool(ein.get("sprung", false)) or bool(ein.get("aktion", false)) or bool(get_meta("_roh_sprung", false)):
+			merke(str(qte["id"]))
+			figur.a.aktion("heben", 1.4)
+			hud.toast(tx("Gefangen!"), 2.0)
+			qte = {}
+		elif uhr > float(qte["bis"]):
+			qte = {}
+	if karte_an:
+		_karte_tick(dt, ein)
+		ein = {"look": ein.get("look", Vector2.ZERO), "zoom": ein.get("zoom", 0.0)}
+	if bool(ein.get("foto", false)):
+		foto()
 	if _figur_zug is Vector3:
 		var to: Vector3 = _figur_zug - figur.pos()
 		to.y = 0.0
@@ -487,6 +548,7 @@ func eingabe(dt: float) -> Dictionary:
 		sp_h = _taste(KEY_SPACE)
 		sp = _neu("space", sp_h)
 		akt = _neu("e", _taste(KEY_E) or _taste(KEY_F))
+		_foto_wunsch = _foto_wunsch or _neu("p", _taste(KEY_P))
 	var k := Vector2(f, r)
 	var pm = main.get("padmap")
 	if pm != null:
@@ -544,11 +606,17 @@ func eingabe(dt: float) -> Dictionary:
 	if figur != null and figur.ok() and figur.zustand == "balance":
 		var right_f: Vector3 = figur.vorne().cross(Vector3.UP).normalized()
 		quer = mv3.dot(right_f)
-	return {"mv": Vector2(mv3.x, mv3.z), "run": run, "sprung": sp, "sprung_h": sp_h, "aktion": akt, "vor": k.x,
+	var fo := _foto_wunsch
+	_foto_wunsch = false
+	if hud != null and hud.tap_foto:
+		fo = true
+		hud.tap_foto = false
+	return {"foto": fo, "mv": Vector2(mv3.x, mv3.z), "run": run, "sprung": sp, "sprung_h": sp_h, "aktion": akt, "vor": k.x,
 		"quer": quer, "look": look, "zoom": zoom}
 
 
 var _maus_look := Vector2.ZERO
+var _foto_wunsch := false
 var _zoom := 0.0
 
 
@@ -646,6 +714,83 @@ func musik(z: String) -> void:
 		k.musik_zustand(z)
 
 
+func film_eintrag(e: Dictionary, sprung: bool) -> void:
+	"""film keys of the chapters beyond the camera (kit_regie.gd _eintrag hands them over)"""
+	match str(e.get("k", "")):
+		"bruecke_einsturz":
+			par.bruecke_einsturz(float(e.get("ab_q", 0.0)))
+			if not sprung:
+				regie.schuetteln(0.6)
+		"maggie_sprung":
+			if hund != null:
+				var von: Vector3 = par.welt(float(e["s"]), float(e["q"]))
+				if sprung:
+					hund.setzen_welt(figur.pos() + figur.vorne() * 0.8)
+				else:
+					hund.setzen_welt(von)
+					hund.heben(von, par.VL(figur.pos() + Vector3(0, 1.1, 0) + figur.vorne() * 0.35))
+					hund.set_meta("sprung_ende", true)
+		"qte":
+			if not sprung:
+				qte = {"id": str(e["id"]), "text": tx(str(e.get("text", "Greifen!"))), "bis": uhr + float(e.get("s", 1.5))}
+		"person":
+			_person(str(e["id"]), e)
+		"person_weg":
+			var a = personen.get(str(e["id"]), null)
+			if a != null and is_instance_valid(a):
+				a.queue_free()
+			personen.erase(str(e["id"]))
+			_person_ziel.erase(str(e["id"]))
+		"zeit":
+			main.set_hour(float(e["h"]))
+		"figur_tal":
+			film_hang = false
+			figur.setzen(par.W(par.G(float(e["x"]), float(e["z"]))))
+			if hund != null:
+				hund.setzen_welt(par.W(par.G(float(e["x"]) + 1.2, float(e["z"]) + 0.8)))
+		"tier":
+			if not sprung and bt != null:
+				var f: Vector3 = par.G(float(e["tal"][0]), float(e["tal"][1]))
+				var t: Vector3 = par.G(float(e["nach_tal"][0]), float(e["nach_tal"][1]))
+				main.spawn(str(e.get("art", "fox")), par.W(f), par.W(t))
+		"maggie_warnen":
+			if hund != null and not sprung:
+				hund.warnen(par.welt(float(e["s"]), float(e["q"])))
+		"maggie_warnen_tal":
+			if hund != null and not sprung:
+				hund.warnen(par.W(par.G(float(e["x"]), float(e["z"]))))
+		"ende":
+			phase = "ende"
+			ziel_text = ""
+			hud.ende(tx(str(e.get("text", ""))), abzeichen.keys())
+			musik("entdeckung")
+
+
+func _person(id: String, e: Dictionary) -> void:
+	var old = personen.get(id, null)
+	if old != null and is_instance_valid(old):
+		old.queue_free()
+	var p: Vector2 = par.tal(float(e["s"]), float(e["q"]))
+	var b: Array = e.get("blick", [float(e["s"]) + 1.0, float(e["q"])])
+	var lb: Vector2 = par.tal(float(b[0]), float(b[1]))
+	var jc: Array = e.get("jacke", [0.5, 0.5, 0.5])
+	var a = par.actor("person", par.G(p.x, p.y), par.G(lb.x, lb.y), 1.3, Color(float(jc[0]), float(jc[1]), float(jc[2])))
+	a.name = "kit_" + id
+	personen[id] = a
+
+
+func _personen_tick(dt: float) -> void:
+	for id in _person_ziel.keys():
+		var a = personen.get(id, null)
+		if a == null or not is_instance_valid(a):
+			_person_ziel.erase(id)
+			continue
+		var q: Vector3 = par.VL(_person_ziel[id])
+		if par.walk(a, Vector3(q.x, 0, q.z), 2.2, dt):
+			_person_ziel.erase(id)
+			regie.zug_fertig(id)
+
+
 func zeitlupe(f: float, s: float) -> void:
 	regie.zeitlupe(f, s)
 
@@ -670,6 +815,10 @@ func aktion_fertig(id: String) -> void:
 func fund(id: String) -> void:
 	if funde.has(id):
 		return
+	var fd: Dictionary = par.dinge.get(id, {}).get("d", {})
+	if bool(fd.get("nur_ir", false)) and not ir_an:
+		sag(tx("Hier ist nichts zu sehen … im normalen Licht."), "figur")
+		return
 	funde[id] = true
 	aktion_fertig(id)
 	par.fund_weg(id)
@@ -677,7 +826,10 @@ func fund(id: String) -> void:
 	var f: Array = daten.FUNDE.get(id, [id, ""])
 	hud.toast(T.t("Gefunden: %s") % tx(str(f[0])), 3.5)
 	ton("fund")
-	if funde.size() >= daten.FUNDE.size():
+	var alle := true
+	for f2 in daten.FUNDE_ALLE:
+		alle = alle and funde.has(f2)
+	if alle:
 		abzeichen_geben("alle_funde")
 
 
@@ -728,6 +880,13 @@ func zug(wer: String, w: Vector3, sofort: bool) -> void:
 			regie.zug_fertig("figur")
 		else:
 			_figur_zug = w
+	elif personen.has(wer):
+		if sofort:
+			var q: Vector3 = par.VL(w)
+			par.place(personen[wer], Vector3(q.x, 0, q.z))
+			regie.zug_fertig(wer)
+		else:
+			_person_ziel[wer] = w
 
 
 var _figur_zug = null
@@ -873,6 +1032,70 @@ func _licht() -> void:
 var ir_an := false
 
 
+# ---- the map piece over the landscape (cairn puzzle) ------------------------------------------------------------------------
+func karte_start(d: Dictionary) -> void:
+	karte_an = true
+	var z: Array = d["richtung_tal"]
+	_karte = {"ziel": Vector2(float(z[0]), float(z[1])), "gut": 0.0}
+	figur.geh_zu("steuern")
+	regie.drag_t = uhr + 1000.0                             # the camera does not swing back by itself
+	hud.karte(true)
+
+
+func _karte_tick(dt: float, ein: Dictionary) -> void:
+	var cam: Camera3D = main.view_cam
+	var fw: Vector3 = bt.tal.global_transform.basis.inverse() * (-cam.global_transform.basis.z)
+	var me: Vector2 = par.tal_von(figur.pos())
+	var to: Vector2 = (_karte["ziel"] as Vector2) - me
+	var diff := wrapf(atan2(to.x, -to.y) - atan2(fw.x, -fw.z), -PI, PI)
+	hud.karte_lage(diff)
+	if absf(diff) < 0.2:
+		_karte["gut"] = float(_karte["gut"]) + dt
+	else:
+		_karte["gut"] = 0.0
+	if kinder and absf(diff) < 0.5:
+		_karte["gut"] = float(_karte["gut"]) + dt
+	if float(_karte["gut"]) > 0.8:
+		karte_ende(true)
+	elif bool(ein.get("aktion", false)) and uhr - float(_karte.get("t0", -10.0)) > 0.4:
+		karte_ende(false)
+
+
+func karte_ende(ok: bool) -> void:
+	karte_an = false
+	hud.karte(false)
+	figur.geh_zu("boden")
+	regie.drag_t = uhr
+	if ok:
+		aktion_fertig("karte")
+		ton("fund")
+
+
+# ---- MoveEye at the camp: IR light, photo ------------------------------------------------------------------------------------
+func ir_umschalten() -> void:
+	ir_an = not ir_an
+	hud.farbe("ir" if ir_an else "")
+	par.ir_sichtbar(ir_an)
+	if ir_an:
+		aktion_fertig("ir")
+		sag(tx("MoveEye: IR-Licht an."), "blinki")
+
+
+func foto() -> void:
+	"""photo mode: the picture of the view (without the HUD) goes to the backpack (user://grossvater/fotos)"""
+	if hud == null:
+		return
+	hud.blitz()
+	var img := get_viewport().get_texture().get_image()
+	if img != null and not img.is_empty():
+		DirAccess.make_dir_recursive_absolute("user://grossvater/fotos")
+		fotos += 1
+		img.resize(maxi(1, img.get_width() / 2), maxi(1, img.get_height() / 2))
+		img.save_jpg("user://grossvater/fotos/k2_%d_%d.jpg" % [int(Time.get_unix_time_from_system()), fotos], 0.85)
+	aktion_fertig("foto")
+	hud.toast(tx("Foto im Rucksack (Tagebuch)"), 2.5)
+
+
 func _log(s: String) -> void:
 	log_.append([snappedf(uhr, 0.01), s])
 	if log_.size() > 60:
@@ -933,7 +1156,11 @@ static func control(m, d: Dictionary) -> Dictionary:
 		"setzen":
 			if k.steuer_maggie:
 				k._maggie_steuern(false)
-			k.figur_setzen(float(d.get("s", 0.0)), float(d.get("q", 0.0)))
+			if d.has("tal"):
+				k.film_hang = false
+				k.figur.setzen(k.par.W(k.par.G(float(d["tal"][0]), float(d["tal"][1]))))
+			else:
+				k.figur_setzen(float(d.get("s", 0.0)), float(d.get("q", 0.0)))
 			k.figur.geh_zu("boden")
 			if d.has("blick"):
 				k.figur.a.heading = float(d["blick"])

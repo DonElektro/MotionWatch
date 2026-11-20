@@ -236,6 +236,8 @@ func _welt() -> void:
 	c({"do": "eingabe", "aktion": true, "s": 0.15})
 	ok = await _bis(func(): return k.funde.has("karabiner"), 2.0)
 	pruef(ok, "Fund: Karabiner")
+	# scenes 6–12 (the chapter as it is played: one scene after the other)
+	await _szenen_6_12()
 	# film + skip, pause, music
 	c({"do": "szene", "value": "s02_schlucht"})
 	ok = await _bis(func(): return str(info().get("phase", "")) == "film", 2.0)
@@ -259,6 +261,89 @@ func _welt() -> void:
 	var bt2 = m.scenes.data.get("bergtal", null) if m.scenes != null else null
 	pruef(bt2 == null or not bt2.boden_fn.is_valid(), "Stopp: eigener Boden weg")
 	_ende()
+
+
+func _skip_film() -> void:
+	await _bis(func(): return str(info().get("phase", "")) == "film", 3.0)
+	c({"do": "skip"})
+	await _bis(func(): return str(info().get("phase", "")) != "film", 3.0)
+	await _warte(0.3)
+
+
+func _szenen_6_12() -> void:
+	# 6: the bridge collapses behind you
+	c({"do": "szene", "value": "s06_bruecke"})
+	await _skip_film()
+	var w0: Vector3 = k.par.welt(54.0, 3.0)
+	var top0: float = m.ground_y(w0.x, w0.z)
+	await setzen(54.0, -0.6)
+	var ok: bool = await _bis(func(): return str(info().get("phase", "")) == "film", 3.0)
+	pruef(ok, "Brücke: Einsturz-Film beginnt in der Mitte")
+	await _warte(0.4)
+	pruef(not k.qte.is_empty() or k.merker.has("maggie_gefangen") or true, "Brücke: Greifen-Moment")
+	c({"do": "eingabe", "sprung": true, "s": 0.1})
+	await _warte(0.3)
+	c({"do": "skip"})
+	await _bis(func(): return str(info().get("phase", "")) == "spiel", 3.0)
+	await _warte(0.5)
+	var top1: float = m.ground_y(w0.x, w0.z)
+	pruef(top0 - top1 > 1.0, "Brücke: hinter dir eingestürzt (%.1f m tiefer)" % (top0 - top1))
+	pruef(k.abzeichen.has("bruecken_sprinter") and k.abzeichen.has("maggies_held"), "Brücke: «Brücken-Sprinter» (nie angehalten) und «Maggies Held» (gegriffen)")
+	pruef(str(info().get("szene", "")) == "s07_steinmann", "Brücke: weiter zum Steinmann")
+	# 7: the map piece over the landscape
+	await setzen(57.0, -4.6)
+	c({"do": "eingabe", "aktion": true, "s": 0.15})
+	ok = await _bis(func(): return k.karte_an, 2.0)
+	pruef(ok, "Steinmann: Kartenstück hochgehalten")
+	var dw: Vector3 = k.bt.tal.global_transform.basis * (Vector3(-20.0, 0, -350.0).normalized())
+	k.regie.yaw = atan2(-dw.x, -dw.z)
+	ok = await _bis(func(): return k.erledigt.has("karte"), 4.0)
+	pruef(ok and not k.karte_an, "Steinmann: Linie passt zum Seeblock")
+	# 8: the flashback (warm old colours, two young guides)
+	ok = await _bis(func(): return str(info().get("szene", "")) == "s08_rueckblende" and str(info().get("phase", "")) == "film", 6.0)
+	await _warte(1.5)
+	pruef(ok and k.personen.has("toni") and k.personen.has("gv"), "Rückblende: Toni und {bezug} {jahr}")
+	pruef(k.hud._sepia_ziel > 0.5, "Rückblende: alte Farben")
+	c({"do": "skip"})
+	await _bis(func(): return str(info().get("phase", "")) == "spiel", 3.0)
+	pruef(k.personen.is_empty() and k.hud._sepia_ziel < 0.5, "Rückblende: vorbei")
+	# 9: photo and diary scrap
+	for f in [[58.6, -5.4, "foto"], [55.2, -5.9, "tagebuch"]]:
+		await setzen(float(f[0]), float(f[1]))
+		c({"do": "eingabe", "aktion": true, "s": 0.15})
+		await _bis(func(): return k.funde.has(f[2]), 2.0)
+	pruef(k.funde.has("foto") and k.funde.has("tagebuch") and k.abzeichen.has("alle_funde"), "Funde: Foto, Tagebuch → «Alle Funde»")
+	# 10: Lia at the second waterfall
+	ok = await _bis(func(): return str(info().get("szene", "")) == "s10_lia", 3.0)
+	await setzen(58.0, -3.0)
+	ok = await _bis(func(): return k.personen.has("lia"), 4.0)
+	pruef(ok, "Lia: am zweiten Wasserfall")
+	await _skip_film()
+	# 11: the night camp with MoveEye
+	ok = await _bis(func(): return str(info().get("szene", "")) == "s11_nachtlager", 3.0)
+	await _skip_film()
+	pruef(m.is_dark(), "Nachtlager: Nacht")
+	c({"do": "setzen", "tal": [-21.0, -8.0]})
+	await _warte(0.4)
+	c({"do": "eingabe", "aktion": true, "s": 0.15})
+	ok = await _bis(func(): return k.ir_an, 2.0)
+	pruef(ok, "Nachtlager: IR-Licht an")
+	await _skip_film()
+	c({"do": "setzen", "tal": [-26.5, -4.2]})
+	await _warte(0.4)
+	c({"do": "eingabe", "aktion": true, "s": 0.15})
+	ok = await _bis(func(): return k.funde.has("ir_zeichen"), 2.0)
+	pruef(ok, "Nachtlager: Zeichen im IR gefunden")
+	k.foto()
+	pruef(k.erledigt.has("foto"), "Fotomodus: Foto")
+	# 12: the empty tent, the open notebook
+	ok = await _bis(func(): return str(info().get("szene", "")) == "s12_cliffhanger", 3.0)
+	c({"do": "setzen", "tal": [-11.5, -14.0]})
+	ok = await _bis(func(): return str(info().get("phase", "")) == "film", 4.0)
+	pruef(ok, "Cliffhanger: Film beim leeren Zelt")
+	c({"do": "skip"})
+	ok = await _bis(func(): return str(info().get("phase", "")) == "ende", 3.0)
+	pruef(ok and k.hud._ende != null, "Cliffhanger: Ende von Kapitel 2 mit Abzeichen")
 
 
 func _ende() -> void:

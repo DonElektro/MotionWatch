@@ -14,13 +14,18 @@ const SEPIA := """
 shader_type canvas_item;
 uniform sampler2D scr : hint_screen_texture, filter_linear_mipmap;
 uniform float k = 0.0;
+uniform float ir = 0.0;                  // MoveEye's infrared view: bright green-grey, noisy
 void fragment() {
 	vec3 c = texture(scr, SCREEN_UV).rgb;
 	float l = dot(c, vec3(0.3, 0.59, 0.11));
 	vec3 s = vec3(l * 1.08 + 0.06, l * 0.9 + 0.03, l * 0.68);
 	vec2 d = SCREEN_UV - 0.5;
 	float v = 1.0 - dot(d, d) * 1.4;
-	COLOR = vec4(mix(c, s * v, k), 1.0);
+	vec3 o = mix(c, s * v, k * (1.0 - ir));
+	float g = clamp(l * 3.2 + 0.08, 0.0, 1.0);
+	float n = fract(sin(dot(SCREEN_UV * 731.0 + TIME, vec2(12.9898, 78.233))) * 43758.5453);
+	o = mix(o, vec3(g * 0.78, g, g * 0.8) * v + (n - 0.5) * 0.06, ir * k);
+	COLOR = vec4(o, 1.0);
 }
 """
 
@@ -178,6 +183,13 @@ func _ready() -> void:
 	_fade.color = Color(0, 0, 0, 0)
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(_fade)
+	_foto_btn = Button.new()
+	_foto_btn.text = T.t("Foto")
+	_foto_btn.focus_mode = Control.FOCUS_NONE
+	_foto_btn.tooltip_text = T.t("Foto mit MoveEye (P)")
+	_foto_btn.pressed.connect(func(): tap_foto = true)
+	_foto_btn.visible = false
+	root.add_child(_foto_btn)
 	_bau_menu()
 	get_viewport().size_changed.connect(_layout)
 	_layout()
@@ -327,14 +339,19 @@ func tick(real_dt: float) -> void:
 	if spiel:
 		_kompass.queue_redraw()
 	_pause_btn.visible = not film and not _menu.visible
+	_foto_btn.visible = spiel and kit.szene_i >= 10
+	_foto_btn.size = Vector2(0, _pause_btn.size.y)
+	_foto_btn.position = _pause_btn.position - Vector2(_foto_btn.get_combined_minimum_size().x + 10.0, 0)
 	_skip_btn.visible = film
 	var pr: String = kit.figur.prompt() if spiel else ""
+	if not kit.qte.is_empty():
+		pr = str(kit.qte["text"])
 	if pr != "":
 		pr = (T.t("Aktion") + ": " if not touch else "") + T.t(pr)
 		if not touch and kit.figur.zustand == "boden":
 			pr = "[E] " + T.t(kit.figur.prompt()) if kit.figur.prompt() != "Springen!" else "[" + T.t("Leertaste") + "] " + T.t("Springen!")
 	_setz("prompt", pr, func(v): _prompt.text = v; _prompt_box.size = Vector2.ZERO)
-	_prompt_box.visible = pr != ""
+	_prompt_box.visible = pr != "" and not (kit.qte.is_empty() and film)
 	if _prompt_box.visible:
 		_prompt_box.position.x = (s.x - _prompt_box.size.x) * 0.5
 	var z: String = kit.figur.zustand
@@ -408,8 +425,100 @@ func blende_aus() -> void:
 
 
 func farbe(art: String) -> void:
-	"""flashback: warm old colours (art «alt»), '' = back"""
-	_sepia_ziel = 1.0 if art == "alt" else 0.0
+	"""flashback: warm old colours (art «alt»), MoveEye's infrared («ir»), '' = back"""
+	_sepia_ziel = 1.0 if art in ["alt", "ir"] else 0.0
+	(_sepia.material as ShaderMaterial).set_shader_parameter("ir", 1.0 if art == "ir" else 0.0)
+	if art == "ir":
+		_sepia_k = 1.0
+
+
+# ---- the map piece (cairn), the flash of the photo, the end card ------------------------------------------------------------
+var _karte: Control
+var _karte_diff := 0.0
+var _ende: PanelContainer
+var _foto_btn: Button
+var tap_foto := false
+
+
+func karte(on: bool) -> void:
+	if _karte == null:
+		_karte = Control.new()
+		_karte.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_karte.draw.connect(_karte_draw)
+		root.add_child(_karte)
+	_karte.visible = on
+	if on:
+		var s := _vs()
+		var w := minf(s.x * 0.8, 520.0)
+		_karte.size = Vector2(w, w * 0.62)
+		_karte.position = Vector2((s.x - w) * 0.5, s.y * 0.2)
+		toast(T.t("Dreh dich, bis die Linie auf der Karte zur Landschaft passt"), 4.0)
+
+
+func karte_lage(diff: float) -> void:
+	_karte_diff = diff
+	if _karte != null:
+		_karte.queue_redraw()
+
+
+func _karte_draw() -> void:
+	var c := _karte
+	var w := c.size.x
+	var h := c.size.y
+	var paper := Color(0.9, 0.82, 0.62, 0.86)
+	var ink := Color(0.35, 0.22, 0.12, 0.95)
+	c.draw_rect(Rect2(Vector2.ZERO, c.size), paper)
+	c.draw_rect(Rect2(Vector2.ZERO, c.size), Color(0.5, 0.35, 0.2), false, 3.0)
+	var off := clampf(_karte_diff / 1.2, -1.0, 1.0) * w * 0.45      # the drawn ridge moves with the view: it fits at 0
+	var pts := PackedVector2Array()
+	for i in range(13):
+		var x := w * i / 12.0
+		pts.append(Vector2(x + off, h * (0.42 + 0.12 * sin(i * 1.3) + 0.05 * sin(i * 3.1))))
+	c.draw_polyline(pts, ink, 3.0)
+	var mid := Vector2(w * 0.5 + off, h * 0.48)
+	c.draw_line(Vector2(w * 0.5, h * 0.9), mid, ink, 2.0)            # the line from the cairn
+	c.draw_colored_polygon(PackedVector2Array([mid + Vector2(-8, 14), mid + Vector2(8, 14), mid]), ink)
+	for k in range(3):                                                # the cairn
+		c.draw_circle(Vector2(w * 0.5, h * 0.9 - k * 9), 9 - k * 2, ink)
+	var ok := absf(_karte_diff) < 0.2
+	c.draw_string(ThemeDB.fallback_font, Vector2(14, h - 12), T.t("passt!") if ok else (T.t("weiter nach links") if _karte_diff < 0.0 else T.t("weiter nach rechts")),
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(0.15, 0.45, 0.15) if ok else ink)
+
+
+func blitz() -> void:
+	_fade.color = Color(1, 1, 1, 0.85)
+	var tw := create_tween()
+	tw.tween_property(_fade, "color", Color(1, 1, 1, 0), 0.35)
+	tw.tween_callback(func(): _fade.color = Color(0, 0, 0, 0))
+
+
+func ende(text: String, badges: Array) -> void:
+	if _ende != null:
+		_ende.queue_free()
+	_ende = PanelContainer.new()
+	_ende.add_theme_stylebox_override("panel", UI.box(Color(0.04, 0.05, 0.07, 0.9), Color(1, 0.8, 0.45, 0.7), 16, 22, 1))
+	root.add_child(_ende)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 10)
+	_ende.add_child(v)
+	var t := _label(24, Color(1, 0.88, 0.6))
+	t.text = text
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(t)
+	var D = kit.daten
+	for id in D.ABZEICHEN:
+		var a: Array = D.ABZEICHEN[id]
+		var l := _label(16, Color(0.75, 1.0, 0.8) if id in badges else Color(0.6, 0.62, 0.66))
+		l.text = ("★ " if id in badges else "☆ ") + T.t(str(a[0])) + " – " + T.t(str(a[1]))
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		l.custom_minimum_size = Vector2(minf(_vs().x - 80.0, 560.0), 0)
+		v.add_child(l)
+	var b := Button.new()
+	b.text = T.t("Abenteuer beenden")
+	b.custom_minimum_size = Vector2(240, 46)
+	b.pressed.connect(func(): kit.stop())
+	v.add_child(b)
+	_ende.position = (_vs() - _ende.get_combined_minimum_size()) * 0.5
 
 
 # ---- compass ---------------------------------------------------------------------------------------------------------------
