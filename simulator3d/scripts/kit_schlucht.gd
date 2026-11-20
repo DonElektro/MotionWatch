@@ -26,6 +26,64 @@ var mesh_mi: MeshInstance3D
 var _mat_alt := {}                   # ground chunk mesh -> its material_override before the clip
 var _mm_alt: Array = []              # [multimesh, index, transform] of hidden rocks / grass
 var _boden_tab: Array = []
+static var _fels_sh: Shader = null
+
+# art pass (Koordinator 21.11.): the walls in world space – strata by height (no stretched UVs on steep faces), a planar
+# rock grain on the side facing the camera, dark seams under each ledge, moss where it is flat on top; the floor / the
+# alpine meadow keep the vertex colours. One shader for the gorge and all rock pieces of the course (blocks, steps, stones).
+const FELS_SHADER := """
+shader_type spatial;
+render_mode cull_disabled;
+uniform float moos_oben = 0.0;           // 1 = rock pieces: moss on flat tops
+uniform vec3 tint = vec3(1.0);
+varying vec3 wp;
+varying vec3 wn;
+float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float vn(vec2 p) {
+	vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y);
+}
+vec3 band(float k) {
+	float r = h21(vec2(k, 7.0));
+	vec3 a = vec3(0.74, 0.57, 0.38); vec3 b = vec3(0.6, 0.52, 0.46); vec3 c = vec3(0.69, 0.45, 0.31); vec3 d = vec3(0.8, 0.69, 0.52);
+	return r < 0.25 ? a : (r < 0.5 ? b : (r < 0.75 ? c : d));
+}
+void vertex() {
+	wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	wn = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
+}
+void fragment() {
+	float up = clamp(wn.y, 0.0, 1.0);
+	float steil = 1.0 - smoothstep(0.55, 0.85, up);
+	vec2 puv = abs(wn.x) > abs(wn.z) ? wp.zy : wp.xy;           // planar on the wall (world space: no stretching)
+	float det = vn(puv * vec2(0.9, 2.6)) * 0.55 + vn(puv * vec2(3.1, 6.0)) * 0.3 + vn(puv * 11.0) * 0.15;
+	float yy = wp.y * 0.62 + vn(wp.xz * 0.12) * 1.8;
+	float k = floor(yy);
+	float f = fract(yy);
+	vec3 rock = mix(band(k), band(k + 1.0), smoothstep(0.85, 1.0, f) * 0.5);
+	rock *= 0.72 + 0.48 * det;
+	rock *= 1.0 - 0.38 * (1.0 - smoothstep(0.0, 0.12, f));      // the seam under each ledge
+	vec3 moss = vec3(0.32, 0.42, 0.2) * (0.8 + 0.4 * vn(wp.xz * 1.7));
+	vec3 base = COLOR.rgb;
+	if (moos_oben > 0.5) {
+		base = mix(rock, moss, smoothstep(0.75, 0.95, up) * smoothstep(0.35, 0.65, vn(wp.xz * 0.9)));
+	}
+	vec3 col = mix(base, rock, steil);
+	ALBEDO = col * tint;
+	ROUGHNESS = 0.88;
+}
+"""
+
+
+static func fels_material(oben_moos: bool, tint := Color(1, 1, 1)) -> ShaderMaterial:
+	if _fels_sh == null:
+		_fels_sh = Shader.new()
+		_fels_sh.code = FELS_SHADER
+	var sm := ShaderMaterial.new()
+	sm.shader = _fels_sh
+	sm.set_shader_parameter("moos_oben", 1.0 if oben_moos else 0.0)
+	sm.set_shader_parameter("tint", Vector3(tint.r, tint.g, tint.b))
+	return sm
 var _breite_tab: Array = []
 
 
@@ -177,10 +235,7 @@ func bauen(holder: Node3D, m, lite: bool) -> void:
 			st.add_index(d2)
 	st.generate_normals()
 	var mesh := st.commit()
-	var mt := StandardMaterial3D.new()
-	mt.vertex_color_use_as_albedo = true
-	mt.roughness = 0.92
-	mt.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var mt := fels_material(false)
 	mesh_mi = MeshInstance3D.new()
 	mesh_mi.name = "kit_schlucht"
 	mesh_mi.mesh = mesh

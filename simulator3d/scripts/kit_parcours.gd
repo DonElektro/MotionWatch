@@ -154,10 +154,25 @@ func _deck(c: Vector2, hq: float, hs: float, top_abs: float) -> Array:
 	return dk
 
 
+var _fels_mt: Material = null
+
+
+func fels(mi: MeshInstance3D) -> MeshInstance3D:
+	"""the rock look of the gorge (kit_schlucht.gd shader) on a piece of the course - moss on its flat top"""
+	if _fels_mt == null:
+		_fels_mt = Schlucht.fels_material(true)
+	mi.material_override = _fels_mt
+	return mi
+
+
 func _box(c: Vector2, hq: float, hs: float, top_abs: float, col: Color, tk = "stone", tief := 3.0) -> MeshInstance3D:
 	var h := tief + (top_abs - _H(c.x, c.y))
 	var n := node(holder, Vector3(c.x, top_abs - h * 0.5, c.y), -rot)
-	return part(n, boxm(hq * 2.0, h, hs * 2.0), Vector3.ZERO, col, tk)
+	var mi := part(n, boxm(hq * 2.0, h, hs * 2.0), Vector3.ZERO, col, tk)
+	if not lite:                                           # a softer edge: a slightly smaller, rounded cap on the box
+		var cap := part(n, cylm(1.0, 1.0, 0.3, 12), Vector3(0, h * 0.5 - 0.06, 0), col, tk, Vector3.ZERO, Vector3(hq * 0.98, 1.0, hs * 0.98))
+		fels(cap)
+	return fels(mi)
 
 
 func _ding(d: Dictionary) -> void:
@@ -174,7 +189,7 @@ func _ding(d: Dictionary) -> void:
 		"stein":
 			e["decks"].append(_deck(c, lq, ls, top))
 			var n := node(holder, Vector3(c.x, top - 0.35, c.y), -rot)
-			part(n, sphm(1.0, -1.0, 10), Vector3.ZERO, FELS.lerp(Color(0.3, 0.36, 0.3), 0.3), "stone", Vector3.ZERO, Vector3(lq * 1.15, 0.45, ls * 1.15))
+			fels(part(n, sphm(1.0, -1.0, 10), Vector3.ZERO, FELS.lerp(Color(0.3, 0.36, 0.3), 0.3), "stone", Vector3.ZERO, Vector3(lq * 1.15, 0.45, ls * 1.15)))
 			e["node"] = n
 		"block":
 			e["decks"].append(_deck(c, lq, ls, top))
@@ -206,12 +221,16 @@ func _ding(d: Dictionary) -> void:
 			var base := _H(c.x, c.y)
 			var h2 := float(d.get("top", 4.0))
 			var n4 := node(holder, Vector3(c.x, base, c.y), -rot)
-			for sx in [-0.25, 0.25]:
-				part(n4, boxm(0.06, h2 + 0.6, 0.06), Vector3(sx, (h2 + 0.6) * 0.5, 0), HOLZ, "tree")
-			var k := 0.3
-			while k < h2 + 0.5:
-				part(n4, boxm(0.5, 0.04, 0.05), Vector3(0, k, 0), HOLZ.lightened(0.1), "tree")
-				k += 0.32
+			var eisen := Color(0.36, 0.36, 0.38)
+			var k := 0.35                                  # Klettersteig: iron rungs (bügel) in the rock and a steel cable beside
+			while k < h2 + 0.3:
+				part(n4, boxm(0.42, 0.035, 0.035), Vector3(0, k, -0.14), eisen, 8.0)
+				for sx in [-0.2, 0.2]:
+					part(n4, boxm(0.035, 0.035, 0.16), Vector3(sx, k, -0.07), eisen, 8.0)
+				k += 0.34
+			part(n4, cylm(0.012, 0.012, h2 + 1.2, 6), Vector3(0.42, (h2 + 1.2) * 0.5, -0.05), Color(0.7, 0.72, 0.74), 8.0)
+			for yy in [0.2, h2 * 0.5, h2 + 1.0]:
+				part(n4, boxm(0.05, 0.05, 0.12), Vector3(0.42, yy, -0.04), eisen, 8.0)
 			e["node"] = n4
 			e["top"] = base + h2
 		"seil":
@@ -294,7 +313,7 @@ func _wand(e: Dictionary, c: Vector2, lq: float, ls: float, top: float) -> void:
 			var sims_top := _H(cc.x, cc.y) + 1.5
 			_box(cc, hq, ls, sims_top, FELS)
 			var n := node(holder, Vector3(cc.x, sims_top + 0.6 + (t - sims_top - 0.6) * 0.5, cc.y), -rot)
-			part(n, boxm(hq * 2.0, t - sims_top - 0.6, ls * 2.0), Vector3.ZERO, FELS, "stone")
+			fels(part(n, boxm(hq * 2.0, t - sims_top - 0.6, ls * 2.0), Vector3.ZERO, FELS, "stone"))
 	e["top"] = top
 
 
@@ -306,8 +325,10 @@ void fragment() {
 	float st = fract(UV.y * 3.0 - TIME * speed + sin(UV.x * 23.0) * 0.15);
 	float n = smoothstep(0.0, 0.5, st) * (1.0 - smoothstep(0.55, 1.0, st));
 	float edge = smoothstep(0.0, 0.18, UV.x) * smoothstep(1.0, 0.82, UV.x);
-	ALBEDO = mix(vec3(0.72, 0.82, 0.86), vec3(1.0), n);
-	ALPHA = (0.45 + 0.45 * n) * edge;
+	float st2 = fract(UV.y * 7.0 - TIME * speed * 1.7 + sin(UV.x * 41.0) * 0.3);
+	float n2 = smoothstep(0.0, 0.3, st2) * (1.0 - smoothstep(0.35, 1.0, st2));
+	ALBEDO = mix(vec3(0.55, 0.7, 0.76), vec3(1.0), clamp(n * 0.7 + n2 * 0.5, 0.0, 1.0));
+	ALPHA = (0.5 + 0.4 * n + 0.2 * n2) * edge;
 }
 """
 
@@ -365,10 +386,39 @@ func _fall(e: Dictionary, c: Vector2, h: float, w: float) -> void:
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var n := node(holder, Vector3(c.x, g + (h + 0.6) * 0.5 - 0.3, c.y), -rot)
 	n.add_child(mi)
-	if not lite:                                           # spray at the foot
-		var sp := glow_mat(Color(0.9, 0.95, 1.0), 0.4, 0.35)
-		for i in range(5):
-			light_part(n, sphm(0.35 + 0.1 * i, -1.0, 8), Vector3(randf_range(-w * 0.4, w * 0.4), -(h + 0.6) * 0.5 + 0.35, randf_range(-0.3, 0.3)), sp)
+	var fuss := Vector3(0, -(h + 0.6) * 0.5 + 0.3, 0.35)
+	var spray := CPUParticles3D.new()                    # spray: a capped count (Lite 10, else 36), CPU particles work on the web too
+	spray.amount = 10 if lite else 36
+	spray.lifetime = 1.2
+	spray.position = fuss
+	spray.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	spray.emission_box_extents = Vector3(w * 0.5, 0.1, 0.2)
+	spray.direction = Vector3(0, 1, 1)
+	spray.spread = 40.0
+	spray.initial_velocity_min = 0.6
+	spray.initial_velocity_max = 1.6
+	spray.gravity = Vector3(0, -1.5, 0)
+	spray.scale_amount_min = 0.5
+	spray.scale_amount_max = 1.2
+	var pm := QuadMesh.new()
+	pm.size = Vector2(0.35, 0.35)
+	var pmat := glow_mat(Color(0.92, 0.96, 1.0), 0.3, 0.35)
+	pmat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	pm.material = pmat
+	spray.mesh = pm
+	n.add_child(spray)
+	var ring := MeshInstance3D.new()                      # the foam ring in the pool under the fall
+	var tm := TorusMesh.new()
+	tm.inner_radius = w * 0.35
+	tm.outer_radius = w * 0.85
+	tm.rings = 16 if not lite else 10
+	tm.ring_segments = 6
+	ring.mesh = tm
+	ring.scale = Vector3(1, 0.08, 1)
+	ring.position = fuss + Vector3(0, -0.25, 0.3)
+	ring.material_override = glow_mat(Color(0.9, 0.95, 0.97), 0.25, 0.6)
+	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	n.add_child(ring)
 	e["node"] = n
 
 

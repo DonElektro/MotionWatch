@@ -218,6 +218,8 @@ func stop() -> void:
 	hud = null
 	_layers_zurueck()
 	musik("")
+	if main.has_method("_update_sky"):
+		main._update_sky()                                     # the light as before (_licht())
 	main.auto_visitors = bool(_saved.get("auto", true))
 	main.bt_events = bool(_saved.get("bt_events", true))
 	main.weather = str(_saved.get("weather", "clear"))
@@ -443,6 +445,7 @@ func spaet(dt: float, real_dt: float) -> void:
 		if alt.has("d"):
 			figur._balance_start(alt["d"])
 	_schritt_tick()
+	_licht()
 	regie.tick(dt, real_dt, ein)
 	hud.tick(real_dt)
 
@@ -851,6 +854,23 @@ func _maggie_ziel_pruefen() -> void:
 
 func abzeichen_merk_maggie() -> void:
 	merke("maggie_riegel")
+
+
+func _licht() -> void:
+	"""warm stylised light and some depth in the gorge (art pass 21.11.): main._update_sky sets the light every 0.5 s,
+	this sets absolute values after it every frame (nothing adds up); stop() calls main._update_sky() again"""
+	if main.env == null or main.sun == null or ir_an:
+		return
+	var tag := clampf(float(main.sun.light_energy) / 1.4, 0.0, 1.0)
+	if tag < 0.05:
+		return                                               # the night stays as main makes it
+	main.sun.light_color = Color(1.0, 0.86, 0.68)
+	main.env.ambient_light_color = Color(0.86, 0.74, 0.62)
+	main.env.fog_light_color = Color(0.93, 0.8, 0.62) * (0.15 + 0.85 * tag)
+	main.env.fog_density = maxf(float(main.env.fog_density), 0.0045)
+
+
+var ir_an := false
 
 
 func _log(s: String) -> void:
