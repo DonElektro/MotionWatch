@@ -3367,6 +3367,13 @@
   "it": "Avventure",
   "rm": "Aventuras"
  },
+ "Abenteuer beenden": {
+  "en": "End adventure",
+  "fr": "Terminer l’aventure",
+  "it": "Termina l’avventura",
+  "rm": "Terminar l’aventura",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Abenteuer begonnen": {
   "en": "Adventures started",
   "fr": "Aventures commencées",
@@ -3582,6 +3589,13 @@
   "fr": "Badge : ",
   "it": "Distintivo: ",
   "rm": "Insigna: "
+ },
+ "Abzeichen: %s": {
+  "en": "Badge: %s",
+  "fr": "Badge : %s",
+  "it": "Distintivo: %s",
+  "rm": "Insigna: %s",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Abzeichen: Alle Gipfel": {
   "en": "Badge: All summits",
@@ -3847,6 +3861,13 @@
   "it": "Le celle 21700 non sono protette: mai cortocircuitarle, controllare la polarità, 4 celle uguali con la stessa carica, niente celle danneggiate, non caricare senza sorveglianza. Nell'X1206 le celle sono in parallelo: inserire solo celle con la stessa tensione (± 0,05 V).",
   "rm": "Las cellas 21700 n'èn betg protegidas: mai far curtcircuit, controllar la polaritad, 4 cellas egualas cun la medema chargia, betg duvrar cellas donnegiadas, betg chargiar senza survegliar. En il X1206 èn las cellas en parallel: metter mo cellas cun la medema tensiun (± 0,05 V)."
  },
+ "Aktion": {
+  "en": "Action",
+  "fr": "Action",
+  "it": "Azione",
+  "rm": "Acziun",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Akustikschaum": {
   "en": "Akustikschaum",
   "fr": "Akustikschaum",
@@ -4008,6 +4029,13 @@
   "fr": "Remettre toutes les fenêtres dans les barres gauche et droite, taille adaptée à l’écran",
   "it": "Rimetti tutte le finestre nelle barre a sinistra e a destra, dimensione adatta allo schermo",
   "rm": "Tut las fanestras enavos en las trav-chantun da sanestra e dretga, grondezza tenor il visur"
+ },
+ "Alle Funde": {
+  "en": "All finds",
+  "fr": "Toutes les trouvailles",
+  "it": "Tutti i ritrovamenti",
+  "rm": "Tut ils chats",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Alle fünf Peilungen auf der Landeskarte gefunden.": {
   "en": "Found all five bearings on the national map.",
@@ -4411,6 +4439,13 @@
   "it": "Pascoli alpini e pietraie",
   "rm": "Pastgiras e champs da crappa"
  },
+ "Als eigene Figur spielen (Kapitel 2, Probe)": {
+  "en": "Play as your own character (chapter 2, preview)",
+  "fr": "Jouer avec ton propre personnage (chapitre 2, essai)",
+  "it": "Gioca con il tuo personaggio (capitolo 2, prova)",
+  "rm": "Giugar sco atgna figura (chapitel 2, emprova)",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Als Person gehen (U)": {
   "en": "Walk as a person (U)",
   "fr": "Marcher en personne (U)",
@@ -4506,6 +4541,13 @@
   "fr": "Alternative",
   "it": "Alternativa",
   "rm": "Alternativa"
+ },
+ "Altes Foto": {
+  "en": "Old photo",
+  "fr": "Vieille photo",
+  "it": "Vecchia foto",
+  "rm": "Fotografia veglia",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Altes Holz trägt, wenn man das Gewicht langsam verlagert. Wer rennt oder springt, drückt viel stärker auf ein einzelnes Brett.": {
   "en": "Old wood holds if you shift your weight slowly. Running or jumping presses much harder on a single board.",
@@ -4910,6 +4952,13 @@
   "it": "Vicino all'acqua: gli animali vengono a bere, umido e freddo di notte",
   "rm": "Sper l'aua: animals vegnan a baiver, la notg umid e fraid"
  },
+ "Am Wasserfall": {
+  "en": "At the waterfall",
+  "fr": "À la cascade",
+  "it": "Alla cascata",
+  "rm": "Tar la cascada",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Am Weg sitzt jemand mit verstauchtem Fuss.": {
   "en": "Someone with a sprained foot is sitting by the path.",
   "fr": "Quelqu'un est assis au bord du chemin avec une entorse.",
@@ -5077,6 +5126,13 @@
   "fr": "activé : images fixes",
   "it": "attivo: immagini ferme",
   "rm": "activà: maletgs quiets"
+ },
+ "Analyse: Dort oben ist ein Spalt. Zu klein für dich. Genau richtig für einen Terrier.": {
+  "en": "Analysis: there is a gap up there. Too small for you. Just right for a terrier.",
+  "fr": "Analyse : il y a une fente là-haut. Trop petite pour toi. Parfaite pour un terrier.",
+  "it": "Analisi: lassù c’è una fessura. Troppo piccola per te. Perfetta per un terrier.",
+  "rm": "Analisa: là si chatta ina sfessa. Memia pitschna per tai. Gist endretg per in terrier.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Andere beobachten (Bergtal: vom Aussichtspunkt aus)": {
   "en": "Watch others (mountain valley: from the viewpoint)",
@@ -5703,6 +5759,13 @@
   "it": "Compito: campeggio di notte",
   "rm": "Incumbensa: plazza da tenda la notg"
  },
+ "Aufheben": {
+  "en": "Pick up",
+  "fr": "Ramasser",
+  "it": "Raccogli",
+  "rm": "Prender si",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Aufhängen": {
   "en": "Hang it up",
   "fr": "Suspendre",
@@ -6291,6 +6354,20 @@
   "fr": "Plage",
   "it": "Spiaggia",
   "rm": "Riva da far bogn"
+ },
+ "Balanciere über den Baumstamm": {
+  "en": "Balance across the log",
+  "fr": "Traverse le tronc en équilibre",
+  "it": "Attraversa il tronco in equilibrio",
+  "rm": "Balantschescha sur il bist",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Balancieren": {
+  "en": "Balance",
+  "fr": "Garder l’équilibre",
+  "it": "Equilibrio",
+  "rm": "Balantschar",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Ball": {
   "en": "Ball",
@@ -7996,6 +8073,13 @@
   "it": "Marrone",
   "rm": "Brin"
  },
+ "Brave Maggie!": {
+  "en": "Good girl, Maggie!",
+  "fr": "Bravo, Maggie !",
+  "it": "Brava Maggie!",
+  "rm": "Brava Maggie!",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Breit und dunkel – am besten in der Nacht.": {
   "en": "Wide and dark – best at night.",
   "fr": "Large et sombre – le mieux la nuit.",
@@ -8134,6 +8218,13 @@
   "fr": "Des ponts qui tanguent.",
   "it": "Ponti che oscillano.",
   "rm": "Punts che vacillan."
+ },
+ "Brücken-Sprinter": {
+  "en": "Bridge sprinter",
+  "fr": "Sprinteur du pont",
+  "it": "Velocista del ponte",
+  "rm": "Sprinter da la punt",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Buch": {
   "en": "Book",
@@ -8532,6 +8623,13 @@
   "it": "Controller: Stick sinistro = girare la testa · A luce · X foto (ruolo «Guardiano»)",
   "rm": "Controller: Stick sanester = vulvar il chau · A glisch · X foto (rolla «Guardian»)"
  },
+ "Controller: linker Stick gehen · rechter Stick umschauen · A springen / greifen · X Aktion · R2 rennen · Start Pause": {
+  "en": "Controller: left stick walk · right stick look around · A jump / grab · X action · R2 run · Start pause",
+  "fr": "Manette : stick gauche marcher · stick droit regarder · A sauter / saisir · X action · R2 courir · Start pause",
+  "it": "Controller: levetta sinistra camminare · levetta destra guardarsi intorno · A saltare / afferrare · X azione · R2 correre · Start pausa",
+  "rm": "Controller: stick sanester ir · stick dretg guardar enturn · A siglir / tschiffar · X acziun · R2 currer · Start pausa",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Countdown": {
   "en": "Countdown",
   "fr": "Compte à rebours",
@@ -8609,6 +8707,13 @@
   "fr": "Il y a quelque chose pour la caméra de MoveEye – %s%s. Tourne la tête et prends une photo.",
   "it": "C’è qualcosa per la camera di MoveEye – %s%s. Gira la testa e scatta una foto.",
   "rm": "Qua datti insatge per la camera da MoveEye – %s%s. Volva il chau e fa ina foto."
+ },
+ "Da glitzert etwas im Fels": {
+  "en": "Something glints in the rock",
+  "fr": "Quelque chose brille dans la roche",
+  "it": "Qualcosa luccica nella roccia",
+  "rm": "Insatge glischa en il grip",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Da ist ein schwaches Licht - im %s, wo auf keiner Karte etwas steht.": {
   "en": "There is a faint light - in the %s, where nothing is on any map.",
@@ -8784,6 +8889,13 @@
   "it": "Allora sei stato fortunato. La prossima volta piazza MoveEye - così avrai la prova.",
   "rm": "Lura has ti gì cletg. La proxima giada metter si MoveEye - lura has ti la cumprova."
  },
+ "Dann such schon mal dein Portemonnaie, Toni.": {
+  "en": "Then start looking for your wallet, Toni.",
+  "fr": "Alors cherche déjà ton porte-monnaie, Toni.",
+  "it": "Allora comincia a cercare il portafoglio, Toni.",
+  "rm": "Lura tschertga gia tia bursa, Toni.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Darin liegt eine zweite Seite aus dem Hospizbuch:": {
   "en": "Inside lies a second page from the hospice book:",
   "fr": "Dedans, une deuxième page du livre de l'hospice :",
@@ -8807,6 +8919,13 @@
   "fr": "le panneau pas à pas",
   "it": "il pannello passo dopo passo",
   "rm": "la panela pass per pass"
+ },
+ "Das Bergtal fehlt – das Abenteuer braucht die Szene Bergtal.": {
+  "en": "The mountain valley is missing – the adventure needs the Bergtal scene.",
+  "fr": "La vallée manque – l’aventure a besoin de la scène Bergtal.",
+  "it": "Manca la valle – l’avventura ha bisogno della scena Bergtal.",
+  "rm": "La val da muntogna manca – l’aventura dovra la scena Bergtal.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Das Bergtal fehlt – die Geschichte braucht die Szene Bergtal.": {
   "en": "The mountain valley is missing – the story needs the Bergtal scene.",
@@ -9035,6 +9154,13 @@
   "fr": "Le camp est monté avant le coucher du soleil. Départ l'après-midi.",
   "it": "Il campo è montato prima del tramonto. Partenza nel pomeriggio.",
   "rm": "Il champ stat avant ch'il sulegl va da rendiu. Partenza il suentermezdi."
+ },
+ "Das leere Zelt": {
+  "en": "The empty tent",
+  "fr": "La tente vide",
+  "it": "La tenda vuota",
+  "rm": "La tenda vida",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Das letzte Stück: ein kleiner See hinter dem Grat, ein schmaler Pfad, und eine Sonne, die genau in einer Lücke im Fels steht. Daneben ein Kreuz - aber kein Gipfelkreuz. Ein Zeichen: hier.": {
   "en": "The last piece: a small lake behind the ridge, a narrow path, and a sun standing exactly in a gap in the rock. Next to it a cross - but not a summit cross. A sign: here.",
@@ -10122,6 +10248,13 @@
   "it": "Il lago segreto",
   "rm": "Il lai zuppà"
  },
+ "Der Grat. Sturm. Und nur noch eine Hand am Fels.": {
+  "en": "The ridge. A storm. And only one hand on the rock.",
+  "fr": "L’arête. La tempête. Et plus qu’une main sur le rocher.",
+  "it": "La cresta. La tempesta. E solo una mano sulla roccia.",
+  "rm": "La cresta. Orcan. E mo pli in maun vi dal grip.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Der Grillmeister": {
   "en": "The barbecue master",
   "fr": "Le roi du barbecue",
@@ -10175,6 +10308,13 @@
   "fr": "Le saut de chapitre (développeur) est actif - d'abord « Terminer le test ».",
   "it": "Il salto di capitolo (sviluppatore) è attivo - prima «Termina test».",
   "rm": "Il sigl da chapitel (sviluppader) è activ - l'emprim «Terminar il test»."
+ },
+ "Der Karabiner": {
+  "en": "The carabiner",
+  "fr": "Le mousqueton",
+  "it": "Il moschettone",
+  "rm": "Il carabiner",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Der Kasten ist offen": {
   "en": "The box is open",
@@ -10642,6 +10782,13 @@
   "fr": "le bouquetin qui te porte sur les rochers raides",
   "it": "lo stambecco che ti porta sulle rocce ripide",
   "rm": "il capricorn che ta porta sur grips stipas"
+ },
+ "Der Steinmann": {
+  "en": "The cairn",
+  "fr": "Le cairn",
+  "it": "L’ometto di pietra",
+  "rm": "Il crap-um",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Der Steinmann mit Augen": {
   "en": "The cairn with eyes",
@@ -11201,6 +11348,13 @@
   "it": "Nelle notti di tempesta la custode dell'ospizio guidava i dispersi oltre il passo. Forse voleva solo vedere se eri al sicuro.",
   "rm": "En notgs da stemprada manava la guardiana da l'ospizi ils sviads sur il pass. Forsa ha ella mo vulì guardar, sche ti es segir."
  },
+ "Die Hängebrücke": {
+  "en": "The suspension bridge",
+  "fr": "Le pont suspendu",
+  "it": "Il ponte sospeso",
+  "rm": "La punt pendenta",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Die Höhle hinter dem Gumpifall": {
   "en": "The cave behind the Gumpifall",
   "fr": "La grotte derrière la Gumpifall",
@@ -11260,6 +11414,20 @@
   "fr": "La carte du grand-père",
   "it": "La mappa del nonno",
   "rm": "La charta dal tat"
+ },
+ "Die Karte des Grossvaters (neu)": {
+  "en": "Grandfather’s Map (new)",
+  "fr": "La carte du grand-père (nouveau)",
+  "it": "La mappa del nonno (nuovo)",
+  "rm": "La charta dal tat (nov)",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Die Karte des {bezug}s führt in die Bachschlucht unter der Alp.": {
+  "en": "The map of {bezug} leads into the gorge below the alp.",
+  "fr": "La carte de {bezug} mène dans la gorge sous l’alpage.",
+  "it": "La mappa di {bezug} porta nella gola sotto l’alpe.",
+  "rm": "La charta da {bezug} maina en la foppa dal flum sut l’alp.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "die Karte zeigt jetzt, was man von hier sieht.": {
   "en": "the map now shows what you can see from here.",
@@ -11614,6 +11782,20 @@
   "fr": "les rôdeurs avaient la tâche trop facile (%d sur %d au but, %d× attrapé)",
   "it": "gli infiltrati l’avevano troppo facile (%d su %d al traguardo, %d× preso)",
   "rm": "ils stgaffaders avevan memia simpel (%d da %d a la mira, %d× tschiffà)"
+ },
+ "Die Schlucht": {
+  "en": "The gorge",
+  "fr": "La gorge",
+  "it": "La gola",
+  "rm": "La foppa",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Die Schlucht ohne einen Fuss im Wasser geschafft.": {
+  "en": "Got through the gorge without a foot in the water.",
+  "fr": "Traversé la gorge sans mettre un pied dans l’eau.",
+  "it": "Superata la gola senza mettere un piede in acqua.",
+  "rm": "Passà la foppa senza in pe en l’aua.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Die Schmugglerroute": {
   "en": "The smugglers’ route",
@@ -12660,6 +12842,13 @@
   "it": "Per tre notti MoveEye sorveglia il tuo campo nella valle. Quello che registra lo trovi al mattino nella sua cronologia.",
   "rm": "Trais notgs ditg surveglia MoveEye tes campament en la val. Tge ch'el registrescha, chattas ti la damaun en ses decurs."
  },
+ "Drei Tage vorher.": {
+  "en": "Three days earlier.",
+  "fr": "Trois jours plus tôt.",
+  "it": "Tre giorni prima.",
+  "rm": "Trais dis pli baud.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Drift (Modul wird mit dem Pi warm, Geräte-Fehler, langsames Wandern)": {
   "en": "Drift (module warms up with the Pi, unit error, slow wandering)",
   "fr": "Dérive (le module chauffe avec le Pi, erreur de l’appareil, lente variation)",
@@ -12983,6 +13172,13 @@
   "fr": "Tu places MoveEye plus haut et tu restes éveillé. Vers midi, le vent pousse une page jaunie contre ta tente :",
   "it": "Metti MoveEye più in alto e resti sveglio. Verso mezzogiorno il vento spinge una pagina ingiallita contro la tua tenda:",
   "rm": "Ti metas MoveEye pli aut e restas sveglià. Vers mezdi suffla il vent ina pagina melnenta vers tes tschalet:"
+ },
+ "Du steuerst jetzt Maggie": {
+  "en": "You are steering Maggie now",
+  "fr": "Tu diriges maintenant Maggie",
+  "it": "Ora guidi Maggie",
+  "rm": "Ussa manegias ti Maggie",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Du und Maggie, euer kleiner Hund.": {
   "en": "You and Maggie, your little dog.",
@@ -13446,6 +13642,13 @@
   "it": "Una vecchia passerella di legno sul Moorbach. A metà scricchiola forte - le assi cedono sotto i piedi.",
   "rm": "In vegl punt da lain sur il Moorbach. Amez sgrizchi'el ferm - las aissas cedan sut ils pes."
  },
+ "Ein alter Stahlkarabiner. Jemand hat «G+T {jahr_kurz}» hineingeritzt.": {
+  "en": "An old steel carabiner. Someone scratched «G+T {jahr_kurz}» into it.",
+  "fr": "Un vieux mousqueton en acier. Quelqu’un y a gravé «G+T {jahr_kurz}».",
+  "it": "Un vecchio moschettone d’acciaio. Qualcuno ci ha inciso «G+T {jahr_kurz}».",
+  "rm": "In vegl carabiner d’atschal. Insatgi ha engravà «G+T {jahr_kurz}».",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Ein alter Wanderer": {
   "en": "An old hiker",
   "fr": "Un vieux randonneur",
@@ -13602,6 +13805,13 @@
   "it": "Un ospite della capanna autogestita spazza la veranda – una raffica, e tutto è di nuovo lì. La terza volta spazza semplicemente dall’altra parte.",
   "rm": "In giast da la chamona senza chamonier scua la veranda – in buf da vent, e tut è puspè là. La terza giada scua el simplamain en l’autra direcziun."
  },
+ "Ein Gatter. Und der Riegel ist auf der anderen Seite.": {
+  "en": "A gate. And the bolt is on the other side.",
+  "fr": "Un portail. Et le verrou est de l’autre côté.",
+  "it": "Un cancello. E il chiavistello è dall’altra parte.",
+  "rm": "In portun. E la stanga è da l’autra vart.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Ein gemeinsames Erscheinungsbild (Web, Fenster, Simulator)": {
   "en": "One common look (web, window, simulator)",
   "fr": "Une apparence commune (web, fenêtre, simulateur)",
@@ -13673,6 +13883,13 @@
   "fr": "Un chapitre réussi en difficulté Difficile, sans mauvaise réponse.",
   "it": "Un capitolo superato a difficoltà Difficile, senza risposte sbagliate.",
   "rm": "In chapitel cun la difficultad Grev fatg, senza ina resposta sbagliada."
+ },
+ "Ein Karabiner. Da ist etwas eingeritzt: «G+T {jahr_kurz}».": {
+  "en": "A carabiner. Something is scratched into it: «G+T {jahr_kurz}».",
+  "fr": "Un mousqueton. Quelque chose y est gravé : «G+T {jahr_kurz}».",
+  "it": "Un moschettone. C’è qualcosa inciso: «G+T {jahr_kurz}».",
+  "rm": "In carabiner. Igl è engravà insatge: «G+T {jahr_kurz}».",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Ein Kind ist weg: rote Jacke, etwa 6 Jahre. Es spielt irgendwo um MoveEye – findet MoveEye es? (5 Min.)": {
   "en": "A child is missing: red jacket, about 6 years old. It is playing somewhere around MoveEye – will MoveEye find it? (5 min)",
@@ -14801,6 +15018,20 @@
   "fr": "serré (6 m)",
   "it": "stretto (6 m)",
   "rm": "stretg (6 m)"
+ },
+ "Enkel": {
+  "en": "Grandson",
+  "fr": "Petit-fils",
+  "it": "Nipote (ragazzo)",
+  "rm": "Biadi",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Enkelin": {
+  "en": "Granddaughter",
+  "fr": "Petite-fille",
+  "it": "Nipote (ragazza)",
+  "rm": "Biadia",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Entdecken": {
   "en": "Discover",
@@ -16730,6 +16961,13 @@
   "it": "FOH",
   "rm": "FOH"
  },
+ "Folge dem Bach durch die Schlucht": {
+  "en": "Follow the stream through the gorge",
+  "fr": "Suis le ruisseau à travers la gorge",
+  "it": "Segui il ruscello attraverso la gola",
+  "rm": "Suonda il flum tras la foppa",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Folge dem Bach von der Alp Richtung Gletscher.": {
   "en": "Follow the stream from the alp towards the glacier.",
   "fr": "Suis le ruisseau depuis l’alpage vers le glacier.",
@@ -16807,6 +17045,13 @@
   "fr": "Fort Chrüzli (Bunker)",
   "it": "Fort Chrüzli (Bunker)",
   "rm": "Fort Chrüzli (Bunker)"
+ },
+ "Fortsetzung folgt (Szenen 6–12 kommen als Nächstes).": {
+  "en": "To be continued (scenes 6–12 come next).",
+  "fr": "À suivre (les scènes 6–12 arrivent).",
+  "it": "Continua (le scene 6–12 arrivano dopo).",
+  "rm": "Cuntinuaziun suonda (las scenas 6–12 vegnan proximamain).",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Fortsetzung folgt: Teil 2 - Die zweite Karte.": {
   "en": "To be continued: Part 2 - The second map.",
@@ -16903,6 +17148,13 @@
   "fr": "Choisir une photo ou un panorama de ton lieu",
   "it": "Scegliere una foto o un panorama del tuo posto",
   "rm": "Tscherner ina foto u in panorama da tes plaz"
+ },
+ "Foto und Tagebuch": {
+  "en": "Photo and diary",
+  "fr": "Photo et journal",
+  "it": "Foto e diario",
+  "rm": "Fotografia e diari",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Foto weg": {
   "en": "Photo away",
@@ -17564,6 +17816,13 @@
   "it": "Piedini v5.3 negli angoli: l'apparecchio sta stabile, gli incavi del supporto vanno bene (FEET53)",
   "rm": "Peis v5.3 en ils chantuns: l'apparat stat stabil, las fossas dal tegnider tutgan (FEET53)"
  },
+ "G wie {bezug}. T wie … unbekannt. Ich lege eine Akte an.": {
+  "en": "G as in {bezug}. T as in … unknown. Opening a file.",
+  "fr": "G comme {bezug}. T comme … inconnu. J’ouvre un dossier.",
+  "it": "G come {bezug}. T come … sconosciuto. Apro un fascicolo.",
+  "rm": "G sco {bezug}. T sco … nunenconuschent. Jau fatsch ina acta.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Gabel": {
   "en": "Fork",
   "fr": "Fourchette",
@@ -17948,6 +18207,13 @@
   "fr": "Mangé",
   "it": "Mangiato",
   "rm": "Mangià"
+ },
+ "Geh durch das Gatter": {
+  "en": "Go through the gate",
+  "fr": "Passe le portail",
+  "it": "Passa dal cancello",
+  "rm": "Va tras il portun",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Geh lieber langsam. Maggie warnt dich, wenn eine Schlange nah ist.": {
   "en": "Better walk slowly. Maggie warns you when a snake is near.",
@@ -18891,6 +19157,20 @@
   "it": "Stessa situazione prima (MoveEye %s): %d segnalati, %d mancati - ora (MoveEye %s): %d segnalati, %d mancati",
   "rm": "Medema situaziun avant (MoveEye %s): %d annunziads, %d manchentads - ussa (MoveEye %s): %d annunziads, %d manchentads"
  },
+ "Gleichgewicht halten": {
+  "en": "Keep your balance",
+  "fr": "Garde l’équilibre",
+  "it": "Mantieni l’equilibrio",
+  "rm": "Tegna l’equiliber",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Gleichgewicht: gegensteuern (A / D, Stick)": {
+  "en": "Balance: steer against it (A / D, stick)",
+  "fr": "Équilibre : compense (A / D, stick)",
+  "it": "Equilibrio: correggi (A / D, levetta)",
+  "rm": "Equiliber: manar encunter (A / D, stick)",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Gleichstand": {
   "en": "Draw",
   "fr": "Égalité",
@@ -19328,6 +19608,13 @@
   "fr": "Grand cercle de tir, 130 ⚡ d’énergie, se recharge plus vite (0.5 ⚡ par seconde).",
   "it": "Cerchio di tiro grande, 130 ⚡ di energia, si ricarica più in fretta (0.5 ⚡ al secondo).",
   "rm": "Grond rintg da tutgar, 130 ⚡ energia, chargia pli svelt (0.5 ⚡ per secunda)."
+ },
+ "Grossvater": {
+  "en": "Grandfather",
+  "fr": "Grand-père",
+  "it": "Nonno",
+  "rm": "Tat",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Grossvaters Feldstecher": {
   "en": "Grandfather's binoculars",
@@ -19851,6 +20138,13 @@
   "it": "Tieni forte la corda - %s sta salendo",
   "rm": "Tegna la corda - %s rampigna"
  },
+ "Halt durch … halt durch!": {
+  "en": "Hold on … hold on!",
+  "fr": "Tiens bon … tiens bon !",
+  "it": "Resisti … resisti!",
+  "rm": "Tegna o … tegna o!",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Halte im Wärmebild (oben rechts) die Augen offen. Mit «Erkunden» kannst du mit der Stirnlampe herumgehen.": {
   "en": "Keep your eyes on the thermal picture (top right). With «Explore» you can walk around with the headlamp.",
   "fr": "Garde l'œil sur l'image thermique (en haut à droite). Avec «Explorer», tu peux te promener avec la lampe frontale.",
@@ -19886,6 +20180,13 @@
   "fr": "Téléphone",
   "it": "Telefonino",
   "rm": "Telefonin"
+ },
+ "Handy / iPad: Stick links · rechts «Aktion» und «Springen/Greifen» · in der rechten Hälfte wischen = umschauen": {
+  "en": "Phone / iPad: stick on the left · «Action» and «Jump/Grab» on the right · swipe in the right half = look around",
+  "fr": "Téléphone / iPad : stick à gauche · à droite «Action» et «Sauter/Saisir» · glisser dans la moitié droite = regarder",
+  "it": "Telefono / iPad: levetta a sinistra · a destra «Azione» e «Saltare/Afferrare» · scorrere nella metà destra = guardarsi intorno",
+  "rm": "Telefonin / iPad: stick a sanester · a dretg «Acziun» e «Siglir/Tschiffar» · stritgar en la mesadad dretga = guardar enturn",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Handy als Begleiter (Karte und MoveEye-Bilder auf dem Handy)": {
   "en": "Phone as companion (map and MoveEye pictures on the phone)",
@@ -20055,6 +20356,13 @@
   "it": "Telecamera della testa (NoIR)",
   "rm": "Camera dal chau (NoIR)",
   "?": "Kameraname an MoveEye (/info) – nicht umhüllen"
+ },
+ "Heb Maggie auf den Felssims (Aktion)": {
+  "en": "Lift Maggie onto the rock ledge (action)",
+  "fr": "Soulève Maggie sur la corniche (action)",
+  "it": "Solleva Maggie sulla cengia (azione)",
+  "rm": "Auza Maggie sin la cornisch da grip (acziun)",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Hecke": {
   "en": "Hedge",
@@ -20796,6 +21104,13 @@
   "it": "Alta (fotorealistica – richiede una buona scheda grafica)",
   "rm": "Aut (fotorealistic – dovra ina buna carta grafica)"
  },
+ "Hoch / runter": {
+  "en": "Up / down",
+  "fr": "Monter / descendre",
+  "it": "Su / giù",
+  "rm": "Si / giu",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Hoch aktiv (Forward+ / Vulkan)": {
   "en": "High active (Forward+ / Vulkan)",
   "fr": "Élevé actif (Forward+ / Vulkan)",
@@ -20862,6 +21177,13 @@
   "it": "Verticale",
   "rm": "Format vertical"
  },
+ "Hochklettern": {
+  "en": "Climb up",
+  "fr": "Grimper",
+  "it": "Arrampicati",
+  "rm": "Rampignar si",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Hochmoor Schwarzseeli\nBitte auf dem Steg bleiben": {
   "en": "Raised bog Schwarzseeli\nPlease stay on the boardwalk",
   "fr": "Haut-marais Schwarzseeli\nMerci de rester sur la passerelle",
@@ -20879,6 +21201,13 @@
   "fr": "Mirador, passage de gibier",
   "it": "Altana, passaggio di selvaggina",
   "rm": "Chamona d’aguat, passadi da selvaschina"
+ },
+ "Hochziehen!": {
+  "en": "Pull up!",
+  "fr": "Hisse-toi !",
+  "it": "Tirati su!",
+  "rm": "Trair si!",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Hofgeist": {
   "en": "Farm ghost",
@@ -21024,11 +21353,32 @@
   "it": "Passerella allo Schwarzseeli",
   "rm": "Punt da lain al Schwarzseeli"
  },
+ "Hopp!": {
+  "en": "Hop!",
+  "fr": "Hop !",
+  "it": "Op!",
+  "rm": "Hop!",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Hopp, Maggie! Durch den Spalt – und zieh am Riegel!": {
+  "en": "Go, Maggie! Through the gap – and pull the bolt!",
+  "fr": "Allez, Maggie ! Par la fente – et tire le verrou !",
+  "it": "Vai, Maggie! Nella fessura – e tira il chiavistello!",
+  "rm": "Hop, Maggie! Tras la sfessa – e tira la stanga!",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Hoppel, hoppel – ein Hase!": {
   "en": "Hop, hop – a hare!",
   "fr": "Hop, hop – un lièvre !",
   "it": "Hop, hop – una lepre!",
   "rm": "Hop, hop – in lieur!"
+ },
+ "Hoppla!": {
+  "en": "Whoops!",
+  "fr": "Oups !",
+  "it": "Ops!",
+  "rm": "Oha!",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Horizont": {
   "en": "Horizon",
@@ -21629,6 +21979,13 @@
   "fr": "Vous marchez tous les deux. Maggie vous suit et aide.",
   "it": "Camminate entrambi. Maggie vi segue e aiuta.",
   "rm": "Vus chaminais omadus. Maggie suonda vus e gida."
+ },
+ "II": {
+  "en": "II",
+  "fr": "II",
+  "it": "II",
+  "rm": "II",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Im %s fehlt noch %d – manches gibt es nur nachts, bei Regen oder am Morgen.": {
   "en": "In %s, %d still missing – some things are only there at night, in the rain or in the morning.",
@@ -23031,6 +23388,13 @@
   "it": "Gioca ora.",
   "rm": "Giugar ussa."
  },
+ "Jetzt springen!": {
+  "en": "Jump now!",
+  "fr": "Saute maintenant !",
+  "it": "Salta ora!",
+  "rm": "Siglia ussa!",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Jetzt wiederherstellen": {
   "en": "Restore now",
   "fr": "Restaurer maintenant",
@@ -23764,6 +24128,20 @@
   "it": "Cappuccio",
   "rm": "Chaputscha"
  },
+ "Karabiner «G+T {jahr_kurz}»": {
+  "en": "Carabiner «G+T {jahr_kurz}»",
+  "fr": "Mousqueton «G+T {jahr_kurz}»",
+  "it": "Moschettone «G+T {jahr_kurz}»",
+  "rm": "Carabiner «G+T {jahr_kurz}»",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Karabiner, Foto und Tagebuchfetzen gefunden.": {
+  "en": "Found the carabiner, the photo and the diary scrap.",
+  "fr": "Mousqueton, photo et bout de journal trouvés.",
+  "it": "Trovati moschettone, foto e pezzo di diario.",
+  "rm": "Chattà carabiner, fotografia e toc da diari.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Karte": {
   "en": "Map",
   "fr": "Carte",
@@ -24298,6 +24676,13 @@
   "it": "nessuna vita rimasta",
   "rm": "naginas vitas pli"
  },
+ "keine Maggie": {
+  "en": "no Maggie",
+  "fr": "pas de Maggie",
+  "it": "nessuna Maggie",
+  "rm": "nagina Maggie",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Keine neuen Schleichwege (alle schon gesendet – oder noch keine Spielrunde, in der jemand unerkannt ins Ziel kam).": {
   "en": "No new sneak paths (all already sent – or no game round yet in which someone reached the goal unseen).",
   "fr": "Pas de nouveaux chemins furtifs (tous déjà envoyés – ou pas encore de manche où quelqu’un a atteint l’arrivée sans être vu).",
@@ -24333,6 +24718,13 @@
   "fr": "Pas de lampe frontale",
   "it": "Niente lampada frontale",
   "rm": "Nagina cazzola da frunt"
+ },
+ "keine Szene ": {
+  "en": "no scene ",
+  "fr": "pas de scène ",
+  "it": "nessuna scena ",
+  "rm": "nagina scena ",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Keine Tipps, keine Pfeile - nur Karte, Kompass und Sterne.": {
   "en": "No tips, no arrows - only map, compass and stars.",
@@ -24593,6 +24985,27 @@
   "it": "Modalità bambini: chiedere un calcolo per uscire (spento = basta un clic su «Adulti»)",
   "rm": "Modus d’uffants: dar in quint per bandunar (deactivà = in clic sin «Creschids» basta)"
  },
+ "Kindermodus an": {
+  "en": "Children’s mode on",
+  "fr": "Mode enfants activé",
+  "it": "Modalità bambini attiva",
+  "rm": "Modus d’uffants activ",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Kindermodus an / aus": {
+  "en": "Children’s mode on / off",
+  "fr": "Mode enfants on / off",
+  "it": "Modalità bambini sì / no",
+  "rm": "Modus d’uffants en / ora",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Kindermodus aus": {
+  "en": "Children’s mode off",
+  "fr": "Mode enfants désactivé",
+  "it": "Modalità bambini disattiva",
+  "rm": "Modus d’uffants deactivà",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Kinderwagen": {
   "en": "Pram",
   "fr": "Poussette",
@@ -24646,6 +25059,13 @@
   "fr": "Benne du téléphérique de service",
   "it": "Cassone della teleferica",
   "rm": "Chascha da la pendenta da material"
+ },
+ "Kit läuft nicht": {
+  "en": "Kit not running",
+  "fr": "Le kit ne tourne pas",
+  "it": "Il kit non è attivo",
+  "rm": "Il kit na funcziuna betg",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Klack - der erste Schieber ist zurückgefallen. Nochmals!": {
   "en": "Clack - the first gate has fallen back. Again!",
@@ -24778,6 +25198,20 @@
   "fr": "Petit avion",
   "it": "Piccolo aereo",
   "rm": "Pitschen aviun"
+ },
+ "Klettere die Felsstufe hoch (Aktion)": {
+  "en": "Climb up the rock step (action)",
+  "fr": "Grimpe sur la marche rocheuse (action)",
+  "it": "Arrampicati sul gradino di roccia (azione)",
+  "rm": "Rampigna sin il stgalim da grip (acziun)",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Klettere über den Absatz und die Leiter hoch": {
+  "en": "Climb up over the ledge and the ladder",
+  "fr": "Grimpe par la corniche et l’échelle",
+  "it": "Sali dalla cengia e dalla scala",
+  "rm": "Rampigna si sur il stgalim e la stgala",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Klettergerüst": {
   "en": "Climbing frame",
@@ -26051,6 +26485,13 @@
   "it": "Tenda vuota",
   "rm": "Tschalet vid"
  },
+ "Leertaste": {
+  "en": "Space",
+  "fr": "Espace",
+  "it": "Spazio",
+  "rm": "Tasta da spazi",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Legföhre": {
   "en": "Mountain pine",
   "fr": "Pin couché",
@@ -26122,6 +26563,13 @@
   "fr": "Performances",
   "it": "Prestazioni",
   "rm": "Prestaziun"
+ },
+ "Leiter": {
+  "en": "Ladder",
+  "fr": "Échelle",
+  "it": "Scala",
+  "rm": "Stgala",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Leitplanke": {
   "en": "Guard rail",
@@ -26230,6 +26678,13 @@
   "fr": "Accu Li-ion 21700, flat top, non protégé",
   "it": "Batteria Li-ion 21700, flat top, non protetta",
   "rm": "Accu Li-ion 21700, flat top, betg protegì"
+ },
+ "Lia": {
+  "en": "Lia",
+  "fr": "Lia",
+  "it": "Lia",
+  "rm": "Lia",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Licht": {
   "en": "Light",
@@ -26695,6 +27150,13 @@
   "it": "Umidità",
   "rm": "Umiditad"
  },
+ "Luftfeuchtigkeit 94 Prozent. Rutschgefahr: hoch. Stimmung: abenteuerlich.": {
+  "en": "Humidity 94 percent. Risk of slipping: high. Mood: adventurous.",
+  "fr": "Humidité 94 pour cent. Risque de glissade : élevé. Ambiance : aventureuse.",
+  "it": "Umidità 94 per cento. Rischio di scivolare: alto. Umore: avventuroso.",
+  "rm": "Umiditad 94 pertschient. Privel da sglischar: aut. Atmosfera: aventurusa.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Luftführung (v5.3)": {
   "en": "Air flow (v5.3)",
   "fr": "Circulation d'air (v5.3)",
@@ -27007,6 +27469,13 @@
   "it": "Segui Maggie",
   "rm": "Suandar Maggie"
  },
+ "Maggie gefangen, als die Brücke fiel.": {
+  "en": "Caught Maggie when the bridge fell.",
+  "fr": "Rattrapé Maggie quand le pont est tombé.",
+  "it": "Presa Maggie quando il ponte è crollato.",
+  "rm": "Tschiffà Maggie, cura che la punt è crudada.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Maggie gräbt den Wegweiser frei. Daran hängt ein Kartenstück!": {
   "en": "Maggie digs out the signpost. A map piece is hanging on it!",
   "fr": "Maggie dégage le panneau. Un morceau de carte y est accroché !",
@@ -27072,6 +27541,13 @@
   "fr": "Maggie lève le nez : depuis l'alpage de Tschuggen, ça sent le fromage d'alpage de Vreni.",
   "it": "Maggie alza il naso: dall'alpe Tschuggen arriva il profumo del formaggio d'alpe di Vreni.",
   "rm": "Maggie auza il nas: da l'Alp Tschuggen nauaferd savura il chaschiel d'alp da la Vreni."
+ },
+ "Maggie hochheben": {
+  "en": "Lift Maggie",
+  "fr": "Soulever Maggie",
+  "it": "Sollevare Maggie",
+  "rm": "Auzar Maggie",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Maggie ist euer Familienhund: ein kleiner, heller Terrier mit hellbraunen Flecken. Sie hat eine sehr gute Nase.": {
   "en": "Maggie is your family dog: a small, light-coloured terrier with light brown spots. She has a very good nose.",
@@ -27234,6 +27710,20 @@
   "fr": "Histoire de Maggie",
   "it": "Storia di Maggie",
   "rm": "Istorgia da Maggie"
+ },
+ "Maggies Held": {
+  "en": "Maggie’s hero",
+  "fr": "Héros de Maggie",
+  "it": "Eroe di Maggie",
+  "rm": "Erox da Maggie",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Maggies Weg": {
+  "en": "Maggie’s way",
+  "fr": "Le chemin de Maggie",
+  "it": "La via di Maggie",
+  "rm": "La via da Maggie",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Mai": {
   "en": "May",
@@ -30881,6 +31371,13 @@
   "it": "Nuovo posto per dormire:",
   "rm": "Nova plazza da durmir:"
  },
+ "Neuer Spielmodus (Probe)": {
+  "en": "New game mode (preview)",
+  "fr": "Nouveau mode de jeu (essai)",
+  "it": "Nuova modalità di gioco (prova)",
+  "rm": "Nov modus da gieu (emprova)",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Neues Abenteuer ›": {
   "en": "New adventure ›",
   "fr": "Nouvelle aventure ›",
@@ -32579,6 +33076,13 @@
   "it": "Pausa (15 min)",
   "rm": "Pausa (15 min.)"
  },
+ "Pause (Esc)": {
+  "en": "Pause (Esc)",
+  "fr": "Pause (Échap)",
+  "it": "Pausa (Esc)",
+  "rm": "Pausa (Esc)",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Pause – spart Strom, bis MoveEye fragt": {
   "en": "Pause – saves power until MoveEye asks",
   "fr": "Pause – économise du courant jusqu’à ce que MoveEye demande",
@@ -32614,6 +33118,13 @@
   "fr": "CPU du PC %s  ·  simulateur %s",
   "it": "CPU del PC %s  ·  simulatore %s",
   "rm": "CPU dal PC %s  ·  simulatur %s"
+ },
+ "PC: W A S D gehen · Shift rennen · Leertaste springen / greifen · E Aktion · Maus ziehen umschauen · Rad näher / weiter · Esc Pause": {
+  "en": "PC: W A S D walk · Shift run · Space jump / grab · E action · drag the mouse to look around · wheel closer / farther · Esc pause",
+  "fr": "PC : W A S D marcher · Maj courir · Espace sauter / saisir · E action · glisser la souris pour regarder · molette plus près / plus loin · Échap pause",
+  "it": "PC: W A S D camminare · Maiusc correre · Spazio saltare / afferrare · E azione · trascina il mouse per guardare · rotella più vicino / lontano · Esc pausa",
+  "rm": "PC: W A S D ir · Shift currer · Tasta da spazi siglir / tschiffar · E acziun · trair la mieur per guardar enturn · rodella pli datiers / pli lunsch · Esc pausa",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "PCA9685": {
   "en": "PCA9685",
@@ -32940,6 +33451,13 @@
   "it": "Sacchetto di plastica al vento",
   "rm": "Satg da plastic en il vent"
  },
+ "Platsch! Nasse Füsse … zurück zum letzten Punkt.": {
+  "en": "Splash! Wet feet … back to the last point.",
+  "fr": "Plouf ! Pieds mouillés … retour au dernier point.",
+  "it": "Splash! Piedi bagnati … torna all’ultimo punto.",
+  "rm": "Platsch! Pes bletschs … enavos al davos punct.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Platte %s": {
   "en": "Plate %s",
   "fr": "Plateau %s",
@@ -33221,6 +33739,13 @@
   "fr": "Essai %d/%d : %s",
   "it": "Prova %d/%d: %s",
   "rm": "Emprova %d/%d: %s"
+ },
+ "Probe starten ›": {
+  "en": "Start preview ›",
+  "fr": "Lancer l’essai ›",
+  "it": "Avvia la prova ›",
+  "rm": "Cumenzar l’emprova ›",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Probe-Runde mit Blinki": {
   "en": "Practice round with Blinki",
@@ -35873,6 +36398,13 @@
   "it": "Vasca",
   "rm": "Bassin"
  },
+ "Schwing dich am Seil über den Spalt (Aktion, dann Springen)": {
+  "en": "Swing across the gap on the rope (action, then jump)",
+  "fr": "Traverse la fente à la corde (action, puis sauter)",
+  "it": "Dondola sulla corda oltre la fessura (azione, poi salta)",
+  "rm": "Schlantscha cun la corda sur la sfessa (acziun, lura siglir)",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Schwärmen": {
   "en": "Swarm",
   "fr": "Essaimer",
@@ -36059,6 +36591,13 @@
   "fr": "Corde au rocher",
   "it": "Corda sulla roccia",
   "rm": "Suga vi dal grip"
+ },
+ "Seil packen": {
+  "en": "Grab the rope",
+  "fr": "Saisir la corde",
+  "it": "Afferra la corda",
+  "rm": "Tschiffar la corda",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Seilbahn": {
   "en": "Cable car",
@@ -36888,6 +37427,13 @@
   "it": "Software",
   "rm": "Software"
  },
+ "Sohn": {
+  "en": "Son",
+  "fr": "Fils",
+  "it": "Figlio",
+  "rm": "Figl",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Solar-Regler (MPPT) zwischen Panel und GX16: Eingang 18 V, Ausgang 12 V konstant (höchstens 18 V), mind. 2 A": {
   "en": "Solar controller (MPPT) between panel and GX16: input 18 V, constant output 12 V (at most 18 V), at least 2 A",
   "fr": "Régulateur solaire (MPPT) entre panneau et GX16 : entrée 18 V, sortie constante 12 V (au plus 18 V), au moins 2 A",
@@ -37506,11 +38052,39 @@
   "it": "Sport e bagagli",
   "rm": "Sport e bagascha"
  },
+ "Spring über die Steine (Springen)": {
+  "en": "Jump across the stones (jump)",
+  "fr": "Saute sur les pierres (sauter)",
+  "it": "Salta sulle pietre (saltare)",
+  "rm": "Siglia sur ils craps (siglir)",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Springen setzt einen Test-Spielstand (eigene Datei) – dein echter Spielstand bleibt unberührt.": {
   "en": "Jumping sets a test progress (own file) – your real progress stays untouched.",
   "fr": "Le saut crée une progression de test (fichier séparé) – ta vraie progression reste intacte.",
   "it": "Il salto imposta un progresso di prova (file proprio) – il tuo vero progresso resta intatto.",
   "rm": "Il sigl metta in stadi da test (atgna datoteca) – tes vair stadi resta intact."
+ },
+ "Springen!": {
+  "en": "Jump!",
+  "fr": "Saute !",
+  "it": "Salta!",
+  "rm": "Siglia!",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Springen/\nGreifen": {
+  "en": "Jump/\nGrab",
+  "fr": "Sauter/\nSaisir",
+  "it": "Salta/\nAfferra",
+  "rm": "Siglir/\nTschiffar",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Springen: von Stein zu Stein.": {
+  "en": "Jump: from stone to stone.",
+  "fr": "Sauter : de pierre en pierre.",
+  "it": "Salta: di pietra in pietra.",
+  "rm": "Siglir: da crap a crap.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Sprint (90 Sekunden)": {
   "en": "Sprint (90 seconds)",
@@ -37999,6 +38573,13 @@
   "it": "Steinchaos Murmelboden",
   "rm": "Steinchaos Murmelboden"
  },
+ "Steine im Wasser … mit einem Sprung von Stein zu Stein.": {
+  "en": "Stones in the water … jump from stone to stone.",
+  "fr": "Des pierres dans l’eau … sauter de pierre en pierre.",
+  "it": "Pietre nell’acqua … salta di pietra in pietra.",
+  "rm": "Craps en l’aua … cun in sigl da crap a crap.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Steine kullern den Hang hinunter!": {
   "en": "Stones are rolling down the slope!",
   "fr": "Des pierres dévalent la pente !",
@@ -38202,6 +38783,20 @@
   "fr": "Dirige un personnage avec le stick et essaie de sortir de l’image de MoveEye – 60 secondes, des points pour le classement.",
   "it": "Guida una figura con lo stick e cerca di uscire dall’immagine di MoveEye – 60 secondi, punti per la classifica.",
   "rm": "Maniescha ina figura cun il stick ed emprova da vegnir or dal maletg da MoveEye – 60 secundas, puncts per la rangaziun."
+ },
+ "Steuere Maggie durch den Spalt zum Riegel": {
+  "en": "Steer Maggie through the gap to the bolt",
+  "fr": "Guide Maggie par la fente jusqu’au verrou",
+  "it": "Guida Maggie nella fessura fino al chiavistello",
+  "rm": "Maina Maggie tras la sfessa a la stanga",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Steuerung": {
+  "en": "Controls",
+  "fr": "Commandes",
+  "it": "Comandi",
+  "rm": "Manaschament",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Stick-Drift selbst lernen (ein Stick, der 3 s genau gleich steht, gilt als Ruhelage)": {
   "en": "Learn stick drift by itself (a stick that stays exactly the same for 3 s counts as rest position)",
@@ -38448,6 +39043,13 @@
   "fr": "Chaise",
   "it": "Sedia",
   "rm": "Sutga"
+ },
+ "Sturm am Grat": {
+  "en": "Storm on the ridge",
+  "fr": "Tempête sur l’arête",
+  "it": "Tempesta sulla cresta",
+  "rm": "Orcan sin la cresta",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Sturm zieht auf": {
   "en": "Storm coming",
@@ -38892,6 +39494,13 @@
   "fr": "Page de journal près de la lumière",
   "it": "Pagina di diario vicino alla luce",
   "rm": "Fegl dal diari tar la glisch"
+ },
+ "Tagebuchfetzen": {
+  "en": "Diary scrap",
+  "fr": "Bout de journal",
+  "it": "Pezzo di diario",
+  "rm": "Toc da diari",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Tagebuchseite": {
   "en": "Diary page",
@@ -39877,6 +40486,13 @@
   "it": "Tocca = carica la scena (i visitatori arrivano da soli). Verde = nuovo.",
   "rm": "Tutgar = chargiar la scena (visitaders vegnan sezs). Verd = nov."
  },
+ "Tippen oder halten: hochziehen!": {
+  "en": "Tap or hold: pull up!",
+  "fr": "Tape ou maintiens : hisse-toi !",
+  "it": "Tocca o tieni premuto: tirati su!",
+  "rm": "Tutgar u tegnair: trair si!",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Tipps und Wildkamera-Aufgaben": {
   "en": "Tips and camera-trap tasks",
   "fr": "Conseils et missions piège photo",
@@ -39949,6 +40565,13 @@
   "it": "Tobelweg (sentiero della gola)",
   "rm": "Tobelweg (senda dal tobel)"
  },
+ "Tochter": {
+  "en": "Daughter",
+  "fr": "Fille",
+  "it": "Figlia",
+  "rm": "Figlia",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Ton": {
   "en": "sound",
   "fr": "son",
@@ -39960,6 +40583,13 @@
   "fr": "Son sur le PC (haut-parleur de MoveEye et bruits ambiants ; le microphone simulé l’entend quand même)",
   "it": "Audio sul PC (altoparlante di MoveEye e rumori dell’ambiente; il microfono simulato lo sente comunque)",
   "rm": "Tun sin il PC (autpledader da MoveEye e canera dals conturns; il microfon simulà al auda tuttina)"
+ },
+ "Toni": {
+  "en": "Toni",
+  "fr": "Toni",
+  "it": "Toni",
+  "rm": "Toni",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Toni, Bergsteiger": {
   "en": "Toni, mountaineer",
@@ -40183,6 +40813,13 @@
   "fr": "Bois avant d'avoir soif. Tu peux remplir au ruisseau.",
   "it": "Bevi prima di avere sete. Al ruscello puoi riempire.",
   "rm": "Baiva avant che ti has said. Al ual pos ti emplenir."
+ },
+ "Trockene Füsse": {
+  "en": "Dry feet",
+  "fr": "Pieds au sec",
+  "it": "Piedi asciutti",
+  "rm": "Pes sitgs",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Trockenmauer": {
   "en": "Dry stone wall",
@@ -41119,6 +41756,13 @@
   "fr": "Vase",
   "it": "Vaso",
   "rm": "Vasa"
+ },
+ "Vater": {
+  "en": "Father",
+  "fr": "Père",
+  "it": "Padre",
+  "rm": "Bab",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Velo": {
   "en": "Bike",
@@ -43305,6 +43949,13 @@
   "it": "chi è stato preso meno",
   "rm": "tgi ch’è vegnì tschiffà il pli pauc"
  },
+ "Wer bist du? (14–16 Jahre)": {
+  "en": "Who are you? (14–16 years)",
+  "fr": "Qui es-tu ? (14–16 ans)",
+  "it": "Chi sei? (14–16 anni)",
+  "rm": "Tgi es ti? (14–16 onns)",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Wer bist du? Gib deiner Figur einen Namen und such dir aus, wie sie aussieht.": {
   "en": "Who are you? Give your character a name and choose how it looks.",
   "fr": "Qui es-tu ? Donne un nom à ton personnage et choisis à quoi il ressemble.",
@@ -43388,6 +44039,13 @@
   "fr": "Qui était-ce ?",
   "it": "Chi è stato?",
   "rm": "Tgi è quai stà?"
+ },
+ "Wer zuerst oben ist, zahlt den Kaffee!": {
+  "en": "Whoever is up first pays for the coffee!",
+  "fr": "Le premier en haut paie le café !",
+  "it": "Chi arriva prima in cima paga il caffè!",
+  "rm": "Tgi ch’è l’emprim sisum paja il café!",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Werkseinstellungen: %d Dateien gelöscht, Kopie %s": {
   "en": "Factory settings: %d files deleted, copy %s",
@@ -44155,6 +44813,20 @@
   "it": "Wi-Fi assente",
   "rm": "WLAN davent"
  },
+ "Wo der Bach zum ersten Mal fällt.": {
+  "en": "Where the stream falls for the first time.",
+  "fr": "Là où le ruisseau tombe pour la première fois.",
+  "it": "Dove il ruscello cade per la prima volta.",
+  "rm": "Nua ch’il flum croda per l’emprima giada.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Wo der Bach zweimal fällt": {
+  "en": "Where the Stream Falls Twice",
+  "fr": "Là où le ruisseau tombe deux fois",
+  "it": "Dove il ruscello cade due volte",
+  "rm": "Nua ch’il flum croda duas giadas",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "wo die Lade-LED angeschlossen wird, ist nicht beschrieben": {
   "en": "where the charging LED is connected is not described",
   "fr": "le branchement de la LED de charge n'est pas décrit",
@@ -44359,6 +45031,13 @@
   "fr": "À quoi vous sert la corde ?",
   "it": "A cosa vi serve la corda?",
   "rm": "Per tge dovrais vus la suga?"
+ },
+ "Wuff!": {
+  "en": "Woof!",
+  "fr": "Ouaf !",
+  "it": "Bau!",
+  "rm": "Vau!",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Wuff! Ein Hund kommt.": {
   "en": "Woof! A dog is coming.",
@@ -44912,6 +45591,13 @@
   "it": "Cercare la capra Flocke (al Fondueplätzli vicino al Gumpisee)",
   "rm": "Tschertgar la chaura Flocke (tar il Fondueplätzli al Gumpisee)"
  },
+ "Zieh dich hoch! (Springen/Greifen mehrmals tippen)": {
+  "en": "Pull yourself up! (tap Jump/Grab several times)",
+  "fr": "Hisse-toi ! (tape plusieurs fois Sauter/Saisir)",
+  "it": "Tirati su! (tocca più volte Salta/Afferra)",
+  "rm": "Trai tai si! (tutga pliras giadas Siglir/Tschiffar)",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Zieh einen Schieber und renn sofort zum anderen - er hält nur kurz.": {
   "en": "Pull one gate and run to the other at once - it only holds for a short time.",
   "fr": "Tire une vanne et cours tout de suite à l'autre - elle ne tient que peu de temps.",
@@ -45140,6 +45826,13 @@
   "it": "troppo lento",
   "rm": "memia plaun"
  },
+ "Zu langsam. 😉": {
+  "en": "Too slow. 😉",
+  "fr": "Trop lent. 😉",
+  "it": "Troppo lento. 😉",
+  "rm": "Memia plaun. 😉",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "zu spät auf dem Gipfel": {
   "en": "too late on the summit",
   "fr": "trop tard au sommet",
@@ -45151,6 +45844,13 @@
   "fr": "averti trop tard (seulement après le vol)",
   "it": "avvisato troppo tardi (solo dopo il furto)",
   "rm": "avertì memia tard (pir suenter il tschiffar)"
+ },
+ "Zu spät – nochmals!": {
+  "en": "Too late – again!",
+  "fr": "Trop tard – encore !",
+  "it": "Troppo tardi – di nuovo!",
+  "rm": "Memia tard – anc ina giada!",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Zu steil (%d°) – %d m daneben ist es flach genug.": {
   "en": "Too steep (%d°) – %d m away it is flat enough.",
@@ -45355,6 +46055,13 @@
   "fr": "Vers la tête",
   "it": "Alla testa",
   "rm": "Tar il chau"
+ },
+ "Zum letzten Checkpoint": {
+  "en": "To the last checkpoint",
+  "fr": "Au dernier point de contrôle",
+  "it": "All’ultimo checkpoint",
+  "rm": "Al davos checkpoint",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Zum Morgen springen": {
   "en": "Skip to the morning",
@@ -45608,6 +46315,13 @@
   "it": "due spaventi improvvisi per notte",
   "rm": "dus mumens da tschuffergna per notg"
  },
+ "Zwei junge Bergführer auf dem Grat, lachend. Auf der Rückseite: «Toni und ich, {jahr}».": {
+  "en": "Two young mountain guides on the ridge, laughing. On the back: «Toni and me, {jahr}».",
+  "fr": "Deux jeunes guides sur l’arête, en train de rire. Au dos : «Toni et moi, {jahr}».",
+  "it": "Due giovani guide alpine sulla cresta, ridendo. Sul retro: «Toni e io, {jahr}».",
+  "rm": "Dus giuvens guids da muntogna sin la cresta, riend. Davos: «Toni ed jau, {jahr}».",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Zwei Personen dicht beieinander": {
   "en": "Two people close together",
   "fr": "Deux personnes très proches",
@@ -45698,6 +46412,13 @@
   "it": "Conta nella classifica della serata (scheda Gioco). Punti solo tra 4 e 25 m dall’apparecchio.",
   "rm": "Quinta en la rangaziun da la saira (carta Gieu). Puncts dat i mo tranter 4 e 25 m da l’apparat."
  },
+ "{bezug}": {
+  "en": "{bezug}",
+  "fr": "{bezug}",
+  "it": "{bezug}",
+  "rm": "{bezug}",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "{ding} · aus ({s} s übrig)": {
   "en": "{ding} · out ({s} s left)",
   "fr": "{ding} · éteinte ({s} s restantes)",
@@ -45721,6 +46442,20 @@
   "fr": "{d} m. Caméra : brouillard. Image thermique : la silhouette est immobile et regarde droit vers MoveEye.",
   "it": "{d} m. Telecamera: nebbia. Immagine termica: la figura sta ferma e guarda dritto verso MoveEye.",
   "rm": "{d} m. Camera: tschajera. Maletg termic: la figura stat salda e guarda directamain vers MoveEye."
+ },
+ "{jahr}": {
+  "en": "{jahr}",
+  "fr": "{jahr}",
+  "it": "{jahr}",
+  "rm": "{jahr}",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "{name}": {
+  "en": "{name}",
+  "fr": "{name}",
+  "it": "{name}",
+  "rm": "{name}",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "~1 kg": {
   "en": "~1 kg",
@@ -45920,6 +46655,13 @@
   "it": "«Sfuggi alla telecamera» con il bot",
   "rm": "«Mitscha da la camera» cun il bot"
  },
+ "«Er hat mich zurückgelassen.»": {
+  "en": "«He left me behind.»",
+  "fr": "«Il m’a laissé derrière.»",
+  "it": "«Mi ha lasciato indietro.»",
+  "rm": "«El m’ha laschà enavos.»",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "«Experte» eingeschaltet – die Updates stehen unter System.": {
   "en": "«Expert» switched on – the updates are under System.",
   "fr": "«Expert» activé – les mises à jour sont sous Système.",
@@ -46051,6 +46793,13 @@
   "fr": "«Rafale» secoue la branche – la caméra n’aime pas le mouvement.",
   "it": "«Raffica» scuote il ramo – alla telecamera non piace il movimento.",
   "rm": "«Buf da vent» scurlatta il rom – la camera n’ama betg moviment."
+ },
+ "«… der Sturm kam schneller als gedacht. Ich habe es ihm versprochen.»": {
+  "en": "«… the storm came faster than expected. I promised him.»",
+  "fr": "«… la tempête est arrivée plus vite que prévu. Je le lui ai promis.»",
+  "it": "«… la tempesta è arrivata prima del previsto. Gliel’ho promesso.»",
+  "rm": "«… l’orcan è vegnì pli svelt ch’ensà. Jau al hai empermess quai.»",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "· ausser Sicht der Kamera": {
   "en": "· out of the camera’s view",
@@ -46232,6 +46981,13 @@
   "fr": "Au-dessus de la cabane Obri Stafel se dresse un sommet calcaire clair avec une antenne.",
   "it": "Sopra la capanna Obri Stafel svetta una vetta calcarea chiara con un'antenna.",
   "rm": "Sur la chamona Obri Stafel s'auza in piz da chaltschina cler cun antenna."
+ },
+ "Über die Hängebrücke, bevor sie einstürzt – ohne anzuhalten.": {
+  "en": "Across the suspension bridge before it collapses – without stopping.",
+  "fr": "Traverser le pont suspendu avant qu’il s’effondre – sans s’arrêter.",
+  "it": "Attraversa il ponte sospeso prima che crolli – senza fermarti.",
+  "rm": "Sur la punt pendenta avant ch’ella collapsa – senza fermar.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Über die steilen Felsen": {
   "en": "Over the steep rocks",

@@ -157,7 +157,7 @@ func steuern(mv_welt: Vector2, dt: float) -> void:
 		tempo = 0.0
 		return
 	var np := hp + Vector3(tal_d.x, 0, tal_d.z).normalized() * spd * dt
-	var hy = kit.maggie_boden(Vector2(hp.x, hp.z), Vector2(np.x, np.z))
+	var hy = kit.maggie_boden(Vector2(hp.x, hp.z), Vector2(np.x, np.z), VL(hund.global_position).y)
 	if typeof(hy) == TYPE_BOOL:
 		stop(hund, dt)
 		tempo = 0.0

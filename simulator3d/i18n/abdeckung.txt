@@ -1,20 +1,20 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7821 (Stellen: 10903)
-Übersetzt: en 7821, fr 7821, it 7821, rm 7821
-Unsicher markiert: 53
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 534 Stellen
+Texte gesamt: 7929 (Stellen: 11033)
+Übersetzt: en 7929, fr 7929, it 7929, rm 7929
+Unsicher markiert: 161
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
 Nicht mehr im Code (noch in texte.json): 403
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 28172, schlüssel 21335, keine Wörter 13258, index 10015, technisch 3675, doc 2464, einheit 340, log 196, englisch 145, pfad 127, stringname 103, html 69, klasse 40, shader 6
+Übersprungen (Grund: Anzahl): kennung 28769, schlüssel 21961, keine Wörter 13721, index 10170, technisch 3733, doc 2513, einheit 341, log 201, englisch 145, pfad 128, stringname 106, html 69, klasse 41, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
   main_einstellungen.gd    400    25
-  bergtal_abenteuer.gd     276     7
+  bergtal_abenteuer.gd     285     7
   gamewiz.gd               252    15
   abenteuer_figuren_daten.gd   238     0
-  main.gd                  212    10
+  main.gd                  213    10
   game.gd                  211    32
   bergtal_abenteuer_daten.gd   197     0
   bergtal.gd               187     5
@@ -46,6 +46,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   kids.gd                   74     1
   pruefstand.gd             72     8
   feedback.gd               69    18
+  kit_k2_daten.gd           67     0
   abenteuer_zweit.gd        66     0
   bib_berg.gd               64     0
   geschichten.gd            64     0
@@ -127,6 +128,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   devtool.gd                19     0
   tv.gd                     19     8
   surprise.gd               19     1
+  kit_hud.gd                18     0
   kompakt_dorf.gd           18     0
   devtool_vorfuehrung.gd    18     0
   kompakt_pfadi.gd          18     0
@@ -143,7 +145,9 @@ Pro Datei (Texte / davon dynamische Stellen):
   main_start.gd             16     2
   menschen.gd               16     0
   gamesneak.gd              15     0
+  kit_figur.gd              15     0
   abenteuer_blinki.gd       14     0
+  kit_abenteuer.gd          14     1
   home_editor.gd            14     3
   zimmertiere.gd            14     0
   abenteuer_inventar.gd     13     0
@@ -216,6 +220,14 @@ Pro Datei (Texte / davon dynamische Stellen):
   net.gd                     1     1
 
 Unsicher:
+  'Neuer Spielmodus (Probe)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Als eigene Figur spielen (Kapitel 2, Probe)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Wer bist du? (14–16 Jahre)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Enkelin': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Enkel': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Tochter': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Sohn': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Probe starten ›': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'PIR Zelt': Sensorname an MoveEye (/info) – nicht umhüllen
   'Dieselbe Runde zweimal: zuerst bewacht ein Mensch (Wächter mit Auslöser – oder der Bot-Wächter), dann die echte Erkennung von MoveEye – mit genau denselben Wegen der Schleicher und denselben Kamerabildern. Am Schluss: Wer hat mehr erwischt? Was der Mensch sah und MoveEye verpasste, wird ein Lernbild und ein Prüfstand-Weg.': rm: Formulierung prüfen
   'Nachts: lass den Lichtkegel über den Platz wandern («Schwenken»).': rm: Sguazzar = schwenken?
@@ -248,6 +260,106 @@ Unsicher:
   'Der PC fährt herunter …': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
   'Der PC startet neu …': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
   'Der PC startet neu ins BIOS …': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
+  'Die Karte des Grossvaters (neu)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Das Bergtal fehlt – das Abenteuer braucht die Szene Bergtal.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Folge dem Bach durch die Schlucht': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Fortsetzung folgt (Szenen 6–12 kommen als Nächstes).': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Kindermodus an': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Kindermodus aus': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Platsch! Nasse Füsse … zurück zum letzten Punkt.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Abzeichen: %s': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Hopp!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Du steuerst jetzt Maggie': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Kit läuft nicht': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'keine Szene ': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'keine Maggie': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Springen: von Stein zu Stein.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Hochklettern': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Leiter': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Balancieren': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Seil packen': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Maggie hochheben': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Aufheben': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Springen!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Aktion': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Hochziehen!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Jetzt springen!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Hoch / runter': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Gleichgewicht halten': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Hoppla!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Zu spät – nochmals!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'II': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Pause (Esc)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Springen/\nGreifen': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Zum letzten Checkpoint': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Steuerung': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Kindermodus an / aus': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Abenteuer beenden': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'PC: W A S D gehen · Shift rennen · Leertaste springen / greifen · E Aktion · Maus ziehen umschauen · Rad näher / weiter · Esc Pause': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Controller: linker Stick gehen · rechter Stick umschauen · A springen / greifen · X Aktion · R2 rennen · Start Pause': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Handy / iPad: Stick links · rechts «Aktion» und «Springen/Greifen» · in der rechten Hälfte wischen = umschauen': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Leertaste': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Tippen oder halten: hochziehen!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Gleichgewicht: gegensteuern (A / D, Stick)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Wo der Bach zweimal fällt': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Grossvater': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Vater': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Karabiner «G+T {jahr_kurz}»': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  '{name}': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  '{bezug}': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Toni': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Lia': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Trockene Füsse': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Die Schlucht ohne einen Fuss im Wasser geschafft.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Brücken-Sprinter': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Über die Hängebrücke, bevor sie einstürzt – ohne anzuhalten.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Maggies Held': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Maggie gefangen, als die Brücke fiel.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Alle Funde': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Karabiner, Foto und Tagebuchfetzen gefunden.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Ein alter Stahlkarabiner. Jemand hat «G+T {jahr_kurz}» hineingeritzt.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Altes Foto': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Zwei junge Bergführer auf dem Grat, lachend. Auf der Rückseite: «Toni und ich, {jahr}».': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Tagebuchfetzen': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  '«… der Sturm kam schneller als gedacht. Ich habe es ihm versprochen.»': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Sturm am Grat': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Der Grat. Sturm. Und nur noch eine Hand am Fels.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Halt durch … halt durch!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Zieh dich hoch! (Springen/Greifen mehrmals tippen)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Drei Tage vorher.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Die Schlucht': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Die Karte des {bezug}s führt in die Bachschlucht unter der Alp.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Luftfeuchtigkeit 94 Prozent. Rutschgefahr: hoch. Stimmung: abenteuerlich.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Steine im Wasser … mit einem Sprung von Stein zu Stein.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Spring über die Steine (Springen)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Klettere die Felsstufe hoch (Aktion)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Maggies Weg': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Ein Gatter. Und der Riegel ist auf der anderen Seite.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Analyse: Dort oben ist ein Spalt. Zu klein für dich. Genau richtig für einen Terrier.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Heb Maggie auf den Felssims (Aktion)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Hopp, Maggie! Durch den Spalt – und zieh am Riegel!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Steuere Maggie durch den Spalt zum Riegel': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Brave Maggie!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Geh durch das Gatter': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Am Wasserfall': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Wo der Bach zum ersten Mal fällt.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Wuff!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Balanciere über den Baumstamm': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Klettere über den Absatz und die Leiter hoch': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Schwing dich am Seil über den Spalt (Aktion, dann Springen)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Der Karabiner': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Da glitzert etwas im Fels': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Ein Karabiner. Da ist etwas eingeritzt: «G+T {jahr_kurz}».': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'G wie {bezug}. T wie … unbekannt. Ich lege eine Akte an.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Die Hängebrücke': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Der Steinmann': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  '{jahr}': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Wer zuerst oben ist, zahlt den Kaffee!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Dann such schon mal dein Portemonnaie, Toni.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Foto und Tagebuch': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Zu langsam. 😉': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Das leere Zelt': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  '«Er hat mich zurückgelassen.»': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   '<%d Bytes %s>': technisch (Log)
   'request %d': technisch (Log)
   'KI-Trainingsdaten': GitHub-Release-Titel – nicht umhüllen
@@ -466,12 +578,12 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   schnittstelle.gd:117  'aus'
   schnittstelle.gd:119  ' · Relais '
   bergtal_abenteuer.gd:419  'Start: '
-  bergtal_abenteuer.gd:1030  ' auf der Bank mit Aussicht'
-  bergtal_abenteuer.gd:2227  'Wird frei: '
-  bergtal_abenteuer.gd:2452  'aus'
-  bergtal_abenteuer.gd:2453  'keine'
-  bergtal_abenteuer.gd:2508  '  · %.1f kg'
-  bergtal_abenteuer.gd:2604  ' - Bank'
+  bergtal_abenteuer.gd:1048  ' auf der Bank mit Aussicht'
+  bergtal_abenteuer.gd:2248  'Wird frei: '
+  bergtal_abenteuer.gd:2506  'aus'
+  bergtal_abenteuer.gd:2507  'keine'
+  bergtal_abenteuer.gd:2562  '  · %.1f kg'
+  bergtal_abenteuer.gd:2658  ' - Bank'
   gamekiwaechter.gd:100  ' · 🤖 gegen die KI – eigene Liste, zählt nicht für die Rangliste'
   gamekiwaechter.gd:147  'aus'
   gamekiwaechter.gd:147  'ein'
@@ -483,14 +595,14 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   licht.gd:42  'aus'
   main.gd:769  ' (Port %d)'
   main.gd:1673  '  %.0f Mbit/s'
-  main.gd:2331  ' (von MoveEye)'
-  main.gd:2364  'Der Simulator ist belegt: '
-  main.gd:3202  'aus'
-  main.gd:3202  'ein'
-  main.gd:3279  'Sabotage-Test: '
-  main.gd:3279  'aus'
-  main.gd:3333  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3336  '\n🚨 Bewacht und weg: '
+  main.gd:2333  ' (von MoveEye)'
+  main.gd:2366  'Der Simulator ist belegt: '
+  main.gd:3205  'aus'
+  main.gd:3205  'ein'
+  main.gd:3282  'Sabotage-Test: '
+  main.gd:3282  'aus'
+  main.gd:3336  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3339  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
@@ -506,23 +618,23 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   mini.gd:195  'aus'
   padmap.gd:64  ' – mehrere Controller: Bedienfeld Mover › Controller › «Controller zuteilen»'
   padmap.gd:86  'Browser'
-  padmap.gd:418  'Licht '
-  padmap.gd:418  'aus'
-  padmap.gd:418  'ein'
-  padmap.gd:422  'IR-Licht '
-  padmap.gd:422  'aus'
-  padmap.gd:422  'ein'
-  padmap.gd:428  'Folgen '
-  padmap.gd:428  'aus'
-  padmap.gd:428  'ein'
-  padmap.gd:445  'Ansicht: '
-  padmap.gd:448  'Ansicht: '
-  padmap.gd:452  'Livebild '
-  padmap.gd:452  'aus'
-  padmap.gd:452  'ein'
-  padmap.gd:455  'Ansicht: '
-  padmap.gd:469  'Foto gespeichert: '
-  padmap.gd:521  'Zu'
+  padmap.gd:420  'Licht '
+  padmap.gd:420  'aus'
+  padmap.gd:420  'ein'
+  padmap.gd:424  'IR-Licht '
+  padmap.gd:424  'aus'
+  padmap.gd:424  'ein'
+  padmap.gd:430  'Folgen '
+  padmap.gd:430  'aus'
+  padmap.gd:430  'ein'
+  padmap.gd:447  'Ansicht: '
+  padmap.gd:450  'Ansicht: '
+  padmap.gd:454  'Livebild '
+  padmap.gd:454  'aus'
+  padmap.gd:454  'ein'
+  padmap.gd:457  'Ansicht: '
+  padmap.gd:471  'Foto gespeichert: '
+  padmap.gd:523  'Zu'
   quick.gd:155  ' · Vorlagen'
   quick.gd:164  'aus'
   statisten.gd:37  'aus'
@@ -542,8 +654,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:245  'Aussicht: '
   bergtal.gd:254  'Schlafplatz: '
   bergtal.gd:256  'Aussicht: '
-  bergtal.gd:2533  'Schlafplatz: '
-  bergtal.gd:2535  'Aussicht: '
+  bergtal.gd:2538  'Schlafplatz: '
+  bergtal.gd:2540  'Aussicht: '
   diagnose.gd:32  ' · virtuelle Maschine'
   diagnose.gd:34  ' · Fenster klein / versteckt'
   diagnose.gd:72  ' · Ersatz-Port, 8765 war besetzt'
@@ -689,6 +801,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inventar.gd:308  '\nKI: – = die KI von MoveEye kennt es nicht (Prüfstand: darf keinen Alarm auslösen)'
   inventar.gd:332  'KI: '
   kids.gd:338  ' Du hast jetzt %d Sterne.'
+  kit_abenteuer.gd:903  'keine Szene '
   kitrain.gd:93  '1/3 Paket: '
   kitrain.gd:157  'Ohne GitHub-Schlüssel: die ZIP liegt hier: %s\nSo kommt sie ins Training: 1. GitHub → Releases → «ki-daten» → Edit → ZIP hineinziehen → Update release '
   kitrain.gd:158  '(beim ersten Mal «Draft a new release», Tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye holt das neue Modell danach selbst.\n'
@@ -727,7 +840,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main_menues.gd:860  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
   main_start.gd:395  'Autostart: '
   main_start.gd:406  'Autologon: '
-  main_steuerung.gd:454  'Dein Platz: '
+  main_steuerung.gd:456  'Dein Platz: '
   mwpc.gd:22  'Aus'
   mwpc.gd:75  'MoveEye hat sich beendet. Protokoll: '
   mwpc.gd:107  ' · %d Bilder erkannt, %d ms'

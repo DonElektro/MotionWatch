@@ -775,7 +775,7 @@ func maggie_hoehe(v: Vector2):
 	return float(par.dinge[id]["top"])
 
 
-func maggie_boden(von: Vector2, nach: Vector2):
+func maggie_boden(von: Vector2, nach: Vector2, y_jetzt := -1.0e9):
 	"""steering Maggie: false = blocked; else the height to keep (null = the ground). The window of a wall lets her
 	through at the height of the ledge; down from a ledge she jumps; up only onto low things"""
 	var sqn: Vector2 = par.sq(nach)
@@ -784,6 +784,8 @@ func maggie_boden(von: Vector2, nach: Vector2):
 	if absf(sqn.x - float(ziel[0])) > 6.0 or absf(sqn.y) > 8.5:
 		return false
 	var hv = maggie_hoehe(von)
+	if y_jetzt > par._H(von.x, von.y) + 0.3:
+		hv = y_jetzt                                         # up on a ledge / in the window: she keeps her height
 	var hn_id: String = par.ding_bei(par.welt_abs(sqn.x, sqn.y, 0.0))
 	if hn_id != "" and _sperrt(hn_id):
 		var d: Dictionary = par.dinge[hn_id]["d"]
