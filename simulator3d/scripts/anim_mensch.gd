@@ -20,7 +20,8 @@ extends RefCounted
 const Quality = preload("res://scripts/quality.gd")
 const Spuren = preload("res://scripts/anim_spuren.gd")
 
-const ARTEN := ["aufheben", "klettern", "kurbeln", "hebel", "highfive", "winken", "freude", "schreck"]
+const ARTEN := ["aufheben", "klettern", "kurbeln", "hebel", "highfive", "winken", "freude", "schreck",
+		"balance", "haengen", "heben", "schwingen", "sprung", "zeigen"]   # Abenteuer-Kit (kit_figur.gd, 20.11.2026)
 const LEER := ["", "verschr", "taschen", "umschau", "gewicht"]
 const BLICK_YAW := 1.1
 const BLICK_PITCH := 0.35
@@ -136,7 +137,8 @@ func aktion(art: String, secs := -1.0, ziel = null) -> bool:
 	if not art in ARTEN:
 		return false
 	var dauer: float = {"aufheben": 1.6, "klettern": 2.4, "kurbeln": 2.0, "hebel": 1.4, "highfive": 1.3, "winken": 2.2,
-			"freude": 1.6, "schreck": 1.1}[art]
+			"freude": 1.6, "schreck": 1.1, "balance": 1.0, "haengen": 1.0, "heben": 1.6, "schwingen": 1.0, "sprung": 0.7,
+			"zeigen": 1.6}[art]
 	akt = art
 	_akt_t0 = a.now_s()
 	_akt_bis = _akt_t0 + (secs if secs > 0.0 else dauer)
@@ -482,6 +484,38 @@ func _handlung(dt: float, now: float, k: float) -> void:
 			_add(a.body_root, ^"position:y", absf(sin(e * 7.0)) * 0.14 * sc * w)
 			for i in range(2):
 				_arm(i, 2.85 + 0.2 * sin(e * 10.0 + i), 0.32 * a.arms[i][1], 0.2, w)
+		"balance":                                           # Abenteuer-Kit: arms out to the side, knees soft, a little wobble
+			var wob := sin(e * 3.1) * 0.25
+			_arm(0, 0.15, -1.35 + wob, 0.15, w)
+			_arm(1, 0.15, 1.35 + wob, 0.15, w)
+			for i in range(2):
+				_leg(i, 0.18, -0.3, w)
+			_add(a.torso, ^"rotation:z", wob * 0.3 * w)
+		"haengen":                                           # both hands up on the edge, the legs hang (a little swing)
+			var sw := sin(e * 2.2) * 0.12
+			for i in range(2):
+				_arm(i, 2.95, 0.12 * a.arms[i][1], 0.1, w)
+				_leg(i, 0.1 + sw + 0.1 * i, -0.2, w)
+			_put(a.head, ^"rotation:x", lerpf(a.head.rotation.x, 0.35, w))
+		"heben":                                             # squat, lift something up in front and above the head
+			var up3 := smoothstep(0.15, 0.85, f)
+			var dn := sin(minf(1.0, f * 2.0) * PI) * (1.0 - up3)
+			_lean(-0.5 * dn, w)
+			for i in range(2):
+				_leg(i, 0.6 * dn, -1.0 * dn, w)
+				_arm(i, lerpf(0.9, 2.7, up3), 0.15 * a.arms[i][1], lerpf(1.0, 0.25, up3), w)
+			_add(a.body_root, ^"position:y", -(0.2 * dn * sc * w))
+		"schwingen":                                         # hanging on a rope: hands together above the head, knees up
+			for i in range(2):
+				_arm(i, 2.9, 0.05 * a.arms[i][1], 0.15, w)
+				_leg(i, 0.7, -0.9, w)
+		"sprung":                                            # in the air: knees up, arms forward / up
+			var k2 := sin(f * PI)
+			for i in range(2):
+				_leg(i, 0.9 * k2, -1.3 * k2, w)
+				_arm(i, 1.4 + 0.6 * k2, 0.2 * a.arms[i][1], 0.4, w)
+		"zeigen":                                            # the right arm points ahead
+			_arm(1, 1.55, 0.05, 0.05, w)
 		"schreck":                                           # back a step, hands up in front, the head away
 			var b2 := sin(minf(1.0, f * 2.5) * PI * 0.5) * (1.0 - smoothstep(0.7, 1.0, f))
 			for i in range(2):
