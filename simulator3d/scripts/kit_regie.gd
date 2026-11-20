@@ -115,8 +115,11 @@ func _folge_xform(tp: Vector3, d0: float, dt: float, heading: float) -> Transfor
 	var moving: bool = float(kit.figur.a.cur_speed) > 0.3 if art == "folge" else kit.hund_tempo() > 0.3
 	if moving and kit.uhr - drag_t > 1.2:                  # the camera follows by itself (phone, iPad, pad and PC alike)
 		yaw = lerp_angle(yaw, heading, clampf(dt * 1.1, 0.0, 1.0))
+	var pit := pitch
+	if art == "folge" and str(kit.figur.zustand) in ["seil", "haengen", "leiter"]:
+		pit = maxf(pitch, 0.62)                             # over a gap / at a wall: look from higher up (never from inside the rock)
 	var back := Vector3(sin(yaw), 0, cos(yaw))
-	var want := tp + back * d0 * cos(pitch) + Vector3(0, d0 * sin(pitch), 0)
+	var want := tp + back * d0 * cos(pit) + Vector3(0, d0 * sin(pit), 0)
 	# the spring arm: shorter where the ground / the course is in the way
 	var n := 6 if Quality.lite() else 12
 	var frac := 1.0
@@ -131,7 +134,7 @@ func _folge_xform(tp: Vector3, d0: float, dt: float, heading: float) -> Transfor
 			break
 	var dz := d0 * frac
 	dist_ist = lerpf(dist_ist, dz, clampf(dt * (12.0 if dz < dist_ist else 2.5), 0.0, 1.0))
-	var at := tp + back * dist_ist * cos(pitch) + Vector3(0, dist_ist * sin(pitch), 0)
+	var at := tp + back * dist_ist * cos(pit) + Vector3(0, dist_ist * sin(pit), 0)
 	at.y = maxf(at.y, main.ground_y(at.x, at.z) + 0.4)
 	var cur := cam.global_transform
 	var tr := Transform3D(Basis.IDENTITY, at).looking_at(tp, Vector3.UP)

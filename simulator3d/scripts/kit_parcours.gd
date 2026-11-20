@@ -340,8 +340,8 @@ void fragment() {
 	float st = fract(UV.y * 0.6 - TIME * 0.9 + sin(UV.x * 9.0 + UV.y * 2.0) * 0.12);
 	float n = smoothstep(0.0, 0.4, st) * (1.0 - smoothstep(0.45, 1.0, st));
 	float edge = smoothstep(0.0, 0.25, UV.x) * smoothstep(1.0, 0.75, UV.x);
-	ALBEDO = mix(vec3(0.24, 0.42, 0.46), vec3(0.78, 0.88, 0.9), n * 0.6);
-	ALPHA = (0.55 + 0.3 * n) * edge;
+	ALBEDO = mix(vec3(0.16, 0.27, 0.29), vec3(0.62, 0.72, 0.74), n * 0.45);
+	ALPHA = (0.62 + 0.2 * n) * edge;
 }
 """
 
