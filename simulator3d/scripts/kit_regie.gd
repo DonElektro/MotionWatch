@@ -51,7 +51,10 @@ func _init(k) -> void:
 
 
 func ziel_figur() -> Vector3:
-	return kit.figur.pos() + Vector3(0, 1.45, 0)
+	var f = kit.figur
+	if str(f.zustand) == "haengen" and f.akt.get("griff", null) is Vector3:
+		return (f.akt["griff"] as Vector3) + Vector3(0, 0.25, 0)   # hanging: look at the hands on the edge (not under it)
+	return f.pos() + Vector3(0, 1.45, 0)
 
 
 # =======================================================================================================================
@@ -117,11 +120,14 @@ func _folge_xform(tp: Vector3, d0: float, dt: float, heading: float) -> Transfor
 	# the spring arm: shorter where the ground / the course is in the way
 	var n := 6 if Quality.lite() else 12
 	var frac := 1.0
+	var L := tp.distance_to(want)
 	for i in range(1, n + 1):
 		var f := float(i) / float(n)
+		if f * L < 0.7:
+			continue                                       # right at the figure (a step, the log it stands on) does not count
 		var q := tp.lerp(want, f)
 		if main.ground_y(q.x, q.z) + 0.35 > q.y:
-			frac = maxf(0.18, f - 1.0 / float(n))
+			frac = maxf(0.4, f - 1.0 / float(n))
 			break
 	var dz := d0 * frac
 	dist_ist = lerpf(dist_ist, dz, clampf(dt * (12.0 if dz < dist_ist else 2.5), 0.0, 1.0))
