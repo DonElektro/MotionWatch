@@ -57,6 +57,8 @@ def main():
     if ganz:
         os.makedirs(os.path.join(out, "ganz"), exist_ok=True)
     K = json.load(open(os.path.join(HIER, "kandidaten.json"), encoding="utf-8"))["kandidaten"]
+    if ganz:                                               # the full pieces: only the ones the owner chose
+        K = [k for k in K if k.get("gewaehlt")]
     zeilen = ["# Musik-Kandidaten – Vorschau (je 25 s)", "",
               "Zur Freigabe durch den Besitzer. Lizenz: CC BY = Namensnennung (kommt in «Über» / Lizenzen des Simulators).", "",
               "| Zustand | Datei | Titel | Autor | Lizenz | Quelle | Länge | Status |", "|---|---|---|---|---|---|---|---|"]
@@ -84,9 +86,15 @@ def main():
             subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", str(ab), "-t", "25", "-i", roh, "-af",
                             "afade=t=in:d=1,afade=t=out:st=23:d=2,loudnorm=I=-18:TP=-1.5", "-ac", "2", "-ar", "44100",
                             "-c:a", "libvorbis", "-q:a", "4", os.path.join(out, name)], check=True, timeout=120)
-            if ganz:
-                subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", roh, "-af", "loudnorm=I=-18:TP=-1.5", "-ac", "2",
-                                "-ar", "44100", "-c:a", "libvorbis", "-q:a", "3", os.path.join(out, "ganz", name)], check=True, timeout=300)
+            if ganz:                                       # compact for the web: ~96 kbit/s, long pieces cut with a fade
+                mx = float(k.get("max", 0)) or d
+                mx = min(mx, d) if d else mx
+                af = "loudnorm=I=-18:TP=-1.5"
+                if d and mx < d - 1:
+                    af = "afade=t=out:st=%.1f:d=4,%s" % (mx - 4, af)
+                ziel = os.path.join(out, "ganz", "kit_%s.ogg" % k["zustand"])
+                subprocess.run(["ffmpeg", "-v", "error", "-y", "-t", "%.1f" % mx, "-i", roh, "-af", af, "-ac", "2", "-ar", "44100",
+                                "-c:a", "libvorbis", "-b:a", "96k", ziel], check=True, timeout=300)
             status = "ok"
             ok_n += 1
             laenge = "%d:%02d" % (int(d) // 60, int(d) % 60) if d else "?"
