@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.72.0"
+const VERSION := "3.73.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -477,7 +477,7 @@ func _ready() -> void:
 	in_vm = _in_vm()
 	if in_vm and not "--quality" in args:
 		quality = "simple"                      # virtual machine: no real graphics card - the light graphics by default
-	DisplayServer.window_set_title(("%s · Live" % Versionen.label(VERSION)) if Versionen.is_new(VERSION) else ("3D-Simulator Live · %s" % VERSION))
+	DisplayServer.window_set_title((("%s · Live" % Versionen.label(VERSION)) if Versionen.is_new(VERSION) else ("3D-Simulator Live · %s" % VERSION)) + preload("res://scripts/testkanal.gd").titel_zusatz())
 	var ic := load("res://icon_sim3d.png")              # the window icon (3D-3.28; 3D-3.63: the orange MoveEye symbol)
 	if ic is Texture2D:
 		DisplayServer.set_icon((ic as Texture2D).get_image())
@@ -702,6 +702,7 @@ func _ready() -> void:
 	add_child(maggie)
 	_register_controls()
 	_order_controls()
+	preload("res://scripts/kit_abenteuer.gd").autostart_pruefen.call_deferred(self)   # probe package: straight into the new mode
 	mwpc = Mwpc.new()
 	mwpc.main = self
 	add_child(mwpc)
@@ -766,7 +767,7 @@ func _ready() -> void:
 			if i + 1 < args.size() and args[i + 1].begins_with("http"):
 				phone.addr.text = args[i + 1]
 			get_tree().create_timer(2.0).timeout.connect(func(): phone.open())
-	DisplayServer.window_set_title((("%s · Live" % Versionen.label(VERSION)) if Versionen.is_new(VERSION) else ("3D-Simulator Live · %s" % VERSION)) + " (Port %d)" % port)
+	DisplayServer.window_set_title((("%s · Live" % Versionen.label(VERSION)) if Versionen.is_new(VERSION) else ("3D-Simulator Live · %s" % VERSION)) + " (Port %d)" % port + preload("res://scripts/testkanal.gd").titel_zusatz())   # Testkanal: «Testversion: <Commit>»
 	_fps0 = Engine.max_fps
 	mini_box = preload("res://scripts/mini.gd").new()      # minimize = small box, the simulator keeps drawing
 	mini_box.main = self
@@ -2308,6 +2309,8 @@ func busy_with(except_ := "") -> String:
 		w = "Wiedergabe"
 	elif horror != null and horror.running:
 		w = "Horror-Modus"                             # the nights of «Das Hospiz» (bergtal_horror.gd)
+	elif kit != null and bool(kit.running):
+		w = "Die Karte des Grossvaters (neu)"         # Abenteuer-Kit (kit_abenteuer.gd)
 	elif maggie != null and maggie.running:
 		w = "Maggie-Geschichte"                        # «Maggie und der Bergkristall» (maggie_story.gd)
 	elif has_meta("trailer") and preload("res://scripts/trailer.gd").busy(self):
@@ -3131,6 +3134,7 @@ func world_reply() -> Dictionary:
 
 
 var schnitt = null                     # schnittstelle.gd (Aufräumen 2)
+var kit = null                         # kit_abenteuer.gd: Abenteuer-Kit «Die Karte des Grossvaters» neu (eigene Figur, Kamera-Regie; Probe)
 var maggie = null                      # maggie_story.gd: «Maggie und der Bergkristall» (API für maggie_hund / maggie_gefahr)
 var horror = null                      # bergtal_horror.gd: Bergtal · Horror-Modus (Hook für die Stimmungswahl: horror.mood_slot / open_from_mood)
 var spieltest = null                   # spieltest.gd: Spieltest-Assistent (Haken für Spiele: Spieltest.ereignis(modus, art, daten))
@@ -4904,6 +4908,8 @@ func _fly(dt: float) -> void:
 		return                                   # keys go to the phone
 	if explore != null and (explore.on or explore.fly):
 		return                                   # exploring: W A S D drive the rover (Entwicklertool: the fly camera, explore.gd)
+	if kit != null and bool(kit.running):
+		return                                   # Abenteuer-Kit: the keys move the own figure (kit_abenteuer.gd)
 	if maggie != null and maggie.walking():
 		return                                   # «Maggie und der Bergkristall»: W A S D move the figure (maggie_story.gd)
 	if typing():

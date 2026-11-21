@@ -193,6 +193,8 @@ func zoom(dir: int) -> String:
 	if ex != null and ex.on:
 		ex.dist = clampf(ex.dist - 0.8 * dir, 2.5, 30.0)
 		return "explore"
+	if main.get("kit") != null and bool(main.kit.running):
+		return "kit"                                   # Abenteuer-Kit: its own wheel (kit_abenteuer.gd)
 	if main.maggie != null and is_instance_valid(main.maggie) and main.maggie.walking():
 		main.maggie.cam_dist = clampf(main.maggie.cam_dist - 0.6 * dir, 2.5, 16.0)
 		return "maggie"
@@ -258,6 +260,8 @@ func arrows_free() -> bool:
 	if main.localplay != null and main.localplay.active:
 		return false                                   # the player at the PC
 	if main.maggie != null and is_instance_valid(main.maggie) and bool(main.maggie.running):
+		return false
+	if main.get("kit") != null and bool(main.kit.running):
 		return false
 	if main.mehr != null and main.mehr.get("tour") != null and bool(main.mehr.tour.active):
 		return false                                   # the tour: ← → back / on

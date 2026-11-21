@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 18.11.2026 · Version **3.72.0** · MoveEye **4.16.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 21.11.2026 · Version **3.73.0** · MoveEye **4.16.1** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -31,6 +31,14 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
   (Ziegelreihen / Kies). Wärmezwillinge und Hindernisse unverändert. Luftbild wird jetzt vor den 3D-Gebäuden gesetzt.
 - Seon ohne OSM (Overpass war aus): 117 Häuser, 44 Wohnblöcke, 24 Bauernhäuser, 3 Scheunen, 2 Chalets, 2 Garagen;
   Dachfarbe aus dem Luftbild 130, Palette 62 (Häuser ausserhalb des nahen Luftbilds).
+
+## NEU in 3.73.0 (MoveEye 4.16.1): Grossvater Kapitel 2 im neuen Modus, Bergtal-Fix, Musik und Stimmen, Testkanal
+
+- Zweig sim-grossvater-k2 @ e5784f4 (CI 44907470226 grün), Übergabe: simulator3d/docs/grossvater_k2_stand.md.
+- Kapitel 2 «Wo der Bach zweimal fällt» im neuen Modus (Standard), Bergtal-Fix (02f2b81), Kamera, Klettern, Grafik.
+- klang/sp_kit_*.ogg (Musik CC BY, Namensnennung in klang/LIZENZEN.txt), klang/stimmen/ (Piper, Thorsten CC0); export_presets.cfg nimmt klang/stimmen mit.
+- Testkanal: Knopf «🧪 Neuste Testversion holen» (testkanal.gd), sim_pi.yml testkanal=true (feste Vorabversion «sim-test», nie latest) und auftrag=musik-vorschau|musik-ganz|stimmen.
+- Offen: Rumantsch der neuen Texte zum Korrekturlesen, Stimmen nur Deutsch.
 
 ## NEU in 3.72.0 (MoveEye 4.16.0): Tab im Hintergrund, Schalter «Mit MoveEye auf der Homepage verbinden»
 

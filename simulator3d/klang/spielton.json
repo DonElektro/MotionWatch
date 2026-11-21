@@ -130,5 +130,29 @@
   "lufs": -26.7,
   "spitze": -11.6,
   "db": 0.7
+ },
+ "kit_explore": {
+  "s": 130.0,
+  "loop": true,
+  "lufs": -18.0,
+  "db": -7.0
+ },
+ "kit_spannung": {
+  "s": 100.0,
+  "loop": true,
+  "lufs": -18.0,
+  "db": -7.0
+ },
+ "kit_action": {
+  "s": 155.0,
+  "loop": true,
+  "lufs": -18.0,
+  "db": -7.0
+ },
+ "kit_entdeckung": {
+  "s": 51.3,
+  "loop": true,
+  "lufs": -18.0,
+  "db": -7.0
  }
 }

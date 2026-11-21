@@ -37,6 +37,14 @@ static func args() -> PackedStringArray:
 	a.append_array(PackedStringArray(["--hour", str(q.get("stunde", DEMO_HOUR))]))
 	if q.has("qualitaet"):
 		a.append_array(PackedStringArray(["--quality", str(q["qualitaet"])]))
+	if str(q.get("grossvater", "")) in ["1", "neu", "k2"]:
+		a.append("--grossvater-neu")                    # Abenteuer-Kit: straight into the new chapter 2 (kit_abenteuer.gd)
+		if q.has("name"):                               # tests on the phone: without the start card (…&name=Nina&k2szene=s06_bruecke)
+			a.append("--kit-name=" + str(q["name"]).uri_decode().left(20))
+		if q.has("messen"):                             # a line with frame times in the game (phone / iPad tests)
+			a.append("--kit-messen")
+		if q.has("k2szene"):
+			a.append("--kit-szene=" + str(q["k2szene"]).left(40))
 	return a
 
 

@@ -1,0 +1,54 @@
+{
+ "_info": "Erzähler und {bezug}: vorgesprochen mit Piper (werkzeuge/stimmen/stimmen.py), nur Deutsch.",
+ "stimmen": {
+  "erzaehler": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/thorsten/high/de_DE-thorsten-high",
+  "grossvater": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/thorsten/high/de_DE-thorsten-high"
+ },
+ "lizenz": "Piper (MIT); die Lizenz jeder Stimme steht in ihrer MODEL_CARD (hier als MODEL_CARD_<rolle>.txt dabei)",
+ "zeilen": {
+  "Der Grat. Sturm. Und nur noch eine Hand am Fels.": {
+   "datei": "ddfbdbd48c0e.ogg",
+   "wer": "erzaehler"
+  },
+  "Drei Tage vorher.": {
+   "datei": "25f827cb2246.ogg",
+   "wer": "erzaehler"
+  },
+  "Die Karte des Grossvaters führt in die Bachschlucht unter der Alp.": {
+   "datei": "a25cc564c518.ogg",
+   "wer": "erzaehler"
+  },
+  "Die Karte des Vaters führt in die Bachschlucht unter der Alp.": {
+   "datei": "0fd96dc8f6a8.ogg",
+   "wer": "erzaehler"
+  },
+  "Wo der Bach zum ersten Mal fällt.": {
+   "datei": "a4a2d0aa6832.ogg",
+   "wer": "erzaehler"
+  },
+  "1974. Genau hier.": {
+   "datei": "258736a5d93f.ogg",
+   "wer": "erzaehler"
+  },
+  "2000. Genau hier.": {
+   "datei": "52bd3b273068.ogg",
+   "wer": "erzaehler"
+  },
+  "Dann such schon mal dein Portemonnaie, Toni.": {
+   "datei": "ada4c5be402a.ogg",
+   "wer": "grossvater"
+  },
+  "Am Abend. Oben am Rand der Schlucht.": {
+   "datei": "819d2ba10c8e.ogg",
+   "wer": "erzaehler"
+  },
+  "Tonis Notizbuch. Aufgeschlagen.": {
+   "datei": "4dc5aa50650e.ogg",
+   "wer": "erzaehler"
+  },
+  "Maggie schnüffelt am Fels. Sie hat etwas!": {
+   "datei": "d50deb2ff619.ogg",
+   "wer": "erzaehler"
+  }
+ }
+}

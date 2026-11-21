@@ -400,6 +400,8 @@ func _build_person() -> void:
 		hooded = bool(nl["hood"]) or variant == "burglar"
 	if bool(nl.get("cap", false)) and not hooded:
 		style = 3
+	if nl.has("kopf") and not hooded:                                      # Grossvater K2: the head of a story figure
+		style = {"kurz": 0, "lang": 1, "zopf": 2, "muetze": 3, "hut": 4, "cap": 5}.get(str(nl["kopf"]), style)
 	if controlled and not look.is_empty():                                  # a player chose
 		hooded = look.get("hat", "") == "hood"
 		style = 3 if look.get("hat", "") == "cap" else 0
@@ -689,9 +691,20 @@ func rand_jacket() -> Color:
 
 
 func add_backpack(col: Color) -> void:
+	"""a rounded pack (21.11.2026, Grossvater K2 «weniger klotzig»): a soft body, a lid, a front pocket and two shoulder straps
+	- the same place and size as the box before (training pictures, thermal picture)"""
 	var bp: Color = col.darkened(0.5).lerp(Color(0.2, 0.3, 0.2), 0.5)
-	_part(torso, _box(0.3, 0.4, 0.15), Vector3(0, 0.3, 0.19), bp, main.ambient + 3.0)
-	_part(torso, _box(0.26, 0.12, 0.05), Vector3(0, 0.18, 0.28), bp.darkened(0.2), main.ambient + 3.0)
+	var t: float = main.ambient + 3.0
+	if Quality.lite():
+		_part(torso, _box(0.3, 0.4, 0.15), Vector3(0, 0.3, 0.19), bp, t)
+		_part(torso, _box(0.26, 0.12, 0.05), Vector3(0, 0.18, 0.28), bp.darkened(0.2), t)
+		return
+	_part(torso, _caps(0.15, 0.42), Vector3(0, 0.3, 0.19), bp, t, Vector3.ZERO, Vector3(1.0, 1.0, 0.55))      # the body
+	_part(torso, _sph(0.14, 0.12), Vector3(0, 0.5, 0.2), bp.darkened(0.15), t, Vector3.ZERO, Vector3(1.05, 1.0, 0.7))   # the lid
+	_part(torso, _caps(0.1, 0.2), Vector3(0, 0.2, 0.275), bp.darkened(0.25), t, Vector3(0, 0, PI / 2), Vector3(1.0, 1.0, 0.45))   # front pocket
+	for sx in [-0.1, 0.1]:                                                  # the straps over the shoulders
+		_part(torso, _box(0.035, 0.38, 0.02), Vector3(sx, 0.3, -0.13), bp.darkened(0.35), t, Vector3(0.1, 0, 0))
+		_part(torso, _box(0.035, 0.02, 0.3), Vector3(sx, 0.5, 0.03), bp.darkened(0.35), t)
 
 
 func add_hood(col: Color) -> void:

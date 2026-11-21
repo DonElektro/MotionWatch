@@ -597,6 +597,10 @@ func control(d: Dictionary) -> Dictionary:
 				"unlock":
 					regal.unlock(str(d.get("id", "")))
 					return {"ok": true}
+				"kapitel2":                                # «▶ Kapitel 2 spielen (neu)» (Grossvater-Neubau), wie der Knopf auf der Karte
+					regal._close_play()
+					main.abenteuer.neu_starten()
+					return {"ok": true}
 				"trailer":                                 # «Trailer ansehen» (trailer.gd), wie der Knopf auf der Karte
 					regal.trailer(str(d.get("id", "")))
 					return {"ok": true}

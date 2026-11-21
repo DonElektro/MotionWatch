@@ -534,6 +534,7 @@ func _about(b: VBoxContainer) -> void:
 		g.add_child(vl)
 		_about_vals[k] = vl
 	_about_paint()
+	_about_quellen(vv)
 	var bt := HBoxContainer.new()
 	bt.add_theme_constant_override("separation", 8)
 	bt.alignment = BoxContainer.ALIGNMENT_END
@@ -556,6 +557,27 @@ func _about(b: VBoxContainer) -> void:
 	cl.text = "Schliessen"
 	cl.pressed.connect(close_window)
 	bt.add_child(cl)
+
+
+func _about_quellen(vv: VBoxContainer) -> void:
+	"""music and voices of the adventures (Grossvater K2, 21.11.2026): the attribution CC BY asks for - from
+	klang/kit_musik_quellen.json (written with the music, werkzeuge/musik/) and klang/stimmen/stimmen.json"""
+	var zeilen := PackedStringArray()
+	var mq := "res://klang/kit_musik_quellen.json"
+	if FileAccess.file_exists(mq):
+		var j = JSON.parse_string(FileAccess.get_file_as_string(mq))
+		if j is Dictionary:
+			for e in j.get("stuecke", []):
+				zeilen.append("«%s» – %s · %s · %s" % [str(e.get("titel", "")), str(e.get("autor", "")), str(e.get("lizenz", "")), str(e.get("quelle", ""))])
+	if FileAccess.file_exists("res://klang/stimmen/stimmen.json"):
+		zeilen.append(T.t("Stimmen: Piper (MIT) mit der Stimme «Thorsten» (Thorsten-Voice, CC0)"))
+	if zeilen.is_empty():
+		return
+	vv.add_child(UI.heading(T.t("Musik und Stimmen")))
+	var l := UI.small("\n".join(zeilen), UI.TXT)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.custom_minimum_size = Vector2(520, 0)
+	vv.add_child(l)
 
 
 func about_status() -> Dictionary:

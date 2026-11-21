@@ -66,6 +66,14 @@ func check(current: String, url := "") -> void:
 	if OS.has_feature("web"):
 		result = "Im Browser: die Seite bringt die neue Version"   # Browser-Demo: kein Herunterladen, kein Neustart
 		return
+	var tk = load("res://scripts/testkanal.gd")
+	if not tk.aktiv().is_empty():                       # Testkanal (21.11.2026): eine Testversion läuft - kein Angebot «Update auf …»
+		result = tk.hinweis()
+		if manual and not quiet:
+			_build_ui()
+			title.text = V.label(current)
+			await _note(result)
+		return
 	_remove_old()
 	if not quiet:
 		_build_ui()

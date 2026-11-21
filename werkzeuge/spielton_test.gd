@@ -55,7 +55,7 @@ func _start() -> void:
 		var o := AudioStreamOggVorbis.load_from_buffer(FileAccess.get_file_as_bytes(p))
 		if o == null or o.get_length() < 0.05:
 			_f("Datei leer: " + p)
-		if bool(info[nm].get("loop", false)) != (nm.begins_with("musik_") or nm in ["wirbel", "puls", "feuer"]):
+		if bool(info[nm].get("loop", false)) != (nm.begins_with("musik_") or nm.begins_with("kit_") or nm in ["wirbel", "puls", "feuer"]):
 			_f("Schleife falsch: " + nm)
 	# 3. the world
 	m = load("res://main.tscn").instantiate()

@@ -292,6 +292,8 @@ func _process(dt: float) -> void:
 	var mz = main.maggie.get_node_or_null("maggie_zwei") if main.get("maggie") != null else null
 	if mz != null:
 		own.append_array(mz.pad_devs())                     # «Maggie» für zwei Spieler (maggie_zwei.gd)
+	if main.get("kit") != null and bool(main.kit.running):
+		own.append_array(devices())                         # Abenteuer-Kit: the controller plays the own figure (kit_abenteuer.gd)
 	var free := []
 	for d in devices():
 		if not d in own:

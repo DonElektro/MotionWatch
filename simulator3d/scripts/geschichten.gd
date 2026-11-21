@@ -395,8 +395,15 @@ func card(s: Dictionary, w: float) -> Control:
 			var bo := _btn(br2, T.t("Ohne Passwort starten"), func(): ohne_passwort(id))
 			bo.tooltip_text = T.t("Nur für den Besitzer (nicht im Kinder-Modus). Das Passwort bleibt, die Warnung kommt trotzdem.")
 		return p
+	if id == "grossvater" and main.abenteuer != null and main.abenteuer.neu_modus_an():
+		var brn := HBoxContainer.new()                     # Neubau (21.11.2026): chapter 2 in the new mode - the default
+		tv.add_child(brn)
+		var bn := _btn(brn, T.t("▶ Kapitel 2 spielen (neu)"), func(): _close_play(); main.abenteuer.neu_starten(), true)
+		bn.tooltip_text = T.t("Eigene Figur, Kamera hinter dir, Maggie dabei. Der alte Ablauf: «Weiterspielen» / «Neu beginnen».")
 	var can := bool(s["started"]) and (not bool(s["done"]) or id == "grossvater")
-	var bw := _btn(br, T.t("Weiterspielen"), func(): weiter(id), can)
+	var bw := _btn(br, T.t("Weiterspielen"), func(): weiter(id), can and not (id == "grossvater" and main.abenteuer != null and main.abenteuer.neu_modus_an()))
+	if id == "grossvater" and main.abenteuer != null and main.abenteuer.neu_modus_an():
+		bw.tooltip_text = T.t("Der alte Ablauf (Rucksack, Tour auf der Karte)")
 	bw.disabled = not can
 	_btn(br, T.t("Neu beginnen"), func(): neu(id), not can)
 	if id in Trailer.IDS:                                  # Trailer (trailer.gd): eigene Zeile, passt in jeder Sprache

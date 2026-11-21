@@ -384,6 +384,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return preload("res://scripts/maggie_vorfuehrung.gd").control(main, d)
 	elif a == "trailer":                               # Trailer der Geschichten (trailer.gd): {do: start (id, sprache, untertitel, ab) | stop | info}
 		return preload("res://scripts/trailer.gd").control(main, d)
+	elif a == "kit":                                   # Abenteuer-Kit (Grossvater neu): {do: info | start | stop | szene | eingabe | setzen | skip | pause | touch | kamera | maggie …}
+		return preload("res://scripts/kit_abenteuer.gd").control(main, d)
 	elif a == "maggie":                                # «Maggie und der Bergkristall» (maggie_story.gd): {do: info | open | start | region …}
 		return main.maggie.control(d) if main.maggie != null else {"ok": false, "error": "no maggie"}
 	elif a == "horror":                                # Bergtal · Horror-Modus: {do: info | open | unlock | start | skip | pause | stop …} (bergtal_horror.gd)
