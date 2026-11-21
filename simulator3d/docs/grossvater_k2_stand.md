@@ -61,6 +61,8 @@ Zweig `sim-grossvater-k2` (von origin/main 9f14de1), Worktree /tmp/claude-0/wt_g
   → Vorabversion https://github.com/DonElektro/MotionWatch/releases/tag/sim-test («Testversion (nicht signiert)»,
   prerelease, nie latest; Tag per GITHUB_TOKEN gesetzt / verschoben). Fasst versions.json / sim-X.Y.Z nie an.
 - Test: werkzeuge/testkanal_test.gd (lokaler Server statt GitHub: Manifest, falsche Prüfsumme / Grösse, Sicherung, Zurück).
+- Erste Runde: Lauf 44887699188, Commit a946844, Windows 54771814 B (sha256 1603b52b…), Linux 48822165 B; dieselbe
+  Windows-ZIP liegt als scratchpad/grossvater/MoveEyeSim_Grossvater_Test.zip.
 
 ## Als Nächstes
 1. Separat (eigener Commit, NICHT mit dem Kapitel mischen): Bergtal `_carve_stream` vertieft bei jedem Schritt –
