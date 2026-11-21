@@ -1,0 +1,4 @@
+{
+ "autostart": true,
+ "_hinweis": "Nur im Probe-Paket für den Besitzer (Grossvater-Neubau, Kapitel 2): der Simulator startet direkt im neuen Spielmodus. Vor dem Zusammenführen LÖSCHEN (kit_abenteuer.gd autostart_pruefen)."
+}
