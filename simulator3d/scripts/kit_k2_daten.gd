@@ -88,8 +88,8 @@ const DINGE := [
 	{"id": "foto", "art": "fund", "s": 58.6, "q": -5.6, "top": 0.0},
 	{"id": "tagebuch", "art": "fund", "s": 55.2, "q": -6.1, "top": 0.0},
 	# scenes 11, 12: at the camp on the rim (valley coordinates «tal»)
-	{"id": "ir_fels", "art": "findling", "tal": [-26.5, -3.0], "r": 0.9},
-	{"id": "ir_zeichen", "art": "fund", "tal": [-26.5, -3.75], "top": 0.75, "nur_ir": true},
+	{"id": "ir_fels", "art": "findling", "tal": [-16.5, -3.5], "r": 0.9},
+	{"id": "ir_zeichen", "art": "fund", "tal": [-17.05, -4.05], "top": 0.75, "nur_ir": true},
 	{"id": "lia_zelt", "art": "zelt", "tal": [-10.0, -16.5], "dreh": 40.0},
 	{"id": "notizbuch", "art": "buch", "tal": [-10.2, -14.8]},
 ]
@@ -109,7 +109,7 @@ const AKTIONEN := [
 	{"id": "foto_nehmen", "art": "fund", "s": 58.6, "q": -5.6, "r": 1.2, "ding": "foto"},
 	{"id": "tagebuch_nehmen", "art": "fund", "s": 55.2, "q": -6.1, "r": 1.2, "ding": "tagebuch"},
 	{"id": "ir", "art": "ir", "tal": [-22.0, -9.0], "r": 3.0},
-	{"id": "ir_zeichen_nehmen", "art": "fund", "tal": [-26.5, -3.9], "r": 1.4, "ding": "ir_zeichen"},
+	{"id": "ir_zeichen_nehmen", "art": "fund", "tal": [-17.5, -4.5], "r": 1.5, "ding": "ir_zeichen"},
 ]
 
 # the soft guide: the way through the gorge (s, q) - the figure is pulled back gently when it leaves the corridor
@@ -308,9 +308,9 @@ const SZENEN := [
 		{"ziel": "Schalte bei MoveEye das IR-Licht ein (Aktion am Lager)", "bis": "aktion:ir"},
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
-			{"t": 0.0, "k": "shot", "art": "fix", "tal": [-17.6, -11.8], "h": 2.3, "blick_tal": [-25.0, -4.4, 0.4], "d": 5.0, "fov": 44.0, "ziel_tal": [-26.5, -3.0, 0.0], "groesse": 1.5},
-			{"t": 0.0, "k": "tier", "art": "fox", "tal": [-30.5, -0.5], "nach_tal": [-22.5, -5.5]},
-			{"t": 0.2, "k": "maggie_warnen_tal", "x": -27.0, "z": -2.0},
+			{"t": 0.0, "k": "shot", "art": "fix", "tal": [-25.5, -12.0], "h": 2.6, "blick_tal": [-17.0, -4.0, 0.5], "d": 5.0, "fov": 40.0, "ziel_tal": [-16.5, -3.5, 0.0], "groesse": 1.5},
+			{"t": 0.0, "k": "tier", "art": "fox", "tal": [-13.5, 1.0], "nach_tal": [-19.5, -5.0]},
+			{"t": 0.2, "k": "maggie_warnen_tal", "x": -15.0, "z": -1.0},
 			{"t": 0.4, "k": "sag", "wer": "blinki", "text": "Bewegung! Ein Fuchs. Harmlos. Maggie sieht das anders."},
 			{"t": 3.0, "k": "sag", "wer": "figur", "text": "Da – am Felsen leuchtet etwas im IR-Licht!"}]},
 		{"ziel": "Untersuche das Zeichen am Felsen", "bis": "fund:ir_zeichen"},

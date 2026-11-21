@@ -177,6 +177,9 @@ func start(o := {}) -> void:
 	main.bt_spot = "frei"
 	main.bt_free = [daten.LAGER.x, daten.LAGER.y, 0.0]
 	main.bt_bed = "bivy"
+	_saved["bt_wall"] = main.get("bt_wall")
+	if main.get("bt_wall") != null:
+		main.bt_wall = false                                  # no wind wall at the camp: it filled the IR shots (polish 21.11.)
 	main.set_scene("bergtal")
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -344,6 +347,8 @@ func stop() -> void:
 	main.bt_spot = str(_saved.get("bt_spot", "huette"))
 	main.bt_free = _saved.get("bt_free", [])
 	main.bt_bed = str(_saved.get("bt_bed", "tent"))
+	if _saved.get("bt_wall", null) != null:
+		main.bt_wall = _saved["bt_wall"]
 	main.set_hour(float(_saved.get("hour", 12.0)))
 	main._set_speed(float(_saved.get("speed", 1.0)))
 	var sc := str(_saved.get("scene", main.scene))
