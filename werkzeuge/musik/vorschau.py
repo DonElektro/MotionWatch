@@ -113,7 +113,7 @@ def main():
     with open(os.path.join(out, "LIESMICH.md"), "w", encoding="utf-8") as f:
         f.write("\n".join(zeilen) + "\n")
     print("Vorschauen: %d von %d" % (ok_n, len(K)))
-    return 0 if ok_n >= 6 else 1
+    return 0 if ok_n >= min(6, len(K)) else 1
 
 
 if __name__ == "__main__":
