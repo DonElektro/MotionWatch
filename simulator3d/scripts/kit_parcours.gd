@@ -347,11 +347,11 @@ func _ding(d: Dictionary) -> void:
 			gefahren.append({"id": id, "art": str(d["art"]), "c": c, "hs": ls, "hq": lq})
 			if str(d["art"]) == "wasser":
 				var n6 := node(holder, Vector3(c.x, _H(c.x, c.y) + 0.06, c.y), -rot)
-				var wm := StandardMaterial3D.new()
-				wm.albedo_color = Color(WASSER, 0.9)
-				wm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-				wm.roughness = 0.08
-				wm.metallic = 0.2
+				var wm := ShaderMaterial.new()
+				var psh := Shader.new()
+				psh.code = POOL_SHADER
+				wm.shader = psh
+				wm.set_shader_parameter("ring", _ring_uv(sv, qv, ls, lq))
 				var pm := PlaneMesh.new()
 				pm.size = Vector2(lq * 2.0, ls * 2.0)
 				var mi := MeshInstance3D.new()
@@ -456,31 +456,78 @@ func _wand(e: Dictionary, c: Vector2, lq: float, ls: float, top: float) -> void:
 	e["top"] = top
 
 
+# ---- water (Besitzer 21.11.: «besserer Shader»): the fall streams down faster towards the foot, with layered streaks, a
+# white foam band at the bottom and a translucent tint; the stream flows DOWN the gorge (towards smaller s); the pools are
+# lit with moving ripples, a fresnel sheen and rings where the fall hits them. All in one pass, no screen texture (web Lite).
 const FALL_SHADER := """
 shader_type spatial;
 render_mode unshaded, cull_disabled, depth_draw_never, shadows_disabled;
 uniform float speed = 2.2;
+float h1(float x) { return fract(sin(x * 127.1) * 43758.5453); }
 void fragment() {
-	float st = fract(UV.y * 3.0 - TIME * speed + sin(UV.x * 23.0) * 0.15);
+	float y = pow(UV.y, 1.35);                                   // faster towards the foot (falling)
+	float wob = sin(UV.x * 23.0 + TIME * 0.7) * 0.12 + sin(UV.x * 57.0) * 0.05;
+	float st = fract(y * 3.0 - TIME * speed + wob);
 	float n = smoothstep(0.0, 0.5, st) * (1.0 - smoothstep(0.55, 1.0, st));
-	float edge = smoothstep(0.0, 0.18, UV.x) * smoothstep(1.0, 0.82, UV.x);
-	float st2 = fract(UV.y * 7.0 - TIME * speed * 1.7 + sin(UV.x * 41.0) * 0.3);
+	float st2 = fract(y * 7.0 - TIME * speed * 1.7 + sin(UV.x * 41.0) * 0.3);
 	float n2 = smoothstep(0.0, 0.3, st2) * (1.0 - smoothstep(0.35, 1.0, st2));
-	ALBEDO = mix(vec3(0.55, 0.7, 0.76), vec3(1.0), clamp(n * 0.7 + n2 * 0.5, 0.0, 1.0));
-	ALPHA = (0.5 + 0.4 * n + 0.2 * n2) * edge;
+	float col = floor(UV.x * 18.0);                              // vertical strands of different brightness
+	float strand = 0.65 + 0.35 * h1(col);
+	float edge = smoothstep(0.0, 0.16 + 0.05 * sin(UV.y * 9.0 + TIME), UV.x) * smoothstep(1.0, 0.84 - 0.05 * sin(UV.y * 7.0 - TIME), UV.x);
+	float foam = smoothstep(0.78, 1.0, UV.y);                     // the white foot
+	float top = smoothstep(0.0, 0.06, UV.y);
+	vec3 deep = vec3(0.32, 0.5, 0.55);
+	vec3 c = mix(deep, vec3(0.92, 0.97, 1.0), clamp((n * 0.6 + n2 * 0.45) * strand + foam * 0.8, 0.0, 1.0));
+	ALBEDO = c;
+	ALPHA = clamp((0.42 + 0.35 * n * strand + 0.2 * n2 + foam * 0.4) * edge * top, 0.0, 0.95);
 }
 """
 
 
 const BACH_SHADER := """
 shader_type spatial;
-render_mode unshaded, cull_disabled, depth_draw_never, shadows_disabled;
+render_mode blend_mix, cull_disabled, depth_draw_never, shadows_disabled, specular_schlick_ggx;
 void fragment() {
-	float st = fract(UV.y * 0.6 - TIME * 0.9 + sin(UV.x * 9.0 + UV.y * 2.0) * 0.12);
+	// UV.y = s along the gorge (it grows upstream): the water moves towards smaller s
+	float t = TIME * 0.9;
+	float st = fract(UV.y * 0.6 + t + sin(UV.x * 9.0 + UV.y * 2.0) * 0.12);
 	float n = smoothstep(0.0, 0.4, st) * (1.0 - smoothstep(0.45, 1.0, st));
+	float st2 = fract(UV.y * 1.7 + t * 1.6 + sin(UV.x * 17.0 - UV.y * 3.0) * 0.2);
+	float n2 = smoothstep(0.0, 0.25, st2) * (1.0 - smoothstep(0.3, 1.0, st2));
 	float edge = smoothstep(0.0, 0.25, UV.x) * smoothstep(1.0, 0.75, UV.x);
-	ALBEDO = mix(vec3(0.16, 0.27, 0.29), vec3(0.62, 0.72, 0.74), n * 0.45);
-	ALPHA = (0.62 + 0.2 * n) * edge;
+	float bank = 1.0 - smoothstep(0.08, 0.3, min(UV.x, 1.0 - UV.x));   // foam along the banks
+	ALBEDO = mix(vec3(0.11, 0.21, 0.23), vec3(0.55, 0.66, 0.68), clamp(n * 0.3 + n2 * 0.2 + bank * 0.25, 0.0, 1.0));
+	ROUGHNESS = 0.12;
+	SPECULAR = 0.6;
+	NORMAL_MAP = normalize(vec3(0.5 + 0.18 * sin(UV.y * 9.0 + t * 6.0 + UV.x * 5.0), 0.5 + 0.18 * cos(UV.x * 13.0 + t * 4.0), 1.0));
+	ALPHA = (0.66 + 0.18 * n) * edge;
+}
+"""
+
+
+const POOL_SHADER := """
+shader_type spatial;
+render_mode blend_mix, cull_disabled, depth_draw_never, shadows_disabled, specular_schlick_ggx;
+uniform vec2 ring = vec2(0.5, 0.05);                            // where the fall hits (UV), -1 = none
+uniform vec3 tief = vec3(0.07, 0.2, 0.23);
+uniform vec3 flach = vec3(0.2, 0.36, 0.36);
+void fragment() {
+	vec2 p = UV * vec2(6.0, 6.0);
+	float t = TIME;
+	float w = sin(p.x * 3.1 + t * 1.3) * 0.5 + sin(p.y * 2.3 - t * 1.1 + p.x * 0.7) * 0.5 + sin((p.x + p.y) * 4.7 + t * 2.1) * 0.25;
+	float r = 0.0;
+	if (ring.x >= 0.0) {
+		float d = distance(UV, ring);
+		r = sin(d * 60.0 - t * 4.0) * (1.0 - smoothstep(0.0, 0.45, d)) * 0.8;
+	}
+	float edge = min(min(UV.x, 1.0 - UV.x), min(UV.y, 1.0 - UV.y));
+	float rand = 1.0 - smoothstep(0.0, 0.12, edge);              // lighter and a little foam at the rim
+	float fres = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 3.0);
+	ALBEDO = mix(mix(tief, flach, rand * 0.7), vec3(0.75, 0.82, 0.85), clamp(fres * 0.45 + max(r, 0.0) * 0.25, 0.0, 1.0));
+	NORMAL_MAP = normalize(vec3(0.5 + 0.12 * w + 0.2 * r, 0.5 + 0.12 * cos(w * 2.0 + t), 1.0));
+	ROUGHNESS = 0.06;
+	SPECULAR = 0.7;
+	ALPHA = 0.86 + 0.1 * fres;
 }
 """
 
@@ -526,6 +573,7 @@ func _fall(e: Dictionary, c: Vector2, h: float, w: float) -> void:
 	var n := node(holder, Vector3(c.x, g + (h + 0.6) * 0.5 - 0.3, c.y), -rot)
 	n.add_child(mi)
 	var fuss := Vector3(0, -(h + 0.6) * 0.5 + 0.3, 0.35)
+	_nebel(n, fuss, w, h)
 	if lite:                                               # the owner saw flat white squares: no spray in Lite (foam ring stays)
 		_schaum(n, fuss, w)
 		e["node"] = n
@@ -561,6 +609,43 @@ func _fall(e: Dictionary, c: Vector2, h: float, w: float) -> void:
 	n.add_child(spray)
 	_schaum(n, fuss, w)
 	e["node"] = n
+
+
+func _ring_uv(sv: float, qv: float, ls: float, lq: float) -> Vector2:
+	"""the UV of the plane where a waterfall of the data hits this pool (or -1)"""
+	for o in daten.DINGE:
+		if str(o["art"]) != "fall":
+			continue
+		var fs := float(o["s"])
+		var fq := float(o["q"])
+		if absf(fs - sv) < ls + 1.5 and absf(fq - qv) < lq:
+			# PlaneMesh: x across (lq), z along (ls); UV.x = across, UV.y = along (towards -s at UV 1)
+			return Vector2(clampf(0.5 + (fq - qv) / (2.0 * lq), 0.0, 1.0), clampf(0.5 - (fs - sv) / (2.0 * ls), 0.02, 0.98))
+	return Vector2(-1.0, -1.0)
+
+
+func _nebel(n: Node3D, fuss: Vector3, w: float, h: float) -> void:
+	"""a soft layer of mist in front of the foot of the fall (two crossed soft quads - cheap, also in Lite)"""
+	var mm := StandardMaterial3D.new()
+	mm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mm.albedo_texture = _weich_tex()
+	mm.albedo_color = Color(0.95, 0.97, 1.0, 0.35)
+	mm.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mm.disable_receive_shadows = true
+	for k in range(2):
+		var q := MeshInstance3D.new()
+		var qm := QuadMesh.new()
+		qm.size = Vector2(w * 2.6, minf(2.2, h * 0.5 + 0.8))
+		q.mesh = qm
+		q.material_override = mm
+		q.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		q.position = fuss + Vector3(0, qm.size.y * 0.35, 0.45)
+		q.rotation.y = 0.0 if k == 0 else PI * 0.5
+		n.add_child(q)
+		var tw := q.create_tween().set_loops()
+		tw.tween_property(q, "scale", Vector3(1.12, 1.08, 1.0), 2.6 + k).set_trans(Tween.TRANS_SINE)
+		tw.tween_property(q, "scale", Vector3(0.94, 0.95, 1.0), 2.6 + k).set_trans(Tween.TRANS_SINE)
 
 
 static var _weich: ImageTexture = null

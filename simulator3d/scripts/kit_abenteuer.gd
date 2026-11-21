@@ -182,6 +182,8 @@ func start(o := {}) -> void:
 	main.bt_free = [daten.LAGER.x, daten.LAGER.y, 0.0]
 	main.bt_bed = "bivy"
 	_saved["bt_wall"] = main.get("bt_wall")
+	if main.env != null:                                      # light and colour (21.11.): own tone values, back at stop()
+		_saved["tone"] = [main.env.tonemap_mode, main.env.tonemap_exposure, main.env.tonemap_white, main.env.glow_intensity]
 	if main.get("bt_wall") != null:
 		main.bt_wall = false                                  # no wind wall at the camp: it filled the IR shots (polish 21.11.)
 	main.set_scene("bergtal")
@@ -353,6 +355,12 @@ func stop() -> void:
 	main.bt_bed = str(_saved.get("bt_bed", "tent"))
 	if _saved.get("bt_wall", null) != null:
 		main.bt_wall = _saved["bt_wall"]
+	if _saved.has("tone") and main.env != null:
+		var tn: Array = _saved["tone"]
+		main.env.tonemap_mode = int(tn[0])
+		main.env.tonemap_exposure = float(tn[1])
+		main.env.tonemap_white = float(tn[2])
+		main.env.glow_intensity = float(tn[3])
 	main.set_hour(float(_saved.get("hour", 12.0)))
 	main._set_speed(float(_saved.get("speed", 1.0)))
 	var sc := str(_saved.get("scene", main.scene))
@@ -1350,10 +1358,18 @@ func _licht() -> void:
 	var tag := clampf(float(main.sun.light_energy) / 1.4, 0.0, 1.0)
 	if tag < 0.05:
 		return                                               # the night stays as main makes it
-	main.sun.light_color = Color(1.0, 0.86, 0.68)
-	main.env.ambient_light_color = Color(0.86, 0.74, 0.62)
-	main.env.fog_light_color = Color(0.93, 0.8, 0.62) * (0.15 + 0.85 * tag)
-	main.env.fog_density = maxf(float(main.env.fog_density), 0.0045)
+	# balanced (owner 21.11.: «nicht ausgewaschen, nicht hart»): a warm, softer sun, a cooler sky fill for depth in the
+	# shade, filmic tone mapping with a little headroom (no white-clipped rock on bright laptop screens), light haze
+	main.sun.light_color = Color(1.0, 0.9, 0.78)
+	main.sun.light_energy = minf(float(main.sun.light_energy), 1.15)
+	main.env.ambient_light_color = Color(0.62, 0.66, 0.74)
+	main.env.ambient_light_energy = clampf(float(main.env.ambient_light_energy), 0.55, 0.75)
+	main.env.fog_light_color = Color(0.86, 0.8, 0.7) * (0.15 + 0.85 * tag)
+	main.env.fog_density = maxf(float(main.env.fog_density), 0.0035)
+	main.env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	main.env.tonemap_exposure = 0.95
+	main.env.tonemap_white = 5.0
+	main.env.glow_intensity = 0.35
 
 
 var ir_an := false

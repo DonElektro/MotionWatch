@@ -167,8 +167,8 @@ static func feder1(x: float, v: float, ziel: float, w: float, dt: float) -> Arra
 
 func _arm_frei(tp: Vector3, want: Vector3) -> float:
 	"""how much of the arm from tp to want is free of ground / rock (1 = all)"""
-	var n := 6 if Quality.lite() else 12
 	var L := tp.distance_to(want)
+	var n := clampi(int(ceil(L / (0.3 if Quality.lite() else 0.2))), 6, 30)   # thin walls (0.6 m) are not jumped over
 	for i in range(1, n + 1):
 		var f := float(i) / float(n)
 		if f * L < 0.7:

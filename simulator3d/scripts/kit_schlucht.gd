@@ -57,18 +57,32 @@ void fragment() {
 	float steil = 1.0 - smoothstep(0.55, 0.85, up);
 	vec2 puv = abs(wn.x) > abs(wn.z) ? wp.zy : wp.xy;           // planar on the wall (world space: no stretching)
 	float det = vn(puv * vec2(0.9, 2.6)) * 0.55 + vn(puv * vec2(3.1, 6.0)) * 0.3 + vn(puv * 11.0) * 0.15;
-	float yy = wp.y * 0.62 + vn(wp.xz * 0.12) * 1.8;
+	// 21.11. «weniger künstlich»: the strata bend and change thickness, faces of other rock break them up, cracks, moss
+	// in the seams, darker in recesses (the vertex alpha of the gorge = AO from its shape)
+	float warp = vn(wp.xz * 0.12) * 1.8 + vn(puv * 0.31) * 1.3 + vn(puv * vec2(0.07, 0.02)) * 2.5;
+	float dick = 0.5 + 0.35 * vn(puv * vec2(0.05, 0.0) + 3.0);    // thicker and thinner layers along the gorge
+	float yy = wp.y * dick + warp;
 	float k = floor(yy);
 	float f = fract(yy);
 	vec3 rock = mix(band(k), band(k + 1.0), smoothstep(0.85, 1.0, f) * 0.5);
+	float flaeche = smoothstep(0.52, 0.72, vn(puv * 0.09 + 11.0));  // big faces of grey limestone over the bands
+	rock = mix(rock, vec3(0.6, 0.58, 0.55) * (0.85 + 0.3 * vn(puv * 0.6)), flaeche * 0.75);
 	rock *= 0.72 + 0.48 * det;
-	rock *= 1.0 - 0.38 * (1.0 - smoothstep(0.0, 0.12, f));      // the seam under each ledge
+	float seam = 1.0 - smoothstep(0.0, 0.12, f);
+	rock *= 1.0 - 0.38 * seam * (1.0 - flaeche * 0.6);          // the seam under each ledge
+	float riss = 1.0 - smoothstep(0.0, 0.022, abs(vn(vec2(puv.x * 1.3, puv.y * 0.22)) - 0.5));
+	riss *= smoothstep(0.6, 0.8, vn(puv * vec2(0.25, 0.12) + 7.0));   // only here and there, and broken along their length
+	rock *= 1.0 - 0.35 * riss * steil;                          // cracks
 	vec3 moss = vec3(0.32, 0.42, 0.2) * (0.8 + 0.4 * vn(wp.xz * 1.7));
+	float moos_naht = seam * smoothstep(0.5, 0.75, vn(puv * 0.7 + 5.0)) + riss * smoothstep(0.55, 0.8, vn(puv * 0.5));
+	rock = mix(rock, moss * 0.85, clamp(moos_naht, 0.0, 1.0) * 0.55 * steil);
 	vec3 base = COLOR.rgb;
-	if (moos_oben > 0.5) {
+	if (moos_oben > 0.5) {                                      // rock pieces: mostly grey limestone, the bands only faint
+		rock = mix(rock, vec3(0.58, 0.56, 0.53) * (0.75 + 0.45 * det), 0.6);
 		base = mix(rock, moss, smoothstep(0.75, 0.95, up) * smoothstep(0.35, 0.65, vn(wp.xz * 0.9)));
 	}
 	vec3 col = mix(base, rock, steil);
+	col *= mix(0.55, 1.0, COLOR.a);                             // recesses darker (AO of the gorge shape; rock pieces: 1)
 	float lum = dot(col, vec3(0.3, 0.59, 0.11));
 	col = mix(vec3(lum), col, 1.3);                            // a little more colour …
 	col = clamp((col - 0.42) * 1.18 + 0.4, 0.0, 1.0);          // … and contrast (bright laptop screens: not washed out)
@@ -226,7 +240,9 @@ func bauen(holder: Node3D, m, lite: bool) -> void:
 			var hq := hs[i * nq + mini(j + 1, nq - 1)]
 			var dq := maxf(0.1, float(qs[mini(j + 1, nq - 1)]) - q)
 			var steil := maxf(absf(hn - h) / step, absf(hq - h) / dq)
-			st.set_color(_farbe(sv, q, h, tF, R, steil))
+			var fc := _farbe(sv, q, h, tF, R, steil)
+			fc.a = _ao(hs, i, j, ns, nq, h, tF, R, steil, q, sv)
+			st.set_color(fc)
 			st.set_uv(Vector2(sv * 0.25, h * 0.25))
 			st.add_vertex(Vector3(tp.x, h, tp.y))
 	for i in range(ns - 1):
@@ -262,6 +278,22 @@ func bauen(holder: Node3D, m, lite: bool) -> void:
 	_details(holder, lite)
 	ecken = ns * nq
 	bau_ms = Time.get_ticks_msec() - t0
+
+
+func _ao(hs: PackedFloat32Array, i: int, j: int, ns: int, nq: int, h: float, F: float, R: float, steil: float, q: float, sv: float) -> float:
+	"""a cheap ambient occlusion from the shape: lower than the neighbours = a recess; the foot of the walls darker"""
+	var sum := 0.0
+	var n := 0
+	for o in [[-2, 0], [2, 0], [0, -2], [0, 2], [-3, 0], [3, 0]]:
+		var i2: int = clampi(i + int(o[0]), 0, ns - 1)
+		var j2: int = clampi(j + int(o[1]), 0, nq - 1)
+		sum += hs[i2 * nq + j2]
+		n += 1
+	var conc := clampf((sum / float(n) - h) / 1.4, 0.0, 1.0)
+	var rel := clampf((h - F) / maxf(R - F, 1.0), 0.0, 1.0)
+	var w := _tab(_breite_tab, sv)
+	var fuss := (1.0 - smoothstep(0.0, 0.22, rel)) * smoothstep(w - 2.0, w, absf(q))   # floor and wall right at the foot
+	return clampf(1.0 - 0.45 * conc - 0.3 * fuss, 0.0, 1.0)
 
 
 func _mm(holder: Node3D, mesh: Mesh, mat: Material, xs: Array) -> void:
@@ -360,6 +392,62 @@ func _details(holder: Node3D, lite: bool) -> void:
 		var hb := rng.randf_range(5.0, 8.5)
 		stamm.append(Transform3D(Basis.from_scale(Vector3(1, hb, 1)), Vector3(t4.x, hy4 + hb * 0.5, t4.y)))
 		krone.append(Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(1, hb * 0.75, 1)), Vector3(t4.x, hy4 + hb * 0.62, t4.y)))
+	# 21.11.: scree at the foot of the walls, big half-buried chunks, overhanging slabs high up
+	var geroell: Array = []
+	var brocken: Array = []
+	var dach: Array = []
+	for i5 in range(60 if lite else 150):
+		var sv5 := rng.randf_range(s0 + 7.0, s1 - 5.0)
+		var sd5 := -1.0 if rng.randf() < 0.5 else 1.0
+		var w5 := _tab(_breite_tab, sv5)
+		var qv5 := sd5 * (w5 + rng.randf_range(-1.4, 1.2) * rng.randf())       # dense at the foot, a fan into the floor
+		if _kanal_bei(sv5, qv5) or absf(qv5) < 3.2:
+			continue
+		var t5 := tal(sv5, qv5)
+		var sc5 := rng.randf_range(0.08, 0.32)
+		geroell.append(Transform3D(Basis(Vector3(rng.randf(), 1, rng.randf()).normalized(), rng.randf() * TAU).scaled(Vector3(sc5 * 1.3, sc5 * 0.7, sc5)),
+				Vector3(t5.x, boden_sq(sv5, qv5) + sc5 * 0.15, t5.y)))
+	for i6 in range(10 if lite else 22):
+		var sv6 := rng.randf_range(s0 + 9.0, s1 - 6.0)
+		var sd6 := -1.0 if rng.randf() < 0.5 else 1.0
+		var qv6 := sd6 * (_tab(_breite_tab, sv6) + rng.randf_range(0.2, 1.2))
+		if _kanal_bei(sv6, qv6):
+			continue
+		var t6 := tal(sv6, qv6)
+		var sc6 := rng.randf_range(1.0, 2.2)
+		brocken.append(Transform3D(Basis(Vector3.UP, rng.randf() * TAU).rotated(Vector3.RIGHT, rng.randf_range(-0.3, 0.3)).scaled(Vector3(sc6, sc6 * 0.75, sc6 * 1.2)),
+				Vector3(t6.x, boden_sq(sv6, qv6) + sc6 * 0.05, t6.y)))
+	for i7 in range(8 if lite else 16):
+		var sv7 := rng.randf_range(s0 + 10.0, s1 - 8.0)
+		var sd7 := -1.0 if i7 % 2 == 0 else 1.0
+		var tp7 := tal(sv7, sd7 * qmax * 0.5)
+		var F7 := _tab(_boden_tab, sv7)
+		var R7: float = Bt.H(tp7.x, tp7.y)
+		if R7 - F7 < 8.0:
+			continue
+		var f7 := rng.randf_range(0.55, 0.85)
+		var dicke7 := 2.2 + 0.3 * (R7 - F7)
+		var qv7 := sd7 * (_tab(_breite_tab, sv7) + f7 * dicke7 - 0.9)
+		var t7 := tal(sv7, qv7)
+		var yaw7 := atan2(qd.y, qd.x)
+		var b7 := Basis(Vector3.UP, -yaw7).rotated(Vector3(qd.x, 0, qd.y).normalized(), sd7 * rng.randf_range(0.05, 0.18)).scaled(
+				Vector3(rng.randf_range(1.6, 2.8), rng.randf_range(0.5, 0.9), rng.randf_range(2.5, 5.0)))
+		dach.append(Transform3D(b7, Vector3(t7.x, boden_sq(sv7, qv7) + 0.3, t7.y)))
+	var kl := SphereMesh.new()
+	kl.radius = 1.0
+	kl.height = 1.5
+	kl.radial_segments = 6
+	kl.rings = 3
+	_mm(holder, kl, fels_m, geroell)
+	var gr := SphereMesh.new()
+	gr.radius = 1.0
+	gr.height = 1.7
+	gr.radial_segments = 9 if lite else 14
+	gr.rings = 5 if lite else 8
+	_mm(holder, gr, fels_m, brocken)
+	var dk := BoxMesh.new()
+	dk.size = Vector3(1, 1, 1)
+	_mm(holder, dk, fels_material(true, Color(0.92, 0.9, 0.88)), dach)
 	var sph := SphereMesh.new()
 	sph.radius = 1.0
 	sph.height = 1.6
