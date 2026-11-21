@@ -25,6 +25,7 @@ const BUSY := "Die Karte des Grossvaters (neu)"
 
 var main
 var daten = preload("res://scripts/kit_k2_daten.gd")
+var kapitel := 2
 var running := false
 var phase := ""                      # laden | spiel | film | pause
 var uhr := 0.0                       # own clock (with slow motion)
@@ -154,6 +155,8 @@ func start(o := {}) -> void:
 		o = o.duplicate()
 		o["rolle"] = w["rolle"]
 		o["name"] = w["name"]
+	kapitel = clampi(int(o.get("kapitel", 2)), 1, 2)           # Phase 2 (21.11.2026): the chapter's data file
+	daten = load("res://scripts/kit_k%d_daten.gd" % kapitel)
 	rolle = str(o.get("rolle", "enkelin"))
 	if not rolle in daten.ROLLEN:
 		rolle = "enkelin"
@@ -202,8 +205,9 @@ func start(o := {}) -> void:
 		main.start_info = T.t("Das Bergtal fehlt – das Abenteuer braucht die Szene Bergtal.")
 		stop()
 		return
-	main.weather = "clear"
-	main.set_hour(10.5)
+	var st0: Dictionary = daten.get_script_constant_map().get("START", {})
+	main.weather = str(st0.get("wetter", "clear"))
+	main.set_hour(float(st0.get("stunde", 10.5)))
 	main._set_speed(0.0)
 	par = Par.new()
 	if not par.binden(main, daten):
@@ -426,7 +430,7 @@ func _naechster_schritt() -> void:
 		if szene_i + 1 < daten.SZENEN.size() and not bool(daten.SZENEN[szene_i + 1].get("offen", false)):
 			szene_starten(szene_i + 1)
 		else:
-			ziel_text = tx("Ende von Kapitel 2 – Fortsetzung folgt.")
+			ziel_text = tx(str(daten.get_script_constant_map().get("ENDE", "Ende von Kapitel 2 – Fortsetzung folgt.")))
 			_ziel_p = null
 			schritt = {}
 		return
@@ -459,7 +463,10 @@ func _naechster_schritt() -> void:
 	elif schritt.has("abzeichen"):
 		var w := str(schritt.get("wenn", ""))
 		var ok := true
-		if w == "trocken":
+		if w == "funde_alle":
+			for f0 in daten.FUNDE_ALLE:
+				ok = ok and funde.has(f0)
+		elif w == "trocken":
 			ok = int(figur.nass) == 0
 		elif w.begins_with("nicht:"):
 			ok = not merker.has(w.substr(6))
@@ -468,6 +475,8 @@ func _naechster_schritt() -> void:
 		if ok:
 			abzeichen_geben(str(schritt["abzeichen"]))
 		_naechster_schritt()
+	elif schritt.has("wahl"):                               # Kapitel 1: pack the backpack (3 of 6) - a card, the game waits
+		_wahl_zeigen()
 	elif schritt.has("maggie"):
 		if hund != null and str(schritt["maggie"]) == "riechen":
 			hund.riechen(par.welt(float(schritt["s"]), float(schritt["q"])))
@@ -789,6 +798,8 @@ func spaet(dt: float, real_dt: float) -> void:
 		nach_klettern = {}
 		if alt.has("d"):
 			figur._balance_start(alt["d"])
+	_ebene_tick()
+	_lampe_tick()
 	_schritt_tick()
 	_marker_tick(real_dt)
 	_licht()
@@ -1125,6 +1136,39 @@ func film_eintrag(e: Dictionary, sprung: bool) -> void:
 		"maggie_warnen_tal":
 			if hund != null and not sprung:
 				hund.warnen(par.W(par.G(float(e["x"]), float(e["z"]))))
+		"ofen":                                            # Kapitel 1: the stove burns
+			var ak: Dictionary = par.aktion("ofen")
+			if not ak.is_empty():
+				par.ofen_an(ak["p"] + (par.tal(2.6, 3.0) - par.tal(1.9, 2.4)), 0.6)
+		"ebene":
+			_ebene(str(e["id"]), bool(e.get("an", true)))
+		"setzen":
+			film_hang = false
+			figur.setzen(par.welt(float(e["s"]), float(e["q"])))
+			if hund != null:
+				hund.setzen_welt(par.welt(float(e["s"]) - 0.8, float(e["q"]) + 0.6))
+		"wetter":
+			main.weather = str(e.get("w", "clear"))
+		"maggie_lauf":
+			if hund != null and not sprung:
+				hund.zur_figur_laufen(par.welt(float(e["s"]), float(e["q"])))
+		"karte_zeigen":
+			hud.karte_bild(str(e.get("teil", "halb")))
+		"karte_weg":
+			hud.karte_bild("")
+		"tier_k1":
+			if bt != null:
+				var tp: Vector3 = par.G(par.tal(float(e["s"]), float(e["q"])).x, par.tal(float(e["s"]), float(e["q"])).y)
+				var lb: Array = e.get("blick", [float(e["s"]) + 1.0, float(e["q"])])
+				var tl: Vector2 = par.tal(float(lb[0]), float(lb[1]))
+				var tier = par.marmot(tp, par.G(tl.x, tl.y))
+				tier.name = "kit_tier"
+				personen["tier"] = tier
+		"tier_weg":
+			var tw = personen.get("tier", null)
+			if tw != null and is_instance_valid(tw):
+				tw.queue_free()
+			personen.erase("tier")
 		"ende":
 			phase = "ende"
 			ziel_text = ""
@@ -1183,6 +1227,116 @@ func aktion_fertig(id: String) -> void:
 	if par != null:
 		par.erledigt[id] = true
 	_log("aktion:" + id)
+	var ak: Dictionary = par.aktion(id) if par != null else {}
+	if not ak.is_empty():
+		_aktion_effekt(str(ak["art"]), ak)
+
+
+# ---- Kapitel 1 (Phase 2, 21.11.2026): the new actions - all here, kit_figur.gd stays as it is (its default branch calls
+# aktion_fertig); the attic as a level, the headlamp, Maggie fetches, the backpack ------------------------------------------
+var lampe_an := false
+var _lampe: SpotLight3D = null
+
+
+func _aktion_effekt(art: String, ak: Dictionary) -> void:
+	match art:
+		"lampe":
+			lampe_schalten(not lampe_an)
+		"runter":
+			_ebene(str(ak["d"].get("ebene", "")), false)
+			var n: Array = ak["d"]["nach"]
+			figur.setzen(par.welt(float(n[0]), float(n[1])))
+			figur.geh_zu("boden")
+		"maggie_such":
+			_maggie_holt(ak["d"])
+		"moveeye", "ofen":
+			pass                                           # (the step's film does the rest)
+
+
+func lampe_schalten(on: bool) -> void:
+	lampe_an = on
+	if on and _lampe == null and figur != null and figur.ok():
+		_lampe = SpotLight3D.new()
+		_lampe.spot_range = 9.0
+		_lampe.spot_angle = 26.0
+		_lampe.light_energy = 2.2
+		_lampe.light_color = Color(1.0, 0.96, 0.88)
+		_lampe.shadow_enabled = false
+		var hd: Node3D = figur.a.head if figur.a.head != null else figur.a
+		hd.add_child(_lampe)
+		_lampe.position = Vector3(0, 0.12, -0.12)
+		_lampe.rotation = Vector3(-0.25, 0, 0)
+	if _lampe != null:
+		_lampe.visible = on
+	ton("klick" if on else "klick")
+
+
+func _lampe_tick() -> void:
+	"""the finds that only the headlamp shows: visible in its cone (35°, 7 m)"""
+	if par == null or par.nur_lampe.is_empty():
+		return
+	var fp: Vector3 = figur.pos() + Vector3(0, 1.5, 0)
+	var fw: Vector3 = -(figur.a.head.global_transform.basis.z if figur.a.head != null else figur.a.global_transform.basis.z)
+	for n in par.nur_lampe:
+		if not is_instance_valid(n) or bool(n.get_meta("genommen", false)):
+			continue
+		var to: Vector3 = (n as Node3D).global_position - fp
+		var hell: bool = lampe_an and to.length() < 7.0 and fw.normalized().dot(to.normalized()) > cos(deg_to_rad(38.0))
+		if hell != (n as Node3D).visible:
+			(n as Node3D).visible = hell
+
+
+func _ebene(id: String, on: bool) -> void:
+	"""a level of the chapter (the attic): its floors on / off; Maggie comes along («Terrier können keine Leitern.» – she can)"""
+	if par == null or id == "":
+		return
+	par.ebene(id, on)
+	if hund != null and figur != null:
+		hund.setzen_welt(figur.pos() + figur.vorne().cross(Vector3.UP) * 0.7)
+	if not on and lampe_an:
+		lampe_schalten(false)
+
+
+func _ebene_tick() -> void:
+	"""up the ladder of the hut: at the top the attic counts (the floors) and the step «up» is done"""
+	if par == null or not par.ebenen_decks.has("dach"):
+		return
+	if figur.zustand == "leiter" and str(figur.akt.get("d", {}).get("ding", "")) == "dachleiter" and not bool(par.ebene_an.get("dach", false)):
+		var top: float = par.top_welt("dachleiter")
+		if figur.pos().y > top - 1.0:
+			_ebene("dach", true)
+	if bool(par.ebene_an.get("dach", false)) and figur.zustand == "boden" and not erledigt.has("dach_hoch_oben"):
+		aktion_fertig("dach_hoch_oben")
+		sag(tx("Terrier können keine Leitern. – Wuff! – Gut, dann eben doch."), "blinki")
+
+
+func _maggie_holt(d: Dictionary) -> void:
+	"""«Maggie, such!»: she runs to the wood pile, digs, and brings back the find"""
+	if hund == null:
+		fund(str(d["ding"]))
+		return
+	var z: Array = d["ziel"]
+	var ziel: Vector3 = hund.VL(par.welt(float(z[0]), float(z[1])))
+	var zu: Vector3 = hund.VL(figur.pos() + figur.vorne() * 0.8)
+	var id := str(d["ding"])
+	hund.modus = "folgen"
+	hund._aktion([{"t": "walk", "p": Vector3(ziel.x, 0, ziel.z), "spd": 2.6}, {"t": "idle", "k": "sniff", "s": 1.2},
+		{"t": "idle", "k": "dig", "s": 1.6}, {"t": "bark", "n": 1},
+		{"t": "walk", "p": Vector3(zu.x, 0, zu.z), "spd": 2.4},
+		{"t": "call", "fn": func(): fund(id)}])
+	sag(tx("Maggie, such!"), "figur")
+
+
+func _wahl_zeigen() -> void:
+	var L: Array = []
+	for r in daten.get_script_constant_map().get("RUCKSACK", []):
+		L.append([str(r[0]), tx(str(r[1]))])
+	hud.wahl(tx(str(schritt.get("titel", "Wähle"))), L, int(schritt.get("n", 3)), func(ids: Array):
+		for i in ids:
+			merke("rucksack_" + str(i))
+		preload("res://scripts/spielstand.gd").set_setting("k_rucksack", ids)
+		_log("rucksack:" + ",".join(ids))
+		_naechster_schritt())
 
 
 func fund(id: String) -> void:
@@ -1195,6 +1349,8 @@ func fund(id: String) -> void:
 	funde[id] = true
 	aktion_fertig(id)
 	par.fund_weg(id)
+	if par.dinge.has(id) and par.dinge[id]["node"] != null:
+		(par.dinge[id]["node"] as Node).set_meta("genommen", true)   # (the headlamp does not show it again)
 	figur.a.aktion("aufheben", 1.4)
 	var f: Array = daten.FUNDE.get(id, [id, ""])
 	hud.toast(T.t("Gefunden: %s") % tx(str(f[0])), 3.5)
