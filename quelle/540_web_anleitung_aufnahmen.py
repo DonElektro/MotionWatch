@@ -645,6 +645,7 @@ body.selecting .chk{display:block}
   <!--NAV-->
   <span class="badge" id="b-count">–</span>
   <span class="badge" id="b-disk">–</span>
+  <span class="badge" id="b-old" hidden role="button" tabindex="0" style="cursor:pointer"></span>
   <span class="badge red" id="b-live" hidden>● REC</span>
   <span class="hdr-ctl">
     <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
@@ -763,7 +764,9 @@ Object.assign(I18N.de, {
   "Statistics": "Statistik", "Events per weekday and hour": "Ereignisse pro Wochentag und Stunde", "Last 14 days (click a day)": "Letzte 14 Tage (Tag anklicken)",
   "Favorites": "Favoriten", "Protect selected": "Auswahl schützen", "Download ZIP": "ZIP laden", "events": "Ereignisse", "Timeline": "Zeitleiste", "Open the timeline of this day": "Zeitleiste dieses Tages öffnen",
   "Favorites are never deleted by the automatic cleanup": "Favoriten werden vom automatischen Aufräumen nie gelöscht", "Timelapse": "Zeitraffer",
-  "Photos": "Fotos", "Create video": "Video erstellen",
+  "Photos": "Fotos", "Create video": "Video erstellen", "back to {d}": "bis {d}",
+  "Oldest kept recording – when the folder is full, the oldest are deleted first (time-lapse and continuous recording have their own limits)":
+    "Älteste noch vorhandene Aufnahme – ist der Ordner voll, werden die ältesten zuerst gelöscht (Zeitraffer und Daueraufnahme haben eigene Grenzen)",
   "No timelapse video yet – one is made every night at about 00:20 from yesterday's photos (Settings → Timelapse)":
     "Noch kein Zeitraffer-Video – entsteht jede Nacht um ca. 00:20 aus den Fotos von gestern (Einstellungen → Zeitraffer)",
   "Place": "Ort", "All places": "Alle Orte", "Without location": "Ohne Ort", "Map": "Karte", "Show only this place": "Nur diesen Ort zeigen",
@@ -804,6 +807,11 @@ async function load(reset) {
   $("#b-count").textContent = j.disk.files + " " + t("recordings");
   $("#b-disk").textContent = j.disk.mb + " MB / " + j.disk.limit_gb + " GB";
   $("#b-live").hidden = !j.recording;
+  // 4.18.1: how far back the recordings reach (the cleanup deletes the oldest when the folder is full); tap = oldest first
+  const od = j.disk.oldest, bo = $("#b-old"); bo.hidden = !od;
+  if (od) { const m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/.exec(od.time) || [];
+    bo.textContent = "⏪ " + t("back to {d}").replace("{d}", +m[3] + "." + m[2] + ". " + m[4] + ":" + m[5]);
+    bo.title = t("Oldest kept recording – when the folder is full, the oldest are deleted first (time-lapse and continuous recording have their own limits)"); }
   $("#result-info").textContent = items.length + " / " + j.total + " " + t("shown");
   $("#empty").hidden = items.length > 0; $("#more").hidden = items.length >= j.total;
   // 3.88 (Klar stage 1): no recordings at all is not «nothing matches the filters»; the filters sit behind «Filter (n)»
@@ -1194,6 +1202,8 @@ $("#btn-delsel").onclick = async () => { if (selected.size && await remove([...s
 $("#btn-zipsel").onclick = () => { if (selected.size) zip([...selected]); };
 $("#btn-starsel").onclick = async () => { if (selected.size) { await setFav([...selected], true); toast("★ " + selected.size); setSelecting(false); load(true); } };
 $("#more").onclick = () => load(false);
+$("#b-old").onclick = $("#b-old").onkeydown = e => { if (e.type === "keydown" && e.key !== "Enter") return;   // 4.18.1: the oldest first
+  F.sort = "old"; $("#f-sort").value = "old"; load(true); };
 
 (async () => {
   await initAppearance(); markKind(); updateSelBtn();
