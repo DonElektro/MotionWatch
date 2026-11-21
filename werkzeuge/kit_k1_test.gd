@@ -162,7 +162,18 @@ func _lauf() -> void:
 	# the MoveEye film switches IR on; the marmot scene turns it off again for a readable shot
 	ok = await _bis(func(): return k.ir_an and m.is_dark(), 12.0)
 	pruef(ok, "Nacht, IR an")
-	# 7 the marmot, 8 Maggie fetches
+	# 7 the marmot: the fixed film camera shows the marmot and Maggie, nothing (sign, wall, figure) in front of them
+	ok = await _bis(func(): return szene() == "s07_murmeltier" and k.phase == "film", 15.0)
+	pruef(ok, "Szene 7: Murmeltier-Film")
+	if ok:
+		await _warte(4.8)
+		var tier = k.personen.get("tier", null)
+		pruef(tier != null, "Murmeltier da")
+		if tier != null:
+			film_sicht("Murmeltier", tier.global_position + Vector3(0, 0.25, 0), [tier])
+			film_sicht("Maggie beim Murmeltier", k.hund_pos() + Vector3(0, 0.35, 0), [])
+	fix_shots_frei()
+	# 8 Maggie fetches
 	await filme_weg()
 	ok = await _bis(func(): return szene() == "s08_holzstapel", 8.0)
 	pruef(ok, "Szene 8: Holzstapel")
@@ -226,6 +237,70 @@ func _lauf() -> void:
 	k._ebene("dach", false)
 	m.weather = vorher_regen
 	_ende()
+
+
+func _meshes(n: Node, out: Array) -> void:
+	if n is MeshInstance3D and n.is_visible_in_tree():
+		out.append(n)
+	for ch in n.get_children():
+		_meshes(ch, out)
+
+
+func _unter(n: Node, wurzeln: Array) -> bool:
+	for w in wurzeln:
+		if w != null and is_instance_valid(w) and (n == w or w.is_ancestor_of(n)):
+			return true
+	return false
+
+
+func film_sicht(was: String, p: Vector3, eigene: Array) -> void:
+	"""the film camera sees p: in the frustum, no wall/board of main, no rock, no object (sign, figure) in between"""
+	var cam: Camera3D = m.view_cam
+	var cp: Vector3 = cam.global_position
+	var im_bild: bool = cam.is_position_in_frustum(p)
+	var l1: Dictionary = m.line_blocker(cp, p)
+	var l2: Dictionary = m.line_blocker(p, cp)
+	var bl: float = k.regie._blocker(cp, p, 24)
+	var vor := ""
+	var ms := []
+	_meshes(m, ms)
+	var hund = k.hund
+	for mi in ms:
+		if _unter(mi, eigene) or (hund is Node and _unter(mi, [hund])):
+			continue
+		var bb: AABB = mi.global_transform * mi.get_aabb()
+		if bb.size.x > 30.0 or bb.size.z > 30.0 or bb.size.y > 30.0:
+			continue                                    # the terrain and the sky (the rock test covers the ground)
+		for i in range(1, 18):
+			var f := float(i) / 20.0
+			if (1.0 - f) * cp.distance_to(p) < 0.35:
+				break
+			if bb.has_point(cp.lerp(p, f)):
+				vor = str(mi.get_parent().name) + "/" + str(mi.name) + " " + str(bb.size)
+				break
+		if vor != "":
+			break
+	var gut: bool = im_bild and l1.is_empty() and l2.is_empty() and bl < 0.0 and vor == ""
+	pruef(gut, "Filmkamera sieht %s: im Bild %s, Wand %s, Fels %.2f, davor %s" % [was, im_bild, str(l1.get("id", "-")) + "/" + str(l2.get("id", "-")), bl, vor if vor != "" else "nichts"])
+
+
+func fix_shots_frei() -> void:
+	"""every fixed/establish film shot of the chapter: no wall of main between its camera and what it looks at"""
+	var n := 0
+	for sz in k.daten.SZENEN:
+		for st in sz["schritte"]:
+			for e in st.get("film", []):
+				if str(e.get("k", "")) != "shot" or not (str(e.get("art", "fix")) in ["fix", "establish"]) or not e.has("blick"):
+					continue
+				var at: Vector3 = k.regie._p(e)
+				var lk: Vector3 = k.regie._blick(e)
+				var l1: Dictionary = m.line_blocker(at, lk)
+				var l2: Dictionary = m.line_blocker(lk, at)
+				var w: Vector3 = k.regie.wand_frei(at, lk)
+				n += 1
+				if not (l1.is_empty() and l2.is_empty()):
+					pruef(m.line_blocker(w, lk).is_empty() and m.line_blocker(lk, w).is_empty(), "fester Shot in %s: Wand dazwischen, Kamera rückt davor (%s)" % [sz["id"], str(k.par.sq_von(w))])
+	pruef(n > 0, "feste Film-Shots geprüft: %d" % n)
 
 
 func _ende() -> void:

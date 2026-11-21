@@ -458,10 +458,31 @@ func frei_ziehen(at: Vector3, lk: Vector3) -> Vector3:
 		up += 1.0
 		last = _blocker(at + Vector3(0, up, 0), lk, n)
 	if last <= 0.0:
-		return at + Vector3(0, up, 0)
+		return wand_frei(at + Vector3(0, up, 0), lk)
 	last = _blocker(at, lk, n)
 	if last > 0.0:
 		at = at.lerp(lk, minf(last + 1.5 / maxf(at.distance_to(lk), 0.5), 0.9))
+		at.y = maxf(at.y, main.ground_y(at.x, at.z) + 0.35)
+	return wand_frei(at, lk)
+
+
+func wand_frei(at: Vector3, lk: Vector3) -> Vector3:
+	"""walls and boards (obstacles of main) between a film camera and its subject: the camera moves in front of them"""
+	if not main.has_method("line_blocker") or not main.has_method("_seg_hits"):
+		return at
+	for _i in range(3):
+		var o: Dictionary = main.line_blocker(at, lk)
+		if o.is_empty():
+			o = main.line_blocker(lk, at)
+		if o.is_empty() or int(o.get("id", -1)) < 0:
+			return at
+		var t: float = main._seg_hits(o, Vector2(at.x, at.z), Vector2(lk.x, lk.z))
+		if t < 0.0:
+			t = 1.0 - main._seg_hits(o, Vector2(lk.x, lk.z), Vector2(at.x, at.z))
+		if t < 0.0 or t > 1.0:
+			return at
+		var L := maxf(at.distance_to(lk), 0.5)
+		at = at.lerp(lk, minf(t + 0.4 / L, 0.85))
 		at.y = maxf(at.y, main.ground_y(at.x, at.z) + 0.35)
 	return at
 
