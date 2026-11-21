@@ -55,9 +55,9 @@ const DINGE := [
 
 const AKTIONEN := [
 	{"id": "ofen", "art": "ofen", "s": 1.9, "q": 2.4, "r": 1.4},
-	{"id": "dach_hoch", "art": "leiter", "s": -0.15, "q": 3.6, "r": 0.9, "ding": "dachleiter", "oben": [1.0, 2.4]},
-	{"id": "dach_runter", "art": "runter", "s": 1.0, "q": 2.4, "r": 0.9, "ebene": "dach", "nach": [-0.6, 3.6]},
-	{"id": "lampe", "art": "lampe", "s": 0.6, "q": 0.0, "r": 5.0, "ebene": "dach"},
+	{"id": "dach_hoch", "art": "leiter", "s": -0.15, "q": 3.6, "r": 0.9, "ding": "dachleiter", "oben": [0.9, 1.6]},
+	{"id": "dach_runter", "art": "runter", "s": 0.3, "q": 3.1, "r": 0.55, "ebene": "dach", "nach": [-0.6, 3.6]},
+	{"id": "lampe", "art": "lampe", "s": 0.9, "q": 1.6, "r": 6.0, "ebene": "dach"},
 	{"id": "dose_nehmen", "art": "fund", "s": 0.25, "q": -3.7, "r": 1.3, "ding": "dose", "ebene": "dach"},
 	{"id": "skischuh_nehmen", "art": "fund", "s": 1.1, "q": -1.2, "r": 1.1, "ding": "skischuh", "ebene": "dach"},
 	{"id": "maeusenest_nehmen", "art": "fund", "s": -1.3, "q": 1.6, "r": 1.1, "ding": "maeusenest", "ebene": "dach"},
@@ -69,7 +69,7 @@ const WEG := [[-16.0, -1.5], [-9.0, -2.0], [-4.6, -2.25]]
 const WEG_BREITE := 5.0
 const WEGE := {"s01_ankunft": [[-16.0, -1.5], [-9.0, -2.0], [-4.6, -2.25]]}
 
-const CHECKPOINTS := {"start": [-16.0, -1.5], "tuer": [-5.2, -2.25], "stube": [-1.0, 1.0], "dach": [1.0, 2.4],
+const CHECKPOINTS := {"start": [-16.0, -1.5], "tuer": [-5.2, -2.25], "stube": [-1.0, 1.0], "dach": [0.9, 1.6],
 		"draussen": [-6.0, 2.0], "schopf": [-0.5, 4.8]}
 
 const SPRECHER := {"erzaehler": ["", Color(0.92, 0.94, 0.97)], "figur": ["{name}", Color(1.0, 0.86, 0.55)],

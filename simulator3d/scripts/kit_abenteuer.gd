@@ -1049,7 +1049,7 @@ var _stimme_player: AudioStreamPlayer = null
 
 
 func _stimme(text: String, wer: String) -> float:
-	if not wer in ["erzaehler", "grossvater"] or T.lang() != "de":
+	if not wer in ["erzaehler", "grossvater", "lia"] or T.lang() != "de":
 		return 0.0
 	if preload("res://scripts/abenteuer_stimme.gd").modus() != "an":
 		return 0.0
@@ -1275,13 +1275,16 @@ func _lampe_tick() -> void:
 	"""the finds that only the headlamp shows: visible in its cone (35°, 7 m)"""
 	if par == null or par.nur_lampe.is_empty():
 		return
-	var fp: Vector3 = figur.pos() + Vector3(0, 1.5, 0)
-	var fw: Vector3 = -(figur.a.head.global_transform.basis.z if figur.a.head != null else figur.a.global_transform.basis.z)
+	var fp: Vector3 = figur.pos()
+	var fw: Vector3 = figur.vorne()                          # the lamp looks where the figure looks (a little down: the floor ahead)
+	fw.y = 0.0
 	for n in par.nur_lampe:
 		if not is_instance_valid(n) or bool(n.get_meta("genommen", false)):
 			continue
 		var to: Vector3 = (n as Node3D).global_position - fp
-		var hell: bool = lampe_an and to.length() < 7.0 and fw.normalized().dot(to.normalized()) > cos(deg_to_rad(38.0))
+		var vh := Vector3(to.x, 0, to.z)
+		var nah: bool = vh.length() < 0.6                   # right at the feet: lit
+		var hell: bool = lampe_an and absf(to.y) < 2.0 and vh.length() < 7.0 and (nah or fw.normalized().dot(vh.normalized()) > cos(deg_to_rad(40.0)))
 		if hell != (n as Node3D).visible:
 			(n as Node3D).visible = hell
 
@@ -1832,6 +1835,13 @@ static func control(m, d: Dictionary) -> Dictionary:
 		"abschnitt":                                       # «Zum nächsten Abschnitt springen» (tests: also before 90 s)
 			k.abschnitt_springen()
 			return {"ok": true, "kit": k.info()}
+		"wahl":                                            # tests: the backpack card (Kapitel 1) answered with these ids
+			if k.hud.wahl_offen() and k.hud._wahl_fertig.is_valid():
+				k.hud._wahl_panel.queue_free()
+				k.hud._wahl_panel = null
+				k.hud._wahl_fertig.call(d.get("ids", []))
+				return {"ok": true}
+			return {"ok": false, "error": "keine Wahl offen"}
 		"frei":                                            # tests: walking only, no steps
 			k.test_frei = bool(d.get("on", true))
 			return {"ok": true}

@@ -566,6 +566,7 @@ func _kb_draw() -> void:
 
 
 var _wahl_panel: PanelContainer = null
+var _wahl_fertig := Callable()           # tests: {"action": "kit", "do": "wahl", "ids": [...]}
 
 
 func wahl(titel: String, optionen: Array, n: int, fertig: Callable) -> void:
@@ -609,6 +610,7 @@ func wahl(titel: String, optionen: Array, n: int, fertig: Callable) -> void:
 				gewaehlt.erase(id)
 			ok.disabled = gewaehlt.size() != n)
 		g.add_child(b)
+	_wahl_fertig = fertig
 	ok.pressed.connect(func():
 		_wahl_panel.queue_free()
 		_wahl_panel = null

@@ -46,7 +46,7 @@ func ebene(id: String, on: bool) -> void:
 	ebene_an[id] = on
 	for dk in ebenen_decks.get(id, []):
 		if on:
-			bt.decks.append(dk)
+			bt.decks.insert(0, dk)                         # (first: bergtal.gy takes the first deck under a point - the hut floor is one)
 			_decks.append(dk)
 		else:
 			bt.decks.erase(dk)
