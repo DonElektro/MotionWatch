@@ -41,6 +41,15 @@ Zweig `sim-grossvater-k2` (von origin/main 9f14de1), Worktree /tmp/claude-0/wt_g
   Web lokal exportiert: scratchpad/grossvater/paket/ (web-grossvater-k2-roh.zip = Godot-Export, sim-web-grossvater-k2.zip =
   Format des Webspace) – Stand 186039a (IR-Felsen noch am alten Ort).
 
+## Test im normalen Simulator (Besitzer 21.11.)
+- Kein Probe-Zweig mehr: der neue Modus ist im Zweig sim-grossvater-k2 Standard für Kapitel 2. Weg im Simulator:
+  Schnellzugriff → SPIELEN → «Spielen» → Fenster «Spielen», Regal «Geschichten» → Karte «Die Karte des Grossvaters» →
+  «▶ Kapitel 2 spielen (neu)» → Startkarte (Rolle, Name «Nina») → «Los geht's!». Alter Ablauf: «Weiterspielen» /
+  «Neu beginnen» und der Schalter «Neuer Spielmodus (Probe)» auf der Kapitel-Seite.
+- Windows lokal exportiert → scratchpad/grossvater/MoveEyeSim_Grossvater_Test.zip (nach jeder Runde neu, gleiche Datei).
+- Führung (Besitzer blieb in Szene 3 hängen): Zielmarke an jedem Ziel, Kompass beim Maggie-Steuern Loch → Riegel,
+  Hinweise nach 10/25 s, Loch mit dunklem Rand + Licht, Maggie läuft drüben selbst zum Riegel.
+
 ## Als Nächstes
 1. Separat (eigener Commit, NICHT mit dem Kapitel mischen): Bergtal `_carve_stream` vertieft bei jedem Schritt –
    Korrektur auf ~19 m, alle Nutzer des Bergtals prüfen und melden, was sich verschiebt.
