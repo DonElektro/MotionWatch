@@ -336,6 +336,7 @@ func _control(d: Dictionary) -> Dictionary:
 			var dv: Array = d["drive"]
 			main.explore.test_drive = Vector2(float(dv[0]), float(dv[1]))
 			main.explore.test_until = main.explore.main.now() + (float(dv[2]) if dv.size() > 2 else 2.0)
+		_explore_person(d)
 		return main.explore.state()
 	elif a == "inventar":                              # 3D-3.86: {do: info | open | close | add (kind, x, z, r) | clear}
 		var iv := str(d.get("do", "info"))
@@ -707,3 +708,42 @@ func _control(d: Dictionary) -> Dictionary:
 	elif a != "get":
 		return {"ok": false, "error": "unknown action"}
 	return main.control_info()
+
+
+func _explore_person(d: Dictionary) -> void:
+	"""«Als Person gehen» / «Frei erkunden» (explore_person.gd): person, frei, pwalk, pplace, haltung, sitzen, liegen, sprung,
+	klettern, pview, ptempo, schnell"""
+	var ex = main.explore
+	if d.has("frei") and bool(d["frei"]):
+		ex.frei_erkunden()
+	if d.has("person"):
+		ex.set_person(bool(d["person"]))
+	if d.has("schnell"):
+		main.ex_schnell = bool(d["schnell"])
+		main._settings_dirty = true
+	if d.has("ptempo"):
+		ex.person.set_tempo(float(d["ptempo"]))
+	var p = ex.person
+	if p == null or not p.ok():
+		return
+	if d.has("pplace"):
+		var pl: Array = d["pplace"]
+		p.place(Vector3(float(pl[0]), 0, float(pl[1])))
+	if d.has("pwalk"):                                   # [forward, turn, seconds, run]
+		var pw: Array = d["pwalk"]
+		p.test_walk(Vector2(float(pw[0]), float(pw[1]) if pw.size() > 1 else 0.0), float(pw[2]) if pw.size() > 2 else 2.0, bool(pw[3]) if pw.size() > 3 else false)
+	if d.has("haltung"):
+		if str(d["haltung"]) == "weiter":
+			p.haltung_weiter()
+		else:
+			p.set_haltung(str(d["haltung"]))
+	if d.has("sitzen"):
+		p.set_haltung("sitzen" if bool(d["sitzen"]) else "stehen")
+	if d.has("liegen"):
+		p.set_haltung("liegen" if bool(d["liegen"]) else "stehen")
+	if bool(d.get("sprung", false)):
+		p.wunsch("sprung")
+	if bool(d.get("klettern", false)):
+		p.wunsch("klettern")
+	if d.has("pview") and str(d["pview"]) in ex.VIEWS:
+		ex.view = str(d["pview"])

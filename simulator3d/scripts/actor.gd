@@ -83,6 +83,9 @@ var gear_speed := 1.0         # players: a camouflage thing or the stolen bike m
 var gear_norun := false       # ... the cardboard box: no running
 var gear_pmin := 0            # ... the postures it allows (box: only crouching, umbrella: no crawling)
 var gear_pmax := 2
+var ctl_sit := false           # «Frei erkunden» (explore_person.gd, 21.11.2026): a player sits (idle «sit», sit_seat) too
+var run_top := 0.0            # ... > 0: the running speed of a standing player (fast run for tests, up to 20 m/s)
+var water_ok := false         # ... may go into lakes (wading, swimming): keep_out lets it past the water obstacles
 static var npc_camo := false   # szenenplus.gd «Tarnen»: the next figure built wears the camouflage clothes of the players
 # P10 «Menschen» (menschen.gd): the look of the next visitor built - {jacket, trousers, height (m), hood, cap, pack, umbrella, lamp}
 static var npc_look := {}
@@ -1449,6 +1452,8 @@ func _player(dt: float, now: float) -> void:
 	if frozen:
 		mv = Vector2.ZERO
 	var top: float = PLAYER_SPEED[ctl_posture] * (2.3 if ctl_run and ctl_posture == 0 and not gear_norun else 1.0) * gear_speed
+	if run_top > 0.0 and ctl_run and ctl_posture == 0 and not gear_norun:
+		top = run_top * gear_speed                                 # «Frei erkunden»: the chosen fast run (explore_person.gd)
 	if power == "turbo" and now < power_until:
 		top *= 1.45
 	top *= 1.0 - 0.07 * handicap
@@ -1463,13 +1468,17 @@ func _player(dt: float, now: float) -> void:
 		rotation.y = heading
 	else:
 		want_heading = heading
-	cur_speed = move_toward(cur_speed, want, dt * (4.0 if want > cur_speed else 6.0))   # starts a bit slower than it stops
+	var acc := maxf(1.0, top / 3.5) if run_top > 0.0 else 1.0   # fast run («Frei erkunden»): speeds up in about the same time
+	cur_speed = move_toward(cur_speed, want, dt * acc * (4.0 if want > cur_speed else 6.0))   # starts a bit slower than it stops
 	if cur_speed > 0.01:
 		var mdir := Vector3(-sin(heading), 0, -cos(heading)).slerp(dir, 0.25) if mv.length() > 0.08 else Vector3(-sin(heading), 0, -cos(heading))
-		position += mdir.normalized() * cur_speed * dt
-		var q: Vector2 = main.keep_out(Vector2(position.x, position.z), radius, true)
-		position.x = q.x
-		position.z = q.y
+		var step := mdir.normalized() * cur_speed * dt
+		var n := maxi(1, int(ceil(step.length() / 0.2)))        # fast: steps of at most 0.2 m - never through a thin wall
+		for i in range(n):
+			position += step / float(n)
+			var q: Vector2 = main.keep_out(Vector2(position.x, position.z), radius, true, water_ok)
+			position.x = q.x
+			position.z = q.y
 	speed = max(1.0, top)
 	_animate(dt, cur_speed, now)
 
@@ -1680,7 +1689,7 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 		c = max(c, 0.35)
 	elif idle == "tie":                                            # Statisten: crouched down, tying a shoe
 		c = max(c, 0.85)
-	_sit_k = move_toward(_sit_k, 1.0 if idle in ["sit", "sitdrink"] and not controlled else 0.0, dt * 1.4)   # P10: sits down / gets up (~0.7 s)
+	_sit_k = move_toward(_sit_k, 1.0 if idle in ["sit", "sitdrink"] and (not controlled or ctl_sit) else 0.0, dt * 1.4)   # P10: sits down / gets up (~0.7 s)
 	var sit_k := smoothstep(0.0, 1.0, _sit_k)
 	c *= 1.0 - sit_k
 	var pr: float = clamp(prone, 0.0, 1.0)

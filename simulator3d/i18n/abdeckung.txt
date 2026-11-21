@@ -1,18 +1,18 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8033 (Stellen: 11154)
-Übersetzt: en 8033, fr 8033, it 8033, rm 8033
+Texte gesamt: 8060 (Stellen: 11191)
+Übersetzt: en 8059, fr 8059, it 8059, rm 8059
 Unsicher markiert: 261
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
-Nicht mehr im Code (noch in texte.json): 405
+Nicht mehr im Code (noch in texte.json): 409
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29210, schlüssel 22340, keine Wörter 14064, index 10276, technisch 3783, doc 2561, einheit 343, log 203, englisch 146, pfad 130, stringname 107, html 69, klasse 42, shader 6
+Übersprungen (Grund: Anzahl): kennung 29388, schlüssel 22441, keine Wörter 14108, index 10313, technisch 3787, doc 2582, einheit 344, log 203, englisch 146, pfad 130, stringname 107, html 69, klasse 43, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
-  main_einstellungen.gd    400    25
+  main_einstellungen.gd    401    25
   bergtal_abenteuer.gd     285     7
-  gamewiz.gd               252    15
+  gamewiz.gd               254    15
   abenteuer_figuren_daten.gd   238     0
   main.gd                  213    10
   game.gd                  211    32
@@ -53,9 +53,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   parcours.gd               63    10
   bergtal_erleben_a.gd      62     0
   erlebniswelt.gd           62     0
+  spielbereich.gd           61     0
   abenteuer_geheim.gd       60     0
+  explore.gd                60     4
   abenteuer_figuren.gd      58     5
-  spielbereich.gd           58     0
   abenteuer_zwei_team.gd    57     0
   entdecken.gd              57     0
   handy.gd                  56     2
@@ -63,7 +64,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_erleben_b.gd      55     0
   karte.gd                  49    10
   abenteuer_rucksack.gd     48     3
-  explore.gd                48     4
   draco.gd                  47     0
   scenes.gd                 47     0
   maggie_zwei_team.gd       46     0
@@ -159,6 +159,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   gameturm.gd               13     0
   tasten.gd                 13     0
   devtool_kontakt.gd        12     0
+  explore_person.gd         12     0
   maggie_modell.gd          12     3
   geschichten_faden.gd      12     0
   replay.gd                 11     1
@@ -188,10 +189,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   kopf.gd                    6     2
   devtool_extra.gd           6     0
   devtool_schalter.gd        6     0
-  explore_person.gd          6     0
   gamewatch.gd               6     0
   autostart.gd               5     0
   visitlog.gd                5     0
+  erkunden_touch.gd          5     0
   figur.gd                   5     0
   wege.gd                    5     0
   gras.gd                    4     0
@@ -551,16 +552,16 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   gamewiz.gd:71  'aus'
   gamewiz.gd:471  ' ⚠ Nur Simulator: braucht einen drehbaren Kopf oder den Mover.'
   gamewiz.gd:473  ' ⚠ MoveEye ist gerade nicht verbunden.'
-  gamewiz.gd:518  ' – 💡 Licht und 📢 Sirene'
-  gamewiz.gd:548  'nein'
-  gamewiz.gd:549  'nein'
-  gamewiz.gd:550  'nein'
-  gamewiz.gd:562  ' (mit den Spielern, die jetzt dabei sind)'
-  gamewiz.gd:577  'ja'
-  gamewiz.gd:577  'nein'
-  gamewiz.gd:776  '⚠ Nicht übernommen: '
-  gamewiz.gd:1120  'Wie letztes Mal: '
-  gamewiz.gd:1219  ' Regeln (%d)'
+  gamewiz.gd:522  ' – 💡 Licht und 📢 Sirene'
+  gamewiz.gd:552  'nein'
+  gamewiz.gd:553  'nein'
+  gamewiz.gd:554  'nein'
+  gamewiz.gd:566  ' (mit den Spielern, die jetzt dabei sind)'
+  gamewiz.gd:581  'ja'
+  gamewiz.gd:581  'nein'
+  gamewiz.gd:784  '⚠ Nicht übernommen: '
+  gamewiz.gd:1128  'Wie letztes Mal: '
+  gamewiz.gd:1227  ' Regeln (%d)'
   web_moveeye.gd:24  'aus'
   web_moveeye.gd:88  'aus'
   web_moveeye.gd:88  'nein'
@@ -643,21 +644,21 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main_einstellungen.gd:332  'aus'
   main_einstellungen.gd:350  'an'
   main_einstellungen.gd:350  'aus'
-  main_einstellungen.gd:424  'keine'
-  main_einstellungen.gd:450  'Wächter an MoveEye: '
-  main_einstellungen.gd:513  'immer'
-  main_einstellungen.gd:515  'aus'
-  main_einstellungen.gd:522  'aus'
-  main_einstellungen.gd:522  'aus'
-  main_einstellungen.gd:523  'immer'
-  main_einstellungen.gd:528  'aus'
-  main_einstellungen.gd:532  'aus'
-  main_einstellungen.gd:532  'aus'
-  main_einstellungen.gd:539  'ohne'
-  main_einstellungen.gd:541  'ohne'
-  main_einstellungen.gd:558  'aus'
-  main_einstellungen.gd:562  'aus'
-  main_einstellungen.gd:725  'Karte öffnen: '
+  main_einstellungen.gd:427  'keine'
+  main_einstellungen.gd:453  'Wächter an MoveEye: '
+  main_einstellungen.gd:516  'immer'
+  main_einstellungen.gd:518  'aus'
+  main_einstellungen.gd:525  'aus'
+  main_einstellungen.gd:525  'aus'
+  main_einstellungen.gd:526  'immer'
+  main_einstellungen.gd:531  'aus'
+  main_einstellungen.gd:535  'aus'
+  main_einstellungen.gd:535  'aus'
+  main_einstellungen.gd:542  'ohne'
+  main_einstellungen.gd:544  'ohne'
+  main_einstellungen.gd:561  'aus'
+  main_einstellungen.gd:565  'aus'
+  main_einstellungen.gd:730  'Karte öffnen: '
   mehr.gd:258  ' · Leistung: %d Bilder/s, Lite %s'
   mehr.gd:258  'an'
   mehr.gd:258  'aus'
@@ -694,16 +695,16 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   hp_kiosk.gd:157  'aus'
   hp_kiosk.gd:197  'aus'
   licht.gd:42  'aus'
-  main.gd:770  ' (Port %d)'
-  main.gd:1674  '  %.0f Mbit/s'
-  main.gd:2334  ' (von MoveEye)'
-  main.gd:2367  'Der Simulator ist belegt: '
-  main.gd:3206  'aus'
-  main.gd:3206  'ein'
-  main.gd:3283  'Sabotage-Test: '
-  main.gd:3283  'aus'
-  main.gd:3337  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3340  '\n🚨 Bewacht und weg: '
+  main.gd:772  ' (Port %d)'
+  main.gd:1676  '  %.0f Mbit/s'
+  main.gd:2336  ' (von MoveEye)'
+  main.gd:2369  'Der Simulator ist belegt: '
+  main.gd:3208  'aus'
+  main.gd:3208  'ein'
+  main.gd:3285  'Sabotage-Test: '
+  main.gd:3285  'aus'
+  main.gd:3339  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3342  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
@@ -719,23 +720,23 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   mini.gd:195  'aus'
   padmap.gd:64  ' – mehrere Controller: Bedienfeld Mover › Controller › «Controller zuteilen»'
   padmap.gd:86  'Browser'
-  padmap.gd:420  'Licht '
-  padmap.gd:420  'aus'
-  padmap.gd:420  'ein'
-  padmap.gd:424  'IR-Licht '
-  padmap.gd:424  'aus'
-  padmap.gd:424  'ein'
-  padmap.gd:430  'Folgen '
-  padmap.gd:430  'aus'
-  padmap.gd:430  'ein'
-  padmap.gd:447  'Ansicht: '
-  padmap.gd:450  'Ansicht: '
-  padmap.gd:454  'Livebild '
-  padmap.gd:454  'aus'
-  padmap.gd:454  'ein'
-  padmap.gd:457  'Ansicht: '
-  padmap.gd:471  'Foto gespeichert: '
-  padmap.gd:523  'Zu'
+  padmap.gd:421  'Licht '
+  padmap.gd:421  'aus'
+  padmap.gd:421  'ein'
+  padmap.gd:425  'IR-Licht '
+  padmap.gd:425  'aus'
+  padmap.gd:425  'ein'
+  padmap.gd:431  'Folgen '
+  padmap.gd:431  'aus'
+  padmap.gd:431  'ein'
+  padmap.gd:448  'Ansicht: '
+  padmap.gd:451  'Ansicht: '
+  padmap.gd:455  'Livebild '
+  padmap.gd:455  'aus'
+  padmap.gd:455  'ein'
+  padmap.gd:458  'Ansicht: '
+  padmap.gd:472  'Foto gespeichert: '
+  padmap.gd:524  'Zu'
   quick.gd:155  ' · Vorlagen'
   quick.gd:164  'aus'
   statisten.gd:37  'aus'
@@ -755,8 +756,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:245  'Aussicht: '
   bergtal.gd:254  'Schlafplatz: '
   bergtal.gd:256  'Aussicht: '
-  bergtal.gd:2559  'Schlafplatz: '
-  bergtal.gd:2561  'Aussicht: '
+  bergtal.gd:2560  'Schlafplatz: '
+  bergtal.gd:2562  'Aussicht: '
   diagnose.gd:32  ' · virtuelle Maschine'
   diagnose.gd:34  ' · Fenster klein / versteckt'
   diagnose.gd:72  ' · Ersatz-Port, 8765 war besetzt'
@@ -784,10 +785,10 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   device.gd:95  ' (Port belegt!)'
   device.gd:298  ' · Gerät 2'
   devtool_notizen.gd:220  'Notizen aus dem MoveEye-Simulator (Entwickler → Notizen an Claude)\n%d Notizen, davon %d offen. Version %s.\n\n'
-  explore.gd:733  ' (automatisch von oben)'
-  explore.gd:740  ' (automatisch von oben)'
-  explore.gd:740  ' · schnell'
-  explore.gd:794  'W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc'
+  explore.gd:805  ' (automatisch von oben)'
+  explore.gd:812  ' (automatisch von oben)'
+  explore.gd:812  ' · schnell'
+  explore.gd:880  'W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc'
   fahrzeuge.gd:90  'nie'
   jahreszeiten.gd:52  'nie'
   feedback.gd:386  ' · TESTMODUS: geht nur an '
@@ -941,7 +942,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main_menues.gd:863  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
   main_start.gd:395  'Autostart: '
   main_start.gd:406  'Autologon: '
-  main_steuerung.gd:456  'Dein Platz: '
+  main_steuerung.gd:457  'Dein Platz: '
   mwpc.gd:22  'Aus'
   mwpc.gd:75  'MoveEye hat sich beendet. Protokoll: '
   mwpc.gd:107  ' · %d Bilder erkannt, %d ms'

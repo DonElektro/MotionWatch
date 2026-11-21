@@ -16,6 +16,10 @@ extends Control
 ## nicht mit). Schnell fahren rechnet main._drive in Schritten von höchstens 0,2 m (kein Durchfahren von Wänden), das Drehen
 ## bleibt so schnell wie bisher. Messungen, Prüfstand, Testläufe und die Patrouille brauchen den Mover nicht oder setzen ihr
 ## eigenes Tempo (patrol.gd) - main.mover_max (MoveEye fährt) wird hier nicht mehr verändert.
+## Besitzer 21.11.2026 «Frei erkunden mit eigener Figur» (Etappe 1): die Person ist jetzt die Figur aus Grossvater Kapitel 2
+## (explore_person.gd: Haltungen C / X / Z, springen, klettern, waten, schwimmen, Schnelllauf bis 20 m/s, drei Ansichten);
+## frei_erkunden() startet Erkunden gleich als Figur (Menüpunkt «🥾 Frei erkunden»). Als Figur: C = Haltung (der Beobachter
+## bleibt beim Mover auf C), der Knopf «Tempo» stellt das Rennen der Figur (1,8 … 20 m/s, nur mit «Schnelllauf» im Entwickler-Bereich).
 
 const T = preload("res://scripts/i18n.gd")
 const Person = preload("res://scripts/explore_person.gd")
@@ -128,10 +132,19 @@ func _ready() -> void:
 	_btn_speed.position = Vector2(242, 60)
 	_btn_speed.size = Vector2(190, 32)
 	_btn_speed.focus_mode = Control.FOCUS_NONE
-	_btn_speed.pressed.connect(func(): speed_step(1, true))
+	_btn_speed.pressed.connect(func():
+		if person_on():
+			person.tempo_stufe(1, true)
+			_paint_btns()
+		else:
+			speed_step(1, true))
 	_btn_speed.gui_input.connect(func(ev):
 		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_RIGHT:
-			speed_step(-1, false))
+			if person_on():
+				person.tempo_stufe(-1, false)
+				_paint_btns()
+			else:
+				speed_step(-1, false))
 	add_child(_btn_speed)
 	_paint_btns()
 
@@ -173,6 +186,22 @@ func set_person(v: bool) -> void:
 	queue_redraw()
 
 
+func frei_erkunden() -> bool:
+	"""«🥾 Frei erkunden» (Besitzer 21.11.2026): Erkunden an und gleich als Figur, in der Welt, die gerade geladen ist"""
+	var why := Person.why_not(main)
+	if why != "":
+		main.start_info = T.t("Frei erkunden geht gerade nicht: %s") % T.t(why)
+		return false
+	if fly:
+		set_fly(false)
+	if not on:
+		set_on(true)
+	set_person(true)
+	if person_on():
+		main.start_info = T.t("Frei erkunden: W A S D gehen · C Haltung · X sitzen · Z hinlegen · Leertaste springen · V Ansicht · U Mover")
+	return person_on()
+
+
 func set_speed(v: float) -> void:
 	main.ex_speed = clampf(v, 0.5, V_MAX)
 	speed = main.ex_speed
@@ -210,16 +239,20 @@ func _paint_btns() -> void:
 	if _btn_person == null:
 		return
 	var show := on and not fly and person_ok()
-	var sig := "%s|%s|%s|%s" % [show, person_on(), main.ex_speed, T.version]
+	var sig := "%s|%s|%s|%s|%s|%s" % [show, person_on(), main.ex_speed, T.version, main.ex_ptempo, main.ex_schnell]
 	if sig == _btn_sig:
 		return
 	_btn_sig = sig
 	_btn_person.visible = show
-	_btn_speed.visible = on and not fly and not person_on()
+	_btn_speed.visible = on and not fly and (not person_on() or Person.schnell_an(main))
 	_btn_person.icon = null
 	_btn_person.text = ("🚜 " + T.t("Mover")) if person_on() else ("🚶 " + T.t("Person"))
 	_btn_person.tooltip_text = T.t("U · zurück in den Mover (MoveEye fährt mit)") if person_on() else T.t("U · als Person gehen (der Mover bleibt stehen)")
 	Sym.deco_button(_btn_person)
+	if person_on():                                       # 21.11.2026: the fast run of the figure (only with «Schnelllauf» on)
+		_btn_speed.text = T.t("Rennen: %s m/s ›") % _num(float(main.ex_ptempo))
+		_btn_speed.tooltip_text = T.t("Klick: schneller rennen (1,8 / 3 / 5 / 10 / 15 / 20 m/s) · Rechtsklick: langsamer · Shift = rennen · Schnelllauf zum Testen (Entwickler-Bereich)")
+		return
 	_btn_speed.text = T.t("Tempo: %s m/s ›") % _num(float(main.ex_speed))
 	_btn_speed.tooltip_text = T.t("Klick: schneller (1,8 / 3 / 5 / 7,5 / 10 m/s) · Rechtsklick: langsamer · Shift fährt × 2,2, höchstens 10 m/s")
 
@@ -382,6 +415,7 @@ func state() -> Dictionary:
 	var r: Node3D = main.rig
 	return {"ok": true, "mast": main.mast_h, "on": on, "fly": fly, "fly_speed": fly_speed, "view": view, "auto_top": auto_top, "device": device, "speed": main.ex_speed, "turbo": turbo,
 			"drive_max": drive_speed(), "speeds": SPEEDS, "person": person.state() if person != null else {}, "btn_person": _btn_person != null and _btn_person.visible,
+			"ptempi": Person.TEMPI, "btn_speed": _btn_speed != null and _btn_speed.visible, "btn_speed_text": _btn_speed.text if _btn_speed != null else "",
 			"x": snappedf(r.position.x, 0.01), "z": snappedf(r.position.z, 0.01), "pads": Input.get_connected_joypads().size(),
 			"pad_name": Input.get_joy_name(Input.get_connected_joypads()[0]) if not Input.get_connected_joypads().is_empty() else ""}
 
@@ -450,8 +484,16 @@ func _input(ev: InputEvent) -> void:
 					set_person(not person_on())
 					get_viewport().set_input_as_handled()
 			KEY_C:
-				spectator(not main.spectate)
+				if person_on():                          # 21.11.2026: as the figure C = posture (stand → crouch → crawl)
+					if not ev.echo and not main.typing():
+						person.haltung_weiter()
+				else:
+					spectator(not main.spectate)
 				get_viewport().set_input_as_handled()
+			KEY_X, KEY_Z, KEY_SPACE, KEY_E, KEY_F:       # 21.11.2026: the figure sits, lies down, jumps, climbs
+				if person_on() and not ev.echo and not main.typing():
+					person.wunsch({KEY_X: "sitzen", KEY_Z: "liegen", KEY_SPACE: "sprung", KEY_E: "klettern", KEY_F: "klettern"}[ev.keycode])
+					get_viewport().set_input_as_handled()
 			KEY_J:
 				set_invite(not invite.visible)
 				get_viewport().set_input_as_handled()
@@ -670,6 +712,11 @@ func _process(dt: float) -> void:
 		main.start_info = T.t("Zurück im Mover – als Person gehen geht gerade nicht")
 	if person != null:
 		person.tick(dt)
+	if person_on() and pm != null and not _game_pad() and not pm.btn("l2"):   # 21.11.2026: ✚ = jump / posture / sit / lie
+		for k in [["up", "sprung"], ["down", "haltung"], ["left", "sitzen"], ["right", "liegen"]]:
+			if pm.hit(str(k[0])):
+				_set_device("pad")
+				person.wunsch(str(k[1]))
 	_paint_btns()
 	if pm != null and pm.btn("r1") and pm.move() != Vector2.ZERO:
 		_set_device("pad")
@@ -684,6 +731,31 @@ func _process(dt: float) -> void:
 	var rig: Node3D = main.rig
 	var yaw: float = rig.rotation.y
 	var pon := person_on() and person.actor != null and is_instance_valid(person.actor)
+	_box_hoch(pon)
+	if pon:                                               # 21.11.2026: the figure moves the view itself (explore_person.gd, after the actors)
+		var dn0: String = {"keyboard": "Tastatur", "mouse": "Maus", "touch": "Touch", "pad": "Controller"}[device]
+		var hl := T.t("Steht")
+		match str(person.haltung):
+			"geduckt":
+				hl = T.t("Geht geduckt")
+			"kriechen":
+				hl = T.t("Kriecht")
+			"sitzen":
+				hl = T.t("Sitzt")
+			"liegen":
+				hl = T.t("Liegt still")
+		if str(person.wasser) == "schwimmen":
+			hl = T.t("Schwimmt")
+		elif str(person.wasser) == "waten":
+			hl += " · " + T.t("Watet")
+		var vn := T.t("hinter der Figur")
+		if view == "driver":
+			vn = T.t("Ich-Sicht")
+		elif view == "top":
+			vn = T.t("von oben")
+		_info.text = "%s · %s · %s · %s · %.1f km/h%s\n%s" % [T.t("Erkunden als Person"), T.t(dn0), vn, hl,
+				person.speed_now() * 3.6, (" · " + T.t("rennt")) if bool(person.actor.ctl_run) and person.speed_now() > 1.6 else "", _help()]
+		return
 	var body: Node3D = person.actor if pon else rig      # 13.11.2026: the view follows the person or the mover
 	if pon:
 		yaw = float(person.yaw)
@@ -740,6 +812,20 @@ func _process(dt: float) -> void:
 			VIEW_NAMES[view] + (" (automatisch von oben)" if auto_top and view == "chase" else ""), kmh, main.mast_h, " · schnell" if turbo else "", cap, _help()]
 
 
+func _box_hoch(gross: bool) -> void:
+	"""21.11.2026: as the figure the box has room for three lines (status + the longer key help), the buttons under it"""
+	var h := 114.0 if gross else 98.0
+	if is_equal_approx(size.y, h):
+		return
+	custom_minimum_size = Vector2(640, h)
+	size = Vector2(640, h)
+	offset_bottom = offset_top + h
+	_info.size = Vector2(570, h - 46.0)
+	_btn_person.position.y = h - 38.0
+	_btn_speed.position.y = h - 38.0
+	queue_redraw()
+
+
 func _invite_tick() -> void:
 	if invite == null or not invite.visible:
 		return
@@ -777,12 +863,12 @@ func _help() -> String:
 	if person_on():                                      # 13.11.2026: als Person - gleiche Tasten wie der Mover
 		match device:
 			"pad":
-				return T.t("rechter Stick gehen (ganz aussen = rennen) · R1 + rechter Stick umschauen · R3 Ansicht · Select ⏱ Mover · Start ⏱ Ende")
+				return T.t("rechter Stick gehen · ✚ ↑ springen · ✚ ↓ Haltung · ✚ ← sitzen · ✚ → hinlegen · R1 + rechter Stick umschauen · R3 Ansicht · Select ⏱ Mover")
 			"touch":
-				return T.t("Grüner Stick unten rechts gehen (am Rand = rennen) · Ansicht und Ende oben im Feld")
+				return T.t("Grüner Stick unten rechts gehen (am Rand = rennen) · links: Haltung, springen, sitzen, hinlegen, Ansicht")
 			"mouse":
 				return T.t("Grünen Stick ziehen (am Rand = rennen) · rechte Taste = umschauen · Rad = Abstand · Strg+Klick = Person hierhin · Esc")
-		return T.t("W A S D / Pfeile gehen · Shift rennen · V Ansicht · U Mover · J Mitspieler · Esc")
+		return T.t("W A S D gehen · Shift rennen · C Haltung · X sitzen · Z hinlegen · Leertaste springen / klettern · V Ansicht · U Mover · Esc")
 	var sw := " · " + T.t("Select ⏱ Person") if person_ok() else ""
 	match device:
 		"pad":

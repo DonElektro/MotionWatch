@@ -1450,6 +1450,7 @@ func _water() -> void:
 					if eq < 0.9 and (season != "winter" or eq < ice_e - 0.12):
 						m.add_obstacle(W(Vector3(q.x, 0, q.y)), r)
 						m.set_obstacle_height(0.1)
+						m.set_obstacle_water()                     # «Frei erkunden»: the own figure may wade / swim
 					z += 12.0
 				x += 12.0
 	info["lakes"] = lakes_info

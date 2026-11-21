@@ -3392,6 +3392,12 @@
   "it": "Avventure completate",
   "rm": "Aventuras reussidas"
  },
+ "Abenteuer läuft": {
+  "en": "an adventure is running",
+  "fr": "une aventure est en cours",
+  "it": "è in corso un'avventura",
+  "rm": "ina aventura è en funcziun"
+ },
  "Abenteuer starten": {
   "en": "Start the adventure",
   "fr": "Commencer l’aventure",
@@ -5284,6 +5290,12 @@
   "fr": "Affichage",
   "it": "Vista",
   "rm": "Vista"
+ },
+ "Ansicht (V): hinter der Figur, aus den Augen, von oben": {
+  "en": "View (V): behind the figure, through its eyes, from above",
+  "fr": "Vue (V) : derrière le personnage, à travers ses yeux, d’en haut",
+  "it": "Vista (V): dietro il personaggio, dai suoi occhi, dall’alto",
+  "rm": "Vista (V): davos la figura, tras ses egls, da survart"
  },
  "Ansicht 55 % scharf": {
   "en": "View 55 % sharp",
@@ -15623,6 +15635,12 @@
   "it": "Esplorare",
   "rm": "Explorar"
  },
+ "Erkunden als Figur starten (zurück in den Mover: U)": {
+  "en": "Start exploring as the figure (back into the mover: U)",
+  "fr": "Commencer l’exploration avec le personnage (retour dans le mover : U)",
+  "it": "Iniziare l’esplorazione con il personaggio (ritorno nel mover: U)",
+  "rm": "Cumenzar d’explorar sco figura (enavos en il mover: U)"
+ },
  "Erkunden als Person": {
   "en": "Exploring as a person",
   "fr": "Explorer en personne",
@@ -17675,6 +17693,24 @@
   "it": "Libero (0)",
   "rm": "Liber (0)"
  },
+ "Frei erkunden": {
+  "en": "Explore freely",
+  "fr": "Exploration libre",
+  "it": "Esplorazione libera",
+  "rm": "Explorar liber"
+ },
+ "Frei erkunden geht gerade nicht: %s": {
+  "en": "Exploring freely is not possible right now: %s",
+  "fr": "L’exploration libre n’est pas possible pour l’instant : %s",
+  "it": "L’esplorazione libera al momento non è possibile: %s",
+  "rm": "Explorar liber na va gist betg: %s"
+ },
+ "Frei erkunden: W A S D gehen · C Haltung · X sitzen · Z hinlegen · Leertaste springen · V Ansicht · U Mover": {
+  "en": "Explore freely: W A S D walk · C posture · X sit · Z lie down · Space jump · V view · U mover",
+  "fr": "Exploration libre : W A S D marcher · C posture · X s’asseoir · Z s’allonger · Espace sauter · V vue · U mover",
+  "it": "Esplorazione libera: W A S D camminare · C postura · X sedersi · Z sdraiarsi · Spazio saltare · V vista · U mover",
+  "rm": "Explorar liber: W A S D ir · C posiziun · X seser · Z giaschair · Spazi siglir · V vista · U mover"
+ },
  "Frei herumfliegen": {
   "en": "Fly around freely",
   "fr": "Voler librement",
@@ -18611,6 +18647,12 @@
   "fr": "Va à MoveEye «%s», qui le transmet anonymement comme tous les retours (type %s, %d étoiles%s).",
   "it": "Va a MoveEye «%s», che lo inoltra in forma anonima come tutti i feedback (tipo %s, %d stelle%s).",
   "rm": "Va a MoveEye «%s», che la tramet vinavant anonimamain sco tut las respostas (gener %s, %d stailas%s)."
+ },
+ "Geht geduckt": {
+  "en": "Crouching",
+  "fr": "Accroupi",
+  "it": "Accovacciato",
+  "rm": "Ir sbassà"
  },
  "geht normal vorbei, nimmt den Rucksack, geht ruhig weiter": {
   "en": "walks past normally, takes the backpack, walks calmly on",
@@ -20153,6 +20195,12 @@
   "it": "Levetta verde in basso a destra per camminare (al bordo = correre) · vista e fine in alto nel riquadro",
   "rm": "Stick verd giudim a dretga per ir (a l’ur = currer) · vista e fin survart en il champ"
  },
+ "Grüner Stick unten rechts gehen (am Rand = rennen) · links: Haltung, springen, sitzen, hinlegen, Ansicht": {
+  "en": "Green stick bottom right: walk (at the edge = run) · left: posture, jump, sit, lie down, view",
+  "fr": "Stick vert en bas à droite : marcher (au bord = courir) · à gauche : posture, sauter, s’asseoir, s’allonger, vue",
+  "it": "Stick verde in basso a destra: camminare (al bordo = correre) · a sinistra: postura, saltare, sedersi, sdraiarsi, vista",
+  "rm": "Stick verd sut a dretga: ir (a l’ur = currer) · a sanestra: posiziun, siglir, seser, giaschair, vista"
+ },
  "Gummistiefel": {
   "en": "Rubber boot",
   "fr": "Botte en caoutchouc",
@@ -20484,6 +20532,12 @@
   "fr": "Support : la sangle 25 mm passe dans les fentes 4 × 28 mm, vis murales Ø 5",
   "it": "Supporto: la cinghia 25 mm passa nelle fessure 4 × 28 mm, viti a muro Ø 5",
   "rm": "Tegnider: la tschinta 25 mm passa tras las fessas 4 × 28 mm, scrauvs da paraid Ø 5"
+ },
+ "Haltung wechseln (C): stehen → geduckt → kriechen": {
+  "en": "Change posture (C): stand → crouch → crawl",
+  "fr": "Changer de posture (C) : debout → accroupi → ramper",
+  "it": "Cambiare postura (C): in piedi → accovacciato → strisciare",
+  "rm": "Midar la posiziun (C): star en pe → sbassà → ruschnar"
  },
  "Hamster im Laufrad": {
   "en": "Hamster in the wheel",
@@ -20934,6 +20988,12 @@
   "it": "Qui non c'è un punto stretto per infilarsi.",
   "rm": "Qua n'esi nagin lieu stretg per sbrinzlar tras."
  },
+ "Hier gibt es nichts zum Hochklettern": {
+  "en": "Nothing to climb up here",
+  "fr": "Rien à escalader ici",
+  "it": "Qui non c’è niente su cui arrampicarsi",
+  "rm": "Qua na datti nagut per s’enrampignar"
+ },
  "Hier hast du schon gekocht.": {
   "en": "You have already cooked here.",
   "fr": "Tu as déjà cuisiné ici.",
@@ -21241,11 +21301,23 @@
   "it": "Su alle rovine di Altstafel",
   "rm": "Ensi a la ruina Altstafel"
  },
+ "Hinlegen und still liegen / aufstehen (Z)": {
+  "en": "Lie down and keep still / get up (Z)",
+  "fr": "S’allonger et rester immobile / se lever (Z)",
+  "it": "Sdraiarsi e restare fermo / alzarsi (Z)",
+  "rm": "Sa giaschair e restar quiet / star si (Z)"
+ },
  "Hinreisen": {
   "en": "Travel there",
   "fr": "Y aller",
   "it": "Andarci",
   "rm": "Ir là"
+ },
+ "Hinsetzen / aufstehen (X)": {
+  "en": "Sit down / get up (X)",
+  "fr": "S’asseoir / se lever (X)",
+  "it": "Sedersi / alzarsi (X)",
+  "rm": "Sa seser / star si (X)"
  },
  "Hinspringen": {
   "en": "Jump there",
@@ -21318,6 +21390,12 @@
   "fr": "Des loups attendent derrière les rochers.",
   "it": "Dietro le rocce aspettano i lupi.",
   "rm": "Davos ils crappuns spetgan lufs."
+ },
+ "hinter der Figur": {
+  "en": "behind the figure",
+  "fr": "derrière le personnage",
+  "it": "dietro il personaggio",
+  "rm": "davos la figura"
  },
  "hinter dir": {
   "en": "behind you",
@@ -22666,6 +22744,18 @@
   "fr": "Impossible de dormir dans l'eau.",
   "it": "Non si può dormire nell'acqua.",
   "rm": "Ins na po betg durmir en l'aua."
+ },
+ "Im Wasser kann man sich nicht hinlegen": {
+  "en": "You cannot lie down in the water",
+  "fr": "Impossible de s’allonger dans l’eau",
+  "it": "Non ci si può sdraiare nell’acqua",
+  "rm": "En l’aua na pon ins betg sa giaschair"
+ },
+ "Im Wasser kann man sich nicht hinsetzen": {
+  "en": "You cannot sit down in the water",
+  "fr": "Impossible de s’asseoir dans l’eau",
+  "it": "Non ci si può sedere nell’acqua",
+  "rm": "En l’aua na pon ins betg sa seser"
  },
  "Im Winter führen unter dem Wyssgletscher seltsame Spuren durch den Schnee.": {
   "en": "In winter strange tracks lead through the snow below the Wyssgletscher.",
@@ -25647,6 +25737,12 @@
   "it": "Clic: più veloce (1,8 / 3 / 5 / 7,5 / 10 m/s) · clic destro: più lento · Maiusc va × 2,2, al massimo 10 m/s",
   "rm": "Clic: pli spert (1,8 / 3 / 5 / 7,5 / 10 m/s) · clic dretg: pli plaun · Shift fa × 2,2, maximalmain 10 m/s"
  },
+ "Klick: schneller rennen (1,8 / 3 / 5 / 10 / 15 / 20 m/s) · Rechtsklick: langsamer · Shift = rennen · Schnelllauf zum Testen (Entwickler-Bereich)": {
+  "en": "Click: run faster (1.8 / 3 / 5 / 10 / 15 / 20 m/s) · right click: slower · Shift = run · fast run for testing (developer area)",
+  "fr": "Clic : courir plus vite (1,8 / 3 / 5 / 10 / 15 / 20 m/s) · clic droit : plus lentement · Maj = courir · course rapide pour les tests (espace développeur)",
+  "it": "Clic: correre più veloce (1,8 / 3 / 5 / 10 / 15 / 20 m/s) · clic destro: più lento · Maiusc = correre · corsa veloce per i test (area sviluppatore)",
+  "rm": "Clic: currer pli spert (1,8 / 3 / 5 / 10 / 15 / 20 m/s) · clic dretg: pli plaun · Shift = currer · curs svelt per testar (sectur da svilup)"
+ },
  "Klicken = Ort wählen (dort steht MoveEye) · Ziehen = verschieben · Mausrad = zoomen": {
   "en": "Click = choose place (MoveEye stands there) · drag = move · mouse wheel = zoom",
   "fr": "Clic = choisir le lieu (MoveEye s’y trouve) · glisser = déplacer · molette = zoomer",
@@ -25964,6 +26060,12 @@
   "fr": "Pro de la reptation",
   "it": "Campione di strisciata",
   "rm": "Profi da sa trair"
+ },
+ "Kriecht": {
+  "en": "Crawling",
+  "fr": "Rampe",
+  "it": "Striscia",
+  "rm": "Ruschna"
  },
  "kriecht heran, trägt die Kühlbox geduckt weg": {
   "en": "crawls up, carries the cool box away crouching",
@@ -27272,6 +27374,12 @@
   "fr": "posé sur",
   "it": "appoggiato su",
   "rm": "sa chatta sin"
+ },
+ "Liegt still": {
+  "en": "Lying still",
+  "fr": "Allongé, immobile",
+  "it": "Sdraiato, fermo",
+  "rm": "Giascha quiet"
  },
  "Lies sie mit der Sonne.": {
   "en": "Read it with the sun.",
@@ -29049,6 +29157,18 @@
   "fr": "Avec le vieux téléphérique au-dessus du Tüfelsschlund",
   "it": "Con la vecchia teleferica sopra il Tüfelsschlund",
   "rm": "Cun la veglia pendiculara sur il Tüfelsschlund"
+ },
+ "Mit der eigenen Figur durch die Welt, die gerade geladen ist: gehen, rennen, ducken, kriechen, klettern, sitzen, schwimmen – MoveEye sieht dich.": {
+  "en": "With your own figure through the world that is loaded: walk, run, crouch, crawl, climb, sit, swim – MoveEye sees you.",
+  "fr": "Avec ton propre personnage dans le monde chargé : marcher, courir, s’accroupir, ramper, grimper, s’asseoir, nager – MoveEye te voit.",
+  "it": "Con il tuo personaggio nel mondo caricato: camminare, correre, accovacciarsi, strisciare, arrampicarsi, sedersi, nuotare – MoveEye ti vede.",
+  "rm": "Cun tia atgna figura tras il mund chargià: ir, currer, sa sbassar, ruschnar, s’enrampignar, seser, nudar – MoveEye ta vesa."
+ },
+ "mit der eigenen Figur durch diese Welt: gehen, rennen, ducken, kriechen, klettern, schwimmen": {
+  "en": "with your own figure through this world: walk, run, crouch, crawl, climb, swim",
+  "fr": "avec ton propre personnage dans ce monde : marcher, courir, s’accroupir, ramper, grimper, nager",
+  "it": "con il tuo personaggio in questo mondo: camminare, correre, accovacciarsi, strisciare, arrampicarsi, nuotare",
+  "rm": "cun tia atgna figura tras quest mund: ir, currer, sa sbassar, ruschnar, s’enrampignar, nudar"
  },
  "Mit der Materialseilbahn fahren (Bergtal)": {
   "en": "Ride the goods cable car (mountain valley)",
@@ -34843,6 +34963,12 @@
   "it": "levetta destra camminare (tutta fuori = correre) · R1 + levetta destra guardarsi intorno · R3 vista · Select ⏱ Mover · Start ⏱ fine",
   "rm": "stick dretg ir (dal tut ordaifer = currer) · R1 + stick dretg guardar enturn · R3 vista · Select ⏱ Mover · Start ⏱ fin"
  },
+ "rechter Stick gehen · ✚ ↑ springen · ✚ ↓ Haltung · ✚ ← sitzen · ✚ → hinlegen · R1 + rechter Stick umschauen · R3 Ansicht · Select ⏱ Mover": {
+  "en": "right stick walk · ✚ ↑ jump · ✚ ↓ posture · ✚ ← sit · ✚ → lie down · R1 + right stick look around · R3 view · Select ⏱ mover",
+  "fr": "stick droit marcher · ✚ ↑ sauter · ✚ ↓ posture · ✚ ← s’asseoir · ✚ → s’allonger · R1 + stick droit regarder autour · R3 vue · Select ⏱ mover",
+  "it": "stick destro camminare · ✚ ↑ saltare · ✚ ↓ postura · ✚ ← sedersi · ✚ → sdraiarsi · R1 + stick destro guardarsi intorno · R3 vista · Select ⏱ mover",
+  "rm": "stick dretg ir · ✚ ↑ siglir · ✚ ↓ posiziun · ✚ ← seser · ✚ → giaschair · R1 + stick dretg guardar enturn · R3 vista · Select ⏱ mover"
+ },
  "rechts an jeder Liste: mit der Maus ziehen": {
   "en": "on the right of every list: drag with the mouse",
   "fr": "à droite de chaque liste : glisser avec la souris",
@@ -35022,6 +35148,18 @@
   "fr": "Rechercher la release «ki-daten»",
   "it": "Cercare la release «ki-daten»",
   "rm": "Tschertgar la release «ki-daten»"
+ },
+ "Rennen (Shift): %s m/s": {
+  "en": "Running (Shift): %s m/s",
+  "fr": "Course (Maj) : %s m/s",
+  "it": "Corsa (Maiusc): %s m/s",
+  "rm": "Currer (Shift): %s m/s"
+ },
+ "Rennen: %s m/s ›": {
+  "en": "Run: %s m/s ›",
+  "fr": "Course : %s m/s ›",
+  "it": "Corsa: %s m/s ›",
+  "rm": "Currer: %s m/s ›"
  },
  "request %d": {
   "en": "request %d",
@@ -36551,6 +36689,12 @@
   "it": "Presto, presto! Passa un jogger.",
   "rm": "Svelt, svelt! In currider curra speravia."
  },
+ "Schnelllauf beim Erkunden (Figur rennt bis 20 m/s, zum Testen)": {
+  "en": "Fast run while exploring (the figure runs up to 20 m/s, for testing)",
+  "fr": "Course rapide en exploration (le personnage court jusqu’à 20 m/s, pour les tests)",
+  "it": "Corsa veloce durante l’esplorazione (il personaggio corre fino a 20 m/s, per i test)",
+  "rm": "Curs svelt durant l’exploraziun (la figura curra fin 20 m/s, per testar)"
+ },
  "Schnellregler": {
   "en": "Quick controls",
   "fr": "Réglages rapides",
@@ -36967,6 +37111,12 @@
   "fr": "Bassin",
   "it": "Vasca",
   "rm": "Bassin"
+ },
+ "Schwimmt": {
+  "en": "Swimming",
+  "fr": "Nage",
+  "it": "Nuota",
+  "rm": "Nuda"
  },
  "Schwing dich am Seil über den Spalt (Aktion, dann Springen)": {
   "en": "Swing across the gap on the rope (action, then jump)",
@@ -37853,6 +38003,12 @@
   "it": "Salva situazione",
   "rm": "Memorisar la situaziun"
  },
+ "Sitzt": {
+  "en": "Sitting",
+  "fr": "Assis",
+  "it": "Seduto",
+  "rm": "Sesa"
+ },
  "Skateboard": {
   "en": "Skateboard",
   "fr": "Skateboard",
@@ -38642,6 +38798,12 @@
   "rm": "Siglia!",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
+ "Springen, an einer Kante hochklettern (Leertaste)": {
+  "en": "Jump, climb up an edge (Space)",
+  "fr": "Sauter, escalader un rebord (Espace)",
+  "it": "Saltare, arrampicarsi su un bordo (Spazio)",
+  "rm": "Siglir, s’enrampignar sin in ur (Spazi)"
+ },
  "Springen/\nGreifen": {
   "en": "Jump/\nGrab",
   "fr": "Sauter/\nSaisir",
@@ -39081,6 +39243,12 @@
   "fr": "Passerelle réparée",
   "it": "Passerella riparata",
   "rm": "Punt reparada"
+ },
+ "Steht": {
+  "en": "Standing",
+  "fr": "Debout",
+  "it": "In piedi",
+  "rm": "Stat en pe"
  },
  "Steigen": {
   "en": "Rise",
@@ -43460,6 +43628,12 @@
   "it": "W A S D volare · Q / E giù / su · Shift più veloce · tasto destro guardarsi intorno · rotella o + / − velocità · Esc indietro",
   "rm": "W A S D sgular · Q / E engiu / ensi · Shift pli svelt · buttun dretg da la mieur guardar enturn · roda u + / − tempo · Esc enavos"
  },
+ "W A S D gehen · Shift rennen · C Haltung · X sitzen · Z hinlegen · Leertaste springen / klettern · V Ansicht · U Mover · Esc": {
+  "en": "W A S D walk · Shift run · C posture · X sit · Z lie down · Space jump / climb · V view · U mover · Esc",
+  "fr": "W A S D marcher · Maj courir · C posture · X s’asseoir · Z s’allonger · Espace sauter / grimper · V vue · U mover · Échap",
+  "it": "W A S D camminare · Maiusc correre · C postura · X sedersi · Z sdraiarsi · Spazio saltare / arrampicarsi · V vista · U mover · Esc",
+  "rm": "W A S D ir · Shift currer · C posiziun · X seser · Z giaschair · Spazi siglir / s’enrampignar · V vista · U mover · Esc"
+ },
  "W A S D gehen · Shift rennen · Maus ziehen umschauen · K Kristall · Esc Pause": {
   "en": "W A S D walk · Shift run · drag mouse look around · K crystal · Esc pause",
   "fr": "W A S D marcher · Maj courir · glisser la souris regarder · K cristal · Échap pause",
@@ -43964,6 +44138,12 @@
   "fr": "Point d’eau",
   "it": "Punto acqua",
   "rm": "Funtauna"
+ },
+ "Watet": {
+  "en": "Wading",
+  "fr": "Patauge",
+  "it": "Guada",
+  "rm": "Vada"
  },
  "Waveshare 27966": {
   "en": "Waveshare 27966",

@@ -1,52 +1,133 @@
 extends Node
-## «Als Person gehen» (Besitzer 13.11.2026): beim Erkunden (explore.gd) und in der Geschichte «Die Karte des Grossvaters»
-## geht man statt mit dem Mover als Person durch die Welt. Ein Kind von explore.gd («ex»), das den Rest dort lässt.
-##   * Umschalten: Knopf «🚶 Person» / «🚜 Mover» (Erkunden-Leiste oben, Menü «Ansicht» der Leiste unten, Abenteuer-Spalte
-##     unterwegs und am Nachtlager), Taste U, Controller: Select 1 s halten (Select ⏱ ist im Modus «sim» von padmap.gd frei;
-##     kurz Select bleibt «Bilder / Ansichten tauschen»). Hinter dem Knopf läuft dasselbe set_person() von explore.gd.
-##   * Steuerung genau wie der Mover (rover_pad.command): W A S D / Pfeile (W / ↑ vorwärts, S / ↓ zurück, A D / ← → drehen),
-##     grüner Stick (Maus, Touch), rechter Stick des Controllers (padmap.drive_cmd). Rennen: Shift, oder Stick / grüne Kugel
-##     ganz am Rand. Ansichten (V / R3): hinterher, Ich-Sicht (auf Augenhöhe), von oben; rechte Maustaste = umschauen.
-##   * Die Figur ist der Wanderer von maggie_zwei.gd bzw. die Figur der Handy-Spieler (actor.gd, controlled): gleiche
-##     Hindernis-Regeln (main.keep_out) und gleiche Höhe über dem Gelände (main.ground_y) wie alle Gehenden, Tempo 1,5 m/s,
-##     rennen × 2,3 (actor.PLAYER_SPEED). Die Kameras von MoveEye sehen sie (wie einen Besucher).
-##   * Zurück in den Mover: die Person bleibt stehen, wo sie ist (MoveEye kann sie sehen); die Ansicht geht zurück zum Mover,
-##     der dort steht, wo man ihn gelassen hat - MoveEye fährt auf dem Mover mit, sein Bild springt also nicht. Wieder
-##     «Person»: weiter an derselben Stelle. Erkunden beenden (Esc) = die Person geht weg.
-##   * Nie während einer Messung (main.measuring(), Nacht-Testlauf), nicht beim Spiel am PC, nicht in einer Spielrunde ausser
-##     «Zonen-Check» (frei bewegen, Mitspieler mit dem Handy bleiben dabei), nicht zu zweit im Abenteuer (eigene Wanderer) und
-##     nicht in «Maggie» (eigene Figur): dann ist der Knopf weg und eine laufende Person wird wieder zum Mover (why_not).
-## In der Geschichte (bergtal_abenteuer.gd, Schritte «Unterwegs» und «Nachtlager»): die Person zählt wie ein Wanderer zu zweit
-##   (abenteuer_geheim.gd walkers(): Steinmännchen bis 3,5 m, Tagebuchblatt beim Licht bis 4 m) und wie der Mover für alles,
-##   was die Welt am Spieler misst (main.walker_pos(): Aussichtspunkte und Feldstecher, Absturzkanten, Grat, «Hier
-##   übernachten», Stirnlampe). Sie geht mit der Gruppe mit (die Tour läuft auf den Wanderwegen weiter) und darf sich bis
-##   LEASH = 110 m entfernen - dieselbe Regel wie «gemeinsam» zu zweit (abenteuer_zweit.gd). Kraft, Zeit und Essen kommen
-##   weiter von den Wegstücken: herumgehen kostet nichts extra (wie zu zweit), so bleibt die Geschichte gleich fair.
-## Steuerbefehl (über explore): {"action": "explore", "person": true | false, "pwalk": [vor, drehen, Sekunden, rennen],
-##   "pplace": [x, z] (Welt)} - Zustand in explore.state() unter «person».
+## «Als Person gehen» (Besitzer 13.11.2026) - ab «Frei erkunden mit eigener Figur» (Besitzer 21.11.2026, Etappe 1) mit der
+## Figur aus Grossvater Kapitel 2 (kit_figur.gd: springen, klettern; kit_regie.gd: die Federkamera). Die alte
+## Wanderer-Figur mit Panzersteuerung ist ersetzt (Entfernen vom Besitzer bestätigt). Ein Kind von explore.gd («ex»).
+##   * Umschalten wie bisher: Knopf «🚶 Person» / «🚜 Mover» (Erkunden-Leiste oben, Menü «Ansicht» der Leiste unten,
+##     Abenteuer-Spalte), Taste U, Controller Select 1 s halten. Neu: «🥾 Frei erkunden» (Spielen → Abenteuer, Spiel-Assistent)
+##     startet Erkunden gleich als Figur, in der Welt, die gerade geladen ist (jede Welt).
+##   * Gehen: W A S D / Pfeile, grüner Stick (Maus, Touch), rechter Stick des Controllers - relativ zur Kamera (W = weg von
+##     der Kamera). Rennen: Shift, oder Stick / grüne Kugel ganz am Rand. Rechte Maustaste / R1 + rechter Stick = umschauen,
+##     Rad = Abstand.
+##   * Haltung (C / ✚ ↓ / Knopf am Rand): stehen → geduckt → kriechen → stehen. X (✚ ←) = hinsetzen (auf eine Bank oder einen
+##     Stein in der Nähe, sonst auf den Boden), Z (✚ →) = hinlegen und still liegen; nochmals oder losgehen = aufstehen.
+##     Leertaste (✚ ↑) = springen, vor einer Kante (0,6–2,2 m, erkunden_welt.gd) hochklettern; E / F = nur hochklettern.
+##     Geduckt und kriechend ist die Figur wirklich niedriger (Gelenke von actor.gd, Crouch-Clips von figur_paket.gd) - MoveEye
+##     sieht ein kleineres Ziel (Sinn der Sache). Geduckt / kriechend kein Rennen, kein Springen (zuerst aufstehen).
+##   * Wasser (erkunden_welt.gd): seicht = waten (langsamer, nicht rennen), tief = schwimmen an der Oberfläche (kein Tauchen,
+##     niemand ertrinkt); hinaus geht es einfach, wo das Wasser wieder seicht wird oder das Ufer beginnt.
+##   * Schnelllauf zum Testen: rennen bis 20 m/s in Stufen 1,8 / 3 / 5 / 10 / 15 / 20 (Knopf «Tempo» oben, main.ex_ptempo,
+##     bleibt gespeichert). Schalter im Entwickler-Bereich «Schnelllauf beim Erkunden» (main.ex_schnell): aus = normales
+##     Rennen (3,45 m/s, wie actor.gd). Auch schnell nie durch eine Wand: actor.gd und hier in Schritten von höchstens 0,2 m
+##     mit main.keep_out (auch im Sprung).
+##   * Ansichten (V / R3 / Knopf): hinter der Figur (Federkamera kit_regie.gd), aus den Augen (die Augenhöhe folgt der Haltung:
+##     der Kopf der Figur), von oben.
+##   * Die Kameras von MoveEye sehen die Figur wie einen Besucher (heute immer; Etappe 2: Schalter).
+##   * Nie während einer Messung, nicht beim Spiel am PC, nicht in einer Spielrunde ausser «Zonen-Check», nicht zu zweit im
+##     Abenteuer, nicht in «Maggie» (why_not): dann ist der Knopf weg und eine laufende Figur wird wieder zum Mover.
+## In der Geschichte (bergtal_abenteuer.gd, Schritte «Unterwegs» und «Nachtlager»): wie bisher - die Figur zählt wie ein
+##   Wanderer zu zweit (abenteuer_geheim.gd walkers()), main.walker_pos() ist ihr Standort, sie geht mit der Gruppe mit und darf
+##   sich höchstens LEASH = 110 m entfernen.
+## Steuerbefehl {"action": "explore", "person": true | false, "pwalk": [vor, drehen, Sekunden, rennen], "pplace": [x, z],
+##   "haltung": stehen | geduckt | kriechen | weiter, "sitzen": bool, "liegen": bool, "sprung": true, "klettern": true,
+##   "pview": chase | driver | top, "ptempo": m/s, "schnell": bool} - Zustand in explore.state() unter «person».
 
 const T = preload("res://scripts/i18n.gd")
 const ActorS = preload("res://scripts/actor.gd")
 const Figur = preload("res://scripts/figur.gd")
 const Bt = preload("res://scripts/bergtal.gd")
+const KitFigur = preload("res://scripts/kit_figur.gd")
+const Regie = preload("res://scripts/kit_regie.gd")
+const Welt = preload("res://scripts/erkunden_welt.gd")
+const Touch = preload("res://scripts/erkunden_touch.gd")
 
-const TURN := 2.4                    # rad/s: A / D drehen (der Mover dreht an Ort etwa gleich schnell)
+const TURN := 2.4                    # rad/s: A / D drehen in der Ich-Sicht (und im Testgang pwalk)
 const LEASH := 110.0                 # m: so weit von der Gruppe weg in der Geschichte (wie abenteuer_zweit.gd)
-const EYE := 1.62                    # m: Augenhöhe für die Ich-Sicht
+const EYE := 1.62                    # m: Augenhöhe stehend (Rückfall, wenn die Figur keinen Kopf-Knoten hat)
 const BOUND := 180.0                 # m: ausserhalb des Bergtals so weit wie der Mover (main._drive)
 const FULL := 0.95                   # Stick / grüne Kugel so weit draussen = rennen
+const HALTUNGEN := ["stehen", "geduckt", "kriechen"]
+const POSTUR := {"stehen": 0, "geduckt": 1, "kriechen": 2, "sitzen": 0, "liegen": 2}
+const AUGE := {"stehen": 1.62, "geduckt": 1.05, "kriechen": 0.38, "sitzen": 1.15, "liegen": 0.3}   # Rückfall ohne Kopf
+const TEMPI := [1.8, 3.0, 5.0, 10.0, 15.0, 20.0]   # m/s: Schnelllauf (rennen), Besitzer 21.11.2026
+const V_MAX := 20.0
+const V_RENNEN := 3.45               # m/s: normales Rennen (actor.PLAYER_SPEED[0] × 2.3) - Schnelllauf aus
+const SCHWIMM_V := 0.9               # m/s an der Oberfläche
+const SCHWIMM_TIEF := 0.25           # m: die Füsse so weit unter dem Wasserspiegel (der Körper liegt, der Kopf ist oben)
+const WATEN_K := 0.55                # waten: so viel vom Tempo
+const LOOK := {"col": "red", "size": "", "build": "", "hat": "", "pack": true}
 
 var ex
 var main
-var active := false                  # die Person wird gesteuert (sonst steht sie, wo man sie gelassen hat)
-var actor: Node3D = null
-var yaw := 0.0                       # wohin die Person schaut / geht (wie rig.rotation.y beim Mover)
-var cmd := Vector2.ZERO              # (vorwärts, rechts drehen) von rover_pad.command()
+var active := false                  # die Figur wird gesteuert (sonst steht sie, wo man sie gelassen hat)
+var actor: Node3D = null             # = figur.a (actor.gd, controlled)
+var yaw := 0.0                       # wohin die Figur schaut (actor.heading)
+var cmd := Vector2.ZERO              # (vorwärts, rechts) von rover_pad.command()
 var run := false
+var haltung := "stehen"              # stehen | geduckt | kriechen | sitzen | liegen
+var wasser := ""                     # "" | waten | schwimmen
+var spiegel := 0.0                   # Welt-y des Wasserspiegels (beim Schwimmen)
+var sitz := {}                       # erkunden_welt.sitz(): wo sie sitzt
+var touch: CanvasLayer = null
 var _scene := ""
 var _anchor = null                   # Geschichte: wo die Gruppe zuletzt war (Tal)
 var _test := {}                      # Tests: {"v": Vector2, "run": bool, "until": s}
 var _far_t := -100.0
+var _ein := {}
+var _wunsch := {}                    # Tasten / Knöpfe seit dem letzten Bild: sprung, klettern, haltung, sitzen, liegen
+var _eye_yaw := 0.0                  # Ich-Sicht: wohin man schaut
+var _eye_p := Vector3.ZERO
+var _eye_ok := false
+var _top_yaw := 0.0
+var _orbit_alt := 0.0
+var _pitch_alt := 0.5
+var _dist_alt := 6.0
+var _view_alt := ""
+var _spaet: Node = null
+var _sk: Skeleton3D = null
+var _sk_von: Node = null
+var _sk_kopf := -1
+
+# ---- what kit_figur.gd / kit_regie.gd read from their «kit» (here: no parcours, no film) ----
+var par = ParLeer.new()
+var figur
+var regie
+var uhr := 0.0
+var phase := "spiel"                 # kit_figur.gd: small steps up only «im Spiel»
+var weg := PackedVector2Array()      # no way to guide along
+var daten = null
+var kinder := false
+var film_move := Vector2.ZERO
+var film_run := false
+var film_hang := false
+var film_hang_p := Vector3.ZERO
+var film_hang_auf := Vector3.ZERO
+var nach_klettern := {}
+var _karte := {}
+
+
+class ParLeer:
+	## kit_parcours.gd without a parcours: no actions, no dangers (the water: erkunden_welt.gd)
+	var aktionen: Array = []
+	var dinge := {}
+	var schlucht = null
+
+	func aktion_bei(_w: Vector3, _nur := true) -> Dictionary:
+		return {}
+
+	func gefahr_bei(_w: Vector3) -> Dictionary:
+		return {}
+
+	func ding_bei(_w: Vector3, _pad := 0.0) -> String:
+		return ""
+
+	func tal_von(w: Vector3) -> Vector2:
+		return Vector2(w.x, w.z)
+
+	func sq_von(w: Vector3) -> Vector2:
+		return Vector2(w.x, w.z)
+
+	func W(p: Vector3) -> Vector3:
+		return p
 
 
 static func why_not(m) -> String:
@@ -65,14 +146,69 @@ static func why_not(m) -> String:
 	var mg = m.get("maggie")
 	if mg != null and is_instance_valid(mg) and bool(mg.get("running")):
 		return "Maggie läuft"
+	var kt = m.get("kit")
+	if kt != null and is_instance_valid(kt) and bool(kt.get("running")):
+		return "Abenteuer läuft"
 	return ""
+
+
+func _ready() -> void:
+	process_priority = -20                                   # before the actors: what the figure wants
+	regie = Regie.new(self)
+	figur = KitFigur.new(self)
+	_spaet = Node.new()
+	_spaet.name = "erkunden_spaet"
+	_spaet.process_priority = 95                             # after the actors: height, walls, water, the camera
+	_spaet.set_script(preload("res://scripts/kit_spaet.gd"))
+	_spaet.set("kit", self)
+	add_child(_spaet)
+	touch = Touch.new()
+	touch.person = self
+	add_child(touch)
 
 
 func _now() -> float:
 	return main.now()
 
 
-# ---- die Geschichte -------------------------------------------------------------------------------------------------------
+func ok() -> bool:
+	return actor != null and is_instance_valid(actor)
+
+
+# ---- settings: fast run ------------------------------------------------------------------------------------------------
+static func schnell_an(m) -> bool:
+	return m != null and bool(m.get("ex_schnell"))
+
+
+static func renn_tempo(m) -> float:
+	"""the running speed of the standing figure: the chosen step (fast run on) or the normal 3.45 m/s"""
+	if not schnell_an(m):
+		return V_RENNEN
+	return clampf(float(m.get("ex_ptempo")), 1.0, V_MAX)
+
+
+func tempo_stufe(dir: int, wrap := false) -> void:
+	var i := 0
+	for k in TEMPI.size():
+		if absf(float(TEMPI[k]) - float(main.ex_ptempo)) < absf(float(TEMPI[i]) - float(main.ex_ptempo)):
+			i = k
+	i += dir
+	if wrap:
+		i = posmod(i, TEMPI.size())
+	set_tempo(float(TEMPI[clampi(i, 0, TEMPI.size() - 1)]))
+	main.start_info = T.t("Rennen (Shift): %s m/s") % _num(float(main.ex_ptempo))
+
+
+func set_tempo(v: float) -> void:
+	main.ex_ptempo = clampf(v, 1.0, V_MAX)
+	main._settings_dirty = true
+
+
+static func _num(v: float) -> String:
+	return str(snappedf(v, 0.1)).trim_suffix(".0")
+
+
+# ---- the story ---------------------------------------------------------------------------------------------------------
 func story():
 	"""bergtal_abenteuer.gd, wenn die Person dort mitgeht (Unterwegs / Nachtlager im Bergtal), sonst null"""
 	var ab = main.get("abenteuer")
@@ -91,7 +227,7 @@ func _anchor_of(ab) -> Vector2:
 
 func valley_pos():
 	"""wo die Person im Tal steht (Vector2) - null ohne Bergtal oder ohne Person"""
-	if actor == null or not is_instance_valid(actor):
+	if not ok():
 		return null
 	var b = main.scenes.data.get("bergtal", null) if main.scene == "bergtal" and main.scenes != null else null
 	if b == null:
@@ -100,7 +236,7 @@ func valley_pos():
 	return Vector2(q.x, q.z)
 
 
-# ---- die Figur ------------------------------------------------------------------------------------------------------------
+# ---- the figure ----------------------------------------------------------------------------------------------------------
 func _spawn_at() -> Vector3:
 	var ab = story()
 	if ab != null:
@@ -116,28 +252,38 @@ func _spawn_at() -> Vector3:
 
 
 func _ensure() -> void:
-	if actor != null and is_instance_valid(actor) and _scene == main.scene:
+	if ok() and _scene == main.scene:
 		return
 	remove()
 	var at := _spawn_at()
+	yaw = main.rig.rotation.y if story() == null else yaw
 	var a = ActorS.new()
 	a.controlled = true
-	a.look = {"col": "red", "size": "", "build": "", "hat": "", "pack": true}
+	a.look = LOOK.duplicate()
 	a.player_color = Figur.LOOK_COLS["red"]
 	a.name = "erkunden_person"
+	a.water_ok = true
 	main.add_child(a)
-	yaw = main.rig.rotation.y if story() == null else yaw
-	var fwd := Vector3(-sin(yaw), 0, -cos(yaw))
-	a.setup(main, "person", at, at + fwd, 1.5)
+	a.setup(main, "person", at, at + Vector3(-sin(yaw), 0, -cos(yaw)), 1.5)
 	actor = a
+	figur.a = a
+	figur.zustand = "film"
+	figur.setzen(at, yaw)
+	figur.geh_zu("boden")
+	haltung = "stehen"
+	wasser = ""
+	sitz = {}
 	_scene = main.scene
 	_anchor = null
+	_eye_ok = false
 
 
 func remove() -> void:
-	if actor != null and is_instance_valid(actor):
+	if ok():
 		actor.queue_free()
 	actor = null
+	if figur != null:
+		figur.a = null
 	active = false
 	_anchor = null
 
@@ -145,60 +291,342 @@ func remove() -> void:
 func set_active(v: bool) -> void:
 	if v:
 		_ensure()
-		if actor != null:
+		if ok():
 			actor.frozen = false
+			if figur.zustand in ["film", "zurueck"]:
+				figur.geh_zu("boden")
+			_eye_yaw = float(actor.heading)
+			_top_yaw = float(actor.heading)
+			_eye_ok = false
+			regie.hinter_figur()
+			_view_alt = ""
 	active = v
 	cmd = Vector2.ZERO
 	run = false
-	if not v and actor != null and is_instance_valid(actor):
+	_wunsch = {}
+	if not v and ok():
 		actor.ctl_move = Vector2.ZERO
 		actor.frozen = true                                 # bleibt stehen, wo sie ist
 
 
 func place(p: Vector3) -> void:
-	if actor == null or not is_instance_valid(actor):
+	if not ok():
 		return
-	var q: Vector2 = main.keep_out(Vector2(p.x, p.z), 0.35, true)
-	actor.position = Vector3(q.x, main.ground_y(q.x, q.y), q.y)
-	actor.cur_speed = 0.0
+	var q: Vector2 = main.keep_out(Vector2(p.x, p.z), 0.35, true, true)
+	if haltung == "sitzen":
+		_aufstehen("stehen")
+	figur.setzen(Vector3(q.x, 0, q.y))
+	if figur.zustand != "boden":
+		figur.geh_zu("boden")
+	wasser = ""
 	_anchor = null
 
 
 func test_walk(v: Vector2, secs: float, r: bool) -> void:
+	"""tests: v = (forward, turn right) along the figure's own heading (like the old person), secs long"""
 	_test = {"v": v, "run": r, "until": _now() + secs}
 
 
 func speed_now() -> float:
-	return float(actor.cur_speed) if actor != null and is_instance_valid(actor) else 0.0
+	return float(actor.cur_speed) if ok() else 0.0
 
 
-func tick(dt: float) -> void:
-	if actor == null or not is_instance_valid(actor):
-		return
-	if _scene != main.scene:                                # eine andere Szene: neu neben dem Mover
+func tick(_dt: float) -> void:
+	"""(explore.gd calls it every frame; the work is in _process / spaet: before and after the actors)"""
+	if ok() and _scene != main.scene:                       # another scene: new beside the mover
 		_ensure()
-	if not active:
+		if active:
+			set_active(true)
+
+
+# ---- posture -----------------------------------------------------------------------------------------------------------
+func wunsch(k: String) -> void:
+	"""a key / button / control command: sprung | klettern | haltung | sitzen | liegen | ansicht"""
+	_wunsch[k] = true
+
+
+func touch_tipp(id: String) -> void:
+	if id == "ansicht":
+		ex.next_view()
+	else:
+		wunsch(id)
+
+
+func haltung_weiter() -> void:
+	"""C: stehen → geduckt → kriechen → stehen (sitting / lying: up to standing)"""
+	if wasser == "schwimmen":
+		return
+	if haltung in ["sitzen", "liegen"]:
+		_aufstehen("stehen")
+		return
+	set_haltung(HALTUNGEN[(HALTUNGEN.find(haltung) + 1) % HALTUNGEN.size()])
+
+
+func set_haltung(h: String) -> void:
+	if not h in POSTUR or not ok():
+		return
+	if wasser == "schwimmen" and h != "stehen":
+		return                                              # swimming: no posture
+	if h == haltung:
+		return
+	if haltung == "sitzen" and h != "sitzen":
+		_aufstehen(h)
+		return
+	if h == "sitzen":
+		_hinsetzen()
+		return
+	if h == "liegen" and wasser != "":
+		main.start_info = T.t("Im Wasser kann man sich nicht hinlegen")
+		return
+	haltung = h
+
+
+func _hinsetzen() -> void:
+	if wasser != "":
+		main.start_info = T.t("Im Wasser kann man sich nicht hinsetzen")
+		return
+	if figur.zustand != "boden":
+		return
+	var s: Dictionary = Welt.sitz(main, actor.global_position, float(actor.heading))
+	sitz = s
+	haltung = "sitzen"
+	actor.cur_speed = 0.0
+	actor.sit_seat = float(s["h"])
+	actor.idle_kind = "sit"
+	actor.idle_until = actor.now_s() + 1.0e6
+	actor.ctl_sit = true
+	if str(s["art"]) != "boden":
+		var sp: Vector3 = s["p"]
+		actor.position = Vector3(sp.x, actor.position.y, sp.z)
+		actor.heading = float(s["yaw"])
+		actor.rotation.y = actor.heading
+		figur._p0 = actor.position
+
+
+func _aufstehen(nach: String) -> void:
+	if haltung == "sitzen":
+		actor.ctl_sit = false
+		actor.idle_until = 0.0
+		actor.idle_kind = ""
+		if str(sitz.get("art", "boden")) != "boden":        # off the bench: a step away from it
+			var q: Vector2 = main.keep_out(Vector2(actor.position.x, actor.position.z), float(actor.radius), true, true)
+			actor.position.x = q.x
+			actor.position.z = q.y
+			figur._p0 = actor.position
+		sitz = {}
+	haltung = nach if nach in POSTUR and nach != "sitzen" else "stehen"
+
+
+func _haltung_tick(ein: Dictionary) -> void:
+	var mv: Vector2 = ein.get("mv", Vector2.ZERO)
+	if bool(_wunsch.get("haltung", false)):
+		haltung_weiter()
+	if bool(_wunsch.get("sitzen", false)):
+		if haltung == "sitzen":
+			_aufstehen("stehen")
+		else:
+			set_haltung("sitzen")
+	if bool(_wunsch.get("liegen", false)):
+		set_haltung("stehen" if haltung == "liegen" else "liegen")
+	if haltung == "sitzen" and mv.length() > 0.3:
+		_aufstehen("stehen")                                # walking off: up from the seat
+	elif haltung == "liegen" and mv.length() > 0.3:
+		haltung = "kriechen"                                # lying still, then moving: crawling on
+	if wasser == "schwimmen" and haltung != "stehen":
+		if haltung == "sitzen":
+			_aufstehen("stehen")
+		haltung = "stehen"
+	# what actor.gd does with it
+	actor.ctl_posture = 2 if wasser == "schwimmen" else int(POSTUR[haltung])
+	actor.gear_speed = (SCHWIMM_V / float(ActorS.PLAYER_SPEED[2])) if wasser == "schwimmen" else (WATEN_K if wasser == "waten" else 1.0)
+	actor.gear_norun = wasser != ""
+	actor.run_top = renn_tempo(main)
+	actor.frozen = haltung in ["sitzen", "liegen"]
+
+
+func _skelett() -> Skeleton3D:
+	"""the visible body of the figure (figur_mensch.gd / figur_paket.gd: a skeleton) - null = built from shapes"""
+	if not ok():
+		return null
+	if _sk != null and is_instance_valid(_sk) and _sk.is_inside_tree() and _sk_von == actor:
+		return _sk
+	_sk = null
+	_sk_von = actor
+	for s in actor.find_children("*", "Skeleton3D", true, false):
+		if (s as Skeleton3D).is_visible_in_tree():
+			_sk = s
+			_sk_kopf = _sk.find_bone("Head")
+			if _sk_kopf < 0:
+				for i in _sk.get_bone_count():
+					if _sk.get_bone_name(i).to_lower().contains("head"):
+						_sk_kopf = i
+						break
+			break
+	return _sk
+
+
+func hoehe() -> float:
+	"""how high the figure is now (m above its feet): the highest bone of its visible skeleton + the top of the head (the
+	joints of actor.gd without a skeleton) - crouching, sitting and crawling make it lower; MoveEye sees the same body"""
+	if not ok():
+		return 0.0
+	var sk := _skelett()
+	var top := -INF
+	if sk != null:
+		for i in sk.get_bone_count():
+			top = maxf(top, (sk.global_transform * sk.get_bone_global_pose(i).origin).y)
+		top += 0.18                                          # the bones end at the base of the head
+	else:
+		var hd = actor.get("head")
+		if hd != null and is_instance_valid(hd):
+			top = (hd as Node3D).global_position.y + 0.2
+	if top == -INF:
+		return 0.0
+	return top - float(figur.y)
+
+
+# ---- every frame, before the actors ----------------------------------------------------------------------------------------
+func _process(dt: float) -> void:
+	if not ok():
+		return
+	uhr += dt
+	if not active or not ex.on:
 		actor.frozen = true
 		actor.ctl_move = Vector2.ZERO
 		return
-	actor.frozen = false
+	var ein := _eingabe(dt)
+	_haltung_tick(ein)
+	if haltung in ["sitzen", "liegen"]:
+		ein["mv"] = Vector2.ZERO
+		ein["sprung"] = false
+	if bool(_wunsch.get("klettern", false)) or bool(ein.get("sprung", false)):
+		if wasser == "" and figur.zustand == "boden":
+			if haltung != "stehen":
+				if bool(ein.get("sprung", false)):
+					haltung = "stehen"                      # first up, then a jump
+				ein["sprung"] = false
+			else:
+				var k: Dictionary = Welt.kante(main, figur.pos(), float(actor.heading))
+				if not k.is_empty():
+					figur._hochziehen(k["ziel"], k["kante"])   # over the edge (the mantle of kit_figur.gd)
+					ein["sprung"] = false
+				elif bool(_wunsch.get("klettern", false)) and not bool(ein.get("sprung", false)):
+					main.start_info = T.t("Hier gibt es nichts zum Hochklettern")
+		else:
+			ein["sprung"] = false                              # swimming / wading: no jumps (no diving)
+	_wunsch = {}
+	_ein = ein
+	if wasser == "schwimmen":
+		actor.puppet = false
+		actor.frozen = false
+		actor.ctl_move = ein.get("mv", Vector2.ZERO)
+		actor.ctl_run = false
+	else:
+		figur.vor(dt, ein)
+		if haltung in ["sitzen", "liegen"]:
+			actor.ctl_move = Vector2.ZERO
+	yaw = float(actor.heading)
+
+
+func _view_yaw() -> float:
+	match str(ex.view):
+		"driver":
+			return _eye_yaw
+		"top":
+			return _top_yaw
+	return float(regie.yaw)
+
+
+func _eingabe(dt: float) -> Dictionary:
+	"""rover_pad.gd (W A S D, arrows, green stick, controller) → one wish; mv in WORLD x/z, relative to the view"""
 	var c := cmd
 	var r := run
+	var tst := false
 	if not _test.is_empty():
 		if _now() < float(_test["until"]):
 			c = _test["v"]
 			r = bool(_test["run"])
+			tst = true
 		else:
 			_test = {}
 	c = c.limit_length(1.0)
-	yaw = wrapf(yaw - c.y * TURN * dt, -PI, PI)
-	var fwd := Vector2(-sin(yaw), -cos(yaw))
-	actor.ctl_move = fwd * c.x * (0.6 if c.x < 0.0 else 1.0)   # zurück: etwas langsamer
-	actor.ctl_run = r and c.x > 0.1
-	if absf(c.x) < 0.08:                                    # an Ort drehen: der Körper dreht mit
-		actor.heading = rotate_toward(float(actor.heading), yaw, 6.0 * dt)
-		actor.rotation.y = actor.heading
+	var mv := Vector2.ZERO
+	if tst:                                                  # tests (pwalk): along the own heading, turning like before
+		yaw = wrapf(float(actor.heading) - c.y * TURN * dt, -PI, PI)
+		if absf(c.x) < 0.08:
+			actor.heading = rotate_toward(float(actor.heading), yaw, 6.0 * dt)
+			actor.rotation.y = actor.heading
+		mv = Vector2(-sin(yaw), -cos(yaw)) * c.x
+	elif str(ex.view) == "driver":                           # own eyes: A / D turn the view, W / S along it
+		_eye_yaw = wrapf(_eye_yaw - c.y * TURN * dt, -PI, PI)
+		mv = Vector2(-sin(_eye_yaw), -cos(_eye_yaw)) * c.x * (0.6 if c.x < 0.0 else 1.0)
+	else:
+		var vy := _view_yaw()
+		var fw := Vector3(-sin(vy), 0, -cos(vy))
+		var rt := fw.cross(Vector3.UP).normalized()
+		var m3 := fw * c.x + rt * c.y
+		mv = Vector2(m3.x, m3.z)
+	var sp := bool(_wunsch.get("sprung", false))
+	return {"mv": mv.limit_length(1.0), "run": r and c.length() > 0.1, "sprung": sp, "sprung_h": false, "aktion": false,
+			"vor": c.x, "quer": c.y}
+
+
+# ---- every frame, after the actors (kit_spaet.gd) --------------------------------------------------------------------------
+func spaet(dt: float, real_dt: float) -> void:
+	if not ok() or not active or not ex.on:
+		return
+	var zs := str(figur.zustand)
+	if zs in ["boden", "luft"]:
+		_waende(figur._p0)
+	var w: Dictionary = Welt.wasser(main, actor.position)
+	var art: String = Welt.art_fuer_tiefe(float(w.get("tiefe", 0.0)), str(w.get("art", "")) == "bach")
+	if art == "schwimmen" and (zs == "boden" or (zs == "luft" and figur.y <= float(w["spiegel"]) - SCHWIMM_TIEF + 0.05)):
+		if wasser != "schwimmen":
+			ton("platsch")
+			figur.nass += 1
+			if haltung == "sitzen":
+				_aufstehen("stehen")
+			haltung = "stehen"
+		wasser = "schwimmen"
+		spiegel = float(w["spiegel"])
+		if zs == "luft":
+			figur.geh_zu("boden")
+		figur.y = spiegel - SCHWIMM_TIEF
+		figur.vy = 0.0
+		actor.position.y = figur.y
+		figur._p0 = actor.position
+	else:
+		if wasser == "schwimmen":                            # out of the deep water: the feet on the bed / the bank
+			figur.y = main.ground_y(actor.position.x, actor.position.z)
+			figur._p0 = Vector3(figur._p0.x, figur.y, figur._p0.z)
+		wasser = art if art != "schwimmen" else ""
+		figur.nach(dt, _ein)
 	_bounds()
+	_kamera(dt, real_dt)
+	touch.tick()
+
+
+func _waende(von: Vector3) -> void:
+	"""fast or in the air: from where it was to where it is now in steps of 0.2 m with main.keep_out - never through a wall"""
+	var a := Vector2(von.x, von.z)
+	var b := Vector2(actor.position.x, actor.position.z)
+	var d := b - a
+	var n := int(ceil(d.length() / 0.2))
+	if n <= 1:
+		return
+	var q := a
+	for i in range(n):
+		q = main.keep_out(q + d / float(n), float(actor.radius), true, true)
+	actor.position.x = q.x
+	actor.position.z = q.y
+
+
+func _setz_xz(w: Vector3) -> void:
+	var g: float = main.ground_y(w.x, w.z)
+	actor.position = Vector3(w.x, g if wasser != "schwimmen" else figur.y, w.z)
+	if wasser != "schwimmen":
+		figur.y = g
+	figur._p0 = actor.position
 
 
 func _bounds() -> void:
@@ -222,27 +650,170 @@ func _bounds() -> void:
 		q = Vector2(clampf(q.x, Bt.LO + 30.0, -Bt.LO - 30.0), clampf(q.y, Bt.LO + 30.0, -Bt.LO - 30.0))
 		_anchor = an
 		if q.distance_to(q0) > 0.001:
-			var w: Vector3 = b.WG(q.x, q.y, 0.0)
-			actor.position = Vector3(w.x, main.ground_y(w.x, w.z), w.z)
+			_setz_xz(b.WG(q.x, q.y, 0.0))
 		return
 	_anchor = null
 	if main.scene != "bergtal":
 		var cx := clampf(p.x, -BOUND, BOUND)
 		var cz := clampf(p.z, -BOUND, BOUND)
 		if cx != p.x or cz != p.z:
-			actor.position = Vector3(cx, main.ground_y(cx, cz), cz)
+			_setz_xz(Vector3(cx, 0, cz))
+
+
+# ---- the views ---------------------------------------------------------------------------------------------------------------
+func _kamera(dt: float, real_dt: float) -> void:
+	var v := str(ex.view)
+	if main.spectate:
+		return                                               # the spectator moves the view (explore.gd)
+	# mouse / R1 + stick (explore.gd orbit, pitch) and the wheel (dist): as changes
+	var d_or: float = float(ex.orbit) - _orbit_alt
+	var d_pi: float = float(ex.pitch) - _pitch_alt
+	var d_di: float = float(ex.dist) - _dist_alt
+	ex.orbit = 0.0
+	_orbit_alt = 0.0
+	_pitch_alt = float(ex.pitch)
+	_dist_alt = float(ex.dist)
+	if v != _view_alt:
+		_view_alt = v
+		_eye_yaw = float(actor.heading)
+		_top_yaw = float(regie.yaw)
+		if v == "chase":
+			regie.hinter_figur()
+		_eye_ok = false
+	var cam: Camera3D = main.view_cam
+	match v:
+		"driver":
+			_eye_yaw = wrapf(_eye_yaw + d_or, -PI, PI)
+			var fw := Vector3(-sin(_eye_yaw), 0, -cos(_eye_yaw))
+			var want := augen_punkt() + fw * 0.12
+			_eye_p = want if not _eye_ok else _eye_p.lerp(want, clampf(dt * 14.0, 0.0, 1.0))
+			_eye_ok = true
+			main.view_mode = 0
+			cam.fov = 70.0
+			cam.near = 0.05
+			cam.global_position = _eye_p
+			cam.look_at(_eye_p + fw * 10.0 + Vector3(0, -1.2 + (0.38 - float(ex.pitch)) * 4.0, 0), Vector3.UP)
+		"top":
+			_top_yaw = wrapf(_top_yaw + d_or, -PI, PI)
+			var tp: Vector3 = figur.pos() + Vector3(0, 0.8, 0)
+			var hgt := float(ex.dist) * 2.6 + 6.0
+			var want2: Vector3 = tp + Vector3(0.01, hgt, 0.01)
+			main.view_mode = 0
+			cam.fov = 70.0
+			cam.global_position = cam.global_position.lerp(want2, clampf(dt * (3.0 + speed_now() * 0.8), 0.0, 1.0)) if _eye_ok else want2
+			_eye_ok = true
+			cam.look_at(tp, Vector3.FORWARD.rotated(Vector3.UP, _top_yaw))
+		_:
+			var look := Vector2(-d_or, d_pi)
+			regie.tick(dt, real_dt, {"look": look, "zoom": d_di * 0.4})
+
+
+func augen_punkt() -> Vector3:
+	"""where the eyes of the figure are now (world): the head bone of the visible body (else the head of actor.gd) + a
+	little up - follows the posture (crouching, sitting, crawling, swimming)"""
+	var sk := _skelett()
+	if sk != null and _sk_kopf >= 0:
+		return sk.global_transform * sk.get_bone_global_pose(_sk_kopf).origin + Vector3(0, 0.1, 0)
+	var hd = actor.get("head")
+	if hd != null and is_instance_valid(hd):
+		return (hd as Node3D).global_position + Vector3(0, 0.1, 0)
+	return Vector3(actor.position.x, figur.y + float(AUGE.get(haltung, EYE)), actor.position.z)
+
+
+# ---- the frame of kit_figur.gd / kit_regie.gd (no parcours, no film, no Maggie) --------------------------------------------
+func ton(nm: String) -> void:
+	var k = main.get("klang")
+	if k != null and k.has_method("kit_ton"):
+		k.kit_ton(nm)
+
+
+func musik(_z: String) -> void:
+	pass
+
+
+func sag(text: String, _wer := "", _d := 0.0) -> void:
+	main.start_info = text
+
+
+func tx(s: String) -> String:
+	return T.t(s)
+
+
+func wasser_fx(_p: Vector3) -> void:
+	pass
+
+
+func zurueck_zum_checkpoint() -> void:
+	"""nobody dies (kit_figur.gd zurueck): here simply on the ground where it is"""
+	if ok():
+		figur.setzen(figur.pos())
+		figur.geh_zu("boden")
+
+
+func aktion_fertig(_id: String) -> void:
+	pass
+
+
+func fund(_id: String) -> void:
+	pass
+
+
+func karte_start(_d: Dictionary) -> void:
+	pass
+
+
+func ir_umschalten() -> void:
+	pass
+
+
+func maggie_heben(_d: Dictionary) -> void:
+	pass
+
+
+func zeitlupe(f: float, s: float) -> void:
+	regie.zeitlupe(f, s)
+
+
+func tal_dir_welt(v: Vector2) -> Vector2:
+	return v
+
+
+func hund_pos() -> Vector3:
+	return figur.pos()
+
+
+func hund_heading() -> float:
+	return float(actor.heading) if ok() else 0.0
+
+
+func hund_tempo() -> float:
+	return 0.0
+
+
+func ziel_welt():
+	return null
 
 
 func state() -> Dictionary:
-	var o := {"on": active, "why_not": why_not(main), "there": actor != null and is_instance_valid(actor)}
+	var o := {"on": active, "why_not": why_not(main), "there": ok()}
 	if o["there"]:
 		var p: Vector3 = actor.global_position
 		o["x"] = snappedf(p.x, 0.01)
-		o["y"] = snappedf(p.y, 0.01)
+		o["y"] = snappedf(figur.y, 0.01)
 		o["z"] = snappedf(p.z, 0.01)
 		o["speed"] = snappedf(speed_now(), 0.01)
+		o["heading"] = snappedf(float(actor.heading), 0.001)
+		o["haltung"] = haltung
+		o["wasser"] = wasser
+		o["zustand"] = str(figur.zustand)
+		o["hoehe"] = snappedf(hoehe(), 0.01)
+		o["sitz"] = str(sitz.get("art", "")) if haltung == "sitzen" else ""
+		o["run_top"] = snappedf(renn_tempo(main), 0.01)
 		var vq = valley_pos()
 		if vq is Vector2:
 			o["tal"] = [snappedf(vq.x, 0.1), snappedf(vq.y, 0.1)]
 	o["story"] = story() != null
+	o["schnell"] = schnell_an(main)
+	o["ptempo"] = float(main.get("ex_ptempo")) if main.get("ex_ptempo") != null else 0.0
+	o["touch"] = touch.info() if touch != null else {}
 	return o
