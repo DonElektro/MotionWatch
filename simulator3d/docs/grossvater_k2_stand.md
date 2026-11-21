@@ -29,6 +29,18 @@ Zweig `sim-grossvater-k2` (von origin/main 9f14de1), Worktree /tmp/claude-0/wt_g
   Klettersteig, Gischt, warmes Licht). Nachtlager am Rand bei (-22, -9) (bergtal «frei», Biwak), Lias Zelt (-10, -16.5).
 - Texte 5 Sprachen (rm mit «?» zum Korrekturlesen). Bilder PC / Handy / iPad hoch + quer in scratchpad/grossvater/bau.
 
+## Polish + Probe-Paket (21.11. nachts)
+- Film-Prüfung automatisch (kit_regie.gd pruef_shot, `{"action":"kit","do":"filmcheck"}`, im Kit-Test): jede Einstellung
+  Motiv ≥ 15 % Bildhöhe, im Bild, kein Fels davor – alle 14 grün. Einstellungen neu gerahmt (Brücke von vorne tief,
+  Rückblende beide am Steinmann mit Sepia/Vignette/Korn/Wischblende, Lia am Wasserfall, IR über MoveEye zum Felsen + Fuchs).
+- Wand-Details (MultiMesh: Blöcke, Farn, Simse, Lärchen), IR-Lichtkegel, Startkarte (Rolle + Name, «Nina»), Ziel-Zeile nach
+  Sprung (setzen mit sync), Laterne bei Lias Zelt, Brückenplanken ohne Lücke.
+- Autostart: Datei `res://inhalte/grossvater_probe.json` ({"autostart": true}) NUR im Zweig `sim-grossvater-k2-probe`
+  (nie zusammenführen), oder Startoption `--grossvater-neu`, Browser `?grossvater=1`. Tests mit --no-tour starten nie davon.
+- Pakete: CI-Lauf 44848049125 auf sim-grossvater-k2-probe (Export Windows / Linux / Pi als Artefakte, Kit-Test grün);
+  Web lokal exportiert: scratchpad/grossvater/paket/ (web-grossvater-k2-roh.zip = Godot-Export, sim-web-grossvater-k2.zip =
+  Format des Webspace) – Stand 186039a (IR-Felsen noch am alten Ort).
+
 ## Als Nächstes
 1. Separat (eigener Commit, NICHT mit dem Kapitel mischen): Bergtal `_carve_stream` vertieft bei jedem Schritt –
    Korrektur auf ~19 m, alle Nutzer des Bergtals prüfen und melden, was sich verschiebt.

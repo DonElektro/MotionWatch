@@ -12976,6 +12976,13 @@
   "it": "Dall'altra parte!",
   "rm": "Sur via!"
  },
+ "Drüben! Maggie läuft zum Riegel.": {
+  "en": "Through! Maggie runs to the bolt.",
+  "fr": "Passée ! Maggie court vers le verrou.",
+  "it": "Passata! Maggie corre al chiavistello.",
+  "rm": "Passada! Maggie curra a la stanga.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Drück K, um in den Kristall zu schauen – er zeigt dir dann eine Gefahr oder einen Weg.": {
   "en": "Press K to look into the crystal – it will show you a danger or a way.",
   "fr": "Appuie sur K pour regarder dans le cristal – il te montre un danger ou un chemin.",
@@ -17064,6 +17071,13 @@
   "fr": "Suis le ruisseau depuis l’alpage vers le glacier.",
   "it": "Segui il torrente dall’alpe verso il ghiacciaio.",
   "rm": "Suonda l’aual da l’alp en direcziun dal glatscher."
+ },
+ "Folge dem leuchtenden Punkt.": {
+  "en": "Follow the glowing point.",
+  "fr": "Suis le point lumineux.",
+  "it": "Segui il punto luminoso.",
+  "rm": "Suonda il punct che glischa.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Folge den Wegweisern nach oben – dort ist die Aussicht weit.": {
   "en": "Follow the signposts upwards – the view is wide up there.",
@@ -27060,6 +27074,13 @@
   "it": "Tirare la paratoia sinistra",
   "rm": "Trair la porta sanestra"
  },
+ "Links in der Wand – das kleine Loch!": {
+  "en": "On the left in the wall – the little hole!",
+  "fr": "À gauche dans la paroi – le petit trou !",
+  "it": "A sinistra nella parete – il buchino!",
+  "rm": "A sanester en la paraid – la pitschna fora!",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "links von dir": {
   "en": "to your left",
   "fr": "à ta gauche",
@@ -27900,6 +27921,13 @@
   "fr": "Maggie et le cristal de roche",
   "it": "Maggie e il cristallo di rocca",
   "rm": "Maggie ed il cristal da muntogna"
+ },
+ "Maggie zuerst durch das Loch auf dem Felssims. Drüben läuft sie selbst zum Riegel am Gatter.": {
+  "en": "Maggie first through the hole on the rock ledge. On the other side she runs to the bolt by herself.",
+  "fr": "Maggie d’abord par le trou sur la corniche. De l’autre côté, elle court seule jusqu’au verrou.",
+  "it": "Prima Maggie attraverso il buco sulla cengia. Dall’altra parte corre da sola al chiavistello.",
+  "rm": "Maggie l’emprim tras la fora sin la cornisch. Da l’autra vart curra ella sezza a la stanga.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Maggie – spring!": {
   "en": "Maggie – jump!",
@@ -35788,6 +35816,13 @@
   "fr": "Chercheuse de trésors",
   "it": "Cercatrice di tesori",
   "rm": "Tschertgadra da scazis"
+ },
+ "Schau auf den Kompass: die gelbe Marke zeigt zum Ziel.": {
+  "en": "Look at the compass: the yellow mark points to the goal.",
+  "fr": "Regarde la boussole : la marque jaune indique le but.",
+  "it": "Guarda la bussola: il segno giallo indica la meta.",
+  "rm": "Guarda sin il cumpass: il segn mellen mussa la finamira.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Schau auf die Schatten: sie zeigen von der Sonne weg. Am Nachmittag steht die Sonne im Südwesten bis Westen.": {
   "en": "Look at the shadows: they point away from the sun. In the afternoon the sun is in the south-west to west.",

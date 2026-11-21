@@ -84,7 +84,7 @@ func tick(dt: float, real_dt: float, ein: Dictionary) -> void:
 		"shot":
 			want = _shot_xform(dt)
 		"maggie":
-			want = _folge_xform(kit.hund_pos() + Vector3(0, 0.5, 0), 2.6, dt, kit.hund_heading())
+			want = _maggie_xform(dt)
 		_:
 			want = _folge_xform(ziel_figur(), _dist_fuer_zustand(), dt, float(kit.figur.a.heading))
 	if _blend > 0.0:
@@ -98,6 +98,22 @@ func tick(dt: float, real_dt: float, ein: Dictionary) -> void:
 	_schuetteln_tick(dt)
 	if art == "folge" and not Quality.lite():
 		AnimKamera.wippen(main, cam, kit.figur.a, dt)
+
+
+func _maggie_xform(dt: float) -> Transform3D:
+	"""steering Maggie: the camera behind her, looking past her to the next target (window, then bolt) - both in the picture"""
+	var hp: Vector3 = kit.hund_pos() + Vector3(0, 0.35, 0)
+	var z = kit.ziel_welt()
+	if not (z is Vector3):
+		return _folge_xform(hp, 2.6, dt, kit.hund_heading())
+	var to: Vector3 = (z as Vector3) - hp
+	to.y = 0.0
+	var dir := to.normalized() if to.length() > 0.3 else Vector3(-sin(kit.hund_heading()), 0, -cos(kit.hund_heading()))
+	var mid := hp.lerp(z, 0.35)
+	var want := hp - dir * 3.2 + Vector3(0, 2.0, 0)
+	want = frei_ziehen(want, mid)
+	var tr := Transform3D(Basis.IDENTITY, want).looking_at(mid, Vector3.UP)
+	return cam.global_transform.interpolate_with(tr, clampf(dt * 4.0, 0.0, 1.0)) if _blend <= 0.0 else tr
 
 
 func _dist_fuer_zustand() -> float:

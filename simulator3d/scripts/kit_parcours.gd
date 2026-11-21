@@ -409,6 +409,18 @@ func _wand(e: Dictionary, c: Vector2, lq: float, ls: float, top: float) -> void:
 			_box(cc, hq, ls, sims_top, FELS)
 			var n := node(holder, Vector3(cc.x, sims_top + 0.6 + (t - sims_top - 0.6) * 0.5, cc.y), -rot)
 			fels(part(n, boxm(hq * 2.0, t - sims_top - 0.6, ls * 2.0), Vector3.ZERO, FELS, "stone"))
+			# the hole made obvious (21.11.): a dark frame round it and warm light coming through from the other side
+			var hn := node(holder, Vector3(cc.x, sims_top + 0.3, cc.y), -rot)
+			var dunkel: Material = m.mat(Color(0.12, 0.09, 0.07))
+			for sx in [-1.0, 1.0]:
+				light_part(hn, boxm(0.12, 0.72, ls * 2.0 + 0.04), Vector3(sx * (hq + 0.02), 0, 0), dunkel)
+			light_part(hn, boxm(hq * 2.0 + 0.2, 0.12, ls * 2.0 + 0.04), Vector3(0, 0.36, 0), dunkel)
+			var licht := glow_mat(Color(1.0, 0.85, 0.55), 1.4, 0.55)
+			licht.cull_mode = BaseMaterial3D.CULL_DISABLED
+			var lq_m := QuadMesh.new()
+			lq_m.size = Vector2(hq * 1.7, 0.5)
+			light_part(hn, lq_m, Vector3(0, 0, -ls - 0.03), licht)
+			lamp(hn, Vector3(0, 0, -ls - 0.6), Color(1.0, 0.8, 0.5), 1.2, 3.0)
 	e["top"] = top
 
 
@@ -482,8 +494,12 @@ func _fall(e: Dictionary, c: Vector2, h: float, w: float) -> void:
 	var n := node(holder, Vector3(c.x, g + (h + 0.6) * 0.5 - 0.3, c.y), -rot)
 	n.add_child(mi)
 	var fuss := Vector3(0, -(h + 0.6) * 0.5 + 0.3, 0.35)
-	var spray := CPUParticles3D.new()                    # spray: a capped count (Lite 10, else 36), CPU particles work on the web too
-	spray.amount = 10 if lite else 36
+	if lite:                                               # the owner saw flat white squares: no spray in Lite (foam ring stays)
+		_schaum(n, fuss, w)
+		e["node"] = n
+		return
+	var spray := CPUParticles3D.new()                    # spray: soft round billboards, fading out (CPU particles work on the web too)
+	spray.amount = 30
 	spray.lifetime = 1.2
 	spray.position = fuss
 	spray.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
@@ -497,11 +513,40 @@ func _fall(e: Dictionary, c: Vector2, h: float, w: float) -> void:
 	spray.scale_amount_max = 1.2
 	var pm := QuadMesh.new()
 	pm.size = Vector2(0.35, 0.35)
-	var pmat := glow_mat(Color(0.92, 0.96, 1.0), 0.3, 0.35)
-	pmat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	var pmat := StandardMaterial3D.new()
+	pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	pmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	pmat.albedo_texture = _weich_tex()
+	pmat.albedo_color = Color(0.95, 0.97, 1.0, 0.5)
+	pmat.vertex_color_use_as_albedo = true
+	pmat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
 	pm.material = pmat
 	spray.mesh = pm
+	var fade := Gradient.new()
+	fade.set_color(0, Color(1, 1, 1, 0.7))
+	fade.set_color(1, Color(1, 1, 1, 0.0))
+	spray.color_ramp = fade
 	n.add_child(spray)
+	_schaum(n, fuss, w)
+	e["node"] = n
+
+
+static var _weich: ImageTexture = null
+
+
+static func _weich_tex() -> ImageTexture:
+	"""a soft round dot (radial falloff) for the spray"""
+	if _weich == null:
+		var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+		for y in range(32):
+			for x in range(32):
+				var r := Vector2(x - 15.5, y - 15.5).length() / 15.5
+				img.set_pixel(x, y, Color(1, 1, 1, clampf(1.0 - r, 0.0, 1.0) * clampf(1.0 - r, 0.0, 1.0)))
+		_weich = ImageTexture.create_from_image(img)
+	return _weich
+
+
+func _schaum(n: Node3D, fuss: Vector3, w: float) -> void:
 	var ring := MeshInstance3D.new()                      # the foam ring in the pool under the fall
 	var tm := TorusMesh.new()
 	tm.inner_radius = w * 0.35
@@ -514,7 +559,6 @@ func _fall(e: Dictionary, c: Vector2, h: float, w: float) -> void:
 	ring.material_override = glow_mat(Color(0.9, 0.95, 0.97), 0.25, 0.6)
 	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	n.add_child(ring)
-	e["node"] = n
 
 
 # ---- what the figure / the kit asks ----------------------------------------------------------------------------------------
