@@ -87,8 +87,14 @@ Zweig `sim-grossvater-k2` (von origin/main 9f14de1), Worktree /tmp/claude-0/wt_g
   Kraft, nicht bei Gehen auf die Kamera zu, Maus/Stick übersteuern, Federarm mit Hysterese, Höhe je Zustand).
 - [x] Klettern: Hochziehen in Phasen (Hände an die Kante – Arm-Winkel aus der Kantenhöhe –, ziehen, Knie, stehen; Zeit nach
   Höhe), Stufen bis 0.6 m einfach hochsteigen (auch von selbst beim Gehen), Ausstieg oben an der Leiter gleich.
-- [ ] Grafik: Wände, Figuren, Wasser, Licht · [ ] Stimmen (Piper) · [ ] Musik einbauen (nach Freigabe) · [ ] Web-Test
-  Handy/iPad · [ ] Übergabe an den Integrator.
+- [x] Grafik: Wände (gebogene Schichten, Kalkflächen, Risse, Moos in Fugen, AO aus der Form), Geröll, Brocken, Überhänge;
+  Wasser-Shader (Fall mit Strähnen + Schaumfuss, Bach fliesst talwärts, Gumpen mit Wellen + Ringen), Nebel am Fallfuss;
+  Licht ausgewogen (Filmic, Belichtung 0.95, kühleres Umgebungslicht, wärmere weichere Sonne); Figuren: Hut (Grossvater),
+  Mütze (Toni), Zopf (Lia), runder Rucksack mit Trägern.
+- [x] Stimmen: Piper/Thorsten (CC0) für Erzähler + Grossvater (tiefer), klang/stimmen/ (11 Dateien, 200 KB), nur Deutsch.
+- [x] Musik gewählt (explore Lost Frontier, spannung Gathering Darkness, action Five Armies, entdeckung Epic loop);
+  ganze Stücke 96 kbit/s → klang/sp_kit_<zustand>.ogg (klang.gd nimmt sie von selbst), Quellen in Über + LIZENZEN.
+- [ ] Web-Test Handy/iPad (web: ?grossvater=1&name=Nina&k2szene=s06_bruecke) · [ ] Übergabe an den Integrator.
 
 ## Als Nächstes
 1. Separat (eigener Commit, NICHT mit dem Kapitel mischen): Bergtal `_carve_stream` vertieft bei jedem Schritt –

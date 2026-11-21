@@ -97,7 +97,13 @@ static func autostart_pruefen(m) -> void:
 		m.news.close()
 	var k = ensure(m)
 	if not k.running:
-		k.start({"rolle": "tochter"})                       # the start card asks for the role and the name (default «Nina»)
+		var o := {"rolle": "tochter"}                       # the start card asks for the role and the name (default «Nina»)
+		for x in (OS.get_cmdline_user_args() + preload("res://scripts/web.gd").args()):
+			if str(x).begins_with("--kit-name="):
+				o["name"] = str(x).substr(11)               # (tests: a name = no start card)
+			elif str(x).begins_with("--kit-szene="):
+				o["szene"] = str(x).substr(12)
+		k.start(o)
 
 
 static func ensure(m):

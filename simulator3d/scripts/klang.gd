@@ -590,7 +590,7 @@ func _musik_tick(dt: float) -> void:
 				p.set_meta("db", float(e[1]))
 				_mus_g[_mus_i] = 0.0
 				p.volume_db = -80.0
-				p.play(randf() * maxf(0.0, p.stream.get_length() - 1.0))
+				p.play(0.0 if nm.begins_with("kit_") else randf() * maxf(0.0, p.stream.get_length() - 1.0))   # (the pieces of the kit: from the start)
 				_merke("musik:" + nm)
 		_mus_nm[_mus_i] = nm
 	var duck := 1.0 if _t > _duck_bis else 0.4
