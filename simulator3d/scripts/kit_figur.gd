@@ -134,7 +134,7 @@ func vor(dt: float, ein: Dictionary) -> void:
 			_springen(mv)
 	elif zustand == "film":
 		a.ctl_move = kit.film_move
-		a.ctl_run = false
+		a.ctl_run = kit.film_run
 	else:
 		a.ctl_move = Vector2.ZERO
 

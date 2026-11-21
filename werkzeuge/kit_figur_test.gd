@@ -118,6 +118,9 @@ func _welt() -> void:
 		pruef(tiefe > 14.0 and tiefe < 22.0, "Schlucht: %.1f m tief bei s 40" % tiefe)
 		var w: Vector3 = k.par.welt(20.0, 0.0)
 		pruef(absf(float(m.ground_y(w.x, w.z)) - w.y) < 0.05, "Schlucht: main.ground_y = Schlucht-Boden")
+	# every film shot: subject >= 15 % of the picture height, in the picture, no rock in front
+	for r in c({"do": "filmcheck"}).get("shots", []):
+		pruef(bool(r["ok"]), "Film-Einstellung %s: Anteil %.2f, im Bild %s, frei %s, Abstand %.1f m" % [r["wo"], float(r["anteil"]), str(r["im_bild"]), str(r["frei"]), float(r["abstand"])])
 	# walking
 	await setzen(3.0, 0.0)
 	var s0 := float(fig()["s"])

@@ -75,6 +75,27 @@ var _karte := {}
 var fotos := 0
 
 
+const PROBE_DATEI := "res://inhalte/grossvater_probe.json"   # only in the probe package of the owner (delete before merging)
+
+
+static func autostart_pruefen(m) -> void:
+	"""the probe package for the owner: with res://inhalte/grossvater_probe.json ({"autostart": true}) or the start option
+	--grossvater-neu (browser: …?grossvater=1) the simulator goes straight into chapter 2 of the new mode (start card first)"""
+	var an := "--grossvater-neu" in (OS.get_cmdline_args() + OS.get_cmdline_user_args() + preload("res://scripts/web.gd").args())
+	if not an and FileAccess.file_exists(PROBE_DATEI):
+		var j = JSON.parse_string(FileAccess.get_file_as_string(PROBE_DATEI))
+		an = j is Dictionary and bool(j.get("autostart", false))
+	var nur_datei := not "--grossvater-neu" in (OS.get_cmdline_args() + OS.get_cmdline_user_args() + preload("res://scripts/web.gd").args())
+	if not an or (nur_datei and "--no-tour" in OS.get_cmdline_user_args()):
+		return                                             # (tests and CI start with --no-tour: the file alone never starts them)
+	await m.get_tree().create_timer(3.0).timeout          # the start of the simulator first (scene, panel, news)
+	if m.get("news") != null and m.news.has_method("close"):
+		m.news.close()
+	var k = ensure(m)
+	if not k.running:
+		k.start({"rolle": "tochter"})                       # the start card asks for the role and the name (default «Nina»)
+
+
 static func ensure(m):
 	if m.get("kit") == null or not is_instance_valid(m.kit):
 		var k = load("res://scripts/kit_abenteuer.gd").new()
@@ -112,9 +133,17 @@ func tx(s: String) -> String:
 # =======================================================================================================================
 # start / stop
 # =======================================================================================================================
+signal start_gewaehlt
+
+
 func start(o := {}) -> void:
 	if running:
 		stop()
+	if not o.has("name") and not bool(o.get("figur_test", false)):
+		var w: Dictionary = await _start_karte(str(o.get("rolle", "tochter")), "Nina")   # the owner: «Nina» as the default name
+		o = o.duplicate()
+		o["rolle"] = w["rolle"]
+		o["name"] = w["name"]
 	rolle = str(o.get("rolle", "enkelin"))
 	if not rolle in daten.ROLLEN:
 		rolle = "enkelin"
@@ -201,6 +230,85 @@ func start(o := {}) -> void:
 	szene_starten(n)
 
 
+var _sk_layer: CanvasLayer = null
+
+
+func _start_karte(rolle0: String, name0: String) -> Dictionary:
+	"""before the start: who you are (Enkelin, Enkel, Tochter, Sohn - 14–16 years) and your name"""
+	var UI = preload("res://scripts/ui_style.gd")
+	_sk_layer = CanvasLayer.new()
+	_sk_layer.layer = 116
+	add_child(_sk_layer)
+	var bg := ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.02, 0.03, 0.05, 0.82)
+	_sk_layer.add_child(bg)
+	var pc := PanelContainer.new()
+	pc.theme = UI.theme()
+	pc.add_theme_stylebox_override("panel", UI.box(Color(0.06, 0.08, 0.11, 0.97), Color(1, 0.8, 0.45, 0.7), 16, 20, 1))
+	_sk_layer.add_child(pc)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 12)
+	pc.add_child(v)
+	var t := Label.new()
+	t.text = T.t("Die Karte des Grossvaters") + " · " + T.t("Kapitel 2") + "\n" + T.t(str(daten.TITEL))
+	t.add_theme_font_size_override("font_size", 22)
+	t.add_theme_color_override("font_color", Color(1, 0.88, 0.6))
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(t)
+	var l := Label.new()
+	l.text = T.t("Wer bist du? (14–16 Jahre)")
+	v.add_child(l)
+	var wahl := {"rolle": rolle0 if rolle0 in daten.ROLLEN else "tochter"}
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 8)
+	v.add_child(row)
+	var knoepfe := {}
+	for r in daten.ROLLEN:
+		var b := Button.new()
+		b.text = T.t(str(daten.ROLLE_NAME[r]))
+		b.toggle_mode = true
+		b.custom_minimum_size = Vector2(110, 44)
+		b.button_pressed = r == wahl["rolle"]
+		var rr: String = r
+		b.pressed.connect(func():
+			wahl["rolle"] = rr
+			for k2 in knoepfe:
+				(knoepfe[k2] as Button).button_pressed = k2 == rr)
+		row.add_child(b)
+		knoepfe[r] = b
+	var l2 := Label.new()
+	l2.text = T.t("Dein Name")
+	v.add_child(l2)
+	var le := LineEdit.new()
+	le.text = name0
+	le.max_length = 16
+	le.custom_minimum_size = Vector2(300, 44)
+	v.add_child(le)
+	var los := Button.new()
+	los.text = T.t("Los geht's! ›")
+	los.custom_minimum_size = Vector2(300, 50)
+	UI.primary(los)
+	los.pressed.connect(func(): start_gewaehlt.emit())
+	le.text_submitted.connect(func(_t): start_gewaehlt.emit())
+	v.add_child(los)
+	var place := func():
+		var s := get_viewport().get_visible_rect().size
+		pc.size = Vector2.ZERO
+		pc.position = (s - pc.get_combined_minimum_size()) * 0.5
+	place.call_deferred()
+	_start_karte_offen = true
+	await start_gewaehlt
+	_start_karte_offen = false
+	wahl["name"] = le.text.strip_edges() if le.text.strip_edges() != "" else name0
+	_sk_layer.queue_free()
+	_sk_layer = null
+	return wahl
+
+
+var _start_karte_offen := false
+
+
 func stop() -> void:
 	if not running:
 		return
@@ -224,6 +332,8 @@ func stop() -> void:
 		hud.queue_free()
 	hud = null
 	_layers_zurueck()
+	_ir_kegel_setzen(false)
+	ir_an = false
 	musik("")
 	if main.has_method("_update_sky"):
 		main._update_sky()                                     # the light as before (_licht())
@@ -485,7 +595,7 @@ func _process(dt: float) -> void:
 	if _figur_zug is Vector3:
 		var to: Vector3 = _figur_zug - figur.pos()
 		to.y = 0.0
-		film_move = Vector2(to.x, to.z).normalized() * 0.7 if to.length() > 0.4 else Vector2.ZERO
+		film_move = Vector2(to.x, to.z).normalized() * (1.0 if film_run else 0.7) if to.length() > 0.4 else Vector2.ZERO
 		if to.length() <= 0.4:
 			_figur_zug = null
 			regie.zug_fertig("figur")
@@ -887,6 +997,7 @@ func zug(wer: String, w: Vector3, sofort: bool) -> void:
 			regie.zug_fertig("figur")
 		else:
 			_figur_zug = w
+			film_run = bool(regie.film_eintrag_jetzt.get("rennen", false)) if regie.get("film_eintrag_jetzt") is Dictionary else false
 	elif personen.has(wer):
 		if sofort:
 			var q: Vector3 = par.VL(w)
@@ -897,6 +1008,7 @@ func zug(wer: String, w: Vector3, sofort: bool) -> void:
 
 
 var _figur_zug = null
+var film_run := false
 
 
 # ---- Maggie --------------------------------------------------------------------------------------------------------------------
@@ -1079,10 +1191,49 @@ func karte_ende(ok: bool) -> void:
 
 
 # ---- MoveEye at the camp: IR light, photo ------------------------------------------------------------------------------------
+var _ir_kegel: MeshInstance3D = null
+
+
+func _ir_kegel_setzen(on: bool) -> void:
+	"""the IR light of MoveEye as a visible cone (in the IR view it shines), from the head towards the marked rock"""
+	if _ir_kegel != null and is_instance_valid(_ir_kegel):
+		_ir_kegel.queue_free()
+	_ir_kegel = null
+	if not on or main.head == null:
+		return
+	var ziel: Vector3 = par.welt_abs(0, 0, 0)
+	if par.dinge.has("ir_fels"):
+		var c: Vector2 = par.dinge["ir_fels"]["c"]
+		ziel = par.W(par.G(c.x, c.y, 0.6))
+	var von: Vector3 = (main.head as Node3D).global_position
+	var L := maxf(1.0, von.distance_to(ziel) + 1.0)
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.06
+	cm.bottom_radius = L * 0.28
+	cm.height = L
+	cm.radial_segments = 16
+	cm.cap_bottom = false
+	var mt := StandardMaterial3D.new()
+	mt.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mt.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mt.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	mt.albedo_color = Color(0.55, 0.42, 0.42, 0.16)
+	mt.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_ir_kegel = MeshInstance3D.new()
+	_ir_kegel.mesh = cm
+	_ir_kegel.material_override = mt
+	_ir_kegel.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(_ir_kegel)
+	var ax := (ziel - von).normalized()
+	var side := ax.cross(Vector3.UP if absf(ax.y) < 0.95 else Vector3.RIGHT).normalized()
+	_ir_kegel.global_transform = Transform3D(Basis(side, -ax, side.cross(-ax)).orthonormalized(), von + ax * L * 0.5)
+
+
 func ir_umschalten() -> void:
 	ir_an = not ir_an
 	hud.farbe("ir" if ir_an else "")
 	par.ir_sichtbar(ir_an)
+	_ir_kegel_setzen(ir_an)
 	if ir_an:
 		aktion_fertig("ir")
 		sag(tx("MoveEye: IR-Licht an."), "blinki")
@@ -1101,6 +1252,59 @@ func foto() -> void:
 		img.save_jpg("user://grossvater/fotos/k2_%d_%d.jpg" % [int(Time.get_unix_time_from_system()), fotos], 0.85)
 	aktion_fertig("foto")
 	hud.toast(tx("Foto im Rucksack (Tagebuch)"), 2.5)
+
+
+func schritt_sync() -> void:
+	"""after a jump of the figure (tests, screenshots, checkpoints): the step whose goal is nearest ahead becomes the current
+	one - the goal line and the compass follow (no films are played)"""
+	if szene_i < 0:
+		return
+	var me: Vector2 = par.tal_von(figur.pos())
+	var me_s: float = par.sq(me).x
+	var best := [-1, -1]
+	var bd := 1.0e9
+	for i in range(daten.SZENEN.size()):
+		var L: Array = daten.SZENEN[i]["schritte"]
+		for j in range(L.size()):
+			if not (L[j] as Dictionary).has("ziel"):
+				continue
+			var p = _bis_ort(str(L[j].get("bis", "")))
+			if not (p is Vector3):
+				continue
+			var t: Vector2 = par.tal_von(p)
+			var ds: float = par.sq(t).x - me_s
+			var d: float = me.distance_to(t)
+			if ds < -1.0 and d > 3.0:
+				continue                                      # behind (along the gorge)
+			if d < bd:
+				bd = d
+				best = [i, j]
+	if best[0] < 0:
+		return
+	szene_i = best[0]
+	schritt_i = best[1] - 1
+	_naechster_schritt()
+
+
+func filmcheck() -> Array:
+	"""every camera shot of every film: subject big enough, in the picture, nothing in front (kit_regie.gd pruef_shot)"""
+	var out := []
+	for sz in daten.SZENEN:
+		var si := 0
+		for st in sz["schritte"]:
+			si += 1
+			if not st.has("film"):
+				continue
+			for e in st["film"]:
+				if str(e.get("k", "")) != "shot":
+					continue
+				var r: Dictionary = regie.pruef_shot(e)
+				if bool(r.get("folge", false)):
+					continue
+				r["wo"] = "%s/%d t=%.1f %s" % [sz["id"], si, float(e.get("t", 0.0)), str(e.get("art", ""))]
+				r.erase("kamera")
+				out.append(r)
+	return out
 
 
 func _log(s: String) -> void:
@@ -1134,6 +1338,10 @@ static func control(m, d: Dictionary) -> Dictionary:
 			return {"ok": true, "kit": k.info()}
 		"start":
 			k.start.call_deferred(d)
+			return {"ok": true}
+		"startwahl":                                        # tests / screenshots: confirm the start card
+			if k._start_karte_offen:
+				k.start_gewaehlt.emit()
 			return {"ok": true}
 		"stop":
 			k.stop()
@@ -1169,6 +1377,8 @@ static func control(m, d: Dictionary) -> Dictionary:
 			else:
 				k.figur_setzen(float(d.get("s", 0.0)), float(d.get("q", 0.0)))
 			k.figur.geh_zu("boden")
+			if bool(d.get("sync", false)):
+				k.schritt_sync()
 			if d.has("blick"):
 				k.figur.a.heading = float(d["blick"])
 				k.figur.a.rotation.y = k.figur.a.heading
@@ -1198,6 +1408,8 @@ static func control(m, d: Dictionary) -> Dictionary:
 		"musik":
 			k.musik(str(d.get("z", "explore")))
 			return {"ok": true}
+		"filmcheck":
+			return {"ok": true, "shots": k.filmcheck()}
 		"sag":
 			k.sag(k.tx(str(d.get("text", ""))), str(d.get("wer", "erzaehler")))
 			return {"ok": true}

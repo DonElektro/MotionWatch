@@ -255,9 +255,146 @@ func bauen(holder: Node3D, m, lite: bool) -> void:
 		tw.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		holder.add_child(tw)
 	_ausschneiden()
-	_steine_weg()
+	_steine_weg()                                          # (before the details: they are multimeshes in the valley too)
+	_details(holder, lite)
 	ecken = ns * nq
 	bau_ms = Time.get_ticks_msec() - t0
+
+
+func _mm(holder: Node3D, mesh: Mesh, mat: Material, xs: Array) -> void:
+	"""many copies in one draw call (web Lite)"""
+	if xs.is_empty():
+		return
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.mesh = mesh
+	mm.instance_count = xs.size()
+	for i in range(xs.size()):
+		mm.set_instance_transform(i, xs[i])
+	var mi := MultiMeshInstance3D.new()
+	mi.multimesh = mm
+	mi.material_override = mat
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	holder.add_child(mi)
+
+
+func _kanal_bei(sv: float, qv: float) -> bool:
+	for k in S.get("kanal", []):
+		if sv >= float(k[0]) - 0.6 and sv <= float(k[1]) + 0.6 and qv >= float(k[2]) - 0.6 and qv <= float(k[3]) + 0.6:
+			return true
+	return false
+
+
+func _details(holder: Node3D, lite: bool) -> void:
+	"""art pass: boulders on the floor, tufts of fern at the foot of the walls, rock ledges sticking out of the walls, larches
+	on the rim - all as MultiMesh (5 draw calls), the same rock shader; fixed seed (same picture every time)"""
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7411
+	var fels_m := fels_material(true)
+	var blk: Array = []
+	var farn: Array = []
+	var sims: Array = []
+	var stamm: Array = []
+	var krone: Array = []
+	var n_blk := 14 if lite else 28
+	var n_farn := 30 if lite else 70
+	var n_sims := 18 if lite else 34
+	var n_baum := 8 if lite else 14
+	var tries := 0
+	while blk.size() < n_blk and tries < 400:
+		tries += 1
+		var sv := rng.randf_range(s0 + 8.0, s1 - 6.0)
+		var sd := -1.0 if rng.randf() < 0.5 else 1.0
+		var w := _tab(_breite_tab, sv)
+		var qv := sd * (w - rng.randf_range(0.2, 1.6))
+		if _kanal_bei(sv, qv) or (absf(qv) < 4.0):
+			continue
+		var t := tal(sv, qv)
+		var sc := rng.randf_range(0.35, 1.0)
+		var b := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(sc * rng.randf_range(0.9, 1.4), sc * 0.7, sc))
+		blk.append(Transform3D(b, Vector3(t.x, boden_sq(sv, qv) + sc * 0.2, t.y)))
+	tries = 0
+	while farn.size() < n_farn and tries < 600:
+		tries += 1
+		var sv2 := rng.randf_range(s0 + 6.0, s1 - 5.0)
+		var sd2 := -1.0 if rng.randf() < 0.5 else 1.0
+		var qv2 := sd2 * (_tab(_breite_tab, sv2) + rng.randf_range(-0.3, 0.5))
+		if _kanal_bei(sv2, qv2):
+			continue
+		var t2 := tal(sv2, qv2)
+		var sc2 := rng.randf_range(0.6, 1.3)
+		farn.append(Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(sc2, sc2 * rng.randf_range(0.7, 1.1), sc2)),
+				Vector3(t2.x, boden_sq(sv2, qv2) - 0.02, t2.y)))
+	for i in range(n_sims):
+		var sv3 := rng.randf_range(s0 + 10.0, s1 - 8.0)
+		var sd3 := -1.0 if i % 2 == 0 else 1.0
+		var tp0 := tal(sv3, sd3 * qmax * 0.5)
+		var F := _tab(_boden_tab, sv3)
+		var R: float = Bt.H(tp0.x, tp0.y)
+		if R - F < 5.0:
+			continue
+		var f := rng.randf_range(0.25, 0.8)
+		var w3 := _tab(_breite_tab, sv3)
+		var dicke := 2.2 + 0.3 * (R - F)
+		var qv3 := sd3 * (w3 + f * dicke - 0.35)
+		var t3 := tal(sv3, qv3)
+		var hy := boden_sq(sv3, qv3)
+		var yaw := atan2(qd.y, qd.x)
+		var b3 := Basis(Vector3.UP, -yaw).scaled(Vector3(rng.randf_range(0.5, 0.9), rng.randf_range(0.18, 0.3), rng.randf_range(1.2, 2.6)))
+		sims.append(Transform3D(b3, Vector3(t3.x, hy, t3.y)))
+	tries = 0
+	while stamm.size() < n_baum and tries < 200:
+		tries += 1
+		var sv4 := rng.randf_range(s0 + 4.0, s1 - 2.0)
+		var sd4 := -1.0 if rng.randf() < 0.5 else 1.0
+		var tp1 := tal(sv4, sd4 * qmax * 0.5)
+		var dicke4 := 2.2 + 0.3 * maxf(0.0, Bt.H(tp1.x, tp1.y) - _tab(_boden_tab, sv4))
+		var qv4 := sd4 * (_tab(_breite_tab, sv4) + dicke4 + rng.randf_range(1.5, 7.0))
+		if absf(qv4) > qmax - 3.0:
+			continue
+		var t4 := tal(sv4, qv4)
+		var hy4 := boden_sq(sv4, qv4)
+		var hb := rng.randf_range(5.0, 8.5)
+		stamm.append(Transform3D(Basis.from_scale(Vector3(1, hb, 1)), Vector3(t4.x, hy4 + hb * 0.5, t4.y)))
+		krone.append(Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(1, hb * 0.75, 1)), Vector3(t4.x, hy4 + hb * 0.62, t4.y)))
+	var sph := SphereMesh.new()
+	sph.radius = 1.0
+	sph.height = 1.6
+	sph.radial_segments = 8 if lite else 12
+	sph.rings = 5 if lite else 7
+	_mm(holder, sph, fels_m, blk)
+	var bx := BoxMesh.new()
+	bx.size = Vector3(1, 1, 1)
+	_mm(holder, bx, fels_m, sims)
+	var fm := CylinderMesh.new()                       # a tuft of fern: an open funnel of green
+	fm.top_radius = 0.38
+	fm.bottom_radius = 0.04
+	fm.height = 0.42
+	fm.radial_segments = 6
+	fm.rings = 1
+	fm.cap_top = false
+	var fmat := StandardMaterial3D.new()
+	fmat.albedo_color = Color(0.3, 0.46, 0.18)
+	fmat.roughness = 0.95
+	fmat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_mm(holder, fm, fmat, farn)
+	var tm := CylinderMesh.new()
+	tm.top_radius = 0.08
+	tm.bottom_radius = 0.16
+	tm.height = 1.0
+	tm.radial_segments = 6
+	var tmat := StandardMaterial3D.new()
+	tmat.albedo_color = Color(0.36, 0.26, 0.18)
+	_mm(holder, tm, tmat, stamm)
+	var cm := CylinderMesh.new()                       # larch crown: a slim cone, warm green
+	cm.top_radius = 0.0
+	cm.bottom_radius = 1.4
+	cm.height = 1.0
+	cm.radial_segments = 7
+	var cmat := StandardMaterial3D.new()
+	cmat.albedo_color = Color(0.42, 0.52, 0.22)
+	cmat.roughness = 0.9
+	_mm(holder, cm, cmat, krone)
 
 
 func _rect() -> Array:

@@ -344,7 +344,11 @@ func _film_tick(dt: float) -> void:
 		_film_ende()
 
 
+var film_eintrag_jetzt := {}
+
+
 func _eintrag(e: Dictionary, sprung: bool) -> void:
+	film_eintrag_jetzt = e
 	match str(e.get("k", "")):
 		"shot":
 			if not sprung:
@@ -421,6 +425,48 @@ func _film_ende() -> void:
 		var cb := film_fertig
 		film_fertig = Callable()
 		cb.call()
+
+
+# ---- the automatic check of the film shots (Koordinator 21.11.: subject >= 15 % of the picture height, nothing in front) ----
+const PRUEF_ANTEIL := 0.15
+
+
+func pruef_shot(sh: Dictionary, aspect := 16.0 / 9.0) -> Dictionary:
+	"""where this shot puts the camera (half way through) and how it sees its subject: «ziel» [s, q, h] / «ziel_tal» [x, z, h]
+	(default: the point it looks at), «groesse» = height of the subject (m, default 1.7 = a person). Returns {anteil, im_bild,
+	frei, ok} - follow shots (schulter / maggie) move with the figure and are not checked."""
+	var art_ := str(sh.get("art", "fix"))
+	if art_ in ["schulter", "maggie"]:
+		return {"ok": true, "folge": true}
+	var alt := _shot
+	var alt_t := _shot_t
+	_shot = sh
+	_shot_t = float(sh.get("d", 3.0)) * 0.5
+	var tr := _shot_xform(0.0)
+	_shot = alt
+	_shot_t = alt_t
+	var ziel: Vector3
+	if sh.get("ziel_tal", null) is Array:
+		var zt: Array = sh["ziel_tal"]
+		ziel = kit.par.W(kit.par.G(float(zt[0]), float(zt[1]), float(zt[2])))
+	elif sh.get("ziel", null) is Array:
+		var z: Array = sh["ziel"]
+		ziel = kit.par.welt(float(z[0]), float(z[1]), float(z[2]))
+	else:
+		ziel = _blick(sh)
+	var gr := float(sh.get("groesse", 1.7))
+	var mitte := ziel + Vector3(0, gr * 0.5, 0) if sh.has("ziel") or sh.has("ziel_tal") else ziel
+	var v := mitte - tr.origin
+	var fw := -tr.basis.z
+	var zt2 := v.dot(fw)
+	var th := tan(deg_to_rad(31.0))
+	var anteil := gr / maxf(0.01, 2.0 * zt2 * th) if zt2 > 0.1 else 0.0
+	var x := v.dot(tr.basis.x) / maxf(0.01, zt2 * th * aspect)
+	var y := v.dot(tr.basis.y) / maxf(0.01, zt2 * th)
+	var im_bild := zt2 > 0.1 and absf(x) < 0.9 and absf(y) < 0.9
+	var frei := _blocker(tr.origin, mitte, 24) <= 0.0
+	return {"anteil": snappedf(anteil, 0.01), "im_bild": im_bild, "frei": frei, "ok": im_bild and frei and anteil >= PRUEF_ANTEIL,
+		"kamera": tr.origin, "abstand": snappedf(zt2, 0.1)}
 
 
 func info() -> Dictionary:

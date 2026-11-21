@@ -37,6 +37,8 @@ static func args() -> PackedStringArray:
 	a.append_array(PackedStringArray(["--hour", str(q.get("stunde", DEMO_HOUR))]))
 	if q.has("qualitaet"):
 		a.append_array(PackedStringArray(["--quality", str(q["qualitaet"])]))
+	if str(q.get("grossvater", "")) in ["1", "neu", "k2"]:
+		a.append("--grossvater-neu")                    # Abenteuer-Kit: straight into the new chapter 2 (kit_abenteuer.gd)
 	return a
 
 

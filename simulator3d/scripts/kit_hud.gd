@@ -15,13 +15,18 @@ shader_type canvas_item;
 uniform sampler2D scr : hint_screen_texture, filter_linear_mipmap;
 uniform float k = 0.0;
 uniform float ir = 0.0;                  // MoveEye's infrared view: bright green-grey, noisy
+uniform float wipe = 1.1;                // > 1: the whole picture (the wipe of the flashback runs 0 -> 1.1)
 void fragment() {
 	vec3 c = texture(scr, SCREEN_UV).rgb;
 	float l = dot(c, vec3(0.3, 0.59, 0.11));
 	vec3 s = vec3(l * 1.08 + 0.06, l * 0.9 + 0.03, l * 0.68);
 	vec2 d = SCREEN_UV - 0.5;
 	float v = 1.0 - dot(d, d) * 1.4;
-	vec3 o = mix(c, s * v, k * (1.0 - ir));
+	float grain = fract(sin(dot(floor(SCREEN_UV * 420.0) + floor(TIME * 24.0), vec2(12.9898, 78.233))) * 43758.5453) - 0.5;
+	vec3 sep = s * mix(1.0, v, 0.85) + grain * 0.07;             // flashback: sepia, strong vignette, soft grain
+	sep = mix(sep, sep * vec3(1.05, 0.95, 0.8), 0.5);
+	float wipe_k = smoothstep(wipe - 0.06, wipe, SCREEN_UV.x);   // the opening wipe from the left
+	vec3 o = mix(c, sep, k * (1.0 - ir) * (1.0 - wipe_k));
 	float g = clamp(l * 3.2 + 0.08, 0.0, 1.0);
 	float n = fract(sin(dot(SCREEN_UV * 731.0 + TIME, vec2(12.9898, 78.233))) * 43758.5453);
 	o = mix(o, vec3(g * 0.78, g, g * 0.8) * v + (n - 0.5) * 0.06, ir * k);
@@ -428,9 +433,17 @@ func blende_aus() -> void:
 func farbe(art: String) -> void:
 	"""flashback: warm old colours (art «alt»), MoveEye's infrared («ir»), '' = back"""
 	_sepia_ziel = 1.0 if art in ["alt", "ir"] else 0.0
-	(_sepia.material as ShaderMaterial).set_shader_parameter("ir", 1.0 if art == "ir" else 0.0)
+	var sm := _sepia.material as ShaderMaterial
+	sm.set_shader_parameter("ir", 1.0 if art == "ir" else 0.0)
 	if art == "ir":
 		_sepia_k = 1.0
+	if art == "alt":                                      # the wipe: from the left over the picture in 0.9 s
+		_sepia_k = 1.0
+		sm.set_shader_parameter("wipe", 0.0)
+		var tw := create_tween()
+		tw.tween_method(func(x): sm.set_shader_parameter("wipe", x), 0.0, 1.1, 0.9).set_trans(Tween.TRANS_SINE)
+	elif art == "":
+		sm.set_shader_parameter("wipe", 1.1)
 
 
 # ---- the map piece (cairn), the flash of the photo, the end card ------------------------------------------------------------

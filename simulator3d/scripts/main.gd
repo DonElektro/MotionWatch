@@ -702,6 +702,7 @@ func _ready() -> void:
 	add_child(maggie)
 	_register_controls()
 	_order_controls()
+	preload("res://scripts/kit_abenteuer.gd").autostart_pruefen.call_deferred(self)   # probe package: straight into the new mode
 	mwpc = Mwpc.new()
 	mwpc.main = self
 	add_child(mwpc)
