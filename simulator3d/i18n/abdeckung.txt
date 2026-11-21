@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8031 (Stellen: 11152)
-Übersetzt: en 8031, fr 8031, it 8031, rm 8031
+Texte gesamt: 8033 (Stellen: 11154)
+Übersetzt: en 8033, fr 8033, it 8033, rm 8033
 Unsicher markiert: 261
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
 Nicht mehr im Code (noch in texte.json): 405
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29196, schlüssel 22340, keine Wörter 14063, index 10272, technisch 3778, doc 2558, einheit 343, log 202, englisch 146, pfad 130, stringname 107, html 69, klasse 42, shader 6
+Übersprungen (Grund: Anzahl): kennung 29210, schlüssel 22340, keine Wörter 14064, index 10276, technisch 3783, doc 2561, einheit 343, log 203, englisch 146, pfad 130, stringname 107, html 69, klasse 42, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -108,11 +108,11 @@ Pro Datei (Texte / davon dynamische Stellen):
   padmap.gd                 28    19
   power.gd                  28    10
   main_status.gd            27    12
+  kit_hud.gd                27     0
   devtool_spieltest.gd      27     0
   inhalte.gd                26    13
   jahreszeiten.gd           26     1
   wetter.gd                 26     0
-  kit_hud.gd                25     0
   umgebung.gd               25     0
   gameshutter.gd            25     5
   werk.gd                   24     0
@@ -902,7 +902,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inventar.gd:308  '\nKI: – = die KI von MoveEye kennt es nicht (Prüfstand: darf keinen Alarm auslösen)'
   inventar.gd:332  'KI: '
   kids.gd:338  ' Du hast jetzt %d Sterne.'
-  kit_abenteuer.gd:1643  'keine Szene '
+  kit_abenteuer.gd:1649  'keine Szene '
   kitrain.gd:93  '1/3 Paket: '
   kitrain.gd:157  'Ohne GitHub-Schlüssel: die ZIP liegt hier: %s\nSo kommt sie ins Training: 1. GitHub → Releases → «ki-daten» → Edit → ZIP hineinziehen → Update release '
   kitrain.gd:158  '(beim ersten Mal «Draft a new release», Tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye holt das neue Modell danach selbst.\n'

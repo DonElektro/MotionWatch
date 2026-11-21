@@ -1171,6 +1171,12 @@
   "it": "%d errori, p. es. %s",
   "rm": "%d sbagls, p. ex. %s"
  },
+ "%d fps · %.1f ms Mittel · %.0f ms max · %s": {
+  "en": "%d fps · %.1f ms average · %.0f ms max · %s",
+  "fr": "%d fps · %.1f ms moyenne · %.0f ms max · %s",
+  "it": "%d fps · %.1f ms media · %.0f ms max · %s",
+  "rm": "%d fps · %.1f ms media · %.0f ms max · %s"
+ },
  "%d Gegenstände in «%s»": {
   "en": "%d things in «%s»",
   "fr": "%d objets dans «%s»",
@@ -27345,6 +27351,12 @@
   "fr": "Réinitialiser la liste «contre l’IA»",
   "it": "Azzerare la lista «contro l’IA»",
   "rm": "Reinizialisar la glista «cunter la IA»"
+ },
+ "Lite": {
+  "en": "Lite",
+  "fr": "Lite",
+  "it": "Lite",
+  "rm": "Lite"
  },
  "Lite (für Raspberry Pi 5: schneller, etwas einfacher)": {
   "en": "Lite (for Raspberry Pi 5: faster, a bit simpler)",
