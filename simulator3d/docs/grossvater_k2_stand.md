@@ -79,6 +79,17 @@ Zweig `sim-grossvater-k2` (von origin/main 9f14de1), Worktree /tmp/claude-0/wt_g
   Sprünge, Aktionen) sucht für JEDES Ziel aller 12 Szenen einen Weg; die echte Figur läuft die reinen Geh-Wege mit der
   Führung der Szene ab. Mit der alten Führung fällt Szene 6 durch.
 
+## Kapitel 2 fertig für Sim 3.73.0 (Besitzer 21.11. nachmittags)
+- [x] Bergtal-Fix sim-bergtal-bach (02f2b81) zusammengeführt.
+- [x] Musik: 13 Kandidaten (CC BY) als 25-s-Vorschau → scratchpad/grossvater/musik/ – wartet auf Freigabe; Werkzeug
+  werkzeuge/musik/ + Sim-Pakete auftrag=musik-vorschau|musik-ganz (läuft auf dem Runner, Ergebnis an sim-test).
+- [x] Kamera: Federn statt lerp (Blickpunkt mit Vorlauf in Gehrichtung, Drehen hinter die Figur mit weich einsetzender
+  Kraft, nicht bei Gehen auf die Kamera zu, Maus/Stick übersteuern, Federarm mit Hysterese, Höhe je Zustand).
+- [x] Klettern: Hochziehen in Phasen (Hände an die Kante – Arm-Winkel aus der Kantenhöhe –, ziehen, Knie, stehen; Zeit nach
+  Höhe), Stufen bis 0.6 m einfach hochsteigen (auch von selbst beim Gehen), Ausstieg oben an der Leiter gleich.
+- [ ] Grafik: Wände, Figuren, Wasser, Licht · [ ] Stimmen (Piper) · [ ] Musik einbauen (nach Freigabe) · [ ] Web-Test
+  Handy/iPad · [ ] Übergabe an den Integrator.
+
 ## Als Nächstes
 1. Separat (eigener Commit, NICHT mit dem Kapitel mischen): Bergtal `_carve_stream` vertieft bei jedem Schritt –
    Korrektur auf ~19 m, alle Nutzer des Bergtals prüfen und melden, was sich verschiebt.

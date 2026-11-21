@@ -127,18 +127,47 @@ func _dist_fuer_zustand() -> float:
 	return dist
 
 
-func _folge_xform(tp: Vector3, d0: float, dt: float, heading: float) -> Transform3D:
-	var moving: bool = float(kit.figur.a.cur_speed) > 0.3 if art == "folge" else kit.hund_tempo() > 0.3
-	if moving and kit.uhr - drag_t > 1.2:                  # the camera follows by itself (phone, iPad, pad and PC alike)
-		yaw = lerp_angle(yaw, heading, clampf(dt * 1.1, 0.0, 1.0))
-	var pit := pitch
-	if art == "folge" and str(kit.figur.zustand) in ["seil", "haengen", "leiter"]:
-		pit = maxf(pitch, 0.62)                             # over a gap / at a wall: look from higher up (never from inside the rock)
-	var back := Vector3(sin(yaw), 0, cos(yaw))
-	var want := tp + back * d0 * cos(pit) + Vector3(0, d0 * sin(pit), 0)
-	# the spring arm: shorter where the ground / the course is in the way
+# ---- the follow camera (Besitzer 21.11.: «folgt und dreht schlecht»): springs instead of lerps -------------------------
+#   * the point it looks at follows the figure on a critically damped spring, a little ahead in the direction of movement
+#   * when the figure moves and nobody turned the camera for AUTO_NACH s, it swings behind it - softly (a spring on the angle,
+#     its strength fades in), and not when the figure walks towards the camera (no wild half turns)
+#   * mouse / right stick / swipe take over at once; afterwards it comes back smoothly
+#   * the spring arm: shorter at once when rock is in the way, longer again only after the way was free for a moment
+#     (no jitter between two lengths)
+#   * distance and height per state: climbing / ladder / hanging closer and higher, on the log and the rope further away
+const AUTO_NACH := 1.4
+const VORLAUF := 0.55                 # s of movement the camera looks ahead
+var _tp := Vector3.ZERO               # the smoothed point it looks at
+var _tp_v := Vector3.ZERO
+var _tp_ok := false
+var _yaw_v := 0.0
+var _vor := Vector3.ZERO              # the smoothed look-ahead
+var _arm := 1.0                       # the free part of the spring arm (0.35..1)
+var _arm_frei_t := 0.0
+var _pit_ist := 0.32
+var _p_alt := Vector3.ZERO
+
+
+static func feder3(x: Vector3, v: Vector3, ziel: Vector3, w: float, dt: float) -> Array:
+	"""critically damped spring (no overshoot): [x, v] after dt; w = stiffness (1/s)"""
+	var f := 1.0 + 2.0 * dt * w
+	var dtw2 := dt * w * w
+	var det := f + dt * dtw2
+	var v2 := (v + (ziel - x) * dtw2) / det
+	return [x + v2 * dt, v2]
+
+
+static func feder1(x: float, v: float, ziel: float, w: float, dt: float) -> Array:
+	var f := 1.0 + 2.0 * dt * w
+	var dtw2 := dt * w * w
+	var det := f + dt * dtw2
+	var v2 := (v + (ziel - x) * dtw2) / det
+	return [x + v2 * dt, v2]
+
+
+func _arm_frei(tp: Vector3, want: Vector3) -> float:
+	"""how much of the arm from tp to want is free of ground / rock (1 = all)"""
 	var n := 6 if Quality.lite() else 12
-	var frac := 1.0
 	var L := tp.distance_to(want)
 	for i in range(1, n + 1):
 		var f := float(i) / float(n)
@@ -146,15 +175,68 @@ func _folge_xform(tp: Vector3, d0: float, dt: float, heading: float) -> Transfor
 			continue                                       # right at the figure (a step, the log it stands on) does not count
 		var q := tp.lerp(want, f)
 		if main.ground_y(q.x, q.z) + 0.35 > q.y:
-			frac = maxf(0.4, f - 1.0 / float(n))
-			break
-	var dz := d0 * frac
-	dist_ist = lerpf(dist_ist, dz, clampf(dt * (12.0 if dz < dist_ist else 2.5), 0.0, 1.0))
-	var at := tp + back * dist_ist * cos(pit) + Vector3(0, dist_ist * sin(pit), 0)
+			return maxf(0.35, f - 1.0 / float(n))
+	return 1.0
+
+
+func _folge_xform(tp: Vector3, d0: float, dt: float, heading: float) -> Transform3D:
+	dt = clampf(dt, 0.0, 0.1)
+	var steuer := art == "folge"
+	var speed: float = float(kit.figur.a.cur_speed) if steuer else kit.hund_tempo()
+	var moving := speed > 0.3
+	var zst := str(kit.figur.zustand) if steuer else ""
+	# the look-ahead: from the real movement (not from the input), smoothed
+	var vel := Vector3.ZERO
+	if dt > 0.0 and _tp_ok:
+		vel = (tp - _p_alt) / dt
+		vel.y = 0.0
+		if vel.length() > 8.0:
+			vel = Vector3.ZERO                             # a jump of the figure (checkpoint, setzen)
+	_p_alt = tp
+	var vor_ziel := vel * VORLAUF if moving and zst in ["boden", "luft", ""] else Vector3.ZERO
+	_vor = _vor.lerp(vor_ziel.limit_length(1.4), clampf(dt * 2.0, 0.0, 1.0))
+	if not _tp_ok or _tp.distance_to(tp) > 6.0:
+		_tp = tp
+		_tp_v = Vector3.ZERO
+		_tp_ok = true
+	var r := feder3(_tp, _tp_v, tp + _vor, 9.0 if zst in ["klettern", "leiter", "haengen"] else 6.5, dt)
+	_tp = r[0]
+	_tp_v = r[1]
+	# auto-rotate behind the figure
+	var frei_seit: float = kit.uhr - drag_t
+	if moving and frei_seit > AUTO_NACH:
+		var diff := wrapf(heading - yaw, -PI, PI)
+		var gegen := absf(diff) > 2.4                     # walking towards the camera: leave it (no half turn)
+		if not gegen:
+			var kraft := clampf((frei_seit - AUTO_NACH) / 1.0, 0.0, 1.0) * clampf(speed / 1.5, 0.4, 1.4)
+			var ry := feder1(0.0, _yaw_v, diff, 2.2 * kraft + 0.01, dt)
+			_yaw_v = ry[1]
+			yaw = wrapf(yaw + float(ry[0]), -PI, PI)
+	else:
+		_yaw_v = lerpf(_yaw_v, 0.0, clampf(dt * 6.0, 0.0, 1.0))
+	# height (pitch) per state, softly
+	var pit := pitch
+	if steuer and zst in ["seil", "haengen", "leiter", "klettern"]:
+		pit = maxf(pitch, 0.62)                             # over a gap / at a wall: from higher up (never from inside the rock)
+	elif steuer and zst == "balance":
+		pit = maxf(pitch, 0.45)
+	_pit_ist = lerpf(_pit_ist, pit, clampf(dt * 3.0, 0.0, 1.0))
+	var back := Vector3(sin(yaw), 0, cos(yaw))
+	var want := _tp + back * d0 * cos(_pit_ist) + Vector3(0, d0 * sin(_pit_ist), 0)
+	# the spring arm with hysteresis
+	var frei := _arm_frei(_tp, want)
+	if frei < _arm - 0.02:
+		_arm = lerpf(_arm, frei, clampf(dt * 14.0, 0.0, 1.0))
+		_arm_frei_t = 0.0
+	else:
+		_arm_frei_t += dt
+		if _arm_frei_t > 0.35:
+			_arm = lerpf(_arm, frei, clampf(dt * 1.8, 0.0, 1.0))
+	dist_ist = d0 * _arm
+	var at := _tp + back * dist_ist * cos(_pit_ist) + Vector3(0, dist_ist * sin(_pit_ist), 0)
 	at.y = maxf(at.y, main.ground_y(at.x, at.z) + 0.4)
-	var cur := cam.global_transform
-	var tr := Transform3D(Basis.IDENTITY, at).looking_at(tp, Vector3.UP)
-	return cur.interpolate_with(tr, clampf(dt * 7.0, 0.0, 1.0)) if _blend <= 0.0 else tr
+	var tr := Transform3D(Basis.IDENTITY, at).looking_at(_tp, Vector3.UP)
+	return tr
 
 
 func hinter_figur() -> void:
@@ -164,6 +246,11 @@ func hinter_figur() -> void:
 	art = "folge"
 	_blend = 0.0
 	dist_ist = dist
+	_tp_ok = false
+	_arm = 1.0
+	_yaw_v = 0.0
+	_vor = Vector3.ZERO
+	_pit_ist = pitch
 	var tp := ziel_figur()
 	var back := Vector3(sin(yaw), 0, cos(yaw))
 	var at := tp + back * dist * cos(pitch) + Vector3(0, dist * sin(pitch), 0)

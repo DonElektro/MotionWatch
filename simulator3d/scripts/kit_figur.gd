@@ -223,6 +223,18 @@ func _boden(dt: float) -> void:
 				block = true                              # the gorge wall: too steep
 			elif y - g > FALL_OK or y - gp > FALL_OK + 0.3:
 				block = true                              # an edge: only with a jump
+	if block and L > 0.0005:
+		# a small step (up to 0.6 m) is stepped up by itself (21.11.) - when its top is flat a little further on
+		var dir := Vector3(mv.x, 0, mv.y) / L
+		var vorn := Vector3(_p0.x, 0, _p0.z) + dir * 0.6
+		var g2: float = main.ground_y(vorn.x, vorn.z)
+		var g3: float = main.ground_y(vorn.x + dir.x * 0.2, vorn.z + dir.z * 0.2)
+		var hs := g2 - y
+		if hs > 0.36 and hs <= 0.62 and absf(g3 - g2) < 0.1 and kit.phase == "spiel":
+			a.position.x = _p0.x
+			a.position.z = _p0.z
+			_hochziehen(Vector3(vorn.x, g2, vorn.z), Vector3(_p0.x, g2, _p0.z) + dir * 0.3)
+			return
 	if block:
 		a.position.x = _p0.x
 		a.position.z = _p0.z
@@ -412,15 +424,39 @@ func _kante_start(id: String) -> void:
 	var sgn := signf(bs - me.x)
 	if sgn == 0.0:
 		sgn = 1.0
-	var ts := bs - sgn * (float(d.get("ls", 0.5)) - 0.45)
+	var ls := float(d.get("ls", 0.5))
+	var ts := bs - sgn * (ls - 0.45)
 	var tq := clampf(me.y, float(d["q"]) - float(d.get("lq", 0.5)) + 0.3, float(d["q"]) + float(d.get("lq", 0.5)) - 0.3)
 	var ziel: Vector3 = par.welt_abs(ts, tq, float(e["top"]))
-	akt = {"von": pos(), "nach": ziel, "dauer": 1.5}
-	var dd: Vector3 = ziel - pos()
-	a.heading = atan2(-dd.x, -dd.z)
+	var kante: Vector3 = par.welt_abs(bs - sgn * ls, tq, float(e["top"]))   # the edge (front face, at the top)
+	_hochziehen(ziel, kante)
+
+
+func _hochziehen(ziel: Vector3, kante: Vector3) -> void:
+	"""over an edge (owner 21.11.: «stieg komisch hoch»): below 0.6 m a simple step up; else a mantle - walk to the wall,
+	the hands on the edge, pull up, one knee on the edge, stand up and step on. The time follows the height."""
+	var von := pos()
+	var h := ziel.y - von.y
+	var dir := Vector3(kante.x - von.x, 0, kante.z - von.z)
+	if dir.length() < 0.05:
+		dir = Vector3(ziel.x - von.x, 0, ziel.z - von.z)
+	dir = dir.normalized() if dir.length() > 0.01 else vorne()
+	a.heading = atan2(-dir.x, -dir.z)
 	a.rotation.y = a.heading
+	if h < 0.6:
+		akt = {"art": "stufe", "von": von, "nach": ziel, "dauer": 0.55}
+		geh_zu("klettern")
+		a.aktion("stufe", 0.55)
+		return
+	var w0 := Vector3(kante.x, von.y, kante.z)
+	var p1 := w0 - dir * 0.38                           # standing at the wall, hands on the edge
+	if (p1 - von).dot(dir) < 0.0:
+		p1 = von
+	var dauer := clampf(0.8 + 0.45 * h, 1.1, 2.0)
+	akt = {"art": "mantle", "von": von, "p1": p1, "p2": w0 - dir * 0.18, "p3": Vector3(kante.x, 0, kante.z) + dir * 0.28,
+			"nach": ziel, "kante_y": ziel.y, "dauer": dauer}
 	geh_zu("klettern")
-	a.aktion("klettern", 1.4)
+	a.aktion("hochziehen", dauer, ziel.y)
 	kit.ton("klettern")
 
 
@@ -428,13 +464,36 @@ func _klettern(dt: float) -> void:
 	var f := clampf(t / float(akt["dauer"]), 0.0, 1.0)
 	var von: Vector3 = akt["von"]
 	var nach: Vector3 = akt["nach"]
-	var up := smoothstep(0.0, 0.65, f)
-	var fw := smoothstep(0.5, 1.0, f)
-	var p := von.lerp(nach, fw)
+	a.cur_speed = 0.0
+	var p: Vector3
+	match str(akt.get("art", "")):
+		"stufe":                                           # up first, then forward (the foot on the step)
+			p = von.lerp(nach, smoothstep(0.15, 1.0, f))
+			y = lerpf(von.y, nach.y, smoothstep(0.0, 0.6, f))
+		"mantle":
+			var p1: Vector3 = akt["p1"]
+			var p2: Vector3 = akt["p2"]
+			var p3: Vector3 = akt["p3"]
+			var top: float = akt["kante_y"]
+			if f < 0.2:                                     # reach: to the wall
+				p = von.lerp(p1, smoothstep(0.0, 1.0, f / 0.2))
+				y = von.y
+			elif f < 0.55:                                  # pull: the hips up to the edge
+				var u := smoothstep(0.0, 1.0, (f - 0.2) / 0.35)
+				p = p1.lerp(p2, u)
+				y = lerpf(von.y, maxf(von.y, top - 0.45), u)
+			elif f < 0.8:                                   # knee up: on the edge
+				var u2 := smoothstep(0.0, 1.0, (f - 0.55) / 0.25)
+				p = p2.lerp(p3, u2)
+				y = lerpf(maxf(von.y, top - 0.45), top, u2)
+			else:                                           # stand up, step on
+				p = p3.lerp(nach, smoothstep(0.0, 1.0, (f - 0.8) / 0.2))
+				y = top
+		_:                                                  # (from the ladder: up, then forward)
+			p = von.lerp(nach, smoothstep(0.5, 1.0, f))
+			y = lerpf(von.y, nach.y, smoothstep(0.0, 0.65, f))
 	a.position.x = p.x
 	a.position.z = p.z
-	y = lerpf(von.y, nach.y, up)
-	a.cur_speed = 0.0
 	if f >= 1.0:
 		y = nach.y
 		geh_zu("boden")
@@ -459,9 +518,14 @@ func _leiter(dt: float, ein: Dictionary) -> void:
 
 
 func _kante_von_leiter(ziel: Vector3) -> void:
-	akt = {"von": pos(), "nach": ziel, "dauer": 0.9}
+	"""off the top of the ladder: the hands on the edge, the knee up, stand (a short mantle)"""
+	var von := pos()
+	var dir := Vector3(ziel.x - von.x, 0, ziel.z - von.z)
+	dir = dir.normalized() if dir.length() > 0.01 else vorne()
+	akt = {"art": "mantle", "von": von, "p1": von, "p2": von + dir * 0.1, "p3": von + dir * 0.45, "nach": ziel,
+			"kante_y": ziel.y, "dauer": 1.0}
 	geh_zu("klettern")
-	a.aktion("klettern", 0.9)
+	a.aktion("hochziehen", 1.0, ziel.y)
 
 
 func _balance_start(d: Dictionary) -> void:
