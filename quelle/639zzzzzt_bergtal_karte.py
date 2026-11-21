@@ -841,14 +841,17 @@ BK_JS = r"""
                                                                         // is false while 3D tiles stream in - then 2D did nothing)
     if (v) { map.setTerrain(D3); map.dragRotate.enable(); map.touchZoomRotate.enableRotation(); map.touchPitch.enable(); map.keyboard.enableRotation();
       try { map.setSky({"sky-color": dark() ? "#1b2a40" : "#9cc7ef", "horizon-color": dark() ? "#3a4a60" : "#eef4fa", "fog-color": dark() ? "#2a3340" : "#eef2f5", "sky-horizon-blend": 0.5, "horizon-fog-blend": 0.8, "fog-ground-blend": 0.25}); } catch (e) {}
-      map.easeTo({pitch: 55, bearing: map.getBearing() || -25, zoom: Math.max(map.getZoom(), 15.5), duration: quick ? 0 : 700});
+      map.easeTo({pitch: 58, bearing: map.getBearing() || -25, zoom: Math.min(Math.max(map.getZoom(), 15.2), 15.2), duration: quick ? 0 : 700});
       // MapLibre takes the height under the centre when the terrain is switched on - before its tiles are there (0 m: the
       // camera would stand inside the mountain, empty picture, measured). Once everything is loaded: a tiny move = new height.
       // (a timer, not «idle»: a big canvas with software WebGL never gets idle - measured)
       clearInterval(BK.nudgeT); let n = 0;
-      BK.nudgeT = setInterval(() => { if (!BK.d3 || !map.getTerrain() || ++n > 120) { clearInterval(BK.nudgeT); return; }
-        if (map.queryTerrainElevation(map.getCenter()) > 0 && n > 2) { clearInterval(BK.nudgeT); return; }
-        const c = map.getCenter(); map.jumpTo({center: [c.lng + (n % 2 ? 1e-7 : -1e-7), c.lat]}); }, 1000); }
+      const nudge = () => { clearInterval(BK.nudgeT);                 // after the tilt (a jumpTo would stop it)
+        BK.nudgeT = setInterval(() => { if (!BK.d3 || !map.getTerrain() || ++n > 120) { clearInterval(BK.nudgeT); return; }
+          let el = 0; try { el = map.queryTerrainElevation(map.getCenter()) || 0; } catch (e) {}     // throws while the terrain starts
+          if (el > 0 && n > 2) { clearInterval(BK.nudgeT); return; }
+          const c = map.getCenter(); map.jumpTo({center: [c.lng + (n % 2 ? 2e-5 : -2e-5), c.lat]}); }, 1000); };   // ±2 m
+      if (quick) nudge(); else map.once("moveend", nudge); }
     else { map.setTerrain(null); map.dragRotate.disable(); map.touchZoomRotate.disableRotation(); map.touchPitch.disable(); map.keyboard.disableRotation(); map.easeTo({pitch: 0, bearing: 0, duration: quick ? 0 : 500}); }
   }
   function addLive() {
@@ -983,8 +986,8 @@ BK_JS = r"""
     let want3d = false; try { want3d = localStorage.getItem("mw-bk-3d") === "1"; } catch (e) {}
     const ml = await lib(), st = await style(), b = BK.meta.bounds, pd = 0.004;
     // never exactly on 0° / 0°: that is the corner of a tile at every zoom - MapLibre then finds no terrain under the centre
-    // and puts the 3D camera inside the mountain (measured: elevation 0, empty picture); 4 m off is enough
-    const c0 = [BK.meta.center[0] + 0.00004, BK.meta.center[1] - 0.00003];
+    // and puts the 3D camera inside the mountain (measured: elevation 0, empty picture; 4 m off was not enough, 11 m was)
+    const c0 = [BK.meta.center[0] + 0.0006, BK.meta.center[1] - 0.0004];   // ~65 m east, ~45 m south of the centre of the valley
     map = BK.map = new ml.Map({container: "kq-c", style: st, center: c0, zoom: 14.2, minZoom: 12.5, maxZoom: 18.6, maxPitch: 78,
       maxBounds: [[b[0] - pd, b[1] - pd], [b[2] + pd, b[3] + pd]], attributionControl: false, fadeDuration: 0, dragRotate: false, pitchWithRotate: false,
       touchPitch: false, renderWorldCopies: false});

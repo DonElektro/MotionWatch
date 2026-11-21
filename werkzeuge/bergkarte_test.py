@@ -358,11 +358,11 @@ def teil_b(datei, data, unp, bilder):
                 pg.evaluate("() => document.getElementById('bk-3d').click()")
                 pg.wait_for_function("() => KQMAP.getPitch() > 40 && !!KQMAP.getTerrain()", timeout=30000)
                 try:                                                   # software WebGL: 3D takes a while (loaded() rarely settles)
-                    pg.wait_for_function("() => KQMAP.queryTerrainElevation(KQMAP.getCenter()) > 1000", timeout=120000)
+                    pg.wait_for_function("() => (() => { try { return KQMAP.queryTerrainElevation(KQMAP.getCenter()) > 1000; } catch (e) { return false; } })()", timeout=120000)
                 except Exception:
                     pass
                 pg.wait_for_timeout(4000)
-                ok(pg.evaluate("() => KQMAP.queryTerrainElevation(KQMAP.getCenter()) > 1000"), f"{name}: 3D an (Neigung, Gelände mit Höhen des Pakets)")
+                ok(pg.evaluate("() => (() => { try { return KQMAP.queryTerrainElevation(KQMAP.getCenter()) > 1000; } catch (e) { return false; } })()"), f"{name}: 3D an (Neigung, Gelände mit Höhen des Pakets)")
                 if bilder:
                     pg.screenshot(path=os.path.join(bilder, f"bergtal_3d_{name}.png"))
                 pg.evaluate("() => document.getElementById('bk-2d').click()")
@@ -380,7 +380,7 @@ def teil_b(datei, data, unp, bilder):
                     pg.locator("#bk-vor-d svg.kt-prof").scroll_into_view_if_needed()
                     pg.screenshot(path=os.path.join(bilder, f"bergtal_profil_{name}.png"), full_page=False)
                     pg.evaluate("() => document.getElementById('bk-3d').click()")
-                    pg.wait_for_function("() => KQMAP.getPitch() > 40 && KQMAP.queryTerrainElevation(KQMAP.getCenter()) > 1000", timeout=120000); pg.wait_for_timeout(4000)
+                    pg.wait_for_function("() => KQMAP.getPitch() > 40 && (() => { try { return KQMAP.queryTerrainElevation(KQMAP.getCenter()) > 1000; } catch (e) { return false; } })()", timeout=120000); pg.wait_for_timeout(4000)
                     pg.evaluate("() => document.getElementById('kq-map').scrollIntoView({block: 'start'})")
                     pg.screenshot(path=os.path.join(bilder, f"bergtal_tour_3d_{name}.png"))
                     pg.evaluate("() => document.getElementById('bk-2d').click()"); pg.wait_for_function("() => KQMAP.getPitch() < 1", timeout=60000)
