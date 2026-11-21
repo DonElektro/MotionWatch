@@ -66,6 +66,7 @@ const VIEWS := ["chase", "driver", "top"]
 const VIEW_NAMES := {"chase": "hinterher", "driver": "Fahrersicht", "top": "von oben"}
 const VIEW_NAMES_P := {"chase": "hinterher", "driver": "Ich-Sicht", "top": "von oben"}   # als Person
 const DEAD := 0.18                    # dead zone of the sticks
+const LINKS_FREI := 64.0              # px: the round buttons at the left edge of the phone (map, keys, camera) stay free
 
 
 func _ready() -> void:
@@ -814,12 +815,18 @@ func _process(dt: float) -> void:
 
 func _box_hoch(gross: bool) -> void:
 	"""21.11.2026: as the figure the box has room for three lines (status + the longer key help), the buttons under it;
-	on a narrow screen (phone upright) the whole box smaller so it fits"""
+	on a narrow screen (phone upright) the whole box smaller, right of the round buttons at the left edge (map, keys, camera)"""
 	var vw: float = get_viewport().get_visible_rect().size.x if is_inside_tree() else 1280.0
-	var k := clampf((vw - 12.0) / 640.0, 0.4, 1.0)
-	if not is_equal_approx(scale.x, k):
-		pivot_offset = Vector2(320, 0)
+	var k := 1.0
+	var ol := -320.0
+	if vw < 640.0 + 2.0 * LINKS_FREI:
+		k = clampf((vw - LINKS_FREI - 6.0) / 640.0, 0.35, 1.0)
+		ol = LINKS_FREI - vw * 0.5                         # the left edge just right of the buttons
+	if not is_equal_approx(scale.x, k) or not is_equal_approx(offset_left, ol):
+		pivot_offset = Vector2.ZERO
 		scale = Vector2(k, k)
+		offset_left = ol
+		offset_right = ol + 640.0
 	var h := 114.0 if gross else 98.0
 	if is_equal_approx(size.y, h):
 		return

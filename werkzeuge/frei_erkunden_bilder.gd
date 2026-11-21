@@ -111,18 +111,16 @@ func _run() -> void:
 	await wait(0.8)
 	# sitting: on a low thing (bench, stone) near the mover, else on the ground
 	var best = null
-	var bd := 40.0
-	for o in main.obstacles:
-		var ht := float(o.get("ht", 3.0))
-		if ht >= 0.3 and ht <= 0.8 and not o.has("wasser"):
-			var dd: float = (o["c"] as Vector2).distance_to(Vector2(main.rig.position.x, main.rig.position.z))
-			if dd < bd:
-				bd = dd
-				best = o
+	var bd := 60.0
+	for e in main.scenes.data.get("sitze", []):              # benches first, then stones (erkunden_welt.gd sitz)
+		var dd: float = Vector2((e[0] as Vector3).x, (e[0] as Vector3).z).distance_to(Vector2(main.rig.position.x, main.rig.position.z)) + (0.0 if str(e[2]) == "bank" else 20.0)
+		if dd < bd:
+			bd = dd
+			best = e
+	print("SITZPLAETZE ", (main.scenes.data.get("sitze", []) as Array).size())
 	if best != null:
-		var r: Array = main._ob_closest(best, (best["c"] as Vector2) + Vector2(2, 0))
-		var q: Vector2 = (r[0] as Vector2) + (r[2] as Vector2) * 0.45
-		p.place(Vector3(q.x, 0, q.y))
+		var sp: Vector3 = best[0]
+		p.place(sp + Vector3(0.6, 0, 0))
 		await wait(0.4)
 	p.set_haltung("sitzen")
 	await wait(1.6)

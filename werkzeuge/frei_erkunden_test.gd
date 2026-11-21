@@ -76,6 +76,8 @@ func _run() -> void:
 	main.set_scene("camping")
 	await wait(2.0)
 	main.clear_obstacles()                                 # an open place (the moving itself is checked)
+	print("  Sitzplätze der Szene: %d" % (main.scenes.data.get("sitze", []) as Array).size())
+	main.scenes.data.erase("sitze")                        # (no stone of the scene beside the start: sitting on the ground first)
 	main.home_pos = Vector3.ZERO
 	main.mover_home()
 	var ex = main.explore
@@ -158,15 +160,29 @@ func _run() -> void:
 	await wait(0.4)
 	var hd := float(a.heading)
 	var fw := Vector3(-sin(hd), 0, -cos(hd))
-	var bp: Vector3 = a.global_position + fw.cross(Vector3.UP) * 0.85
-	main.add_obstacle_box(bp, 1.6, 0.45, hd)                 # a bench beside the figure
-	main.set_obstacle_height(0.45)
+	var side := fw.cross(Vector3.UP)
+	main.add_obstacle(a.global_position - side * 0.9, 0.5)  # a camping table / fire ring beside: no seat
+	main.set_obstacle_height(0.5)
+	await _key(KEY_X)
+	await wait(0.8)
+	ok("X: nie auf den Tisch daneben (Boden)", p.haltung == "sitzen" and str(p.sitz.get("art", "")) == "boden")
+	await _key(KEY_X)
+	await wait(0.3)
+	main.sitz_merken(a.global_position + side * 1.3, 0.3, "stein")   # a stone and a bench of the scene beside
+	main.sitz_merken(a.global_position + side * 0.8, 0.45, "bank")
 	await _key(KEY_X)
 	await wait(1.0)
-	ok("X: sitzt auf der Bank daneben (%s)" % str(p.sitz.get("art", "")), p.haltung == "sitzen" and str(p.sitz.get("art", "")) in ["bank", "stein"] and absf(float(a.sit_seat) - 0.45) < 0.06)
+	ok("X: sitzt auf der Bank daneben (%s)" % str(p.sitz.get("art", "")), p.haltung == "sitzen" and str(p.sitz.get("art", "")) == "bank" and absf(float(a.sit_seat) - 0.45) < 0.06)
 	await _key(KEY_X)
 	ok("X nochmals: steht auf", p.haltung == "stehen")
 	main.clear_obstacles()
+	main.scenes.data.erase("sitze")
+	main.sitz_merken(a.global_position + side * 0.9, 0.3, "stein")
+	await _key(KEY_X)
+	await wait(0.8)
+	ok("X: sonst auf den Stein", str(p.sitz.get("art", "")) == "stein")
+	await _key(KEY_X)
+	main.scenes.data.erase("sitze")
 	# lying still
 	await _key(KEY_Z)
 	await wait(1.6)

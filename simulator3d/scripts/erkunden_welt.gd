@@ -7,8 +7,8 @@ extends RefCounted
 ##     «erkunden_wasser» an main hängt: [{"c": Vector2 (Welt x/z), "r": m, "spiegel": Welt-y}, …].
 ##   * Tiefe < WATEN_AB: trocken (nasse Füsse zählen nicht) · bis SCHWIMMEN_AB: waten (langsamer, nicht rennen) · tiefer:
 ##     schwimmen an der Oberfläche (kein Tauchen, niemand ertrinkt). Ein Bach ist immer «waten».
-##   * Sitzen: eine Bank der Szene (scenes.data «bench» / «bench2») oder ein niedriges Hindernis (Höhe 0,25–0,95 m: Bank,
-##     Stein, Mäuerchen) bis 0,9 m neben der Figur - sonst auf den Boden.
+##   * Sitzen: eine Bank oder ein Stein der Szene (scenes.data «bench» / «bench2» / «sitze», main.sitz_merken) bis 1,6 m neben
+##     der Figur, Bänke zuerst - sonst auf den Boden (nie auf Tische oder Feuerstellen).
 ##   * Klettern: vor der Figur steigt der Boden um 0,62–2,2 m an und ist oben eben (Fels, Mauer im Gelände) - kleinere
 ##     Stufen steigt kit_figur.gd von selbst.
 
@@ -18,6 +18,7 @@ const WATEN_AB := 0.25               # m Wassertiefe: ab hier waten
 const SCHWIMMEN_AB := 1.1            # m: ab hier schwimmen
 const BACH_TIEFE := 0.35             # m: so tief gilt ein Bach (das Band liegt knapp über dem Bachbett)
 const SITZ_BODEN := 0.05             # m: auf dem Boden sitzen
+const SITZ_R := 1.6                  # m: so nah muss eine Bank / ein Stein sein
 const KANTE_MIN := 0.62              # m: ab hier klettern (darunter steigt kit_figur.gd selbst)
 const KANTE_MAX := 2.2
 
@@ -85,32 +86,26 @@ static func wasser(main, p: Vector3) -> Dictionary:
 
 
 static func sitz(main, p: Vector3, heading: float) -> Dictionary:
-	"""wo und wie hoch die Figur bei p sitzt: {art: bank | stein | boden, h (Sitzhöhe über den Füssen), p (Welt), yaw}"""
-	var best := {}
-	var bd := 1.6
+	"""wo und wie hoch die Figur bei p sitzt: {art: bank | stein | boden, h (Sitzhöhe über den Füssen), p (Welt), yaw}.
+	Nur echte Sitzplätze (Bänke, Steine, Felsen der Szene) bis SITZ_R neben der Figur, eine Bank vor einem Stein - Tische,
+	Feuerstellen und andere niedrige Hindernisse nie (Besitzer-Test 21.11.: sass auf dem Campingtisch); sonst der Boden."""
 	var d: Dictionary = main.scenes.data if main.scenes != null else {}
+	var liste: Array = []
 	for bk in ["bench", "bench2"]:
 		if d.get(bk, null) is Vector3:
-			var bp: Vector3 = d[bk]
-			var dd := Vector2(bp.x, bp.z).distance_to(Vector2(p.x, p.z))
-			if dd < bd:
-				bd = dd
-				best = {"art": "bank", "h": 0.45, "p": Vector3(bp.x, main.ground_y(bp.x, bp.z), bp.z), "yaw": heading}
-	if not best.is_empty():
-		return best
-	var p2 := Vector2(p.x, p.z)
-	var bo := 0.9
-	for o in main._ob_near(p2):
-		var ht := float(o.get("ht", 3.0))
-		if ht < 0.25 or ht > 0.95 or bool(o.get("wasser", false)):
+			liste.append([d[bk], 0.45, "bank"])
+	liste.append_array(d.get("sitze", []))
+	var best := {}
+	var bs := INF
+	for e in liste:
+		var sp: Vector3 = e[0]
+		var dd := Vector2(sp.x, sp.z).distance_to(Vector2(p.x, p.z))
+		if dd > SITZ_R:
 			continue
-		var r: Array = main._ob_closest(o, p2)
-		if float(r[1]) < bo:
-			bo = float(r[1])
-			var n: Vector2 = r[2]
-			var at: Vector2 = (r[0] as Vector2) - n * 0.12        # the hips a little over the edge
-			best = {"art": "bank" if o.has("h") else "stein", "h": clampf(ht, 0.3, 0.6),
-					"p": Vector3(at.x, main.ground_y(at.x, at.y), at.y), "yaw": atan2(-n.x, -n.y)}
+		var sc := dd + (0.0 if str(e[2]) == "bank" else 0.6)   # a bench a little further away still wins
+		if sc < bs:
+			bs = sc
+			best = {"art": str(e[2]), "h": clampf(float(e[1]), 0.3, 0.6), "p": Vector3(sp.x, main.ground_y(sp.x, sp.z), sp.z), "yaw": heading}
 	if not best.is_empty():
 		return best
 	return {"art": "boden", "h": SITZ_BODEN, "p": p, "yaw": heading}

@@ -5398,6 +5398,14 @@ func set_obstacle_height(ht: float) -> void:
 		obstacles[-1]["ht"] = ht
 
 
+func sitz_merken(p: Vector3, h: float, art: String) -> void:
+	"""a bench / stone to sit on (world) - «Frei erkunden» (erkunden_welt.gd sitz); scenes.data is new for every scene"""
+	if scenes != null:
+		if not scenes.data.has("sitze"):
+			scenes.data["sitze"] = []
+		scenes.data["sitze"].append([p, h, art])
+
+
 func set_obstacle_water() -> void:
 	"""the object added last is water (a lake): the figure of «Frei erkunden» may go in (explore_person.gd)"""
 	if not obstacles.is_empty() and not _ob_skip:
