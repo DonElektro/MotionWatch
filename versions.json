@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-21 22:14",
+ "generated": "2026-11-22 00:08",
  "versions": [
   {
-   "version": "4.18.0",
-   "file": "webcam_bewegung_4_18_0.py",
+   "version": "4.18.1",
+   "file": "webcam_bewegung_4_18_1.py",
    "url": "",
-   "sha256": "2f66ffe7322bfe9fe338d7b645c8300a464b8b748449f84f347e3a00e5ff71d1",
-   "date": "2026-11-21 22:14",
-   "notes": "Akku (Geekworm X1206): Kälteschutz beim Laden (GPIO 16), Notladen, «Akku schonen», gelernte Laufzeit, «Voll in …», Akku-Gesundheit · Schlafen und Wecken mit der Uhr (RTC) · Licht in Prozent dimmen · Servo 270° prüfen",
-   "size": 4022288,
-   "sig": "de6e08039327659a3951196008082b792420e5551c03461cba9a1c901caf5af5de1cc94cb1bf8d68cdc44654982bd0f6b17e0031ada714d82700e4ff9440170b",
+   "sha256": "ee13c4958350cccc47d4e7735fa908347dc3d3376bf34bf5adceeb9643d39cbc",
+   "date": "2026-11-22 00:08",
+   "notes": "Aufnahmen dürfen bis 8 GB brauchen (vorher 2 GB, höchstens die Hälfte des Laufwerks; beim Update 2 → 8 GB ab 16 GB mit Hinweis); Verlauf: Chip «⏪ bis …» (älteste Aufnahme, Tippen = älteste zuerst), Chip «… MB / … GB» führt zur Einstellung; Suche in den Einstellungen findet «Aufnahmeordner», «Zeitraffer-Ordner» und «Tagen löschen» (auch in «Einfach»)",
+   "size": 4025336,
+   "sig": "8dc822ba4ec5918ec0df88cdd22dc9b591f40f4c3acc24f409a7868b463c3ebd5c3a19538eafec0f88863a179d649f48c2034d5ca0710fbd060e4c268c447c0a",
    "data": {
-    "file": "moveeye_daten_4_18_0.zip",
+    "file": "moveeye_daten_4_18_1.zip",
     "url": "",
-    "sha256": "9c5069dc39080a5e24c6f0879e50d34373e3448b36bb1af6cfcd9a5ab90b3b6b",
-    "size": 14441284,
-    "sig": "78d930d6b256007f8e512e4999530831df58cb57be2199f3477cd485d6e38c07629da495f8af4abe2ac262edcf3b3ea5162f85f4980b7989a56f7eeb08fdfb05"
+    "sha256": "b66b5357166e7d94b51521170cb907fb848ea2d42f463ef33cebec2f8382b1b9",
+    "size": 14449717,
+    "sig": "7eb8c4ed12252c72a735aea382ea6bd828e3dffefeebc82bda81699dcb0681ac5a0197d158270b4b4d38ec3fa96c60695a8b4edd9b0096e2a0d0326263c8a603"
    }
   },
   {
@@ -24,7 +24,7 @@
    "file": "webcam_bewegung_4_17_1.py",
    "url": "",
    "sha256": "022c5a07ffa40c837a269b4d8aa6080cf4cb6da2ed34020ce4e870f819ab77d5",
-   "date": "2026-11-21 22:11",
+   "date": "2026-11-21 22:57",
    "notes": "Verlauf: «Zeitraffer» mit «Videos / Fotos», Hinweis ohne Video · Simulator verbinden / trennen ist kein Stromausfall (keine Push, kein Sabotage-Alarm), Schalter «keine Push, solange der Simulator verbunden ist»",
    "size": 4040696,
    "sig": "52c8cbdd682d56f0463910b6485b855768fe5ed71b5a9d7973b95c10e0ee2a14a50f9f79086912fa67ed5d715591437fa2724271f67c817a25da0e825ed97f0b",
