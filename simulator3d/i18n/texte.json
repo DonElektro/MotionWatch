@@ -30781,6 +30781,13 @@
   "it": "Musica",
   "rm": "Musica"
  },
+ "Musik und Stimmen": {
+  "en": "Music and voices",
+  "fr": "Musique et voix",
+  "it": "Musica e voci",
+  "rm": "Musica e vuschs",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Muuuh! Eine Kuh.": {
   "en": "Mooo! A cow.",
   "fr": "Meuh ! Une vache.",
@@ -39408,6 +39415,13 @@
   "fr": "Voix",
   "it": "Voci",
   "rm": "Vuschs"
+ },
+ "Stimmen: Piper (MIT) mit der Stimme «Thorsten» (Thorsten-Voice, CC0)": {
+  "en": "Voices: Piper (MIT) with the voice «Thorsten» (Thorsten-Voice, CC0)",
+  "fr": "Voix : Piper (MIT) avec la voix «Thorsten» (Thorsten-Voice, CC0)",
+  "it": "Voci: Piper (MIT) con la voce «Thorsten» (Thorsten-Voice, CC0)",
+  "rm": "Vuschs: Piper (MIT) cun la vusch «Thorsten» (Thorsten-Voice, CC0)",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Stimmung": {
   "en": "Mood",

@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8029 (Stellen: 11149)
-Übersetzt: en 8029, fr 8029, it 8029, rm 8029
-Unsicher markiert: 259
+Texte gesamt: 8031 (Stellen: 11152)
+Übersetzt: en 8031, fr 8031, it 8031, rm 8031
+Unsicher markiert: 261
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
 Nicht mehr im Code (noch in texte.json): 405
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29162, schlüssel 22297, keine Wörter 14041, index 10260, technisch 3775, doc 2547, einheit 342, log 202, englisch 146, pfad 129, stringname 106, html 69, klasse 42, shader 6
+Übersprungen (Grund: Anzahl): kennung 29196, schlüssel 22340, keine Wörter 14063, index 10272, technisch 3778, doc 2558, einheit 343, log 202, englisch 146, pfad 130, stringname 107, html 69, klasse 42, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -37,8 +37,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   maggie_hund.gd            85     0
   abenteuer_action.gd       83     1
   gameplus.gd               83     5
+  mehr.gd                   82    13
   objects.gd                81     0
-  mehr.gd                   80    13
   objekte_neu.gd            80     0
   maggie_gefahr.gd          79     0
   maggie_zwei.gd            78     0
@@ -100,7 +100,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   gametools.gd              33     2
   tour.gd                   31     1
   bergtal_wegweiser.gd      30     0
-  kit_abenteuer.gd          29     1
+  kit_abenteuer.gd          30     1
   b3d.gd                    29     5
   zwilling.gd               29     3
   gamemission.gd            29     0
@@ -427,6 +427,8 @@ Unsicher:
   'Wohnwagen-Tür': Sensorname an MoveEye (/info) – nicht umhüllen
   'Gas Wohnwagen': Sensorname an MoveEye (/info) – nicht umhüllen
   'Lockvogel erlaubt (lockt die Kamera weg, Teampunkte)': rm: Lockvogel
+  'Stimmen: Piper (MIT) mit der Stimme «Thorsten» (Thorsten-Voice, CC0)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Musik und Stimmen': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n': technisch (HTTP) – nicht umhüllen
   '&vo=1': technisch – nicht umhüllen
   'Browser (WebGL 2)': rm automatisch
@@ -660,15 +662,15 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   mehr.gd:258  'an'
   mehr.gd:258  'aus'
   mehr.gd:299  'Hell / Dunkel / Rotlicht: '
-  mehr.gd:568  'aus'
-  mehr.gd:568  'ein'
-  mehr.gd:570  ' · Tunnel %s:%d (%s)'
-  mehr.gd:571  ' · Update: '
-  mehr.gd:573  ' · virtuelle Maschine'
-  mehr.gd:577  'Simulator '
-  mehr.gd:577  'frei %s von %s · '
-  mehr.gd:578  ' (zuletzt %s)'
-  mehr.gd:578  'nicht verbunden'
+  mehr.gd:590  'aus'
+  mehr.gd:590  'ein'
+  mehr.gd:592  ' · Tunnel %s:%d (%s)'
+  mehr.gd:593  ' · Update: '
+  mehr.gd:595  ' · virtuelle Maschine'
+  mehr.gd:599  'Simulator '
+  mehr.gd:599  'frei %s von %s · '
+  mehr.gd:600  ' (zuletzt %s)'
+  mehr.gd:600  'nicht verbunden'
   schnittstelle.gd:69  'Schnittstelle: '
   schnittstelle.gd:113  ' · Schutz '
   schnittstelle.gd:113  'an'
@@ -753,8 +755,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal.gd:245  'Aussicht: '
   bergtal.gd:254  'Schlafplatz: '
   bergtal.gd:256  'Aussicht: '
-  bergtal.gd:2538  'Schlafplatz: '
-  bergtal.gd:2540  'Aussicht: '
+  bergtal.gd:2559  'Schlafplatz: '
+  bergtal.gd:2561  'Aussicht: '
   diagnose.gd:32  ' · virtuelle Maschine'
   diagnose.gd:34  ' · Fenster klein / versteckt'
   diagnose.gd:72  ' · Ersatz-Port, 8765 war besetzt'
@@ -900,7 +902,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inventar.gd:308  '\nKI: – = die KI von MoveEye kennt es nicht (Prüfstand: darf keinen Alarm auslösen)'
   inventar.gd:332  'KI: '
   kids.gd:338  ' Du hast jetzt %d Sterne.'
-  kit_abenteuer.gd:1579  'keine Szene '
+  kit_abenteuer.gd:1643  'keine Szene '
   kitrain.gd:93  '1/3 Paket: '
   kitrain.gd:157  'Ohne GitHub-Schlüssel: die ZIP liegt hier: %s\nSo kommt sie ins Training: 1. GitHub → Releases → «ki-daten» → Edit → ZIP hineinziehen → Update release '
   kitrain.gd:158  '(beim ersten Mal «Draft a new release», Tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye holt das neue Modell danach selbst.\n'

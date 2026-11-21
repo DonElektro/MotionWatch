@@ -99,3 +99,10 @@ sp_feuer           Lagerfeuer knistert, 9-s-Schleife: Brausen (Synthese), Kniste
                                                                                                + [RD] wood_cracking_*
 sp_ui_klick        Menü-Klick: kurzer weicher Sinus wie MoveEye, ein Hauch Klick .............. [SYN] + [KEN] Interface click_002
 sp_ui_auf, sp_ui_zu  Schalter an / aus: zwei kurze Sinustöne hinauf / hinab .................. [SYN]
+
+Stimmen des Abenteuers «Die Karte des Grossvaters» (klang/stimmen/, ab Sim 3.73.0)
+--------------------------------------------------------------------------------
+Erzähler und Grossvater/Vater: vorgesprochen mit Piper (https://github.com/rhasspy/piper, MIT) und der Stimme
+«de_DE-thorsten-high» (rhasspy/piper-voices v1.0.0; Datensatz Thorsten-Voice, CC0 1.0,
+https://github.com/thorstenMueller/Thorsten-Voice) - dieselbe Stimme wie in MoveEye. Der Grossvater ist dieselbe Stimme,
+langsamer und tiefer gestimmt. Gebaut mit werkzeuge/stimmen/stimmen.py (Workflow «Sim-Pakete», auftrag=stimmen).

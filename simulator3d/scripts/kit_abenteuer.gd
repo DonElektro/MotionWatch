@@ -955,6 +955,8 @@ func pause(on: bool) -> void:
 
 
 func ueberspringen() -> void:
+	if _stimme_player != null:
+		_stimme_player.stop()
 	if phase == "film":
 		regie.ueberspringen()
 
@@ -1007,6 +1009,8 @@ func sag(text: String, wer: String, d := 0.0) -> void:
 	if text == "":
 		hud.untertitel("", "", Color.WHITE)
 		_sub_bis = 0.0
+		if _stimme_player != null:
+			_stimme_player.stop()
 		return
 	var sp: Array = daten.SPRECHER.get(wer, ["", Color.WHITE])
 	var nm := tx(str(sp[0])) if str(sp[0]) != "" else ""
@@ -1014,7 +1018,44 @@ func sag(text: String, wer: String, d := 0.0) -> void:
 	_sub_bis = uhr + (d if d > 0.0 else clampf(1.4 + text.length() * 0.055, 2.2, 7.0))
 	if figur != null and figur.ok() and wer == "figur":
 		figur.a.sprechen(minf(3.0, text.length() * 0.06))
+	var sek := _stimme(text, wer)
+	if sek > 0.0:
+		_sub_bis = maxf(_sub_bis, uhr + sek + 0.4)               # the subtitle stays while the voice speaks
 	_log("sag:" + wer)
+
+
+# ---- the voices (21.11.: Piper, pre-spoken - werkzeuge/stimmen/stimmen.py): narrator and the grandfather / father, German only;
+# the other figures: subtitles (and short sounds). The switch «Stimme» (abenteuer_stimme.gd: an | aus | untertitel) counts.
+const STIMMEN := "res://klang/stimmen/"
+static var _stimmen_karte = null
+var _stimme_player: AudioStreamPlayer = null
+
+
+func _stimme(text: String, wer: String) -> float:
+	if not wer in ["erzaehler", "grossvater"] or T.lang() != "de":
+		return 0.0
+	if preload("res://scripts/abenteuer_stimme.gd").modus() != "an":
+		return 0.0
+	if _stimmen_karte == null:
+		_stimmen_karte = {}
+		if FileAccess.file_exists(STIMMEN + "stimmen.json"):
+			var j = JSON.parse_string(FileAccess.get_file_as_string(STIMMEN + "stimmen.json"))
+			if j is Dictionary:
+				_stimmen_karte = j.get("zeilen", {})
+	var e = _stimmen_karte.get(text, null)
+	if not (e is Dictionary) or not FileAccess.file_exists(STIMMEN + str(e["datei"])):
+		return 0.0
+	var o := AudioStreamOggVorbis.load_from_buffer(FileAccess.get_file_as_bytes(STIMMEN + str(e["datei"])))
+	if o == null:
+		return 0.0
+	if _stimme_player == null:
+		_stimme_player = AudioStreamPlayer.new()
+		_stimme_player.bus = "Master"
+		add_child(_stimme_player)
+	_stimme_player.stream = o
+	_stimme_player.volume_db = -2.0
+	_stimme_player.play()
+	return o.get_length()
 
 
 func ton(nm: String) -> void:
@@ -1093,7 +1134,14 @@ func _person(id: String, e: Dictionary) -> void:
 	var b: Array = e.get("blick", [float(e["s"]) + 1.0, float(e["q"])])
 	var lb: Vector2 = par.tal(float(b[0]), float(b[1]))
 	var jc: Array = e.get("jacke", [0.5, 0.5, 0.5])
+	var Act = main.Actor
+	var lk: Dictionary = (e.get("look", {}) as Dictionary).duplicate()   # the own look of a story figure (hat, plait, pack)
+	if lk.has("hose"):
+		lk["trousers"] = Color(float(lk["hose"][0]), float(lk["hose"][1]), float(lk["hose"][2]))
+		lk.erase("hose")
+	Act.npc_look = lk
 	var a = par.actor("person", par.G(p.x, p.y), par.G(lb.x, lb.y), 1.3, Color(float(jc[0]), float(jc[1]), float(jc[2])))
+	Act.npc_look = {}
 	a.name = "kit_" + id
 	personen[id] = a
 

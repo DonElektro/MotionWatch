@@ -175,7 +175,7 @@ func _arm_frei(tp: Vector3, want: Vector3) -> float:
 			continue                                       # right at the figure (a step, the log it stands on) does not count
 		var q := tp.lerp(want, f)
 		if main.ground_y(q.x, q.z) + 0.35 > q.y:
-			return maxf(0.35, f - 1.0 / float(n))
+			return maxf(0.1, f - 1.0 / float(n))
 	return 1.0
 
 
@@ -223,8 +223,16 @@ func _folge_xform(tp: Vector3, d0: float, dt: float, heading: float) -> Transfor
 	_pit_ist = lerpf(_pit_ist, pit, clampf(dt * 3.0, 0.0, 1.0))
 	var back := Vector3(sin(yaw), 0, cos(yaw))
 	var want := _tp + back * d0 * cos(_pit_ist) + Vector3(0, d0 * sin(_pit_ist), 0)
-	# the spring arm with hysteresis
+	# the spring arm with hysteresis; very close to a wall behind the figure: from higher up instead (over the wall)
 	var frei := _arm_frei(_tp, want)
+	if frei < 0.45:
+		var pit_hoch := maxf(_pit_ist, 1.0)
+		var want2 := _tp + back * d0 * cos(pit_hoch) + Vector3(0, d0 * sin(pit_hoch), 0)
+		var frei2 := _arm_frei(_tp, want2)
+		if frei2 > frei + 0.2:
+			_pit_ist = lerpf(_pit_ist, pit_hoch, clampf(dt * 4.0, 0.0, 1.0))
+			want = _tp + back * d0 * cos(_pit_ist) + Vector3(0, d0 * sin(_pit_ist), 0)
+			frei = _arm_frei(_tp, want)
 	if frei < _arm - 0.02:
 		_arm = lerpf(_arm, frei, clampf(dt * 14.0, 0.0, 1.0))
 		_arm_frei_t = 0.0

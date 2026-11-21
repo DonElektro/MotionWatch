@@ -466,12 +466,13 @@ uniform float speed = 2.2;
 float h1(float x) { return fract(sin(x * 127.1) * 43758.5453); }
 void fragment() {
 	float y = pow(UV.y, 1.35);                                   // faster towards the foot (falling)
-	float wob = sin(UV.x * 23.0 + TIME * 0.7) * 0.12 + sin(UV.x * 57.0) * 0.05;
-	float st = fract(y * 3.0 - TIME * speed + wob);
+	float col = floor(UV.x * 18.0);                              // vertical strands of different brightness and phase
+	float col2 = floor(UV.x * 31.0);
+	float wob = h1(col) * 0.9 + sin(UV.x * 5.0 + TIME * 0.5) * 0.04;
+	float st = fract(y * 3.0 - TIME * speed * (0.85 + 0.3 * h1(col + 3.0)) + wob);
 	float n = smoothstep(0.0, 0.5, st) * (1.0 - smoothstep(0.55, 1.0, st));
-	float st2 = fract(y * 7.0 - TIME * speed * 1.7 + sin(UV.x * 41.0) * 0.3);
+	float st2 = fract(y * 7.0 - TIME * speed * 1.7 + h1(col2 + 9.0));
 	float n2 = smoothstep(0.0, 0.3, st2) * (1.0 - smoothstep(0.35, 1.0, st2));
-	float col = floor(UV.x * 18.0);                              // vertical strands of different brightness
 	float strand = 0.65 + 0.35 * h1(col);
 	float edge = smoothstep(0.0, 0.16 + 0.05 * sin(UV.y * 9.0 + TIME), UV.x) * smoothstep(1.0, 0.84 - 0.05 * sin(UV.y * 7.0 - TIME), UV.x);
 	float foam = smoothstep(0.78, 1.0, UV.y);                     // the white foot
@@ -523,10 +524,10 @@ void fragment() {
 	float edge = min(min(UV.x, 1.0 - UV.x), min(UV.y, 1.0 - UV.y));
 	float rand = 1.0 - smoothstep(0.0, 0.12, edge);              // lighter and a little foam at the rim
 	float fres = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 3.0);
-	ALBEDO = mix(mix(tief, flach, rand * 0.7), vec3(0.75, 0.82, 0.85), clamp(fres * 0.45 + max(r, 0.0) * 0.25, 0.0, 1.0));
+	ALBEDO = mix(mix(tief, flach, rand * 0.7), vec3(0.6, 0.7, 0.74), clamp(fres * 0.25 + max(r, 0.0) * 0.25, 0.0, 1.0));
 	NORMAL_MAP = normalize(vec3(0.5 + 0.12 * w + 0.2 * r, 0.5 + 0.12 * cos(w * 2.0 + t), 1.0));
-	ROUGHNESS = 0.06;
-	SPECULAR = 0.7;
+	ROUGHNESS = 0.14;
+	SPECULAR = 0.45;
 	ALPHA = 0.86 + 0.1 * fres;
 }
 """
