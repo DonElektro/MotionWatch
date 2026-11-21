@@ -162,6 +162,13 @@ func _build() -> void:
 	var drop := float(case.get("drop", 0.0)) if real else 0.0
 	if real:
 		(case["base"] as Node3D).position = head.position      # the lower part does not pan
+		var lp = case.get("lamp")                               # gaeste-licht: the lights sit in the lamps and tilt with them
+		if lp != null:
+			var G = preload("res://scripts/gehaeuse.gd")
+			if (lp as Node3D).has_meta("lens_w"):
+				G.light_to(white, lp, (lp as Node3D).get_meta("lens_w") + Vector3(0, 0, -0.01))
+			if (lp as Node3D).has_meta("lens_ir"):
+				G.light_to(ir, lp, (lp as Node3D).get_meta("lens_ir") + Vector3(0, 0, -0.01))
 		led_mat = StandardMaterial3D.new()                      # its status LED (MoveEye 2 sends «led» like the first)
 		led_mat.albedo_color = Color(0.85, 0.86, 0.88)
 		led_mat.emission_enabled = true
@@ -230,11 +237,13 @@ func _process(dt: float) -> void:
 	var step := deg_to_rad(main.SERVO_DEG_S) * dt
 	head.rotation.y = move_toward(head.rotation.y, -deg_to_rad(float(s.get("pan_deg", 0.0))), step)
 	head_pitch.rotation.x = move_toward(head_pitch.rotation.x, deg_to_rad(float(s.get("tilt_deg", 0.0)) - 6.0), step)
+	if case.get("lamp") != null:
+		preload("res://scripts/gehaeuse.gd").lamp_follow(case["lamp"], head_pitch)   # gaeste-licht: the lamps tilt too
 	cams[0].global_transform = head_pitch.global_transform.translated_local(Vector3(0, 0, -0.13))
 	cams[1].global_transform = rig.global_transform * Transform3D(Basis.from_euler(Vector3(deg_to_rad(-10.0), 0, 0)), Vector3(0, 2.4, 0.5))
 	cams[2].global_transform = head_pitch.global_transform.translated_local(Vector3(0.12, 0.0, -0.12))
 	var L: Dictionary = mw.get("lights", {})
-	white.light_energy = 9.0 if L.get("white", false) else 0.0
+	white.light_energy = 9.0 * clampf(float(L.get("white_level", 1.0)), 0.05, 1.0) if L.get("white", false) else 0.0   # gaeste-licht: dimmed / fading
 	if bool(case.get("ok", false)):                      # sim-echte-kamera: the lamps of its case glow, its status LED shows «led»
 		preload("res://scripts/gehaeuse.gd").set_glow(case["lists"], bool(L.get("white", false)), bool(L.get("ir", false)), false, main.is_dark())
 		if led_mat != null:

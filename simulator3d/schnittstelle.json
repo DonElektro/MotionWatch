@@ -55,7 +55,7 @@
     "ai_status": "KI-Status -> Simulator Testlauf",
     "refscan": "Referenz-Scan -> Simulator Knopf",
     "servo": "Kopf: Stellung, Tempo, Ziel, Not-Aus, Folgen -> Simulator Kopf",
-    "lights": "weisses Licht, IR -> Simulator Licht",
+    "lights": "weisses Licht, IR, white_level (0..1: gedimmt / Führungslicht 639zzzzl) -> Simulator Licht (main.gd, device.gd)",
     "wake": "Wecker -> sleeper.gd",
     "relays": "Relais mit Name und an/aus -> Simulator Statuszeile (schnittstelle.gd mw_extra), Python-Simulator",
     "sound": "Sirene / Sprechen -> Simulator Ton, Tiere fliehen",
@@ -83,7 +83,8 @@
     "level": "Zustand Aus / Wachsam / Voll / Gehtest {id, col, arming} wie MoveEye -> schnittstelle.gd mw_extra, abgleich.gd",
     "lock": "Bedienermodus {on, n, msg, pin} -> abgleich.gd (nur Hauptschalter, Entsperren mit der PIN von MoveEye)",
     "push": "die letzte Meldung {id, t, hm, title, where, status} -> abgleich.gd Push-Vorschau",
-    "diag": "alle 15 s die Selbstdiagnose von MoveEye (id, icon, title, level, text, tip) -> diagnose.gd"
+    "diag": "alle 15 s die Selbstdiagnose von MoveEye (id, icon, title, level, text, tip) -> diagnose.gd",
+    "guests": "«Gäste erwartet» (639zzzzl): on, phase, lvl, target {kind tent / fire / point, x, y m vom Gerät} -> gaeste.gd (Gäste gehen zum Ziel und wieder weg)"
   },
   "info": {
     "v": "Version",
