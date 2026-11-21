@@ -109,6 +109,7 @@ func _welt() -> void:
 	k = m.kit
 	pruef(k.tx("{bezug}") == "Vater" and k.tx("{jahr}") == "2000", "Rolle Sohn: Vater / 2000")
 	pruef(k.hud.touch and k.hud.stick.visible, "Touch: Stick sichtbar")
+	print("Leistung: ", JSON.stringify(k.par.info()), " fps ", Engine.get_frames_per_second())
 	var sch = k.par.schlucht
 	pruef(sch != null, "Schlucht: gebaut")
 	if sch != null:

@@ -187,7 +187,12 @@ func _farbe(sv: float, qv: float, h: float, F: float, R: float, steil: float) ->
 	return col
 
 
+var bau_ms := 0
+var ecken := 0
+
+
 func bauen(holder: Node3D, m, lite: bool) -> void:
+	var t0 := Time.get_ticks_msec()
 	var step := 1.0 if lite else 0.75
 	var ns := int(ceil((s1 - s0) / step)) + 1
 	var qs: Array = []
@@ -251,6 +256,8 @@ func bauen(holder: Node3D, m, lite: bool) -> void:
 		holder.add_child(tw)
 	_ausschneiden()
 	_steine_weg()
+	ecken = ns * nq
+	bau_ms = Time.get_ticks_msec() - t0
 
 
 func _rect() -> Array:
@@ -305,4 +312,4 @@ func aufraeumen() -> void:
 
 
 func info() -> Dictionary:
-	return {"mitte": [c.x, c.y], "s": [s0, s1], "versteckt": _mm_alt.size(), "ausschnitt": _mat_alt.size()}
+	return {"mitte": [c.x, c.y], "s": [s0, s1], "versteckt": _mm_alt.size(), "ausschnitt": _mat_alt.size(), "ecken": ecken, "bau_ms": bau_ms}

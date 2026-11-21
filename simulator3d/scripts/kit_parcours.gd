@@ -283,14 +283,17 @@ func _ding(d: Dictionary) -> void:
 			var n4 := node(holder, Vector3(c.x, base, c.y), -rot)
 			var eisen := Color(0.36, 0.36, 0.38)
 			var k := 0.35                                  # Klettersteig: iron rungs (bügel) in the rock and a steel cable beside
+			var st := SurfaceTool.new()                    # all rungs and anchors in ONE mesh (one draw call; web Lite)
+			st.begin(Mesh.PRIMITIVE_TRIANGLES)
 			while k < h2 + 0.3:
-				part(n4, boxm(0.42, 0.035, 0.035), Vector3(0, k, -0.14), eisen, 8.0)
+				st.append_from(boxm(0.42, 0.035, 0.035), 0, Transform3D(Basis.IDENTITY, Vector3(0, k, -0.14)))
 				for sx in [-0.2, 0.2]:
-					part(n4, boxm(0.035, 0.035, 0.16), Vector3(sx, k, -0.07), eisen, 8.0)
+					st.append_from(boxm(0.035, 0.035, 0.16), 0, Transform3D(Basis.IDENTITY, Vector3(sx, k, -0.07)))
 				k += 0.34
-			part(n4, cylm(0.012, 0.012, h2 + 1.2, 6), Vector3(0.42, (h2 + 1.2) * 0.5, -0.05), Color(0.7, 0.72, 0.74), 8.0)
 			for yy in [0.2, h2 * 0.5, h2 + 1.0]:
-				part(n4, boxm(0.05, 0.05, 0.12), Vector3(0.42, yy, -0.04), eisen, 8.0)
+				st.append_from(boxm(0.05, 0.05, 0.12), 0, Transform3D(Basis.IDENTITY, Vector3(0.42, yy, -0.04)))
+			light_part(n4, st.commit(), Vector3.ZERO, m.mat(eisen))
+			light_part(n4, cylm(0.012, 0.012, h2 + 1.2, 6), Vector3(0.42, (h2 + 1.2) * 0.5, -0.05), m.mat(Color(0.7, 0.72, 0.74)))
 			e["node"] = n4
 			e["top"] = base + h2
 		"seil":
@@ -619,4 +622,6 @@ func _process(dt: float) -> void:
 
 
 func info() -> Dictionary:
-	return {"dinge": dinge.size(), "decks": _decks.size(), "aktionen": aktionen.size(), "gefahren": gefahren.size(), "erledigt": erledigt.keys()}
+	var teile := holder.find_children("*", "MeshInstance3D", true, false).size() if holder != null and is_instance_valid(holder) else 0
+	return {"dinge": dinge.size(), "decks": _decks.size(), "aktionen": aktionen.size(), "gefahren": gefahren.size(), "erledigt": erledigt.keys(),
+		"netze": teile, "schlucht": schlucht.info() if schlucht != null else {}}
