@@ -147,7 +147,7 @@ const SZENEN := [
 			{"t": 0.0, "k": "balken", "an": true},
 			{"t": 0.0, "k": "musik", "z": "action"},
 			{"t": 0.0, "k": "wetter", "w": "storm"},
-			{"t": 0.0, "k": "shot", "art": "establish", "s": 43.6, "q": -5.6, "h": 5.0, "blick": [46.1, -0.9, -0.8], "d": 4.0, "ziel": [46.1, -0.9, -2.0], "groesse": 2.0},
+			{"t": 0.0, "k": "shot", "art": "establish", "s": 46.6, "q": 4.6, "h": 1.7, "blick": [46.1, -0.9, -0.8], "d": 4.0, "ziel": [46.1, -0.9, -2.0], "groesse": 2.0},
 			{"t": 0.3, "k": "sag", "wer": "erzaehler", "text": "Der Grat. Sturm. Und nur noch eine Hand am Fels."},
 			{"t": 0.0, "k": "figur_haengen", "s": 46.1, "q": -1.0},
 			{"t": 4.0, "k": "shot", "art": "schulter", "d": 3.0},
@@ -201,7 +201,7 @@ const SZENEN := [
 	{"id": "s04_wasserfall", "titel": "Am Wasserfall", "start": [39.0, 0.8], "schritte": [
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
-			{"t": 0.0, "k": "shot", "art": "reveal", "s": 40.0, "q": -6.0, "h": 0.6, "blick": [46.4, 0.9, 4.5], "d": 4.0, "ziel": [44.3, 0.9, 0.0], "groesse": 4.0},
+			{"t": 0.0, "k": "shot", "art": "reveal", "s": 40.5, "q": -5.5, "h": 0.8, "blick": [44.3, 0.9, 2.0], "d": 4.0, "ziel": [44.3, 0.9, 0.0], "groesse": 4.0},
 			{"t": 0.4, "k": "musik", "z": "entdeckung"},
 			{"t": 0.6, "k": "sag", "wer": "erzaehler", "text": "Wo der Bach zum ersten Mal fällt."},
 			{"t": 3.5, "k": "sag", "wer": "maggie", "text": "Wuff!"}]},
@@ -325,7 +325,7 @@ const SZENEN := [
 			{"t": 0.0, "k": "ir", "an": false},
 			{"t": 0.0, "k": "shot", "art": "fix", "tal": [-14.5, -18.5], "h": 1.4, "blick_tal": [-10.0, -16.0, 0.3], "d": 6.0, "ziel_tal": [-10.0, -16.5, 0.0], "groesse": 1.2},
 			{"t": 0.4, "k": "sag", "wer": "figur", "text": "Lia? … Das Zelt ist leer."},
-			{"t": 3.2, "k": "shot", "art": "nah_tal", "tal": [-10.2, -14.8], "h": 0.15, "d": 5.0, "ziel_tal": [-10.2, -14.8, 0.02], "groesse": 0.28},
+			{"t": 3.2, "k": "shot", "art": "nah_tal", "tal": [-10.2, -14.8], "h": 0.12, "r": 0.75, "d": 5.0, "ziel_tal": [-10.2, -14.8, 0.02], "groesse": 0.28},
 			{"t": 3.4, "k": "sag", "wer": "erzaehler", "text": "Tonis Notizbuch. Aufgeschlagen."},
 			{"t": 5.6, "k": "sag", "wer": "toni", "text": "«Er hat mich zurückgelassen.»", "d": 4.0},
 			{"t": 9.8, "k": "ende", "text": "Ende von Kapitel 2 – Fortsetzung folgt."}]}]},

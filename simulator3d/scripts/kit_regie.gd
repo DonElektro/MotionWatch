@@ -228,7 +228,8 @@ func _shot_xform(dt: float) -> Transform3D:
 		"nah", "nah_tal":
 			var c := _p(sh)
 			var ang := u * 0.7
-			at = c + Vector3(sin(ang) * 1.1, 0.45, cos(ang) * 1.1)
+			var rr := float(sh.get("r", 1.1))
+			at = c + Vector3(sin(ang) * rr, 0.45 * rr / 1.1, cos(ang) * rr)
 			lk = c
 		"maggie":
 			return _folge_xform(kit.hund_pos() + Vector3(0, 0.5, 0), 2.4, dt, kit.hund_heading())
@@ -241,8 +242,11 @@ func _shot_xform(dt: float) -> Transform3D:
 
 func _blocker(at: Vector3, lk: Vector3, n: int) -> float:
 	var last := -1.0
+	var L := at.distance_to(lk)
 	for i in range(1, n):
 		var f := float(i) / float(n)
+		if (1.0 - f) * L < 0.45:
+			continue                                       # right at the subject (a thing lying on the ground) does not count
 		var q := at.lerp(lk, f)
 		if main.ground_y(q.x, q.z) + 0.2 > q.y:
 			last = f
