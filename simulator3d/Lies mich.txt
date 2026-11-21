@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.72.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.73.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -493,6 +493,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.73.0
+3.73.0: Abenteuer «Die Karte des Grossvaters», Kapitel 2 «Wo der Bach zweimal fällt» im neuen Spielmodus (Standard; der
+alte Ablauf bleibt über «Neuer Spielmodus (Probe)»). Dazu eigene Musik und vorgesprochene Stimmen (Quellen und Lizenzen
+in klang/LIZENZEN.txt und unter Mehr › Über den Simulator › «Musik und Stimmen»), bessere Kamera, Klettern und Grafik;
+das Bergtal hat wieder den richtigen Bach. Neu für Tester: «🧪 Neuste Testversion holen» (Mehr → Entwickler).
+So testest du: Abenteuer öffnen → Kapitel 2 starten, den Weg bis zum zweiten Wasserfall gehen; Musik und Stimmen hören.
 
 NEU IN 3.72.0
 3.72.0: Im Browser sagt der Simulator MoveEye auf der Homepage, wenn sein Tab in den Hintergrund geht (der Browser zeichnet
