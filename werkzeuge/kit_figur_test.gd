@@ -165,10 +165,12 @@ func _welt() -> void:
 	pruef(ok, "Maggie hochgehoben")
 	k._maggie_steuern(true)
 	pruef(k.steuer_maggie and zustand() == "steuern" and k.regie.art == "maggie", "Maggie steuern: Kamera bei Maggie")
-	for wp in [[36.0, -5.6], [37.0, -5.6], [38.2, -5.4], [38.0, 0.2]]:
+	var z0 = k.ziel_welt()
+	pruef(z0 is Vector3 and absf(k.par.sq_von(z0).y + 5.6) < 0.3, "Maggie steuern: Kompass zeigt zuerst auf das Loch")
+	for wp in [[36.0, -5.6], [37.0, -5.6], [38.2, -5.4]]:
 		var ziel: Vector3 = k.par.welt(float(wp[0]), float(wp[1]))
 		var t := 0.0
-		while t < 6.0:
+		while t < 6.0 and not k._maggie_auto:
 			var hp: Vector3 = k.hund.welt()
 			var d := Vector2(ziel.x - hp.x, ziel.z - hp.z)
 			if d.length() < 0.25:
@@ -176,8 +178,10 @@ func _welt() -> void:
 			k.hund.steuern(d.normalized(), 0.05)
 			await process_frame
 			t += 0.05
-	k._maggie_ziel_pruefen()
-	pruef(k.erledigt.has("maggie_spalt") and not k.steuer_maggie, "Maggie durch den Spalt am Riegel")
+	var z1 = k.ziel_welt()
+	pruef(z1 is Vector3 and absf(k.par.sq_von(z1).y - 0.2) < 0.4, "Maggie steuern: dann zeigt er auf den Riegel")
+	ok = await _bis(func(): return k.erledigt.has("maggie_spalt"), 8.0)
+	pruef(ok and not k.steuer_maggie, "Maggie durch den Spalt, läuft drüben selbst zum Riegel")
 	k.par.tor_auf("tor")
 	pruef(k.maggie_frei(k.par.tal(36.0, 0.8), k.par.tal(38.0, 0.8)), "Tor offen: Maggie kommt durch")
 	# the log: children's mode across; without help: slip -> hang -> pull up

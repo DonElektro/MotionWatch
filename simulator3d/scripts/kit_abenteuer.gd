@@ -66,6 +66,10 @@ var log_: Array = []
 var fps_log: Array = []
 var _fps_t := 0.0
 var steuer_maggie := false
+var _marker: Node3D = null
+var _marker_t := 0.0
+var _hinweis_i := 0
+var _maggie_auto := false
 var _halt_t := 0.0
 var qte := {}                        # a quick press in a film: {id, text, bis}
 var personen := {}                   # film figures: id -> actor (puppet)
@@ -420,6 +424,7 @@ func _naechster_schritt() -> void:
 		regie.spiele(schritt["film"], func(): _film_fertig())
 	elif schritt.has("ziel"):
 		schritt["_t0"] = uhr
+		_hinweis_i = 0
 		ziel_text = tx(str(schritt["ziel"]))
 		_ziel_p = _bis_ort(str(schritt.get("bis", "")))
 		if str(schritt.get("bis", "")) == "aktion:maggie_spalt":
@@ -506,6 +511,7 @@ func _schritt_tick() -> void:
 		fertig = funde.has(b.substr(5))
 	elif b.begins_with("zeit:"):
 		fertig = uhr > float(schritt.get("_t0", uhr)) + float(b.substr(5))
+	_hinweise_tick()
 	if schritt.has("merke_halt") and par.ding_bei(figur.pos()) == str(schritt["merke_halt"]):   # stopping on the bridge
 		if float(figur.a.cur_speed) < 0.3:
 			_halt_t += get_process_delta_time()
@@ -518,7 +524,108 @@ func _schritt_tick() -> void:
 
 
 func ziel_welt():
+	if steuer_maggie:
+		return maggie_ziel()
 	return _ziel_p
+
+
+func maggie_ziel():
+	"""while steering Maggie: first the window in the wall, then the bolt (the compass and the marker follow)"""
+	var ak: Dictionary = par.aktion("maggie_spalt")
+	if ak.is_empty() or hund == null:
+		return _ziel_p
+	var d: Dictionary = ak["d"]
+	var hp: Vector3 = hund.ppos(hund.hund)
+	var hs: Vector2 = par.sq(Vector2(hp.x, hp.z))
+	if hs.x < float(d.get("hinter_wand", 37.5)) and d.has("fenster"):
+		var f: Array = d["fenster"]
+		return par.welt(float(f[0]), float(f[1]), float(f[2]))
+	var z: Array = d["ziel"]
+	return par.welt(float(z[0]), float(z[1]), 1.2)
+
+
+const HINWEIS_STD := [[30.0, "Schau auf den Kompass: die gelbe Marke zeigt zum Ziel.", "blinki"], [55.0, "Folge dem leuchtenden Punkt.", "blinki"]]
+
+
+func _hinweise_tick() -> void:
+	"""a hint after some time without progress in a step: the step's own («hinweise» [[s, text, who]]), else two general ones"""
+	if schritt.is_empty() or not schritt.has("ziel") or phase != "spiel":
+		return
+	var L: Array = schritt.get("hinweise", HINWEIS_STD)
+	if _hinweis_i >= L.size():
+		return
+	var h: Array = L[_hinweis_i]
+	if uhr - float(schritt.get("_t0", uhr)) > float(h[0]):
+		_hinweis_i += 1
+		sag(tx(str(h[1])), str(h[2]) if h.size() > 2 else "blinki")
+		if _marker != null:
+			_marker_t = 2.5                                      # the marker pulses stronger for a moment
+
+
+# ---- the marker at the current target: a ring on the ground and a soft beam of light, pulsing --------------------------------
+func _marker_tick(real_dt: float) -> void:
+	var zp = ziel_welt() if phase == "spiel" else null
+	if not (zp is Vector3):
+		if _marker != null:
+			_marker.visible = false
+		return
+	if _marker == null:
+		_marker = Node3D.new()
+		_marker.name = "kit_marker"
+		add_child(_marker)
+		var gm := StandardMaterial3D.new()
+		gm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		gm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		gm.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		gm.albedo_color = Color(1.0, 0.78, 0.3, 0.55)
+		gm.cull_mode = BaseMaterial3D.CULL_DISABLED
+		var ring := MeshInstance3D.new()
+		var tm := TorusMesh.new()
+		tm.inner_radius = 0.42
+		tm.outer_radius = 0.55
+		tm.rings = 24
+		tm.ring_segments = 6
+		ring.mesh = tm
+		ring.scale = Vector3(1, 0.2, 1)
+		ring.material_override = gm
+		ring.name = "ring"
+		_marker.add_child(ring)
+		var beam := MeshInstance3D.new()
+		var cm := CylinderMesh.new()
+		cm.top_radius = 0.02
+		cm.bottom_radius = 0.16
+		cm.height = 3.0
+		cm.radial_segments = 8
+		cm.cap_top = false
+		cm.cap_bottom = false
+		beam.mesh = cm
+		beam.position = Vector3(0, 1.5, 0)
+		var bm := gm.duplicate() as StandardMaterial3D
+		bm.albedo_color = Color(1.0, 0.8, 0.35, 0.22)
+		beam.material_override = bm
+		beam.name = "beam"
+		_marker.add_child(beam)
+		var dot := MeshInstance3D.new()
+		var sm := SphereMesh.new()
+		sm.radius = 0.12
+		sm.height = 0.24
+		dot.mesh = sm
+		dot.material_override = gm
+		dot.name = "dot"
+		_marker.add_child(dot)
+	_marker.visible = true
+	var p: Vector3 = zp
+	var g: float = main.ground_y(p.x, p.z)
+	var auf_boden: bool = absf(p.y - (g + 1.0)) < 0.2            # an «ort» goal (1 m over the ground): ring on the ground
+	_marker.global_position = Vector3(p.x, g + 0.05, p.z) if auf_boden else p
+	(_marker.get_node("ring") as Node3D).visible = auf_boden
+	(_marker.get_node("beam") as Node3D).visible = auf_boden
+	(_marker.get_node("dot") as Node3D).visible = not auf_boden
+	_marker_t = maxf(0.0, _marker_t - real_dt)
+	var puls := 1.0 + 0.18 * sin(uhr * 4.0) + 0.5 * _marker_t
+	_marker.scale = Vector3.ONE * puls
+	var near: bool = figur.pos().distance_to(p) < 1.6 and not steuer_maggie
+	_marker.visible = not near
 
 
 func nord_off() -> float:
@@ -578,10 +685,13 @@ func _process(dt: float) -> void:
 	if phase in ["pause", "ende"]:
 		ein = {}
 	if steuer_maggie and hund != null:
-		var mv: Vector2 = ein.get("mv", Vector2.ZERO)
-		hund.steuern(mv, dt)
-		if bool(ein.get("aktion", false)):
-			_maggie_ziel_pruefen()
+		if _maggie_auto:
+			if hund.zustand_hund != "aktion":
+				_maggie_ziel_pruefen(true)
+		else:
+			var mv: Vector2 = ein.get("mv", Vector2.ZERO)
+			hund.steuern(mv, dt)
+			_maggie_ziel_pruefen(bool(ein.get("aktion", false)))
 		ein = {}
 	_personen_tick(dt)
 	if not qte.is_empty():
@@ -625,6 +735,7 @@ func spaet(dt: float, real_dt: float) -> void:
 		if alt.has("d"):
 			figur._balance_start(alt["d"])
 	_schritt_tick()
+	_marker_tick(real_dt)
 	_licht()
 	regie.tick(dt, real_dt, ein)
 	hud.tick(real_dt)
@@ -1110,6 +1221,7 @@ func maggie_heben(d: Dictionary) -> void:
 
 func _maggie_steuern(on: bool) -> void:
 	steuer_maggie = on
+	_maggie_auto = false
 	if on:
 		figur.geh_zu("steuern")
 		regie.zu_maggie(true)
@@ -1121,13 +1233,26 @@ func _maggie_steuern(on: bool) -> void:
 			hund.modus = "folgen"
 
 
-func _maggie_ziel_pruefen() -> void:
+func _maggie_ziel_pruefen(fertig_machen := false) -> void:
+	"""within 1.3 m of the bolt: done (no button needed); once she is through the window and down on the far side she walks
+	the last metres by herself (the owner got stuck here, 21.11.)"""
 	var ak: Dictionary = par.aktion("maggie_spalt")
 	if ak.is_empty() or hund == null:
 		return
 	var z: Array = ak["d"]["ziel"]
 	var hp: Vector3 = hund.ppos(hund.hund)
-	if par.sq(Vector2(hp.x, hp.z)).distance_to(Vector2(float(z[0]), float(z[1]))) < 1.3:
+	var hs: Vector2 = par.sq(Vector2(hp.x, hp.z))
+	var hy: float = hund.VL(hund.hund.global_position).y
+	var unten: bool = hy < par._H(hp.x, hp.z) + 0.3
+	if not _maggie_auto and hs.x > float(ak["d"].get("hinter_wand", 37.5)) and unten and hs.distance_to(Vector2(float(z[0]), float(z[1]))) >= 1.3:
+		_maggie_auto = true
+		var zt: Vector2 = par.tal(float(z[0]), float(z[1]))
+		hund.modus = "folgen"
+		hund._aktion([{"t": "walk", "p": Vector3(zt.x, 0, zt.y), "spd": 2.6}])
+		sag(tx("Drüben! Maggie läuft zum Riegel."), "figur")
+		return
+	if hs.distance_to(Vector2(float(z[0]), float(z[1]))) < 1.3 or (fertig_machen and _maggie_auto):
+		_maggie_auto = false
 		hund.bellen(hp, 2)
 		hund.idle(hund.hund, "root", 1.2)
 		_maggie_steuern(false)

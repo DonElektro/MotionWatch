@@ -69,6 +69,9 @@ void fragment() {
 		base = mix(rock, moss, smoothstep(0.75, 0.95, up) * smoothstep(0.35, 0.65, vn(wp.xz * 0.9)));
 	}
 	vec3 col = mix(base, rock, steil);
+	float lum = dot(col, vec3(0.3, 0.59, 0.11));
+	col = mix(vec3(lum), col, 1.3);                            // a little more colour …
+	col = clamp((col - 0.42) * 1.18 + 0.4, 0.0, 1.0);          // … and contrast (bright laptop screens: not washed out)
 	ALBEDO = col * tint;
 	ROUGHNESS = 0.88;
 }
