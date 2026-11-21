@@ -272,7 +272,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_17_0.zip"
-ZD_SHA256 = "5a54718543c7ea27f98f1a87a05427541be03ee42dbff9fbc0c13a7de7286ff6"
+ZD_SHA256 = "0c2a59fac1d70776677f7287b081bd1841a51ec128aa9d470f8c39e8704433da"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -117750,6 +117750,45 @@ hspref_selftest = _zd_fn('639zzzzy_hotspot_bevorzugen/hspref_selftest()')
 
 
 SELFTEST_EXTRA.append(("Prefer my phone hotspot (639zzzzy)", hspref_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BK_TAG = "bergkarte-1"
+BK_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"}
+
+BK_FILE = {"name": "bergtal-karte-1.zip", "size": 0, "sha256": "", "unpacked": 0, "sim": ""}
+BK_PY = _zd('639zzzzzt_bergtal_karte/BK_PY', "")
+zd_exec(BK_PY, "639zzzzzt_bergtal_karte.py")
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")
