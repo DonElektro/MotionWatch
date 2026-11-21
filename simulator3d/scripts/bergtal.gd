@@ -410,8 +410,10 @@ static func generate() -> void:
 	_flatten(BIVOUAC, 8.0, 0.8)
 	_flatten(Vector2(-700, -130), 12.0, 0.8)               # the old dairy
 	_flatten(Vector2(-650, 430), 30.0, 0.7)                # the cairn plateau
+	_hm0 = _hm.duplicate()                                  # 21.11.2026: the ground before the streams (see _carve_stream)
 	for i in range(STREAMS.size()):
 		_carve_stream(STREAMS[i][0], float(STREAMS[i][1]), i == 0)
+	_hm0 = PackedFloat32Array()
 	_pads.clear()
 	for pl in Worlds.places_of("bergtal"):                 # 3D-4.x Welten: the flat areas of the old scenes (worlds.gd)
 		_pad(Vector2(pl[2], pl[3]), float(pl[5]), pl[0] == "seeufer")   # K2: before the road (the road lies on them)
@@ -441,6 +443,23 @@ static func generate() -> void:
 
 static func _idx(x: float, z: float) -> Vector2i:
 	return Vector2i(clampi(int(round((x - LO) / STEP)), 0, N - 1), clampi(int(round((z - LO) / STEP)), 0, N - 1))
+
+
+static var _hm0 := PackedFloat32Array()      # only while the streams are carved: the height map before (generate)
+
+
+static func _h_vor(x: float, z: float) -> float:
+	"""the ground before the streams were carved (bilinear like H)"""
+	if _hm0.is_empty():
+		return H(x, z)
+	var fx := clampf((x - LO) / STEP, 0.0, N - 1.001)
+	var fz := clampf((z - LO) / STEP, 0.0, N - 1.001)
+	var i := mini(int(fx), N - 2)
+	var j := mini(int(fz), N - 2)
+	var u := fx - i
+	var v := fz - j
+	var k := j * N + i
+	return lerpf(lerpf(_hm0[k], _hm0[k + 1], u), lerpf(_hm0[k + N], _hm0[k + N + 1], u), v)
 
 
 static func H(x: float, z: float) -> float:
@@ -575,7 +594,9 @@ static func _carve_stream(pts: Array, w: float, gorge: bool) -> void:
 				half = 7.0
 			var i0 := _idx(p.x - half - 6.0, p.y - half - 6.0)
 			var i1 := _idx(p.x + half + 6.0, p.y + half + 6.0)
-			var bed := H(p.x, p.y)
+			var bed := _h_vor(p.x, p.y)                      # 21.11.2026: from the ground BEFORE carving - H() read the channel
+			                                                  # already cut by the step before, so it got deeper at every 4 m step
+			                                                  # (the stream below the hut a 35–40 m slot, the gorge 200–800 m deep)
 			for j in range(i0.y, i1.y + 1):
 				for i in range(i0.x, i1.x + 1):
 					var q := Vector2(LO + i * STEP, LO + j * STEP)
