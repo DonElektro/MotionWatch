@@ -837,10 +837,18 @@ BK_JS = r"""
   function set3d(v, quick) {
     BK.d3 = v; try { localStorage.setItem("mw-bk-3d", v ? "1" : "0"); } catch (e) {}
     document.querySelectorAll(".bk-3d button").forEach(b => { const on = (b.dataset.v === "3d") === v; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false"); });
-    if (!map || !map.isStyleLoaded()) return;                           // before «load»: the load handler does it
+    if (!map || !BK.ready) return;                                      // before «load»: the load handler does it (isStyleLoaded()
+                                                                        // is false while 3D tiles stream in - then 2D did nothing)
     if (v) { map.setTerrain(D3); map.dragRotate.enable(); map.touchZoomRotate.enableRotation(); map.touchPitch.enable(); map.keyboard.enableRotation();
       try { map.setSky({"sky-color": dark() ? "#1b2a40" : "#9cc7ef", "horizon-color": dark() ? "#3a4a60" : "#eef4fa", "fog-color": dark() ? "#2a3340" : "#eef2f5", "sky-horizon-blend": 0.5, "horizon-fog-blend": 0.8, "fog-ground-blend": 0.25}); } catch (e) {}
-      map.easeTo({pitch: 58, bearing: map.getBearing() || -25, zoom: Math.max(map.getZoom(), 15.2), duration: quick ? 0 : 700}); }
+      map.easeTo({pitch: 55, bearing: map.getBearing() || -25, zoom: Math.max(map.getZoom(), 15.5), duration: quick ? 0 : 700});
+      // MapLibre takes the height under the centre when the terrain is switched on - before its tiles are there (0 m: the
+      // camera would stand inside the mountain, empty picture, measured). Once everything is loaded: a tiny move = new height.
+      // (a timer, not «idle»: a big canvas with software WebGL never gets idle - measured)
+      clearInterval(BK.nudgeT); let n = 0;
+      BK.nudgeT = setInterval(() => { if (!BK.d3 || !map.getTerrain() || ++n > 120) { clearInterval(BK.nudgeT); return; }
+        if (map.queryTerrainElevation(map.getCenter()) > 0 && n > 2) { clearInterval(BK.nudgeT); return; }
+        const c = map.getCenter(); map.jumpTo({center: [c.lng + (n % 2 ? 1e-7 : -1e-7), c.lat]}); }, 1000); }
     else { map.setTerrain(null); map.dragRotate.disable(); map.touchZoomRotate.disableRotation(); map.touchPitch.disable(); map.keyboard.disableRotation(); map.easeTo({pitch: 0, bearing: 0, duration: quick ? 0 : 500}); }
   }
   function addLive() {
@@ -995,7 +1003,7 @@ BK_JS = r"""
     let tm = 0; q.addEventListener("input", () => { clearTimeout(tm); tm = setTimeout(() => search(q.value, pick), 150); });
     q.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); search(q.value, pick); } });
     $("#kq-go").onclick = () => search(q.value, pick);
-    map.on("load", () => { addLive(); applyGeheim(); if (BK.d3) set3d(true, true); });
+    map.on("load", () => { BK.ready = true; addLive(); applyGeheim(); if (BK.d3) set3d(true, true); });
     // light / dark like the page: a new style, the own sources and layers (tours, live, suggestions) stay
     let lastDark = dark();
     new MutationObserver(() => { const d = dark(); if (d === lastDark) return; lastDark = d;
