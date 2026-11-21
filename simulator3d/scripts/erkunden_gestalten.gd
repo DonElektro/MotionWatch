@@ -25,14 +25,14 @@ var main
 var offen := false
 var reiter := "person"
 var panel: PanelContainer
-var _tabs: HBoxContainer
+var _tabs: HFlowContainer
 var _body: VBoxContainer
 var _scroll: ScrollContainer
 var _knoepfe := {}                   # id -> Button (tests)
 
 
 func _ready() -> void:
-	layer = 7
+	layer = 20                                                   # above the green stick and the edge buttons
 	panel = PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", UI.box(Color(UI.PANEL.r, UI.PANEL.g, UI.PANEL.b, 0.94), UI.LINE, 12, 10, 1))
 	panel.visible = false
@@ -54,8 +54,9 @@ func _ready() -> void:
 	fertig.pressed.connect(func(): zeigen(false))
 	UI.primary(fertig)
 	kopf.add_child(fertig)
-	_tabs = HBoxContainer.new()
-	_tabs.add_theme_constant_override("separation", 4)
+	_tabs = HFlowContainer.new()                                  # wraps on the phone (no cut words)
+	_tabs.add_theme_constant_override("h_separation", 4)
+	_tabs.add_theme_constant_override("v_separation", 4)
 	v.add_child(_tabs)
 	_scroll = ScrollContainer.new()
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -146,7 +147,7 @@ func _bauen() -> void:
 		tb.focus_mode = Control.FOCUS_NONE
 		tb.custom_minimum_size = Vector2(0, 40 if gross else 32)
 		tb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		tb.clip_text = true
+		tb.add_theme_font_size_override("font_size", 13)
 		var rid := str(r[0])
 		tb.pressed.connect(func(): reiter = rid; _bauen())
 		if rid == reiter:

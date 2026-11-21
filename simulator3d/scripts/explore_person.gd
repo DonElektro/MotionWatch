@@ -794,10 +794,11 @@ func _portrait(cam: Camera3D, dt: float) -> void:
 	var hoch := s.y > s.x
 	var hh: float = clampf(hoehe(), 0.5, 2.0)
 	var mitte: Vector3 = figur.pos() + Vector3(0, hh * 0.55, 0)
-	var dist := hh * (2.3 if hoch else 1.9) + 0.8
+	var dist := hh * (3.4 if hoch else 1.9) + 0.8
 	var want := mitte + fw * dist + Vector3(0, 0.25, 0)
-	# the figure where the window is not: left of the window on the PC, above it on the phone
-	var blick := mitte + (rt * dist * 0.32 if not hoch else Vector3(0, -dist * 0.28, 0))
+	# the figure where the window is not: left of the window on the PC, above it on the phone (the camera looks along -fw:
+	# its right is -rt, so looking a little to -rt puts the figure left in the picture)
+	var blick := mitte + (-rt * dist * 0.3 if not hoch else Vector3(0, -dist * 0.17, 0))
 	main.view_mode = 0
 	cam.fov = 50.0
 	var tr := Transform3D(Basis.IDENTITY, want).looking_at(blick, Vector3.UP)

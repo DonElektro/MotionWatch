@@ -228,11 +228,15 @@ func _layout() -> void:
 	var unten: float = 150.0
 	if ex != null and is_instance_valid(ex):
 		var r: Rect2 = ex.get_global_rect()
-		unten = r.position.y + r.size.y * ex.scale.y + 8.0
+		unten = r.position.y + r.size.y + 8.0                    # (the global rect is already scaled)
 	auge.size = Vector2(minf(250.0, s.x - 80.0), 34)
 	auge.position = Vector2(clampf(s.x * 0.5 - auge.size.x * 0.5, 66.0, s.x - auge.size.x - 4.0), unten)
-	blinki.position = Vector2(s.x - 58.0, unten + 2.0)
-	_bl_box.position = Vector2(maxf(66.0, s.x - 58.0 - 232.0), unten + 44.0)
+	if s.x >= 768.0:                                          # wide: under the small map at the left (the cameras are right)
+		blinki.position = Vector2(16.0, 214.0)
+		_bl_box.position = Vector2(66.0, 222.0)
+	else:
+		blinki.position = Vector2(s.x - 58.0, unten + 2.0)
+		_bl_box.position = Vector2(maxf(66.0, s.x - 58.0 - 232.0), unten + 44.0)
 	_bl_txt.custom_minimum_size = Vector2(minf(220.0, s.x - 140.0), 0)
 
 

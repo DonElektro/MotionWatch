@@ -88,6 +88,9 @@ func command() -> Vector2:
 
 func _process(dt: float) -> void:
 	visible = main.mover_on
+	var ex0 = main.explore
+	if visible and ex0 != null and ex0.person != null and ex0.person.gestalten != null and bool(ex0.person.gestalten.offen):
+		visible = false                                   # «Figur gestalten» open: the window needs the room (explore_person.gd)
 	var clean: bool = main.now() - main.view_clean_t < 3.0     # 3D-3.67: the browser shows full screen: not drawn, but still drives
 	modulate.a = 0.0 if clean else 1.0
 	mouse_filter = Control.MOUSE_FILTER_IGNORE if clean else Control.MOUSE_FILTER_STOP

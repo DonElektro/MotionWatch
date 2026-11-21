@@ -146,7 +146,8 @@ func zeigen() -> bool:
 
 
 func tick() -> void:
-	var on: bool = person != null and person.ok() and bool(person.active) and zeigen() and not bool(person.ex.fly)
+	var on: bool = person != null and person.ok() and bool(person.active) and zeigen() and not bool(person.ex.fly) \
+			and not (person.gestalten != null and person.gestalten.offen)
 	if visible != on:
 		visible = on
 		if on:
