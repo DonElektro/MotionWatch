@@ -273,7 +273,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_16_1.zip"
-ZD_SHA256 = "8f5e646a5d036ae25a461dde7c13afed7f06e59d62fa0adc1b9b9ab9a232e1e3"
+ZD_SHA256 = "e42c78c4258b4d7b35cd412f9ee16fa33c10e41beee50a0861face0f3df36f7d"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -7821,7 +7821,11 @@ class Hardware:
 				pct=light_pct(n)if on else 0.0
 				if self.pca is not None and prev!=(out,on,pct):
 					try:
-						self.pca.dim(int(out[4:]),pct);self._pca_lights[n]=(out,on,pct)
+						if 0.0<pct<100.0 and hasattr(self.pca,"dim"):
+							self.pca.dim(int(out[4:]),pct)
+						else:
+							self.pca.switch(int(out[4:]),on)
+						self._pca_lights[n]=(out,on,pct)
 					except Exception as e:
 						log_event("servo",f"Light error: {e}")
 			elif out.startswith("gpio:"):

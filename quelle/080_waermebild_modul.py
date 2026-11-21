@@ -269,7 +269,11 @@ class Hardware:
                 pct = light_pct(n) if on else 0.0                 # 639zzzzz: dimmed as a percentage (100 % = on as before)
                 if self.pca is not None and prev != (out, on, pct):
                     try:
-                        self.pca.dim(int(out[4:]), pct); self._pca_lights[n] = (out, on, pct)
+                        if 0.0 < pct < 100.0 and hasattr(self.pca, "dim"):
+                            self.pca.dim(int(out[4:]), pct)
+                        else:
+                            self.pca.switch(int(out[4:]), on)         # 100 % / off: exactly as before
+                        self._pca_lights[n] = (out, on, pct)
                     except Exception as e:
                         log_event("servo", f"Light error: {e}")
             elif out.startswith("gpio:"):

@@ -407,7 +407,7 @@ def main():
     ok(R["s_rtc"] == ["", "1900000123"], "Weckzeit in den RTC (%s)" % R["s_rtc"])
     ok(str(R["s_self"]).startswith("fixed times"), "Selbsttest Schlafen: %s" % R["s_self"])
     ok(str(R["a_self"]).startswith("cold block"), "Selbsttest Laden: %s" % R["a_self"])
-    ok(R["dims"] == [[2, 100.0], [3, 40.0], [2, 30.0]], "Licht in %% am PCA9685, nur bei Änderung (%s)" % R["dims"])
+    ok(R["dims"] == [[2, "sw", True], [3, 40.0], [2, 30.0]], "Licht in %% am PCA9685, nur bei Änderung (%s)" % R["dims"])
     ok(R["pca_bits"] == [[2, 4096, 0], [2, 0, 4096], [3, 0, 2048]], "100 %% = ganz an wie bisher, 0 %% = aus, 50 %% = PWM (%s)" % R["pca_bits"])
     print("\n" + ("X1206-Test OK" if not FEHLER else "%d FEHLER" % len(FEHLER)))
     return 1 if FEHLER else 0
