@@ -498,6 +498,12 @@ func _ding(d: Dictionary) -> void:
 			var dk := [c, Vector2(lq, ls), rot, top]
 			e["decks"].append(dk)
 			ebenen_decks[str(d.get("ebene", ""))] = ebenen_decks.get(str(d.get("ebene", "")), []) + [dk]
+		"decke":                                           # Kapitel 1: a ceiling under the roof of the hut (from inside the roof was open)
+			var nd := node(holder, Vector3(c.x, top, c.y), -rot)
+			part(nd, boxm(lq * 2.0, 0.08, ls * 2.0), Vector3.ZERO, Color(0.32, 0.22, 0.14), "tree")
+			for k3 in range(5):                            # beams
+				part(nd, boxm(lq * 2.0, 0.16, 0.14), Vector3(0, -0.1, -ls + (k3 + 0.5) * ls * 2.0 / 5.0), Color(0.26, 0.18, 0.11), "tree")
+			e["node"] = nd
 		"holz":                                            # Kapitel 1: the wood pile beside the hut
 			var nh := node(holder, Vector3(c.x, _H(c.x, c.y), c.y), -rot)
 			for r in range(3):

@@ -215,6 +215,9 @@ func start(o := {}) -> void:
 		return
 	bt.s.root.add_child(par)
 	par.bauen()
+	_decke_boden = {}
+	for dc in daten.get_script_constant_map().get("DECKEN", []):
+		decke_bei(par.welt(float(dc["s"]), float(dc["q"])), 0.0)   # (the floor measured now, while no level is on)
 	weg = par.weg_punkte()
 	figur = Figur.new(self)
 	figur.kinder = kinder
@@ -1300,6 +1303,27 @@ func _ebene(id: String, on: bool) -> void:
 		lampe_schalten(false)
 
 
+var _decke_boden := {}
+
+
+func decke_bei(w: Vector3, figur_y: float) -> float:
+	"""the ceiling over a world point for the camera (Kapitel 1: the hut - under the attic floor in the room, under the roof in
+	the attic), INF = open sky"""
+	if par == null:
+		return INF
+	var L: Array = daten.get_script_constant_map().get("DECKEN", [])
+	for i in range(L.size()):
+		var dc: Dictionary = L[i]
+		var sq: Vector2 = par.sq_von(w)
+		if absf(sq.x - float(dc["s"])) < float(dc["ls"]) and absf(sq.y - float(dc["q"])) < float(dc["lq"]):
+			if not _decke_boden.has(i):                       # the floor of the room (measured once, before any level is on)
+				_decke_boden[i] = par.y_welt(par.boden_tal(par.tal(float(dc["s"]), float(dc["q"])))) if not bool(par.ebene_an.get("dach", false)) else figur_y - 2.5
+			var boden: float = float(_decke_boden[i])
+			var auf_boden := figur_y - boden
+			return boden + (float(dc["oben"]) if auf_boden > float(dc["trenn"]) else float(dc["unten"]))
+	return INF
+
+
 func _ebene_tick() -> void:
 	"""up the ladder of the hut: at the top the attic counts (the floors) and the step «up» is done"""
 	if par == null or not par.ebenen_decks.has("dach"):
@@ -1835,6 +1859,12 @@ static func control(m, d: Dictionary) -> Dictionary:
 		"abschnitt":                                       # «Zum nächsten Abschnitt springen» (tests: also before 90 s)
 			k.abschnitt_springen()
 			return {"ok": true, "kit": k.info()}
+		"ebene":                                           # tests / pictures (Kapitel 1): a level on / off (the attic)
+			k._ebene(str(d.get("id", "")), bool(d.get("an", true)))
+			return {"ok": true}
+		"lampe":
+			k.lampe_schalten(bool(d.get("an", true)))
+			return {"ok": true}
 		"wahl":                                            # tests: the backpack card (Kapitel 1) answered with these ids
 			if k.hud.wahl_offen() and k.hud._wahl_fertig.is_valid():
 				k.hud._wahl_panel.queue_free()

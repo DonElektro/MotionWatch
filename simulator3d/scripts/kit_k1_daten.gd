@@ -16,7 +16,7 @@ const ENDE := "Ende von Kapitel 1 – weiter mit Kapitel 2 «Wo der Bach zweimal
 
 const ACHSE := [Vector2(51.0, 3.0), Vector2(0.0, 1.0)]
 const LAGER := Vector2(44.5, -6.0)                 # MoveEye on its tripod, west of the door (bergtal «frei»)
-const START := {"wetter": "rain", "stunde": 17.5}  # arrival in the rain, late afternoon
+const START := {"wetter": "rain", "stunde": 15.5}  # arrival in the rain, afternoon
 
 const ROLLEN := ["enkelin", "enkel", "tochter", "sohn"]
 const ROLLE_NAME := {"enkelin": "Enkelin", "enkel": "Enkel", "tochter": "Tochter", "sohn": "Sohn"}
@@ -44,6 +44,7 @@ const DINGE := [
 	{"id": "dachwand_w", "art": "deck", "ebene": "dach", "s": 0.0, "q": -4.55, "ls": 3.9, "lq": 0.12, "top": 4.8},
 	{"id": "dachwand_v", "art": "deck", "ebene": "dach", "s": -3.82, "q": 0.0, "ls": 0.12, "lq": 4.6, "top": 4.8},
 	{"id": "dachwand_h", "art": "deck", "ebene": "dach", "s": 3.82, "q": 0.0, "ls": 0.12, "lq": 4.6, "top": 4.8},
+	{"id": "decke", "art": "decke", "s": 0.0, "q": 0.0, "ls": 3.7, "lq": 4.45, "top": 4.62, "boden_deck": true},
 	# finds up there - only to be seen in the cone of the headlamp
 	{"id": "dose", "art": "fund", "s": 0.25, "q": -3.7, "top": 2.5, "boden_deck": true, "nur_lampe": true, "form": "dose"},
 	{"id": "skischuh", "art": "fund", "s": 1.1, "q": -1.2, "top": 2.5, "boden_deck": true, "nur_lampe": true, "form": "schuh"},
@@ -64,6 +65,9 @@ const AKTIONEN := [
 	{"id": "moveeye", "art": "moveeye", "tal": [44.5, -5.2], "r": 1.8},
 	{"id": "maggie_such", "art": "maggie_such", "s": 0.5, "q": 4.6, "r": 2.2, "ding": "kartenecke", "ziel": [0.5, 6.3]},
 ]
+
+# ceilings for the camera (kit_regie.gd): inside the hut it stays under the ceiling of the floor the figure is on
+const DECKEN := [{"s": 0.0, "q": 0.0, "ls": 3.6, "lq": 4.35, "unten": 2.3, "oben": 4.5, "trenn": 1.6}]
 
 const WEG := [[-16.0, -1.5], [-9.0, -2.0], [-4.6, -2.25]]
 const WEG_BREITE := 5.0
@@ -102,7 +106,8 @@ const SZENEN := [
 			{"t": 6.4, "k": "maggie_lauf", "s": -5.4, "q": -1.6}]},
 		{"ziel": "Geh zur Hütte", "bis": "ort:-5.2,-2.25,1.6"},
 		{"checkpoint": "tuer"},
-		{"sag": "Offen. Und drinnen ist es kälter als draussen.", "wer": "figur"}]},
+		{"sag": "Offen. Und drinnen ist es kälter als draussen.", "wer": "figur"},
+		{"film": [{"t": 0.0, "k": "wetter", "w": "cloudy"}, {"t": 0.0, "k": "zeit", "h": 17.0}]}]},
 	{"id": "s02_ofen", "titel": "Kalte Stube", "start": [-1.0, 1.0], "schritte": [
 		{"ziel": "Mach Feuer im Ofen (Aktion)", "bis": "aktion:ofen"},
 		{"film": [
@@ -154,12 +159,12 @@ const SZENEN := [
 		{"wahl": "rucksack", "n": 3, "titel": "Rucksack packen: wähle 3 Sachen"},
 		{"sag": "Gute Wahl. Wahrscheinlich. Ich hätte die Batterien genommen.", "wer": "blinki"}]},
 	{"id": "s06_moveeye", "titel": "Nachtwache", "start": [-1.2, 2.6], "schritte": [
-		{"film": [{"t": 0.0, "k": "zeit", "h": 20.5}, {"t": 0.0, "k": "wetter", "w": "cloudy"},
+		{"film": [{"t": 0.0, "k": "zeit", "h": 20.0}, {"t": 0.0, "k": "wetter", "w": "clear"},
 			{"t": 0.0, "k": "sag", "wer": "erzaehler", "text": "Der Regen hört auf. Es wird Nacht."}]},
 		{"ziel": "Geh hinaus und stell MoveEye beim Weg auf (Aktion)", "bis": "aktion:moveeye",
 			"ueber": [[-5.2, -2.25, 1.4]]},
 		{"film": [
-			{"t": 0.0, "k": "zeit", "h": 22.0},
+			{"t": 0.0, "k": "zeit", "h": 21.2},
 			{"t": 0.0, "k": "ir", "an": true},
 			{"t": 0.0, "k": "shot", "art": "schulter", "s": -11.0, "q": 4.5, "h": 1.6, "blick": [-8.2, 6.5, 1.2], "d": 3.0, "ziel": [-8.2, 6.5, 1.2], "groesse": 0.8},
 			{"t": 0.3, "k": "sag", "wer": "blinki", "text": "MoveEye ist wach. Infrarot an. Ich sehe: Gras. Viel Gras."},
@@ -198,7 +203,7 @@ const SZENEN := [
 			{"t": 7.4, "k": "sag", "wer": "blinki", "text": "Schlafenszeit. Ich wache. MoveEye wacht. Maggie … schnarcht."}]}]},
 	{"id": "s10_morgen", "titel": "Morgen", "start": [-0.5, 4.8], "schritte": [
 		{"film": [
-			{"t": 0.0, "k": "zeit", "h": 6.6},
+			{"t": 0.0, "k": "zeit", "h": 9.0},
 			{"t": 0.0, "k": "musik", "z": "entdeckung"},
 			{"t": 0.0, "k": "shot", "art": "establish", "s": -20.0, "q": -10.0, "h": 6.0, "blick": [10.0, -20.0, 0.0], "d": 4.0, "ziel": [0.0, 0.0, 2.0], "groesse": 1.0},
 			{"t": 0.3, "k": "sag", "wer": "erzaehler", "text": "Am Morgen."},

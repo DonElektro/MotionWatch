@@ -201,6 +201,12 @@ func _arm_frei(tp: Vector3, want: Vector3) -> float:
 					break
 		if zu:
 			return maxf(0.1, f - 1.0 / float(n))
+	# walls of buildings (Kapitel 1: inside the hut) are obstacles of main, not ground: the arm ends in front of them
+	var o: Dictionary = main.line_blocker(tp, want)
+	if not o.is_empty() and int(o.get("id", -1)) >= 0 and main.has_method("_seg_hits"):
+		var t: float = main._seg_hits(o, Vector2(tp.x, tp.z), Vector2(want.x, want.z))
+		if t >= 0.0:
+			return clampf(t - 0.35 / maxf(L, 0.5), 0.1, 1.0)
 	return 1.0
 
 
@@ -268,6 +274,9 @@ func _folge_xform(tp: Vector3, d0: float, dt: float, heading: float) -> Transfor
 	dist_ist = d0 * _arm
 	var at := _tp + back * dist_ist * cos(_pit_ist) + Vector3(0, dist_ist * sin(_pit_ist), 0)
 	at.y = maxf(at.y, main.ground_y(at.x, at.z) + 0.4)
+	var decke: float = kit.decke_bei(at, kit.figur.pos().y) if steuer else INF   # inside a building: under its ceiling
+	if decke < INF:
+		at.y = minf(at.y, decke - 0.2)
 	for k in _kugeln_nah(_tp, at):                          # near-clip guard: never inside a rock detail
 		var dk: Vector3 = at - (k[0] as Vector3)
 		var rr: float = float(k[1]) + 0.3
