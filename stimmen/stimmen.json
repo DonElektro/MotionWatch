@@ -1,0 +1,99 @@
+{
+ "_info": "Erzähler und {bezug}: vorgesprochen mit Piper (werkzeuge/stimmen/stimmen.py), nur Deutsch.",
+ "stimmen": {
+  "erzaehler": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/thorsten/high/de_DE-thorsten-high",
+  "grossvater": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/thorsten/high/de_DE-thorsten-high",
+  "lia": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/kerstin/low/de_DE-kerstin-low"
+ },
+ "lizenz": "Piper (MIT); die Lizenz jeder Stimme steht in ihrer MODEL_CARD (hier als MODEL_CARD_<rolle>.txt dabei)",
+ "zeilen": {
+  "Die Alp Tschuggen. Regen seit Mittag.": {
+   "datei": "724a4aa0e100.ogg",
+   "wer": "erzaehler"
+  },
+  "1974. Am selben Tisch.": {
+   "datei": "2c70d8e0d7dd.ogg",
+   "wer": "erzaehler"
+  },
+  "2000. Am selben Tisch.": {
+   "datei": "8eba755fe93c.ogg",
+   "wer": "erzaehler"
+  },
+  "Wir kommen beide zurück, Toni. Versprochen.": {
+   "datei": "19988c9b3b80.ogg",
+   "wer": "grossvater"
+  },
+  "Der Regen hört auf. Es wird Nacht.": {
+   "datei": "7ff5c77a27f5.ogg",
+   "wer": "erzaehler"
+  },
+  "Später. Der Himmel ist klar. Unten rauscht der Bach.": {
+   "datei": "0955153153b9.ogg",
+   "wer": "erzaehler"
+  },
+  "Am Morgen.": {
+   "datei": "9fe2a394e9f8.ogg",
+   "wer": "erzaehler"
+  },
+  "Der Grat. Sturm. Und nur noch eine Hand am Fels.": {
+   "datei": "ddfbdbd48c0e.ogg",
+   "wer": "erzaehler"
+  },
+  "Drei Tage vorher.": {
+   "datei": "25f827cb2246.ogg",
+   "wer": "erzaehler"
+  },
+  "Die Karte des Grossvaters führt in die Bachschlucht unter der Alp.": {
+   "datei": "a25cc564c518.ogg",
+   "wer": "erzaehler"
+  },
+  "Die Karte des Vaters führt in die Bachschlucht unter der Alp.": {
+   "datei": "0fd96dc8f6a8.ogg",
+   "wer": "erzaehler"
+  },
+  "Wo der Bach zum ersten Mal fällt.": {
+   "datei": "a4a2d0aa6832.ogg",
+   "wer": "erzaehler"
+  },
+  "1974. Genau hier.": {
+   "datei": "258736a5d93f.ogg",
+   "wer": "erzaehler"
+  },
+  "2000. Genau hier.": {
+   "datei": "52bd3b273068.ogg",
+   "wer": "erzaehler"
+  },
+  "Dann such schon mal dein Portemonnaie, Toni.": {
+   "datei": "ada4c5be402a.ogg",
+   "wer": "grossvater"
+  },
+  "Na? Auch auf der Suche nach dem Schatz von deinem Grossvater?": {
+   "datei": "f6021244e451.ogg",
+   "wer": "lia"
+  },
+  "Na? Auch auf der Suche nach dem Schatz von deinem Vater?": {
+   "datei": "09cf70380e70.ogg",
+   "wer": "lia"
+  },
+  "Lia. Lia Arnold. Toni war mein Grossvater. Und du: zu langsam. ;-)": {
+   "datei": "92862bd83767.ogg",
+   "wer": "lia"
+  },
+  "Lia. Lia Arnold. Toni war mein Vater. Und du: zu langsam. ;-)": {
+   "datei": "e93d84229bf6.ogg",
+   "wer": "lia"
+  },
+  "Am Abend. Oben am Rand der Schlucht.": {
+   "datei": "819d2ba10c8e.ogg",
+   "wer": "erzaehler"
+  },
+  "Tonis Notizbuch. Aufgeschlagen.": {
+   "datei": "4dc5aa50650e.ogg",
+   "wer": "erzaehler"
+  },
+  "Maggie schnüffelt am Fels. Sie hat etwas!": {
+   "datei": "d50deb2ff619.ogg",
+   "wer": "erzaehler"
+  }
+ }
+}
