@@ -63,6 +63,8 @@ FORMAT = 1
 QUELLE_TEIL = os.path.join(REPO, "quelle", "639zzzzzt_bergtal_karte.py")
 M = 6371008.8 * math.pi / 180.0                  # metres per degree (lat and lon at 0° / 0°)
 DEM_Z = (11, 15)                                 # zoom levels of the height tiles (z15 ≈ 4.7 m per pixel, the grid is 4 m)
+DEM_RING = {11: 8000.0, 12: 8000.0, 13: 8000.0, 14: 8000.0, 15: 8000.0}   # metres around the grid at every zoom (3D: no wall at the edge; a missing tile inside the bounds of the source leaves the 3D view empty)
+DEM_RING_CAP = 700.0                             # outside the grid the edge rises like in the simulator, at most this much
 LAND_PX = 1024                                   # land.png: 2 m per pixel over the 2048 m of the grid
 FIX_TIME = (1980, 1, 1, 0, 0, 0)
 WEB_FILES = ("maplibre-gl.js", "maplibre-gl.js.gz", "maplibre-gl.css", "maplibre-gl.css.gz")
@@ -97,14 +99,17 @@ class Gitter:
             raise SystemExit("export: Grösse passt nicht (%d Höhen, %d Bodenarten, n=%d)" % (len(self.h), len(self.land), self.n))
         self.hi = -self.lo
 
-    def H(self, x, z):
-        """exactly bergtal.gd H(): bilinear in the grid, outside the edge rises (0.35 × step per cell)"""
+    def H(self, x, z, cap=None):
+        """exactly bergtal.gd H(): bilinear in the grid, outside the edge rises (0.35 × step per cell); cap: at most so many
+        metres of that rise (the surroundings of the 3D view)"""
         n, st = self.n, self.step
         fx = (x - self.lo) / st
         fz = (z - self.lo) / st
         out = 0.0
         if fx < 0.0 or fz < 0.0 or fx > n - 1 or fz > n - 1:
             out = max(max(-fx, fx - (n - 1)), max(-fz, fz - (n - 1))) * st * 0.35
+            if cap is not None:
+                out = min(out, cap)
             fx = min(max(fx, 0.0), n - 1.001)
             fz = min(max(fz, 0.0), n - 1.001)
         i = min(int(fx), n - 2)
@@ -184,22 +189,41 @@ def png_read(b):
 
 
 # ---- height tiles (terrarium) ----------------------------------------------------------------------------------------------------
-def tile_range(z, g):
+def tile_range(z, g, ring=0.0):
     def tx(lon):
         return int(math.floor((lon + 180.0) / 360.0 * (1 << z)))
 
     def ty(lat):
         r = math.radians(lat)
         return int(math.floor((1.0 - math.log(math.tan(r) + 1.0 / math.cos(r)) / math.pi) / 2.0 * (1 << z)))
-    a = ll(g.lo, g.lo)                                   # north-west corner: x = lo, z = lo (north)
-    b = ll(g.hi, g.hi)
+    a = ll(g.lo - ring, g.lo - ring)                     # north-west corner: x = lo, z = lo (north)
+    b = ll(g.hi + ring, g.hi + ring)
     return tx(a[0]), tx(b[0]), ty(a[1]), ty(b[1])
+
+
+def ring_h(g, x, z):
+    """the height for the 3D view: inside the grid exactly H; outside the edge profile fades within 500 m into a calm
+    plateau (mean of the border + the rise of the simulator, at most DEM_RING_CAP) - no streaks in the relief"""
+    lo, hi = g.lo, g.hi
+    d = max(lo - x, x - hi, lo - z, z - hi, 0.0)
+    if d <= 0.0:
+        return g.H(x, z)
+    if not hasattr(g, "_rand"):
+        n = g.n
+        b = [g.h[i] for i in range(n)] + [g.h[(n - 1) * n + i] for i in range(n)] + [g.h[j * n] for j in range(n)] + [g.h[j * n + n - 1] for j in range(n)]
+        g._rand = sum(b) / len(b)
+    rise = min(d * 0.35, DEM_RING_CAP)
+    edge = g.H(min(max(x, lo), hi), min(max(z, lo), hi)) + rise
+    far = g._rand + rise
+    w = min(1.0, d / 500.0)
+    w = w * w * (3 - 2 * w)
+    return edge + (far - edge) * w
 
 
 def dem_tiles(g):
     out = {}
     for z in range(DEM_Z[0], DEM_Z[1] + 1):
-        x0, x1, y0, y1 = tile_range(z, g)
+        x0, x1, y0, y1 = tile_range(z, g, DEM_RING.get(z, 0.0))
         n = 1 << z
         for ty in range(y0, y1 + 1):
             for tx in range(x0, x1 + 1):
@@ -211,7 +235,7 @@ def dem_tiles(g):
                     r = bytearray()
                     for px in range(256):
                         lon = (tx * 256 + px + 0.5) / (256.0 * n) * 360.0 - 180.0
-                        v = round((g.alt0 + g.H(lon * M, zz)) * 10.0) / 10.0 + 32768.0
+                        v = round((g.alt0 + ring_h(g, lon * M, zz)) * 10.0) / 10.0 + 32768.0
                         r += bytes((int(v // 256) & 255, int(v % 256) & 255, int((v - math.floor(v)) * 256) & 255))
                     rows.append(bytes(r))
                 out["dem/%d/%d/%d.png" % (z, tx, ty)] = png(256, 256, rows)
@@ -619,8 +643,10 @@ def bauen(exp, web_zip, aus):
     files["touren.json"] = json.dumps(tours, ensure_ascii=False, separators=(",", ":")).encode()
     a, b = ll(g.lo, g.lo), ll(g.hi, g.hi)
     bounds = [a[0], b[1], b[0], a[1]]                    # west, south, east, north
+    ra, rb = ll(g.lo - DEM_RING[DEM_Z[0]], g.lo - DEM_RING[DEM_Z[0]]), ll(g.hi + DEM_RING[DEM_Z[0]], g.hi + DEM_RING[DEM_Z[0]])
+    dem_bounds = [ra[0], rb[1], rb[0], ra[1]]
     for dark, nm in ((False, "stil.json"), (True, "stil_dunkel.json")):
-        files[nm] = json.dumps(stil(dark, DEM_Z[1], bounds), ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode()
+        files[nm] = json.dumps(stil(dark, DEM_Z[1], dem_bounds), ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode()
     wf, lic, wmeta = web_files(web_zip) if web_zip else ({}, "(ohne MapLibre gebaut - nur für Tests)\n", {})
     files.update(wf)
     files["web/LIZENZEN_karte_web.txt"] = lic.encode()

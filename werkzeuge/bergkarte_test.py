@@ -356,9 +356,9 @@ def teil_b(datei, data, unp, bilder):
                 if bilder:
                     pg.screenshot(path=os.path.join(bilder, f"bergtal_2d_{name}.png"))
                 tap("#bk-3d")
-                pg.wait_for_function("() => KQMAP.getPitch() > 40 && !!KQMAP.getTerrain()", timeout=20000)
-                pg.wait_for_function("() => KQMAP.loaded()", timeout=30000); pg.wait_for_timeout(900)
-                ok(True, f"{name}: 3D an (Neigung, Gelände)")
+                pg.wait_for_function("() => KQMAP.getPitch() > 40 && !!KQMAP.getTerrain()", timeout=30000)
+                pg.wait_for_function("() => KQMAP.loaded()", timeout=120000); pg.wait_for_timeout(1500)     # software WebGL: 3D takes a while
+                ok(pg.evaluate("() => KQMAP.queryTerrainElevation(KQMAP.getCenter()) > 1000"), f"{name}: 3D an (Neigung, Gelände mit Höhen des Pakets)")
                 if bilder:
                     pg.screenshot(path=os.path.join(bilder, f"bergtal_3d_{name}.png"))
                 tap("#bk-2d")
@@ -376,7 +376,7 @@ def teil_b(datei, data, unp, bilder):
                     pg.locator("#bk-vor-d svg.kt-prof").scroll_into_view_if_needed()
                     pg.screenshot(path=os.path.join(bilder, f"bergtal_profil_{name}.png"), full_page=False)
                     tap("#bk-3d")
-                    pg.wait_for_function("() => KQMAP.getPitch() > 40 && KQMAP.loaded()", timeout=30000); pg.wait_for_timeout(900)
+                    pg.wait_for_function("() => KQMAP.getPitch() > 40 && KQMAP.loaded()", timeout=120000); pg.wait_for_timeout(1500)
                     pg.evaluate("() => document.getElementById('kq-map').scrollIntoView({block: 'start'})")
                     pg.screenshot(path=os.path.join(bilder, f"bergtal_tour_3d_{name}.png"))
                     tap("#bk-2d"); pg.wait_for_function("() => KQMAP.getPitch() < 1", timeout=20000)
@@ -395,14 +395,16 @@ def teil_b(datei, data, unp, bilder):
                 ok("Aufstieg" in dt and "Wanderzeit" in dt and "Höhendaten" not in dt, f"{name}: gezeichnete Route im Bergtal mit Auf- / Abstieg und Profil aus dem Paket")
                 pg.fill("#kt-dname", "Bergtal Test " + name); tap("#kt-save")
                 pg.wait_for_selector("#kt-detail:not([hidden]) #kt-name", timeout=20000)
-                ok(pg.locator(".bk-simtour").count() == 1, f"{name}: Tour-Detail hat «🎮 Tour im Sim nachlaufen» (Admin)")
+                ok(pg.locator("#kt-detail .bk-simtour").count() == 1, f"{name}: Tour-Detail hat «🎮 Tour im Sim nachlaufen» (Admin)")
                 # the switch: to Switzerland and back (remembered)
                 pg.locator("#bk-welt").scroll_into_view_if_needed()
                 pg.locator("#bk-welt button[data-v=ch]").click()
                 pg.wait_for_function("() => window.BK && BK.mode === 'ch' && !document.getElementById('kq-none').hidden", timeout=30000)
-                ok(pg.locator("#bk-welt").is_visible() and "nicht installiert" in pg.inner_text("#kq-none") and pg.evaluate("() => localStorage.getItem('mw-kq-welt')") == "ch"
-                   and pg.locator("#kt .kt-li").filter(has_text="Bergtal Test").count() == 0,
-                   f"{name}: Schalter → Schweiz (hier nicht installiert), gemerkt, Bergtal-Touren nicht in der Liste")
+                ok(pg.locator("#bk-welt").is_visible() and "nicht installiert" in pg.inner_text("#kq-none") and pg.evaluate("() => localStorage.getItem('mw-kq-welt')") == "ch",
+                   f"{name}: Schalter → Schweiz (hier nicht installiert), gemerkt")
+                pg.wait_for_selector("#kt:not([hidden])", timeout=20000); pg.wait_for_timeout(500)
+                ok(pg.locator("#kt .kt-li").filter(has_text="Bergtal Test").count() == 0 and pg.evaluate("() => !!document.querySelector('#kt-items')"),
+                   f"{name}: in der Schweiz keine Bergtal-Touren in der Liste ({pg.locator('#kt .kt-li').count()} Touren sichtbar)")
                 pg.goto(base + "/karte")
                 pg.wait_for_function("() => window.BK && BK.mode === 'ch'", timeout=30000)
                 pg.locator("#bk-welt button[data-v=berg]").click()

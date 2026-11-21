@@ -832,15 +832,15 @@ BK_JS = r"""
     const s = document.createElement("script"); s.src = BASE + "/web/maplibre-gl.js"; s.onload = () => ok(window.maplibregl); s.onerror = () => no(new Error("maplibre")); document.head.appendChild(s); });
   const style = () => fetch(BASE + (dark() ? "/stil_dunkel.json" : "/stil.json")).then(r => r.text()).then(t => {
     const s = JSON.parse(t.split("{B}").join(BASE)); s.sources.land.coordinates = BK.meta.landc;
-    s.sources.dem3d = JSON.parse(JSON.stringify(s.sources.dem)); return s; });
-  const D3 = {source: "dem3d", exaggeration: 1.3};
+    return s; });
+  const D3 = {source: "dem", exaggeration: 1.2};                       // the same source as the relief (a copy stayed empty in WebGL tests)
   function set3d(v, quick) {
     BK.d3 = v; try { localStorage.setItem("mw-bk-3d", v ? "1" : "0"); } catch (e) {}
     document.querySelectorAll(".bk-3d button").forEach(b => { const on = (b.dataset.v === "3d") === v; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false"); });
     if (!map || !map.isStyleLoaded()) return;                           // before «load»: the load handler does it
     if (v) { map.setTerrain(D3); map.dragRotate.enable(); map.touchZoomRotate.enableRotation(); map.touchPitch.enable(); map.keyboard.enableRotation();
-      try { map.setSky({"sky-color": dark() ? "#1b2a40" : "#9cc7ef", "horizon-color": dark() ? "#3a4a60" : "#eef4fa", "fog-color": dark() ? "#2a3340" : "#f2f5f7", "sky-horizon-blend": 0.6, "horizon-fog-blend": 0.6, "fog-ground-blend": 0.4}); } catch (e) {}
-      map.easeTo({pitch: 62, bearing: map.getBearing() || -28, duration: quick ? 0 : 700}); }
+      try { map.setSky({"sky-color": dark() ? "#1b2a40" : "#9cc7ef", "horizon-color": dark() ? "#3a4a60" : "#eef4fa", "fog-color": dark() ? "#2a3340" : "#eef2f5", "sky-horizon-blend": 0.5, "horizon-fog-blend": 0.8, "fog-ground-blend": 0.25}); } catch (e) {}
+      map.easeTo({pitch: 58, bearing: map.getBearing() || -25, zoom: Math.max(map.getZoom(), 15.2), duration: quick ? 0 : 700}); }
     else { map.setTerrain(null); map.dragRotate.disable(); map.touchZoomRotate.disableRotation(); map.touchPitch.disable(); map.keyboard.disableRotation(); map.easeTo({pitch: 0, bearing: 0, duration: quick ? 0 : 500}); }
   }
   function addLive() {
@@ -974,7 +974,10 @@ BK_JS = r"""
     const lg = legend(); $("#kq-map").after(lg);
     let want3d = false; try { want3d = localStorage.getItem("mw-bk-3d") === "1"; } catch (e) {}
     const ml = await lib(), st = await style(), b = BK.meta.bounds, pd = 0.004;
-    map = BK.map = new ml.Map({container: "kq-c", style: st, center: BK.meta.center, zoom: 14.2, minZoom: 12.5, maxZoom: 18.6, maxPitch: 78,
+    // never exactly on 0° / 0°: that is the corner of a tile at every zoom - MapLibre then finds no terrain under the centre
+    // and puts the 3D camera inside the mountain (measured: elevation 0, empty picture); 4 m off is enough
+    const c0 = [BK.meta.center[0] + 0.00004, BK.meta.center[1] - 0.00003];
+    map = BK.map = new ml.Map({container: "kq-c", style: st, center: c0, zoom: 14.2, minZoom: 12.5, maxZoom: 18.6, maxPitch: 78,
       maxBounds: [[b[0] - pd, b[1] - pd], [b[2] + pd, b[3] + pd]], attributionControl: false, fadeDuration: 0, dragRotate: false, pitchWithRotate: false,
       touchPitch: false, renderWorldCopies: false});
     try { map.touchZoomRotate.disableRotation(); map.keyboard.disableRotation(); } catch (e) {}
