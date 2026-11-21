@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-21 18:46",
+ "generated": "2026-11-21 21:50",
  "versions": [
   {
-   "version": "4.17.0",
-   "file": "webcam_bewegung_4_17_0.py",
+   "version": "4.17.1",
+   "file": "webcam_bewegung_4_17_1.py",
    "url": "",
-   "sha256": "232376d4f238c5f13ad1102f9c07317781544df2860c6003e27efd5259b84a85",
-   "date": "2026-11-21 18:46",
-   "notes": "Homepage-Startseite: «📷 MoveEye» (das echte MoveEye beim Host, demo/) und «🗺️ Die Karte des Grossvaters» (Sim/?grossvater=1, direkt ins Spiel), 5 Sprachen",
-   "size": 4037478,
-   "sig": "871210d37f5256eaf04f8ddc84c0e4b738c8dd9cc48091cb67d567cecf5aca2dbcbeaf905f37d1bd41ba470d89d391ed0d39a3d5552a13c9dbd1101857468903",
+   "sha256": "022c5a07ffa40c837a269b4d8aa6080cf4cb6da2ed34020ce4e870f819ab77d5",
+   "date": "2026-11-21 21:50",
+   "notes": "Verlauf: «Zeitraffer» mit «Videos / Fotos», Hinweis ohne Video · Simulator verbinden / trennen ist kein Stromausfall (keine Push, kein Sabotage-Alarm), Schalter «keine Push, solange der Simulator verbunden ist»",
+   "size": 4040696,
+   "sig": "52c8cbdd682d56f0463910b6485b855768fe5ed71b5a9d7973b95c10e0ee2a14a50f9f79086912fa67ed5d715591437fa2724271f67c817a25da0e825ed97f0b",
    "data": {
-    "file": "moveeye_daten_4_17_0.zip",
+    "file": "moveeye_daten_4_17_1.zip",
     "url": "",
-    "sha256": "5a54718543c7ea27f98f1a87a05427541be03ee42dbff9fbc0c13a7de7286ff6",
-    "size": 14309663,
-    "sig": "fb56e48192a3e72ecffead2dcf50c3cfebcc9cf16ff8e6b90d711f305df7bb8352786a3d0ccaccc9c958642184d67caeb298c48260106987ab5886ffeaa56409"
+    "sha256": "dd1945f0811f2eaa7c6ae393752a06d64d1e25d91892650695895b985c6a98a5",
+    "size": 14319680,
+    "sig": "bc604df0841bede2ba35f416b556887e98a6e760abcb744c69207456d14edd93ef7cf67de338a48691ec53d1054f4cdc151efc57446a50be6e53e56cd6659205"
    }
   },
   {

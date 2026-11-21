@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 4.17.1: Verlauf: «Zeitraffer» mit «Videos / Fotos», Hinweis ohne Video · Simulator verbinden / trennen ist kein
+    Stromausfall (keine Push, kein Sabotage-Alarm), Schalter «keine Push, solange der Simulator verbunden ist»
   * 4.17.0: Homepage-Startseite: «📷 MoveEye» (das echte MoveEye beim Host, demo/) und «🗺️ Die Karte des Grossvaters»
     (Sim/?grossvater=1, direkt ins Spiel), 5 Sprachen
   * 4.16.1: OpenCV bleibt bei 4.x (opencv-python-headless>=4.8,<5 in requirements.txt, CI, Prüfsatz, HP und Einrichtung): OpenCV
@@ -109,7 +111,6 @@ Features
     zweite «Pi camera 0» mehr, die die Hauptkamera blockiert («Camera __init__ sequence did not complete»); ein solches Doppel
     wird beim Start von selbst aufgeräumt. (2) Spielecke: alle Spiel-Kacheln mit kurzen, gleich langen Texten in fünf Sprachen,
     zwei Zeilen, gleich hohe Reihen (Spielesammlung GS-1.21).
-  * 3.92.1: «Verschollen im Bergtal»: Spieltempo ⏩ 1× / 2× / 4× und ⏸ Pause (Spielesammlung GS-1.20).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -118,10 +119,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_4_17_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_4_17_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_4_17_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_4_17_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_4_17_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_4_17_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -138,7 +139,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "4.17.0"
+APP_VERSION = "4.17.1"
 
 
 def default_data_dir():
@@ -271,8 +272,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_4_17_0.zip"
-ZD_SHA256 = "5a54718543c7ea27f98f1a87a05427541be03ee42dbff9fbc0c13a7de7286ff6"
+ZD_FILE = "moveeye_daten_4_17_1.zip"
+ZD_SHA256 = "dd1945f0811f2eaa7c6ae393752a06d64d1e25d91892650695895b985c6a98a5"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -8725,6 +8726,13 @@ class BatteryMonitor:
 		if drill_active("battery"):
 			return drill_battery_tick(self)
 		sb_=sim_sensor("battery")
+		src_="sim"if sb_ is not None else "real"
+		if getattr(self,"_val_src",None)not in(None,src_):
+
+
+			self._on_batt=None
+			log_event("sys",f"Battery values from the {'simulator' if src_ == 'sim' else 'device'} - no power event")
+		self._val_src=src_
 		if sb_ is not None and sim_battery_tick(self,sb_):
 			return
 		if CFG["ups_on"]and self.ups_tick():
@@ -39478,15 +39486,23 @@ def list_recordings(args, watch=None):
 					  "sched":[i for i,s in enumerate(plans)if schedule_window_contains(s,dt)],
 					  "gps":rec_gps(n,meta,d,snap[0]if snap else None)})
 
+
 	kind_req=args.get("kind","")
-	if kind_req in("","timelapse","video"):
+	if kind_req=="timelapse":
+		kind_req="timelapse_video"
+	tl_info={"videos":0,"photos":0,"last_day":""}
+	if kind_req in("","timelapse_video","timelapse_photo","video"):
 		try:
 			tl_names=os.listdir(tl_dir())
 		except OSError:
 			tl_names=[]
 		for n in tl_names:
 			is_v=bool(TL_VIDEO_RE.match(n))
-			if not is_v and not(kind_req=="timelapse"and TL_PHOTO_RE.match(n)):
+			if is_v:
+				tl_info["videos"]+=1
+			elif TL_PHOTO_RE.match(n):
+				tl_info["photos"]+=1;tl_info["last_day"]=max(tl_info["last_day"],n[3:11])
+			if not is_v and not(kind_req=="timelapse_photo"and TL_PHOTO_RE.match(n)):
 				continue
 			try:
 				st=os.stat(os.path.join(tl_dir(),n))
@@ -39499,15 +39515,15 @@ def list_recordings(args, watch=None):
 						  "sched":[],"tl":True,"gps":rec_gps(n,meta,tl_dir())if not is_v else None})
 
 
-	kind_f,src_f,q=args.get("kind",""),args.get("source",""),(args.get("q","")or "").strip().lower()
+	kind_f,src_f,q=kind_req,args.get("source",""),(args.get("q","")or "").strip().lower()
 	d_from,d_to=_parse_day(args.get("from","")),_parse_day(args.get("to",""))
 	sources=sorted({it["meta"].get("source")for it in items if it["meta"].get("source")})
 	places=places_assign(items)
 	no_place=sum(1 for it in items if not it.get("gps"))
 	if kind_f in("video","image"):
 		items=[it for it in items if it["kind"]==kind_f]
-	elif kind_f=="timelapse":
-		items=[it for it in items if it.get("tl")]
+	elif kind_f in("timelapse_video","timelapse_photo"):
+		items=[it for it in items if it.get("tl")and it["kind"]==("video"if kind_f[10]=="v"else "image")]
 	if d_from:
 		items=[it for it in items if it["dt"]>=d_from]
 	if d_to:
@@ -39574,7 +39590,7 @@ def list_recordings(args, watch=None):
 						   "end":s["end"],"active_now":schedule_active(s,now),"count":counts.get(str(i),0)}
 						  for i,s in enumerate(plans)],
 			"disk":{"files":len(files),"mb":int(total_bytes/1024**2),"limit_gb":CFG["record_max_gb"]},
-			"ffmpeg":shutil.which("ffmpeg")is not None}
+			"ffmpeg":shutil.which("ffmpeg")is not None,"tl":tl_info}
 
 
 def _write_sidecar(name, meta):
@@ -39945,8 +39961,6 @@ def rec_delete(names, watch=None):
 	if n_ok:
 		log_event("rec",f"{n_ok} recording(s) deleted from the preview page")
 	return n_ok
-
-
 
 
 
@@ -50710,7 +50724,7 @@ class App:
 		self.watch=watch
 		self.web=web or WebStream(watch)
 		self.root=tk.Tk()
-		self.root.title("MoveEye 4.17.0")
+		self.root.title("MoveEye 4.17.1")
 		try:
 			import base64
 			self._icon=tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -51097,7 +51111,7 @@ class App:
 			if not small:
 				vl=tk.Label(tl,text=APP_VERSION,bg=C["bg"],fg=C["mut"],font=("DejaVu Sans",8),cursor="hand2");vl.pack(side="left",padx=(8,0),pady=(5,0))
 				vl.bind("<Button-1>",self._ver_tap,add="+");Tip(vl,tr("About MoveEye"))
-			Tip(nm,f"{tr('Build')} 4.17.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm,f"{tr('Build')} 4.17.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps=[]
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>",self._egg_tap,add="+")
@@ -109694,6 +109708,16 @@ SELFTEST_EXTRA.append(("Timelapse: every day a video automatically (639zzzv)", t
 
 
 
+_HX_VTL = _zd('639zzzv_zeitraffer_taeglich/HX_VTL', _zd_hx_en((
+	"No timelapse video yet – one is made every night at about 00:20 from yesterday's photos (Settings → Timelapse)",
+)))
+for _k, _v in _HX_VTL.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+
+
+
 
 
 
@@ -115465,6 +115489,107 @@ push_pause_selftest = _zd_fn('639zzzzp_push_pause/push_pause_selftest()')
 
 
 SELFTEST_EXTRA.append(("Push pause (639zzzzp)", push_pause_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CFG.setdefault("sim_push_off", False); DEFAULTS.setdefault("sim_push_off", False)
+USER_SETTINGS_DENY.update({"sim_push_off"})
+SIMQ_S = 60.0
+_sx_put_after(TOGGLES, "sim_autoupd", ("Simulator", "sim_push_off", "While the simulator is connected: no push"))
+_HX_SIMQ = _zd('639zzzzq_sim_push_ruhe/HX_SIMQ', _zd_hx_en((
+	'While the simulator is connected: no push',
+)))
+for _k, _v in _HX_SIMQ.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+
+
+def simq_connected(now=None):
+	now=time.time()if now is None else now
+	return bool(CFG.get("sim_on")and SIM.get("ok")and now-float(SIM.get("t")or 0.0)<5.0)
+
+
+def simq_quiet(now=None):
+	""
+	now=time.time()if now is None else now
+	if simq_connected(now):
+		return "simulator just connected"if now-float(SIM.get("since")or 0.0)<SIMQ_S else ""
+	return "simulator just left"if now-max(float(SIM.get("t")or 0.0),float(SIM.get("off_t")or 0.0))<SIMQ_S+5.0 else ""
+
+
+def simq_hold(p, now=None):
+	"""
+"""
+	if not isinstance(p,dict)or p.get("event")=="test"or p.get("_test")or "SOS"in str(p.get("info_title")or ""):
+		return ""
+	if p.get("event")=="tamper"and not(str(STATE.get("source_id")or "").startswith("sim:")and any(
+			str(p.get("text")or "").startswith(tr(k))for k in("camera covered","camera turned / picture changed"))):
+		return ""
+	if CFG.get("sim_push_off")and simq_connected(now):
+		return "simulator connected, setting «no push»"
+	q=simq_quiet(now)if p.get("event")=="info"else ""
+	return q and q+", device message"
+
+
+_simq_dispatch_before = Notifier._dispatch
+
+
+def _simq_dispatch(self, p, jpg, fname):
+	""
+	why=simq_hold(p)
+	if not why:
+		return _simq_dispatch_before(self,p,jpg,fname)
+	try:
+		msglog_add(self._title(p),push_with_map(self._text(p),p," · "),self._event(p),jpg,"none","🎮 Simulator")
+	except Exception:
+		pass
+	log_event("sys",f"No push ({why}): {self._title(p)}"[:200])
+
+
+
+Notifier._dispatch = _simq_dispatch
+
+
+sim_push_ruhe_selftest = _zd_fn('639zzzzq_sim_push_ruhe/sim_push_ruhe_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Simulator connect is no power event (639zzzzq)", sim_push_ruhe_selftest))
 
 
 

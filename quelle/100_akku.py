@@ -285,6 +285,13 @@ class BatteryMonitor:
         if drill_active("battery"):                      # 2.96.6: drill «battery empty» (141) - never the real shutdown
             return drill_battery_tick(self)
         sb_ = sim_sensor("battery")                      # Simulator-Werte: the simulated UPS HAT instead of the real one (285)
+        src_ = "sim" if sb_ is not None else "real"
+        if getattr(self, "_val_src", None) not in (None, src_):
+            # 4.17.1 (639zzzzq): the simulator connected / left - another source of values is no power cut / power back:
+            # start again without «before» (no push, no sabotage alarm), only this line
+            self._on_batt = None
+            log_event("sys", f"Battery values from the {'simulator' if src_ == 'sim' else 'device'} - no power event")
+        self._val_src = src_
         if sb_ is not None and sim_battery_tick(self, sb_):
             return
         if CFG["ups_on"] and self.ups_tick():
