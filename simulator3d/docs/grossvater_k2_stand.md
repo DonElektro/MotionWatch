@@ -64,6 +64,19 @@ Zweig `sim-grossvater-k2` (von origin/main 9f14de1), Worktree /tmp/claude-0/wt_g
 - Erste Runde: Lauf 44887699188, Commit a946844, Windows 54771814 B (sha256 1603b52b…), Linux 48822165 B; dieselbe
   Windows-ZIP liegt als scratchpad/grossvater/MoveEyeSim_Grossvater_Test.zip.
 
+## Szene 6: Brückenkopf nicht erreichbar (Besitzer 21.11.)
+- Ursache 1: die Führung (WEG) war EIN Weg für das ganze Kapitel und endete bei s 43 – ab Szene 5 zog sie die Figur
+  überall zurück Richtung Wasserfallwand (am stärksten auf dem Weg zur Brücke). Jetzt: WEGE je Szene (kit_k2_daten.gd),
+  das Lager am Rand ohne Führung.
+- Ursache 2: Kompass und Marke zeigten auf die Brückenmitte – geradeaus steht man an der Kante des Wasserfall-Einschnitts.
+  Jetzt: Schritt «ueber» (Plattenweg → Brückenkopf → Mitte), Hinweise nach 10/25 s; am Kopf eine breite Holzplattform,
+  Trittsteine vom Seil-Ende her, zwei Laternen.
+- «ort»-Ziele zählen nur auf ihrer Höhe (die Leiter-Stufe galt schon unten an der Wand).
+- Nach 90 s ohne Fortschritt: Blinki-Hinweis + Pausenmenü «⏭ Zum nächsten Abschnitt springen».
+- Test werkzeuge/kit_weg_test.gd: Raster-Modell (main.ground_y, keep_out, Wasser/Spalt, Stufe/Steilheit/Fallhöhe,
+  Sprünge, Aktionen) sucht für JEDES Ziel aller 12 Szenen einen Weg; die echte Figur läuft die reinen Geh-Wege mit der
+  Führung der Szene ab. Mit der alten Führung fällt Szene 6 durch.
+
 ## Als Nächstes
 1. Separat (eigener Commit, NICHT mit dem Kapitel mischen): Bergtal `_carve_stream` vertieft bei jedem Schritt –
    Korrektur auf ~19 m, alle Nutzer des Bergtals prüfen und melden, was sich verschiebt.

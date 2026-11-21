@@ -3,7 +3,8 @@ extends CanvasLayer
 ## Ziel-Zeile (oben links), Kompass mit Ziel-Marke (oben Mitte), Pause (oben rechts), Hinweis zur Aktion (unten Mitte),
 ## Untertitel (Sprecher farbig), Kino-Balken, Blende, Rückblenden-Farbe, Hochzieh- / Balance-Anzeige, kurze Meldungen.
 ## Handy / iPad (Touch): Stick links, rechts «Aktion» und «Springen/Greifen», Wischen in der rechten Hälfte = umschauen;
-## die Kamera folgt sonst von selbst (kit_regie.gd). Pause-Menü: Weiter · Zum Checkpoint · Steuerung · Beenden.
+## die Kamera folgt sonst von selbst (kit_regie.gd). Pause-Menü: Weiter · (nach 90 s ohne Fortschritt: Zum nächsten Abschnitt
+## springen) · Zum Checkpoint · Steuerung · Beenden.
 ## Alle anderen Ebenen (Bedienfeld, Fenster, Leiste) blendet kit_abenteuer.gd aus, solange gespielt wird.
 ## Gebaut wird einmal; jedes Bild werden nur Texte / Positionen gesetzt, wenn sie sich ändern (kein Neubau).
 
@@ -249,6 +250,14 @@ func _bau_menu() -> void:
 		b.custom_minimum_size = Vector2(260, 46)
 		b.pressed.connect(e[1])
 		v.add_child(b)
+		if str(e[0]) == "Weiter":                       # stuck for 90 s in one step (kit_abenteuer.gd STECKEN_S): the way out
+			_abschnitt_btn = Button.new()
+			_abschnitt_btn.text = T.t("⏭ Zum nächsten Abschnitt springen")
+			_abschnitt_btn.custom_minimum_size = Vector2(260, 46)
+			_abschnitt_btn.pressed.connect(func(): kit.abschnitt_springen())
+			_abschnitt_btn.visible = false
+			UI.primary(_abschnitt_btn)
+			v.add_child(_abschnitt_btn)
 	_hilfe = _label(14, Color(0.85, 0.9, 0.95))
 	_hilfe.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_hilfe.custom_minimum_size = Vector2(260, 0)
@@ -407,8 +416,13 @@ func toast(text: String, secs := 3.0) -> void:
 	_toast_bis = kit.uhr + secs
 
 
+var _abschnitt_btn: Button = null
+
+
 func menu(on: bool) -> void:
 	_menu.visible = on
+	if _abschnitt_btn != null:
+		_abschnitt_btn.visible = on and bool(kit.abschnitt_angebot)
 	_hilfe.visible = false
 	_menu.size = Vector2.ZERO
 	_menu.position = (_vs() - _menu.get_combined_minimum_size()) * 0.5

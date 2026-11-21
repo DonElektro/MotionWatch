@@ -117,6 +117,21 @@ const AKTIONEN := [
 const WEG := [[0.0, 0.0], [10.5, 0.2], [21.0, 0.0], [24.0, 0.0], [31.0, 0.0], [34.6, -3.0], [38.5, 0.8], [39.4, 2.4],
 		[43.6, 2.4], [43.1, -3.2]]
 const WEG_BREITE := 5.5
+# per scene (21.11.2026: the owner got stuck in scene 6 - the one way above ended at s 43 and pulled him back towards it from
+# everywhere further up): the guide of each scene; a scene without an entry has no guide (the camp on the rim)
+const WEGE := {
+	"s02_schlucht": WEG, "s03_maggie_riegel": WEG, "s04_wasserfall": [[31.0, 0.0], [34.6, -3.0], [38.5, 0.8], [39.4, 2.4], [43.6, 2.4], [43.1, -3.2],
+		[44.3, -4.2], [45.6, -4.6], [46.1, -1.9], [46.1, 3.3], [46.2, 5.0]],
+	"s05_karabiner": [[45.6, -4.6], [46.1, -1.9], [46.1, 3.3], [46.2, 5.0], [46.4, 6.2], [47.5, 5.0]],
+	"s06_bruecke": [[46.2, 5.0], [47.5, 5.4], [50.5, 6.1], [52.6, 6.4], [54.0, 6.4], [54.0, 1.0], [54.0, -4.2], [55.5, -4.5]],
+	"s07_steinmann": [[54.0, -4.2], [55.5, -4.5], [57.0, -4.6], [58.6, -5.0]],
+	"s08_rueckblende": [[54.0, -4.2], [55.5, -4.5], [57.0, -4.6], [58.6, -5.0]],
+	"s09_funde": [[54.0, -4.2], [55.2, -5.6], [57.0, -4.6], [58.6, -5.4]],
+	"s10_lia": [[54.0, -4.2], [55.5, -4.5], [57.0, -4.6], [58.0, -3.0]],
+}
+# the way onto the old bridge: the head is on the RIGHT (q 5.5 - 7), the cleft of the waterfall lies between - straight
+# towards the middle of the bridge you would stand at its edge (owner 21.11.)
+const BRUECKENKOPF := [53.9, 6.6]
 
 const CHECKPOINTS := {"start": [2.0, 0.0], "steine": [21.0, 0.0], "stufe": [31.0, 0.0], "tor": [39.0, 0.8],
 		"wand": [43.0, -2.0], "oben": [45.6, -4.6], "fund": [46.2, 5.0], "steinmann": [55.5, -4.5], "lager": {"tal": [-19.5, -7.0]}}
@@ -233,7 +248,10 @@ const SZENEN := [
 			{"t": 0.3, "k": "sag", "wer": "figur", "text": "Eine Hängebrücke. Alt. Sehr alt."},
 			{"t": 2.6, "k": "sag", "wer": "blinki", "text": "Tragfähigkeit: unbekannt. Empfehlung: zügig gehen. Nicht hüpfen."}]},
 		{"musik": "spannung"},
-		{"ziel": "Geh über die Hängebrücke – zügig!", "bis": "ort:54.0,-0.3,1.0", "merke_halt": "bruecke"},
+		{"ziel": "Geh über die Hängebrücke – zügig!", "bis": "ort:54.0,-0.3,1.0", "merke_halt": "bruecke",
+			"ueber": [[51.0, 6.3, 1.6], [53.9, 6.6, 1.1]],
+			"hinweise": [[10.0, "Der Brückenkopf ist rechts, bei den Pfosten mit den Laternen.", "blinki"],
+				[25.0, "Folge dem Plattenweg zur Laterne – nicht über die Kante zum Wasserfall.", "blinki"]]},
 		{"film": [
 			{"t": 0.0, "k": "musik", "z": "action"},
 			{"t": 0.0, "k": "zeitlupe", "f": 0.35, "s": 2.4},

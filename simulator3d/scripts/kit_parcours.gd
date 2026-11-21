@@ -61,6 +61,38 @@ func _bruecke(e: Dictionary, d: Dictionary, c: Vector2, sv: float, qv: float, ls
 		hn.add_child(seil)
 		seil.position = Vector3.ZERO
 		_planken.append([999.0, hn, null])
+	_brueckenkopf(e, sv, qv, lq, top)
+
+
+func _brueckenkopf(e: Dictionary, sv: float, qv: float, lq: float, top: float) -> void:
+	"""the way onto the bridge (owner stuck 21.11.): a wide wooden landing at the head (q > the cleft), flat stones from the
+	terrace to it, two lanterns on the head posts - the head lies RIGHT of the waterfall cleft, not straight ahead"""
+	var q0 := qv + lq - 0.4                                # the landing overlaps the last planks
+	var q1 := qv + lq + 1.7
+	var lc := tal(sv, (q0 + q1) * 0.5)
+	var dk := _deck(lc, (q1 - q0) * 0.5, 1.0, top)
+	e["decks"].append(dk)
+	var ln := node(holder, Vector3(lc.x, top - 0.07, lc.y), -rot)
+	part(ln, boxm(q1 - q0, 0.12, 2.0), Vector3.ZERO, HOLZ.lightened(0.08), "tree")
+	for zz in [-0.98, 0.98]:                               # edge beams
+		part(ln, boxm(q1 - q0, 0.1, 0.1), Vector3(0, 0.08, zz), HOLZ.darkened(0.25), "tree")
+	# flat stones from the terrace (the end of the rope swing / the carabiner) to the landing
+	var von := Vector2(47.6, 5.6)
+	var bis := Vector2(sv - 1.2, qv + lq + 0.6)
+	var n := int(von.distance_to(bis) / 0.75)
+	for i in range(n + 1):
+		var f := float(i) / maxf(1.0, float(n))
+		var pq := von.lerp(bis, f) + Vector2(0, 0.18 * sin(i * 1.7))
+		var pt := tal(pq.x, pq.y)
+		var g := _H(pt.x, pt.y)
+		part(holder, cylm(0.32, 0.36, 0.08, 7), Vector3(pt.x, g + 0.01, pt.y), Color(0.62, 0.6, 0.56).darkened(randf() * 0.12), "stone",
+				Vector3(0, randf() * 3.0, 0), Vector3(1.0, 1.0, 0.75))
+	# lanterns on the two posts at the head
+	for side in [-1.0, 1.0]:
+		var lp := tal(sv + side * 0.9, q1 - 0.3)
+		part(holder, cylm(0.06, 0.07, 1.7, 6), Vector3(lp.x, top + 0.8, lp.y), HOLZ.darkened(0.2), "tree")
+		light_part(holder, sphm(0.11, -1.0, 8), Vector3(lp.x, top + 1.72, lp.y), glow_mat(Color(1.0, 0.72, 0.32), 3.0))
+		lamp(holder, Vector3(lp.x, top + 1.75, lp.y), Color(1.0, 0.75, 0.4), 0.9, 4.5)
 
 
 func bruecke_einsturz(ab_q: float) -> void:
@@ -650,9 +682,9 @@ func seil_zu(id: String, griff: Vector2, y_tal: float) -> void:
 	seil.transform = Transform3D(Basis(side, up * L, side.cross(up)), (a + b) * 0.5)
 
 
-func weg_punkte() -> PackedVector2Array:
+func weg_punkte(L = null) -> PackedVector2Array:
 	var out := PackedVector2Array()
-	for p in daten.WEG:
+	for p in (daten.WEG if L == null else L):
 		out.append(tal(float(p[0]), float(p[1])))
 	return out
 

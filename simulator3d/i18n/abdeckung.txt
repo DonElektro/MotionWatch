@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8024 (Stellen: 11144)
-Übersetzt: en 8024, fr 8024, it 8024, rm 8024
-Unsicher markiert: 254
+Texte gesamt: 8028 (Stellen: 11148)
+Übersetzt: en 8028, fr 8028, it 8028, rm 8028
+Unsicher markiert: 258
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
 Nicht mehr im Code (noch in texte.json): 405
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29129, schlüssel 22276, keine Wörter 14034, index 10253, technisch 3775, doc 2542, einheit 342, log 201, englisch 146, pfad 129, stringname 106, html 69, klasse 42, shader 6
+Übersprungen (Grund: Anzahl): kennung 29155, schlüssel 22297, keine Wörter 14041, index 10260, technisch 3775, doc 2545, einheit 342, log 202, englisch 146, pfad 129, stringname 106, html 69, klasse 42, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -25,8 +25,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   abenteuer_moveeye.gd     110    14
   bergtal_orte.gd          108     0
   bib_objekte.gd           108     0
+  kit_k2_daten.gd          107     0
   main_menues.gd           106     2
-  kit_k2_daten.gd          105     0
   einbruch.gd              102     0
   spieltest.gd              99    20
   bergtal_aussicht.gd       94     4
@@ -100,21 +100,21 @@ Pro Datei (Texte / davon dynamische Stellen):
   gametools.gd              33     2
   tour.gd                   31     1
   bergtal_wegweiser.gd      30     0
+  kit_abenteuer.gd          29     1
   b3d.gd                    29     5
   zwilling.gd               29     3
   gamemission.gd            29     0
   news.gd                   29     1
   padmap.gd                 28    19
-  kit_abenteuer.gd          28     1
   power.gd                  28    10
   main_status.gd            27    12
   devtool_spieltest.gd      27     0
   inhalte.gd                26    13
   jahreszeiten.gd           26     1
   wetter.gd                 26     0
+  kit_hud.gd                25     0
   umgebung.gd               25     0
   gameshutter.gd            25     5
-  kit_hud.gd                24     0
   werk.gd                   24     0
   figur_paket.gd            24     6
   worlds.gd                 23     0
@@ -268,6 +268,7 @@ Unsicher:
   'Das Bergtal fehlt – das Abenteuer braucht die Szene Bergtal.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Folge dem Bach durch die Schlucht': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Ende von Kapitel 2 – Fortsetzung folgt.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Hängst du fest? Der leuchtende Punkt zeigt den Weg – oder im Pausenmenü: «Zum nächsten Abschnitt springen».': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Schau auf den Kompass: die gelbe Marke zeigt zum Ziel.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Folge dem leuchtenden Punkt.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Gefangen!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
@@ -310,6 +311,7 @@ Unsicher:
   'Steuerung': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Kindermodus an / aus': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Abenteuer beenden': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  '⏭ Zum nächsten Abschnitt springen': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'PC: W A S D gehen · Shift rennen · Leertaste springen / greifen · E Aktion · Maus ziehen umschauen · Rad näher / weiter · Esc Pause': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Controller: linker Stick gehen · rechter Stick umschauen · A springen / greifen · X Aktion · R2 rennen · Start Pause': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Handy / iPad: Stick links · rechts «Aktion» und «Springen/Greifen» · in der rechten Hälfte wischen = umschauen': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
@@ -378,6 +380,8 @@ Unsicher:
   'Eine Hängebrücke. Alt. Sehr alt.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Tragfähigkeit: unbekannt. Empfehlung: zügig gehen. Nicht hüpfen.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Geh über die Hängebrücke – zügig!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Der Brückenkopf ist rechts, bei den Pfosten mit den Laternen.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Folge dem Plattenweg zur Laterne – nicht über die Kante zum Wasserfall.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Maggie – spring!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Okay. Zurück geht es jedenfalls nicht mehr.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Der Steinmann': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
@@ -895,7 +899,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inventar.gd:308  '\nKI: – = die KI von MoveEye kennt es nicht (Prüfstand: darf keinen Alarm auslösen)'
   inventar.gd:332  'KI: '
   kids.gd:338  ' Du hast jetzt %d Sterne.'
-  kit_abenteuer.gd:1500  'keine Szene '
+  kit_abenteuer.gd:1571  'keine Szene '
   kitrain.gd:93  '1/3 Paket: '
   kitrain.gd:157  'Ohne GitHub-Schlüssel: die ZIP liegt hier: %s\nSo kommt sie ins Training: 1. GitHub → Releases → «ki-daten» → Edit → ZIP hineinziehen → Update release '
   kitrain.gd:158  '(beim ersten Mal «Draft a new release», Tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye holt das neue Modell danach selbst.\n'

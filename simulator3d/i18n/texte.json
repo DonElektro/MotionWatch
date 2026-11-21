@@ -10241,6 +10241,13 @@
   "it": "Il browser si apre … Indietro: barra in alto o Ctrl+Alt+Z",
   "rm": "Il browser s’avra … Enavos: la trav sisum u Ctrl+Alt+Z"
  },
+ "Der Brückenkopf ist rechts, bei den Pfosten mit den Laternen.": {
+  "en": "The bridge head is on the right, by the posts with the lanterns.",
+  "fr": "La tête du pont est à droite, près des poteaux avec les lanternes.",
+  "it": "La testa del ponte è a destra, vicino ai pali con le lanterne.",
+  "rm": "Il chau da la punt è a dretga, tar ils pals cun las lanternas.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Der Bunker Fort Chrüzli": {
   "en": "The Fort Chrüzli bunker",
   "fr": "Le bunker du fort Chrüzli",
@@ -17212,6 +17219,13 @@
   "rm": "Suonda il punct che glischa.",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
+ "Folge dem Plattenweg zur Laterne – nicht über die Kante zum Wasserfall.": {
+  "en": "Follow the stone path to the lantern – not over the edge by the waterfall.",
+  "fr": "Suis le chemin de dalles jusqu’à la lanterne – pas par le bord vers la cascade.",
+  "it": "Segui il sentiero di lastre fino alla lanterna – non oltre il bordo verso la cascata.",
+  "rm": "Suonda la via da plattas fin tar la lanterna – betg sur l’ur vers la cascada.",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Folge den Wegweisern nach oben – dort ist die Aussicht weit.": {
   "en": "Follow the signposts upwards – the view is wide up there.",
   "fr": "Suis les panneaux vers le haut – la vue y est large.",
@@ -21977,6 +21991,13 @@
   "fr": "Hamac (se balance au vent)",
   "it": "Amaca (dondola al vento)",
   "rm": "Hamac (sa ballantscha en il vent)"
+ },
+ "Hängst du fest? Der leuchtende Punkt zeigt den Weg – oder im Pausenmenü: «Zum nächsten Abschnitt springen».": {
+  "en": "Stuck? The glowing dot shows the way – or in the pause menu: «Skip to the next section».",
+  "fr": "Tu es coincé·e ? Le point lumineux montre le chemin – ou dans le menu pause : «Passer à la section suivante».",
+  "it": "Sei bloccato? Il punto luminoso indica la strada – oppure nel menu di pausa: «Salta alla sezione successiva».",
+  "rm": "Es ti bloccà? Il punct glischant mussa la via – u en il menu da pausa: «Siglir al proxim tschancun».",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "Häufig: in der Dämmerung und nachts rund ums Lager.": {
   "en": "Common: at dusk and at night around the camp.",
@@ -47938,6 +47959,13 @@
   "fr": "⏭ Essai sauté – ça compte tout de suite",
   "it": "⏭ Prova saltata – tra poco si fa sul serio",
   "rm": "⏭ Emprova sursiglida – immediat vala quai"
+ },
+ "⏭ Zum nächsten Abschnitt springen": {
+  "en": "⏭ Skip to the next section",
+  "fr": "⏭ Passer à la section suivante",
+  "it": "⏭ Salta alla sezione successiva",
+  "rm": "⏭ Siglir al proxim tschancun",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "⏭ Überspringen": {
   "en": "⏭ Skip",

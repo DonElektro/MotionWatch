@@ -395,6 +395,7 @@ func szene_starten(n: int) -> void:
 		if figur.pos().distance_to(par.welt(float(st[0]), float(st[1]))) > 8.0:   # only when far away (else: just go on)
 			figur_setzen(float(st[0]), float(st[1]))
 		regie.hinter_figur()
+	weg = par.weg_punkte(daten.WEGE.get(str(sz["id"]), []))
 	schritt_i = -1
 	_naechster_schritt()
 
@@ -425,8 +426,11 @@ func _naechster_schritt() -> void:
 	elif schritt.has("ziel"):
 		schritt["_t0"] = uhr
 		_hinweis_i = 0
+		abschnitt_angebot = false
 		ziel_text = tx(str(schritt["ziel"]))
 		_ziel_p = _bis_ort(str(schritt.get("bis", "")))
+		schritt["_ueber_i"] = 0
+		_ueber_ziel()
 		if str(schritt.get("bis", "")) == "aktion:maggie_spalt":
 			_maggie_steuern(true)
 	elif schritt.has("sag"):
@@ -492,19 +496,56 @@ func _bis_ort(b: String):
 	return null
 
 
+func _auf_hoehe(zp) -> bool:
+	"""an «ort» goal on a ledge counts only up there, not at the foot of the wall below it (21.11.: «Klettere … hoch» was done
+	at the bottom)"""
+	if not (zp is Vector3):
+		return true
+	return absf(figur.pos().y - float(main.ground_y(zp.x, zp.z))) < 1.0
+
+
+func _ueber_ziel() -> void:
+	"""a step with «ueber» [[s, q, r], …]: the compass and the marker lead over these points first (the bridge head)"""
+	var U: Array = schritt.get("ueber", [])
+	var i := int(schritt.get("_ueber_i", 0))
+	if i < U.size():
+		_ziel_p = par.welt(float(U[i][0]), float(U[i][1]), 1.0)
+	else:
+		_ziel_p = _bis_ort(str(schritt.get("bis", "")))
+
+
+const STECKEN_S := 90.0               # s without progress in one step: «Zum nächsten Abschnitt springen» in the pause menu
+var abschnitt_angebot := false
+var test_frei := false                # tests (kit_weg_test.gd): no steps, only walking
+
+
 func _schritt_tick() -> void:
-	if schritt.is_empty() or not schritt.has("ziel") or phase != "spiel":
+	if test_frei or schritt.is_empty() or not schritt.has("ziel") or phase != "spiel":
 		return
+	var U: Array = schritt.get("ueber", [])
+	var ui := int(schritt.get("_ueber_i", 0))
+	if ui < U.size():
+		var mp: Vector2 = par.sq_von(figur.pos())
+		if mp.distance_to(Vector2(float(U[ui][0]), float(U[ui][1]))) < float(U[ui][2]):
+			schritt["_ueber_i"] = ui + 1
+			schritt["_t0"] = uhr                          # progress: the hints and the offer start again
+			_hinweis_i = 0
+			_marker_t = 0.6
+			_ueber_ziel()
+	if not abschnitt_angebot and uhr - float(schritt.get("_t0", uhr)) > STECKEN_S:
+		abschnitt_angebot = true
+		_marker_t = 3.0
+		sag(tx("Hängst du fest? Der leuchtende Punkt zeigt den Weg – oder im Pausenmenü: «Zum nächsten Abschnitt springen»."), "blinki")
 	var b := str(schritt.get("bis", ""))
 	var fertig := false
 	if b.begins_with("ort:"):
 		var p := b.substr(4).split(",")
 		var me: Vector2 = par.sq_von(figur.pos())
-		fertig = me.distance_to(Vector2(float(p[0]), float(p[1]))) < float(p[2]) and figur.zustand == "boden"
+		fertig = me.distance_to(Vector2(float(p[0]), float(p[1]))) < float(p[2]) and figur.zustand == "boden" and _auf_hoehe(_bis_ort(b))
 	elif b.begins_with("ort_tal:"):
 		var pt := b.substr(8).split(",")
 		var me2: Vector2 = par.tal_von(figur.pos())
-		fertig = me2.distance_to(Vector2(float(pt[0]), float(pt[1]))) < float(pt[2]) and figur.zustand == "boden"
+		fertig = me2.distance_to(Vector2(float(pt[0]), float(pt[1]))) < float(pt[2]) and figur.zustand == "boden" and _auf_hoehe(_bis_ort(b))
 	elif b.begins_with("aktion:"):
 		fertig = erledigt.has(b.substr(7))
 	elif b.begins_with("fund:"):
@@ -832,6 +873,10 @@ func eingabe(dt: float) -> Dictionary:
 	fw = fw.normalized() if fw.length() > 0.01 else Vector3(0, 0, -1)
 	var rt := fw.cross(Vector3.UP).normalized()
 	var mv3 := fw * k.x + rt * k.y
+	if not _test.is_empty() and (_test["ein"] as Dictionary).has("ziel") and figur != null and figur.ok():
+		var zw: Array = _test["ein"]["ziel"]                # tests (kit_weg_test.gd): straight to a world point
+		var to := Vector3(float(zw[0]), 0, float(zw[1])) - Vector3(figur.pos().x, 0, figur.pos().z)
+		mv3 = to.normalized() if to.length() > 0.05 else Vector3.ZERO
 	var quer := 0.0
 	if figur != null and figur.ok() and figur.zustand == "balance":
 		var right_f: Vector3 = figur.vorne().cross(Vector3.UP).normalized()
@@ -904,6 +949,39 @@ func pause(on: bool) -> void:
 func ueberspringen() -> void:
 	if phase == "film":
 		regie.ueberspringen()
+
+
+func abschnitt_springen() -> void:
+	"""the way out when stuck (pause menu after STECKEN_S): the goal of this step counts as reached"""
+	pause(false)
+	if schritt.is_empty() or not schritt.has("ziel"):
+		return
+	var b := str(schritt.get("bis", ""))
+	_log("abschnitt_springen:" + b)
+	hud.blende(1.0)
+	if b.begins_with("ort:"):
+		var p := b.substr(4).split(",")
+		figur_setzen(float(p[0]), float(p[1]))
+		figur.geh_zu("boden")
+	elif b.begins_with("ort_tal:"):
+		var pt := b.substr(8).split(",")
+		figur.setzen(par.W(par.G(float(pt[0]), float(pt[1]))))
+		figur.geh_zu("boden")
+	elif b.begins_with("aktion:"):
+		var id := b.substr(7)
+		if id == "maggie_spalt":
+			_maggie_auto = false
+			_maggie_steuern(false)
+		if id == "karte" and karte_an:
+			karte_ende(true)
+		aktion_fertig(id)
+	elif b.begins_with("fund:"):
+		var fid := b.substr(5)
+		if par.dinge.has(fid) and bool(par.dinge[fid]["d"].get("nur_ir", false)) and not ir_an:
+			ir_umschalten()
+		fund(fid)
+	abschnitt_angebot = false
+	regie.hinter_figur()
 
 
 func kinder_umschalten() -> void:
@@ -1451,7 +1529,8 @@ func info() -> Dictionary:
 		"szene": str(daten.SZENEN[szene_i]["id"]) if running and szene_i >= 0 else "", "schritt": schritt_i, "ziel": ziel_text,
 		"checkpoint": checkpoint_id, "erledigt": erledigt.keys(), "funde": funde.keys(), "abzeichen": abzeichen.keys(),
 		"merker": merker.keys(), "musik": musik_z, "touch": touch_an(), "log": log_.slice(-12), "lite": Quality.lite(),
-		"steuer_maggie": steuer_maggie, "fps": fps_log.slice(-10), "time_scale": Engine.time_scale}
+		"steuer_maggie": steuer_maggie, "fps": fps_log.slice(-10), "time_scale": Engine.time_scale,
+		"abschnitt_angebot": abschnitt_angebot, "ueber_i": int(schritt.get("_ueber_i", 0)), "weg": weg.size()}
 	if running and figur != null and figur.ok():
 		o["figur"] = figur.info()
 		o["kamera"] = regie.info()
@@ -1500,7 +1579,7 @@ static func control(m, d: Dictionary) -> Dictionary:
 			return {"ok": false, "error": "keine Szene " + v}
 		"eingabe":
 			var e := {}
-			for key in ["mv", "run", "sprung", "aktion", "halten"]:
+			for key in ["mv", "run", "sprung", "aktion", "halten", "ziel"]:
 				if d.has(key):
 					e[key] = d[key]
 			k._test = {"ein": e, "bis": k.uhr + float(d.get("s", 0.5))}
@@ -1523,6 +1602,12 @@ static func control(m, d: Dictionary) -> Dictionary:
 			return {"ok": true, "kit": k.info()}
 		"aktion":
 			k.aktion_fertig(str(d.get("id", "")))
+			return {"ok": true}
+		"abschnitt":                                       # «Zum nächsten Abschnitt springen» (tests: also before 90 s)
+			k.abschnitt_springen()
+			return {"ok": true, "kit": k.info()}
+		"frei":                                            # tests: walking only, no steps
+			k.test_frei = bool(d.get("on", true))
 			return {"ok": true}
 		"skip":
 			k.ueberspringen()
