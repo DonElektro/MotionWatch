@@ -259,7 +259,7 @@ func _paint_btns() -> void:
 	var sig := "%s|%s|%s|%s|%s|%s" % [show, person_on(), main.ex_speed, T.version, main.ex_ptempo, main.ex_schnell]
 	if _btn_figur != null:
 		_btn_figur.visible = on and not fly and person_on()
-		_btn_figur.text = "🎨 " + T.t("Figur")
+		_btn_figur.text = T.t("Figur") + " ›"              # (no emoji: the symbol font of the phone may lack it)
 		_btn_figur.tooltip_text = T.t("I · Figur gestalten: Aussehen, Ausrüstung, Begleiter, MoveEye")
 	if sig == _btn_sig:
 		return

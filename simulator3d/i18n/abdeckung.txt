@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8102 (Stellen: 11250)
-Übersetzt: en 8059, fr 8059, it 8059, rm 8059
+Texte gesamt: 8101 (Stellen: 11250)
+Übersetzt: en 8101, fr 8101, it 8101, rm 8101
 Unsicher markiert: 261
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 539 Stellen
 Nicht mehr im Code (noch in texte.json): 410
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29570, schlüssel 22507, keine Wörter 14156, index 10355, technisch 3801, doc 2596, einheit 344, log 203, englisch 146, pfad 130, stringname 107, html 69, klasse 45, shader 6
+Übersprungen (Grund: Anzahl): kennung 29574, schlüssel 22507, keine Wörter 14156, index 10355, technisch 3801, doc 2596, einheit 344, log 203, englisch 146, pfad 130, stringname 107, html 69, klasse 45, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -603,9 +603,9 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   abenteuer_rucksack.gd:424  ' und '
   abenteuer_rucksack.gd:480  'Fertig'
   quality.gd:113  ' und '
-  erkunden_gestalten.gd:135  'Fertig'
-  erkunden_gestalten.gd:170  'an'
-  erkunden_gestalten.gd:170  'aus'
+  erkunden_gestalten.gd:136  'Fertig'
+  erkunden_gestalten.gd:171  'an'
+  erkunden_gestalten.gd:171  'aus'
   fenster_waechter.gd:14  'Fertig'
   fenster_waechter.gd:14  'Zu'
   tour.gd:188  'Fertig'
@@ -895,8 +895,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   geo.gd:1585  ' (Fluss)'
   geo.gd:1681  'Ort: %s (%.5f, %.5f)\n%s\n'
   grafik_hoch.gd:310  'Hoch gewählt, aber aus: '
-  handy.gd:534  '● MoveEye (Demo) · '
-  handy.gd:538  '● MoveEye · '
+  handy.gd:537  '● MoveEye (Demo) · '
+  handy.gd:541  '● MoveEye · '
   headpad.gd:117  '\nAuslöser: Bildmitte (Kreis) auf einen Spieler, dann der runde Knopf im Bild oder R2 am Controller.'
   headpad.gd:119  '\nController: '
   toolbar.gd:180  '\nController: '

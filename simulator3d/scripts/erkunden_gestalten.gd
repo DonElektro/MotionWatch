@@ -69,7 +69,7 @@ func _ready() -> void:
 	var unten := HBoxContainer.new()
 	unten.add_theme_constant_override("separation", 8)
 	v.add_child(unten)
-	for e in [["zufall", "🎲 Zufall"], ["zurueck", "Zurücksetzen"]]:
+	for e in [["zufall", "Zufall"], ["zurueck", "Zurücksetzen"]]:
 		var b := Button.new()
 		b.name = str(e[0])
 		b.focus_mode = Control.FOCUS_NONE
