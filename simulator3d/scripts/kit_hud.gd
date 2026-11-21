@@ -453,7 +453,7 @@ func karte(on: bool) -> void:
 		var s := _vs()
 		var w := minf(s.x * 0.8, 520.0)
 		_karte.size = Vector2(w, w * 0.62)
-		_karte.position = Vector2((s.x - w) * 0.5, s.y * 0.2)
+		_karte.position = Vector2((s.x - w) * 0.5, s.y * 0.3)
 		toast(T.t("Dreh dich, bis die Linie auf der Karte zur Landschaft passt"), 4.0)
 
 

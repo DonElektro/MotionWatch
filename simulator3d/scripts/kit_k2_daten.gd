@@ -320,6 +320,7 @@ const SZENEN := [
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
 			{"t": 0.0, "k": "musik", "z": "spannung"},
+			{"t": 0.0, "k": "ir", "an": false},
 			{"t": 0.0, "k": "shot", "art": "fix", "tal": [-14.5, -18.5], "h": 1.4, "blick_tal": [-10.0, -16.0, 0.3], "d": 6.0},
 			{"t": 0.4, "k": "sag", "wer": "figur", "text": "Lia? … Das Zelt ist leer."},
 			{"t": 3.2, "k": "shot", "art": "nah_tal", "tal": [-10.2, -14.8], "h": 0.15, "d": 5.0},

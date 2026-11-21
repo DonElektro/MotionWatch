@@ -747,6 +747,9 @@ func film_eintrag(e: Dictionary, sprung: bool) -> void:
 			_person_ziel.erase(str(e["id"]))
 		"zeit":
 			main.set_hour(float(e["h"]))
+		"ir":
+			if ir_an != bool(e.get("an", false)):
+				ir_umschalten()
 		"figur_tal":
 			film_hang = false
 			figur.setzen(par.W(par.G(float(e["x"]), float(e["z"]))))

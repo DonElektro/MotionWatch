@@ -32,7 +32,7 @@ func _daten() -> void:
 		for sid in a.get("kette", []):
 			if not ids.has(sid):
 				errs.append("Aktion %s: Stein %s fehlt" % [a["id"], sid])
-	var arten := ["film", "ziel", "sag", "musik", "checkpoint"]
+	var arten := ["film", "ziel", "sag", "musik", "checkpoint", "abzeichen", "maggie"]
 	for sz in D.SZENEN:
 		for st in sz["schritte"]:
 			var ok := false
@@ -279,8 +279,8 @@ func _szenen_6_12() -> void:
 	await setzen(54.0, -0.6)
 	var ok: bool = await _bis(func(): return str(info().get("phase", "")) == "film", 3.0)
 	pruef(ok, "Brücke: Einsturz-Film beginnt in der Mitte")
-	await _warte(0.4)
-	pruef(not k.qte.is_empty() or k.merker.has("maggie_gefangen") or true, "Brücke: Greifen-Moment")
+	ok = await _bis(func(): return not k.qte.is_empty(), 5.0)
+	pruef(ok and Engine.time_scale < 0.5, "Brücke: Zeitlupe und Greifen-Moment")
 	c({"do": "eingabe", "sprung": true, "s": 0.1})
 	await _warte(0.3)
 	c({"do": "skip"})
@@ -288,7 +288,7 @@ func _szenen_6_12() -> void:
 	await _warte(0.5)
 	var top1: float = m.ground_y(w0.x, w0.z)
 	pruef(top0 - top1 > 1.0, "Brücke: hinter dir eingestürzt (%.1f m tiefer)" % (top0 - top1))
-	pruef(k.abzeichen.has("bruecken_sprinter") and k.abzeichen.has("maggies_held"), "Brücke: «Brücken-Sprinter» (nie angehalten) und «Maggies Held» (gegriffen)")
+	pruef(k.abzeichen.has("bruecken_sprinter") and k.abzeichen.has("maggies_held"), "Brücke: «Brücken-Sprinter» (nie angehalten) und «Maggies Held» (gegriffen) %s" % str(k.abzeichen.keys()))
 	pruef(str(info().get("szene", "")) == "s07_steinmann", "Brücke: weiter zum Steinmann")
 	# 7: the map piece over the landscape
 	await setzen(57.0, -4.6)
