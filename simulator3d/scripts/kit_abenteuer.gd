@@ -1356,6 +1356,13 @@ static func control(m, d: Dictionary) -> Dictionary:
 					if k.phase == "film":
 						k.regie.film_an = false
 						k.regie.balken_ziel = 0.0
+						k.regie.zeitlupe_aus()
+					k.hud.farbe("ir" if k.ir_an else "")       # (a jump out of the flashback: the colours back)
+					for pid in k.personen.keys():
+						if is_instance_valid(k.personen[pid]):
+							k.personen[pid].queue_free()
+					k.personen.clear()
+					k._person_ziel.clear()
 					k.phase = "spiel"
 					k.figur.geh_zu("boden")
 					k.szene_starten(i)

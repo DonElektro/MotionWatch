@@ -308,7 +308,7 @@ const SZENEN := [
 		{"ziel": "Schalte bei MoveEye das IR-Licht ein (Aktion am Lager)", "bis": "aktion:ir"},
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
-			{"t": 0.0, "k": "shot", "art": "fix", "tal": [-20.8, -8.6], "h": 1.5, "blick_tal": [-26.5, -3.4, 0.8], "d": 5.0, "ziel_tal": [-26.5, -3.0, 0.0], "groesse": 1.5},
+			{"t": 0.0, "k": "shot", "art": "fix", "tal": [-17.6, -11.8], "h": 2.3, "blick_tal": [-25.0, -4.4, 0.4], "d": 5.0, "fov": 44.0, "ziel_tal": [-26.5, -3.0, 0.0], "groesse": 1.5},
 			{"t": 0.0, "k": "tier", "art": "fox", "tal": [-30.5, -0.5], "nach_tal": [-22.5, -5.5]},
 			{"t": 0.2, "k": "maggie_warnen_tal", "x": -27.0, "z": -2.0},
 			{"t": 0.4, "k": "sag", "wer": "blinki", "text": "Bewegung! Ein Fuchs. Harmlos. Maggie sieht das anders."},

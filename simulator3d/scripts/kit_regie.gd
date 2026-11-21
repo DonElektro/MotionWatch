@@ -66,7 +66,7 @@ func tick(dt: float, real_dt: float, ein: Dictionary) -> void:
 		return
 	AnimKamera.weg(cam)
 	main.view_mode = 0
-	cam.fov = 62.0
+	cam.fov = float(_shot.get("fov", 62.0)) if art == "shot" else 62.0
 	cam.far = 7000.0
 	_zeitlupe_tick(real_dt)
 	balken = move_toward(balken, balken_ziel, real_dt * 2.5)
@@ -463,7 +463,7 @@ func pruef_shot(sh: Dictionary, aspect := 16.0 / 9.0) -> Dictionary:
 	var v := mitte - tr.origin
 	var fw := -tr.basis.z
 	var zt2 := v.dot(fw)
-	var th := tan(deg_to_rad(31.0))
+	var th := tan(deg_to_rad(float(sh.get("fov", 62.0)) * 0.5))
 	var anteil := gr / maxf(0.01, 2.0 * zt2 * th) if zt2 > 0.1 else 0.0
 	var x := v.dot(tr.basis.x) / maxf(0.01, zt2 * th * aspect)
 	var y := v.dot(tr.basis.y) / maxf(0.01, zt2 * th)
