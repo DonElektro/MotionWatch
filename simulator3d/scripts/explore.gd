@@ -813,7 +813,13 @@ func _process(dt: float) -> void:
 
 
 func _box_hoch(gross: bool) -> void:
-	"""21.11.2026: as the figure the box has room for three lines (status + the longer key help), the buttons under it"""
+	"""21.11.2026: as the figure the box has room for three lines (status + the longer key help), the buttons under it;
+	on a narrow screen (phone upright) the whole box smaller so it fits"""
+	var vw: float = get_viewport().get_visible_rect().size.x if is_inside_tree() else 1280.0
+	var k := clampf((vw - 12.0) / 640.0, 0.4, 1.0)
+	if not is_equal_approx(scale.x, k):
+		pivot_offset = Vector2(320, 0)
+		scale = Vector2(k, k)
 	var h := 114.0 if gross else 98.0
 	if is_equal_approx(size.y, h):
 		return
