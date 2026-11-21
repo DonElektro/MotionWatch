@@ -5,7 +5,7 @@ setzt die Platzhalter je Rolle ein ({bezug}: Grossvater / Vater, {jahr}: 1974 / 
 (der Name ist frei gewählt). Ausgabe: <out>/stimmen/<sha1-12>.ogg + <out>/stimmen/stimmen.json {text: datei} (deutsch).
 
     python3 werkzeuge/stimmen/stimmen.py <out>      (braucht: piper im PATH oder ./piper/piper, ffmpeg)
-Die Stimmen (rhasspy/piper-voices, MIT / CC-Lizenz je Stimme, siehe stimmen.json «lizenz») lädt der Workflow.
+Die Stimme (rhasspy/piper-voices, Thorsten = CC0, siehe MODEL_CARD) lädt der Workflow.
 """
 import hashlib
 import json
@@ -18,10 +18,12 @@ import urllib.request
 R = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATEN = os.path.join(R, "simulator3d", "scripts", "kit_k2_daten.gd")
 HF = "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/"
-STIMMEN = {   # role -> (voice, speaker speed): narrator calm, the grandfather / father deeper and slower
+STIMMEN = {   # role -> (voice, speaker speed): both Thorsten (CC0 - the voice MoveEye already uses), the grandfather / father
+    # slower and lower (pitch below); other voices were left out: their training data has unclear licences (karlsson)
     "erzaehler": ("thorsten/high/de_DE-thorsten-high", 1.05),
-    "grossvater": ("karlsson/low/de_DE-karlsson-low", 1.12),
+    "grossvater": ("thorsten/high/de_DE-thorsten-high", 1.12),
 }
+TIEFER = {"grossvater": 0.88}  # pitch factor (ffmpeg asetrate + atempo: same speed, lower voice)
 JAHR_SPRECH = {"1974": "neunzehnhundertvierundsiebzig", "2000": "zweitausend"}
 
 
@@ -90,7 +92,11 @@ def main():
             ogg = os.path.join(out, key + ".ogg")
             subprocess.run([pb, "--model", mp, "--length_scale", str(tempo), "--output_file", wav], input=spoken.encode("utf-8"),
                            check=True, capture_output=True, timeout=120)
-            subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", wav, "-af", "loudnorm=I=-16:TP=-1.5", "-ac", "1", "-ar", "22050",
+            af = "loudnorm=I=-16:TP=-1.5"
+            if wer in TIEFER:
+                k = TIEFER[wer]
+                af = "asetrate=22050*%.3f,aresample=22050,atempo=%.4f,%s" % (k, 1.0 / k, af)
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", wav, "-af", af, "-ac", "1", "-ar", "22050",
                             "-c:a", "libvorbis", "-q:a", "3", ogg], check=True, timeout=120)
             os.remove(wav)
             karte[shown] = {"datei": key + ".ogg", "wer": wer}
