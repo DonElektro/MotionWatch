@@ -498,6 +498,17 @@ func _ding(d: Dictionary) -> void:
 			var dk := [c, Vector2(lq, ls), rot, top]
 			e["decks"].append(dk)
 			ebenen_decks[str(d.get("ebene", ""))] = ebenen_decks.get(str(d.get("ebene", "")), []) + [dk]
+		"licht":                                           # Kapitel 1: a warm light (the lantern on the table, light from the window)
+			var lt := OmniLight3D.new()
+			lt.light_color = Color(1.0, 0.72, 0.42)
+			lt.light_energy = float(d.get("energie", 0.6))
+			lt.omni_range = float(d.get("weite", 5.0))
+			lt.shadow_enabled = false
+			lt.position = Vector3(c.x, top, c.y)
+			holder.add_child(lt)
+			if bool(d.get("glas", false)):
+				light_part(holder, sphm(0.06, -1.0, 8), Vector3(c.x, top, c.y), glow_mat(Color(1.0, 0.7, 0.35), 3.0))
+			e["node"] = lt
 		"decke":                                           # Kapitel 1: a ceiling under the roof of the hut (from inside the roof was open)
 			var nd := node(holder, Vector3(c.x, top, c.y), -rot)
 			part(nd, boxm(lq * 2.0, 0.08, ls * 2.0), Vector3.ZERO, Color(0.32, 0.22, 0.14), "tree")

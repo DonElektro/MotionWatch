@@ -159,8 +159,9 @@ func _lauf() -> void:
 	await aktion()
 	ok = await _bis(func(): return k.erledigt.has("moveeye"), 3.0)
 	pruef(ok, "MoveEye aufgestellt")
-	await filme_weg()
-	pruef(k.ir_an and m.is_dark(), "Nacht, IR an")
+	# the MoveEye film switches IR on; the marmot scene turns it off again for a readable shot
+	ok = await _bis(func(): return k.ir_an and m.is_dark(), 12.0)
+	pruef(ok, "Nacht, IR an")
 	# 7 the marmot, 8 Maggie fetches
 	await filme_weg()
 	ok = await _bis(func(): return szene() == "s08_holzstapel", 8.0)
@@ -186,20 +187,44 @@ func _lauf() -> void:
 		if (sz["start"] as Array).size() >= 2:
 			orte.append([str(sz["id"]), float(sz["start"][0]), float(sz["start"][1]), false])
 	orte.append(["dachboden", 0.9, 1.6, true])
+	orte.append(["stube_leiter", -0.15, 3.6, false])
+	orte.append(["dach_luke", 0.9, 3.0, true])
+	var vorher_regen: String = str(m.weather)
+	m.weather = "rain"
 	for o in orte:
+		k._ebene("dach", false)                         # (in the order of the pictures: down, the level on, set again)
+		c({"do": "setzen", "s": o[1], "q": o[2]})
 		k._ebene("dach", bool(o[3]))
-		for blick in [0.0, PI * 0.5, PI, -PI * 0.5]:
-			c({"do": "setzen", "s": o[1], "q": o[2]})
-			k.figur.a.heading = k.par.yaw_achse() + blick
-			k.regie.hinter_figur()
-			await _warte(0.9)
-			var cp: Vector3 = m.view_cam.global_position
-			var kopf_p: Vector3 = k.figur.pos() + Vector3(0, 1.45, 0)
-			var unter_decke: bool = cp.y < k.decke_bei(cp, k.figur.pos().y) - 0.1
-			var ueber_boden: bool = cp.y > float(m.ground_y(cp.x, cp.z)) + 0.25
-			var frei: bool = k.regie._blocker(cp, kopf_p, 16) < 0.0 and m.line_blocker(cp, kopf_p).is_empty()
-			pruef(unter_decke and ueber_boden and frei, "Kamera %s Blick %.1f: Decke %s, Boden %s, Sicht %s" % [o[0], blick, unter_decke, ueber_boden, frei])
+		for i in range(8):
+			var blick := TAU * i / 8.0
+			for zieh in [0.0, 0.35]:                    # also with the camera turned a little by hand (mouse / stick)
+				c({"do": "setzen", "s": o[1], "q": o[2]})
+				k.figur.a.heading = k.par.yaw_achse() + blick
+				k.regie.hinter_figur()
+				if zieh != 0.0:
+					k.regie.yaw = float(k.figur.a.heading) + zieh
+					k.regie.drag_t = k.uhr + 100.0
+				await _warte(0.9)
+				var cam: Camera3D = m.view_cam
+				var cp: Vector3 = cam.global_position
+				var kopf_p: Vector3 = k.figur.pos() + Vector3(0, 1.45, 0)
+				var bauch: Vector3 = k.figur.pos() + Vector3(0, 0.9, 0)
+				var unter_decke: bool = cp.y < k.decke_bei(cp, k.figur.pos().y) - 0.1
+				var ueber_boden: bool = cp.y > float(m.ground_y(cp.x, cp.z)) + 0.25
+				var im_bild: bool = cam.is_position_in_frustum(kopf_p) and cam.is_position_in_frustum(bauch)
+				var bl: float = k.regie._blocker(cp, kopf_p, 24)
+				var l1: Dictionary = m.line_blocker(cp, kopf_p)
+				var l2: Dictionary = m.line_blocker(kopf_p, cp)
+				var frei: bool = bl < 0.0 and l1.is_empty() and l2.is_empty()
+				var gut: bool = unter_decke and ueber_boden and im_bild and frei
+				if not gut or i % 4 == 0:
+					pruef(gut, "Kamera %s Blick %d/8%s: Decke %s, Boden %s, Figur im Bild %s, Sicht frei %s %s" % [o[0], i, " gedreht" if zieh != 0.0 else "", unter_decke, ueber_boden, im_bild, frei,
+							"" if frei else "(Boden/Fels %.2f, Hindernis %s / %s, Kamera %s Abstand %.1f)" % [bl, str(l1.get("c", l1.get("id", ""))), str(l2.get("c", l2.get("id", ""))), str(k.par.sq_von(cp)), cp.distance_to(kopf_p)]])
+		var drin: bool = k.decke_bei(m.view_cam.global_position, k.figur.pos().y) < INF
+		if drin:
+			pruef(not m.rain.visible, "kein Regen im Bild unter dem Dach (%s)" % o[0])
 	k._ebene("dach", false)
+	m.weather = vorher_regen
 	_ende()
 
 

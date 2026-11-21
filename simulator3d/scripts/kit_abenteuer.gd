@@ -368,6 +368,9 @@ func stop() -> void:
 	main.bt_bed = str(_saved.get("bt_bed", "tent"))
 	if _saved.get("bt_wall", null) != null:
 		main.bt_wall = _saved["bt_wall"]
+	for n in [main.get("rain"), main.get("splashes")]:
+		if n != null and is_instance_valid(n):
+			(n as Node3D).visible = true
 	if _saved.has("tone") and main.env != null:
 		var tn: Array = _saved["tone"]
 		main.env.tonemap_mode = int(tn[0])
@@ -803,6 +806,7 @@ func spaet(dt: float, real_dt: float) -> void:
 			figur._balance_start(alt["d"])
 	_ebene_tick()
 	_lampe_tick()
+	_dach_tick()
 	_schritt_tick()
 	_marker_tick(real_dt)
 	_licht()
@@ -1306,6 +1310,24 @@ func _ebene(id: String, on: bool) -> void:
 var _decke_boden := {}
 
 
+func raum_klemmen(p: Vector3) -> Vector3:
+	"""the camera stays inside the room the figure is in (Kapitel 1: the hut, DECKEN) - 0.4 m from its walls"""
+	if par == null or figur == null:
+		return p
+	var fs: Vector2 = par.sq_von(figur.pos())
+	for dc in daten.get_script_constant_map().get("DECKEN", []):
+		var ls := float(dc["ls"])
+		var lq := float(dc["lq"])
+		if absf(fs.x - float(dc["s"])) < ls and absf(fs.y - float(dc["q"])) < lq:
+			var sq: Vector2 = par.sq_von(p)
+			var s2 := clampf(sq.x, float(dc["s"]) - ls + 0.5, float(dc["s"]) + ls - 0.5)
+			var q2 := clampf(sq.y, float(dc["q"]) - lq + 0.5, float(dc["q"]) + lq - 0.5)
+			if s2 != sq.x or q2 != sq.y:
+				var w: Vector3 = par.welt(s2, q2)
+				return Vector3(w.x, p.y, w.z)
+	return p
+
+
 func decke_bei(w: Vector3, figur_y: float) -> float:
 	"""the ceiling over a world point for the camera (Kapitel 1: the hut - under the attic floor in the room, under the roof in
 	the attic), INF = open sky"""
@@ -1322,6 +1344,35 @@ func decke_bei(w: Vector3, figur_y: float) -> float:
 			var auf_boden := figur_y - boden
 			return boden + (float(dc["oben"]) if auf_boden > float(dc["trenn"]) else float(dc["unten"]))
 	return INF
+
+
+var _tiere_t := 0.0
+
+
+func _tiere_weg() -> void:
+	"""Kapitel 1: no cow or sheep of the valley walks into the hut (in the attic they stood on its floor) - every 2 s"""
+	_tiere_t -= get_process_delta_time()
+	if _tiere_t > 0.0 or main.visitors == null:
+		return
+	_tiere_t = 2.0
+	var mitte: Vector3 = par.welt(0.0, 0.0)
+	for v in main.visitors.get_children():
+		if v == figur.a or v == (hund.hund if hund != null else null) or not v.has_method("is_animal") or personen.values().has(v):
+			continue
+		if v.is_animal() and (v as Node3D).global_position.distance_to(mitte) < 14.0 and not v.has_meta("kit_hund"):
+			v.queue_free()
+
+
+func _dach_tick() -> void:
+	"""under a roof (the camera in the hut): no rain drops and splashes in the picture (the sound stays outside)"""
+	if not daten.get_script_constant_map().has("DECKEN"):
+		return
+	_tiere_weg()
+	var cam: Camera3D = main.view_cam
+	var drin: bool = cam != null and decke_bei(cam.global_position, figur.pos().y) < INF
+	for n in [main.get("rain"), main.get("splashes")]:
+		if n != null and is_instance_valid(n) and (n as Node3D).visible == drin:
+			(n as Node3D).visible = not drin
 
 
 func _ebene_tick() -> void:
@@ -1594,6 +1645,10 @@ func _licht() -> void:
 		return
 	var tag := clampf(float(main.sun.light_energy) / 1.4, 0.0, 1.0)
 	if tag < 0.05:
+		if kapitel == 1:                                     # Kapitel 1 at the hut: a moonlit night one can read (21.11.)
+			main.env.ambient_light_color = Color(0.36, 0.44, 0.62)
+			main.env.ambient_light_energy = maxf(float(main.env.ambient_light_energy), 0.75)
+			main.env.tonemap_exposure = 1.3
 		return                                               # the night stays as main makes it
 	# balanced (owner 21.11.: «nicht ausgewaschen, nicht hart»): a warm, softer sun, a cooler sky fill for depth in the
 	# shade, filmic tone mapping with a little headroom (no white-clipped rock on bright laptop screens), light haze
@@ -1864,6 +1919,9 @@ static func control(m, d: Dictionary) -> Dictionary:
 			return {"ok": true}
 		"lampe":
 			k.lampe_schalten(bool(d.get("an", true)))
+			return {"ok": true}
+		"eintrag":                                         # tests / pictures: one film key now (zeit, ir, wetter, ofen …)
+			k.film_eintrag(d.get("e", {}), true)
 			return {"ok": true}
 		"wahl":                                            # tests: the backpack card (Kapitel 1) answered with these ids
 			if k.hud.wahl_offen() and k.hud._wahl_fertig.is_valid():

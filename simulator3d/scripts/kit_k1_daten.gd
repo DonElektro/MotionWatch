@@ -44,6 +44,8 @@ const DINGE := [
 	{"id": "dachwand_w", "art": "deck", "ebene": "dach", "s": 0.0, "q": -4.55, "ls": 3.9, "lq": 0.12, "top": 4.8},
 	{"id": "dachwand_v", "art": "deck", "ebene": "dach", "s": -3.82, "q": 0.0, "ls": 0.12, "lq": 4.6, "top": 4.8},
 	{"id": "dachwand_h", "art": "deck", "ebene": "dach", "s": 3.82, "q": 0.0, "ls": 0.12, "lq": 4.6, "top": 4.8},
+	{"id": "laterne", "art": "licht", "s": -1.8, "q": 2.0, "top": 1.0, "boden_deck": true, "energie": 0.7, "weite": 5.5, "glas": true},
+	{"id": "fensterlicht", "art": "licht", "s": -4.6, "q": 1.7, "top": 1.3, "boden_deck": true, "energie": 0.8, "weite": 4.5},
 	{"id": "decke", "art": "decke", "s": 0.0, "q": 0.0, "ls": 3.7, "lq": 4.45, "top": 4.62, "boden_deck": true},
 	# finds up there - only to be seen in the cone of the headlamp
 	{"id": "dose", "art": "fund", "s": 0.25, "q": -3.7, "top": 2.5, "boden_deck": true, "nur_lampe": true, "form": "dose"},
@@ -67,7 +69,7 @@ const AKTIONEN := [
 ]
 
 # ceilings for the camera (kit_regie.gd): inside the hut it stays under the ceiling of the floor the figure is on
-const DECKEN := [{"s": 0.0, "q": 0.0, "ls": 3.6, "lq": 4.35, "unten": 2.3, "oben": 4.5, "trenn": 1.6}]
+const DECKEN := [{"s": 0.0, "q": 0.0, "ls": 3.25, "lq": 4.0, "unten": 2.3, "oben": 4.5, "trenn": 1.6}]
 
 const WEG := [[-16.0, -1.5], [-9.0, -2.0], [-4.6, -2.25]]
 const WEG_BREITE := 5.0
@@ -112,7 +114,7 @@ const SZENEN := [
 		{"ziel": "Mach Feuer im Ofen (Aktion)", "bis": "aktion:ofen"},
 		{"film": [
 			{"t": 0.0, "k": "ofen"},
-			{"t": 0.0, "k": "shot", "art": "nah", "s": 1.0, "q": 1.4, "h": 1.3, "d": 2.2, "ziel": [2.6, 3.0, 0.6], "groesse": 0.6},
+			{"t": 0.0, "k": "shot", "art": "nah", "s": 2.4, "q": 2.9, "h": 0.6, "r": 1.7, "d": 2.2, "ziel": [2.6, 3.0, 0.6], "groesse": 0.6},
 			{"t": 0.3, "k": "sag", "wer": "blinki", "text": "Rauch: viel. Wärme: noch wenig. Klappe am Ofenrohr: zu. Ich sage ja nur."},
 			{"t": 3.6, "k": "sag", "wer": "figur", "text": "… jetzt ist sie offen."},
 			{"t": 5.4, "k": "musik", "z": "explore"}]},
@@ -132,7 +134,7 @@ const SZENEN := [
 	{"id": "s04_karte", "titel": "Die halbe Karte", "start": [], "schritte": [
 		{"film": [
 			{"t": 0.0, "k": "musik", "z": "entdeckung"},
-			{"t": 0.0, "k": "shot", "art": "nah", "s": 0.6, "q": -2.6, "h": 3.9, "d": 1.6, "ziel": [0.25, -3.7, 2.55], "groesse": 0.35},
+			{"t": 0.0, "k": "shot", "art": "nah", "s": 0.25, "q": -3.7, "h": 0.25, "r": 1.2, "d": 1.6, "ziel": [0.25, -3.7, 0.2], "groesse": 0.35},
 			{"t": 0.3, "k": "sag", "wer": "figur", "text": "Eine Karte. Halb. Jemand hat sie mittendurch gerissen."},
 			{"t": 3.4, "k": "karte_zeigen", "teil": "halb"},
 			{"t": 3.6, "k": "sag", "wer": "blinki", "text": "Massstab 1:25 000. Eine Linie mit Bleistift. Und am Rand: «G+T»."},
@@ -159,12 +161,12 @@ const SZENEN := [
 		{"wahl": "rucksack", "n": 3, "titel": "Rucksack packen: wähle 3 Sachen"},
 		{"sag": "Gute Wahl. Wahrscheinlich. Ich hätte die Batterien genommen.", "wer": "blinki"}]},
 	{"id": "s06_moveeye", "titel": "Nachtwache", "start": [-1.2, 2.6], "schritte": [
-		{"film": [{"t": 0.0, "k": "zeit", "h": 20.0}, {"t": 0.0, "k": "wetter", "w": "clear"},
+		{"film": [{"t": 0.0, "k": "zeit", "h": 19.6}, {"t": 0.0, "k": "wetter", "w": "clear"},
 			{"t": 0.0, "k": "sag", "wer": "erzaehler", "text": "Der Regen hört auf. Es wird Nacht."}]},
 		{"ziel": "Geh hinaus und stell MoveEye beim Weg auf (Aktion)", "bis": "aktion:moveeye",
 			"ueber": [[-5.2, -2.25, 1.4]]},
 		{"film": [
-			{"t": 0.0, "k": "zeit", "h": 21.2},
+			{"t": 0.0, "k": "zeit", "h": 20.3},
 			{"t": 0.0, "k": "ir", "an": true},
 			{"t": 0.0, "k": "shot", "art": "schulter", "s": -11.0, "q": 4.5, "h": 1.6, "blick": [-8.2, 6.5, 1.2], "d": 3.0, "ziel": [-8.2, 6.5, 1.2], "groesse": 0.8},
 			{"t": 0.3, "k": "sag", "wer": "blinki", "text": "MoveEye ist wach. Infrarot an. Ich sehe: Gras. Viel Gras."},
@@ -173,10 +175,11 @@ const SZENEN := [
 	{"id": "s07_murmeltier", "titel": "Etwas am Fenster", "start": [-6.0, 2.0], "schritte": [
 		{"film": [
 			{"t": 0.0, "k": "musik", "z": "spannung"},
-			{"t": 0.0, "k": "tier_k1", "s": -5.0, "q": 2.8, "blick": [-3.8, 2.8]},
-			{"t": 0.2, "k": "shot", "art": "nah", "s": -7.2, "q": 1.4, "h": 0.9, "d": 2.4, "ziel": [-5.0, 2.8, 0.3], "groesse": 0.4},
+			{"t": 0.0, "k": "ir", "an": false},
+			{"t": 0.0, "k": "tier_k1", "s": -4.95, "q": 1.5, "blick": [-3.7, 1.7]},
+			{"t": 0.2, "k": "shot", "art": "fix", "s": -7.0, "q": 0.9, "h": 1.0, "blick": [-4.6, 1.6, 0.55], "d": 2.4, "ziel": [-4.95, 1.5, 0.3], "groesse": 0.4},
 			{"t": 0.4, "k": "sag", "wer": "blinki", "text": "Bewegung am Fenster! Grösse: klein. Gefahr: … flauschig."},
-			{"t": 3.2, "k": "maggie_warnen", "s": -5.0, "q": 2.8},
+			{"t": 3.2, "k": "maggie_warnen", "s": -5.0, "q": 1.2},
 			{"t": 3.4, "k": "sag", "wer": "figur", "text": "Ein Murmeltier. Maggie, das ist kein Einbrecher."},
 			{"t": 6.0, "k": "sag", "wer": "maggie", "text": "Wuff! (Doch.)"},
 			{"t": 8.0, "k": "tier_weg"},
