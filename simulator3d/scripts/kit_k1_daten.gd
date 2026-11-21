@@ -74,7 +74,7 @@ const WEG_BREITE := 5.0
 const WEGE := {"s01_ankunft": [[-16.0, -1.5], [-9.0, -2.0], [-4.6, -2.25]]}
 
 const CHECKPOINTS := {"start": [-16.0, -1.5], "tuer": [-5.2, -2.25], "stube": [-1.0, 1.0], "dach": [0.9, 1.6],
-		"draussen": [-6.0, 2.0], "schopf": [-0.5, 4.8]}
+		"draussen": [-6.0, 2.0], "schopf": [-0.5, 5.6]}
 
 const SPRECHER := {"erzaehler": ["", Color(0.92, 0.94, 0.97)], "figur": ["{name}", Color(1.0, 0.86, 0.55)],
 		"grossvater": ["{bezug}", Color(0.95, 0.78, 0.55)], "toni": ["Toni", Color(0.7, 0.85, 1.0)],
@@ -193,7 +193,7 @@ const SZENEN := [
 			{"t": 3.2, "k": "sag", "wer": "blinki", "text": "Die Linie führt hinunter in die Schlucht. Zum Bach. Und weiter."},
 			{"t": 6.6, "k": "karte_weg"}]},
 		{"checkpoint": "schopf"}]},
-	{"id": "s09_nacht", "titel": "Sterne", "start": [-0.5, 4.8], "schritte": [
+	{"id": "s09_nacht", "titel": "Sterne", "start": [-0.5, 5.6], "schritte": [
 		{"film": [
 			{"t": 0.0, "k": "ir", "an": false},
 			{"t": 0.0, "k": "wetter", "w": "clear"},
@@ -201,7 +201,7 @@ const SZENEN := [
 			{"t": 0.3, "k": "sag", "wer": "erzaehler", "text": "Später. Der Himmel ist klar. Unten rauscht der Bach."},
 			{"t": 4.0, "k": "sag", "wer": "figur", "text": "Was hast du hier oben versteckt, {bezug}?"},
 			{"t": 7.4, "k": "sag", "wer": "blinki", "text": "Schlafenszeit. Ich wache. MoveEye wacht. Maggie … schnarcht."}]}]},
-	{"id": "s10_morgen", "titel": "Morgen", "start": [-0.5, 4.8], "schritte": [
+	{"id": "s10_morgen", "titel": "Morgen", "start": [-0.5, 5.6], "schritte": [
 		{"film": [
 			{"t": 0.0, "k": "zeit", "h": 9.0},
 			{"t": 0.0, "k": "musik", "z": "entdeckung"},

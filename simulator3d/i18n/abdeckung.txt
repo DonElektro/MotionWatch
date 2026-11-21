@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8033 (Stellen: 11154)
-Übersetzt: en 8033, fr 8033, it 8033, rm 8033
-Unsicher markiert: 261
+Texte gesamt: 8102 (Stellen: 11246)
+Übersetzt: en 8102, fr 8102, it 8102, rm 8102
+Unsicher markiert: 329
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
-Nicht mehr im Code (noch in texte.json): 405
+Nicht mehr im Code (noch in texte.json): 404
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29210, schlüssel 22340, keine Wörter 14064, index 10276, technisch 3783, doc 2561, einheit 343, log 203, englisch 146, pfad 130, stringname 107, html 69, klasse 42, shader 6
+Übersprungen (Grund: Anzahl): kennung 29499, schlüssel 22736, keine Wörter 14387, index 10297, technisch 3828, doc 2571, einheit 344, log 204, englisch 146, pfad 130, stringname 107, html 69, klasse 42, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -38,6 +38,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   abenteuer_action.gd       83     1
   gameplus.gd               83     5
   mehr.gd                   82    13
+  kit_k1_daten.gd           82     0
   objects.gd                81     0
   objekte_neu.gd            80     0
   maggie_gefahr.gd          79     0
@@ -46,8 +47,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   diagnose.gd               76    10
   kids.gd                   74     1
   pruefstand.gd             72     8
+  geschichten.gd            69     0
   feedback.gd               69    18
-  geschichten.gd            67     0
   abenteuer_zweit.gd        66     0
   bib_berg.gd               64     0
   parcours.gd               63    10
@@ -95,20 +96,20 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamemore.gd               36     1
   maggie_vorfuehrung.gd     35     7
   fenster.gd                34     0
+  kit_abenteuer.gd          34     1
   gameziele.gd              34     0
   devtool_notizen.gd        34     1
   gametools.gd              33     2
   tour.gd                   31     1
   bergtal_wegweiser.gd      30     0
-  kit_abenteuer.gd          30     1
   b3d.gd                    29     5
   zwilling.gd               29     3
   gamemission.gd            29     0
   news.gd                   29     1
   padmap.gd                 28    19
+  kit_hud.gd                28     0
   power.gd                  28    10
   main_status.gd            27    12
-  kit_hud.gd                27     0
   devtool_spieltest.gd      27     0
   inhalte.gd                26    13
   jahreszeiten.gd           26     1
@@ -241,6 +242,8 @@ Unsicher:
   '🦆 Lockvogel: Wer will, wählt auf dem Handy «Lockvogel». Er lässt sich absichtlich sehen, lockt die Kamera weg und holt Teampunkte.': rm: Lockvogel
   "🦊 So geht's: Jeder wählt auf dem Handy einen Lockvogel und bewegt ihn vor der Kamera. Der Pfeil zeigt zur Kamera 📷. Die Dinge haben einen eigenen Knopf (Windstoss, Schwenken, Steigen, Fallen, Schwärmen).": rm: Lockvogel/Schwenken
   'Welche Lockvögel sind erlaubt?': rm: Lockvogel
+  '▶ Kapitel 1': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Kapitel 1 «Die Karte»: der Abend an der Alp Tschuggen': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
   '▶ Kapitel 2 spielen (neu)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Eigene Figur, Kamera hinter dir, Maggie dabei. Der alte Ablauf: «Weiterspielen» / «Neu beginnen».': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Der alte Ablauf (Rucksack, Tour auf der Karte)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
@@ -276,6 +279,9 @@ Unsicher:
   'Kindermodus aus': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Greifen!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Platsch! Nasse Füsse … zurück zum letzten Punkt.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Terrier können keine Leitern. – Wuff! – Gut, dann eben doch.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Maggie, such!': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Wähle': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
   'Hier ist nichts zu sehen … im normalen Licht.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Abzeichen: %s': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Hopp!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
@@ -285,6 +291,7 @@ Unsicher:
   'Foto im Rucksack (Tagebuch)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Kit läuft nicht': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'keine Szene ': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'keine Wahl offen': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
   'keine Maggie': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Springen: von Stein zu Stein.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Hochklettern': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
@@ -319,17 +326,80 @@ Unsicher:
   'Tippen oder halten: hochziehen!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Gleichgewicht: gegensteuern (A / D, Stick)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Dreh dich, bis die Linie auf der Karte zur Landschaft passt': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Packen': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
   'passt!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'weiter nach links': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'weiter nach rechts': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
-  'Wo der Bach zweimal fällt': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Die Karte': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Ende von Kapitel 1 – weiter mit Kapitel 2 «Wo der Bach zweimal fällt».': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
   'Grossvater': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Vater': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
-  'Karabiner «G+T {jahr_kurz}»': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   '{name}': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   '{bezug}': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Toni': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Lia': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Stöberer': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Auf dem Dachboden alles gefunden – auch das Mäusenest.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Blechdose': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Eine alte Blechdose unter einem losen Brett. Darin: eine halbe Karte.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Alter Skischuh': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Leder, Grösse 44. Riecht nach 1974.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Mäusenest': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Aus Zeitungspapier. Die Zeitung ist von {jahr}.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Kartenecke': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Die fehlende Ecke der Karte – Maggie hat sie im Holzstapel gefunden.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Apotheke': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Ankunft im Regen': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Die Alp Tschuggen. Regen seit Mittag.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Niederschlag: viel. Laune von Maggie: trotzdem gut.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Geh zur Hütte': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Offen. Und drinnen ist es kälter als draussen.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Kalte Stube': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Mach Feuer im Ofen (Aktion)': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Rauch: viel. Wärme: noch wenig. Klappe am Ofenrohr: zu. Ich sage ja nur.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  '… jetzt ist sie offen.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Der {bezug} hat erzählt, auf dem Dachboden liege noch etwas von ihm.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Der Dachboden': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Steig die Leiter auf den Dachboden': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Die Leiter steht hinten rechts, neben dem Ofen.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Stockdunkel hier oben.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Schalte die Stirnlampe ein (Aktion)': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Such im Licht der Stirnlampe nach der Blechdose': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Leuchte langsam herum: was im Licht glänzt, kann man nehmen.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Ganz hinten links, unter einem losen Brett.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Die halbe Karte': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Eine Karte. Halb. Jemand hat sie mittendurch gerissen.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Massstab 1:25 000. Eine Linie mit Bleistift. Und am Rand: «G+T».': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  '{jahr}. Am selben Tisch.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Wenn einer von uns nicht zurückkommt, holt der andere die Dose.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Wir kommen beide zurück, Toni. Versprochen.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Morgen geht es los. Drei Sachen passen noch in den Rucksack.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Rucksack packen: wähle 3 Sachen': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Gute Wahl. Wahrscheinlich. Ich hätte die Batterien genommen.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Nachtwache': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Der Regen hört auf. Es wird Nacht.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Geh hinaus und stell MoveEye beim Weg auf (Aktion)': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'MoveEye ist wach. Infrarot an. Ich sehe: Gras. Viel Gras.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Dann sind wir ja sicher.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Etwas am Fenster': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Bewegung am Fenster! Grösse: klein. Gefahr: … flauschig.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Ein Murmeltier. Maggie, das ist kein Einbrecher.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Wuff! (Doch.)': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Die Karte ist an der Ecke abgerissen. Vielleicht liegt das Stück noch hier irgendwo …': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Geh mit Maggie zum Holzstapel und lass sie suchen (Aktion)': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Der Holzstapel liegt neben der Hütte, auf der Seite des Ofens.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Warte, bis Maggie etwas bringt': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Brave Maggie! Die Ecke passt.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Die Linie führt hinunter in die Schlucht. Zum Bach. Und weiter.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Sterne': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Später. Der Himmel ist klar. Unten rauscht der Bach.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Was hast du hier oben versteckt, {bezug}?': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Schlafenszeit. Ich wache. MoveEye wacht. Maggie … schnarcht.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Am Morgen.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Die Linie zeigt in die Bachschlucht. Gehen wir, Maggie.': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'Wuff!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Wo der Bach zweimal fällt': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Karabiner «G+T {jahr_kurz}»': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Trockene Füsse': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Die Schlucht ohne einen Fuss im Wasser geschafft.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Brücken-Sprinter': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
@@ -368,7 +438,6 @@ Unsicher:
   'Geh durch das Gatter': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Am Wasserfall': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Wo der Bach zum ersten Mal fällt.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
-  'Wuff!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Balanciere über den Baumstamm': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Klettere über den Absatz und die Leiter hoch': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Schwing dich am Seil über den Spalt (Aktion, dann Springen)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
@@ -902,7 +971,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inventar.gd:308  '\nKI: – = die KI von MoveEye kennt es nicht (Prüfstand: darf keinen Alarm auslösen)'
   inventar.gd:332  'KI: '
   kids.gd:338  ' Du hast jetzt %d Sterne.'
-  kit_abenteuer.gd:1649  'keine Szene '
+  kit_abenteuer.gd:1832  'keine Szene '
   kitrain.gd:93  '1/3 Paket: '
   kitrain.gd:157  'Ohne GitHub-Schlüssel: die ZIP liegt hier: %s\nSo kommt sie ins Training: 1. GitHub → Releases → «ki-daten» → Edit → ZIP hineinziehen → Update release '
   kitrain.gd:158  '(beim ersten Mal «Draft a new release», Tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye holt das neue Modell danach selbst.\n'

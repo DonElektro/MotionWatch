@@ -203,6 +203,8 @@ func _arm_frei(tp: Vector3, want: Vector3) -> float:
 			return maxf(0.1, f - 1.0 / float(n))
 	# walls of buildings (Kapitel 1: inside the hut) are obstacles of main, not ground: the arm ends in front of them
 	var o: Dictionary = main.line_blocker(tp, want)
+	if o.is_empty():                                       # (line_blocker skips a wall right at its start - the figure at a wall)
+		o = main.line_blocker(want, tp)
 	if not o.is_empty() and int(o.get("id", -1)) >= 0 and main.has_method("_seg_hits"):
 		var t: float = main._seg_hits(o, Vector2(tp.x, tp.z), Vector2(want.x, want.z))
 		if t >= 0.0:

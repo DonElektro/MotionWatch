@@ -179,6 +179,27 @@ func _lauf() -> void:
 	ok = await _bis(func(): return k.phase == "ende", 20.0)
 	pruef(ok and k.hud._ende != null, "Ende von Kapitel 1")
 	pruef(k.funde.has("dose") and k.funde.has("kartenecke"), "Funde: Dose, Kartenecke")
+	# the camera at the start of every scene and in the attic: above the ground, under the ceiling, the head in view
+	k.phase = "spiel"
+	var orte := []
+	for sz in k.daten.SZENEN:
+		if (sz["start"] as Array).size() >= 2:
+			orte.append([str(sz["id"]), float(sz["start"][0]), float(sz["start"][1]), false])
+	orte.append(["dachboden", 0.9, 1.6, true])
+	for o in orte:
+		k._ebene("dach", bool(o[3]))
+		for blick in [0.0, PI * 0.5, PI, -PI * 0.5]:
+			c({"do": "setzen", "s": o[1], "q": o[2]})
+			k.figur.a.heading = k.par.yaw_achse() + blick
+			k.regie.hinter_figur()
+			await _warte(0.9)
+			var cp: Vector3 = m.view_cam.global_position
+			var kopf_p: Vector3 = k.figur.pos() + Vector3(0, 1.45, 0)
+			var unter_decke: bool = cp.y < k.decke_bei(cp, k.figur.pos().y) - 0.1
+			var ueber_boden: bool = cp.y > float(m.ground_y(cp.x, cp.z)) + 0.25
+			var frei: bool = k.regie._blocker(cp, kopf_p, 16) < 0.0 and m.line_blocker(cp, kopf_p).is_empty()
+			pruef(unter_decke and ueber_boden and frei, "Kamera %s Blick %.1f: Decke %s, Boden %s, Sicht %s" % [o[0], blick, unter_decke, ueber_boden, frei])
+	k._ebene("dach", false)
 	_ende()
 
 
