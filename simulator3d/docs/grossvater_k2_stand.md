@@ -60,6 +60,8 @@ Zweig `sim-grossvater-k2` (von origin/main 9f14de1), Worktree /tmp/claude-0/wt_g
   `gh workflow run sim_pi.yml --ref sim-grossvater-k2 -f testkanal=true -f ref=sim-grossvater-k2 -f label="Grossvater K2"`
   → Vorabversion https://github.com/DonElektro/MotionWatch/releases/tag/sim-test («Testversion (nicht signiert)»,
   prerelease, nie latest; Tag per GITHUB_TOKEN gesetzt / verschoben). Fasst versions.json / sim-X.Y.Z nie an.
+- Auch ohne MoveEye (Besitzer fand das Entwickler-Fenster nicht – dev_area aus): dieselben Knöpfe unter Mehr → Updates
+  (= Karte System → Updates), nur in «Experte» (in «Einfach» ein Hinweis), nie im Kinder-Modus.
 - Test: werkzeuge/testkanal_test.gd (lokaler Server statt GitHub: Manifest, falsche Prüfsumme / Grösse, Sicherung, Zurück).
 - Erste Runde: Lauf 44887699188, Commit a946844, Windows 54771814 B (sha256 1603b52b…), Linux 48822165 B; dieselbe
   Windows-ZIP liegt als scratchpad/grossvater/MoveEyeSim_Grossvater_Test.zip.

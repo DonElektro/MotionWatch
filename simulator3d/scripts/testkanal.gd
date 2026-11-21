@@ -1,5 +1,6 @@
 extends CanvasLayer
-## Testkanal (Besitzer 21.11.2026: «Dateien schieben ist mühsam»): im Entwickler-Bereich (Mehr → Entwickler) zwei Knöpfe
+## Testkanal (Besitzer 21.11.2026: «Dateien schieben ist mühsam»): in Mehr → Updates (Karte System → Updates, nur «Experte», nie
+## im Kinder-Modus, auch ohne MoveEye) und im Entwickler-Fenster (Mehr → Entwickler) zwei Knöpfe
 ##   «🧪 Neuste Testversion holen» – «Testversion – nicht signiert, nur zum Ausprobieren»
 ##   «⏪ Zur letzten Version zurück»
 ## Quelle: eine feste Vorabversion auf GitHub, Tag «sim-test» (nie «latest», nie in versions.json, kein Gerät und kein
@@ -377,8 +378,12 @@ func _neu_starten() -> void:
 
 
 # ---- the two buttons (devtool_extra.gd) ----------------------------------------------------------------------------------
-static func knoepfe(m, parent: Control) -> void:
+static func knoepfe(m, parent: Control, nur_experte := false) -> void:
+	"""the two buttons + the orange line: in Mehr → Entwickler and in System → Updates (Mehr → Updates; there only in
+	«Experte» - in «Einfach» one small line says where). Never in the children's mode. Checked every second (the modes change
+	while the panel stays built)."""
 	var box := VBoxContainer.new()
+	box.name = "testkanal"
 	box.add_theme_constant_override("separation", 4)
 	parent.add_child(box)
 	var row := HFlowContainer.new()
@@ -399,6 +404,26 @@ static func knoepfe(m, parent: Control) -> void:
 	l.add_theme_color_override("font_color", UI.ORG)
 	l.add_theme_font_size_override("font_size", 12)
 	box.add_child(l)
+	var hinweis := Label.new()
+	hinweis.text = T.t("🧪 Testversionen: oben «Experte» wählen.")
+	hinweis.add_theme_color_override("font_color", UI.MUT)
+	hinweis.add_theme_font_size_override("font_size", 12)
+	box.add_child(hinweis)
+	if m == null:
+		hinweis.visible = false
+		return
+	var tm := Timer.new()
+	tm.wait_time = 1.0
+	tm.autostart = true
+	box.add_child(tm)
+	var pruef := func():
+		var einfach: bool = nur_experte and bool(m.get("ui_simple"))
+		box.visible = not bool(m.get("kids_on"))
+		row.visible = not einfach
+		l.visible = not einfach
+		hinweis.visible = einfach
+	tm.timeout.connect(pruef)
+	pruef.call()
 
 
 static func starte(m, was: String) -> void:

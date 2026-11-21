@@ -554,6 +554,9 @@ func _build_ui() -> void:
 	main.update_btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	main.update_btn.pressed.connect(main.check_updates)
 	(subs.get("System/Updates", tl) as Control).add_child(main.update_btn)
+	# Testkanal (Besitzer 21.11.2026): also here, without MoveEye's developer area (Mehr → Updates opens this card);
+	# the card is only in «Experte», and testkanal.gd hides the buttons in the children's mode
+	preload("res://scripts/testkanal.gd").knoepfe(main, subs.get("System/Updates", tl) as Control, true)
 	if main.testen_measure != null:
 		main.testrun.add_info(main.testen_measure, main.UI)          # progress and result of the test run (card «Testen»)
 		main.nacht.add_info(main.testen_measure, main.UI)            # Nacht-Testlauf: progress, «abbrechen»

@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8028 (Stellen: 11148)
-Übersetzt: en 8028, fr 8028, it 8028, rm 8028
-Unsicher markiert: 258
+Texte gesamt: 8029 (Stellen: 11149)
+Übersetzt: en 8029, fr 8029, it 8029, rm 8029
+Unsicher markiert: 259
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
 Nicht mehr im Code (noch in texte.json): 405
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29155, schlüssel 22297, keine Wörter 14041, index 10260, technisch 3775, doc 2545, einheit 342, log 202, englisch 146, pfad 129, stringname 106, html 69, klasse 42, shader 6
+Übersprungen (Grund: Anzahl): kennung 29162, schlüssel 22297, keine Wörter 14041, index 10260, technisch 3775, doc 2547, einheit 342, log 202, englisch 146, pfad 129, stringname 106, html 69, klasse 42, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -73,10 +73,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   symbole.gd                44     1
   ferienpark_leben.gd       43     2
   geo.gd                    43     9
+  testkanal.gd              43     0
   protokoll.gd              42    16
   update.gd                 42     4
   sicherung.gd              42     1
-  testkanal.gd              42     0
   pir.gd                    41     0
   statisten.gd              41     7
   werkstatt_einzel.gd       41     5
@@ -475,6 +475,7 @@ Unsicher:
   'Testversion – nicht signiert, nur zum Ausprobieren': rm: Testkanal 21.11.2026 (Korrekturlesen)
   '⏪ Zur letzten Version zurück': rm: Testkanal 21.11.2026 (Korrekturlesen)
   'läuft: %s': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  '🧪 Testversionen: oben «Experte» wählen.': rm: Testkanal 21.11.2026 (Korrekturlesen)
   'Im Browser: die Seite bringt die neue Version': rm automatisch
   '!Download liess sich nicht starten.': «!» am Anfang ist ein Fehler-Merker (behalten)
   'MoveEye Sim · 3D %s': Gerätename an MoveEye (/info) – nicht umhüllen
@@ -899,7 +900,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inventar.gd:308  '\nKI: – = die KI von MoveEye kennt es nicht (Prüfstand: darf keinen Alarm auslösen)'
   inventar.gd:332  'KI: '
   kids.gd:338  ' Du hast jetzt %d Sterne.'
-  kit_abenteuer.gd:1571  'keine Szene '
+  kit_abenteuer.gd:1579  'keine Szene '
   kitrain.gd:93  '1/3 Paket: '
   kitrain.gd:157  'Ohne GitHub-Schlüssel: die ZIP liegt hier: %s\nSo kommt sie ins Training: 1. GitHub → Releases → «ki-daten» → Edit → ZIP hineinziehen → Update release '
   kitrain.gd:158  '(beim ersten Mal «Draft a new release», Tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye holt das neue Modell danach selbst.\n'
@@ -935,7 +936,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   maggie_modell.gd:166  'BackLowerLeg.'
   tier_modell.gd:123  'Modell fehlt: '
   main_menues.gd:324  'Blinde Flecken: '
-  main_menues.gd:860  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
+  main_menues.gd:863  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
   main_start.gd:395  'Autostart: '
   main_start.gd:406  'Autologon: '
   main_steuerung.gd:456  'Dein Platz: '
