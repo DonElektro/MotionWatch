@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8060 (Stellen: 11191)
+Texte gesamt: 8102 (Stellen: 11250)
 Übersetzt: en 8059, fr 8059, it 8059, rm 8059
 Unsicher markiert: 261
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
-Nicht mehr im Code (noch in texte.json): 409
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 539 Stellen
+Nicht mehr im Code (noch in texte.json): 410
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29388, schlüssel 22441, keine Wörter 14108, index 10313, technisch 3787, doc 2582, einheit 344, log 203, englisch 146, pfad 130, stringname 107, html 69, klasse 43, shader 6
+Übersprungen (Grund: Anzahl): kennung 29570, schlüssel 22507, keine Wörter 14156, index 10355, technisch 3801, doc 2596, einheit 344, log 203, englisch 146, pfad 130, stringname 107, html 69, klasse 45, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -51,11 +51,11 @@ Pro Datei (Texte / davon dynamische Stellen):
   abenteuer_zweit.gd        66     0
   bib_berg.gd               64     0
   parcours.gd               63    10
+  explore.gd                62     4
   bergtal_erleben_a.gd      62     0
   erlebniswelt.gd           62     0
   spielbereich.gd           61     0
   abenteuer_geheim.gd       60     0
-  explore.gd                60     4
   abenteuer_figuren.gd      58     5
   abenteuer_zwei_team.gd    57     0
   entdecken.gd              57     0
@@ -99,6 +99,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   devtool_notizen.gd        34     1
   gametools.gd              33     2
   tour.gd                   31     1
+  erkunden_gestalten.gd     31     3
   bergtal_wegweiser.gd      30     0
   kit_abenteuer.gd          30     1
   b3d.gd                    29     5
@@ -128,6 +129,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   klang.gd                  20     0
   patrol.gd                 20     0
   trailer.gd                19     7
+  erkunden_figur.gd         19     1
   devtool.gd                19     0
   tv.gd                     19     8
   surprise.gd               19     1
@@ -182,6 +184,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   abgleich.gd                7     4
   tunnel.gd                  7     2
   servo.gd                   7     0
+  erkunden_begleiter.gd      7     0
   tiere.gd                   7     0
   gamexp.gd                  7     0
   nachtlauf.gd               7     0
@@ -600,6 +603,9 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   abenteuer_rucksack.gd:424  ' und '
   abenteuer_rucksack.gd:480  'Fertig'
   quality.gd:113  ' und '
+  erkunden_gestalten.gd:135  'Fertig'
+  erkunden_gestalten.gd:170  'an'
+  erkunden_gestalten.gd:170  'aus'
   fenster_waechter.gd:14  'Fertig'
   fenster_waechter.gd:14  'Zu'
   tour.gd:188  'Fertig'
@@ -658,7 +664,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main_einstellungen.gd:544  'ohne'
   main_einstellungen.gd:561  'aus'
   main_einstellungen.gd:565  'aus'
-  main_einstellungen.gd:730  'Karte öffnen: '
+  main_einstellungen.gd:735  'Karte öffnen: '
   mehr.gd:258  ' · Leistung: %d Bilder/s, Lite %s'
   mehr.gd:258  'an'
   mehr.gd:258  'aus'
@@ -695,16 +701,16 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   hp_kiosk.gd:157  'aus'
   hp_kiosk.gd:197  'aus'
   licht.gd:42  'aus'
-  main.gd:772  ' (Port %d)'
-  main.gd:1676  '  %.0f Mbit/s'
-  main.gd:2336  ' (von MoveEye)'
-  main.gd:2369  'Der Simulator ist belegt: '
-  main.gd:3208  'aus'
-  main.gd:3208  'ein'
-  main.gd:3285  'Sabotage-Test: '
-  main.gd:3285  'aus'
-  main.gd:3339  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3342  '\n🚨 Bewacht und weg: '
+  main.gd:777  ' (Port %d)'
+  main.gd:1681  '  %.0f Mbit/s'
+  main.gd:2341  ' (von MoveEye)'
+  main.gd:2374  'Der Simulator ist belegt: '
+  main.gd:3213  'aus'
+  main.gd:3213  'ein'
+  main.gd:3290  'Sabotage-Test: '
+  main.gd:3290  'aus'
+  main.gd:3344  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3347  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
@@ -785,10 +791,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   device.gd:95  ' (Port belegt!)'
   device.gd:298  ' · Gerät 2'
   devtool_notizen.gd:220  'Notizen aus dem MoveEye-Simulator (Entwickler → Notizen an Claude)\n%d Notizen, davon %d offen. Version %s.\n\n'
-  explore.gd:805  ' (automatisch von oben)'
-  explore.gd:812  ' (automatisch von oben)'
-  explore.gd:812  ' · schnell'
-  explore.gd:880  'W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc'
+  erkunden_figur.gd:18  'Ohne'
+  explore.gd:834  ' (automatisch von oben)'
+  explore.gd:841  ' (automatisch von oben)'
+  explore.gd:841  ' · schnell'
+  explore.gd:922  'W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc'
   fahrzeuge.gd:90  'nie'
   jahreszeiten.gd:52  'nie'
   feedback.gd:386  ' · TESTMODUS: geht nur an '

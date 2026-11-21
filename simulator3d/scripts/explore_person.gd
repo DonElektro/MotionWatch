@@ -39,6 +39,9 @@ const KitFigur = preload("res://scripts/kit_figur.gd")
 const Regie = preload("res://scripts/kit_regie.gd")
 const Welt = preload("res://scripts/erkunden_welt.gd")
 const Touch = preload("res://scripts/erkunden_touch.gd")
+const EFigur = preload("res://scripts/erkunden_figur.gd")
+const Begleiter = preload("res://scripts/erkunden_begleiter.gd")
+const Gestalten = preload("res://scripts/erkunden_gestalten.gd")
 
 const TURN := 2.4                    # rad/s: A / D drehen in der Ich-Sicht (und im Testgang pwalk)
 const LEASH := 110.0                 # m: so weit von der Gruppe weg in der Geschichte (wie abenteuer_zweit.gd)
@@ -68,6 +71,8 @@ var wasser := ""                     # "" | waten | schwimmen
 var spiegel := 0.0                   # Welt-y des Wasserspiegels (beim Schwimmen)
 var sitz := {}                       # erkunden_welt.sitz(): wo sie sitzt
 var touch: CanvasLayer = null
+var begleiter: Node = null           # erkunden_begleiter.gd: Maggie, Blinki, «MoveEye sieht dich» (Etappe 2)
+var gestalten: CanvasLayer = null    # erkunden_gestalten.gd: die Figur gestalten (Etappe 2)
 var _scene := ""
 var _anchor = null                   # Geschichte: wo die Gruppe zuletzt war (Tal)
 var _test := {}                      # Tests: {"v": Vector2, "run": bool, "until": s}
@@ -165,6 +170,14 @@ func _ready() -> void:
 	touch = Touch.new()
 	touch.person = self
 	add_child(touch)
+	begleiter = Begleiter.new()
+	begleiter.person = self
+	begleiter.main = main
+	add_child(begleiter)
+	gestalten = Gestalten.new()
+	gestalten.person = self
+	gestalten.main = main
+	add_child(gestalten)
 
 
 func _now() -> float:
@@ -257,19 +270,7 @@ func _ensure() -> void:
 	remove()
 	var at := _spawn_at()
 	yaw = main.rig.rotation.y if story() == null else yaw
-	var a = ActorS.new()
-	a.controlled = true
-	a.look = LOOK.duplicate()
-	a.player_color = Figur.LOOK_COLS["red"]
-	a.name = "erkunden_person"
-	a.water_ok = true
-	main.add_child(a)
-	a.setup(main, "person", at, at + Vector3(-sin(yaw), 0, -cos(yaw)), 1.5)
-	actor = a
-	figur.a = a
-	figur.zustand = "film"
-	figur.setzen(at, yaw)
-	figur.geh_zu("boden")
+	_bauen(at, yaw)
 	haltung = "stehen"
 	wasser = ""
 	sitz = {}
@@ -278,7 +279,60 @@ func _ensure() -> void:
 	_eye_ok = false
 
 
+func figur_wahl() -> Dictionary:
+	"""the own figure (Etappe 2: main.ex_figur, erkunden_figur.gd) - always complete"""
+	return EFigur.norm(main.get("ex_figur"))
+
+
+func _bauen(at: Vector3, hd: float) -> void:
+	var fd := figur_wahl()
+	var a = ActorS.new()
+	a.controlled = true
+	a.look = EFigur.look(fd)
+	a.player_color = EFigur.farbe(str(fd["jacke"]))
+	a.name = "erkunden_person"
+	a.water_ok = true
+	main.add_child(a)
+	a.setup(main, EFigur.art(fd), at, at + Vector3(-sin(hd), 0, -cos(hd)), 1.5)
+	actor = a
+	figur.a = a
+	figur.zustand = "film"
+	figur.setzen(at, hd)
+	figur.geh_zu("boden")
+	_sk = null
+	if begleiter != null:
+		begleiter.mw_anwenden(true)
+
+
+func figur_setzen(d: Dictionary) -> void:
+	"""a new look (the window «Figur gestalten», control command): saved, the figure rebuilt where it stands"""
+	main.ex_figur = EFigur.norm(d)
+	main._settings_dirty = true
+	if not ok():
+		return
+	var p: Vector3 = figur.pos()
+	var hd := float(actor.heading)
+	var h_alt := haltung
+	var sw := wasser
+	var war_aktiv := active
+	if haltung == "sitzen":
+		_aufstehen("stehen")
+	actor.queue_free()
+	_bauen(p, hd)
+	if sw == "schwimmen":
+		figur.y = spiegel - SCHWIMM_TIEF
+		actor.position.y = figur.y
+		figur._p0 = actor.position
+	wasser = sw
+	haltung = h_alt if h_alt != "sitzen" else "stehen"
+	actor.frozen = not war_aktiv
+
+
 func remove() -> void:
+	if begleiter != null:
+		begleiter.hund_weg()
+	if gestalten != null and gestalten.offen:
+		gestalten.zeigen(false)
 	if ok():
 		actor.queue_free()
 	actor = null
@@ -495,6 +549,10 @@ func _process(dt: float) -> void:
 		actor.ctl_move = Vector2.ZERO
 		return
 	var ein := _eingabe(dt)
+	if gestalten != null and gestalten.offen:            # designing: the figure stands for its portrait
+		ein["mv"] = Vector2.ZERO
+		ein["sprung"] = false
+		_wunsch = {}
 	_haltung_tick(ein)
 	if haltung in ["sitzen", "liegen"]:
 		ein["mv"] = Vector2.ZERO
@@ -681,6 +739,9 @@ func _kamera(dt: float, real_dt: float) -> void:
 			regie.hinter_figur()
 		_eye_ok = false
 	var cam: Camera3D = main.view_cam
+	if gestalten != null and gestalten.offen:
+		_portrait(cam, dt)
+		return
 	match v:
 		"driver":
 			_eye_yaw = wrapf(_eye_yaw + d_or, -PI, PI)
@@ -706,6 +767,50 @@ func _kamera(dt: float, real_dt: float) -> void:
 		_:
 			var look := Vector2(-d_or, d_pi)
 			regie.tick(dt, real_dt, {"look": look, "zoom": d_di * 0.4})
+
+
+var _por := {}
+
+
+func portrait_start() -> void:
+	"""«Figur gestalten»: the figure turns to the view, the camera in front of it (a live preview in the world)"""
+	if not ok():
+		return
+	var cam: Camera3D = main.view_cam
+	if _por.is_empty():
+		var to := cam.global_position - actor.global_position
+		var hd := atan2(-to.x, -to.z) + PI                       # facing the camera
+		_por = {"hd": hd}
+		actor.heading = hd
+		actor.rotation.y = hd
+	_eye_ok = false
+
+
+func _portrait(cam: Camera3D, dt: float) -> void:
+	var hd := float(_por.get("hd", actor.heading))
+	var fw := Vector3(-sin(hd), 0, -cos(hd))                   # where the figure looks = towards the camera
+	var rt := fw.cross(Vector3.UP).normalized()
+	var s: Vector2 = get_viewport().get_visible_rect().size
+	var hoch := s.y > s.x
+	var hh: float = clampf(hoehe(), 0.5, 2.0)
+	var mitte: Vector3 = figur.pos() + Vector3(0, hh * 0.55, 0)
+	var dist := hh * (2.3 if hoch else 1.9) + 0.8
+	var want := mitte + fw * dist + Vector3(0, 0.25, 0)
+	# the figure where the window is not: left of the window on the PC, above it on the phone
+	var blick := mitte + (rt * dist * 0.32 if not hoch else Vector3(0, -dist * 0.28, 0))
+	main.view_mode = 0
+	cam.fov = 50.0
+	var tr := Transform3D(Basis.IDENTITY, want).looking_at(blick, Vector3.UP)
+	cam.global_transform = tr if not _eye_ok else cam.global_transform.interpolate_with(tr, clampf(dt * 6.0, 0.0, 1.0))
+	_eye_ok = true
+	actor.heading = hd
+	actor.rotation.y = hd
+
+
+func portrait_ende() -> void:
+	_por = {}
+	_eye_ok = false
+	regie.hinter_figur()
 
 
 func augen_punkt() -> Vector3:
@@ -809,6 +914,8 @@ func state() -> Dictionary:
 		o["hoehe"] = snappedf(hoehe(), 0.01)
 		o["sitz"] = str(sitz.get("art", "")) if haltung == "sitzen" else ""
 		o["run_top"] = snappedf(renn_tempo(main), 0.01)
+		o["figur"] = figur_wahl()
+		o["kind_figur"] = str(actor.get("variant")) == "child"
 		var vq = valley_pos()
 		if vq is Vector2:
 			o["tal"] = [snappedf(vq.x, 0.1), snappedf(vq.y, 0.1)]
@@ -816,4 +923,6 @@ func state() -> Dictionary:
 	o["schnell"] = schnell_an(main)
 	o["ptempo"] = float(main.get("ex_ptempo")) if main.get("ex_ptempo") != null else 0.0
 	o["touch"] = touch.info() if touch != null else {}
+	o["begleiter"] = begleiter.info() if begleiter != null else {}
+	o["gestalten"] = gestalten.info() if gestalten != null else {}
 	return o

@@ -39,6 +39,7 @@ var speed := 1.8                      # top speed while exploring (m/s) = main.e
 var person                            # explore_person.gd: als Person gehen (Besitzer 13.11.2026)
 var _btn_person: Button
 var _btn_speed: Button
+var _btn_figur: Button                # 21.11.2026 Etappe 2: «🎨 Figur» - the window «Figur gestalten» (erkunden_gestalten.gd)
 var _btn_sig := ""
 var turbo := false
 var _saved := {}
@@ -147,6 +148,12 @@ func _ready() -> void:
 			else:
 				speed_step(-1, false))
 	add_child(_btn_speed)
+	_btn_figur = Button.new()
+	_btn_figur.position = Vector2(442, 60)
+	_btn_figur.size = Vector2(176, 32)
+	_btn_figur.focus_mode = Control.FOCUS_NONE
+	_btn_figur.pressed.connect(func(): figur_gestalten(not person.gestalten.offen))
+	add_child(_btn_figur)
 	_paint_btns()
 
 
@@ -185,6 +192,15 @@ func set_person(v: bool) -> void:
 			else T.t("Zurück im Mover – die Person bleibt stehen, wo sie ist")
 	_paint_btns()
 	queue_redraw()
+
+
+func figur_gestalten(v: bool) -> void:
+	"""the window «Figur gestalten» (as the figure only)"""
+	if person == null or person.gestalten == null:
+		return
+	if v and not person_on():
+		set_person(true)
+	person.gestalten.zeigen(v and person_on())
 
 
 func frei_erkunden() -> bool:
@@ -241,6 +257,10 @@ func _paint_btns() -> void:
 		return
 	var show := on and not fly and person_ok()
 	var sig := "%s|%s|%s|%s|%s|%s" % [show, person_on(), main.ex_speed, T.version, main.ex_ptempo, main.ex_schnell]
+	if _btn_figur != null:
+		_btn_figur.visible = on and not fly and person_on()
+		_btn_figur.text = "🎨 " + T.t("Figur")
+		_btn_figur.tooltip_text = T.t("I · Figur gestalten: Aussehen, Ausrüstung, Begleiter, MoveEye")
 	if sig == _btn_sig:
 		return
 	_btn_sig = sig
@@ -476,7 +496,15 @@ func _input(ev: InputEvent) -> void:
 		_set_device("keyboard")
 		match ev.keycode:
 			KEY_ESCAPE:
-				set_on(false)
+				if person != null and person.gestalten != null and person.gestalten.offen:
+					person.gestalten.zeigen(false)              # Esc first closes «Figur gestalten»
+					get_viewport().set_input_as_handled()
+				else:
+					set_on(false)
+			KEY_I:
+				if person_on() and not ev.echo and not main.typing():
+					figur_gestalten(not person.gestalten.offen)
+					get_viewport().set_input_as_handled()
 			KEY_V:
 				next_view()
 				get_viewport().set_input_as_handled()
@@ -836,6 +864,7 @@ func _box_hoch(gross: bool) -> void:
 	_info.size = Vector2(570, h - 46.0)
 	_btn_person.position.y = h - 38.0
 	_btn_speed.position.y = h - 38.0
+	_btn_figur.position.y = h - 38.0
 	queue_redraw()
 
 
@@ -881,7 +910,7 @@ func _help() -> String:
 				return T.t("Grüner Stick unten rechts gehen (am Rand = rennen) · links: Haltung, springen, sitzen, hinlegen, Ansicht")
 			"mouse":
 				return T.t("Grünen Stick ziehen (am Rand = rennen) · rechte Taste = umschauen · Rad = Abstand · Strg+Klick = Person hierhin · Esc")
-		return T.t("W A S D gehen · Shift rennen · C Haltung · X sitzen · Z hinlegen · Leertaste springen / klettern · V Ansicht · U Mover · Esc")
+		return T.t("W A S D gehen · Shift rennen · C Haltung · X sitzen · Z hinlegen · Leertaste springen / klettern · V Ansicht · I Figur · U Mover · Esc")
 	var sw := " · " + T.t("Select ⏱ Person") if person_ok() else ""
 	match device:
 		"pad":

@@ -362,6 +362,18 @@ func _build_person() -> void:
 			jacket = Figur.LOOK_COLS[lc]
 		tall = float(Figur.LOOK_SIZE.get(str(look.get("size", "")), 1.0))
 		wide = float(Figur.LOOK_BUILD.get(str(look.get("build", "")), 1.0))
+	var fd: Dictionary = look.get("figur", {}) if controlled else {}
+	if not fd.is_empty():                                                  # «Frei erkunden» Etappe 2: the own figure (erkunden_figur.gd)
+		var EF = preload("res://scripts/erkunden_figur.gd")
+		jacket = EF.farbe(str(fd["jacke"]))
+		trousers = EF.farbe(str(fd["hose"]))
+		skin = EF.farbe(str(fd["haut"]))
+		hair = EF.farbe(str(fd["haarfarbe"]))
+		sex = str(fd["sex"])
+		tall = EF.hoehe_faktor(fd)
+		wide = 1.08 if str(fd["bau"]) == "kraeftig" else 0.95
+		stil = {"bau": str(fd["bau"])}
+		shorts = false
 	var nl: Dictionary = npc_look if not controlled and not preview else {}
 	if not nl.is_empty():                                                  # P10: menschen.gd chose the look
 		if nl.has("jacket"):
@@ -408,12 +420,24 @@ func _build_person() -> void:
 	if controlled and not look.is_empty():                                  # a player chose
 		hooded = look.get("hat", "") == "hood"
 		style = 3 if look.get("hat", "") == "cap" else 0
+	if not fd.is_empty():                                                  # the own figure: hair style and head
+		style = {"kurz": 0, "kurz2": 0, "lang": 1, "dutt": 2}.get(str(fd["haar"]), 0)
+		style = {"muetze": 3, "hut": 4, "cap": 5}.get(str(fd["hut"]), style)
 	if hooded:                                                             # hood up
 		add_hood(jacket)
 	else:
 		_hair_and_hat(style, hair, jacket, cold and not jog and not controlled, kid, old_)
 	body_h = 0.9 * body_root.scale.y
 	_person_extras(jacket, cloth_t)
+	if not fd.is_empty():                                                  # «Frei erkunden»: beard and equipment
+		if bool(fd["bart"]):
+			_part(head, _sph(0.072, 0.07), Vector3(0, 0.045, -0.072), hair.darkened(0.12), 30.0, Vector3.ZERO, Vector3(1.15, 1.0, 0.7))
+		if bool(fd["feldstecher"]):
+			add_binoculars()
+		if bool(fd["stoecke"]):
+			add_poles()
+		if bool(fd["stirnlampe"]):
+			add_lamp("head")
 	if bool(nl.get("umbrella", wet and not kid and not jog and variant in ["", "elderly"] and not controlled and randf() < 0.55)):   # 3D-3.95: umbrella in the rain
 		add_umbrella()
 	if styled and bool(stil["stoecke"]):                                 # menschen_stil.gd: two trekking poles
@@ -679,6 +703,11 @@ func _figure_body(jacket: Color, shirt: Color, trousers: Color, skin: Color, hai
 	p["wide"] = wide
 	p["sex"] = sex
 	p["bau"] = str(stil.get("bau", ""))
+	var fd2: Dictionary = look.get("figur", {}) if controlled else {}
+	if not fd2.is_empty():                                                # «Frei erkunden»: the chosen hair style (figur_mensch.gd)
+		p["haar"] = str(fd2["haar"])
+		p["sh"] = 1.0
+		p["hp"] = 1.0
 	p["alter"] = "kind" if kid else ("alt" if old_ else "erw")
 	p["stil"] = str(stil.get("stil", ""))
 	if FigurMensch.wanted(main):                                          # «Figuren menschlicher»: MakeHuman (figur_mensch.gd)
@@ -717,6 +746,15 @@ func add_hood(col: Color) -> void:
 	_part(head, _sph(0.13, 0.28), Vector3(0, 0.19, 0.055), col.darkened(0.1), _cloth_t - 2.0, Vector3.ZERO, Vector3(1.0, 1.0, 1.05))   # open in front: the face shows
 	_part(head, _caps(0.022, 0.22), Vector3(0, 0.235, -0.07), col.darkened(0.25), _cloth_t - 2.0, Vector3(0, 0, PI / 2), Vector3(1.0, 1.0, 0.8))   # rim over the forehead
 	_part(torso, _sph(0.11, 0.12), Vector3(0, 0.55, 0.12), col.darkened(0.1), _cloth_t)
+
+
+func add_binoculars() -> void:
+	"""«Frei erkunden» Etappe 2: binoculars on a strap in front of the chest"""
+	if torso == null:
+		return
+	for s in [-1, 1]:
+		_part(torso, _cyl(0.024, 0.026, 0.11, 8), Vector3(0.033 * s, 0.3, -0.17), Color(0.12, 0.12, 0.13), main.ambient + 3.0, Vector3(PI / 2, 0, 0))
+	_part(torso, _box(0.03, 0.02, 0.03), Vector3(0, 0.3, -0.17), Color(0.2, 0.2, 0.21), main.ambient + 3.0)
 
 
 func add_poles() -> void:

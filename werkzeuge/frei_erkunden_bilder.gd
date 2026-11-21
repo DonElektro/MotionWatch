@@ -4,12 +4,14 @@ extends SceneTree
 ##   cd simulator3d && HOME=<test-home> xvfb-run -s "-screen 0 1920x1920x24" <godot> --path . -s "$PWD/../werkzeuge/frei_erkunden_bilder.gd" \
 ##       -- --no-update --no-tour --aus <ordner/prefix_> [--handy]
 ## --handy: 390 × 844 Punkte mit Faktor 2 (780 × 1688 Pixel), die Touch-Knöpfe sichtbar; sonst PC 1280 × 720.
+## --etappe2: «Figur gestalten» (Fenster offen, Vorschau), Begleiter (Maggie, Blinki) und das Auge «MoveEye sieht dich».
 
 const Welt = preload("res://scripts/erkunden_welt.gd")
 
 var main
 var out := "/tmp/erkunden_"
 var handy := false
+var etappe2 := false
 
 
 func _initialize() -> void:
@@ -18,6 +20,7 @@ func _initialize() -> void:
 	if i >= 0:
 		out = args[i + 1]
 	handy = "--handy" in args
+	etappe2 = "--etappe2" in args
 	if handy:
 		DisplayServer.window_set_size(Vector2i(780, 1688))
 		root.content_scale_factor = 2.0
@@ -93,6 +96,10 @@ func _run() -> void:
 	var to_cam := cam.global_position - at
 	p.figur.setzen(p.figur.pos(), atan2(to_cam.x, to_cam.z) + PI * 0.5)   # side-on to MoveEye
 	await wait(0.5)
+	if etappe2:
+		await _etappe2(ex, p)
+		quit(0)
+		return
 	# crouched
 	p.set_haltung("geduckt")
 	p.test_walk(Vector2(1, 0), 1.6, false)
@@ -167,3 +174,35 @@ func _run() -> void:
 		await wait(0.7)
 		await _bild("schwimmen")
 	quit(0)
+
+
+func _etappe2(ex, p) -> void:
+	"""«Figur gestalten» open on two tabs, then the figure with Maggie and Blinki in front of MoveEye (eye open)"""
+	main.ex_figur = {"sex": "m", "alter": "erw", "haar": "kurz", "haarfarbe": "59260f", "bart": true, "jacke": "2e8c4d",
+			"hose": "4d4733", "hut": "hut", "rucksack": true, "stoecke": true, "feldstecher": true}
+	p.figur_setzen(main.ex_figur)
+	await wait(0.6)
+	ex.figur_gestalten(true)
+	await wait(1.5)
+	await _bild("gestalten_person")
+	p.gestalten.druecke("reiter:kleider")
+	await wait(1.0)
+	await _bild("gestalten_kleider")
+	p.gestalten.druecke("reiter:unterwegs")
+	main.ex_maggie = true
+	p.gestalten.druecke("reiter:unterwegs")
+	await wait(1.0)
+	await _bild("gestalten_unterwegs")
+	ex.figur_gestalten(false)
+	await wait(0.5)
+	var cam: Camera3D = main.cams[0]
+	var fw := -cam.global_transform.basis.z
+	fw.y = 0.0
+	fw = fw.normalized()
+	p.test_walk(Vector2(1, 0), 2.5, false)
+	await wait(2.6)
+	_seitlich(p, 2.4)
+	p.begleiter.sag(load("res://scripts/i18n.gd").t("Achtung, MoveEye sieht dich!"), 8.0)
+	await wait(1.2)
+	print("BEGLEITER ", p.begleiter.info())
+	await _bild("begleiter")

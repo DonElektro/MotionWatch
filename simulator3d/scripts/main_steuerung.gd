@@ -712,7 +712,7 @@ func _control(d: Dictionary) -> Dictionary:
 
 func _explore_person(d: Dictionary) -> void:
 	"""«Als Person gehen» / «Frei erkunden» (explore_person.gd): person, frei, pwalk, pplace, haltung, sitzen, liegen, sprung,
-	klettern, pview, ptempo, schnell"""
+	klettern, pview, ptempo, schnell; Etappe 2: figur {…}, gestalten, gtaste, maggie, blinki, mw_sieht, auge"""
 	var ex = main.explore
 	if d.has("frei") and bool(d["frei"]):
 		ex.frei_erkunden()
@@ -747,3 +747,15 @@ func _explore_person(d: Dictionary) -> void:
 		p.wunsch("klettern")
 	if d.has("pview") and str(d["pview"]) in ex.VIEWS:
 		ex.view = str(d["pview"])
+	for k in ["maggie", "blinki", "mw_sieht", "auge"]:   # Etappe 2: companions, MoveEye sees the figure, the eye
+		if d.has(k):
+			main.set("ex_" + k, bool(d[k]))
+			main._settings_dirty = true
+	if d.has("figur") and d["figur"] is Dictionary:      # the own figure: {sex, alter, groesse, bau, haar, haarfarbe, haut, bart, …}
+		var f0: Dictionary = p.figur_wahl()
+		f0.merge(d["figur"], true)
+		p.figur_setzen(f0)
+	if d.has("gestalten"):
+		ex.figur_gestalten(bool(d["gestalten"]))
+	if d.has("gtaste"):                                  # tests: a button of «Figur gestalten»
+		p.gestalten.druecke(str(d["gtaste"]))

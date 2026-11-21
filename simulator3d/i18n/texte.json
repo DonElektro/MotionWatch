@@ -3693,6 +3693,12 @@
   "it": "Attenzione, bordo di un dirupo! Qui si scende a picco.",
   "rm": "Attenziun, ur da precipizi! Qua vai giu a picco."
  },
+ "Achtung, MoveEye sieht dich!": {
+  "en": "Watch out, MoveEye sees you!",
+  "fr": "Attention, MoveEye te voit !",
+  "it": "Attenzione, MoveEye ti vede!",
+  "rm": "Attenziun, MoveEye ta vesa!"
+ },
  "Achtung, pass auf!": {
   "en": "Careful, watch out!",
   "fr": "Attention, fais gaffe !",
@@ -4523,6 +4529,12 @@
   "fr": "Ancienne prise d'eau avec deux vannes (chapitre 4)",
   "it": "Vecchia presa d'acqua con due paratoie (capitolo 4)",
   "rm": "Veglia tschaffa d'aua cun duas portas (chapitel 4)"
+ },
+ "Alter": {
+  "en": "Age",
+  "fr": "Âge",
+  "it": "Età",
+  "rm": "Vegliadetgna"
  },
  "Alter Holzski im Eis": {
   "en": "Old wooden ski in the ice",
@@ -5876,6 +5888,12 @@
   "it": "Missione compiuta",
   "rm": "Incumbensa fatga"
  },
+ "Auge-Symbol «MoveEye sieht dich»": {
+  "en": "Eye symbol «MoveEye sees you»",
+  "fr": "Symbole d’œil « MoveEye te voit »",
+  "it": "Simbolo occhio «MoveEye ti vede»",
+  "rm": "Simbol egl «MoveEye ta vesa»"
+ },
  "AUGEN ZU! Noch %d s": {
   "en": "EYES CLOSED! %d s left",
   "fr": "FERME LES YEUX ! Encore %d s",
@@ -6460,6 +6478,12 @@
   "fr": "Baraque 3",
   "it": "Baracca 3",
   "rm": "Baracca 3"
+ },
+ "Bart": {
+  "en": "Beard",
+  "fr": "Barbe",
+  "it": "Barba",
+  "rm": "Barba"
  },
  "Bartgeier": {
   "en": "Bearded vulture",
@@ -7848,6 +7872,12 @@
   "it": "Blinki",
   "rm": "Blinki"
  },
+ "Blinki kommt mit": {
+  "en": "Blinki comes along",
+  "fr": "Blinki t’accompagne",
+  "it": "Blinki viene con te",
+  "rm": "Blinki vegn cun tai"
+ },
  "Blinki schlägt vor (für Anfänger)": {
   "en": "Blinki suggests (for beginners)",
   "fr": "Blinki propose (pour débutants)",
@@ -8474,6 +8504,12 @@
   "fr": "Table de camping",
   "it": "Tavolo da campeggio",
   "rm": "Maisa da campadi"
+ },
+ "Cap": {
+  "en": "Cap",
+  "fr": "Casquette",
+  "it": "Berretto con visiera",
+  "rm": "Cap"
  },
  "CC0 – frei": {
   "en": "CC0 – free",
@@ -13552,6 +13588,12 @@
   "it": "sete",
   "rm": "said"
  },
+ "Dutt": {
+  "en": "Bun",
+  "fr": "Chignon",
+  "it": "Chignon",
+  "rm": "Tuppa"
+ },
  "Dämmerung": {
   "en": "Dusk",
   "fr": "Crépuscule",
@@ -15797,6 +15839,12 @@
   "it": "Primo avvio: assistente",
   "rm": "Emprim aviar: assistent"
  },
+ "Erwachsen": {
+  "en": "Adult",
+  "fr": "Adulte",
+  "it": "Adulto",
+  "rm": "Creschì"
+ },
  "Erwachsene": {
   "en": "Adults",
   "fr": "Adultes",
@@ -16929,6 +16977,12 @@
   "it": "Corporatura",
   "rm": "Statura"
  },
+ "Figur gestalten": {
+  "en": "Design figure",
+  "fr": "Créer le personnage",
+  "it": "Crea il personaggio",
+  "rm": "Crear la figura"
+ },
  "Figuren der Menschen (gilt für neue Besucher; Lite und «einfach»: immer einfache Figuren)": {
   "en": "Figures of the people (for new visitors; Lite and «simple»: always simple figures)",
   "fr": "Silhouettes des personnes (pour les nouveaux visiteurs ; Lite et «simple» : toujours simples)",
@@ -17663,6 +17717,12 @@
   "it": "Domanda per adulti",
   "rm": "Dumonda per creschids"
  },
+ "Frau": {
+  "en": "Woman",
+  "fr": "Femme",
+  "it": "Donna",
+  "rm": "Dunna"
+ },
  "Frei": {
   "en": "Free",
   "fr": "Libre",
@@ -17782,6 +17842,12 @@
   "fr": "L'air frais entre par les 3 fentes avec toit anti-pluie au-dessus de la fenêtre de service dans le conduit 27 et directement dans l'aspiration de l'Active Cooler ; l'air chaud des ailettes sort comme avant par les fentes d'aération voisines. Ne pas boucher l'entrée ; les câbles caméra passent sur le conduit, pas devant.",
   "it": "L'aria fresca entra dalle 3 fessure con tettuccio sopra la finestra di servizio nel condotto 27 e direttamente nell'aspirazione dell'Active Cooler; l'aria calda delle alette esce come prima dalle fessure di aerazione accanto. Non coprire l'ingresso; i cavi delle fotocamere stanno sul condotto, non davanti.",
   "rm": "Aria frestga entra tras las 3 fessas cun tetg da plievgia sur la fanestra da servetsch en il canal 27 e directamain en l'aspiraziun da l'Active Cooler; l'aria chauda da las alas sorta sco fin ussa tras las fessas da ventilaziun daspera. Betg cuvrir l'entrada; ils cabels da las cameras èn sin il canal, betg davant."
+ },
+ "Frisur": {
+  "en": "Hairstyle",
+  "fr": "Coiffure",
+  "it": "Acconciatura",
+  "rm": "Frisura"
  },
  "Frösche": {
   "en": "Frogs",
@@ -19080,6 +19146,12 @@
   "it": "Storie",
   "rm": "Istorgias"
  },
+ "Geschlecht": {
+  "en": "Gender",
+  "fr": "Genre",
+  "it": "Genere",
+  "rm": "Schlattaina"
+ },
  "Geschäft": {
   "en": "Shop",
   "fr": "Commerce",
@@ -19923,6 +19995,12 @@
   "it": "Salsicce alla griglia (piatto)",
   "rm": "Liongias grillidas (tagliet)"
  },
+ "Gross": {
+  "en": "Tall",
+  "fr": "Grand",
+  "it": "Alto",
+  "rm": "Grond"
+ },
  "gross": {
   "en": "large",
   "fr": "grande",
@@ -20429,6 +20507,12 @@
   "it": "Capelli",
   "rm": "Chavels"
  },
+ "Haarfarbe": {
+  "en": "Hair colour",
+  "fr": "Couleur des cheveux",
+  "it": "Colore dei capelli",
+  "rm": "Colur dals chavels"
+ },
  "Haben Sie unterwegs etwas Spezielles gesehen?": {
   "en": "Did you see anything special on the way?",
   "fr": "Avez-vous vu quelque chose de spécial en route ?",
@@ -20476,6 +20560,12 @@
   "fr": "Salut ! Je suis Nina. Nous voulons monter sur l'arête demain matin tôt - et toi ?",
   "it": "Ciao! Sono Nina. Domattina presto vogliamo salire sulla cresta - e tu?",
   "rm": "Allegra! Jau sun Nina. Nus vulain ir damaun marvegl sin la cresta - e ti?"
+ },
+ "Hallo! Ich komme mit. Duck dich (C), dann sieht MoveEye dich schlechter.": {
+  "en": "Hello! I’m coming along. Crouch (C) and MoveEye sees you less well.",
+  "fr": "Salut ! Je viens avec toi. Accroupis-toi (C) et MoveEye te verra moins bien.",
+  "it": "Ciao! Vengo con te. Accovacciati (C) e MoveEye ti vedrà peggio.",
+  "rm": "Allegra! Jau vegn cun tai. Sa sbassa (C), lura ta vesa MoveEye pli mal."
  },
  "Hallo! Na, immer noch Lust aufs Seil?": {
   "en": "Hello! Well, still keen on the rope?",
@@ -20725,6 +20815,12 @@
   "fr": "Animaux dans la chambre : hamster (la nuit dans sa roue) et perruche (le jour)",
   "it": "Animali in camera da letto: criceto (di notte nella ruota) e pappagallino (di giorno)",
   "rm": "Animals da chasa en la stanza da durmir: hamster (la notg en la roda) e papagalin (di)"
+ },
+ "Hautfarbe": {
+  "en": "Skin colour",
+  "fr": "Couleur de peau",
+  "it": "Colore della pelle",
+  "rm": "Colur da la pel"
  },
  "Head": {
   "en": "Head",
@@ -21878,6 +21974,12 @@
   "it": "Horror: notte %d (prova)",
   "rm": "Horror: notg %d (test)"
  },
+ "Hose": {
+  "en": "Trousers",
+  "fr": "Pantalon",
+  "it": "Pantaloni",
+  "rm": "Chautschas"
+ },
  "Hospiz": {
   "en": "Hospice",
   "fr": "Hospice",
@@ -22027,6 +22129,12 @@
   "fr": "faim",
   "it": "fame",
   "rm": "fom"
+ },
+ "Hut": {
+  "en": "Hat",
+  "fr": "Chapeau",
+  "it": "Cappello",
+  "rm": "Chapè"
  },
  "Hut des Grossvaters": {
   "en": "Grandfather's hat",
@@ -22262,6 +22370,12 @@
   "fr": "Le gardien balaie, le vent ramène tout",
   "it": "Il guardiano spazza, il vento riporta tutto",
   "rm": "Il chasader scua, il vent bufa enavos"
+ },
+ "I · Figur gestalten: Aussehen, Ausrüstung, Begleiter, MoveEye": {
+  "en": "I · Design figure: look, equipment, companions, MoveEye",
+  "fr": "I · Créer le personnage : apparence, équipement, compagnons, MoveEye",
+  "it": "I · Crea il personaggio: aspetto, equipaggiamento, compagni, MoveEye",
+  "rm": "I · Crear la figura: aspect, equipament, accumpagnaders, MoveEye"
  },
  "I2C 0x60 · Motor M1 = links, M2 = rechts": {
   "en": "I2C 0x60 · motor M1 = left, M2 = right",
@@ -23896,6 +24010,12 @@
   "fr": "JST XH 2.54 2 Pin Kabel",
   "it": "JST XH 2.54 2 Pin Kabel",
   "rm": "JST XH 2.54 2 Pin Kabel"
+ },
+ "Jugendlich": {
+  "en": "Teen",
+  "fr": "Ado",
+  "it": "Adolescente",
+  "rm": "Giuven"
  },
  "Juhu, ein neues Abzeichen!": {
   "en": "Yay, a new badge!",
@@ -25627,6 +25747,18 @@
   "it": "Battere le mani 4×",
   "rm": "Clatschar 4×"
  },
+ "Kleider": {
+  "en": "Clothes",
+  "fr": "Vêtements",
+  "it": "Vestiti",
+  "rm": "Vestgadira"
+ },
+ "Klein": {
+  "en": "Small",
+  "fr": "Petit",
+  "it": "Piccolo",
+  "rm": "Pitschen"
+ },
  "klein": {
   "en": "small",
   "fr": "petite",
@@ -25977,6 +26109,12 @@
   "it": "Testa al centro",
   "rm": "Chau al center"
  },
+ "Kopfbedeckung": {
+  "en": "Headwear",
+  "fr": "Couvre-chef",
+  "it": "Copricapo",
+  "rm": "Cuvrida dal chau"
+ },
  "Kopfgewicht für die Servos (Kamera, Halter)": {
   "en": "Head weight for the servos (camera, holder)",
   "fr": "Poids de la tête pour les servos (caméra, support)",
@@ -26061,6 +26199,12 @@
   "it": "Campione di strisciata",
   "rm": "Profi da sa trair"
  },
+ "Kriechend bist du ganz klein im Bild von MoveEye.": {
+  "en": "Crawling, you are tiny in MoveEye’s picture.",
+  "fr": "En rampant, tu es tout petit dans l’image de MoveEye.",
+  "it": "Strisciando sei piccolissimo nell’immagine di MoveEye.",
+  "rm": "Ruschnond es ti fitg pitschen en il maletg da MoveEye."
+ },
  "Kriecht": {
   "en": "Crawling",
   "fr": "Rampe",
@@ -26120,6 +26264,12 @@
   "fr": "Grotte de cristaux derrière la cascade (seulement en basses eaux)",
   "it": "Grotta di cristalli dietro la cascata (solo con poca acqua)",
   "rm": "Cuvel da cristals davos la cascada (mo cun pauca aua)"
+ },
+ "Kräftig": {
+  "en": "Sturdy",
+  "fr": "Costaud",
+  "it": "Robusto",
+  "rm": "Ferm"
  },
  "kräftig": {
   "en": "strong",
@@ -26241,6 +26391,12 @@
   "it": "Girare",
   "rm": "Girar"
  },
+ "Kurz": {
+  "en": "Short",
+  "fr": "Courts",
+  "it": "Corti",
+  "rm": "Curt"
+ },
  "Kurz (Tag und Nacht · etwa 2½ Min., für die automatische Optimierung)": {
   "en": "Short (day and night · about 2½ min, for automatic optimisation)",
   "fr": "Court (jour et nuit · environ 2½ min, pour l’optimisation automatique)",
@@ -26282,6 +26438,12 @@
   "fr": "Court – bien pour les enfants et pour essayer.",
   "it": "Breve – adatto ai bambini e per provare.",
   "rm": "Curt – bun per uffants e per empruvar."
+ },
+ "Kurz, wuschelig": {
+  "en": "Short, tousled",
+  "fr": "Courts, ébouriffés",
+  "it": "Corti, arruffati",
+  "rm": "Curt, sbarbuglià"
  },
  "Kurz: 1, 5, 6": {
   "en": "Short: 1, 5, 6",
@@ -26715,6 +26877,12 @@
   "fr": "Atterrissage dans le pâturage",
   "it": "Atterraggio sul pascolo",
   "rm": "Atterrar sin la pastgira"
+ },
+ "Lang": {
+  "en": "Long",
+  "fr": "Longs",
+  "it": "Lunghi",
+  "rm": "Lung"
  },
  "Lang und flach: der Strasse nach": {
   "en": "Long and flat: following the road",
@@ -28169,6 +28337,12 @@
   "it": "Maggie ringhia! Là davanti c'è qualcosa. Stai attento.",
   "rm": "Maggie rugna! Là davant è insatge. Fa attenziun."
  },
+ "Maggie kommt mit": {
+  "en": "Maggie comes along",
+  "fr": "Maggie t’accompagne",
+  "it": "Maggie viene con te",
+  "rm": "Maggie vegn cun tai"
+ },
  "Maggie kriecht durch enge Stellen und öffnet den Weg": {
   "en": "Maggie crawls through narrow spots and opens the way",
   "fr": "Maggie se faufile dans les passages étroits et ouvre le chemin",
@@ -28311,6 +28485,12 @@
   "fr": "Mai",
   "it": "Maggio",
   "rm": "Matg"
+ },
+ "Mann": {
+  "en": "Man",
+  "fr": "Homme",
+  "it": "Uomo",
+  "rm": "Um"
  },
  "Mannschaftsraum · Ruhe": {
   "en": "Crew room · Quiet",
@@ -30220,6 +30400,24 @@
   "it": "MoveEye non vede il simulatore",
   "rm": "MoveEye na vesa betg il simulatur"
  },
+ "MoveEye sieht dich": {
+  "en": "MoveEye sees you",
+  "fr": "MoveEye te voit",
+  "it": "MoveEye ti vede",
+  "rm": "MoveEye ta vesa"
+ },
+ "MoveEye sieht dich nicht (aus)": {
+  "en": "MoveEye does not see you (off)",
+  "fr": "MoveEye ne te voit pas (désactivé)",
+  "it": "MoveEye non ti vede (disattivato)",
+  "rm": "MoveEye na ta vesa betg (deactivà)"
+ },
+ "MoveEye sieht die Figur (Bild und Alarm)": {
+  "en": "MoveEye sees the figure (picture and alarm)",
+  "fr": "MoveEye voit le personnage (image et alarme)",
+  "it": "MoveEye vede il personaggio (immagine e allarme)",
+  "rm": "MoveEye vesa la figura (maletg ed alarm)"
+ },
  "MoveEye Sim": {
   "en": "MoveEye Sim",
   "fr": "MoveEye Sim",
@@ -32095,6 +32293,12 @@
   "it": "non visibile",
   "rm": "betg en il maletg"
  },
+ "Nicht im Bild von MoveEye": {
+  "en": "Not in MoveEye’s picture",
+  "fr": "Pas dans l’image de MoveEye",
+  "it": "Non nell’immagine di MoveEye",
+  "rm": "Betg en il maletg da MoveEye"
+ },
  "nicht in der Materialliste": {
   "en": "not in the parts list",
   "fr": "pas dans la liste du matériel",
@@ -32767,6 +32971,12 @@
   "it": "Solo per il proprietario – non in modalità bambini.",
   "rm": "Mo per il possessur – betg en il modus d’uffants."
  },
+ "Nur für erwachsene Männer": {
+  "en": "Only for adult men",
+  "fr": "Seulement pour les hommes adultes",
+  "it": "Solo per uomini adulti",
+  "rm": "Mo per umens creschids"
+ },
  "nur für IR_TYP = «5mm» in v52.py – Standard ist das IR-Modul 120° (irmod), nicht zusätzlich kaufen": {
   "en": "only for IR_TYP = «5mm» in v52.py – the standard is the IR module 120° (irmod), do not buy both",
   "fr": "seulement pour IR_TYP = «5mm» dans v52.py – le standard est le module IR 120° (irmod), ne pas acheter les deux",
@@ -33102,6 +33312,12 @@
   "fr": "Oh là là - la prochaine fois, on l'emporte.",
   "it": "Oh no - la prossima volta lo mettiamo nello zaino.",
   "rm": "Oh dieu - la proxima giada pachettain nus quai."
+ },
+ "Ohne": {
+  "en": "None",
+  "fr": "Sans",
+  "it": "Senza",
+  "rm": "Senza"
  },
  "ohne": {
   "en": "without",
@@ -36425,6 +36641,12 @@
   "it": "I serpenti sentono i passi nel terreno.",
   "rm": "Serps sentan ils pass en il terren."
  },
+ "Schlank": {
+  "en": "Slim",
+  "fr": "Mince",
+  "it": "Snello",
+  "rm": "Satigl"
+ },
  "Schlechtes WLAN: das Bild ruckelt und bleibt hängen": {
   "en": "Bad Wi-Fi: the picture stutters and freezes",
   "fr": "Mauvais Wi-Fi : l’image saccade et se fige",
@@ -37111,6 +37333,12 @@
   "fr": "Bassin",
   "it": "Vasca",
   "rm": "Bassin"
+ },
+ "Schwimmen! Tauchen geht nicht – zum Ufer kommst du einfach zurück.": {
+  "en": "Swimming! No diving – you simply get back to the shore.",
+  "fr": "On nage ! Pas de plongée – tu reviens simplement au bord.",
+  "it": "Si nuota! Niente immersioni – torni semplicemente a riva.",
+  "rm": "Nudar! Bittar na va betg – tar la riva turnas ti simplamain."
  },
  "Schwimmt": {
   "en": "Swimming",
@@ -39208,6 +39436,12 @@
   "it": "Al posto dell'UPS HAT (E) e delle batterie premere lo zoccolo 13 nel recinto (nervature di bloccaggio) e avvitare il Pi sulle colonnine con 4 × M2,5 × 6 – stessa posizione e altezza che con la batteria. Il Pi è alimentato dal suo alimentatore USB-C (5,1 V / 5 A) attraverso la finestra di servizio. Servo, lampade e amplificatore: alimentatore esterno alla presa GX16 (pin come per la carica: 2 +, 2 −), il fusibile 5 A resta nella linea, poi all'ingresso dello step-down. Attenzione: lo step-down vuole almeno 6 V in ingresso (6–36 V) – 5 V non bastano; usare 12 V oppure portare l'alimentatore 5 V (≥ 4 A) direttamente sulla linea 5 V (uscita step-down / V+ del PCA9685). Controllare la polarità, non c'è protezione. In questa variante % batteria, INA219 e LED di carica non mostrano nulla.",
   "rm": "Empè da l'UPS HAT (E) e dals accus smatgar la zocla 13 en il chasté (costas da serrar) e fixar il Pi cun 4 × M2,5 × 6 – medema posiziun ed autezza sco cun l'accu. Il Pi survegn current da ses agen alimentader USB-C (5,1 V / 5 A) tras la fanestra da servetsch. Servos, lampas ed amplificatur: alimentader extern a la bischla GX16 (pins sco per chargiar: 2 +, 2 −), la segirezza da 5 A resta en la lingia, lura a l'entrada dal step-down. Attenziun: il step-down basegna almain 6 V (6–36 V) – 5 V na tanschan betg; prender 12 V u metter l'alimentader da 5 V (≥ 4 A) directamain sin la lingia da 5 V (sortida step-down / V+ dal PCA9685). Controllar la polaritad, i na dat nagina protecziun. En questa variante mussan % d'accu, INA219 e LED da chargiar nagut."
  },
+ "Statur": {
+  "en": "Build",
+  "fr": "Stature",
+  "it": "Corporatura",
+  "rm": "Statura"
+ },
  "Status-LED & Tasten": {
   "en": "Status LED & buttons",
   "fr": "LED d’état & boutons",
@@ -39614,6 +39848,12 @@
   "fr": "Lampe frontale",
   "it": "Lampada frontale",
   "rm": "Cazzola da frunt"
+ },
+ "Stirnlampe (leuchtet nachts)": {
+  "en": "Headlamp (lights at night)",
+  "fr": "Lampe frontale (éclaire la nuit)",
+  "it": "Lampada frontale (illumina di notte)",
+  "rm": "Lampa da frunt (glischa la notg)"
  },
  "STOP": {
   "en": "STOP",
@@ -43628,6 +43868,12 @@
   "it": "W A S D volare · Q / E giù / su · Shift più veloce · tasto destro guardarsi intorno · rotella o + / − velocità · Esc indietro",
   "rm": "W A S D sgular · Q / E engiu / ensi · Shift pli svelt · buttun dretg da la mieur guardar enturn · roda u + / − tempo · Esc enavos"
  },
+ "W A S D gehen · Shift rennen · C Haltung · X sitzen · Z hinlegen · Leertaste springen / klettern · V Ansicht · I Figur · U Mover · Esc": {
+  "en": "W A S D walk · Shift run · C posture · X sit · Z lie down · Space jump / climb · V view · I figure · U mover · Esc",
+  "fr": "W A S D marcher · Maj courir · C posture · X s’asseoir · Z s’allonger · Espace sauter / grimper · V vue · I personnage · U mover · Échap",
+  "it": "W A S D camminare · Maiusc correre · C postura · X sedersi · Z sdraiarsi · Spazio saltare / arrampicarsi · V vista · I personaggio · U mover · Esc",
+  "rm": "W A S D ir · Shift currer · C posiziun · X seser · Z giaschair · Spazi siglir / s’enrampignar · V vista · I figura · U mover · Esc"
+ },
  "W A S D gehen · Shift rennen · C Haltung · X sitzen · Z hinlegen · Leertaste springen / klettern · V Ansicht · U Mover · Esc": {
   "en": "W A S D walk · Shift run · C posture · X sit · Z lie down · Space jump / climb · V view · U mover · Esc",
   "fr": "W A S D marcher · Maj courir · C posture · X s’asseoir · Z s’allonger · Espace sauter / grimper · V vue · U mover · Échap",
@@ -47075,6 +47321,12 @@
   "it": "Ripristino fatto.",
   "rm": "Restaurà."
  },
+ "Zurücksetzen": {
+  "en": "Reset",
+  "fr": "Réinitialiser",
+  "it": "Ripristina",
+  "rm": "Reinizialisar"
+ },
  "Zurückstellen": {
   "en": "Put back",
   "fr": "Remettre",
@@ -49415,6 +49667,12 @@
   "fr": "🎯 Niveau du gardien : cercle de tir et énergie ⚡ du gardien",
   "it": "🎯 Livello del guardiano: cerchio di tiro ed energia ⚡ del guardiano",
   "rm": "🎯 Nivel dal guardian: rintg da tutgar ed energia ⚡ dal guardian"
+ },
+ "🎲 Zufall": {
+  "en": "🎲 Random",
+  "fr": "🎲 Hasard",
+  "it": "🎲 Casuale",
+  "rm": "🎲 Casualitad"
  },
  "🎲 zufällig": {
   "en": "🎲 random",

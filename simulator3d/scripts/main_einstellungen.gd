@@ -606,6 +606,8 @@ func _load_settings() -> void:
 				v = bool(v)
 			elif typeof(old) == TYPE_FLOAT:
 				v = float(v)
+			elif typeof(old) == TYPE_DICTIONARY:              # «Frei erkunden»: the own figure (ex_figur)
+				v = v if typeof(v) == TYPE_DICTIONARY else old
 			else:
 				v = str(v)
 			main.set(k, v)
@@ -619,6 +621,9 @@ func _load_settings() -> void:
 	main.ex_speed = clampf(float(main.ex_speed), 0.5, 10.0)      # 13.11.2026: the speed of exploring (explore.gd SPEEDS)
 	main.ex_ptempo = clampf(float(main.ex_ptempo), 1.0, 20.0)    # 21.11.2026: the fast run of the figure (explore_person.gd)
 	main.ex_schnell = bool(main.ex_schnell)
+	main.ex_figur = preload("res://scripts/erkunden_figur.gd").norm(main.ex_figur)   # Etappe 2: the own figure, always complete
+	for k in ["ex_maggie", "ex_blinki", "ex_mw_sieht", "ex_auge"]:
+		main.set(k, bool(main.get(k)))
 	if d.has("hour_now") and not "--hour" in OS.get_cmdline_user_args() and not "--hour" in OS.get_cmdline_args() and not main.real_time:
 		# 3D-3.76: the time as it was set; a short break (update, restart) - the clock went on meanwhile, like outside
 		main.speed = clampf(float(d.get("speed_now", 1.0)), 1.0, 120.0)
