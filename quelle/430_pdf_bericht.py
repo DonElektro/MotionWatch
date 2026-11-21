@@ -401,7 +401,7 @@ def list_recordings(args, watch=None):
             "schedules": [{"index": i, "name": s["name"], "enabled": s["enabled"], "days": s["days"], "start": s["start"],
                            "end": s["end"], "active_now": schedule_active(s, now), "count": counts.get(str(i), 0)}
                           for i, s in enumerate(plans)],
-            "disk": {"files": len(files), "mb": int(total_bytes / 1024 ** 2), "limit_gb": CFG["record_max_gb"],
+            "disk": {"files": len(files), "mb": int(total_bytes / 1024 ** 2), "limit_gb": rec_limit_gb(),
                      "oldest": rec_oldest(files)},     # 4.18.1: how far back the kept recordings reach (the cleanup deletes the oldest)
             "ffmpeg": shutil.which("ffmpeg") is not None, "tl": tl_info}
 

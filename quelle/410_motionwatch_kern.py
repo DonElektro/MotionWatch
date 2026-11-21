@@ -106,7 +106,7 @@ class MotionWatch:
         items.sort(key=lambda g: g[0])
         total = sum(g[1] for g in items)
         removable = [g for g in items if not _read_sidecar(g[2] + ".json").get("fav")]
-        limit = CFG["record_max_gb"] * 1024 ** 3
+        limit = rec_limit_gb() * 1024 ** 3                          # 4.18.1: at most half of the drive
         removed = 0
 
         def card_full():

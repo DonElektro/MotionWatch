@@ -644,7 +644,7 @@ body.selecting .chk{display:block}
   <h1>MoveEye</h1>
   <!--NAV-->
   <span class="badge" id="b-count">–</span>
-  <span class="badge" id="b-disk">–</span>
+  <a class="badge" id="b-disk" href="/settings?setting=record_max_gb" style="text-decoration:none;color:inherit">–</a>
   <span class="badge" id="b-old" hidden role="button" tabindex="0" style="cursor:pointer"></span>
   <span class="badge red" id="b-live" hidden>● REC</span>
   <span class="hdr-ctl">
