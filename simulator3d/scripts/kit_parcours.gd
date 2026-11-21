@@ -356,7 +356,7 @@ func _ding(d: Dictionary) -> void:
 			e["node"] = n10
 		"buch":
 			var n11 := node(holder, Vector3(c.x, top + 0.03, c.y), 0.4)
-			light_part(n11, sphm(0.06, -1.0, 8), Vector3(0.45, 0.12, 0.2), glow_mat(Color(1.0, 0.75, 0.4), 3.0))   # Lia's lantern
+			light_part(n11, sphm(0.035, -1.0, 8), Vector3(0.6, 0.1, 0.35), glow_mat(Color(1.0, 0.75, 0.4), 1.6))   # Lia's lantern
 			lamp(n11, Vector3(0.45, 0.3, 0.2), Color(1.0, 0.72, 0.4), 0.9, 4.0)
 			part(n11, boxm(0.34, 0.035, 0.24), Vector3.ZERO, Color(0.36, 0.22, 0.14), 14.0)
 			part(n11, boxm(0.32, 0.012, 0.22), Vector3(0, 0.024, 0), Color(0.93, 0.9, 0.8), 14.0, Vector3(0, 0, 0.05))
