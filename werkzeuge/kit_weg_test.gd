@@ -518,7 +518,7 @@ func _welt() -> void:
 	for sz in D.SZENEN:
 		var st := start_von(sz)
 		var stp: Vector2 = st["p"]
-		for blick in [0.0, PI * 0.5, PI, -PI * 0.5]:
+		for blick in [k.par.yaw_achse(), k.par.yaw_achse() + PI * 0.5, k.par.yaw_achse() + PI, k.par.yaw_achse() - PI * 0.5]:
 			if str(st["kind"]) == "sq":
 				c({"do": "setzen", "s": stp.x, "q": stp.y})
 			else:
@@ -536,6 +536,11 @@ func _welt() -> void:
 			if cp.y < float(m.ground_y(cp.x, cp.z)) + 0.25:
 				drin = "im Boden"
 			var frei: bool = k.regie._blocker(cp, kopf_p, 16) < 0.0
+			var fw: Vector3 = -m.view_cam.global_transform.basis.z
+			for dd in [0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1, 2.4]:   # nothing right under the line of sight in front of the lens
+				var qa: Vector3 = cp + fw * dd
+				if float(m.ground_y(qa.x, qa.z)) > qa.y - 0.5:
+					drin = "Fläche direkt vor der Linse (%.1f m)" % dd
 			pruef(drin == "" and frei, "Kamera %s Blick %.1f: %s" % [str(sz["id"]), blick, "frei" if drin == "" and frei else (drin if drin != "" else "Fels zwischen Kamera und Kopf")])
 
 	# ---- 3: the way out after 90 s

@@ -190,7 +190,10 @@ func _arm_frei(tp: Vector3, want: Vector3) -> float:
 		if f * L < 0.7:
 			continue                                       # right at the figure (a step, the log it stands on) does not count
 		var q := tp.lerp(want, f)
-		var zu: bool = main.ground_y(q.x, q.z) + 0.35 > q.y
+		# clearance: 0.35 m at the ends, up to 0.9 m in the middle - a wall top just under the line filled the lower half of the
+		# picture (21.11., bridge head: the top of the waterfall wall 0.6 m under the camera's line of sight)
+		var luft := 0.35 + 0.55 * sin(clampf(f, 0.0, 1.0) * PI)
+		var zu: bool = main.ground_y(q.x, q.z) + luft > q.y
 		if not zu:
 			for k in ks:
 				if q.distance_to(k[0]) < float(k[1]) + 0.35:   # + the near plane of the camera
