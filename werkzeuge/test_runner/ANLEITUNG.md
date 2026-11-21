@@ -71,7 +71,7 @@ den Reiter **Live** bzw. die Sim-Ansicht offen und sichtbar haben (Browser, eben
 MoveEye meldet das dem HP alle 20 s (`POST /zuschauer` an Port 8761, nur eine Zeitmarke) –, oder ein Handy öffnet die
 Spiel-Seite (Port 8770). **Eine Verbindung MoveEye ↔ Simulator allein zählt nicht** (Entscheid Besitzer 03.11.2026: der Pi
 bleibt im Simulator-Betrieb dauernd verbunden), die Karte / Seite «HP rechnet» auch nicht. Dann hält der Test in wenigen
-Sekunden an, der Test-Simulator ist zu, und der Kiosk-Simulator startet (nie beide zugleich – 4 GB RAM). **15 Min. ohne
+Sekunden an, der Test-Simulator ist zu, und der Kiosk-Simulator startet (nie beide zugleich – 4 GB RAM). **3 Min. ohne
 Maus, Taste, Controller, Zuschauer und Spieler am Handy** rechnet der nächste Lauf genau dort weiter. Ein Controller
 (Gamepad) am HP zählt als Spielen – auch während gerechnet wird (Abschnitt «Controller»).
 
