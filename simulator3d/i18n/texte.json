@@ -47091,6 +47091,12 @@
   "it": "a caso nell’area",
   "rm": "casual en il champ"
  },
+ "Zufällige Figur": {
+  "en": "Random figure",
+  "fr": "Personnage au hasard",
+  "it": "Personaggio casuale",
+  "rm": "Figura casuala"
+ },
  "Zufällige Route": {
   "en": "Random route",
   "fr": "Itinéraire aléatoire",
