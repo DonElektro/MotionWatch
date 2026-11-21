@@ -477,7 +477,7 @@ func _ready() -> void:
 	in_vm = _in_vm()
 	if in_vm and not "--quality" in args:
 		quality = "simple"                      # virtual machine: no real graphics card - the light graphics by default
-	DisplayServer.window_set_title(("%s · Live" % Versionen.label(VERSION)) if Versionen.is_new(VERSION) else ("3D-Simulator Live · %s" % VERSION))
+	DisplayServer.window_set_title((("%s · Live" % Versionen.label(VERSION)) if Versionen.is_new(VERSION) else ("3D-Simulator Live · %s" % VERSION)) + preload("res://scripts/testkanal.gd").titel_zusatz())
 	var ic := load("res://icon_sim3d.png")              # the window icon (3D-3.28; 3D-3.63: the orange MoveEye symbol)
 	if ic is Texture2D:
 		DisplayServer.set_icon((ic as Texture2D).get_image())
@@ -767,7 +767,7 @@ func _ready() -> void:
 			if i + 1 < args.size() and args[i + 1].begins_with("http"):
 				phone.addr.text = args[i + 1]
 			get_tree().create_timer(2.0).timeout.connect(func(): phone.open())
-	DisplayServer.window_set_title((("%s · Live" % Versionen.label(VERSION)) if Versionen.is_new(VERSION) else ("3D-Simulator Live · %s" % VERSION)) + " (Port %d)" % port)
+	DisplayServer.window_set_title((("%s · Live" % Versionen.label(VERSION)) if Versionen.is_new(VERSION) else ("3D-Simulator Live · %s" % VERSION)) + " (Port %d)" % port + preload("res://scripts/testkanal.gd").titel_zusatz())   # Testkanal: «Testversion: <Commit>»
 	_fps0 = Engine.max_fps
 	mini_box = preload("res://scripts/mini.gd").new()      # minimize = small box, the simulator keeps drawing
 	mini_box.main = self

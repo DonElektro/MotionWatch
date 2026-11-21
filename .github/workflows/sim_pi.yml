@@ -23,6 +23,13 @@
 # über die öffentliche Adresse mit denselben Wegen wie die Geräte zurück (MoveEye: urllib mit _upd_request; HP: curl mit
 # den Schaltern von hp_update.sh; Simulator: Godot HTTPRequest wie update.gd) und löscht die Vorabversion wieder.
 # Keine Geheimnisse: nur GITHUB_TOKEN (contents: write), kein Signierschlüssel.
+# testkanal=true (Besitzer 21.11.2026): Job «testkanal» statt aller anderen - baut Windows + Linux von «ref» (z. B. ein
+# Arbeitszweig) und überschreibt die Assets der EINEN festen Vorabversion «sim-test» (Titel «Testversion (nicht signiert)»,
+# prerelease, nie latest): MoveEyeSim_Test_Windows.zip, MoveEyeSim_Test_Linux.zip, sim-test.json (Commit, Zeit, Grösse,
+# SHA-256). Der Tag «sim-test» wird hier mit GITHUB_TOKEN gesetzt / verschoben. Fasst nie versions.json, version.json,
+# sim-X.Y.Z oder «latest» an; kein Gerät und kein MoveEye sucht «sim-test». Nur der Knopf «🧪 Neuste Testversion holen»
+# im Simulator (Mehr → Entwickler, testkanal.gd) lädt es - von Hand, mit Prüfsumme, mit Sicherung und «Zurück».
+#   gh workflow run sim_pi.yml --ref sim-grossvater-k2 -f testkanal=true -f ref=sim-grossvater-k2 -f label="Grossvater K2"
 name: Sim-Pakete
 on:
   workflow_dispatch:
@@ -47,6 +54,13 @@ on:
       loeschen:
         description: "Statt bauen: Probe-Release + Tag löschen (nur simprobe-…, nur Vorabversion)"
         default: ""
+      testkanal:
+        description: "Testkanal: Windows + Linux von «ref» bauen und die feste Vorabversion «sim-test» überschreiben (nicht signiert, nie latest)"
+        type: boolean
+        default: false
+      label:
+        description: "Testkanal: kurzer Name der Testversion (im Simulator angezeigt)"
+        default: ""
 permissions:
   contents: write
 concurrency:
@@ -59,7 +73,7 @@ env:
 jobs:
   pi:
     name: Sim-Pakete · ${{ inputs.ver }}${{ inputs.probe && ' (Probe)' || '' }}
-    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen == '' && !inputs.abruf
+    if: github.repository == 'DonElektro/MotionWatch' && !inputs.testkanal && inputs.loeschen == '' && !inputs.abruf
     runs-on: ubuntu-24.04
     timeout-minutes: 70
     steps:
@@ -304,9 +318,150 @@ jobs:
           [ "$latest" != "$TAG" ] || { echo "::error::$TAG ist «latest» geworden - das ist dem Bausatz (geh-…) vorbehalten"; exit 1; }
           echo "commit $SHA · latest bleibt \`$latest\`" >> "$GITHUB_STEP_SUMMARY"
 
+  testkanal:
+    name: Testkanal sim-test · ${{ inputs.ref }}
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.testkanal
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Prüfen (sim-test ist eine Vorabversion oder fehlt)
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          sha=$(git rev-parse HEAD)
+          pre=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/sim-test" --jq .prerelease 2>/dev/null || echo "fehlt")
+          [ "$pre" = "true" ] || [ "$pre" = "fehlt" ] || { echo "::error::sim-test ist keine Vorabversion ($pre) - nichts angefasst"; exit 1; }
+          grep -q '^extends CanvasLayer' simulator3d/scripts/testkanal.gd || { echo "::error::dieser Stand hat den Testkanal-Knopf nicht (testkanal.gd)"; exit 1; }
+          [ ! -f simulator3d/inhalte/grossvater_probe.json ] || { echo "::error::Probe-Autostart im Stand - die Testversion soll der normale Simulator sein"; exit 1; }
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "ver=$(sed -n 's/^const VERSION := "\(.*\)"/\1/p' simulator3d/scripts/main.gd)" >> "$GITHUB_OUTPUT"
+          echo "Testkanal von ${{ inputs.ref }} ($sha), sim-test war: $pre"
+      - name: Godot 4.3 (Cache)
+        id: gcache
+        uses: actions/cache@v4
+        with:
+          path: ~/godot
+          key: godot-4.3-stable-linux
+      - name: Godot 4.3 herunterladen
+        if: steps.gcache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot && cd ~/godot
+          curl -fsSL -o g.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          unzip -q g.zip && rm g.zip && chmod +x Godot_v4.3-stable_linux.x86_64
+      - name: Export-Vorlagen 4.3 (Cache, derselbe Satz wie im Job «pi»)
+        id: tcache
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/godot/export_templates/4.3.stable
+          key: godot-templates-4.3-stable-linux-windows-konsole-arm64
+      - name: Export-Vorlagen herunterladen
+        if: steps.tcache.outputs.cache-hit != 'true'
+        run: |
+          d=~/.local/share/godot/export_templates/4.3.stable; mkdir -p "$d" "$RUNNER_TEMP/t" && cd "$RUNNER_TEMP/t"
+          curl -fsSL -o t.tpz https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
+          unzip -q t.tpz templates/version.txt templates/linux_release.x86_64 templates/linux_debug.x86_64 \
+            templates/windows_release_x86_64.exe templates/windows_debug_x86_64.exe \
+            templates/windows_release_x86_64_console.exe templates/windows_debug_x86_64_console.exe \
+            templates/linux_release.arm64 templates/linux_debug.arm64
+          mv templates/* "$d"/ && rm -rf "$RUNNER_TEMP/t" && ls -la "$d"
+      - name: Import (Cache simulator3d/.godot)
+        uses: actions/cache@v4
+        with:
+          path: simulator3d/.godot
+          key: godot-import-${{ hashFiles('simulator3d/**/*.png', 'simulator3d/**/*.glb', 'simulator3d/**/*.ogg', 'simulator3d/**/*.wav', 'simulator3d/**/*.mp3', 'simulator3d/**/*.jpg', 'simulator3d/**/*.gdshader', 'simulator3d/project.godot') }}
+          restore-keys: godot-import-
+      - name: Projekt importieren
+        run: timeout 900 "$GODOT_BIN" --headless --import --path simulator3d > "$RUNNER_TEMP/import.log" 2>&1 || true
+      - name: Exportieren Windows + Linux und packen
+        run: |
+          set -e
+          out="$RUNNER_TEMP/build"; mkdir -p "$out/win"
+          timeout 1500 "$GODOT_BIN" --headless --path simulator3d --export-release "Windows Desktop" "$out/win/MoveEyeSim3D.exe" 2>&1 | tail -20
+          test -s "$out/win/MoveEyeSim3D.exe" || { echo "::error::Export «Windows Desktop» fehlgeschlagen"; exit 1; }
+          bash werkzeuge/windows_paket.sh "$out/win/MoveEyeSim3D.exe" "$out/MoveEyeSim_Test_Windows.zip"
+          rm -rf "$out/win"
+          timeout 1500 "$GODOT_BIN" --headless --path simulator3d --export-release "Linux" "$out/MoveEyeSim3D.x86_64" 2>&1 | tail -20
+          test -s "$out/MoveEyeSim3D.x86_64" || { echo "::error::Export «Linux» fehlgeschlagen"; exit 1; }
+          bash werkzeuge/linux_paket.sh "$out/MoveEyeSim3D.x86_64" "$out/MoveEyeSim_Test_Linux.zip"
+          rm -f "$out/MoveEyeSim3D.x86_64"
+          unzip -Z1 "$out/MoveEyeSim_Test_Windows.zip" | grep -qx 'MoveEyeSim3D/MoveEyeSim3D.exe'
+          unzip -Z1 "$out/MoveEyeSim_Test_Linux.zip" | grep -qx 'MoveEyeSim3D/MoveEyeSim3D.x86_64'
+          ls -la "$out"
+      - name: sim-test.json schreiben, Tag sim-test setzen, Vorabversion überschreiben
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.v.outputs.sha }}
+          VER: ${{ steps.v.outputs.ver }}
+          REF: ${{ inputs.ref }}
+          LABEL: ${{ inputs.label }}
+        run: |
+          set -e
+          O="$RUNNER_TEMP/build"
+          python3 - "$O" <<'PY'
+          import hashlib, json, os, sys, time
+          o = sys.argv[1]
+          def f(plat, name):
+              p = os.path.join(o, name)
+              h = hashlib.sha256()
+              with open(p, "rb") as fh:
+                  for b in iter(lambda: fh.read(1 << 20), b""):
+                      h.update(b)
+              return {"platform": plat, "name": name, "size": os.path.getsize(p), "sha256": h.hexdigest()}
+          m = {"kanal": "sim-test", "ver": os.environ["VER"], "label": os.environ.get("LABEL") or os.environ["REF"],
+               "branch": os.environ["REF"], "commit": os.environ["SHA"], "built_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+               "lauf": "%s/%s/actions/runs/%s" % (os.environ["GITHUB_SERVER_URL"], os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_RUN_ID"]),
+               "files": [f("win", "MoveEyeSim_Test_Windows.zip"), f("linux", "MoveEyeSim_Test_Linux.zip")]}
+          json.dump(m, open(os.path.join(o, "sim-test.json"), "w"), indent=1)
+          print(json.dumps(m, indent=1))
+          PY
+          # Tag sim-test auf diesen Commit (anlegen oder verschieben) - nur dieser eine Name
+          if gh api "repos/$GITHUB_REPOSITORY/git/refs/tags/sim-test" >/dev/null 2>&1; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/sim-test" -f sha="$SHA" -F force=true >/dev/null
+          else
+            gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" -f ref=refs/tags/sim-test -f sha="$SHA" >/dev/null
+          fi
+          {
+            echo "Testversion (nicht signiert) - nur zum Ausprobieren, nur über den Knopf «🧪 Neuste Testversion holen»"
+            echo "im Simulator (Mehr → Entwickler). Kein Gerät und kein MoveEye nimmt diese Vorabversion."
+            echo
+            echo "Zweig: $REF · Commit: $SHA · Sim $VER"
+            echo "Lauf: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > notes.md
+          if gh release view sim-test -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release edit sim-test -R "$GITHUB_REPOSITORY" --title "Testversion (nicht signiert)" --notes-file notes.md --prerelease --latest=false
+          else
+            gh release create sim-test -R "$GITHUB_REPOSITORY" --verify-tag --title "Testversion (nicht signiert)" --notes-file notes.md --prerelease --latest=false
+          fi
+          # die ZIPs zuerst, das Manifest zuletzt: dazwischen passt die Prüfsumme nicht, der Simulator nimmt dann nichts
+          gh release upload sim-test -R "$GITHUB_REPOSITORY" --clobber "$O/MoveEyeSim_Test_Windows.zip" "$O/MoveEyeSim_Test_Linux.zip"
+          gh release upload sim-test -R "$GITHUB_REPOSITORY" --clobber "$O/sim-test.json"
+          # zurücklesen über die öffentliche Adresse (wie der Simulator)
+          u="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/sim-test"
+          sleep 5
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/m.json" "$u/sim-test.json"
+          cmp "$RUNNER_TEMP/m.json" "$O/sim-test.json"
+          for n in MoveEyeSim_Test_Windows.zip MoveEyeSim_Test_Linux.zip; do
+            curl -fsSL --retry 3 -o "$RUNNER_TEMP/c_$n" "$u/$n"
+            cmp "$RUNNER_TEMP/c_$n" "$O/$n"
+            rm -f "$RUNNER_TEMP/c_$n"
+          done
+          pre=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/sim-test" --jq .prerelease)
+          latest=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name 2>/dev/null || true)
+          [ "$pre" = "true" ] && [ "$latest" != "sim-test" ] || { echo "::error::sim-test ist nicht (nur) Vorabversion: prerelease=$pre latest=$latest"; exit 1; }
+          {
+            echo "### Testkanal sim-test ← $REF ($SHA)"
+            echo "$u/sim-test.json · latest bleibt \`$latest\`"
+            echo '```'; cat "$O/sim-test.json"; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
   abruf:
     name: Abruf-Probe (Ersatz-Asset über die öffentliche Adresse zurückholen)
-    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen == '' && inputs.abruf
+    if: github.repository == 'DonElektro/MotionWatch' && !inputs.testkanal && inputs.loeschen == '' && inputs.abruf
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -388,7 +543,7 @@ jobs:
 
   weg:
     name: Probe löschen · ${{ inputs.loeschen }}
-    if: github.repository == 'DonElektro/MotionWatch' && inputs.loeschen != ''
+    if: github.repository == 'DonElektro/MotionWatch' && !inputs.testkanal && inputs.loeschen != ''
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

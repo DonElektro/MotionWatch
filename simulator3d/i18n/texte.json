@@ -8547,6 +8547,13 @@
   "it": "Codice sbagliato – controllare sulla pagina di MoveEye",
   "rm": "Code fallà – guardar sin la pagina da MoveEye"
  },
+ "Commit fehlt": {
+  "en": "commit missing",
+  "fr": "commit manquant",
+  "it": "commit mancante",
+  "rm": "commit manca",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "Compatibility": {
   "en": "Compatibility",
   "fr": "Compatibility",
@@ -9533,6 +9540,13 @@
   "it": "Il file non contiene un modello 3D: ",
   "rm": "La datoteca na cuntegna nagin model 3D: "
  },
+ "Datei fehlt": {
+  "en": "file missing",
+  "fr": "fichier manquant",
+  "it": "file mancante",
+  "rm": "datoteca manca",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "Datei hier: %s": {
   "en": "File here: %s",
   "fr": "Fichier ici : %s",
@@ -9580,6 +9594,20 @@
   "fr": "Fichier trop gros",
   "it": "File troppo grande",
   "rm": "Datoteca memia gronda"
+ },
+ "Datei-Eintrag": {
+  "en": "file entry",
+  "fr": "entrée de fichier",
+  "it": "voce del file",
+  "rm": "endataziun da la datoteca",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
+ "Dateiname %s": {
+  "en": "file name %s",
+  "fr": "nom de fichier %s",
+  "it": "nome del file %s",
+  "rm": "num da datoteca %s",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
  "Daten löschen": {
   "en": "Delete data",
@@ -10025,6 +10053,13 @@
   "it": "Riparata la passerella, fissata la corda alla roccia e attraversato il cono di valanga.",
   "rm": "Reparà la punt, fixà la suga vi dal grip e passà il cun da lavina."
  },
+ "Den Testkanal gibt es nur für Windows und Linux (PC).": {
+  "en": "The test channel is only available for Windows and Linux (PC).",
+  "fr": "Le canal de test n’existe que pour Windows et Linux (PC).",
+  "it": "Il canale di test esiste solo per Windows e Linux (PC).",
+  "rm": "Il chanal da test exista mo per Windows e Linux (PC).",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "Den Weg im Nebel finden": {
   "en": "Find the way in the fog",
   "fr": "Trouver le chemin dans le brouillard",
@@ -10217,6 +10252,13 @@
   "fr": "le D36V50F5 n'a pas de régulation MPPT : sans régulateur la tension s'effondre par faible soleil",
   "it": "il D36V50F5 non ha regolazione MPPT: senza regolatore la tensione crolla con poco sole",
   "rm": "il D36V50F5 n'ha nagina regulaziun MPPT: senza regulatur croda la tensiun cun pauc sulegl"
+ },
+ "Der Download liess sich nicht starten.": {
+  "en": "The download could not be started.",
+  "fr": "Le téléchargement n’a pas pu démarrer.",
+  "it": "Impossibile avviare il download.",
+  "rm": "La telechargiada n’ha betg pudì vegnir startada.",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
  "Der Enkel des Bergführers! Schön, dass du wieder vorbeikommst.": {
   "en": "The mountain guide's grandson! Nice of you to drop by again.",
@@ -11072,6 +11114,20 @@
   "it": "La vecchia presa d'acqua",
   "rm": "La veglia tschaffa d'aua"
  },
+ "Die Anfrage liess sich nicht starten.": {
+  "en": "The request could not be started.",
+  "fr": "La requête n’a pas pu démarrer.",
+  "it": "Impossibile avviare la richiesta.",
+  "rm": "La dumonda n’ha betg pudì vegnir startada.",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
+ "Die Angaben der Testversion sind ungültig (%s).": {
+  "en": "The test version details are invalid (%s).",
+  "fr": "Les informations de la version de test ne sont pas valables (%s).",
+  "it": "I dati della versione di test non sono validi (%s).",
+  "rm": "Las indicaziuns da la versiun da test èn nunvalaivlas (%s).",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "Die angezeigten Einträge als Text in die Zwischenablage (z. B. für eine Rückmeldung)": {
   "en": "Copy the shown entries as text to the clipboard (e.g. for a feedback)",
   "fr": "Les entrées affichées en texte dans le presse-papiers (p. ex. pour un retour)",
@@ -11173,6 +11229,13 @@
   "fr": "Le fichier n’a pas la bonne taille.",
   "it": "Il file ha la dimensione sbagliata.",
   "rm": "La datoteca ha la faussa grondezza."
+ },
+ "Die Datei wurde nicht benutzt: %s.": {
+  "en": "The file was not used: %s.",
+  "fr": "Le fichier n’a pas été utilisé : %s.",
+  "it": "Il file non è stato usato: %s.",
+  "rm": "La datoteca n’è betg vegnida duvrada: %s.",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
  "die Drohne": {
   "en": "the drone",
@@ -11567,6 +11630,13 @@
   "it": "La lanterna è di nuovo nella baita. L'ultima notte. La campana ora è vicinissima.",
   "rm": "La lanterna è puspè en la chamona. L'ultima notg. La stgella è ussa fitg datiers."
  },
+ "Die laufende Datei lässt sich nicht ersetzen. Läuft der Simulator zweimal?": {
+  "en": "The running file cannot be replaced. Is the simulator running twice?",
+  "fr": "Le fichier en cours ne peut pas être remplacé. Le simulateur tourne-t-il deux fois ?",
+  "it": "Il file in esecuzione non può essere sostituito. Il simulatore è aperto due volte?",
+  "rm": "La datoteca che curra na po betg vegnir remplazzada. Curra il simulatur duas giadas?",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "Die laufende Datei lässt sich nicht ersetzen. Läuft der Simulator zweimal? Bitte alle Simulator-Fenster schliessen (auch das kleine Kästchen) und neu starten.": {
   "en": "The running file cannot be replaced. Is the simulator running twice? Please close all simulator windows (also the small box) and restart.",
   "fr": "Impossible de remplacer le fichier en cours. Le simulateur tourne-t-il deux fois ? Merci de fermer toutes les fenêtres du simulateur (aussi la petite case) et de redémarrer.",
@@ -11870,6 +11940,13 @@
   "it": "La casara",
   "rm": "La signuna"
  },
+ "Die Sicherung der jetzigen Version liess sich nicht anlegen.": {
+  "en": "The backup of the current version could not be created.",
+  "fr": "La sauvegarde de la version actuelle n’a pas pu être créée.",
+  "it": "Impossibile creare la copia di sicurezza della versione attuale.",
+  "rm": "La copia da segirezza da la versiun actuala n’ha betg pudì vegnir fatga.",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "Die Sicherung ist beschädigt ({f}) – nichts geändert.": {
   "en": "The backup is damaged ({f}) – nothing changed.",
   "fr": "La sauvegarde est endommagée ({f}) – rien n’a été modifié.",
@@ -11887,6 +11964,13 @@
   "fr": "Impossible d’écrire la sauvegarde ici : {p}",
   "it": "Impossibile scrivere il backup qui: {p}",
   "rm": "La copia da segirezza na po betg vegnir scritta qua: {p}"
+ },
+ "Die Sicherung lässt sich nicht zurücklegen.": {
+  "en": "The backup cannot be put back.",
+  "fr": "La sauvegarde ne peut pas être remise en place.",
+  "it": "Impossibile rimettere la copia di sicurezza.",
+  "rm": "La copia da segirezza na po betg vegnir restituida.",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
  "Die Sockendiebin": {
   "en": "The sock thief",
@@ -12362,6 +12446,13 @@
   "it": "Questo backup proviene da una versione più recente ({v}). Viene comunque caricato – questo simulatore forse non conosce le novità.",
   "rm": "Questa copia da segirezza deriva d’ina versiun pli nova ({v}). Ella vegn tuttina chargiada – quest simulatur na enconuscha forsa betg las novitads."
  },
+ "Diese Testversion läuft schon (%s).": {
+  "en": "This test version is already running (%s).",
+  "fr": "Cette version de test tourne déjà (%s).",
+  "it": "Questa versione di test è già in uso (%s).",
+  "rm": "Questa versiun da test curra gia (%s).",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "Dieselbe Runde zweimal: zuerst bewacht ein Mensch (Wächter mit Auslöser – oder der Bot-Wächter), dann die echte Erkennung von MoveEye – mit genau denselben Wegen der Schleicher und denselben Kamerabildern. Am Schluss: Wer hat mehr erwischt? Was der Mensch sah und MoveEye verpasste, wird ein Lernbild und ein Prüfstand-Weg.": {
   "en": "The same round twice: first a human guards (guard with shutter – or the bot guard), then the real detection of MoveEye – with exactly the same paths of the sneakers and the same camera pictures. At the end: who caught more? What the human saw and MoveEye missed becomes a learning picture and a test bench path.",
   "fr": "La même manche deux fois : d’abord un humain surveille (gardien avec déclencheur – ou le gardien-bot), puis la vraie détection de MoveEye – avec exactement les mêmes chemins des furtifs et les mêmes images de caméra. À la fin : qui a attrapé le plus ? Ce que l’humain a vu et que MoveEye a manqué devient une image d’apprentissage et un chemin du banc d’essai.",
@@ -12530,6 +12621,13 @@
   "fr": "Là : des phares, le klaxon à trois tons du premier car postal. Ouf, réussi.",
   "it": "Lì: fari, il clacson a tre toni del primo autopostale. Ce l'hai fatta.",
   "rm": "Là: cazzolas, il corn da trais tuns da l'emprim auto da posta. Fatg."
+ },
+ "Download abgebrochen (%s / %s).": {
+  "en": "Download aborted (%s / %s).",
+  "fr": "Téléchargement interrompu (%s / %s).",
+  "it": "Download interrotto (%s / %s).",
+  "rm": "Telechargiada interrutta (%s / %s).",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
  "Download abgebrochen (Fehler %s / %s).": {
   "en": "Download cancelled (error %s / %s).",
@@ -15722,6 +15820,13 @@
   "it": "Resta asciutto. Ma stanotte farà davvero freddo - il sacco a pelo deve essere abbastanza caldo.",
   "rm": "I resta sitg. Ma questa notg vegn ei propi fraid - il sac da durmir sto esser chaud avunda."
  },
+ "Es gibt keine Sicherung einer früheren Version.": {
+  "en": "There is no backup of an earlier version.",
+  "fr": "Il n’y a pas de sauvegarde d’une version précédente.",
+  "it": "Non c’è una copia di sicurezza di una versione precedente.",
+  "rm": "I na dat nagina copia da segirezza d’ina versiun anteriura.",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "Es ist %s Uhr. Sonnenuntergang: %s.": {
   "en": "It is %s. Sunset: %s.",
   "fr": "Il est %s. Coucher du soleil : %s.",
@@ -16129,6 +16234,20 @@
   "fr": "FAUX : ",
   "it": "SBAGLIATO: ",
   "rm": "FALLÀ: "
+ },
+ "falsche Grösse": {
+  "en": "wrong size",
+  "fr": "taille incorrecte",
+  "it": "dimensione errata",
+  "rm": "grondezza sbagliada",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
+ "falscher Kanal": {
+  "en": "wrong channel",
+  "fr": "mauvais canal",
+  "it": "canale errato",
+  "rm": "chanal sbaglià",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
  "Falscher Ort": {
   "en": "Wrong place",
@@ -17871,6 +17990,13 @@
   "fr": "Pour la Thermal-90 : télécharger «Thermal_Camera_Hat.zip» du wiki Waveshare, installer dans le dossier pysenxor-master.",
   "it": "Per la Thermal-90: scaricare «Thermal_Camera_Hat.zip» dal wiki Waveshare, installare nella cartella pysenxor-master.",
   "rm": "Per la Thermal-90: chargiar «Thermal_Camera_Hat.zip» dal wiki Waveshare, installar en l'ordinatur pysenxor-master."
+ },
+ "Für dieses System gibt es keine Testversion.": {
+  "en": "There is no test version for this system.",
+  "fr": "Il n’y a pas de version de test pour ce système.",
+  "it": "Non c’è una versione di test per questo sistema.",
+  "rm": "Per quest sistem na dat i nagina versiun da test.",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
  "Für Kinder und kurze Runden: immer derselbe Parcours mit 3 Toren. Durch die Tore, dann ins Ziel – je schneller, desto mehr Punkte.": {
   "en": "For children and short rounds: always the same course with 3 gates. Through the gates, then to the goal – the faster, the more points.",
@@ -19856,6 +19982,13 @@
   "it": "Altezza",
   "rm": "Grondezza"
  },
+ "Grösse %s": {
+  "en": "size %s",
+  "fr": "taille %s",
+  "it": "dimensione %s",
+  "rm": "grondezza %s",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "Grösse (Bounding Box): %s mm": {
   "en": "Size (bounding box): %s mm",
   "fr": "Taille (boîte englobante) : %s mm",
@@ -21499,6 +21632,13 @@
   "it": "Prendi il portamonete dal tavolo da campeggio vicino alla luce verde e riportalo alla tua partenza.",
   "rm": "Prenda la bursa da la maisa da campadi tar la glisch verda e la porta enavos a tes start."
  },
+ "Hole die Angaben der Testversion …": {
+  "en": "Fetching the test version details …",
+  "fr": "Récupération des informations de la version de test …",
+  "it": "Recupero i dati della versione di test …",
+  "rm": "Jau ritsch las indicaziuns da la versiun da test …",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "Holzbeige": {
   "en": "Woodpile",
   "fr": "Tas de bois",
@@ -23087,6 +23227,20 @@
   "fr": "Installation des paquets pour MoveEye (seulement la première fois, quelques minutes)",
   "it": "Installo i pacchetti per MoveEye (solo la prima volta, qualche minuto)",
   "rm": "Installar ils pachets per MoveEye (mo l’emprima giada, in pèr minutas)"
+ },
+ "Installieren": {
+  "en": "Install",
+  "fr": "Installer",
+  "it": "Installa",
+  "rm": "Installar",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
+ "Installieren ging nicht: %s": {
+  "en": "Installation failed: %s",
+  "fr": "L’installation a échoué : %s",
+  "it": "Installazione non riuscita: %s",
+  "rm": "L’installaziun n’è betg reussida: %s",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
  "Internet prüfen; später nochmals «Jetzt nach Updates suchen».": {
   "en": "Check the internet; later again «Search for updates now».",
@@ -24692,6 +24846,13 @@
   "it": "nessun cane",
   "rm": "nagin chaun"
  },
+ "kein JSON": {
+  "en": "not JSON",
+  "fr": "pas du JSON",
+  "it": "non è JSON",
+  "rm": "nagin JSON",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "kein Netz": {
   "en": "no network",
   "fr": "pas de réseau",
@@ -24818,6 +24979,13 @@
   "it": "nessun file scelto",
   "rm": "nagina datoteca tschernida"
  },
+ "keine Dateien": {
+  "en": "no files",
+  "fr": "aucun fichier",
+  "it": "nessun file",
+  "rm": "naginas datotecas",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "keine Draco-Daten": {
   "en": "no Draco data",
   "fr": "pas de données Draco",
@@ -24927,6 +25095,13 @@
   "it": "nessuna scena ",
   "rm": "nagina scena ",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Keine Testversion gefunden (GitHub antwortet %s).": {
+  "en": "No test version found (GitHub answers %s).",
+  "fr": "Aucune version de test trouvée (GitHub répond %s).",
+  "it": "Nessuna versione di test trovata (GitHub risponde %s).",
+  "rm": "Nagina versiun da test chattada (GitHub respunda %s).",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
  "Keine Tipps, keine Pfeile - nur Karte, Kompass und Sterne.": {
   "en": "No tips, no arrows - only map, compass and stars.",
@@ -26164,6 +26339,13 @@
   "fr": "Chargement du paquet de contenus photo …",
   "it": "Carico il pacchetto dei contenuti foto …",
   "rm": "Chargia il pachet dals cuntegns da fotos …"
+ },
+ "Lade die Testversion …": {
+  "en": "Downloading the test version …",
+  "fr": "Téléchargement de la version de test …",
+  "it": "Scarico la versione di test …",
+  "rm": "Jau chargel la versiun da test …",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
  "Lade Gelände, Luftbild und Gebäude": {
   "en": "Loading terrain, aerial picture and buildings",
@@ -27487,6 +27669,13 @@
   "fr": "En marche depuis %s.",
   "it": "Attivo da %s.",
   "rm": "Funcziuna dapi %s."
+ },
+ "läuft: %s": {
+  "en": "running: %s",
+  "fr": "en cours : %s",
+  "it": "in uso: %s",
+  "rm": "curra: %s",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
  "Läuft: %s (Lauf %d von %d) · %s · noch etwa %d Min.": {
   "en": "Running: %s (run %d of %d) · %s · about %d min left",
@@ -33792,6 +33981,13 @@
   "it": "I piatti A, B e C v5.3 sostituiscono i piatti v5.2 (parte inferiore con inserti, sportello, presa d'aria e occhielli; coperchio con occhiello; supporto e sportello sul piatto C). v5.3 è lo standard (approvata da Elektro il 02.11.2026); v5.2 e v5.1 restano selezionabili. Prima di stampare controllare l'elenco «da misurare».",
   "rm": "Las plattas A, B e C v5.3 remplazzan las plattas v5.2 (part sut cun inserts, portina, entrada d'aria ed ögls; viertgel cun ögl; tegnider e portina sin la platta C). v5.3 è standard (approvà dad Elektro ils 02.11.2026); v5.2 e v5.1 restan tschernibels. Avant la stampa controllar la glista «mesirar»."
  },
+ "Plattform %s": {
+  "en": "platform %s",
+  "fr": "plateforme %s",
+  "it": "piattaforma %s",
+  "rm": "plattafurma %s",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "Plattform mit Geländer, Antenne und Wegweiser – senkrecht unter dir die helle Kalkwand und die Obri Stafelhütte.": {
   "en": "A platform with railing, antenna and signpost – straight below you the light limestone face and the Obri Stafel hut.",
   "fr": "Plateforme avec garde-corps, antenne et panneau – sous tes pieds, la paroi calcaire claire et la cabane Obri Stafel.",
@@ -34129,6 +34325,13 @@
   "it": "Controllo il file …",
   "rm": "Controllar la datoteca …"
  },
+ "Prüfe Grösse und Prüfsumme …": {
+  "en": "Checking size and checksum …",
+  "fr": "Vérification de la taille et de la somme de contrôle …",
+  "it": "Controllo dimensione e checksum …",
+  "rm": "Jau controllesch grondezza e summa da controlla …",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "Prüfe Python …": {
   "en": "Checking Python …",
   "fr": "Vérification de Python …",
@@ -34194,6 +34397,20 @@
   "fr": "Banc d’essai : chemin furtif du jeu (%s)",
   "it": "Banco di prova: percorso furtivo dal gioco (%s)",
   "rm": "Banc da prova: via da sa stular dal gieu (%s)"
+ },
+ "Prüfsumme %s": {
+  "en": "checksum %s",
+  "fr": "somme de contrôle %s",
+  "it": "checksum %s",
+  "rm": "summa da controlla %s",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
+ "Prüfsumme stimmt nicht": {
+  "en": "checksum does not match",
+  "fr": "la somme de contrôle ne correspond pas",
+  "it": "il checksum non corrisponde",
+  "rm": "la summa da controlla na correspunda betg",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
  "PS5-Controller per Bluetooth koppeln, Liste mit Akku, Trennen, Vergessen": {
   "en": "Pair a PS5 controller via Bluetooth, list with battery, disconnect, forget",
@@ -40445,6 +40662,13 @@
   "it": "Aiuto al test: %s %s",
   "rm": "Agid da test: %s %s"
  },
+ "Testkanal aktiv – normale Updates erst nach «Zur letzten Version zurück».": {
+  "en": "Test channel active – normal updates only after «Back to the last version».",
+  "fr": "Canal de test actif – mises à jour normales seulement après «Revenir à la dernière version».",
+  "it": "Canale di test attivo – aggiornamenti normali solo dopo «Torna all’ultima versione».",
+  "rm": "Chanal da test activ – actualisaziuns normalas pir suenter «Enavos a la davosa versiun».",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "Testlauf": {
   "en": "Test run",
   "fr": "Test",
@@ -40540,6 +40764,27 @@
   "fr": "Test : phase %d sur %d – %s · encore environ %d s",
   "it": "Test: fase %d di %d – %s · ancora circa %d s",
   "rm": "Test: fasa %d da %d – %s · anc circa %d s"
+ },
+ "Testversion %s\nZweig: %s · Commit: %s\nGebaut: %s\nGrösse: %.1f MB\n\nNicht signiert – nur zum Ausprobieren. Die jetzige Version bleibt als Sicherung («⏪ Zur letzten Version zurück»).": {
+  "en": "Test version %s\nBranch: %s · Commit: %s\nBuilt: %s\nSize: %.1f MB\n\nNot signed – just for trying out. The current version is kept as a backup («⏪ Back to the last version»).",
+  "fr": "Version de test %s\nBranche : %s · Commit : %s\nCompilée : %s\nTaille : %.1f Mo\n\nNon signée – seulement pour essayer. La version actuelle reste en sauvegarde («⏪ Revenir à la dernière version»).",
+  "it": "Versione di test %s\nRamo: %s · Commit: %s\nCompilata: %s\nDimensione: %.1f MB\n\nNon firmata – solo per provare. La versione attuale resta come copia di sicurezza («⏪ Torna all’ultima versione»).",
+  "rm": "Versiun da test %s\nRom: %s · Commit: %s\nConstruida: %s\nGrondezza: %.1f MB\n\nBetg signada – mo per empruvar. La versiun actuala resta sco copia da segirezza («⏪ Enavos a la davosa versiun»).",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
+ "Testversion – nicht signiert, nur zum Ausprobieren": {
+  "en": "Test version – not signed, just for trying out",
+  "fr": "Version de test – non signée, seulement pour essayer",
+  "it": "Versione di test – non firmata, solo per provare",
+  "rm": "Versiun da test – betg signada, mo per empruvar",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
+ "Testversion: %s": {
+  "en": "Test version: %s",
+  "fr": "Version de test : %s",
+  "it": "Versione di test: %s",
+  "rm": "Versiun da test: %s",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
  "THERMAL": {
   "en": "THERMAL",
@@ -46584,6 +46829,13 @@
   "it": "Torna alla scelta",
   "rm": "Enavos a la tscherna"
  },
+ "Zurück zur Version vor der Testversion? Der Simulator startet danach neu.": {
+  "en": "Go back to the version before the test version? The simulator restarts afterwards.",
+  "fr": "Revenir à la version d’avant la version de test ? Le simulateur redémarre ensuite.",
+  "it": "Tornare alla versione precedente alla versione di test? Poi il simulatore si riavvia.",
+  "rm": "Turnar a la versiun avant la versiun da test? Il simulatur reschaina lura.",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
  "Zurückgefallen": {
   "en": "Fallen back",
   "fr": "Retombée",
@@ -47673,6 +47925,13 @@
   "fr": "− Bot",
   "it": "− Bot",
   "rm": "− Bot"
+ },
+ "⏪ Zur letzten Version zurück": {
+  "en": "⏪ Back to the last version",
+  "fr": "⏪ Revenir à la dernière version",
+  "it": "⏪ Torna all’ultima versione",
+  "rm": "⏪ Enavos a la davosa versiun",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
  "⏭ Probe übersprungen – gleich gilt's": {
   "en": "⏭ Practice skipped – it counts in a moment",
@@ -50455,6 +50714,20 @@
   "fr": "🧣 Écharpe",
   "it": "🧣 Sciarpa",
   "rm": "🧣 Schal"
+ },
+ "🧪 Neuste Testversion holen": {
+  "en": "🧪 Get the newest test version",
+  "fr": "🧪 Obtenir la dernière version de test",
+  "it": "🧪 Scarica l’ultima versione di test",
+  "rm": "🧪 Prender la versiun da test la pli nova",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
+ },
+ "🧪 Testversion – nicht signiert, nur zum Ausprobieren": {
+  "en": "🧪 Test version – not signed, just for trying out",
+  "fr": "🧪 Version de test – non signée, seulement pour essayer",
+  "it": "🧪 Versione di test – non firmata, solo per provare",
+  "rm": "🧪 Versiun da test – betg signada, mo per empruvar",
+  "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
  "🧪 Werte für MoveEye": {
   "en": "🧪 Values for MoveEye",

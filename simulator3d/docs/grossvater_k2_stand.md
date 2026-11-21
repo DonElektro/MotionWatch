@@ -50,6 +50,18 @@ Zweig `sim-grossvater-k2` (von origin/main 9f14de1), Worktree /tmp/claude-0/wt_g
 - Führung (Besitzer blieb in Szene 3 hängen): Zielmarke an jedem Ziel, Kompass beim Maggie-Steuern Loch → Riegel,
   Hinweise nach 10/25 s, Loch mit dunklem Rand + Licht, Maggie läuft drüben selbst zum Riegel.
 
+## Testkanal «sim-test» (Besitzer 21.11.)
+- Knopf im Simulator: Mehr → Entwickler (nur Besitzer, Entwickler-Bereich an), ganz oben über den Reitern:
+  «🧪 Neuste Testversion holen» und «⏪ Zur letzten Version zurück» (scripts/testkanal.gd). Holt sim-test.json, zeigt
+  Commit / Datum / Grösse, fragt, lädt, prüft Grösse + SHA-256, sichert die laufende Datei als «<exe>.vorher» (eine
+  Sicherung: die erste Nicht-Testversion bleibt), tauscht wie update.gd (_install) und startet neu. Titelleiste dann
+  «Testversion: <commit>», das normale Update bietet nichts an (Hinweis «Testkanal aktiv»). Nie automatisch.
+- Bauen: Workflow «Sim-Pakete» (sim_pi.yml) mit testkanal=true, Job «testkanal»:
+  `gh workflow run sim_pi.yml --ref sim-grossvater-k2 -f testkanal=true -f ref=sim-grossvater-k2 -f label="Grossvater K2"`
+  → Vorabversion https://github.com/DonElektro/MotionWatch/releases/tag/sim-test («Testversion (nicht signiert)»,
+  prerelease, nie latest; Tag per GITHUB_TOKEN gesetzt / verschoben). Fasst versions.json / sim-X.Y.Z nie an.
+- Test: werkzeuge/testkanal_test.gd (lokaler Server statt GitHub: Manifest, falsche Prüfsumme / Grösse, Sicherung, Zurück).
+
 ## Als Nächstes
 1. Separat (eigener Commit, NICHT mit dem Kapitel mischen): Bergtal `_carve_stream` vertieft bei jedem Schritt –
    Korrektur auf ~19 m, alle Nutzer des Bergtals prüfen und melden, was sich verschiebt.

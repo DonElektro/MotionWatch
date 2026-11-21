@@ -10,6 +10,7 @@ extends Node
 ##                        früher die Gruppe «Entwickler» im Bedienfeld; erster Reiter)
 ##   * Spieltest:         devtool_spieltest.gd (der Assistent spieltest.gd: ein / aus, Push-Zeile, Vorschläge, ZIP für Claude)
 ##   * Vorführung:        devtool_vorfuehrung.gd (Vorführmodus «Maggie und der Bergkristall», maggie_vorfuehrung.gd)
+##   * Testkanal:         testkanal.gd (die zwei Knöpfe ganz oben: unsignierte Testversion holen / zurück)
 ## Hier: die Knopfzeile (ein Teil offen), das Foto ohne Bedienelemente (eigene kleine Kamera wie entdecken.gd, cull_mask 1 =
 ## wie die Kameras von MoveEye: keine Helfer-Marken) und GET /dev/kontakt/… · /dev/notizen/… · /dev/notizen.zip.
 ## Lite: dev._lite() (Quality.lite()) - die Fotos warten länger, bis die Szene steht (Kontaktbogen langsamer, sonst gleich).
@@ -51,6 +52,7 @@ func _ready() -> void:
 # the row «Notizen · Kontaktbogen · Kapitel» in the window (one part open at a time, below the map)
 # =============================================================================================================================
 func build(v: VBoxContainer) -> void:
+	preload("res://scripts/testkanal.gd").knoepfe(main, v)   # Testkanal (21.11.2026): «🧪 Neuste Testversion holen» · «⏪ Zurück»
 	var row := HFlowContainer.new()                     # Paket «Andocken»: bricht um, wenn das Fenster kleiner ist
 	row.add_theme_constant_override("separation", 6)
 	row.add_theme_constant_override("h_separation", 6)

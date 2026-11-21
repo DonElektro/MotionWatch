@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7985 (Stellen: 11099)
-Übersetzt: en 7985, fr 7985, it 7985, rm 7985
-Unsicher markiert: 215
+Texte gesamt: 8024 (Stellen: 11144)
+Übersetzt: en 8024, fr 8024, it 8024, rm 8024
+Unsicher markiert: 254
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
 Nicht mehr im Code (noch in texte.json): 405
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29071, schlüssel 22248, keine Wörter 13992, index 10240, technisch 3770, doc 2536, einheit 342, log 201, englisch 145, pfad 129, stringname 106, html 69, klasse 42, shader 6
+Übersprungen (Grund: Anzahl): kennung 29129, schlüssel 22276, keine Wörter 14034, index 10253, technisch 3775, doc 2542, einheit 342, log 201, englisch 146, pfad 129, stringname 106, html 69, klasse 42, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -76,6 +76,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   protokoll.gd              42    16
   update.gd                 42     4
   sicherung.gd              42     1
+  testkanal.gd              42     0
   pir.gd                    41     0
   statisten.gd              41     7
   werkstatt_einzel.gd       41     5
@@ -431,6 +432,45 @@ Unsicher:
   'Schnittstelle: OK (%d Antwort-Felder, %d Info-Felder, %d Aktionen wie in schnittstelle.json)': Log-Zeile, die Tests suchen («Schnittstelle: OK») – nicht umhüllen
   'Schnittstelle: ': Log-Zeile – nicht umhüllen
   '-Servo blockiert': dynamisch angehängt («Schwenk»+…) – Phase 2: ganze Vorlage
+  'kein JSON': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'falscher Kanal': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Commit fehlt': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'keine Dateien': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Datei-Eintrag': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Dateiname %s': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Prüfsumme %s': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Grösse %s': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Plattform %s': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Datei fehlt': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'falsche Grösse': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Prüfsumme stimmt nicht': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Testversion: %s': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Testkanal aktiv – normale Updates erst nach «Zur letzten Version zurück».': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  '🧪 Testversion – nicht signiert, nur zum Ausprobieren': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Den Testkanal gibt es nur für Windows und Linux (PC).': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Hole die Angaben der Testversion …': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Die Anfrage liess sich nicht starten.': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Keine Testversion gefunden (GitHub antwortet %s).': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Die Angaben der Testversion sind ungültig (%s).': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Für dieses System gibt es keine Testversion.': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Diese Testversion läuft schon (%s).': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Testversion %s\nZweig: %s · Commit: %s\nGebaut: %s\nGrösse: %.1f MB\n\nNicht signiert – nur zum Ausprobieren. Die jetzige Version bleibt als Sicherung («⏪ Zur letzten Version zurück»).': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Installieren': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Der Download liess sich nicht starten.': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Lade die Testversion …': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Download abgebrochen (%s / %s).': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Prüfe Grösse und Prüfsumme …': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Die Datei wurde nicht benutzt: %s.': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Installieren ging nicht: %s': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Die Sicherung der jetzigen Version liess sich nicht anlegen.': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Es gibt keine Sicherung einer früheren Version.': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Zurück zur Version vor der Testversion? Der Simulator startet danach neu.': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Die laufende Datei lässt sich nicht ersetzen. Läuft der Simulator zweimal?': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Die Sicherung lässt sich nicht zurücklegen.': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  '🧪 Neuste Testversion holen': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'Testversion – nicht signiert, nur zum Ausprobieren': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  '⏪ Zur letzten Version zurück': rm: Testkanal 21.11.2026 (Korrekturlesen)
+  'läuft: %s': rm: Testkanal 21.11.2026 (Korrekturlesen)
   'Im Browser: die Seite bringt die neue Version': rm automatisch
   '!Download liess sich nicht starten.': «!» am Anfang ist ein Fehler-Merker (behalten)
   'MoveEye Sim · 3D %s': Gerätename an MoveEye (/info) – nicht umhüllen
@@ -968,7 +1008,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   testrun.gd:775  ' (nur Wärmebild)'
   testrun.gd:900  ' (frei, gross genug, genug Licht) – nachts auch für die Wärmebildkamera (warm und gross genug).'
   testrun.gd:951  'FALSCH: '
-  update.gd:115  '\n\n(Im Godot-Editor wird nicht aktualisiert.)'
-  update.gd:119  '\n\nDer Simulator startet nach dem Update neu. Läuft MoveEye auf diesem PC, danach bitte wieder starten.'
-  update.gd:131  '\n\nWird in %d s automatisch installiert, danach startet der Simulator neu.'
-  update.gd:316  'Update hat nicht geklappt: '
+  update.gd:123  '\n\n(Im Godot-Editor wird nicht aktualisiert.)'
+  update.gd:127  '\n\nDer Simulator startet nach dem Update neu. Läuft MoveEye auf diesem PC, danach bitte wieder starten.'
+  update.gd:139  '\n\nWird in %d s automatisch installiert, danach startet der Simulator neu.'
+  update.gd:324  'Update hat nicht geklappt: '
