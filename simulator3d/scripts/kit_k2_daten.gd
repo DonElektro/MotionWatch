@@ -146,7 +146,7 @@ const SZENEN := [
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
 			{"t": 0.0, "k": "musik", "z": "action"},
-			{"t": 0.0, "k": "wetter", "w": "storm"},
+			{"t": 0.0, "k": "wetter", "w": "rain"},
 			{"t": 0.0, "k": "shot", "art": "establish", "s": 46.6, "q": 4.6, "h": 1.7, "blick": [46.1, -0.9, -0.8], "d": 4.0, "ziel": [46.1, -0.9, -2.0], "groesse": 2.0},
 			{"t": 0.3, "k": "sag", "wer": "erzaehler", "text": "Der Grat. Sturm. Und nur noch eine Hand am Fels."},
 			{"t": 0.0, "k": "figur_haengen", "s": 46.1, "q": -1.0},

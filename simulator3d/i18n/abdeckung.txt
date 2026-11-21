@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7975 (Stellen: 11084)
-Übersetzt: en 7975, fr 7975, it 7975, rm 7975
+Texte gesamt: 7977 (Stellen: 11091)
+Übersetzt: en 7977, fr 7977, it 7977, rm 7977
 Unsicher markiert: 207
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
 Nicht mehr im Code (noch in texte.json): 405
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 28992, schlüssel 22182, keine Wörter 13957, index 10218, technisch 3764, doc 2522, einheit 341, log 201, englisch 145, pfad 129, stringname 106, html 69, klasse 41, shader 6
+Übersprungen (Grund: Anzahl): kennung 29044, schlüssel 22239, keine Wörter 13986, index 10233, technisch 3769, doc 2530, einheit 342, log 201, englisch 145, pfad 129, stringname 106, html 69, klasse 42, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -110,6 +110,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   inhalte.gd                26    13
   jahreszeiten.gd           26     1
   wetter.gd                 26     0
+  kit_abenteuer.gd          25     1
   umgebung.gd               25     0
   gameshutter.gd            25     5
   kit_hud.gd                24     0
@@ -126,7 +127,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   klang.gd                  20     0
   patrol.gd                 20     0
   trailer.gd                19     7
-  kit_abenteuer.gd          19     1
   devtool.gd                19     0
   tv.gd                     19     8
   surprise.gd               19     1
@@ -639,16 +639,16 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   hp_kiosk.gd:157  'aus'
   hp_kiosk.gd:197  'aus'
   licht.gd:42  'aus'
-  main.gd:769  ' (Port %d)'
-  main.gd:1673  '  %.0f Mbit/s'
-  main.gd:2333  ' (von MoveEye)'
-  main.gd:2366  'Der Simulator ist belegt: '
-  main.gd:3205  'aus'
-  main.gd:3205  'ein'
-  main.gd:3282  'Sabotage-Test: '
-  main.gd:3282  'aus'
-  main.gd:3336  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3339  '\n🚨 Bewacht und weg: '
+  main.gd:770  ' (Port %d)'
+  main.gd:1674  '  %.0f Mbit/s'
+  main.gd:2334  ' (von MoveEye)'
+  main.gd:2367  'Der Simulator ist belegt: '
+  main.gd:3206  'aus'
+  main.gd:3206  'ein'
+  main.gd:3283  'Sabotage-Test: '
+  main.gd:3283  'aus'
+  main.gd:3337  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3340  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
@@ -847,7 +847,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inventar.gd:308  '\nKI: – = die KI von MoveEye kennt es nicht (Prüfstand: darf keinen Alarm auslösen)'
   inventar.gd:332  'KI: '
   kids.gd:338  ' Du hast jetzt %d Sterne.'
-  kit_abenteuer.gd:1148  'keine Szene '
+  kit_abenteuer.gd:1370  'keine Szene '
   kitrain.gd:93  '1/3 Paket: '
   kitrain.gd:157  'Ohne GitHub-Schlüssel: die ZIP liegt hier: %s\nSo kommt sie ins Training: 1. GitHub → Releases → «ki-daten» → Edit → ZIP hineinziehen → Update release '
   kitrain.gd:158  '(beim ersten Mal «Draft a new release», Tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye holt das neue Modell danach selbst.\n'
