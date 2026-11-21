@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 7982 (Stellen: 11096)
-Übersetzt: en 7982, fr 7982, it 7982, rm 7982
-Unsicher markiert: 212
+Texte gesamt: 7985 (Stellen: 11099)
+Übersetzt: en 7985, fr 7985, it 7985, rm 7985
+Unsicher markiert: 215
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
 Nicht mehr im Code (noch in texte.json): 405
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29068, schlüssel 22245, keine Wörter 13991, index 10238, technisch 3770, doc 2535, einheit 342, log 201, englisch 145, pfad 129, stringname 106, html 69, klasse 42, shader 6
+Übersprungen (Grund: Anzahl): kennung 29071, schlüssel 22248, keine Wörter 13992, index 10240, technisch 3770, doc 2536, einheit 342, log 201, englisch 145, pfad 129, stringname 106, html 69, klasse 42, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -47,9 +47,9 @@ Pro Datei (Texte / davon dynamische Stellen):
   kids.gd                   74     1
   pruefstand.gd             72     8
   feedback.gd               69    18
+  geschichten.gd            67     0
   abenteuer_zweit.gd        66     0
   bib_berg.gd               64     0
-  geschichten.gd            64     0
   parcours.gd               63    10
   bergtal_erleben_a.gd      62     0
   erlebniswelt.gd           62     0
@@ -240,6 +240,9 @@ Unsicher:
   '🦆 Lockvogel: Wer will, wählt auf dem Handy «Lockvogel». Er lässt sich absichtlich sehen, lockt die Kamera weg und holt Teampunkte.': rm: Lockvogel
   "🦊 So geht's: Jeder wählt auf dem Handy einen Lockvogel und bewegt ihn vor der Kamera. Der Pfeil zeigt zur Kamera 📷. Die Dinge haben einen eigenen Knopf (Windstoss, Schwenken, Steigen, Fallen, Schwärmen).": rm: Lockvogel/Schwenken
   'Welche Lockvögel sind erlaubt?': rm: Lockvogel
+  '▶ Kapitel 2 spielen (neu)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Eigene Figur, Kamera hinter dir, Maggie dabei. Der alte Ablauf: «Weiterspielen» / «Neu beginnen».': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Der alte Ablauf (Rucksack, Tour auf der Karte)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Kamera von MoveEye': rm automatisch
   'PS5-Controller per Bluetooth koppeln, Liste mit Akku, Trennen, Vergessen': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
   'Öffnet den Browser über dem Simulator. Der Simulator hält solange an. Zurück: Leiste oben oder Ctrl+Alt+Z': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
@@ -631,10 +634,10 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   bergtal_abenteuer.gd:419  'Start: '
   bergtal_abenteuer.gd:1048  ' auf der Bank mit Aussicht'
   bergtal_abenteuer.gd:2248  'Wird frei: '
-  bergtal_abenteuer.gd:2506  'aus'
-  bergtal_abenteuer.gd:2507  'keine'
-  bergtal_abenteuer.gd:2562  '  · %.1f kg'
-  bergtal_abenteuer.gd:2658  ' - Bank'
+  bergtal_abenteuer.gd:2517  'aus'
+  bergtal_abenteuer.gd:2518  'keine'
+  bergtal_abenteuer.gd:2573  '  · %.1f kg'
+  bergtal_abenteuer.gd:2669  ' - Bank'
   gamekiwaechter.gd:100  ' · 🤖 gegen die KI – eigene Liste, zählt nicht für die Rangliste'
   gamekiwaechter.gd:147  'aus'
   gamekiwaechter.gd:147  'ein'

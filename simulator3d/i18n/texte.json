@@ -10079,6 +10079,13 @@
   "it": "Il simulatore 3D ricostruisce il posto di MoveEye – persone, animali, meteo, notte – così MoveEye può esercitarsi senza notti vere. Il banco di prova misura ogni versione di MoveEye con esso, e al falò diventa il gioco «Squadra contro MoveEye». Fatto con Godot 4 – da Elektro insieme a Claude (un’IA di Anthropic).",
   "rm": "Il simulatur 3D fa suenter il plaz da MoveEye – persunas, animals, aura, notg –, uschia che MoveEye po exercitar senza notgs veras. Il banc da prova mesira cun el mintga versiun da MoveEye, e tar il fieu da champ daventa el il gieu «Team cunter MoveEye». Fatg cun Godot 4 – da Elektro ensemen cun Claude (ina IA dad Anthropic)."
  },
+ "Der alte Ablauf (Rucksack, Tour auf der Karte)": {
+  "en": "The old way (backpack, tour on the map)",
+  "fr": "L’ancien déroulement (sac à dos, tour sur la carte)",
+  "it": "Il vecchio percorso (zaino, giro sulla mappa)",
+  "rm": "Il vegl decurs (satgados, tura sin la charta)",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
  "Der alte Holzsteg": {
   "en": "The old wooden footbridge",
   "fr": "La vieille passerelle en bois",
@@ -13589,6 +13596,13 @@
   "fr": "Fichier propre",
   "it": "File proprio",
   "rm": "Atgna datoteca"
+ },
+ "Eigene Figur, Kamera hinter dir, Maggie dabei. Der alte Ablauf: «Weiterspielen» / «Neu beginnen».": {
+  "en": "Your own character, the camera behind you, Maggie with you. The old way: «Continue» / «Start again».",
+  "fr": "Ton propre personnage, la caméra derrière toi, Maggie avec toi. L’ancien déroulement : «Continuer» / «Recommencer».",
+  "it": "Il tuo personaggio, la telecamera dietro di te, Maggie con te. Il vecchio percorso: «Continua» / «Ricomincia».",
+  "rm": "Atgna figura, la camera davos tai, Maggie cun tai. Il vegl decurs: «Giugar vinavant» / «Cumenzar da nov».",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "eigene KI": {
   "en": "own AI",
@@ -47779,6 +47793,13 @@
   "fr": "▶ Rejouer à l'identique (même seed, mêmes décisions)",
   "it": "▶ Rigiocare esattamente uguale (stesso seed, stesse decisioni)",
   "rm": "▶ Giugar anc ina giada exactamain uschia (medem seed, medemas decisiuns)"
+ },
+ "▶ Kapitel 2 spielen (neu)": {
+  "en": "▶ Play chapter 2 (new)",
+  "fr": "▶ Jouer le chapitre 2 (nouveau)",
+  "it": "▶ Gioca il capitolo 2 (nuovo)",
+  "rm": "▶ Giugar il chapitel 2 (nov)",
+  "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
  "▶ Los": {
   "en": "▶ Go",

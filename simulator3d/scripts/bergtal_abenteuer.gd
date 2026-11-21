@@ -2284,7 +2284,7 @@ func _paint_neu(parent: Control) -> void:
 	"""Neubau «im Uncharted-Stil» (Besitzer 20.11.2026): eigene Figur, Kamera-Regie, schlanker Bildschirm (kit_abenteuer.gd).
 	Der alte Ablauf bleibt der Standard, bis der neue freigegeben ist; der Schalter merkt sich die Wahl (fortschritt.json)."""
 	var g := _group(T.t("Neuer Spielmodus (Probe)"), parent)
-	var on := bool(P.get("neu_modus", false))
+	var on := neu_modus_an()
 	_toggle_row(g, T.t("Als eigene Figur spielen (Kapitel 2, Probe)"), on, func(v): P["neu_modus"] = v; _save(); _changed())
 	if not on:
 		return
@@ -2304,9 +2304,20 @@ func _paint_neu(parent: Control) -> void:
 	_btn(g, T.t("Probe starten ›"), func(): neu_starten(), true)
 
 
+func neu_modus_an() -> bool:
+	"""the new mode (kit_abenteuer.gd) is the default for chapter 2 (owner 21.11.2026: test in the normal simulator);
+	the switch on the chapter page turns it off (the old flow)"""
+	if P.is_empty():
+		_load()
+	return bool(P.get("neu_modus", true))
+
+
 func neu_starten() -> void:
 	close_ab()
-	preload("res://scripts/kit_abenteuer.gd").ensure(main).start({"rolle": _neu_rolle, "name": _neu_name})
+	var o := {"rolle": _neu_rolle}
+	if _neu_name.strip_edges() != "":
+		o["name"] = _neu_name                             # else the start card asks (role + name, «Nina»)
+	preload("res://scripts/kit_abenteuer.gd").ensure(main).start(o)
 
 
 func _paint_slots(parent: Control) -> void:
@@ -2929,6 +2940,9 @@ func op(d: Dictionary) -> Dictionary:
 			W["items"] = {}
 			_changed()
 		"next":
+			if step == 0 and int(W["chapter"]) == 2 and neu_modus_an():
+				neu_starten()                              # chapter 2: the new mode (the switch on this page = the old flow)
+				return {"ok": true, "neu": true}
 			if step < 3:
 				step += 1
 				if step == 3 and W["items"].is_empty():
