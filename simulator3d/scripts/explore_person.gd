@@ -15,7 +15,7 @@ extends Node
 ##     sieht ein kleineres Ziel (Sinn der Sache). Geduckt / kriechend kein Rennen, kein Springen (zuerst aufstehen).
 ##   * Wasser (erkunden_welt.gd): seicht = waten (langsamer, nicht rennen), tief = schwimmen an der Oberfläche (kein Tauchen,
 ##     niemand ertrinkt); hinaus geht es einfach, wo das Wasser wieder seicht wird oder das Ufer beginnt.
-##   * Schnelllauf zum Testen: rennen bis 20 m/s in Stufen 1,8 / 3 / 5 / 10 / 15 / 20 (Knopf «Tempo» oben, main.ex_ptempo,
+##   * Schnelllauf zum Testen: rennen bis 40 m/s in Stufen 1,8 / 3 / 5 / 10 / 15 / 20 / 30 / 40 (Besitzer: 40 statt 20; Knopf «Tempo» oben, main.ex_ptempo,
 ##     bleibt gespeichert). Schalter im Entwickler-Bereich «Schnelllauf beim Erkunden» (main.ex_schnell): aus = normales
 ##     Rennen (3,45 m/s, wie actor.gd). Auch schnell nie durch eine Wand: actor.gd und hier in Schritten von höchstens 0,2 m
 ##     mit main.keep_out (auch im Sprung).
@@ -51,8 +51,8 @@ const FULL := 0.95                   # Stick / grüne Kugel so weit draussen = r
 const HALTUNGEN := ["stehen", "geduckt", "kriechen"]
 const POSTUR := {"stehen": 0, "geduckt": 1, "kriechen": 2, "sitzen": 0, "liegen": 2}
 const AUGE := {"stehen": 1.62, "geduckt": 1.05, "kriechen": 0.38, "sitzen": 1.15, "liegen": 0.3}   # Rückfall ohne Kopf
-const TEMPI := [1.8, 3.0, 5.0, 10.0, 15.0, 20.0]   # m/s: Schnelllauf (rennen), Besitzer 21.11.2026
-const V_MAX := 20.0
+const TEMPI := [1.8, 3.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0]   # m/s: Schnelllauf (rennen), Besitzer 21.11.2026 (bis 40)
+const V_MAX := 40.0
 const V_RENNEN := 3.45               # m/s: normales Rennen (actor.PLAYER_SPEED[0] × 2.3) - Schnelllauf aus
 const SCHWIMM_V := 0.9               # m/s an der Oberfläche
 const SCHWIMM_TIEF := 0.25           # m: die Füsse so weit unter dem Wasserspiegel (der Körper liegt, der Kopf ist oben)
@@ -634,7 +634,7 @@ func spaet(dt: float, real_dt: float) -> void:
 	if not ok() or not active or not ex.on:
 		return
 	var zs := str(figur.zustand)
-	if zs in ["boden", "luft"]:
+	if zs == "luft":                                         # (on the ground actor.gd already steps 0.2 m with keep_out)
 		_waende(figur._p0)
 	var w: Dictionary = Welt.wasser(main, actor.position)
 	var art: String = Welt.art_fuer_tiefe(float(w.get("tiefe", 0.0)), str(w.get("art", "")) == "bach")

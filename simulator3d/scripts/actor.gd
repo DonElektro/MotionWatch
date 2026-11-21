@@ -84,7 +84,7 @@ var gear_norun := false       # ... the cardboard box: no running
 var gear_pmin := 0            # ... the postures it allows (box: only crouching, umbrella: no crawling)
 var gear_pmax := 2
 var ctl_sit := false           # «Frei erkunden» (explore_person.gd, 21.11.2026): a player sits (idle «sit», sit_seat) too
-var run_top := 0.0            # ... > 0: the running speed of a standing player (fast run for tests, up to 20 m/s)
+var run_top := 0.0            # ... > 0: the running speed of a standing player (fast run for tests, up to 40 m/s)
 var water_ok := false         # ... may go into lakes (wading, swimming): keep_out lets it past the water obstacles
 static var npc_camo := false   # szenenplus.gd «Tarnen»: the next figure built wears the camouflage clothes of the players
 # P10 «Menschen» (menschen.gd): the look of the next visitor built - {jacket, trousers, height (m), hood, cap, pack, umbrella, lamp}
@@ -96,6 +96,8 @@ var arm_hold := {}            # P10: side (-1 left, 1 right) -> Vector3(shoulder
 var sit_seat := 0.45          # P10: idle «sit» - height of the seat (camping chair 0.45 m, ground 0.05 m)
 var hold_post := -1           # P10: posture kept for the plain points of the route (-1 = stand up there, 1 crouch, 2 crawl)
 var _sit_k := 0.0
+var _crawl_m := 0.0           # «Frei erkunden» Robben: 0 lying still … 1 crawling (smoothed - the idle pose blends in)
+const CRAWL_STROKE := 0.3     # m: one pull of an elbow (× body scale) - the cycle is tied to the speed (no skating)
 var power_until := 0.0
 var emote := ""               # players: caught / goal / throw (game.gd)
 var emote_until := 0.0
@@ -1475,6 +1477,16 @@ func _step(dt: float) -> void:
 const PLAYER_SPEED := [1.5, 0.9, 0.45]   # walking: standing, crouching, crawling (m/s); running: × 2.3 (only standing)
 
 
+static func _crawl_zug(u: float) -> Array:
+	"""army crawl, one elbow (and the opposite knee): [progress 0 ahead … 1 back, lift 0..1]. First half of the cycle: on the
+	ground, pulling back at an even pace (the body moves the same way - no skating); second half: lifted, forward again."""
+	u = fposmod(u, 1.0)
+	if u < 0.5:
+		return [u / 0.5, 0.0]
+	var r := (u - 0.5) / 0.5
+	return [1.0 - smoothstep(0.0, 1.0, r), sin(PI * r)]
+
+
 func player_speed_now() -> float:
 	return cur_speed
 
@@ -1485,7 +1497,7 @@ func _player(dt: float, now: float) -> void:
 	var want_p := 1.0 if ctl_posture == 2 else 0.0
 	var want_c := 1.0 if ctl_posture == 1 or (ctl_posture == 2 and prone < 0.9) or (want_p < prone and prone > 0.3) else 0.0   # 3D-4.12: over the crouch
 	crouch = move_toward(crouch, want_c, dt * 2.5)
-	prone = move_toward(prone, want_p, dt * 2.0)
+	prone = move_toward(prone, want_p, dt * 2.8)                      # «Frei erkunden» (owner): down / up in about 0.35 s
 	var mv := ctl_move.limit_length(1.0)
 	if frozen:
 		mv = Vector2.ZERO
@@ -1571,7 +1583,7 @@ func _animate(dt: float, spd: float, now: float) -> void:
 		var turning: bool = controlled and spd < 0.15 and abs(wrapf(want_heading - heading, -PI, PI)) > 0.15
 		var fs: float = 0.0
 		if prone > 0.5:
-			fs = clamp(spd / 0.45 * 1.3, 0.0, 2.2)
+			fs = clamp(spd / (CRAWL_STROKE * body_root.scale.y), 0.0, 3.0)   # one half cycle = one pull of CRAWL_STROKE
 		elif spd > 0.05:
 			fs = clamp(0.95 + 0.6 * spd, 0.95, 3.3)
 		elif turning:
@@ -1580,7 +1592,7 @@ func _animate(dt: float, spd: float, now: float) -> void:
 		var want_amp: float = asin(clamp(stepl / (2.0 * L), 0.0, 0.8))
 		gait_amp = lerp(gait_amp, want_amp, clamp(dt * 8.0, 0.0, 1.0))
 		gait_fs = lerp(gait_fs, fs, clamp(dt * 6.0, 0.0, 1.0))
-		if gait_fs > 0.05 or abs(sin(phase)) > 0.05:
+		if gait_fs > 0.05 or (abs(sin(phase)) > 0.05 and prone < 0.5):   # lying still: the crawl stops where it is
 			phase += dt * PI * max(gait_fs, 1.2 if gait_fs < 0.05 else 0.0)   # standing: the last step is finished
 		amp = gait_amp
 		lean_acc = lerp(lean_acc, clamp((spd - last_spd) / max(dt, 0.001) * 0.06, -0.15, 0.15), clamp(dt * 5.0, 0.0, 1.0))
@@ -1731,6 +1743,9 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 	var sit_k := smoothstep(0.0, 1.0, _sit_k)
 	c *= 1.0 - sit_k
 	var pr: float = clamp(prone, 0.0, 1.0)
+	var kpr: float = smoothstep(0.3, 0.85, pr)                     # the crawl pose blends in while going down (no snapping)
+	_crawl_m = move_toward(_crawl_m, clampf(spd / 0.2, 0.0, 1.0) if pr > 0.5 else 0.0, dt * 3.0)
+	var cu: float = fposmod(phase / TAU, 1.0)
 	var sc: float = body_root.scale.y
 	var kl: float = 1.0 if not (now < startle_until or em == "caught") else 0.0
 	# ---- legs: base pose of the crouch + the swing of the steps ----
@@ -1747,28 +1762,36 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 		var side: int = l[1]
 		var hip_x: float
 		var hip_z := 0.0
+		var hip_y := 0.0                                           # (crawling: the thigh turned out - the knee bends along the ground)
 		var knee_x: float
 		var s := 0.0
-		if pr > 0.5:
-			# belly crawl: one knee drawn up to the side while the other leg is stretched, in turn
-			var draw: float = max(0.0, sin(phase + (0.0 if side > 0 else PI)))
-			hip_x = 0.06 + 0.3 * draw                                    # (lying: + = towards the ground)
-			hip_z = side * (0.08 + 0.85 * draw)                          # the knee comes up at the side, on the ground
-			knee_x = -(0.08 + 0.4 * draw)
-		else:
-			s = sin(phase) * amp * side * swing_k
+		if pr < 1.0:
+			s = sin(phase) * amp * side * swing_k * (1.0 - pr)
 			var swing_fw: float = max(0.0, cos(phase + 0.3 - 0.6 * run_f) * side)   # this leg is swinging forward: the knee bends (walking: early in the swing most, running: still bent in front)
 			var stance: float = max(0.0, -cos(phase) * side)             # this leg carries the weight: a little bent
 			hip_x = hf + s
 			knee_x = -(kf + minf(1.95 - 0.9 * c, swing_fw * amp * (2.3 + 1.2 * run_f) * (1.0 - 0.5 * c)) + stance * amp * (0.25 + 0.5 * run_f) + 0.05 * amp)
 			if idle == "bend":
 				knee_x = -0.6
+		if kpr > 0.0:
+			# belly crawl (army crawl): this knee draws up to the side while the opposite elbow reaches, and pushes back while
+			# that elbow pulls - the same progress as the arm (_crawl_zug), so the knee does not skate either
+			var lz: Array = _crawl_zug(cu + (0.5 if side > 0 else 0.0))
+			var draw: float = (1.0 - float(lz[0])) * _crawl_m
+			var c_hx: float = 0.05 + 0.32 * draw                         # (lying: + = towards the ground)
+			var c_hz: float = side * (0.12 + 0.8 * draw)                  # the knee comes up at the side, on the ground
+			var c_kx: float = -(0.1 + 0.7 * draw)
+			hip_y = side * 1.35 * draw * kpr                              # turned out: the shin stays on the ground
+			hip_x = lerpf(hip_x, c_hx, kpr)
+			hip_z = lerpf(hip_z, c_hz, kpr)
+			knee_x = lerpf(knee_x, c_kx, kpr)
 		if sit_k > 0.0:                                                # P10: thigh level, shin down (on the ground: legs ahead)
 			hip_x = lerpf(hip_x, 1.5 if sit_seat > 0.2 else 1.45, sit_k)
 			knee_x = lerpf(knee_x, -1.45 if sit_seat > 0.2 else -0.3, sit_k)
 			hip_z = lerpf(hip_z, 0.1 * side, sit_k)
 		l[0].rotation.x = lerp(l[0].rotation.x, hip_x, k)
 		l[0].rotation.z = lerp(l[0].rotation.z, hip_z, k)
+		l[0].rotation.y = lerp(l[0].rotation.y, hip_y, k)
 		l[2].rotation.x = lerp(l[2].rotation.x, knee_x, k)
 		var h: float = l[0].rotation.x
 		var kx: float = l[2].rotation.x
@@ -1788,21 +1811,22 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 	var jump := 0.0
 	if em == "goal":
 		jump = abs(sin(now * 7.0)) * 0.18
-	var crawl_bob: float = abs(sin(phase)) * 0.02
+	var breath: float = sin(now * 1.7 + seed_t) * 0.006                # lying still: breathing
+	var crawl_bob: float = abs(sin(phase)) * 0.015 * _crawl_m + breath
 	body_root.position.y = lerp((-drop * sc + jump), 0.05 * sc + crawl_bob, pr)
 	if sit_k > 0.0:                                                # P10: the hips down on the seat
 		body_root.position.y = lerpf(body_root.position.y, sit_seat + 0.07 - 0.95 * sc, sit_k)
 	body_root.rotation.x = -1.52 * pr
-	body_root.rotation.z = sin(phase) * 0.06 * pr                     # crawling: the body rolls a little from side to side
+	body_root.rotation.z = sin(phase) * 0.07 * pr * _crawl_m          # crawling: the body rolls a little from side to side
 	body_root.position.z = 0.95 * pr * sc                              # lying down: the hips stay where the player is
 	body_root.position.x = sin(phase) * 0.025 * clamp(amp / 0.35, 0.0, 1.0) * (1.0 - pr) + still * 0.018 * sin(now * 0.45 + seed_t)
 	if variant == "drunk":                                         # sways and staggers
 		body_root.rotation.z = sin(now * 1.3 + seed_t) * 0.14 + sin(now * 3.1) * 0.04
 		body_root.position.x += sin(now * 0.9 + seed_t) * 0.25
 	if hips != null:
-		hips.rotation.y = sin(phase) * amp * 0.2 * (1.0 - pr)
+		hips.rotation.y = sin(phase) * amp * 0.2 * (1.0 - pr) + sin(phase) * 0.12 * kpr * _crawl_m   # crawling: the hips roll
 		hips.rotation.z = sin(phase) * 0.05 * amp + still * 0.03 * sin(now * 0.45 + seed_t)
-		torso.rotation.y = -sin(phase) * amp * 0.25 * (1.0 - pr) + sin(phase) * 0.15 * pr
+		torso.rotation.y = -sin(phase) * amp * 0.25 * (1.0 - pr) - sin(phase) * 0.08 * kpr * _crawl_m   # crawling: the shoulders against the hips
 		var lean := -0.62 * c - 0.28 * run_f - (0.1 if jog and spd > 0.5 else 0.0) - (0.22 if variant == "elderly" else 0.0) - lean_acc * (1.0 - pr) + still * 0.02 * sin(now * 1.6 + seed_t)
 		if idle == "bend":
 			lean = -1.05
@@ -1810,8 +1834,8 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 			lean = -0.95
 		if kl == 0.0:
 			lean = 0.12
-		if pr > 0.5:
-			lean = 0.0
+		if kpr > 0.0:                                                  # lying: the chest a little up on the elbows, breathing
+			lean = lerpf(lean, 0.16 + breath * 2.5, kpr)
 		if sit_k > 0.0:
 			lean = lerpf(lean, 0.06 + 0.04 * sin(now * 0.3 + seed_t), sit_k)   # sits upright, leans back a little now and then
 		torso.rotation.x = lerp(torso.rotation.x, lean, k)
@@ -1823,11 +1847,21 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 		# «Gelenke»: the elbow is always a little bent and bends more while the arm swings forward (running ~90°)
 		var ex: float = minf(1.9, 0.28 + 0.9 * (1.0 - 0.6 * run_f) * maxf(0.0, asw) + (1.0 if jog else 0.0) + 1.15 * run_f * (0.0 if jog else 1.0) + (0.15 if jog else 0.0) * run_f + 0.55 * c)
 		var sz := 0.06 * side + 0.1 * c * side
-		if pr > 0.5:                                                   # crawling: reach forward along the ground, pull back
-			var reach: float = max(0.0, sin(phase + (PI if side > 0 else 0.0)))
-			sx = lerp(0.4, -3.2, reach)                                  # elbow beside the chest, forearm flat ahead -> arm stretched ahead
-			ex = lerp(2.6, 0.15, reach)
-			sz = side * lerp(0.45, 0.2, reach)
+		if kpr > 0.0:                                                 # army crawl: the elbow reaches ahead, is planted, pulls back
+			var az: Array = _crawl_zug(cu + (0.0 if side > 0 else 0.5))
+			var x: float = float(az[0])                                  # 0 = elbow ahead … 1 = elbow back at the chest
+			var lift: float = float(az[1])
+			# (lying: + π/2 = the upper arm down to the ground, + π = ahead along the ground; the forearm lies flat ahead:
+			# shoulder + elbow ≈ π)
+			var c_sx: float = lerpf(2.45, 1.4, x) - 0.25 * lift           # the elbow ahead of the face … back beside the chest
+			var c_ex: float = clampf(PI - c_sx - 0.15 + 0.35 * lift, 0.2, 2.2)
+			var c_sz: float = side * (0.42 + 0.12 * lift)                 # elbows out; lifted a little while reaching
+			c_sx = lerpf(1.7, c_sx, _crawl_m)                            # lying still: both elbows under the shoulders,
+			c_ex = lerpf(1.3, c_ex, _crawl_m)                            # forearms flat ahead
+			c_sz = lerpf(side * 0.45, c_sz, _crawl_m)
+			sx = lerpf(sx, c_sx, kpr)
+			ex = lerpf(ex, c_ex, kpr)
+			sz = lerpf(sz, c_sz, kpr)
 		elif kl == 0.0:                                                # startled / caught: hands up
 			sx = 2.8
 			ex = 0.35

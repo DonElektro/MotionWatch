@@ -358,7 +358,7 @@ func _register_controls() -> void:
 	main.add_control("button", "pruef_open", "Prüfstand öffnen", null, func(): main.pruef.open(not main.pruef.visible), "Entwickler", {"expert": true, "devwin": true})
 	main.add_control("button", "simint_open", "Störungen testen", null, func(): main._open_stoer(), "Entwickler", {"expert": true, "devwin": true})
 	# «Frei erkunden» (Besitzer 21.11.2026): fast run of the own figure for tests - off = the normal running speed
-	main.add_control("toggle", "ex_schnell", "Schnelllauf beim Erkunden (Figur rennt bis 20 m/s, zum Testen)", func(): return main.ex_schnell,
+	main.add_control("toggle", "ex_schnell", "Schnelllauf beim Erkunden (Figur rennt bis 40 m/s, zum Testen)", func(): return main.ex_schnell,
 			func(v): main.ex_schnell = bool(v); main._settings_dirty = true, "Entwickler", {"expert": true, "devwin": true})
 	preload("res://scripts/spieltest.gd").add_controls(main)   # Spieltest-Assistent + «Spieltest-Meldungen» (wie MoveEye Entwickler)
 	preload("res://scripts/maggie_vorfuehrung.gd").add_controls(main)   # Vorführmodus «Maggie» (Entwickler, Reiter «Vorführung»)
@@ -619,7 +619,7 @@ func _load_settings() -> void:
 	if main.game_mode == "teamguard":                          # Balance 30.10.2026: «Team gegen Team» is gone
 		main.game_mode = "guard"
 	main.ex_speed = clampf(float(main.ex_speed), 0.5, 10.0)      # 13.11.2026: the speed of exploring (explore.gd SPEEDS)
-	main.ex_ptempo = clampf(float(main.ex_ptempo), 1.0, 20.0)    # 21.11.2026: the fast run of the figure (explore_person.gd)
+	main.ex_ptempo = clampf(float(main.ex_ptempo), 1.0, 40.0)    # 21.11.2026: the fast run of the figure (explore_person.gd)
 	main.ex_schnell = bool(main.ex_schnell)
 	main.ex_figur = preload("res://scripts/erkunden_figur.gd").norm(main.ex_figur)   # Etappe 2: the own figure, always complete
 	for k in ["ex_maggie", "ex_blinki", "ex_mw_sieht", "ex_auge"]:

@@ -11,7 +11,7 @@ extends SceneTree
 ##   3. Springen (Leertaste) und an einer Kante hochklettern (eine Stufe von 1,2 m im Gelände).
 ##   4. Wasser: Tiefe → trocken / waten / schwimmen (erkunden_welt.gd), ein Teich: waten langsamer, schwimmen an der
 ##      Oberfläche (kein Tauchen), hinaus geht es von selbst; im Bergtal der Bergsee.
-##   5. Schnelllauf: Stufen 1,8 / 3 / 5 / 10 / 15 / 20 m/s, nie über 20, rennt wirklich ≈ 20 m/s und nicht durch eine dünne
+##   5. Schnelllauf: Stufen 1,8 / 3 / 5 / 10 / 15 / 20 / 30 / 40 m/s, nie über 40, rennt wirklich ≈ 40 m/s und nicht durch eine dünne
 ##      Wand; Schalter «Schnelllauf» aus = normales Rennen 3,45 m/s, Knopf «Tempo» weg.
 ##   6. Der alte Steuerbefehl {"action": "explore", "person": …, "pwalk": …, "pplace": …} geht weiter (+ haltung, sitzen …),
 ##      und why_not() gilt auch für «Frei erkunden» (Messung: geht nicht).
@@ -279,39 +279,41 @@ func _run() -> void:
 	main.ground_fn = gf_alt
 	await wait(0.3)
 	# ---- 5. fast run ----
-	ok("Stufen 1,8 / 3 / 5 / 10 / 15 / 20", str(p.TEMPI) == str([1.8, 3.0, 5.0, 10.0, 15.0, 20.0]))
+	ok("Stufen 1,8 / 3 / 5 / 10 / 15 / 20 / 30 / 40", str(p.TEMPI) == str([1.8, 3.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0]))
 	p.set_tempo(1.8)
 	var seen := []
-	for i in range(6):
+	for i in range(8):
 		p.tempo_stufe(1, true)
 		seen.append(main.ex_ptempo)
-	ok("Knopf geht durch alle Stufen (%s)" % str(seen), str(seen) == str([3.0, 5.0, 10.0, 15.0, 20.0, 1.8]))
-	p.set_tempo(50.0)
-	ok("nie über 20 m/s", is_equal_approx(main.ex_ptempo, 20.0) and is_equal_approx(p.renn_tempo(main), 20.0))
+	ok("Knopf geht durch alle Stufen (%s)" % str(seen), str(seen) == str([3.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 1.8]))
+	p.set_tempo(90.0)
+	ok("nie über 40 m/s", is_equal_approx(main.ex_ptempo, 40.0) and is_equal_approx(p.renn_tempo(main), 40.0))
 	ex._process(0.016)
-	ok("Knopf «Rennen» sichtbar (Schnelllauf an)", ex._btn_speed.visible and ex._btn_speed.text.find("20") >= 0)
+	ok("Knopf «Rennen» sichtbar (Schnelllauf an)", ex._btn_speed.visible and ex._btn_speed.text.find("40") >= 0)
 	main.clear_obstacles()
-	main.add_obstacle_box(Vector3(0, 0, -70), 14.0, 0.1, 0.0)  # a thin wall 70 m ahead
+	main.add_obstacle_box(Vector3(0, 0, -150), 14.0, 0.1, 0.0)  # a thin wall 150 m ahead
 	p.figur.setzen(Vector3(0, 0, 0), 0.0)
 	ex.view = "chase"
 	await wait(0.3)
 	p.test_walk(Vector2(1, 0), 9.0, true)
 	await wait(1.8)
-	var v20: float = await _speed(p, 1.0)
-	print("  Schnelllauf: %.1f m/s" % v20)
-	ok("rennt etwa 20 m/s (%.1f)" % v20, v20 > 16.0 and v20 < 20.8)
+	var v40: float = await _speed(p, 1.0)
+	print("  Schnelllauf: %.1f m/s" % v40)
+	ok("rennt etwa 40 m/s (%.1f)" % v40, v40 > 32.0 and v40 < 41.0)
 	await wait(4.5)
-	print("  vor der Wand: z = %.2f (Wand bei -70)" % a.global_position.z)
-	ok("bei 20 m/s nicht durch die Wand", a.global_position.z > -70.0 and a.global_position.z < -66.0)
+	print("  vor der Wand: z = %.2f (Wand bei -150)" % a.global_position.z)
+	ok("bei 40 m/s nicht durch die Wand", a.global_position.z > -150.0 and a.global_position.z < -146.0)
 	# a long frame right in front of the wall
-	p.figur.setzen(Vector3(0, 0, -60.0), 0.0)
-	a.cur_speed = 20.0
+	p.figur.setzen(Vector3(0, 0, -140.0), 0.0)
+	a.cur_speed = 40.0
 	a.ctl_move = Vector2(0, -1)
 	a.ctl_run = true
 	var py: Vector3 = a.position
-	a._step(0.9)                                             # one frame of 0.9 s: 18 m in one go
+	var t_us := Time.get_ticks_usec()
+	a._step(0.9)                                             # one frame of 0.9 s: 36 m in one go (180 steps of 0.2 m)
+	print("  langes Bild bei 40 m/s: %d µs" % (Time.get_ticks_usec() - t_us))
 	p._waende(py)
-	ok("auch ein langes Bild nicht durch die Wand (z %.2f)" % a.position.z, a.position.z > -70.0)
+	ok("auch ein langes Bild bei 40 m/s nicht durch die Wand (z %.2f)" % a.position.z, a.position.z > -150.0)
 	main.clear_obstacles()
 	p.figur.setzen(Vector3(0, 0, 0), 0.0)
 	main.ex_schnell = false
@@ -326,7 +328,7 @@ func _run() -> void:
 	ok("Schalter im Entwickler-Bereich", "ex_schnell" in dev_ids)
 	main._save_settings()
 	var saved = JSON.parse_string(FileAccess.get_file_as_string(main.SETTINGS_FILE))
-	ok("Schnelllauf und Tempo bleiben in den Einstellungen", saved is Dictionary and saved.get("ex_schnell", true) == false and is_equal_approx(float(saved.get("ex_ptempo", 0.0)), 20.0))
+	ok("Schnelllauf und Tempo bleiben in den Einstellungen", saved is Dictionary and saved.get("ex_schnell", true) == false and is_equal_approx(float(saved.get("ex_ptempo", 0.0)), 40.0))
 	main.ex_schnell = true
 	p.set_tempo(3.0)
 	p.test_walk(Vector2.ZERO, 0.1, false)

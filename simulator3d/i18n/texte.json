@@ -25869,11 +25869,11 @@
   "it": "Clic: più veloce (1,8 / 3 / 5 / 7,5 / 10 m/s) · clic destro: più lento · Maiusc va × 2,2, al massimo 10 m/s",
   "rm": "Clic: pli spert (1,8 / 3 / 5 / 7,5 / 10 m/s) · clic dretg: pli plaun · Shift fa × 2,2, maximalmain 10 m/s"
  },
- "Klick: schneller rennen (1,8 / 3 / 5 / 10 / 15 / 20 m/s) · Rechtsklick: langsamer · Shift = rennen · Schnelllauf zum Testen (Entwickler-Bereich)": {
-  "en": "Click: run faster (1.8 / 3 / 5 / 10 / 15 / 20 m/s) · right click: slower · Shift = run · fast run for testing (developer area)",
-  "fr": "Clic : courir plus vite (1,8 / 3 / 5 / 10 / 15 / 20 m/s) · clic droit : plus lentement · Maj = courir · course rapide pour les tests (espace développeur)",
-  "it": "Clic: correre più veloce (1,8 / 3 / 5 / 10 / 15 / 20 m/s) · clic destro: più lento · Maiusc = correre · corsa veloce per i test (area sviluppatore)",
-  "rm": "Clic: currer pli spert (1,8 / 3 / 5 / 10 / 15 / 20 m/s) · clic dretg: pli plaun · Shift = currer · curs svelt per testar (sectur da svilup)"
+ "Klick: schneller rennen (1,8 / 3 / 5 / 10 / 15 / 20 / 30 / 40 m/s) · Rechtsklick: langsamer · Shift = rennen · Schnelllauf zum Testen (Entwickler-Bereich)": {
+  "en": "Click: run faster (1.8 / 3 / 5 / 10 / 15 / 20 / 30 / 40 m/s) · right click: slower · Shift = run · fast run for testing (developer area)",
+  "fr": "Clic : courir plus vite (1,8 / 3 / 5 / 10 / 15 / 20 / 30 / 40 m/s) · clic droit : plus lentement · Maj = courir · course rapide pour les tests (espace développeur)",
+  "it": "Clic: correre più veloce (1,8 / 3 / 5 / 10 / 15 / 20 / 30 / 40 m/s) · clic destro: più lento · Maiusc = correre · corsa veloce per i test (area sviluppatore)",
+  "rm": "Clic: currer pli spert (1,8 / 3 / 5 / 10 / 15 / 20 / 30 / 40 m/s) · clic dretg: pli plaun · Shift = currer · curs svelt per testar (sectur da svilup)"
  },
  "Klicken = Ort wählen (dort steht MoveEye) · Ziehen = verschieben · Mausrad = zoomen": {
   "en": "Click = choose place (MoveEye stands there) · drag = move · mouse wheel = zoom",
@@ -36911,11 +36911,11 @@
   "it": "Presto, presto! Passa un jogger.",
   "rm": "Svelt, svelt! In currider curra speravia."
  },
- "Schnelllauf beim Erkunden (Figur rennt bis 20 m/s, zum Testen)": {
-  "en": "Fast run while exploring (the figure runs up to 20 m/s, for testing)",
-  "fr": "Course rapide en exploration (le personnage court jusqu’à 20 m/s, pour les tests)",
-  "it": "Corsa veloce durante l’esplorazione (il personaggio corre fino a 20 m/s, per i test)",
-  "rm": "Curs svelt durant l’exploraziun (la figura curra fin 20 m/s, per testar)"
+ "Schnelllauf beim Erkunden (Figur rennt bis 40 m/s, zum Testen)": {
+  "en": "Fast run while exploring (the figure runs up to 40 m/s, for testing)",
+  "fr": "Course rapide en exploration (le personnage court jusqu’à 40 m/s, pour les tests)",
+  "it": "Corsa veloce durante l’esplorazione (il personaggio corre fino a 40 m/s, per i test)",
+  "rm": "Curs svelt durant l’exploraziun (la figura curra fin 40 m/s, per testar)"
  },
  "Schnellregler": {
   "en": "Quick controls",

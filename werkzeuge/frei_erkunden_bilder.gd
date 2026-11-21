@@ -5,6 +5,7 @@ extends SceneTree
 ##       -- --no-update --no-tour --aus <ordner/prefix_> [--handy]
 ## --handy: 390 × 844 Punkte mit Faktor 2 (780 × 1688 Pixel), die Touch-Knöpfe sichtbar; sonst PC 1280 × 720.
 ## --etappe2: «Figur gestalten» (Fenster offen, Vorschau), Begleiter (Maggie, Blinki) und das Auge «MoveEye sieht dich».
+## --kriechen: das Kriechen (Robben) von der Seite und von hinten, in Bewegung und still liegend (vorher / nachher).
 
 const Welt = preload("res://scripts/erkunden_welt.gd")
 
@@ -12,6 +13,7 @@ var main
 var out := "/tmp/erkunden_"
 var handy := false
 var etappe2 := false
+var kriechen := false
 
 
 func _initialize() -> void:
@@ -21,6 +23,7 @@ func _initialize() -> void:
 		out = args[i + 1]
 	handy = "--handy" in args
 	etappe2 = "--etappe2" in args
+	kriechen = "--kriechen" in args
 	if handy:
 		DisplayServer.window_set_size(Vector2i(780, 1688))
 		root.content_scale_factor = 2.0
@@ -98,6 +101,10 @@ func _run() -> void:
 	await wait(0.5)
 	if etappe2:
 		await _etappe2(ex, p)
+		quit(0)
+		return
+	if kriechen:
+		await _kriechen(p)
 		quit(0)
 		return
 	# crouched
@@ -206,3 +213,25 @@ func _etappe2(ex, p) -> void:
 	await wait(1.2)
 	print("BEGLEITER ", p.begleiter.info())
 	await _bild("begleiter")
+
+
+func _kriechen(p) -> void:
+	"""the belly crawl: side and back while moving (two moments of the cycle), lying still from the side"""
+	p.set_haltung("kriechen")
+	p.test_walk(Vector2(1, 0), 30.0, false)
+	await wait(2.5)
+	for k in [["seite_a", PI * 0.5], ["seite_b", PI * 0.5], ["hinten", 0.0]]:
+		p.regie.yaw = float(p.actor.heading) + float(k[1])
+		p.regie.pitch = 0.18
+		p.regie.dist = 3.0
+		p.regie.drag_t = p.uhr + 100.0
+		await wait(0.35 if str(k[0]) == "seite_b" else 0.8)
+		await _bild("kriechen_" + str(k[0]))
+	print("KRIECHEN hoehe %.2f" % p.hoehe())
+	p.test_walk(Vector2.ZERO, 0.1, false)
+	await wait(2.0)
+	p.regie.yaw = float(p.actor.heading) + PI * 0.5
+	p.regie.drag_t = p.uhr + 100.0
+	await wait(0.8)
+	await _bild("kriechen_still")
+	print("KRIECHEN still hoehe %.2f" % p.hoehe())

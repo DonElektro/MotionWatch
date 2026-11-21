@@ -273,7 +273,7 @@ var mast_pole: MeshInstance3D
 var mover_on := false                 # «Mover simulieren»: a tracked vehicle under MoveEye, driven by its second stick
 var mover_max := 0.8                  # top speed (m/s) when MoveEye drives (setting «Höchstgeschwindigkeit des Movers»)
 var ex_speed := 1.8                   # 13.11.2026: top speed while exploring (explore.gd SPEEDS 1.8 … 10 m/s), kept between sessions
-var ex_ptempo := 3.0                  # 21.11.2026 «Frei erkunden»: running speed of the own figure (explore_person.gd TEMPI 1.8 … 20 m/s)
+var ex_ptempo := 3.0                  # 21.11.2026 «Frei erkunden»: running speed of the own figure (explore_person.gd TEMPI 1.8 … 40 m/s)
 var ex_schnell := true                # ... fast run for tests on (Entwickler); off = the normal running speed (3.45 m/s)
 var ex_figur := {}                    # «Frei erkunden» Etappe 2: the own figure (erkunden_figur.gd, window erkunden_gestalten.gd)
 var ex_maggie := false                # ... Maggie comes along (erkunden_begleiter.gd)

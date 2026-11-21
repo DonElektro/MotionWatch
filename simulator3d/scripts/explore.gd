@@ -17,9 +17,9 @@ extends Control
 ## bleibt so schnell wie bisher. Messungen, Prüfstand, Testläufe und die Patrouille brauchen den Mover nicht oder setzen ihr
 ## eigenes Tempo (patrol.gd) - main.mover_max (MoveEye fährt) wird hier nicht mehr verändert.
 ## Besitzer 21.11.2026 «Frei erkunden mit eigener Figur» (Etappe 1): die Person ist jetzt die Figur aus Grossvater Kapitel 2
-## (explore_person.gd: Haltungen C / X / Z, springen, klettern, waten, schwimmen, Schnelllauf bis 20 m/s, drei Ansichten);
+## (explore_person.gd: Haltungen C / X / Z, springen, klettern, waten, schwimmen, Schnelllauf bis 40 m/s, drei Ansichten);
 ## frei_erkunden() startet Erkunden gleich als Figur (Menüpunkt «🥾 Frei erkunden»). Als Figur: C = Haltung (der Beobachter
-## bleibt beim Mover auf C), der Knopf «Tempo» stellt das Rennen der Figur (1,8 … 20 m/s, nur mit «Schnelllauf» im Entwickler-Bereich).
+## bleibt beim Mover auf C), der Knopf «Tempo» stellt das Rennen der Figur (1,8 … 40 m/s, nur mit «Schnelllauf» im Entwickler-Bereich).
 
 const T = preload("res://scripts/i18n.gd")
 const Person = preload("res://scripts/explore_person.gd")
@@ -272,7 +272,7 @@ func _paint_btns() -> void:
 	Sym.deco_button(_btn_person)
 	if person_on():                                       # 21.11.2026: the fast run of the figure (only with «Schnelllauf» on)
 		_btn_speed.text = T.t("Rennen: %s m/s ›") % _num(float(main.ex_ptempo))
-		_btn_speed.tooltip_text = T.t("Klick: schneller rennen (1,8 / 3 / 5 / 10 / 15 / 20 m/s) · Rechtsklick: langsamer · Shift = rennen · Schnelllauf zum Testen (Entwickler-Bereich)")
+		_btn_speed.tooltip_text = T.t("Klick: schneller rennen (1,8 / 3 / 5 / 10 / 15 / 20 / 30 / 40 m/s) · Rechtsklick: langsamer · Shift = rennen · Schnelllauf zum Testen (Entwickler-Bereich)")
 		return
 	_btn_speed.text = T.t("Tempo: %s m/s ›") % _num(float(main.ex_speed))
 	_btn_speed.tooltip_text = T.t("Klick: schneller (1,8 / 3 / 5 / 7,5 / 10 m/s) · Rechtsklick: langsamer · Shift fährt × 2,2, höchstens 10 m/s")
