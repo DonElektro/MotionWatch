@@ -30,6 +30,8 @@
 # sim-X.Y.Z oder «latest» an; kein Gerät und kein MoveEye sucht «sim-test». Nur der Knopf «🧪 Neuste Testversion holen»
 # im Simulator (Mehr → Entwickler, testkanal.gd) lädt es - von Hand, mit Prüfsumme, mit Sicherung und «Zurück».
 #   gh workflow run sim_pi.yml --ref sim-grossvater-k2 -f testkanal=true -f ref=sim-grossvater-k2 -f label="Grossvater K2"
+# auftrag=musik-vorschau | musik-ganz | stimmen: Job «auftrag» - Musik-Kandidaten laden und schneiden (werkzeuge/musik/), Stimmen
+# mit Piper sprechen (werkzeuge/stimmen/); Ergebnis nur als Artefakt des Laufs.
 name: Sim-Pakete
 on:
   workflow_dispatch:
@@ -61,6 +63,9 @@ on:
       label:
         description: "Testkanal: kurzer Name der Testversion (im Simulator angezeigt)"
         default: ""
+      auftrag:
+        description: "Statt bauen: musik-vorschau | musik-ganz | stimmen (Ergebnis als Artefakt, nie im Repository / Release)"
+        default: ""
 permissions:
   contents: write
 concurrency:
@@ -73,7 +78,7 @@ env:
 jobs:
   pi:
     name: Sim-Pakete · ${{ inputs.ver }}${{ inputs.probe && ' (Probe)' || '' }}
-    if: github.repository == 'DonElektro/MotionWatch' && !inputs.testkanal && inputs.loeschen == '' && !inputs.abruf
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.auftrag == '' && !inputs.testkanal && inputs.loeschen == '' && !inputs.abruf
     runs-on: ubuntu-24.04
     timeout-minutes: 70
     steps:
@@ -463,9 +468,44 @@ jobs:
             echo '```'; cat "$O/sim-test.json"; echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+  auftrag:
+    name: Auftrag · ${{ inputs.auftrag }}
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.auftrag != '' && !inputs.testkanal
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Werkzeuge (ffmpeg)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+          ffmpeg -version | head -1
+      - name: Musik-Vorschau (Kandidaten laden, 25 s schneiden, Lizenzen)
+        if: inputs.auftrag == 'musik-vorschau' || inputs.auftrag == 'musik-ganz'
+        run: |
+          set -e
+          extra=""; [ "${{ inputs.auftrag }}" = "musik-ganz" ] && extra="--ganz"
+          python3 werkzeuge/musik/vorschau.py "$RUNNER_TEMP/musik" $extra
+          cat "$RUNNER_TEMP/musik/LIESMICH.md" >> "$GITHUB_STEP_SUMMARY"
+          ls -la "$RUNNER_TEMP/musik"
+      - name: Stimmen (Piper, Ogg)
+        if: inputs.auftrag == 'stimmen'
+        run: |
+          set -e
+          python3 -m pip install -q piper-tts==1.2.0
+          python3 werkzeuge/stimmen/stimmen.py "$RUNNER_TEMP/musik"
+          ls -la "$RUNNER_TEMP/musik" | head -40
+      - name: Ergebnis als Artefakt (nicht im Repository, kein Release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: auftrag-${{ inputs.auftrag }}
+          path: ${{ runner.temp }}/musik
+          retention-days: 14
+
   abruf:
     name: Abruf-Probe (Ersatz-Asset über die öffentliche Adresse zurückholen)
-    if: github.repository == 'DonElektro/MotionWatch' && !inputs.testkanal && inputs.loeschen == '' && inputs.abruf
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.auftrag == '' && !inputs.testkanal && inputs.loeschen == '' && inputs.abruf
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -547,7 +587,7 @@ jobs:
 
   weg:
     name: Probe löschen · ${{ inputs.loeschen }}
-    if: github.repository == 'DonElektro/MotionWatch' && !inputs.testkanal && inputs.loeschen != ''
+    if: github.repository == 'DonElektro/MotionWatch' && inputs.auftrag == '' && !inputs.testkanal && inputs.loeschen != ''
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
