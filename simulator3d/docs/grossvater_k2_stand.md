@@ -94,7 +94,25 @@ Zweig `sim-grossvater-k2` (von origin/main 9f14de1), Worktree /tmp/claude-0/wt_g
 - [x] Stimmen: Piper/Thorsten (CC0) für Erzähler + Grossvater (tiefer), klang/stimmen/ (11 Dateien, 200 KB), nur Deutsch.
 - [x] Musik gewählt (explore Lost Frontier, spannung Gathering Darkness, action Five Armies, entdeckung Epic loop);
   ganze Stücke 96 kbit/s → klang/sp_kit_<zustand>.ogg (klang.gd nimmt sie von selbst), Quellen in Über + LIZENZEN.
-- [ ] Web-Test Handy/iPad (web: ?grossvater=1&name=Nina&k2szene=s06_bruecke) · [ ] Übergabe an den Integrator.
+- [x] Web-Test Handy 390×844, iPad 820×1180 / 1180×820 (Playwright, Touch, Export «Web» lokal): läuft, Touch-Stick,
+  Szene direkt per ?grossvater=1&name=Nina&k2szene=s06_bruecke; gefunden + behoben: das Demo-Fenster der Homepage lag über
+  dem Spiel. Bildzeiten hier nicht aussagekräftig (Software-Grafik ~1 fps) → auf dem Gerät messen mit …&messen=1
+  (Zeile oben links: fps, mittlere/längste Bildzeit, Lite).
+- [x] Kamera am Brückenkopf (unteres halbes Bild verdeckt): Federarm mit mehr Luft unter der Sichtlinie + Felsbrocken als
+  Hindernis + Nahgrenze; Test: Kamera am Start jeder Szene in 4 Richtungen frei (kit_weg_test).
+
+## Übergabe an den Integrator – Sim 3.73.0 (Zweig sim-grossvater-k2)
+- Inhalt: Kapitel 2 «Wo der Bach zweimal fällt» im neuen Modus (Standard für Kapitel 2; alter Ablauf über den Schalter
+  «Neuer Spielmodus (Probe)»), Bergtal-Fix (sim-bergtal-bach zusammengeführt), Testkanal-Knöpfe (Mehr → Updates nur
+  «Experte», Mehr → Entwickler) + Sim-Pakete testkanal/auftrag, Kamera, Klettern, Grafik, Stimmen, Musik.
+- Neue Dateien im Paket: klang/sp_kit_*.ogg (4.7 MB Musik), klang/stimmen/ (0.2 MB), klang/kit_musik_quellen.json;
+  export_presets.cfg: include_filter + klang/stimmen/*.ogg, klang/stimmen/*.json (alle Presets).
+- Lizenzen: klang/LIZENZEN.txt (Musik CC BY mit Wortlaut, Stimmen CC0), «Lies mich.txt» Block MUSIK UND STIMMEN,
+  Mehr › Über den Simulator › «Musik und Stimmen». «NEU IN 3.73.0» schreibt der Integrator (rel_sim.sh).
+- Tests: kit_figur_test, kit_weg_test (neu: Erreichbarkeit aller 12 Szenen + Kamera), testkanal_test (neu),
+  spielton_test (kit_* = Schleife), sim_texte --pruefen grün. CI-Lauf auf dem Zweig: siehe Bericht.
+- Offen / bewusst nicht: Rumantsch der neuen Texte zum Korrekturlesen («?» in texte.json); Stimmen nur Deutsch;
+  Figuren-Paket (Quaternius) wird im Kit nicht verlangt; die Testkanal-Vorabversion «sim-test» bleibt (nie latest).
 
 ## Als Nächstes
 1. Separat (eigener Commit, NICHT mit dem Kapitel mischen): Bergtal `_carve_stream` vertieft bei jedem Schritt –
