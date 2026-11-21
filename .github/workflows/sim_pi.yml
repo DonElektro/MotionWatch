@@ -493,7 +493,8 @@ jobs:
         if: inputs.auftrag == 'stimmen'
         run: |
           set -e
-          python3 -m pip install -q piper-tts==1.2.0
+          curl -fsSL -o piper.tgz https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz
+          tar xzf piper.tgz && ./piper/piper --help > /dev/null 2>&1 || true
           python3 werkzeuge/stimmen/stimmen.py "$RUNNER_TEMP/musik"
           ls -la "$RUNNER_TEMP/musik" | head -40
       - name: Ergebnis an die Vorabversion sim-test hängen (der Proxy der Bauumgebung lässt Artefakte nicht durch)
