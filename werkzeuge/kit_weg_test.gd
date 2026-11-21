@@ -512,6 +512,32 @@ func _welt() -> void:
 	var kopf := zelle(r6, float(D.BRUECKENKOPF[0]), float(D.BRUECKENKOPF[1]))
 	pruef(kopf >= 0 and not (r6["f"][kopf] & 3), "Brückenkopf: begehbar")
 
+	# ---- 4: the camera at the start of every scene (21.11.: it went into a boulder at the bridge head): not in a rock detail,
+	# above the ground, the head of the figure in view
+	k.regie.yaw = 0.0
+	for sz in D.SZENEN:
+		var st := start_von(sz)
+		var stp: Vector2 = st["p"]
+		for blick in [0.0, PI * 0.5, PI, -PI * 0.5]:
+			if str(st["kind"]) == "sq":
+				c({"do": "setzen", "s": stp.x, "q": stp.y})
+			else:
+				c({"do": "setzen", "tal": [stp.x, stp.y]})
+			k.figur.a.heading = blick
+			k.regie.hinter_figur()
+			await _warte(0.8)
+			var cp: Vector3 = m.view_cam.global_position
+			var kopf_p: Vector3 = k.figur.pos() + Vector3(0, 1.45, 0)
+			var drin := ""
+			if k.par.schlucht != null:
+				for kg in k.par.schlucht.kugeln_welt(Callable(k.par, "W")):
+					if cp.distance_to(kg[0]) < float(kg[1]):
+						drin = "in einem Felsbrocken"
+			if cp.y < float(m.ground_y(cp.x, cp.z)) + 0.25:
+				drin = "im Boden"
+			var frei: bool = k.regie._blocker(cp, kopf_p, 16) < 0.0
+			pruef(drin == "" and frei, "Kamera %s Blick %.1f: %s" % [str(sz["id"]), blick, "frei" if drin == "" and frei else (drin if drin != "" else "Fels zwischen Kamera und Kopf")])
+
 	# ---- 3: the way out after 90 s
 	c({"do": "frei", "on": false})
 	c({"do": "szene", "value": "s06_bruecke"})

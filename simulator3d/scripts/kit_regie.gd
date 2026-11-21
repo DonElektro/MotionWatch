@@ -165,16 +165,38 @@ static func feder1(x: float, v: float, ziel: float, w: float, dt: float) -> Arra
 	return [x + v2 * dt, v2]
 
 
+func _kugeln_nah(tp: Vector3, want: Vector3) -> Array:
+	"""the rock details (kit_schlucht.gd kugeln: boulders, chunks, slabs - not in main.ground_y) near the arm"""
+	var sch = kit.par.schlucht if kit.par != null else null
+	if sch == null:
+		return []
+	var out := []
+	var mid := (tp + want) * 0.5
+	var r0 := tp.distance_to(want) * 0.5 + 3.0
+	for k in sch.kugeln_welt(Callable(kit.par, "W")):
+		if (k[0] as Vector3).distance_to(mid) < r0 + float(k[1]):
+			out.append(k)
+	return out
+
+
 func _arm_frei(tp: Vector3, want: Vector3) -> float:
-	"""how much of the arm from tp to want is free of ground / rock (1 = all)"""
+	"""how much of the arm from tp to want is free of ground, rock and the rock details (1 = all) - 21.11.: the camera went
+	into a boulder at the bridge head (the lower half of the picture blurred grey-green)"""
 	var L := tp.distance_to(want)
 	var n := clampi(int(ceil(L / (0.3 if Quality.lite() else 0.2))), 6, 30)   # thin walls (0.6 m) are not jumped over
+	var ks := _kugeln_nah(tp, want)
 	for i in range(1, n + 1):
 		var f := float(i) / float(n)
 		if f * L < 0.7:
 			continue                                       # right at the figure (a step, the log it stands on) does not count
 		var q := tp.lerp(want, f)
-		if main.ground_y(q.x, q.z) + 0.35 > q.y:
+		var zu: bool = main.ground_y(q.x, q.z) + 0.35 > q.y
+		if not zu:
+			for k in ks:
+				if q.distance_to(k[0]) < float(k[1]) + 0.35:   # + the near plane of the camera
+					zu = true
+					break
+		if zu:
 			return maxf(0.1, f - 1.0 / float(n))
 	return 1.0
 
@@ -243,6 +265,12 @@ func _folge_xform(tp: Vector3, d0: float, dt: float, heading: float) -> Transfor
 	dist_ist = d0 * _arm
 	var at := _tp + back * dist_ist * cos(_pit_ist) + Vector3(0, dist_ist * sin(_pit_ist), 0)
 	at.y = maxf(at.y, main.ground_y(at.x, at.z) + 0.4)
+	for k in _kugeln_nah(_tp, at):                          # near-clip guard: never inside a rock detail
+		var dk: Vector3 = at - (k[0] as Vector3)
+		var rr: float = float(k[1]) + 0.3
+		if dk.length() < rr:
+			at = (k[0] as Vector3) + (dk.normalized() if dk.length() > 0.01 else Vector3.UP) * rr
+	cam.near = 0.05
 	var tr := Transform3D(Basis.IDENTITY, at).looking_at(_tp, Vector3.UP)
 	return tr
 
@@ -354,6 +382,7 @@ func _shot_xform(dt: float) -> Transform3D:
 func _blocker(at: Vector3, lk: Vector3, n: int) -> float:
 	var last := -1.0
 	var L := at.distance_to(lk)
+	var ks := _kugeln_nah(at, lk)
 	for i in range(1, n):
 		var f := float(i) / float(n)
 		if (1.0 - f) * L < 0.45:
@@ -361,6 +390,11 @@ func _blocker(at: Vector3, lk: Vector3, n: int) -> float:
 		var q := at.lerp(lk, f)
 		if main.ground_y(q.x, q.z) + 0.2 > q.y:
 			last = f
+			continue
+		for k in ks:                                       # the rock details (boulders, chunks, slabs) hide too
+			if q.distance_to(k[0]) < float(k[1]):
+				last = f
+				break
 	return last
 
 

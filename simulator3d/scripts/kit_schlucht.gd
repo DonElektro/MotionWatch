@@ -206,6 +206,17 @@ func _farbe(sv: float, qv: float, h: float, F: float, R: float, steil: float) ->
 
 var bau_ms := 0
 var ecken := 0
+var kugeln: Array = []               # [valley point, radius] of the rock details (boulders, chunks, slabs): the camera keeps out
+
+
+func kugeln_welt(W: Callable) -> Array:
+	"""the details as world spheres (computed once; the valley does not move while the kit runs)"""
+	if not has_meta("kw"):
+		var o := []
+		for k in kugeln:
+			o.append([W.call(k[0]), float(k[1])])
+		set_meta("kw", o)
+	return get_meta("kw")
 
 
 func bauen(holder: Node3D, m, lite: bool) -> void:
@@ -348,6 +359,7 @@ func _details(holder: Node3D, lite: bool) -> void:
 		var sc := rng.randf_range(0.35, 1.0)
 		var b := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(sc * rng.randf_range(0.9, 1.4), sc * 0.7, sc))
 		blk.append(Transform3D(b, Vector3(t.x, boden_sq(sv, qv) + sc * 0.2, t.y)))
+		kugeln.append([Vector3(t.x, boden_sq(sv, qv) + sc * 0.2, t.y), sc * 1.3])
 	tries = 0
 	while farn.size() < n_farn and tries < 600:
 		tries += 1
@@ -410,13 +422,14 @@ func _details(holder: Node3D, lite: bool) -> void:
 	for i6 in range(10 if lite else 22):
 		var sv6 := rng.randf_range(s0 + 9.0, s1 - 6.0)
 		var sd6 := -1.0 if rng.randf() < 0.5 else 1.0
-		var qv6 := sd6 * (_tab(_breite_tab, sv6) + rng.randf_range(0.2, 1.2))
+		var qv6 := sd6 * (_tab(_breite_tab, sv6) + rng.randf_range(0.8, 1.8))
 		if _kanal_bei(sv6, qv6):
 			continue
 		var t6 := tal(sv6, qv6)
-		var sc6 := rng.randf_range(1.0, 2.2)
+		var sc6 := rng.randf_range(0.9, 1.7)
 		brocken.append(Transform3D(Basis(Vector3.UP, rng.randf() * TAU).rotated(Vector3.RIGHT, rng.randf_range(-0.3, 0.3)).scaled(Vector3(sc6, sc6 * 0.75, sc6 * 1.2)),
 				Vector3(t6.x, boden_sq(sv6, qv6) + sc6 * 0.05, t6.y)))
+		kugeln.append([Vector3(t6.x, boden_sq(sv6, qv6) + sc6 * 0.3, t6.y), sc6 * 1.15])
 	for i7 in range(8 if lite else 16):
 		var sv7 := rng.randf_range(s0 + 10.0, s1 - 8.0)
 		var sd7 := -1.0 if i7 % 2 == 0 else 1.0
@@ -433,6 +446,7 @@ func _details(holder: Node3D, lite: bool) -> void:
 		var b7 := Basis(Vector3.UP, -yaw7).rotated(Vector3(qd.x, 0, qd.y).normalized(), sd7 * rng.randf_range(0.05, 0.18)).scaled(
 				Vector3(rng.randf_range(1.6, 2.8), rng.randf_range(0.5, 0.9), rng.randf_range(2.5, 5.0)))
 		dach.append(Transform3D(b7, Vector3(t7.x, boden_sq(sv7, qv7) + 0.3, t7.y)))
+		kugeln.append([Vector3(t7.x, boden_sq(sv7, qv7) + 0.3, t7.y), b7.get_scale().z * 0.55])
 	var kl := SphereMesh.new()
 	kl.radius = 1.0
 	kl.height = 1.5

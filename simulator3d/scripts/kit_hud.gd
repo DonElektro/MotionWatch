@@ -242,7 +242,7 @@ func _bau_menu() -> void:
 	t.text = T.t("Pause")
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(t)
-	for e in [["Weiter", func(): kit.pause(false)], ["Zum letzten Checkpoint", func(): kit.pause(false); kit.figur.zurueck()],
+	for e in [["Weiterspielen", func(): kit.pause(false)], ["Zum letzten Checkpoint", func(): kit.pause(false); kit.figur.zurueck()],
 			["Steuerung", func(): _hilfe.visible = not _hilfe.visible], ["Kindermodus an / aus", func(): kit.kinder_umschalten()],
 			["Abenteuer beenden", func(): kit.stop()]]:
 		var b := Button.new()
@@ -250,7 +250,7 @@ func _bau_menu() -> void:
 		b.custom_minimum_size = Vector2(260, 46)
 		b.pressed.connect(e[1])
 		v.add_child(b)
-		if str(e[0]) == "Weiter":                       # stuck for 90 s in one step (kit_abenteuer.gd STECKEN_S): the way out
+		if str(e[0]) == "Weiterspielen":                       # stuck for 90 s in one step (kit_abenteuer.gd STECKEN_S): the way out
 			_abschnitt_btn = Button.new()
 			_abschnitt_btn.text = T.t("⏭ Zum nächsten Abschnitt springen")
 			_abschnitt_btn.custom_minimum_size = Vector2(260, 46)
