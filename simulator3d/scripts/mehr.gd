@@ -561,9 +561,9 @@ func _about(b: VBoxContainer) -> void:
 
 func _about_quellen(vv: VBoxContainer) -> void:
 	"""music and voices of the adventures (Grossvater K2, 21.11.2026): the attribution CC BY asks for - from
-	klang/musik/quellen.json (written with the music, werkzeuge/musik/) and klang/stimmen/stimmen.json"""
+	klang/kit_musik_quellen.json (written with the music, werkzeuge/musik/) and klang/stimmen/stimmen.json"""
 	var zeilen := PackedStringArray()
-	var mq := "res://klang/musik/quellen.json"
+	var mq := "res://klang/kit_musik_quellen.json"
 	if FileAccess.file_exists(mq):
 		var j = JSON.parse_string(FileAccess.get_file_as_string(mq))
 		if j is Dictionary:

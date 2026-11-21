@@ -28,6 +28,12 @@ LINUX (Linux Mint, Ubuntu; PC mit x86_64)
   von selbst Lite (Sparmodus, gilt auch unter Windows). Eine eigene Wahl unter System › Grafik gilt immer vor.
 - Protokoll: ~/.local/share/godot/app_userdata/MoveEye Sim 3D/logs/godot.log
 
+MUSIK UND STIMMEN IM ABENTEUER «DIE KARTE DES GROSSVATERS» (Namensnennung, Liste auch unter Mehr › Über den Simulator)
+- «Lost Frontier», «Gathering Darkness», «Five Armies»: Kevin MacLeod (incompetech.com), Licensed under Creative Commons:
+  By Attribution 4.0 License, http://creativecommons.org/licenses/by/4.0/
+- «Epic loop»: CodeManu (opengameart.org/content/orchestral-adventure), CC BY 3.0, https://creativecommons.org/licenses/by/3.0/
+- Stimmen: Piper (MIT) mit der Stimme «Thorsten» (Thorsten-Voice, CC0). Alle Angaben: klang/LIZENZEN.txt im Quellcode.
+
 KIOSK (Linux Mint: der PC zeigt nur noch den Simulator)
 - Wozu: ein PC (z. B. HP EliteDesk) startet direkt in den Simulator im Vollbild, sendet an MoveEye und startet ihn
   nach einem Absturz von selbst neu. Nichts wird deinstalliert oder gelöscht, alles lässt sich zurückstellen.

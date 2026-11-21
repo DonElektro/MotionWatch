@@ -106,3 +106,15 @@ Erzähler und Grossvater/Vater: vorgesprochen mit Piper (https://github.com/rhas
 «de_DE-thorsten-high» (rhasspy/piper-voices v1.0.0; Datensatz Thorsten-Voice, CC0 1.0,
 https://github.com/thorstenMueller/Thorsten-Voice) - dieselbe Stimme wie in MoveEye. Der Grossvater ist dieselbe Stimme,
 langsamer und tiefer gestimmt. Gebaut mit werkzeuge/stimmen/stimmen.py (Workflow «Sim-Pakete», auftrag=stimmen).
+
+Musik des Abenteuers «Die Karte des Grossvaters» (klang/sp_kit_*.ogg, ab Sim 3.73.0) – Namensnennung nach CC BY
+-----------------------------------------------------------------------------------------------------------------
+sp_kit_explore     «Lost Frontier» Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0
+                   License, http://creativecommons.org/licenses/by/4.0/ (gekürzt auf 130 s, ausgeblendet, 96 kbit/s)
+sp_kit_spannung    «Gathering Darkness» Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0
+                   License, http://creativecommons.org/licenses/by/4.0/ (gekürzt auf 100 s, ausgeblendet, 96 kbit/s)
+sp_kit_action      «Five Armies» Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0
+                   License, http://creativecommons.org/licenses/by/4.0/ (96 kbit/s)
+sp_kit_entdeckung  «Epic loop» CodeManu (https://opengameart.org/content/orchestral-adventure), CC BY 3.0,
+                   https://creativecommons.org/licenses/by/3.0/ (96 kbit/s)
+Werkzeug: werkzeuge/musik/vorschau.py (Kandidaten und Quellen: werkzeuge/musik/kandidaten.json).

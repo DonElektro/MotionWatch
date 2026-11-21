@@ -1,0 +1,33 @@
+{
+ "_info": "Musik des Abenteuer-Kits (Grossvater K2, Wahl des Besitzers 21.11.2026): klang/sp_kit_<zustand>.ogg, gebaut mit werkzeuge/musik/vorschau.py --ganz (96 kbit/s, lange Stücke mit Ausblendung gekürzt).",
+ "stuecke": [
+  {
+   "zustand": "explore",
+   "titel": "Lost Frontier",
+   "autor": "Kevin MacLeod (incompetech.com)",
+   "lizenz": "CC BY 4.0 (creativecommons.org/licenses/by/4.0/)",
+   "quelle": "incompetech.com"
+  },
+  {
+   "zustand": "spannung",
+   "titel": "Gathering Darkness",
+   "autor": "Kevin MacLeod (incompetech.com)",
+   "lizenz": "CC BY 4.0 (creativecommons.org/licenses/by/4.0/)",
+   "quelle": "incompetech.com"
+  },
+  {
+   "zustand": "action",
+   "titel": "Five Armies",
+   "autor": "Kevin MacLeod (incompetech.com)",
+   "lizenz": "CC BY 4.0 (creativecommons.org/licenses/by/4.0/)",
+   "quelle": "incompetech.com"
+  },
+  {
+   "zustand": "entdeckung",
+   "titel": "Epic loop",
+   "autor": "CodeManu (opengameart.org)",
+   "lizenz": "CC BY 3.0 (creativecommons.org/licenses/by/3.0/)",
+   "quelle": "opengameart.org/content/orchestral-adventure"
+  }
+ ]
+}
