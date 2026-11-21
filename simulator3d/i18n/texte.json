@@ -41252,6 +41252,24 @@
   "it": "Touch",
   "rm": "Touch"
  },
+ "Tour im Sim:": {
+  "en": "Tour in the simulator:",
+  "fr": "Randonnée dans le simulateur :",
+  "it": "Escursione nel simulatore:",
+  "rm": "Tura en il simulatur:"
+ },
+ "Tour im Sim: am Ziel": {
+  "en": "Tour in the simulator: at the finish",
+  "fr": "Randonnée dans le simulateur : à l’arrivée",
+  "it": "Escursione nel simulatore: all’arrivo",
+  "rm": "Tura en il simulatur: a la finamira"
+ },
+ "Tour im Sim: der Mover kommt hier nicht weiter": {
+  "en": "Tour in the simulator: the mover cannot go on here",
+  "fr": "Randonnée dans le simulateur : le mover ne peut pas aller plus loin ici",
+  "it": "Escursione nel simulatore: il mover non può proseguire qui",
+  "rm": "Tura en il simulatur: il mover na po betg ir vinavant qua"
+ },
  "TowerPro MG90S": {
   "en": "TowerPro MG90S",
   "fr": "TowerPro MG90S",

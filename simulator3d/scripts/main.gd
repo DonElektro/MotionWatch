@@ -700,6 +700,9 @@ func _ready() -> void:
 	maggie = preload("res://scripts/maggie_story.gd").new()    # «Maggie und der Bergkristall» (Geschichte unter «Spielen», maggie_story.gd)
 	maggie.main = self
 	add_child(maggie)
+	bkarte = preload("res://scripts/bergkarte.gd").new()      # «Bergtal-Karte» (MoveEye 639zzzzzt): world_reply «bkarte», {"action": "bkarte"} (Tour nachlaufen)
+	bkarte.main = self
+	add_child(bkarte)
 	_register_controls()
 	_order_controls()
 	preload("res://scripts/kit_abenteuer.gd").autostart_pruefen.call_deferred(self)   # probe package: straight into the new mode
@@ -3127,6 +3130,7 @@ func world_reply() -> Dictionary:
 	r["sky"] = licht.reply() if licht != null else null   # «Licht & Nacht»: lux am Gerät, Dämmerung, Sonne, Mond (MoveEye liest es noch nicht)
 	r["season"] = jahreszeiten.reply() if jahreszeiten != null else null   # «Jahreszeiten»: Jahreszeit, Sonnenauf-/untergang, Belegung (MoveEye liest es noch nicht)
 	r["egg"] = bt_ei.reply() if bt_ei != null and is_instance_valid(bt_ei) else null
+	r["bkarte"] = bkarte.reply() if bkarte != null else null   # Bergtal-Karte: Lage, Blick, Figur, Mover, Erkanntes, gefundene Geheimnisse -> MoveEye 639zzzzzt
 	r["lens"] = wetter.lens_reply() if wetter != null else null   # sim-kamerabild: Tropfen / Beschlag auf der Linse -> MoveEye 558l «Linse putzen»   # Bergtal-Geheimnis (nur wenn es etwas zu zeichnen gibt) -> MoveEye 639z
 	if simwerte != null:
 		r.merge(simwerte.reply())                     # Simulator-Werte: battery, pi_temp, net, clock, place, forecast (power.gd)
@@ -3139,6 +3143,7 @@ var maggie = null                      # maggie_story.gd: «Maggie und der Bergk
 var horror = null                      # bergtal_horror.gd: Bergtal · Horror-Modus (Hook für die Stimmungswahl: horror.mood_slot / open_from_mood)
 var spieltest = null                   # spieltest.gd: Spieltest-Assistent (Haken für Spiele: Spieltest.ereignis(modus, art, daten))
 var bt_ei = null                       # bergtal_ei.gd (Bergtal): reads the white light, answers {"action": "egg"}, world_reply «egg»
+var bkarte = null                      # bergkarte.gd: die Bergtal-Karte von MoveEye (world_reply «bkarte», {"action": "bkarte"})
 var own_light := false                 # the light button here while no MoveEye is connected (bergtal_ei.gd hears it too)
 var klang = null                       # klang.gd: Spielton (Musik, Effekte, Umgebung, Klicks - nur in Spielen und Geschichten)
 var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
@@ -3988,7 +3993,7 @@ func _control(d: Dictionary) -> Dictionary:
 	#     "game_shut", "game_mwcatch", "shoot", "replay", "planner", "blindmap", "dataset", "farecreate", "whatif",
 	#     "input", "pad", "padview", "press", "rover", "view_look", "netmap", "nacht", "parcours", "sabotage",
 	#     "templates", "twin", "visits", "weit", "entdecken", "werkstatt", "trailer", "vorfuehrung", "spielbereich",
-	#     "egg", "sicherung", "mehr", "localplay", "wetter"]
+	#     "egg", "sicherung", "mehr", "localplay", "wetter", "bkarte"]
 	return _mod("steuerung")._control(d)
 
 
