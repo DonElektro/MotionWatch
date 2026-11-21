@@ -10,6 +10,7 @@
 for _k, _v in (("rec8_mig", False), ("rec8_note", ""), ("rec8_seen", [])):
     CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v)
 REC8_MIN_DRIVE = 14.5 * 1024 ** 3        # a «16 GB» card has about 14.8 GiB
+SIMPLE_KEYS.update({"record_max_gb", "rec_keep_days", "timelapse_max_gb"}); SIMPLE_SECTIONS.add("Timelapse")   # 4.18.1: the 3 limits also «Einfach»
 REC8_NOTE = "New: recordings may now use up to 8 GB (before 2 GB) – the oldest are still deleted first. Change it: Settings → Recording → «Max recordings folder (GB)»."
 
 
