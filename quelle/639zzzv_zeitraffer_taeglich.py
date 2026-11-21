@@ -342,3 +342,15 @@ def tld_selftest():
 
 
 SELFTEST_EXTRA.append(("Timelapse: every day a video automatically (639zzzv)", tld_selftest))
+
+
+# 4.17.1: the hint of the history page when «Timelapse → Videos» has no video yet (the page itself has the German text)
+_HX_VTL = {"No timelapse video yet – one is made every night at about 00:20 from yesterday's photos (Settings → Timelapse)":
+               ("Noch kein Zeitraffer-Video – entsteht jede Nacht um ca. 00:20 aus den Fotos von gestern (Einstellungen → Zeitraffer)",
+                "Pas encore de vidéo accélérée – elle est créée chaque nuit vers 00:20 à partir des photos d’hier (Réglages → Accéléré)",
+                "Ancora nessun video timelapse – viene creato ogni notte verso le 00:20 dalle foto di ieri (Impostazioni → Timelapse)",
+                "Anc nagin video accelerà – el vegn fatg mintga notg enturn las 00:20 ord las fotos dad ier (Parameters → Accelerà)")}
+for _k, _v in _HX_VTL.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
