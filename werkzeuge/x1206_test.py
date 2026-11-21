@@ -10,6 +10,10 @@
     4. Stromausfall / Strom zurück (Push), Schutz-Alarm «power» (scharf), sauberes Abschalten bei leerem Akku.
     5. GPIO 6 / 16 mit dem X1206 nie geschaltet: Lade-LED (echter Faden mit erfundenem gpiozero), Tasten, Relais; Warnung im Protokoll.
     6. Einstellungen: neue Geräte GPIO 13 / 12, Einstellungen älterer Versionen behalten 6 / 16; Texte in 5 Sprachen; Anzeige.
+    7. 639zzzzz Laden steuern über GPIO 16 (erfundenes pinctrl): Kälte mit Hysterese, Notfall unter 10 %, «Trotzdem laden» 1 h,
+       ohne BME280 keine Sperre, «Akku schonen» 80 / 75 %, Pegel einstellbar.
+    8. Lernen mit erfundener Uhr: Restzeit aus dem Abfall, «voll in …», Zyklen, Kapazität aus einer langen Entladung.
+    9. Schlafen (RTC in eine Datei, Selbsttest), Licht in Prozent am PCA9685, Selbsttests der neuen Teile.
 
   python3 werkzeuge/x1206_test.py [--datei webcam_bewegung_X_Y_Z.py]
 """
@@ -202,6 +206,95 @@ R["help"] = ["0x36" in ns["HELP_PAGE"], ns["HELP_PAGE"].count("X1206"), json.dum
 R["web"] = 'b.model === "x12" ? "Geekworm X1206"' in ns["WEB_PAGE"]
 R["i2c"] = ns["i2c_conflicts"](dict(servo_driver="pca9685", pca_address="0x41", solar_on=True, solar_addr="0x42", mover_mode="off",
                                      ups_on=True, ups_model="x12", ups_addr="0x42", thermal_on=False))
+
+# 7 charging control (639zzzzz): made-up pinctrl and clock, BME280 values in STATE["env"]
+PINS = []
+_run0 = ns["_run"]
+def _frun(cmd, timeout=30, inp=None):
+    c = [x for x in cmd if x not in ("sudo", "-n")]
+    if c[:3] == ["pinctrl", "set", "16"]:
+        PINS.append(" ".join(c[3:]))
+        GP[16] = 1 if c[3:] == ["op", "dh"] else 0
+        return 0, "", ""
+    return _run0(cmd, timeout, inp)
+ns["_run"] = _frun
+A = ns["AKL"]; CLK = [1.9e9]; A["now"] = lambda: CLK[0]
+C.update(chg_cold_on=True, chg_cold_c=0.0, chg_cold_hyst=3.0, chg_emerg_pct=10, chg_override_h=1.0, chg_care=False, chg_off_level="high")
+BUS["dev"] = {0x36: chip_x12(v=3.9, soc=60)}; GP[6] = 1; GP[16] = 0; X.update(seen=False, probed=False, warned=set())
+bm = bm_new(); pushes.clear(); LOG.clear()
+def tick(t=None, soc=60, pld=1, src="BME280", dt=30.0):
+    CLK[0] += dt
+    S["env"] = None if t is None else {"t": t, "src": src}
+    BUS["dev"] = {0x36: chip_x12(v=3.9, soc=soc)}; GP[6] = pld
+    bm.ups_tick()
+    b = S.get("battery") or {}
+    return (b.get("chg_ctl") or {}).get("why"), b.get("charging"), list(PINS)
+R["c_warm"] = tick(5.0)
+R["c_cold"] = tick(-1.0)
+R["c_cold_log"] = [l for l in LOG if "GPIO 16" in l]
+R["c_hyst"] = [tick(1.0)[0], tick(2.9)[0], tick(3.0)[0]]
+R["c_pins"] = list(PINS)
+tick(-2.0); ns["akl_override"](True, "test"); R["c_ov"] = tick(-2.0)[0]; R["c_ov_push"] = [p for p in pushes if "1 h" in p]
+CLK[0] += 3700; R["c_ov_end"] = tick(-2.0)[0]
+R["c_emerg"] = [tick(-2.0, soc=9)[0], tick(-2.0, soc=12)[0], tick(-2.0, soc=13)[0]]
+R["c_emerg_push"] = [p for p in pushes if "9 %" in p]
+CLK[0] += 700; R["c_nobme"] = tick(-5.0, src="DS18B20")
+R["c_nobme_state"] = dict((S["battery"].get("chg_ctl") or {}))
+C["chg_care"] = True; PINS.clear()
+R["c_care"] = [tick(20.0, soc=80)[0], tick(20.0, soc=77)[0], tick(20.0, soc=75)[0]]
+R["c_care_pins"] = list(PINS)
+C["chg_care"] = False; C["chg_off_level"] = "low"; PINS.clear()
+R["c_low"] = tick(-3.0)[2]
+GP[16] = 0
+R["c_low_read"] = S["battery"].get("charging")
+tick(5.0); C["chg_off_level"] = "high"; GP[16] = 0
+R["c_file"] = json.load(open(os.path.join(ns["DATA_DIR"], "akku_lernen.json")))
+
+# 8 learning: runtime from the SOC drop, «full in», cycles, capacity from a long discharge
+A.update(dis=[], chg=[], rate_dis=None, rate_t=0.0, cyc_pct=0.0, last_pct=None, cap_wh=None, cap_n=0, span=None)
+bm.watts = lambda: (5.0, "pmic")
+soc = 80.0
+for i in range(150):                                   # 2.5 h on the battery, 16 %/h
+    tick(10.0, soc=int(round(soc)), pld=0, dt=60.0); soc -= 16.0 / 60.0
+b = S["battery"]
+R["l_run"] = {k: b.get(k) for k in ("use_src", "use_w", "hours", "pct", "cap_wh")}
+R["l_rate"] = A["rate_dis"]
+R["l_night"] = ns["night_forecast"]() is not None
+tick(10.0, soc=int(round(soc)), pld=1, dt=60.0)          # mains back: the span ends
+R["l_cap"] = [A["cap_wh"], A["cap_n"], (S["battery"].get("health") or {}).get("health"), (S["battery"].get("health") or {}).get("cycles")]
+GP[16] = 0
+for i in range(40):                                    # charging 30 %/h
+    tick(10.0, soc=int(round(soc)), pld=1, dt=60.0); soc += 0.5
+R["l_full"] = [S["battery"].get("charging"), S["battery"].get("full_min"), S["battery"].get("pct")]
+R["l_lines"] = ns["akl_lines"](S["battery"], "de")
+A["now"] = None
+
+# 9 sleep (RTC to a file), lights dimmed, the self-tests of both parts
+rtc = os.path.join(ns["DATA_DIR"], "wakealarm"); ns["SLP_RTC"] = rtc
+R["s_rtc"] = [ns["slp_write_alarm"](1900000123), open(rtc).read()]
+try:
+    R["s_self"] = ns["slp_selftest"]()
+except Exception as e:
+    R["s_self"] = "FEHLER %s: %s" % (type(e).__name__, e)
+try:
+    R["a_self"] = ns["akl_selftest"]()
+except Exception as e:
+    R["a_self"] = "FEHLER %s: %s" % (type(e).__name__, e)
+dims = []
+class FakePCA:
+    def dim(self, ch, pct): dims.append((ch, round(pct, 1)))
+    def switch(self, ch, on): dims.append((ch, "sw", on))
+hw2 = ns["Hardware"].__new__(ns["Hardware"]); hw2.pca = FakePCA(); hw2._pca_lights = {}
+C.update(light_white_out="pca:2", light_ir_out="pca:3", light_white_pct=100, light_ir_pct=40)
+ns["lights_tick"] = lambda: {"white": True, "ir": True}
+hw2._lights({}); hw2._lights({})
+C["light_white_pct"] = 30; hw2._lights({})
+R["dims"] = [d for d in dims if d[0] in (2, 3)]          # channel 4 = the wide infrared light (163), on / off
+R["pca_bits"] = []
+class FakeFD:
+    pass
+P = ns["PCA9685"].__new__(ns["PCA9685"]); P._set = lambda ch, on, off: R["pca_bits"].append((ch, on, off))
+P.dim(2, 100); P.dim(2, 0); P.dim(3, 50)
 try:
     R["selftest"] = ns["x1206_selftest"]()
 except Exception as e:
@@ -289,6 +382,33 @@ def main():
     ok(R["web"], "Anzeige oben: «Geekworm X1206»")
     ok(R["i2c"] == [], "INA219-Adresse zählt mit dem X1206 nicht als Konflikt")
     ok(str(R["selftest"]).startswith("model «x12»"), "Selbsttest des Teils: %s" % R["selftest"])
+    print("7  Laden steuern (639zzzzz): Kälte, Notfall, «Trotzdem laden», «Akku schonen»")
+    ok(R["c_warm"][0] == "" and R["c_warm"][2] == [], "warm: GPIO 16 nie angefasst (%s)" % (R["c_warm"],))
+    ok(R["c_cold"][0] == "cold" and R["c_cold"][2] == ["op dh"] and R["c_cold"][1] is False, "unter 0 °C: GPIO 16 hoch, lädt nicht (%s)" % (R["c_cold"],))
+    ok(len([l for l in R["c_cold_log"] if "owns" in l]) == 0 and any("switched off" in l for l in R["c_cold_log"]), "eigene Sperre: keine Warnung «GPIO 16 hoch» (%s)" % R["c_cold_log"])
+    ok(R["c_hyst"] == ["cold", "cold", ""] and R["c_pins"] == ["op dh", "ip pd"], "Hysterese: frei erst ab 3 °C, dann Eingang mit Pull-down (%s %s)" % (R["c_hyst"], R["c_pins"]))
+    ok(R["c_ov"] == "override" and R["c_ov_end"] == "cold" and len(R["c_ov_push"]) == 1, "«Trotzdem laden» 1 h mit Push, danach wieder gesperrt")
+    ok(R["c_emerg"] == ["emergency", "emergency", "cold"] and len(R["c_emerg_push"]) == 1, "unter 10 %% lädt es trotzdem (frei bis 13 %%), ein Push (%s)" % R["c_emerg"])
+    ok(R["c_nobme"][0] == "" and R["c_nobme_state"].get("no_bme") is True, "ohne BME280: keine Sperre, nur Hinweis")
+    ok(R["c_care"] == ["care", "care", ""] and R["c_care_pins"] == ["op dh", "ip pd"], "«Akku schonen»: aus bei 80 %%, wieder ab 75 %% (%s)" % R["c_care"])
+    ok(R["c_low"] == ["op dl"] and R["c_low_read"] is False, "Pegel «tief» einstellbar: GPIO 16 tief = Laden aus (%s)" % R["c_low"])
+    ok(R["c_file"].get("we_blocked") is False and "cyc_pct" in R["c_file"], "akku_lernen.json im Datenordner")
+    print("8  Lernen: Laufzeit, «voll in», Zyklen, Kapazität")
+    lr = R["l_run"]
+    ok(lr["use_src"] == "learned" and R["l_rate"] and abs(R["l_rate"] - 16.0) < 2.5 and lr["hours"] and abs(lr["hours"] - lr["pct"] / R["l_rate"]) < 0.2,
+       "Restzeit aus dem Abfall %%/h (%s, %s)" % (lr, R["l_rate"]))
+    ok(R["l_night"], "Nachtprognose rechnet mit dem gelernten Verbrauch")
+    cap = R["l_cap"]
+    ok(cap[0] and 25 < cap[0] < 38 and cap[1] == 1 and cap[2] and 38 < cap[2] < 60 and 0.35 < cap[3] < 0.45, "Kapazität aus 2.5 h / 40 %%: %s" % cap)
+    lf = R["l_full"]
+    ok(lf[0] is True and lf[1] and abs(lf[1] - (100 - lf[2]) / 30.0 * 60) < 25, "voll in … aus dem Anstieg (%s)" % lf)
+    ok(any("Vollzyklen" in l for l in R["l_lines"]), "Zeilen der Akku-Karte deutsch: %s" % R["l_lines"])
+    print("9  Schlafen, Licht dimmen, Selbsttests")
+    ok(R["s_rtc"] == ["", "1900000123"], "Weckzeit in den RTC (%s)" % R["s_rtc"])
+    ok(str(R["s_self"]).startswith("fixed times"), "Selbsttest Schlafen: %s" % R["s_self"])
+    ok(str(R["a_self"]).startswith("cold block"), "Selbsttest Laden: %s" % R["a_self"])
+    ok(R["dims"] == [[2, 100.0], [3, 40.0], [2, 30.0]], "Licht in %% am PCA9685, nur bei Änderung (%s)" % R["dims"])
+    ok(R["pca_bits"] == [[2, 4096, 0], [2, 0, 4096], [3, 0, 2048]], "100 %% = ganz an wie bisher, 0 %% = aus, 50 %% = PWM (%s)" % R["pca_bits"])
     print("\n" + ("X1206-Test OK" if not FEHLER else "%d FEHLER" % len(FEHLER)))
     return 1 if FEHLER else 0
 

@@ -273,7 +273,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_16_1.zip"
-ZD_SHA256 = "1b94d5e5de4bd5ce503e9cfe484bb32534ae75e4cdf5db192a2303a4084799c6"
+ZD_SHA256 = "8f5e646a5d036ae25a461dde7c13afed7f06e59d62fa0adc1b9b9ab9a232e1e3"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -6070,6 +6070,13 @@ class PCA9685:
 	def switch(self,ch,on):
 		self._set(ch,0x1000,0)if on else self._set(ch,0,0x1000)
 
+	def dim(self,ch,pct):
+		""
+		pct=max(0.0,min(100.0,float(pct)))
+		if pct>=99.95 or pct<=0.0:
+			return self.switch(ch,pct>0.0)
+		self._set(ch,0,max(1,min(4095,int(round(4095*pct/100.0)))))
+
 	def close(self):
 		try:
 			os.write(self.fd,bytes([0xFA,0,0,0,0x10]))
@@ -6381,6 +6388,21 @@ def is_dark():
 
 def light_alarm():
 	LIGHTS["alarm_t"]=time.time()
+
+
+
+
+for _k in ("light_white_pct", "light_ir_pct"):
+	CFG.setdefault(_k,100);DEFAULTS.setdefault(_k,100)
+
+
+def light_pct(n):
+	""
+	try:
+		v=float(CFG.get(f"light_{n}_pct",100))
+	except(TypeError,ValueError):
+		return 100.0
+	return 100.0 if not math.isfinite(v)else max(5.0,min(100.0,v))
 
 
 def lights_tick():
@@ -7796,9 +7818,10 @@ class Hardware:
 					pass
 				self._pca_lights.pop(n,None);prev=None
 			if out.startswith("pca:"):
-				if self.pca is not None and prev!=(out,on):
+				pct=light_pct(n)if on else 0.0
+				if self.pca is not None and prev!=(out,on,pct):
 					try:
-						self.pca.switch(int(out[4:]),on);self._pca_lights[n]=(out,on)
+						self.pca.dim(int(out[4:]),pct);self._pca_lights[n]=(out,on,pct)
 					except Exception as e:
 						log_event("servo",f"Light error: {e}")
 			elif out.startswith("gpio:"):
@@ -8524,6 +8547,7 @@ def ups_read_e(addr=0x2D, bus=1):
 
 
 
+
 UPS_X12 = {"seen": False, "probed": False, "warned": set()}
 
 
@@ -8565,6 +8589,19 @@ def ups_x12_pins():
 	return{6,16}if UPS_X12["seen"]or CFG.get("ups_model")=="x12"else set()
 
 
+def ups_x12_chg_off(chg):
+	"""
+"""
+	if chg is None:
+		return False
+	return chg==(0 if CFG.get("chg_off_level")=="low"else 1)
+
+
+def ups_x12_own_block():
+	""
+	return False
+
+
 def ups_x12_pin_warn(what, pin):
 	""
 	if(what,pin)not in UPS_X12["warned"]:
@@ -8591,7 +8628,7 @@ class BatteryMonitor:
 		else:
 			p*=1.15
 		L=STATE.get("lights")or{}
-		p+=float(CFG["batt_extra_w"])+(0.6 if L.get("white")else 0.0)+(0.6 if L.get("ir")else 0.0)
+		p+=float(CFG["batt_extra_w"])+(0.6*light_pct("white")/100.0 if L.get("white")else 0.0)+(0.6*light_pct("ir")/100.0 if L.get("ir")else 0.0)
 		return p,src
 
 	def loop(self):
@@ -8675,7 +8712,8 @@ class BatteryMonitor:
 		self._ups_miss=0
 		v,pct,pld,chg=r["v"],r["pct"],r["pld"],r["chg"]
 		on_batt=pld==0
-		if chg==1 and not on_batt:
+		chg_off=ups_x12_chg_off(chg)
+		if chg_off and not on_batt and not ups_x12_own_block():
 			ups_x12_pin_warn("charging",16)
 		full=not on_batt and(pct>=98 or v>=4.18)
 		p=self.watts()[0]
@@ -8683,7 +8721,7 @@ class BatteryMonitor:
 		hours=round(pct/100.0*cap_wh/max(0.8,p),1)if on_batt else None
 		STATE["battery"]={"on":True,"src":"ups","model":"x12","pct":pct,"hours":hours,"cap_wh":round(cap_wh,1),
 							"use_w":round(p,1),"watts":round(p,1),"volt":round(v,2),"on_battery":on_batt,
-							"charging":not on_batt and pld is not None and chg!=1 and not full,"full":full}
+							"charging":not on_batt and pld is not None and not chg_off and not full,"full":full}
 		return self.ups_events(v,pct,hours,on_batt,2.8<=v<=4.4)
 
 	def ups_events(self,v,pct,hours,on_batt,volt_ok):
@@ -117750,6 +117788,109 @@ hspref_selftest = _zd_fn('639zzzzy_hotspot_bevorzugen/hspref_selftest()')
 
 
 SELFTEST_EXTRA.append(("Prefer my phone hotspot (639zzzzy)", hspref_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+AKL_DEF = {"chg_cold_on": True, "chg_cold_c": 0.0, "chg_cold_hyst": 3.0, "chg_emerg_pct": 10, "chg_override_h": 1.0,
+		   "chg_care": False, "chg_care_max": 80, "chg_care_resume": 75, "chg_off_level": "high"}
+for _k, _v in AKL_DEF.items():
+	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
+USER_SETTINGS_DENY.update(AKL_DEF)
+LOCK_DENY_KEYS.update(AKL_DEF)
+AKL_FILE = "akku_lernen.json"
+_AKL0 = {"done": False}
+
+
+def akl_release_nozip():
+	""
+	_AKL0["done"]=True
+	try:
+		with open(os.path.join(DATA_DIR,AKL_FILE),encoding="utf-8")as f:
+			if not json.load(f).get("we_blocked"):
+				return
+	except(OSError,ValueError,AttributeError):
+		return
+	for c in(["pinctrl","set","16","ip","pd"],["sudo","-n","pinctrl","set","16","ip","pd"]):
+		if _run(c,timeout=5)[0]==0:
+			log_event("sys","Charging allowed again (GPIO 16): no charging control without the data zip")
+			return
+
+
+_akl_ups_x12_base = BatteryMonitor.ups_x12
+
+
+def _akl_ups_x12(self, r):
+	res=_akl_ups_x12_base(self,r)
+	try:
+		if "akl_tick"in globals():
+			akl_tick(self,r)
+		elif not _AKL0["done"]:
+			akl_release_nozip()
+	except Exception as e:
+		if not _AKL0.get("err"):
+			_AKL0["err"]=True
+			log_event("sys",f"Battery learning / charging control: {e}"[:160])
+	return res
+
+
+
+BatteryMonitor.ups_x12 = _akl_ups_x12
+
+
+AKKU_LUECKEN_PY = _zd('639zzzzz_akku_luecken/AKKU_LUECKEN_PY', "")
+zd_exec(AKKU_LUECKEN_PY, '639zzzzz_akku_luecken.py')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SLP_DEF = {"sleep_mode": "off", "sleep_off": "09:00", "sleep_on": "18:00", "sleep_sun_min": 30, "sleep_low_pct": 30,
+		   "sleep_low_h": 4, "sleep_armed_ok": False}
+for _k, _v in SLP_DEF.items():
+	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
+USER_SETTINGS_DENY.update(SLP_DEF)
+LOCK_DENY_KEYS.update(SLP_DEF)
+
+SCHLAF_PY = _zd('639zzzzz_schlaf_wecken/SCHLAF_PY', "")
+zd_exec(SCHLAF_PY, '639zzzzz_schlaf_wecken.py')
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")

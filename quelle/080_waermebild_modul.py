@@ -266,9 +266,10 @@ class Hardware:
                     pass
                 self._pca_lights.pop(n, None); prev = None
             if out.startswith("pca:"):
-                if self.pca is not None and prev != (out, on):
+                pct = light_pct(n) if on else 0.0                 # 639zzzzz: dimmed as a percentage (100 % = on as before)
+                if self.pca is not None and prev != (out, on, pct):
                     try:
-                        self.pca.switch(int(out[4:]), on); self._pca_lights[n] = (out, on)
+                        self.pca.dim(int(out[4:]), pct); self._pca_lights[n] = (out, on, pct)
                     except Exception as e:
                         log_event("servo", f"Light error: {e}")
             elif out.startswith("gpio:"):
