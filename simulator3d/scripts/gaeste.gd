@@ -1,7 +1,7 @@
 extends Node
 ## «Gäste besuchen das Zelt» (gaeste-licht, Wunsch des Besitzers 21.11.2026): ein oder zwei Gäste kommen von weit her (aus dem
 ## Bild), gehen ohne Taschenlampe zum Ziel, bleiben eine Weile und gehen wieder hinaus - so lässt sich das Führungslicht von
-## MoveEye («🔦 Gäste erwartet», Teil 639zzzzl) sehen und testen.
+## MoveEye («🔦 Gäste erwartet», Teil 639zzzzzg) sehen und testen.
 ##  Ziel   der Zustand «guests» von MoveEye (schnittstelle.json): target {kind, x, y} in m vom Gerät (x rechts, y geradeaus bei
 ##         Schwenk 0 - dieselbe Umrechnung wie Zonen / Wegpunkte im Zwilling, main.gd), sonst / bei «tent» das eigene Zelt
 ##         (main.obj["pir"]).

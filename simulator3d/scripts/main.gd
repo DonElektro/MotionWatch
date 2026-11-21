@@ -531,7 +531,7 @@ func _ready() -> void:
 	privat = preload("res://scripts/privatplatz.gd").new()  # Wunsch Nr. 2: normal visitors keep off your pitch (burglars do not)
 	privat.main = self
 	add_child(privat)
-	gaeste = preload("res://scripts/gaeste.gd").new()       # gaeste-licht: guests walk to the tent and back (MoveEye 639zzzzl)
+	gaeste = preload("res://scripts/gaeste.gd").new()       # gaeste-licht: guests walk to the tent and back (MoveEye 639zzzzzg)
 	gaeste.main = self
 	add_child(gaeste)
 	einbruch = preload("res://scripts/einbruch.gd").new()   # Einbruch-Abläufe: auskundschaften, ablenken, stehlen - wann warnt MoveEye?

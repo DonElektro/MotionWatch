@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 639zzzzl: «🔦 Gäste erwartet» – Führungslicht: Gäste lösen keinen Alarm aus (nur ein leiser Push «Gast kommt»), das weisse Licht blendet weich auf und leuchtet etwa 2 m vor die Füsse in Gehrichtung, bis zum Ziel (Zelt, Feuerstelle, Punkt) und beim Gehen wieder hinaus. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 639zzzzzg: «🔦 Gäste erwartet» – Führungslicht: Gäste lösen keinen Alarm aus (nur ein leiser Push «Gast kommt»), das weisse Licht blendet weich auf und leuchtet etwa 2 m vor die Füsse in Gehrichtung, bis zum Ziel (Zelt, Feuerstelle, Punkt) und beim Gehen wieder hinaus. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Wunsch des Besitzers (21.11.2026, freigegeben):
 #  Ein / aus   Schalter «Gäste erwartet» (Einstellungen → Schutz → «Gäste erwartet», Web und Pi-Fenster, nur Administrator:
@@ -53,45 +53,32 @@ LOCK_DENY_KEYS.update(GL_DEF)
 SCHED_FEATURES.append(("gl_on", "Guests expected (guide light)"))
 SCHED_KEYS.append("gl_on")
 GL_KINDS = ("person", "prealarm", "warm")      # what a guest may cause - never tamper, theft, SOS, by hand, noise, sensors
-GL_NOTE_S = 120.0                               # «Gast kommt»: log + quiet push at most every 2 min
 GL_ZD = {"ok": False}                           # True once the program text of the data zip ran (below)
-GL_LIGHT = {"drive": False, "pct": 0.0, "base": False, "was": False}
-GL_NOTE = {"t": 0.0, "n": 0, "kind": ""}
+GL_LIGHT = {"drive": False, "pct": 0.0, "was": False}
+GL_DIM = "light_pct" in globals()               # 4.18.0: white light dimmed in percent (PCA9685), else on / off
 
 
 def gl_active(now=None):
     """«Gäste erwartet» is on now (switch / schedule, before the end time) - only with the program text of the data zip"""
     if not (GL_ZD["ok"] and CFG.get("gl_on")):
         return False
+    u = CFG.get("gl_until_t") or 0
+    return not (isinstance(u, (int, float)) and 0 < u <= (time.time() if now is None else now))
+
+
+def _gl_call(name, *a):
+    """a function of the data zip - never raises, None when it is missing or fails (then everything runs as before)"""
     try:
-        u = float(CFG.get("gl_until_t") or 0.0)
-    except (TypeError, ValueError):
-        u = 0.0
-    return not (u > 0.0 and (time.time() if now is None else now) >= u)
-
-
-def gl_guest_note(kind, force=False):
-    """a guest (person / warm body / movement / animal) - no alarm: one log line and one quiet push at most every GL_NOTE_S"""
-    now = time.time()
-    GL_NOTE["n"] += 1; GL_NOTE["kind"] = kind
-    if not force and now - GL_NOTE["t"] < GL_NOTE_S:
-        return False
-    GL_NOTE["t"] = now
-    log_event("person", f"Guests expected: a guest is coming ({kind}) - no alarm")
-    if CFG.get("gl_push", True):
-        w = WATCH_REF.get("w")
-        try:
-            if w is not None:
-                w.notifier.info("🔦 " + tr("A guest is coming – no alarm (guests expected)."), title="{name}: " + tr("Guest arriving"))
-        except Exception as e:
-            log_event("sys", f"Guests expected: push {e}"[:160])
-    return True
+        f = globals().get(name)
+        return f(*a) if f is not None and GL_ZD["ok"] else None
+    except Exception:
+        return None
 
 
 def _gl_quiet(kind):
     try:
         if kind in GL_KINDS and gl_active():
-            gl_guest_note(kind)
+            _gl_call("gl_guest_note", kind)
             return True
     except Exception:
         pass
@@ -103,7 +90,7 @@ _gl_push_alert = push_alert
 
 
 # wraps: push_alert
-def push_alert(kind, text="", **extra):                     # + 639zzzzl: a guest gives no browser alarm, no escalation, no LED
+def push_alert(kind, text="", **extra):                     # + 639zzzzzg: a guest gives no browser alarm, no escalation, no LED
     if _gl_quiet(kind):
         return None
     return _gl_push_alert(kind, text, **extra)
@@ -113,7 +100,7 @@ _gl_siren_alarm = siren_alarm
 
 
 # wraps: siren_alarm
-def siren_alarm(kind):                                      # + 639zzzzl: no siren for a guest (tamper / sensor: as before)
+def siren_alarm(kind):                                      # + 639zzzzzg: no siren for a guest (tamper / sensor: as before)
     if _gl_quiet(kind):
         return None
     return _gl_siren_alarm(kind)
@@ -123,12 +110,9 @@ _gl_light_alarm = light_alarm
 
 
 # wraps: light_alarm
-def light_alarm():                                          # + 639zzzzl: no alarm light for a guest (the guide light is gentler)
-    try:
-        if gl_active() and (STATE.get("persons") or STATE.get("warm") or "prealarm" in (STATE.get("present") or [])):
-            return None
-    except Exception:
-        pass
+def light_alarm():                                          # + 639zzzzzg: no alarm light for a guest (the guide light is gentler)
+    if gl_active() and (STATE.get("persons") or STATE.get("warm") or "prealarm" in (STATE.get("present") or [])):
+        return None
     return _gl_light_alarm()
 
 
@@ -157,11 +141,8 @@ _gl_relays_update = RelayManager.update
 
 
 def _gl_relays(self, present):
-    try:
-        if gl_active():
-            present = set(present) - {"person", "warm", "prealarm", "animal"}
-    except Exception:
-        pass
+    if gl_active():
+        present = set(present) - {"person", "warm", "prealarm", "animal"}
     return _gl_relays_update(self, present)
 
 
@@ -171,12 +152,9 @@ _gl_deter_check = Deterrence.check
 
 
 def _gl_deter(self, present, t0):
-    try:
-        if gl_active():
-            self.seen.clear()
-            return None                                      # no deterrence while guests are expected (person or animal)
-    except Exception:
-        pass
+    if gl_active():
+        self.seen.clear()
+        return None                                          # no deterrence while guests are expected (person or animal)
     return _gl_deter_check(self, present, t0)
 
 
@@ -186,7 +164,7 @@ _gl_crawl_push = crawl_push
 
 
 # wraps: crawl_push
-def crawl_push(notifier, frame, d, ln):                     # + 639zzzzl: «something big at the ground» is a guest too
+def crawl_push(notifier, frame, d, ln):                     # + 639zzzzzg: «something big at the ground» is a guest too
     if _gl_quiet("prealarm"):
         return False
     return _gl_crawl_push(notifier, frame, d, ln)
@@ -196,42 +174,26 @@ _gl_obj_push = obj_push
 
 
 # wraps: obj_push
-def obj_push(ev, ic, title, text, jpg=None, gap_key=None):  # + 639zzzzl: animals with names (639zz) - no push while guests come
-    try:
-        if ev == "obj_animal" and gl_active():
-            return False
-    except Exception:
-        pass
+def obj_push(ev, ic, title, text, jpg=None, gap_key=None):  # + 639zzzzzg: animals with names (639zz) - no push while guests come
+    if ev == "obj_animal" and gl_active():
+        return False
     return _gl_obj_push(ev, ic, title, text, jpg, gap_key)
 
 
-# ---- the head: own mover «guide» right after «alarm» / «marker» (162) ------------------------------------------------------------
+# ---- the head: own mover «guide» right after «alarm» / «marker» (162); the light; the simulator ---------------------------------
 _gl_kp = [p for p in KOPF_PRIO if p != "guide"]
 _gl_ki = _gl_kp.index("marker") + 1 if "marker" in _gl_kp else _gl_kp.index("alarm") + 1
 KOPF_PRIO = tuple(_gl_kp[:_gl_ki] + ["guide"] + _gl_kp[_gl_ki:])
-
-
-def gl_head_held():
-    f = globals().get("gl_holds_head")
-    try:
-        return bool(f is not None and GL_ZD["ok"] and f())
-    except Exception:
-        return False
-
-
 _gl_kopf_claims = kopf_claims
 
 
 # wraps: kopf_claims
-def kopf_claims():                                           # + 639zzzzl: the guide light holds the head while it guides
+def kopf_claims():                                           # + 639zzzzzg: the guide light holds the head while it guides
     c = _gl_kopf_claims()
-    try:
-        if gl_head_held():
-            if "alarm" in c and not (KOPF["alarm"] or KOPF["tamper"] or KOPF["back"]):
-                c.discard("alarm")                           # only «following a person» (paused while guiding)
-            c.add("guide")
-    except Exception:
-        return _gl_kopf_claims()
+    if _gl_call("gl_holds_head"):
+        if "alarm" in c and not (KOPF["alarm"] or KOPF["tamper"] or KOPF["back"]):
+            c.discard("alarm")                               # only «following a person» (paused while guiding)
+        c.add("guide")
     return c
 
 
@@ -239,10 +201,8 @@ _gl_kopf_track_blocked = kopf_track_blocked
 
 
 # wraps: kopf_track_blocked
-def kopf_track_blocked():                                    # + 639zzzzl: 410 does not follow the person - the guide aims ahead of it
-    if gl_head_held():
-        return True
-    return _gl_kopf_track_blocked()
+def kopf_track_blocked():                                    # + 639zzzzzg: 410 does not follow the person - the guide aims ahead of it
+    return bool(_gl_call("gl_holds_head")) or _gl_kopf_track_blocked()
 
 
 _gl_kopf_frame = kopf_frame
@@ -251,48 +211,18 @@ _gl_kopf_frame = kopf_frame
 # wraps: kopf_frame (410 calls it for every picture)
 def kopf_frame(w, candidates, person_boxes, warm_boxes, present, frame, pw, ph, t0):
     r = _gl_kopf_frame(w, candidates, person_boxes, warm_boxes, present, frame, pw, ph, t0)
-    try:
-        f = globals().get("gl_frame")
-        if f is not None and GL_ZD["ok"]:
-            f(w, candidates, person_boxes, warm_boxes, pw, ph, t0)
-    except Exception as e:
-        if time.time() - GL_NOTE.get("err_t", 0.0) > 300:
-            GL_NOTE["err_t"] = time.time()
-            log_event("sys", f"Guide light: {type(e).__name__}: {e}"[:160])
+    _gl_call("gl_frame", w, candidates, person_boxes, warm_boxes, pw, ph, t0)
     return r
 
 
-# ---- the light: the guide switches the white light on (SOS, Morse, deterrence flashing and alarms go first) ----------------------
-GL_DIM = "light_pct" in globals()                            # 4.18.0: white light dimmed in percent (PCA9685), else on / off
 _gl_lights_tick = lights_tick
 
 
 # wraps: lights_tick
-def lights_tick():                                           # + 639zzzzl: the guide light (the way of the SOS lamp 639zzt)
-    L = STATE.get("lights")
-    if isinstance(L, dict) and "gl" in L:                    # the light rules (070) compare with their own last result
-        L = dict(L, white=bool(L["gl"])); L.pop("gl", None); STATE["lights"] = L
+def lights_tick():                                           # + 639zzzzzg: the guide light (the way of the SOS lamp 639zzt)
+    _gl_call("gl_lights_pre")
     res = _gl_lights_tick()
-    drive, pct = False, 0.0
-    try:
-        f = globals().get("gl_light_want")
-        if f is not None and GL_ZD["ok"]:
-            frac, top = f(time.time())
-            now = time.time()
-            busy = (bool((globals().get("ALM_SOS") or {}).get("on")) or (globals().get("MORSE") or {}).get("tx") is not None
-                    or now < float(LIGHTS.get("strobe_until", 0.0) or 0.0) or PAUSING["on"])
-            if frac > 0.0 and not res.get("white") and not busy and (CFG.get("light_white_out") or CFG.get("sim_on")):
-                pct = max(5.0, min(100.0, float(top) * frac))
-                drive = (pct >= 5.0 and frac >= 0.02) if (GL_DIM or CFG.get("sim_on")) else frac >= 0.5
-    except Exception:
-        drive = False
-    if drive:
-        res["white"] = True
-        STATE["lights"] = dict(STATE.get("lights") or {}, white=True, gl=False)
-    if drive != GL_LIGHT["was"]:
-        GL_LIGHT["was"] = drive
-        log_event("relay", "Guide light " + ("ON" if drive else "OFF"))
-    GL_LIGHT.update(drive=drive, pct=round(pct, 1))
+    _gl_call("gl_lights_post", res)
     return res
 
 
@@ -300,39 +230,16 @@ if GL_DIM:
     _gl_light_pct = light_pct
 
     # wraps: light_pct (4.18.0)
-    def light_pct(n):                                        # + 639zzzzl: the guide light fades
-        if n == "white" and GL_LIGHT.get("drive"):
-            return max(5.0, min(100.0, float(GL_LIGHT.get("pct") or 5.0)))
-        return _gl_light_pct(n)
-
-
-# ---- the simulator: «guests» (the visitors walk to the target and back) and the brightness of the guide light ------------------------
+    def light_pct(n):                                        # + 639zzzzzg: the guide light fades
+        return GL_LIGHT["pct"] if n == "white" and GL_LIGHT["drive"] else _gl_light_pct(n)
 _gl_sim_state = sim_state
 
 
 # wraps: sim_state
-def sim_state():                                              # + 639zzzzl: «guests» - the simulator sends guests to the target
+def sim_state():                                              # + 639zzzzzg: «guests» - the simulator sends guests to the target
     d = _gl_sim_state()
-    try:
-        f = globals().get("gl_sim_info")
-        d["guests"] = f() if (f is not None and GL_ZD["ok"]) else {"on": False}
-        if GL_LIGHT.get("drive") and isinstance(d.get("lights"), dict):
-            d["lights"] = dict(d["lights"], white=True, white_level=round(float(GL_LIGHT["pct"]) / 100.0, 3))
-    except Exception:
-        d["guests"] = {"on": False}
+    d["guests"] = _gl_call("gl_sim_patch", d) or {"on": False}
     return d
-
-
-for _k, _v in {"Guests expected (guide light)": ("Gäste erwartet (Führungslicht)", "Invités attendus (lumière de guidage)",
-                                                 "Ospiti attesi (luce guida)", "Giasts spetgads (glisch da guidar)"),
-               "Guest arriving": ("Gast kommt", "Un invité arrive", "Arriva un ospite", "In giast arriva"),
-               "A guest is coming – no alarm (guests expected).": ("Ein Gast kommt – kein Alarm (Gäste erwartet).",
-                                                                   "Un invité arrive – pas d’alarme (invités attendus).",
-                                                                   "Arriva un ospite – nessun allarme (ospiti attesi).",
-                                                                   "In giast arriva – nagin alarm (giasts spetgads).")}.items():
-    DE.setdefault(_k, _v[0])
-    for _i, _L in enumerate(("fr", "it", "rm")):
-        TRX[_L].setdefault(_k, _v[_i + 1])
 
 
 # ---- the program text (data zip): the guide itself, the page, the window, the texts, the manual -----------------------------------
@@ -356,6 +263,62 @@ GL_PERSON_H = 1.7
 GL_LOOK_S = 0.25          # the head gets a new aim at most every 0.25 s (the planner 072 drives smoothly)
 GL = {"core": None, "aim": None, "look": None, "pan_t": 0.0, "last_end": None, "src": "", "seen": "", "wide": False,
       "lv": 0.0, "lv_t": 0.0, "want": False, "frames": 0, "obs_n": 0, "until_log": 0.0, "targets_t": 0.0}
+GL_NOTE_S = 120.0         # «Gast kommt»: log + quiet push at most every 2 min
+GL_NOTE = {"t": 0.0, "n": 0, "kind": "", "err_t": 0.0}
+
+
+def gl_guest_note(kind, force=False):
+    """a guest (person / warm body / movement / animal) - no alarm: one log line and one quiet push at most every GL_NOTE_S"""
+    now = time.time()
+    GL_NOTE["n"] += 1; GL_NOTE["kind"] = kind
+    if not force and now - GL_NOTE["t"] < GL_NOTE_S:
+        return False
+    GL_NOTE["t"] = now
+    log_event("person", f"Guests expected: a guest is coming ({kind}) - no alarm")
+    if CFG.get("gl_push", True):
+        w = WATCH_REF.get("w")
+        try:
+            if w is not None:
+                w.notifier.info("🔦 " + tr("A guest is coming – no alarm (guests expected)."), title="{name}: " + tr("Guest arriving"))
+        except Exception as e:
+            log_event("sys", f"Guests expected: push {e}"[:160])
+    return True
+
+
+def gl_lights_pre():
+    L = STATE.get("lights")
+    if isinstance(L, dict) and "gl" in L:                    # the light rules (070) compare with their own last result
+        L = dict(L, white=bool(L["gl"])); L.pop("gl", None); STATE["lights"] = L
+
+
+def gl_lights_post(res):
+    """the guide switches the white light on - only when nothing else has it (SOS lamp, Morse, deterrence flashing, pause, an
+    alarm light or the own setting «on» go first)"""
+    drive, pct = False, 0.0
+    try:
+        now = time.time()
+        frac, top = gl_light_want(now)
+        busy = (bool((globals().get("ALM_SOS") or {}).get("on")) or (globals().get("MORSE") or {}).get("tx") is not None
+                or now < float(LIGHTS.get("strobe_until", 0.0) or 0.0) or PAUSING["on"])
+        if frac > 0.0 and not res.get("white") and not busy and (CFG.get("light_white_out") or CFG.get("sim_on")):
+            pct = max(5.0, min(100.0, float(top) * frac))
+            drive = frac >= 0.02 if (GL_DIM or CFG.get("sim_on")) else frac >= 0.5
+    except Exception:
+        drive = False
+    if drive:
+        res["white"] = True
+        STATE["lights"] = dict(STATE.get("lights") or {}, white=True, gl=False)
+    if drive != GL_LIGHT["was"]:
+        GL_LIGHT["was"] = drive
+        log_event("relay", "Guide light " + ("ON" if drive else "OFF"))
+    GL_LIGHT.update(drive=drive, pct=round(pct, 1))
+
+
+def gl_sim_patch(d):
+    """sim_state: the brightness of the guide light (white_level) and «guests»"""
+    if GL_LIGHT.get("drive") and isinstance(d.get("lights"), dict):
+        d["lights"] = dict(d["lights"], white=True, white_level=round(float(GL_LIGHT["pct"]) / 100.0, 3))
+    return gl_sim_info()
 
 
 # ---- geometry (pure: angles in degrees, ground in m - x right, y straight ahead at pan 50 %) -----------------------------------------
@@ -801,6 +764,15 @@ def gl_dark_ok():
 
 
 def gl_frame(w, candidates, person_boxes, warm_boxes, pw, ph, t0):
+    try:
+        _gl_frame(w, candidates, person_boxes, warm_boxes, pw, ph, t0)
+    except Exception as e:
+        if time.time() - GL_NOTE["err_t"] > 300:
+            GL_NOTE["err_t"] = time.time()
+            log_event("sys", f"Guide light: {type(e).__name__}: {e}"[:160])
+
+
+def _gl_frame(w, candidates, person_boxes, warm_boxes, pw, ph, t0):
     now = time.time()
     gl_tick(now)
     c = GL["core"]
@@ -950,7 +922,7 @@ def gl_phase_text(s, lang=None):
 _smalltv_routes_gl = smalltv_routes
 
 
-def smalltv_routes(app, reply, body):                     # + 639zzzzl
+def smalltv_routes(app, reply, body):                     # + 639zzzzzg
     _smalltv_routes_gl(app, reply, body)
     from flask import request
 
@@ -1016,7 +988,7 @@ GL_CSS = """
 #gl-p .gl-note{margin-top:6px;font-size:12.5px;line-height:1.4}
 """
 GL_JS = r"""
-// 639zzzzl «Gäste erwartet»: the panel in Einstellungen → Schutz → «Gäste erwartet» (administrator)
+// 639zzzzzg «Gäste erwartet»: the panel in Einstellungen → Schutz → «Gäste erwartet» (administrator)
 window.glPanel = function (d) {
   if (!d || d.querySelector("#gl-p")) return;
   const P = el("div", ""); P.id = "gl-p";
@@ -1058,7 +1030,10 @@ window.glPanel = function (d) {
     if (!s.light_out) P.appendChild(el("div", "mut gl-note", "⚠ " + t("No white light connected (Settings → Lights) - the alarms stay quiet, but nothing lights.")));
     P.appendChild(el("div", "mut gl-note", "ℹ️ " + t("Persons and animals raise no alarm while this is on. Sabotage, theft, SOS and the alarm by hand stay as they are.")));
   }
-  const tick = async () => { if (!document.body.contains(P)) return; let j = null;
+  let was = false;
+  const tick = async () => { const on = document.body.contains(P);
+    if (!on) { if (!was) setTimeout(tick, 500); return; }      // built before it is in the page: wait; removed later: stop
+    was = true; let j = null;
     try { j = await (await fetch("/api/gaeste?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) {}
     if (j && j.phase !== undefined) paint(j, false); else if (j && !j.phase) P.hidden = true;
     setTimeout(tick, 2500); };
@@ -1068,7 +1043,7 @@ window.glPanel = function (d) {
 GL_JS_KEYS = ("No connection to MoveEye.", "off")
 _GL_SEC = 'if (sec.id === "Extra display" && window.stvPanel) stvPanel(d);'
 if _GL_SEC in WEB_PAGE and 'window.glPanel) glPanel(d)' not in WEB_PAGE:
-    WEB_PAGE = WEB_PAGE.replace(_GL_SEC, _GL_SEC + '\n    if (sec.id === "Guests expected" && window.glPanel) glPanel(d);   // 639zzzzl', 1)
+    WEB_PAGE = WEB_PAGE.replace(_GL_SEC, _GL_SEC + '\n    if (sec.id === "Guests expected" && window.glPanel) glPanel(d);   // 639zzzzzg', 1)
 _GL_GRP = '{sec: "Camping / protection", title: "Arming and own Wi-Fi", ic: "🏕️"}'
 if _GL_GRP in WEB_PAGE and '{sec: "Guests expected"' not in WEB_PAGE:
     WEB_PAGE = WEB_PAGE.replace(_GL_GRP, _GL_GRP + ', {sec: "Guests expected", title: "Guests expected", ic: "🔦"}', 1)
@@ -1135,6 +1110,11 @@ App._build_section = _gl_tk_build_section
 
 # ---- texts (English key: Deutsch, français, italiano, rumantsch) -------------------------------------------------------------------------
 _HX_GL = {
+    "Guests expected (guide light)": ("Gäste erwartet (Führungslicht)", "Invités attendus (lumière de guidage)", "Ospiti attesi (luce guida)",
+                                      "Giasts spetgads (glisch da guidar)"),
+    "Guest arriving": ("Gast kommt", "Un invité arrive", "Arriva un ospite", "In giast arriva"),
+    "A guest is coming – no alarm (guests expected).": ("Ein Gast kommt – kein Alarm (Gäste erwartet).", "Un invité arrive – pas d’alarme (invités attendus).",
+                                                        "Arriva un ospite – nessun allarme (ospiti attesi).", "In giast arriva – nagin alarm (giasts spetgads)."),
     "Guests expected": ("Gäste erwartet", "Invités attendus", "Ospiti attesi", "Giasts spetgads"),
     "Animals too": ("Auch Tiere", "Aussi les animaux", "Anche gli animali", "Er ils animals"),
     "Light only in the dark": ("Licht nur im Dunkeln", "Lumière seulement dans l’obscurité", "Luce solo al buio", "Glisch mo en il stgir"),
@@ -1319,7 +1299,7 @@ def gl_selftest():
     return "ground point, 2 m ahead, turn back, target -> off -> farewell, lost, head rank, schedule, page, texts"
 
 
-SELFTEST_EXTRA.append(("Guests expected «🔦 guide light» (639zzzzl)", gl_selftest))
+SELFTEST_EXTRA.append(("Guests expected «🔦 guide light» (639zzzzzg)", gl_selftest))
 GL_ZD["ok"] = True
 '''
-zd_exec(GAESTE_PY, '639zzzzl_gaeste_licht.py')
+zd_exec(GAESTE_PY, '639zzzzzg_gaeste_licht.py')

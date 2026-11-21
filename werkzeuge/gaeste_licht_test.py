@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test «🔦 Gäste erwartet» (MoveEye Teil 639zzzzl) – Führungslicht, ohne Hardware.
+"""Test «🔦 Gäste erwartet» (MoveEye Teil 639zzzzzg) – Führungslicht, ohne Hardware.
 
   A) im eigenen Prozess (gebaute Datei geladen, Kopf ohne Servo-Schleife, Push / Sirene / Licht nachgemacht):
      Zielen (Bodenpunkt, 2 m voraus in Gehrichtung, Umdrehen, die Person bleibt im Bild der Kopf-Kamera, mit fester
@@ -28,6 +28,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.parse
 import urllib.request
 
 HIER = os.path.dirname(os.path.abspath(__file__))
@@ -44,7 +45,8 @@ ns["save_settings"] = lambda *a, **k: None
 ns["SRV"]["pos"] = None; ns["SRV"]["started"] = False
 C.update(lang="de", pan=50.0, tilt=50.0, kopf_on=True, sim_on=False, light_white_out="pca:2", armed=True, notify_on=True,
          gl_on=False, gl_until="", gl_until_t=0.0, gl_target={}, gl_animals=True, gl_dark_only=False, gl_push=True, gl_pct=60,
-         gl_fade_in_s=3.0, gl_fade_out_s=4.0, gl_lost_s=10, gl_still_s=30, gl_max_min=5, gl_target_r=2.0, cam_height=1.6, browser_alarm=True)
+         gl_fade_in_s=3.0, gl_fade_out_s=4.0, gl_lost_s=10, gl_still_s=30, gl_max_min=5, gl_target_r=2.0, cam_height=1.6, browser_alarm=True,
+         push_bundle=False)
 S.update(tracking=False, persons=0, warm=0, arm_state="armed")
 GC = ns["GuideCore"]
 aim_ang = ns["gl_aim_angles"]
@@ -97,7 +99,7 @@ for i in range(80):
 out["still"] = [ev, c.last_end["why"] if c.last_end else None]
 out["block"] = [c.step(5045.0, [(3.0, 7.0, "person")]), c.step(5046.0, [(9.0, 2.0, "person")])]
 c = GC()
-ev, t = walk(c, 6000.0, (-30.0, 10.0), (0.1, 0.0), 301.0, step=1.0, max_s=300.0)
+ev, t = walk(c, 6000.0, (-30.0, 10.0), (0.1, 0.0), 305.0, step=1.0, max_s=300.0)
 out["max"] = ev[-1:]
 c = GC()
 out["at_target_start"] = [c.step(7000.0, [(0.5, 5.0, "person")], (0.0, 5.0), r=2.0), c.phase, c.light_wanted()]
@@ -177,7 +179,7 @@ if sos is not None:
     vals = set()
     for i in range(30):
         vals.add(bool(ns["lights_tick"]().get("white"))); time.sleep(0.05)
-    out["sos"] = [sorted(vals), ns["GL_LIGHT"]["drive"]]
+    out["sos"] = [sorted(vals), ns["GL_LIGHT"]["drive"], bool(ns["_alm_sos_blocked"](time.time())) if "_alm_sos_blocked" in ns else False]
     sos.update(on=False)
 # fade: from off, the light comes up softly
 ns["GL"]["want"] = False; ns["GL"]["lv"] = 0.0; ns["GL"]["lv_t"] = time.time() - 10
@@ -236,6 +238,7 @@ ns["schedule_tick"]()
 out["sched_off"] = C["gl_on"]
 ok_, msg = ns["gl_set_target"]({"kind": "point", "x": 1.5, "y": 6.0, "name": "Zelt"})
 out["target"] = [ok_, C["gl_target"].get("x"), C["gl_target"].get("y")]
+C.update(pan=50.0, tilt=50.0); ns["SRV"]["pos"] = None
 ok_, msg = ns["gl_set_target"]({"kind": "here"})
 out["target_here"] = [ok_, msg]
 C["tilt"] = 40.0; ns["SRV"]["pos"] = None
@@ -299,7 +302,7 @@ def teil_a(datei, tmp):
     lg = e["light_guide"]
     ok(lg[0] and lg[1] and 5 <= lg[2] <= 60, "Führungslicht schaltet das weisse Licht dazu (%s)" % lg)
     if "sos" in e:
-        ok(e["sos"][0] == [False, True] and not e["sos"][1], "SOS-Lampe geht vor: blinkt, das Führungslicht hält sich raus (%s)" % e["sos"])
+        ok(not e["sos"][1] and (e["sos"][0] == [False, True] or e["sos"][2]), "SOS-Lampe geht vor: das Führungslicht hält sich raus (%s)" % e["sos"])
     fi, fo = e["fade_in"], e["fade_out"]
     ok(fi[0] == 0.0 and 0 < fi[1] < 0.15 and fi[1] < fi[2] < fi[3] and fi[3] == 1.0 and fi[4] == 1.0, "weich auf in 3 s, kein Sprung (%s)" % fi)
     ok(fo[0] == 1.0 and 0 < fo[1] < 1 and fo[2] == 0.0, "weich aus in 4 s (%s)" % fo)
@@ -314,7 +317,7 @@ def teil_a(datei, tmp):
     ok(e["until_end"] == [False, False], "Endzeit vorbei: aus (%s)" % e["until_end"])
     ok(e["sched"] == [True, True] and e["sched_on"] == [True, True] and e["sched_off"] is False, "Zeitplan schaltet «Gäste erwartet» ein und wieder aus")
     ok(e["target"] == [True, 1.5, 6.0], "Ziel als Punkt (%s)" % e["target"])
-    ok(e["target_here"][0] is False and "Horizont" in e["target_here"][1], "Ziel «wohin der Kopf schaut» am Horizont: abgelehnt (%s)" % e["target_here"][1])
+    ok(e["target_here"][0] is False and "horizon" in e["target_here"][1], "Ziel «wohin der Kopf schaut» am Horizont: abgelehnt (%s)" % e["target_here"][1])
     ok(e["target_here_low"][0] and 2 < e["target_here_low"][1] < 30, "Kopf schaut nach unten: Ziel am Boden (%s)" % e["target_here_low"])
     ok({"on", "active", "phase", "target", "targets", "until", "level", "light"} <= set(e["state"]), "Zustand für Seite und Fenster")
     ok(e["deny"], "nur der Administrator (USER_SETTINGS_DENY, APPKEY_DENY_KEYS)")
@@ -382,22 +385,23 @@ def teil_b(datei, tmp, bilder):
                 pg = ctx.new_page()
                 errs = []
                 pg.on("pageerror", lambda e: errs.append(str(e)))
-                pg.goto(base + "/protect", wait_until="domcontentloaded")
+                pg.goto(base + "/protect?open=" + urllib.parse.quote("sec:Guests expected"), wait_until="domcontentloaded")
                 pg.wait_for_timeout(2500)
                 pg.evaluate("() => { const g = document.getElementById('gd-card'); if (g) g.style.display = 'none'; ['g2-ov', 'g2-spot', 'g2-bub'].forEach(i => { const e = document.getElementById(i); if (e) e.remove(); }); }")
-                found = pg.evaluate("""() => { const s = [...document.querySelectorAll('details, .card, section')].find(d => {
-                    const sm = d.querySelector('summary'); return sm && /Gäste erwartet/.test(sm.textContent); });
-                    if (!s) return false; if (s.tagName === 'DETAILS') s.open = true; s.dispatchEvent(new Event('toggle')); s.scrollIntoView(); return true; }""")
-                ok(found, "%s: Abschnitt «Gäste erwartet» auf der Seite Schutz" % name)
+                found = pg.evaluate("""() => { const s = document.querySelector('[data-view="sec:Guests expected"]'); if (!s) return false;
+                    for (let e = s; e; e = e.parentElement) if (e.tagName === 'DETAILS') e.open = true; s.scrollIntoView(); return true; }""")
+                ok(found, "%s: Abschnitt «Gäste erwartet» auf der Seite Schutz (?open=sec:Guests expected)" % name)
                 try:
                     pg.wait_for_selector("#gl-p .gl-st", timeout=30000)
                     pg.wait_for_timeout(1200)
                     txt = pg.locator("#gl-p").inner_text()
                     ok("wartet auf Gäste" in txt or "führt" in txt or "Licht nur" in txt, "%s: Zustand «%s»" % (name, txt.splitlines()[0]))
                     ok("Zelt" in txt, "%s: Ziel «Zelt» in der Liste" % name)
-                    box = pg.evaluate("() => { const p = document.getElementById('gl-p').closest('details') || document.getElementById('gl-p'); const r = p.getBoundingClientRect(); return [r.x, r.y + window.scrollY, r.width, r.height]; }")
+                    pg.evaluate("() => window.scrollTo(0, 0)")
+                    pg.wait_for_timeout(400)
+                    box = pg.evaluate("() => { const p = document.querySelector('[data-view=\"sec:Guests expected\"]') || document.getElementById('gl-p'); const r = p.getBoundingClientRect(); return [r.x, r.y + window.scrollY, r.width, r.height]; }")
                     pg.screenshot(path=os.path.join(bilder, name), full_page=True,
-                                  clip={"x": 0, "y": max(0, box[1] - 10), "width": vp["width"], "height": min(1600, box[3] + 20)})
+                                  clip={"x": 0, "y": max(0, box[1] - 60), "width": vp["width"], "height": min(2400, box[3] + 80)})
                 except Exception as ex:
                     ok(False, "%s: Karte fehlt (%s)" % (name, ex))
                 if mob:
@@ -406,7 +410,7 @@ def teil_b(datei, tmp, bilder):
                     for L, word in (("fr", "Invités attendus"), ("it", "Ospiti attesi"), ("rm", "Giasts spetgads"), ("en", "Guests expected")):
                         pg.evaluate("async l => { try { localStorage.setItem('mw-lang', l); } catch (e) {} await fetch('/api/ui', {method: 'POST', "
                                     "headers: {'Content-Type': 'application/json'}, body: JSON.stringify({set: {'mw-lang': l}})}); }", L)
-                        pg.goto(base + "/protect", wait_until="domcontentloaded")
+                        pg.goto(base + "/protect?open=" + urllib.parse.quote("sec:Guests expected"), wait_until="domcontentloaded")
                         try:
                             pg.wait_for_function("w => document.body.textContent.includes(w)", arg=word, timeout=30000)
                             ok(True, "%s: «%s»" % (L, word))

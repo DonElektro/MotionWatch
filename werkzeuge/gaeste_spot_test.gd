@@ -1,5 +1,5 @@
 extends SceneTree
-## Test «Scheinwerfer kippt mit» + «Gäste besuchen das Zelt» (gaeste-licht, MoveEye 639zzzzl / Simulator gehaeuse.gd, gaeste.gd) -
+## Test «Scheinwerfer kippt mit» + «Gäste besuchen das Zelt» (gaeste-licht, MoveEye 639zzzzzg / Simulator gehaeuse.gd, gaeste.gd) -
 ## ohne Bild, ohne Welt, ohne Modelle (Ersatz-Teile mit den Namen aus modelle.json):
 ##   cd simulator3d && <godot> --headless --path . -s "$PWD/../werkzeuge/gaeste_spot_test.gd"   (absoluter Pfad nötig)
 ## 1. Die Lampen am Drehteller (lamp1 / lamp2 / lens_w / lens_ir) hängen nach lamp_pivot an einem eigenen Drehpunkt - an derselben

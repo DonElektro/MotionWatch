@@ -1,16 +1,16 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8033 (Stellen: 11154)
+Texte gesamt: 8036 (Stellen: 11163)
 Übersetzt: en 8033, fr 8033, it 8033, rm 8033
 Unsicher markiert: 261
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
 Nicht mehr im Code (noch in texte.json): 405
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29210, schlüssel 22340, keine Wörter 14064, index 10276, technisch 3783, doc 2561, einheit 343, log 203, englisch 146, pfad 130, stringname 107, html 69, klasse 42, shader 6
+Übersprungen (Grund: Anzahl): kennung 29245, schlüssel 22356, keine Wörter 14072, index 10280, technisch 3793, doc 2566, einheit 343, log 203, englisch 146, pfad 130, stringname 107, html 69, klasse 42, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
-  main_einstellungen.gd    400    25
+  main_einstellungen.gd    402    25
   bergtal_abenteuer.gd     285     7
   gamewiz.gd               252    15
   abenteuer_figuren_daten.gd   238     0
@@ -216,6 +216,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   blindmap.gd                1     0
   devtool_kamera.gd          1     0
   devzugang.gd               1     0
+  gaeste.gd                  1     0
   markierkarte.gd            1     0
   minimap.gd                 1     0
   net.gd                     1     1
@@ -633,31 +634,31 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inhalte.gd:871  'an'
   kopf.gd:120  'an'
   kopf.gd:120  'aus'
-  main_einstellungen.gd:328  'an'
-  main_einstellungen.gd:328  'an'
-  main_einstellungen.gd:328  'aus'
-  main_einstellungen.gd:328  'aus'
-  main_einstellungen.gd:331  'an'
-  main_einstellungen.gd:331  'aus'
-  main_einstellungen.gd:332  'an'
-  main_einstellungen.gd:332  'aus'
-  main_einstellungen.gd:350  'an'
-  main_einstellungen.gd:350  'aus'
-  main_einstellungen.gd:424  'keine'
-  main_einstellungen.gd:450  'Wächter an MoveEye: '
-  main_einstellungen.gd:513  'immer'
-  main_einstellungen.gd:515  'aus'
-  main_einstellungen.gd:522  'aus'
-  main_einstellungen.gd:522  'aus'
-  main_einstellungen.gd:523  'immer'
-  main_einstellungen.gd:528  'aus'
-  main_einstellungen.gd:532  'aus'
-  main_einstellungen.gd:532  'aus'
-  main_einstellungen.gd:539  'ohne'
+  main_einstellungen.gd:330  'an'
+  main_einstellungen.gd:330  'an'
+  main_einstellungen.gd:330  'aus'
+  main_einstellungen.gd:330  'aus'
+  main_einstellungen.gd:333  'an'
+  main_einstellungen.gd:333  'aus'
+  main_einstellungen.gd:334  'an'
+  main_einstellungen.gd:334  'aus'
+  main_einstellungen.gd:352  'an'
+  main_einstellungen.gd:352  'aus'
+  main_einstellungen.gd:426  'keine'
+  main_einstellungen.gd:452  'Wächter an MoveEye: '
+  main_einstellungen.gd:515  'immer'
+  main_einstellungen.gd:517  'aus'
+  main_einstellungen.gd:524  'aus'
+  main_einstellungen.gd:524  'aus'
+  main_einstellungen.gd:525  'immer'
+  main_einstellungen.gd:530  'aus'
+  main_einstellungen.gd:534  'aus'
+  main_einstellungen.gd:534  'aus'
   main_einstellungen.gd:541  'ohne'
-  main_einstellungen.gd:558  'aus'
-  main_einstellungen.gd:562  'aus'
-  main_einstellungen.gd:725  'Karte öffnen: '
+  main_einstellungen.gd:543  'ohne'
+  main_einstellungen.gd:560  'aus'
+  main_einstellungen.gd:564  'aus'
+  main_einstellungen.gd:727  'Karte öffnen: '
   mehr.gd:258  ' · Leistung: %d Bilder/s, Lite %s'
   mehr.gd:258  'an'
   mehr.gd:258  'aus'
@@ -694,16 +695,16 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   hp_kiosk.gd:157  'aus'
   hp_kiosk.gd:197  'aus'
   licht.gd:42  'aus'
-  main.gd:770  ' (Port %d)'
-  main.gd:1674  '  %.0f Mbit/s'
-  main.gd:2334  ' (von MoveEye)'
-  main.gd:2367  'Der Simulator ist belegt: '
-  main.gd:3206  'aus'
-  main.gd:3206  'ein'
-  main.gd:3283  'Sabotage-Test: '
-  main.gd:3283  'aus'
-  main.gd:3337  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3340  '\n🚨 Bewacht und weg: '
+  main.gd:775  ' (Port %d)'
+  main.gd:1679  '  %.0f Mbit/s'
+  main.gd:2339  ' (von MoveEye)'
+  main.gd:2372  'Der Simulator ist belegt: '
+  main.gd:3212  'aus'
+  main.gd:3212  'ein'
+  main.gd:3289  'Sabotage-Test: '
+  main.gd:3289  'aus'
+  main.gd:3343  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3346  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
@@ -782,7 +783,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   dataset.gd:319  ' · Vielfalt hoch'
   dataset.gd:434  ' · alte KI-Daten gelöscht: %d (%.0f MB)'
   device.gd:95  ' (Port belegt!)'
-  device.gd:298  ' · Gerät 2'
+  device.gd:307  ' · Gerät 2'
   devtool_notizen.gd:220  'Notizen aus dem MoveEye-Simulator (Entwickler → Notizen an Claude)\n%d Notizen, davon %d offen. Version %s.\n\n'
   explore.gd:733  ' (automatisch von oben)'
   explore.gd:740  ' (automatisch von oben)'
@@ -941,7 +942,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main_menues.gd:863  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
   main_start.gd:395  'Autostart: '
   main_start.gd:406  'Autologon: '
-  main_steuerung.gd:456  'Dein Platz: '
+  main_steuerung.gd:458  'Dein Platz: '
   mwpc.gd:22  'Aus'
   mwpc.gd:75  'MoveEye hat sich beendet. Protokoll: '
   mwpc.gd:107  ' · %d Bilder erkannt, %d ms'
