@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-21 18:04",
+ "generated": "2026-11-21 18:46",
  "versions": [
+  {
+   "version": "4.17.0",
+   "file": "webcam_bewegung_4_17_0.py",
+   "url": "",
+   "sha256": "232376d4f238c5f13ad1102f9c07317781544df2860c6003e27efd5259b84a85",
+   "date": "2026-11-21 18:46",
+   "notes": "Homepage-Startseite: «📷 MoveEye» (das echte MoveEye beim Host, demo/) und «🗺️ Die Karte des Grossvaters» (Sim/?grossvater=1, direkt ins Spiel), 5 Sprachen",
+   "size": 4037478,
+   "sig": "871210d37f5256eaf04f8ddc84c0e4b738c8dd9cc48091cb67d567cecf5aca2dbcbeaf905f37d1bd41ba470d89d391ed0d39a3d5552a13c9dbd1101857468903",
+   "data": {
+    "file": "moveeye_daten_4_17_0.zip",
+    "url": "",
+    "sha256": "5a54718543c7ea27f98f1a87a05427541be03ee42dbff9fbc0c13a7de7286ff6",
+    "size": 14309663,
+    "sig": "fb56e48192a3e72ecffead2dcf50c3cfebcc9cf16ff8e6b90d711f305df7bb8352786a3d0ccaccc9c958642184d67caeb298c48260106987ab5886ffeaa56409"
+   }
+  },
   {
    "version": "4.16.1",
    "file": "webcam_bewegung_4_16_1.py",
    "url": "",
    "sha256": "53e8719a9845a2b57372efdeb831d3cac766a3d3ed0efded6a154226860124be",
-   "date": "2026-11-19 01:47",
+   "date": "2026-11-21 18:42",
    "notes": "OpenCV bleibt bei 4.x (opencv-python-headless>=4.8,<5 in requirements.txt, CI, Prüfsatz, HP und Einrichtung): OpenCV 5 kann das KI-Modell nicht lesen – klare Meldung «OpenCV 5.x cannot read this model» mit Hinweis pip install \"opencv-python-headless<5\" in der Fehlerhilfe",
    "size": 4037653,
    "sig": "6e3922696dfac9124b5d0087b927485751cc6fa5f741c9b573cfd240ca01a8a75d1782e470dbb1dad9635baeadfc7e0c94419bfa08ec9f6d184cf37b5764a500",
@@ -136,23 +153,6 @@
     "sha256": "8361333f0fe863f2fbd855e0853be107bb1ef451c72a17e9e7ba23e3b11924ba",
     "size": 13784611,
     "sig": "5faf9e4b288ad1e12eca17c984b75d2b50079f18768e695efedeb94fe903e9922affda64051c6f34dce394c942f57865d7fc571af2eafc3c7f402a5564f8c902"
-   }
-  },
-  {
-   "version": "4.8.0",
-   "file": "webcam_bewegung_4_8_0.py",
-   "url": "",
-   "sha256": "fab8aafffe8a17dac270925b1e904580fe8463459500dee630fd06ec02f2a98b",
-   "date": "2026-11-16 01:46",
-   "notes": "Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt hoch) · Spielesammlung GS-1.25: «Verschollen im Bergtal» zeigt den Fortschritt pro Kapitel (oben und im Menü) und läuft bis 16× schnell; in «Gipfeltreffen» trifft Antippen am Handy wieder die richtige Stelle",
-   "size": 3957146,
-   "sig": "c1c73cddd00bf6615a9df3ae1295343647e3ace0e5e808137c2e78775fffe71b7a348876e26b73ae31f10e35f620da17ca715e1085aac8e7ea157cbfffe20e0b",
-   "data": {
-    "file": "moveeye_daten_4_8_0.zip",
-    "url": "",
-    "sha256": "bb1b8d40de731391cf3bd8be3ed809f3bfdfb6336e433dc77b8e825f406ee99a",
-    "size": 13603898,
-    "sig": "a5e3df59cc77e94d1cca18d3706f2adfb1fb5a5604ac697ce5fffe70ebf41901a534cf2361bc7e1e2bcd8439994a12fe7a9a2558c4ed666328e31382f577f90d"
    }
   },
   {
