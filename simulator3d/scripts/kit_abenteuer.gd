@@ -336,6 +336,10 @@ func stop() -> void:
 		return
 	running = false
 	phase = ""
+	for n in _versteckt:
+		if is_instance_valid(n):
+			n.visible = true
+	_versteckt.clear()
 	if regie != null:
 		regie.zeitlupe_aus()
 	Engine.time_scale = 1.0
@@ -1361,6 +1365,18 @@ func _tiere_weg() -> void:
 			continue
 		if v.is_animal() and (v as Node3D).global_position.distance_to(mitte) < 14.0 and not v.has_meta("kit_hund"):
 			v.queue_free()
+	# the tarp of the sim scene (simreal: blue cloth on two poles beside the tent) stood in front of the hut and the marmot
+	var sr = main.scenes.root if main.get("scenes") != null else null
+	if sr != null:
+		for n in sr.get_children():
+			if n is MeshInstance3D and n.visible and (n as Node3D).global_position.distance_to(mitte) < 14.0 \
+					and (n as MeshInstance3D).get_aabb().get_longest_axis_size() < 3.0:
+				n.visible = false
+				n.set_meta("kit_versteckt", true)
+				_versteckt.append(n)
+
+
+var _versteckt: Array = []
 
 
 func _dach_tick() -> void:
@@ -1563,6 +1579,8 @@ func maggie_boden(von: Vector2, nach: Vector2, y_jetzt := -1.0e9):
 		var fe = d.get("fenster", null)
 		if fe is Array and absf(sqn.y - float(fe[0])) < float(fe[1]) and hv != null:
 			return hv                                        # through the window at ledge height
+		if fe is Array and absf(sqn.y - float(fe[0])) < float(fe[1]) + 0.3 and par.sq(von).x > float(d["s"]) and sqn.x >= par.sq(von).x - 0.05:
+			return null                                      # just down behind the wall: on and away from it (3.73.0 she stuck here)
 		return false
 	if hn_id != "":
 		var top := float(par.dinge[hn_id]["top"])
@@ -1570,6 +1588,13 @@ func maggie_boden(von: Vector2, nach: Vector2, y_jetzt := -1.0e9):
 		if top - cur > 0.6:
 			return false
 		return top
+	if hv != null and not ak.is_empty() and sqn.x < float(ak["d"].get("hinter_wand", 37.5)) - 0.4 and ak["d"].has("fenster"):
+		# up on the ledge, still this side of the wall: no jumping off into the gap - only on towards the window
+		# (the owner, 3.73.0: she fell into the gap in front of the hole and never got through)
+		var fq := float(ak["d"]["fenster"][1])
+		var g0: float = bt.H(nach.x, nach.y)
+		if float(hv) - g0 > 0.3 and absf(sqn.y - fq) > 0.45:
+			return false
 	if hv != null:
 		var g: float = bt.H(nach.x, nach.y)
 		if float(hv) - g > 0.05:
@@ -1618,6 +1643,9 @@ func _maggie_ziel_pruefen(fertig_machen := false) -> void:
 	var hs: Vector2 = par.sq(Vector2(hp.x, hp.z))
 	var hy: float = hund.VL(hund.hund.global_position).y
 	var unten: bool = hy < par._H(hp.x, hp.z) + 0.3
+	if not _maggie_auto and hs.x < float(ak["d"].get("hinter_wand", 37.5)) - 0.4 and erledigt.has("maggie_heben") and hy < _sims_top() - 0.6:
+		maggie_zurueck()                                    # fell off the ledge this side of the wall: back up onto it
+		return
 	if not _maggie_auto and hs.x > float(ak["d"].get("hinter_wand", 37.5)) and unten and hs.distance_to(Vector2(float(z[0]), float(z[1]))) >= 1.3:
 		_maggie_auto = true
 		var zt: Vector2 = par.tal(float(z[0]), float(z[1]))
@@ -1632,6 +1660,31 @@ func _maggie_ziel_pruefen(fertig_machen := false) -> void:
 		_maggie_steuern(false)
 		aktion_fertig("maggie_spalt")
 		abzeichen_merk_maggie()
+
+
+var maggie_zurueck_n := 0
+
+
+func _sims_top() -> float:
+	"""the valley height of the ledge she was lifted onto (-INF without one)"""
+	var hk: Dictionary = par.aktion("maggie_heben")
+	if hk.is_empty() or not par.dinge.has(str(hk["d"]["ding"])):
+		return -INF
+	return float(par.dinge[str(hk["d"]["ding"])]["top"])
+
+
+func maggie_zurueck() -> void:
+	"""recovery while steering: Maggie is down on the ground in front of the wall - she is lifted back onto the ledge"""
+	var hk: Dictionary = par.aktion("maggie_heben")
+	if hk.is_empty() or hund == null:
+		return
+	var na: Array = hk["d"]["nach"]
+	var e: Dictionary = par.dinge[str(hk["d"]["ding"])]
+	var t: Vector2 = par.tal(float(na[0]), float(na[1]))
+	maggie_zurueck_n += 1
+	hund.place(hund.hund, Vector3(t.x, float(e["top"]), t.y), true)
+	hund.modus = "oben"
+	sag(tx("Hoppla! Nochmal, Maggie – rauf auf den Sims."), "figur")
 
 
 func abzeichen_merk_maggie() -> void:

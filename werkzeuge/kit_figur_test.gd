@@ -167,17 +167,26 @@ func _welt() -> void:
 	pruef(k.steuer_maggie and zustand() == "steuern" and k.regie.art == "maggie", "Maggie steuern: Kamera bei Maggie")
 	var z0 = k.ziel_welt()
 	pruef(z0 is Vector3 and absf(k.par.sq_von(z0).y + 5.6) < 0.3, "Maggie steuern: Kompass zeigt zuerst auf das Loch")
-	for wp in [[36.0, -5.6], [37.0, -5.6], [38.2, -5.4]]:
-		var ziel: Vector3 = k.par.welt(float(wp[0]), float(wp[1]))
-		var t := 0.0
-		while t < 6.0 and not k._maggie_auto:
-			var hp: Vector3 = k.hund.welt()
-			var d := Vector2(ziel.x - hp.x, ziel.z - hp.z)
-			if d.length() < 0.25:
-				break
-			k.hund.steuern(d.normalized(), 0.05)
-			await process_frame
-			t += 0.05
+	# recovery: if she lands in the gap in front of the wall anyway, she is put back up onto the ledge
+	k.hund.place(k.hund.hund, k.hund.VL(k.par.welt(36.62, -4.62)), false)
+	await _warte(0.3)
+	var hz: Vector3 = k.hund.VL(k.hund.hund.global_position)
+	pruef(k.maggie_zurueck_n >= 1 and hz.y > k._sims_top() - 0.3, "Maggie aus der Lücke zurück auf den Sims (%d, y %.2f / Sims %.2f)" % [k.maggie_zurueck_n, hz.y, k._sims_top()])
+	# like a player (owner 3.73.0: she fell into the gap and never got through): forward on the stick, a little drift to
+	# the side; she never drops below the ledge before the wall, and down behind the wall she runs on to the bolt
+	var tiefst := INF
+	var t := 0.0
+	var n0: int = k.maggie_zurueck_n
+	while t < 8.0 and not k._maggie_auto and not k.erledigt.has("maggie_spalt"):
+		c({"do": "eingabe", "mv": [1.0, 0.45 if t < 0.4 else 0.0], "s": 0.2})
+		await _warte(0.05)
+		t += 0.05
+		var hy: Vector3 = k.hund.VL(k.hund.hund.global_position)
+		var hsq: Vector2 = k.par.sq(Vector2(hy.x, hy.z))
+		if hsq.x < 36.9:
+			tiefst = minf(tiefst, hy.y)
+	pruef(tiefst > k._sims_top() - 0.3 and k.maggie_zurueck_n == n0, "Maggie fällt vor dem Loch nicht hinunter (tiefst %.2f, Sims %.2f)" % [tiefst, k._sims_top()])
+	pruef(k._maggie_auto or k.erledigt.has("maggie_spalt"), "Maggie mit dem Stick durch das Loch (%.1f s)" % t)
 	var z1 = k.ziel_welt()
 	pruef(z1 is Vector3 and absf(k.par.sq_von(z1).y - 0.2) < 0.4, "Maggie steuern: dann zeigt er auf den Riegel")
 	ok = await _bis(func(): return k.erledigt.has("maggie_spalt"), 8.0)

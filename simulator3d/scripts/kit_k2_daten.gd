@@ -67,7 +67,7 @@ const DINGE := [
 	# scene 3: the gate with the bolt; the side ledge with the window for Maggie
 	{"id": "riegelwand", "art": "wand", "s": 37.0, "q": 0.0, "ls": 0.3, "lq": 9.0, "top": 2.6, "fenster": [-5.6, 0.5]},
 	{"id": "tor", "art": "tor", "s": 37.0, "q": 0.8, "ls": 0.12, "lq": 1.3, "top": 2.0},
-	{"id": "sims", "art": "block", "s": 35.6, "q": -5.6, "ls": 1.0, "lq": 1.0, "top": 1.5},
+	{"id": "sims", "art": "block", "s": 35.65, "q": -5.6, "ls": 1.08, "lq": 1.0, "top": 1.5},   # up to the wall: no gap in front of the hole
 	# scene 4: the log over the second pool, the waterfall wall with ledge, ladder and the rope over the gap
 	{"id": "gumpe2", "art": "wasser", "s": 41.3, "q": 0.0, "ls": 1.6, "lq": 9.0},
 	{"id": "baum", "art": "balken", "s": 41.3, "q": 2.4, "ls": 2.6, "lq": 0.2, "top": 0.5},
@@ -100,7 +100,7 @@ const AKTIONEN := [
 	{"id": "stufe_hoch", "art": "kante", "s": 24.6, "q": 0.0, "r": 6.0, "ding": "stufe"},
 	{"id": "maggie_heben", "art": "maggie_heben", "s": 34.6, "q": -4.3, "r": 1.3, "ding": "sims", "nach": [35.6, -5.6]},
 	{"id": "maggie_spalt", "art": "maggie_steuern", "s": 35.6, "q": -5.6, "r": 0.0, "ziel": [37.9, 0.2], "riegel": "tor",
-		"fenster": [37.0, -5.6, 1.8], "hinter_wand": 37.5},
+		"fenster": [37.0, -5.6, 1.8], "hinter_wand": 37.3},
 	{"id": "baum_balance", "art": "balance", "s": 39.4, "q": 2.4, "r": 1.3, "ding": "baum"},
 	{"id": "absatz_hoch", "art": "kante", "s": 43.1, "q": -3.2, "r": 1.4, "ding": "absatz"},
 	{"id": "leiter_hoch", "art": "leiter", "s": 43.9, "q": -3.2, "r": 0.9, "ding": "leiter", "oben": [45.4, -3.2]},

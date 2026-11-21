@@ -176,10 +176,12 @@ const SZENEN := [
 		{"film": [
 			{"t": 0.0, "k": "musik", "z": "spannung"},
 			{"t": 0.0, "k": "ir", "an": false},
+			{"t": 0.0, "k": "setzen", "s": -7.8, "q": 5.2},
 			{"t": 0.0, "k": "tier_k1", "s": -4.95, "q": 1.5, "blick": [-3.7, 1.7]},
 			{"t": 0.2, "k": "shot", "art": "fix", "s": -6.5, "q": 3.4, "h": 1.15, "blick": [-4.7, 1.45, 0.5], "d": 2.4, "ziel": [-4.95, 1.5, 0.3], "groesse": 0.4},
 			{"t": 0.4, "k": "sag", "wer": "blinki", "text": "Bewegung am Fenster! Grösse: klein. Gefahr: … flauschig."},
-			{"t": 3.2, "k": "maggie_warnen", "s": -5.0, "q": 1.2},
+			{"t": 0.6, "k": "maggie_lauf", "s": -5.6, "q": 0.9},
+			{"t": 3.2, "k": "maggie_warnen", "s": -4.95, "q": 1.5},
 			{"t": 3.4, "k": "sag", "wer": "figur", "text": "Ein Murmeltier. Maggie, das ist kein Einbrecher."},
 			{"t": 6.0, "k": "sag", "wer": "maggie", "text": "Wuff! (Doch.)"},
 			{"t": 8.0, "k": "tier_weg"},
