@@ -76,6 +76,9 @@ static func tx(k: String) -> String:
 
 func still() -> bool:
 	"""das Demo-MoveEye der Homepage ist verbunden (web_moveeye.gd): dann schweigt dieses kleine eingebaute MoveEye"""
+	var k = main.get("kit") if main != null else null
+	if k != null and is_instance_valid(k) and bool(k.running):
+		return true                                     # Abenteuer-Kit (Grossvater K2): no demo window over the game (phone test 21.11.)
 	var wm = main.get_meta("web_moveeye") if main != null and main.has_meta("web_moveeye") else null
 	return wm != null and wm.verbunden()
 

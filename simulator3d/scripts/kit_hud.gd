@@ -338,7 +338,39 @@ func set_touch(on: bool) -> void:
 
 
 # ---- every frame ----------------------------------------------------------------------------------------------------------
+var _mess: Label = null
+var _mess_t := 0.0
+var _mess_ms: Array = []
+
+
+func _messen(real_dt: float) -> void:
+	"""measuring on the phone / iPad (21.11.): with --kit-messen (browser: …&messen=1) a small line top left - frames per second,
+	average and slowest frame time of the last second, Lite or not"""
+	if _mess == null:
+		if not "--kit-messen" in (OS.get_cmdline_user_args() + preload("res://scripts/web.gd").args()):
+			set_meta("kein_messen", true)
+			return
+		_mess = _label(13, Color(0.7, 1.0, 0.7))
+		_mess.position = Vector2(10, 8)
+		root.add_child(_mess)
+	_mess_ms.append(real_dt * 1000.0)
+	_mess_t += real_dt
+	if _mess_t >= 1.0:
+		var sum := 0.0
+		var mx := 0.0
+		for v in _mess_ms:
+			sum += float(v)
+			mx = maxf(mx, float(v))
+		_mess.text = "%d fps · %.1f ms Mittel · %.0f ms max · %s" % [Engine.get_frames_per_second(), sum / maxf(1.0, _mess_ms.size()),
+				mx, "Lite" if preload("res://scripts/quality.gd").lite() else "voll"]
+		print("kit-messen: " + _mess.text)
+		_mess_ms.clear()
+		_mess_t = 0.0
+
+
 func tick(real_dt: float) -> void:
+	if not has_meta("kein_messen"):
+		_messen(real_dt)
 	var s := _vs()
 	var bh: float = float(kit.regie.balken) * s.y * 0.1
 	(_bars[0] as ColorRect).size = Vector2(s.x, bh)
