@@ -334,7 +334,11 @@ jobs:
         run: |
           set -e
           sha=$(git rev-parse HEAD)
-          pre=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/sim-test" --jq .prerelease 2>/dev/null || echo "fehlt")
+          if gh release view sim-test -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            pre=$(gh release view sim-test -R "$GITHUB_REPOSITORY" --json isPrerelease --jq .isPrerelease)
+          else
+            pre=fehlt
+          fi
           [ "$pre" = "true" ] || [ "$pre" = "fehlt" ] || { echo "::error::sim-test ist keine Vorabversion ($pre) - nichts angefasst"; exit 1; }
           grep -q '^extends CanvasLayer' simulator3d/scripts/testkanal.gd || { echo "::error::dieser Stand hat den Testkanal-Knopf nicht (testkanal.gd)"; exit 1; }
           [ ! -f simulator3d/inhalte/grossvater_probe.json ] || { echo "::error::Probe-Autostart im Stand - die Testversion soll der normale Simulator sein"; exit 1; }
