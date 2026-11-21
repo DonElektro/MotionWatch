@@ -333,7 +333,7 @@ func _szenen_6_12() -> void:
 	ok = await _bis(func(): return k.ir_an, 2.0)
 	pruef(ok, "Nachtlager: IR-Licht an")
 	await _skip_film()
-	c({"do": "setzen", "tal": [-26.5, -4.2]})
+	c({"do": "setzen", "tal": [-17.6, -4.6]})
 	await _warte(0.4)
 	c({"do": "eingabe", "aktion": true, "s": 0.15})
 	ok = await _bis(func(): return k.funde.has("ir_zeichen"), 2.0)
