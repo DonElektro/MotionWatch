@@ -3,7 +3,7 @@
 verbindet das Dauerrechnen des Test-Runners mit dem Spielen am HP.
 
   python3 -I hp_wache.py [--spiel-datei /run/moveeye-spiel/spielen] [--pause /run/moveeye-test/kiosk_pause]
-                         [--status-port 8761] [--ruhe-s 900]
+                         [--status-port 8761] [--ruhe-s 180]
 
 Drei Aufgaben, alles nur mit Daten-Dateien (nichts wird ausgeführt, was von aussen kommt):
 1. «Spielen»-Wunsch erkennen und als Datei melden (SPIEL_DATEI, JSON {"grund", "seit"}; ihr Änderungsdatum = letzte
@@ -30,7 +30,7 @@ Drei Aufgaben, alles nur mit Daten-Dateien (nichts wird ausgeführt, was von aus
    - Browser am HP (HP_FASSUNG 8): solange der Browser über dem Kiosk offen ist (Marke «browser_offen» neben der
      Spielen-Datei, hp_knoepfe.sh frischt sie alle 5 s auf), gilt das als Spielen - es wird nicht gerechnet.
    - Solange gespielt wird: jede Eingabe (Leerlauf-Zähler des X-Servers, libXss), jede Controller-Eingabe, jeder
-     Zuschauer-Puls und jeder Spieler auf 8770 / 8771 frischt die Datei auf. 15 Min. ohne das -> die Datei ist abgelaufen (Änderungsdatum älter als --ruhe-s),
+     Zuschauer-Puls und jeder Spieler auf 8770 / 8771 frischt die Datei auf. 3 Min. ohne das (Besitzer 21.11.2026, vorher 15) -> die Datei ist abgelaufen (Änderungsdatum älter als --ruhe-s),
      das Rechnen geht dort weiter, wo es stand.
 2. Kleiner Status-Dienst nur fürs eigene Netz (Port 8761, nur private Adressen): GET /status.json (was der HP gerade
    rechnet, Fortschritt, Spielen), GET /bild.png und POST /zuschauer (nur die Zeitmarke oben) (das kleine Live-Bild des Tests). MoveEye (Teil 639zu «HP rechnet») holt
@@ -103,7 +103,7 @@ def zahl(v, lo, hi):
     return v if lo <= v <= hi else None
 
 
-def spielen_schreiben(pfad, grund, ruhe_s=900):
+def spielen_schreiben(pfad, grund, ruhe_s=180):
     """Spielen-Wunsch melden (atomar, lesbar für den Test-Runner). Gilt die Datei noch, nur auffrischen."""
     try:
         al = alter(pfad)
@@ -591,7 +591,7 @@ class Wache:
 
     # ---------------------------------------------- Takt
     def aktivitaet(self, z):
-        """Eingaben / Verbindungen prüfen: Spielen auffrischen, beginnen (ohne Rechnen) oder nach 15 Min. Ruhe beenden"""
+        """Eingaben / Verbindungen prüfen: Spielen auffrischen, beginnen (ohne Rechnen) oder nach 3 Min. Ruhe beenden"""
         jetzt = time.time()
         idle = self.leer.sekunden()
         eingabe = idle is not None and idle < 20
@@ -698,7 +698,7 @@ def main():
     ap.add_argument("--spiel-datei", default="/run/moveeye-spiel/spielen")
     ap.add_argument("--pause", default="/run/moveeye-test/kiosk_pause")
     ap.add_argument("--pause-max-s", type=int, default=25200)
-    ap.add_argument("--ruhe-s", type=int, default=900, help="so lange ohne Eingabe und ohne Verbindung, dann wird weitergerechnet")
+    ap.add_argument("--ruhe-s", type=int, default=180, help="so lange ohne Eingabe und ohne Verbindung, dann wird weitergerechnet")
     ap.add_argument("--status-port", type=int, default=8761, help="0 = aus")
     ap.add_argument("--zuschauer-s", type=int, default=60, help="so lange gilt ein Zuschauer-Puls von MoveEye (s)")
     ap.add_argument("--pad-quelle", default="/dev/input", help="Ordner mit js* / event* (Controller); leer = aus")
