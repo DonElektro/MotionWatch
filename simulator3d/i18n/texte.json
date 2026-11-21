@@ -24241,6 +24241,12 @@
   "it": "Capitolo 1 - La lettera",
   "rm": "Chapitel 1 - La brev"
  },
+ "Kapitel 2": {
+  "en": "Chapter 2",
+  "fr": "Chapitre 2",
+  "it": "Capitolo 2",
+  "rm": "Chapitel 2"
+ },
  "Kapitel 2 - Wo der Bach zweimal fällt": {
   "en": "Chapter 2 - Where the stream falls twice",
   "fr": "Chapitre 2 - Là où le ruisseau tombe deux fois",
@@ -31805,6 +31811,12 @@
   "fr": "Prends la tenue de camouflage, le parapluie ou le carton (à choisir avant la manche) et rampe jusqu’à la tente. Ici la tenue de camouflage aide davantage – mais seulement le jour. MoveEye surveille.",
   "it": "Prendi abiti mimetici, ombrello o scatolone (da scegliere prima del turno) e striscia fino alla tenda. Qui gli abiti mimetici aiutano di più – ma solo di giorno. MoveEye sorveglia.",
   "rm": "Prenda vestgadira da camuflascha, parasol u cartun (tscherner avant la runda) e sa tira fin a la tenda. Qua gida la vestgadira da camuflascha dapli – ma mo dal di. MoveEye fa attenziun."
+ },
+ "Nina": {
+  "en": "Nina",
+  "fr": "Nina",
+  "it": "Nina",
+  "rm": "Nina"
  },
  "Nina, Bergsteigerin": {
   "en": "Nina, mountaineer",
