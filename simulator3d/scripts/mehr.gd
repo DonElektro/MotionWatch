@@ -47,6 +47,7 @@ const ITEMS := [["help", "help", "Anleitung", "Maus, Tasten, Leiste – und die 
 		["updates", "update", "Updates", ""],
 		["theme", "theme", "Hell / Dunkel / Rotlicht", ""],         # Menüs A: «Ansicht» is the menu of the bar (like MoveEye), this is the colour scheme
 		["werkstatt", "wrench", "Bauen", "Alles zum Selberbauen: 3D, Teile, Einkauf, Drucken, Montage, Verkabeln, Software"],   # real-bauen (ui_gemeinsam.json «more»: build, früher «Werkstatt»)
+		["roboter", "robot", "Roboter", "Roboter-Labor: Segment-Roboter mit Physik, Gelenken und Posen (nur am PC)"],   # Besitzer 22.11.2026 (roboter_labor.gd; nur im Simulator)
 		["feedback", "chat", "Rückmeldung an den Entwickler", "Fehler, Wünsche, Lob, Fragen – anonym"],
 		["dev", "bug", "Entwickler", "Karte aller Orte, Flugkamera, Prüfstand, Störungen, Spieltest – nur für den Besitzer"],
 		["about", "info", "Über den Simulator", "Version und Status, Geschichte, Entwickler"],
@@ -279,6 +280,11 @@ func act(id: String) -> void:
 			dev.open()
 		"werk":
 			werk.open()
+		"roboter":
+			close_window()
+			if main.roboter != null:
+				main.roboter.mehr = self
+				main.roboter.open()
 		"werkstatt":
 			close_window()
 			if main.werkstatt != null:

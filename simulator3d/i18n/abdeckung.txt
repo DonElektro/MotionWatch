@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8541 (Stellen: 11873)
-Übersetzt: en 8541, fr 8541, it 8541, rm 8541
+Texte gesamt: 8667 (Stellen: 12025)
+Übersetzt: en 8667, fr 8667, it 8667, rm 8667
 Unsicher markiert: 514
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 553 Stellen
-Nicht mehr im Code (noch in texte.json): 417
+Nicht mehr im Code (noch in texte.json): 416
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 31463, schlüssel 24473, keine Wörter 15707, index 10832, technisch 3986, doc 2764, einheit 352, log 204, englisch 148, pfad 130, stringname 107, html 69, klasse 48, shader 6
+Übersprungen (Grund: Anzahl): kennung 31816, schlüssel 24726, keine Wörter 15851, index 11149, technisch 4058, doc 2798, einheit 363, log 204, englisch 150, pfad 130, stringname 107, html 69, klasse 48, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -22,6 +22,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   abenteuer_raetsel.gd     145     2
   maggie_story.gd          114     2
   zwei_bausteine.gd        113     2
+  roboter_labor.gd         113     0
   abenteuer_moveeye.gd     110    14
   bergtal_orte.gd          108     0
   bib_objekte.gd           108     0
@@ -36,10 +37,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   toolbar.gd                89     3
   ferienpark.gd             89     0
   maggie_hund.gd            85     0
+  mehr.gd                   84    13
   abenteuer_action.gd       83     1
   gameplus.gd               83     5
   erkunden_camp.gd          83     4
-  mehr.gd                   82    13
   kit_k1_daten.gd           82     0
   objects.gd                81     0
   objekte_neu.gd            80     0
@@ -160,6 +161,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamesneak.gd              15     0
   abenteuer_blinki.gd       14     0
   home_editor.gd            14     3
+  roboter_bewegung.gd       14     0
   kit_k4.gd                 14     0
   zimmertiere.gd            14     0
   abenteuer_inventar.gd     13     0
@@ -197,6 +199,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   tiere.gd                   7     0
   gamexp.gd                  7     0
   nachtlauf.gd               7     0
+  roboter_gelaende.gd        7     0
   fenster_waechter.gd        6     2
   kopf.gd                    6     2
   devtool_extra.gd           6     0
@@ -932,19 +935,19 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main_einstellungen.gd:571  'aus'
   main_einstellungen.gd:575  'aus'
   main_einstellungen.gd:746  'Karte öffnen: '
-  mehr.gd:258  ' · Leistung: %d Bilder/s, Lite %s'
-  mehr.gd:258  'an'
-  mehr.gd:258  'aus'
-  mehr.gd:299  'Hell / Dunkel / Rotlicht: '
-  mehr.gd:590  'aus'
-  mehr.gd:590  'ein'
-  mehr.gd:592  ' · Tunnel %s:%d (%s)'
-  mehr.gd:593  ' · Update: '
-  mehr.gd:595  ' · virtuelle Maschine'
-  mehr.gd:599  'Simulator '
-  mehr.gd:599  'frei %s von %s · '
-  mehr.gd:600  ' (zuletzt %s)'
-  mehr.gd:600  'nicht verbunden'
+  mehr.gd:259  ' · Leistung: %d Bilder/s, Lite %s'
+  mehr.gd:259  'an'
+  mehr.gd:259  'aus'
+  mehr.gd:305  'Hell / Dunkel / Rotlicht: '
+  mehr.gd:596  'aus'
+  mehr.gd:596  'ein'
+  mehr.gd:598  ' · Tunnel %s:%d (%s)'
+  mehr.gd:599  ' · Update: '
+  mehr.gd:601  ' · virtuelle Maschine'
+  mehr.gd:605  'Simulator '
+  mehr.gd:605  'frei %s von %s · '
+  mehr.gd:606  ' (zuletzt %s)'
+  mehr.gd:606  'nicht verbunden'
   schnittstelle.gd:69  'Schnittstelle: '
   schnittstelle.gd:113  ' · Schutz '
   schnittstelle.gd:113  'an'
@@ -980,16 +983,16 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   hp_kiosk.gd:157  'aus'
   hp_kiosk.gd:197  'aus'
   licht.gd:42  'aus'
-  main.gd:790  ' (Port %d)'
-  main.gd:1699  '  %.0f Mbit/s'
-  main.gd:2359  ' (von MoveEye)'
-  main.gd:2392  'Der Simulator ist belegt: '
-  main.gd:3237  'aus'
-  main.gd:3237  'ein'
-  main.gd:3314  'Sabotage-Test: '
-  main.gd:3314  'aus'
-  main.gd:3368  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3371  '\n🚨 Bewacht und weg: '
+  main.gd:797  ' (Port %d)'
+  main.gd:1706  '  %.0f Mbit/s'
+  main.gd:2366  ' (von MoveEye)'
+  main.gd:2399  'Der Simulator ist belegt: '
+  main.gd:3244  'aus'
+  main.gd:3244  'ein'
+  main.gd:3321  'Sabotage-Test: '
+  main.gd:3321  'aus'
+  main.gd:3375  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3378  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
