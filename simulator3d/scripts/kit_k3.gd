@@ -404,6 +404,11 @@ func control(d: Dictionary) -> Dictionary:
 	return {"ok": true, "info": info()}
 
 
+func haltung_erlaubt() -> bool:
+	"""on the raft: no crouching, sitting, lying (kit_abenteuer.gd haltung_frei)"""
+	return floss.is_empty()
+
+
 func info() -> Dictionary:
 	var o := {"gelesen": gelesen.keys(), "schloss_offen": _schloss != null, "schloss": schloss_wahl.duplicate(), "falsch": schloss_falsch}
 	if not duft.is_empty():

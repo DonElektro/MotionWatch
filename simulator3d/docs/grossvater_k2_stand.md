@@ -151,3 +151,40 @@ Zweig `sim-grossvater-k2` (von origin/main 9f14de1), Worktree /tmp/claude-0/wt_g
 - Lias Zelt (art «zelt», auch Kapitel 2): stehendes Firstzelt (Prisma), offen und leer; der Test prüft die Höhe.
 - Für das Finale (Kapitel 5, Sonnenaufgang): Haken des Frei-erkunden-Helfers beim Abschluss aufrufen –
   main.explore.startpunkt_melden("grossvater_grat", T.t("Grat beim Sonnenaufgang"), "bergtal", welt_pos, heading).
+
+## Phase 2 – Kapitel 4 «Nebel im Couloir» (Zweig sim-grossvater-k4, 22.11.)
+- Daten: scripts/kit_k4_daten.gd (12 Szenen). Ort: ein Couloir am Osthang über dem Gumpisee (kit_schlucht.gd, SCHLUCHT),
+  Achse s = x − 138 (hinauf nach Osten), oben auf der Schulter das alte Biwak (DECKEN: Kamera unter dem Dach).
+- Neu in scripts/kit_k4.gd (kit_abenteuer.gd lädt je Kapitel kit_k<n>.gd mit denselben Haken; kit_figur.gd unverändert,
+  verträglich mit explore_person.gd): Nebel (eigene Dichte nach dem Nebel-Tick von bergtal.gd), Wärmebild (Bildschirm in
+  kalter Palette, warme Körper leuchten durch den Nebel), Peilung (nur Kompass, kein Leuchtpunkt, Kurs in Grad), Seilschaft
+  (Haken einhängen vor dem Klettern, Lia sichert von Stand zu Stand, sichtbares Seil), Stahlseil-Querung (ohne Umhängen
+  kein Weiterkommen), Steinschlag mit QTE, Maggie im Rucksack, das Biwak mit dem Buch; Abzeichen «Seilschaft».
+- Test werkzeuge/kit_k4_test.gd: das ganze Kapitel wie ein Spieler, alle Filmeinstellungen, Kamera an allen Szenenstarts,
+  auf den Stufen, am Stahlseil und im Biwak (unter dem Dach).
+- Nach der Durchsicht (22.11.): im Biwak eine feste Eckkamera an der Türwand (Regal und Buch im Bild) statt der
+  Folgekamera von oben; Szene 12 eine echte Nacht (der Himmel wird nachgeführt - main tut es während des Abenteuers nicht -,
+  Sterne und Milchstrasse, ohne Tagesdunst, Kerze im neuen Fenster und in der Tür, zuerst ein Blick zu den Sternen);
+  Steinschlag mit Lia und den Steinen im Bild; keine Filmeinstellung steiler als 22° (Test); Rollen-Test Biwakbuch und
+  Rückblende (Tochter / Sohn: 2000 und «Vater», Enkelin / Enkel: 1974 und «Grossvater», auch die Stimme).
+
+## Kapitel um Kapitel, Kapitelwähler, Startadresse (22.11.)
+- kit_abenteuer.gd KAPITEL_FERTIG = [1, 2, 3, 4]: die fertigen Kapitel für den Wähler, die Kette und die Startseiten-Kachel.
+- Am Ende eines Kapitels: «Kapitel N geschafft – weiter mit Kapitel N+1 …», 5 s Countdown, «Weiter ›», «Zurück zum Menü»;
+  Held, Name, Rolle bleiben (der Held ist im Spielstand gespeichert: k_held), der Rucksack (k_rucksack) auch. Nach dem
+  letzten fertigen Kapitel das Ende des Kapitels («Fortsetzung folgt»). Tests einzelner Kapitel: Start mit "kette": false.
+- Geschichten-Karte: «▶ Ganzes Spiel ab Kapitel 1» und «Kapitel 1 … 4». Ohne gespeicherten Helden zuerst die Heldenwahl.
+- Browser: ?grossvater=1 = der Kapitelwähler, ?grossvater=1&kapitel=N = gleich Kapitel N (die alte Adresse ?grossvater=k2 =
+  Kapitel 2); Startoptionen --grossvater-neu und --grossvater-kapitel=N; Steuerbefehl {"action":"kit","do":"grossvater"}
+  (ohne kapitel: der Wähler), {"do":"kapitel_liste"}.
+- Test werkzeuge/kit_kette_test.gd.
+
+## Die Bewegungen von «Frei erkunden» im Abenteuer (22.11.)
+- scripts/figur_haltung.gd: EIN Ablauf für explore_person.gd und kit_abenteuer.gd - C / ✚ ↓ / grüner Knopf: stehen →
+  geduckt → kriechen; X / ✚ ← sitzen, Z / ✚ → liegen; waten und schwimmen; V / R3 die Ansichten (hinter dir, aus den Augen,
+  von oben); Rennen mit dem Schnelllauf des Erkundens (Entwickler-Schalter), im Abenteuer nie langsamer als normal.
+- Überall erlaubt ausser im Film, beim Klettern / Hangeln / Balancieren, beim Steuern von Maggie, auf der Karte und auf dem
+  Floss (kit_k3.gd haltung_erlaubt). Das Wasser eines Rätsels (Parcours «wasser»: Bach, der See um den Seeblock) bleibt
+  wie es ist: zurück zum letzten Punkt - schwimmend wird kein Rätsel übersprungen. Die Folgekamera schaut bei tiefer
+  Haltung tiefer (kit_regie.gd ziel_figur über kit.kopf_hoehe()).
+- Test werkzeuge/kit_haltung_test.gd.

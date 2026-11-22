@@ -106,7 +106,7 @@ func _lauf() -> void:
 	for i in range(120):
 		await process_frame
 	await _warte(2.0)
-	c({"do": "start", "kapitel": 3, "rolle": "enkelin", "name": "Test", "touch": false})
+	c({"do": "start", "kapitel": 3, "rolle": "enkelin", "name": "Test", "touch": false, "kette": false})
 	var ok: bool = await _bis(func(): return str(info().get("phase", "")) in ["film", "spiel"], 60.0)
 	pruef(ok, "Start Kapitel 3")
 	if not ok:
