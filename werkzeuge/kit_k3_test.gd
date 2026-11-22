@@ -115,6 +115,15 @@ func _lauf() -> void:
 	k = m.kit
 	pruef(k.kapitel == 3 and str(k.daten.TITEL) == "Der Seeblock" and k.k3 != null, "Kapitel 3: Daten «Der Seeblock», Mechanik geladen")
 	var wl: float = k.par.see_y()
+	# Lia's tent stands (review 22.11.: it lay flat on the ground): its meshes are at least 1 m high
+	var zelt: Node3D = k.par.dinge["lia_zelt"]["node"]
+	var bb := AABB()
+	var erst := true
+	for mi in zelt.find_children("*", "MeshInstance3D", true, false):
+		var b2: AABB = (mi as MeshInstance3D).global_transform * (mi as MeshInstance3D).get_aabb()
+		bb = b2 if erst else bb.merge(b2)
+		erst = false
+	pruef(not erst and bb.size.y > 1.0 and bb.size.x > 1.0 and bb.size.z > 1.0, "Lias Zelt steht (Höhe %.2f m, %.1f × %.1f m)" % [bb.size.y, bb.size.x, bb.size.z])
 	# 1 the empty tent
 	await filme_weg()
 	pruef(szene() == "s01_zelt", "Szene 1: das leere Zelt")

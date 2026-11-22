@@ -34,7 +34,7 @@ static func bezug(rolle: String) -> Dictionary:
 # =======================================================================================================================
 const DINGE := [
 	# scene 1: Lia's tent at the camp of chapter 2 (empty)
-	{"id": "lia_zelt", "art": "zelt", "tal": [-10.0, -16.5], "dreh": 40.0},
+	{"id": "lia_zelt", "art": "zelt", "tal": [-10.0, -16.5], "dreh": -45.0},   # the open door towards the film camera
 	# scene 3: the brook where it runs into the lake - stepping stones (over the lake level), then the boulders
 	{"id": "bach", "art": "wasser", "s": 19.5, "q": -7.0, "ls": 6.2, "lq": 3.2, "top_see": 0.02},
 	{"id": "stein1", "art": "stein", "s": 24.4, "q": -7.0, "ls": 0.5, "lq": 0.55, "top_see": 0.4},

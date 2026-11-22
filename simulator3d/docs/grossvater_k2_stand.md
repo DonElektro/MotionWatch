@@ -148,3 +148,6 @@ Zweig `sim-grossvater-k2` (von origin/main 9f14de1), Worktree /tmp/claude-0/wt_g
 - Test werkzeuge/kit_k3_test.gd: das ganze Kapitel wie ein Spieler (Stick + Springen über die Steine, Kante, Floss mit Stick
   relativ zur Kamera und Aktion bei den Böen, Schloss erst falsch, dann richtig), jede Filmeinstellung, die Kamera an allen
   Szenenstarts + Steinen + Steg (8 Richtungen), Duftspur verloren / neu, Floss vom Kurs.
+- Lias Zelt (art «zelt», auch Kapitel 2): stehendes Firstzelt (Prisma), offen und leer; der Test prüft die Höhe.
+- Für das Finale (Kapitel 5, Sonnenaufgang): Haken des Frei-erkunden-Helfers beim Abschluss aufrufen –
+  main.explore.startpunkt_melden("grossvater_grat", T.t("Grat beim Sonnenaufgang"), "bergtal", welt_pos, heading).

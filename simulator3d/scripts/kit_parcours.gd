@@ -466,10 +466,18 @@ func _ding(d: Dictionary) -> void:
 			e["node"] = n9
 		"zelt":
 			var n10 := node(holder, Vector3(c.x, top, c.y), deg_to_rad(float(d.get("dreh", 0.0))))
+			# a standing ridge tent (K3 review 22.11.: the two panels lay open on the ground like a book), empty and open:
+			# the body a prism, a dark doorway in front, two poles, a fly flap folded back
 			var zc := Color(0.86, 0.4, 0.22)
-			for sd in [-1.0, 1.0]:
-				part(n10, boxm(1.25, 0.04, 2.1), Vector3(sd * 0.42, 0.5, 0), zc, "tent", Vector3(0, 0, sd * 0.86))
-			part(n10, boxm(0.06, 1.1, 0.06), Vector3(0, 0.55, 1.0), Color(0.3, 0.3, 0.32), 8.0)
+			var pr := PrismMesh.new()
+			pr.size = Vector3(1.7, 1.2, 2.2)
+			part(n10, pr, Vector3(0, 0.6, 0), zc, "tent")
+			var tuer := PrismMesh.new()
+			tuer.size = Vector3(0.8, 0.9, 0.02)
+			part(n10, tuer, Vector3(0, 0.45, 1.115), Color(0.08, 0.07, 0.06), "tent")
+			part(n10, boxm(0.5, 0.6, 0.03), Vector3(0.62, 0.42, 1.2), zc.darkened(0.15), "tent", Vector3(0, -0.7, -0.5))
+			for z in [-1.12, 1.12]:
+				part(n10, cylm(0.02, 0.02, 1.28, 6), Vector3(0, 0.64, z), Color(0.3, 0.3, 0.32), 8.0)
 			e["node"] = n10
 		"buch":
 			var n11 := node(holder, Vector3(c.x, top + 0.03, c.y), 0.4)
