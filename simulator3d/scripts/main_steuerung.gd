@@ -716,6 +716,8 @@ func _explore_person(d: Dictionary) -> void:
 	var ex = main.explore
 	if d.has("frei") and bool(d["frei"]):
 		ex.frei_erkunden()
+	if d.has("frei_ab"):                                 # Etappe 4: «ort» or the id of a start point
+		ex.frei_ab(str(d["frei_ab"]))
 	if d.has("person"):
 		ex.set_person(bool(d["person"]))
 	if d.has("schnell"):
@@ -747,7 +749,26 @@ func _explore_person(d: Dictionary) -> void:
 		p.wunsch("klettern")
 	if d.has("pview") and str(d["pview"]) in ex.VIEWS:
 		ex.view = str(d["pview"])
-	for k in ["maggie", "blinki", "mw_sieht", "auge"]:   # Etappe 2: companions, MoveEye sees the figure, the eye
+	if d.has("rucksack") and d["rucksack"] is Dictionary:   # Etappe 3: {pack, n: {id: count}}
+		main.ex_rucksack = preload("res://scripts/erkunden_rucksack.gd").norm(d["rucksack"])
+		main._settings_dirty = true
+	if d.has("fotomodus"):                               # Etappe 4
+		p.extras.fotomodus(bool(d["fotomodus"]))
+	if bool(d.get("ort_merken", false)):
+		p.extras.ort_merken()
+	if d.has("hour"):
+		main.set_hour(float(d["hour"]))
+	if d.has("weather"):
+		main.weather = str(d["weather"])
+	if d.has("sache"):                                   # Etappe 3: lampe | feldstecher | essen | kochen | trinken | auffuellen | …
+		p.sachen.tu(str(d["sache"]))
+	if d.has("zoom"):
+		p.sachen.set_zoom(float(d["zoom"]))
+	if d.has("kraft"):                                   # tests: {kraft, hunger, durst, waerme}
+		for kk in ["kraft", "hunger", "durst", "waerme"]:
+			if d.has(kk):
+				p.sachen.set(kk, float(d[kk]))
+	for k in ["maggie", "blinki", "mw_sieht", "auge", "kraft_echt"]:   # Etappe 2: companions, MoveEye sees the figure, the eye
 		if d.has(k):
 			main.set("ex_" + k, bool(d[k]))
 			main._settings_dirty = true

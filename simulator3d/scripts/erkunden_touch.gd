@@ -87,6 +87,10 @@ class Knopf extends Control:
 			"ansicht":
 				ci.draw_arc(c, k * 0.55, 0.0, TAU, 24, col, w, true)           # an eye
 				ci.draw_circle(c, k * 0.22, col)
+			"rucksack":                                                     # a backpack
+				ci.draw_rect(Rect2(c + Vector2(-0.45, -0.45) * k, Vector2(0.9, 1.15) * k), col, false, w)
+				ci.draw_rect(Rect2(c + Vector2(-0.3, 0.15) * k, Vector2(0.6, 0.35) * k), col, false, w * 0.7)
+				ci.draw_arc(c + Vector2(0, -0.45) * k, k * 0.25, PI, TAU, 10, col, w, true)
 			_:                                                              # standing
 				H.call(Vector2(0.0, -0.72))
 				L.call(Vector2(0.0, -0.54), Vector2(0.0, 0.2))
@@ -104,10 +108,10 @@ func _ready() -> void:
 	add_child(root)
 	for e in [["haltung", "Haltung wechseln (C): stehen → geduckt → kriechen"], ["sitzen", "Hinsetzen / aufstehen (X)"],
 			["liegen", "Hinlegen und still liegen / aufstehen (Z)"], ["sprung", "Springen, an einer Kante hochklettern (Leertaste)"],
-			["ansicht", "Ansicht (V): hinter der Figur, aus den Augen, von oben"]]:
+			["ansicht", "Ansicht (V): hinter der Figur, aus den Augen, von oben"], ["rucksack", "Rucksack (R): Lampe, Feldstecher, essen, trinken, übernachten …"]]:
 		var b := Knopf.new()
 		b.id = str(e[0])
-		b.symbol = "sprung" if b.id == "sprung" else ("ansicht" if b.id == "ansicht" else b.id)
+		b.symbol = b.id
 		b.tooltip_text = T.t(str(e[1]))
 		b.mouse_filter = Control.MOUSE_FILTER_STOP
 		var bid := b.id
@@ -130,7 +134,7 @@ func _layout() -> void:
 	var hb: Knopf = knoepfe["haltung"]
 	hb.size = Vector2(gr, gr)
 	hb.position = Vector2(pad, y)
-	var order := ["sprung", "sitzen", "liegen", "ansicht"]
+	var order := ["sprung", "sitzen", "liegen", "ansicht", "rucksack"]
 	for i in range(order.size()):
 		var b: Knopf = knoepfe[order[i]]
 		b.size = Vector2(kl, kl)

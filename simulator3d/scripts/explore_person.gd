@@ -42,6 +42,8 @@ const Touch = preload("res://scripts/erkunden_touch.gd")
 const EFigur = preload("res://scripts/erkunden_figur.gd")
 const Begleiter = preload("res://scripts/erkunden_begleiter.gd")
 const Gestalten = preload("res://scripts/erkunden_gestalten.gd")
+const Sachen = preload("res://scripts/erkunden_sachen.gd")
+const Extras = preload("res://scripts/erkunden_extras.gd")
 
 const TURN := 2.4                    # rad/s: A / D drehen in der Ich-Sicht (und im Testgang pwalk)
 const LEASH := 110.0                 # m: so weit von der Gruppe weg in der Geschichte (wie abenteuer_zweit.gd)
@@ -73,6 +75,10 @@ var sitz := {}                       # erkunden_welt.sitz(): wo sie sitzt
 var touch: CanvasLayer = null
 var begleiter: Node = null           # erkunden_begleiter.gd: Maggie, Blinki, «MoveEye sieht dich» (Etappe 2)
 var gestalten: CanvasLayer = null    # erkunden_gestalten.gd: die Figur gestalten (Etappe 2)
+var sachen: Node = null              # erkunden_sachen.gd: Rucksack-Sachen und Kraft (Etappe 3)
+var extras: Node = null              # erkunden_extras.gd: Fotomodus, Ort merken, Startpunkte (Etappe 4)
+var _abseil := {}                    # rappelling: {von, kante, nach, t, dauer}
+var _y_hoch := -INF                  # the highest point of the last flight (a hard landing, «Echt»)
 var _scene := ""
 var _anchor = null                   # Geschichte: wo die Gruppe zuletzt war (Tal)
 var _test := {}                      # Tests: {"v": Vector2, "run": bool, "until": s}
@@ -178,6 +184,14 @@ func _ready() -> void:
 	gestalten.person = self
 	gestalten.main = main
 	add_child(gestalten)
+	sachen = Sachen.new()
+	sachen.person = self
+	sachen.main = main
+	add_child(sachen)
+	extras = Extras.new()
+	extras.person = self
+	extras.main = main
+	add_child(extras)
 
 
 func _now() -> float:
@@ -331,6 +345,14 @@ func figur_setzen(d: Dictionary) -> void:
 func remove() -> void:
 	if begleiter != null:
 		begleiter.hund_weg()
+	if extras != null and extras.foto_an:
+		extras.fotomodus(false)
+	if sachen != null:
+		sachen.lager_weg()
+		if sachen.fernglas:
+			sachen.feldstecher(false)
+		sachen.menu(false)
+	_abseil = {}
 	if gestalten != null and gestalten.offen:
 		gestalten.zeigen(false)
 	if ok():
@@ -402,6 +424,8 @@ func wunsch(k: String) -> void:
 func touch_tipp(id: String) -> void:
 	if id == "ansicht":
 		ex.next_view()
+	elif id == "rucksack":
+		sachen.menu(not sachen.menu_offen())
 	else:
 		wunsch(id)
 
@@ -493,7 +517,9 @@ func _haltung_tick(ein: Dictionary) -> void:
 	# what actor.gd does with it
 	actor.ctl_posture = 2 if wasser == "schwimmen" else int(POSTUR[haltung])
 	actor.gear_speed = (SCHWIMM_V / float(ActorS.PLAYER_SPEED[2])) if wasser == "schwimmen" else (WATEN_K if wasser == "waten" else 1.0)
-	actor.gear_norun = wasser != ""
+	actor.gear_norun = wasser != "" or (sachen != null and not sachen.darf_rennen())
+	if sachen != null:
+		actor.gear_speed *= sachen.tempo_faktor()            # Etappe 3: strength, snow without ice axe, hurt
 	actor.run_top = renn_tempo(main)
 	actor.frozen = haltung in ["sitzen", "liegen"]
 
@@ -549,8 +575,9 @@ func _process(dt: float) -> void:
 		actor.ctl_move = Vector2.ZERO
 		return
 	var ein := _eingabe(dt)
-	if gestalten != null and gestalten.offen:            # designing: the figure stands for its portrait
-		ein["mv"] = Vector2.ZERO
+	if (gestalten != null and gestalten.offen) or (sachen != null and sachen.fernglas) or not _abseil.is_empty() \
+			or (extras != null and extras.foto_an):
+		ein["mv"] = Vector2.ZERO                             # designing / binoculars / rappelling: the figure stands
 		ein["sprung"] = false
 		_wunsch = {}
 	_haltung_tick(ein)
@@ -564,16 +591,26 @@ func _process(dt: float) -> void:
 					haltung = "stehen"                      # first up, then a jump
 				ein["sprung"] = false
 			else:
-				var k: Dictionary = Welt.kante(main, figur.pos(), float(actor.heading))
+				var hmax: float = 3.5 if (sachen != null and sachen.hat("pickel") and sachen.auf_schnee()) else Welt.KANTE_MAX
+				var k: Dictionary = Welt.kante(main, figur.pos(), float(actor.heading), hmax)
 				if not k.is_empty():
 					figur._hochziehen(k["ziel"], k["kante"])   # over the edge (the mantle of kit_figur.gd)
 					ein["sprung"] = false
 				elif bool(_wunsch.get("klettern", false)) and not bool(ein.get("sprung", false)):
-					main.start_info = T.t("Hier gibt es nichts zum Hochklettern")
+					var ab: Dictionary = sachen.abgrund() if sachen != null else {}
+					if not ab.is_empty() and sachen.hat("seil"):
+						abseilen()                              # Etappe 3: with the rope down a drop
+					elif not ab.is_empty():
+						sachen.sag(T.t("Zu steil – mit einem Seil kannst du dich hier abseilen"))
+					else:
+						main.start_info = T.t("Hier gibt es nichts zum Hochklettern")
 		else:
 			ein["sprung"] = false                              # swimming / wading: no jumps (no diving)
 	_wunsch = {}
 	_ein = ein
+	if not _abseil.is_empty():
+		actor.puppet = true
+		return
 	if wasser == "schwimmen":
 		actor.puppet = false
 		actor.frozen = false
@@ -633,9 +670,20 @@ func _eingabe(dt: float) -> Dictionary:
 func spaet(dt: float, real_dt: float) -> void:
 	if not ok() or not active or not ex.on:
 		return
+	if not _abseil.is_empty():
+		_abseil_tick(dt)
+		_bounds()
+		_kamera(dt, real_dt)
+		touch.tick()
+		return
 	var zs := str(figur.zustand)
 	if zs == "luft":                                         # (on the ground actor.gd already steps 0.2 m with keep_out)
 		_waende(figur._p0)
+		_y_hoch = maxf(_y_hoch, figur.y)
+	elif _y_hoch > -INF:
+		if sachen != null:
+			sachen.gelandet(_y_hoch - figur.y)                # Etappe 3: a hard landing («Echt»)
+		_y_hoch = -INF
 	var w: Dictionary = Welt.wasser(main, actor.position)
 	var art: String = Welt.art_fuer_tiefe(float(w.get("tiefe", 0.0)), str(w.get("art", "")) == "bach")
 	if art == "schwimmen" and (zs == "boden" or (zs == "luft" and figur.y <= float(w["spiegel"]) - SCHWIMM_TIEF + 0.05)):
@@ -662,6 +710,54 @@ func spaet(dt: float, real_dt: float) -> void:
 	_bounds()
 	_kamera(dt, real_dt)
 	touch.tick()
+
+
+func abseilen() -> bool:
+	"""Etappe 3: with the rope down the drop ahead (1–40 m) - to the edge, then slowly down, at the bottom on the ground"""
+	if sachen == null or not sachen.hat("seil") or figur.zustand != "boden" or wasser != "":
+		return false
+	var ab: Dictionary = sachen.abgrund()
+	if ab.is_empty():
+		return false
+	if haltung != "stehen":
+		if haltung == "sitzen":
+			_aufstehen("stehen")
+		haltung = "stehen"
+	_abseil = {"von": figur.pos(), "kante": ab["kante"], "nach": ab["nach"], "t": 0.0, "dauer": 1.0 + float(ab["h"]) / 1.6}
+	actor.cur_speed = 0.0
+	sachen.sag(T.t("Abseilen …"), 1.5)
+	return true
+
+
+func _abseil_tick(dt: float) -> void:
+	var A := _abseil
+	A["t"] = float(A["t"]) + dt
+	var f := clampf(float(A["t"]) / float(A["dauer"]), 0.0, 1.0)
+	var von: Vector3 = A["von"]
+	var kante: Vector3 = A["kante"]
+	var nach: Vector3 = A["nach"]
+	var p: Vector3
+	if f < 0.15:                                              # to the edge, turn round (face the wall)
+		p = von.lerp(kante, smoothstep(0.0, 1.0, f / 0.15))
+	else:                                                     # down along the wall, a little away from it
+		var u := smoothstep(0.0, 1.0, (f - 0.15) / 0.85)
+		p = Vector3(lerpf(kante.x, nach.x, u), lerpf(kante.y, nach.y, u), lerpf(kante.z, nach.z, u))
+	var to := nach - von
+	actor.heading = atan2(to.x, to.z)                         # back to the drop
+	actor.rotation.y = actor.heading
+	actor.position = p
+	figur.y = p.y
+	figur._p0 = p
+	actor.cur_speed = 0.0
+	actor.aktion("haengen" if f > 0.15 else "klettern", 0.3)
+	if f >= 1.0:
+		_abseil = {}
+		actor.puppet = false
+		actor.heading = atan2(-to.x, -to.z)
+		actor.rotation.y = actor.heading
+		figur.setzen(nach, actor.heading)
+		figur.geh_zu("boden")
+		sachen.sag(T.t("Unten!"), 1.5)
 
 
 func _waende(von: Vector3) -> void:
@@ -741,6 +837,16 @@ func _kamera(dt: float, real_dt: float) -> void:
 	var cam: Camera3D = main.view_cam
 	if gestalten != null and gestalten.offen:
 		_portrait(cam, dt)
+		return
+	if extras != null and extras.foto_an:                   # Etappe 4: the photo mode - the camera free round the figure
+		extras.kamera(cam, dt, d_or, d_pi, d_di)
+		return
+	if sachen != null and sachen.fernglas:                  # Etappe 3: through the binoculars (mouse / R1 look, wheel zoom)
+		_eye_yaw = wrapf(_eye_yaw + d_or, -PI, PI)
+		if d_di != 0.0:
+			sachen.set_zoom(sachen.zoom - d_di * 0.6)
+		main.view_mode = 0
+		sachen.kamera(cam, dt)
 		return
 	match v:
 		"driver":
@@ -925,5 +1031,8 @@ func state() -> Dictionary:
 	o["ptempo"] = float(main.get("ex_ptempo")) if main.get("ex_ptempo") != null else 0.0
 	o["touch"] = touch.info() if touch != null else {}
 	o["begleiter"] = begleiter.info() if begleiter != null else {}
+	o["sachen"] = sachen.info() if sachen != null and ok() else {}
+	o["abseilen"] = not _abseil.is_empty()
+	o["extras"] = extras.info() if extras != null else {}
 	o["gestalten"] = gestalten.info() if gestalten != null else {}
 	return o

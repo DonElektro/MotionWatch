@@ -622,7 +622,8 @@ func _load_settings() -> void:
 	main.ex_ptempo = clampf(float(main.ex_ptempo), 1.0, 40.0)    # 21.11.2026: the fast run of the figure (explore_person.gd)
 	main.ex_schnell = bool(main.ex_schnell)
 	main.ex_figur = preload("res://scripts/erkunden_figur.gd").norm(main.ex_figur)   # Etappe 2: the own figure, always complete
-	for k in ["ex_maggie", "ex_blinki", "ex_mw_sieht", "ex_auge"]:
+	main.ex_rucksack = preload("res://scripts/erkunden_rucksack.gd").norm(main.ex_rucksack)   # Etappe 3: the pack
+	for k in ["ex_maggie", "ex_blinki", "ex_mw_sieht", "ex_auge", "ex_kraft_echt"]:
 		main.set(k, bool(main.get(k)))
 	if d.has("hour_now") and not "--hour" in OS.get_cmdline_user_args() and not "--hour" in OS.get_cmdline_args() and not main.real_time:
 		# 3D-3.76: the time as it was set; a short break (update, restart) - the clock went on meanwhile, like outside

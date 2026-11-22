@@ -111,7 +111,7 @@ static func sitz(main, p: Vector3, heading: float) -> Dictionary:
 	return {"art": "boden", "h": SITZ_BODEN, "p": p, "yaw": heading}
 
 
-static func kante(main, p: Vector3, heading: float) -> Dictionary:
+static func kante(main, p: Vector3, heading: float, hoch_max := KANTE_MAX) -> Dictionary:
 	"""eine Kante vor der Figur zum Hochklettern: {ziel (oben, Welt), kante (Vorderkante oben), h} oder {}"""
 	var dir := Vector3(-sin(heading), 0, -cos(heading))
 	for dd in [0.45, 0.7, 0.95, 1.2]:
@@ -120,7 +120,7 @@ static func kante(main, p: Vector3, heading: float) -> Dictionary:
 		var h := g - p.y
 		if h < KANTE_MIN:
 			continue
-		if h > KANTE_MAX:
+		if h > hoch_max:
 			return {}
 		var q2: Vector3 = q + dir * 0.45
 		var g2: float = main.ground_y(q2.x, q2.z)

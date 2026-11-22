@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8102 (Stellen: 11250)
-Übersetzt: en 8100, fr 8100, it 8100, rm 8100
+Texte gesamt: 8173 (Stellen: 11367)
+Übersetzt: en 8165, fr 8165, it 8165, rm 8165
 Unsicher markiert: 261
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 539 Stellen
-Nicht mehr im Code (noch in texte.json): 411
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 540 Stellen
+Nicht mehr im Code (noch in texte.json): 408
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29572, schlüssel 22508, keine Wörter 14156, index 10355, technisch 3801, doc 2596, einheit 344, log 203, englisch 146, pfad 130, stringname 107, html 69, klasse 45, shader 6
+Übersprungen (Grund: Anzahl): kennung 29788, schlüssel 22606, keine Wörter 14252, index 10391, technisch 3818, doc 2627, einheit 347, log 203, englisch 146, pfad 130, stringname 107, html 69, klasse 45, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -50,11 +50,12 @@ Pro Datei (Texte / davon dynamische Stellen):
   geschichten.gd            67     0
   abenteuer_zweit.gd        66     0
   bib_berg.gd               64     0
+  spielbereich.gd           63     0
+  explore.gd                63     4
   parcours.gd               63    10
-  explore.gd                62     4
   bergtal_erleben_a.gd      62     0
   erlebniswelt.gd           62     0
-  spielbereich.gd           61     0
+  erkunden_sachen.gd        61     1
   abenteuer_geheim.gd       60     0
   abenteuer_figuren.gd      58     5
   abenteuer_zwei_team.gd    57     0
@@ -62,6 +63,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   handy.gd                  56     2
   quick.gd                  55     2
   bergtal_erleben_b.gd      55     0
+  erkunden_gestalten.gd     50     3
   karte.gd                  49    10
   abenteuer_rucksack.gd     48     3
   draco.gd                  47     0
@@ -99,7 +101,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   devtool_notizen.gd        34     1
   gametools.gd              33     2
   tour.gd                   31     1
-  erkunden_gestalten.gd     31     3
   bergtal_wegweiser.gd      30     0
   kit_abenteuer.gd          30     1
   b3d.gd                    29     5
@@ -150,7 +151,9 @@ Pro Datei (Texte / davon dynamische Stellen):
   main_start.gd             16     2
   menschen.gd               16     0
   gamesneak.gd              15     0
+  explore_person.gd         15     0
   abenteuer_blinki.gd       14     0
+  erkunden_rucksack.gd      14     0
   home_editor.gd            14     3
   zimmertiere.gd            14     0
   abenteuer_inventar.gd     13     0
@@ -161,7 +164,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   gameturm.gd               13     0
   tasten.gd                 13     0
   devtool_kontakt.gd        12     0
-  explore_person.gd         12     0
   maggie_modell.gd          12     3
   geschichten_faden.gd      12     0
   replay.gd                 11     1
@@ -192,12 +194,13 @@ Pro Datei (Texte / davon dynamische Stellen):
   kopf.gd                    6     2
   devtool_extra.gd           6     0
   devtool_schalter.gd        6     0
+  erkunden_touch.gd          6     0
   gamewatch.gd               6     0
   autostart.gd               5     0
   visitlog.gd                5     0
-  erkunden_touch.gd          5     0
   figur.gd                   5     0
   wege.gd                    5     0
+  erkunden_extras.gd         4     0
   gras.gd                    4     0
   device.gd                  4     2
   main_steuerung.gd          4     1
@@ -603,9 +606,9 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   abenteuer_rucksack.gd:424  ' und '
   abenteuer_rucksack.gd:480  'Fertig'
   quality.gd:113  ' und '
-  erkunden_gestalten.gd:136  'Fertig'
-  erkunden_gestalten.gd:171  'an'
-  erkunden_gestalten.gd:171  'aus'
+  erkunden_gestalten.gd:140  'Fertig'
+  erkunden_gestalten.gd:181  'an'
+  erkunden_gestalten.gd:181  'aus'
   fenster_waechter.gd:14  'Fertig'
   fenster_waechter.gd:14  'Zu'
   tour.gd:188  'Fertig'
@@ -664,7 +667,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main_einstellungen.gd:544  'ohne'
   main_einstellungen.gd:561  'aus'
   main_einstellungen.gd:565  'aus'
-  main_einstellungen.gd:735  'Karte öffnen: '
+  main_einstellungen.gd:736  'Karte öffnen: '
   mehr.gd:258  ' · Leistung: %d Bilder/s, Lite %s'
   mehr.gd:258  'an'
   mehr.gd:258  'aus'
@@ -701,16 +704,16 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   hp_kiosk.gd:157  'aus'
   hp_kiosk.gd:197  'aus'
   licht.gd:42  'aus'
-  main.gd:777  ' (Port %d)'
-  main.gd:1681  '  %.0f Mbit/s'
-  main.gd:2341  ' (von MoveEye)'
-  main.gd:2374  'Der Simulator ist belegt: '
-  main.gd:3213  'aus'
-  main.gd:3213  'ein'
-  main.gd:3290  'Sabotage-Test: '
-  main.gd:3290  'aus'
-  main.gd:3344  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3347  '\n🚨 Bewacht und weg: '
+  main.gd:781  ' (Port %d)'
+  main.gd:1685  '  %.0f Mbit/s'
+  main.gd:2345  ' (von MoveEye)'
+  main.gd:2378  'Der Simulator ist belegt: '
+  main.gd:3217  'aus'
+  main.gd:3217  'ein'
+  main.gd:3294  'Sabotage-Test: '
+  main.gd:3294  'aus'
+  main.gd:3348  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3351  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
@@ -792,10 +795,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   device.gd:298  ' · Gerät 2'
   devtool_notizen.gd:220  'Notizen aus dem MoveEye-Simulator (Entwickler → Notizen an Claude)\n%d Notizen, davon %d offen. Version %s.\n\n'
   erkunden_figur.gd:18  'Ohne'
-  explore.gd:834  ' (automatisch von oben)'
-  explore.gd:841  ' (automatisch von oben)'
-  explore.gd:841  ' · schnell'
-  explore.gd:922  'W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc'
+  erkunden_sachen.gd:637  'Zu'
+  explore.gd:898  ' (automatisch von oben)'
+  explore.gd:905  ' (automatisch von oben)'
+  explore.gd:905  ' · schnell'
+  explore.gd:986  'W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc'
   fahrzeuge.gd:90  'nie'
   jahreszeiten.gd:52  'nie'
   feedback.gd:386  ' · TESTMODUS: geht nur an '

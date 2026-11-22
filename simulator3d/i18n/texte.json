@@ -1057,6 +1057,18 @@
   "it": "%.1f kg",
   "rm": "%.1f kg"
  },
+ "%.1f kg (bequem bis %d kg) · %d von %d Liter": {
+  "en": "%.1f kg (comfortable up to %d kg) · %d of %d litres",
+  "fr": "%.1f kg (confortable jusqu’à %d kg) · %d sur %d litres",
+  "it": "%.1f kg (comodo fino a %d kg) · %d di %d litri",
+  "rm": "%.1f kg (cumadaivel fin %d kg) · %d da %d liters"
+ },
+ "%.1f kg · %d von %d L": {
+  "en": "%.1f kg · %d of %d L",
+  "fr": "%.1f kg · %d sur %d L",
+  "it": "%.1f kg · %d di %d L",
+  "rm": "%.1f kg · %d da %d L"
+ },
  "%.1f s aus dem Bild (10 Punkte/s) · %.1f s verdeckt (5 Punkte/s) · %d× verloren (je 100)": {
   "en": "%.1f s out of the picture (10 points/s) · %.1f s hidden (5 points/s) · %d× lost (100 each)",
   "fr": "%.1f s hors de l’image (10 points/s) · %.1f s caché (5 points/s) · %d× perdu (100 chacun)",
@@ -3548,6 +3560,24 @@
   "it": "Tratto %d",
   "rm": "Tschancun %d"
  },
+ "Abseilen": {
+  "en": "Abseil",
+  "fr": "Descendre en rappel",
+  "it": "Calarsi in corda doppia",
+  "rm": "Sa laschar giu cun la corda"
+ },
+ "Abseilen (%d m)": {
+  "en": "Abseil (%d m)",
+  "fr": "Rappel (%d m)",
+  "it": "Calata (%d m)",
+  "rm": "Laschar giu (%d m)"
+ },
+ "Abseilen …": {
+  "en": "Abseiling …",
+  "fr": "Descente en rappel …",
+  "it": "Calata …",
+  "rm": "Sa laschar giu …"
+ },
  "Abseits des Weges, zwischen Gras und Steinen: ein kleines Steinmännchen, kaum kniehoch. In den obersten Stein ist ein Zeichen geritzt: «%s».": {
   "en": "Off the path, between grass and stones: a little cairn, hardly knee-high. A sign is scratched into the top stone: «%s».",
   "fr": "À l'écart du chemin, entre l'herbe et les pierres : un petit cairn, à peine à hauteur du genou. Un signe est gravé dans la pierre du haut : «%s».",
@@ -5146,6 +5176,12 @@
   "it": "passato a MoveEye",
   "rm": "dà vinavant a MoveEye"
  },
+ "An steilen Stellen abseilen (E an der Kante).": {
+  "en": "Abseil down steep spots (E at the edge).",
+  "fr": "Descendre en rappel aux endroits raides (E au bord).",
+  "it": "Calarsi nei punti ripidi (E sul bordo).",
+  "rm": "Sa laschar giu en lieus stip (E a l’ur)."
+ },
  "An: Fotos für Boden, Wege, Zelt, Bäume und Himmel": {
   "en": "On: photos for ground, paths, tent, trees and sky",
   "fr": "Activé : photos pour le sol, les chemins, la tente, les arbres et le ciel",
@@ -5749,6 +5785,12 @@
   "it": "Su una pietra (rialzato)",
   "rm": "Sin in crap (pli aut)"
  },
+ "Auf Schnee und Eis sicher und schneller; höhere Kanten hoch.": {
+  "en": "Safe and faster on snow and ice; climb higher edges.",
+  "fr": "Sûr et plus rapide sur neige et glace ; franchir des rebords plus hauts.",
+  "it": "Sicuro e più veloce su neve e ghiaccio; bordi più alti.",
+  "rm": "Segir e pli svelt sin naiv e glatsch; urs pli auts."
+ },
  "Auf warmen Steinen und im hohen Gras liegen gern Schlangen.": {
   "en": "Snakes like to lie on warm stones and in tall grass.",
   "fr": "Les serpents aiment les pierres chaudes et les hautes herbes.",
@@ -6338,6 +6380,18 @@
   "fr": "Démarrage auto : ",
   "it": "Avvio automatico: ",
   "rm": "Autostart: "
+ },
+ "Autsch! Hart gelandet – Erste Hilfe hilft": {
+  "en": "Ouch! Hard landing – first aid helps",
+  "fr": "Aïe ! Atterrissage dur – les premiers secours aident",
+  "it": "Ahi! Atterraggio duro – il pronto soccorso aiuta",
+  "rm": "Ai! Aterrà dir – l’emprim agid gida"
+ },
+ "Autsch! Hart gelandet – langsam weiter": {
+  "en": "Ouch! Hard landing – carry on slowly",
+  "fr": "Aïe ! Atterrissage dur – continue lentement",
+  "it": "Ahi! Atterraggio duro – continua piano",
+  "rm": "Ai! Aterrà dir – vinavant plaunsieu"
  },
  "Bach": {
   "en": "Creek",
@@ -8124,6 +8178,12 @@
   "it": "serve il mini treppiede",
   "rm": "dovra il mini-stativ"
  },
+ "Braucht ein Seil und eine Kante vor dir": {
+  "en": "Needs a rope and an edge in front of you",
+  "fr": "Il faut une corde et un rebord devant toi",
+  "it": "Servono una corda e un bordo davanti a te",
+  "rm": "Basegna ina corda ed in ur davant tai"
+ },
  "braucht ein Zelt": {
   "en": "needs a tent",
   "fr": "il faut une tente",
@@ -8135,6 +8195,18 @@
   "fr": "il faut un troisième canal MOSFET – la liste a un module à 2 canaux",
   "it": "serve un terzo canale MOSFET – la distinta ha un modulo a 2 canali",
   "rm": "basegna in terz chanal MOSFET – la glista ha in modul cun 2 chanals"
+ },
+ "Braucht Kocher und Proviant": {
+  "en": "Needs a stove and food",
+  "fr": "Il faut un réchaud et des provisions",
+  "it": "Servono fornello e provviste",
+  "rm": "Basegna in cuschinader e proviant"
+ },
+ "Braucht Mini-Stativ und Powerbank": {
+  "en": "Needs mini tripod and power bank",
+  "fr": "Il faut un mini-trépied et une batterie externe",
+  "it": "Servono mini treppiede e powerbank",
+  "rm": "Basegna mini stativ e powerbank"
  },
  "Braun": {
   "en": "Brown",
@@ -8888,6 +8960,24 @@
   "fr": "Blaireau",
   "it": "Tasso",
   "rm": "Tais"
+ },
+ "Dafür braucht es das Mini-Stativ": {
+  "en": "This needs the mini tripod",
+  "fr": "Il faut le mini-trépied",
+  "it": "Serve il mini treppiede",
+  "rm": "Per quai basegni il mini stativ"
+ },
+ "Dafür braucht es ein Zelt, ein Tarp oder einen Biwaksack": {
+  "en": "This needs a tent, a tarp or a bivy bag",
+  "fr": "Il faut une tente, une bâche ou un sac de bivouac",
+  "it": "Serve una tenda, un telo o un sacco da bivacco",
+  "rm": "Per quai basegni ina tenda, in tarp u in sac da bivac"
+ },
+ "Dafür braucht es einen Schlafsack": {
+  "en": "This needs a sleeping bag",
+  "fr": "Il faut un sac de couchage",
+  "it": "Serve un sacco a pelo",
+  "rm": "Per quai basegni in sac da durmir"
  },
  "Dafür ist ein alter Lehrer da.": {
   "en": "That's what an old teacher is for.",
@@ -16020,6 +16110,12 @@
   "it": "Mangiare (%d porzioni)",
   "rm": "Mangiar (%d porziuns)"
  },
+ "Essen (%d)": {
+  "en": "Eat (%d)",
+  "fr": "Manger (%d)",
+  "it": "Mangiare (%d)",
+  "rm": "Mangiar (%d)"
+ },
  "Essen und Trinken: aus (Hilfe-Stufe Leicht)": {
   "en": "Food and drink: off (help level Easy)",
   "fr": "Manger et boire : désactivé (niveau d'aide Facile)",
@@ -17474,6 +17570,12 @@
   "it": "Foto scattata - ma nessun animale",
   "rm": "Foto fatga - ma nagin animal sin il maletg"
  },
+ "Foto gespeichert": {
+  "en": "Photo saved",
+  "fr": "Photo enregistrée",
+  "it": "Foto salvata",
+  "rm": "Foto memorisada"
+ },
  "Foto gespeichert: ": {
   "en": "Photo saved: ",
   "fr": "Photo enregistrée : ",
@@ -17675,6 +17777,12 @@
   "it": "Foto: direzione del centro dell’immagine (0 = dritto)",
   "rm": "Foto: direcziun dal center dal maletg (0 = dretg ora)"
  },
+ "Fotomodus (P)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Fotorealistische Modelle, Oberflächen und Himmel (HDRI).": {
   "en": "Photorealistic models, surfaces and skies (HDRI).",
   "fr": "Modèles, surfaces et ciels photoréalistes (HDRI).",
@@ -17758,6 +17866,12 @@
   "fr": "Exploration libre",
   "it": "Esplorazione libera",
   "rm": "Explorar liber"
+ },
+ "Frei erkunden ab: %s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Frei erkunden geht gerade nicht: %s": {
   "en": "Exploring freely is not possible right now: %s",
@@ -18828,6 +18942,12 @@
   "it": "segnalato da MoveEye",
   "rm": "annunzià da MoveEye"
  },
+ "Gemerkt: %s": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Gemüsebeet": {
   "en": "Vegetable bed",
   "fr": "Potager",
@@ -19253,6 +19373,18 @@
   "fr": "Jeu d'engrenage des servos",
   "it": "Gioco degli ingranaggi dei servo",
   "rm": "Gieu dals rodals dals servos"
+ },
+ "Getrunken": {
+  "en": "Had a drink",
+  "fr": "Bu",
+  "it": "Bevuto",
+  "rm": "Bavì"
+ },
+ "Getrunken und %d Liter aufgefüllt": {
+  "en": "Had a drink and refilled %d litres",
+  "fr": "Bu et rempli %d litres",
+  "it": "Bevuto e riempito %d litri",
+  "rm": "Bavì ed emplenì %d liters"
  },
  "gewarnt (kein Griff)": {
   "en": "warned (no grab)",
@@ -20357,6 +20489,12 @@
   "it": "Ben fatto! Hai ascoltato Maggie.",
   "rm": "Bain fatg! Ti has tadlà Maggie."
  },
+ "Gut geschlafen – guten Morgen!": {
+  "en": "Slept well – good morning!",
+  "fr": "Bien dormi – bonjour !",
+  "it": "Dormito bene – buongiorno!",
+  "rm": "Durmì bain – bun di!"
+ },
  "Gut geschützt vor Wind": {
   "en": "Well sheltered from the wind",
   "fr": "Bien abrité du vent",
@@ -20386,6 +20524,12 @@
   "fr": "Bonsoir",
   "it": "Buonasera",
   "rm": "Buna saira"
+ },
+ "Guten Morgen! Das Lager bleibt stehen, bis du weitergehst.": {
+  "en": "Good morning! The camp stays until you move on.",
+  "fr": "Bonjour ! Le camp reste jusqu’à ce que tu repartes.",
+  "it": "Buongiorno! Il campo resta finché riparti.",
+  "rm": "Bun di! Il champ resta, fin che ti vas vinavant."
  },
  "Guten Morgen! Die Sonne scheint.": {
   "en": "Good morning! The sun is shining.",
@@ -21137,6 +21281,12 @@
   "fr": "Voici l'image d'une marmotte.",
   "it": "Ecco la ripresa di una marmotta.",
   "rm": "Qua è la registraziun d'ina muntanella."
+ },
+ "Hier ist kein Wasser": {
+  "en": "There is no water here",
+  "fr": "Il n’y a pas d’eau ici",
+  "it": "Qui non c’è acqua",
+  "rm": "Qua n’hai nagin’aua"
  },
  "Hier ist keine Hütte zum Kochen.": {
   "en": "There is no hut to cook in here.",
@@ -24239,6 +24389,12 @@
   "it": "Blocco calcareo (pascolo carsico)",
   "rm": "Bloc da chaltschina (pastgira da carst)"
  },
+ "Kalt geschlafen – mit Isomatte / Winterschlafsack wäre es wärmer": {
+  "en": "Slept cold – a sleeping mat / winter sleeping bag would be warmer",
+  "fr": "Nuit froide – avec matelas / sac d’hiver ce serait plus chaud",
+  "it": "Notte fredda – con materassino / sacco invernale sarebbe più caldo",
+  "rm": "Durmì fraid – cun matratscha / sac d’enviern fiss pli chaud"
+ },
  "Kalte Nacht am Gipfel": {
   "en": "Cold night on the summit",
   "fr": "Nuit froide au sommet",
@@ -25023,6 +25179,12 @@
   "it": "nessun binocolo",
   "rm": "nagin binocul"
  },
+ "Kein Feldstecher im Rucksack": {
+  "en": "No binoculars in the backpack",
+  "fr": "Pas de jumelles dans le sac",
+  "it": "Nessun binocolo nello zaino",
+  "rm": "Nagins spievels en il satgados"
+ },
  "kein Foto": {
   "en": "no photo",
   "fr": "pas de photo",
@@ -25090,6 +25252,12 @@
   "rm": "nagin JSON",
   "?": "rm: Testkanal 21.11.2026 (Korrekturlesen)"
  },
+ "Kein Kocher im Rucksack": {
+  "en": "No stove in the backpack",
+  "fr": "Pas de réchaud dans le sac",
+  "it": "Nessun fornello nello zaino",
+  "rm": "Nagin cuschinader en il satgados"
+ },
  "kein Netz": {
   "en": "no network",
   "fr": "pas de réseau",
@@ -25107,6 +25275,12 @@
   "fr": "Pas de problème. Une autre fois peut-être.",
   "it": "Nessun problema. Magari un'altra volta.",
   "rm": "Nagin problem. Forsa in'autra giada."
+ },
+ "Kein Proviant mehr": {
+  "en": "No food left",
+  "fr": "Plus de provisions",
+  "it": "Niente più provviste",
+  "rm": "Nagin proviant pli"
  },
  "Kein Proviant mehr - aber im Hüttenvorrat sind Teigwaren und Tee. Die Flasche ist wieder voll.": {
   "en": "No food left - but the hut's supplies have pasta and tea. The bottle is full again.",
@@ -25180,6 +25354,18 @@
   "it": "nessun Vulkan (OpenGL in uso)",
   "rm": "nagin Vulkan (OpenGL è en funcziun)"
  },
+ "Kein Wasser mehr": {
+  "en": "No water left",
+  "fr": "Plus d’eau",
+  "it": "Niente più acqua",
+  "rm": "Nagin’aua pli"
+ },
+ "Kein Wasser mehr – am Bach oder See auffüllen": {
+  "en": "No water left – refill at a stream or lake",
+  "fr": "Plus d’eau – remplis au ruisseau ou au lac",
+  "it": "Niente più acqua – riempi al ruscello o al lago",
+  "rm": "Nagin’aua pli – emplenescha tar in aual u lai"
+ },
  "Kein zweiter Controller: MoveEye mit der Maus im Bedienfeld bedienen": {
   "en": "No second controller: use MoveEye with the mouse in the control panel",
   "fr": "Pas de deuxième manette : piloter MoveEye à la souris dans le panneau",
@@ -25228,6 +25414,12 @@
   "fr": "pas de données Draco",
   "it": "nessun dato Draco",
   "rm": "naginas datas Draco"
+ },
+ "Keine Erste Hilfe im Rucksack": {
+  "en": "No first aid in the backpack",
+  "fr": "Pas de premiers secours dans le sac",
+  "it": "Nessun pronto soccorso nello zaino",
+  "rm": "Nagin emprim agid en il satgados"
  },
  "keine Figur": {
   "en": "no figure",
@@ -25326,12 +25518,24 @@
   "it": "Niente lampada frontale",
   "rm": "Nagina cazzola da frunt"
  },
+ "Keine Stirnlampe im Rucksack": {
+  "en": "No headlamp in the backpack",
+  "fr": "Pas de lampe frontale dans le sac",
+  "it": "Nessuna lampada frontale nello zaino",
+  "rm": "Nagina lampa da frunt en il satgados"
+ },
  "keine Szene ": {
   "en": "no scene ",
   "fr": "pas de scène ",
   "it": "nessuna scena ",
   "rm": "nagina scena ",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Keine Taschenuhr im Rucksack": {
+  "en": "No pocket watch in the backpack",
+  "fr": "Pas de montre de poche dans le sac",
+  "it": "Nessun orologio da tasca nello zaino",
+  "rm": "Nagin ura da giaglioffa en il satgados"
  },
  "Keine Testversion gefunden (GitHub antwortet %s).": {
   "en": "No test version found (GitHub answers %s).",
@@ -26180,6 +26384,12 @@
   "fr": "Force −%d",
   "it": "Forza −%d",
   "rm": "Forza −%d"
+ },
+ "Kraft, Hunger, Durst, Kälte: «Echt» (aus = «Entspannt»)": {
+  "en": "Strength, hunger, thirst, cold: «Real» (off = «Relaxed»)",
+  "fr": "Force, faim, soif, froid : « Réel » (désactivé = « Détendu »)",
+  "it": "Forza, fame, sete, freddo: «Reale» (spento = «Rilassato»)",
+  "rm": "Forza, fom, said, fraid: «Real» (deactivà = «Relaxà»)"
  },
  "Krawatte (an der Leine)": {
   "en": "Tie (on the line)",
@@ -30166,6 +30376,12 @@
   "it": "MoveEye si è chiuso subito. Registro: ",
   "rm": "MoveEye è sa terminà immediat. Protocol: "
  },
+ "MoveEye hier aufstellen": {
+  "en": "Set up MoveEye here",
+  "fr": "Installer MoveEye ici",
+  "it": "Posiziona MoveEye qui",
+  "rm": "Installar MoveEye qua"
+ },
  "MoveEye hierhin stellen": {
   "en": "Put MoveEye here",
   "fr": "Placer MoveEye ici",
@@ -30478,6 +30694,12 @@
   "fr": "MoveEye joue aussi",
   "it": "MoveEye gioca anche lui",
   "rm": "MoveEye gioga cun"
+ },
+ "MoveEye steht hier – jetzt weggehen und anschleichen!": {
+  "en": "MoveEye stands here – now walk away and sneak up!",
+  "fr": "MoveEye est installé ici – éloigne-toi puis approche en douce !",
+  "it": "MoveEye è qui – ora allontanati e avvicinati di soppiatto!",
+  "rm": "MoveEye stat qua – ussa va davent e ta stgaffa da nov!"
  },
  "MoveEye steht in einem Gebäude – das Gebäude wurde weggelassen.": {
   "en": "MoveEye stands in a building – the building was left out.",
@@ -31702,6 +31924,12 @@
   "rm": "Da notg: lascha ir il cun da glisch sur il plaz («Sguazzar»).",
   "?": "rm: Sguazzar = schwenken?"
  },
+ "Nachtsicht": {
+  "en": "Night vision",
+  "fr": "Vision nocturne",
+  "it": "Visione notturna",
+  "rm": "Vista da notg"
+ },
  "Nachtverstärkung der Kameras (höchstens)": {
   "en": "Night gain of the cameras (maximum)",
   "fr": "Amplification nocturne des caméras (maximum)",
@@ -32299,6 +32527,12 @@
   "it": "Non nell’immagine di MoveEye",
   "rm": "Betg en il maletg da MoveEye"
  },
+ "Nicht im Wasser": {
+  "en": "Not in the water",
+  "fr": "Pas dans l’eau",
+  "it": "Non nell’acqua",
+  "rm": "Betg en l’aua"
+ },
  "nicht in der Materialliste": {
   "en": "not in the parts list",
   "fr": "pas dans la liste du matériel",
@@ -32316,6 +32550,12 @@
   "fr": "Ne plus afficher",
   "it": "Non mostrare più",
   "rm": "Betg pli mussar"
+ },
+ "Nicht mehr davon": {
+  "en": "No more of this",
+  "fr": "Pas plus",
+  "it": "Non di più",
+  "rm": "Betg dapli da quai"
  },
  "Nicht mehr folgen": {
   "en": "Stop following",
@@ -32514,6 +32754,12 @@
   "fr": "Pas encore d'image MoveEye",
   "it": "Ancora nessuna immagine MoveEye",
   "rm": "Anc nagin maletg da MoveEye"
+ },
+ "Noch kein Ort gemerkt": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "Noch kein Paket gemacht.": {
   "en": "No package made yet.",
@@ -32868,6 +33114,12 @@
   "fr": "seulement le soir",
   "it": "solo di sera",
   "rm": "mo la saira"
+ },
+ "Nur am Bach oder See": {
+  "en": "Only at a stream or lake",
+  "fr": "Seulement au ruisseau ou au lac",
+  "it": "Solo al ruscello o al lago",
+  "rm": "Mo tar in aual u lai"
  },
  "nur am Morgen": {
   "en": "only in the morning",
@@ -33439,6 +33691,12 @@
   "it": "Senza piccozza questa via è troppo pericolosa.",
   "rm": "Senza zappun da glatsch è questa via memia privlusa."
  },
+ "Ohne Powerbank hält MoveEye nicht lange – nimm sie mit": {
+  "en": "Without a power bank MoveEye won’t last – take it along",
+  "fr": "Sans batterie externe MoveEye ne tient pas – emporte-la",
+  "it": "Senza powerbank MoveEye non dura – portala",
+  "rm": "Senza powerbank na tegna MoveEye betg ditg – prenda ella cun tai"
+ },
  "Ohne Powerbank war der Akku von MoveEye in der Kälte um %s leer - danach hätte es nichts mehr gemeldet.": {
   "en": "Without a power bank MoveEye's battery was empty in the cold at %s - after that it would not have reported anything.",
   "fr": "Sans batterie externe, l'accu de MoveEye était vide dans le froid à %s - ensuite il n'aurait plus rien signalé.",
@@ -33584,11 +33842,41 @@
   "it": "Scegliere un luogo sulla mappa (Svizzera)",
   "rm": "Tscherner in lieu sin la charta (Svizra)"
  },
+ "Ort gemerkt": {
+  "en": "Place marked",
+  "fr": "Lieu mémorisé",
+  "it": "Luogo memorizzato",
+  "rm": "Lieu memorisà"
+ },
+ "Ort gemerkt – beim nächsten Mal geht es hier weiter": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Ort gemerkt – der Kompass zeigt hierher": {
+  "en": "Place marked – the compass points here",
+  "fr": "Lieu mémorisé – la boussole indique ici",
+  "it": "Luogo memorizzato – la bussola punta qui",
+  "rm": "Lieu memorisà – la busla mussa nà qua"
+ },
+ "Ort hier merken (nächstes Mal weiter hier)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
  "Ort in dieser Welt": {
   "en": "Place in this world",
   "fr": "Lieu dans ce monde",
   "it": "Luogo in questo mondo",
   "rm": "Lieu en quest mund"
+ },
+ "Ort merken (Kompass)": {
+  "en": "Mark place (compass)",
+  "fr": "Mémoriser le lieu (boussole)",
+  "it": "Memorizza luogo (bussola)",
+  "rm": "Memorisar il lieu (busla)"
  },
  "Ort suchen …": {
   "en": "Search place …",
@@ -33848,6 +34136,12 @@
   "it": "Strada del passo con tornanti",
   "rm": "Via dal pass cun stortas"
  },
+ "Passt nicht mehr in den Rucksack": {
+  "en": "Does not fit in the backpack any more",
+  "fr": "Ne rentre plus dans le sac",
+  "it": "Non sta più nello zaino",
+  "rm": "Na fa betg pli plaz en il satgados"
+ },
  "passt!": {
   "en": "fits!",
   "fr": "ça colle !",
@@ -33975,6 +34269,12 @@
   "fr": "CPU du PC %s  ·  simulateur %s",
   "it": "CPU del PC %s  ·  simulatore %s",
   "rm": "CPU dal PC %s  ·  simulatur %s"
+ },
+ "PC: L Lampe · B Feldstecher · O Ort merken · , . Uhr · E abseilen · R dieses Menü": {
+  "en": "PC: L lamp · B binoculars · O mark place · , . watch · E abseil · R this menu",
+  "fr": "PC : L lampe · B jumelles · O mémoriser le lieu · , . montre · E rappel · R ce menu",
+  "it": "PC: L lampada · B binocolo · O memorizza luogo · , . orologio · E calata · R questo menu",
+  "rm": "PC: L lampa · B spievels · O memorisar lieu · , . ura · E laschar giu · R quest menu"
  },
  "PC: W A S D gehen · Shift rennen · Leertaste springen / greifen · E Aktion · Maus ziehen umschauen · Rad näher / weiter · Esc Pause": {
   "en": "PC: W A S D walk · Shift run · Space jump / grab · E action · drag the mouse to look around · wheel closer / farther · Esc pause",
@@ -35481,6 +35781,12 @@
   "rm": "Direcziun memorisada. Jau l’avess era chattà. Probablamain.",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
+ "Richtung und eine Nadel zum gemerkten Ort (O).": {
+  "en": "Heading and a needle to the marked place (O).",
+  "fr": "Direction et une aiguille vers le lieu mémorisé (O).",
+  "it": "Direzione e un ago verso il luogo memorizzato (O).",
+  "rm": "Direcziun ed ina guglia vers il lieu memorisà (O)."
+ },
  "Riechen": {
   "en": "Sniff",
   "fr": "Renifler",
@@ -35750,6 +36056,12 @@
   "fr": "Sac à dos",
   "it": "Zaino",
   "rm": "Satg da dies"
+ },
+ "Rucksack (R): Lampe, Feldstecher, essen, trinken, übernachten …": {
+  "en": "Backpack (R): lamp, binoculars, eat, drink, camp …",
+  "fr": "Sac (R) : lampe, jumelles, manger, boire, bivouaquer …",
+  "it": "Zaino (R): lampada, binocolo, mangiare, bere, pernottare …",
+  "rm": "Satgados (R): lampa, spievels, mangiar, baiver, pernottar …"
  },
  "Rucksack 30 L": {
   "en": "Backpack 30 L",
@@ -38093,6 +38405,12 @@
   "it": "Vincitore",
   "rm": "Victur"
  },
+ "Sieht gut aus.": {
+  "en": "Looks good.",
+  "fr": "Ça a de l’allure.",
+  "it": "Sta bene.",
+  "rm": "Para bain."
+ },
  "Silikon- oder Lagerfett": {
   "en": "Silicone or bearing grease",
   "fr": "Graisse silicone ou pour roulements",
@@ -39854,6 +40172,18 @@
   "fr": "Lampe frontale (éclaire la nuit)",
   "it": "Lampada frontale (illumina di notte)",
   "rm": "Lampa da frunt (glischa la notg)"
+ },
+ "Stirnlampe an": {
+  "en": "Headlamp on",
+  "fr": "Lampe frontale allumée",
+  "it": "Lampada frontale accesa",
+  "rm": "Lampa da frunt activada"
+ },
+ "Stirnlampe aus": {
+  "en": "Headlamp off",
+  "fr": "Lampe frontale éteinte",
+  "it": "Lampada frontale spenta",
+  "rm": "Lampa da frunt deactivada"
  },
  "STOP": {
   "en": "STOP",
@@ -41848,6 +42178,12 @@
   "it": "Bevi prima di avere sete. Al ruscello puoi riempire.",
   "rm": "Baiva avant che ti has said. Al ual pos ti emplenir."
  },
+ "Trinken (%d L)": {
+  "en": "Drink (%d L)",
+  "fr": "Boire (%d L)",
+  "it": "Bere (%d L)",
+  "rm": "Baiver (%d L)"
+ },
  "Trockene Füsse": {
   "en": "Dry feet",
   "fr": "Pieds au sec",
@@ -42070,6 +42406,18 @@
   "fr": "Heure : %s",
   "it": "Ora: %s",
   "rm": "Ura: %s"
+ },
+ "Uhr: ½ Stunde vor": {
+  "en": "Watch: ½ hour forward",
+  "fr": "Montre : ½ heure en avant",
+  "it": "Orologio: ½ ora avanti",
+  "rm": "Ura: ½ ura vinavant"
+ },
+ "Uhr: ½ Stunde zurück": {
+  "en": "Watch: ½ hour back",
+  "fr": "Montre : ½ heure en arrière",
+  "it": "Orologio: ½ ora indietro",
+  "rm": "Ura: ½ ura enavos"
  },
  "Uhrzeit": {
   "en": "Time",
@@ -42358,6 +42706,12 @@
   "fr": "En bas la vallée dans le brouillard, en haut toi dans l’air limpide.",
   "it": "Giù la valle nella nebbia, su tu nell’aria limpida.",
   "rm": "Giudim la val en la tschajera, sisum ti en l’aria clera."
+ },
+ "Unten!": {
+  "en": "Down!",
+  "fr": "En bas !",
+  "it": "Giù!",
+  "rm": "Giusut!"
  },
  "Unter Bergsteigern kennt man den Namen. Mit dem Hut bist du hier überall willkommen.": {
   "en": "Among mountaineers the name is known. With that hat you're welcome everywhere here.",
@@ -43003,6 +43357,12 @@
   "fr": "connecté à «%s» · MoveEye %s · %s",
   "it": "collegato a «%s» · MoveEye %s · %s",
   "rm": "collià cun «%s» · MoveEye %s · %s"
+ },
+ "Verbunden – es geht wieder": {
+  "en": "Bandaged – it’s fine again",
+  "fr": "Pansé – ça va mieux",
+  "it": "Fasciato – va di nuovo",
+  "rm": "Bandagià – i va puspè"
  },
  "Verbunden: %s": {
   "en": "Connected: %s",
@@ -43868,6 +44228,12 @@
   "it": "W A S D volare · Q / E giù / su · Shift più veloce · tasto destro guardarsi intorno · rotella o + / − velocità · Esc indietro",
   "rm": "W A S D sgular · Q / E engiu / ensi · Shift pli svelt · buttun dretg da la mieur guardar enturn · roda u + / − tempo · Esc enavos"
  },
+ "W A S D gehen · Shift rennen · C Haltung · X sitzen · Z hinlegen · Leertaste springen / klettern · V Ansicht · I Figur · R Rucksack · U Mover · Esc": {
+  "en": "W A S D walk · Shift run · C posture · X sit · Z lie down · Space jump / climb · V view · I figure · R backpack · U mover · Esc",
+  "fr": "W A S D marcher · Maj courir · C posture · X s’asseoir · Z s’allonger · Espace sauter / grimper · V vue · I personnage · R sac · U mover · Échap",
+  "it": "W A S D camminare · Maiusc correre · C postura · X sedersi · Z sdraiarsi · Spazio saltare / arrampicarsi · V vista · I personaggio · R zaino · U mover · Esc",
+  "rm": "W A S D ir · Shift currer · C posiziun · X seser · Z giaschair · Spazi siglir / s’enrampignar · V vista · I figura · R satgados · U mover · Esc"
+ },
  "W A S D gehen · Shift rennen · C Haltung · X sitzen · Z hinlegen · Leertaste springen / klettern · V Ansicht · I Figur · U Mover · Esc": {
   "en": "W A S D walk · Shift run · C posture · X sit · Z lie down · Space jump / climb · V view · I figure · U mover · Esc",
   "fr": "W A S D marcher · Maj courir · C posture · X s’asseoir · Z s’allonger · Espace sauter / grimper · V vue · I personnage · U mover · Échap",
@@ -43988,11 +44354,23 @@
   "it": "Caldo sotto lo zero. Grande e pesante.",
   "rm": "Chaud fin sut il punct da schelar. Grond e grev."
  },
+ "Warm gegessen – das tut gut": {
+  "en": "A warm meal – that feels good",
+  "fr": "Un repas chaud – ça fait du bien",
+  "it": "Un pasto caldo – fa bene",
+  "rm": "Mangià chaud – quai fa bain"
+ },
  "Warm genug bis etwa 5 °C.": {
   "en": "Warm enough down to about 5 °C.",
   "fr": "Assez chaud jusqu'à environ 5 °C.",
   "it": "Abbastanza caldo fino a circa 5 °C.",
   "rm": "Avunda chaud fin circa 5 °C."
+ },
+ "Warm kochen": {
+  "en": "Cook a warm meal",
+  "fr": "Cuisiner chaud",
+  "it": "Cucinare caldo",
+  "rm": "Cuschinar chaud"
  },
  "Warm wie der Winterschlafsack, viel leichter.": {
   "en": "As warm as the winter sleeping bag, much lighter.",
@@ -44324,6 +44702,12 @@
   "fr": "Eau sur la fenêtre du capteur sous la pluie et la neige (taches froides, rien derrière)",
   "it": "Acqua sulla finestra del sensore con pioggia e neve (macchie fredde, dietro niente)",
   "rm": "Aua sin la fanestra dal sensor cun plievgia e naiv (fletgs fraids, davos nagut)"
+ },
+ "Wasser auffüllen": {
+  "en": "Refill water",
+  "fr": "Remplir l’eau",
+  "it": "Riempire l’acqua",
+  "rm": "Emplenir aua"
  },
  "Wasser auffüllen (%s)": {
   "en": "Refill water (%s)",
@@ -44666,6 +45050,18 @@
   "fr": "Suivant (→ / Enter)",
   "it": "Avanti (→ / Enter)",
   "rm": "Vinavant (→ / Enter)"
+ },
+ "Weiter am gemerkten Ort": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
+ },
+ "Weiter am gemerkten Ort (%s)": {
+  "en": "",
+  "fr": "",
+  "it": "",
+  "rm": ""
  },
  "weiter bei Schritt %d – das Bedienfeld Schritt für Schritt": {
   "en": "continue at step %d – the control panel step by step",
@@ -46271,6 +46667,12 @@
   "it": "Pareti",
   "rm": "Paraids"
  },
+ "Wärme": {
+  "en": "Warmth",
+  "fr": "Chaleur",
+  "it": "Calore",
+  "rm": "Chalur"
+ },
  "Wärmebild": {
   "en": "Thermal image",
   "fr": "Image thermique",
@@ -46481,6 +46883,12 @@
   "it": "Segno nella roccia",
   "rm": "Segn en il grip",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Zeigt die Zeit; vor- und zurückspulen (, und .).": {
+  "en": "Shows the time; forward and back (, and .).",
+  "fr": "Affiche l’heure ; avancer et reculer (, et .).",
+  "it": "Mostra l’ora; avanti e indietro (, e .).",
+  "rm": "Mussa l’ura; vinavant ed enavos (, e .)."
  },
  "Zeit": {
   "en": "Time",
@@ -46879,6 +47287,12 @@
   "it": "Zoom",
   "rm": "Zoom"
  },
+ "Zoom 2–10×, Tiere und Menschen mit Name und Distanz, Foto, Nachtsicht (B).": {
+  "en": "Zoom 2–10×, animals and people with name and distance, photo, night vision (B).",
+  "fr": "Zoom 2–10×, animaux et personnes avec nom et distance, photo, vision nocturne (B).",
+  "it": "Zoom 2–10×, animali e persone con nome e distanza, foto, visione notturna (B).",
+  "rm": "Zoom 2–10×, animals e persunas cun num e distanza, foto, vista da notg (B)."
+ },
  "zoomen (auch Ziffernblock) – Ansicht, Kamera, Karte, Werkstatt": {
   "en": "zoom (also number pad) – view, camera, map, workshop",
   "fr": "zoomer (aussi pavé numérique) – vue, caméra, carte, atelier",
@@ -46958,6 +47372,12 @@
   "fr": "Trop raide (%d°) – à %d m, c'est assez plat.",
   "it": "Troppo ripido (%d°) – a %d m è abbastanza piano.",
   "rm": "Memia stip (%d°) – %d m dasper è quai avunda plat."
+ },
+ "Zu steil – mit einem Seil kannst du dich hier abseilen": {
+  "en": "Too steep – with a rope you can abseil here",
+  "fr": "Trop raide – avec une corde tu peux descendre en rappel ici",
+  "it": "Troppo ripido – con una corda puoi calarti qui",
+  "rm": "Memia stip – cun ina corda pos ti ta laschar giu qua"
  },
  "zu viele Umleitungen": {
   "en": "too many redirects",

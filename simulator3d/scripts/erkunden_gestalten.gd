@@ -11,13 +11,17 @@ extends CanvasLayer
 const T = preload("res://scripts/i18n.gd")
 const UI = preload("res://scripts/ui_style.gd")
 const EF = preload("res://scripts/erkunden_figur.gd")
+const RS = preload("res://scripts/erkunden_rucksack.gd")
+const AbD = preload("res://scripts/bergtal_abenteuer_daten.gd")
 
-const REITER := [["person", "Person"], ["kopf", "Kopf"], ["kleider", "Kleider"], ["ausruestung", "Ausrüstung"], ["unterwegs", "Unterwegs"]]
+const REITER := [["person", "Person"], ["kopf", "Kopf"], ["kleider", "Kleider"], ["ausruestung", "Ausrüstung"], ["rucksack", "Rucksack"], ["unterwegs", "Unterwegs"], ["welt", "Welt"]]
 const INHALT := {"person": [["sex", "Geschlecht"], ["alter", "Alter"], ["groesse", "Grösse"], ["bau", "Statur"]],
 		"kopf": [["haar", "Frisur"], ["haarfarbe", "Haarfarbe"], ["haut", "Hautfarbe"], ["bart", "Bart"]],
 		"kleider": [["jacke", "Jacke"], ["hose", "Hose"], ["hut", "Kopfbedeckung"], ["rucksack", "Rucksack"]],
 		"ausruestung": [["stirnlampe", "Stirnlampe (leuchtet nachts)"], ["stoecke", "Wanderstöcke"], ["feldstecher", "Feldstecher"]],
-		"unterwegs": [["ex_maggie", "Maggie kommt mit"], ["ex_blinki", "Blinki kommt mit"],
+		"rucksack": [],
+		"welt": [],
+		"unterwegs": [["ex_kraft_echt", "Kraft, Hunger, Durst, Kälte: «Echt» (aus = «Entspannt»)"], ["ex_maggie", "Maggie kommt mit"], ["ex_blinki", "Blinki kommt mit"],
 				["ex_mw_sieht", "MoveEye sieht die Figur (Bild und Alarm)"], ["ex_auge", "Auge-Symbol «MoveEye sieht dich»"]]}
 
 var person
@@ -156,6 +160,12 @@ func _bauen() -> void:
 	for c in _body.get_children():
 		c.queue_free()
 	_knoepfe = {}
+	if reiter == "rucksack":
+		_rucksack_bauen(gross)
+		return
+	if reiter == "welt":
+		_welt_bauen(gross)
+		return
 	var fd: Dictionary = person.figur_wahl()
 	for zeile in INHALT[reiter]:
 		var feld := str(zeile[0])
@@ -191,6 +201,102 @@ func _bauen() -> void:
 				b3.pressed.connect(func(): setze(feld, w3))
 				fl.add_child(b3)
 				_knoepfe["%s=%s" % [feld, w3]] = b3
+
+
+const ZEITEN := [[7.0, "Morgen"], [12.0, "Mittag"], [19.5, "Abend"], [23.0, "Nacht"]]
+const WETTER := [["clear", "klar"], ["cloudy", "bewölkt"], ["rain", "Regen"], ["fog", "Nebel"], ["snow", "Schnee"]]
+
+
+func _welt_bauen(gross: bool) -> void:
+	"""Etappe 4: time of day, weather, remember the place, the photo mode"""
+	_body.add_child(UI.small(T.t("Tageszeit") + "  (" + person.sachen._zeit() + ")", UI.TXT))
+	var fl := HFlowContainer.new()
+	fl.add_theme_constant_override("h_separation", 6)
+	_body.add_child(fl)
+	var h: float = float(main.hour())
+	for z in ZEITEN:
+		var b := _chip(T.t(str(z[1])), absf(h - float(z[0])) < 0.3, gross)
+		var w := float(z[0])
+		b.pressed.connect(func(): main.set_hour(w); _bauen())
+		fl.add_child(b)
+		_knoepfe["zeit=" + str(z[1])] = b
+	_body.add_child(UI.small(T.t("Wetter"), UI.TXT))
+	var fl2 := HFlowContainer.new()
+	fl2.add_theme_constant_override("h_separation", 6)
+	_body.add_child(fl2)
+	for wt in WETTER:
+		var b2 := _chip(T.t(str(wt[1])), str(main.weather) == str(wt[0]), gross)
+		var w2 := str(wt[0])
+		b2.pressed.connect(func(): main.weather = w2; main._settings_dirty = true; _bauen())
+		fl2.add_child(b2)
+		_knoepfe["wetter=" + w2] = b2
+	_body.add_child(UI.small(T.t("Ort"), UI.TXT))
+	var o: Dictionary = person.extras.ort()
+	_body.add_child(UI.small(T.t("Gemerkt: %s") % str(o.get("name", "")) if not o.is_empty() else T.t("Noch kein Ort gemerkt"), UI.MUT))
+	var b3 := _chip(T.t("Ort hier merken (nächstes Mal weiter hier)"), false, gross)
+	b3.pressed.connect(func(): person.extras.ort_merken(); _bauen())
+	_body.add_child(b3)
+	_knoepfe["ort_merken"] = b3
+	var b4 := _chip(T.t("Fotomodus (P)"), false, gross)
+	b4.pressed.connect(func(): zeigen(false); person.extras.fotomodus(true))
+	_body.add_child(b4)
+	_knoepfe["fotomodus"] = b4
+
+
+func _rucksack_bauen(gross: bool) -> void:
+	"""Etappe 3: pack like in the adventure - 30 / 50 / 70 L, every thing with − / +, weight and volume"""
+	var r: Dictionary = RS.norm(main.get("ex_rucksack"))
+	_body.add_child(UI.small(T.t("Rucksack"), UI.TXT))
+	var fl := HFlowContainer.new()
+	fl.add_theme_constant_override("h_separation", 6)
+	_body.add_child(fl)
+	for pk in ["30", "50", "70"]:
+		var b := _chip(T.t(str(AbD.PACKS[pk][0])), str(r["pack"]) == pk, gross)
+		var w: String = pk
+		b.pressed.connect(func(): main.ex_rucksack = RS.pack_setzen(RS.norm(main.get("ex_rucksack")), w); main._settings_dirty = true; _bauen())
+		fl.add_child(b)
+		_knoepfe["pack=" + pk] = b
+	var kg := RS.gewicht(r)
+	var zu_schwer := kg > RS.bequem(r)
+	var sum := UI.small(T.t("%.1f kg (bequem bis %d kg) · %d von %d Liter") % [kg, int(RS.bequem(r)), int(RS.volumen(r)), int(RS.platz(r))],
+			UI.ORG if zu_schwer else UI.MUT)
+	sum.name = "summe"
+	_body.add_child(sum)
+	for id in RS.ORDER:
+		var e: Array = RS.item(id)
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 6)
+		_body.add_child(row)
+		var lb := Label.new()
+		var n := RS.anzahl(r, id)
+		lb.text = "%s%s" % [T.t(str(e[0])), (" × %d" % n) if n > 1 else ""]
+		lb.tooltip_text = T.t(str(e[4]))
+		lb.mouse_filter = Control.MOUSE_FILTER_PASS
+		lb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		lb.clip_text = true
+		lb.add_theme_color_override("font_color", UI.TXT if n > 0 else UI.MUT)
+		row.add_child(lb)
+		var kgl := UI.small("%.1f kg" % float(e[1]), UI.MUT)
+		kgl.custom_minimum_size = Vector2(54, 0)
+		row.add_child(kgl)
+		for k in [-1, 1]:
+			var b2 := Button.new()
+			b2.text = "−" if k < 0 else "+"
+			b2.focus_mode = Control.FOCUS_NONE
+			b2.custom_minimum_size = Vector2(44 if gross else 34, 40 if gross else 30)
+			b2.disabled = (k < 0 and n == 0) or (k > 0 and n >= int(e[5]))
+			var iid := str(id)
+			var kk := int(k)
+			b2.pressed.connect(func():
+				var res: Dictionary = RS.dazu(RS.norm(main.get("ex_rucksack")), iid, kk)
+				if bool(res["ok"]):
+					main.ex_rucksack = res["d"]
+					main._settings_dirty = true
+				elif person.sachen != null:
+					person.sachen.sag(T.t(str(res["grund"])))
+				_bauen())
+			row.add_child(b2)
+			_knoepfe["%s%s" % [id, "+" if k > 0 else "-"]] = b2
 
 
 func _chip(text: String, an: bool, gross: bool) -> Button:

@@ -216,7 +216,33 @@ func frei_erkunden() -> bool:
 	set_person(true)
 	if person_on():
 		main.start_info = T.t("Frei erkunden: W A S D gehen · C Haltung · X sitzen · Z hinlegen · Leertaste springen · V Ansicht · U Mover")
+		if person.extras != null and person.extras.am_ort_beginnen(person.extras.ort()):   # Etappe 4: where it stopped last time
+			main.start_info = T.t("Weiter am gemerkten Ort")
 	return person_on()
+
+
+func startpunkt_melden(id: String, name: String, scene: String, w: Vector3, heading := 0.0) -> void:
+	"""Etappe 4, for other games (Grossvater K1: the ridge at sunrise, once the story is finished):
+	main.explore.startpunkt_melden("grossvater_grat", T.t("Grat beim Sonnenaufgang"), "bergtal", welt_pos, heading)
+	- kept in the settings, «Spielen» shows it under «Frei erkunden»"""
+	person.extras.startpunkt_melden(id, name, scene, w, heading)
+
+
+func frei_ab(id: String) -> bool:
+	"""Etappe 4: «Frei erkunden» from a remembered place («ort») or a start point of another game - loads its world"""
+	var o: Dictionary = person.extras.ort() if id == "ort" else person.extras.startpunkte().get(id, {})
+	if o.is_empty():
+		return false
+	if str(main.scene) != str(o["scene"]):
+		if on:
+			set_on(false)
+		main.set_scene(str(o["scene"]))
+	if not frei_erkunden():
+		return false
+	person.place(Vector3(float(o["x"]), 0, float(o["z"])))
+	person.figur.setzen(person.figur.pos(), float(o.get("h", 0.0)))
+	person.regie.hinter_figur()
+	return true
 
 
 func set_speed(v: float) -> void:
@@ -499,8 +525,43 @@ func _input(ev: InputEvent) -> void:
 				if person != null and person.gestalten != null and person.gestalten.offen:
 					person.gestalten.zeigen(false)              # Esc first closes «Figur gestalten»
 					get_viewport().set_input_as_handled()
+				elif person != null and person.extras != null and person.extras.foto_an:
+					person.extras.fotomodus(false)              # … the photo mode
+					get_viewport().set_input_as_handled()
+				elif person != null and person.sachen != null and (person.sachen.fernglas or person.sachen.menu_offen()):
+					person.sachen.feldstecher(false)            # … then the binoculars / the menu «Rucksack»
+					person.sachen.menu(false)
+					get_viewport().set_input_as_handled()
 				else:
 					set_on(false)
+			KEY_P:
+				if person_on() and not ev.echo and not main.typing():   # Etappe 4: the photo mode (else P = phone, main.gd)
+					person.extras.fotomodus(not person.extras.foto_an)
+					get_viewport().set_input_as_handled()
+			KEY_L, KEY_B, KEY_R, KEY_O, KEY_COMMA, KEY_PERIOD, KEY_N, KEY_PLUS, KEY_KP_ADD, KEY_MINUS, KEY_KP_SUBTRACT:
+				if person_on() and not ev.echo and not main.typing():   # Etappe 3: the things in the pack (erkunden_sachen.gd)
+					var sa = person.sachen
+					match ev.keycode:
+						KEY_L:
+							sa.lampe()
+						KEY_B:
+							sa.feldstecher(not sa.fernglas)
+						KEY_R:
+							sa.menu(not sa.menu_offen())
+						KEY_O:
+							sa.ort_merken()
+						KEY_COMMA:
+							sa.uhr(-0.5)
+						KEY_PERIOD:
+							sa.uhr(0.5)
+						KEY_N:
+							if sa.fernglas:
+								sa.tu_fernglas("nacht")
+						KEY_PLUS, KEY_KP_ADD:
+							sa.set_zoom(sa.zoom + 1.0)
+						KEY_MINUS, KEY_KP_SUBTRACT:
+							sa.set_zoom(sa.zoom - 1.0)
+					get_viewport().set_input_as_handled()
 			KEY_I:
 				if person_on() and not ev.echo and not main.typing():
 					figur_gestalten(not person.gestalten.offen)
@@ -520,7 +581,10 @@ func _input(ev: InputEvent) -> void:
 					spectator(not main.spectate)
 				get_viewport().set_input_as_handled()
 			KEY_X, KEY_Z, KEY_SPACE, KEY_E, KEY_F:       # 21.11.2026: the figure sits, lies down, jumps, climbs
-				if person_on() and not ev.echo and not main.typing():
+				if person_on() and not ev.echo and not main.typing() and ev.keycode == KEY_SPACE and person.sachen.fernglas:
+					person.sachen.foto()                         # through the binoculars: Space = a photo
+					get_viewport().set_input_as_handled()
+				elif person_on() and not ev.echo and not main.typing():
 					person.wunsch({KEY_X: "sitzen", KEY_Z: "liegen", KEY_SPACE: "sprung", KEY_E: "klettern", KEY_F: "klettern"}[ev.keycode])
 					get_viewport().set_input_as_handled()
 			KEY_J:
@@ -910,7 +974,7 @@ func _help() -> String:
 				return T.t("Grüner Stick unten rechts gehen (am Rand = rennen) · links: Haltung, springen, sitzen, hinlegen, Ansicht")
 			"mouse":
 				return T.t("Grünen Stick ziehen (am Rand = rennen) · rechte Taste = umschauen · Rad = Abstand · Strg+Klick = Person hierhin · Esc")
-		return T.t("W A S D gehen · Shift rennen · C Haltung · X sitzen · Z hinlegen · Leertaste springen / klettern · V Ansicht · I Figur · U Mover · Esc")
+		return T.t("W A S D gehen · Shift rennen · C Haltung · X sitzen · Z hinlegen · Leertaste springen / klettern · V Ansicht · I Figur · R Rucksack · U Mover · Esc")
 	var sw := " · " + T.t("Select ⏱ Person") if person_ok() else ""
 	match device:
 		"pad":
