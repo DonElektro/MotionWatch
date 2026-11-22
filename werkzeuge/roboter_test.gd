@@ -31,6 +31,9 @@ var notes := []
 
 
 func _initialize() -> void:
+	var p := ProjectSettings.globalize_path("user://roboter_labor.json")
+	if FileAccess.file_exists(p):
+		DirAccess.remove_absolute(p)                    # every test starts from the start values (8 segments)
 	main = load("res://main.tscn").instantiate()
 	root.add_child(main)
 	current_scene = main
@@ -280,6 +283,7 @@ func _process(_dt: float) -> bool:
 			check("Ablauf Einrollen und öffnen: fertig, ohne Explosion", lab.bew.mode == "" and sane(), lab.bew.mode)
 			lab.stop_all()
 			lab.reset()
+			lab.control({"do": "rund", "methode": "stossen"})
 			lab.control({"do": "ring", "drive": 0.0})
 			next_step()
 		14:

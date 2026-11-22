@@ -23,9 +23,28 @@ const BEWEGUNG = preload("res://scripts/roboter_bewegung.gd")
 const GELAENDE = preload("res://scripts/roboter_gelaende.gd")
 const ANZEIGE = preload("res://scripts/roboter_anzeige.gd")
 const TICKS := 120
+# Zwei Varianten (Besitzer 22.11.2026 21:33): «8 Segmente» (Ring 8 × 45°) und «4 Segmente» (Ring 4 × 90°, die 45°-Schrägen
+# liegen flach aneinander). Jede Variante hat ihre eigenen Regler, Pose und Gang-Werte (user://roboter_labor.json).
+# Einstieg von aussen (z. B. ?roboter=4 der Startseite): control({"do": "open", "variante": "4"}) - variante_aus() deutet den Wert.
+const VARIANTEN := [["8", "8 Segmente"], ["6", "6 Segmente"], ["4", "4 Segmente"]]   # 6er: Besitzer 21:54 (Ring 6 × 60°)
+const SPEICHER := "user://roboter_labor.json"
+const BEW_KEYS := ["hoehe", "spreiz", "tempo", "schritt_laenge", "schritt_hoehe", "anpassen", "ring_methode", "ring_hoehe", "spur_rollen"]
+# Start-Werte fürs Rollen je Variante (gemessen 22.11.2026, je 3 Versuche über eine ganze Drehung, Median):
+#   8er: C «Füsse passen sich an», Höhe 0, Spur 24.7 cm: Mitte ± 0.5 cm, Tempo ± 12 %, immer ≥ 3 Bodenkontakte
+#        (Nur stossen: ± 0.45 cm, Tempo ± 24 %, Kontakte min 1) → C ist deutlich besser (Wertung mit Kontakt-Abzug)
+#   4er: nur C rollt mit Höhe 13.9 cm / Spur 33.6 cm sicher (3/3, ± 1 cm, Tempo ± 10 %, aber Kontakte Ø 2.5 / min 1,
+#        72 cm/s schnell); A (Höhe 0) ± 0.8 cm, aber zeitweise ohne Bodenkontakt; Nur stossen und B kommen nicht herum
+#   6er: C, Höhe 7.1 cm, Spur 24.7 cm: ± 0.6 cm, Tempo ± 6 %, Kontakte min 2 / Ø 3.5 (60 cm/s); Höhe 0: ± 0.6 … 0.9 cm,
+#        Tempo ± 11 … 22 % (zwei Messreihen - die Streuung ist gross); Nur stossen ± 0.4 cm, aber Tempo ± 39 %, min 1
+#   B (Speichen) rollt bei keiner Variante ganz herum (zu langsam); A ist beim 6er / 8er unruhig (± 2.4 … 3.4 cm)
+const RUND_START := {"8": {"ring_methode": "c", "ring_hoehe": 0.0, "spur_rollen": 0.247},
+		"4": {"ring_methode": "c", "ring_hoehe": 0.139, "spur_rollen": 0.336},
+		"6": {"ring_methode": "c", "ring_hoehe": 0.071, "spur_rollen": 0.247}}
+const RUND_VERSUCHE := 3
+const RUND_MAX := 40.0                 # s for one full turn, else «zu langsam»
 const PANEL_W := 380.0
 const TABS := [["form", "Form"], ["gelenke", "Gelenke"], ["posen", "Posen"], ["bewegen", "Bewegen"], ["anzeigen", "Anzeigen"],
-		["gelaende", "Gelände"], ["physik", "Physik"], ["ansicht", "Ansicht"]]
+		["rund", "Rund rollen"], ["gelaende", "Gelände"], ["physik", "Physik"], ["ansicht", "Ansicht"]]
 const VIEWS := [["frei", "Frei"], ["seite", "Seite"], ["oben", "Oben"], ["roboter", "Roboter-Kamera"]]
 const FORM := [   # [key, name, unit, step]
 	["segmente", "Segmente", "", 1.0], ["halbe_breite", "Halbe Breite", "E", 0.01], ["halbe_breite_spitze", "Halbe Breite Spitze", "E", 0.01],
@@ -55,6 +74,11 @@ var speed := 0.0                       # measured, m/s (smooth)
 var _last_com := Vector3.ZERO
 var _press := Vector2.ZERO
 var _anz_t := 0.0
+var rund_jobs := []                   # Rund rollen: queue [{methode, hoehe, spur, versuch}]
+var rund_job := {}                     # the running one (+ phase, t)
+var rund_rows := {}                    # key -> [results]
+var rund_best := ""
+var auto_best := true
 var terrain := {}                      # Gelände-Test: {name, ring, t, best, last_t, queue}; empty = none running
 var terrain_results := {}              # name -> [ok, text]
 const TERRAIN_MAX := 150.0             # s
@@ -71,6 +95,10 @@ var pitch := 22.0
 var dist := 1.9
 var target := Vector3(-0.5, 0.1, 0)
 var last_pose := "gerade"
+var variante := "8"
+var _store := {}
+var _store_loaded := false
+var _dirty_t := -1.0
 var _old_ticks := 30
 var _old_3d := false
 var _w := {}                           # widgets
@@ -85,9 +113,16 @@ func is_open() -> bool:
 	return win != null and is_instance_valid(win)
 
 
+static func variante_aus(v) -> String:
+	"""«4» → 4 Segmente, «6» → 6 Segmente, alles andere («1», «8», leer) → 8 Segmente"""
+	var t := str(v).strip_edges()
+	return t if t in ["4", "6"] else "8"
+
+
 func open() -> void:
 	if is_open():
 		return
+	_load_store()
 	if mehr != null:
 		mehr.close_window()
 		mehr.close_menu()
@@ -111,6 +146,7 @@ func close() -> void:
 	layer.queue_free()
 	layer = null
 	win = null
+	_save_store()
 	model = null
 	_sl = {}
 	_w = {}
@@ -151,13 +187,79 @@ func _build_world() -> void:
 	world.add_child(cam)
 	model = MODELL.new()
 	model.name = "segmentroboter"
+	var sp: Dictionary = (_store.get(variante, {}) as Dictionary).get("p", {})
+	for k in sp:
+		if MODELL.START.has(k):
+			model.p[k] = sp[k]
+	if variante in ["4", "6"]:
+		model.p["segmente"] = int(variante)
+	elif int(model.p["segmente"]) in [4, 6]:
+		model.p["segmente"] = 8
+	last_pose = str((_store.get(variante, {}) as Dictionary).get("pose", "gerade"))
 	world.add_child(model)
 	bew = BEWEGUNG.new()
 	bew.m = model
+	var rs0: Dictionary = RUND_START.get(variante, {})
+	for k in rs0:
+		bew.set(k, rs0[k])
+	var sb: Dictionary = (_store.get(variante, {}) as Dictionary).get("bew", {})
+	for k in BEW_KEYS:
+		if sb.has(k):
+			bew.set(k, sb[k])
 	anz = ANZEIGE.new()
 	anz.name = "anzeige"
 	anz.m = model
 	world.add_child(anz)
+
+
+func _load_store() -> void:
+	if _store_loaded:
+		return
+	_store_loaded = true
+	if FileAccess.file_exists(SPEICHER):
+		var d = JSON.parse_string(FileAccess.get_file_as_string(SPEICHER))
+		if typeof(d) == TYPE_DICTIONARY:
+			_store = d
+	variante = variante_aus(_store.get("aktiv", "8"))
+
+
+func _save_store() -> void:
+	if model == null:
+		return
+	var b := {}
+	for k in BEW_KEYS:
+		b[k] = bew.get(k)
+	var old: Dictionary = _store.get(variante, {})
+	_store[variante] = {"p": model.p.duplicate(), "pose": last_pose, "bew": b, "rund": rund_summary() if not rund_rows.is_empty() else old.get("rund", []),
+			"rund_best": rund_best if rund_best != "" else str(old.get("rund_best", ""))}
+	_store["aktiv"] = variante
+	var f := FileAccess.open(SPEICHER, FileAccess.WRITE)
+	if f != null:
+		f.store_string(JSON.stringify(_store, " "))
+	_dirty_t = -1.0
+
+
+func mark_dirty() -> void:
+	_dirty_t = 2.0
+
+
+func set_variante(v: String) -> void:
+	"""switch 8 ↔ 4 segments: the current values are kept for later, the other variant comes with its own"""
+	v = variante_aus(v)
+	if v == variante and is_open():
+		return
+	var was_open := is_open()
+	if was_open:
+		_save_store()
+		close()
+	rund_rows = {}                                   # the measurements belong to their variant (saved above)
+	rund_best = ""
+	rund_jobs = []
+	rund_job = {}
+	variante = v
+	_store["aktiv"] = v
+	if was_open:
+		open()
 
 
 func _start_physics() -> void:
@@ -199,11 +301,17 @@ func _physics_process(dt: float) -> void:
 	model.step(dt)
 	if not terrain.is_empty():
 		_terrain_step(dt)
+	if not rund_job.is_empty() or not rund_jobs.is_empty():
+		_rund_step(dt)
 
 
 func _process(dt: float) -> void:
 	if not is_open():
 		return
+	if _dirty_t > 0.0:
+		_dirty_t -= dt
+		if _dirty_t <= 0.0:
+			_save_store()
 	if _rebuild_t > 0.0:
 		_rebuild_t -= dt
 		if _rebuild_t <= 0.0:
@@ -423,6 +531,7 @@ func reset() -> void:
 
 func apply_pose(name: String, snap := false) -> void:
 	last_pose = name
+	mark_dirty()
 	bew.mode = ""
 	bew.goal = null
 	bew.apply(bew.pose(name))
@@ -438,7 +547,10 @@ func set_gravity(g: float) -> void:
 
 
 func set_shape(key: String, v: float) -> void:
+	if key == "segmente" and variante in ["4", "6"]:
+		v = float(variante)                          # the 4- and 6-segment variants keep their number
 	model.set_param(key, v)
+	mark_dirty()
 	var d: Dictionary = _w.get("form_" + key, {})
 	if not d.is_empty() and not is_equal_approx((d["sl"] as HSlider).value, float(model.p[key])):
 		(d["sl"] as HSlider).set_value_no_signal(float(model.p[key]))
@@ -508,6 +620,14 @@ func _build_ui() -> void:
 	hd.add_child(x)
 	var sub := UI.small(T.t("Segment-Roboter – Form, Gelenke und Physik ausprobieren"))
 	pv.add_child(sub)
+	var vs := HBoxContainer.new()
+	vs.add_theme_constant_override("separation", 4)
+	pv.add_child(vs)
+	for vv in VARIANTEN:
+		var vid: String = vv[0]
+		var vb := _button(vs, T.t(vv[1]), func(): set_variante.call_deferred(vid))
+		vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_paint_btn(vb, vid == variante)
 	var tabs := HFlowContainer.new()
 	tabs.add_theme_constant_override("h_separation", 4)
 	tabs.add_theme_constant_override("v_separation", 4)
@@ -541,6 +661,7 @@ func _build_ui() -> void:
 	_page_bewegen(_w["page_bewegen"])
 	_page_anzeigen(_w["page_anzeigen"])
 	_page_gelaende(_w["page_gelaende"])
+	_page_rund(_w["page_rund"])
 	_page_ansicht(_w["page_ansicht"])
 	var keys := UI.small(T.t("W / S vor / zurück · A / D seitwärts · Q / E drehen · Leertaste Stopp · G Gehen · 1 – 4 Ansicht · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · H Bedienfeld · Esc schliessen"))
 	pv.add_child(keys)
@@ -695,12 +816,17 @@ func _page_form(pg: VBoxContainer) -> void:
 		var g: Array = MODELL.GRENZEN[f[0]]
 		var key: String = f[0]
 		_w["form_" + key] = _slider(pg, T.t(f[1]), g[0], g[1], f[3], float(model.p[key]), f[2], func(x: float): set_shape(key, x))
+		if key == "segmente" and variante in ["4", "6"]:
+			(_w["form_" + key]["sl"] as HSlider).editable = false
+			(_w["form_" + key]["title"] as Label).text = T.t("Segmente (fest bei dieser Variante)")
 	var info := UI.small("", UI.TXT)
 	pg.add_child(info)
 	_w["form_info"] = info
 	_button(pg, T.t("Startwerte (modell.json)"), func():
 		for k in MODELL.START:
 			model.p[k] = MODELL.START[k]
+		if variante in ["4", "6"]:
+			model.p["segmente"] = int(variante)
 		for f in FORM:
 			(_w["form_" + f[0]]["sl"] as HSlider).set_value_no_signal(float(model.p[f[0]]))
 			(_w["form_" + f[0]]["val"] as Label).text = (_w["form_" + f[0]]["fmt"] as Callable).call(float(model.p[f[0]])).strip_edges()
@@ -727,6 +853,9 @@ func _page_gelenke(pg: VBoxContainer) -> void:
 
 
 func _fill_servo_sliders() -> void:
+	var rh: Dictionary = _w.get("rund_h", {})
+	if not rh.is_empty() and model.built_ok:               # the reachable ride height is known only once the robot is built
+		(rh["sl"] as HSlider).max_value = maxf(0.5, bew.ring_height_max() * 100.0)
 	var pg: VBoxContainer = _w.get("servo_box")
 	if pg == null:
 		return
@@ -860,10 +989,23 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 		_paint_gang())
 	_w["ring_btn"] = rb
 	_w["turn_sl"] = _slider(pg, T.t("Kurve (− rechts, + links)"), -1.0, 1.0, 0.05, 0.0, "", func(x: float): manual.z = x)
-	_slider(pg, T.t("Tempo"), 0.01, 0.25, 0.01, bew.tempo, "m/s", func(x: float): bew.tempo = x)
-	_slider(pg, T.t("Körperhöhe über dem Boden"), 0.3, 1.8, 0.05, bew.hoehe, "E", func(x: float): bew.hoehe = x)
-	_slider(pg, T.t("Schrittlänge"), 0.2, 1.4, 0.05, bew.schritt_laenge, "E", func(x: float): bew.schritt_laenge = x)
-	_slider(pg, T.t("Schritthöhe"), 0.1, 0.9, 0.05, bew.schritt_hoehe, "E", func(x: float): bew.schritt_hoehe = x)
+	_slider(pg, T.t("Tempo"), 0.01, 0.25, 0.01, bew.tempo, "m/s", func(x: float):
+		bew.tempo = x
+		mark_dirty())
+	_slider(pg, T.t("Körperhöhe über dem Boden"), 0.3, 1.8, 0.05, bew.hoehe, "E", func(x: float):
+		bew.hoehe = x
+		mark_dirty())
+	_slider(pg, T.t("Spurbreite beim Gehen (Fuss links bis Fuss rechts)"), model.u("halbe_breite") * 200.0 + 2.0,
+			(model.u("halbe_breite") + (model.u("oberschenkel") + model.u("unterschenkel")) * 0.95) * 200.0, 0.5, bew.spur_gehen() * 100.0, "cm",
+			func(x: float):
+		bew.set_spur_gehen(x / 100.0)
+		mark_dirty())
+	_slider(pg, T.t("Schrittlänge"), 0.2, 1.4, 0.05, bew.schritt_laenge, "E", func(x: float):
+		bew.schritt_laenge = x
+		mark_dirty())
+	_slider(pg, T.t("Schritthöhe"), 0.1, 0.9, 0.05, bew.schritt_hoehe, "E", func(x: float):
+		bew.schritt_hoehe = x
+		mark_dirty())
 	var gi := UI.small("", UI.TXT)
 	pg.add_child(gi)
 	_w["gang_info"] = gi
@@ -932,6 +1074,248 @@ func _page_anzeigen(pg: VBoxContainer) -> void:
 		h.add_child(pb)
 		_w["bars"].append([l, pb])
 	pg.add_child(UI.small(T.t("Strom: Schätzung je Servo = Ruhestrom + Blockierstrom × Last (Regler unter «Physik»). Kipp-Reserve: Abstand des Schwerpunkt-Lots vom Rand der Stützfläche (alle Bodenkontakte).")))
+
+
+# ---- Rund rollen (Besitzer 22.11.2026 21:33 – 21:40) -----------------------------------------------------------------------
+func _page_rund(pg: VBoxContainer) -> void:
+	pg.add_child(UI.small(T.t("Wie rund rollt der Ring? Gemessen über eine ganze Drehung: Schwankung der Mittenhöhe, des Tempos, Zahl der Bodenkontakte (Ziel: immer mindestens 3) und Kipp-Reserve. Je Einstellung 3 Versuche.")))
+	var gm := GridContainer.new()
+	gm.columns = 1
+	gm.add_theme_constant_override("v_separation", 4)
+	pg.add_child(gm)
+	for rm in bew.ring_methods():
+		var mn: String = rm[0]
+		var b := _button(gm, T.t(rm[1]), func():
+			bew.ring_methode = mn
+			mark_dirty()
+			_paint_rund())
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_w["rm_" + mn] = b
+	var hmax: float = bew.ring_height_max() * 100.0 if model.built_ok else 30.0
+	_w["rund_h"] = _slider(pg, T.t("Höhe über Boden (0 = auf den Ecken, mehr = auf Stelzen)"), 0.0, maxf(0.5, hmax), 0.5,
+			clampf(bew.ring_hoehe * 100.0, 0.0, hmax), "cm", func(x: float):
+		bew.ring_hoehe = x / 100.0
+		mark_dirty())
+	var reach: float = model.u("oberschenkel") + model.u("unterschenkel")
+	var smin: float = model.u("halbe_breite") * 200.0
+	var smax: float = (model.u("halbe_breite") + reach * 0.6) * 200.0
+	_w["rund_s"] = _slider(pg, T.t("Spurbreite beim Rollen (Fuss links bis Fuss rechts)"), smin, smax, 0.5,
+			clampf(bew.spur_rollen * 100.0, smin, smax), "cm", func(x: float):
+		bew.spur_rollen = x / 100.0
+		mark_dirty())
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	pg.add_child(row)
+	var go := _button(row, T.t("Im Ring rollen"), func():
+		if model.latch["state"] != "locked":
+			apply_pose("ring", true)
+		bew.start_ring()
+		manual = Vector3(0.0, 1.0, 0.0)
+		_paint_gang())
+	go.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var st := _button(row, T.t("Stopp"), func():
+		rund_jobs = []
+		rund_job = {}
+		stop_all())
+	st.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var live := UI.small("", UI.TXT)
+	pg.add_child(live)
+	_w["rund_live"] = live
+	var gb := GridContainer.new()
+	gb.columns = 2
+	gb.add_theme_constant_override("h_separation", 6)
+	gb.add_theme_constant_override("v_separation", 6)
+	pg.add_child(gb)
+	for e in [["Messen (diese Methode)", "eine"], ["Alle Methoden vergleichen", "alle"], ["Reihe Höhe (C)", "hoehe"], ["Reihe Spurbreite (C)", "spur"]]:
+		var what: String = e[1]
+		var b := _button(gb, T.t(e[0]), func(): rund_start(what))
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var ab := _toggle(pg, T.t("Beste Methode als Standard übernehmen"), auto_best, func(on: bool): auto_best = on)
+	_w["rund_auto"] = ab
+	var res := UI.small("", UI.TXT)
+	res.add_theme_font_override("font", UI.heading_font())
+	pg.add_child(res)
+	_w["rund_res"] = res
+
+
+func _paint_rund() -> void:
+	for rm in BEWEGUNG.RING_METHODEN:
+		var b: Button = _w.get("rm_" + rm[0])
+		if b != null:
+			_paint_btn(b, bew.ring_methode == rm[0])
+
+
+func rund_start(what: String) -> void:
+	"""queue measurements: eine | alle | hoehe | spur (3 trials each)"""
+	var cfgs := []
+	var h: float = bew.ring_hoehe
+	var sp: float = bew.spur_rollen
+	match what:
+		"eine":
+			cfgs = [[bew.ring_methode, h, sp]]
+		"alle":
+			for rm in bew.ring_methods():
+				cfgs.append([rm[0], h, sp])
+		"hoehe":
+			var hm: float = bew.ring_height_max()
+			for k in [0.0, 0.5, 1.0]:
+				cfgs.append(["c", hm * k, sp])
+		"spur":
+			var w: float = model.u("halbe_breite")
+			var reach: float = model.u("oberschenkel") + model.u("unterschenkel")
+			for k in [0.15, 0.35, 0.55]:
+				cfgs.append(["c", h, 2.0 * (w + reach * k)])
+	rund_jobs = []
+	for c in cfgs:
+		for v in range(RUND_VERSUCHE):
+			rund_jobs.append({"methode": c[0], "hoehe": c[1], "spur": c[2], "versuch": v})
+	rund_job = {}
+	terrain = {}
+
+
+static func rund_key(methode: String, hoehe: float, spur: float) -> String:
+	return "%s|%.1f|%.1f" % [methode, hoehe * 100.0, spur * 100.0]
+
+
+func _rund_step(dt: float) -> void:
+	if rund_job.is_empty():
+		if rund_jobs.is_empty():
+			return
+		rund_job = rund_jobs.pop_front()
+		bew.stop()
+		manual = Vector3.ZERO
+		bew.ring_methode = rund_job["methode"]
+		bew.ring_hoehe = rund_job["hoehe"]
+		bew.spur_rollen = rund_job["spur"]
+		model.root_xf = starts.get("start", Transform3D())
+		apply_pose("ring", true)
+		rund_job["phase"] = "settle"
+		rund_job["t"] = 0.0
+		return
+	rund_job["t"] = float(rund_job["t"]) + dt
+	var t: float = rund_job["t"]
+	match rund_job["phase"]:
+		"settle":
+			if t > 1.5 + 0.25 * float(rund_job["versuch"]):
+				bew.start_ring()
+				manual = Vector3(0.0, 1.0, 0.0)
+				rund_job["phase"] = "go"
+				rund_job["t"] = 0.0
+		"go":
+			if t > 1.0:
+				bew.start_ring_measure()
+				rund_job["phase"] = "measure"
+				rund_job["t"] = 0.0
+		"measure":
+			var r: Dictionary = bew.ring_result
+			var fell: bool = model.latch["state"] != "locked" or absf(bew.ring_lean) > 50.0 or _tipped_ring()
+			if r.is_empty() and not fell and t < RUND_MAX:
+				return
+			var row := r.duplicate() if not r.is_empty() else {"ok": false, "grund": "umgefallen" if fell else "zu langsam"}
+			if not r.is_empty() and fell:
+				row["ok"] = false
+				row["grund"] = "umgefallen"
+			var key := rund_key(rund_job["methode"], rund_job["hoehe"], rund_job["spur"])
+			if not rund_rows.has(key) or int(rund_job["versuch"]) == 0:
+				rund_rows[key] = []
+			(rund_rows[key] as Array).append(row)
+			rund_job = {}
+			if rund_jobs.is_empty():
+				bew.stop()
+				manual = Vector3.ZERO
+				_rund_pick_best()
+
+
+func _tipped_ring() -> bool:
+	return absf(bew.ring_lean) > 50.0
+
+
+static func _median(a: Array) -> float:
+	if a.is_empty():
+		return 0.0
+	var b := a.duplicate()
+	b.sort()
+	return float(b[b.size() / 2])
+
+
+func rund_summary() -> Array:
+	"""one line per setting: [key, methode, hoehe cm, spur cm, ok/n, dh, dv, v, kmin, kavg, kipp, unter3]"""
+	var out := []
+	for key in rund_rows:
+		var rows: Array = rund_rows[key]
+		var parts: Array = key.split("|")
+		var oks := rows.filter(func(r): return bool(r.get("ok", false)))
+		var line := {"key": key, "methode": parts[0], "hoehe": float(parts[1]), "spur": float(parts[2]), "ok": oks.size(), "n": rows.size()}
+		if not oks.is_empty():
+			line["dh"] = _median(oks.map(func(r): return float(r["dh"])))
+			line["dv"] = _median(oks.map(func(r): return float(r["dv"])))
+			line["v"] = _median(oks.map(func(r): return float(r["v"])))
+			line["kmin"] = oks.map(func(r): return int(r["kmin"])).min()
+			line["kavg"] = _median(oks.map(func(r): return float(r["kavg"])))
+			line["kipp"] = oks.map(func(r): return float(r.get("kipp", 0.0))).min()
+			line["unter3"] = oks[0].get("unter3", [])
+		else:
+			line["grund"] = str(rows[0].get("grund", ""))
+		out.append(line)
+	return out
+
+
+static func rund_score(l: Dictionary) -> float:
+	"""smaller = better: centre-height swing (cm) + speed swing + a penalty for fewer than 3 ground contacts"""
+	return float(l["dh"]) + 0.02 * float(l["dv"]) + maxf(0.0, 3.0 - float(l["kavg"])) + 0.5 * maxf(0.0, 3.0 - float(l["kmin"]))
+
+
+func _rund_pick_best() -> void:
+	"""roundest = all trials made it, best score; becomes the default of this variant if clearly better (≤ 80 %)"""
+	var lines := rund_summary().filter(func(l): return int(l["ok"]) == int(l["n"]) and int(l["n"]) > 0)
+	lines.sort_custom(func(a, b): return rund_score(a) < rund_score(b))
+	rund_best = ""
+	if lines.is_empty():
+		return
+	var best: Dictionary = lines[0]
+	var clearly: bool = lines.size() == 1 or rund_score(best) <= 0.8 * rund_score(lines[1])
+	mark_dirty()
+	rund_best = str(best["key"])
+	if auto_best and clearly:
+		bew.ring_methode = best["methode"]
+		bew.ring_hoehe = float(best["hoehe"]) / 100.0
+		bew.spur_rollen = float(best["spur"]) / 100.0
+		mark_dirty()
+
+
+func _rund_text() -> String:
+	var names := {}
+	for rm in BEWEGUNG.RING_METHODEN:
+		names[rm[0]] = T.t(rm[1])
+	var t := ""
+	for l in rund_summary():
+		t += ("★ " if l["key"] == rund_best else "") + str(names.get(l["methode"], l["methode"])) + "  ·  " + T.t("Höhe %.1f cm · Spur %.1f cm") % [l["hoehe"], l["spur"]] + "\n"
+		if int(l["ok"]) == 0:
+			var gr := {"umgefallen": T.t("umgefallen"), "zu langsam": T.t("zu langsam")}
+			t += "   " + T.t("nicht geschafft") + " (" + str(gr.get(str(l.get("grund", "")), "")) + ")\n"
+			continue
+		t += "   " + T.t("%d/%d geschafft · Mitte ± %.1f cm · Tempo %.0f cm/s ± %.0f %% · Kontakte min %d / Ø %.1f · Kipp-Reserve %.1f cm") % [
+				l["ok"], l["n"], float(l["dh"]) * 0.5, l["v"], l["dv"], l["kmin"], l["kavg"], l["kipp"]] + "\n"
+		if int(l["kmin"]) < 3 and not (l["unter3"] as Array).is_empty():
+			var zs := []
+			for z in l["unter3"]:
+				zs.append("%d–%d°" % [z[0], z[1]])
+			t += "   " + T.t("unter 3 Kontakten bei: %s") % ", ".join(zs) + "\n"
+	# the variants side by side (the best measured setting of each, saved)
+	var side := ""
+	for vv in VARIANTEN:
+		var sv: Dictionary = _store.get(vv[0], {})
+		var lines: Array = rund_summary() if vv[0] == variante and not rund_rows.is_empty() else sv.get("rund", [])
+		var bk: String = rund_best if vv[0] == variante and rund_best != "" else str(sv.get("rund_best", ""))
+		for l in lines:
+			if l["key"] == bk and int(l["ok"]) > 0:
+				side += "%s: %s · " % [T.t(vv[1]), names.get(l["methode"], l["methode"])] + T.t("Mitte ± %.1f cm · Tempo ± %.0f %% · Kontakte min %d / Ø %.1f") % [
+						float(l["dh"]) * 0.5, l["dv"], l["kmin"], l["kavg"]] + "\n"
+	if side != "":
+		t += "\n" + T.t("Vergleich 8 / 6 / 4 (jeweils die beste Messung):") + "\n" + side
+	if not rund_jobs.is_empty() or not rund_job.is_empty():
+		t += T.t("Messung läuft … noch %d") % (rund_jobs.size() + (0 if rund_job.is_empty() else 1)) + "\n"
+	return t
 
 
 func _page_gelaende(pg: VBoxContainer) -> void:
@@ -1101,6 +1485,12 @@ func _refresh() -> void:
 				(pr[0] as Label).text = "%s  %.2f N·m" % [servo_name(tops[i][0]), absf(tops[i][2])]
 				(pr[1] as ProgressBar).value = minf(1.5, tops[i][1])
 				(pr[1] as ProgressBar).modulate = ANZEIGE.load_color(tops[i][1])
+	if tab == "rund":
+		_paint_rund()
+		var rs: Dictionary = bew.ring_state() if model.latch["state"] == "locked" else {}
+		(_w["rund_live"] as Label).text = (T.t("Mitte %.1f cm über Boden · %d Kontakte · Neigung %d° · %.1f cm/s") % [
+				((rs["c"] as Vector3).y - float(rs["gy"])) * 100.0, model.ground_contacts(), int(round(bew.ring_lean)), absf(bew._ring_v) * 100.0]) if not rs.is_empty() else T.t("Ring nicht verriegelt")
+		(_w["rund_res"] as Label).text = _rund_text()
 	if tab == "gelaende":
 		for t in GELAENDE.NAMEN:
 			var l: Label = _w.get("terrain_" + t[0])
@@ -1173,12 +1563,16 @@ func info() -> Dictionary:
 				"mode": bew.mode, "gait": bew.gang_now, "sequence": bew.seq_name, "speed": speed, "tip_margin": anz.margin,
 				"tipping": anz.tipping, "goal_reached": bew.goal_reached, "ring_lean": bew.ring_lean,
 				"terrain": terrain.get("name", ""), "terrain_results": terrain_results, "adapted": bew.angepasst,
-				"plan": bew.plan, "anpassen": bew.anpassen})
+				"plan": bew.plan, "anpassen": bew.anpassen, "variante": variante, "ring_methode": bew.ring_methode,
+				"rund": rund_summary(), "rund_best": rund_best, "rund_laeuft": not rund_jobs.is_empty() or not rund_job.is_empty()})
 	return d
 
 
 func control(d: Dictionary) -> Dictionary:
 	var do := str(d.get("do", "info"))
+	if d.has("variante"):
+		_load_store()
+		set_variante(str(d["variante"]))
 	if do == "open":
 		open()
 	elif do == "close":
@@ -1228,6 +1622,15 @@ func control(d: Dictionary) -> Dictionary:
 			manual = Vector3(0.0, float(d.get("drive", 0.0)), float(d.get("turn", 0.0)))
 		"anpassen":
 			bew.anpassen = bool(d.get("on", true))
+		"rund":
+			if d.has("methode"):
+				bew.ring_methode = str(d["methode"])
+			if d.has("hoehe"):
+				bew.ring_hoehe = float(d["hoehe"])
+			if d.has("spur"):
+				bew.spur_rollen = float(d["spur"])
+			if d.has("messen"):
+				rund_start(str(d["messen"]))
 		"gelaende":
 			var names = d.get("name", "stufe")
 			terrain_start(names if names is Array else [str(names)], bool(d.get("ring", false)))
