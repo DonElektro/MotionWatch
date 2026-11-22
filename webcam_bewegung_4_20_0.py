@@ -278,7 +278,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_20_0.zip"
-ZD_SHA256 = "4c74c62f2c23ff40fff4d17a7d2b9db86ec18bf9b0ec2eaf12dbf7381334f0c1"
+ZD_SHA256 = "6df5abda8e26c6922f6a69c3eb20385db306a9c6678a62ba125c8d86df9f4fd3"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -117770,12 +117770,49 @@ zd_exec(GAESTE_PY, '639zzzzzg_gaeste_licht.py')
 
 
 
-BK_TAG = "bergkarte-1"
+BK_TAG = "bergkarte-2"
 BK_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"}
 
-BK_FILE = {"name": "bergtal-karte-1.zip", "size": 3233671, "sha256": "deb7d5508aaa3b106e513475398693927f429efad130bc5d0b965d30788f97b9", "unpacked": 4527105, "sim": "3.75.0"}
+
+
+BK_FILE = {"name": "bergtal-karte-2.zip", "size": 0, "sha256": "", "unpacked": 0, "sim": ""}
 BK_PY = _zd('639zzzzzt_bergtal_karte/BK_PY', "")
 zd_exec(BK_PY, "639zzzzzt_bergtal_karte.py")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+WC_TAG = "wildcamp-1"
+WC_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"}
+
+WC_FILE = {"name": "wildcamp-ch-1.zip", "size": 0, "sha256": "", "unpacked": 0, "datum": ""}
+WC_PY = _zd('639zzzzzw_wildcamp/WC_PY', "")
+zd_exec(WC_PY, "639zzzzzw_wildcamp.py")
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")

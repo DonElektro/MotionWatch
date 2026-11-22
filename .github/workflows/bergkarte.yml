@@ -7,7 +7,7 @@
 # Release (das Paket folgt dem Bergtal des Simulators; ändert sich die Prüfsumme, braucht es ein neues bergkarte-N).
 #   Nur bauen + prüfen:  gh api -X POST repos/DonElektro/MotionWatch/actions/workflows/bergkarte.yml/dispatches -f ref=main
 #   Probe-Release:       … -f ref=main -f 'inputs[release]=probe'
-#   Echt:                … -f ref=main -f 'inputs[release]=echt' -f 'inputs[tag]=bergkarte-1'
+#   Echt:                … -f ref=main -f 'inputs[release]=echt' -f 'inputs[tag]=bergkarte-2'
 #   Probe wegräumen:     … -f ref=main -f 'inputs[loeschen]=bergkarteprobe-N'
 # Danach (lokal, Integrator): `python3 werkzeuge/bergkarte/paket.py --eintragen pins_bergkarte.txt` schreibt BK_FILE in
 # quelle/639zzzzzt, MoveEye bauen und signieren (die Prüfsumme kommt so in die signierte Hauptdatei). Ein Release wird nie
@@ -23,7 +23,7 @@ on:
         default: keins
       tag:
         description: "Tag für «echt» (bergkarte-N, = TAG in werkzeuge/bergkarte/paket.py und BK_TAG in quelle/639zzzzzt)"
-        default: bergkarte-1
+        default: bergkarte-2
       loeschen:
         description: "Statt bauen: Probe-Release + Tag löschen (nur bergkarteprobe-N, nur Vorabversion)"
         default: ""
@@ -80,7 +80,7 @@ jobs:
         id: v
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ inputs.tag || 'bergkarte-1' }}
+          TAG: ${{ inputs.tag || 'bergkarte-2' }}
         run: |
           set -euo pipefail
           sha=$(git rev-parse HEAD)
@@ -99,6 +99,7 @@ jobs:
             echo "::error::Release $tag gibt es schon - nie überschreiben"; exit 1
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"; echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "BKZIP=bergtal-karte-${ptag#bergkarte-}.zip" >> "$GITHUB_ENV"
       - name: Web-Paket (MapLibre + Schriften) von karten-2, Prüfsumme aus quelle/639zzq
         run: |
           set -euo pipefail
@@ -121,7 +122,7 @@ jobs:
           set -euo pipefail
           python3 -I werkzeuge/bergkarte/paket.py --export "$RUNNER_TEMP/exp" --web-zip "$WEB" --aus "$RUNNER_TEMP/out" --pins | tee "$RUNNER_TEMP/bau.txt"
           python3 -I werkzeuge/bergkarte/paket.py --pruefen "$RUNNER_TEMP/out" --export "$RUNNER_TEMP/exp" | tee -a "$RUNNER_TEMP/bau.txt"
-          [ -s "$RUNNER_TEMP/out/bergtal-karte-1.zip" ] && [ -s "$RUNNER_TEMP/out/pins_bergkarte.txt" ] || { echo "::error::Paket oder Pins fehlen"; exit 1; }
+          [ -s "$RUNNER_TEMP/out/$BKZIP" ] && [ -s "$RUNNER_TEMP/out/pins_bergkarte.txt" ] || { echo "::error::Paket oder Pins fehlen"; exit 1; }
           { grep -E '^(PAKET|PIN|PRUEFUNG)' "$RUNNER_TEMP/bau.txt" || true; } | cut -c1-900 | while read -r l; do echo "::notice title=Bergtal-Karte::$l"; done
       - name: Test Paket = Simulator (werkzeuge/bergkarte_test.gd)
         run: |
@@ -169,16 +170,16 @@ jobs:
           } > notes.md
           for i in 1 2 3; do
             if [ "$REL" = "probe" ]; then
-              gh release create "$TAG" "$O/bergtal-karte-1.zip" "$O/pins_bergkarte.txt" -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Probe · Bergtal-Karte" --notes-file notes.md --prerelease --latest=false && break
+              gh release create "$TAG" "$O/$BKZIP" "$O/pins_bergkarte.txt" -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Probe · Bergtal-Karte" --notes-file notes.md --prerelease --latest=false && break
             else
-              gh release create "$TAG" "$O/bergtal-karte-1.zip" "$O/pins_bergkarte.txt" -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Bergtal-Karte" --notes-file notes.md --latest=false && break
+              gh release create "$TAG" "$O/$BKZIP" "$O/pins_bergkarte.txt" -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Bergtal-Karte" --notes-file notes.md --latest=false && break
             fi
             echo "Versuch $i fehlgeschlagen, warte"; sleep 30
             gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 && { echo "::error::Release halb angelegt - bitte von Hand prüfen"; exit 1; }
           done
           mkdir -p "$RUNNER_TEMP/zurueck"
-          curl -fsSL -o "$RUNNER_TEMP/zurueck/bergtal-karte-1.zip" "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/bergtal-karte-1.zip"
-          s=$(sed -n 's/^PIN bergkarte .*sha256=\([0-9a-f]*\).*/\1/p' "$O/pins_bergkarte.txt"); echo "$s  $RUNNER_TEMP/zurueck/bergtal-karte-1.zip" | sha256sum -c -
+          curl -fsSL -o "$RUNNER_TEMP/zurueck/$BKZIP" "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$BKZIP"
+          s=$(sed -n 's/^PIN bergkarte .*sha256=\([0-9a-f]*\).*/\1/p' "$O/pins_bergkarte.txt"); echo "$s  $RUNNER_TEMP/zurueck/$BKZIP" | sha256sum -c -
           echo "latest bleibt: $(gh api repos/$GITHUB_REPOSITORY/releases/latest --jq .tag_name)"
 
   weg:

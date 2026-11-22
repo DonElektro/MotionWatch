@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8109 (Stellen: 11260)
+Texte gesamt: 8113 (Stellen: 11264)
 Übersetzt: en 8109, fr 8109, it 8109, rm 8109
 Unsicher markiert: 330
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
 Nicht mehr im Code (noch in texte.json): 404
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29724, schlüssel 22843, keine Wörter 14463, index 10347, technisch 3850, doc 2594, einheit 346, log 204, englisch 148, pfad 130, stringname 107, html 69, klasse 42, shader 6
+Übersprungen (Grund: Anzahl): kennung 29729, schlüssel 22859, keine Wörter 14499, index 10357, technisch 3850, doc 2596, einheit 346, log 204, englisch 148, pfad 130, stringname 107, html 69, klasse 42, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -14,10 +14,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_abenteuer.gd     285     7
   gamewiz.gd               252    15
   abenteuer_figuren_daten.gd   238     0
-  main.gd                  213    10
+  main.gd                  214    10
   game.gd                  211    32
   bergtal_abenteuer_daten.gd   197     0
-  bergtal.gd               187     5
+  bergtal.gd               190     5
   bergtal_horror.gd        160     3
   abenteuer_raetsel.gd     145     2
   maggie_story.gd          114     2
@@ -767,15 +767,15 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   hp_kiosk.gd:197  'aus'
   licht.gd:42  'aus'
   main.gd:779  ' (Port %d)'
-  main.gd:1683  '  %.0f Mbit/s'
-  main.gd:2343  ' (von MoveEye)'
-  main.gd:2376  'Der Simulator ist belegt: '
-  main.gd:3221  'aus'
-  main.gd:3221  'ein'
-  main.gd:3298  'Sabotage-Test: '
-  main.gd:3298  'aus'
-  main.gd:3352  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3355  '\n🚨 Bewacht und weg: '
+  main.gd:1688  '  %.0f Mbit/s'
+  main.gd:2348  ' (von MoveEye)'
+  main.gd:2381  'Der Simulator ist belegt: '
+  main.gd:3226  'aus'
+  main.gd:3226  'ein'
+  main.gd:3303  'Sabotage-Test: '
+  main.gd:3303  'aus'
+  main.gd:3357  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3360  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
@@ -824,11 +824,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   b3d.gd:128  'Kacheln nicht lesbar'
   b3d.gd:221  'Verzeichnis nicht lesbar: '
   b3d.gd:244  'Kachel fehlt: '
-  bergtal.gd:245  'Aussicht: '
-  bergtal.gd:254  'Schlafplatz: '
-  bergtal.gd:256  'Aussicht: '
-  bergtal.gd:2559  'Schlafplatz: '
-  bergtal.gd:2561  'Aussicht: '
+  bergtal.gd:265  'Aussicht: '
+  bergtal.gd:274  'Schlafplatz: '
+  bergtal.gd:276  'Aussicht: '
+  bergtal.gd:2579  'Schlafplatz: '
+  bergtal.gd:2581  'Aussicht: '
   diagnose.gd:32  ' · virtuelle Maschine'
   diagnose.gd:34  ' · Fenster klein / versteckt'
   diagnose.gd:72  ' · Ersatz-Port, 8765 war besetzt'
