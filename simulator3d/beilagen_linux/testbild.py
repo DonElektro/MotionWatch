@@ -43,7 +43,7 @@ except ImportError:                                   # python3-tk fehlt: kiosk_
 BG, PANEL, KACHEL, LINIE = "#0f1624", "#172134", "#1d2940", "#27324a"
 FG, GRAU, ORANGE, GRUEN, ROT = "#e6ebf4", "#9a9ea3", "#f59a4a", "#3ecf8e", "#ef5b5b"
 DATEN_S = 5
-SPIEL_RUHE_S = 900                                    # wie hp_wache.py --ruhe-s: so lange gilt ein Spielen-Wunsch
+SPIEL_RUHE_S = 180                                    # wie hp_wache.py --ruhe-s: so lange gilt ein Spielen-Wunsch
 ARBEITEN = {"Erkennung messen", "KI-Trainingsbilder", "Langzeittest"}
 MAX_JSON, MAX_BILD = 65536, 4_000_000
 

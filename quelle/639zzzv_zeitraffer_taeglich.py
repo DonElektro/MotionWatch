@@ -342,3 +342,21 @@ def tld_selftest():
 
 
 SELFTEST_EXTRA.append(("Timelapse: every day a video automatically (639zzzv)", tld_selftest))
+
+
+# 4.17.1: the hint of the history page when «Timelapse → Videos» has no video yet (the page itself has the German text)
+_HX_VTL = {"No timelapse video yet – one is made every night at about 00:20 from yesterday's photos (Settings → Timelapse)":
+               ("Noch kein Zeitraffer-Video – entsteht jede Nacht um ca. 00:20 aus den Fotos von gestern (Einstellungen → Zeitraffer)",
+                "Pas encore de vidéo accélérée – elle est créée chaque nuit vers 00:20 à partir des photos d’hier (Réglages → Accéléré)",
+                "Ancora nessun video timelapse – viene creato ogni notte verso le 00:20 dalle foto di ieri (Impostazioni → Timelapse)",
+                "Anc nagin video accelerà – el vegn fatg mintga notg enturn las 00:20 ord las fotos dad ier (Parameters → Accelerà)"),
+           "back to {d}": ("bis {d}", "jusqu’au {d}", "fino al {d}", "fin ils {d}"),     # 4.18.1: chip in the history (oldest kept recording)
+           "Oldest kept recording – when the folder is full, the oldest are deleted first (time-lapse and continuous recording have their own limits)":
+               ("Älteste noch vorhandene Aufnahme – ist der Ordner voll, werden die ältesten zuerst gelöscht (Zeitraffer und Daueraufnahme haben eigene Grenzen)",
+                "Plus ancien enregistrement conservé – quand le dossier est plein, les plus anciens sont effacés en premier (l’accéléré et l’enregistrement continu ont leurs propres limites)",
+                "Registrazione più vecchia conservata – quando la cartella è piena, le più vecchie vengono cancellate per prime (timelapse e registrazione continua hanno limiti propri)",
+                "La pli veglia registraziun anc avant maun – sch'il ordinatur è plain, vegnan las pli veglias stizzadas l'emprim (accelerà e registraziun permanenta han atgnas limitas)")}
+for _k, _v in _HX_VTL.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])

@@ -23,6 +23,33 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 4.17.1: Verlauf: «Zeitraffer» mit «Videos / Fotos», Hinweis ohne Video · Simulator verbinden / trennen ist kein
+    Stromausfall (keine Push, kein Sabotage-Alarm), Schalter «keine Push, solange der Simulator verbunden ist»
+  * 4.17.0: Homepage-Startseite: «📷 MoveEye» (das echte MoveEye beim Host, demo/) und «🗺️ Die Karte des Grossvaters»
+    (Sim/?grossvater=1, direkt ins Spiel), 5 Sprachen
+  * 4.16.1: OpenCV bleibt bei 4.x (opencv-python-headless>=4.8,<5 in requirements.txt, CI, Prüfsatz, HP und Einrichtung): OpenCV
+    5 kann das KI-Modell nicht lesen – klare Meldung «OpenCV 5.x cannot read this model» mit Hinweis pip install
+    "opencv-python-headless<5" in der Fehlerhilfe
+  * 4.16.0: Beim Host: KI-Erkennung (Person, Tier, Fahrzeug; Modell nur von der festen Quelle mit Prüfsumme), Daueraufnahme und
+    Zeitraffer (zusammen bis 300 MB), Kopf, Joystick, Teach-in und Patrouille steuern den Simulator der Homepage, Simulator-Tab
+    im Hintergrund = «Bild pausiert» statt «Verbinde …», kein Watchdog-Banner beim Warten, Link «Simulator öffnen» richtig,
+    «Passwort kommt vom Host (Basic Auth)» · Fehlerkorrektur auf allen Geräten: «guard watch: unsupported operand type(s) for
+    +=» mit verbundenem Simulator
+  * 4.15.1: Beim Host: das Bild des Simulators kommt als Einzelbilder durch die Leitung (kein Stau mehr, kein «Simulator nicht
+    erreichbar»), Hinweis auf den Simulator der Homepage · Spiele beim Host: Spielesammlung, Amazon Queen und die anderen fertigen Spiele lassen sich laden (nur von GitHub, mit Prüfsumme, bis 400 MB)
+  * 4.15.0: MoveEye beim Host: eine echte MoveEye statt der Demo – der Simulator auf der Homepage ist die Kamera, Einstellungen
+    und Aufnahmen bleiben, nur Bewegungserkennung, keine KI-Modelle; Aufnahme: fehlt ein Video-Encoder (z. B. kein
+    Hardware-Encoder), nimmt MoveEye mit einem anderen auf
+  * 4.14.0: 💬 Plaudern mit Blinki: frei fragen, was man will (getippt oder gesprochen), mit kurzem Verlauf nur im Speicher; der
+    Auslöser am Gerät fragt ab Werk «Plaudern»
+  * 4.13.0: Akku: Geekworm X1206 V2.0 wird erkannt (I2C 0x36, nach dem UPS HAT (E)); GPIO 6 und 16 gehören dann der Platine und
+    werden nie geschaltet; neue Geräte: Lade-LED GPIO 13, Taste «Schutz» GPIO 12 (ältere Einstellungen behalten 6 / 16)
+  * 4.12.0: Topo-Karte: die Offline-Karte der Schweiz als Wanderkarte mit Höhenlinien und Relief (Paket karten-2)
+  * 4.11.0: MoveEye als Demo im Internet: demo_start.py startet MoveEye auf einem Webhost unter /demo (nur gezeichnete Szene,
+    alle Sperren an, keine Verbindung nach aussen); der Simulator im Browser kann sich mit dieser Demo verbinden · Homepage: der Simulator im Browser kommt in Teilen (index_pck1… .wasm) – die Prüfung meldet sie nicht mehr als falsch
+  * 4.10.0: 💬 Blinki fragen: Blinki beantwortet Fragen zur Bedienung und erklärt Fehler – offline auf dem Gerät (Sprachmodell
+    auf Knopfdruck laden), wahlweise mit eigener Cloud; Fragen auch gesprochen (Handy 🎙, am Gerät nach 2× klatschen, Knopf oder
+    QR-Karte – ab Werk aus) · 📌 Eigene Orte auf der Offline-Karte (setzen, ziehen, bearbeiten; gespeichert im Digitalen Rucksack, GPX / KML / GeoJSON) · 📍 Markier-Karte (experimentell, ab Werk aus): eine gedruckte Karte vor die Kopf-Kamera halten, der Kopf folgt ihr und merkt sich Punkte
   * 4.9.0: Digitaler Rucksack bei Import und Export: überall eine Datei aus dem Rucksack wählen oder einen Export direkt dort
     ablegen · Mein Handy-Hotspot bevorzugen: ein gespeichertes Netz markieren, MoveEye wechselt hin, sobald es da ist (Schalter, ab Werk aus) · 📖 Vorlesen und Datei-Ansicht im Digitalen Rucksack: Geschichten (.txt, .md, .epub, .docx, .pdf) mit der Piper-Stimme vorlesen, mit Lesezeichen
   * 4.8.0: Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt
@@ -84,46 +111,6 @@ Features
     zweite «Pi camera 0» mehr, die die Hauptkamera blockiert («Camera __init__ sequence did not complete»); ein solches Doppel
     wird beim Start von selbst aufgeräumt. (2) Spielecke: alle Spiel-Kacheln mit kurzen, gleich langen Texten in fünf Sprachen,
     zwei Zeilen, gleich hohe Reihen (Spielesammlung GS-1.21).
-  * 3.92.1: «Verschollen im Bergtal»: Spieltempo ⏩ 1× / 2× / 4× und ⏸ Pause (Spielesammlung GS-1.20).
-  * 3.92.0: Design «Klar», Etappe 1: ruhigere Kopfzeile mit aufklappbarer Statuszeile, klarere Gast-Seiten (ein Knopf «Digitaler
-    Rucksack»), aufgeräumte Menüs in Web und Fenster; «Mehr» in vier Gruppen (Unterwegs · Spielen · Hilfe & Drucken · Gerät).
-    «Einrichtung» und «Werkseinstellungen» stehen jetzt unter Einstellungen → System.
-  * 3.91.0: Zwei Teile. (1) «🔍 Lupe» im Live-Bild: nur das Bild vergrössern, nicht die ganze Seite – Rahmen ziehen oder mit zwei
-    Fingern zoomen; der Ausschnitt kommt scharf aus der vollen Auflösung der Kamera, Privatsphäre-Zonen bleiben schwarz; mit
-    Kopf-Recht dreht der Kopf den Bereich in die Mitte. Bei eingeschaltetem Schutz nur auf Wunsch (höchstens alle 10 s). Auch im
-    Pi-Fenster. (2) Morse-Modus, Schritt 2: Empfang auch über das Mikrofon (ab Werk aus, es wird kein Ton gespeichert), IR-Test
-    zwischen zwei MoveEye, «Gegenstelle testen» in Web und Fenster.
-  * 3.90.0: Autostart einheitlich: der Dienst startet einen festen kleinen Starter, der genau die Programmdatei startet, die
-    MoveEye mit Grösse und Prüfsumme vermerkt hat – nach einem Update muss niemand mehr den Dienst neu einrichten, auch nicht
-    den System-Dienst (sudo … --install-service). Die bestehende Einrichtung wird beim ersten Start einmal umgestellt, ohne dass
-    MoveEye anhält. Eine fremde, veränderte oder halb geladene Datei startet der Starter nie.
-  * 3.89.1: «Flight of the Amazon Queen» läuft jetzt auch auf iPhone und iPad (neue Engine, nur rund 12 MB neu laden – die
-    Spielstände bleiben): die Kachel steht bei «👆 Touch», keine Warnseite mehr; am Spielende und bei einem Fehler bleibt eine
-    Tafel stehen statt einer leeren Seite. Wer das Spiel schon hat: unter Werkzeuge → Queen «⬆ Neue Fassung laden».
-  * 3.89.0: Weitwinkel-KI: Person, Tier und Fahrzeug im Weitwinkelbild rufen den Kopf; Zonen grün (auslösen) und rot
-    (ignorieren) mit Zielen pro Montage; nachts zählt ein Personen-Alarm nur, wenn das Wärmebild in seiner Richtung Wärme sieht
-    – ab jetzt auf allen Geräten an (einmaliger Hinweis, abschaltbar).
-  * 3.88.0: Drei Teile. (1) Neues Spiel «Verschollen im Bergtal», Kapitel 1: ein Aufbau-Abenteuer – ohne Erinnerung in einer
-    Berghütte, nur dein Hund und die Kamera MoveEye (Spielecke, hinter «A Dark Room»; Spielesammlung GS-1.19). (2) Über dem
-    offenen Passwort-Fenster erscheint kein Tipp und keine Tour mehr. (3) Unter der Haube: die Programmdatei ist nochmals rund
-    130 KB kleiner; am Verhalten ändert sich nichts.
-  * 3.87.1: Wichtig: Nach einem Update kommt die Webseite wieder. Bisher konnte MoveEye direkt nach dem Neustart seinen eigenen
-    Autostart-Dienst anhalten – die Seite blieb weg, bis der Pi neu gestartet wurde. Jetzt nie mehr; hängt ein Start trotzdem
-    länger als 90 Sekunden, startet MoveEye sich von selbst neu und schreibt auf, wo es hing (das zählt nicht als Stromausfall).
-    Belegt ein anderes Programm den Port der Webseite, bewacht MoveEye weiter und meldet es einmal. Teilen mit verpixelten
-    Gesichtern stürzt auf dem Pi nicht mehr ab. Höhenprofil nur noch für Routen bis 300 km. Schach: «Vorziehen» wie auf
-    Lichess – während der Gegner überlegt, kannst du deinen nächsten Zug schon setzen; er wird ausgeführt, sobald du dran bist
-    (gegen den Computer und auf zwei Handys). Spielesammlung GS-1.18.
-  * 3.87.0: Nachtsicht: Die Kachel «🌙 Nachtsicht» schaltet jetzt wirklich aus, auch wenn «Heute Nacht bewachen» die automatische
-    Nachtsicht eingeschaltet hatte (sie bleibt dann aus, bis du sie wieder einschaltest). Spiele: «A Dark Room» läuft jetzt auch
-    am iPhone, mit Pfeiltasten am Bildschirm auf der Karte und im Weltraum (Spielesammlung GS-1.17).
-  * 3.86.1: Touren: Die «Höhendaten Schweiz» sind da (60 MB, swisstopo DHM25, 25 m). Der Administrator lädt sie auf der Karte
-    unter «Touren»; danach bekommen auch gezeichnete Routen Auf- und Abstieg, Höhenprofil und Wanderzeit. Ausserhalb der Daten
-    steht «keine Höhendaten». Bei gezeichneten Routen heisst der Hinweis neu «aus dem Höhenmodell, geglättet».
-  * 3.86.0: Neu: Morse-Modus (Mehr → «📡 Morse-Modus», nur Administrator, mit PIN wenn der Schutz an ist). Solange er läuft, ist
-    der Schutz PAUSIERT – 10 Minuten, höchstens 30, danach ist alles wie vorher. Senden mit weissem Licht, Infrarot, Relais,
-    Status-LED oder Lautsprecher (sichtbares Licht blinkt nie schneller als 3-mal pro Sekunde); Lesen mit der Kamera, der Text
-    erscheint im Live-Bild, im Verlauf und als eine Push-Meldung. Ein empfangener Text ist nie ein Befehl.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -132,10 +119,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_4_9_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_4_17_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_4_9_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_4_9_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_4_17_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_4_17_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -152,7 +139,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "4.9.0"
+APP_VERSION = "4.17.1"
 
 
 def default_data_dir():
@@ -285,8 +272,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_4_9_0.zip"
-ZD_SHA256 = "8361333f0fe863f2fbd855e0853be107bb1ef451c72a17e9e7ba23e3b11924ba"
+ZD_FILE = "moveeye_daten_4_17_1.zip"
+ZD_SHA256 = "dd1945f0811f2eaa7c6ae393752a06d64d1e25d91892650695895b985c6a98a5"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -1524,7 +1511,7 @@ def text_choice_pairs(key):
 		return[("alarm_dark",tr("at an alarm, only at night")),("alarm",tr("at an alarm, day and night")),
 				("dark",tr("the whole night (sunset to sunrise)"))]
 	if extra=="ups_model":
-		return[("auto",tr("automatic")),("e","UPS HAT (E) – 4 × 21700, I2C 0x2D"),("ina","UPS HAT (A / B / C) – INA219")]
+		return[("auto",tr("automatic")),("e","UPS HAT (E) – 4 × 21700, I2C 0x2D"),("x12","Geekworm X1206 – 4 × 21700, I2C 0x36"),("ina","UPS HAT (A / B / C) – INA219")]
 	if extra=="species_model":
 		cur=str(CFG.get("species_model")or "")
 		ms=species_models()+([cur]if cur and cur not in species_models()else[])
@@ -1606,7 +1593,7 @@ def _i2c_active(key, cfg=None):
 	pca_on=c.get("servo_driver")=="pca9685"or(c.get("servo_driver")=="auto"and str(STATE.get("servo_backend","")).startswith("pca9685"))
 	return{"_thermal":bool(c.get("thermal_on"))and str(c.get("thermal_source","")).startswith("senxor"),
 			"pca_address":pca_on,"solar_addr":bool(c.get("solar_on")),"mover_addr":c.get("mover_mode")!="off",
-			"ups_addr":bool(c.get("ups_on"))and c.get("ups_model")!="e"}.get(key,False)
+			"ups_addr":bool(c.get("ups_on"))and c.get("ups_model")not in("e","x12")}.get(key,False)
 
 
 def i2c_conflicts(cfg=None):
@@ -7753,6 +7740,8 @@ class Hardware:
 				servo_io_error(e)
 
 	def _write(self,gpio,on,al):
+		if gpio in ups_x12_pins():
+			return ups_x12_pin_warn("relay / light",gpio)
 		ent=self.outs.get(gpio)
 		if self.io=="gpiozero":
 			if ent is None or ent["al"]!=al:
@@ -8531,6 +8520,58 @@ def ups_read_e(addr=0x2D, bus=1):
 		os.close(fd)
 
 
+
+
+
+
+UPS_X12 = {"seen": False, "probed": False, "warned": set()}
+
+
+def ups_x12_gpio(n):
+	""
+	rc,txt,_e=_run(["pinctrl","get",str(n)],timeout=3)
+	m=re.search(r"\|\s*(hi|lo)\b",txt or "")if rc==0 else None
+	return None if m is None else int(m.group(1)=="hi")
+
+
+def ups_read_x12(addr=0x36, bus=1, gpio=True):
+	""
+	import fcntl
+	try:
+		fd=os.open(f"/dev/i2c-{bus}",os.O_RDWR)
+	except OSError:
+		return None
+	try:
+		fcntl.ioctl(fd,I2C_SLAVE,addr)
+		def reg(r):
+			os.write(fd,bytes([r]));b=os.read(fd,2)
+			return(b[0]<<8)|b[1]
+		v=(reg(0x02)>>4)*0.00125;soc=reg(0x04)/256.0
+		if not(2.5<=v<=4.45)or soc>102:
+			return None
+	except(OSError,IndexError):
+		return None
+	finally:
+		os.close(fd)
+	return{"v":v,"pct":int(min(100,round(soc))),"pld":ups_x12_gpio(6)if gpio else None,"chg":ups_x12_gpio(16)if gpio else None}
+
+
+def ups_x12_pins():
+	"""
+"""
+	if not UPS_X12["probed"]:
+		UPS_X12["probed"]=True
+		UPS_X12["seen"]=UPS_X12["seen"]or ups_read_x12(gpio=False)is not None
+	return{6,16}if UPS_X12["seen"]or CFG.get("ups_model")=="x12"else set()
+
+
+def ups_x12_pin_warn(what, pin):
+	""
+	if(what,pin)not in UPS_X12["warned"]:
+		UPS_X12["warned"].add((what,pin))
+		log_event("sys",f"Geekworm X1206 owns GPIO {pin}: {what} stays off there - choose another GPIO")
+
+
 class BatteryMonitor:
 	"""
 """
@@ -8565,14 +8606,16 @@ class BatteryMonitor:
 	def ups_tick(self):
 		"""
 """
-		model=CFG["ups_model"]
+		model=CFG["ups_model"];r=None
 		if model in("auto","e"):
 			e=ups_read_e()
 			if e is not None:
 				return self.ups_e(e)
-			if model=="e":
-				r=None
-		if model!="e":
+		if model in("auto","x12"):
+			x=ups_read_x12()
+			if x is not None:
+				return self.ups_x12(x)
+		if model not in("e","x12"):
 			try:
 				addr=int(str(CFG["ups_addr"]),16)
 			except ValueError:
@@ -8622,6 +8665,27 @@ class BatteryMonitor:
 			log_event("sys","UPS HAT (E): the cells are uneven ("+" / ".join(f"{c:.2f}"for c in r["cells"])+" V) - check the batteries")
 		return self.ups_events(v,pct,hours,on_batt,9.0<=v<=17.6)
 
+	def ups_x12(self,r):
+		"""
+"""
+		UPS_X12["seen"]=True
+		if not getattr(self,"_ups_seen",False):
+			self._ups_seen=True
+			log_event("sys",f"Geekworm X1206 found (0x36): cell {r['v']:.2f} V, {r['pct']} %, PLD {r['pld']}")
+		self._ups_miss=0
+		v,pct,pld,chg=r["v"],r["pct"],r["pld"],r["chg"]
+		on_batt=pld==0
+		if chg==1 and not on_batt:
+			ups_x12_pin_warn("charging",16)
+		full=not on_batt and(pct>=98 or v>=4.18)
+		p=self.watts()[0]
+		cap_wh=float(CFG["ups_mah"])*4*3.6*0.9/1000.0
+		hours=round(pct/100.0*cap_wh/max(0.8,p),1)if on_batt else None
+		STATE["battery"]={"on":True,"src":"ups","model":"x12","pct":pct,"hours":hours,"cap_wh":round(cap_wh,1),
+							"use_w":round(p,1),"watts":round(p,1),"volt":round(v,2),"on_battery":on_batt,
+							"charging":not on_batt and pld is not None and chg!=1 and not full,"full":full}
+		return self.ups_events(v,pct,hours,on_batt,2.8<=v<=4.4)
+
 	def ups_events(self,v,pct,hours,on_batt,volt_ok):
 		""
 		w=WATCH_REF["w"];de=CFG["lang"]=="de"
@@ -8662,6 +8726,13 @@ class BatteryMonitor:
 		if drill_active("battery"):
 			return drill_battery_tick(self)
 		sb_=sim_sensor("battery")
+		src_="sim"if sb_ is not None else "real"
+		if getattr(self,"_val_src",None)not in(None,src_):
+
+
+			self._on_batt=None
+			log_event("sys",f"Battery values from the {'simulator' if src_ == 'sim' else 'device'} - no power event")
+		self._val_src=src_
 		if sb_ is not None and sim_battery_tick(self,sb_):
 			return
 		if CFG["ups_on"]and self.ups_tick():
@@ -16706,12 +16777,13 @@ def weit_state(lang=None):
 
 
 
+
 LED_DEFAULTS = {
 	"led_on": True, "led_ch_r": 5, "led_ch_g": 6, "led_ch_b": 7, "led_common": "cathode", "led_bright": 60,
 	"led_col_off": "green", "led_col_watch": "orange", "led_col_full": "red",
 	"led_night": "dim", "led_night_bright": 8, "led_alarm_blink": True, "led_fault_pulse": True, "led_det_flash": False,
 	"led_heartbeat": True, "led_hb_min": 5,
-	"btn_on": False, "btn_gpio_protect": "16", "btn_gpio_ack": "26", "btn_long_s": 1.5, "btn_debounce_ms": 50,
+	"btn_on": False, "btn_gpio_protect": "12", "btn_gpio_ack": "26", "btn_long_s": 1.5, "btn_debounce_ms": 50,
 	"btn_allow_arm": True, "btn_allow_disarm": True, "btn_allow_siren": True, "btn_allow_ack": True, "btn_notify_off": True,
 }
 for _k, _v in LED_DEFAULTS.items():
@@ -17109,6 +17181,7 @@ def led_button_event(name, ev, src="GPIO"):
 		return None
 	lv,_arming=led_level()
 	what=""
+	bk_idle=name=="ack"and ev=="long"and not LED.get("alarm")and not(SOUND.get("playing")if "SOUND"in globals()else False)
 	if name=="protect":
 		if ev=="long"or not CFG.get("armed"):
 			if not CFG.get("btn_allow_arm",True):
@@ -17145,6 +17218,11 @@ def led_button_event(name, ev, src="GPIO"):
 			led_device_notice("siren",src)
 	LED["presses"].append({"t":datetime.now().strftime("%H:%M:%S"),"btn":name,"ev":ev,"src":src,"what":what})
 	log_event("sys",f"Button «{LED_BTN_NAMES[name]}» {ev} press ({src}{' 🧪' if src == 'simulator' else ''}): {what}")
+	if bk_idle and CFG.get("blinki_btn"):
+		try:
+			blinki_listen("button")
+		except Exception as e:
+			log_event("sys",f"Blinki: {type(e).__name__}"[:80])
 	return what
 
 
@@ -17198,7 +17276,9 @@ def led_gpio_pins():
 	out={}
 	for name,k in(("protect","btn_gpio_protect"),("ack","btn_gpio_ack")):
 		v=str(CFG.get(k)or "")
-		if v.isdigit():
+		if v.isdigit()and int(v)in ups_x12_pins():
+			ups_x12_pin_warn("button «"+name+"»",int(v))
+		elif v.isdigit():
 			out[name]=int(v)
 	return out
 
@@ -17298,6 +17378,11 @@ def ai_model_download():
 		return False,"already running"
 	if DEMO["on"]:
 		return False,"not in the demo"
+	if not hasattr(cv2.dnn,"readNetFromTensorflow"):
+		why=f'OpenCV {cv2.__version__} cannot read this model - pip install "opencv-python-headless<5"'
+		AI_MODEL.update(msg=f"failed: {why}"[:120],pct=0)
+		log_event("ai",f"AI model not downloaded: {why}")
+		return False,why
 	AI_MODEL.update(busy=True,msg="downloading",pct=0)
 
 	def run():
@@ -18295,6 +18380,8 @@ class AIDetector:
 				log_event("ai","AI model SSD MobileNet V2 loaded")
 			except Exception as e:
 				STATE["ai_status"]="load error"
+				if not hasattr(cv2.dnn,"readNetFromTensorflow"):
+					e=f'OpenCV {cv2.__version__} cannot read this model - pip install "opencv-python-headless<5"'
 				log_event("ai",f"AI model could not be loaded: {e}")
 		else:
 			CFG["ai_enabled"]=False
@@ -19758,7 +19845,7 @@ def open_source(spec, thermal=False):
 	label=source_label(spec)
 	try:
 		kind,_,arg=spec.partition(":")
-		if spec=="demo"or DEMO["on"]:
+		if spec=="demo"or(DEMO["on"]and not(HOST["on"]and host_sim_source(spec))):
 			return DemoSource(),"demo","Demo",""
 		if kind=="sim":
 			if arg=="thermal":
@@ -21206,6 +21293,15 @@ def clap_action(n):
 	SOUNDEV.update(last_n=n,last_n_t=time.time())
 	if wake_clap_listens():
 		SOUNDEV.update(last_act=tr("Snooze"),last_act_t=time.time());wake_snooze(f"{n}× clapped");return
+	if n==2 and blinki_clap_listens()and not(CFG.get("clap_on")and act!="none"):
+		SOUNDEV.update(last_act="💬 Blinki",last_act_t=time.time())
+		try:
+			blinki_listen("2× clapped")
+		except Exception as e:
+			log_event("sys",f"Blinki: {type(e).__name__}"[:80])
+		return
+	if not CFG.get("clap_on"):
+		return
 	if act=="none":
 		SOUNDEV["last_act"]="";return
 	label=dict(clap_act_pairs()).get(act,act)
@@ -21265,7 +21361,7 @@ class SoundEvents:
 		threading.Thread(target=self._model_loop,daemon=True,name="sneeze").start()
 
 	def feed(self,a,now):
-		if not(CFG.get("clap_on")or CFG.get("sneeze_on")or wake_clap_listens()):
+		if not(CFG.get("clap_on")or CFG.get("sneeze_on")or wake_clap_listens()or blinki_clap_listens()):
 			self.pending.clear();SOUNDEV["claps"]=[];return
 		muted=(AUDIO is not None and now<AUDIO.mute_until)or SOUND["playing"]or now-SERVO_MOVE["t"]<1.0
 		x=a/32768.0
@@ -21294,7 +21390,7 @@ class SoundEvents:
 		if CFG.get("sneeze_on")and db>max(self.bg+14.0,-45.0)and t-self.loud_t>0.7 and not muted:
 			self.loud_t=t
 			threading.Timer(0.6,self._ask_model,args=(t,)).start()
-		if(CFG.get("clap_on")or wake_clap_listens())and not muted and loud and before<db-12.0 and not any(abs(t-p[0])<0.12 for p in self.pending):
+		if(CFG.get("clap_on")or wake_clap_listens()or blinki_clap_listens())and not muted and loud and before<db-12.0 and not any(abs(t-p[0])<0.12 for p in self.pending):
 			self.pending.append((t,db))
 		for p in list(self.pending):
 			if t-p[0]>=0.16:
@@ -21376,7 +21472,7 @@ def sim_sound_events(evs, last, fresh=False):
 		kind,n,db=str(e.get("kind")or ""),int(e.get("n")or 1),float(e.get("db")or-90.0)
 		if kind in("clap","sneeze")and own_sound_now():
 			own_sound_ignored(kind);continue
-		if kind=="clap"and(CFG.get("clap_on")or wake_clap_listens()):
+		if kind=="clap"and(CFG.get("clap_on")or wake_clap_listens()or blinki_clap_listens()):
 			rise=26.0-1.6*float(CFG.get("clap_sens",5))
 			if db<max(bg+rise,-42.0):
 				SOUNDEV.update(last_n=n,last_n_t=time.time(),last_act=tr("too quiet"));continue
@@ -38097,19 +38193,34 @@ _TRANSCODE_SEM = threading.Semaphore(1)
 
 
 
-_ENC = {"hw": None}
+_ENC = {"hw": None, "logged": ""}
+
+
+def _ffmpeg_enc_ok(enc):
+	"""
+"""
+	k="hw"if enc=="h264_v4l2m2m"else "ok_"+enc
+	if _ENC.get(k)is None:
+		try:
+			r=subprocess.run(["ffmpeg","-hide_banner","-loglevel","error","-f","lavfi","-i","testsrc=size=320x240:rate=10",
+								"-frames:v","5","-c:v",enc,"-pix_fmt","yuv420p","-f","null","-"],
+							   capture_output=True,timeout=20)
+			_ENC[k]=r.returncode==0
+		except Exception:
+			_ENC[k]=False
+	return _ENC[k]
 
 
 def _ffmpeg_hw_ok():
-	if _ENC["hw"]is None:
-		try:
-			r=subprocess.run(["ffmpeg","-hide_banner","-loglevel","error","-f","lavfi","-i","testsrc=size=320x240:rate=10",
-								"-frames:v","5","-c:v","h264_v4l2m2m","-pix_fmt","yuv420p","-f","null","-"],
-							   capture_output=True,timeout=20)
-			_ENC["hw"]=r.returncode==0
-		except Exception:
-			_ENC["hw"]=False
-	return _ENC["hw"]
+	return _ffmpeg_enc_ok("h264_v4l2m2m")
+
+
+def _rec_enc_chosen(name, failed):
+	""
+	STATE["recording_enc"]=name
+	if failed and _ENC.get("logged")!=name:
+		_ENC["logged"]=name
+		log_event("rec",f"Video encoder: {', '.join(failed)} not available - recording with {name}")
 
 
 class FfmpegWriter:
@@ -38176,19 +38287,24 @@ def open_writer(path, fps, size):
 		pass
 	if not os.access(d_,os.W_OK):
 		return None,""
+	failed=[]
 	if CFG["record_encoder"]=="auto"and "ffmpeg"not in _BAD_CODECS and shutil.which("ffmpeg"):
 		for hw in((True,False)if _ffmpeg_hw_ok()else(False,)):
 			if hw and("ffmpeg_hw"in _BAD_CODECS or size[0]>1920 or size[1]>1088):
+				continue
+			if not hw and not _ffmpeg_enc_ok("libx264"):
+				failed.append("ffmpeg x264")
 				continue
 			try:
 				w=FfmpegWriter(path,fps,size,hw)
 				time.sleep(0.2)
 				if w.isOpened():
-					STATE["recording_enc"]="ffmpeg h264_v4l2m2m (hardware)"if hw else "ffmpeg x264"
+					_rec_enc_chosen("ffmpeg h264_v4l2m2m (hardware)"if hw else "ffmpeg x264",failed)
 					return w,"h264"
 				w.release()
 			except Exception:
 				pass
+			failed.append("ffmpeg h264_v4l2m2m"if hw else "ffmpeg x264")
 			try:
 				os.remove(path)
 			except OSError:
@@ -38202,8 +38318,9 @@ def open_writer(path, fps, size):
 		except Exception:
 			w=None
 		if w is not None and w.isOpened():
-			STATE["recording_enc"]="OpenCV "+cc
+			_rec_enc_chosen("OpenCV "+cc,failed)
 			return w,cc
+		failed.append("OpenCV "+cc)
 		_BAD_CODECS.add(cc)
 		if w is not None:
 			w.release()
@@ -39369,15 +39486,23 @@ def list_recordings(args, watch=None):
 					  "sched":[i for i,s in enumerate(plans)if schedule_window_contains(s,dt)],
 					  "gps":rec_gps(n,meta,d,snap[0]if snap else None)})
 
+
 	kind_req=args.get("kind","")
-	if kind_req in("","timelapse","video"):
+	if kind_req=="timelapse":
+		kind_req="timelapse_video"
+	tl_info={"videos":0,"photos":0,"last_day":""}
+	if kind_req in("","timelapse_video","timelapse_photo","video"):
 		try:
 			tl_names=os.listdir(tl_dir())
 		except OSError:
 			tl_names=[]
 		for n in tl_names:
 			is_v=bool(TL_VIDEO_RE.match(n))
-			if not is_v and not(kind_req=="timelapse"and TL_PHOTO_RE.match(n)):
+			if is_v:
+				tl_info["videos"]+=1
+			elif TL_PHOTO_RE.match(n):
+				tl_info["photos"]+=1;tl_info["last_day"]=max(tl_info["last_day"],n[3:11])
+			if not is_v and not(kind_req=="timelapse_photo"and TL_PHOTO_RE.match(n)):
 				continue
 			try:
 				st=os.stat(os.path.join(tl_dir(),n))
@@ -39390,15 +39515,15 @@ def list_recordings(args, watch=None):
 						  "sched":[],"tl":True,"gps":rec_gps(n,meta,tl_dir())if not is_v else None})
 
 
-	kind_f,src_f,q=args.get("kind",""),args.get("source",""),(args.get("q","")or "").strip().lower()
+	kind_f,src_f,q=kind_req,args.get("source",""),(args.get("q","")or "").strip().lower()
 	d_from,d_to=_parse_day(args.get("from","")),_parse_day(args.get("to",""))
 	sources=sorted({it["meta"].get("source")for it in items if it["meta"].get("source")})
 	places=places_assign(items)
 	no_place=sum(1 for it in items if not it.get("gps"))
 	if kind_f in("video","image"):
 		items=[it for it in items if it["kind"]==kind_f]
-	elif kind_f=="timelapse":
-		items=[it for it in items if it.get("tl")]
+	elif kind_f in("timelapse_video","timelapse_photo"):
+		items=[it for it in items if it.get("tl")and it["kind"]==("video"if kind_f[10]=="v"else "image")]
 	if d_from:
 		items=[it for it in items if it["dt"]>=d_from]
 	if d_to:
@@ -39465,7 +39590,7 @@ def list_recordings(args, watch=None):
 						   "end":s["end"],"active_now":schedule_active(s,now),"count":counts.get(str(i),0)}
 						  for i,s in enumerate(plans)],
 			"disk":{"files":len(files),"mb":int(total_bytes/1024**2),"limit_gb":CFG["record_max_gb"]},
-			"ffmpeg":shutil.which("ffmpeg")is not None}
+			"ffmpeg":shutil.which("ffmpeg")is not None,"tl":tl_info}
 
 
 def _write_sidecar(name, meta):
@@ -39836,8 +39961,6 @@ def rec_delete(names, watch=None):
 	if n_ok:
 		log_event("rec",f"{n_ok} recording(s) deleted from the preview page")
 	return n_ok
-
-
 
 
 
@@ -50601,7 +50724,7 @@ class App:
 		self.watch=watch
 		self.web=web or WebStream(watch)
 		self.root=tk.Tk()
-		self.root.title("MoveEye 4.9.0")
+		self.root.title("MoveEye 4.17.1")
 		try:
 			import base64
 			self._icon=tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -50988,7 +51111,7 @@ class App:
 			if not small:
 				vl=tk.Label(tl,text=APP_VERSION,bg=C["bg"],fg=C["mut"],font=("DejaVu Sans",8),cursor="hand2");vl.pack(side="left",padx=(8,0),pady=(5,0))
 				vl.bind("<Button-1>",self._ver_tap,add="+");Tip(vl,tr("About MoveEye"))
-			Tip(nm,f"{tr('Build')} 4.9.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm,f"{tr('Build')} 4.17.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps=[]
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>",self._egg_tap,add="+")
@@ -52486,7 +52609,7 @@ class App:
 		b=st.get("battery")or{}
 		press=tr("Press 'Battery is full now' after charging.")
 		if b.get("src")=="ups":
-			self._status("Battery",f"🔋 {tr('UPS HAT')}{' (E)' if b.get('model') == 'e' else ''}: {b['pct']} % · {b['volt']} V · "+(
+			self._status("Battery",f"🔋 {'Geekworm X1206' if b.get('model') == 'x12' else tr('UPS HAT')}{' (E)' if b.get('model') == 'e' else ''}: {b['pct']} % · {b['volt']} V · "+(
 				f"⚡ {tr('on battery')} · {b['hours'] or 0:.1f} h {tr('left')} · {b['watts']} W"if b.get("on_battery")
 				else("🔌 "+(tr("fast charging"if b.get("fast")else "charging")if b.get("charging")else tr("mains power"))))
 				+(("\n"+tr("Cells")+": "+" / ".join(f"{c:.2f}"for c in b["cells"])+" V")if b.get("cells")else ""))
@@ -58194,7 +58317,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 326
+INFO_PARTS = 341
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -72973,23 +73096,28 @@ FEHLER_KATALOG = json.loads(r"""{
    "schritte": {
     "de": [
      "Internet prüfen (ca. 70 MB werden geladen).",
-     "Auf «KI-Modell herunterladen» tippen und warten."
+     "Auf «KI-Modell herunterladen» tippen und warten.",
+     "Meldung «OpenCV 5.x cannot read this model»: OpenCV 5 liest das Modell nicht → pip install \"opencv-python-headless<5\""
     ],
     "en": [
      "Check the internet (about 70 MB are downloaded).",
-     "Tap «Download the AI model» and wait."
+     "Tap «Download the AI model» and wait.",
+     "Message «OpenCV 5.x cannot read this model»: OpenCV 5 cannot read the model → pip install \"opencv-python-headless<5\""
     ],
     "fr": [
      "Vérifiez Internet (environ 70 Mo).",
-     "Touchez « Télécharger le modèle IA » et patientez."
+     "Touchez « Télécharger le modèle IA » et patientez.",
+     "Message « OpenCV 5.x cannot read this model » : OpenCV 5 ne lit pas le modèle → pip install \"opencv-python-headless<5\""
     ],
     "it": [
      "Controlla Internet (circa 70 MB).",
-     "Tocca «Scarica il modello IA» e attendi."
+     "Tocca «Scarica il modello IA» e attendi.",
+     "Messaggio «OpenCV 5.x cannot read this model»: OpenCV 5 non legge il modello → pip install \"opencv-python-headless<5\""
     ],
     "rm": [
      "Controllar l'internet (var 70 MB vegnan telechargiads).",
-     "Smatga «Telechargiar il model IA» e spetga."
+     "Smatga «Telechargiar il model IA» e spetga.",
+     "Messadi «OpenCV 5.x cannot read this model»: OpenCV 5 na legia betg il model → pip install \"opencv-python-headless<5\""
     ]
    },
    "aktion": "ki_laden"
@@ -74366,28 +74494,28 @@ FEHLER_KATALOG = json.loads(r"""{
    "schritte": {
     "de": [
      "Pogo-Pins sauber unter dem Pi? Akkus richtig herum und geladen?",
-     "«sudo i2cdetect -y 1»: 2d muss erscheinen.",
-     "Einstellungen → Stromversorgung: Modell «UPS HAT (E)» wählen."
+     "«sudo i2cdetect -y 1»: 2d (UPS HAT (E)) oder 36 (X1206) muss erscheinen.",
+     "Einstellungen → Stromversorgung: Modell «automatisch» wählen."
     ],
     "en": [
      "Pogo pins clean under the Pi? Cells the right way round and charged?",
-     "«sudo i2cdetect -y 1»: 2d must show up.",
-     "Settings → Power supply: choose the model «UPS HAT (E)»."
+     "«sudo i2cdetect -y 1»: 2d (UPS HAT (E)) or 36 (X1206) must show up.",
+     "Settings → Power supply: choose the model «automatic»."
     ],
     "fr": [
      "Broches pogo propres sous le Pi ? Cellules dans le bon sens et chargées ?",
-     "«sudo i2cdetect -y 1» : 2d doit apparaître.",
-     "Réglages → Alimentation : choisir le modèle «UPS HAT (E)»."
+     "«sudo i2cdetect -y 1» : 2d (UPS HAT (E)) ou 36 (X1206) doit apparaître.",
+     "Réglages → Alimentation : choisir le modèle «automatique»."
     ],
     "it": [
      "Pin pogo puliti sotto il Pi? Celle nel verso giusto e cariche?",
-     "«sudo i2cdetect -y 1»: deve comparire 2d.",
-     "Impostazioni → Alimentazione: scegliere il modello «UPS HAT (E)»."
+     "«sudo i2cdetect -y 1»: deve comparire 2d (UPS HAT (E)) o 36 (X1206).",
+     "Impostazioni → Alimentazione: scegliere il modello «automatico»."
     ],
     "rm": [
      "Pins pogo nets sut il Pi? Cellas endretg e chargiadas?",
-     "«sudo i2cdetect -y 1»: 2d sto cumparair.",
-     "Parameters → Alimentaziun: tscherner il model «UPS HAT (E)»."
+     "«sudo i2cdetect -y 1»: 2d (UPS HAT (E)) u 36 (X1206) sto cumparair.",
+     "Parameters → Alimentaziun: tscherner il model «automatic»."
     ]
    }
   },
@@ -75303,9 +75431,9 @@ SELFTEST_EXTRA.append(("Error help with QR code (simulator3d/fehler_katalog.json
 
 
 
-GEH_QUELLE_SHA = '3551bbdbff0cce549f45bfd21f67a2326159474a3d787a556e50c25d53e7abef'
+GEH_QUELLE_SHA = '2f4e0602060dce296189155274aa348adafb43add64fa803600a3b2106d959ab'
 GEH_BAU = json.loads(_zd('639v_daten_gehaeuse/GEH_BAU', '{}'))
-GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: UPS HAT (E) with its cells (assumed 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: UPS HAT (E) mit Akkus (angenommen 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Elektro – parametric Python model.": "Eigenes Werk von Elektro – parametrisches Python-Modell.", "Step": "Schritt"}
+GEH_UI_DE = {"Case & build": "Gehäuse & Bau", "Guide, parts list, print files – in 3D in the workshop of the simulator": "Anleitung, Materialliste, Druckdateien – in 3D in der Werkstatt des Simulators", "Case": "Gehäuse", "View in the simulator": "Im Simulator ansehen", "Opens the workshop in the 3D simulator: turn, explode, see through, click parts, assembly step by step.": "Öffnet die Werkstatt im 3D-Simulator: drehen, zerlegen, durchsichtig, Teile anklicken, Montage Schritt für Schritt.", "Simulator not connected – start it and connect it on the page Simulator.": "Simulator nicht verbunden – starte ihn und verbinde ihn auf der Seite «Simulator».", "Opened in the simulator.": "Im Simulator geöffnet.", "Print files": "Druckdateien", "3MF plates for the Bambu Lab X2D (PETG, no supports)": "3MF-Platten für den Bambu Lab X2D (PETG, ohne Stützen)", "Single STL files: in the hand-over package (ZIP, about 60 MB), not in the repository.": "Einzelne STL-Dateien: im Übergabe-Paket (ZIP, ca. 60 MB), nicht im Repository.", "Assembly step by step": "Montage Schritt für Schritt", "Show this step in the simulator": "Diesen Schritt im Simulator zeigen", "Parts list": "Materialliste", "Qty": "Menge", "Part number": "Teilenummer", "Guides and source (GitHub)": "Anleitungen und Quellcode (GitHub)", "Detailed guide v5.1": "Ausführliche Anleitung v5.1", "Full parts list with order list": "Ganze Materialliste mit Bestellliste", "Measure first: Geekworm X1206 with its cells (model still 90 × 80 × 26 mm) before printing the lower part.": "Zuerst nachmessen: Geekworm X1206 mit Akkus (Modell noch 90 × 80 × 26 mm), bevor das Unterteil gedruckt wird.", "Own work of Elektro – parametric Python model.": "Eigenes Werk von Elektro – parametrisches Python-Modell.", "Step": "Schritt"}
 GEH_UI_TRX = _zd('639v_daten_gehaeuse/GEH_UI_TRX', _ZDDict())
 
 GEH_UI2_DE = _zd('639v_daten_gehaeuse/GEH_UI2_DE', _ZDDict())
@@ -75314,7 +75442,7 @@ GEH_UI2_TRX = _zd('639v_daten_gehaeuse/GEH_UI2_TRX', _ZDDict())
 
 
 
-BAU3D_QUELLE_SHA = '3551bbdbff0cce549f45bfd21f67a2326159474a3d787a556e50c25d53e7abef'
+BAU3D_QUELLE_SHA = '2f4e0602060dce296189155274aa348adafb43add64fa803600a3b2106d959ab'
 BAU3D = _zd('639vb_daten_bau3d/BAU3D', _ZDDict())
 BAU3D_GLB = _zd('639vb_daten_bau3d/BAU3D_GLB', [])
 
@@ -76748,27 +76876,7 @@ SIMWAIT_HTML = ('<div id="simwait" hidden role="status" aria-live="polite">'
 				'<div class="sw-t"></div><div class="sw-bar" hidden><i></i></div><div class="sw-s"></div>'
 				'<div class="sw-h" hidden></div><div class="sw-l"><a href="/sim" class="sw-a"></a><a href="/help#ruhebild" class="sw-b"></a></div></div>')
 
-SIMWAIT_JS = r"""
-(function () {
-  const base = window.simPaint;
-  if (typeof base !== "function") return;
-  const q = s => document.querySelector(s);
-  function paint(st) {
-    const B = q("#simwait"); if (!B) return;
-    const W = st && st.simwait;
-    if (!W) { B.hidden = true; return; }
-    B.hidden = false;
-    q("#simwait .sw-t").textContent = W.title;
-    q("#simwait .sw-s").textContent = W.sub;
-    const bar = q("#simwait .sw-bar"); bar.hidden = W.pct == null; if (W.pct != null) bar.firstChild.style.width = W.pct + "%";
-    B.classList.toggle("long", !!W.hint);
-    const h = q("#simwait .sw-h"); h.hidden = !W.hint; h.textContent = W.hint || "";
-    if (W.hint2) { const sm = document.createElement("small"); sm.textContent = W.hint2; h.appendChild(sm); }
-    q("#simwait .sw-a").textContent = W.link; q("#simwait .sw-b").textContent = W.help;
-  }
-  window.simPaint = function (s) { base(s); try { paint(s); } catch (e) {} };
-})();
-"""
+SIMWAIT_JS = _zd('639y_ruhebild/SIMWAIT_JS', "")
 
 if '<img id="video" data-src="/video_feed" alt="">' in WEB_PAGE:
 	WEB_PAGE=WEB_PAGE.replace('<img id="video" data-src="/video_feed" alt="">','<img id="video" data-src="/video_feed" alt="">'+SIMWAIT_HTML,1)
@@ -77514,10 +77622,17 @@ def health_check(lang=None):
 	if not(CFG.get("sim_on")and SIM.get("ok")and time.time()-float(SIM.get("t")or 0)<5):
 		return out
 	L=norm_lang(lang)if lang else cur_lang()
-	out+=ui_pair_items(L)
+
+
+	items=out.get("items")if isinstance(out,dict)else out
+	if not isinstance(items,list):
+		return out
+	items+=ui_pair_items(L)
 	for x in UIS["sim_diag"]or[]:
-		out.append({"id":"sim:"+str(x.get("id","")),"icon":"🎮","title":tr("Simulator",L)+": "+str(x.get("title","")),
-					"level":str(x.get("level","off")),"text":str(x.get("text","")),"tip":str(x.get("tip",""))})
+		items.append({"id":"sim:"+str(x.get("id","")),"icon":"🎮","title":tr("Simulator",L)+": "+str(x.get("title","")),
+					  "level":str(x.get("level","off")),"text":str(x.get("text","")),"tip":str(x.get("tip",""))})
+	if isinstance(out,dict)and isinstance(out.get("count"),dict):
+		out["count"]={k:sum(1 for x in items if x.get("level")==k)for k in HEALTH_ORDER}
 	return out
 
 
@@ -77785,6 +77900,21 @@ ui_more_selftest = _zd_fn('639zb_ui_abgleich/ui_more_selftest()')
 
 
 
+ui_health_selftest = _zd_fn('639zb_ui_abgleich/ui_health_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Health list with a connected simulator (639zb)", ui_health_selftest))
 SELFTEST_EXTRA.append(("View shared with the simulator (ui, 639zb)", ui_sync_selftest))
 SELFTEST_EXTRA.append(("«Mehr» in the same order MoveEye ↔ simulator (ui_gemeinsam.json «more», 639zb)", ui_more_selftest))
 
@@ -77993,10 +78123,11 @@ SELFTEST_EXTRA.append(("Solar meter: shunt 0.01 Ohm, old standard taken over onc
 
 
 
-CHARGE_LED_GPIO = 6
+
+CHARGE_LED_GPIO = 13
 CHARGE_LED_HZ = {"slow": 0.5, "fast": 4.0}
 CHARGE_LED_FULL_PCT = 98
-for _k, _v in {"charge_led_on": True}.items():
+for _k, _v in {"charge_led_on": True, "charge_led_gpio": str(CHARGE_LED_GPIO)}.items():
 	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
 CHARGE_LED = {"mode": "off", "why": "", "t0": 0.0, "hw": "none", "dev": None, "thread": None, "last": None, "pi": None, "err_t": 0.0}
 CHARGE_LED_WHY = {"charging": "charging", "low": "battery almost empty", "full": "full, power at the input", "": "",
@@ -78068,7 +78199,7 @@ def charge_led_tick(now=None):
 	br=charge_led_bright(dark,saving)if mode!="off"else 0.0
 	lvl=charge_led_level(now,mode,br)
 	STATE["charge_led"]={"on":bool(CFG.get("charge_led_on",True)),"mode":mode,"why":why,"br":round(br,3),"lvl":round(lvl,3),
-						   "night":dark and CFG.get("led_night","dim")!="normal","saving":saving,"hw":CHARGE_LED["hw"],"gpio":CHARGE_LED_GPIO}
+						   "night":dark and CFG.get("led_night","dim")!="normal","saving":saving,"hw":CHARGE_LED["hw"],"gpio":charge_led_pin()}
 	return lvl
 
 
@@ -78097,13 +78228,19 @@ def charge_led_is_pi():
 	return CHARGE_LED["pi"]
 
 
+def charge_led_pin():
+	""
+	v=str(CFG.get("charge_led_gpio")or "")
+	return int(v)if v.isdigit()else None
+
+
 def charge_led_gpio_taken():
 	""
 	try:
 		u=set(_sens_used_gpios_cl_base(None))
 	except Exception:
 		u=set()
-	return CHARGE_LED_GPIO in u
+	return charge_led_pin()in u
 
 
 def _charge_led_close():
@@ -78132,16 +78269,24 @@ def _charge_led_loop():
 				_charge_led_close()
 				CHARGE_LED["hw"]="sim"if CFG.get("charge_led_on",True)else "off"
 				time.sleep(0.5);continue
+			pin=charge_led_pin()
+			if CHARGE_LED["dev"]is not None and(pin!=CHARGE_LED.get("pin")or pin in ups_x12_pins()):
+				_charge_led_close()
 			if CHARGE_LED["dev"]is None:
+				if pin is None:
+					CHARGE_LED["hw"]="no GPIO";time.sleep(2);continue
+				if pin in ups_x12_pins():
+					ups_x12_pin_warn("charge LED",pin)
+					CHARGE_LED["hw"]="X1206";time.sleep(10);continue
 				if not charge_led_is_pi():
 					CHARGE_LED["hw"]="none";time.sleep(30);continue
 				if charge_led_gpio_taken():
 					CHARGE_LED["hw"]="conflict";time.sleep(10);continue
 				try:
 					from gpiozero import PWMLED
-					CHARGE_LED["dev"]=PWMLED(CHARGE_LED_GPIO,frequency=200)
-					CHARGE_LED["hw"]="gpio"
-					log_event("sys",f"Charge LED on GPIO {CHARGE_LED_GPIO} (pin 31)")
+					CHARGE_LED["dev"]=PWMLED(pin,frequency=200)
+					CHARGE_LED["hw"]="gpio";CHARGE_LED["pin"]=pin
+					log_event("sys",f"Charge LED on GPIO {pin}")
 				except Exception as e:
 					CHARGE_LED["hw"]=f"no GPIO ({type(e).__name__})"
 					time.sleep(60);continue
@@ -78174,8 +78319,8 @@ _sens_used_gpios_cl_base = sens_used_gpios
 
 def sens_used_gpios(skip=None):
 	u=_sens_used_gpios_cl_base(skip)
-	if CFG.get("charge_led_on",True):
-		u=set(u)|{CHARGE_LED_GPIO}
+	if CFG.get("charge_led_on",True)and charge_led_pin()is not None:
+		u=set(u)|{charge_led_pin()}
 	return u
 
 
@@ -78196,10 +78341,10 @@ def sim_state():
 
 
 
-_CL_LABEL = "Charge LED (GPIO 6, pin 31): on while charging, blinks slowly when full, fast when the battery is almost empty"
+_CL_LABEL = "Charge LED: on while charging, blinks slowly when full, fast when the battery is almost empty"
 _bi = max([i for i, x in enumerate(TOGGLES) if x[0] == "Battery"] or [len(TOGGLES) - 1])
 TOGGLES.insert(_bi + 1, ("Battery", "charge_led_on", _CL_LABEL))
-SET_HELP["charge_led_on"] = ("The small green LED at the back of the device (GPIO 6, pin 31): on while the battery charges, blinks slowly "
+SET_HELP["charge_led_on"] = ("The small green LED at the back of the device (setting «Charge LED: GPIO»): on while the battery charges, blinks slowly "
 							 "when it is full and power is at the input, blinks fast when the battery is almost empty (the same limit as "
 							 "the warning), otherwise off. At night and while the battery saver runs it is dimmed (or off at night, like "
 							 "the status LED). On a PC nothing is switched; with the simulator it shows in the window «Gerät».", "On.")
@@ -78210,8 +78355,8 @@ for _a, _b in _CL_HELP:
 		HELP_PAGE=HELP_PAGE.replace(_a,_a+_b,1)
 
 _HX_CHARGELED = _zd_hxk('639zi_lade_led/HX_CHARGELED', [
-	(_CL_LABEL, 'Lade-LED (GPIO 6, Pin 31): leuchtet beim Laden, blinkt langsam bei vollem Akku, schnell bei fast leerem Akku'),
-	(SET_HELP['charge_led_on'][0], 'Die kleine grüne LED hinten am Gerät (GPIO 6, Pin 31): leuchtet, solange der Akku lädt, blinkt langsam, wenn er voll ist und Strom anliegt, blinkt schnell, wenn der Akku fast leer ist (dieselbe Schwelle wie die Warnung), sonst aus. Nachts und beim Akku-Sparen gedimmt (nachts aus wie die Status-LED, falls so eingestellt). Auf einem PC wird nichts geschaltet; mit dem Simulator zeigt sie das Fenster «Gerät».'),
+	(_CL_LABEL, 'Lade-LED: leuchtet beim Laden, blinkt langsam bei vollem Akku, schnell bei fast leerem Akku'),
+	(SET_HELP['charge_led_on'][0], 'Die kleine grüne LED hinten am Gerät (Einstellung «Lade-LED: GPIO»): leuchtet, solange der Akku lädt, blinkt langsam, wenn er voll ist und Strom anliegt, blinkt schnell, wenn der Akku fast leer ist (dieselbe Schwelle wie die Warnung), sonst aus. Nachts und beim Akku-Sparen gedimmt (nachts aus wie die Status-LED, falls so eingestellt). Auf einem PC wird nichts geschaltet; mit dem Simulator zeigt sie das Fenster «Gerät».'),
 	('On.', 'An.'),
 	('Charge LED', 'Lade-LED'),
 	('Charge LED: off', 'Lade-LED: aus'),
@@ -78304,7 +78449,7 @@ charge_led_selftest = _zd_fn('639zi_lade_led/charge_led_selftest()')
 
 
 
-SELFTEST_EXTRA.append(("Charge LED on GPIO 6: charging / full / almost empty, night, simulator (639zi)", charge_led_selftest))
+SELFTEST_EXTRA.append(("Charge LED on its GPIO: charging / full / almost empty, night, simulator (639zi)", charge_led_selftest))
 
 
 
@@ -92212,6 +92357,8 @@ def qrk_exec(card, img, who="QR card"):
 	cmd,p=card["cmd"],card["p"]
 	L=norm_lang(CFG.get("lang"))
 	nm=card["name"]
+	if cmd=="B":
+		return blinki_listen("QR card")if "blinki_listen"in globals()else(False,"unknown command")
 	if cmd=="P":
 		w=WATCH_REF.get("w")
 		n=getattr(w,"notifier",None)if w is not None else None
@@ -93022,24 +93169,53 @@ SELFTEST_EXTRA.append(("QR command cards «▦ Karten-Werkstatt» (639zzp)", qrk
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import struct as _kq_struct
 from bisect import bisect_right as _kq_bisect
 from collections import OrderedDict as _KqOD
 
-KQ_TAG = "karten-1"
+KQ_TAG = "karten-2"
 KQ_MAXZOOM = 15
-KQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + KQ_TAG + "/"}
+KQ_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"}
+KQ_FILE_TAG = {"orte": "karten-1", "tiles": "karten-1"}
 
 KQ_FILES = {
 	"tiles": {"name": "karte-ch-1.pmtiles", "size": 655187450, "sha256": "ea71c54bcf1c91585106a6d3dcb7d5757f219761f3c0ebbbf54c5df487fde185", "unpacked": 0},
-	"web": {"name": "karte-web-1.zip", "size": 1434333, "sha256": "31f13e157ba0918d71df97b99f1cfdf70a1ad1a3560c91c16d83935e35cfdfa2", "unpacked": 2350250},
+	"web": {"name": "karte-web-2.zip", "size": 1495338, "sha256": "c72953b5c74c5c9dc839aaa48da67eafd8fb04922ad9584ae187d5519a42b227", "unpacked": 2604659},
 	"orte": {"name": "orte-ch-1.sqlite.gz", "size": 11211798, "sha256": "1e9f1e574a92a324b789768fb18c1deff2bf3716942d725d0dc1d3999330eb00", "unpacked": 28307456},
+	"topo": {"name": "topo-ch-2.pmtiles", "size": 381431763, "sha256": "9e8a74a87ab1a7d486ac933ccbc4e22a20b7cf97e63893afd6856dd45e937a7c", "unpacked": 0},
+	"relief": {"name": "relief-ch-2.pmtiles", "size": 226169173, "sha256": "31a369ba638b330d943e9f7797402ae596d72b55eb904ba292c206c74994a579", "unpacked": 0},
 }
-KQ_MAX = {"tiles": 2000 * 1000 * 1000, "web": 60 * 1000 * 1000, "orte": 300 * 1000 * 1000}
-KQ_NAME_RE = {"tiles": r"karte-ch-\d{1,3}\.pmtiles", "web": r"karte-web-\d{1,3}\.zip", "orte": r"orte-ch-\d{1,3}\.sqlite\.gz"}
+KQ_MAX = {"tiles": 2000 * 1000 * 1000, "web": 60 * 1000 * 1000, "orte": 300 * 1000 * 1000, "topo": 2000 * 1000 * 1000,
+		  "relief": 2000 * 1000 * 1000}
+KQ_NAME_RE = {"tiles": r"karte-ch-\d{1,3}\.pmtiles", "web": r"karte-web-\d{1,3}\.zip", "orte": r"orte-ch-\d{1,3}\.sqlite\.gz",
+			  "topo": r"topo-ch-\d{1,3}\.pmtiles", "relief": r"relief-ch-\d{1,3}\.pmtiles"}
+KQ_DISK = {"tiles": "ch.pmtiles", "topo": "topo.pmtiles", "relief": "relief.pmtiles", "orte": "orte.sqlite", "web": "web"}
+KQ_LAYER = {"ch": "tiles", "topo": "topo", "relief": "relief"}
+KQ_TTYPE = {"tiles": (1,), "topo": (1,), "relief": (2, 4)}
+KQ_MIME = {1: "application/x-protobuf", 2: "image/png", 3: "image/jpeg", 4: "image/webp"}
+KQ_EXT = {1: "mvt", 2: "png", 3: "jpg", 4: "webp"}
+KQ_ORDER = ("web", "orte", "topo", "relief", "tiles")
+KQ_STYLES = ("style.json", "style_dark.json", "style_topo.json", "style_topo_dark.json")
 KQ_LEAF_CACHE = 48
 KQ_DL = {"running": False, "got": 0, "total": 0, "msg": "", "stop": False, "done": False, "phase": ""}
-KQ_RT = {"pm": None, "db": None, "lock": threading.Lock(), "ok_t": 0.0, "ok": False}
+KQ_RT = {"pm": {}, "db": None, "lock": threading.Lock(), "ok_t": 0.0, "have": {}}
+for _k, _v in {"map_topo": True}.items():
+	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
 
 
 def kq_dir():
@@ -93050,50 +93226,101 @@ def kq_dl_dir():
 	return os.path.join(DATA_DIR,"karte_dl")
 
 
+def kq_tag(r_):
+	return KQ_FILE_TAG.get(r_,KQ_TAG)
+
+
+def kq_url(r_):
+	return KQ_BASE["url"]+kq_tag(r_)+"/"+KQ_FILES[r_]["name"]
+
+
+def kq_key(r_):
+	""
+	return(KQ_FILES[r_].get("sha256")or "0"*12)[:12]
+
+
 def kq_pinned():
 	""
 	for r_,f in KQ_FILES.items():
 		if not(isinstance(f.get("size"),int)and 0<f["size"]<=KQ_MAX[r_]and re.fullmatch(r"[0-9a-f]{64}",str(f.get("sha256")or ""))
-				and isinstance(f.get("unpacked"),int)and 0<=f["unpacked"]<=KQ_MAX[r_]and re.fullmatch(KQ_NAME_RE[r_],f.get("name")or "")):
+				and isinstance(f.get("unpacked"),int)and 0<=f["unpacked"]<=KQ_MAX[r_]and re.fullmatch(KQ_NAME_RE[r_],f.get("name")or "")
+				and re.fullmatch(r"karten-\d{1,3}",kq_tag(r_))and f["name"].split("-")[-1].split(".")[0]==kq_tag(r_).split("-")[1]):
 			return False
 	return KQ_FILES["web"]["unpacked"]>0 and KQ_FILES["orte"]["unpacked"]>0
 
 
 def kq_total():
-	return sum(f["size"]for f in KQ_FILES.values())
+	""
+	have=kq_have()
+	return sum(f["size"]for r_,f in KQ_FILES.items()if not have.get(r_))
 
 
 def kq_need_disk():
 	""
-	return KQ_FILES["tiles"]["size"]+KQ_FILES["web"]["unpacked"]+KQ_FILES["orte"]["unpacked"]
+	return sum(f["size"]for r_,f in KQ_FILES.items()if r_ not in("web","orte"))+KQ_FILES["web"]["unpacked"]+KQ_FILES["orte"]["unpacked"]
+
+
+def kq_have():
+	"""
+"""
+	now=time.time()
+	if now-KQ_RT["ok_t"]<2.0:
+		return KQ_RT["have"]
+	have={}
+	d_=kq_dir()
+	try:
+		with open(os.path.join(d_,"karte.ok"),encoding="utf-8")as fh:
+			m=json.load(fh)
+		sh=m.get("sha256")if isinstance(m,dict)else None
+		sh=sh if isinstance(sh,dict)else{}
+		for r_,f in KQ_FILES.items():
+			if not f.get("sha256")or sh.get(r_)!=f["sha256"]:
+				continue
+			p_=os.path.join(d_,KQ_DISK[r_])
+			if r_=="web":
+				ok=all(os.path.isfile(os.path.join(p_,x))for x in("maplibre-gl.js","maplibre-gl.css","style.json"))
+			elif r_=="orte":
+				ok=os.path.isfile(p_)and os.path.getsize(p_)==f["unpacked"]
+			else:
+				ok=os.path.isfile(p_)and os.path.getsize(p_)==f["size"]
+			if ok:
+				have[r_]=True
+	except(OSError,ValueError):
+		have={}
+	KQ_RT["have"],KQ_RT["ok_t"]=have,now
+	return have
 
 
 def kq_installed():
 	""
-	now=time.time()
-	if now-KQ_RT["ok_t"]<2.0:
-		return KQ_RT["ok"]
-	ok=False
-	if kq_pinned():
-		d_=kq_dir()
-		try:
-			with open(os.path.join(d_,"karte.ok"),encoding="utf-8")as fh:
-				m=json.load(fh)
-			ok=(isinstance(m,dict)and m.get("tag")==KQ_TAG and m.get("sha256")=={r_:f["sha256"]for r_,f in KQ_FILES.items()}
-				  and os.path.getsize(os.path.join(d_,"ch.pmtiles"))==KQ_FILES["tiles"]["size"]
-				  and os.path.getsize(os.path.join(d_,"orte.sqlite"))==KQ_FILES["orte"]["unpacked"]
-				  and all(os.path.isfile(os.path.join(d_,"web",f))for f in("maplibre-gl.js","maplibre-gl.css","style.json")))
-		except(OSError,ValueError):
-			ok=False
-	KQ_RT["ok"],KQ_RT["ok_t"]=ok,now
-	return ok
+	return kq_pinned()and all(kq_have().get(r_)for r_ in KQ_FILES)
+
+
+def kq_on():
+	"""
+"""
+	h_=kq_have()
+	return bool(h_.get("tiles")and h_.get("orte")and os.path.isfile(os.path.join(kq_dir(),"web","style.json"))
+				and os.path.isfile(os.path.join(kq_dir(),"web","maplibre-gl.js")))
+
+
+def kq_styles():
+	""
+	if not kq_on():
+		return[]
+	return[s_ for s_ in KQ_STYLES if os.path.isfile(os.path.join(kq_dir(),"web",s_))]
+
+
+def kq_topo_on():
+	h_=kq_have()
+	return bool(kq_on()and h_.get("topo")and h_.get("relief")and "style_topo.json"in kq_styles())
 
 
 def kq_close():
 	with KQ_RT["lock"]:
-		for k in("pm","db"):
-			o=KQ_RT[k]
-			KQ_RT[k]=None
+		pms,KQ_RT["pm"]=KQ_RT["pm"],{}
+		db_,KQ_RT["db"]=KQ_RT["db"],None
+		for o in list(pms.values())+[db_]:
 			try:
 				if o is not None:
 					o.close()
@@ -93137,7 +93364,7 @@ class KqPMTiles:
 			 self.data_len,self.n_addr,self.n_entries,self.n_contents)=_kq_struct.unpack_from("<11Q",h,8)
 			self.clustered,self.icomp,self.tcomp,self.ttype,self.minz,self.maxz=_kq_struct.unpack_from("<6B",h,96)
 			self.bounds=[v/1e7 for v in _kq_struct.unpack_from("<4i",h,102)]
-			if self.icomp not in(1,2)or self.ttype!=1 or self.root_len>1<<20:
+			if self.icomp not in(1,2)or self.ttype not in KQ_MIME or self.root_len>1<<20:
 				raise ValueError("unsupported PMTiles (compression %d, tile type %d)"%(self.icomp,self.ttype))
 			self.size=os.fstat(self.fd).st_size
 			self.leaves=_KqOD()
@@ -93231,11 +93458,12 @@ class KqPMTiles:
 		return None
 
 
-def kq_pm():
+def kq_pm(r_="tiles"):
 	with KQ_RT["lock"]:
-		if KQ_RT["pm"]is None:
-			KQ_RT["pm"]=KqPMTiles(os.path.join(kq_dir(),"ch.pmtiles"))
-		return KQ_RT["pm"]
+		pm=KQ_RT["pm"].get(r_)
+		if pm is None:
+			pm=KQ_RT["pm"][r_]=KqPMTiles(os.path.join(kq_dir(),KQ_DISK[r_]))
+		return pm
 
 
 
@@ -93273,7 +93501,7 @@ def kq_search(q, n=8):
 	"""
 """
 	k=kq_norm(q)[:60]
-	if len(k)<2 or not kq_installed():
+	if len(k)<2 or not kq_on():
 		return[]
 	try:
 		n=max(1,min(20,int(n or 8)))
@@ -93363,14 +93591,28 @@ def kq_free():
 
 
 def kq_space_ok():
-	""
+	"""
+"""
 	dd=kq_dl_dir()
-	have=0
-	for f in KQ_FILES.values():
+	have,h_=0,kq_have()
+	for r_,f in KQ_FILES.items():
+		if h_.get(r_):
+			continue
 		for p in(os.path.join(dd,f["name"]),os.path.join(dd,f["name"])+".part"):
 			if os.path.isfile(p):
 				have+=os.path.getsize(p)
-	return kq_free()-(kq_total()-have+KQ_FILES["web"]["unpacked"]+KQ_FILES["orte"]["unpacked"])>=bio_free_need()
+	unp=sum(KQ_FILES[r_]["unpacked"]for r_ in("web","orte")if not h_.get(r_))
+	return kq_free()-(kq_total()-have+unp)>=bio_free_need()
+
+
+def _kq_keep(src, dst, moved):
+	"""
+"""
+	try:
+		os.link(src,dst)
+	except OSError:
+		os.replace(src,dst)
+		moved.append((dst,src))
 
 
 def kq_download(wait=False):
@@ -93386,25 +93628,36 @@ def kq_download(wait=False):
 	KQ_DL.update(running=True,got=0,total=kq_total(),msg="",stop=False,done=False,phase="load")
 
 	def work():
-		dd,tmp=kq_dl_dir(),kq_dir()+".new"
+		dd,tmp,old=kq_dl_dir(),kq_dir()+".new",kq_dir()
+		have=dict(kq_have())
+		moved=[]
 		try:
 			os.makedirs(dd,exist_ok=True)
-			for r_ in("web","orte","tiles"):
+			for r_ in KQ_ORDER:
+				if have.get(r_):
+					continue
 				f=KQ_FILES[r_]
 				dest=os.path.join(dd,f["name"])
 				if os.path.isfile(dest)and piper_check_file(dest,f)[0]:
 					KQ_DL["got"]+=f["size"]
 				else:
-					bio_fetch(KQ_BASE["url"]+f["name"],dest,f,KQ_DL)
+					bio_fetch(kq_url(r_),dest,f,KQ_DL)
 			KQ_DL["phase"]="unpack"
 			shutil.rmtree(tmp,ignore_errors=True)
-			os.makedirs(os.path.join(tmp,"web"))
-			_kq_unzip(os.path.join(dd,KQ_FILES["web"]["name"]),os.path.join(tmp,"web"),KQ_FILES["web"]["unpacked"])
+			os.makedirs(tmp)
+			if have.get("web"):
+				shutil.copytree(os.path.join(old,"web"),os.path.join(tmp,"web"))
+			else:
+				os.makedirs(os.path.join(tmp,"web"))
+				_kq_unzip(os.path.join(dd,KQ_FILES["web"]["name"]),os.path.join(tmp,"web"),KQ_FILES["web"]["unpacked"])
 			with open(os.path.join(tmp,"web","karte.json"),encoding="utf-8")as fh:
 				man=json.load(fh)
-			if man.get("tag")!=KQ_TAG:
-				raise ValueError("the package is not "+KQ_TAG)
-			_kq_gunzip(os.path.join(dd,KQ_FILES["orte"]["name"]),os.path.join(tmp,"orte.sqlite"),KQ_FILES["orte"]["unpacked"])
+			if man.get("tag")!=kq_tag("web"):
+				raise ValueError("the package is not "+kq_tag("web"))
+			if have.get("orte"):
+				_kq_keep(os.path.join(old,"orte.sqlite"),os.path.join(tmp,"orte.sqlite"),moved)
+			else:
+				_kq_gunzip(os.path.join(dd,KQ_FILES["orte"]["name"]),os.path.join(tmp,"orte.sqlite"),KQ_FILES["orte"]["unpacked"])
 			import sqlite3
 			c_=sqlite3.connect("file:"+os.path.join(tmp,"orte.sqlite")+"?mode=ro",uri=True)
 			try:
@@ -93412,24 +93665,42 @@ def kq_download(wait=False):
 				c_.execute("SELECT k, id, w, r FROM such LIMIT 1").fetchall()
 			finally:
 				c_.close()
-			os.replace(os.path.join(dd,KQ_FILES["tiles"]["name"]),os.path.join(tmp,"ch.pmtiles"))
-			KqPMTiles(os.path.join(tmp,"ch.pmtiles")).close()
+			for r_ in("tiles","topo","relief"):
+				dst=os.path.join(tmp,KQ_DISK[r_])
+				if have.get(r_):
+					_kq_keep(os.path.join(old,KQ_DISK[r_]),dst,moved)
+				else:
+					os.replace(os.path.join(dd,KQ_FILES[r_]["name"]),dst)
+				pm=KqPMTiles(dst)
+				try:
+					if pm.ttype not in KQ_TTYPE[r_]:
+						raise ValueError("%s: wrong tile type %d"%(KQ_FILES[r_]["name"],pm.ttype))
+				finally:
+					pm.close()
 			with open(os.path.join(tmp,"karte.ok"),"w",encoding="utf-8")as fh:
-				json.dump({"tag":KQ_TAG,"sha256":{r_:f["sha256"]for r_,f in KQ_FILES.items()}},fh)
+				json.dump({"tag":KQ_TAG,"sha256":{r_:f["sha256"]for r_,f in KQ_FILES.items()},
+						   "tags":{r_:kq_tag(r_)for r_ in KQ_FILES}},fh)
 			kq_close()
-			shutil.rmtree(kq_dir(),ignore_errors=True)
-			os.replace(tmp,kq_dir())
+			moved.clear()
+			shutil.rmtree(old,ignore_errors=True)
+			os.replace(tmp,old)
 			shutil.rmtree(dd,ignore_errors=True)
 			KQ_DL["done"]=True
 			KQ_RT["ok_t"]=0.0
-			log_event("sys",f"Offline map of Switzerland installed ({KQ_TAG}, {round(kq_total() / 1e6)} MB)")
+			log_event("sys",f"Offline map of Switzerland installed ({KQ_TAG}, {round(kq_need_disk() / 1e6)} MB)")
 		except InterruptedError:
 			KQ_DL["msg"]="cancelled"
 		except Exception as e:
 			KQ_DL["msg"]=str(getattr(e,"reason","")or e)[:160]or e.__class__.__name__
 			log_event("sys",f"Offline map not installed: {KQ_DL['msg']}")
 		finally:
+			for dst,src in moved:
+				try:
+					os.replace(dst,src)
+				except OSError:
+					pass
 			shutil.rmtree(tmp,ignore_errors=True)
+			KQ_RT["ok_t"]=0.0
 			KQ_DL.update(running=False,phase="")
 	if wait:
 		work()
@@ -93473,15 +93744,33 @@ def kq_sim_ok():
 def kq_maxzoom():
 	""
 	try:
-		return int(kq_pm().maxz)if kq_installed()else KQ_MAXZOOM
+		return int(kq_pm().maxz)if kq_on()else KQ_MAXZOOM
 	except(OSError,ValueError):
 		return KQ_MAXZOOM
 
 
+def kq_layers():
+	""
+	out={}
+	h_=kq_have()
+	for sch,r_ in KQ_LAYER.items():
+		if not h_.get(r_)or(r_!="tiles"and not kq_topo_on()):
+			continue
+		try:
+			pm=kq_pm(r_)
+			out[sch]={"key":kq_key(r_),"z":[int(pm.minz),int(pm.maxz)],"bounds":[round(v,5)for v in pm.bounds],
+						"ext":KQ_EXT.get(pm.ttype,"mvt")}
+		except(OSError,ValueError):
+			pass
+	return out
+
+
 def kq_state():
-	on=kq_installed()
-	return{"on":on,"tag":KQ_TAG,"maxzoom":kq_maxzoom(),"pinned":kq_pinned(),"admin":kq_role()=="admin","sim":kq_sim_ok(),
-			"size":kq_total(),"disk":kq_need_disk(),"free":kq_free(),"free_need":bio_free_need(),"space_ok":True if on else kq_space_ok(),
+	on,full=kq_on(),kq_installed()
+	return{"on":on,"full":full,"topo":kq_topo_on(),"add":bool(on and not full and kq_pinned()),"tag":KQ_TAG,
+			"maxzoom":kq_maxzoom(),"pinned":kq_pinned(),"admin":kq_role()=="admin","sim":kq_sim_ok(),
+			"styles":kq_styles(),"layers":kq_layers(),"def":"topo"if CFG.get("map_topo",True)else "std",
+			"size":kq_total(),"disk":kq_need_disk(),"free":kq_free(),"free_need":bio_free_need(),"space_ok":True if full else kq_space_ok(),
 			"dl":{k:KQ_DL[k]for k in("running","got","total","msg","done","phase")}}
 
 
@@ -93501,12 +93790,9 @@ def smalltv_routes(app, reply, body):
 	def kq_page_():
 		return Response(kq_page(),mimetype="text/html")
 
-	@app.route("/karte/t/<tag>/<int:z>/<int:x>/<int:y>.mvt")
-	def kq_tile_(tag,z,x,y):
-		if tag!=KQ_TAG or not kq_installed():
-			return nope()
+	def tile_reply(r_,z,x,y):
 		try:
-			pm=kq_pm()
+			pm=kq_pm(r_)
 			b_=pm.tile(z,x,y)
 		except(ValueError,OSError):
 			return nope()
@@ -93515,13 +93801,26 @@ def smalltv_routes(app, reply, body):
 		h_={"Cache-Control":"public, max-age=2592000, immutable"}
 		if pm.tcomp==2:
 			h_["Content-Encoding"]="gzip"
-		return Response(b_,mimetype="application/x-protobuf",headers=h_)
+		return Response(b_,mimetype=KQ_MIME.get(pm.ttype,"application/octet-stream"),headers=h_)
+
+	@app.route("/karte/t/<tag>/<int:z>/<int:x>/<int:y>.mvt")
+	def kq_tile_(tag,z,x,y):
+		if tag not in(KQ_TAG,kq_tag("tiles"))or not kq_on():
+			return nope()
+		return tile_reply("tiles",z,x,y)
+
+	@app.route("/karte/t/<key>/<sch>/<int:z>/<int:x>/<int:y>.<ext>")
+	def kq_tile2_(key,sch,z,x,y,ext):
+		r_=KQ_LAYER.get(sch)
+		if not r_ or not kq_on()or key!=kq_key(r_)or not kq_have().get(r_)or(r_!="tiles"and not kq_topo_on()):
+			return nope()
+		return tile_reply(r_,z,x,y)
 
 	@app.route("/karte/fonts/<path:fp>")
 	def kq_font_(fp):
 		""
 		h_={"Cache-Control":"public, max-age=2592000"}
-		if not kq_installed():
+		if not kq_on():
 			return nope()
 		m_=re.fullmatch(r"([A-Za-z0-9 ,]{1,120})/(\d{1,5}-\d{1,5})\.pbf",fp)
 		if m_:
@@ -93535,7 +93834,7 @@ def smalltv_routes(app, reply, body):
 
 	@app.route("/karte/web/<path:fp>")
 	def kq_web_(fp):
-		if not kq_installed()or not re.fullmatch(r"[A-Za-z0-9._@/-]{1,120}",fp)or fp.endswith(".gz")or fp=="karte.json":
+		if not kq_on()or not re.fullmatch(r"[A-Za-z0-9._@/-]{1,120}",fp)or fp.endswith(".gz")or fp=="karte.json":
 			return nope()
 		base=os.path.realpath(os.path.join(kq_dir(),"web"))
 		p_=os.path.realpath(os.path.join(base,fp))
@@ -93585,57 +93884,70 @@ VIEW_GET = tuple(VIEW_GET) + tuple(p for p in ("/karte", "/karte/", "/api/karte"
 
 
 
-_HX_KQ = _zd('639zzq_offline_karten/HX_KQ', _zd_hx_en((
-	'OpenStreetMap contributors',
-	'Offline map of Switzerland',
-	'Map and place search without internet: loaded once from GitHub (fixed checksum), then everything stays on MoveEye.',
-	'Download offline map of Switzerland',
-	'kq-ask',
-	'kq-del',
-	'installed',
-	'Remove',
-	'Cancel',
-	'checking and unpacking …',
-	'not enough free space on the memory card',
-	'comes with an update',
-	'cancelled',
-	'Search a place …',
-	'Nothing found',
-	'Open in the simulator',
-	'Set as location of MoveEye',
-	'Big map',
-	'Map',
-	'Location of MoveEye',
-	'Tap on the map to choose a point. Two fingers or the wheel zoom.',
-	'The offline map is not installed.',
-	'Install it under Settings → Location.',
-	'Offline map not readable',
-	'Sent to the simulator – it loads the place.',
-	'Saved',
-	'Only in Switzerland',
-	'Sources and licences',
-	'kind-city',
-	'kind-town',
-	'kind-village',
-	'kind-suburb',
-	'kind-quarter',
-	'kind-neighbourhood',
-	'kind-hamlet',
-	'kind-locality',
-	'kind-isolated_dwelling',
-	'kind-farm',
-	'kind-island',
-	'kind-islet',
-	'kind-peak',
-	'kind-volcano',
-	'kind-saddle',
-	'kind-pass',
-	'kind-lake',
-	'kind-reservoir',
-	'kind-glacier',
-	'kind-street',
-)))
+_KQ_TOPO_LABEL = "Offline map: topo map (contour lines, relief, hiking paths) instead of the standard map"
+_HX_KQ = _zd_hxk('639zzq_offline_karten/HX_KQ', [
+	('OpenStreetMap contributors', 'OpenStreetMap-Mitwirkende'),
+	('Offline map of Switzerland', 'Offline-Karte Schweiz'),
+	('Map and place search without internet: loaded once from GitHub (fixed checksum), then everything stays on MoveEye.', 'Karte und Ortssuche ohne Internet: einmal von GitHub laden (feste Prüfsumme), danach bleibt alles auf MoveEye.'),
+	('Download offline map of Switzerland', 'Offline-Karte Schweiz herunterladen'),
+	('kq-ask', 'Offline-Karte Schweiz jetzt laden? %s MB von GitHub (danach %s MB auf der Speicherkarte, %s GB bleiben frei).'),
+	('kq-del', 'Offline-Karte entfernen? Danach kommen die Karten wieder aus dem Internet (wenn eingeschaltet).'),
+	('installed', 'installiert'),
+	('Remove', 'Entfernen'),
+	('Cancel', 'Abbrechen'),
+	('checking and unpacking …', 'prüfen und entpacken …'),
+	('not enough free space on the memory card', 'zu wenig freier Platz auf der Speicherkarte'),
+	('comes with an update', 'kommt mit einem Update'),
+	('cancelled', 'abgebrochen'),
+	('Search a place …', 'Ort suchen …'),
+	('Nothing found', 'Nichts gefunden'),
+	('Open in the simulator', 'Im Simulator öffnen'),
+	('Set as location of MoveEye', 'Als Standort von MoveEye setzen'),
+	('Big map', 'Grosse Karte'),
+	('Map', 'Karte'),
+	('Location of MoveEye', 'Standort von MoveEye'),
+	('Tap on the map to choose a point. Two fingers or the wheel zoom.', 'Auf die Karte tippen, um einen Punkt zu wählen. Mit zwei Fingern oder dem Rad zoomen.'),
+	('The offline map is not installed.', 'Die Offline-Karte ist nicht installiert.'),
+	('Install it under Settings → Location.', 'Installieren unter Einstellungen → Standort.'),
+	('Offline map not readable', 'Offline-Karte nicht lesbar'),
+	('Sent to the simulator – it loads the place.', 'An den Simulator geschickt – er lädt den Ort.'),
+	('Saved', 'Gespeichert'),
+	('Only in Switzerland', 'Nur in der Schweiz'),
+	('Sources and licences', 'Quellen und Lizenzen'),
+	('kind-city', 'Stadt'),
+	('kind-town', 'Stadt'),
+	('kind-village', 'Dorf'),
+	('kind-suburb', 'Quartier'),
+	('kind-quarter', 'Quartier'),
+	('kind-neighbourhood', 'Quartier'),
+	('kind-hamlet', 'Weiler'),
+	('kind-locality', 'Flurname'),
+	('kind-isolated_dwelling', 'Einzelhof'),
+	('kind-farm', 'Hof'),
+	('kind-island', 'Insel'),
+	('kind-islet', 'Insel'),
+	('kind-peak', 'Gipfel'),
+	('kind-volcano', 'Gipfel'),
+	('kind-saddle', 'Sattel'),
+	('kind-pass', 'Pass'),
+	('kind-lake', 'See'),
+	('kind-reservoir', 'Stausee'),
+	('kind-glacier', 'Gletscher'),
+	('kind-street', 'Strasse'),
+	('Map style', 'Kartenstil'),
+	('Standard', 'Standard'),
+	('Topo', 'Topo'),
+	('hiking trail', 'Wanderweg'),
+	('mountain trail', 'Bergwanderweg'),
+	('alpine trail', 'Alpinwanderweg'),
+	('Hiking paths from OpenStreetMap – not the official network.', 'Wanderwege aus OpenStreetMap – nicht das offizielle Netz.'),
+	('Add the topo map', 'Topo-Karte ergänzen'),
+	('Contour lines, relief and hiking paths for the map.', 'Höhenlinien, Relief und Wanderwege für die Karte.'),
+	('kq-ask-topo', 'Topo-Karte jetzt ergänzen? %s MB von GitHub (danach %s MB auf der Speicherkarte, %s GB bleiben frei). Die Karte bleibt solange an.'),
+	(_KQ_TOPO_LABEL, 'Offline-Karte: Topo-Karte (Höhenlinien, Relief, Wanderwege) statt Standard'),
+])
 _KQ_EN = {"kq-ask": "Load the offline map of Switzerland now? %s MB from GitHub (then %s MB on the memory card, %s GB stay free).",
+		  "kq-ask-topo": "Add the topo map now? %s MB from GitHub (then %s MB on the memory card, %s GB stay free). The map stays on meanwhile.",
 		  "kq-del": "Remove the offline map? Then the maps come from the internet again (if switched on).",
 		  "kind-city": "city", "kind-town": "town", "kind-village": "village", "kind-suburb": "quarter", "kind-quarter": "quarter",
 		  "kind-neighbourhood": "quarter", "kind-hamlet": "hamlet", "kind-locality": "locality", "kind-isolated_dwelling": "farmstead",
@@ -93646,6 +93958,10 @@ for _k, _v in _HX_KQ.items():
 	DE.setdefault(_k,_v[0])
 	for _i,_L in enumerate(("fr","it","rm")):
 		TRX[_L].setdefault(_k,_v[_i+1])
+
+
+_kq_i = max([i for i, x in enumerate(TOGGLES) if x[1] == "map_online"] or [len(TOGGLES) - 1])
+TOGGLES.insert(_kq_i + 1, ("Setup", "map_topo", _KQ_TOPO_LABEL))
 
 
 def kq_tx():
@@ -93662,7 +93978,7 @@ KQ_HEAD_JS = _zd('639zzq_offline_karten/KQ_HEAD_JS', "")
 
 def kq_head():
 	s_=kq_state()
-	st={k:s_[k]for k in("on","tag","maxzoom","pinned","admin","sim")}
+	st={k:s_[k]for k in("on","full","topo","tag","maxzoom","pinned","admin","sim","styles","layers","def")}
 	return(KQ_HEAD_JS.replace("/*KQSTATE*/{}",json.dumps(st),1)
 			.replace("/*KQTX*/{}",json.dumps(kq_tx(),ensure_ascii=False).replace("</","<\\/"),1))
 
@@ -93739,11 +94055,11 @@ def kq_page():
 
 
 _HELP_KQ = {
-	"de": ("🗺 Offline-Karte Schweiz", "(Einstellungen → Standort, nur der Admin): Karte und Ortssuche der ganzen Schweiz einmal von GitHub laden (feste Prüfsumme; vorher wird der freie Platz auf der Speicherkarte geprüft), danach ohne Internet: Standort auf der Karte antippen oder suchen («Zurich» findet Zürich), Orte der Aufnahmen, grosse Karte /karte, «🎮 Im Simulator öffnen» und «Ort von der Karte» im Simulator. «🗑 Entfernen» löscht sie wieder. Daten © OpenStreetMap-Mitwirkende (ODbL)."),
-	"en": ("🗺 Offline map of Switzerland", "(Settings → Location, administrator only): load the map and the place search of all of Switzerland once from GitHub (fixed checksum; the free space on the memory card is checked first), then without internet: tap or search the location (“Zurich” finds Zürich), the places of the recordings, the big map /karte, “🎮 Open in the simulator” and “Place from the map” in the simulator. “🗑 Remove” deletes it again. Data © OpenStreetMap contributors (ODbL)."),
-	"fr": ("🗺 Carte hors ligne de la Suisse", "(Réglages → Emplacement, administrateur seulement) : charger une fois depuis GitHub la carte et la recherche de lieux de toute la Suisse (somme de contrôle fixe ; l’espace libre sur la carte mémoire est vérifié d’abord), ensuite sans Internet : toucher ou chercher l’emplacement (« Zurich » trouve Zürich), les lieux des enregistrements, la grande carte /karte, « 🎮 Ouvrir dans le simulateur » et « Lieu sur la carte » dans le simulateur. « 🗑 Supprimer » l’efface. Données © contributeurs d’OpenStreetMap (ODbL)."),
-	"it": ("🗺 Mappa offline della Svizzera", "(Impostazioni → Posizione, solo l’amministratore): caricare una volta da GitHub la mappa e la ricerca di luoghi di tutta la Svizzera (somma di controllo fissa; prima viene controllato lo spazio libero sulla scheda di memoria), poi senza Internet: toccare o cercare la posizione («Zurich» trova Zürich), i luoghi delle registrazioni, la mappa grande /karte, «🎮 Apri nel simulatore» e «Luogo dalla mappa» nel simulatore. «🗑 Rimuovi» la cancella. Dati © contributori di OpenStreetMap (ODbL)."),
-	"rm": ("🗺 Charta offline da la Svizra", "(Parameters → Lieu, mo l’administratur): chargiar ina giada da GitHub la charta e la tschertga da lieus da tut la Svizra (summa da controlla fixa; avant vegn controllà il spazi liber sin la carta da memoria), lura senza internet: tutgar u tschertgar il lieu («Zurich» chatta Zürich), ils lieus da las registraziuns, la charta gronda /karte, «🎮 Avrir en il simulatur» e «Lieu da la charta» en il simulatur. «🗑 Allontanar» la stizza. Datas © contribuents d’OpenStreetMap (ODbL)."),
+	"de": ("🗺 Offline-Karte Schweiz", "(Einstellungen → Standort, nur der Admin): Karte und Ortssuche der ganzen Schweiz einmal von GitHub laden (feste Prüfsumme; vorher wird der freie Platz auf der Speicherkarte geprüft), danach ohne Internet: Standort auf der Karte antippen oder suchen («Zurich» findet Zürich), Orte der Aufnahmen, grosse Karte /karte, «🎮 Im Simulator öffnen» und «Ort von der Karte» im Simulator. «🗑 Entfernen» löscht sie wieder. Daten © OpenStreetMap-Mitwirkende (ODbL). Topo-Karte (Vorgabe, Schalter «Standard / Topo» auf /karte): Höhenlinien und Relief aus swissALTI3D (© swisstopo), Wanderwege gelb / rot / blau aus OpenStreetMap (nicht das offizielle Netz); hell oder dunkel wie die Seite."),
+	"en": ("🗺 Offline map of Switzerland", "(Settings → Location, administrator only): load the map and the place search of all of Switzerland once from GitHub (fixed checksum; the free space on the memory card is checked first), then without internet: tap or search the location (“Zurich” finds Zürich), the places of the recordings, the big map /karte, “🎮 Open in the simulator” and “Place from the map” in the simulator. “🗑 Remove” deletes it again. Data © OpenStreetMap contributors (ODbL). Topo map (default, switch “Standard / Topo” on /karte): contour lines and relief from swissALTI3D (© swisstopo), hiking paths yellow / red / blue from OpenStreetMap (not the official network); light or dark like the page."),
+	"fr": ("🗺 Carte hors ligne de la Suisse", "(Réglages → Emplacement, administrateur seulement) : charger une fois depuis GitHub la carte et la recherche de lieux de toute la Suisse (somme de contrôle fixe ; l’espace libre sur la carte mémoire est vérifié d’abord), ensuite sans Internet : toucher ou chercher l’emplacement (« Zurich » trouve Zürich), les lieux des enregistrements, la grande carte /karte, « 🎮 Ouvrir dans le simulateur » et « Lieu sur la carte » dans le simulateur. « 🗑 Supprimer » l’efface. Données © contributeurs d’OpenStreetMap (ODbL). Carte topo (par défaut, bouton « Standard / Topo » sur /karte) : courbes de niveau et relief de swissALTI3D (© swisstopo), sentiers jaunes / rouges / bleus d’OpenStreetMap (pas le réseau officiel) ; claire ou sombre comme la page."),
+	"it": ("🗺 Mappa offline della Svizzera", "(Impostazioni → Posizione, solo l’amministratore): caricare una volta da GitHub la mappa e la ricerca di luoghi di tutta la Svizzera (somma di controllo fissa; prima viene controllato lo spazio libero sulla scheda di memoria), poi senza Internet: toccare o cercare la posizione («Zurich» trova Zürich), i luoghi delle registrazioni, la mappa grande /karte, «🎮 Apri nel simulatore» e «Luogo dalla mappa» nel simulatore. «🗑 Rimuovi» la cancella. Dati © contributori di OpenStreetMap (ODbL). Mappa topo (predefinita, interruttore «Standard / Topo» su /karte): curve di livello e rilievo da swissALTI3D (© swisstopo), sentieri gialli / rossi / blu da OpenStreetMap (non la rete ufficiale); chiara o scura come la pagina."),
+	"rm": ("🗺 Charta offline da la Svizra", "(Parameters → Lieu, mo l’administratur): chargiar ina giada da GitHub la charta e la tschertga da lieus da tut la Svizra (summa da controlla fixa; avant vegn controllà il spazi liber sin la carta da memoria), lura senza internet: tutgar u tschertgar il lieu («Zurich» chatta Zürich), ils lieus da las registraziuns, la charta gronda /karte, «🎮 Avrir en il simulatur» e «Lieu da la charta» en il simulatur. «🗑 Allontanar» la stizza. Datas © contribuents d’OpenStreetMap (ODbL). Charta topo (predefinida, cumutatur «Standard / Topo» sin /karte): lingias d’autezza e relief da swissALTI3D (© swisstopo), sendas melnas / cotschnas / blauas da OpenStreetMap (betg la rait uffiziala); clera u stgira sco la pagina."),
 }
 
 
@@ -93773,6 +94089,19 @@ for _L in ("fr", "it", "rm"):
 
 
 kq_selftest = _zd_fn('639zzq_offline_karten/kq_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -98516,8 +98845,9 @@ def _kt_coords(text, sep):
 	return out
 
 
-def kt_parse(data, fname=""):
+def kt_parse(data, fname="", need_route=True):
 	"""
+
 """
 	if len(data)>KT_IMPORT_MAX:
 		raise KTError("The file is too big.")
@@ -98609,8 +98939,10 @@ def kt_parse(data, fname=""):
 	except(_ET.ParseError,ValueError,LookupError):
 		raise KTError("This file could not be read.")
 	pts=[p for s in segs for p in s]or rte
+	if len(pts)<2 and(need_route or not wps):
+		raise KTError("No route was found in this file."if need_route else "No places were found in this file.")
 	if len(pts)<2:
-		raise KTError("No route was found in this file.")
+		pts=[]
 	thinned=False
 	if len(pts)>KT_MAX_PTS:
 		step=(len(pts)+KT_MAX_PTS-1)//KT_MAX_PTS
@@ -99584,40 +99916,40 @@ RUCKSACK_NAMEN = {"de": "Digitaler Rucksack", "en": "Digital backpack", "fr": "S
 _RUCKSACK_INTERN = re.compile(r"\b\w*\d\w*_daten" + r"tausch\b")
 
 
-rucksack_alt_in = _zd_fn('639zzy_digitaler_rucksack/rucksack_alt_in()')
+def rucksack_alt_in(text):
+	"""
+"""
+	if text in EN_SHOW:
+		return ""
+	s=_RUCKSACK_INTERN.sub("",text)
+	for k in sorted(EN_SHOW,key=len,reverse=True):
+		if k not in s:
+			continue
+		q=re.escape(k)
+		s=re.sub(r"""data-i18n(?:-ph)?=\\?["']"""+q+r"""\\?["']|\b(?:t|tt|tr|trf)\(\s*\\?["']"""+q+r"""\\?["']|\b(?:sec|title):\s*\\?["']"""
+				   +q+r"""\\?["']|\\?["']"""+q+r"""\\?["']\s*:"""," ",s)
+	m=RUCKSACK_ALT.search(s)
+	return s[max(0,m.start()-40):m.end()+40]if m else ""
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-rucksack_alt_source = _zd_fn('639zzy_digitaler_rucksack/rucksack_alt_source()')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+def rucksack_alt_source(src):
+	"""
+"""
+	import ast as _ast
+	tree=_ast.parse(src)
+	skip=set()
+	for nd in _ast.walk(tree):
+		if isinstance(nd,(_ast.Module,_ast.FunctionDef,_ast.AsyncFunctionDef,_ast.ClassDef))and nd.body:
+			d=nd.body[0]
+			if isinstance(d,_ast.Expr)and isinstance(d.value,_ast.Constant)and isinstance(d.value.value,str):
+				skip.add(id(d.value))
+	out=[]
+	for nd in _ast.walk(tree):
+		if isinstance(nd,_ast.Constant)and isinstance(nd.value,str)and id(nd)not in skip and len(nd.value)>9:
+			hit=rucksack_alt_in(nd.value)
+			if hit:
+				out.append((nd.lineno,hit.replace("\n"," ")))
+	return out
 
 
 rucksack_selftest = _zd_fn('639zzy_digitaler_rucksack/rucksack_selftest()')
@@ -103886,7 +104218,7 @@ def hp_probe(url, want=None, origin=""):
 		P.append(("size {a} instead of {b}",f"{row['size']}|{want['size']}"))
 	elif want and small and want.get("sha")and h.hexdigest()!=want["sha"]:
 		P.append(("content differs from the file of MoveEye",""))
-	if ext=="wasm"and head[:4]!=b"\0asm":
+	if ext=="wasm"and head[:4]!=b"\0asm"and not re.search(r"(^|/)index_pck\d{1,2}\.wasm$",want["path"]if want else ""):
 		P.append(("not a WebAssembly file",""))
 	if H["Content-Security-Policy"]and(ext=="html"or ct=="text/html"):
 		P+=hp_csp(H["Content-Security-Policy"],origin)
@@ -104120,6 +104452,7 @@ for _L in ("fr", "it", "rm"):
 
 
 homepage_selftest = _zd_fn('639zzzh_homepage/homepage_selftest()')
+
 
 
 
@@ -109375,6 +109708,16 @@ SELFTEST_EXTRA.append(("Timelapse: every day a video automatically (639zzzv)", t
 
 
 
+_HX_VTL = _zd('639zzzv_zeitraffer_taeglich/HX_VTL', _zd_hx_en((
+	"No timelapse video yet – one is made every night at about 00:20 from yesterday's photos (Settings → Timelapse)",
+)))
+for _k, _v in _HX_VTL.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+
+
+
 
 
 
@@ -113947,6 +114290,339 @@ SELFTEST_EXTRA.append(("Start page: own pictures (A / B, focus, without EXIF, St
 
 
 
+
+
+def zd_exec(src, name):
+	"""
+
+
+"""
+	if not src:
+		return False
+	import linecache
+	linecache.cache[name]=(len(src),None,src.splitlines(True),name)
+	exec(compile(src,name,"exec"),globals())
+	return True
+
+
+BLINKI_KERN_PY = _zd('639zzzzk_blinki_kern/BLINKI_KERN_PY', "")
+zd_exec(BLINKI_KERN_PY, '639zzzzk_blinki_kern.py')
+BLINKI_PAGE = _zd('639zzzzk_blinki_seite/BLINKI_PAGE', ZD_PAGE)
+BKFRAG_TX = _zd('639zzzzk_blinki_texte/BKFRAG_TX', _ZDDict())
+for _k, _v in BKFRAG_TX.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+_BKFRAG_DE = {_k: DE.get(_k, _k) for _k in BKFRAG_TX}
+_BKFRAG_DE.update({k: DE[k] for k in ("More", "Stop", "Cancel", "Copy", "Fix", "done", "No connection to MoveEye.") if DE.get(k)})
+MORE_DE.update({k: DE[k] for k in ("Ask Blinki", "Questions about MoveEye, troubleshooting") if DE.get(k)})
+
+
+_HELP_BKFRAG = _zd('639zzzzk_blinki_texte/HELP_BKFRAG', _ZDDict())
+
+
+def _help_bkfrag(doc, lang):
+	if 'id="blinki"'in doc or not _HELP_BKFRAG.get(lang):
+		return doc
+	i=doc.find('<section id="tips"')
+	return doc[:i]+_HELP_BKFRAG[lang]+doc[i:]if i>=0 else doc
+
+
+_hp_en_bkfrag = HELP_PAGE.find('<div lang="en">') if isinstance(HELP_PAGE, str) else -1
+if _hp_en_bkfrag > 0:
+	HELP_PAGE=_help_bkfrag(HELP_PAGE[:_hp_en_bkfrag],"de")+_help_bkfrag(HELP_PAGE[_hp_en_bkfrag:],"en")
+for _L in ("fr", "it", "rm"):
+	if isinstance(HELP_X,dict)and HELP_X.get(_L):
+		HELP_X[_L]=_help_bkfrag(HELP_X[_L],_L)
+
+
+
+bkfrag_selftest = _zd_fn('639zzzzk_blinki_texte/bkfrag_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Blinki fragen: pins, search, rights (639zzzzk)", bkfrag_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BLINKI_WEB_PY = _zd('639zzzzk_blinki_web/BLINKI_WEB_PY', "")
+zd_exec(BLINKI_WEB_PY, '639zzzzk_blinki_web.py')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BLINKI_WISSEN_PY = _zd('639zzzzk_blinki_wissen/BLINKI_WISSEN_PY', "")
+zd_exec(BLINKI_WISSEN_PY, '639zzzzk_blinki_wissen.py')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_BK_SECRET_KEYS = ("blinki_cloud_on", "blinki_cloud_fmt", "blinki_cloud_url", "blinki_cloud_model", "blinki_cloud_key")
+USER_SETTINGS_DENY.update(_BK_SECRET_KEYS); APPKEY_DENY_KEYS.update(_BK_SECRET_KEYS)
+BLINKI_CLOUD_PY = _zd('639zzzzk_blinki_y_cloud/BLINKI_CLOUD_PY', "")
+zd_exec(BLINKI_CLOUD_PY, '639zzzzk_blinki_y_cloud.py')
+
+
+
+
+
+
+
+
+
+
+
+
+BLINKI_MEHR_PY = _zd('639zzzzk_blinki_y_mehr/BLINKI_MEHR_PY', "")
+zd_exec(BLINKI_MEHR_PY, '639zzzzk_blinki_y_mehr.py')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+USER_SETTINGS_DENY.update(("blinki_clap", "blinki_btn", "blinki_cloud_stt")); APPKEY_DENY_KEYS.update(("blinki_clap", "blinki_btn", "blinki_cloud_stt"))
+
+
+def blinki_clap_listens():
+	return False
+BLINKI_SPRACHE_PY = _zd('639zzzzk_blinki_z_sprache/BLINKI_SPRACHE_PY', "")
+zd_exec(BLINKI_SPRACHE_PY, '639zzzzk_blinki_z_sprache.py')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BLINKI_PLAUDERN_PY = _zd('639zzzzk_blinki_zz_plaudern/BLINKI_PLAUDERN_PY', "")
+zd_exec(BLINKI_PLAUDERN_PY, '639zzzzk_blinki_zz_plaudern.py')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if "zd_exec" not in globals():
+
+	def zd_exec(src,name):
+		"""
+
+"""
+		if not src:
+			return False
+		import linecache
+		linecache.cache[name]=(len(src),None,src.splitlines(True),name)
+		exec(compile(src,name,"exec"),globals())
+		return True
+
+
+MK_PY = _zd('639zzzzm_markier_karte/MK_PY', "")
+zd_exec(MK_PY and "\n" * 58 + MK_PY, "639zzzzm_markier_karte.py")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if "zd_exec" not in globals():
+
+	def zd_exec(src,name):
+		"""
+
+"""
+		if not src:
+			return False
+		import linecache
+		linecache.cache[name]=(len(src),None,src.splitlines(True),name)
+		exec(compile(src,name,"exec"),globals())
+		return True
+
+
+EO_OFF_KEY = "The file exchange is switched off."
+EO_PY = _zd('639zzzzo_eigene_orte/EO_PY', "")
+zd_exec(EO_PY, "639zzzzo_eigene_orte.py")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 for _k in ("push_pause", "push_pause_users"):
 	CFG.setdefault(_k,{});DEFAULTS.setdefault(_k,{})
 try:
@@ -114827,6 +115503,107 @@ SELFTEST_EXTRA.append(("Push pause (639zzzzp)", push_pause_selftest))
 
 
 
+CFG.setdefault("sim_push_off", False); DEFAULTS.setdefault("sim_push_off", False)
+USER_SETTINGS_DENY.update({"sim_push_off"})
+SIMQ_S = 60.0
+_sx_put_after(TOGGLES, "sim_autoupd", ("Simulator", "sim_push_off", "While the simulator is connected: no push"))
+_HX_SIMQ = _zd('639zzzzq_sim_push_ruhe/HX_SIMQ', _zd_hx_en((
+	'While the simulator is connected: no push',
+)))
+for _k, _v in _HX_SIMQ.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+
+
+def simq_connected(now=None):
+	now=time.time()if now is None else now
+	return bool(CFG.get("sim_on")and SIM.get("ok")and now-float(SIM.get("t")or 0.0)<5.0)
+
+
+def simq_quiet(now=None):
+	""
+	now=time.time()if now is None else now
+	if simq_connected(now):
+		return "simulator just connected"if now-float(SIM.get("since")or 0.0)<SIMQ_S else ""
+	return "simulator just left"if now-max(float(SIM.get("t")or 0.0),float(SIM.get("off_t")or 0.0))<SIMQ_S+5.0 else ""
+
+
+def simq_hold(p, now=None):
+	"""
+"""
+	if not isinstance(p,dict)or p.get("event")=="test"or p.get("_test")or "SOS"in str(p.get("info_title")or ""):
+		return ""
+	if p.get("event")=="tamper"and not(str(STATE.get("source_id")or "").startswith("sim:")and any(
+			str(p.get("text")or "").startswith(tr(k))for k in("camera covered","camera turned / picture changed"))):
+		return ""
+	if CFG.get("sim_push_off")and simq_connected(now):
+		return "simulator connected, setting «no push»"
+	q=simq_quiet(now)if p.get("event")=="info"else ""
+	return q and q+", device message"
+
+
+_simq_dispatch_before = Notifier._dispatch
+
+
+def _simq_dispatch(self, p, jpg, fname):
+	""
+	why=simq_hold(p)
+	if not why:
+		return _simq_dispatch_before(self,p,jpg,fname)
+	try:
+		msglog_add(self._title(p),push_with_map(self._text(p),p," · "),self._event(p),jpg,"none","🎮 Simulator")
+	except Exception:
+		pass
+	log_event("sys",f"No push ({why}): {self._title(p)}"[:200])
+
+
+
+Notifier._dispatch = _simq_dispatch
+
+
+sim_push_ruhe_selftest = _zd_fn('639zzzzq_sim_push_ruhe/sim_push_ruhe_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Simulator connect is no power event (639zzzzq)", sim_push_ruhe_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -115133,6 +115910,34 @@ rucksack_io_selftest = _zd_fn('639zzzzr_rucksack_io/rucksack_io_selftest()')
 
 
 SELFTEST_EXTRA.append(("Backpack for import / export: export list, private, script (639zzzzr)", rucksack_io_selftest))
+
+
+
+
+
+
+
+
+
+
+
+def x12_pins_migrate(cfg_in):
+	""
+	for k,v in(("charge_led_gpio","6"),("btn_gpio_protect","16")):
+		if isinstance(cfg_in,dict)and k not in cfg_in:
+			CFG[k]=v
+
+
+_settings_migrations_before_x12 = _settings_migrations
+
+
+def _settings_migrations(cfg_in):
+	_settings_migrations_before_x12(cfg_in)
+	x12_pins_migrate(cfg_in)
+
+
+X1206_PY = _zd('639zzzzu_x1206/X1206_PY', "")
+zd_exec(X1206_PY, '639zzzzu_x1206.py')
 
 
 
@@ -116521,6 +117326,57 @@ SELFTEST_EXTRA.append(("Read aloud and file view in the Digital backpack (639zzz
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+HOST = {"on": False, "prefix": "", "data": "", "roots": (), "door": "", "sim_auto": False, "ws": 0, "blocked": {}, "fixed_t": 0.0}
+
+
+
+HOST_PY = _zd('639zzzzw_host_demo/HOST_PY', "")
+if HOST_PY:
+	import linecache as _hlc
+	_hlc.cache["639zzzzw_host_demo.py"]=(len(HOST_PY),None,HOST_PY.splitlines(True),"639zzzzw_host_demo.py")
+	exec(compile(HOST_PY,"639zzzzw_host_demo.py","exec"),globals())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 WEB_UI_LOCAL.add("mw-sheet")
 
 UF_CSS = _zd('639zzzzx_fenster/UF_CSS', "")
@@ -117045,8 +117901,13 @@ if __name__ == "__main__":
 					help="quick checks without camera (with FOLDER: also the signatures in FOLDER/versions.json) and exit")
 	ap.add_argument("--helper",action="store_true",help="also work as AI helper for a Raspberry Pi in the network (port 5057, pairing code)")
 	ap.add_argument("--demo",action="store_true",help="demo: drawn scene with a person / animals walking by, own settings folder, no changes to the computer")
+	ap.add_argument("--host-modus",action="store_true",help="MoveEye on a web host (639zzzzw, started by demo_start.py; 4.15.0: a real MoveEye, the web simulator is the camera): --headless, only 127.0.0.1, every lock on")
+	ap.add_argument("--url-prefix",default=None,help="with --host-modus: path prefix of the page at the host (default /demo, '' = none)")
 	ap.add_argument("--paused-until",type=float,default=None,help=argparse.SUPPRESS)
 	a=ap.parse_args()
+	if a.host_modus:
+		a.headless=True;a.helper=False;a.bind="127.0.0.1"
+	nosys=a.demo or a.host_modus
 	if a.make_manifest:
 		sys.exit(make_manifest(a.make_manifest,a.base_url,a.sign_key))
 	if a.self_test is not None:
@@ -117064,9 +117925,13 @@ if __name__ == "__main__":
 		set_data_dir(a.config or os.path.join(tempfile.gettempdir(),"motionwatch-demo"))
 	else:
 		set_data_dir(a.config or DATA_DIR)
-	if not a.demo:
+	if a.host_modus:
+		if "host_mode_start"not in globals():
+			sys.exit("host mode needs the data zip moveeye_daten_X_Y_Z.zip next to the program")
+		host_mode_start(a)
+	if not nosys:
 		start_watchdog_arm()
-	took=prepare_settings_file()if not a.demo else ""
+	took=prepare_settings_file()if not nosys else ""
 	threading.Thread(target=clock_guard_loop,daemon=True,name="clockguard").start()
 	threading.Thread(target=outbox_loop,daemon=True,name="outbox").start()
 	threading.Thread(target=guard_watch_loop,daemon=True,name="guardwatch").start()
@@ -117076,10 +117941,10 @@ if __name__ == "__main__":
 				  +("the backup copy was used"if STATE.get("settings_from_backup")else "no usable backup: default settings!"))
 	testopt_load()
 	threading.Thread(target=testopt_nightly_loop,daemon=True,name="testnight").start()
-	if not a.demo and not a.helper:
+	if not nosys and not a.helper:
 		threading.Thread(target=tunnel_start,daemon=True).start()
 	STATE["helper_arg"]=bool(a.helper)
-	if(a.helper or CFG.get("helper_serve"))and not a.demo:
+	if(a.helper or CFG.get("helper_serve"))and not nosys:
 		if a.helper and not CFG.get("helper_serve"):
 			CFG["helper_serve"]=True;save_settings()
 		helper_server_start()
@@ -117102,7 +117967,11 @@ if __name__ == "__main__":
 				   device_name=CFG["device_name"]or "Demo")
 		a.source=None;a.cam=None
 		print("DEMO MODE - settings in "+DATA_DIR)
-	if not DEMO["on"]and not instance_lock(CFG["web_port"]):
+	if HOST["on"]:
+		CFG.update(setup_done=True,dev_phase_done=True)
+		a.source=None;a.cam=None
+		host_after_settings()
+	if not nosys and not instance_lock(CFG["web_port"]):
 		if a.boot or not instance_takeover(CFG["web_port"],not a.headless):
 			sys.exit(0)
 	start_guard()
@@ -117129,7 +117998,7 @@ if __name__ == "__main__":
 			ap.error("--source must be auto, usb:N, pi:N or an rtsp:// / http:// URL")
 	elif a.cam is not None:
 		CFG["source"]=f"usb:{a.cam}"
-	if not DEMO["on"]:
+	if not nosys:
 		storage_apply(start=True)
 	LOOPREC=LoopRecorder()
 	threading.Thread(target=rtsp_watch,daemon=True,name="rtsp-watch").start()
@@ -117141,16 +118010,18 @@ if __name__ == "__main__":
 	arm_tick()
 	if DEMO["on"]:
 		threading.Timer(3.0,lambda:arm(0)).start()
-	else:
+	elif not nosys:
 		NetAuto()
-	if a.boot and CFG["net_mode"]=="hotspot"and not DEMO["on"]:
+	if nosys:
+		pass
+	elif a.boot and CFG["net_mode"]=="hotspot":
 		boot_hotspot()
 	elif a.boot and CFG["net_mode"]=="client"and CFG["hotspot_on"]:
 		CFG["hotspot_on"]=False
 	elif CFG["hotspot_on"]and not a.boot:
 		hotspot_switch_later(True,3.0)
 	try:
-		if not DEMO["on"]:
+		if not nosys:
 			autostart_follow_version();autostart_check_boot();autostart_refresh()
 	except Exception:
 		pass
@@ -117165,10 +118036,12 @@ if __name__ == "__main__":
 	apply_theme()
 	ip=local_ip()
 	print(f"MoveEye {APP_VERSION} started"+(f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}"if CFG["web_stream"]else ""))
-	if CFG["web_stream"]and not web_pw_active():
+	if CFG["web_stream"]and not web_pw_active()and HOST["on"]:
+		print("   Password comes from the host (Basic Auth of the homepage)")
+	elif CFG["web_stream"]and not web_pw_active():
 		print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
 	if a.headless:
-		if CFG["desktop_notice"]and not DEMO["on"]:
+		if CFG["desktop_notice"]and not nosys:
 			desktop_notice(tr("MoveEye is running"),
 						   tr("Started in the background.")+(" "+tr("Page")+": "+page_address(ip)if ip and CFG["web_stream"]else ""),
 						   wait=300 if a.boot else 30)

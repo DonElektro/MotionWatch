@@ -55,6 +55,13 @@ class PCA9685:
     def switch(self, ch, on):
         self._set(ch, 0x1000, 0) if on else self._set(ch, 0, 0x1000)       # bit 12 = fully on / fully off
 
+    def dim(self, ch, pct):
+        """639zzzzz: a light as a percentage (PWM). 100 % = fully on (the same bits as switch(True)), 0 % = fully off."""
+        pct = max(0.0, min(100.0, float(pct)))
+        if pct >= 99.95 or pct <= 0.0:
+            return self.switch(ch, pct > 0.0)
+        self._set(ch, 0, max(1, min(4095, int(round(4095 * pct / 100.0)))))
+
     def close(self):
         try:
             os.write(self.fd, bytes([0xFA, 0, 0, 0, 0x10]))                    # all channels off (servos go limp)
@@ -366,6 +373,21 @@ def is_dark():
 
 def light_alarm():
     LIGHTS["alarm_t"] = time.time()
+
+
+# 639zzzzz (Besitzer 21.11.2026): white and infrared light on the PCA9685 (channels 2 / 3) as a percentage (PWM). 100 % = fully
+# on as before, so nothing changes until the slider is moved. Lights on a GPIO stay on / off.
+for _k in ("light_white_pct", "light_ir_pct"):
+    CFG.setdefault(_k, 100); DEFAULTS.setdefault(_k, 100)
+
+
+def light_pct(n):
+    """brightness of light n («white» / «ir») in % (5 … 100) while it is on"""
+    try:
+        v = float(CFG.get(f"light_{n}_pct", 100))
+    except (TypeError, ValueError):
+        return 100.0
+    return 100.0 if not math.isfinite(v) else max(5.0, min(100.0, v))
 
 
 def lights_tick():

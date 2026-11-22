@@ -37,6 +37,7 @@ SKRIPT = re.compile(r"werkzeuge/[A-Za-z0-9_][A-Za-z0-9_-]*(/[A-Za-z0-9_][A-Za-z0
 GD = re.compile(r"werkzeuge/[a-z0-9_]{1,60}_test\.gd")
 MAX_ZEILEN = 40
 SPIEL = os.environ.get("MW_SPIEL", "/run/moveeye-spiel/spielen")
+SPIEL_RUHE_S = 180                  # Besitzer 21.11.2026: 3 Min. ohne Eingabe / Verbindung = niemand spielt mehr (vorher 15)
 
 
 def gh():
@@ -193,7 +194,7 @@ def spielt():
     try:
         if os.path.islink(SPIEL) or not os.path.isfile(SPIEL):
             return False
-        return time.time() - os.stat(SPIEL).st_mtime < 900
+        return time.time() - os.stat(SPIEL).st_mtime < SPIEL_RUHE_S
     except OSError:
         return False
 

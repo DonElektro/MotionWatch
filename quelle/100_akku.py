@@ -81,8 +81,9 @@ def ups_read_e(addr=0x2D, bus=1):
 
 # Geekworm X1206 V2.0 (Besitzer 16.11.2026; X120x boards): 4 x 21700 in PARALLEL (1S4P, 3.0 ... 4.23 V), fuel gauge MAX17043 on
 # I2C 0x36 (big endian: 0x02 VCELL >> 4 x 1.25 mV, 0x04 SOC / 256 %; suptronics/x120x bat.py), no current. Pogo pins on the
-# header: GPIO 6 = PLD (output of the board: high = power at the input), GPIO 16 = charging (low = on, high = off). MoveEye only
-# READS both (pinctrl) and never drives them: the charge LED, the buttons and relays stay off GPIO 6 / 16 once the board is found.
+# header: GPIO 6 = PLD (output of the board: high = power at the input), GPIO 16 = charging (low = on, high = off). MoveEye
+# READS both (pinctrl); the charge LED, the buttons and relays stay off GPIO 6 / 16 once the board is found. Only the charge
+# control of 639zzzzz (Besitzer 21.11.2026: cold, «protect the battery») DRIVES GPIO 16, nothing else.
 UPS_X12 = {"seen": False, "probed": False, "warned": set()}
 
 
@@ -124,6 +125,19 @@ def ups_x12_pins():
     return {6, 16} if UPS_X12["seen"] or CFG.get("ups_model") == "x12" else set()
 
 
+def ups_x12_chg_off(chg):
+    """GPIO 16 read as 1 / 0 / None: True = charging is switched off. Geekworm (X1200 hardware page): high = charging off,
+    low = on; the level is the setting chg_off_level (639zzzzz) in case a board does it the other way round."""
+    if chg is None:
+        return False
+    return chg == (0 if CFG.get("chg_off_level") == "low" else 1)
+
+
+def ups_x12_own_block():
+    """True while MoveEye itself holds charging off (639zzzzz: cold, «protect the battery») - then no warning"""
+    return False
+
+
 def ups_x12_pin_warn(what, pin):
     """once per use and pin: «Geekworm X1206 uses GPIO 6: the charge LED there stays off»"""
     if (what, pin) not in UPS_X12["warned"]:
@@ -150,7 +164,7 @@ class BatteryMonitor:
         else:
             p *= 1.15                    # the power chip does not see USB devices, losses
         L = STATE.get("lights") or {}
-        p += float(CFG["batt_extra_w"]) + (0.6 if L.get("white") else 0.0) + (0.6 if L.get("ir") else 0.0)
+        p += float(CFG["batt_extra_w"]) + (0.6 * light_pct("white") / 100.0 if L.get("white") else 0.0) + (0.6 * light_pct("ir") / 100.0 if L.get("ir") else 0.0)
         return p, src
 
     def loop(self):
@@ -234,7 +248,8 @@ class BatteryMonitor:
         self._ups_miss = 0
         v, pct, pld, chg = r["v"], r["pct"], r["pld"], r["chg"]
         on_batt = pld == 0
-        if chg == 1 and not on_batt:
+        chg_off = ups_x12_chg_off(chg)                    # 639zzzzz: which level stops charging is a setting (high, Geekworm)
+        if chg_off and not on_batt and not ups_x12_own_block():
             ups_x12_pin_warn("charging", 16)
         full = not on_batt and (pct >= 98 or v >= 4.18)
         p = self.watts()[0]
@@ -242,7 +257,7 @@ class BatteryMonitor:
         hours = round(pct / 100.0 * cap_wh / max(0.8, p), 1) if on_batt else None
         STATE["battery"] = {"on": True, "src": "ups", "model": "x12", "pct": pct, "hours": hours, "cap_wh": round(cap_wh, 1),
                             "use_w": round(p, 1), "watts": round(p, 1), "volt": round(v, 2), "on_battery": on_batt,
-                            "charging": not on_batt and pld is not None and chg != 1 and not full, "full": full}
+                            "charging": not on_batt and pld is not None and not chg_off and not full, "full": full}
         return self.ups_events(v, pct, hours, on_batt, 2.8 <= v <= 4.4)
 
     def ups_events(self, v, pct, hours, on_batt, volt_ok):
@@ -285,6 +300,13 @@ class BatteryMonitor:
         if drill_active("battery"):                      # 2.96.6: drill «battery empty» (141) - never the real shutdown
             return drill_battery_tick(self)
         sb_ = sim_sensor("battery")                      # Simulator-Werte: the simulated UPS HAT instead of the real one (285)
+        src_ = "sim" if sb_ is not None else "real"
+        if getattr(self, "_val_src", None) not in (None, src_):
+            # 4.17.1 (639zzzzq): the simulator connected / left - another source of values is no power cut / power back:
+            # start again without «before» (no push, no sabotage alarm), only this line
+            self._on_batt = None
+            log_event("sys", f"Battery values from the {'simulator' if src_ == 'sim' else 'device'} - no power event")
+        self._val_src = src_
         if sb_ is not None and sim_battery_tick(self, sb_):
             return
         if CFG["ups_on"] and self.ups_tick():

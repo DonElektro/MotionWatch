@@ -23,6 +23,13 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 4.18.1: Aufnahmen dürfen bis 8 GB brauchen (vorher 2 GB, höchstens die Hälfte des Laufwerks; beim Update 2 → 8 GB ab 16 GB
+    mit Hinweis); Verlauf: Chip «⏪ bis …» (älteste Aufnahme, Tippen = älteste zuerst), Chip «… MB / … GB» führt zur Einstellung;
+    Suche in den Einstellungen findet «Aufnahmeordner», «Zeitraffer-Ordner» und «Tagen löschen» (auch in «Einfach»)
+  * 4.18.0: Akku (Geekworm X1206): Kälteschutz beim Laden (GPIO 16), Notladen, «Akku schonen», gelernte Laufzeit, «Voll in …»,
+    Akku-Gesundheit · Schlafen und Wecken mit der Uhr (RTC) · Licht in Prozent dimmen · Servo 270° prüfen
+  * 4.17.1: Verlauf: «Zeitraffer» mit «Videos / Fotos», Hinweis ohne Video · Simulator verbinden / trennen ist kein
+    Stromausfall (keine Push, kein Sabotage-Alarm), Schalter «keine Push, solange der Simulator verbunden ist»
   * 4.17.0: Homepage-Startseite: «📷 MoveEye» (das echte MoveEye beim Host, demo/) und «🗺️ Die Karte des Grossvaters»
     (Sim/?grossvater=1, direkt ins Spiel), 5 Sprachen
   * 4.16.1: OpenCV bleibt bei 4.x (opencv-python-headless>=4.8,<5 in requirements.txt, CI, Prüfsatz, HP und Einrichtung): OpenCV
@@ -102,14 +109,6 @@ Features
   * 3.94.0: Drei Teile. (1) Live-Bild: ruhige Animationen und ein CPU-Chip im Bild. (2) «🧳 Transportmodus» für die
     Transportkappe: der Kopf fährt in die Transport-Lage und bleibt dort. (3) Digitaler Rucksack im Netzwerk: auf Wunsch eine
     Freigabe «rucksack» über SMB (ab Werk aus), damit PC und Handy im eigenen Netz direkt darauf zugreifen.
-  * 3.93.0: Drei Teile. (1) Design «Klar», Etappe 2 – der Kopf: Reiter mit ruhigen Linien-Symbolen, klarere Kopf-Knöpfe, auch im
-    Pi-Fenster. (2) Schach: Bewertungsbalken links neben dem Brett wie bei Lichess (Spielesammlung GS-1.22). (3) Morse-Modus:
-    «Eigenes Protokoll (2 Töne)» und «📻 Handy-Funkgerät» – ein Handy wird zum Sender und Empfänger, auch ohne MoveEye.
-  * 3.92.2: Zwei Teile. (1) Kameras: nach dem Trennen vom Simulator kommt genau die Kamera-Liste von vorher zurück – keine
-    zweite «Pi camera 0» mehr, die die Hauptkamera blockiert («Camera __init__ sequence did not complete»); ein solches Doppel
-    wird beim Start von selbst aufgeräumt. (2) Spielecke: alle Spiel-Kacheln mit kurzen, gleich langen Texten in fünf Sprachen,
-    zwei Zeilen, gleich hohe Reihen (Spielesammlung GS-1.21).
-  * 3.92.1: «Verschollen im Bergtal»: Spieltempo ⏩ 1× / 2× / 4× und ⏸ Pause (Spielesammlung GS-1.20).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -118,10 +117,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_4_17_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_4_18_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_4_17_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_4_17_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_4_18_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_4_18_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -138,7 +137,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "4.17.0"
+APP_VERSION = "4.18.1"
 
 
 def default_data_dir():
@@ -271,8 +270,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_4_17_0.zip"
-ZD_SHA256 = "e058b770e2c71eee31a980d23a5c040a0087164c25c050777c11e0403f3b6ace"
+ZD_FILE = "moveeye_daten_4_18_1.zip"
+ZD_SHA256 = "d43005a7bc11445cd157d589d54aea6a948d4aac08b262e5bf029623166b7ce4"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -501,7 +500,7 @@ CFG = {
 	"ext_on": False, "ext_token": "", "rtsp_on": False, "rtsp_port": 8554,
 	"storage_path": "",
 	"record": True, "record_dir": "recordings", "record_tail": 3.0,
-	"record_max_gb": 2.0,
+	"record_max_gb": 8.0,
 	"snapshot_on_person": True,
 	"rec_marks": "thin",
 
@@ -2651,7 +2650,8 @@ def _settings_migrations(cfg_in):
 	except Exception as e:
 		log_event("sys",f"Settings migration (135): {e}"[:150])
 	for _f,_n in((lambda:shortcut_migrate(cfg_in),"573"),(place_report_migrate,"317"),(lambda:heat_confirm_migrate(cfg_in),"639zw"),
-				   (lambda:tld_migrate(cfg_in),"639zzzv")):
+				   (lambda:tld_migrate(cfg_in),"639zzzv"),
+				   (lambda:rec8_migrate(cfg_in),"639zzzzs")):
 		try:
 			did=_f()
 			if did:
@@ -6069,6 +6069,13 @@ class PCA9685:
 	def switch(self,ch,on):
 		self._set(ch,0x1000,0)if on else self._set(ch,0,0x1000)
 
+	def dim(self,ch,pct):
+		""
+		pct=max(0.0,min(100.0,float(pct)))
+		if pct>=99.95 or pct<=0.0:
+			return self.switch(ch,pct>0.0)
+		self._set(ch,0,max(1,min(4095,int(round(4095*pct/100.0)))))
+
 	def close(self):
 		try:
 			os.write(self.fd,bytes([0xFA,0,0,0,0x10]))
@@ -6380,6 +6387,21 @@ def is_dark():
 
 def light_alarm():
 	LIGHTS["alarm_t"]=time.time()
+
+
+
+
+for _k in ("light_white_pct", "light_ir_pct"):
+	CFG.setdefault(_k,100);DEFAULTS.setdefault(_k,100)
+
+
+def light_pct(n):
+	""
+	try:
+		v=float(CFG.get(f"light_{n}_pct",100))
+	except(TypeError,ValueError):
+		return 100.0
+	return 100.0 if not math.isfinite(v)else max(5.0,min(100.0,v))
 
 
 def lights_tick():
@@ -7795,9 +7817,14 @@ class Hardware:
 					pass
 				self._pca_lights.pop(n,None);prev=None
 			if out.startswith("pca:"):
-				if self.pca is not None and prev!=(out,on):
+				pct=light_pct(n)if on else 0.0
+				if self.pca is not None and prev!=(out,on,pct):
 					try:
-						self.pca.switch(int(out[4:]),on);self._pca_lights[n]=(out,on)
+						if 0.0<pct<100.0 and hasattr(self.pca,"dim"):
+							self.pca.dim(int(out[4:]),pct)
+						else:
+							self.pca.switch(int(out[4:]),on)
+						self._pca_lights[n]=(out,on,pct)
 					except Exception as e:
 						log_event("servo",f"Light error: {e}")
 			elif out.startswith("gpio:"):
@@ -8523,6 +8550,7 @@ def ups_read_e(addr=0x2D, bus=1):
 
 
 
+
 UPS_X12 = {"seen": False, "probed": False, "warned": set()}
 
 
@@ -8564,6 +8592,19 @@ def ups_x12_pins():
 	return{6,16}if UPS_X12["seen"]or CFG.get("ups_model")=="x12"else set()
 
 
+def ups_x12_chg_off(chg):
+	"""
+"""
+	if chg is None:
+		return False
+	return chg==(0 if CFG.get("chg_off_level")=="low"else 1)
+
+
+def ups_x12_own_block():
+	""
+	return False
+
+
 def ups_x12_pin_warn(what, pin):
 	""
 	if(what,pin)not in UPS_X12["warned"]:
@@ -8590,7 +8631,7 @@ class BatteryMonitor:
 		else:
 			p*=1.15
 		L=STATE.get("lights")or{}
-		p+=float(CFG["batt_extra_w"])+(0.6 if L.get("white")else 0.0)+(0.6 if L.get("ir")else 0.0)
+		p+=float(CFG["batt_extra_w"])+(0.6*light_pct("white")/100.0 if L.get("white")else 0.0)+(0.6*light_pct("ir")/100.0 if L.get("ir")else 0.0)
 		return p,src
 
 	def loop(self):
@@ -8674,7 +8715,8 @@ class BatteryMonitor:
 		self._ups_miss=0
 		v,pct,pld,chg=r["v"],r["pct"],r["pld"],r["chg"]
 		on_batt=pld==0
-		if chg==1 and not on_batt:
+		chg_off=ups_x12_chg_off(chg)
+		if chg_off and not on_batt and not ups_x12_own_block():
 			ups_x12_pin_warn("charging",16)
 		full=not on_batt and(pct>=98 or v>=4.18)
 		p=self.watts()[0]
@@ -8682,7 +8724,7 @@ class BatteryMonitor:
 		hours=round(pct/100.0*cap_wh/max(0.8,p),1)if on_batt else None
 		STATE["battery"]={"on":True,"src":"ups","model":"x12","pct":pct,"hours":hours,"cap_wh":round(cap_wh,1),
 							"use_w":round(p,1),"watts":round(p,1),"volt":round(v,2),"on_battery":on_batt,
-							"charging":not on_batt and pld is not None and chg!=1 and not full,"full":full}
+							"charging":not on_batt and pld is not None and not chg_off and not full,"full":full}
 		return self.ups_events(v,pct,hours,on_batt,2.8<=v<=4.4)
 
 	def ups_events(self,v,pct,hours,on_batt,volt_ok):
@@ -8725,6 +8767,13 @@ class BatteryMonitor:
 		if drill_active("battery"):
 			return drill_battery_tick(self)
 		sb_=sim_sensor("battery")
+		src_="sim"if sb_ is not None else "real"
+		if getattr(self,"_val_src",None)not in(None,src_):
+
+
+			self._on_batt=None
+			log_event("sys",f"Battery values from the {'simulator' if src_ == 'sim' else 'device'} - no power event")
+		self._val_src=src_
 		if sb_ is not None and sim_battery_tick(self,sb_):
 			return
 		if CFG["ups_on"]and self.ups_tick():
@@ -34264,7 +34313,7 @@ class MotionWatch:
 		items.sort(key=lambda g:g[0])
 		total=sum(g[1]for g in items)
 		removable=[g for g in items if not _read_sidecar(g[2]+".json").get("fav")]
-		limit=CFG["record_max_gb"]*1024**3
+		limit=rec_limit_gb()*1024**3
 		removed=0
 
 		def card_full():
@@ -38379,12 +38428,23 @@ def storage_candidates():
 	return out
 
 
+def rec_limit_gb():
+	"""
+"""
+	try:
+		half=shutil.disk_usage(rec_dir()if os.path.isdir(rec_dir())else os.path.dirname(rec_dir())or "/").total/2/1024**3
+	except OSError:
+		half=None
+	lim=float(CFG["record_max_gb"])
+	return round(min(lim,half),1)if half else lim
+
+
 def storage_info():
 	sysdev,_mp,_fs=_mount_of("/")
 	rdev,rmp,rfs=_mount_of(rec_dir()if os.path.isdir(rec_dir())else os.path.dirname(rec_dir())or "/")
 	return{"system":_dev_kind(sysdev),"rec":_dev_kind(rdev),"rec_mount":rmp,"rec_fs":rfs,"rec_dir":rec_dir(),
 			"want":CFG["storage_path"],"fallback":STORE["fallback"],"moving":STORE["moving"],"msg":STORE["msg"],
-			"candidates":storage_candidates()}
+			"candidates":storage_candidates(),"limit_gb":float(CFG["record_max_gb"]),"limit_eff_gb":rec_limit_gb()}
 
 
 def storage_apply(start=False):
@@ -39441,6 +39501,18 @@ def _parse_day(s):
 		return None
 
 
+def rec_oldest(files):
+	"""
+"""
+	best=None
+	for stem,kinds in files.items():
+		n,st=kinds.get("video")or kinds.get("image")
+		dt=parse_stamp(n)or datetime.fromtimestamp(st.st_mtime)
+		if best is None or dt<best[0]:
+			best=(dt,n)
+	return{"time":best[0].strftime("%Y-%m-%d %H:%M:%S"),"name":best[1]}if best else None
+
+
 def list_recordings(args, watch=None):
 	""
 	d=rec_dir()
@@ -39478,15 +39550,23 @@ def list_recordings(args, watch=None):
 					  "sched":[i for i,s in enumerate(plans)if schedule_window_contains(s,dt)],
 					  "gps":rec_gps(n,meta,d,snap[0]if snap else None)})
 
+
 	kind_req=args.get("kind","")
-	if kind_req in("","timelapse","video"):
+	if kind_req=="timelapse":
+		kind_req="timelapse_video"
+	tl_info={"videos":0,"photos":0,"last_day":""}
+	if kind_req in("","timelapse_video","timelapse_photo","video"):
 		try:
 			tl_names=os.listdir(tl_dir())
 		except OSError:
 			tl_names=[]
 		for n in tl_names:
 			is_v=bool(TL_VIDEO_RE.match(n))
-			if not is_v and not(kind_req=="timelapse"and TL_PHOTO_RE.match(n)):
+			if is_v:
+				tl_info["videos"]+=1
+			elif TL_PHOTO_RE.match(n):
+				tl_info["photos"]+=1;tl_info["last_day"]=max(tl_info["last_day"],n[3:11])
+			if not is_v and not(kind_req=="timelapse_photo"and TL_PHOTO_RE.match(n)):
 				continue
 			try:
 				st=os.stat(os.path.join(tl_dir(),n))
@@ -39499,15 +39579,15 @@ def list_recordings(args, watch=None):
 						  "sched":[],"tl":True,"gps":rec_gps(n,meta,tl_dir())if not is_v else None})
 
 
-	kind_f,src_f,q=args.get("kind",""),args.get("source",""),(args.get("q","")or "").strip().lower()
+	kind_f,src_f,q=kind_req,args.get("source",""),(args.get("q","")or "").strip().lower()
 	d_from,d_to=_parse_day(args.get("from","")),_parse_day(args.get("to",""))
 	sources=sorted({it["meta"].get("source")for it in items if it["meta"].get("source")})
 	places=places_assign(items)
 	no_place=sum(1 for it in items if not it.get("gps"))
 	if kind_f in("video","image"):
 		items=[it for it in items if it["kind"]==kind_f]
-	elif kind_f=="timelapse":
-		items=[it for it in items if it.get("tl")]
+	elif kind_f in("timelapse_video","timelapse_photo"):
+		items=[it for it in items if it.get("tl")and it["kind"]==("video"if kind_f[10]=="v"else "image")]
 	if d_from:
 		items=[it for it in items if it["dt"]>=d_from]
 	if d_to:
@@ -39573,8 +39653,9 @@ def list_recordings(args, watch=None):
 			"schedules":[{"index":i,"name":s["name"],"enabled":s["enabled"],"days":s["days"],"start":s["start"],
 						   "end":s["end"],"active_now":schedule_active(s,now),"count":counts.get(str(i),0)}
 						  for i,s in enumerate(plans)],
-			"disk":{"files":len(files),"mb":int(total_bytes/1024**2),"limit_gb":CFG["record_max_gb"]},
-			"ffmpeg":shutil.which("ffmpeg")is not None}
+			"disk":{"files":len(files),"mb":int(total_bytes/1024**2),"limit_gb":rec_limit_gb(),
+					 "oldest":rec_oldest(files)},
+			"ffmpeg":shutil.which("ffmpeg")is not None,"tl":tl_info}
 
 
 def _write_sidecar(name, meta):
@@ -39945,8 +40026,6 @@ def rec_delete(names, watch=None):
 	if n_ok:
 		log_event("rec",f"{n_ok} recording(s) deleted from the preview page")
 	return n_ok
-
-
 
 
 
@@ -50710,7 +50789,7 @@ class App:
 		self.watch=watch
 		self.web=web or WebStream(watch)
 		self.root=tk.Tk()
-		self.root.title("MoveEye 4.17.0")
+		self.root.title("MoveEye 4.18.1")
 		try:
 			import base64
 			self._icon=tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -51097,7 +51176,7 @@ class App:
 			if not small:
 				vl=tk.Label(tl,text=APP_VERSION,bg=C["bg"],fg=C["mut"],font=("DejaVu Sans",8),cursor="hand2");vl.pack(side="left",padx=(8,0),pady=(5,0))
 				vl.bind("<Button-1>",self._ver_tap,add="+");Tip(vl,tr("About MoveEye"))
-			Tip(nm,f"{tr('Build')} 4.17.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm,f"{tr('Build')} 4.18.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps=[]
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>",self._egg_tap,add="+")
@@ -58303,7 +58382,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 341
+INFO_PARTS = 345
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -94139,741 +94218,14 @@ SELFTEST_EXTRA.append(("Offline map of Switzerland (639zzq)", kq_selftest))
 
 
 
-SF_START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-SF_ABC = "ACDEFHJKMNPQRTUVWXY3479"
-SF_GRENZEN = {"spiele": 10, "frist": 24 * 3600, "nach_ende": 1800, "posts": (12, 10.0), "neu_ip": (8, 600.0),
-			  "falsch_ip": (15, 300.0), "warten": 15.0, "warter": 40, "online": 25.0, "idle_weg": 600.0}
-SF = {"spiele": {}, "cond": threading.Condition(), "ip": {}, "geladen": False, "warter": 0}
-SF_DATEI = "schach_fern.json"
-SF_OPS_POST = ("neu", "beitreten", "zug", "aktion")
-SF_OPS_GET = ("info", "zustand", "qr")
-PERM_GET["games"] = tuple(PERM_GET.get("games", ())) + ("/schachfern/",)
-PERM_POST["games"] = set(PERM_POST.get("games", ())) | {"/schachfern/" + o for o in SF_OPS_POST}
 
 
 
-_SF_N = (33, 31, 18, 14, -14, -18, -31, -33)
-_SF_K = (1, -1, 16, -16, 15, 17, -15, -17)
-_SF_B = (15, 17, -15, -17)
-_SF_R = (1, -1, 16, -16)
-
-
-def _sf_sq(name):
-	return(int(name[1])-1)*16+"abcdefgh".index(name[0])
-
-
-def _sf_name(s):
-	return "abcdefgh"[s&7]+str((s>>4)+1)
-
-
-def sf_fen_lesen(fen):
-	""
-	t=str(fen or "").split()
-	if len(t)!=6:
-		raise ValueError("fen")
-	rows=t[0].split("/")
-	if len(rows)!=8:
-		raise ValueError("fen rows")
-	b=[None]*128
-	for i,row in enumerate(rows):
-		r,f=7-i,0
-		for ch in row:
-			if ch.isdigit():
-				f+=int(ch)
-			elif ch in "pnbrqkPNBRQK":
-				if f>7:
-					raise ValueError("fen row")
-				b[r*16+f]=ch;f+=1
-			else:
-				raise ValueError("fen piece")
-		if f!=8:
-			raise ValueError("fen row")
-	if b.count("K")!=1 or b.count("k")!=1 or t[1]not in("w","b")or not re.fullmatch(r"-|K?Q?k?q?",t[2])or not re.fullmatch(r"-|[a-h][36]",t[3]):
-		raise ValueError("fen fields")
-	return{"b":b,"w":t[1],"c":""if t[2]=="-"else t[2],"ep":-1 if t[3]=="-"else _sf_sq(t[3]),"h":int(t[4]),"f":max(1,int(t[5]))}
-
-
-def sf_fen(p):
-	rows=[]
-	for r in range(7,-1,-1):
-		s,n="",0
-		for f in range(8):
-			x=p["b"][r*16+f]
-			if x is None:
-				n+=1
-			else:
-				s+=(str(n)if n else "")+x;n=0
-		rows.append(s+(str(n)if n else ""))
-	return f"{'/'.join(rows)} {p['w']} {p['c'] or '-'} {_sf_name(p['ep']) if p['ep'] >= 0 else '-'} {p['h']} {p['f']}"
-
-
-def _sf_weiss(x):
-	return x is not None and x.isupper()
-
-
-def _sf_farbe(x):
-	return None if x is None else("w"if x.isupper()else "b")
-
-
-def sf_angegriffen(b, s, von):
-	""
-	up=von=="w"
-	P,N,B,R,Q,K=("PNBRQK"if up else "pnbrqk")
-	for d in((-15,-17)if up else(15,17)):
-		t=s+d
-		if not t&0x88 and b[t]==P:
-			return True
-	for d in _SF_N:
-		t=s+d
-		if not t&0x88 and b[t]==N:
-			return True
-	for d in _SF_K:
-		t=s+d
-		if not t&0x88 and b[t]==K:
-			return True
-	for dirs,a in((_SF_B,(B,Q)),(_SF_R,(R,Q))):
-		for d in dirs:
-			t=s+d
-			while not t&0x88:
-				if b[t]is not None:
-					if b[t]in a:
-						return True
-					break
-				t+=d
-	return False
-
-
-def _sf_koenig(b, c):
-	k="K"if c=="w"else "k"
-	for s in range(128):
-		if not s&0x88 and b[s]==k:
-			return s
-	return-1
-
-
-def sf_schach(p):
-	return sf_angegriffen(p["b"],_sf_koenig(p["b"],p["w"]),"b"if p["w"]=="w"else "w")
-
-
-def _sf_pseudo(p):
-	b,c=p["b"],p["w"]
-	them="b"if c=="w"else "w"
-	out=[]
-	for s in range(128):
-		if s&0x88 or b[s]is None or _sf_farbe(b[s])!=c:
-			continue
-		x=b[s].lower()
-		if x=="p":
-			fw,start,last=(16,1,7)if c=="w"else(-16,6,0)
-			t=s+fw
-			if not t&0x88 and b[t]is None:
-				if t>>4==last:
-					out+=[(s,t,q)for q in "qrbn"]
-				else:
-					out.append((s,t,""))
-					t2=t+fw
-					if s>>4==start and b[t2]is None:
-						out.append((s,t2,""))
-			for d in(fw-1,fw+1):
-				t=s+d
-				if t&0x88:
-					continue
-				if b[t]is not None and _sf_farbe(b[t])==them:
-					out+=[(s,t,q)for q in "qrbn"]if t>>4==last else[(s,t,"")]
-				elif t==p["ep"]:
-					out.append((s,t,""))
-		elif x in "nk":
-			for d in(_SF_N if x=="n"else _SF_K):
-				t=s+d
-				if not t&0x88 and(b[t]is None or _sf_farbe(b[t])==them):
-					out.append((s,t,""))
-		else:
-			for d in((_SF_B if x=="b"else _SF_R if x=="r"else _SF_K)):
-				t=s+d
-				while not t&0x88:
-					if b[t]is None:
-						out.append((s,t,""))
-					else:
-						if _sf_farbe(b[t])==them:
-							out.append((s,t,""))
-						break
-					t+=d
-
-	ks,rank=(4,0)if c=="w"else(116,112)
-	if b[ks]==("K"if c=="w"else "k")and not sf_angegriffen(b,ks,them):
-		R="R"if c=="w"else "r"
-		if("K"if c=="w"else "k")in p["c"]and b[rank+7]==R and b[ks+1]is None and b[ks+2]is None \
-				and not sf_angegriffen(b,ks+1,them)and not sf_angegriffen(b,ks+2,them):
-			out.append((ks,ks+2,""))
-		if("Q"if c=="w"else "q")in p["c"]and b[rank]==R and b[ks-1]is None and b[ks-2]is None and b[ks-3]is None \
-				and not sf_angegriffen(b,ks-1,them)and not sf_angegriffen(b,ks-2,them):
-			out.append((ks,ks-2,""))
-	return out
-
-
-def sf_ziehe(p, m):
-	""
-	s,t,q=m
-	b=p["b"][:];c=p["w"];x=b[s];them="b"if c=="w"else "w"
-	cap=b[t]is not None
-	rights=p["c"]
-	if x.lower()=="p"and t==p["ep"]and not cap:
-		b[t-16 if c=="w"else t+16]=None;cap=True
-	b[t]=(q.upper()if c=="w"else q)if q else x;b[s]=None
-	if x.lower()=="k":
-		rights=rights.replace("K","").replace("Q","")if c=="w"else rights.replace("k","").replace("q","")
-		if t-s==2:
-			b[s+1]=b[s+3];b[s+3]=None
-		elif s-t==2:
-			b[s-1]=b[s-4];b[s-4]=None
-	for sq,r in((0,"Q"),(7,"K"),(112,"q"),(119,"k")):
-		if s==sq or t==sq:
-			rights=rights.replace(r,"")
-	ep=-1
-	if x.lower()=="p"and abs(t-s)==32:
-		P="p"if c=="w"else "P"
-		if(not(t-1)&0x88 and b[t-1]==P)or(not(t+1)&0x88 and b[t+1]==P):
-			ep=(s+t)//2
-	return{"b":b,"w":them,"c":rights,"ep":ep,"h":0 if(x.lower()=="p"or cap)else p["h"]+1,
-			"f":p["f"]+(1 if c=="b"else 0)}
-
-
-def sf_legal(p):
-	""
-	c=p["w"];them="b"if c=="w"else "w";out=[]
-	for m in _sf_pseudo(p):
-		n=sf_ziehe(p,m)
-		if not sf_angegriffen(n["b"],_sf_koenig(n["b"],c),them):
-			out.append(m)
-	return out
-
-
-def sf_uci(m):
-	return _sf_name(m[0])+_sf_name(m[1])+m[2]
-
-
-def sf_schluessel(p):
-	""
-	return "".join(x or "."for i,x in enumerate(p["b"])if not i&0x88)+p["w"]+p["c"]+str(p["ep"])
-
-
-def sf_material_fehlt(p):
-	""
-	n,cnt,farben=0,{},[]
-	for s in range(128):
-		if s&0x88 or p["b"][s]is None:
-			continue
-		x=p["b"][s].lower();n+=1;cnt[x]=cnt.get(x,0)+1
-		if x=="b":
-			farben.append(((s>>4)+(s&7))%2)
-	if n==2:
-		return True
-	if n==3 and(cnt.get("b")==1 or cnt.get("n")==1):
-		return True
-	if n==cnt.get("b",0)+2 and(sum(farben)==0 or sum(farben)==len(farben)):
-		return True
-	return False
-
-
-def sf_partie(start, zuege):
-	""
-	p=sf_fen_lesen(start)
-	keys={sf_schluessel(p):1}
-	leg=sf_legal(p)
-	for u in zuege:
-		m=next((m for m in leg if sf_uci(m)==u),None)
-		if m is None:
-			raise ValueError("illegal "+str(u)[:8])
-		p=sf_ziehe(p,m)
-		k=sf_schluessel(p);keys[k]=keys.get(k,0)+1
-		leg=sf_legal(p)
-	return p,keys,leg
-
-
-def sf_ende_regeln(p, keys, leg):
-	""
-	if not leg:
-		return{"art":"matt","sieger":"b"if p["w"]=="w"else "w"}if sf_schach(p)else{"art":"patt","sieger":None}
-	if sf_material_fehlt(p):
-		return{"art":"material","sieger":None}
-	if keys.get(sf_schluessel(p),0)>=3:
-		return{"art":"wiederholung","sieger":None}
-	if p["h"]>=100:
-		return{"art":"50zuege","sieger":None}
-	return None
-
-
-def sf_perft(p, d):
-	if d==0:
-		return 1
-	return sum(sf_perft(sf_ziehe(p,m),d-1)for m in sf_legal(p))if d>1 else len(sf_legal(p))
-
-
-
-def _sf_hash(t):
-	return hashlib.sha256(str(t).encode()).hexdigest()
-
-
-def _sf_datei():
-	return os.path.join(DATA_DIR,SF_DATEI)
-
-
-def _sf_speichern():
-	try:
-		keep=("code","nr","erstellt","t","startFen","zuege","ende","sitze","anfrage","hilfe","t_ende")
-		d={"v":1,"spiele":{k:{x:G[x]for x in keep if x in G}for k,G in SF["spiele"].items()}}
-		tmp=_sf_datei()+".tmp"
-		with open(tmp,"w",encoding="utf-8")as f:
-			json.dump(d,f)
-		os.replace(tmp,_sf_datei())
-	except(OSError,TypeError,ValueError):
-		pass
-
-
-def _sf_laden():
-	if SF["geladen"]:
-		return
-	SF["geladen"]=True
-	try:
-		with open(_sf_datei(),encoding="utf-8")as f:
-			d=json.load(f)
-		for k,G in(d.get("spiele")or{}).items():
-			if not(isinstance(G,dict)and re.fullmatch("[%s]{4}"%SF_ABC,str(k))):
-				continue
-			G["code"]=k
-			G["seq"]=secrets.randbelow(10**9)
-			G["posts"]={"w":[],"b":[]};G["zs"]={}
-			if _sf_neu_rechnen(G):
-				SF["spiele"][k]=G
-	except(OSError,ValueError,TypeError,AttributeError):
-		pass
-
-
-def _sf_neu_rechnen(G):
-	""
-	try:
-		G["_p"],G["_k"],G["_l"]=sf_partie(G.get("startFen")or SF_START,list(G.get("zuege")or[]))
-		return True
-	except(ValueError,TypeError,KeyError,IndexError):
-		return False
-
-
-def _sf_bump(G, speichern=True):
-	G["seq"]=(G.get("seq",0)+1)%10**9
-	G["t"]=time.time()
-	if speichern:
-		_sf_speichern()
-	SF["cond"].notify_all()
-
-
-def _sf_aufraeumen(now=None):
-	""
-	now=now or time.time();weg=[]
-	for k,G in SF["spiele"].items():
-		if now-G.get("t",0)>SF_GRENZEN["frist"]or(G.get("ende")and now-G.get("t_ende",now)>SF_GRENZEN["nach_ende"]):
-			weg.append(k)
-	for k in weg:
-		SF["spiele"].pop(k,None)
-	if weg:
-		_sf_speichern();SF["cond"].notify_all()
-	return weg
-
-
-def _sf_grenze(liste, n, s, now):
-	liste[:]=[x for x in liste if now-x<s]
-	if len(liste)>=n:
-		return False
-	liste.append(now)
-	return True
-
-
-def _sf_ip_ok(ip, art, now, zaehlen=True):
-	n,s=SF_GRENZEN[art]
-	L=SF["ip"].setdefault(art+"|"+str(ip),[])
-	L[:]=[x for x in L if now-x<s]
-	if len(L)>=n:
-		return False
-	if zaehlen:
-		L.append(now)
-	if len(SF["ip"])>2000:
-		SF["ip"]={k:v for k,v in SF["ip"].items()if v and now-v[-1]<900}
-	return True
-
-
-def _sf_sitz(G, token):
-	""
-	if not token:
-		return ""
-	h=_sf_hash(token)
-	import hmac
-	for c in("w","b"):
-		if G["sitze"][c].get("h")and hmac.compare_digest(G["sitze"][c]["h"],h):
-			return c
-	return None
-
-
-def _sf_status(G):
-	return "ende"if G.get("ende")else "laeuft"if G["sitze"]["w"].get("h")and G["sitze"]["b"].get("h")else "warte"
-
-
-def sf_sicht(G, sitz, now=None):
-	""
-	now=now or time.time()
-	p=G["_p"]
-	G["zs"]={k:v for k,v in G.get("zs",{}).items()if now-v<SF_GRENZEN["online"]}
-	return{"ok":True,"code":G["code"],"nr":G["nr"],"seq":G["seq"],"startFen":G["startFen"],"zuege":list(G["zuege"]),
-			"fen":sf_fen(p),"amZug":p["w"],"ende":G.get("ende"),"sitz":sitz or "zuschauer","status":_sf_status(G),
-			"sitze":{c:{"da":bool(G["sitze"][c].get("h")),"online":bool(G["sitze"][c].get("h"))and now-G["sitze"][c].get("t",0)<SF_GRENZEN["online"]}
-					  for c in("w","b")},
-			"anfrage":G.get("anfrage"),"hilfe":G.get("hilfe"),"zuschauer":len(G["zs"])}
-
-
-def _sf_neues_spiel(farbe, now):
-	while True:
-		code="".join(secrets.choice(SF_ABC)for _ in range(4))
-		if code not in SF["spiele"]:
-			break
-	if farbe not in("w","b"):
-		farbe=secrets.choice("wb")
-	tok=secrets.token_urlsafe(18)
-	G={"code":code,"nr":1,"erstellt":now,"t":now,"startFen":SF_START,"zuege":[],"ende":None,
-		 "sitze":{"w":{},"b":{}},"anfrage":None,"hilfe":{"w":{},"b":{}},"seq":secrets.randbelow(10**9),
-		 "posts":{"w":[],"b":[]},"zs":{}}
-	G["sitze"][farbe]={"h":_sf_hash(tok),"t":now}
-	_sf_neu_rechnen(G)
-	return G,tok,farbe
-
-
-def _sf_platz_machen(now):
-	""
-	if len(SF["spiele"])<SF_GRENZEN["spiele"]:
-		return True
-	ende=sorted((G["t"],k)for k,G in SF["spiele"].items()if G.get("ende"))
-	idle=sorted((G["t"],k)for k,G in SF["spiele"].items()if now-G["t"]>SF_GRENZEN["idle_weg"])
-	for _t,k in ende+idle:
-		SF["spiele"].pop(k,None)
-		if len(SF["spiele"])<SF_GRENZEN["spiele"]:
-			return True
-	return False
-
-
-def _sf_zurueck(G, von):
-	""
-	n=len(G["zuege"]);p=G["_p"]
-	k=1 if p["w"]!=von else 2
-	if n<k:
-		return False
-	G["zuege"]=G["zuege"][:n-k]
-	_sf_neu_rechnen(G)
-	return True
-
-
-def _sf_eigene_zuege(G, c):
-	start_w=G["startFen"].split()[1]=="w"
-	return sum(1 for i in range(len(G["zuege"]))if("w"if(i%2==0)==start_w else "b")==c)
-
-
-def _sf_ausfuehren(G, art, von, now):
-	""
-	if art=="remis":
-		G["ende"]={"art":"einigung","sieger":None};G["t_ende"]=now
-	elif art=="zurueck":
-		_sf_zurueck(G,von)
-	elif art=="revanche":
-		G["sitze"]={"w":G["sitze"]["b"],"b":G["sitze"]["w"]}
-		G["hilfe"]={"w":dict(G["hilfe"].get("b")or{},tipps=0),"b":dict(G["hilfe"].get("w")or{},tipps=0)}
-		G["nr"]+=1;G["zuege"]=[];G["ende"]=None;G.pop("t_ende",None);G["startFen"]=SF_START
-		_sf_neu_rechnen(G)
-	G["anfrage"]=None
-
-
-def sf_api(op, method, args, d, ip="?", warten=True):
-	""
-	now=time.time()
-	args=args or{};d=d if isinstance(d,dict)else{}
-	if(method=="POST")!=(op in SF_OPS_POST)or op not in SF_OPS_POST+SF_OPS_GET:
-		return 404,{"ok":False,"fehler":"unbekannt"}
-	src=d if method=="POST"else args
-	code=re.sub(r"[^A-Z0-9]","",str(src.get("code")or "").upper())[:8]
-	token=str(src.get("token")or "")[:64]
-	with SF["cond"]:
-		_sf_laden();_sf_aufraeumen(now)
-		if op=="info":
-			return 200,{"ok":True,"offen":len(SF["spiele"]),"max":SF_GRENZEN["spiele"]}
-		if op=="neu":
-			if not _sf_ip_ok(ip,"neu_ip",now):
-				return 429,{"ok":False,"fehler":"zu_oft"}
-			if not _sf_platz_machen(now):
-				return 429,{"ok":False,"fehler":"voll"}
-			G,tok,farbe=_sf_neues_spiel(str(d.get("farbe")or ""),now)
-			SF["spiele"][G["code"]]=G
-			_sf_bump(G)
-			return 200,dict(sf_sicht(G,farbe,now),token=tok)
-		if not _sf_ip_ok(ip,"falsch_ip",now,zaehlen=False):
-			return 429,{"ok":False,"fehler":"zu_oft"}
-		G=SF["spiele"].get(code)
-		if G is None:
-			_sf_ip_ok(ip,"falsch_ip",now)
-			return 404,{"ok":False,"fehler":"weg"}
-		sitz=_sf_sitz(G,token)
-		if sitz is None:
-			_sf_ip_ok(ip,"falsch_ip",now)
-			return 403,{"ok":False,"fehler":"token"}
-		if op=="qr":
-			u=str(args.get("u")or "")
-			from urllib.parse import urlsplit
-			try:
-				x=urlsplit(u)
-			except ValueError:
-				x=None
-			if not(x and x.scheme in("http","https")and x.netloc and "@"not in x.netloc and not x.query and not x.fragment and len(u)<300
-					and re.fullmatch(r"(/p/[A-Za-z0-9_\-]{1,64}|/spiele)?/(g|games)/schach/(index\.html)?",x.path)):
-				return 400,{"ok":False,"fehler":"adresse"}
-			return 200,(qr_svg(sf_qr_text(u,G["code"])).encode("utf-8"),"image/svg+xml")
-		if op=="beitreten":
-			if not sitz:
-				frei=[c for c in("w","b")if not G["sitze"][c].get("h")]
-				if frei and not G.get("ende"):
-					tok=secrets.token_urlsafe(18)
-					G["sitze"][frei[0]]={"h":_sf_hash(tok),"t":now}
-					_sf_bump(G)
-					return 200,dict(sf_sicht(G,frei[0],now),token=tok)
-				G.setdefault("zs",{})[_sf_hash(ip)[:12]]=now
-				return 200,dict(sf_sicht(G,"",now),token="")
-			G["sitze"][sitz]["t"]=now
-			return 200,dict(sf_sicht(G,sitz,now),token=token)
-		if op=="zustand":
-			if sitz:
-				G["sitze"][sitz]["t"]=now
-			else:
-				G.setdefault("zs",{})[_sf_hash(ip)[:12]]=now
-			try:
-				seq=int(args.get("seq",-1))
-			except(TypeError,ValueError):
-				seq=-1
-			if warten and str(args.get("warte")or "")=="1"and seq==G["seq"]and SF["warter"]<SF_GRENZEN["warter"]:
-				end=now+SF_GRENZEN["warten"];SF["warter"]+=1
-				try:
-					while G["seq"]==seq and time.time()<end and SF["spiele"].get(code)is G:
-						SF["cond"].wait(min(1.0,end-time.time()))
-				finally:
-					SF["warter"]-=1
-				if SF["spiele"].get(code)is not G:
-					return 404,{"ok":False,"fehler":"weg"}
-				sitz=_sf_sitz(G,token)or ""
-				if sitz:
-					G["sitze"][sitz]["t"]=time.time()
-			return 200,sf_sicht(G,sitz)
-
-		if not sitz:
-			return 403,{"ok":False,"fehler":"zuschauer"}
-		G["sitze"][sitz]["t"]=now
-		n_,s_=SF_GRENZEN["posts"]
-		if not _sf_grenze(G.setdefault("posts",{}).setdefault(sitz,[]),n_,s_,now):
-			return 429,{"ok":False,"fehler":"zu_oft","v":sf_sicht(G,sitz,now)}
-		if op=="zug":
-			uci=str(d.get("uci")or "")
-			try:
-				n=int(d.get("n",-1))
-			except(TypeError,ValueError):
-				n=-1
-			if n==len(G["zuege"])-1 and n>=0 and G["zuege"][n]==uci and G["_p"]["w"]!=sitz:
-				return 200,sf_sicht(G,sitz,now)
-			fehler=("ende"if G.get("ende")else "warte"if _sf_status(G)!="laeuft"else "nicht_dran"if G["_p"]["w"]!=sitz
-					  else "nicht_synchron"if n!=len(G["zuege"])else "")
-			if not fehler:
-				m=next((m for m in G["_l"]if sf_uci(m)==uci),None)if re.fullmatch(r"[a-h][1-8][a-h][1-8][qrbn]?",uci)else None
-				if m is None:
-					fehler="illegal"
-			if fehler:
-				return 409,{"ok":False,"fehler":fehler,"v":sf_sicht(G,sitz,now)}
-			G["_p"]=sf_ziehe(G["_p"],m);G["zuege"].append(uci)
-			k=sf_schluessel(G["_p"]);G["_k"][k]=G["_k"].get(k,0)+1
-			G["_l"]=sf_legal(G["_p"])
-			G["anfrage"]=None
-			e=sf_ende_regeln(G["_p"],G["_k"],G["_l"])
-			if e:
-				G["ende"]=e;G["t_ende"]=now
-			_sf_bump(G)
-			return 200,sf_sicht(G,sitz,now)
-		art=str(d.get("art")or "")
-		ander="b"if sitz=="w"else "w"
-		A=G.get("anfrage")
-		fehler=""
-		if art=="hilfe":
-			h=G["hilfe"].setdefault(sitz,{})
-			for k_ in("lern","balken"):
-				if isinstance(d.get(k_),bool):
-					h[k_]=d[k_]
-			if d.get("tipp")is True:
-				h["tipps"]=min(999,int(h.get("tipps")or 0)+1)
-		elif art=="aufgeben":
-			if G.get("ende")or _sf_status(G)!="laeuft":
-				fehler="ende"if G.get("ende")else "warte"
-			else:
-				G["ende"]={"art":"aufgabe","sieger":ander};G["t_ende"]=now;G["anfrage"]=None
-		elif art=="abbrechen":
-			if G["sitze"][ander].get("h"):
-				fehler="laeuft"
-			else:
-				SF["spiele"].pop(code,None);_sf_speichern();SF["cond"].notify_all()
-				return 200,{"ok":True,"weg":True}
-		elif art in("remis","zurueck","revanche"):
-			ok_=(not G.get("ende")and _sf_status(G)=="laeuft")if art!="revanche"else bool(G.get("ende"))and G["sitze"][ander].get("h")
-			if art=="zurueck"and ok_:
-				ok_=_sf_eigene_zuege(G,sitz)>0
-			if not ok_:
-				fehler="geht_nicht"
-			elif A and A.get("von")==ander and A.get("art")==art:
-				_sf_ausfuehren(G,art,ander,now)
-			elif A and A.get("von")==ander:
-				fehler="offen"
-			else:
-				G["anfrage"]={"art":art,"von":sitz,"nr":len(G["zuege"])}
-		elif art=="annehmen":
-			if not A or A.get("von")!=ander or(A["art"]!="revanche"and(G.get("ende")or A.get("nr")!=len(G["zuege"]))):
-				fehler="keine"
-			else:
-				_sf_ausfuehren(G,A["art"],ander,now)
-		elif art in("ablehnen","zurueckziehen"):
-			if A and A.get("von")==(ander if art=="ablehnen"else sitz):
-				G["anfrage"]=None
-		else:
-			return 400,{"ok":False,"fehler":"unbekannt"}
-		if fehler:
-			return 409,{"ok":False,"fehler":fehler,"v":sf_sicht(G,sitz,now)}
-		_sf_bump(G)
-		return 200,sf_sicht(G,_sf_sitz(G,token)or "",now)
-
-
-def sf_qr_text(u, code):
-	""
-	return u+"?fern="+code
-
-
-def sf_ip(remote, fwd=""):
-	ip=remote or "?"
-	if ip in("127.0.0.1","::1")and fwd:
-		ip=fwd.split(",")[0].strip()[:45]or ip
-	return ip
-
-
-
-def sf_spieleport(h, method, path):
-	from urllib.parse import urlsplit,parse_qs
-	op=path[len("/schachfern/"):]
-	hdr={"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}
-	if method=="POST":
-		o=h.headers.get("Origin")
-		if o is not None:
-			try:
-				ok_=urlsplit(o).netloc.lower()==(h.headers.get("Host")or "").lower()
-			except ValueError:
-				ok_=False
-			if not ok_:
-				return _sf_antwort(h,403,{"ok":False,"fehler":"fremd"},hdr)
-		try:
-			n=int(h.headers.get("Content-Length")or 0)
-		except ValueError:
-			n=-1
-		if not 0<=n<=4096:
-			return _sf_antwort(h,413,{"ok":False,"fehler":"gross"},hdr)
-		try:
-			d=json.loads(h.rfile.read(n)or b"{}")
-		except ValueError:
-			d={}
-		args={}
-	else:
-		d={}
-		args={k:v[0]for k,v in parse_qs(urlsplit(h.path).query).items()}
-	try:
-		st,out=sf_api(op,method,args,d,h.client_address[0])
-	except Exception as e:
-		log_event("web",f"Schach (zwei Handys): {e.__class__.__name__}")
-		st,out=500,{"ok":False,"fehler":"fehler"}
-	return _sf_antwort(h,st,out,hdr)
-
-
-def _sf_antwort(h, st, out, hdr):
-	if isinstance(out,tuple):
-		data,ct=out
-		hdr=dict(hdr,**{"Content-Security-Policy":"default-src 'none'; style-src 'unsafe-inline'; sandbox"})
-	else:
-		data,ct=json.dumps(out).encode("utf-8"),"application/json"
-	try:
-		h.send_response(st)
-		h.send_header("Content-Type",ct+("; charset=utf-8"if ct=="application/json"else ""))
-		for k,v in hdr.items():
-			h.send_header(k,v)
-		h.send_header("Content-Length",str(len(data)))
-		h.end_headers();h.wfile.write(data)
-	except(BrokenPipeError,ConnectionResetError):
-		pass
-
-
-GAMESRV_API["/schachfern/"] = sf_spieleport
-
-
-
-_smalltv_routes_639zzr = smalltv_routes
-
-
-def smalltv_routes(app, reply, body):
-	_smalltv_routes_639zzr(app,reply,body)
-	from flask import Response,request
-	import hmac
-
-	def run(op):
-		if request.method=="POST"and not 0<=(request.content_length if request.content_length is not None else-1)<=4096:
-			return Response(json.dumps({"ok":False,"fehler":"gross"}),413,mimetype="application/json")
-		d=(request.get_json(force=True,silent=True)or{})if request.method=="POST"else{}
-		if not isinstance(d,dict):
-			d={}
-		st,out=sf_api(op,request.method,request.args.to_dict(),d,sf_ip(request.remote_addr,request.headers.get("X-Forwarded-For","")))
-		if isinstance(out,tuple):
-			return Response(out[0],st,mimetype=out[1],headers={"Cache-Control":"no-store","X-Content-Type-Options":"nosniff",
-																  "Content-Security-Policy":"default-src 'none'; style-src 'unsafe-inline'; sandbox"})
-		return Response(json.dumps(out),st,mimetype="application/json",headers={"Cache-Control":"no-store"})
-
-	zu=lambda:Response(json.dumps({"ok":False,"fehler":"zu"}),404,mimetype="application/json",headers={"Cache-Control":"no-store"})
-
-	@app.route("/schachfern/<op>",methods=["GET","POST"])
-	def schachfern_login(op):
-		return run(op)
-
-	@app.route("/p/<key>/schachfern/<op>",methods=["GET","POST"])
-	def schachfern_gast(key,op):
-		if not(party_on()and hmac.compare_digest(str(PARTY.get("key")or ""),key)):
-			return zu()
-		return run(op)
-
-	@app.route("/spiele/schachfern/<op>",methods=["GET","POST"])
-	def schachfern_spiele(op):
-		if not lan_guest_ip(request.remote_addr,request.headers.get("X-Forwarded-For","")or request.headers.get("Forwarded","")):
-			return zu()
-		return run(op)
-
-
-
-sf_selftest = _zd_fn('639zzr_schach_fern/sf_selftest()')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-SELFTEST_EXTRA.append(("Chess for two phones: relay and rules (639zzr)", sf_selftest))
+SCHACHF_PY = _zd('639zzr_schach_fern/SCHACHF_PY', "")
+if SCHACHF_PY:
+	import linecache as _sflc
+	_sflc.cache["639zzr_schach_fern.py"]=(len(SCHACHF_PY),None,SCHACHF_PY.splitlines(True),"639zzr_schach_fern.py")
+	exec(compile(SCHACHF_PY,"639zzr_schach_fern.py","exec"),globals())
 
 
 
@@ -109694,6 +109046,18 @@ SELFTEST_EXTRA.append(("Timelapse: every day a video automatically (639zzzv)", t
 
 
 
+_HX_VTL = _zd('639zzzv_zeitraffer_taeglich/HX_VTL', _zd_hx_en((
+	"No timelapse video yet – one is made every night at about 00:20 from yesterday's photos (Settings → Timelapse)",
+	'back to {d}',
+	'Oldest kept recording – when the folder is full, the oldest are deleted first (time-lapse and continuous recording have their own limits)',
+)))
+for _k, _v in _HX_VTL.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+
+
+
 
 
 
@@ -115479,6 +114843,107 @@ SELFTEST_EXTRA.append(("Push pause (639zzzzp)", push_pause_selftest))
 
 
 
+CFG.setdefault("sim_push_off", False); DEFAULTS.setdefault("sim_push_off", False)
+USER_SETTINGS_DENY.update({"sim_push_off"})
+SIMQ_S = 60.0
+_sx_put_after(TOGGLES, "sim_autoupd", ("Simulator", "sim_push_off", "While the simulator is connected: no push"))
+_HX_SIMQ = _zd('639zzzzq_sim_push_ruhe/HX_SIMQ', _zd_hx_en((
+	'While the simulator is connected: no push',
+)))
+for _k, _v in _HX_SIMQ.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+
+
+def simq_connected(now=None):
+	now=time.time()if now is None else now
+	return bool(CFG.get("sim_on")and SIM.get("ok")and now-float(SIM.get("t")or 0.0)<5.0)
+
+
+def simq_quiet(now=None):
+	""
+	now=time.time()if now is None else now
+	if simq_connected(now):
+		return "simulator just connected"if now-float(SIM.get("since")or 0.0)<SIMQ_S else ""
+	return "simulator just left"if now-max(float(SIM.get("t")or 0.0),float(SIM.get("off_t")or 0.0))<SIMQ_S+5.0 else ""
+
+
+def simq_hold(p, now=None):
+	"""
+"""
+	if not isinstance(p,dict)or p.get("event")=="test"or p.get("_test")or "SOS"in str(p.get("info_title")or ""):
+		return ""
+	if p.get("event")=="tamper"and not(str(STATE.get("source_id")or "").startswith("sim:")and any(
+			str(p.get("text")or "").startswith(tr(k))for k in("camera covered","camera turned / picture changed"))):
+		return ""
+	if CFG.get("sim_push_off")and simq_connected(now):
+		return "simulator connected, setting «no push»"
+	q=simq_quiet(now)if p.get("event")=="info"else ""
+	return q and q+", device message"
+
+
+_simq_dispatch_before = Notifier._dispatch
+
+
+def _simq_dispatch(self, p, jpg, fname):
+	""
+	why=simq_hold(p)
+	if not why:
+		return _simq_dispatch_before(self,p,jpg,fname)
+	try:
+		msglog_add(self._title(p),push_with_map(self._text(p),p," · "),self._event(p),jpg,"none","🎮 Simulator")
+	except Exception:
+		pass
+	log_event("sys",f"No push ({why}): {self._title(p)}"[:200])
+
+
+
+Notifier._dispatch = _simq_dispatch
+
+
+sim_push_ruhe_selftest = _zd_fn('639zzzzq_sim_push_ruhe/sim_push_ruhe_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Simulator connect is no power event (639zzzzq)", sim_push_ruhe_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -115785,6 +115250,70 @@ rucksack_io_selftest = _zd_fn('639zzzzr_rucksack_io/rucksack_io_selftest()')
 
 
 SELFTEST_EXTRA.append(("Backpack for import / export: export list, private, script (639zzzzr)", rucksack_io_selftest))
+
+
+
+
+
+
+
+
+for _k, _v in (("rec8_mig", False), ("rec8_note", ""), ("rec8_seen", [])):
+	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v)
+REC8_MIN_DRIVE = 14.5 * 1024 ** 3
+SIMPLE_KEYS.update({"record_max_gb", "rec_keep_days", "timelapse_max_gb"}); SIMPLE_SECTIONS.add("Timelapse")
+REC8_NOTE = "New: recordings may now use up to 8 GB (before 2 GB) – the oldest are still deleted first. Change it: Settings → Recording → «Max recordings folder (GB)»."
+
+
+def rec8_migrate(cfg_in):
+	""
+	if not isinstance(cfg_in,dict)or cfg_in.get("rec8_mig")or HOST.get("on"):
+		return[]
+	CFG["rec8_mig"]=True
+	try:
+		old=float(cfg_in["record_max_gb"])
+	except(KeyError,TypeError,ValueError):
+		return[]
+	if abs(old-2.0)>1e-9:
+		return[]
+	try:
+		total=shutil.disk_usage(rec_dir()if os.path.isdir(rec_dir())else os.path.dirname(rec_dir())or "/").total
+	except OSError:
+		return[]
+	if total<REC8_MIN_DRIVE:
+		return[]
+	CFG["record_max_gb"]=8.0;CFG["rec8_note"]="pending";CFG["rec8_seen"]=[]
+	return[f"recordings folder 2 GB -> 8 GB (drive {total / 1024 ** 3:.0f} GB)"]
+
+
+_news_state_639zzzzs = news_state
+_news_seen_639zzzzs = news_seen
+
+
+
+def news_state(who="web", lang=None):
+	st=_news_state_639zzzzs(who,lang)
+	if CFG.get("rec8_note")=="pending"and who not in(CFG.get("rec8_seen")or[]):
+		it={"v":APP_VERSION,"t":"🗄 "+tr(REC8_NOTE,lang),"href":"/settings?setting=record_max_gb"}
+		st=dict(st,items=[it]+list(st.get("items")or[]),show=True)
+	return st
+
+
+
+def news_seen(who="web"):
+	if CFG.get("rec8_note")=="pending":
+		CFG["rec8_seen"]=sorted(set(CFG.get("rec8_seen")or[])|{who})
+	return _news_seen_639zzzzs(who)
+
+
+_HX_REC8 = _zd_hxk('639zzzzs_aufnahme_8gb/HX_REC8', [
+	(REC8_NOTE, 'Neu: Aufnahmen dürfen jetzt bis 8 GB brauchen (vorher 2 GB) – die ältesten werden weiterhin zuerst gelöscht. Ändern: Einstellungen → Aufnahme → «Max. Aufnahmeordner (GB)».'),
+	('The drive is small: at most {n} GB for recordings (half of the drive)', 'Das Laufwerk ist klein: höchstens {n} GB für Aufnahmen (die Hälfte des Laufwerks)'),
+])
+for _k, _v in _HX_REC8.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
 
 
 
@@ -117777,18 +117306,82 @@ SELFTEST_EXTRA.append(("Prefer my phone hotspot (639zzzzy)", hspref_selftest))
 
 
 
+AKL_DEF = {"chg_cold_on": True, "chg_cold_c": 0.0, "chg_cold_hyst": 3.0, "chg_emerg_pct": 10, "chg_override_h": 1.0,
+		   "chg_care": False, "chg_care_max": 80, "chg_care_resume": 75, "chg_off_level": "high"}
+for _k, _v in AKL_DEF.items():
+	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
+USER_SETTINGS_DENY.update(AKL_DEF)
+LOCK_DENY_KEYS.update(AKL_DEF)
+AKL_FILE = "akku_lernen.json"
+_AKL0 = {"done": False}
+
+
+def akl_release_nozip():
+	""
+	_AKL0["done"]=True
+	try:
+		with open(os.path.join(DATA_DIR,AKL_FILE),encoding="utf-8")as f:
+			if not json.load(f).get("we_blocked"):
+				return
+	except(OSError,ValueError,AttributeError):
+		return
+	for c in(["pinctrl","set","16","ip","pd"],["sudo","-n","pinctrl","set","16","ip","pd"]):
+		if _run(c,timeout=5)[0]==0:
+			log_event("sys","Charging allowed again (GPIO 16): no charging control without the data zip")
+			return
+
+
+_akl_ups_x12_base = BatteryMonitor.ups_x12
+
+
+def _akl_ups_x12(self, r):
+	res=_akl_ups_x12_base(self,r)
+	try:
+		if "akl_tick"in globals():
+			akl_tick(self,r)
+		elif not _AKL0["done"]:
+			akl_release_nozip()
+	except Exception as e:
+		if not _AKL0.get("err"):
+			_AKL0["err"]=True
+			log_event("sys",f"Battery learning / charging control: {e}"[:160])
+	return res
+
+
+
+BatteryMonitor.ups_x12 = _akl_ups_x12
+
+
+AKKU_LUECKEN_PY = _zd('639zzzzz_akku_luecken/AKKU_LUECKEN_PY', "")
+zd_exec(AKKU_LUECKEN_PY, '639zzzzz_akku_luecken.py')
 
 
 
 
 
 
-BK_TAG = "bergkarte-1"
-BK_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"}
 
-BK_FILE = {"name": "bergtal-karte-1.zip", "size": 0, "sha256": "", "unpacked": 0, "sim": ""}
-BK_PY = _zd('639zzzzzt_bergtal_karte/BK_PY', "")
-zd_exec(BK_PY, "639zzzzzt_bergtal_karte.py")
+
+
+
+
+
+
+
+
+
+
+
+
+SLP_DEF = {"sleep_mode": "off", "sleep_off": "09:00", "sleep_on": "18:00", "sleep_sun_min": 30, "sleep_low_pct": 30,
+		   "sleep_low_h": 4, "sleep_armed_ok": False}
+for _k, _v in SLP_DEF.items():
+	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
+USER_SETTINGS_DENY.update(SLP_DEF)
+LOCK_DENY_KEYS.update(SLP_DEF)
+
+SCHLAF_PY = _zd('639zzzzz_schlaf_wecken/SCHLAF_PY', "")
+zd_exec(SCHLAF_PY, '639zzzzz_schlaf_wecken.py')
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")
