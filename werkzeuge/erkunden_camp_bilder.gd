@@ -42,11 +42,13 @@ func _bild(name: String) -> void:
 
 
 func _blick(p, von: Vector3, auf: Vector3) -> void:
-	"""the figure at von, looking at auf; the spring camera behind it"""
+	"""the figure at von, looking at auf; the spring camera behind it, a little higher (the preview in front is seen)"""
 	p.place(von)
 	var to := auf - von
 	p.figur.setzen(p.figur.pos(), atan2(-to.x, -to.z))
 	p.regie.hinter_figur()
+	p.regie.pitch = 0.55
+	p.regie.dist = 5.0
 
 
 func _run() -> void:
@@ -71,9 +73,22 @@ func _run() -> void:
 		ex.device = "touch"
 	await wait(1.0)
 	# an open place: a few metres beside the mover
-	var c0: Vector3 = main.rig.global_position + main.rig.global_transform.basis.x * 9.0
-	c0 = main.free_spot(c0, 4.0, true)
+	# the open place: nothing within 9 m of the camp and of the camera behind the figure (no crate clipping the view)
+	var c0 := Vector3.ZERO
+	var best := -1.0
+	for k in range(48):
+		var a := TAU * float(k) / 16.0
+		var r := 8.0 + 6.0 * float(k / 16)
+		var q: Vector3 = main.rig.global_position + Vector3(cos(a) * r, 0, sin(a) * r)
+		var fr := 20.0
+		for pt in [q, q + Vector3(0, 0, 6.0), q + Vector3(0, 0, 10.0), q + Vector3(5.0, 0, 7.0), q + Vector3(9.0, 0, 9.0)]:
+			for o in main._ob_near(Vector2(pt.x, pt.z)):
+				fr = minf(fr, float(main._ob_closest(o, Vector2(pt.x, pt.z))[1]))
+		if fr > best + 0.3:
+			best = fr
+			c0 = q
 	c0.y = main.ground_y(c0.x, c0.z)
+	print("FREI %.1f m" % best)
 	print("PLATZ ", c0)
 	# ---- the clean screen: before (as until now) / after ----
 	var ru = p.ruhe

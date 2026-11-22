@@ -31,6 +31,7 @@ const DATEI := "user://erkunden_camp.json"
 const BAU_S := {"kuppelzelt": 4.0, "einmannzelt": 3.5, "tarp": 3.5, "biwaksack": 2.5, "isomatte": 2.0, "feuerstelle": 3.0}
 const BAU_KLEIN_S := 1.5
 const SCHLAF_NAH := 2.6              # m: so nah am eigenen Schlafplatz zählt «hinlegen» als «schlafen gehen»
+const VOR_FREI := 2.0               # m frei zwischen der Figur und dem Rand der Vorschau
 const WAERME_NAH := 3.5              # m: so nah am Feuer wird es warm («Echt»)
 
 var person
@@ -301,7 +302,8 @@ func drehen(k: float) -> void:
 func _vorschau_ort() -> Dictionary:
 	"""where the preview stands: in front of the figure, on the ground"""
 	var d := D.ding(vorschau)
-	var p: Vector3 = person.figur.pos() + person.figur.vorne() * float(d.get("weit", 2.0))
+	var weit := maxf(float(d.get("weit", 2.0)), float(d.get("r", 0.5)) + VOR_FREI)   # (Besitzer: vor der Figur, nicht unter ihr)
+	var p: Vector3 = person.figur.pos() + person.figur.vorne() * weit
 	var y: float = main.ground_y(p.x, p.z)
 	return {"p": Vector3(p.x, y, p.z), "yaw": float(person.actor.heading) + PI + dreh}
 
