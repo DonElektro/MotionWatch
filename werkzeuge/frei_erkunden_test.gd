@@ -64,11 +64,19 @@ func _ctl(d: Dictionary) -> Dictionary:
 
 
 func _speed(p, secs: float) -> float:
+	"""the speed over secs: the way, frame by frame, through the engine's own frame times (what the figure moves by) - not the
+	wall clock (on a busy machine the frame times drift from it, a fast run then looked faster / slower than it is)"""
 	var a: Node3D = p.actor
-	var p0 := _xz(a)
-	var t0: float = main.now()
-	await wait(secs)
-	return _xz(a).distance_to(p0) / maxf(0.01, main.now() - t0)
+	var q := _xz(a)
+	var weg := 0.0
+	var t := 0.0
+	while t < secs:
+		await process_frame
+		t += get_root().get_process_delta_time()
+		var q2 := _xz(a)
+		weg += q2.distance_to(q)
+		q = q2
+	return weg / maxf(0.01, t)
 
 
 func _linie(o: Vector3, d: Vector3, L: float) -> Dictionary:
@@ -110,16 +118,20 @@ func _hang_lauf(p, o: Vector3, d: Vector3, v: float) -> Dictionary:
 	p.test_walk(Vector2(1, 0), 3.0, true)
 	await wait(1.1)
 	var a: Node3D = p.actor
-	var q0 := _xz(a)
-	var t0: float = main.now()
+	var q := _xz(a)
+	var weg := 0.0
+	var t := 0.0
 	var luft := 0
 	var tief := 0.0
-	while main.now() - t0 < 0.5:
+	while t < 0.5:
 		await process_frame
+		t += get_root().get_process_delta_time()
+		weg += _xz(a).distance_to(q)
+		q = _xz(a)
 		if str(p.figur.zustand) != "boden":
 			luft += 1
 		tief = minf(tief, a.global_position.y - main.ground_y(a.global_position.x, a.global_position.z))
-	var r := {"v": _xz(a).distance_to(q0) / maxf(0.01, main.now() - t0), "luft": luft, "tief": tief}
+	var r := {"v": weg / maxf(0.01, t), "luft": luft, "tief": tief}
 	p.test_walk(Vector2.ZERO, 0.1, false)
 	await wait(0.3)
 	return r
