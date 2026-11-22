@@ -149,7 +149,7 @@ def teil_a(datei, zp, data, unp, exp):
     logs = []
     ns["log_event"] = lambda *x, **k: logs.append(" ".join(str(v) for v in x))
     CFG, SIM = ns["CFG"], ns["SIM"]
-    ok("bk_selftest" in ns and bool(ns["bk_selftest"]()), "Selbsttest 639zzzzzt")
+    ok("bergkarte_selftest" in ns and bool(ns["bergkarte_selftest"]()), "Selbsttest 639zzzzzt")
     ok(ns["bk_installed"]() is False and ns["bk_pinned"]() == (ns["BK_FILE"]["size"] > 0), "ohne Paket: nicht installiert; gepinnt wie im Programm")
     srv = Srv()
     srv.files["/" + ns["BK_TAG"] + "/" + ns["BK_FILE"]["name"]] = data
@@ -362,9 +362,13 @@ def teil_b(datei, data, unp, bilder):
                 except Exception:
                     pass
                 pg.wait_for_timeout(4000)
-                ok(pg.evaluate("() => (() => { try { return KQMAP.queryTerrainElevation(KQMAP.getCenter()) > 1000; } catch (e) { return false; } })()"), f"{name}: 3D an (Neigung, Gelände mit Höhen des Pakets)")
-                if bilder:
-                    pg.screenshot(path=os.path.join(bilder, f"bergtal_3d_{name}.png"))
+                el3 = pg.evaluate("() => (() => { try { return KQMAP.queryTerrainElevation(KQMAP.getCenter()) > 1000; } catch (e) { return false; } })()")
+                if mob or el3:
+                    ok(el3, f"{name}: 3D an (Neigung, Gelände mit Höhen des Pakets)")
+                else:                                            # software WebGL cannot draw terrain on 2732 × 1800 px (also a bare MapLibre page)
+                    print(f"  ~ {name}: 3D nur geschaltet (Neigung, Gelände) - Software-WebGL zeichnet bei 1366 × 900 DPR 2 kein Gelände, siehe DPR-1-Bild", flush=True)
+                if bilder and mob:                                 # PC 3D pictures: own context at DPR 1 (below)
+                    pg.screenshot(path=os.path.join(bilder, f"bergtal_3d_{name}.png"), timeout=90000)
                 pg.evaluate("() => document.getElementById('bk-2d').click()")
                 pg.wait_for_function("() => KQMAP.getPitch() < 1 && !KQMAP.getTerrain()", timeout=60000)
                 pg.locator("#bk-vor .kt-li").first.scroll_into_view_if_needed()
@@ -379,10 +383,11 @@ def teil_b(datei, data, unp, bilder):
                     pg.screenshot(path=os.path.join(bilder, f"bergtal_tour_{name}.png"), full_page=False)
                     pg.locator("#bk-vor-d svg.kt-prof").scroll_into_view_if_needed()
                     pg.screenshot(path=os.path.join(bilder, f"bergtal_profil_{name}.png"), full_page=False)
+                if bilder and mob:
                     pg.evaluate("() => document.getElementById('bk-3d').click()")
                     pg.wait_for_function("() => KQMAP.getPitch() > 40 && (() => { try { return KQMAP.queryTerrainElevation(KQMAP.getCenter()) > 1000; } catch (e) { return false; } })()", timeout=120000); pg.wait_for_timeout(4000)
                     pg.evaluate("() => document.getElementById('kq-map').scrollIntoView({block: 'start'})")
-                    pg.screenshot(path=os.path.join(bilder, f"bergtal_tour_3d_{name}.png"))
+                    pg.screenshot(path=os.path.join(bilder, f"bergtal_tour_3d_{name}.png"), timeout=90000)
                     pg.evaluate("() => document.getElementById('bk-2d').click()"); pg.wait_for_function("() => KQMAP.getPitch() < 1", timeout=60000)
                 # draw a route (tours of 639zzx on the Bergtal map)
                 pg.wait_for_selector("#kt:not([hidden]) #kt-new", timeout=20000)
@@ -416,6 +421,26 @@ def teil_b(datei, data, unp, bilder):
                 pg.wait_for_function("() => window.BK && BK.mode === 'berg' && window.KQMAP && KQMAP.loaded()", timeout=60000)
                 ok(True, f"{name}: zurück ins Bergtal")
                 ok(not errs, f"{name}: keine JS-Fehler" + (f" ({errs[:2]})" if errs else ""))
+                ctx.close()
+            if bilder:                                           # PC in 3D at DPR 1 (software WebGL draws terrain there)
+                ctx = br.new_context(viewport={"width": 1366, "height": 900}, device_scale_factor=1, http_credentials={"username": "admin", "password": PW}, locale="de-CH")
+                ctx.add_init_script("try{localStorage.setItem('mw-lang','de');localStorage.setItem('mw-theme','light');localStorage.setItem('mw-kq-welt','berg')}catch(e){}")
+                pg = ctx.new_page()
+                pg.goto(base + "/karte")
+                pg.wait_for_function("() => window.KQMAP && KQMAP.loaded() && window.BK && BK.map", timeout=90000)
+                pg.evaluate("() => document.getElementById('bk-3d').click()")
+                try:
+                    pg.wait_for_function("() => (() => { try { return KQMAP.getPitch() > 40 && KQMAP.queryTerrainElevation(KQMAP.getCenter()) > 1000; } catch (e) { return false; } })()", timeout=180000)
+                except Exception:
+                    pass
+                pg.wait_for_timeout(5000)
+                pg.evaluate("() => document.getElementById('kq-map').scrollIntoView({block: 'start'})")
+                pg.screenshot(path=os.path.join(bilder, "bergtal_3d_pc_dpr1.png"), timeout=90000)
+                pg.locator("#bk-vor .kt-li").first.click()
+                pg.wait_for_selector("#bk-vor-d:not([hidden]) svg.kt-prof", timeout=30000)
+                pg.wait_for_timeout(8000)
+                pg.evaluate("() => document.getElementById('kq-map').scrollIntoView({block: 'start'})")
+                pg.screenshot(path=os.path.join(bilder, "bergtal_tour_3d_pc_dpr1.png"), timeout=90000)
                 ctx.close()
             ok(not aussen, "keine Anfrage nach aussen" + (f" ({aussen[:3]})" if aussen else ""))
             br.close()

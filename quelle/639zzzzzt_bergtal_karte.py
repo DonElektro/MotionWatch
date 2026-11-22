@@ -26,7 +26,7 @@
 #     der Admin (wie 639zzq): Platz (BK_FREE_MIN bleibt frei - nicht 2 GB: das Paket hat ~3 MB), Fortsetzen, Prüfsumme vor dem
 #     Auspacken, ein neuer Ordner erst am Schluss umbenannt. Auf dem Host darf der Faden «bergkarte-dl» zu GitHub (639zzzzw).
 #   * Texte in 5 Sprachen; das Fenster (Tk) hat keine Offline-Karte - dort nichts. Der Live-Reiter bleibt unverändert.
-# Selbsttest bk_selftest; Tests werkzeuge/bergkarte_test.py (Schalter, geheime Orte, Touren-Profil, Laden, Seite im Browser)
+# Selbsttest bergkarte_selftest; Tests werkzeuge/bergkarte_test.py (Schalter, geheime Orte, Touren-Profil, Laden, Seite im Browser)
 # und werkzeuge/bergkarte_test.gd (Paket = Simulator: Zahl der Orte, Höhen an Stichproben).
 # ----------------------------------------------------------------------------
 # Die Pins bleiben in der (signierten) Hauptdatei; der Programmtext steht in EINEM Literal (Hauptdatei klein, wie 639zzzzo):
@@ -1084,7 +1084,7 @@ for _L in ("fr", "it", "rm"):
 
 
 # ---- self-test (werkzeuge/bergkarte_test.py: install, secrets, tours, the page in the browser) ------------------------------------------
-def bk_selftest():
+def bergkarte_selftest():
     assert all(BK_KT_HOOKED.values()), [a for a, v in BK_KT_HOOKED.items() if not v]
     assert bk_in(0.005, -0.008) and not bk_in(46.8, 8.2) and not bk_in("x", 0) and not bk_in(0.0, 0.013)
     x, z = bk_xz(-0.003, 0.004)
@@ -1116,6 +1116,6 @@ def bk_selftest():
     return "Bergtal map: frame, files, secrets only from the simulator, hooks, rights, texts"
 
 
-SELFTEST_EXTRA.append(("Bergtal map (639zzzzzt)", bk_selftest))
+SELFTEST_EXTRA.append(("Bergtal map (639zzzzzt)", bergkarte_selftest))
 '''
 zd_exec(BK_PY, "639zzzzzt_bergtal_karte.py")
