@@ -115,9 +115,10 @@ def main():
             browser(base, a.bilder, "vorher", None, a.foto)
         c, _t, b = req("/api/produktbilder")
         st0 = json.loads(b) if c == 200 else {}
-        ok(c == 200 and [s["id"] for s in st0.get("slots", [])] == ["live", "tag", "nacht", "damals", "jetzt"] and not any(s["custom"] for s in st0["slots"]),
-           "Zustand: fünf Bildplätze, alle «Beispiel» (%d)" % c)
-        for s in ("live", "tag", "nacht", "damals", "jetzt"):
+        ok(c == 200 and [s["id"] for s in st0.get("slots", [])] == ["live", "tag", "nacht", "damals", "jetzt", "app_kamera", "app_live", "app_tagebuch", "zelt"] and not any(s["custom"] for s in st0["slots"]),
+           "Zustand: neun Bildplätze (4.22.x: dazu die vier der App-Galerie), alle «Beispiel» (%d)" % c)
+        ok([s["ratio"] for s in st0.get("slots", [])][5:] == ["1280/720", "520/1125", "520/1125", "1280/592"], "Form der neuen Plätze (Handy hochkant, Film-Karte)")
+        for s in ["live", "tag", "nacht", "damals", "jetzt", "app_kamera", "app_live", "app_tagebuch", "zelt"]:
             c, t, b = req("/api/produktbilder/bild/" + s)
             ok(c == 200 and t.startswith("image/") and b[:4] == b"RIFF", "Vorschau Beispiel «%s» (%d, %s)" % (s, c, t))
         # rights
@@ -163,6 +164,16 @@ def main():
         ok(c == 400 and "zu klein" in json.loads(b).get("error", ""), "zu kleines Bild: 400")
         c, _t, b = req("/api/produktbilder?action=set&slot=hacker&pos=50", foto_jpeg(), ctype="application/octet-stream")
         ok(c == 400, "unbekannter Bildplatz: 400")
+        # 4.22.x: the gallery slots - a phone screenshot (portrait) and the film card
+        b3 = io.BytesIO(); Image.new("RGB", (1170, 2532), (30, 40, 60)).save(b3, "PNG")
+        c, _t, b = req("/api/produktbilder?action=set&slot=app_tagebuch&pos=50", b3.getvalue(), ctype="application/octet-stream")
+        c2, t2, img2 = req("/info/bild/app_tagebuch.webp?v=1", auth=False)
+        ok(c == 200 and c2 == 200 and Image.open(io.BytesIO(img2)).size == (520, 1125), "«App: Tagebuch» hochkant 520 × 1125 (%d, %d)" % (c, c2))
+        c, _t, b = req("/api/produktbilder?action=set&slot=zelt&pos=50", foto_jpeg(500, 200), ctype="application/octet-stream")
+        ok(c == 400 and "mindestens 640 × 296" in json.loads(b).get("error", ""), "Film-Karte: zu kleines Bild «%s»" % json.loads(b or b"{}").get("error"))
+        c, _t, h = req("/info/", auth=False); h = h.decode()
+        ok('src="/info/bild/app_tagebuch.webp?v=' in h and 'id="app-tagebuch"' in h and '<video' in h, "/info/: eigenes «Tagebuch», der Film bleibt")
+        req("/api/produktbilder?action=reset", json.dumps({"slot": "app_tagebuch"}).encode())
         c, _t, b = req("/api/produktbilder?action=box", json.dumps({"slot": "jetzt", "box": [5, 5, 50, 50], "label": "neu: Holz"}).encode())
         ok(c == 200 and next(s for s in json.loads(b)["slots"] if s["id"] == "jetzt")["label"] == "neu: Holz", "Markierung ändern")
         if shots:
@@ -172,10 +183,10 @@ def main():
                 req("/api/produktbilder?action=box", json.dumps({"slot": "jetzt", "box": [40, 55, 25, 30], "label": "neu: Tisch"}).encode())
             browser(base, a.bilder, "nachher", "jetzt", a.foto)
         elif a.browser:
-            for s in ("live", "tag"):        # 4.19.1: the new page - own pictures also in «Live-Bild Handy» and «Sieh selbst: Tag»
+            for s in ("live", "tag", "app_kamera", "zelt"):   # 4.19.1 + 4.22.x: own pictures also in the gallery cards
                 req("/api/produktbilder?action=set&slot=%s&pos=50" % s, raw, ctype="application/octet-stream")
             browser(base, "", "", "jetzt", "")
-            for s in ("live", "tag"):
+            for s in ("live", "tag", "app_kamera", "zelt"):
                 req("/api/produktbilder?action=reset", json.dumps({"slot": s}).encode())
         # back to the example
         c, _t, b = req("/api/produktbilder?action=reset", json.dumps({"slot": "jetzt"}).encode())
@@ -218,11 +229,14 @@ def browser(base, bilder, tag, slot, foto=""):
         pg.locator("#hp-pbild").click(); pg.wait_for_url("**/produktbilder", timeout=20000)
         ok(pg.url.endswith("/produktbilder"), "Knopf öffnet /produktbilder")
         pg.goto(base + "/produktbilder", wait_until="domcontentloaded")
-        pg.wait_for_function("() => document.querySelectorAll('#pb-list .pb-c').length === 5", timeout=30000)
+        pg.wait_for_function("() => document.querySelectorAll('#pb-list .pb-c').length === 9", timeout=30000)
         pg.wait_for_function("() => [...document.querySelectorAll('#pb-list img')].every(i => i.complete && i.naturalWidth > 0)", timeout=30000)
         pg.evaluate("() => { const g = document.getElementById('gd-card'); if (g) g.style.display = 'none'; ['g2-ov','g2-spot','g2-bub'].forEach(i => { const e = document.getElementById(i); if (e) e.remove(); }); }")
         names = pg.evaluate("() => [...document.querySelectorAll('#pb-list .pb-b b')].map(b => b.textContent)")
-        ok(names == ["Live-Bild (Handy)", "Sieh selbst: Tag", "Sieh selbst: Nacht", "Zeitfenster: damals", "Zeitfenster: jetzt"], "Seite: %s" % names)
+        ok(names == ["Live-Bild (Handy)", "Sieh selbst: Tag", "Sieh selbst: Nacht", "Zeitfenster: damals", "Zeitfenster: jetzt",
+                     "App: Kamerabild im Handy", "App: ganzer Bildschirm Live", "App: Tagebuch", "Nachts am Zelt"], "Seite: %s" % names)
+        ar = pg.evaluate("() => ['app_live', 'zelt'].map(k => { const r = document.querySelector('#pb-' + k + ' .pb-pv').getBoundingClientRect(); return Math.round(r.width / r.height * 100) / 100; })")
+        ok(abs(ar[0] - 0.46) < 0.03 and abs(ar[1] - 2.16) < 0.05, "Vorschau in der Form des Platzes (Handy hochkant, Film-Karte) %s" % ar)
         ok("Keine Personen, Kennzeichen oder Hausnummern." in pg.locator("#pb-h2").inner_text(), "Hinweis «Keine Personen, Kennzeichen oder Hausnummern»")
         bk = pg.evaluate("() => { const b = document.getElementById('pb-back'); return [b.textContent.trim(), b.getAttribute('href')]; }")
         ok(bk == ["‹ Homepage", "/homepage"], "Zurück-Link «‹ Homepage» → /homepage %s" % bk)
@@ -258,7 +272,12 @@ def browser(base, bilder, tag, slot, foto=""):
             ok(st[0].startswith("/info/bild/jetzt.webp") and st[1] > 0 and not st[2] and st[3].startswith("neu:"), "/info/: eigenes Bild und Markierung im Zeitfenster %s" % st)
             ov = p2.evaluate("() => [...document.querySelectorAll('img[data-pb]')].map(i => [i.dataset.pb, (i.getAttribute('src') || '').slice(0, 24)])")
             own = {k: v for k, v in ov}
-            ok(sorted(own) == ["damals", "jetzt", "live", "nacht", "tag"], "/info/: fünf Bildplätze data-pb (%s)" % sorted(own))
+            ok(sorted(own) == ["app_kamera", "app_live", "app_tagebuch", "damals", "jetzt", "live", "nacht", "tag", "zelt"], "/info/: neun Bildplätze data-pb (%s)" % sorted(own))
+            gal = p2.evaluate("() => { const c = document.getElementById('app-cam'), l = document.getElementById('app-cam-live'), z = document.querySelector('[data-pb=zelt]'); "
+                              "return [(c.getAttribute('src') || '').slice(0, 21), c.naturalWidth, !c.hidden, !l.hidden, z.tagName, (z.getAttribute('src') || '').slice(0, 17), !!document.getElementById('clip'), "
+                              "(document.getElementById('app-live').getAttribute('src') || '').slice(0, 10)]; }")
+            ok(gal[0] == "/info/bild/app_kamera" and gal[1] > 0 and gal[2] and gal[3] and gal[4] == "IMG" and gal[5] == "/info/bild/zelt.w" and not gal[6] and gal[7] == "data:image",
+               "/info/: eigenes Kamerabild im Live-Bild-Handy (mit «LIVE»), eigenes Bild statt des Films, die App rundherum bleibt %s" % gal)
             if not foto:
                 ok(own["live"].startswith("/info/bild/live.webp") and own["tag"].startswith("/info/bild/tag.webp") and own["nacht"].startswith("data:"),
                    "/info/: eigene Bilder ersetzen «Live-Bild Handy» und «Sieh selbst: Tag», die anderen bleiben Beispiele (%s)" % ov)

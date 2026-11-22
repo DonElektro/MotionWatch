@@ -2,7 +2,8 @@
 # ----------------------------------------------------------------------------
 # Wunsch des Besitzers (11/2026): auf der Produktseite stehen ruhige Beispielbilder (Teil 620, Bildplätze data-pb="…");
 # der Besitzer will später eigene Fotos nehmen. Hier:
-#   * PB_SLOTS: die fünf Bildplätze. Alle 16:9; gespeichert als DATA_DIR/produktseite/<platz>.webp (nie im Repository),
+#   * PB_SLOTS: die Bildplätze (4.22.x: neun – dazu die Karten von «Ein Blick in die App»: Kamerabild im Live-Bild-Handy,
+#     ganzer Bildschirm Live, Tagebuch, Nachts am Zelt). 16:9, ausser PB_SIZE (Handy hochkant, Film-Karte quer); gespeichert als DATA_DIR/produktseite/<platz>.webp (nie im Repository),
 #     dazu produktseite/bilder.json {platz: {"v": Zeit, "box": [x, y, b, h] in %, "label": Text}}.
 #   * pbild_make(): Hochladen (JPEG, PNG, WebP; HEIC nur, wenn «pillow_heif» da ist) → Drehung aus EXIF anwenden, Mitte
 #     zuschneiden auf 16:9 (Regler «Ausschnitt» 0–100 = Lage auf der freien Achse, wie object-position im Browser),
@@ -41,10 +42,12 @@ PB_PY = r'''
 import io
 import shutil
 
-PB_SLOTS = ("live", "tag", "nacht", "damals", "jetzt")
+PB_SLOTS = ("live", "tag", "nacht", "damals", "jetzt", "app_kamera", "app_live", "app_tagebuch", "zelt")
+PB_SIZE = {"app_live": ((520, 1125), (360, 780)), "app_tagebuch": ((520, 1125), (360, 780)), "zelt": ((1280, 592), (640, 296))}   # (size, minimum)
 PB_BOXED = ("tag", "nacht", "jetzt")                           # these places can have a mark with a text
 PB_W, PB_H, PB_BYTES, PB_UPLOAD_MAX, PB_MIN = 1280, 720, 220000, 25 << 20, (640, 360)
-PB_DEFAULT_BOX = {"jetzt": [58, 75.5, 16, 17]}                 # the mark of the example (stones), as in the page
+PB_DEFAULT_BOX = {"jetzt": [58, 75.5, 16, 17]}
+PB_APP = ("app_live", "app_tagebuch")                          # screenshots of the app: no «Kamerabild» text                 # the mark of the example (stones), as in the page
 _PB_LOCK = threading.Lock()
 _PB_DEF = {}
 
@@ -86,8 +89,9 @@ def pbild_box_clean(box, label):
     return [round(x, 1), round(y, 1), round(w, 1), round(h, 1)], lab
 
 
-def pbild_make(raw, pos=50):
-    """the uploaded picture -> WebP bytes 16:9 without any metadata; raises ValueError(English text)"""
+def pbild_make(raw, pos=50, slot=""):
+    """the uploaded picture -> WebP bytes in the shape of its place (16:9 or PB_SIZE) without any metadata; raises ValueError(English text)"""
+    (PW_, PH_), mn = PB_SIZE.get(slot, ((PB_W, PB_H), PB_MIN))
     from PIL import Image, ImageOps
     if len(raw) > PB_UPLOAD_MAX:
         raise ValueError("The picture is too big (at most 25 MB).")
@@ -108,16 +112,18 @@ def pbild_make(raw, pos=50):
     except Exception:
         raise ValueError("This picture cannot be read. Please choose a JPEG or PNG.")
     w, h = im.size
-    if w < PB_MIN[0] or h < PB_MIN[1]:
-        raise ValueError("The picture is too small (at least 640 × 360).")
+    if w < mn[0] or h < mn[1]:
+        if mn == PB_MIN:
+            raise ValueError("The picture is too small (at least 640 × 360).")
+        raise ValueError("The picture is too small (at least %d × %d)." % mn)
     p = min(max(float(pos), 0.0), 100.0) / 100.0
-    if w * 9 > h * 16:                                         # wider than 16:9: the free axis is x
-        cw = h * 16 // 9; box = (int((w - cw) * p), 0, int((w - cw) * p) + cw, h)
+    if w * PH_ > h * PW_:                                      # wider than the place: the free axis is x
+        cw = h * PW_ // PH_; box = (int((w - cw) * p), 0, int((w - cw) * p) + cw, h)
     else:
-        ch = w * 9 // 16; box = (0, int((h - ch) * p), w, int((h - ch) * p) + ch)
+        ch = w * PH_ // PW_; box = (0, int((h - ch) * p), w, int((h - ch) * p) + ch)
     im = im.crop(box)
-    if im.size[0] > PB_W:
-        im = im.resize((PB_W, PB_H), Image.LANCZOS)
+    if im.size[0] > PW_:
+        im = im.resize((PW_, PH_), Image.LANCZOS)
     clean = Image.new("RGB", im.size)                          # only the picture points: no EXIF / GPS / XMP / ICC
     clean.paste(im)
     out = b""
@@ -131,7 +137,7 @@ def pbild_make(raw, pos=50):
 def pbild_set(slot, raw, pos=50, box=None, label=""):
     if slot not in PB_SLOTS:
         raise ValueError("Unknown picture.")
-    data = pbild_make(raw, pos)
+    data = pbild_make(raw, pos, slot)
     with _PB_LOCK:
         m = pbild_meta()
         b, lab = pbild_box_clean(box, label) if slot in PB_BOXED else (None, "")
@@ -171,11 +177,11 @@ def pbild_default(slot):
     if _PB_DEF.get("_k") != key:
         import gzip as _gz, base64 as _b64
         h = _gz.decompress(_b64.b64decode(INFO_HTML_GZ)).decode("utf-8")
-        tags = {m.group(1): m.group(0) for m in re.finditer(r'<img\b[^>]*\bdata-pb="(\w+)"[^>]*>', h)}
+        tags = {m.group(1): m.group(0) for m in re.finditer(r'<(?:img|video)\b[^>]*\bdata-pb="(\w+)"[^>]*>', h)}
         ids = {m.group(2): m.group(1) for m in re.finditer(r'<img\b[^>]*\bsrc="(data:[^"]+)"[^>]*\bid="([\w-]+)"', h)}
         _PB_DEF.clear(); _PB_DEF["_k"] = key
         for k, t in tags.items():
-            s = re.search(r'\bsrc="(data:[^"]+)"', t); same = re.search(r'\bdata-same="([\w-]+)"', t)
+            s = re.search(r'\b(?:src|poster)="(data:[^"]+)"', t); same = re.search(r'\bdata-same="([\w-]+)"', t)
             u = s.group(1) if s else ids.get(same.group(1), "") if same else ""
             m = re.match(r"data:(image/[a-z]+);base64,(.*)", u)
             if m:
@@ -191,10 +197,12 @@ def pbild_apply(h):
     for k, v in m.items():
         url = "/info/bild/%s.webp?v=%s" % (k, int(v.get("v") or 0))
 
-        def tag_(mt, url=url):
+        def tag_(mt, url=url, k=k):
             t = re.sub(r'\s(?:src|data-same|data-alt|alt)="[^"]*"', "", mt.group(0))
-            return t.replace("<img", '<img src="%s" alt="Kamerabild" data-alt="alt_cam"' % url, 1)
+            return t.replace("<img", '<img src="%s" %s' % (url, 'alt=""' if k in PB_APP else 'alt="Kamerabild" data-alt="alt_cam"'), 1)
         h = re.sub(r'<img\b[^>]*\bdata-pb="%s"[^>]*>' % k, tag_, h, count=1)
+        h = re.sub(r'<video\b[^>]*\bdata-pb="%s"[^>]*>.*?</video>' % k,          # 4.22.x: a film card -> the own picture
+                   lambda mt, url=url, k=k: '<img data-pb="%s" src="%s" alt="Kamerabild" data-alt="alt_cam" loading="lazy">' % (k, url), h, count=1, flags=re.S)
     pb = {k: {"box": v.get("box"), "label": v.get("label") or ""} for k, v in m.items()}
     js = "<script>window.PB=" + json.dumps(pb, ensure_ascii=False).replace("</", "<\\/") + ";</script>"
     return h.replace("</head>", js + "</head>", 1)
@@ -212,14 +220,19 @@ def pbild_state(lang=None):
     L = norm_lang(lang or CFG.get("lang"))
     m = pbild_meta()
     names = {"live": "Live picture (phone)", "tag": "See for yourself: day", "nacht": "See for yourself: night",
-             "damals": "Window to the past: then", "jetzt": "Window to the past: now"}
+             "damals": "Window to the past: then", "jetzt": "Window to the past: now", "app_kamera": "App: camera picture in the phone",
+             "app_live": "App: whole live screen", "app_tagebuch": "App: diary", "zelt": "At the tent at night"}
     notes = {"nacht": "Night: ideally an infrared picture of MoveEye.", "damals": "Then and now: twice the same view, a little changed.",
-             "jetzt": "Then and now: twice the same view, a little changed."}
+             "jetzt": "Then and now: twice the same view, a little changed.",
+             "app_kamera": "Only the camera picture inside the phone - the app around it stays.",
+             "app_live": "A screenshot of the MoveEye app on the phone (portrait). Replaces the whole phone screen.",
+             "app_tagebuch": "A screenshot of the MoveEye app on the phone (portrait).", "zelt": "Your own picture replaces the short film."}
     out = []
     for k in PB_SLOTS:
         v = m.get(k) or {}
         out.append({"id": k, "name": tr(names[k], L), "note": tr(notes[k], L) if k in notes else "", "custom": bool(v), "v": v.get("v") or 0,
-                    "box": v.get("box") if v else PB_DEFAULT_BOX.get(k), "label": v.get("label") or "", "boxable": k in PB_BOXED})
+                    "box": v.get("box") if v else PB_DEFAULT_BOX.get(k), "label": v.get("label") or "", "boxable": k in PB_BOXED,
+                    "ratio": "%d/%d" % PB_SIZE.get(k, ((PB_W, PB_H),))[0]})
     return {"ok": True, "slots": out, "info_on": bool(CFG.get("info_page"))}
 
 
@@ -330,6 +343,33 @@ _HX_PB = {
                                                              "Avant et maintenant : deux fois la même vue, un peu changée.",
                                                              "Prima e adesso: due volte la stessa vista, un po' cambiata.",
                                                              "Avant ed ussa: duas giadas la medema vista, in pau midada."),
+    "Location data (EXIF, GPS) is removed. The picture is cut to the shape of its place and stored on MoveEye.": (
+        "Standortdaten (EXIF, GPS) werden entfernt. Das Bild wird passend zu seinem Platz zugeschnitten und auf MoveEye gespeichert.",
+        "Les données de position (EXIF, GPS) sont supprimées. L'image est recadrée selon sa place et enregistrée sur MoveEye.",
+        "I dati di posizione (EXIF, GPS) vengono rimossi. L'immagine viene ritagliata secondo il suo posto e salvata su MoveEye.",
+        "Las datas da lieu (EXIF, GPS) vegnan allontanadas. Il maletg vegn taglià tenor ses plaz e memorisà sin MoveEye."),
+    "App: camera picture in the phone": ("App: Kamerabild im Handy", "App : image de la caméra dans le téléphone",
+                                         "App: immagine della telecamera nel telefono", "App: maletg da la camera en il telefonin"),
+    "App: whole live screen": ("App: ganzer Bildschirm Live", "App : écran direct entier", "App: schermo live intero", "App: entir visur live"),
+    "App: diary": ("App: Tagebuch", "App : journal", "App: diario", "App: diari"),
+    "At the tent at night": ("Nachts am Zelt", "La nuit près de la tente", "Di notte vicino alla tenda", "La notg tar la tenda"),
+    "Only the camera picture inside the phone - the app around it stays.": (
+        "Nur das Kamerabild im Handy – die App rundherum bleibt.", "Seulement l'image de la caméra dans le téléphone – l'app autour reste.",
+        "Solo l'immagine della telecamera nel telefono – l'app intorno resta.", "Mo il maletg da la camera en il telefonin – l'app enturn resta."),
+    "A screenshot of the MoveEye app on the phone (portrait). Replaces the whole phone screen.": (
+        "Ein Bildschirmfoto der MoveEye-App auf dem Handy (hochkant). Ersetzt den ganzen Handy-Bildschirm.",
+        "Une capture d'écran de l'app MoveEye sur le téléphone (vertical). Remplace tout l'écran du téléphone.",
+        "Uno screenshot dell'app MoveEye sul telefono (verticale). Sostituisce l'intero schermo del telefono.",
+        "In maletg dal visur da l'app MoveEye sin il telefonin (en autezza). Remplazza l'entir visur dal telefonin."),
+    "A screenshot of the MoveEye app on the phone (portrait).": (
+        "Ein Bildschirmfoto der MoveEye-App auf dem Handy (hochkant).", "Une capture d'écran de l'app MoveEye sur le téléphone (vertical).",
+        "Uno screenshot dell'app MoveEye sul telefono (verticale).", "In maletg dal visur da l'app MoveEye sin il telefonin (en autezza)."),
+    "Your own picture replaces the short film.": ("Dein eigenes Bild ersetzt den kurzen Film.", "Ta propre image remplace le court film.",
+                                                  "La tua immagine sostituisce il breve filmato.", "Tes atgen maletg remplazza il curt film."),
+    "The picture is too small (at least 360 × 780).": ("Das Bild ist zu klein (mindestens 360 × 780).", "L'image est trop petite (au moins 360 × 780).",
+                                              "L'immagine è troppo piccola (almeno 360 × 780).", "Il maletg è memia pitschen (almain 360 × 780)."),
+    "The picture is too small (at least 640 × 296).": ("Das Bild ist zu klein (mindestens 640 × 296).", "L'image est trop petite (au moins 640 × 296).",
+                                              "L'immagine è troppo piccola (almeno 640 × 296).", "Il maletg è memia pitschen (almain 640 × 296)."),
     "Example": ("Beispiel", "Exemple", "Esempio", "Exempel"),
     "Own picture": ("Eigenes Bild", "Image personnelle", "Immagine propria", "Atgen maletg"),
     "Replace": ("Ersetzen", "Remplacer", "Sostituisci", "Remplazzar"),
@@ -438,13 +478,18 @@ main{padding:16px;max-width:760px;margin:0 auto;box-sizing:border-box}
   $i("pb-back").textContent = "‹ " + t("Homepage"); $i("pb-title").textContent = "🖼 " + t("Product page: pictures");
   $i("pb-h1").textContent = t("These pictures are shown to guests on the product page (/info/). Your own photos replace the examples.");
   $i("pb-h2").textContent = "⚠ " + t("No people, number plates or house numbers.");
-  $i("pb-h3").textContent = t("Location data (EXIF, GPS) is removed. The picture is cut to 16:9 and stored on MoveEye.");
+  $i("pb-h3").textContent = t("Location data (EXIF, GPS) is removed. The picture is cut to the shape of its place and stored on MoveEye.");
   let J = null;
   const get = async () => { try { const r = await fetch("/api/produktbilder?lang=" + L()); return await r.json(); } catch (e) { return {ok: false, error: t("No connection to MoveEye.")}; } };
   const post = async (q, data, json) => {
     try { const r = await fetch("/api/produktbilder?lang=" + L() + "&" + q, {method: "POST", body: data,
         headers: {"Content-Type": json ? "application/json" : "application/octet-stream"}}); return await r.json(); }
     catch (e) { return {ok: false, error: t("No connection to MoveEye.")}; } };
+  function shape(pv, s) {                                     // 4.22.x: the shape of the place (phone portrait, film card)
+    if (!s.ratio || s.ratio === "1280/720") return;
+    pv.style.aspectRatio = s.ratio; const [w, h] = s.ratio.split("/").map(Number);
+    if (h > w) { pv.style.maxWidth = "140px"; pv.style.width = "100%"; }
+  }
   function mark(pv, box, label) {
     pv.querySelectorAll(".pb-mk").forEach(x => x.remove()); if (!box) return;
     const m = E("div", "pb-mk"); m.style.left = box[0] + "%"; m.style.top = box[1] + "%"; m.style.width = box[2] + "%"; m.style.height = box[3] + "%";
@@ -454,7 +499,7 @@ main{padding:16px;max-width:760px;margin:0 auto;box-sizing:border-box}
     card.querySelectorAll(".pb-ed").forEach(x => x.remove());
     const ed = E("div", "pb-ed"), pv = E("div", "pb-pv"), im = E("img"), msg = E("div", "pb-msg");
     let url = file ? URL.createObjectURL(file) : "/api/produktbilder/bild/" + s.id + "?v=" + s.v, pos = 50, box = s.custom ? s.box : null;
-    im.src = url; im.alt = ""; pv.appendChild(im); ed.appendChild(pv);
+    im.src = url; im.alt = ""; pv.appendChild(im); ed.appendChild(pv); shape(pv, s);
     if (file) {
       const sl = E("label", "pb-sl"), r = E("input"); r.type = "range"; r.min = 0; r.max = 100; r.value = 50;
       sl.appendChild(E("span", "", t("Section"))); sl.appendChild(r); ed.appendChild(sl);
@@ -493,7 +538,7 @@ main{padding:16px;max-width:760px;margin:0 auto;box-sizing:border-box}
     $i("pb-off").hidden = !!J.info_on; $i("pb-off").textContent = t("The product page is switched off - guests do not see it at the moment.");
     J.slots.forEach(s => {
       const c = E("section", "pb-c"), pv = E("div", "pb-pv"), im = E("img"), b = E("div", "pb-b");
-      c.id = "pb-" + s.id; im.src = "/api/produktbilder/bild/" + s.id + "?v=" + s.v; im.alt = s.name; pv.appendChild(im); mark(pv, s.box, s.custom ? s.label : (s.box ? "" : ""));
+      c.id = "pb-" + s.id; shape(pv, s); im.src = "/api/produktbilder/bild/" + s.id + "?v=" + s.v; im.alt = s.name; pv.appendChild(im); mark(pv, s.box, s.custom ? s.label : (s.box ? "" : ""));
       b.appendChild(E("b", "", s.name));
       const st = E("span", "pb-st" + (s.custom ? " own" : ""), s.custom ? "✓ " + t("Own picture") : t("Example")); b.appendChild(st);
       if (s.note) b.appendChild(E("small", "", s.note));
@@ -540,6 +585,15 @@ def produktbilder_selftest():
                 pass
         for k in PB_SLOTS:
             assert pbild_default(k) and pbild_default(k)[0][:4] == b"RIFF", "example picture in the page: " + k
+        b2 = io.BytesIO(); Image.new("RGB", (1170, 2532), (30, 40, 60)).save(b2, "PNG")      # 4.22.x: a phone screenshot (portrait)
+        pbild_set("app_tagebuch", b2.getvalue()); pbild_set("zelt", raw)
+        assert Image.open(os.path.join(pbild_dir(), "app_tagebuch.webp")).size == (520, 1125), "phone portrait 520 × 1125"
+        assert Image.open(os.path.join(pbild_dir(), "zelt.webp")).size == (1280, 592), "film card 1280 × 592"
+        h = pbild_apply('<html><head></head><body><img id="app-tagebuch" data-pb="app_tagebuch" src="data:image/webp;base64,AA" alt="">'
+                        '<video id="clip" data-pb="zelt" poster="data:image/webp;base64,AA" data-src="x"></video></body></html>')
+        assert re.search(r'<img src="/info/bild/app_tagebuch\.webp\?v=\d+" alt="" id="app-tagebuch"', h), "app screenshot: own picture, no camera text"
+        assert "<video" not in h and '<img data-pb="zelt" src="/info/bild/zelt.webp?v=' in h, "film card -> own picture"
+        pbild_reset("app_tagebuch"); pbild_reset("zelt")
         assert all(DE.get(k) and all(TRX[L].get(k) for L in ("fr", "it", "rm")) for k in _HX_PB), "texts in 5 languages"
         assert 'class="pb-back" href="/homepage"' in PB_PAGE and 'id="hp-pbild" href="/produktbilder"' in HP_PAGE and 'href="/produktbilder"' not in TOOLS_PAGE, "entry in the card Homepage"
     finally:

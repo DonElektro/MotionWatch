@@ -6,7 +6,7 @@
   python3 werkzeuge/info_seite_packen.py --pruefen                         # nur prüfen (Bildplätze, Bildplatz-Skript, Nummern)
 
 Beim Packen kommt dazu, was MoveEye an der Seite braucht (wie bisher von Hand):
-  * die fünf Bildplätze data-pb="live|tag|nacht|damals|jetzt" (eigene Fotos, Teil 639zzzze),
+  * die Bildplätze data-pb="live|tag|nacht|damals|jetzt|app_kamera|app_live|app_tagebuch|zelt" (eigene Fotos, Teil 639zzzze),
   * das kleine Skript für Markierung / Text der eigenen Fotos (window.PB),
   * die Nummern in der Fussnote von «Alle Funktionen» (const MWV): MoveEye aus APP_VERSION (Teil 010), Simulator aus
     simulator3d/scripts/main.gd. Auf dem Gerät setzt INFO_INJECT (620) zusätzlich window.MW_VER = {app: APP_VERSION} –
@@ -18,7 +18,10 @@ import base64, gzip, json, os, re, sys
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEIL = os.path.join(REPO, "quelle", "620_daten_produktseite.py")
 SLOTS = (("tag", r'\bid="img-day"'), ("nacht", r'\bid="img-night"'), ("jetzt", r'\bid="zf-now"'),
-         ("damals", r'\bid="zf-then-img"'), ("live", r'\bdata-alt="alt_live"'))
+         ("damals", r'\bid="zf-then-img"'), ("live", r'\bdata-alt="alt_live"'),
+         # 4.22.x: the cards of «Ein Blick in die App» (owner 22.11.2026): camera picture in the Live-Bild phone, the two phone
+         # screens, the film card (a <video>: its poster is the example, an own picture replaces the film)
+         ("app_kamera", r'\bid="app-cam"'), ("app_live", r'\bid="app-live"'), ("app_tagebuch", r'\bid="app-tagebuch"'), ("zelt", r'\bid="clip"'))
 PB_SCRIPT = """<script>
 /* image slots: window.PB = {slot: {box, label}} for the own pictures of the admin (MoveEye part 639zzzze) */
 (function () {
@@ -33,6 +36,9 @@ PB_SCRIPT = """<script>
     if (sp && c.label) { sp.textContent = c.label; sp.removeAttribute("data-i"); }
     else if (sp && id !== "zf-mark") sp.hidden = true;
   });
+  const cam = document.getElementById("app-cam"), lab = document.getElementById("app-cam-live");   // the camera picture in the Live-Bild phone
+  if (cam && PB.app_kamera) { if (lab) lab.hidden = false; }          // own picture: the «LIVE» label on top (the example has it in the picture)
+  else if (cam && PB.app_live) cam.hidden = true;                    // own whole screen without own camera picture: the screen as it is
 })();
 </script>
 """
@@ -52,12 +58,13 @@ def prepare(h):
     if i >= 0:
         h = h[:i + len("</html>")] + "\n"                    # nothing after the document (an artifact export may repeat </body></html>)
     for slot, sel in SLOTS:
-        tags = [m for m in re.finditer(r"<img\b[^>]*>", h) if re.search(sel, m.group(0))]
+        tags = [m for m in re.finditer(r"<(?:img|video)\b[^>]*>", h) if re.search(sel, m.group(0))]
         if len(tags) != 1:
             sys.exit("Bildplatz %s: %d passende <img> (erwartet 1)" % (slot, len(tags)))
         t = tags[0].group(0)
         if 'data-pb="' not in t:
-            h = h[:tags[0].start()] + t.replace("<img ", '<img data-pb="%s" ' % slot, 1) + h[tags[0].end():]
+            el = "<video " if t.startswith("<video") else "<img "
+            h = h[:tags[0].start()] + t.replace(el, el + 'data-pb="%s" ' % slot, 1) + h[tags[0].end():]
     if "window.PB || {}" not in h:
         h = h.replace("</body>", PB_SCRIPT + "</body>", 1)
     app, sim = versions()
@@ -70,7 +77,7 @@ def prepare(h):
 
 def check(h):
     bad = []
-    pb = sorted(re.findall(r'<img\b[^>]*\bdata-pb="(\w+)"', h))
+    pb = sorted(re.findall(r'<(?:img|video)\b[^>]*\bdata-pb="(\w+)"', h))
     if pb != sorted(s for s, _ in SLOTS):
         bad.append("Bildplätze %s" % pb)
     if "window.PB || {}" not in h:

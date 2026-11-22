@@ -324,7 +324,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_22_0.zip"
-ZD_SHA256 = "f65db088a5901b0a6b0744bb9d385039f94276b127f0d87fcff0a34ac6ac355a"
+ZD_SHA256 = "595044038bd0948b75a0d710e64383d48b8d19e66976cfc64020f0fb5f56b25f"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -101839,6 +101839,7 @@ radio_selftest = _zd_fn('639zzzzd_radio/radio_selftest()')
 
 
 SELFTEST_EXTRA.append(("Radio: stations, play lists, ICY, priority, rights (639zzzzd)", radio_selftest))
+
 
 
 
