@@ -249,6 +249,18 @@ def _parse_day(s):
         return None
 
 
+def rec_oldest(files):
+    """4.18.1: {"time", "name"} of the oldest kept recording (video or snapshot of the recordings folder - the cleanup counts
+    only these against record_max_gb; time-lapse and continuous recording have their own limits) or None"""
+    best = None
+    for stem, kinds in files.items():
+        n, st = kinds.get("video") or kinds.get("image")
+        dt = parse_stamp(n) or datetime.fromtimestamp(st.st_mtime)
+        if best is None or dt < best[0]:
+            best = (dt, n)
+    return {"time": best[0].strftime("%Y-%m-%d %H:%M:%S"), "name": best[1]} if best else None
+
+
 def list_recordings(args, watch=None):
     """Filtered, sorted, paged list of recordings. Filters: kind, from, to, schedule, source, q, sort, offset, limit."""
     d = rec_dir()
@@ -389,7 +401,8 @@ def list_recordings(args, watch=None):
             "schedules": [{"index": i, "name": s["name"], "enabled": s["enabled"], "days": s["days"], "start": s["start"],
                            "end": s["end"], "active_now": schedule_active(s, now), "count": counts.get(str(i), 0)}
                           for i, s in enumerate(plans)],
-            "disk": {"files": len(files), "mb": int(total_bytes / 1024 ** 2), "limit_gb": CFG["record_max_gb"]},
+            "disk": {"files": len(files), "mb": int(total_bytes / 1024 ** 2), "limit_gb": rec_limit_gb(),
+                     "oldest": rec_oldest(files)},     # 4.18.1: how far back the kept recordings reach (the cleanup deletes the oldest)
             "ffmpeg": shutil.which("ffmpeg") is not None, "tl": tl_info}
 
 

@@ -61,6 +61,18 @@ r, n = liste("video")
 ok(n == ["timelapse/tlv_20261120_auto.mp4"], "«Videos» wie bisher (mit Zeitraffer-Videos) (%s)" % n)
 r, n = liste("image")
 ok(n == ["person_20261121_101500.jpg"], "«Bilder» wie bisher (ohne Zeitraffer-Fotos) (%s)" % n)
+# 4.18.1: the chip «⏪ bis …» - the oldest kept recording of the recordings folder (time-lapse not counted: own limit)
+ok(r["disk"]["oldest"] == {"time": "2026-11-21 10:15:00", "name": "person_20261121_101500.jpg"},
+   "Chip «⏪ bis …»: die älteste Aufnahme (%s), Zeitraffer-Fotos vom 20.11. zählen nicht" % r["disk"]["oldest"])
+open(os.path.join(rec, "motion_20261119_063000.mp4"), "wb").write(b"\x00" * 100)
+open(os.path.join(rec, "motion_20261119_063000.jpg"), "wb").write(b"\xff\xd8x")
+r, n = liste(None)
+ok(r["disk"]["oldest"] == {"time": "2026-11-19 06:30:00", "name": "motion_20261119_063000.mp4"} and r["disk"]["files"] == 2,
+   "Chip: ältere Aufnahme (Video + Bild) -> %s" % r["disk"]["oldest"])
+for n_ in ("motion_20261119_063000.mp4", "motion_20261119_063000.jpg", "person_20261121_101500.jpg"):
+    os.remove(os.path.join(rec, n_))
+r, n = liste(None)
+ok(r["disk"]["oldest"] is None, "Chip: keine Aufnahme -> kein Chip (%s)" % r["disk"]["oldest"])
 r, n = liste("timelapse_video")
 ok(r["tl"]["videos"] == 1 and r["tl"]["photos"] == 35, "mit Video: tl = %s (kein Hinweis mehr)" % r["tl"])
 page = ns["REC_PAGE"] if "REC_PAGE" in ns else ""
@@ -70,6 +82,10 @@ ok(hinweis in page and "empty-tlmk" in page and 'q_.get("kind")' in page, "Seite
 ok(all(ns["TRX"][L].get(hinweis) for L in ("fr", "it", "rm")) and ns["DE"].get(hinweis, "").startswith("Noch kein Zeitraffer-Video"),
    "Hinweis in 5 Sprachen")
 ok(all(ns["TRX"][L].get(k) for L in ("fr", "it", "rm") for k in ("Photos", "Videos", "Create video")), "«Fotos», «Videos», «Video erstellen» in fr / it / rm")
+ok('id="b-old"' in page and "back to {d}" in page and 'F.sort = "old"' in page, "Seite: Chip «⏪ bis …» neben den beiden anderen, Tippen = älteste zuerst")
+kt = "Oldest kept recording – when the folder is full, the oldest are deleted first (time-lapse and continuous recording have their own limits)"
+ok(all(ns["TRX"][L].get(k) for L in ("fr", "it", "rm") for k in ("back to {d}", kt)) and ns["DE"].get("back to {d}") == "bis {d}",
+   "Chip und Hinweis in 5 Sprachen")
 print("ERG " + json.dumps(erg))
 '''
 

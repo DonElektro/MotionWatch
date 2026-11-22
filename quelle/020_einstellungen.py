@@ -35,7 +35,7 @@ CFG = {
     "ext_on": False, "ext_token": "", "rtsp_on": False, "rtsp_port": 8554,   # picture for other programs
     "storage_path": "",                      # recordings on this drive (mount point); empty = next to the program
     "record": True, "record_dir": "recordings", "record_tail": 3.0,
-    "record_max_gb": 2.0,        # oldest recordings are deleted above this size
+    "record_max_gb": 8.0,        # oldest recordings are deleted above this size (4.18.1: 8 GB, before 2 GB; at most half the drive: rec_limit_gb)
     "snapshot_on_person": True,  # save a JPG the moment a person is detected
     "rec_marks": "thin",         # markings in recordings / alarm pictures: none | thin (corner brackets, face stays free) | full
     # low light
