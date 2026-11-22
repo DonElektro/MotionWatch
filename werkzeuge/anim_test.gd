@@ -30,6 +30,13 @@ func wait(s: float) -> void:
 	await create_timer(s).timeout
 
 
+func bis(cond: Callable, max_s: float) -> void:
+	"""wait until cond() is true, at most max_s seconds (checks every frame - no fixed wait on a full runner)"""
+	var ende := Time.get_ticks_msec() + int(max_s * 1000.0)
+	while not cond.call() and Time.get_ticks_msec() < ende:
+		await process_frame
+
+
 func spawn(kind: String, at: Vector3, to := Vector3.INF):
 	var v = main.spawn(kind, at, at + Vector3(0, 0, -30) if to == Vector3.INF else to)
 	return v
@@ -61,13 +68,21 @@ func _run() -> void:
 	var p = spawn("person", _front(5.0))
 	ok("Person hat anim", p != null and p.anim != null)
 	p.demo = 0.0
+	# CI 22.11.2026 (rot in ~6 % der Läufe): actor.gd startet 4-12 s nach dem Erscheinen einen eigenen Leerlauf (idle_kind,
+	# «steht» wird falsch, die Leerlauf-Pose fällt weg). Auf einem vollen Runner dauert dieser Teil über 4 s -> kein eigener
+	# Leerlauf, und gewartet wird auf den Zustand (höchstens 8 s), nicht eine feste Zeit.
+	p.next_idle = p.now_s() + 9999.0
+	p.idle_until = 0.0
 	await wait(0.6)
 	var A = p.anim
 	A._steh = 5.0
 	A.leer = "verschr"
-	A._leer_bis = p.now_s() + 30.0
-	await wait(1.2)
-	ok("Arme verschränkt (Oberarm nach innen gedreht, Ellbogen > 1.5)", (p.arms[1][0] as Node3D).rotation.y > 0.5 and (p.arms[0][0] as Node3D).rotation.y < -0.5 and (p.arms[1][2] as Node3D).rotation.x > 1.5)
+	A._leer_bis = p.now_s() + 9999.0
+	var verschr := func(): return (p.arms[1][0] as Node3D).rotation.y > 0.5 and (p.arms[0][0] as Node3D).rotation.y < -0.5 and (p.arms[1][2] as Node3D).rotation.x > 1.5
+	await bis(verschr, 8.0)
+	if not verschr.call():
+		print("  (Zustand: lod %s, leer «%s», idle «%s», Tempo %.2f, anim_arme %s)" % [A.lod, A.leer, p.idle_kind, p.cur_speed, p.anim_arme])
+	ok("Arme verschränkt (Oberarm nach innen gedreht, Ellbogen > 1.5)", verschr.call())
 	ok("anim_arme für das Figuren-Paket", p.anim_arme)
 	A.leer = "gewicht"
 	var tz := []
@@ -76,8 +91,9 @@ func _run() -> void:
 		tz.append(absf(p.hips.rotation.z))
 	ok("Gewicht verlagern ohne Aufsammeln (Hüfte |z| < 0.12)", tz.max() < 0.12 and tz.max() > 0.02)
 	A.leer = "taschen"
-	await wait(1.0)
-	ok("Hände in den Taschen", (p.arms[0][0] as Node3D).rotation.x < 0.0)
+	var taschen := func(): return (p.arms[0][0] as Node3D).rotation.x < 0.0
+	await bis(taschen, 8.0)
+	ok("Hände in den Taschen", taschen.call())
 	# ---- 5 Handlungen ----
 	for art in ["winken", "aufheben", "klettern", "kurbeln", "hebel", "highfive", "freude", "schreck"]:
 		ok("aktion %s angenommen" % art, p.aktion(art, 1.0))

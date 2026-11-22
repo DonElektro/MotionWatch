@@ -96,6 +96,9 @@ func _process(_dt: float) -> bool:
 				var low: float = (_low_person(v) if v.kind == "person" else _low_animal(v)) - gy
 				var s: Dictionary = stat[i]
 				s["min"] = minf(s["min"], low)
+				if low > s["max"]:                           # 22.11.2026: CI once «Mensch rennt: Fuss schwebt 0.279 m» (~6 % of the runs,
+					# not reproduced locally, also not with 350 ms hitches): the error now says what the figure did at that moment
+					s["wo"] = "Bild %d, dt %.3f s, Tempo %.2f, y %.3f, idle «%s», emote «%s»" % [frames, _dt, float(v.cur_speed), gy, str(v.idle_kind), str(v.emote)]
 				s["max"] = maxf(s["max"], low)
 				for l in v.legs:
 					if l.size() > 2 and l[2] != null:
@@ -114,7 +117,7 @@ func _process(_dt: float) -> bool:
 				if s["min"] < -0.025:
 					errs.append("%s: Fuss %.3f m im Boden" % [c[3], s["min"]])
 				if s["max"] > fly:
-					errs.append("%s: Fuss schwebt %.3f m" % [c[3], s["max"]])
+					errs.append("%s: Fuss schwebt %.3f m (%s)" % [c[3], s["max"], str(s.get("wo", "?"))])
 				if str(c[0]) in ["person", "child", "elderly"] and float(c[1]) >= 1.0 and s["knee"] < 0.75:
 					errs.append("%s: Knie beugt nur %.2f" % [c[3], s["knee"]])
 			print("Bilder: %d" % frames)
