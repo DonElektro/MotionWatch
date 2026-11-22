@@ -126,8 +126,9 @@ func _run() -> void:
 	ok("Reh im Feldstecher mit Name und Distanz", sicht.any(func(e): return str(e[0]) == sa.T.t("Reh") and float(e[1]) > 35.0 and float(e[1]) < 45.0))
 	sa.tu_fernglas("nacht")
 	ok("Nachtsicht an", bool(sa.nacht))
-	var fp: String = sa.foto()
-	ok("Foto gespeichert (%s)" % fp, FileAccess.file_exists(fp))
+	if DisplayServer.get_name() != "headless":            # (headless: no renderer, no picture)
+		var fp: String = sa.foto()
+		ok("Foto gespeichert (%s)" % fp, FileAccess.file_exists(fp))
 	await _key(KEY_B)
 	ok("B: zurück", not bool(sa.fernglas) and not bool(sa.nacht))
 	if deer != null and is_instance_valid(deer):

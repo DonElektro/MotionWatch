@@ -270,9 +270,10 @@ func foto() -> String:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(FOTO_DIR))
 	_fotos += 1
 	var nm := "%s/erkunden_%s_%d.png" % [FOTO_DIR, Time.get_datetime_string_from_system().replace(":", "-"), _fotos]
-	var img: Image = get_viewport().get_texture().get_image()
-	if img != null:
-		img.save_png(nm)
+	var img: Image = get_viewport().get_texture().get_image() if DisplayServer.get_name() != "headless" else null
+	if img == null:
+		return ""                                         # (no picture without a renderer - tests)
+	img.save_png(nm)
 	sag(T.t("Foto gespeichert"), 2.0)
 	return nm
 

@@ -100,6 +100,8 @@ func kamera(cam: Camera3D, dt: float, d_or: float, d_pi: float, d_di: float) -> 
 
 func foto() -> String:
 	"""a picture of the 3D view without any controls: an own camera at the place of the view, rendered once"""
+	if DisplayServer.get_name() == "headless":
+		return ""                                         # (no picture without a renderer - tests)
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(FOTO_DIR))
 	var vs: Vector2i = Vector2i(get_viewport().get_visible_rect().size)
 	var sv := SubViewport.new()

@@ -17778,10 +17778,10 @@
   "rm": "Foto: direcziun dal center dal maletg (0 = dretg ora)"
  },
  "Fotomodus (P)": {
-  "en": "",
-  "fr": "",
-  "it": "",
-  "rm": ""
+  "en": "Photo mode (P)",
+  "fr": "Mode photo (P)",
+  "it": "Modalità foto (P)",
+  "rm": "Modus da foto (P)"
  },
  "Fotorealistische Modelle, Oberflächen und Himmel (HDRI).": {
   "en": "Photorealistic models, surfaces and skies (HDRI).",
@@ -17868,10 +17868,10 @@
   "rm": "Explorar liber"
  },
  "Frei erkunden ab: %s": {
-  "en": "",
-  "fr": "",
-  "it": "",
-  "rm": ""
+  "en": "Explore freely from: %s",
+  "fr": "Exploration libre depuis : %s",
+  "it": "Esplorazione libera da: %s",
+  "rm": "Explorar liber davent da: %s"
  },
  "Frei erkunden geht gerade nicht: %s": {
   "en": "Exploring freely is not possible right now: %s",
@@ -18943,10 +18943,10 @@
   "rm": "annunzià da MoveEye"
  },
  "Gemerkt: %s": {
-  "en": "",
-  "fr": "",
-  "it": "",
-  "rm": ""
+  "en": "Marked: %s",
+  "fr": "Mémorisé : %s",
+  "it": "Memorizzato: %s",
+  "rm": "Memorisà: %s"
  },
  "Gemüsebeet": {
   "en": "Vegetable bed",
@@ -32756,10 +32756,10 @@
   "rm": "Anc nagin maletg da MoveEye"
  },
  "Noch kein Ort gemerkt": {
-  "en": "",
-  "fr": "",
-  "it": "",
-  "rm": ""
+  "en": "No place marked yet",
+  "fr": "Aucun lieu mémorisé",
+  "it": "Nessun luogo memorizzato",
+  "rm": "Anc nagin lieu memorisà"
  },
  "Noch kein Paket gemacht.": {
   "en": "No package made yet.",
@@ -33849,10 +33849,10 @@
   "rm": "Lieu memorisà"
  },
  "Ort gemerkt – beim nächsten Mal geht es hier weiter": {
-  "en": "",
-  "fr": "",
-  "it": "",
-  "rm": ""
+  "en": "Place marked – next time you continue here",
+  "fr": "Lieu mémorisé – la prochaine fois tu reprends ici",
+  "it": "Luogo memorizzato – la prossima volta riprendi da qui",
+  "rm": "Lieu memorisà – la proxima giada vai vinavant qua"
  },
  "Ort gemerkt – der Kompass zeigt hierher": {
   "en": "Place marked – the compass points here",
@@ -33861,10 +33861,10 @@
   "rm": "Lieu memorisà – la busla mussa nà qua"
  },
  "Ort hier merken (nächstes Mal weiter hier)": {
-  "en": "",
-  "fr": "",
-  "it": "",
-  "rm": ""
+  "en": "Mark this place (continue here next time)",
+  "fr": "Mémoriser ce lieu (reprendre ici la prochaine fois)",
+  "it": "Memorizza questo luogo (riprendi qui la prossima volta)",
+  "rm": "Memorisar quest lieu (la proxima giada vinavant qua)"
  },
  "Ort in dieser Welt": {
   "en": "Place in this world",
@@ -45052,16 +45052,16 @@
   "rm": "Vinavant (→ / Enter)"
  },
  "Weiter am gemerkten Ort": {
-  "en": "",
-  "fr": "",
-  "it": "",
-  "rm": ""
+  "en": "Continuing at the marked place",
+  "fr": "On reprend au lieu mémorisé",
+  "it": "Si riprende dal luogo memorizzato",
+  "rm": "Vinavant al lieu memorisà"
  },
  "Weiter am gemerkten Ort (%s)": {
-  "en": "",
-  "fr": "",
-  "it": "",
-  "rm": ""
+  "en": "Continue at the marked place (%s)",
+  "fr": "Reprendre au lieu mémorisé (%s)",
+  "it": "Riprendi dal luogo memorizzato (%s)",
+  "rm": "Vinavant al lieu memorisà (%s)"
  },
  "weiter bei Schritt %d – das Bedienfeld Schritt für Schritt": {
   "en": "continue at step %d – the control panel step by step",
