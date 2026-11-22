@@ -1,16 +1,16 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8347 (Stellen: 11598)
-Übersetzt: en 8347, fr 8347, it 8347, rm 8347
+Texte gesamt: 8350 (Stellen: 11602)
+Übersetzt: en 8350, fr 8350, it 8350, rm 8350
 Unsicher markiert: 428
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 540 Stellen
-Nicht mehr im Code (noch in texte.json): 407
+Nicht mehr im Code (noch in texte.json): 408
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 30682, schlüssel 23644, keine Wörter 15088, index 10579, technisch 3929, doc 2674, einheit 351, log 204, englisch 148, pfad 130, stringname 107, html 69, klasse 45, shader 6
+Übersprungen (Grund: Anzahl): kennung 30690, schlüssel 23648, keine Wörter 15088, index 10582, technisch 3931, doc 2677, einheit 351, log 204, englisch 148, pfad 130, stringname 107, html 69, klasse 45, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
-  main_einstellungen.gd    403    25
+  main_einstellungen.gd    404    25
   bergtal_abenteuer.gd     285     7
   gamewiz.gd               254    15
   abenteuer_figuren_daten.gd   238     0
@@ -128,12 +128,12 @@ Pro Datei (Texte / davon dynamische Stellen):
   dataset.gd                22     3
   statusled.gd              22     0
   mini.gd                   21     1
+  devtool.gd                21     0
   phone.gd                  20     4
   klang.gd                  20     0
   patrol.gd                 20     0
   trailer.gd                19     7
   erkunden_figur.gd         19     1
-  devtool.gd                19     0
   tv.gd                     19     8
   surprise.gd               19     1
   kompakt_dorf.gd           18     0
@@ -825,21 +825,21 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main_einstellungen.gd:334  'aus'
   main_einstellungen.gd:352  'an'
   main_einstellungen.gd:352  'aus'
-  main_einstellungen.gd:429  'keine'
-  main_einstellungen.gd:455  'Wächter an MoveEye: '
-  main_einstellungen.gd:518  'immer'
-  main_einstellungen.gd:520  'aus'
-  main_einstellungen.gd:527  'aus'
-  main_einstellungen.gd:527  'aus'
-  main_einstellungen.gd:528  'immer'
-  main_einstellungen.gd:533  'aus'
-  main_einstellungen.gd:537  'aus'
-  main_einstellungen.gd:537  'aus'
-  main_einstellungen.gd:544  'ohne'
-  main_einstellungen.gd:546  'ohne'
-  main_einstellungen.gd:563  'aus'
-  main_einstellungen.gd:567  'aus'
-  main_einstellungen.gd:738  'Karte öffnen: '
+  main_einstellungen.gd:437  'keine'
+  main_einstellungen.gd:463  'Wächter an MoveEye: '
+  main_einstellungen.gd:526  'immer'
+  main_einstellungen.gd:528  'aus'
+  main_einstellungen.gd:535  'aus'
+  main_einstellungen.gd:535  'aus'
+  main_einstellungen.gd:536  'immer'
+  main_einstellungen.gd:541  'aus'
+  main_einstellungen.gd:545  'aus'
+  main_einstellungen.gd:545  'aus'
+  main_einstellungen.gd:552  'ohne'
+  main_einstellungen.gd:554  'ohne'
+  main_einstellungen.gd:571  'aus'
+  main_einstellungen.gd:575  'aus'
+  main_einstellungen.gd:746  'Karte öffnen: '
   mehr.gd:258  ' · Leistung: %d Bilder/s, Lite %s'
   mehr.gd:258  'an'
   mehr.gd:258  'aus'

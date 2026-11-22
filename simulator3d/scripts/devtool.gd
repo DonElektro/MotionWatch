@@ -65,6 +65,8 @@ var _search: LineEdit
 var _world_opt: OptionButton
 var _map: DevMap
 var _status: Label
+var _speed_lbl: Label
+var _tempo_hint: Label                                    # «Frei erkunden»: where the speed of the figure is (the bar may be under this window)
 var _fly_chk: CheckButton
 var _speed_opt: OptionButton
 var _all: Array = []                   # alle_orte() of the last refresh
@@ -544,9 +546,11 @@ func _build() -> void:
 	_fly_chk.toggled.connect(func(on): set_fly(on))
 	bot.add_child(_fly_chk)
 	var sl := Label.new()
-	sl.text = T.t("Tempo")
+	sl.text = T.t("Flugkamera-Tempo")                    # (Besitzer 22.11.2026: not the speed of the figure - only with the fly camera on)
 	bot.add_child(sl)
+	_speed_lbl = sl
 	_speed_opt = OptionButton.new()
+	_speed_opt.tooltip_text = T.t("Nur für die Flugkamera. Das Tempo der Figur: Leiste oben «Rennen» oder Reiter «Schalter» → «Rennen beim Erkunden».")
 	for s in SPEEDS:
 		_speed_opt.add_item("%s m/s" % str(s).trim_suffix(".0"))
 	_speed_opt.item_selected.connect(func(i):
@@ -557,6 +561,11 @@ func _build() -> void:
 	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_status.clip_text = true
 	bot.add_child(_status)
+	_tempo_hint = UI.small(T.t("Tempo der Figur: Leiste oben «Rennen» (unter diesem Fenster) oder Reiter «Schalter» → «Rennen beim Erkunden»"), UI.ORG)
+	_tempo_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_tempo_hint.custom_minimum_size = Vector2(440, 0)
+	_tempo_hint.visible = false
+	v.add_child(_tempo_hint)
 	v.add_child(eb().section())                          # Teil 2: Schnellregler + Ebenen
 	extra.build(v)                                       # Teil 3: Notizen, Kontaktbogen, Kapitel-Sprung
 	if main.fenster != null:
@@ -656,6 +665,22 @@ func _paint() -> void:
 			if absf(float(SPEEDS[i]) - float(ex.fly_speed)) < absf(float(SPEEDS[best]) - float(ex.fly_speed)):
 				best = i
 		_speed_opt.select(best)
+		_speed_opt.disabled = not bool(ex.fly)               # greyed out unless the fly camera is on
+		if _speed_lbl != null:
+			_speed_lbl.modulate.a = 1.0 if bool(ex.fly) else 0.45
+	if _tempo_hint != null:
+		_tempo_hint.visible = tempo_verdeckt()
+
+
+func tempo_verdeckt() -> bool:
+	"""«Frei erkunden» with fast run: the bar button «Rennen» lies under this window (then the window says where the speed is)"""
+	var ex = main.explore
+	if ex == null or panel == null or not shown or not ex.has_method("person_on") or not ex.person_on():
+		return false
+	var b: Control = ex.get("_btn_speed")
+	if b == null or not b.visible:
+		return false
+	return panel.get_global_rect().intersects(b.get_global_rect())
 
 
 func _process(dt: float) -> void:
