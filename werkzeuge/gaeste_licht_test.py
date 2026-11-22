@@ -537,7 +537,7 @@ def teil_c(datei, tmp, bilder, godot):
         st = {"sim_on": True, "source": "sim:0", "thermal_source": "sim:thermal", "sim_url": "http://127.0.0.1:%d" % sp, "sim_auto": False,
               "sim_autostart": False, "sim_autostart_v2": False, "sim_autoupd": False, "update_url": "", "lang": "de", "desktop_notice": False,
               "setup_done": True, "news_popup": False, "theme": "dark", "thermal_on": False, "patrol": False, "track_person": True,
-              "gl_on": True, "gl_dark_only": True, "gl_pct": 70}
+              "gl_on": True, "gl_dark_only": True, "gl_pct": 70, "light_ir": "auto", "light_ir_auto": "dark"}   # IR as on a real night
         json.dump({"cfg": st}, open(os.path.join(cfg, "motionwatch_settings.json"), "w"))
         ki = os.path.join(env.get("CACHE", ""), "ki") if env.get("CACHE") else ""
         print("  KI-Modell: %s" % (ki if ki and os.path.isdir(ki) else "keins (Bewegung + Wärmebild)"), flush=True)
