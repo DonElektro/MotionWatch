@@ -30,6 +30,7 @@ func _ready() -> void:
 	knopf.custom_minimum_size = Vector2(48, 44)
 	knopf.add_theme_font_size_override("font_size", 15)
 	knopf.pressed.connect(func(): set_menu(not menu_zeigen))
+	pille(knopf)
 	knopf.visible = false
 	_layer.add_child(knopf)
 
@@ -205,3 +206,14 @@ func info() -> Dictionary:
 		if n != null:
 			namen.append(str(n.name))
 	return {"an": an, "menu": menu_zeigen, "versteckt": namen.size(), "namen": namen, "knopf": knopf.visible}
+
+
+static func pille(b: Button) -> void:
+	"""a pill like the round edge buttons of erkunden_touch.gd: dark, light ring (blue while pressed)"""
+	var ring := Color(0.9, 0.93, 0.96, 0.95)
+	b.add_theme_stylebox_override("normal", UI.box(Color(0.05, 0.07, 0.09, 0.62), ring, 26, 12, 3))
+	b.add_theme_stylebox_override("hover", UI.box(Color(0.05, 0.07, 0.09, 0.75), ring, 26, 12, 3))
+	b.add_theme_stylebox_override("pressed", UI.box(Color(0.05, 0.07, 0.09, 0.85), Color(0.35, 0.75, 1.0), 26, 12, 3))
+	b.add_theme_color_override("font_color", Color(0.95, 0.97, 1.0))
+	b.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	b.add_theme_constant_override("outline_size", 4)

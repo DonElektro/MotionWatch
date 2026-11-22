@@ -86,6 +86,7 @@ func _ready() -> void:
 	knopf.custom_minimum_size = Vector2(96, 48)
 	knopf.add_theme_font_size_override("font_size", 16)
 	knopf.pressed.connect(func(): menu(not _panel.visible))
+	preload("res://scripts/erkunden_ruhe.gd").pille(knopf)
 	knopf.visible = false
 	_layer.add_child(knopf)
 	_panel = PanelContainer.new()
@@ -1357,6 +1358,8 @@ func _process(dt: float) -> void:
 	_zeltplane(1 if zeltplane_soll() else 0)
 	_bau_tick()
 	_vorschau_tick(dt)
+	if vorschau != "" and person.touch != null and person.touch.visible and get_viewport().get_visible_rect().size.x < 600.0:
+		person.touch.visible = false                                 # phone: the edge buttons wait while placing (the bar needs the room)
 	_feuer_tick(dt)
 	if hat("moveeye") and hat("feuerstelle") and main.now() - _glut_t > 2.0:
 		_glut_t = main.now()
@@ -1377,7 +1380,7 @@ func _process(dt: float) -> void:
 func _layout() -> void:
 	var s: Vector2 = get_viewport().get_visible_rect().size
 	var schmal := s.x < 600.0
-	knopf.text = "⛺ " + T.t("Camp") if not schmal else T.t("Camp")
+	knopf.text = "⛺ " + T.t("Camp")
 	var kg := knopf.get_combined_minimum_size()
 	knopf.size = kg
 	var oben := 8.0
@@ -1399,7 +1402,7 @@ func _layout() -> void:
 		var lw := minf(520.0, s.x - 16.0)
 		_leiste.custom_minimum_size = Vector2(lw, 0)
 		_leiste.size = Vector2(lw, 0)
-		_leiste.position = Vector2((s.x - lw) * 0.5, s.y - _leiste.get_combined_minimum_size().y - (s.y * 0.2 if schmal else 24.0))
+		_leiste.position = Vector2((s.x - lw) * 0.5, s.y - _leiste.get_combined_minimum_size().y - (s.y * 0.36 if schmal else 24.0))   # phone: above the stick
 	if _dlg.visible:
 		var dw := minf(460.0, s.x - 24.0)
 		_dlg.custom_minimum_size = Vector2(dw, 0)
