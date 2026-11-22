@@ -1,0 +1,5 @@
+{
+ "version": "4.19.0",
+ "grund": "Bergtal-Karte: der Workflow «Bergtal-Karte» muss von main laufen und legt das Release bergkarte-1 an; dessen Prüfsummen kommen danach in die signierte Fassung 4.19.0.",
+ "bis": "2026-11-24"
+}

@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8102 (Stellen: 11246)
-Übersetzt: en 8102, fr 8102, it 8102, rm 8102
-Unsicher markiert: 329
+Texte gesamt: 8106 (Stellen: 11251)
+Übersetzt: en 8106, fr 8106, it 8106, rm 8106
+Unsicher markiert: 330
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
 Nicht mehr im Code (noch in texte.json): 404
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29499, schlüssel 22736, keine Wörter 14387, index 10297, technisch 3828, doc 2571, einheit 344, log 204, englisch 146, pfad 130, stringname 107, html 69, klasse 42, shader 6
+Übersprungen (Grund: Anzahl): kennung 29678, schlüssel 22822, keine Wörter 14454, index 10337, technisch 3840, doc 2587, einheit 346, log 204, englisch 148, pfad 130, stringname 107, html 69, klasse 42, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -95,8 +95,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   simreal.gd                37     0
   gamemore.gd               36     1
   maggie_vorfuehrung.gd     35     7
+  kit_abenteuer.gd          35     1
   fenster.gd                34     0
-  kit_abenteuer.gd          34     1
   gameziele.gd              34     0
   devtool_notizen.gd        34     1
   gametools.gd              33     2
@@ -195,6 +195,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   visitlog.gd                5     0
   figur.gd                   5     0
   wege.gd                    5     0
+  bergkarte.gd               4     0
   gras.gd                    4     0
   device.gd                  4     2
   main_steuerung.gd          4     1
@@ -287,6 +288,7 @@ Unsicher:
   'Hopp!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Du steuerst jetzt Maggie': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Drüben! Maggie läuft zum Riegel.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Hoppla! Nochmal, Maggie – rauf auf den Sims.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
   'MoveEye: IR-Licht an.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Foto im Rucksack (Tagebuch)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Kit läuft nicht': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
@@ -763,16 +765,16 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   hp_kiosk.gd:157  'aus'
   hp_kiosk.gd:197  'aus'
   licht.gd:42  'aus'
-  main.gd:770  ' (Port %d)'
-  main.gd:1674  '  %.0f Mbit/s'
-  main.gd:2334  ' (von MoveEye)'
-  main.gd:2367  'Der Simulator ist belegt: '
-  main.gd:3206  'aus'
-  main.gd:3206  'ein'
-  main.gd:3283  'Sabotage-Test: '
-  main.gd:3283  'aus'
-  main.gd:3337  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3340  '\n🚨 Bewacht und weg: '
+  main.gd:773  ' (Port %d)'
+  main.gd:1677  '  %.0f Mbit/s'
+  main.gd:2337  ' (von MoveEye)'
+  main.gd:2370  'Der Simulator ist belegt: '
+  main.gd:3211  'aus'
+  main.gd:3211  'ein'
+  main.gd:3288  'Sabotage-Test: '
+  main.gd:3288  'aus'
+  main.gd:3342  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3345  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
@@ -971,7 +973,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inventar.gd:308  '\nKI: – = die KI von MoveEye kennt es nicht (Prüfstand: darf keinen Alarm auslösen)'
   inventar.gd:332  'KI: '
   kids.gd:338  ' Du hast jetzt %d Sterne.'
-  kit_abenteuer.gd:1832  'keine Szene '
+  kit_abenteuer.gd:1940  'keine Szene '
   kitrain.gd:93  '1/3 Paket: '
   kitrain.gd:157  'Ohne GitHub-Schlüssel: die ZIP liegt hier: %s\nSo kommt sie ins Training: 1. GitHub → Releases → «ki-daten» → Edit → ZIP hineinziehen → Update release '
   kitrain.gd:158  '(beim ersten Mal «Draft a new release», Tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye holt das neue Modell danach selbst.\n'

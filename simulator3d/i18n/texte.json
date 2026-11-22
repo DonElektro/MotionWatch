@@ -21946,6 +21946,13 @@
   "rm": "Oha!",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
+ "Hoppla! Nochmal, Maggie – rauf auf den Sims.": {
+  "en": "Oops! Again, Maggie – back up on the ledge.",
+  "fr": "Oups ! Encore une fois, Maggie – remonte sur la corniche.",
+  "it": "Ops! Ancora una volta, Maggie – di nuovo sulla cengia.",
+  "rm": "Oha! Anc ina giada, Maggie – puspè si sin la cengia.",
+  "?": "rm: Neubau-Texte 22.11.2026 (Korrekturlesen)"
+ },
  "Horizont": {
   "en": "Horizon",
   "fr": "Horizon",
@@ -41665,6 +41672,24 @@
   "it": "Touch",
   "rm": "Touch"
  },
+ "Tour im Sim:": {
+  "en": "Tour in the simulator:",
+  "fr": "Randonnée dans le simulateur :",
+  "it": "Escursione nel simulatore:",
+  "rm": "Tura en il simulatur:"
+ },
+ "Tour im Sim: am Ziel": {
+  "en": "Tour in the simulator: at the finish",
+  "fr": "Randonnée dans le simulateur : à l’arrivée",
+  "it": "Escursione nel simulatore: all’arrivo",
+  "rm": "Tura en il simulatur: a la finamira"
+ },
+ "Tour im Sim: der Mover kommt hier nicht weiter": {
+  "en": "Tour in the simulator: the mover cannot go on here",
+  "fr": "Randonnée dans le simulateur : le mover ne peut pas aller plus loin ici",
+  "it": "Escursione nel simulatore: il mover non può proseguire qui",
+  "rm": "Tura en il simulatur: il mover na po betg ir vinavant qua"
+ },
  "TowerPro MG90S": {
   "en": "TowerPro MG90S",
   "fr": "TowerPro MG90S",
@@ -51367,12 +51392,5 @@
   "fr": "🪨 Lance une pierre : «Lancer» (PC : F) – la caméra regarde vers le bruit, pas vers toi",
   "it": "🪨 Lancia un sasso: «Lanciare» (PC: F) – la telecamera guarda verso il rumore, non verso di te",
   "rm": "🪨 Bitta in crap: «Bittar» (PC: F) – la camera guarda vers la canera, betg vers tai"
- },
- "Hoppla! Nochmal, Maggie – rauf auf den Sims.": {
-  "en": "Oops! Again, Maggie – back up on the ledge.",
-  "fr": "Oups ! Encore une fois, Maggie – remonte sur la corniche.",
-  "it": "Ops! Ancora una volta, Maggie – di nuovo sulla cengia.",
-  "rm": "Oha! Anc ina giada, Maggie – puspè si sin la cengia.",
-  "?": "rm: Neubau-Texte 22.11.2026 (Korrekturlesen)"
  }
 }
