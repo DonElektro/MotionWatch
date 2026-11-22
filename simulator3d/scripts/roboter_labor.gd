@@ -13,7 +13,8 @@ extends Node
 ## Maus in der 3D-Ansicht: ziehen = drehen, rechts / Mitte ziehen = verschieben, Rad = zoomen.
 ## /control {"action": "roboter", "do": open | close | info | pose (name, snap) | set (id, value) | param (key, value) |
 ##           view (frei | seite | oben | roboter) | pause (on) | reset | hold (on) | tab (name) | pip (on) |
-##           gang (name, drive, turn) | ablauf (name) | goal (pos [x, y, z]) | stop}
+##           gang (name, drive, turn) | ablauf (name) | goal (pos [x, y, z]) | stop | ring (drive, turn) |
+##           gelaende (name | [names], ring)}
 
 const UI = preload("res://scripts/ui_style.gd")
 const T = preload("res://scripts/i18n.gd")
@@ -24,7 +25,7 @@ const ANZEIGE = preload("res://scripts/roboter_anzeige.gd")
 const TICKS := 120
 const PANEL_W := 380.0
 const TABS := [["form", "Form"], ["gelenke", "Gelenke"], ["posen", "Posen"], ["bewegen", "Bewegen"], ["anzeigen", "Anzeigen"],
-		["physik", "Physik"], ["ansicht", "Ansicht"]]
+		["gelaende", "Gelände"], ["physik", "Physik"], ["ansicht", "Ansicht"]]
 const VIEWS := [["frei", "Frei"], ["seite", "Seite"], ["oben", "Oben"], ["roboter", "Roboter-Kamera"]]
 const FORM := [   # [key, name, unit, step]
 	["segmente", "Segmente", "", 1.0], ["halbe_breite", "Halbe Breite", "E", 0.01], ["halbe_breite_spitze", "Halbe Breite Spitze", "E", 0.01],
@@ -54,6 +55,10 @@ var speed := 0.0                       # measured, m/s (smooth)
 var _last_com := Vector3.ZERO
 var _press := Vector2.ZERO
 var _anz_t := 0.0
+var terrain := {}                      # Gelände-Test: {name, ring, t, best, last_t, queue}; empty = none running
+var terrain_results := {}              # name -> [ok, text]
+const TERRAIN_MAX := 150.0             # s
+const TERRAIN_STILL := 15.0            # s without 3 cm progress = stuck
 var starts := {}                       # lane -> Transform3D (roboter_gelaende.gd)
 var view := "frei"
 var tab := "form"
@@ -181,11 +186,16 @@ func _physics_process(dt: float) -> void:
 		return
 	var wasd := Vector2(float(Input.is_key_pressed(KEY_A)) - float(Input.is_key_pressed(KEY_D)),
 			float(Input.is_key_pressed(KEY_W)) - float(Input.is_key_pressed(KEY_S)))
-	if wasd != Vector2.ZERO and bew.mode != "gang":
-		bew.start_gang(bew.gang)
+	if wasd != Vector2.ZERO and bew.mode not in ["gang", "ring"]:
+		if model.latch["state"] == "locked":
+			bew.start_ring()
+		else:
+			bew.start_gang(bew.gang)
 	bew.keys = wasd if wasd != Vector2.ZERO else manual
 	bew.step(dt)
 	model.step(dt)
+	if not terrain.is_empty():
+		_terrain_step(dt)
 
 
 func _process(dt: float) -> void:
@@ -524,6 +534,7 @@ func _build_ui() -> void:
 	_page_physik(_w["page_physik"])
 	_page_bewegen(_w["page_bewegen"])
 	_page_anzeigen(_w["page_anzeigen"])
+	_page_gelaende(_w["page_gelaende"])
 	_page_ansicht(_w["page_ansicht"])
 	var keys := UI.small(T.t("W / S vor / zurück · A / D Kurve · Leertaste Stopp · G Gehen · 1 – 4 Ansicht · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · H Bedienfeld · Esc schliessen"))
 	pv.add_child(keys)
@@ -823,10 +834,19 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 			else:
 				manual.y = dv
 				bew.goal = null
-				if bew.mode != "gang":
-					bew.start_gang(bew.gang)
+				if bew.mode not in ["gang", "ring"]:
+					if model.latch["state"] == "locked":
+						bew.start_ring()
+					else:
+						bew.start_gang(bew.gang)
 				_paint_gang())
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var rb := _button(pg, T.t("Im Ring rollen (die Füsse stossen, Kurve = Ring neigen)"), func():
+		if model.latch["state"] != "locked":
+			apply_pose("ring", true)
+		bew.start_ring()
+		_paint_gang())
+	_w["ring_btn"] = rb
 	_w["turn_sl"] = _slider(pg, T.t("Kurve (− rechts, + links)"), -1.0, 1.0, 0.05, 0.0, "", func(x: float): manual.x = x)
 	_slider(pg, T.t("Tempo"), 0.01, 0.25, 0.01, bew.tempo, "m/s", func(x: float): bew.tempo = x)
 	_slider(pg, T.t("Körperhöhe über dem Boden"), 0.3, 1.8, 0.05, bew.hoehe, "E", func(x: float): bew.hoehe = x)
@@ -846,6 +866,9 @@ func _paint_gang() -> void:
 		var b: Button = _w.get("ab_" + a[0])
 		if b != null:
 			_paint_btn(b, bew.mode == "ablauf" and bew.seq_name == a[0])
+	var r: Button = _w.get("ring_btn")
+	if r != null:
+		_paint_btn(r, bew.mode == "ring")
 
 
 func _page_anzeigen(pg: VBoxContainer) -> void:
@@ -879,6 +902,96 @@ func _page_anzeigen(pg: VBoxContainer) -> void:
 		h.add_child(pb)
 		_w["bars"].append([l, pb])
 	pg.add_child(UI.small(T.t("Strom: Schätzung je Servo = Ruhestrom + Blockierstrom × Last (Regler unter «Physik»). Kipp-Reserve: Abstand des Schwerpunkt-Lots vom Rand der Stützfläche (alle Bodenkontakte).")))
+
+
+func _page_gelaende(pg: VBoxContainer) -> void:
+	pg.add_child(UI.small(T.t("Gelände-Test: der Roboter startet vor der Prüfstrecke und geht mit der automatischen Gangart (oder rollt im Ring) hinüber. Geschafft = das hinterste Segment ist darüber. «Automatisch» hebt die Füsse und den Körper, wenn er nicht vorwärts kommt.")))
+	var ring := CheckButton.new()
+	ring.text = T.t("Im Ring rollen statt gehen")
+	ring.focus_mode = Control.FOCUS_NONE
+	pg.add_child(ring)
+	_w["terrain_ring"] = ring
+	for t in GELAENDE.NAMEN:
+		var tn: String = t[0]
+		var h := HBoxContainer.new()
+		h.add_theme_constant_override("separation", 8)
+		pg.add_child(h)
+		var b := _button(h, T.t(t[1]), func(): terrain_start([tn], ring.button_pressed))
+		b.custom_minimum_size = Vector2(130, 0)
+		var l := UI.small("–", UI.MUT)
+		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		h.add_child(l)
+		_w["terrain_" + tn] = l
+	_button(pg, T.t("Alle nacheinander"), func(): terrain_start(GELAENDE.NAMEN.map(func(x): return x[0]), ring.button_pressed), true)
+	_button(pg, T.t("Abbrechen"), func():
+		terrain = {}
+		stop_all())
+
+
+func terrain_start(names: Array, ring := false) -> void:
+	if names.is_empty():
+		return
+	var tn: String = names[0]
+	stop_all()
+	bew.angepasst = false
+	bew.hoehe = 0.9
+	bew.schritt_hoehe = 0.35
+	model.root_xf = starts.get(tn, starts.get("start", Transform3D()))
+	apply_pose("ring" if ring else "gerade", true)
+	terrain = {"name": tn, "ring": ring, "t": 0.0, "best": -1e9, "last_t": 0.0, "queue": names.slice(1)}
+	terrain_results[tn] = [false, T.t("läuft …")]
+	follow = true
+	if ring:
+		bew.start_ring()
+		manual = Vector2(0.0, 1.0)
+	else:
+		bew.start_gang("auto")
+		manual = Vector2(0.0, 1.0)
+	_paint_gang()
+
+
+func _terrain_x() -> float:
+	if terrain.get("ring", false):
+		return (bew.ring_state()["c"] as Vector3).x
+	return model.segment_xf(model.n() - 1).origin.x
+
+
+func _terrain_step(dt: float) -> void:
+	terrain["t"] = float(terrain["t"]) + dt
+	var tn: String = terrain["name"]
+	var x := _terrain_x()
+	if x > float(terrain["best"]) + 0.03:
+		terrain["best"] = x
+		terrain["last_t"] = terrain["t"]
+	var t: float = terrain["t"]
+	var res := []
+	if x >= float(GELAENDE.ENDE[tn]):
+		res = [true, T.t("geschafft in %d s") % int(round(t)) + (" · " + T.t("Füsse höher") if bew.angepasst else "")]
+	elif terrain.get("ring", false) and (model.latch["state"] != "locked" or absf(bew.ring_lean) > 60.0):
+		res = [false, T.t("umgefallen nach %d s") % int(round(t))]
+	elif not terrain.get("ring", false) and _tipped():
+		res = [false, T.t("gekippt nach %d s") % int(round(t))]
+	elif t - float(terrain["last_t"]) > TERRAIN_STILL:
+		res = [false, T.t("steckt fest (%d s ohne Fortschritt)") % int(TERRAIN_STILL)]
+	elif t > TERRAIN_MAX:
+		res = [false, T.t("zu langsam (über %d s)") % int(TERRAIN_MAX)]
+	if res.is_empty():
+		return
+	terrain_results[tn] = res
+	var q: Array = terrain["queue"]
+	var ring: bool = terrain["ring"]
+	terrain = {}
+	bew.stop()
+	manual = Vector2.ZERO
+	if not q.is_empty():
+		terrain_start(q, ring)
+
+
+func _tipped() -> bool:
+	for i in range(model.n()):
+		if model.segment_xf(i).basis.y.y < 0.2:
+			return true
+	return false
 
 
 func servo_name(id: String) -> String:
@@ -958,6 +1071,13 @@ func _refresh() -> void:
 				(pr[0] as Label).text = "%s  %.2f N·m" % [servo_name(tops[i][0]), absf(tops[i][2])]
 				(pr[1] as ProgressBar).value = minf(1.5, tops[i][1])
 				(pr[1] as ProgressBar).modulate = ANZEIGE.load_color(tops[i][1])
+	if tab == "gelaende":
+		for t in GELAENDE.NAMEN:
+			var l: Label = _w.get("terrain_" + t[0])
+			var r: Array = terrain_results.get(t[0], [])
+			if l != null and not r.is_empty():
+				l.text = str(r[1])
+				l.add_theme_color_override("font_color", UI.GRN if r[0] else (UI.TXT if str(r[1]) == T.t("läuft …") else UI.RED))
 	if tab == "bewegen":
 		(_w["gang_info"] as Label).text = _move_text()
 		_paint_gang()
@@ -983,6 +1103,12 @@ func _move_text() -> String:
 		t = str(names.get(bew.gang_now, bew.gang_now)) + (" (" + T.t("automatisch") + ")" if bew.gang == "auto" else "")
 		if bew.goal != null:
 			t += " · " + (T.t("Ziel erreicht") if bew.goal_reached else T.t("zum Ziel"))
+	elif bew.mode == "ring":
+		t = T.t("Im Ring rollen") + " · " + T.t("Neigung %d°") % int(round(bew.ring_lean))
+		if model.latch["state"] != "locked":
+			t += " · " + T.t("Ring nicht verriegelt")
+		if bew.goal != null:
+			t += " · " + (T.t("Ziel erreicht") if bew.goal_reached else T.t("zum Ziel"))
 	elif bew.mode == "ablauf":
 		t = T.t("Ablauf") + ": " + str(names.get(bew.seq_name, bew.seq_name))
 	return t + " · " + T.t("%.1f cm/s") % (speed * 100.0)
@@ -997,7 +1123,8 @@ func info() -> Dictionary:
 				"mass": model.total_mass, "current": model.total_current, "overloaded": model.overloaded(),
 				"collide": model.colliding_names(), "pose": last_pose, "ticks": Engine.physics_ticks_per_second,
 				"mode": bew.mode, "gait": bew.gang_now, "sequence": bew.seq_name, "speed": speed, "tip_margin": anz.margin,
-				"tipping": anz.tipping, "goal_reached": bew.goal_reached})
+				"tipping": anz.tipping, "goal_reached": bew.goal_reached, "ring_lean": bew.ring_lean,
+				"terrain": terrain.get("name", ""), "terrain_results": terrain_results, "adapted": bew.angepasst})
 	return d
 
 
@@ -1043,4 +1170,12 @@ func control(d: Dictionary) -> Dictionary:
 			set_goal(Vector3(float(g[0]), float(g[1]), float(g[2])))
 		"stop":
 			stop_all()
+		"ring":
+			if model.latch["state"] != "locked":
+				apply_pose("ring", true)
+			bew.start_ring()
+			manual = Vector2(float(d.get("turn", 0.0)), float(d.get("drive", 0.0)))
+		"gelaende":
+			var names = d.get("name", "stufe")
+			terrain_start(names if names is Array else [str(names)], bool(d.get("ring", false)))
 	return info()

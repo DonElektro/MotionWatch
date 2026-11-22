@@ -4151,6 +4151,12 @@
   "it": "Tutti a casa",
   "rm": "Tuts a chasa"
  },
+ "Alle nacheinander": {
+  "en": "All one after the other",
+  "fr": "Tous l’un après l’autre",
+  "it": "Tutti uno dopo l’altro",
+  "rm": "Tuts in suenter l’auter"
+ },
  "Alle notierten Runden löschen (zweimal klicken)": {
   "en": "Delete all noted rounds (click twice)",
   "fr": "Supprimer toutes les parties notées (cliquer deux fois)",
@@ -18884,6 +18890,12 @@
   "it": "Incollare i piedini e premere il dado per treppiede 1/4\" nella sede esagonale dall'interno. Incollare l'altoparlante nell'anello sopra la griglia con 3–4 punti di colla a caldo.",
   "rm": "Tatgar ils peis e smatgar la mutra da stativ 1/4\" da l'intern en la tastga sisagulara. Tatgar l'autpledader en l'anè sur la grilla dal fund cun 3–4 puncts cola chauda."
  },
+ "Füsse höher": {
+  "en": "feet higher",
+  "fr": "pieds plus hauts",
+  "it": "piedi più alti",
+  "rm": "pes pli auts"
+ },
  "Füsse seitlich": {
   "en": "Feet to the side",
   "fr": "Pieds sur le côté",
@@ -19507,6 +19519,12 @@
   "it": "Corridore fantasma: il tuo miglior percorso corre con te come fantasma (lo vedono solo i giocatori)",
   "rm": "Currider spiert: l’atgna meglra via curra cun sco spiert (mo ils giugaders la vesan)"
  },
+ "gekippt nach %d s": {
+  "en": "tipped over after %d s",
+  "fr": "renversé après %d s",
+  "it": "ribaltato dopo %d s",
+  "rm": "sturnà suenter %d s"
+ },
  "Gelb": {
   "en": "Yellow",
   "fr": "Jaune",
@@ -19548,6 +19566,12 @@
   "fr": "Terrain et surface (arbres, toits) comme modèle d’altitude – pour ton propre terrain dans Blender.",
   "it": "Terreno e superficie (alberi, tetti) come modello altimetrico – per un proprio terreno in Blender.",
   "rm": "Terren e surfatscha (plantas, tetgs) sco model d’autezza – per agen terren en Blender."
+ },
+ "Gelände-Test: der Roboter startet vor der Prüfstrecke und geht mit der automatischen Gangart (oder rollt im Ring) hinüber. Geschafft = das hinterste Segment ist darüber. «Automatisch» hebt die Füsse und den Körper, wenn er nicht vorwärts kommt.": {
+  "en": "Terrain test: the robot starts in front of the test track and crosses it with the automatic gait (or rolls in the ring). Made it = the rearmost segment is across. «Automatic» lifts the feet and the body when it does not get on.",
+  "fr": "Test de terrain : le robot part devant la piste d’essai et la traverse avec l’allure automatique (ou roule en anneau). Réussi = le dernier segment est passé. «Automatique» lève les pieds et le corps quand il n’avance pas.",
+  "it": "Test del terreno: il robot parte davanti al percorso di prova e lo attraversa con l’andatura automatica (o rotola ad anello). Riuscito = l’ultimo segmento è passato. «Automatica» alza i piedi e il corpo quando non avanza.",
+  "rm": "Test dal terren: il robot partescha davant la stretga da test e la traversa cun la moda da chaminar automatica (u rulla en il rintg). Reussì = l’ultim segment è passà. «Automatic» auza ils pes ed il corp, sch’el na vegn betg enavant."
  },
  "Gelände: leichte Hügel und Senken statt flachem Boden (Camping-Platz; baut die Szene neu)": {
   "en": "Terrain: gentle hills and hollows instead of flat ground (camping site; rebuilds the scene)",
@@ -19830,6 +19854,12 @@
   "fr": "Réussi - ensemble par-dessus le ressaut !",
   "it": "Fatto - insieme oltre il gradino di roccia!",
   "rm": "Fatg - ensemen sur la stgalim da crap!"
+ },
+ "geschafft in %d s": {
+  "en": "made it in %d s",
+  "fr": "réussi en %d s",
+  "it": "riuscito in %d s",
+  "rm": "reussì en %d s"
  },
  "Geschafft!": {
   "en": "Done!",
@@ -20577,6 +20607,12 @@
   "fr": "Creuser / Rapporter",
   "it": "Scavare / Riportare",
   "rm": "Chavar / Purtar"
+ },
+ "Graben 20 cm": {
+  "en": "Ditch 20 cm",
+  "fr": "Fossé 20 cm",
+  "it": "Fosso 20 cm",
+  "rm": "Foss 20 cm"
  },
  "Grafik": {
   "en": "Graphics",
@@ -23651,6 +23687,24 @@
   "fr": "Le bois crépite dans le poêle, la soupe fume. La gourde est de nouveau pleine.",
   "it": "La legna scoppietta nella stufa, la minestra fuma. La borraccia è di nuovo piena.",
   "rm": "La laina scrocla en la pigna, la suppa fima. La buttiglia è puspè plaina."
+ },
+ "Im Ring rollen": {
+  "en": "Rolling in the ring",
+  "fr": "Rouler en anneau",
+  "it": "Rotolare ad anello",
+  "rm": "Rullar en il rintg"
+ },
+ "Im Ring rollen (die Füsse stossen, Kurve = Ring neigen)": {
+  "en": "Roll in the ring (the feet push, curve = tilt the ring)",
+  "fr": "Rouler en anneau (les pieds poussent, virage = incliner l’anneau)",
+  "it": "Rotolare ad anello (i piedi spingono, curva = inclinare l’anello)",
+  "rm": "Rullar en il rintg (ils pes stuschan, curva = inclinar il rintg)"
+ },
+ "Im Ring rollen statt gehen": {
+  "en": "Roll in the ring instead of walking",
+  "fr": "Rouler en anneau au lieu de marcher",
+  "it": "Rotolare ad anello invece di camminare",
+  "rm": "Rullar en il rintg empè da chaminar"
  },
  "Im Rucksack: %s": {
   "en": "In the backpack: %s",
@@ -29147,6 +29201,12 @@
   "it": "Attivo da %s.",
   "rm": "Funcziuna dapi %s."
  },
+ "läuft …": {
+  "en": "running …",
+  "fr": "en cours …",
+  "it": "in corso …",
+  "rm": "è en funcziun …"
+ },
  "läuft: %s": {
   "en": "running: %s",
   "fr": "en cours : %s",
@@ -33273,6 +33333,12 @@
   "it": "Inclinazione bloccata",
   "rm": "Inclinar stgatschà"
  },
+ "Neigung %d°": {
+  "en": "Tilt %d°",
+  "fr": "Inclinaison %d°",
+  "it": "Inclinazione %d°",
+  "rm": "Inclinaziun %d°"
+ },
  "nein": {
   "en": "no",
   "fr": "non",
@@ -36449,6 +36515,12 @@
   "it": "Rampa %d°",
   "rm": "Rampa %d°"
  },
+ "Rampe 15°": {
+  "en": "Ramp 15°",
+  "fr": "Rampe 15°",
+  "it": "Rampa 15°",
+  "rm": "Rampa 15°"
+ },
  "Rangliste des Abends zurücksetzen": {
   "en": "Reset the ranking of the evening",
   "fr": "Remettre à zéro le classement de la soirée",
@@ -37045,6 +37117,12 @@
   "fr": "Anneau",
   "it": "Anello",
   "rm": "Rintg"
+ },
+ "Ring nicht verriegelt": {
+  "en": "Ring not locked",
+  "fr": "Anneau non verrouillé",
+  "it": "Anello non bloccato",
+  "rm": "Rintg betg serrà"
  },
  "Ring rund ums Gerät (8 m)": {
   "en": "Ring around the device (8 m)",
@@ -41215,6 +41293,12 @@
   "it": "togliere la polvere; temperatura CPU sotto 80 °C?",
   "rm": "allontanar la pulvra; temperatura CPU sut 80 °C?"
  },
+ "steckt fest (%d s ohne Fortschritt)": {
+  "en": "stuck (%d s without progress)",
+  "fr": "bloqué (%d s sans progrès)",
+  "it": "bloccato (%d s senza progressi)",
+  "rm": "è bloccà (%d s senza progress)"
+ },
  "Steg": {
   "en": "Jetty",
   "fr": "Ponton",
@@ -41810,6 +41894,12 @@
   "fr": "Niveau %d : %s",
   "it": "Livello %d: %s",
   "rm": "Stgalim %d: %s"
+ },
+ "Stufe 6 cm": {
+  "en": "Step 6 cm",
+  "fr": "Marche 6 cm",
+  "it": "Gradino 6 cm",
+  "rm": "Stgalim 6 cm"
  },
  "Stufe «%s» · %d Bilder/s · %s": {
   "en": "Level «%s» · %d frames/s · %s",
@@ -44038,6 +44128,12 @@
   "fr": "Bruits ambiants (vent, pluie, eau, animaux, route, voix)",
   "it": "Suoni dell'ambiente (vento, pioggia, acqua, animali, strada, voci)",
   "rm": "Ramurs da l'ambient (vent, plievgia, aua, animals, via, vuschs)"
+ },
+ "umgefallen nach %d s": {
+  "en": "fell over after %d s",
+  "fr": "tombé après %d s",
+  "it": "caduto dopo %d s",
+  "rm": "dà enturn suenter %d s"
  },
  "Umgekehrt": {
   "en": "Turned back",
@@ -49046,6 +49142,12 @@
   "fr": "trop lent",
   "it": "troppo lento",
   "rm": "memia plaun"
+ },
+ "zu langsam (über %d s)": {
+  "en": "too slow (over %d s)",
+  "fr": "trop lent (plus de %d s)",
+  "it": "troppo lento (oltre %d s)",
+  "rm": "memia plaun (sur %d s)"
  },
  "Zu langsam. 😉": {
   "en": "Too slow. 😉",

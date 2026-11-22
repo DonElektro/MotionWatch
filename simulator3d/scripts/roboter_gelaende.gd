@@ -12,6 +12,9 @@ const RAMPE_GRAD := 15.0
 const STUFE_H := 0.06
 const GRABEN_B := 0.20
 const GRABEN_T := 0.15
+# Gelände-Test: geschafft, wenn das hinterste Segment (im Ring: die Ringmitte) diese x-Lage erreicht
+const ENDE := {"rampe": START_X + 3.9, "stufe": START_X + 0.25, "kies": START_X + 2.6, "graben": START_X + 0.5 + GRABEN_B + 0.15}
+const NAMEN := [["rampe", "Rampe 15°"], ["stufe", "Stufe 6 cm"], ["kies", "Kies"], ["graben", "Graben 20 cm"]]
 
 const GRID_SHADER := """
 shader_type spatial;
@@ -101,7 +104,7 @@ static func build(world: Node3D) -> Dictionary:
 	_sign(world, Vector3(START_X - 0.3, 0.45, SPUREN["graben"]), T.t("Graben %d cm") % int(round(GRABEN_B * 100)))
 	var out := {}
 	for k in SPUREN:
-		out[k] = Transform3D(Basis(), Vector3(0.6, 0.0, float(SPUREN[k])))
+		out[k] = Transform3D(Basis(), Vector3(0.6 if k == "start" else START_X - 0.35, 0.0, float(SPUREN[k])))
 	return out
 
 

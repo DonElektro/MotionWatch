@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8450 (Stellen: 11719)
-Übersetzt: en 8450, fr 8450, it 8450, rm 8450
+Texte gesamt: 8467 (Stellen: 11742)
+Übersetzt: en 8467, fr 8467, it 8467, rm 8467
 Unsicher markiert: 428
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 540 Stellen
 Nicht mehr im Code (noch in texte.json): 407
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 30981, schlüssel 23863, keine Wörter 15197, index 10859, technisch 4000, doc 2705, einheit 362, log 204, englisch 150, pfad 130, stringname 107, html 69, klasse 45, shader 6
+Übersprungen (Grund: Anzahl): kennung 31017, schlüssel 23895, keine Wörter 15216, index 10890, technisch 4002, doc 2706, einheit 362, log 204, englisch 150, pfad 130, stringname 107, html 69, klasse 45, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -27,6 +27,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   bib_objekte.gd           108     0
   kit_k2_daten.gd          107     0
   main_menues.gd           106     2
+  roboter_labor.gd         103     0
   einbruch.gd              102     0
   spieltest.gd              99    20
   kit_k3_daten.gd           96     0
@@ -35,7 +36,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   templates.gd              94     6
   toolbar.gd                89     3
   ferienpark.gd             89     0
-  roboter_labor.gd          87     0
   maggie_hund.gd            85     0
   mehr.gd                   84    13
   abenteuer_action.gd       83     1
@@ -195,6 +195,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   tiere.gd                   7     0
   gamexp.gd                  7     0
   nachtlauf.gd               7     0
+  roboter_gelaende.gd        7     0
   fenster_waechter.gd        6     2
   kopf.gd                    6     2
   devtool_extra.gd           6     0
@@ -214,7 +215,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamebots.gd                4     0
   liveview.gd                4     0
   overlay3d.gd               4     0
-  roboter_gelaende.gd        4     0
   waerme_welt.gd             4     0
   abenteuer_stimme.gd        3     8
   gelaende.gd                3     0

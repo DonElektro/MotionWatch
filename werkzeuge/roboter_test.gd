@@ -13,6 +13,8 @@ extends SceneTree
 ##   · Automatisch: ein Ziel links vorne wird selbst erreicht (Kurve + Gang)
 ##   · Abläufe: «Aufstehen» endet stehend, «Einrollen und öffnen» läuft ohne Explosion durch (ob der Ring schliesst,
 ##     hängt vom Servo-Moment ab: nur gemeldet)
+##   · Ring rollen: die Füsse stossen den verriegelten Ring vorwärts; mit «Kurve» neigt er sich und fährt nach links
+##   · Gelände-Test: die automatische Gangart schafft die Stufe (6 cm)
 ##   cd simulator3d && <godot> --headless --path . -s "$PWD/../werkzeuge/roboter_test.gd"   (absoluter Pfad nötig)
 ## Ende: «Robotertest OK» oder «SCRIPT ERROR: Robotertest: …» (Exit-Code 0 / 1).
 
@@ -72,7 +74,7 @@ func sane() -> bool:
 
 func _process(_dt: float) -> bool:
 	var t := Time.get_ticks_msec() / 1000.0 - t_start
-	if t > 420.0:
+	if t > 700.0:
 		errs.append("Zeit abgelaufen in Schritt %d" % step)
 		return _end()
 	if m != null and m.built_ok:
@@ -247,10 +249,46 @@ func _process(_dt: float) -> bool:
 				return false
 			print("  info Ablauf Einrollen: Ring %s (mit %.1f N·m je Segmentgelenk)" % ["verriegelt" if get_meta("locked") else "NICHT geschlossen", m.p["moment_koerper"]])
 			check("Ablauf Einrollen und öffnen: fertig, ohne Explosion", lab.bew.mode == "" and sane(), lab.bew.mode)
+			lab.stop_all()
+			lab.reset()
+			lab.control({"do": "ring", "drive": 0.0})
+			next_step()
+		14:
+			if frames() < 120:
+				return false
+			check("Ring rollen: Ring verriegelt", m.latch["state"] == "locked", m.latch["state"])
+			set_meta("c0", lab.bew.ring_state()["c"])
+			lab.control({"do": "ring", "drive": 1.0})
+			next_step()
+		15:
+			if frames() < 120 * 5:
+				return false
+			var c: Vector3 = lab.bew.ring_state()["c"]
+			var dx: float = c.x - (get_meta("c0") as Vector3).x
+			check("Ring rollen: die Füsse stossen ihn vorwärts (5 s)", dx > 0.3 and m.latch["state"] == "locked", "%.2f m" % dx)
+			set_meta("c0", c)
+			set_meta("leanmax", 0.0)
+			lab.control({"do": "ring", "drive": 1.0, "turn": 1.0})
+			next_step()
+		16:
+			set_meta("leanmax", maxf(get_meta("leanmax"), lab.bew.ring_lean))
+			if frames() < 120 * 6:
+				return false
+			var c: Vector3 = lab.bew.ring_state()["c"]
+			var dz: float = c.z - (get_meta("c0") as Vector3).z
+			check("Ring lenken: neigt sich etwas (> 2°) und fährt links (−z)", dz < -0.2 and float(get_meta("leanmax")) > 2.0 and m.latch["state"] == "locked",
+					"dz %.2f m, Neigung bis %.1f°" % [dz, get_meta("leanmax")])
+			lab.control({"do": "gelaende", "name": "stufe"})
+			next_step()
+		17:
+			if not lab.terrain.is_empty() and frames() < 120 * 100:
+				return false
+			var r: Array = lab.terrain_results.get("stufe", [false, "kein Ergebnis"])
+			check("Gelände-Test Stufe 6 cm (automatische Gangart)", bool(r[0]), str(r[1]))
 			check("Keine Explosion im ganzen Test", vmax_all < 5.0, "%.2f m/s" % vmax_all)
 			main.roboter.control({"do": "close"})
 			next_step()
-		14:
+		18:
 			if frames() < 10:
 				return false
 			check("Geschlossen: Physik wieder wie vorher", Engine.physics_ticks_per_second == 30 and not main.roboter.is_open(), str(Engine.physics_ticks_per_second))

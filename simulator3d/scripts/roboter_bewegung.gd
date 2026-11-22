@@ -131,10 +131,15 @@ var seq_t := 0.0
 var _seq_from := {}
 var legs_level := false                # sequence: legs stand level under the body each step
 var traveled := 0.0                    # metres the front segment went (gait test)
+var angepasst := false                 # «auto» raised the steps and the body because it got stuck
+var _prog_t := 0.0
+var _prog_p := Vector3.ZERO
 
 
 func start_gang(g: String) -> void:
 	gang = g if g in GAENGE.map(func(x): return x[0]) else "auto"
+	_prog_t = 0.0
+	_prog_p = m.segment_xf(0).origin if m != null and m.built_ok else Vector3.ZERO
 	mode = "gang"
 	seq = []
 	seq_name = ""
@@ -156,7 +161,9 @@ func stop() -> void:
 func set_goal(p: Vector3) -> void:
 	goal = p
 	goal_reached = false
-	if mode != "gang":
+	if mode == "ring" or m.latch["state"] == "locked":
+		mode = "ring"
+	elif mode != "gang":
 		start_gang(gang)
 
 
@@ -198,6 +205,8 @@ func step(dt: float) -> void:
 		_seq_step(dt)
 	elif mode == "gang":
 		_gang_step(dt)
+	elif mode == "ring":
+		_ring_step(dt)
 
 
 func _gang_step(dt: float) -> void:
@@ -234,6 +243,16 @@ func _gang_step(dt: float) -> void:
 			if not str(id).begins_with("s"):
 				over_leg = true
 		gang_now = "dreifuss" if absf(v) > 0.1 and not over_leg else "welle"
+	if gang == "auto" and absf(v) > 0.01:
+		_prog_t += dt
+		if _prog_t >= 3.0:
+			var pnow: Vector3 = m.segment_xf(0).origin
+			if not angepasst and pnow.distance_to(_prog_p) < 0.25 * absf(v) * _prog_t:
+				angepasst = true                  # stuck: higher steps, body higher (e.g. at a step or in gravel)
+				schritt_hoehe = maxf(schritt_hoehe, 0.8)
+				hoehe = maxf(hoehe, 1.2)
+			_prog_t = 0.0
+			_prog_p = pnow
 	var beta: float = BETA.get(gang_now, 0.75)
 	var amax := schritt_laenge * sc * 0.5
 	var moving := absf(v) > 0.002
@@ -358,3 +377,119 @@ func _seq_step(dt: float) -> void:
 		seq_i += 1
 		seq_t = 0.0
 		_seq_from = m.targets()
+
+
+# ==== Stufe 3: im Ring rollen (Besitzer: «die Füsse stossen ihn vorwärts, den Ring kippen = Kurve») ======================
+# Nur bei verriegeltem Ring. Die Beine der Segmente unten hinten (in Rollrichtung gesehen) greifen seitlich neben dem Ring
+# auf den Boden und stossen nach hinten-unten → der Ring rollt vorwärts. Die anderen Beine stehen als Speichen seitlich ab.
+# Lenken: der Ring neigt sich wie eine rollende Münze und fährt dann eine Kurve; die Füsse einer Seite drücken dafür tiefer.
+# Ohne Fahrbefehl stützen die unteren Beine beidseits (der Ring bleibt stehen und aufrecht).
+var ring_lean := 0.0                   # measured lean (°, + = top to the left)
+var ring_push := [5.0, 80.0]           # window behind the bottom (°) where the legs push
+var ring_lean_max := 14.0              # ° at full turn
+var ring_k := 0.3                      # m of extra press per rad of lean error
+var ring_info := {}
+
+
+func ring_state() -> Dictionary:
+	"""centre, axle (segment Z, right), forward (horizontal, ⟂ axle), lean (°), ground height"""
+	var N: int = m.n()
+	var c := Vector3.ZERO
+	var ax := Vector3.ZERO
+	for i in range(N):
+		var xf: Transform3D = m.segment_xf(i)
+		c += xf.origin
+		ax += xf.basis.z
+	c /= N
+	ax = ax.normalized()
+	var fw := Vector3.UP.cross(ax)
+	fw.y = 0.0
+	fw = fw.normalized() if fw.length() > 0.1 else Vector3.RIGHT
+	var gy: float = c.y - (float(m.pitch_len()) * 0.5 / tan(PI / N) + float(m.u("halbe_breite")))
+	var cps: Array = m.contact_points()
+	if not cps.is_empty():
+		gy = 1e9
+		for q in cps:
+			gy = minf(gy, (q as Vector3).y)
+	return {"c": c, "ax": ax, "fw": fw, "lean": rad_to_deg(asin(clampf(ax.y, -1.0, 1.0))), "gy": gy}
+
+
+func _ring_step(dt: float) -> void:
+	if m.latch["state"] != "locked":
+		ring_info = {"ok": false}
+		return
+	var N: int = m.n()
+	var dv := keys.y
+	var tv := keys.x
+	var rs := ring_state()
+	if goal != null and keys == Vector2.ZERO:
+		var to: Vector3 = (goal as Vector3) - (rs["c"] as Vector3)
+		to.y = 0.0
+		var hd: Vector3 = rs["fw"]
+		if to.length() < 0.2 or goal_reached:
+			goal_reached = true
+			dv = 0.0
+			tv = 0.0
+		else:
+			var err := atan2(hd.z * to.x - hd.x * to.z, hd.dot(to))
+			if absf(err) > PI * 0.6:                      # behind: roll backwards is shorter
+				dv = -1.0
+				err = -(PI - absf(err)) * signf(err)
+			else:
+				dv = 1.0
+			tv = clampf(err / 0.8, -1.0, 1.0) * signf(dv)
+	drive = move_toward(drive, dv, dt * 1.5)
+	turn = move_toward(turn, tv, dt * 1.5)
+	ring_lean = rs["lean"]
+	var c: Vector3 = rs["c"]
+	var ax: Vector3 = rs["ax"]
+	var fw: Vector3 = rs["fw"]
+	var gy: float = rs["gy"]
+	var l1: float = m.u("oberschenkel")
+	var l2: float = m.u("unterschenkel")
+	var reach := (l1 + l2) * 0.97
+	var w: float = m.u("halbe_breite")
+	var lat := w * 0.4 + spreiz * float(m.bp["massstab"]) * 0.6
+	var dirv := 1.0 if drive >= 0.0 else -1.0
+	var lean_err := deg_to_rad(turn * ring_lean_max - ring_lean)
+	var d := {}
+	var pushing := 0
+	for i in range(N):
+		var xf: Transform3D = m.segment_xf(i)
+		var r := xf.origin - c
+		var ang := rad_to_deg(atan2(Vector3.DOWN.cross(r).dot(ax), Vector3.DOWN.dot(r)))   # + = ahead of the bottom
+		var behind := -ang * dirv
+		for s in [-1, 1]:
+			var sd := "l" if s < 0 else "r"
+			var hip: Vector3 = xf * Vector3(0, 0, s * w)
+			var h := hip.y - gy
+			var press := 0.012 + clampf(float(s) * lean_err * ring_k, -0.05, 0.04)   # lean: one side presses, the other lifts
+			var foot := Vector3.ZERO
+			var use := false
+			if absf(drive) > 0.05 and behind > ring_push[0] and behind < ring_push[1]:
+				var back := sqrt(maxf(0.0, reach * reach - lat * lat - (h + press) * (h + press))) * absf(drive)
+				foot = hip + ax * float(s) * lat - fw * dirv * back
+				use = true
+				pushing += 1
+			elif absf(drive) <= 0.05 and absf(ang) < 55.0:
+				foot = hip + ax * float(s) * lat
+				use = true
+			if use and h < reach:
+				foot.y = gy - press
+				var a := leg_ik(s, xf.affine_inverse() * foot)
+				d["hy%d%s" % [i, sd]] = a[0]
+				d["hp%d%s" % [i, sd]] = a[1]
+				d["kn%d%s" % [i, sd]] = a[2]
+			else:
+				d["hy%d%s" % [i, sd]] = 0.0
+				d["hp%d%s" % [i, sd]] = 0.0
+				d["kn%d%s" % [i, sd]] = 0.0
+	apply(d)
+	ring_info = {"ok": true, "lean": ring_lean, "pushing": pushing, "centre": c}
+
+
+func start_ring() -> void:
+	mode = "ring"
+	seq = []
+	seq_name = ""
+	goal = null
