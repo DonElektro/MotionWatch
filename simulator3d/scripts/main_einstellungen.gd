@@ -203,6 +203,7 @@ func _register_controls() -> void:
 	main.add_control("button", "sneaker", "Vorsichtiger Schleicher (von Deckung zu Deckung, kriecht, erstarrt bei Licht, Lampe aus)", null, func(): main.visit("sneaker"), "Besuch")
 	main.add_control("button", "bbq", "Grillabend (Grill, Rauch, Freunde kommen)", null, func(): main.visit("bbq"), "Besuch")
 	main.add_control("button", "homecoming", "Spät heimkommen (Auto hält, Tür auf und zu)", null, func(): main.visit("homecoming"), "Besuch")
+	main.add_control("button", "gaeste_zelt", "Gäste besuchen das Zelt (ohne Lampe – für «Gäste erwartet» von MoveEye)", null, func(): main.gaeste.start(), "Besuch")
 	main.add_control("button", "parcel", "Paket wird gebracht", null, func(): main.visit("parcel"), "Besuch")
 	main.add_control("button", "fox_trash", "Fuchs am Abfalleimer", null, func(): main.visit("fox_trash"), "Besuch")
 	main.add_control("button", "boar_group", "Wildschweine mit Jungen", null, func(): main.visit("boar_group"), "Besuch")
@@ -234,6 +235,7 @@ func _register_controls() -> void:
 	main.add_control("toggle", "flee_sound", "Tiere flüchten vor der Sirene", func(): return main.flee_sound, func(v): main.flee_sound = v, "Besuch", ex)
 	main.add_control("toggle", "avoid_on", "Um Bäume, Häuser und Fahrzeuge herumgehen", func(): return main.avoid_on, func(v): main.avoid_on = v, "Besuch", ex)
 	main.add_control("toggle", "privat_on", "Besucher meiden deinen Platz (Privatsphäre; Einbrecher und Diebe nicht)", func(): return main.privat_on, func(v): main.privat_on = v, "Besuch", ex)
+	main.add_control("toggle", "gaeste_auto", "Gäste kommen von selbst, wenn MoveEye «Gäste erwartet» an hat", func(): return main.gaeste_auto, func(v): main.gaeste_auto = bool(v), "Besuch", ex)
 	# 3D-4.x P1: the noise slider is also the one of «Kamera wie echt» (camphys.gd: noise from the gain of the sensor) - no second one
 	main.add_control("slider", "lens_noise", "Rauschen (wie der Sensor: mehr Verstärkung = mehr Rauschen, am Tag sauber)", func(): return main.lens_noise, func(v): main.lens_noise = v, "Kamerabild", {"sub": "Wie echt", "min": 0, "max": 1, "step": 0.05, "expert": true})
 	main.add_control("slider", "night_gain", "Nachtverstärkung der Kameras (höchstens)", func(): return main.night_gain, func(v): main.night_gain = v, "Kamerabild", {"min": 1, "max": 8, "step": 0.5, "unit": "×"})

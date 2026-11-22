@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.74.0"
+const VERSION := "3.76.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -434,6 +434,9 @@ var flee_light := true                # animals flee from the white light at nig
 var flee_sound := true                # ... and from the siren
 var privat_on := true                 # Wunsch Nr. 2: normal visitors keep off your pitch (privatplatz.gd)
 var privat                            # privatplatz.gd: the private circle round MoveEye and its tent
+var gaeste                            # gaeste.gd: «Gäste besuchen das Zelt» - for MoveEye's guide light («Gäste erwartet»)
+var gaeste_auto := true               # gaeste-licht: guests come by themselves while MoveEye has «Gäste erwartet» on
+const GUIDE_SPOT_DEG := 13.0          # gaeste-licht: half angle of the white spot while MoveEye guides (a pool ~2 m wide at 8 m)
 # ---- parts of main.gd in their own files (Vorschlag 24): main_*.gd, loaded at their first use ----
 var _mods := {}                       # "steuerung" -> main_steuerung.gd … (load, not preload: parsed only when needed)
 
@@ -540,6 +543,9 @@ func _ready() -> void:
 	privat = preload("res://scripts/privatplatz.gd").new()  # Wunsch Nr. 2: normal visitors keep off your pitch (burglars do not)
 	privat.main = self
 	add_child(privat)
+	gaeste = preload("res://scripts/gaeste.gd").new()       # gaeste-licht: guests walk to the tent and back (MoveEye 639zzzzzg)
+	gaeste.main = self
+	add_child(gaeste)
 	einbruch = preload("res://scripts/einbruch.gd").new()   # Einbruch-Abläufe: auskundschaften, ablenken, stehlen - wann warnt MoveEye?
 	einbruch.main = self
 	add_child(einbruch)
@@ -711,6 +717,9 @@ func _ready() -> void:
 	maggie = preload("res://scripts/maggie_story.gd").new()    # «Maggie und der Bergkristall» (Geschichte unter «Spielen», maggie_story.gd)
 	maggie.main = self
 	add_child(maggie)
+	bkarte = preload("res://scripts/bergkarte.gd").new()      # «Bergtal-Karte» (MoveEye 639zzzzzt): world_reply «bkarte», {"action": "bkarte"} (Tour nachlaufen)
+	bkarte.main = self
+	add_child(bkarte)
 	_register_controls()
 	_order_controls()
 	preload("res://scripts/kit_abenteuer.gd").autostart_pruefen.call_deferred(self)   # probe package: straight into the new mode
@@ -2744,11 +2753,15 @@ func _process(dt: float) -> void:
 	var wl_on: bool = L.get("white", false) or (game != null and game.now() < game.flash_until) or (own_light and now() - mw_t >= 3.0)
 	if wl_on and white_light.light_energy == 0.0 and look_at_light:
 		for v in visitors.get_children():               # the light goes on: people stop and look at it for a moment
-			if v.get("kind") == "person" and v.position.length() < 25.0 and not v.get("controlled"):
+			if v.get("kind") == "person" and v.position.length() < 25.0 and not v.get("controlled") and not v.has_meta("gast"):   # gaeste-licht: guests expect the light
 				v.wait_until = max(float(v.wait_until), v.now_s() + randf_range(1.0, 2.5))
 				v._face(Vector3.ZERO)
 				v.startle()
-	white_light.light_energy = 9.0 if wl_on else 0.0
+	var wl_k: float = clampf(float(L.get("white_level", 1.0)), 0.05, 1.0) if L.get("white", false) else 1.0   # gaeste-licht: MoveEye dims / fades (white_level)
+	white_light.light_energy = 9.0 * wl_k if wl_on else 0.0
+	# gaeste-licht (review 22.11.2026): MoveEye's guide light (lights.guide) is a narrow, readable pool on the ground;
+	# otherwise the wide light as before
+	white_light.spot_angle = GUIDE_SPOT_DEG if (bool(L.get("guide", false)) and bool(L.get("white", false))) else 32.0
 	rain.position = Vector3(0, 12, -8)
 	var t := now() - clock0
 	for i in range(anims.size() - 1, -1, -1):
@@ -3138,6 +3151,7 @@ func world_reply() -> Dictionary:
 	r["sky"] = licht.reply() if licht != null else null   # «Licht & Nacht»: lux am Gerät, Dämmerung, Sonne, Mond (MoveEye liest es noch nicht)
 	r["season"] = jahreszeiten.reply() if jahreszeiten != null else null   # «Jahreszeiten»: Jahreszeit, Sonnenauf-/untergang, Belegung (MoveEye liest es noch nicht)
 	r["egg"] = bt_ei.reply() if bt_ei != null and is_instance_valid(bt_ei) else null
+	r["bkarte"] = bkarte.reply() if bkarte != null else null   # Bergtal-Karte: Lage, Blick, Figur, Mover, Erkanntes, gefundene Geheimnisse -> MoveEye 639zzzzzt
 	r["lens"] = wetter.lens_reply() if wetter != null else null   # sim-kamerabild: Tropfen / Beschlag auf der Linse -> MoveEye 558l «Linse putzen»   # Bergtal-Geheimnis (nur wenn es etwas zu zeichnen gibt) -> MoveEye 639z
 	if simwerte != null:
 		r.merge(simwerte.reply())                     # Simulator-Werte: battery, pi_temp, net, clock, place, forecast (power.gd)
@@ -3150,6 +3164,7 @@ var maggie = null                      # maggie_story.gd: «Maggie und der Bergk
 var horror = null                      # bergtal_horror.gd: Bergtal · Horror-Modus (Hook für die Stimmungswahl: horror.mood_slot / open_from_mood)
 var spieltest = null                   # spieltest.gd: Spieltest-Assistent (Haken für Spiele: Spieltest.ereignis(modus, art, daten))
 var bt_ei = null                       # bergtal_ei.gd (Bergtal): reads the white light, answers {"action": "egg"}, world_reply «egg»
+var bkarte = null                      # bergkarte.gd: die Bergtal-Karte von MoveEye (world_reply «bkarte», {"action": "bkarte"})
 var own_light := false                 # the light button here while no MoveEye is connected (bergtal_ei.gd hears it too)
 var klang = null                       # klang.gd: Spielton (Musik, Effekte, Umgebung, Klicks - nur in Spielen und Geschichten)
 var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
@@ -3760,7 +3775,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"cam1_yaw": ["Kamerabild", "Weitwinkel-Kamera"], "humidity": ["Wetter", "Mehr Wetter"], "pressure": ["Wetter", "Mehr Wetter"],
 		"storm": ["Wetter", "Mehr Wetter"], "thunder": ["Wetter", "Mehr Wetter"], "cloud_shadows": ["Wetter", "Mehr Wetter"], "gusts": ["Wetter", "Natur und Wind"],
 		"world_cloth": ["Wetter", "Natur und Wind"], "world_smoke": ["Wetter", "Natur und Wind"], "world_fireflies": ["Wetter", "Natur und Wind"],
-		"meadow": ["Wetter", "Natur und Wind"], "car": ["Besuch", "Fahrzeuge"], "thief": ["Besuch", "Abläufe"], "burglar": ["Besuch", "Abläufe"], "sneaker": ["Besuch", "Abläufe"], "bbq": ["Besuch", "Abläufe"], "homecoming": ["Besuch", "Abläufe"], "parcel": ["Besuch", "Abläufe"], "fox_trash": ["Besuch", "Abläufe"], "boar_group": ["Besuch", "Abläufe"], "kids_tag": ["Besuch", "Abläufe"], "mowing": ["Besuch", "Abläufe"], "night_lapse": ["Besuch", "Von selbst"], "calendar": ["Besuch", "Von selbst"],
+		"meadow": ["Wetter", "Natur und Wind"], "car": ["Besuch", "Fahrzeuge"], "thief": ["Besuch", "Abläufe"], "burglar": ["Besuch", "Abläufe"], "sneaker": ["Besuch", "Abläufe"], "bbq": ["Besuch", "Abläufe"], "homecoming": ["Besuch", "Abläufe"], "gaeste_zelt": ["Besuch", "Abläufe"], "gaeste_auto": ["Besuch", "Verhalten"], "parcel": ["Besuch", "Abläufe"], "fox_trash": ["Besuch", "Abläufe"], "boar_group": ["Besuch", "Abläufe"], "kids_tag": ["Besuch", "Abläufe"], "mowing": ["Besuch", "Abläufe"], "night_lapse": ["Besuch", "Von selbst"], "calendar": ["Besuch", "Von selbst"],
 		"dogwalk": ["Besuch", "Menschen schicken"], "herd": ["Besuch", "Tiere schicken"], "clear": ["Besuch", "Vorlagen"], "visit_preset": ["Besuch", "Vorlagen"],
 		"car_park": ["Besuch", "Fahrzeuge"], "bench": ["Besuch", "Menschen schicken"], "feed": ["Besuch", "Tiere schicken"],
 		"garden_person": ["Besuch", "Menschen schicken"], "couple": ["Besuch", "Menschen schicken"], "horse_walk": ["Besuch", "Menschen schicken"],
@@ -3806,7 +3821,7 @@ const GROUP_IDS := {"Szene": "scene", "Wetter": "weather", "Besuch": "visit", "K
 const SIMPLE_IDS := ["scene", "home_edit", "hour", "fp_spot", "bt_spot", "bt_bed", "bt_mount", "bt_wall", "bt_here", "bt_goto", "bt_season",
 		"ort_map", "ort", "twin_on", "twin_open", "twin_yaw", "twin_span", "jahreszeit", "real_time", "licht_lp", "licht_platz",
 		"weather", "wind", "ambient", "real_weather", "night_weather", "w_rain",
-		"visit_preset", "clear", "thief", "burglar", "sneaker", "homecoming", "parcel", "auto", "mix", "visit_rate", "tagesablauf", "night_lapse", "st_frei",
+		"visit_preset", "clear", "thief", "burglar", "sneaker", "homecoming", "gaeste_zelt", "parcel", "auto", "mix", "visit_rate", "tagesablauf", "night_lapse", "st_frei",
 		"show_laser", "door", "mast_h", "statusled_panel", "rifle",
 		"testrun_plan", "testrun_start", "testrun_stop", "testrun_open", "rec_start", "rec_stop", "rec_pick", "rec_play", "rec_stopplay",
 		"parcours_pick", "parcours_start", "parcours_stop", "einbruch_ablauf", "einbruch_start", "einbruch_stop",
@@ -3999,7 +4014,7 @@ func _control(d: Dictionary) -> Dictionary:
 	#     "game_shut", "game_mwcatch", "shoot", "replay", "planner", "blindmap", "dataset", "farecreate", "whatif",
 	#     "input", "pad", "padview", "press", "rover", "view_look", "netmap", "nacht", "parcours", "sabotage",
 	#     "templates", "twin", "visits", "weit", "entdecken", "werkstatt", "trailer", "vorfuehrung", "spielbereich",
-	#     "egg", "sicherung", "mehr", "localplay", "wetter"]
+	#     "egg", "sicherung", "mehr", "localplay", "wetter", "bkarte"]
 	return _mod("steuerung")._control(d)
 
 
@@ -4396,7 +4411,7 @@ func restart_args() -> PackedStringArray:
 	return _mod("start").restart_args()
 
 
-const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "ui_icons_pick", "start_groups", "mine_mig", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound", "privat_on",
+const KEEP := ["pad_auto", "pad_sens", "pad_inv_y", "pad_swap", "pad_rumble", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "fp_spot", "szene_spot", "bt_spot", "bt_bed", "bt_season", "bt_free", "bt_events", "bt_mount", "bt_bag", "bt_stove", "bt_wall", "bt_orient", "bt_marks", "bt_visited", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "ui_icons", "ui_icons_pick", "start_groups", "mine_mig", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound", "privat_on", "gaeste_auto",
 		"avoid_on", "grafik_mode", "cam_wippen", "foto_tex", "reduce_motion", "tour_auto", "blinki_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "ex_speed", "ex_ptempo", "ex_schnell", "ex_figur", "ex_maggie", "ex_blinki", "ex_mw_sieht", "ex_auge", "ex_rucksack", "ex_kraft_echt", "ex_ort", "ex_startpunkte", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars", "dev_area", "news_links"]
 var _settings_dirty := false
 

@@ -54,7 +54,8 @@ const ECHT_DB := -6.0
 const KIT_MUSIK := {"explore": "", "spannung": "pad_dunkel", "action": "ostinato", "entdeckung": "pad_hell"}
 const KIT_TON := {"sprung": ["whoosh", -14.0, 1.25], "landen": ["schritte", -10.0, 0.8], "klettern": ["rascheln", -8.0, 1.0],
 		"greifen": ["knacken", -8.0, 1.3], "platsch": ["wasser", -2.0, 1.4], "fund": ["sp_fund", -4.0, 1.0],
-		"abzeichen": ["sp_fanfare", -5.0, 1.0], "riegel": ["knacken", -4.0, 0.7], "einsturz": ["boom", -2.0, 0.8]}
+		"abzeichen": ["sp_fanfare", -5.0, 1.0], "riegel": ["knacken", -4.0, 0.7], "einsturz": ["boom", -2.0, 0.8],
+		"wind": ["wind", -6.0, 1.0], "klick": ["knacken", -14.0, 1.9]}
 
 static var inst = null
 

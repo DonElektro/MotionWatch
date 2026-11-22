@@ -20,6 +20,7 @@ const Hud = preload("res://scripts/kit_hud.gd")
 const Par = preload("res://scripts/kit_parcours.gd")
 const Hund = preload("res://scripts/kit_maggie.gd")
 const Klang = preload("res://scripts/klang.gd")
+const K3 = preload("res://scripts/kit_k3.gd")
 const Quality = preload("res://scripts/quality.gd")
 const BUSY := "Die Karte des Grossvaters (neu)"
 
@@ -35,6 +36,7 @@ var hud
 var par
 var hund
 var bt
+var k3 = null                         # Kapitel 3: kit_k3.gd (scent trail, raft, lock, the set at the lake)
 var weg := PackedVector2Array()
 var rolle := "enkelin"
 var name_ := ""
@@ -155,7 +157,7 @@ func start(o := {}) -> void:
 		o = o.duplicate()
 		o["rolle"] = w["rolle"]
 		o["name"] = w["name"]
-	kapitel = clampi(int(o.get("kapitel", 2)), 1, 2)           # Phase 2 (21.11.2026): the chapter's data file
+	kapitel = clampi(int(o.get("kapitel", 2)), 1, 3)           # Phase 2 (21.11.2026): the chapter's data file
 	daten = load("res://scripts/kit_k%d_daten.gd" % kapitel)
 	rolle = str(o.get("rolle", "enkelin"))
 	if not rolle in daten.ROLLEN:
@@ -237,6 +239,10 @@ func start(o := {}) -> void:
 	add_child(hud)
 	hud.set_touch(touch_an())
 	_layers_aus()
+	if kapitel == 3:                                         # (after _layers_aus: its own layer stays visible)
+		k3 = K3.new(self)
+		add_child(k3)
+		k3.bauen()
 	checkpoint_setzen("start")
 	regie.hinter_figur()
 	phase = "spiel"
@@ -346,6 +352,10 @@ func stop() -> void:
 	if figur != null:
 		figur.weg()
 	figur = null
+	if k3 != null and is_instance_valid(k3):
+		k3.aufraeumen()
+		k3.queue_free()
+	k3 = null
 	if hund != null and is_instance_valid(hund):
 		hund._on_schluss()
 		hund.queue_free()
@@ -416,12 +426,18 @@ func szene_starten(n: int) -> void:
 	if karte_an:
 		karte_ende(false)
 	szene_i = clampi(n, 0, daten.SZENEN.size() - 1)
+	if hud != null:
+		hud.karte_bild("")                                 # (a map card of the scene before never stays)
 	var sz: Dictionary = daten.SZENEN[szene_i]
 	_log("szene:" + str(sz["id"]))
 	if sz.has("start") and szene_i > 0 and (sz["start"] as Array).size() >= 2:
 		var st: Array = sz["start"]
 		if figur.pos().distance_to(par.welt(float(st[0]), float(st[1]))) > 8.0:   # only when far away (else: just go on)
 			figur_setzen(float(st[0]), float(st[1]))
+		if sz.has("blick"):                                # Kapitel 3: facing where it goes on (the axis points the other way)
+			var bw: Vector3 = par.welt(float(sz["blick"][0]), float(sz["blick"][1])) - figur.pos()
+			figur.a.heading = atan2(-bw.x, -bw.z)
+			figur.a.rotation.y = figur.a.heading
 		regie.hinter_figur()
 	weg = par.weg_punkte(daten.WEGE.get(str(sz["id"]), []))
 	schritt_i = -1
@@ -461,6 +477,8 @@ func _naechster_schritt() -> void:
 		_ueber_ziel()
 		if str(schritt.get("bis", "")) == "aktion:maggie_spalt":
 			_maggie_steuern(true)
+		if k3 != null:
+			k3.schritt_start(schritt)
 	elif schritt.has("sag"):
 		sag(tx(str(schritt["sag"])), str(schritt.get("wer", "erzaehler")))
 		_naechster_schritt()
@@ -600,6 +618,8 @@ func _schritt_tick() -> void:
 func ziel_welt():
 	if steuer_maggie:
 		return maggie_ziel()
+	if k3 != null and k3.ziel() != null:
+		return k3.ziel()
 	return _ziel_p
 
 
@@ -758,6 +778,8 @@ func _process(dt: float) -> void:
 	set_meta("_roh_sprung", phase == "film" and (bool(ein.get("sprung", false)) or bool(ein.get("aktion", false))))
 	if phase in ["pause", "ende"]:
 		ein = {}
+	if k3 != null:
+		ein = k3.tick(dt, ein)
 	if steuer_maggie and hund != null:
 		if _maggie_auto:
 			if hund.zustand_hund != "aktion":
@@ -1185,6 +1207,9 @@ func film_eintrag(e: Dictionary, sprung: bool) -> void:
 			ziel_text = ""
 			hud.ende(tx(str(e.get("text", ""))), abzeichen.keys())
 			musik("entdeckung")
+		_:
+			if k3 != null:
+				k3.film(e, sprung)
 
 
 func _person(id: String, e: Dictionary) -> void:
@@ -1201,7 +1226,10 @@ func _person(id: String, e: Dictionary) -> void:
 		lk["trousers"] = Color(float(lk["hose"][0]), float(lk["hose"][1]), float(lk["hose"][2]))
 		lk.erase("hose")
 	Act.npc_look = lk
-	var a = par.actor("person", par.G(p.x, p.y), par.G(lb.x, lb.y), 1.3, Color(float(jc[0]), float(jc[1]), float(jc[2])))
+	var g0: Vector3 = par.G(p.x, p.y)
+	if e.has("y_see"):                                     # Kapitel 3: on the Seeblock (its top over the lake)
+		g0.y = par.see_y() + float(e["y_see"])
+	var a = par.actor("person", g0, par.G(lb.x, lb.y), 1.3, Color(float(jc[0]), float(jc[1]), float(jc[2])))
 	Act.npc_look = {}
 	a.name = "kit_" + id
 	personen[id] = a
@@ -1262,6 +1290,9 @@ func _aktion_effekt(art: String, ak: Dictionary) -> void:
 			_maggie_holt(ak["d"])
 		"moveeye", "ofen":
 			pass                                           # (the step's film does the rest)
+		_:
+			if k3 != null:
+				k3.aktion(art, ak)
 
 
 func lampe_schalten(on: bool) -> void:
@@ -1449,7 +1480,7 @@ func fund(id: String) -> void:
 	var f: Array = daten.FUNDE.get(id, [id, ""])
 	hud.toast(T.t("Gefunden: %s") % tx(str(f[0])), 3.5)
 	ton("fund")
-	var alle := true
+	var alle := not (daten.FUNDE_ALLE as Array).is_empty()
 	for f2 in daten.FUNDE_ALLE:
 		alle = alle and funde.has(f2)
 	if alle:
@@ -1890,7 +1921,7 @@ func info() -> Dictionary:
 		"szene": str(daten.SZENEN[szene_i]["id"]) if running and szene_i >= 0 else "", "schritt": schritt_i, "ziel": ziel_text,
 		"checkpoint": checkpoint_id, "erledigt": erledigt.keys(), "funde": funde.keys(), "abzeichen": abzeichen.keys(),
 		"merker": merker.keys(), "musik": musik_z, "touch": touch_an(), "log": log_.slice(-12), "lite": Quality.lite(),
-		"steuer_maggie": steuer_maggie, "fps": fps_log.slice(-10), "time_scale": Engine.time_scale,
+		"steuer_maggie": steuer_maggie, "fps": fps_log.slice(-10), "time_scale": Engine.time_scale, "k3": k3.info() if k3 != null else {},
 		"abschnitt_angebot": abschnitt_angebot, "ueber_i": int(schritt.get("_ueber_i", 0)), "weg": weg.size()}
 	if running and figur != null and figur.ok():
 		o["figur"] = figur.info()
@@ -1983,6 +2014,8 @@ static func control(m, d: Dictionary) -> Dictionary:
 				k.hud._wahl_fertig.call(d.get("ids", []))
 				return {"ok": true}
 			return {"ok": false, "error": "keine Wahl offen"}
+		"k3":                                              # tests / pictures: Kapitel 3 (the lock, its state)
+			return k.k3.control(d) if k.k3 != null else {"ok": false, "error": "kein Kapitel 3"}
 		"frei":                                            # tests: walking only, no steps
 			k.test_frei = bool(d.get("on", true))
 			return {"ok": true}

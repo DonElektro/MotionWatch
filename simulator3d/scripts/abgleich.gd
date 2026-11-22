@@ -387,6 +387,7 @@ func _ready() -> void:
 	_lv_dot.custom_minimum_size = Vector2(12, 18)
 	_lv_dot.draw.connect(func(): _lv_dot.draw_circle(Vector2(6, 9), 5.5, level_color()))
 	_lv_l = UI.small("", UI.TXT)
+	_lv_l.autowrap_mode = TextServer.AUTOWRAP_OFF            # gaeste-licht review: never one letter per line («W a c h s a m»)
 	_lv_row.add_child(_lv_dot)
 	_lv_row.add_child(_lv_l)
 	_push_row = Button.new()
@@ -394,6 +395,7 @@ func _ready() -> void:
 	_push_row.icon = null
 	_push_row.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_push_row.add_theme_font_size_override("font_size", 13)
+	_push_row.size_flags_horizontal = Control.SIZE_SHRINK_END    # its own width, right-aligned
 	_push_row.pressed.connect(_open_history)
 	_push_row.visible = false
 	_box.add_child(_push_row)
@@ -449,6 +451,7 @@ func _ready() -> void:
 func _chip(parent: Control = null) -> HBoxContainer:
 	var pc := PanelContainer.new()
 	pc.add_theme_stylebox_override("panel", UI.box(Color(UI.PANEL, 0.94), UI.LINE, 99, 6))
+	pc.size_flags_horizontal = Control.SIZE_SHRINK_END            # gaeste-licht review: the chip keeps its own width (no wide empty panel)
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", 6)
 	pc.add_child(h)
@@ -490,7 +493,7 @@ func _process(dt: float) -> void:
 	_lv_dot.queue_redraw()
 	var pt := push_text()
 	_push_row.visible = on and pt != "" and main.now() - _push_t < 10.0
-	_push_row.text = pt
+	_push_row.text = pt if pt.length() <= 64 else pt.left(63) + "…"   # one short line (narrow windows, the phone)
 	var p := pair()
 	_ver_box.visible = on and str(p["mw"]) != "" and not bool(p["same"]) and ver_key(p) != ver_hidden
 	_ver_l.text = ver_short(p)
