@@ -37,7 +37,7 @@ BK_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"
 # Werte aus werkzeuge/bergkarte/paket.py (pins_bergkarte.txt des Workflows «Bergtal-Karte»); size 0 = noch nicht freigegeben
 # bergkarte-2 (22.11.2026, «Wildcamp» 639zzzzzw): dazu die erfundenen Wildruhezonen (vektor.json t = «wrz»); bergkarte-1 war
 # 3233671 Bytes, sha256 deb7d5508aaa3b106e513475398693927f429efad130bc5d0b965d30788f97b9 (Release bleibt).
-BK_FILE = {"name": "bergtal-karte-2.zip", "size": 0, "sha256": "", "unpacked": 0, "sim": ""}
+BK_FILE = {"name": "bergtal-karte-2.zip", "size": 3233934, "sha256": "f6198c8a13bfaf1605ee1b431d30aacf6f04606d0431fec73918bc7d84974085", "unpacked": 4528179, "sim": "3.77.0"}
 BK_PY = r'''BK_FORMAT = 1
 BK_MAX = 80 * 1000 * 1000                                  # hard limit of the package (also unpacked)
 BK_FREE_MIN = 200 * 1000 * 1000                            # so much stays free after the install

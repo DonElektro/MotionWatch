@@ -650,6 +650,11 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 4.21.0: Startseite der Homepage: Titel, Auge, Satz und alle Kacheln passen ohne Scrollen auf Laptop, iPad und Handy.
+    ‹Die Karte des Grossvaters› hat jetzt ‹▶ Ganzes Spiel› und je einen Knopf pro Kapitel. Neue Kachel ‹ℹ️ Besucherseite›:
+    MoveEye lädt die Produktseite als Info/ auf den Webspace (Schalter ‹Besucherseite (Info/)›, ab Werk an; dort ohne ‹✕›,
+    ‹Senden› kopiert die Anfrage).
+  * 4.21.0: CI – Zweige aufräumen: hp-test-Zweige werden jede Nacht automatisch gelöscht.
   * 4.21.0: NEU: «🏕 Wildcamp» auf der Karte – Schutzgebiete aus den offenen Daten des Bundes (Wildruhezonen mit Schutzzeit,
     Jagdbanngebiete, Nationalpark, Vogelreservate, Moore, Auen) mit Schaltern und Legende, je nach Datum kräftig oder blass;
     Antippen zeigt die Schutzzone und eine kurze Notiz zum Wildcampen im Kanton; Hinweise bei eigenen Orten (Nachtlager) und bei
