@@ -34,9 +34,12 @@ const BEW_KEYS := ["hoehe", "spreiz", "tempo", "schritt_laenge", "schritt_hoehe"
 #        (Nur stossen: ± 0.45 cm, Tempo ± 24 %, Kontakte min 1) → C ist deutlich besser (Wertung mit Kontakt-Abzug)
 #   4er: nur C rollt mit Höhe 13.9 cm / Spur 33.6 cm sicher (3/3, ± 1 cm, Tempo ± 10 %, aber Kontakte Ø 2.5 / min 1,
 #        72 cm/s schnell); A (Höhe 0) ± 0.8 cm, aber zeitweise ohne Bodenkontakt; Nur stossen und B kommen nicht herum
+#   6er: C, Höhe 7.1 cm, Spur 24.7 cm: ± 0.6 cm, Tempo ± 6 %, Kontakte min 2 / Ø 3.5 (60 cm/s); Höhe 0: ± 0.6 … 0.9 cm,
+#        Tempo ± 11 … 22 % (zwei Messreihen - die Streuung ist gross); Nur stossen ± 0.4 cm, aber Tempo ± 39 %, min 1
+#   B (Speichen) rollt bei keiner Variante ganz herum (zu langsam); A ist beim 6er / 8er unruhig (± 2.4 … 3.4 cm)
 const RUND_START := {"8": {"ring_methode": "c", "ring_hoehe": 0.0, "spur_rollen": 0.247},
 		"4": {"ring_methode": "c", "ring_hoehe": 0.139, "spur_rollen": 0.336},
-		"6": {"ring_methode": "c", "ring_hoehe": 0.0, "spur_rollen": 0.247}}
+		"6": {"ring_methode": "c", "ring_hoehe": 0.071, "spur_rollen": 0.247}}
 const RUND_VERSUCHE := 3
 const RUND_MAX := 40.0                 # s for one full turn, else «zu langsam»
 const PANEL_W := 380.0
