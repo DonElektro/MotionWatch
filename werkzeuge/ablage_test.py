@@ -135,19 +135,32 @@ def main():
         # otherwise 4.20.1 is compared with 4.18.1 instead of 4.20.0
         quellen = {n: (lambda n=n: open(os.path.join(REPO, n), "rb").read()) for n in os.listdir(REPO)
                    if re.match(r"^moveeye_daten_\d{1,3}_\d{1,3}_\d{1,3}\.zip$", n)}
-        try:
-            if subprocess.run(["git", "-C", REPO, "rev-parse", "--is-shallow-repository"], capture_output=True, text=True,
-                              timeout=30).stdout.strip() == "true":   # the CI checks out 1 commit: fetch some history
-                subprocess.run(["git", "-C", REPO, "fetch", "-q", "--deepen=40"], capture_output=True, timeout=300)
+        def geloeschte():
             r_ = subprocess.run(["git", "-C", REPO, "log", "--diff-filter=D", "--format=@%H", "--name-only", "-n", "20", "--",
                                  "moveeye_daten_*.zip"], capture_output=True, text=True, timeout=60)
-            c_ = None
+            out_, c_ = {}, None
             for ln in r_.stdout.splitlines():
                 if ln.startswith("@"):
                     c_ = ln[1:]
-                elif ln.strip() and c_ and ln.strip() not in quellen and re.match(r"^moveeye_daten_\d{1,3}_\d{1,3}_\d{1,3}\.zip$", ln.strip()):
-                    quellen[ln.strip()] = (lambda c=c_, n=ln.strip(): subprocess.run(["git", "-C", REPO, "show", "%s^:%s" % (c, n)],
-                                                                                  capture_output=True, timeout=120).stdout)
+                elif ln.strip() and c_ and ln.strip() not in out_ and re.match(r"^moveeye_daten_\d{1,3}_\d{1,3}_\d{1,3}\.zip$", ln.strip()):
+                    out_[ln.strip()] = c_
+            return out_
+        try:
+            neuste = max((n for n in quellen if n != bauen.zd_name(v)), key=vkey, default="")
+            weg = geloeschte()
+            # the CI checks out one commit: fetch a little history (in small steps - every old zip is ~18 MB) until the
+            # zip that a newer X.Y.Z removed is found, at most 4 steps
+            for _i in range(4):
+                if any(vkey(n) > vkey(neuste) for n in weg if n != bauen.zd_name(v)) or subprocess.run(
+                        ["git", "-C", REPO, "rev-parse", "--is-shallow-repository"], capture_output=True, text=True,
+                        timeout=30).stdout.strip() != "true":
+                    break
+                subprocess.run(["git", "-C", REPO, "fetch", "-q", "--deepen=4"], capture_output=True, timeout=240)
+                weg = geloeschte()
+            for n_, c_ in weg.items():
+                if n_ not in quellen:
+                    quellen[n_] = (lambda c=c_, n=n_: subprocess.run(["git", "-C", REPO, "show", "%s^:%s" % (c, n)],
+                                                                    capture_output=True, timeout=120).stdout)
         except (OSError, subprocess.SubprocessError):
             pass
         zips = sorted(quellen, key=vkey)[-2:]
