@@ -106,6 +106,17 @@ func _chapter_done(n: int) -> bool:
 	return int(P.get("chapter", 1)) > n or (n >= 5 and bool(P.get("finale", false)))
 
 
+static func wildruhezonen() -> Array:
+	"""«Wildcamp» (MoveEye 639zzzzzw): the invented Wildruhezonen of the valley {id, name, z, s, b, ring [[x, z] …]} (bergtal.gd)"""
+	var out := []
+	for wz in Bt.WILDRUHEZONEN:
+		var ring := []
+		for q in wz["ring"]:
+			ring.append([snappedf((q as Vector2).x, 0.1), snappedf((q as Vector2).y, 0.1)])
+		out.append({"id": str(wz["id"]), "name": str(wz["name"]), "z": str(wz["z"]), "s": str(wz["s"]), "b": str(wz["b"]), "ring": ring})
+	return out
+
+
 static func trails() -> Array:
 	"""{name, level 0 gelb / 1 rot / 2 blau, pts [[x, z] …], secret (found ids or [])}"""
 	var out := []

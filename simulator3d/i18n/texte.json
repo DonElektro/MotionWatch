@@ -20848,6 +20848,12 @@
   "it": "Gratspitz sopra la Rüfi",
   "rm": "Gratspitz sur la Rüfi"
  },
+ "Gratspitz-Murmelboden": {
+  "en": "Gratspitz-Murmelboden",
+  "fr": "Gratspitz-Murmelboden",
+  "it": "Gratspitz-Murmelboden",
+  "rm": "Gratspitz-Murmelboden"
+ },
  "Gratweg": {
   "en": "Ridge trail",
   "fr": "Sentier d'arête",
@@ -24077,6 +24083,12 @@
   "fr": "Regarder dans le cristal : une image de l’avenir (un danger ou un chemin)",
   "it": "Guardare nel cristallo: un’immagine del futuro (un pericolo o una strada)",
   "rm": "Guardar en il cristal: in maletg da l’avegnir (in privel u ina via)"
+ },
+ "In der (erfundenen) Wildruhezone «{name}», Schutzzeit {zeit} – hier besser nicht übernachten.": {
+  "en": "In the (invented) wildlife rest area «{name}», protection period {zeit} – better not to sleep here.",
+  "fr": "Dans la zone de tranquillité (inventée) «{name}», période de protection {zeit} – mieux vaut ne pas dormir ici.",
+  "it": "Nella zona di tranquillità (inventata) «{name}», periodo di protezione {zeit} – meglio non pernottare qui.",
+  "rm": "En la zona da ruaus (inventada) «{name}», temp da protecziun {zeit} – meglier betg durmir qua."
  },
  "In der alten Sennerei hängt ein aufgerolltes Seil am Haken - stark genug für den Fels.": {
   "en": "In the old dairy a coiled rope hangs on a hook - strong enough for the rock.",
@@ -37094,6 +37106,12 @@
   "it": "Riedmoos (eriofori)",
   "rm": "Riedmoos (launa da palì)"
  },
+ "Riedmoos-Schwarzseeli": {
+  "en": "Riedmoos-Schwarzseeli",
+  "fr": "Riedmoos-Schwarzseeli",
+  "it": "Riedmoos-Schwarzseeli",
+  "rm": "Riedmoos-Schwarzseeli"
+ },
  "Riedspitz": {
   "en": "Riedspitz",
   "fr": "Riedspitz",
@@ -38039,6 +38057,12 @@
   "fr": "Schattwald %d m",
   "it": "Schattwald %d m",
   "rm": "Schattwald %d m"
+ },
+ "Schattwald (Auerhuhn)": {
+  "en": "Schattwald (capercaillie)",
+  "fr": "Schattwald (grand tétras)",
+  "it": "Schattwald (gallo cedrone)",
+  "rm": "Schattwald (giaglina gronda)"
  },
  "Schattwald (Wald mit Feuerstelle)": {
   "en": "Schattwald (forest with fire place)",
@@ -49362,6 +49386,12 @@
   "fr": "Vers la nuit suivante",
   "it": "Alla notte successiva",
   "rm": "A la proxima notg"
+ },
+ "Zur schönsten Aussicht springen (Chanzle über dem Gumpisee)": {
+  "en": "Jump to the finest view (Chanzle above the Gumpisee)",
+  "fr": "Aller à la plus belle vue (Chanzle au-dessus du Gumpisee)",
+  "it": "Vai al panorama più bello (Chanzle sopra il Gumpisee)",
+  "rm": "Siglir a la pli bella vista (Chanzle sur il Gumpisee)"
  },
  "Zurück": {
   "en": "Back",

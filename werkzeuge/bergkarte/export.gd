@@ -6,7 +6,8 @@ extends SceneTree
 ##   hoehen.f32    die Höhenkarte bergtal.gd _hm (N × N Float32, little endian, Zeile = z, Spalte = x; Tal-Meter über dem
 ##                 Nordende, wie Bt.H im Gitter) - dieselben Zahlen wie main.ground_y im Tal (ohne Brücken / Eis)
 ##   land.u8       die Bodenart je Gitterpunkt (bergkarte.gd land_class: 0 Wiese … 7 Weide), N × N Bytes
-##   bergtal.json  Gitter (lo, step, n, alt0), Orte, geheime Orte, Wanderwege, Bäche, Seen, Strasse, Stichproben der Höhe
+##   bergtal.json  Gitter (lo, step, n, alt0), Orte, geheime Orte, Wanderwege, Bäche, Seen, Strasse, erfundene Wildruhezonen
+##                 («Wildcamp», MoveEye 639zzzzzw), Stichproben der Höhe
 ##                 (für den Test), Sim-Version
 ## Ende: «Bergtal-Export OK …» (Exit 0) oder «SCRIPT ERROR: Bergtal-Export: …» (Exit 1). Kein Bild, kein Netz.
 
@@ -75,7 +76,7 @@ static func export_to(aus: String) -> String:
 		samples.append([p["x"], p["z"], snappedf(Bt.H(float(p["x"]), float(p["z"])), 0.001)])
 	var d := {"format": BK.VERSION, "sim": sim_version(), "grid": {"lo": Bt.LO, "step": Bt.STEP, "n": n, "alt0": Bt.ALT0},
 			"places": BK.places(), "secrets": BK.secrets(), "trails": BK.trails(), "streams": BK.streams(), "lakes": BK.lakes(),
-			"road": BK.road(), "samples": samples,
+			"road": BK.road(), "wildruhezonen": BK.wildruhezonen(), "samples": samples,
 			"land_classes": ["wiese", "wald", "fels", "geroell", "gletscher", "see", "moor", "weide"]}
 	var j_ := FileAccess.open(aus.path_join("bergtal.json"), FileAccess.WRITE)
 	j_.store_string(JSON.stringify(d, "", false))

@@ -46,7 +46,11 @@ func _init() -> void:
 	var rep := "\n".join(log)
 	ok(rc == 0 and "PRUEFUNG OK" in rep, "paket.py --pruefen: " + rep.strip_edges().get_slice("\n", 0))
 	Bt.generate()
-	_check(out.path_join("bergtal-karte-1.zip"))
+	var zname := ""
+	for f in DirAccess.get_files_at(out):                  # bergtal-karte-N.zip (N = TAG in paket.py)
+		if f.begins_with("bergtal-karte-") and f.ends_with(".zip"):
+			zname = f
+	_check(out.path_join(zname))
 	var bk = BK.new()
 	ok(bk.reply() == null and not bk.control({"do": "tour", "pts": [[0, 0], [10, 10]]})["ok"], "bergkarte.gd ohne Bergtal: keine Antwort, Tour abgelehnt")
 	bk.free()
@@ -91,6 +95,15 @@ func _check(zp: String) -> void:
 		if txt.find(str(s["name"])) >= 0:
 			leak.append(str(s["name"]))
 	ok(leak.is_empty() and (gh["orte"] as Array).size() == BK.secrets().size(), "geheime Orte: %d nur in geheim.json, keiner in vektor.json %s" % [BK.secrets().size(), str(leak)])
+	# «Wildcamp» (MoveEye 639zzzzzw): the invented Wildruhezonen of bergtal.gd in vektor.json, with period, and wrz_at() of the simulator
+	var wz := []
+	for f in vk["features"]:
+		if f["properties"]["t"] == "wrz":
+			wz.append(f)
+	var wzi: Array = BK.wildruhezonen()
+	var inside: Dictionary = Bt.wrz_at(-420.0, -230.0)
+	ok(wz.size() == wzi.size() and wzi.size() >= 3 and str(inside.get("id", "")) == "riedmoos" and Bt.wrz_at(0.0, 0.0).is_empty(),
+			"Wildruhezonen: %d im Paket = %d im Simulator, Schlafplatz «Riedmoos» liegt in einer, Alp Tschuggen nicht" % [wz.size(), wzi.size()])
 	# every found-id exists in the simulator
 	var src := ""
 	for f in DirAccess.get_files_at("res://scripts"):
