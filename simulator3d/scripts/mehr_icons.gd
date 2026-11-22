@@ -5,12 +5,20 @@ extends RefCounted
 ## Kreis beim Laden). Dazu Blinki, die kleine Figur aus dem MoveEye-Logo (wie quelle/589_blinki.py).
 
 const KINDS := ["more", "help", "chat", "info", "steth", "log", "update", "theme", "tour", "bug", "bulb", "star", "star_on",
-		"question", "copy", "x", "sun", "moon", "trash", "play", "wrench", "cart", "search", "pin", "printer"]
+		"question", "copy", "x", "sun", "moon", "trash", "play", "wrench", "cart", "search", "pin", "printer", "robot"]
 
 
 static func draw(d: CanvasItem, kind: String, c: Vector2, col: Color, w := 1.8) -> bool:
 	"""draws the symbol, false = unknown"""
 	match kind:
+		"robot":                                      # Roboter-Labor: Segment-Kette mit Beinen und Kamera-Mast
+			for i in range(3):
+				var x := -7.0 + i * 5.2
+				d.draw_rect(Rect2(c + Vector2(x - 2.0, -1.5), Vector2(4.0, 4.0)), col, false, w)
+				d.draw_line(c + Vector2(x - 1.0, 2.5), c + Vector2(x - 2.6, 7.0), col, w, true)
+				d.draw_line(c + Vector2(x + 1.0, 2.5), c + Vector2(x + 2.6, 7.0), col, w, true)
+			d.draw_line(c + Vector2(3.4, -1.5), c + Vector2(3.4, -6.0), col, w, true)
+			d.draw_rect(Rect2(c + Vector2(2.0, -9.0), Vector2(5.0, 3.0)), col, true)
 		"wrench":                                     # real-gehaeuse: Werkstatt (Schraubenschlüssel)
 			var dd := Vector2(0.7071, 0.7071)
 			d.draw_line(c - dd * 3.0, c + dd * 7.5, col, w + 1.2, true)
