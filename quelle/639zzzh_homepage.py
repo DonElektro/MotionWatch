@@ -1111,10 +1111,11 @@ HP_LINKS = (
 # in the simulator, simulator3d/scripts/web.gd) and per chapter the first simulator number that has it in the browser WITH the
 # parameter «kapitel». A chip only appears when the released browser simulator (signed, SIM3D_WEB) is at least that number;
 # before, the tile only has «▶ Ganzes Spiel». A new chapter = one more line here.
-HP_GV_KAPITEL = (
-    (1, "3.77.0"),
-    (2, "3.77.0"),
-    (3, "3.77.0"),
+HP_GV_KAPITEL = (                                            # 4.21.0: «kapitel» comes with sim-grossvater-k4 = Sim 3.78.0
+    (1, "3.78.0"),
+    (2, "3.78.0"),
+    (3, "3.78.0"),
+    (4, "3.78.0"),
 )
 HP_GV_TX = {                                                 # the chips of the game tile: (de, en, fr, it, rm)
     "gv.all": ("▶ Ganzes Spiel", "▶ Whole game", "▶ Jeu complet", "▶ Gioco completo", "▶ Gieu cumplet"),
@@ -1499,7 +1500,7 @@ def homepage_selftest():
     assert 'class="mweye"' in ix and "mwe-blink" in ix and "prefers-reduced-motion" in ix, "4.19.1: animated eye, still without motion"
     assert all('href="Sim/?grossvater=1&amp;kapitel=%d"' % n in ix for n in (1, 2, 3)) and "kapitel=4" not in ix, "22.11.2026: chapter chips"
     assert "kapitel=" not in hp_index_html([]) and "gv.all" in hp_index_html([]), "without chapters: only «Ganzes Spiel»"
-    assert hp_gv_kapitel("3.76.0") == [] and hp_gv_kapitel("3.77.0") == [n for n, _v in HP_GV_KAPITEL] and hp_gv_kapitel("") == []
+    assert hp_gv_kapitel("3.77.0") == [] and hp_gv_kapitel("3.78.0") == [n for n, _v in HP_GV_KAPITEL] == [1, 2, 3, 4] and hp_gv_kapitel("") == []
     assert all(len(v) == 5 and all(v) for v in HP_GV_TX.values()), "chips: 5 languages"
     assert DEFAULTS.get("hp_info_on") is True and "hp_info_on" in USER_SETTINGS_DENY and hp_part("Info/index.html") == "info" and _hp_ours("Info/index.html")
     pg = hp_info_page().decode("utf-8")

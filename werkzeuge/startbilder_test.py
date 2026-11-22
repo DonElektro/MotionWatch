@@ -217,14 +217,14 @@ def lauf(datei):
     ok(links_ok(idx), "4.19.1 B: alle Links (MoveEye · Karte des Grossvaters · Funkgerät · Simulator · Besucherseite, 5 Sprachen) und das bewegte Auge")
     ok("kapitel=" not in idx and 'data-t="gv.all"' in idx, "ohne veröffentlichten Browser-Simulator: nur «▶ Ganzes Spiel»")
     m_ = ns["sb_meta"]()
-    for ver, want in (("3.76.0", []), ("3.77.0", [1, 2, 3])):
+    for ver, want in (("3.77.0", []), ("3.78.0", [1, 2, 3, 4])):
         hk = ns["sb_page_html"]("A", lambda s_, k_: "x.webp", m_, ns["hp_gv_kapitel"](ver))
         got = [int(x) for x in re.findall(r'href="Sim/\?grossvater=1&amp;kapitel=(\d+)"', hk)]
         ok(got == want and (not want or hk.count('class="chip"') == len(want)), "A mit Sim %s: Kapitel-Knöpfe %s" % (ver, got))
     sv = dict(ns["SIM3D_WEB"])
-    ns["SIM3D_WEB"].update(version="3.77.0", size=1, sha256="0" * 64)
-    ok(ns["hp_gv_kapitel"]() == [1, 2, 3] and "kapitel=3" in ns["hp_fixed_items"]()[0]["get"]().read().decode(),
-       "Kapitel nach dem veröffentlichten Browser-Simulator (SIM3D_WEB 3.77.0): 1 · 2 · 3 auf der Startseite")
+    ns["SIM3D_WEB"].update(version="3.78.0", size=1, sha256="0" * 64)
+    ok(ns["hp_gv_kapitel"]() == [1, 2, 3, 4] and "kapitel=4" in ns["hp_fixed_items"]()[0]["get"]().read().decode(),
+       "Kapitel nach dem veröffentlichten Browser-Simulator (SIM3D_WEB 3.78.0): 1 · 2 · 3 · 4 auf der Startseite")
     ns["SIM3D_WEB"].clear(); ns["SIM3D_WEB"].update(sv)
     ok(not re.search(r'(?:src|href|srcset)="(?:https?:)?//', idx) and "http://" not in idx and "https://" not in idx, "keine fremden Adressen in der Seite")
     def lokal(p):
