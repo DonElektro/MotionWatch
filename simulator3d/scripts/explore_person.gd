@@ -89,7 +89,7 @@ var _abseil := {}                    # rappelling: {von, kante, nach, t, dauer}
 var _y_hoch := -INF                  # the highest point of the last flight (a hard landing, «Echt»)
 var _scene := ""
 var _anchor = null                   # Geschichte: wo die Gruppe zuletzt war (Tal)
-var _test := {}                      # Tests: {"v": Vector2, "run": bool, "until": s}
+var _test := {}                      # Tests: {"v": Vector2, "run": bool, "left": s Bildzeit}
 var _far_t := -100.0
 var _ein := {}
 var _wunsch := {}                    # Tasten / Knöpfe seit dem letzten Bild: sprung, klettern, haltung, sitzen, liegen
@@ -426,8 +426,16 @@ func place(p: Vector3) -> void:
 
 
 func test_walk(v: Vector2, secs: float, r: bool) -> void:
-	"""tests: v = (forward, turn right) along the figure's own heading (like the old person), secs long"""
-	_test = {"v": v, "run": r, "until": _now() + secs}
+	"""tests: v = (forward, turn right) along the figure's own heading (like the old person), secs long.
+	22.11.2026 (CI-Wackler erkunden_sachen_test «rennen macht müde»): die Dauer zählt in Bildzeit (dt wie Kraft, Bewegung und
+	die Wartezeit der Tests), nicht mehr nach der Wanduhr - Godot kürzt nach einem Hänger das dt eines Bilds (höchstens
+	8 Physik-Schritte), die Wanduhr lief weiter: unter Last lief die Figur so spürbar kürzer, als ein Test meinte."""
+	_test = {"v": v, "run": r, "left": secs}
+
+
+func test_laeuft() -> bool:
+	"""tests: läuft noch ein test_walk?"""
+	return not _test.is_empty()
 
 
 func speed_now() -> float:
@@ -618,7 +626,8 @@ func _eingabe(dt: float) -> Dictionary:
 	var r := run
 	var tst := false
 	if not _test.is_empty():
-		if _now() < float(_test["until"]):
+		if float(_test["left"]) > 0.0:
+			_test["left"] = float(_test["left"]) - dt
 			c = _test["v"]
 			r = bool(_test["run"])
 			tst = true
