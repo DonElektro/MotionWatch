@@ -117418,7 +117418,7 @@ zd_exec(SCHLAF_PY, '639zzzzz_schlaf_wecken.py')
 BK_TAG = "bergkarte-1"
 BK_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"}
 
-BK_FILE = {"name": "bergtal-karte-1.zip", "size": 0, "sha256": "", "unpacked": 0, "sim": ""}
+BK_FILE = {"name": "bergtal-karte-1.zip", "size": 3233671, "sha256": "deb7d5508aaa3b106e513475398693927f429efad130bc5d0b965d30788f97b9", "unpacked": 4527105, "sim": "3.75.0"}
 BK_PY = _zd('639zzzzzt_bergtal_karte/BK_PY', "")
 zd_exec(BK_PY, "639zzzzzt_bergtal_karte.py")
 if __name__ == "__main__":
