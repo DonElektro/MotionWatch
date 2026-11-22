@@ -360,6 +360,14 @@ func _register_controls() -> void:
 	# «Frei erkunden» (Besitzer 21.11.2026): fast run of the own figure for tests - off = the normal running speed
 	main.add_control("toggle", "ex_schnell", "Schnelllauf beim Erkunden (Figur rennt bis 40 m/s, zum Testen)", func(): return main.ex_schnell,
 			func(v): main.ex_schnell = bool(v); main._settings_dirty = true, "Entwickler", {"expert": true, "devwin": true})
+	# ... and its speed (Besitzer 22.11.2026): the same setting as the bar button «Rennen: x m/s ›» (main.ex_ptempo), both always in step
+	var EP = preload("res://scripts/explore_person.gd")
+	var tempi := []
+	for t in EP.TEMPI:
+		tempi.append([EP._num(float(t)), EP._num(float(t)) + " m/s"])
+	main.add_control("select", "ex_ptempo", "Rennen beim Erkunden", func(): return EP._num(EP.tempo_naechste(float(main.ex_ptempo))),
+			func(v): main.ex_ptempo = clampf(float(v), 1.0, EP.V_MAX); main._settings_dirty = true, "Entwickler",
+			{"expert": true, "devwin": true, "options": tempi, "an": func(): return bool(main.ex_schnell)})
 	preload("res://scripts/spieltest.gd").add_controls(main)   # Spieltest-Assistent + «Spieltest-Meldungen» (wie MoveEye Entwickler)
 	preload("res://scripts/maggie_vorfuehrung.gd").add_controls(main)   # Vorführmodus «Maggie» (Entwickler, Reiter «Vorführung»)
 	preload("res://scripts/trailer.gd").add_controls(main)   # Trailer der Geschichten (Entwickler; dazu oben im Entwickler-Fenster)

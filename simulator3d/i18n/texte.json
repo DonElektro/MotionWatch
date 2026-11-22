@@ -17556,6 +17556,12 @@
   "it": "Telecamera di volo terminata",
   "rm": "Camera da sgol terminada"
  },
+ "Flugkamera-Tempo": {
+  "en": "Fly camera speed",
+  "fr": "Vitesse de la caméra volante",
+  "it": "Velocità della telecamera volante",
+  "rm": "Svelt da la camera sgulanta"
+ },
  "FOH": {
   "en": "FOH",
   "fr": "FOH",
@@ -33552,6 +33558,12 @@
   "it": "Solo per il proprietario – non in modalità bambini.",
   "rm": "Mo per il possessur – betg en il modus d’uffants."
  },
+ "Nur für die Flugkamera. Das Tempo der Figur: Leiste oben «Rennen» oder Reiter «Schalter» → «Rennen beim Erkunden».": {
+  "en": "Only for the fly camera. The speed of the figure: bar at the top «Run» or tab «Switches» → «Running while exploring».",
+  "fr": "Uniquement pour la caméra volante. La vitesse du personnage : barre en haut «Course» ou onglet «Commandes» → «Courir en exploration».",
+  "it": "Solo per la telecamera volante. La velocità della figura: barra in alto «Corsa» o scheda «Comandi» → «Correre durante l’esplorazione».",
+  "rm": "Mo per la camera sgulanta. Il svelt da la figura: trav sisura «Currer» u register «Cumonds» → «Currer durant explorar»."
+ },
  "Nur für erwachsene Männer": {
   "en": "Only for adult men",
   "fr": "Seulement pour les hommes adultes",
@@ -36020,6 +36032,12 @@
   "fr": "Course (Maj) : %s m/s",
   "it": "Corsa (Maiusc): %s m/s",
   "rm": "Currer (Shift): %s m/s"
+ },
+ "Rennen beim Erkunden": {
+  "en": "Running while exploring",
+  "fr": "Courir en exploration",
+  "it": "Correre durante l’esplorazione",
+  "rm": "Currer durant explorar"
  },
  "Rennen: %s m/s ›": {
   "en": "Run: %s m/s ›",
@@ -41739,6 +41757,12 @@
   "fr": "Vitesse des visiteurs",
   "it": "Velocità dei visitatori",
   "rm": "Tempo dals visitaders"
+ },
+ "Tempo der Figur: Leiste oben «Rennen» (unter diesem Fenster) oder Reiter «Schalter» → «Rennen beim Erkunden»": {
+  "en": "Speed of the figure: bar at the top «Run» (under this window) or tab «Switches» → «Running while exploring»",
+  "fr": "Vitesse du personnage : barre en haut «Course» (sous cette fenêtre) ou onglet «Commandes» → «Courir en exploration»",
+  "it": "Velocità della figura: barra in alto «Corsa» (sotto questa finestra) o scheda «Comandi» → «Correre durante l’esplorazione»",
+  "rm": "Svelt da la figura: trav sisura «Currer» (sut questa fanestra) u register «Cumonds» → «Currer durant explorar»"
  },
  "Tempo der Patrouille": {
   "en": "Speed of the patrol",

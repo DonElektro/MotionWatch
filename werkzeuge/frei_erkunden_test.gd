@@ -18,6 +18,7 @@ extends SceneTree
 ## Ende: «Frei-Erkunden-Test OK» oder «SCRIPT ERROR: Frei-Erkunden-Test: …» (Exit-Code 0 / 1).
 
 const Welt = preload("res://scripts/erkunden_welt.gd")
+const T = preload("res://scripts/i18n.gd")
 
 var main
 var errs := []
@@ -345,6 +346,47 @@ func _run() -> void:
 	var saved = JSON.parse_string(FileAccess.get_file_as_string(main.SETTINGS_FILE))
 	ok("Schnelllauf und Tempo bleiben in den Einstellungen", saved is Dictionary and saved.get("ex_schnell", true) == false and is_equal_approx(float(saved.get("ex_ptempo", 0.0)), 40.0))
 	main.ex_schnell = true
+	p.set_tempo(3.0)
+	ex._process(0.016)
+	# «Rennen beim Erkunden» (Besitzer 22.11.2026): the speed beside «Schnelllauf», the same setting as the bar button
+	ok("Entwickler: «Rennen beim Erkunden» gleich nach «Schnelllauf»", "ex_ptempo" in dev_ids and dev_ids.find("ex_ptempo") == dev_ids.find("ex_schnell") + 1)
+	var ctl_t: Dictionary = {}
+	for c in main.controls:
+		if str(c.id) == "ex_ptempo":
+			ctl_t = c
+	ok("Rennen beim Erkunden: 8 Stufen 1,8 … 40 m/s", ctl_t.extra.get("options", []).map(func(o): return str(o[0])) == ["1.8", "3", "5", "10", "15", "20", "30", "40"])
+	ctl_t["set"].call("10")
+	ok("Wahl im Entwickler-Fenster = Tempo der Figur (10 m/s)", is_equal_approx(float(main.ex_ptempo), 10.0) and str(ctl_t["get"].call()) == "10")
+	ex._process(0.016)
+	ok("… und der Knopf der Leiste zeigt es", "10" in ex._btn_speed.text)
+	p.tempo_stufe(1)
+	ok("Knopf der Leiste (+1 Stufe) → Wahl im Fenster 15", str(ctl_t["get"].call()) == "15")
+	ok("ohne Schnelllauf ausgegraut", bool(ctl_t.extra["an"].call()) == bool(main.ex_schnell))
+	var dv = main.mehr.dev if main.get("mehr") != null and main.mehr != null else null
+	if dv != null:
+		main.dev_area = true
+		main.dev_window("schalter")
+		await wait(0.3)
+		dv._paint()
+		ok("Flugkamera-Tempo heisst so", dv._speed_lbl.text == T.t("Flugkamera-Tempo"))
+		ok("Flugkamera-Tempo ausgegraut ohne Flugkamera", dv._speed_opt.disabled and not ex.fly)
+		var sch = dv.extra.schalter
+		sch.sync()
+		var ob_t: OptionButton = null
+		for w in sch._alle(sch._state.get_parent()):
+			if w is OptionButton and w.has_meta("ctl") and str(w.get_meta("ctl").id) == "ex_ptempo":
+				ob_t = w
+		ok("Reiter «Schalter»: die Wahl zeigt 15 m/s", ob_t != null and ob_t.get_item_text(ob_t.selected) == "15 m/s")
+		p.tempo_stufe(-1)
+		sch.sync()
+		ok("… und folgt dem Knopf der Leiste (10 m/s)", ob_t != null and ob_t.get_item_text(ob_t.selected) == "10 m/s")
+		dv.panel.global_position = ex._btn_speed.get_global_rect().position - Vector2(20, 20)
+		dv._paint()
+		ok("Fenster über dem Knopf «Rennen»: Hinweis, wo das Tempo ist", dv.tempo_verdeckt() and dv._tempo_hint.visible)
+		dv.close()
+		main.dev_area = false
+	else:
+		ok("Entwickler-Fenster vorhanden", false)
 	p.set_tempo(3.0)
 	p.test_walk(Vector2.ZERO, 0.1, false)
 	await wait(0.5)

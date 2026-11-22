@@ -1,26 +1,16 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-<<<<<<< HEAD
-Texte gesamt: 8173 (Stellen: 11367)
-Übersetzt: en 8165, fr 8165, it 8165, rm 8165
-Unsicher markiert: 261
+Texte gesamt: 8246 (Stellen: 11464)
+Übersetzt: en 8242, fr 8242, it 8242, rm 8242
+Unsicher markiert: 330
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 540 Stellen
 Nicht mehr im Code (noch in texte.json): 408
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29788, schlüssel 22606, keine Wörter 14252, index 10391, technisch 3818, doc 2627, einheit 347, log 203, englisch 146, pfad 130, stringname 107, html 69, klasse 45, shader 6
-=======
-Texte gesamt: 8102 (Stellen: 11246)
-Übersetzt: en 8102, fr 8102, it 8102, rm 8102
-Unsicher markiert: 329
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
-Nicht mehr im Code (noch in texte.json): 404
-HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29499, schlüssel 22736, keine Wörter 14387, index 10297, technisch 3828, doc 2571, einheit 344, log 204, englisch 146, pfad 130, stringname 107, html 69, klasse 42, shader 6
->>>>>>> origin/main
+Übersprungen (Grund: Anzahl): kennung 30115, schlüssel 23025, keine Wörter 14609, index 10425, technisch 3868, doc 2649, einheit 348, log 204, englisch 146, pfad 130, stringname 107, html 69, klasse 45, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
-  main_einstellungen.gd    401    25
+  main_einstellungen.gd    402    25
   bergtal_abenteuer.gd     285     7
   gamewiz.gd               254    15
   abenteuer_figuren_daten.gd   238     0
@@ -107,8 +97,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   simreal.gd                37     0
   gamemore.gd               36     1
   maggie_vorfuehrung.gd     35     7
+  kit_abenteuer.gd          35     1
   fenster.gd                34     0
-  kit_abenteuer.gd          34     1
   gameziele.gd              34     0
   devtool_notizen.gd        34     1
   gametools.gd              33     2
@@ -137,12 +127,12 @@ Pro Datei (Texte / davon dynamische Stellen):
   dataset.gd                22     3
   statusled.gd              22     0
   mini.gd                   21     1
+  devtool.gd                21     0
   phone.gd                  20     4
   klang.gd                  20     0
   patrol.gd                 20     0
   trailer.gd                19     7
   erkunden_figur.gd         19     1
-  devtool.gd                19     0
   tv.gd                     19     8
   surprise.gd               19     1
   kompakt_dorf.gd           18     0
@@ -304,6 +294,7 @@ Unsicher:
   'Hopp!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Du steuerst jetzt Maggie': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Drüben! Maggie läuft zum Riegel.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Hoppla! Nochmal, Maggie – rauf auf den Sims.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
   'MoveEye: IR-Licht an.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Foto im Rucksack (Tagebuch)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Kit läuft nicht': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
@@ -732,21 +723,21 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   main_einstellungen.gd:332  'aus'
   main_einstellungen.gd:350  'an'
   main_einstellungen.gd:350  'aus'
-  main_einstellungen.gd:427  'keine'
-  main_einstellungen.gd:453  'Wächter an MoveEye: '
-  main_einstellungen.gd:516  'immer'
-  main_einstellungen.gd:518  'aus'
-  main_einstellungen.gd:525  'aus'
-  main_einstellungen.gd:525  'aus'
-  main_einstellungen.gd:526  'immer'
-  main_einstellungen.gd:531  'aus'
-  main_einstellungen.gd:535  'aus'
-  main_einstellungen.gd:535  'aus'
-  main_einstellungen.gd:542  'ohne'
-  main_einstellungen.gd:544  'ohne'
-  main_einstellungen.gd:561  'aus'
-  main_einstellungen.gd:565  'aus'
-  main_einstellungen.gd:736  'Karte öffnen: '
+  main_einstellungen.gd:435  'keine'
+  main_einstellungen.gd:461  'Wächter an MoveEye: '
+  main_einstellungen.gd:524  'immer'
+  main_einstellungen.gd:526  'aus'
+  main_einstellungen.gd:533  'aus'
+  main_einstellungen.gd:533  'aus'
+  main_einstellungen.gd:534  'immer'
+  main_einstellungen.gd:539  'aus'
+  main_einstellungen.gd:543  'aus'
+  main_einstellungen.gd:543  'aus'
+  main_einstellungen.gd:550  'ohne'
+  main_einstellungen.gd:552  'ohne'
+  main_einstellungen.gd:569  'aus'
+  main_einstellungen.gd:573  'aus'
+  main_einstellungen.gd:744  'Karte öffnen: '
   mehr.gd:258  ' · Leistung: %d Bilder/s, Lite %s'
   mehr.gd:258  'an'
   mehr.gd:258  'aus'
@@ -874,11 +865,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   device.gd:298  ' · Gerät 2'
   devtool_notizen.gd:220  'Notizen aus dem MoveEye-Simulator (Entwickler → Notizen an Claude)\n%d Notizen, davon %d offen. Version %s.\n\n'
   erkunden_figur.gd:18  'Ohne'
-  erkunden_sachen.gd:637  'Zu'
-  explore.gd:898  ' (automatisch von oben)'
-  explore.gd:905  ' (automatisch von oben)'
-  explore.gd:905  ' · schnell'
-  explore.gd:986  'W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc'
+  erkunden_sachen.gd:640  'Zu'
+  explore.gd:899  ' (automatisch von oben)'
+  explore.gd:906  ' (automatisch von oben)'
+  explore.gd:906  ' · schnell'
+  explore.gd:987  'W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc'
   fahrzeuge.gd:90  'nie'
   jahreszeiten.gd:52  'nie'
   feedback.gd:386  ' · TESTMODUS: geht nur an '
@@ -993,7 +984,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inventar.gd:308  '\nKI: – = die KI von MoveEye kennt es nicht (Prüfstand: darf keinen Alarm auslösen)'
   inventar.gd:332  'KI: '
   kids.gd:338  ' Du hast jetzt %d Sterne.'
-  kit_abenteuer.gd:1832  'keine Szene '
+  kit_abenteuer.gd:1940  'keine Szene '
   kitrain.gd:93  '1/3 Paket: '
   kitrain.gd:157  'Ohne GitHub-Schlüssel: die ZIP liegt hier: %s\nSo kommt sie ins Training: 1. GitHub → Releases → «ki-daten» → Edit → ZIP hineinziehen → Update release '
   kitrain.gd:158  '(beim ersten Mal «Draft a new release», Tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye holt das neue Modell danach selbst.\n'

@@ -214,6 +214,15 @@ static func renn_tempo(m) -> float:
 	return clampf(float(m.get("ex_ptempo")), 1.0, V_MAX)
 
 
+static func tempo_naechste(v: float) -> float:
+	"""the step of TEMPI nearest to v"""
+	var i := 0
+	for k in TEMPI.size():
+		if absf(float(TEMPI[k]) - v) < absf(float(TEMPI[i]) - v):
+			i = k
+	return float(TEMPI[i])
+
+
 func tempo_stufe(dir: int, wrap := false) -> void:
 	var i := 0
 	for k in TEMPI.size():
