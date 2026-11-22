@@ -212,7 +212,7 @@ def lauf(datei):
     def links_ok(h_):
         pos_ = [h_.find('href="%s"' % x) for x in ("demo/", "Sim/?grossvater=1", "Funk/", "Sim/", "Info/")]
         return min(pos_) >= 0 and pos_ == sorted(pos_) and "📷 MoveEye" in h_ and "🗺️ Die Karte des Grossvaters" in h_ and "ℹ️ Besucherseite" in h_ \
-            and '"btn.i": "ℹ️ Visitor page"' in h_ and '"gv.all": "▶ Jeu complet"' in h_ and h_.count('class="tile') == 5 \
+            and '"btn.i": "ℹ️ Visitor page"' in h_ and '"gv.all": "▶ Jeu complet"' in h_ and h_.count('class="tile t-') == 5 \
             and "La carte du grand-père" in h_ and "La charta dal tat" in h_ and 'class="mweye"' in h_ and "mwe-blink" in h_
     ok(links_ok(idx), "4.19.1 B: alle Links (MoveEye · Karte des Grossvaters · Funkgerät · Simulator · Besucherseite, 5 Sprachen) und das bewegte Auge")
     ok("kapitel=" not in idx and 'data-t="gv.all"' in idx, "ohne veröffentlichten Browser-Simulator: nur «▶ Ganzes Spiel»")

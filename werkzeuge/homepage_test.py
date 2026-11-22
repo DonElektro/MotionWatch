@@ -395,7 +395,7 @@ def lauf(datei, tmp):
     tj = re.search(r"var T=(\{.*?\});", ix, re.S)
     nt = len(ns["hp_tiles_tx"]())
     ok(tj and sorted(json.loads(tj.group(1))) == ["en", "fr", "it", "rm"] and all(len(v) == nt for v in json.loads(tj.group(1)).values())
-       and ix.count('class="tile') == 5 and 'href="Info/"' in ix and "ℹ️ Besucherseite" in ix,
+       and ix.count('class="tile t-') == 5 and 'href="Info/"' in ix and "ℹ️ Besucherseite" in ix,
        "Startseite: 5 Kacheln (mit ℹ️ Besucherseite → Info/), je %d Texte in en / fr / it / rm (Deutsch im HTML)" % nt)
     ok('href="Sim/?grossvater=1" data-t="gv.all"' in ix and "kapitel=" not in ix,
        "Simulator für den Browser noch nicht veröffentlicht: nur «▶ Ganzes Spiel», keine Kapitel")
@@ -438,8 +438,9 @@ def lauf(datei, tmp):
     code, j = api("admin", {"action": "publish"})
     with zipfile.ZipFile(zp) as z:
         ok(all(W.files.get("Sim/" + n) == z.read(n) for n in z.namelist()), "Sim/ = die 8 Dateien aus sim-web.zip")
-    ok(len(W.uploads()) - n0 == 11 and "index.html" in [x[2] for x in W.uploads()[n0:]] and not j["last"].get("ren"),
-       f"nur die 10 neuen Dateien (8 + 2 Pack-Teile) + index.html (jetzt mit Kapiteln) hochgeladen ({len(W.uploads()) - n0}), keine Umbenennung")
+    ok(len(W.uploads()) - n0 == 10 and not j["last"].get("ren"), f"nur die 10 neuen Dateien (8 + 2 Pack-Teile) hochgeladen ({len(W.uploads()) - n0}), keine Umbenennung")
+    ok("index.html" in ns["hp_state"]()["up"] and b"kapitel=1" in W.files["index.html"],
+       "index.html mit den Kapiteln schon beim Lauf davor hochgeladen (Sim 3.95.0 übernommen)")
     ix = W.files["index.html"].decode("utf-8")
     want = ns["hp_gv_kapitel"]("3.95.0")
     ok(want == [n for n, _v in ns["HP_GV_KAPITEL"]] and want[:3] == [1, 2, 3] and all('href="Sim/?grossvater=1&amp;kapitel=%d"' % n in ix for n in want)

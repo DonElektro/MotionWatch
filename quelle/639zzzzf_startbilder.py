@@ -930,11 +930,11 @@ def startbilder_selftest():
     from PIL import Image
     import tempfile as _tf
     global DATA_DIR
-    old, c0 = DATA_DIR, {k: CFG.get(k) for k in ("hp_start_on", "hp_start_variant", "hp_funk_on", "hp_sim_on")}
+    old, c0 = DATA_DIR, {k: CFG.get(k) for k in ("hp_start_on", "hp_start_variant", "hp_funk_on", "hp_sim_on", "hp_info_on")}
     d = _tf.mkdtemp(prefix="mw_sb_")
     try:
         DATA_DIR = d
-        CFG.update(hp_start_on=True, hp_start_variant="B", hp_funk_on=False, hp_sim_on=False)
+        CFG.update(hp_start_on=True, hp_start_variant="B", hp_funk_on=False, hp_sim_on=False, hp_info_on=False)
         b = io.BytesIO(); ex = Image.Exif(); ex[0x010F] = "TestCam"; ex[0x8825] = {1: "N", 2: (47.0, 3.0, 0.0)}
         Image.new("RGB", (2400, 1800), (40, 120, 60)).save(b, "JPEG", exif=ex.tobytes()); raw = b.getvalue()
         assert b"TestCam" in raw
