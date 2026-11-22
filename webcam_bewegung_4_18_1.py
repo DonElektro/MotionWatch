@@ -271,7 +271,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_18_1.zip"
-ZD_SHA256 = "d43005a7bc11445cd157d589d54aea6a948d4aac08b262e5bf029623166b7ce4"
+ZD_SHA256 = "6ef6511bbccf5ed8668ca2899f917b53d606b1fe7d0f5c036f6b3095d4b5fe1d"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -117382,6 +117382,254 @@ LOCK_DENY_KEYS.update(SLP_DEF)
 
 SCHLAF_PY = _zd('639zzzzz_schlaf_wecken/SCHLAF_PY', "")
 zd_exec(SCHLAF_PY, '639zzzzz_schlaf_wecken.py')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GL_DEF = {"gl_on": False, "gl_until": "", "gl_until_t": 0.0, "gl_animals": True, "gl_dark_only": True, "gl_push": True, "gl_pct": 60,
+		  "gl_fade_in_s": 3.0, "gl_fade_out_s": 4.0, "gl_lost_s": 10, "gl_still_s": 30, "gl_max_min": 5, "gl_target_r": 2.0, "gl_target": {}}
+for _k, _v in GL_DEF.items():
+	CFG.setdefault(_k,json.loads(json.dumps(_v)));DEFAULTS.setdefault(_k,json.loads(json.dumps(_v)))
+	FACTORY_CFG.setdefault(_k,json.loads(json.dumps(_v)))
+USER_SETTINGS_DENY.update(GL_DEF)
+APPKEY_DENY_KEYS.update(GL_DEF)
+APPKEY_DENY_PATHS.update({"/api/gaeste"})
+LOCK_DENY_PATHS.add("/api/gaeste")
+LOCK_DENY_KEYS.update(GL_DEF)
+SCHED_FEATURES.append(("gl_on", "Guests expected (guide light)"))
+SCHED_KEYS.append("gl_on")
+GL_KINDS = ("person", "prealarm", "warm")
+GL_ZD = {"ok": False}
+GL_LIGHT = {"drive": False, "pct": 0.0, "was": False}
+GL_DIM = "light_pct" in globals()
+
+
+def gl_active(now=None):
+	""
+	if not(GL_ZD["ok"]and CFG.get("gl_on")):
+		return False
+	u=CFG.get("gl_until_t")or 0
+	return not(isinstance(u,(int,float))and 0<u<=(time.time()if now is None else now))
+
+
+def _gl_call(name, *a):
+	""
+	try:
+		f=globals().get(name)
+		return f(*a)if f is not None and GL_ZD["ok"]else None
+	except Exception:
+		return None
+
+
+def _gl_quiet(kind):
+	try:
+		if kind in GL_KINDS and gl_active():
+			_gl_call("gl_guest_note",kind)
+			return True
+	except Exception:
+		pass
+	return False
+
+
+
+_gl_push_alert = push_alert
+
+
+
+def push_alert(kind, text="", **extra):
+	if _gl_quiet(kind):
+		return None
+	return _gl_push_alert(kind,text,**extra)
+
+
+_gl_siren_alarm = siren_alarm
+
+
+
+def siren_alarm(kind):
+	if _gl_quiet(kind):
+		return None
+	return _gl_siren_alarm(kind)
+
+
+_gl_light_alarm = light_alarm
+
+
+
+def light_alarm():
+	if gl_active()and(STATE.get("persons")or STATE.get("warm")or "prealarm"in(STATE.get("present")or[])):
+		return None
+	return _gl_light_alarm()
+
+
+_gl_np_person = Notifier.person
+_gl_np_prealarm = Notifier.prealarm
+
+
+def _gl_person(self, count, snapshot_path=None, frame=None):
+	if count and _gl_quiet("person"):
+		STATE["notify_status"]="guests expected"
+		return None
+	return _gl_np_person(self,count,snapshot_path,frame)
+
+
+def _gl_prealarm(self, frame, event="prealarm"):
+	if event in("prealarm","warm")and _gl_quiet(event):
+		return False
+	return _gl_np_prealarm(self,frame,event)
+
+
+
+Notifier.person = _gl_person
+
+Notifier.prealarm = _gl_prealarm
+_gl_relays_update = RelayManager.update
+
+
+def _gl_relays(self, present):
+	if gl_active():
+		present=set(present)-{"person","warm","prealarm","animal"}
+	return _gl_relays_update(self,present)
+
+
+
+RelayManager.update = _gl_relays
+_gl_deter_check = Deterrence.check
+
+
+def _gl_deter(self, present, t0):
+	if gl_active():
+		self.seen.clear()
+		return None
+	return _gl_deter_check(self,present,t0)
+
+
+
+Deterrence.check = _gl_deter
+_gl_crawl_push = crawl_push
+
+
+
+def crawl_push(notifier, frame, d, ln):
+	if _gl_quiet("prealarm"):
+		return False
+	return _gl_crawl_push(notifier,frame,d,ln)
+
+
+_gl_obj_push = obj_push
+
+
+
+def obj_push(ev, ic, title, text, jpg=None, gap_key=None):
+	if ev=="obj_animal"and gl_active():
+		return False
+	return _gl_obj_push(ev,ic,title,text,jpg,gap_key)
+
+
+
+_gl_kp = [p for p in KOPF_PRIO if p != "guide"]
+_gl_ki = _gl_kp.index("marker") + 1 if "marker" in _gl_kp else _gl_kp.index("alarm") + 1
+KOPF_PRIO = tuple(_gl_kp[:_gl_ki] + ["guide"] + _gl_kp[_gl_ki:])
+_gl_kopf_claims = kopf_claims
+
+
+
+def kopf_claims():
+	c=_gl_kopf_claims()
+	if _gl_call("gl_holds_head"):
+		if "alarm"in c and not(KOPF["alarm"]or KOPF["tamper"]or KOPF["back"]):
+			c.discard("alarm")
+		c.add("guide")
+	return c
+
+
+_gl_kopf_track_blocked = kopf_track_blocked
+
+
+
+def kopf_track_blocked():
+	return bool(_gl_call("gl_holds_head"))or _gl_kopf_track_blocked()
+
+
+_gl_kopf_frame = kopf_frame
+
+
+
+def kopf_frame(w, candidates, person_boxes, warm_boxes, present, frame, pw, ph, t0):
+	r=_gl_kopf_frame(w,candidates,person_boxes,warm_boxes,present,frame,pw,ph,t0)
+	_gl_call("gl_frame",w,candidates,person_boxes,warm_boxes,pw,ph,t0)
+	return r
+
+
+_gl_lights_tick = lights_tick
+
+
+
+def lights_tick():
+	_gl_call("gl_lights_pre")
+	res=_gl_lights_tick()
+	_gl_call("gl_lights_post",res)
+	return res
+
+
+if GL_DIM:
+	_gl_light_pct=light_pct
+
+
+	def light_pct(n):
+		return GL_LIGHT["pct"]if n=="white"and GL_LIGHT["drive"]else _gl_light_pct(n)
+_gl_sim_state = sim_state
+
+
+
+def sim_state():
+	d=_gl_sim_state()
+	d["guests"]=_gl_call("gl_sim_patch",d)or{"on":False}
+	return d
+
+
+
+GAESTE_PY = _zd('639zzzzzg_gaeste_licht/GAESTE_PY', "")
+zd_exec(GAESTE_PY, '639zzzzzg_gaeste_licht.py')
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")
