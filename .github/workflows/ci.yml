@@ -145,14 +145,14 @@ jobs:
         timeout-minutes: 20
         run: bash werkzeuge/ci_chromium.sh ~/apt-chromium
       - name: ffmpeg (Cache)
-        if: ${{ matrix.gruppe == 'kern' }}
+        if: ${{ startsWith(matrix.gruppe, 'kern') }}
         id: ffcache
         uses: actions/cache@v4
         with:
           path: ~/ffmpeg-static
           key: ffmpeg-static-btbn-gpl-1
-      - name: ffmpeg (nur «kern» – radio_test.py braucht ein echtes ffmpeg, 3.99.0)
-        if: ${{ matrix.gruppe == 'kern' }}
+      - name: ffmpeg (nur «kern» / «kern-2» – radio_test.py, ki_test.py brauchen ein echtes ffmpeg, 3.99.0)
+        if: ${{ startsWith(matrix.gruppe, 'kern') }}
         timeout-minutes: 15
         env:
           DEBIAN_FRONTEND: noninteractive
