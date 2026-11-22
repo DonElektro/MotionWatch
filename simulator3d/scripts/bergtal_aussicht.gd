@@ -108,6 +108,8 @@ static func save_state() -> void:
 static func add_controls(main) -> void:
 	"""die Bedienelemente (Gruppe Szene wie die anderen Bergtal-Schalter; Wetter → Mehr Wetter)"""
 	main.add_control("button", "bt_aus_scope", "Durchs Fernrohr schauen (Bergtal: an einem Aussichtspunkt)", null, func(): _do(main, "scope"), "Szene")
+	main.add_control("button", "bt_aus_sprung", "Zur schönsten Aussicht springen (Chanzle über dem Gumpisee)", null,
+			func(): jump(main, "vp_kanzel"), "Entwickler", {"expert": true, "devwin": true})   # Besitzer 22.11.2026
 	main.add_control("button", "bt_aus_pano", "Panoramafoto mit MoveEyes Kamera (Bergtal)", null, func(): _do(main, "pano"), "Szene")
 	main.add_control("button", "bt_aus_observe", "Andere beobachten (Bergtal: vom Aussichtspunkt aus)", null, func(): _do(main, "observe"), "Szene", {"expert": true})
 	main.add_control("toggle", "bt_aus_cone", "MoveEye-Reichweite auf der Landschaft zeigen (Bergtal)", func(): return bool(state()["cone"]),
@@ -124,6 +126,16 @@ static func add_controls(main) -> void:
 static func _mod(main):
 	var bt = main.scenes.data.get("bergtal", null) if main.scenes != null else null
 	return bt.aussicht if bt != null and bt.get("aussicht") != null else null
+
+
+static func jump(main, id: String) -> void:
+	"""developer area: fly the view to a viewpoint; outside the Bergtal first switch to it (the module starts with the scene)"""
+	if _mod(main) != null:
+		_do(main, "visit", id)
+		return
+	if not main.set_scene("bergtal"):
+		return
+	main.get_tree().create_timer(1.0).timeout.connect(func(): _do(main, "visit", id))
 
 
 static func _do(main, what: String, value = null) -> Dictionary:
