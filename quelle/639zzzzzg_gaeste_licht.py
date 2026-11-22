@@ -248,6 +248,7 @@ def sim_state():                                              # + 639zzzzzg: «g
 GAESTE_PY = r'''
 GL_AHEAD_M = 2.0          # m ahead of the feet (Besitzer: «etwa 2 m»)
 GL_HIST_S = 1.2           # s of positions for the walking direction
+GL_HIST_LONG_S = 4.0      # ... or this long when the pictures come seldom (the head stands still between steps, the AI is slow)
 GL_WALK_MS = 0.3          # m/s: slower is no walking direction (standing, the noise of the distance estimate)
 GL_FLIP_S = 0.5           # s: walking against the old direction this long = turned back
 GL_STILL_M = 0.8          # m: moving less than this counts as standing still
@@ -419,8 +420,10 @@ class GuideCore:
         self.seen_t = now
         self.hist.append((now, self.p[0], self.p[1]))
         pts = [h for h in self.hist if now - h[0] <= GL_HIST_S]
+        if len(pts) < 3 or pts[-1][0] - pts[0][0] < 0.4:
+            pts = [h for h in self.hist if now - h[0] <= GL_HIST_LONG_S]
         self.v, self.speed = (0.0, 0.0), 0.0
-        if len(pts) >= 3 and pts[-1][0] - pts[0][0] >= 0.4:
+        if len(pts) >= 2 and pts[-1][0] - pts[0][0] >= 0.6:
             n = len(pts); mt = sum(p[0] for p in pts) / n
             mx = sum(p[1] for p in pts) / n; my = sum(p[2] for p in pts) / n
             st = sum((p[0] - mt) ** 2 for p in pts) or 1e-9
@@ -1300,6 +1303,10 @@ def gl_selftest():
     for i in range(40):
         ev += c2.step(208.0 + i * 0.1, [(i * 0.12, 3.0 + i * 0.12, "person")], target=(0.0, 3.0), r=2.0)
     assert "farewell" in ev and c2.light_wanted(), ev
+    c4 = GuideCore()
+    for i in range(4):                                        # a picture only every 1.5 s: still a walking direction
+        c4.step(400.0 + i * 1.5, [(0.0 + i * 1.5, 6.0, "person")])
+    assert c4.head is not None and c4.head[0] > 0.9, c4.head
     c3 = GuideCore(); c3.step(300.0, [(1.0, 5.0, "person")])
     assert c3.step(311.0, [], lost_s=10.0) == ["end:lost"]
     assert "guide" in KOPF_PRIO and KOPF_PRIO.index("guide") > KOPF_PRIO.index("alarm"), KOPF_PRIO

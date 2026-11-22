@@ -10,7 +10,7 @@ extends Node
 ##         «Gäste von selbst …» (Besuch → Verhalten, main.gaeste_auto).
 ##  Knopf  «Gäste besuchen das Zelt» (Besuch → Abläufe) - auch ohne MoveEye.
 ##  Die Gäste bleiben stehen, wenn das Licht angeht, nicht (sie erwarten es: Meta «gast», main.gd look_at_light).
-## Steuerung: {"action": "gaeste", "do": "info" | "start" (n = 1 / 2, stay = s)} -> laufende Gäste, Ziel, Zelt in MoveEye-Metern.
+## Steuerung: {"action": "gaeste", "do": "info" | "start" (n = 1 / 2, stay = s) | "look" (freie Ansicht übers Gerät zum Ziel)} -> laufende Gäste, Ziel, Zelt in MoveEye-Metern.
 
 const GAST_FIRST_S := 6.0
 const GAST_EVERY := [110.0, 170.0]
@@ -109,9 +109,26 @@ func info() -> Dictionary:
 			"tent_mw": to_mw(main.obj["pir"]), "next_in": snappedf(maxf(0.0, next_t - main.now()), 0.1) if was_on else -1.0}
 
 
+func look() -> Dictionary:
+	"""the free view looks over the device to the target (pictures of the guide light: device, beam, guest and tent)"""
+	main._to_free_view()
+	var tg := target_world()
+	var dev: Vector3 = main.rig.global_position
+	var dir: Vector3 = tg - dev
+	dir.y = 0.0
+	dir = dir.normalized() if dir.length() > 0.3 else Vector3(0, 0, -1)
+	var side := Vector3(-dir.z, 0, dir.x)
+	main.view_cam.global_position = dev - dir * 5.0 + side * 3.5 + Vector3(0, 3.4, 0)
+	main.view_cam.look_at(dev.lerp(tg, 0.6) + Vector3(0, 0.4, 0), Vector3.UP)
+	main.view_want_t = main.now()
+	return info()
+
+
 func control(d: Dictionary) -> Dictionary:
 	match str(d.get("do", "info")):
 		"start":
 			return start(int(d.get("n", 0)), float(d.get("stay", 0.0)))
+		"look":
+			return look()
 		_:
 			return info()

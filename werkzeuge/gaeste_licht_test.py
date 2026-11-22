@@ -449,11 +449,27 @@ def http_bytes(url, timeout=10, auth=None):
         return x.read()
 
 
+def bild_klein(pfad, breite=960):
+    """smaller for the log: at most 960 px wide, JPEG 78 (cv2 is there wherever MoveEye runs)"""
+    try:
+        import cv2
+        im = cv2.imread(pfad)
+        if im is not None:
+            if im.shape[1] > breite:
+                im = cv2.resize(im, (breite, int(im.shape[0] * breite / im.shape[1])), interpolation=cv2.INTER_AREA)
+            ok_, buf = cv2.imencode(".jpg", im, [cv2.IMWRITE_JPEG_QUALITY, 78])
+            if ok_:
+                return buf.tobytes()
+    except Exception:
+        pass
+    return open(pfad, "rb").read()
+
+
 def bild_ins_log(pfad):
     """the HP artifact cannot always be fetched: the picture also goes into the job log (base64, lines «GLBILD name i/n …»;
     werkzeuge/gaeste_licht_test.py --bilder-aus-log LOG puts them together again). Simulator pictures only - nothing private."""
     try:
-        b = base64.b64encode(open(pfad, "rb").read()).decode()
+        b = base64.b64encode(bild_klein(pfad)).decode()
     except OSError:
         return
     name, n = os.path.basename(pfad), (len(b) + 2999) // 3000
@@ -466,7 +482,10 @@ def bilder_aus_log(log, ziel):
     for ln in open(log, encoding="utf-8", errors="replace"):
         m = re.search(r"GLBILD (\S+) (\d+)/(\d+) (\S+)", ln)
         if m:
-            parts.setdefault(m.group(1), {})[int(m.group(2))] = (int(m.group(3)), m.group(4))
+            d = parts.setdefault(m.group(1), {})
+            if int(m.group(2)) == 1 or (d and next(iter(d.values()))[0] != int(m.group(3))):
+                d.clear()                                      # a new copy of the picture starts
+            d[int(m.group(2))] = (int(m.group(3)), m.group(4))
     os.makedirs(ziel, exist_ok=True)
     for name, d in parts.items():
         n = next(iter(d.values()))[0]
@@ -546,6 +565,7 @@ def teil_c(datei, tmp, bilder, godot):
         ok(info.get("ok") and info.get("mw_on"), "Simulator sieht «Gäste erwartet» von MoveEye (%s)" % info)
         ok(int(info.get("started") or 0) >= 1, "Gäste kommen von selbst, weil MoveEye «Gäste erwartet» an hat")
         tx, ty = info["tent_mw"]
+        http_json(sim + "/control", {"action": "gaeste", "do": "look"})
         r = http_json(web + "/api/gaeste", {"action": "target", "kind": "point", "x": tx, "y": ty, "name": "Zelt"}, auth=auth)
         ok(r.get("ok"), "Ziel = Zelt des Simulators (%.1f / %.1f m)" % (tx, ty))
         shots, phases, t0 = [], [], time.time()
@@ -560,9 +580,16 @@ def teil_c(datei, tmp, bilder, godot):
                            (g.get("last_end") or {}).get("why")))
             if ph in want and want[ph] not in shots and (ph != "guide" or (g.get("light") and float(g.get("pct") or 0) > 40)):
                 time.sleep(1.5 if ph != "arrived" else 4.0)
+                http_json(sim + "/control", {"action": "gaeste", "do": "look"})
+                time.sleep(0.6)
                 open(os.path.join(bilder, want[ph]), "wb").write(http_bytes(sim + "/view.jpg", 20))
+                try:                                                   # MoveEye's head camera: the guest in the light
+                    open(os.path.join(bilder, want[ph].replace(".jpg", "_kopf.jpg")), "wb").write(http_bytes(web + "/api/frame.jpg", 20, auth))
+                except Exception as ex:
+                    print("  Kopf-Bild: %s" % ex, flush=True)
                 shots.append(want[ph])
                 bild_ins_log(os.path.join(bilder, want[ph]))            # at once (the artifact cannot always be fetched)
+                bild_ins_log(os.path.join(bilder, want[ph].replace(".jpg", "_kopf.jpg")))
             time.sleep(0.8)
         print("  Ziel %.1f / %.1f m · Verlauf (s, Phase, Licht, %%, Gast, Licht-Ziel, ungesehen s, Ende):" % (tx, ty), flush=True)
         idle = [x for x in phases if x[1] == "idle"]
@@ -593,6 +620,7 @@ def teil_c(datei, tmp, bilder, godot):
             ok(up and _verbunden(web, auth, 300), "Simulator hochkant neu gestartet, wieder verbunden")
             time.sleep(10)
             http_json(sim + "/control", {"action": "gaeste", "do": "start", "n": 1, "stay": 25}, timeout=20)
+            http_json(sim + "/control", {"action": "gaeste", "do": "look"}, timeout=20)
             t1, got = time.time(), False
             while time.time() - t1 < 240 and not got:
                 try:
@@ -618,6 +646,9 @@ def teil_c(datei, tmp, bilder, godot):
                                 hits.append(ln.strip()[:220])
                     except OSError:
                         pass
+        for fn in sorted(os.listdir(bilder)):                    # once more at the end (a line of the log may get lost)
+            if fn.startswith("gaeste_sim_") and fn.endswith(".jpg"):
+                bild_ins_log(os.path.join(bilder, fn))
         print("  MoveEye-Protokoll (Führungslicht, letzte 40):", flush=True)
         for ln in hits[-40:]:
             print("   ", ln, flush=True)
