@@ -76,6 +76,55 @@ HK_CPU = {"copy": "about 1–3 % of one core to copy + 15–25 % for the encoder
           "720p": "about 25–40 % of one core, only while somebody watches", "idle": "about 1 % and 80 MB of memory"}
 HK_STEPS_OK = (5, 10, 15, 20, 30, 45)
 
+# Programmtext in der ZIP (Hauptdatei kleiner, 22.11.2026; Muster 639zzzzk / 639zzzzm): ab Zeile 127 steht der Teil in EINEM
+# Literal HK_PY - bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert), zd_exec führt es hier aus (Zeilennummern wie
+# in dieser Datei). Keine Start-, Schutz-, Alarm-, Update- oder Reparatur-Funktion: ohne ZIP fehlt der Teil einfach. Was ohne
+# ZIP gelten muss (Einstellungen, Sperrlisten, Rückfall-Funktionen für andere Teile), steht oben ausserhalb des Literals.
+
+def hk_cam_name():
+    n = re.sub(r"[^\w ']", " ", str(CFG.get("device_name") or "MoveEye"), flags=re.U)
+    n = re.sub(r"\s+", " ", n).strip()[:30]
+    return n if n and n[0].isalnum() and n[-1].isalnum() else "MoveEye"
+
+
+def homekit_on_alert(kind):
+    """called by push_alert: a real alarm while armed -> the camera plugin's motion trigger on 127.0.0.1 (never raises)"""
+    try:
+        if not CFG.get("hk_on") or kind not in ("person", "warm", "noise") or not is_armed() or CFG.get("sim_on"):
+            return False
+        now = time.time()
+        if now - HK["motion_t"] < 5:
+            return False
+        HK["motion_t"] = now
+        url = f"http://127.0.0.1:{HK_MOTION_PORT}/motion?" + urllib.parse.quote(hk_cam_name())
+
+        def go():
+            try:
+                urllib.request.urlopen(urllib.request.Request(url), timeout=3).read(200)
+            except Exception as e:
+                log_event("sys", f"Apple Home: motion sensor not reached ({e.__class__.__name__})")
+        threading.Thread(target=go, daemon=True, name="hk-motion").start()
+        return True
+    except Exception:
+        return False
+
+
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+HK_PY = r'''
+
 
 def hk_sys(cmd, inp=None, timeout=60, root=True):
     """the one door to the system (the test replaces it): as root / «sudo -n» like Samba (639zzzn); secrets only through inp"""
@@ -172,10 +221,10 @@ def _hk_hash(x):
     return hashlib.sha256(("mw-hk|" + str(x)).encode()).hexdigest()
 
 
-def hk_cam_name():
-    n = re.sub(r"[^\w ']", " ", str(CFG.get("device_name") or "MoveEye"), flags=re.U)
-    n = re.sub(r"\s+", " ", n).strip()[:30]
-    return n if n and n[0].isalnum() and n[-1].isalnum() else "MoveEye"
+
+
+
+
 
 
 def hk_quality_eff():
@@ -759,26 +808,26 @@ def hk_action(d):
 
 
 # ---- the alarm -> the motion sensor of the camera (020 push_alert) ------------------------------------------------------
-def homekit_on_alert(kind):
-    """called by push_alert: a real alarm while armed -> the camera plugin's motion trigger on 127.0.0.1 (never raises)"""
-    try:
-        if not CFG.get("hk_on") or kind not in ("person", "warm", "noise") or not is_armed() or CFG.get("sim_on"):
-            return False
-        now = time.time()
-        if now - HK["motion_t"] < 5:
-            return False
-        HK["motion_t"] = now
-        url = f"http://127.0.0.1:{HK_MOTION_PORT}/motion?" + urllib.parse.quote(hk_cam_name())
 
-        def go():
-            try:
-                urllib.request.urlopen(urllib.request.Request(url), timeout=3).read(200)
-            except Exception as e:
-                log_event("sys", f"Apple Home: motion sensor not reached ({e.__class__.__name__})")
-        threading.Thread(target=go, daemon=True, name="hk-motion").start()
-        return True
-    except Exception:
-        return False
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # ---- what the Home app shows / switches -----------------------------------------------------------------------------------
@@ -1367,3 +1416,5 @@ def apple_home_selftest():
 
 
 SELFTEST_EXTRA.append(("Apple Home (Homebridge): setup code, config, card (639zzzo)", apple_home_selftest))
+'''
+zd_exec(HK_PY and "\n" * 125 + HK_PY, "639zzzo_apple_home.py")   # line 1 of HK_PY = line 126: the line numbers are those of this file

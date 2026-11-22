@@ -81,7 +81,27 @@ KQ_RT = {"pm": {}, "db": None, "lock": threading.Lock(), "ok_t": 0.0, "have": {}
 for _k, _v in {"map_topo": True}.items():
     CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)   # 636 took its copy before this part
 
+# Programmtext in der ZIP (Hauptdatei kleiner, 22.11.2026; Muster 639zzzzk / 639zzzzm): ab Zeile 105 steht der Teil in EINEM
+# Literal KQ_PY - bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert), zd_exec führt es hier aus (Zeilennummern wie
+# in dieser Datei). Keine Start-, Schutz-, Alarm-, Update- oder Reparatur-Funktion: ohne ZIP fehlt der Teil einfach. Was ohne
+# ZIP gelten muss (Einstellungen, Sperrlisten), steht oben ausserhalb des Literals.
 
+
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+KQ_PY = r'''
 def kq_dir():
     return os.path.join(DATA_DIR, "karte")
 
@@ -1327,3 +1347,5 @@ def kq_selftest():
 
 
 SELFTEST_EXTRA.append(("Offline map of Switzerland (639zzq)", kq_selftest))
+'''
+zd_exec(KQ_PY and "\n" * 103 + KQ_PY, "639zzq_offline_karten.py")   # line 1 of KQ_PY = line 104: the line numbers are those of this file

@@ -12,6 +12,28 @@
 #   * «In Bambu Studio öffnen» bewusst weggelassen: das Link-Schema (bambustudio://open?file=…) ist nicht offiziell beschrieben und
 #     lädt nur Dateien, die Bambu Studio selbst aus dem Internet holen kann – die Seite des Pi im Heimnetz geht dafür nicht sicher.
 # ----------------------------------------------------------------------------
+
+# Programmtext in der ZIP (Hauptdatei kleiner, 22.11.2026; Muster 639zzzzk / 639zzzzm): ab Zeile 37 steht der Teil in EINEM
+# Literal GEHE_PY - bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert), zd_exec führt es hier aus (Zeilennummern wie
+# in dieser Datei). Keine Start-, Schutz-, Alarm-, Update- oder Reparatur-Funktion: ohne ZIP fehlt der Teil einfach. Was ohne
+# ZIP gelten muss (Einstellungen, Sperrlisten), steht oben ausserhalb des Literals.
+
+
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+GEHE_PY = r'''
 EINZEL_TX = {   # English key: (de, fr, it, rm)
     "Show only this part": ("Nur dieses Teil zeigen", "Afficher seulement cette pièce", "Mostra solo questo pezzo", "Mussar mo questa part"),
     "Back to the whole model": ("Zurück zum ganzen Modell", "Retour au modèle complet", "Torna al modello completo", "Enavos al model entir"),
@@ -466,3 +488,5 @@ def geh_einzel_selftest():
 
 
 SELFTEST_EXTRA.append(("Build: single part view, print plates (orientation from the 3MF, ZIP with short guide)", geh_einzel_selftest))
+'''
+zd_exec(GEHE_PY and "\n" * 35 + GEHE_PY, "639wc_einzelteil.py")   # line 1 of GEHE_PY = line 36: the line numbers are those of this file

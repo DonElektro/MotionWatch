@@ -14,6 +14,28 @@
 # Hier (nach 639i / 525 / 470) per Ersetzen, damit die geteilten Teile unberührt bleiben. Selbsttest spiele_ordnen_selftest,
 # Test werkzeuge/spiele_ordnen_test.py (Browser: ein Einstieg, Kachel öffnet /party, Freigeben von der Spielecke aus).
 # ----------------------------------------------------------------------------
+
+# Programmtext in der ZIP (Hauptdatei kleiner, 22.11.2026; Muster 639zzzzk / 639zzzzm): ab Zeile 39 steht der Teil in EINEM
+# Literal SO_PY - bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert), zd_exec führt es hier aus (Zeilennummern wie
+# in dieser Datei). Keine Start-, Schutz-, Alarm-, Update- oder Reparatur-Funktion: ohne ZIP fehlt der Teil einfach. Was ohne
+# ZIP gelten muss (Einstellungen, Sperrlisten), steht oben ausserhalb des Literals.
+
+
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+SO_PY = r'''
 NAV_SUB["more"] = [x for x in NAV_SUB["more"] if x[0] != "party"]      # NAV_OF["party"] bleibt «more»
 _nav_html_639zzo = nav_html
 
@@ -104,3 +126,5 @@ def spiele_ordnen_selftest():
 
 
 SELFTEST_EXTRA.append(("Games under «Mehr»: one entry point (639zzo)", spiele_ordnen_selftest))
+'''
+zd_exec(SO_PY and "\n" * 37 + SO_PY, "639zzo_spiele_ordnen.py")   # line 1 of SO_PY = line 38: the line numbers are those of this file

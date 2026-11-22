@@ -44,6 +44,28 @@ VIEW_GET_PAGES.add("/build")                              # every user may look 
 VIEW_GET = VIEW_GET + ("/api/bau", "/bau3d/", "/build/")
 VIEW_POST.add("/api/bau")
 
+# Programmtext in der ZIP (Hauptdatei kleiner, 22.11.2026; Muster 639zzzzk / 639zzzzm): ab Zeile 68 steht der Teil in EINEM
+# Literal GEH_PY - bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert), zd_exec führt es hier aus (Zeilennummern wie
+# in dieser Datei). Keine Start-, Schutz-, Alarm-, Update- oder Reparatur-Funktion: ohne ZIP fehlt der Teil einfach. Was ohne
+# ZIP gelten muss (Einstellungen, Sperrlisten), steht oben ausserhalb des Literals.
+
+
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+GEH_PY = r'''
+
 GEH_MORE_ROW = ('  <a class="mi" href="/build" id="m-build"><i>🛠</i><span><b data-i18n="Build yourself">Build yourself</b><small data-i18n="Everything to build it yourself: 3D, parts, shopping, printing, assembly, wiring, software">'
                 'Everything to build it yourself: 3D, parts, shopping, printing, assembly, wiring, software</small></span><span class="ar">›</span></a>\n')
 _geh_anchor = '  <a class="mi" href="/info" id="m-info">'
@@ -1605,3 +1627,5 @@ def geh_dl_selftest():
 
 
 SELFTEST_EXTRA.append(("Build print files (fetched without the repository, cache, ZIP of the case)", geh_dl_selftest))
+'''
+zd_exec(GEH_PY and "\n" * 66 + GEH_PY, "639w_gehaeuse.py")   # line 1 of GEH_PY = line 67: the line numbers are those of this file

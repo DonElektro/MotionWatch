@@ -60,6 +60,234 @@ PL = {"lock": threading.RLock(), "root": None, "lists": None, "photo_bytes": 0}
 for _p in TZ_PERMS:                                       # role_guard (550) lets these through, the routes check the exact right
     PERM_POST[_p] = set(PERM_POST.get(_p, ())) | {"/api/tausch/pack", "/api/tausch/pack/import"}
 
+# Programmtext in der ZIP (Hauptdatei kleiner, 22.11.2026; Muster 639zzzzk / 639zzzzm): ab Zeile 291 steht der Teil in EINEM
+# Literal PL_PY - bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert), zd_exec führt es hier aus (Zeilennummern wie
+# in dieser Datei). Keine Start-, Schutz-, Alarm-, Update- oder Reparatur-Funktion: ohne ZIP fehlt der Teil einfach. Was ohne
+# ZIP gelten muss (Einstellungen, Sperrlisten, Rückfall-Funktionen für andere Teile), steht oben ausserhalb des Literals.
+
+PL_HEIC_MSG = "This photo is HEIC - MoveEye cannot read that format. Choose it from the photo library (Safari then sends JPEG) or set the camera to «Most compatible»."
+
+
+_HX_PACK = {
+    "Packing lists": ("Packlisten", "Listes de bagages", "Liste di cose da portare", "Glistas da pachetar"),
+    "Lists with weight, photos and ticks - pack together": (
+        "Listen mit Gewicht, Fotos und Häkchen – gemeinsam packen", "Listes avec poids, photos et coches – préparer ensemble",
+        "Liste con peso, foto e spunte – preparare insieme", "Glistas cun paisa, fotos e crutschs – pachetar ensemen"),
+    "New list": ("Neue Liste", "Nouvelle liste", "Nuova lista", "Nova glista"),
+    "Import": ("Importieren", "Importer", "Importa", "Importar"),
+    "To buy": ("Kaufen", "À acheter", "Da comprare", "Da cumprar"),
+    "All items": ("Alle", "Tout", "Tutti", "Tuts"),
+    "Not packed yet": ("Noch nicht gepackt", "Pas encore emballé", "Non ancora preparato", "Betg anc pachetà"),
+    "Without a weight": ("Ohne Gewicht", "Sans poids", "Senza peso", "Senza paisa"),
+    "By category": ("Nach Kategorie", "Par catégorie", "Per categoria", "Tenor categoria"),
+    "By name": ("Nach Name", "Par nom", "Per nome", "Tenor num"),
+    "Heaviest first": ("Schwerstes zuerst", "Le plus lourd d’abord", "Prima il più pesante", "Il pli grev l’emprim"),
+    "Not packed first": ("Nicht Gepacktes zuerst", "Non emballé d’abord", "Prima il non preparato", "Betg pachetà l’emprim"),
+    "Name, weight – e.g. Headlamp 85 g": ("Name, Gewicht – z. B. Stirnlampe 85 g", "Nom, poids – p. ex. Lampe frontale 85 g",
+                                          "Nome, peso – p. es. Lampada frontale 85 g", "Num, paisa – p.ex. Lampa frontala 85 g"),
+    "Still missing – e.g. Gas canister": ("Fehlt noch – z. B. Gaskartusche", "Manque encore – p. ex. Cartouche de gaz", "Manca ancora – p. es. Cartuccia di gas",
+                                          "Manca anc – p.ex. Cartuscha da gas"),
+    "Sleeping": ("Schlafen", "Dormir", "Dormire", "Durmir"),
+    "Clothes": ("Kleider", "Vêtements", "Vestiti", "Vestgadira"),
+    "Kitchen": ("Küche", "Cuisine", "Cucina", "Cuschina"),
+    "Food": ("Essen", "Nourriture", "Cibo", "Mangiar"),
+    "Water": ("Wasser", "Eau", "Acqua", "Aua"),
+    "Hygiene": ("Hygiene", "Hygiène", "Igiene", "Igiena"),
+    "First aid": ("Erste Hilfe", "Premiers secours", "Pronto soccorso", "Emprim agid"),
+    "Tools & repair": ("Werkzeug", "Outils", "Attrezzi", "Utensils"),
+    "Electronics": ("Elektronik", "Électronique", "Elettronica", "Electronica"),
+    "Navigation": ("Navigation", "Navigation", "Navigazione", "Navigaziun"),
+    "Documents & money": ("Dokumente", "Documents", "Documenti", "Documents"),
+    "Miscellaneous": ("Sonstiges", "Divers", "Varie", "Divers"),
+    "Base weight": ("Basisgewicht", "Poids de base", "Peso base", "Paisa da basa"),
+    "Consumable": ("Verbrauch", "Consommable", "Consumabile", "Consum"),
+    "Worn": ("Am Körper", "Porté", "Indossato", "Vi dal corp"),
+    "Rucksack": ("Rucksack", "Sac à dos", "Zaino", "Satgados"),
+    "Category": ("Kategorie", "Catégorie", "Categoria", "Categoria"),
+    "Quantity": ("Anzahl", "Quantité", "Quantità", "Quantitad"),
+    "Weight (g)": ("Gewicht (g)", "Poids (g)", "Peso (g)", "Paisa (g)"),
+    "Kind": ("Art", "Type", "Tipo", "Tip"),
+    "Remark": ("Notiz", "Remarque", "Nota", "Remartga"),
+    "Packed": ("Gepackt", "Emballé", "Preparato", "Pachetà"),
+    "Bought": ("Gekauft", "Acheté", "Comprato", "Cumprà"),
+    "Still missing / to buy": ("Fehlt noch / kaufen", "Manque encore / à acheter", "Manca ancora / da comprare", "Manca anc / da cumprar"),
+    "Goal {n}": ("Ziel {n}", "Objectif {n}", "Obiettivo {n}", "Finamira {n}"),
+    "{n} over": ("{n} darüber", "{n} de trop", "{n} in più", "{n} da memia"),
+    "{n} under": ("{n} darunter", "{n} en dessous", "{n} in meno", "{n} sutvart"),
+    "{a} of {b} packed": ("{a} von {b} gepackt", "{a} sur {b} emballés", "{a} di {b} preparati", "{a} da {b} pachetads"),
+    "{n} without a weight": ("{n} ohne Gewicht", "{n} sans poids", "{n} senza peso", "{n} senza paisa"),
+    "{n} each": ("je {n}", "{n} pièce", "{n} cad.", "{n} per toc"),
+    "changed by {who} {n} s ago": ("geändert von {who} vor {n} s", "modifié par {who} il y a {n} s", "modificato da {who} {n} s fa", "midà da {who} avant {n} s"),
+    "changed by {who} {n} min ago": ("geändert von {who} vor {n} Min.", "modifié par {who} il y a {n} min", "modificato da {who} {n} min fa", "midà da {who} avant {n} min"),
+    "No packing lists yet.": ("Noch keine Packlisten.", "Pas encore de listes.", "Ancora nessuna lista.", "Anc naginas glistas."),
+    "Start with «New list» (also from a template) or import a list you already have.": (
+        "Beginne mit «Neue Liste» (auch aus einer Vorlage) oder importiere eine Liste, die du schon hast.",
+        "Commence avec «Nouvelle liste» (aussi depuis un modèle) ou importe une liste que tu as déjà.",
+        "Inizia con «Nuova lista» (anche da un modello) o importa una lista che hai già.",
+        "Cumenza cun «Nova glista» (er or d’in model) u importa ina glista che ti has gia."),
+    "This list is still empty.": ("Diese Liste ist noch leer.", "Cette liste est encore vide.", "Questa lista è ancora vuota.", "Questa glista è anc vida."),
+    "Add the first item below or import a list.": ("Füge unten den ersten Gegenstand hinzu oder importiere eine Liste.", "Ajoute le premier objet en bas ou importe une liste.",
+                                                   "Aggiungi il primo oggetto qui sotto o importa una lista.", "Agiunta sutvart l’emprim object u importa ina glista."),
+    "Nothing is missing.": ("Es fehlt nichts.", "Il ne manque rien.", "Non manca niente.", "I na manca nagut."),
+    "Mark an item with 🛒 or add what is missing below.": ("Markiere einen Gegenstand mit 🛒 oder trage unten ein, was fehlt.", "Marque un objet avec 🛒 ou ajoute en bas ce qui manque.",
+                                                          "Segna un oggetto con 🛒 o aggiungi sotto ciò che manca.", "Marca in object cun 🛒 u agiunta sutvart quai che manca."),
+    "You may look at the packing lists, but not change them.": (
+        "Du darfst die Packlisten ansehen, aber nicht ändern.", "Tu peux regarder les listes, mais pas les modifier.",
+        "Puoi guardare le liste, ma non modificarle.", "Ti dastgas guardar las glistas, ma betg midar ellas."),
+    "Empty list": ("Leere Liste", "Liste vide", "Lista vuota", "Glista vida"),
+    "Template «{name}» ({n} items)": ("Vorlage «{name}» ({n} Sachen)", "Modèle «{name}» ({n} objets)", "Modello «{name}» ({n} oggetti)", "Model «{name}» ({n} objects)"),
+    "Only for me (private)": ("Nur für mich (privat)", "Seulement pour moi (privé)", "Solo per me (privato)", "Mo per mai (privat)"),
+    "Name of the list": ("Name der Liste", "Nom de la liste", "Nome della lista", "Num da la glista"),
+    "Name of the new list": ("Name der neuen Liste", "Nom de la nouvelle liste", "Nome della nuova lista", "Num da la nova glista"),
+    "Name of the copy": ("Name der Kopie", "Nom de la copie", "Nome della copia", "Num da la copia"),
+    "Name of the own category": ("Name der eigenen Kategorie", "Nom de ta catégorie", "Nome della tua categoria", "Num da l’atgna categoria"),
+    "Own category …": ("Eigene Kategorie …", "Ma catégorie …", "Categoria propria …", "Atgna categoria …"),
+    "Category: automatic": ("Kategorie: automatisch", "Catégorie : automatique", "Categoria: automatica", "Categoria: automatic"),
+    "Start from": ("Beginnen mit", "Commencer avec", "Inizia da", "Cumenzar cun"),
+    "Weight goal for the rucksack (optional)": ("Gewichtsziel für den Rucksack (freiwillig)", "Objectif de poids pour le sac (facultatif)",
+                                                "Obiettivo di peso per lo zaino (facoltativo)", "Finamira da paisa per il satgados (facultativ)"),
+    "The goal counts base weight and consumables - not what you wear.": (
+        "Das Ziel zählt Basisgewicht und Verbrauch – nicht, was du am Körper trägst.", "L’objectif compte le poids de base et les consommables – pas ce que tu portes sur toi.",
+        "L’obiettivo conta peso base e consumabili – non ciò che indossi.", "La finamira dumbra paisa da basa e consum – betg quai che ti portas vi dal corp."),
+    "e.g. 8 kg": ("z. B. 8 kg", "p. ex. 8 kg", "p. es. 8 kg", "p.ex. 8 kg"),
+    "e.g. 350 g or 1.2 kg": ("z. B. 350 g oder 1,2 kg", "p. ex. 350 g ou 1,2 kg", "p. es. 350 g o 1,2 kg", "p.ex. 350 g u 1,2 kg"),
+    "e.g. Weekend in the Jura": ("z. B. Wochenende im Jura", "p. ex. Week-end dans le Jura", "p. es. Fine settimana nel Giura", "p.ex. Fin d’emna en il Giura"),
+    "Create": ("Anlegen", "Créer", "Crea", "Crear"),
+    "Weight per piece": ("Gewicht pro Stück", "Poids par pièce", "Peso per pezzo", "Paisa per toc"),
+    "Counts as": ("Zählt als", "Compte comme", "Conta come", "Dumbra sco"),
+    "Take or choose a photo": ("Foto aufnehmen oder wählen", "Prendre ou choisir une photo", "Scatta o scegli una foto", "Far u tscherner ina foto"),
+    "Change the photo": ("Foto ändern", "Changer la photo", "Cambia la foto", "Midar la foto"),
+    "Remove the photo": ("Foto entfernen", "Retirer la photo", "Rimuovi la foto", "Allontanar la foto"),
+    "Show the photo": ("Foto zeigen", "Afficher la photo", "Mostra la foto", "Mussar la foto"),
+    "Preparing the photo": ("Foto wird vorbereitet", "Préparation de la photo", "Preparazione della foto", "La foto vegn preparada"),
+    "Delete this item?": ("Diesen Gegenstand löschen?", "Supprimer cet objet ?", "Eliminare questo oggetto?", "Stizzar quest object?"),
+    "Name, weight goal, note": ("Name, Gewichtsziel, Notiz", "Nom, objectif de poids, remarque", "Nome, obiettivo di peso, nota", "Num, finamira da paisa, remartga"),
+    "Import into this list": ("In diese Liste importieren", "Importer dans cette liste", "Importa in questa lista", "Importar en questa glista"),
+    "Reset all ticks (next trip)": ("Alle Häkchen zurücksetzen (nächste Tour)", "Enlever toutes les coches (prochaine sortie)", "Togli tutte le spunte (prossima gita)",
+                                    "Allontanar tut ils crutschs (proxima tura)"),
+    "Remove all ticks of this list?": ("Alle Häkchen dieser Liste entfernen?", "Enlever toutes les coches de cette liste ?", "Togliere tutte le spunte di questa lista?",
+                                       "Allontanar tut ils crutschs da questa glista?"),
+    "{n} ticks removed": ("{n} Häkchen entfernt", "{n} coches enlevées", "{n} spunte tolte", "{n} crutschs allontanads"),
+    "Copy this list": ("Liste kopieren", "Copier cette liste", "Copia questa lista", "Copiar questa glista"),
+    "{name} (copy)": ("{name} (Kopie)", "{name} (copie)", "{name} (copia)", "{name} (copia)"),
+    "table for Excel / Numbers": ("Tabelle für Excel / Numbers", "tableau pour Excel / Numbers", "tabella per Excel / Numbers", "tabella per Excel / Numbers"),
+    "the list as MoveEye stores it": ("die Liste, wie MoveEye sie speichert", "la liste telle que MoveEye l’enregistre", "la lista come la salva MoveEye",
+                                      "la glista sco che MoveEye la memorisescha"),
+    "list and photos, as a backup": ("Liste und Fotos, als Sicherung", "liste et photos, comme sauvegarde", "lista e foto, come backup", "glista e fotos, sco copia da segirezza"),
+    "Delete this list": ("Liste löschen", "Supprimer cette liste", "Elimina questa lista", "Stizzar questa glista"),
+    "Delete this list with all its photos? It cannot be undone.": (
+        "Diese Liste mit allen Fotos löschen? Das lässt sich nicht rückgängig machen.", "Supprimer cette liste avec toutes ses photos ? C’est définitif.",
+        "Eliminare questa lista con tutte le foto? Non si può annullare.", "Stizzar questa glista cun tut las fotos? Quai na sa lascha betg revocar."),
+    "This list was deleted.": ("Diese Liste wurde gelöscht.", "Cette liste a été supprimée.", "Questa lista è stata eliminata.", "Questa glista è vegnida stizzada."),
+    "Back to the list": ("Zurück zur Liste", "Retour à la liste", "Torna alla lista", "Enavos a la glista"),
+    "Choose a file": ("Datei wählen", "Choisir un fichier", "Scegli un file", "Tscherner ina datoteca"),
+    "Paste the text here – one item per line. Example:": ("Text hier einfügen – ein Gegenstand pro Zeile. Beispiel:", "Colle le texte ici – un objet par ligne. Exemple :",
+                                                          "Incolla qui il testo – un oggetto per riga. Esempio:", "Encollar qua il text – in object per lingia. Exempel:"),
+    "… or paste text (e.g. from the Notes app)": ("… oder Text einfügen (z. B. aus der Notizen-App)", "… ou coller du texte (p. ex. depuis Notes)",
+                                                 "… o incolla del testo (p. es. dall’app Note)", "… u encollar text (p.ex. da l’app Notizias)"),
+    "Text file (one item per line), Excel (.xlsx) or CSV. You always see a preview first and can correct everything.": (
+        "Textdatei (ein Gegenstand pro Zeile), Excel (.xlsx) oder CSV. Du siehst immer zuerst eine Vorschau und kannst alles korrigieren.",
+        "Fichier texte (un objet par ligne), Excel (.xlsx) ou CSV. Tu vois toujours d’abord un aperçu et tu peux tout corriger.",
+        "File di testo (un oggetto per riga), Excel (.xlsx) o CSV. Vedi sempre prima un’anteprima e puoi correggere tutto.",
+        "Datoteca da text (in object per lingia), Excel (.xlsx) u CSV. Ti vesas adina l’emprim ina prevista e pos curreger tut."),
+    "Reading": ("Wird gelesen", "Lecture", "Lettura", "Vegn legì"),
+    "Add to «{name}»": ("An «{name}» anhängen", "Ajouter à «{name}»", "Aggiungi a «{name}»", "Agiuntar a «{name}»"),
+    "Make a new list from it": ("Neue Liste daraus machen", "En faire une nouvelle liste", "Farne una nuova lista", "Far ina nova glista londeror"),
+    "Which column is what? MoveEye guessed - please check.": ("Welche Spalte ist was? MoveEye hat geraten – bitte prüfen.", "Quelle colonne est quoi ? MoveEye a deviné – vérifie.",
+                                                              "Quale colonna è cosa? MoveEye ha indovinato – controlla.", "Tge colonna è tge? MoveEye ha engiavinà – controllescha p.pl."),
+    "Numbers without a unit are": ("Zahlen ohne Einheit sind", "Les nombres sans unité sont", "I numeri senza unità sono", "Cifras senza unitad èn"),
+    "grams (g)": ("Gramm (g)", "grammes (g)", "grammi (g)", "grams (g)"),
+    "kilograms (kg)": ("Kilogramm (kg)", "kilogrammes (kg)", "chilogrammi (kg)", "kilograms (kg)"),
+    "The first row is the heading": ("Die erste Zeile sind Überschriften", "La première ligne contient les titres", "La prima riga contiene i titoli", "L’emprima lingia èn ils titels"),
+    "{n} items": ("{n} Sachen", "{n} objets", "{n} oggetti", "{n} objects"),
+    "{n} doubles": ("{n} doppelt", "{n} doublons", "{n} doppi", "{n} dubels"),
+    "{n} lines not understood": ("{n} Zeilen nicht verstanden", "{n} lignes non comprises", "{n} righe non capite", "{n} lingias betg chapidas"),
+    "only {n} more fit into this list": ("nur noch {n} haben in dieser Liste Platz", "seulement {n} de plus entrent dans cette liste", "solo altri {n} entrano in questa lista",
+                                         "mo anc {n} han plaz en questa glista"),
+    "Import {n} items": ("{n} Sachen importieren", "Importer {n} objets", "Importa {n} oggetti", "Importar {n} objects"),
+    "{n} items imported": ("{n} Sachen importiert", "{n} objets importés", "{n} oggetti importati", "{n} objects importads"),
+    "Double: already in the list": ("Doppelt: schon in der Liste", "Doublon : déjà dans la liste", "Doppio: già nella lista", "Dubel: gia en la glista"),
+    "Double: twice in this import": ("Doppelt: zweimal in diesem Import", "Doublon : deux fois dans cet import", "Doppio: due volte in questa importazione",
+                                     "Dubel: duas giadas en quest import"),
+    "«{name}» is in the list twice now": ("«{name}» steht jetzt zweimal in der Liste", "«{name}» est maintenant deux fois dans la liste", "«{name}» ora è due volte nella lista",
+                                          "«{name}» stat ussa duas giadas en la glista"),
+    "Similar to «{name}» in the list": ("Ähnlich wie «{name}» in der Liste", "Semblable à «{name}» dans la liste", "Simile a «{name}» nella lista", "Sumegliant a «{name}» en la glista"),
+    "As category": ("Als Kategorie", "Comme catégorie", "Come categoria", "Sco categoria"),
+    "As item": ("Als Gegenstand", "Comme objet", "Come oggetto", "Sco object"),
+    "unknown list": ("unbekannte Liste", "liste inconnue", "lista sconosciuta", "glista nunenconuschenta"),
+    "The list needs a name.": ("Die Liste braucht einen Namen.", "La liste a besoin d’un nom.", "La lista ha bisogno di un nome.", "La glista dovra in num."),
+    "The item needs a name.": ("Der Gegenstand braucht einen Namen.", "L’objet a besoin d’un nom.", "L’oggetto ha bisogno di un nome.", "L’object dovra in num."),
+    "This item does not exist (any more).": ("Diesen Gegenstand gibt es nicht (mehr).", "Cet objet n’existe pas (plus).", "Questo oggetto non esiste (più).", "Quest object n’exista betg (pli)."),
+    "At most {n} items per list.": ("Höchstens {n} Gegenstände pro Liste.", "Au plus {n} objets par liste.", "Al massimo {n} oggetti per lista.", "Maximalmain {n} objects per glista."),
+    "At most {n} packing lists - delete an old one first.": ("Höchstens {n} Packlisten – lösche zuerst eine alte.", "Au plus {n} listes – supprime d’abord une ancienne.",
+                                                             "Al massimo {n} liste – elimina prima una vecchia.", "Maximalmain {n} glistas – stizza l’emprim ina veglia."),
+    "Only the person who created this list (or the administrator) may delete it.": (
+        "Nur wer die Liste angelegt hat (oder der Administrator), darf sie löschen.", "Seule la personne qui a créé la liste (ou l’administrateur) peut la supprimer.",
+        "Solo chi ha creato la lista (o l’amministratore) può eliminarla.", "Mo tgi che ha creà la glista (u l’administratur) dastga stizzar ella."),
+    "This weight is not understood. Examples: 350 g, 1.2 kg, 0,5 kg.": ("Dieses Gewicht verstehe ich nicht. Beispiele: 350 g, 1.2 kg, 0,5 kg.",
+                                                                        "Ce poids n’est pas compris. Exemples : 350 g, 1.2 kg, 0,5 kg.",
+                                                                        "Questo peso non è chiaro. Esempi: 350 g, 1.2 kg, 0,5 kg.", "Questa paisa na vegn betg chapida. Exempels: 350 g, 1.2 kg, 0,5 kg."),
+    "Nothing to import was found.": ("Nichts zum Importieren gefunden.", "Rien à importer.", "Niente da importare.", "Chattà nagut per importar."),
+    "The file is too big.": ("Die Datei ist zu gross.", "Le fichier est trop grand.", "Il file è troppo grande.", "La datoteca è memia gronda."),
+    "The text is too long.": ("Der Text ist zu lang.", "Le texte est trop long.", "Il testo è troppo lungo.", "Il text è memia lung."),
+    "The storage is full.": ("Der Speicher ist voll.", "Le stockage est plein.", "La memoria è piena.", "La memoria è plaina."),
+    "This file could not be read.": ("Diese Datei konnte nicht gelesen werden.", "Ce fichier n’a pas pu être lu.", "Impossibile leggere questo file.", "Questa datoteca n’ha betg pudì vegnir legida."),
+    "This table could not be read.": ("Diese Tabelle konnte nicht gelesen werden.", "Ce tableau n’a pas pu être lu.", "Impossibile leggere questa tabella.", "Questa tabella n’ha betg pudì vegnir legida."),
+    "This Excel file could not be read.": ("Diese Excel-Datei konnte nicht gelesen werden.", "Ce fichier Excel n’a pas pu être lu.", "Impossibile leggere questo file Excel.",
+                                           "Questa datoteca Excel n’ha betg pudì vegnir legida."),
+    "This Excel file has no table.": ("Diese Excel-Datei hat keine Tabelle.", "Ce fichier Excel n’a pas de tableau.", "Questo file Excel non ha una tabella.", "Questa datoteca Excel n’ha nagina tabella."),
+    "This Excel file is not accepted (too big when unpacked).": ("Diese Excel-Datei wird nicht angenommen (entpackt zu gross).", "Ce fichier Excel est refusé (trop grand une fois décompressé).",
+                                                                "Questo file Excel non è accettato (troppo grande una volta estratto).", "Questa datoteca Excel na vegn betg acceptada (memia gronda extratga)."),
+    "This Excel file is not accepted (unusual content).": ("Diese Excel-Datei wird nicht angenommen (ungewöhnlicher Inhalt).", "Ce fichier Excel est refusé (contenu inhabituel).",
+                                                          "Questo file Excel non è accettato (contenuto insolito).", "Questa datoteca Excel na vegn betg acceptada (cuntegn nunusità)."),
+    "This JSON file is not a packing list of MoveEye.": ("Diese JSON-Datei ist keine Packliste von MoveEye.", "Ce fichier JSON n’est pas une liste de MoveEye.",
+                                                        "Questo file JSON non è una lista di MoveEye.", "Questa datoteca JSON n’è betg ina glista da MoveEye."),
+    "This kind of file cannot be imported. Save the list as .xlsx, CSV or text.": (
+        "Diese Art Datei kann nicht importiert werden. Speichere die Liste als .xlsx, CSV oder Text.", "Ce type de fichier ne peut pas être importé. Enregistre la liste en .xlsx, CSV ou texte.",
+        "Questo tipo di file non può essere importato. Salva la lista come .xlsx, CSV o testo.", "Questa sort datoteca na po betg vegnir importada. Memorisescha la glista sco .xlsx, CSV u text."),
+    "Old Excel files (.xls) cannot be read. Save the table as .xlsx or CSV.": (
+        "Alte Excel-Dateien (.xls) können nicht gelesen werden. Speichere die Tabelle als .xlsx oder CSV.", "Les anciens fichiers Excel (.xls) ne peuvent pas être lus. Enregistre le tableau en .xlsx ou CSV.",
+        "I vecchi file Excel (.xls) non possono essere letti. Salva la tabella come .xlsx o CSV.", "Veglias datotecas Excel (.xls) na pon betg vegnir legidas. Memorisescha la tabella sco .xlsx u CSV."),
+    "Please choose a photo (JPEG, PNG or WebP).": ("Bitte ein Foto wählen (JPEG, PNG oder WebP).", "Choisis une photo (JPEG, PNG ou WebP).", "Scegli una foto (JPEG, PNG o WebP).",
+                                                   "Tscherna p.pl. ina foto (JPEG, PNG u WebP)."),
+    "This picture could not be read. Please choose a photo (JPEG, PNG or WebP).": (
+        "Dieses Bild konnte nicht gelesen werden. Bitte ein Foto wählen (JPEG, PNG oder WebP).", "Cette image n’a pas pu être lue. Choisis une photo (JPEG, PNG ou WebP).",
+        "Impossibile leggere questa immagine. Scegli una foto (JPEG, PNG o WebP).", "Quest maletg n’ha betg pudì vegnir legì. Tscherna p.pl. ina foto (JPEG, PNG u WebP)."),
+    PL_HEIC_MSG: ("Dieses Foto ist HEIC – dieses Format kann MoveEye nicht lesen. Wähle es aus der Fotomediathek (Safari schickt dann JPEG) oder stelle die Kamera auf «Maximale Kompatibilität».",
+                  "Cette photo est en HEIC – MoveEye ne lit pas ce format. Choisis-la dans la photothèque (Safari envoie alors du JPEG) ou règle l’appareil photo sur «Le plus compatible».",
+                  "Questa foto è HEIC – MoveEye non legge questo formato. Sceglila dalla libreria foto (Safari invia allora JPEG) o imposta la fotocamera su «Più compatibile».",
+                  "Questa foto è HEIC – quest format na po MoveEye betg leger. Tscherna ella or da la fototeca (Safari trametta lura JPEG) u metta la camera sin «Maximala cumpatibilitad»."),
+    "The space for photos of the packing lists is full - remove some photos first.": (
+        "Der Platz für Fotos der Packlisten ist voll – entferne zuerst einige Fotos.", "L’espace pour les photos des listes est plein – retire d’abord quelques photos.",
+        "Lo spazio per le foto delle liste è pieno – rimuovi prima alcune foto.", "Il plaz per fotos da las glistas è plain – allontanescha l’emprim intginas fotos."),
+    "Weights are typical values - weigh your own things.": ("Die Gewichte sind Richtwerte – wiege deine eigenen Sachen.", "Les poids sont indicatifs – pèse tes propres affaires.",
+                                                            "I pesi sono indicativi – pesa le tue cose.", "Las paisas èn valurs approximativas – paisa tias atgnas chaussas."),
+    "Only to look at - changing the lists needs a login.": ("Nur zum Ansehen – zum Ändern der Listen braucht es eine Anmeldung.", "Seulement pour regarder – modifier les listes demande une connexion.",
+                                                            "Solo da guardare – per modificare le liste serve un accesso.", "Mo per guardar – per midar las glistas dovri in’annunzia."),
+}
+
+
+for _k, _v in _HX_PACK.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+PL_PY = r'''
 # key, English name (= text key), colour, symbol (24 × 24, drawn for MoveEye: lines only)
 PL_CATS = (
     ("sleep", "Sleeping", "#8b9bff", "M2.5 20h19M12 5 3.5 20M12 5l8.5 15M12 12.5 9 20M12 12.5l3 7.5"),
@@ -202,7 +430,7 @@ PL_TEMPLATES = (
 )
 
 
-PL_HEIC_MSG = "This photo is HEIC - MoveEye cannot read that format. Choose it from the photo library (Safari then sends JPEG) or set the camera to «Most compatible»."
+
 
 
 class PLError(Exception):
@@ -2569,207 +2797,207 @@ def tausch_guest_html(token):                              # + 639zzw: the link 
 
 
 # ---- texts (English key: Deutsch, français, italiano, rumantsch) --------------------------------------------------------------------
-_HX_PACK = {
-    "Packing lists": ("Packlisten", "Listes de bagages", "Liste di cose da portare", "Glistas da pachetar"),
-    "Lists with weight, photos and ticks - pack together": (
-        "Listen mit Gewicht, Fotos und Häkchen – gemeinsam packen", "Listes avec poids, photos et coches – préparer ensemble",
-        "Liste con peso, foto e spunte – preparare insieme", "Glistas cun paisa, fotos e crutschs – pachetar ensemen"),
-    "New list": ("Neue Liste", "Nouvelle liste", "Nuova lista", "Nova glista"),
-    "Import": ("Importieren", "Importer", "Importa", "Importar"),
-    "To buy": ("Kaufen", "À acheter", "Da comprare", "Da cumprar"),
-    "All items": ("Alle", "Tout", "Tutti", "Tuts"),
-    "Not packed yet": ("Noch nicht gepackt", "Pas encore emballé", "Non ancora preparato", "Betg anc pachetà"),
-    "Without a weight": ("Ohne Gewicht", "Sans poids", "Senza peso", "Senza paisa"),
-    "By category": ("Nach Kategorie", "Par catégorie", "Per categoria", "Tenor categoria"),
-    "By name": ("Nach Name", "Par nom", "Per nome", "Tenor num"),
-    "Heaviest first": ("Schwerstes zuerst", "Le plus lourd d’abord", "Prima il più pesante", "Il pli grev l’emprim"),
-    "Not packed first": ("Nicht Gepacktes zuerst", "Non emballé d’abord", "Prima il non preparato", "Betg pachetà l’emprim"),
-    "Name, weight – e.g. Headlamp 85 g": ("Name, Gewicht – z. B. Stirnlampe 85 g", "Nom, poids – p. ex. Lampe frontale 85 g",
-                                          "Nome, peso – p. es. Lampada frontale 85 g", "Num, paisa – p.ex. Lampa frontala 85 g"),
-    "Still missing – e.g. Gas canister": ("Fehlt noch – z. B. Gaskartusche", "Manque encore – p. ex. Cartouche de gaz", "Manca ancora – p. es. Cartuccia di gas",
-                                          "Manca anc – p.ex. Cartuscha da gas"),
-    "Sleeping": ("Schlafen", "Dormir", "Dormire", "Durmir"),
-    "Clothes": ("Kleider", "Vêtements", "Vestiti", "Vestgadira"),
-    "Kitchen": ("Küche", "Cuisine", "Cucina", "Cuschina"),
-    "Food": ("Essen", "Nourriture", "Cibo", "Mangiar"),
-    "Water": ("Wasser", "Eau", "Acqua", "Aua"),
-    "Hygiene": ("Hygiene", "Hygiène", "Igiene", "Igiena"),
-    "First aid": ("Erste Hilfe", "Premiers secours", "Pronto soccorso", "Emprim agid"),
-    "Tools & repair": ("Werkzeug", "Outils", "Attrezzi", "Utensils"),
-    "Electronics": ("Elektronik", "Électronique", "Elettronica", "Electronica"),
-    "Navigation": ("Navigation", "Navigation", "Navigazione", "Navigaziun"),
-    "Documents & money": ("Dokumente", "Documents", "Documenti", "Documents"),
-    "Miscellaneous": ("Sonstiges", "Divers", "Varie", "Divers"),
-    "Base weight": ("Basisgewicht", "Poids de base", "Peso base", "Paisa da basa"),
-    "Consumable": ("Verbrauch", "Consommable", "Consumabile", "Consum"),
-    "Worn": ("Am Körper", "Porté", "Indossato", "Vi dal corp"),
-    "Rucksack": ("Rucksack", "Sac à dos", "Zaino", "Satgados"),
-    "Category": ("Kategorie", "Catégorie", "Categoria", "Categoria"),
-    "Quantity": ("Anzahl", "Quantité", "Quantità", "Quantitad"),
-    "Weight (g)": ("Gewicht (g)", "Poids (g)", "Peso (g)", "Paisa (g)"),
-    "Kind": ("Art", "Type", "Tipo", "Tip"),
-    "Remark": ("Notiz", "Remarque", "Nota", "Remartga"),
-    "Packed": ("Gepackt", "Emballé", "Preparato", "Pachetà"),
-    "Bought": ("Gekauft", "Acheté", "Comprato", "Cumprà"),
-    "Still missing / to buy": ("Fehlt noch / kaufen", "Manque encore / à acheter", "Manca ancora / da comprare", "Manca anc / da cumprar"),
-    "Goal {n}": ("Ziel {n}", "Objectif {n}", "Obiettivo {n}", "Finamira {n}"),
-    "{n} over": ("{n} darüber", "{n} de trop", "{n} in più", "{n} da memia"),
-    "{n} under": ("{n} darunter", "{n} en dessous", "{n} in meno", "{n} sutvart"),
-    "{a} of {b} packed": ("{a} von {b} gepackt", "{a} sur {b} emballés", "{a} di {b} preparati", "{a} da {b} pachetads"),
-    "{n} without a weight": ("{n} ohne Gewicht", "{n} sans poids", "{n} senza peso", "{n} senza paisa"),
-    "{n} each": ("je {n}", "{n} pièce", "{n} cad.", "{n} per toc"),
-    "changed by {who} {n} s ago": ("geändert von {who} vor {n} s", "modifié par {who} il y a {n} s", "modificato da {who} {n} s fa", "midà da {who} avant {n} s"),
-    "changed by {who} {n} min ago": ("geändert von {who} vor {n} Min.", "modifié par {who} il y a {n} min", "modificato da {who} {n} min fa", "midà da {who} avant {n} min"),
-    "No packing lists yet.": ("Noch keine Packlisten.", "Pas encore de listes.", "Ancora nessuna lista.", "Anc naginas glistas."),
-    "Start with «New list» (also from a template) or import a list you already have.": (
-        "Beginne mit «Neue Liste» (auch aus einer Vorlage) oder importiere eine Liste, die du schon hast.",
-        "Commence avec «Nouvelle liste» (aussi depuis un modèle) ou importe une liste que tu as déjà.",
-        "Inizia con «Nuova lista» (anche da un modello) o importa una lista che hai già.",
-        "Cumenza cun «Nova glista» (er or d’in model) u importa ina glista che ti has gia."),
-    "This list is still empty.": ("Diese Liste ist noch leer.", "Cette liste est encore vide.", "Questa lista è ancora vuota.", "Questa glista è anc vida."),
-    "Add the first item below or import a list.": ("Füge unten den ersten Gegenstand hinzu oder importiere eine Liste.", "Ajoute le premier objet en bas ou importe une liste.",
-                                                   "Aggiungi il primo oggetto qui sotto o importa una lista.", "Agiunta sutvart l’emprim object u importa ina glista."),
-    "Nothing is missing.": ("Es fehlt nichts.", "Il ne manque rien.", "Non manca niente.", "I na manca nagut."),
-    "Mark an item with 🛒 or add what is missing below.": ("Markiere einen Gegenstand mit 🛒 oder trage unten ein, was fehlt.", "Marque un objet avec 🛒 ou ajoute en bas ce qui manque.",
-                                                          "Segna un oggetto con 🛒 o aggiungi sotto ciò che manca.", "Marca in object cun 🛒 u agiunta sutvart quai che manca."),
-    "You may look at the packing lists, but not change them.": (
-        "Du darfst die Packlisten ansehen, aber nicht ändern.", "Tu peux regarder les listes, mais pas les modifier.",
-        "Puoi guardare le liste, ma non modificarle.", "Ti dastgas guardar las glistas, ma betg midar ellas."),
-    "Empty list": ("Leere Liste", "Liste vide", "Lista vuota", "Glista vida"),
-    "Template «{name}» ({n} items)": ("Vorlage «{name}» ({n} Sachen)", "Modèle «{name}» ({n} objets)", "Modello «{name}» ({n} oggetti)", "Model «{name}» ({n} objects)"),
-    "Only for me (private)": ("Nur für mich (privat)", "Seulement pour moi (privé)", "Solo per me (privato)", "Mo per mai (privat)"),
-    "Name of the list": ("Name der Liste", "Nom de la liste", "Nome della lista", "Num da la glista"),
-    "Name of the new list": ("Name der neuen Liste", "Nom de la nouvelle liste", "Nome della nuova lista", "Num da la nova glista"),
-    "Name of the copy": ("Name der Kopie", "Nom de la copie", "Nome della copia", "Num da la copia"),
-    "Name of the own category": ("Name der eigenen Kategorie", "Nom de ta catégorie", "Nome della tua categoria", "Num da l’atgna categoria"),
-    "Own category …": ("Eigene Kategorie …", "Ma catégorie …", "Categoria propria …", "Atgna categoria …"),
-    "Category: automatic": ("Kategorie: automatisch", "Catégorie : automatique", "Categoria: automatica", "Categoria: automatic"),
-    "Start from": ("Beginnen mit", "Commencer avec", "Inizia da", "Cumenzar cun"),
-    "Weight goal for the rucksack (optional)": ("Gewichtsziel für den Rucksack (freiwillig)", "Objectif de poids pour le sac (facultatif)",
-                                                "Obiettivo di peso per lo zaino (facoltativo)", "Finamira da paisa per il satgados (facultativ)"),
-    "The goal counts base weight and consumables - not what you wear.": (
-        "Das Ziel zählt Basisgewicht und Verbrauch – nicht, was du am Körper trägst.", "L’objectif compte le poids de base et les consommables – pas ce que tu portes sur toi.",
-        "L’obiettivo conta peso base e consumabili – non ciò che indossi.", "La finamira dumbra paisa da basa e consum – betg quai che ti portas vi dal corp."),
-    "e.g. 8 kg": ("z. B. 8 kg", "p. ex. 8 kg", "p. es. 8 kg", "p.ex. 8 kg"),
-    "e.g. 350 g or 1.2 kg": ("z. B. 350 g oder 1,2 kg", "p. ex. 350 g ou 1,2 kg", "p. es. 350 g o 1,2 kg", "p.ex. 350 g u 1,2 kg"),
-    "e.g. Weekend in the Jura": ("z. B. Wochenende im Jura", "p. ex. Week-end dans le Jura", "p. es. Fine settimana nel Giura", "p.ex. Fin d’emna en il Giura"),
-    "Create": ("Anlegen", "Créer", "Crea", "Crear"),
-    "Weight per piece": ("Gewicht pro Stück", "Poids par pièce", "Peso per pezzo", "Paisa per toc"),
-    "Counts as": ("Zählt als", "Compte comme", "Conta come", "Dumbra sco"),
-    "Take or choose a photo": ("Foto aufnehmen oder wählen", "Prendre ou choisir une photo", "Scatta o scegli una foto", "Far u tscherner ina foto"),
-    "Change the photo": ("Foto ändern", "Changer la photo", "Cambia la foto", "Midar la foto"),
-    "Remove the photo": ("Foto entfernen", "Retirer la photo", "Rimuovi la foto", "Allontanar la foto"),
-    "Show the photo": ("Foto zeigen", "Afficher la photo", "Mostra la foto", "Mussar la foto"),
-    "Preparing the photo": ("Foto wird vorbereitet", "Préparation de la photo", "Preparazione della foto", "La foto vegn preparada"),
-    "Delete this item?": ("Diesen Gegenstand löschen?", "Supprimer cet objet ?", "Eliminare questo oggetto?", "Stizzar quest object?"),
-    "Name, weight goal, note": ("Name, Gewichtsziel, Notiz", "Nom, objectif de poids, remarque", "Nome, obiettivo di peso, nota", "Num, finamira da paisa, remartga"),
-    "Import into this list": ("In diese Liste importieren", "Importer dans cette liste", "Importa in questa lista", "Importar en questa glista"),
-    "Reset all ticks (next trip)": ("Alle Häkchen zurücksetzen (nächste Tour)", "Enlever toutes les coches (prochaine sortie)", "Togli tutte le spunte (prossima gita)",
-                                    "Allontanar tut ils crutschs (proxima tura)"),
-    "Remove all ticks of this list?": ("Alle Häkchen dieser Liste entfernen?", "Enlever toutes les coches de cette liste ?", "Togliere tutte le spunte di questa lista?",
-                                       "Allontanar tut ils crutschs da questa glista?"),
-    "{n} ticks removed": ("{n} Häkchen entfernt", "{n} coches enlevées", "{n} spunte tolte", "{n} crutschs allontanads"),
-    "Copy this list": ("Liste kopieren", "Copier cette liste", "Copia questa lista", "Copiar questa glista"),
-    "{name} (copy)": ("{name} (Kopie)", "{name} (copie)", "{name} (copia)", "{name} (copia)"),
-    "table for Excel / Numbers": ("Tabelle für Excel / Numbers", "tableau pour Excel / Numbers", "tabella per Excel / Numbers", "tabella per Excel / Numbers"),
-    "the list as MoveEye stores it": ("die Liste, wie MoveEye sie speichert", "la liste telle que MoveEye l’enregistre", "la lista come la salva MoveEye",
-                                      "la glista sco che MoveEye la memorisescha"),
-    "list and photos, as a backup": ("Liste und Fotos, als Sicherung", "liste et photos, comme sauvegarde", "lista e foto, come backup", "glista e fotos, sco copia da segirezza"),
-    "Delete this list": ("Liste löschen", "Supprimer cette liste", "Elimina questa lista", "Stizzar questa glista"),
-    "Delete this list with all its photos? It cannot be undone.": (
-        "Diese Liste mit allen Fotos löschen? Das lässt sich nicht rückgängig machen.", "Supprimer cette liste avec toutes ses photos ? C’est définitif.",
-        "Eliminare questa lista con tutte le foto? Non si può annullare.", "Stizzar questa glista cun tut las fotos? Quai na sa lascha betg revocar."),
-    "This list was deleted.": ("Diese Liste wurde gelöscht.", "Cette liste a été supprimée.", "Questa lista è stata eliminata.", "Questa glista è vegnida stizzada."),
-    "Back to the list": ("Zurück zur Liste", "Retour à la liste", "Torna alla lista", "Enavos a la glista"),
-    "Choose a file": ("Datei wählen", "Choisir un fichier", "Scegli un file", "Tscherner ina datoteca"),
-    "Paste the text here – one item per line. Example:": ("Text hier einfügen – ein Gegenstand pro Zeile. Beispiel:", "Colle le texte ici – un objet par ligne. Exemple :",
-                                                          "Incolla qui il testo – un oggetto per riga. Esempio:", "Encollar qua il text – in object per lingia. Exempel:"),
-    "… or paste text (e.g. from the Notes app)": ("… oder Text einfügen (z. B. aus der Notizen-App)", "… ou coller du texte (p. ex. depuis Notes)",
-                                                 "… o incolla del testo (p. es. dall’app Note)", "… u encollar text (p.ex. da l’app Notizias)"),
-    "Text file (one item per line), Excel (.xlsx) or CSV. You always see a preview first and can correct everything.": (
-        "Textdatei (ein Gegenstand pro Zeile), Excel (.xlsx) oder CSV. Du siehst immer zuerst eine Vorschau und kannst alles korrigieren.",
-        "Fichier texte (un objet par ligne), Excel (.xlsx) ou CSV. Tu vois toujours d’abord un aperçu et tu peux tout corriger.",
-        "File di testo (un oggetto per riga), Excel (.xlsx) o CSV. Vedi sempre prima un’anteprima e puoi correggere tutto.",
-        "Datoteca da text (in object per lingia), Excel (.xlsx) u CSV. Ti vesas adina l’emprim ina prevista e pos curreger tut."),
-    "Reading": ("Wird gelesen", "Lecture", "Lettura", "Vegn legì"),
-    "Add to «{name}»": ("An «{name}» anhängen", "Ajouter à «{name}»", "Aggiungi a «{name}»", "Agiuntar a «{name}»"),
-    "Make a new list from it": ("Neue Liste daraus machen", "En faire une nouvelle liste", "Farne una nuova lista", "Far ina nova glista londeror"),
-    "Which column is what? MoveEye guessed - please check.": ("Welche Spalte ist was? MoveEye hat geraten – bitte prüfen.", "Quelle colonne est quoi ? MoveEye a deviné – vérifie.",
-                                                              "Quale colonna è cosa? MoveEye ha indovinato – controlla.", "Tge colonna è tge? MoveEye ha engiavinà – controllescha p.pl."),
-    "Numbers without a unit are": ("Zahlen ohne Einheit sind", "Les nombres sans unité sont", "I numeri senza unità sono", "Cifras senza unitad èn"),
-    "grams (g)": ("Gramm (g)", "grammes (g)", "grammi (g)", "grams (g)"),
-    "kilograms (kg)": ("Kilogramm (kg)", "kilogrammes (kg)", "chilogrammi (kg)", "kilograms (kg)"),
-    "The first row is the heading": ("Die erste Zeile sind Überschriften", "La première ligne contient les titres", "La prima riga contiene i titoli", "L’emprima lingia èn ils titels"),
-    "{n} items": ("{n} Sachen", "{n} objets", "{n} oggetti", "{n} objects"),
-    "{n} doubles": ("{n} doppelt", "{n} doublons", "{n} doppi", "{n} dubels"),
-    "{n} lines not understood": ("{n} Zeilen nicht verstanden", "{n} lignes non comprises", "{n} righe non capite", "{n} lingias betg chapidas"),
-    "only {n} more fit into this list": ("nur noch {n} haben in dieser Liste Platz", "seulement {n} de plus entrent dans cette liste", "solo altri {n} entrano in questa lista",
-                                         "mo anc {n} han plaz en questa glista"),
-    "Import {n} items": ("{n} Sachen importieren", "Importer {n} objets", "Importa {n} oggetti", "Importar {n} objects"),
-    "{n} items imported": ("{n} Sachen importiert", "{n} objets importés", "{n} oggetti importati", "{n} objects importads"),
-    "Double: already in the list": ("Doppelt: schon in der Liste", "Doublon : déjà dans la liste", "Doppio: già nella lista", "Dubel: gia en la glista"),
-    "Double: twice in this import": ("Doppelt: zweimal in diesem Import", "Doublon : deux fois dans cet import", "Doppio: due volte in questa importazione",
-                                     "Dubel: duas giadas en quest import"),
-    "«{name}» is in the list twice now": ("«{name}» steht jetzt zweimal in der Liste", "«{name}» est maintenant deux fois dans la liste", "«{name}» ora è due volte nella lista",
-                                          "«{name}» stat ussa duas giadas en la glista"),
-    "Similar to «{name}» in the list": ("Ähnlich wie «{name}» in der Liste", "Semblable à «{name}» dans la liste", "Simile a «{name}» nella lista", "Sumegliant a «{name}» en la glista"),
-    "As category": ("Als Kategorie", "Comme catégorie", "Come categoria", "Sco categoria"),
-    "As item": ("Als Gegenstand", "Comme objet", "Come oggetto", "Sco object"),
-    "unknown list": ("unbekannte Liste", "liste inconnue", "lista sconosciuta", "glista nunenconuschenta"),
-    "The list needs a name.": ("Die Liste braucht einen Namen.", "La liste a besoin d’un nom.", "La lista ha bisogno di un nome.", "La glista dovra in num."),
-    "The item needs a name.": ("Der Gegenstand braucht einen Namen.", "L’objet a besoin d’un nom.", "L’oggetto ha bisogno di un nome.", "L’object dovra in num."),
-    "This item does not exist (any more).": ("Diesen Gegenstand gibt es nicht (mehr).", "Cet objet n’existe pas (plus).", "Questo oggetto non esiste (più).", "Quest object n’exista betg (pli)."),
-    "At most {n} items per list.": ("Höchstens {n} Gegenstände pro Liste.", "Au plus {n} objets par liste.", "Al massimo {n} oggetti per lista.", "Maximalmain {n} objects per glista."),
-    "At most {n} packing lists - delete an old one first.": ("Höchstens {n} Packlisten – lösche zuerst eine alte.", "Au plus {n} listes – supprime d’abord une ancienne.",
-                                                             "Al massimo {n} liste – elimina prima una vecchia.", "Maximalmain {n} glistas – stizza l’emprim ina veglia."),
-    "Only the person who created this list (or the administrator) may delete it.": (
-        "Nur wer die Liste angelegt hat (oder der Administrator), darf sie löschen.", "Seule la personne qui a créé la liste (ou l’administrateur) peut la supprimer.",
-        "Solo chi ha creato la lista (o l’amministratore) può eliminarla.", "Mo tgi che ha creà la glista (u l’administratur) dastga stizzar ella."),
-    "This weight is not understood. Examples: 350 g, 1.2 kg, 0,5 kg.": ("Dieses Gewicht verstehe ich nicht. Beispiele: 350 g, 1.2 kg, 0,5 kg.",
-                                                                        "Ce poids n’est pas compris. Exemples : 350 g, 1.2 kg, 0,5 kg.",
-                                                                        "Questo peso non è chiaro. Esempi: 350 g, 1.2 kg, 0,5 kg.", "Questa paisa na vegn betg chapida. Exempels: 350 g, 1.2 kg, 0,5 kg."),
-    "Nothing to import was found.": ("Nichts zum Importieren gefunden.", "Rien à importer.", "Niente da importare.", "Chattà nagut per importar."),
-    "The file is too big.": ("Die Datei ist zu gross.", "Le fichier est trop grand.", "Il file è troppo grande.", "La datoteca è memia gronda."),
-    "The text is too long.": ("Der Text ist zu lang.", "Le texte est trop long.", "Il testo è troppo lungo.", "Il text è memia lung."),
-    "The storage is full.": ("Der Speicher ist voll.", "Le stockage est plein.", "La memoria è piena.", "La memoria è plaina."),
-    "This file could not be read.": ("Diese Datei konnte nicht gelesen werden.", "Ce fichier n’a pas pu être lu.", "Impossibile leggere questo file.", "Questa datoteca n’ha betg pudì vegnir legida."),
-    "This table could not be read.": ("Diese Tabelle konnte nicht gelesen werden.", "Ce tableau n’a pas pu être lu.", "Impossibile leggere questa tabella.", "Questa tabella n’ha betg pudì vegnir legida."),
-    "This Excel file could not be read.": ("Diese Excel-Datei konnte nicht gelesen werden.", "Ce fichier Excel n’a pas pu être lu.", "Impossibile leggere questo file Excel.",
-                                           "Questa datoteca Excel n’ha betg pudì vegnir legida."),
-    "This Excel file has no table.": ("Diese Excel-Datei hat keine Tabelle.", "Ce fichier Excel n’a pas de tableau.", "Questo file Excel non ha una tabella.", "Questa datoteca Excel n’ha nagina tabella."),
-    "This Excel file is not accepted (too big when unpacked).": ("Diese Excel-Datei wird nicht angenommen (entpackt zu gross).", "Ce fichier Excel est refusé (trop grand une fois décompressé).",
-                                                                "Questo file Excel non è accettato (troppo grande una volta estratto).", "Questa datoteca Excel na vegn betg acceptada (memia gronda extratga)."),
-    "This Excel file is not accepted (unusual content).": ("Diese Excel-Datei wird nicht angenommen (ungewöhnlicher Inhalt).", "Ce fichier Excel est refusé (contenu inhabituel).",
-                                                          "Questo file Excel non è accettato (contenuto insolito).", "Questa datoteca Excel na vegn betg acceptada (cuntegn nunusità)."),
-    "This JSON file is not a packing list of MoveEye.": ("Diese JSON-Datei ist keine Packliste von MoveEye.", "Ce fichier JSON n’est pas une liste de MoveEye.",
-                                                        "Questo file JSON non è una lista di MoveEye.", "Questa datoteca JSON n’è betg ina glista da MoveEye."),
-    "This kind of file cannot be imported. Save the list as .xlsx, CSV or text.": (
-        "Diese Art Datei kann nicht importiert werden. Speichere die Liste als .xlsx, CSV oder Text.", "Ce type de fichier ne peut pas être importé. Enregistre la liste en .xlsx, CSV ou texte.",
-        "Questo tipo di file non può essere importato. Salva la lista come .xlsx, CSV o testo.", "Questa sort datoteca na po betg vegnir importada. Memorisescha la glista sco .xlsx, CSV u text."),
-    "Old Excel files (.xls) cannot be read. Save the table as .xlsx or CSV.": (
-        "Alte Excel-Dateien (.xls) können nicht gelesen werden. Speichere die Tabelle als .xlsx oder CSV.", "Les anciens fichiers Excel (.xls) ne peuvent pas être lus. Enregistre le tableau en .xlsx ou CSV.",
-        "I vecchi file Excel (.xls) non possono essere letti. Salva la tabella come .xlsx o CSV.", "Veglias datotecas Excel (.xls) na pon betg vegnir legidas. Memorisescha la tabella sco .xlsx u CSV."),
-    "Please choose a photo (JPEG, PNG or WebP).": ("Bitte ein Foto wählen (JPEG, PNG oder WebP).", "Choisis une photo (JPEG, PNG ou WebP).", "Scegli una foto (JPEG, PNG o WebP).",
-                                                   "Tscherna p.pl. ina foto (JPEG, PNG u WebP)."),
-    "This picture could not be read. Please choose a photo (JPEG, PNG or WebP).": (
-        "Dieses Bild konnte nicht gelesen werden. Bitte ein Foto wählen (JPEG, PNG oder WebP).", "Cette image n’a pas pu être lue. Choisis une photo (JPEG, PNG ou WebP).",
-        "Impossibile leggere questa immagine. Scegli una foto (JPEG, PNG o WebP).", "Quest maletg n’ha betg pudì vegnir legì. Tscherna p.pl. ina foto (JPEG, PNG u WebP)."),
-    PL_HEIC_MSG: ("Dieses Foto ist HEIC – dieses Format kann MoveEye nicht lesen. Wähle es aus der Fotomediathek (Safari schickt dann JPEG) oder stelle die Kamera auf «Maximale Kompatibilität».",
-                  "Cette photo est en HEIC – MoveEye ne lit pas ce format. Choisis-la dans la photothèque (Safari envoie alors du JPEG) ou règle l’appareil photo sur «Le plus compatible».",
-                  "Questa foto è HEIC – MoveEye non legge questo formato. Sceglila dalla libreria foto (Safari invia allora JPEG) o imposta la fotocamera su «Più compatibile».",
-                  "Questa foto è HEIC – quest format na po MoveEye betg leger. Tscherna ella or da la fototeca (Safari trametta lura JPEG) u metta la camera sin «Maximala cumpatibilitad»."),
-    "The space for photos of the packing lists is full - remove some photos first.": (
-        "Der Platz für Fotos der Packlisten ist voll – entferne zuerst einige Fotos.", "L’espace pour les photos des listes est plein – retire d’abord quelques photos.",
-        "Lo spazio per le foto delle liste è pieno – rimuovi prima alcune foto.", "Il plaz per fotos da las glistas è plain – allontanescha l’emprim intginas fotos."),
-    "Weights are typical values - weigh your own things.": ("Die Gewichte sind Richtwerte – wiege deine eigenen Sachen.", "Les poids sont indicatifs – pèse tes propres affaires.",
-                                                            "I pesi sono indicativi – pesa le tue cose.", "Las paisas èn valurs approximativas – paisa tias atgnas chaussas."),
-    "Only to look at - changing the lists needs a login.": ("Nur zum Ansehen – zum Ändern der Listen braucht es eine Anmeldung.", "Seulement pour regarder – modifier les listes demande une connexion.",
-                                                            "Solo da guardare – per modificare le liste serve un accesso.", "Mo per guardar – per midar las glistas dovri in’annunzia."),
-}
-for _k, _v in _HX_PACK.items():
-    DE.setdefault(_k, _v[0])
-    for _i, _L in enumerate(("fr", "it", "rm")):
-        TRX[_L].setdefault(_k, _v[_i + 1])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 MORE_DE.update({"Packing lists": "Packlisten"})
 # the German of every text of the page (also the ones other parts already translate: «Save», «Cancel» …)
 _PL_DE = {_k: DE[_k] for _k in set(re.findall(r'\bt[f]?\(\s*"((?:[^"\\]|\\.)+)"', PL_PAGE)) | set(re.findall(r'data-i18n(?:-ph)?="([^"]+)"', PL_PAGE))
@@ -2977,3 +3205,5 @@ def pl_selftest():
 
 
 SELFTEST_EXTRA.append(("Packing lists: import, merge, rights, export (639zzw)", pl_selftest))
+'''
+zd_exec(PL_PY and "\n" * 289 + PL_PY, "639zzw_packlisten.py")   # line 1 of PL_PY = line 290: the line numbers are those of this file
