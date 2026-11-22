@@ -32,10 +32,12 @@
 # Die Pins bleiben in der (signierten) Hauptdatei; der Programmtext steht in EINEM Literal (Hauptdatei klein, wie 639zzzzo):
 # werkzeuge/bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert). Ohne ZIP gibt es die Bergtal-Karte nicht - sie
 # gehört nicht zu Start, Schutz, Alarm, Update oder Reparatur.
-BK_TAG = "bergkarte-1"
+BK_TAG = "bergkarte-2"
 BK_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"}   # + <tag>/<name>; Tests: lokaler Server
 # Werte aus werkzeuge/bergkarte/paket.py (pins_bergkarte.txt des Workflows «Bergtal-Karte»); size 0 = noch nicht freigegeben
-BK_FILE = {"name": "bergtal-karte-1.zip", "size": 3233671, "sha256": "deb7d5508aaa3b106e513475398693927f429efad130bc5d0b965d30788f97b9", "unpacked": 4527105, "sim": "3.75.0"}
+# bergkarte-2 (22.11.2026, «Wildcamp» 639zzzzzw): dazu die erfundenen Wildruhezonen (vektor.json t = «wrz»); bergkarte-1 war
+# 3233671 Bytes, sha256 deb7d5508aaa3b106e513475398693927f429efad130bc5d0b965d30788f97b9 (Release bleibt).
+BK_FILE = {"name": "bergtal-karte-2.zip", "size": 0, "sha256": "", "unpacked": 0, "sim": ""}
 BK_PY = r'''BK_FORMAT = 1
 BK_MAX = 80 * 1000 * 1000                                  # hard limit of the package (also unpacked)
 BK_FREE_MIN = 200 * 1000 * 1000                            # so much stays free after the install

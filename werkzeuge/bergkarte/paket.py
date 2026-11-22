@@ -57,7 +57,7 @@ import zlib
 
 HIER = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HIER))
-TAG = "bergkarte-1"
+TAG = "bergkarte-2"
 NAME = "bergtal-karte-%s.zip" % TAG.split("-")[1]
 FORMAT = 1
 QUELLE_TEIL = os.path.join(REPO, "quelle", "639zzzzzt_bergtal_karte.py")
@@ -410,6 +410,15 @@ def ellipse(lk, n=56):
     return {"type": "Polygon", "coordinates": [ring]}
 
 
+def perioden(z):
+    """«20.12. - 30.04.» -> [["1220", "0430"]] (the format of werkzeuge/wildcamp/paket.py)"""
+    m = re.fullmatch(r"\s*(\d{1,2})\.(\d{1,2})\.\s*-\s*(\d{1,2})\.(\d{1,2})\.\s*", str(z or ""))
+    if not m:
+        return []
+    d0, m0, d1, m1 = (int(x) for x in m.groups())
+    return [["%02d%02d" % (m0, d0), "%02d%02d" % (m1, d1)]]
+
+
 def lvl_of(e):
     return 100 if e % 100 == 0 else 50 if e % 50 == 0 else 20 if e % 20 == 0 else 10
 
@@ -431,6 +440,10 @@ def vektor(g, cont):
     for tr in D["trails"]:
         if not tr["secret"]:
             F.append(feat(line(tr["pts"]), t="weg", g=int(tr["level"]) + 1, name=tr["name"]))
+    for w in D.get("wildruhezonen", []):                 # «Wildcamp» (MoveEye 639zzzzzw): the invented Wildruhezonen
+        ring = [ll(q[0], q[1]) for q in w["ring"]]
+        F.append(feat({"type": "Polygon", "coordinates": [ring + [ring[0]]]}, t="wrz", id=w["id"], name=w["name"], z=w["z"], s=w["s"], b=w["b"],
+                      p=perioden(w["z"])))
     for p in D["places"]:
         F.append(feat({"type": "Point", "coordinates": ll(p["x"], p["z"])}, t="ort", name=p["name"], kind=p["kind"],
                       ele=int(round(g.alt0 + g.H(p["x"], p["z"])))))
@@ -653,7 +666,7 @@ def bauen(exp, web_zip, aus):
     files["LIZENZEN.txt"] = (LIZENZ % (TAG, D["sim"], wmeta.get("maplibre", "?"))).encode()
     counts = {"orte": len(D["places"]), "geheim": len(D["secrets"]), "wege": sum(1 for t in D["trails"] if not t["secret"]),
               "geheim_wege": sum(1 for t in D["trails"] if t["secret"]), "seen": sum(1 for l in D["lakes"] if not l["secret"]),
-              "bach": len(D["streams"]), "touren": len(tours), "hk": sum(len(v) for v in cont.values())}
+              "bach": len(D["streams"]), "touren": len(tours), "hk": sum(len(v) for v in cont.values()), "wrz": len(D.get("wildruhezonen", []))}
     head = {"tag": TAG, "format": FORMAT, "sim": D["sim"], "grid": D["grid"], "m_per_deg": M, "bounds": bounds,
             "landc": [ll(g.lo, g.lo), ll(g.hi, g.lo), ll(g.hi, g.hi), ll(g.lo, g.hi)], "dem": {"z": list(DEM_Z)},
             "center": ll(0, 0), "counts": counts, "maplibre": wmeta.get("maplibre", ""), "web_tag": wmeta.get("tag", "")}
@@ -751,6 +764,12 @@ def pruefen(aus, exp):
         worst = max(worst, dev)
         if dev > 0.06 or math.hypot(cx - x, cz - z) > 3.5:
             fehler.append("Höhen-Kachel bei %g / %g: %.2f statt %.2f" % (x, z, hd, g.alt0 + g.H(cx, cz)))
+    wz = [f for f in vk["features"] if f["properties"]["t"] == "wrz"]       # «Wildcamp»: the invented Wildruhezonen of the simulator
+    if sorted(f["properties"]["id"] for f in wz) != sorted(w["id"] for w in D.get("wildruhezonen", [])):
+        fehler.append("Wildruhezonen: %d im Paket, %d im Simulator" % (len(wz), len(D.get("wildruhezonen", []))))
+    for f in wz:
+        if not f["properties"].get("p") or len(f["geometry"]["coordinates"][0]) < 4:
+            fehler.append("Wildruhezone ohne Schutzzeit / Fläche: " + f["properties"]["id"])
     st = json.loads(files["stil.json"])
     for need in ("bk-relief", "bk-hk", "bk-wege-1", "bk-wege-23", "bk-orte", "bk-geheim", "bk-land"):
         if need not in {l["id"] for l in st["layers"]}:

@@ -1,0 +1,173 @@
+# Wildcamp (MoveEye, Teil 639zzzzzw): baut das Paket «Wildcamp» (Schutzgebiete der Schweiz) mit werkzeuge/wildcamp/paket.py -
+# holt die Ebenen des Geoportals des Bundes über api3.geo.admin.ch (Wildruhezonen, Wildtierschutzgebiete, Jagdbanngebiete,
+# Nationalpark, Wasser- und Zugvogelreservate, Moore, Auen, Kantonsgrenzen; Open Government Data, Quellenangabe Pflicht),
+# vereinfacht sie zu GeoJSON, prüft das Paket (paket.py --pruefen streng: Mindestzahlen, «Alp Plaun» mit 20.12. - 30.04.,
+# alle 26 Kantone, Lizenztext) und den Server-Teil von MoveEye damit (werkzeuge/wildcamp_test.py --roh, ohne Browser), und legt
+# es auf Wunsch als Release an. Asset wildcamp-ch-N.zip an «wildcamp-N» (nie «latest»), Probe an «wildcampprobe-<Lauf>».
+# Von selbst bei jedem MoveEye-Release (Push auf main mit versions.json): nur bauen + prüfen + Pins als Artefakt, KEIN Release.
+# Die Daten des Bundes ändern sich laufend: weicht die Prüfsumme von WC_FILE ab, steht im Lauf «NEUE DATEN» - dann braucht es
+# ein neues wildcamp-N (TAG in paket.py und WC_TAG in quelle/639zzzzzw erhöhen, beide Stufen; ein Release wird nie überschrieben).
+#   Nur bauen + prüfen:  gh api -X POST repos/DonElektro/MotionWatch/actions/workflows/wildcamp.yml/dispatches -f ref=main
+#   Probe-Release:       … -f ref=main -f 'inputs[release]=probe'
+#   Echt:                … -f ref=main -f 'inputs[release]=echt' -f 'inputs[tag]=wildcamp-1'
+#   Probe wegräumen:     … -f ref=main -f 'inputs[loeschen]=wildcampprobe-N'
+# Danach (lokal, Integrator): `python3 werkzeuge/wildcamp/paket.py --eintragen pins_wildcamp.txt` schreibt WC_FILE in
+# quelle/639zzzzzw, MoveEye bauen und signieren. Keine Geheimnisse: nur GITHUB_TOKEN.
+name: Wildcamp
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "keins · probe (Vorabversion wildcampprobe-<Lauf>) · echt (Release <tag>, nur von main)"
+        type: choice
+        options: [keins, probe, echt]
+        default: keins
+      tag:
+        description: "Tag für «echt» (wildcamp-N, = TAG in werkzeuge/wildcamp/paket.py und WC_TAG in quelle/639zzzzzw)"
+        default: wildcamp-1
+      loeschen:
+        description: "Statt bauen: Probe-Release + Tag löschen (nur wildcampprobe-N, nur Vorabversion)"
+        default: ""
+  push:
+    branches: [main]
+    paths: [versions.json]
+permissions:
+  contents: write
+concurrency:
+  group: wildcamp
+  cancel-in-progress: false
+env:
+  PYTHONUNBUFFERED: "1"
+  REL: ${{ inputs.release || 'keins' }}
+
+jobs:
+  bauen:
+    name: Wildcamp · ${{ inputs.release || 'keins' }}
+    if: >-
+      github.repository == 'DonElektro/MotionWatch' &&
+      ((github.event_name == 'workflow_dispatch' && inputs.loeschen == '') || github.event_name == 'push')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pakete für den Server-Test
+        run: |
+          pip install -q "opencv-python-headless>=4.8,<5" numpy flask pillow cryptography
+      - name: Prüfen (Tag, Zweig, Release noch nicht da)
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || 'wildcamp-1' }}
+        run: |
+          set -euo pipefail
+          sha=$(git rev-parse HEAD)
+          ptag=$(sed -n 's/^TAG = "\(wildcamp-[0-9]*\)"$/\1/p' werkzeuge/wildcamp/paket.py)
+          qtag=$(sed -n 's/^WC_TAG = "\(wildcamp-[0-9]*\)"$/\1/p' quelle/639zzzzzw_wildcamp.py)
+          [ -n "$ptag" ] && [ "$ptag" = "$qtag" ] || { echo "::error::TAG in paket.py ($ptag) und WC_TAG in quelle/639zzzzzw ($qtag) passen nicht"; exit 1; }
+          if [ "$REL" = "echt" ]; then
+            [ "$TAG" = "$ptag" ] || { echo "::error::Tag $TAG ist nicht $ptag (paket.py)"; exit 1; }
+            msha=$(git ls-remote origin refs/heads/main | cut -f1)
+            [ "$GITHUB_REF_NAME" = "main" ] && [ "$sha" = "$msha" ] || { echo "::error::echt nur vom aktuellen main ($msha), nicht $GITHUB_REF_NAME ($sha)"; exit 1; }
+            tag="$TAG"
+          else
+            tag="wildcampprobe-$GITHUB_RUN_NUMBER"
+          fi
+          if [ "$REL" != "keins" ] && gh release view "$tag" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release $tag gibt es schon - nie überschreiben"; exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"; echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "WCZIP=wildcamp-ch-${ptag#wildcamp-}.zip" >> "$GITHUB_ENV"
+      - name: Stufe 1 – Daten holen (api3.geo.admin.ch)
+        run: |
+          set -euo pipefail
+          python3 -I werkzeuge/wildcamp/paket.py --holen "$RUNNER_TEMP/roh" | tee "$RUNNER_TEMP/holen.txt"
+      - name: Stufe 2 – Paket bauen und prüfen (paket.py, streng)
+        run: |
+          set -euo pipefail
+          python3 -I werkzeuge/wildcamp/paket.py --bauen "$RUNNER_TEMP/roh" --aus "$RUNNER_TEMP/out" --pins | tee "$RUNNER_TEMP/bau.txt"
+          python3 -I werkzeuge/wildcamp/paket.py --pruefen "$RUNNER_TEMP/out" | tee -a "$RUNNER_TEMP/bau.txt"
+          [ -s "$RUNNER_TEMP/out/$WCZIP" ] && [ -s "$RUNNER_TEMP/out/pins_wildcamp.txt" ] || { echo "::error::Paket oder Pins fehlen"; exit 1; }
+          { grep -E '^(PAKET|PIN|PRUEFUNG)' "$RUNNER_TEMP/bau.txt" || true; } | cut -c1-900 | while read -r l; do echo "::notice title=Wildcamp::$l"; done
+          s=$(sed -n 's/^PIN wildcamp .*sha256=\([0-9a-f]*\).*/\1/p' "$RUNNER_TEMP/out/pins_wildcamp.txt")
+          q=$(sed -n 's/^WC_FILE = .*"sha256": "\([0-9a-f]*\)".*/\1/p' quelle/639zzzzzw_wildcamp.py)
+          if [ "$s" = "$q" ]; then echo "::notice title=Wildcamp::Paket = WC_FILE (gleiche Prüfsumme)"
+          else echo "::warning title=Wildcamp::NEUE DATEN: Prüfsumme $s ist nicht WC_FILE (${q:-noch nicht eingetragen}) - für Geräte braucht es ein neues wildcamp-N"; fi
+      - name: Test Server-Teil mit den echten Daten (werkzeuge/wildcamp_test.py --roh, ohne Browser)
+        run: |
+          set -euo pipefail
+          timeout 900 python3 -W ignore werkzeuge/wildcamp_test.py --roh "$RUNNER_TEMP/roh" --ohne-browser > "$RUNNER_TEMP/test.txt" 2>&1 || true
+          grep -aE "✓|✗|Test:" "$RUNNER_TEMP/test.txt" || tail -40 "$RUNNER_TEMP/test.txt"
+          grep -q "Wildcamp-Test: OK" "$RUNNER_TEMP/test.txt" || { echo "::error::wildcamp_test.py rot"; exit 1; }
+      - name: Messung als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wildcamp-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/out/pins_wildcamp.txt
+            ${{ runner.temp }}/holen.txt
+            ${{ runner.temp }}/bau.txt
+            ${{ runner.temp }}/test.txt
+          retention-days: 14
+          if-no-files-found: ignore
+      - name: Zusammenfassung
+        if: always()
+        run: |
+          set -euo pipefail
+          { echo "### Wildcamp"; echo '```'; for f in "$RUNNER_TEMP/holen.txt" "$RUNNER_TEMP/bau.txt" "$RUNNER_TEMP/out/pins_wildcamp.txt" "$RUNNER_TEMP/test.txt"; do
+              if [ -f "$f" ]; then grep -aE 'HOLEN|PAKET|PIN|PRUEFUNG|✗|Test:' "$f" | head -40 || true; else echo "(fehlt: $(basename "$f"))"; fi; done; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Release anlegen, Asset hochladen, zurücklesen
+        if: env.REL == 'probe' || env.REL == 'echt'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.v.outputs.tag }}
+          SHA: ${{ steps.v.outputs.sha }}
+        run: |
+          set -euo pipefail
+          O="$RUNNER_TEMP/out"
+          {
+            if [ "$REL" = "probe" ]; then echo "PROBELAUF (Vorabversion) - nicht für Geräte, wird wieder gelöscht."; echo; fi
+            echo "Wildcamp für MoveEye (Teil 639zzzzzw): Schutzgebiete der Schweiz für die Offline-Karte."
+            echo "Daten: Geoportal des Bundes (geo.admin.ch) - BAFU, Kantone, swisstopo. Open Government Data: freie Nutzung, Quellenangabe ist Pflicht."
+            echo "Vereinfacht, LV95 -> WGS84 genähert (etwa 1 m). Information, keine Rechtsberatung."
+            echo "Gebaut mit https://github.com/$GITHUB_REPOSITORY/blob/$SHA/werkzeuge/wildcamp/paket.py"
+            echo
+            sed 's/^PIN /pin: /' "$O/pins_wildcamp.txt"
+            echo "commit: $SHA"
+            echo "lauf: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > notes.md
+          for i in 1 2 3; do
+            if [ "$REL" = "probe" ]; then
+              gh release create "$TAG" "$O/$WCZIP" "$O/pins_wildcamp.txt" -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Probe · Wildcamp" --notes-file notes.md --prerelease --latest=false && break
+            else
+              gh release create "$TAG" "$O/$WCZIP" "$O/pins_wildcamp.txt" -R "$GITHUB_REPOSITORY" --target "$SHA" --title "Wildcamp" --notes-file notes.md --latest=false && break
+            fi
+            echo "Versuch $i fehlgeschlagen, warte"; sleep 30
+            gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 && { echo "::error::Release halb angelegt - bitte von Hand prüfen"; exit 1; }
+          done
+          mkdir -p "$RUNNER_TEMP/zurueck"
+          curl -fsSL -o "$RUNNER_TEMP/zurueck/$WCZIP" "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$WCZIP"
+          s=$(sed -n 's/^PIN wildcamp .*sha256=\([0-9a-f]*\).*/\1/p' "$O/pins_wildcamp.txt"); echo "$s  $RUNNER_TEMP/zurueck/$WCZIP" | sha256sum -c -
+          echo "latest bleibt: $(gh api repos/$GITHUB_REPOSITORY/releases/latest --jq .tag_name)"
+
+  weg:
+    name: Probe löschen · ${{ inputs.loeschen }}
+    if: github.repository == 'DonElektro/MotionWatch' && github.event_name == 'workflow_dispatch' && inputs.loeschen != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Probe-Release und Tag löschen (nur wildcampprobe-N, nur Vorabversion, nie «latest»)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.loeschen }}
+        run: |
+          set -euo pipefail
+          echo "$TAG" | grep -Eq '^wildcampprobe-[0-9]+$' || { echo "::error::nur wildcampprobe-N, nicht $TAG"; exit 1; }
+          pre=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .prerelease)
+          [ "$pre" = "true" ] || { echo "::error::$TAG ist keine Vorabversion - nicht gelöscht"; exit 1; }
+          [ "$TAG" != "$(gh api repos/$GITHUB_REPOSITORY/releases/latest --jq .tag_name)" ] || { echo "::error::$TAG ist latest"; exit 1; }
+          gh release delete "$TAG" -R "$GITHUB_REPOSITORY" --yes --cleanup-tag
+          echo "gelöscht: $TAG" >> "$GITHUB_STEP_SUMMARY"

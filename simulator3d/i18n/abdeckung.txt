@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8350 (Stellen: 11602)
-Übersetzt: en 8350, fr 8350, it 8350, rm 8350
+Texte gesamt: 8355 (Stellen: 11608)
+Übersetzt: en 8355, fr 8355, it 8355, rm 8355
 Unsicher markiert: 428
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 540 Stellen
 Nicht mehr im Code (noch in texte.json): 408
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 30690, schlüssel 23648, keine Wörter 15088, index 10582, technisch 3931, doc 2677, einheit 351, log 204, englisch 148, pfad 130, stringname 107, html 69, klasse 45, shader 6
+Übersprungen (Grund: Anzahl): kennung 30699, schlüssel 23666, keine Wörter 15124, index 10592, technisch 3933, doc 2680, einheit 351, log 204, englisch 148, pfad 130, stringname 107, html 69, klasse 45, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -14,10 +14,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_abenteuer.gd     285     7
   gamewiz.gd               254    15
   abenteuer_figuren_daten.gd   238     0
-  main.gd                  213    10
+  main.gd                  214    10
   game.gd                  211    32
   bergtal_abenteuer_daten.gd   197     0
-  bergtal.gd               187     5
+  bergtal.gd               190     5
   bergtal_horror.gd        160     3
   abenteuer_raetsel.gd     145     2
   maggie_story.gd          114     2
@@ -30,7 +30,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   einbruch.gd              102     0
   spieltest.gd              99    20
   kit_k3_daten.gd           96     0
-  bergtal_aussicht.gd       94     4
+  bergtal_aussicht.gd       96     4
   testrun.gd                94     3
   templates.gd              94     6
   toolbar.gd                89     3
@@ -877,15 +877,15 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   hp_kiosk.gd:197  'aus'
   licht.gd:42  'aus'
   main.gd:790  ' (Port %d)'
-  main.gd:1694  '  %.0f Mbit/s'
-  main.gd:2354  ' (von MoveEye)'
-  main.gd:2387  'Der Simulator ist belegt: '
-  main.gd:3232  'aus'
-  main.gd:3232  'ein'
-  main.gd:3309  'Sabotage-Test: '
-  main.gd:3309  'aus'
-  main.gd:3363  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3366  '\n🚨 Bewacht und weg: '
+  main.gd:1699  '  %.0f Mbit/s'
+  main.gd:2359  ' (von MoveEye)'
+  main.gd:2392  'Der Simulator ist belegt: '
+  main.gd:3237  'aus'
+  main.gd:3237  'ein'
+  main.gd:3314  'Sabotage-Test: '
+  main.gd:3314  'aus'
+  main.gd:3368  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3371  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
@@ -934,11 +934,11 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   b3d.gd:128  'Kacheln nicht lesbar'
   b3d.gd:221  'Verzeichnis nicht lesbar: '
   b3d.gd:244  'Kachel fehlt: '
-  bergtal.gd:245  'Aussicht: '
-  bergtal.gd:254  'Schlafplatz: '
-  bergtal.gd:256  'Aussicht: '
-  bergtal.gd:2560  'Schlafplatz: '
-  bergtal.gd:2562  'Aussicht: '
+  bergtal.gd:265  'Aussicht: '
+  bergtal.gd:274  'Schlafplatz: '
+  bergtal.gd:276  'Aussicht: '
+  bergtal.gd:2580  'Schlafplatz: '
+  bergtal.gd:2582  'Aussicht: '
   diagnose.gd:32  ' · virtuelle Maschine'
   diagnose.gd:34  ' · Fenster klein / versteckt'
   diagnose.gd:72  ' · Ersatz-Port, 8765 war besetzt'
@@ -955,10 +955,10 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   werkstatt_einzel.gd:478  'keine'
   werkstatt_einzel.gd:478  'keine'
   werkstatt_einzel.gd:666  '&lang='
-  bergtal_aussicht.gd:358  'von'
-  bergtal_aussicht.gd:537  'von'
-  bergtal_aussicht.gd:1160  'Abzeichen: '
-  bergtal_aussicht.gd:1161  'von'
+  bergtal_aussicht.gd:370  'von'
+  bergtal_aussicht.gd:549  'von'
+  bergtal_aussicht.gd:1172  'Abzeichen: '
+  bergtal_aussicht.gd:1173  'von'
   camphys.gd:153  ' · %.1f Blenden zu dunkel'
   dataset.gd:54  'Spiel: '
   dataset.gd:319  ' · Vielfalt hoch'
