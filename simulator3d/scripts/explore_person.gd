@@ -44,6 +44,8 @@ const Begleiter = preload("res://scripts/erkunden_begleiter.gd")
 const Gestalten = preload("res://scripts/erkunden_gestalten.gd")
 const Sachen = preload("res://scripts/erkunden_sachen.gd")
 const Extras = preload("res://scripts/erkunden_extras.gd")
+const Camp = preload("res://scripts/erkunden_camp.gd")
+const Ruhe = preload("res://scripts/erkunden_ruhe.gd")
 
 const TURN := 2.4                    # rad/s: A / D drehen in der Ich-Sicht (und im Testgang pwalk)
 const LEASH := 110.0                 # m: so weit von der Gruppe weg in der Geschichte (wie abenteuer_zweit.gd)
@@ -77,6 +79,8 @@ var begleiter: Node = null           # erkunden_begleiter.gd: Maggie, Blinki, «
 var gestalten: CanvasLayer = null    # erkunden_gestalten.gd: die Figur gestalten (Etappe 2)
 var sachen: Node = null              # erkunden_sachen.gd: Rucksack-Sachen und Kraft (Etappe 3)
 var extras: Node = null              # erkunden_extras.gd: Fotomodus, Ort merken, Startpunkte (Etappe 4)
+var camp: Node = null                # erkunden_camp.gd: Camp aufstellen, Feuer, Nacht, einpacken (Besitzer 22.11.2026)
+var ruhe: Node = null                # erkunden_ruhe.gd: ruhiger Bildschirm beim Frei erkunden (Besitzer 22.11.2026)
 var _abseil := {}                    # rappelling: {von, kante, nach, t, dauer}
 var _y_hoch := -INF                  # the highest point of the last flight (a hard landing, «Echt»)
 var _scene := ""
@@ -192,6 +196,14 @@ func _ready() -> void:
 	extras.person = self
 	extras.main = main
 	add_child(extras)
+	camp = Camp.new()
+	camp.person = self
+	camp.main = main
+	add_child(camp)
+	ruhe = Ruhe.new()
+	ruhe.person = self
+	ruhe.main = main
+	add_child(ruhe)
 
 
 func _now() -> float:
@@ -352,6 +364,8 @@ func figur_setzen(d: Dictionary) -> void:
 
 
 func remove() -> void:
+	if camp != null:
+		camp.ende()                                          # a camp still standing: left standing (saved)
 	if begleiter != null:
 		begleiter.hund_weg()
 	if extras != null and extras.foto_an:
@@ -1058,5 +1072,7 @@ func state() -> Dictionary:
 	o["sachen"] = sachen.info() if sachen != null and ok() else {}
 	o["abseilen"] = not _abseil.is_empty()
 	o["extras"] = extras.info() if extras != null else {}
+	o["camp"] = camp.info() if camp != null else {}
+	o["ruhe"] = ruhe.info() if ruhe != null else {}
 	o["gestalten"] = gestalten.info() if gestalten != null else {}
 	return o

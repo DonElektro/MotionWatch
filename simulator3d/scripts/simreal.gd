@@ -354,11 +354,23 @@ func note_bike(b: Node3D) -> void:
 
 
 # ---- scene: tarp, pennant, road sign -------------------------------------------------------------------------------
+var zeltplane: Node3D = null          # the loose tarp (and its two poles) of this scene
+
+
+func zeltplane_zeigen(v: bool) -> void:
+	"""«Camp aufstellen» (Besitzer 22.11.2026): while exploring as the figure the loose tarp is only there when a tarp is in the
+	pack (then it is the own tarp); erkunden_camp.gd calls this - with true again when exploring ends (tests, Prüfstand,
+	other modes: unchanged)"""
+	if zeltplane != null and is_instance_valid(zeltplane):
+		zeltplane.visible = v
+
+
 func on_scene() -> void:
 	"""called after a scene was built (main._build_scene): the extra things of this scene"""
 	_cars = _cars.filter(func(c): return is_instance_valid(c) and not c.is_queued_for_deletion())
 	_flap_mats.clear()
 	_sign_done = false
+	zeltplane = null
 	var root: Node3D = main.scenes.root
 	if root == null:
 		return
@@ -368,9 +380,12 @@ func on_scene() -> void:
 			# a loose tarp on a line beside the tent: fixed at the top, the free edge flaps
 			var tp: Vector3 = tent + Vector3(1.9, 0, 0.6)
 			tp = main.free_spot(tp, 0.8, true)
-			_pole(root, tp + Vector3(-0.8, 0, 0), 1.5)
-			_pole(root, tp + Vector3(0.8, 0, 0), 1.5)
-			_flap(root, Vector2(1.6, 1.1), tp + Vector3(0, 0.95, 0), Vector3(0, 0, 0), Color(0.15, 0.32, 0.55), true, 1.2)
+			zeltplane = Node3D.new()                     # «Camp aufstellen» (22.11.2026): its own node - hidden while exploring without a tarp
+			zeltplane.name = "lose_zeltplane"
+			root.add_child(zeltplane)
+			_pole(zeltplane, tp + Vector3(-0.8, 0, 0), 1.5)
+			_pole(zeltplane, tp + Vector3(0.8, 0, 0), 1.5)
+			_flap(zeltplane, Vector2(1.6, 1.1), tp + Vector3(0, 0.95, 0), Vector3(0, 0, 0), Color(0.15, 0.32, 0.55), true, 1.2)
 		# a pennant on a short pole in front of the camera (the wind moves it all night)
 		var pp: Vector3 = main.free_spot(Vector3(-1.6, 0, -13.0), 0.6, true)
 		_pole(root, pp, 2.6)
