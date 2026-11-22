@@ -925,6 +925,16 @@ func portrait_ende() -> void:
 	regie.hinter_figur()
 
 
+func decke_bei(_w: Vector3, _figur_y: float) -> float:
+	"""kit_regie asks the adventure for a ceiling (Kapitel 1: the hut) - free exploring: open sky everywhere"""
+	return INF
+
+
+func raum_klemmen(w: Vector3) -> Vector3:
+	"""kit_regie: keep the camera inside a room of the adventure - free exploring has none (walls: main.line_blocker)"""
+	return w
+
+
 func augen_punkt() -> Vector3:
 	"""where the eyes of the figure are now (world): the head bone of the visible body (else the head of actor.gd) + a
 	little up - follows the posture (crouching, sitting, crawling, swimming)"""

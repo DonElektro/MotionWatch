@@ -385,6 +385,30 @@ func _run() -> void:
 	p.test_walk(Vector2(1, 0), 1.5, false)
 	await wait(1.7)
 	ok("geht auf dem Stellplatz", _xz(p.actor).distance_to(s0) > 0.8)
+	# the spring camera of the kit (kit_regie.gd) asks its kit for a ceiling and a room: the figure answers «none»
+	ok("Kamera-Fragen des Kits beantwortet (decke_bei, raum_klemmen)", p.has_method("decke_bei") and p.has_method("raum_klemmen")
+		and p.decke_bei(Vector3.ZERO, 0.0) == INF)
+	# back to a caravan / a house of the place: the camera stays outside (walls: main.line_blocker, Sim 3.74.0)
+	var n_box := 0
+	var n_drin := 0
+	for o in main.obstacles:
+		if n_box >= 6 or not o.has("h") or bool(o["po"]) or minf(o["h"].x, o["h"].y) < 1.0:
+			continue
+		var nrm: Vector3 = (o["b"] as Basis) * Vector3(0, 0, 1)
+		var at: Vector3 = Vector3(o["c"].x, 0, o["c"].y) + nrm * (float(o["h"].y) + 0.6)
+		if main.keep_out(Vector2(at.x, at.z), 0.3, true).distance_to(Vector2(at.x, at.z)) > 0.01:
+			continue
+		n_box += 1
+		p.figur.setzen(at, atan2(nrm.x, nrm.z))
+		await wait(0.05)
+		p.regie.hinter_figur()
+		await wait(0.8)
+		var cam: Vector3 = main.view_cam.global_position
+		var l: Vector3 = (o["bi"] as Basis) * Vector3(cam.x - o["c"].x, 0, cam.z - o["c"].y)
+		if absf(l.x) < float(o["h"].x) and absf(l.z) < float(o["h"].y) and cam.y - main.ground_y(cam.x, cam.z) < float(o.get("ht", 3.0)):
+			n_drin += 1
+	print("  Rücken zu Wohnwagen / Haus: %d Stellen, Kamera drin: %d" % [n_box, n_drin])
+	ok("Rücken zum Wohnwagen: die Kamera bleibt draussen", n_box >= 3 and n_drin == 0)
 	ex.set_on(false)
 	# ---- the Bergtal: the lake ----
 	main.set_scene("bergtal")
