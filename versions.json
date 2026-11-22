@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-22 09:02",
+ "generated": "2026-11-22 10:04",
  "versions": [
   {
-   "version": "4.19.0",
-   "file": "webcam_bewegung_4_19_0.py",
+   "version": "4.20.0",
+   "file": "webcam_bewegung_4_20_0.py",
    "url": "",
-   "sha256": "a2e44e85a504d3320602eb5cdd156cd62c660d04b02375c611ffe27db5c155f4",
-   "date": "2026-11-22 09:02",
-   "notes": "Karte: neuer Schalter «🗺 Schweiz | ⛰ Bergtal» auf /karte – die Karte des Simulator-Tals wie die Landeskarte (Relief, Höhenlinien, 3D, Orte, Wanderwege, Bäche, Seen), geheime Orte erst nach dem Finden im Simulator, live MoveEye / Figur / Mover, Touren mit Bergtal-Höhen, «Tour im Sim nachlaufen», Vorschläge",
-   "size": 4025727,
-   "sig": "662d6877476b6df52ecdb4248973686cf70d4c96d95a982415aa93400654947a5acaee2c894fab817a2a85f800060214335d75b190609d4811d463b8fc2b8307",
+   "sha256": "654d7bac8dee9de6ab3b7fc8ab4338c564e08b3ca1061dad9af176a8b4d0230b",
+   "date": "2026-11-22 10:03",
+   "notes": "«🔦 Gäste erwartet» (Einstellungen → Schutz, nur Administrator): solange an, lösen Gäste keinen Alarm aus (nur Protokoll und leiser Push «Gast kommt»; Sabotage, Diebstahl und SOS bleiben) – MoveEye leuchtet ihnen mit dem Licht etwa 2 m voraus den Weg; «bis HH:MM» oder Zeitplan. Bekannte Grenze: in der Nacht liegt die geschätzte Lage der Gäste 1,5–3,5 m daneben, der Lichtfleck ist darum noch nicht zuverlässig 2 m voraus; mit echter Hardware schwenkt die Lampe vorerst nur seitlich",
+   "size": 4036305,
+   "sig": "f70c86fc0acf7549d1ce9df007aa5207cb39a14eaeefcab2edc8eeeee9dcc8dde0430291cec529c2e23b316c3b7364aed9b7e12276af4a9438fc436006ea9d02",
    "data": {
-    "file": "moveeye_daten_4_19_0.zip",
+    "file": "moveeye_daten_4_20_0.zip",
     "url": "",
-    "sha256": "58430b980ed66752757f15976ecb3c8df1ba60188833dd2405b7c193a256fae0",
-    "size": 14537720,
-    "sig": "53836a23fba7836572e8a061379b1b0af4dadb0d14974aa5bd66ba48985fd903abc56ba22979670b23f35712026c37687649a0e49b06d30fc3cf13cb9d496b0b"
+    "sha256": "4c74c62f2c23ff40fff4d17a7d2b9db86ec18bf9b0ec2eaf12dbf7381334f0c1",
+    "size": 17702177,
+    "sig": "36e399659a945f0cfd522bd21aada6d8cc679e7b6b0d714575cb0276df6100f123cf0d9c65e5dbd63efb72497ab31544d2ef01003a71564c319d5e3ab796310f"
    }
   },
   {
