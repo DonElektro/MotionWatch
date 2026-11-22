@@ -495,16 +495,17 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
 NEU IN 3.75.0
-3.75.0: MoveEye zeigt s Bergtal jetzt als Charte (MoveEye 4.19.0, /karte → «⛰ Bergtal»). Dr Simulator seit MoveEye, wo
-du und dr Mover grad sind und weli gheime Ort du scho gfunde hesch – erscht denn stöh si uf dr Charte. Neu: e Tour vo dr
-Charte im Sim nachelaufe (d Figur lauft si ab).
-So tesch: Simulator mit MoveEye verbinde, is Bergtal gah, in MoveEye /karte → «⛰ Bergtal» ufmache: dr Punkt lauft mit.
+3.75.0: MoveEye zeigt das Bergtal jetzt als Karte (MoveEye 4.19.0, /karte → «⛰ Bergtal»). Der Simulator meldet MoveEye,
+wo du und der Mover gerade seid und welche geheimen Orte du schon gefunden hast – erst dann stehen sie auf der Karte. Neu:
+eine Tour von der Karte im Simulator nachlaufen (die Figur geht sie ab).
+So testest du: Simulator mit MoveEye verbinden, ins Bergtal gehen, in MoveEye /karte → «⛰ Bergtal» öffnen: der Punkt läuft mit.
 
 NEU IN 3.74.0
-3.74.0: Abentüür «D Charte vom Grossvater», Kapitel 1 «Die Karte» (10 Szene) im neue Spielmodus. Im Kapitel 2 bliibt
-d Maggie nüme hinder ere Wand hange (und chunnt sälber wieder zrugg). Kamera und dinne: kei Räge meh i de Hütte, d Kamera
-bliibt im Zimmer, d Murmeli-Kamera und s Liecht vom Ofe sind gflickt. 22 neui Stimme (Quelle i klang/LIZENZEN.txt).
-So tesch: Abentüür ufmache → Kapitel 1 starte und dur alli 10 Szene; im Kapitel 2 Szene 3 mit dr Maggie bis zum Schluss.
+3.74.0: Abenteuer «Die Karte des Grossvaters», Kapitel 1 «Die Karte» (10 Szenen) im neuen Spielmodus. In Kapitel 2
+bleibt Maggie nicht mehr hinter einer Wand stecken (und kommt selbst wieder zurück). Kamera und Innenräume: kein Regen
+mehr in der Hütte, die Kamera bleibt im Zimmer, die Murmeltier-Kamera und das Licht des Ofens sind behoben. 22 neue Stimmen
+(Quellen in klang/LIZENZEN.txt).
+So testest du: Abenteuer öffnen → Kapitel 1 starten und durch alle 10 Szenen; in Kapitel 2 Szene 3 mit Maggie bis zum Schluss.
 
 NEU IN 3.73.0
 3.73.0: Abenteuer «Die Karte des Grossvaters», Kapitel 2 «Wo der Bach zweimal fällt» im neuen Spielmodus (Standard; der
