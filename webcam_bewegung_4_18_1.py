@@ -271,7 +271,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_18_1.zip"
-ZD_SHA256 = "e9c42bd54c5ce66edcefd4046454e907bbef51f5d7f57e3609f9125ac1628a45"
+ZD_SHA256 = "2e43c3b015574305bbf4ccae6b63c0f236a877874d42db47e9a52f9388a98227"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -117592,7 +117592,7 @@ _gl_kopf_claims = kopf_claims
 def kopf_claims():
 	c=_gl_kopf_claims()
 	if _gl_call("gl_holds_head"):
-		if "alarm"in c and not(KOPF["alarm"]or KOPF["tamper"]or KOPF["back"]):
+		if "alarm"in c and not(KOPF["alarm"]or KOPF["tamper"]):
 			c.discard("alarm")
 		c.add("guide")
 	return c

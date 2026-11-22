@@ -209,8 +209,8 @@ _gl_kopf_claims = kopf_claims
 def kopf_claims():                                           # + 639zzzzzg: the guide light holds the head while it guides
     c = _gl_kopf_claims()
     if _gl_call("gl_holds_head"):
-        if "alarm" in c and not (KOPF["alarm"] or KOPF["tamper"] or KOPF["back"]):
-            c.discard("alarm")                               # only «following a person» (paused while guiding)
+        if "alarm" in c and not (KOPF["alarm"] or KOPF["tamper"]):
+            c.discard("alarm")                               # following a person / «back home later»: the guide goes first
         c.add("guide")
     return c
 
@@ -276,7 +276,8 @@ GL_BLOCK_S = 120.0        # after «stands still» / «max. duration»: no new g
 GL_BLOCK_M = 3.0
 GL_MARGIN = 0.12          # part of the field of view kept free at each edge (the person stays in the picture)
 GL_HEAD_STEP = 25.0       # ° the head turns at most in one step (the planner 072 drives it smoothly)
-GL_HEAD_DEAD = 3.0        # ° dead zone: smaller changes wait (a still head = a picture the detection can use)
+GL_HEAD_DEAD = 3.0        # ° dead zone (pan): smaller changes wait (a still head = a picture the detection can use)
+GL_TILT_DEAD = 1.5        # ° dead zone (tilt): 3° would put the spot metres off on the ground far away
 GL_HOLD_S = 1.0           # s the head stands still after each step (movement / thermal detection need a still picture)
 GL_PREDICT_S = 2.5        # s: not seen for a moment - the guest walks on in its direction (the head does not stop behind it)
 GL_WIDE_S = 1.5           # s: a hit of the fixed wide camera counts this long
@@ -833,6 +834,10 @@ def _gl_frame(w, candidates, person_boxes, warm_boxes, pw, ph, t0):
     GL["aim"] = a
     if a is None:
         return
+    bk = KOPF.get("back")                                     # review 22.11.2026: a «back home» of 162 during the guide holds the
+    if bk and bk.get("why") != "protection on":              # rank «alarm» and drives home - remember it for the end instead
+        GL["home"] = GL.get("home") or (tuple(bk["pos"]) if bk.get("pos") else None)
+        KOPF["back"] = None
     gl_head_to(a, c.where(now) if c.phase != "arrived" else None, now)
 
 
@@ -883,9 +888,10 @@ def gl_head_to(g, person, now):
     p0, t0 = servo_pos_deg()
     want_t = pitch + gl_pitch_off()
     dpan, dtilt = gl_angdiff(az, p0), want_t - t0
-    if abs(dpan) < GL_HEAD_DEAD and abs(dtilt) < GL_HEAD_DEAD:
+    if abs(dpan) < GL_HEAD_DEAD and abs(dtilt) < GL_TILT_DEAD:
         return
     GL["move_t"] = now
+    GL["moves"] = GL.get("moves", 0) + 1
     dpan = max(-GL_HEAD_STEP, min(GL_HEAD_STEP, dpan)); dtilt = max(-GL_HEAD_STEP, min(GL_HEAD_STEP, dtilt))
     cp, ct = servo_pos()
     CFG["pan"] = kopf_pan_add(cp, dpan)
@@ -937,7 +943,7 @@ def gl_state(lang=None):
             "dim": bool(GL_DIM), "dark": gl_dark_ok(), "dark_only": bool(CFG.get("gl_dark_only", True)), "wide": GL["wide"],
             "pos": [round(v, 1) for v in c.p] if c.p else None, "seen_s": round(time.time() - c.seen_t, 1) if c.p else None, "aim": [round(v, 1) for v in GL["aim"]] if GL["aim"] else None,
             "target": tg, "targets": gl_targets(L), "last_end": {"why": le["why"], "t": le["t"]} if le else None,
-            "notes": GL_NOTE["n"], "light_out": bool(CFG.get("light_white_out")) or bool(CFG.get("sim_on")),
+            "notes": GL_NOTE["n"], "moves": GL.get("moves", 0), "may": bool(kopf_may("guide")), "owner": kopf_owner(), "light_out": bool(CFG.get("light_white_out")) or bool(CFG.get("sim_on")),
             "sched": "gl_on" in (SCHED.get("base") or {})}
 
 

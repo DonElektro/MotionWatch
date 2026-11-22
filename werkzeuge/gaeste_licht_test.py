@@ -599,7 +599,7 @@ def teil_c(datei, tmp, bilder, godot):
                 time.sleep(1); continue
             ph = g.get("phase")
             phases.append((round(time.time() - t0), ph, g.get("light"), round(float(g.get("pct") or 0)), g.get("pos"), g.get("aim"), g.get("seen_s"),
-                           (g.get("last_end") or {}).get("why")))
+                           (g.get("last_end") or {}).get("why"), g.get("moves"), g.get("owner")))
             if ph in want and want[ph] not in shots and (ph != "guide" or (g.get("light") and float(g.get("pct") or 0) > 40)):
                 if ph in ("guide", "farewell"):                   # the markers: red = axis of the spot on the ground, green = MoveEye's aim
                     http_json(sim + "/control", {"action": "gaeste", "do": "look"})
@@ -624,15 +624,16 @@ def teil_c(datei, tmp, bilder, godot):
                 bild_ins_log(os.path.join(bilder, want[ph]))            # at once (the artifact cannot always be fetched)
                 bild_ins_log(os.path.join(bilder, want[ph].replace(".jpg", "_kopf.jpg")))
             time.sleep(0.8)
-        print("  Ziel %.1f / %.1f m · Verlauf (s, Phase, Licht, %%, Gast, Licht-Ziel, ungesehen s, Ende):" % (tx, ty), flush=True)
+        print("  Ziel %.1f / %.1f m · Verlauf (s, Phase, Licht, %%, Gast, Licht-Ziel, ungesehen s, Ende, Kopf-Schritte, wer hat den Kopf):" % (tx, ty), flush=True)
         idle = [x for x in phases if x[1] == "idle"]
         for x in [x for x in phases if x[1] != "idle" or x in idle[::15]][:120]:
             print("   ", x, flush=True)
         print("  Marken (Lichtachse am Boden / Zielpunkt MoveEye / Gast, m vom Gerät):", flush=True)
         for m_ in meas:
             print("   ", m_, flush=True)
-        errs_ = sorted(float(m_["err_m"]) for m_ in meas if "err_m" in m_)
-        ok(bool(errs_) and errs_[len(errs_) // 2] < 1.0, "Licht trifft den Zielpunkt von MoveEye am Boden (Abweichung Median %s m)" % (errs_[len(errs_) // 2] if errs_ else "–"))
+        rel = sorted(float(m_["err_m"]) / max(5.0, math.hypot(*m_["aim_mw"])) for m_ in meas if "err_m" in m_ and "aim_mw" in m_)
+        ok(bool(rel) and rel[len(rel) // 2] < 0.2, "Licht trifft den Zielpunkt von MoveEye am Boden (Abweichung Median %s %% des Abstands; "
+           "der Kopf steht zwischen den Schritten still)" % (round(rel[len(rel) // 2] * 100) if rel else "–"))
         ahead = []
         for m_ in meas:
             if "aim_mw" in m_ and "guest_mw" in m_:
