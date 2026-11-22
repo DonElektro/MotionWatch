@@ -155,7 +155,7 @@ func stop() -> void:
 	turn = 0.0
 	keys = Vector2.ZERO
 	_amp = 0.0
-	apply(pose("gerade"))
+	apply(pose("ring" if m.latch["state"] == "locked" else "gerade"))   # never straighten against the closed latch
 
 
 func set_goal(p: Vector3) -> void:
@@ -406,7 +406,7 @@ func ring_state() -> Dictionary:
 	fw.y = 0.0
 	fw = fw.normalized() if fw.length() > 0.1 else Vector3.RIGHT
 	var gy: float = c.y - (float(m.pitch_len()) * 0.5 / tan(PI / N) + float(m.u("halbe_breite")))
-	var cps: Array = m.contact_points()
+	var cps: Array = m.contact_points(["seg", "buegel"])
 	if not cps.is_empty():
 		gy = 1e9
 		for q in cps:
@@ -474,8 +474,19 @@ func _ring_step(dt: float) -> void:
 			elif absf(drive) <= 0.05 and absf(ang) < 55.0:
 				foot = hip + ax * float(s) * lat
 				use = true
+			if use:
+				var gl := _ground_at(foot, hip.y + 0.05, gy)       # every foot finds its own ground (step, gravel)
+				if gl < gy - 0.03 and absf(drive) > 0.05:          # a gap (ditch) under the foot: look further back
+					for k in [0.6, 0.3, 1.3]:
+						var alt: Vector3 = hip + ax * float(s) * lat - fw * dirv * (foot - hip).dot(-fw * dirv) * float(k)
+						var ga := _ground_at(alt, hip.y + 0.05, gy)
+						if ga >= gy - 0.03:
+							foot = alt
+							gl = ga
+							break
+				h = hip.y - gl
+				foot.y = gl - press
 			if use and h < reach:
-				foot.y = gy - press
 				var a := leg_ik(s, xf.affine_inverse() * foot)
 				d["hy%d%s" % [i, sd]] = a[0]
 				d["hp%d%s" % [i, sd]] = a[1]
@@ -486,6 +497,16 @@ func _ring_step(dt: float) -> void:
 				d["kn%d%s" % [i, sd]] = 0.0
 	apply(d)
 	ring_info = {"ok": true, "lean": ring_lean, "pushing": pushing, "centre": c}
+
+
+func _ground_at(p: Vector3, from_y: float, fallback: float) -> float:
+	"""height of the terrain under p (ray down, terrain layer only)"""
+	var w3: World3D = m.get_world_3d()
+	if w3 == null:
+		return fallback
+	var q := PhysicsRayQueryParameters3D.create(Vector3(p.x, from_y, p.z), Vector3(p.x, from_y - 1.0, p.z), m.LAYER_GELAENDE)
+	var hit := w3.direct_space_state.intersect_ray(q)
+	return float((hit["position"] as Vector3).y) if not hit.is_empty() else fallback
 
 
 func start_ring() -> void:

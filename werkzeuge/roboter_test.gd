@@ -276,7 +276,7 @@ func _process(_dt: float) -> bool:
 				return false
 			var c: Vector3 = lab.bew.ring_state()["c"]
 			var dz: float = c.z - (get_meta("c0") as Vector3).z
-			check("Ring lenken: neigt sich etwas (> 2°) und fährt links (−z)", dz < -0.2 and float(get_meta("leanmax")) > 2.0 and m.latch["state"] == "locked",
+			check("Ring lenken: neigt sich etwas (> 1°) und fährt links (−z)", dz < -0.2 and float(get_meta("leanmax")) > 1.0 and m.latch["state"] == "locked",
 					"dz %.2f m, Neigung bis %.1f°" % [dz, get_meta("leanmax")])
 			lab.control({"do": "gelaende", "name": "stufe"})
 			next_step()

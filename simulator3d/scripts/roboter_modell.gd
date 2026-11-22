@@ -845,10 +845,12 @@ func overloaded() -> Array:
 	return out
 
 
-func contact_points() -> Array:
-	"""world points where the robot touches the ground right now (feet, belly, legs)"""
+func contact_points(kinds := []) -> Array:
+	"""world points where the robot touches the ground right now (feet, belly, legs; or only these body kinds)"""
 	var out := []
 	for b in bodies:
+		if not kinds.is_empty() and not kinds.has(b["kind"]):
+			continue
 		var st := PhysicsServer3D.body_get_direct_state((b["rb"] as RigidBody3D).get_rid())
 		if st == null:
 			continue
