@@ -36,7 +36,8 @@ import bauen  # noqa: E402
 FEHLER = []
 GRENZE_MB = 1.0                     # growth per version in the pack (measured 0.06 - 0.11 MB; the whole zip was 4.9 MB)
 # Ausnahmen, je an EINE Version gebunden (Entscheid Besitzer/Koordinator 22.11.2026) - die Grenze bleibt für alle anderen 1.0 MB
-AUSNAHMEN = {"4.20.0": (3.5, "neue Produktseite /info/ (Bildsatz B, Sim-Clip), einmalig")}
+AUSNAHMEN = {"4.20.0": (3.5, "neue Produktseite /info/ (Bildsatz B, Sim-Clip), einmalig"),
+             "4.21.0": (3.5, "Besucherseite /info/ v16 neu gepackt («Radar», Suche, Akku X1206), einmalig")}
 GERAETE_MAX = 64 * 1024 * 1024      # ZD_MAX_BYTES in part 397 since the first data zip (926d265)
 
 

@@ -23,6 +23,11 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 4.21.0: Besucherseite /info/ neu gestaltet («Radar»: feine Ringe und ein langsamer Radarstrahl im Hintergrund,
+    Erkennungs-Ecken, Abschnittsleiste am PC, hell oder dunkel wie das Gerät); Suchfeld in «Alle Funktionen» (Name und Satz, mit
+    Anzahl); Kachel mit der Anzahl Funktionen; Schwenkbereich ±135°; «Eine Nacht» spielt jeden Zeitpunkt ganz ab; Akku: Geekworm
+    X1206 V2.0 als Standard, Waveshare UPS HAT (E) auch möglich; die Fussnote nennt immer die aktuelle MoveEye- und
+    Simulator-Nummer
   * 4.21.0: NEU: «🏕 Wildcamp» auf der Karte – Schutzgebiete aus den offenen Daten des Bundes (Wildruhezonen mit Schutzzeit,
     Jagdbanngebiete, Nationalpark, Vogelreservate, Moore, Auen) mit Schaltern und Legende, je nach Datum kräftig oder blass;
     Antippen zeigt die Schutzzone und eine kurze Notiz zum Wildcampen im Kanton; Hinweise bei eigenen Orten (Nachtlager) und bei
@@ -312,7 +317,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_21_0.zip"
-ZD_SHA256 = "0fad1dccbf7a0fd6612b62aa30deaf88dc743aa20bc23cf2467231dcf197a799"
+ZD_SHA256 = "cae9994a4bf2ad8835bc8cd872ee441e870e98a8786ec465ce8485e768061d0f"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -65481,7 +65486,26 @@ def info_html():
 	import gzip as _gz,base64 as _b64
 	h=_gz.decompress(_b64.b64decode(INFO_HTML_GZ)).decode("utf-8")
 	inj=INFO_INJECT.replace("__MAIL__",json.dumps(str(CFG.get("info_mail")or "")))
+	h=h.replace("</head>","<script>window.MW_VER="+json.dumps(info_versions(h))+";</script></head>",1)
 	return h.replace("</body>",inj+"</body>",1)if "</body>"in h else h+inj
+
+
+def info_versions(h=""):
+	"""
+"""
+	out={"app":APP_VERSION}
+	m=re.search(r'const MWV = Object\.assign\(\{"app": "[\d.]+", "sim": "([\d.]+)"\}',h)
+	sims=[m.group(1)]if m else[]
+	try:
+		sim_manifest_load()
+		sims+=[str(p.get("version")or "")for p in(SIM3D,SIM3D_LINUX)]
+		keys=[k for k in(sim_vkey(v)for v in sims)if k]
+		if keys:
+			out["sim"]=".".join(str(x)for x in max(keys))
+	except Exception:
+		if m:
+			out["sim"]=m.group(1)
+	return out
 
 
 INFO_INJECT = r"""<script>

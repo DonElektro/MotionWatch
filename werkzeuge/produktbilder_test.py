@@ -275,6 +275,18 @@ def browser(base, bilder, tag, slot, foto=""):
             p3.locator(sel).scroll_into_view_if_needed(); p3.wait_for_timeout(700)
         p3.evaluate("() => { const b = document.querySelector('.langs button[data-lang=fr]'); if (b) b.click(); }"); p3.wait_for_timeout(500)
         ok(p3.evaluate("() => document.documentElement.lang") == "fr", "/info/ am PC: Sprachwahl fr")
+        # 4.21.0: «Alle Funktionen» with search, tile with the number, footnote with this MoveEye's number (window.MW_VER)
+        p3.evaluate("() => document.getElementById('af-tile').click()"); p3.wait_for_timeout(600)
+        p3.fill("#af-q", "batterie"); p3.wait_for_timeout(400)
+        af = p3.evaluate("() => [document.querySelectorAll('.afs li').length, document.querySelectorAll('.afs li:not([hidden])').length, "
+                         "document.getElementById('af-cnt').textContent, document.getElementById('af-qn').textContent, "
+                         "document.querySelector('.af-fine').textContent, (window.MW_VER || {}).app || '', (window.MW_VER || {}).sim || '']")
+        ok(af[0] > 300 and 0 < af[1] < af[0] and af[2] == str(af[0]) and af[3].startswith(str(af[1]) + " sur "),
+           "/info/: Suche in «Alle Funktionen» (%d von %d, Kachel %s, %r)" % (af[1], af[0], af[2], af[3]))
+        ok(bool(re.match(r"^\d+\.\d+\.\d+$", af[5])) and ("MoveEye %s " % af[5]) in af[4] and bool(af[6]) and af[6] in af[4],
+           "/info/: Fussnote mit der Nummer dieser MoveEye und des Simulators (%r)" % af[4])
+        p3.keyboard.press("Escape"); p3.keyboard.press("Escape"); p3.wait_for_timeout(300)
+        ok(p3.evaluate("() => document.getElementById('af-ov').hidden"), "/info/: Esc leert die Suche, zweites Esc schliesst")
         p3.evaluate("() => { document.getElementById('f-name').value = 'Test'; document.getElementById('f-msg').value = 'Frage aus dem Test'; }")
         p3.evaluate("() => document.getElementById('ask').requestSubmit()"); p3.wait_for_timeout(2500)
         nt = p3.evaluate("() => document.getElementById('note').textContent")
