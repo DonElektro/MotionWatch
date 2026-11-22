@@ -39,7 +39,18 @@ func _process(dt: float) -> void:
 
 
 func center() -> Vector3:
+	var fg = _figur()
+	if fg != null:
+		return fg.global_position                    # «Frei erkunden»: the map follows the own figure
 	return main.rig.global_position if main.rig != null else Vector3.ZERO
+
+
+func _figur():
+	"""«Frei erkunden» (explore_person.gd): the own figure while walking as it, else null"""
+	var ex = main.get("explore")
+	if ex != null and ex.person_on() and ex.person.ok():
+		return ex.person.actor
+	return null
 
 
 func w2m(p: Vector3) -> Vector2:
@@ -186,6 +197,16 @@ func _draw() -> void:
 			bar = cand
 			break
 	draw_line(Vector2(8, s - 10), Vector2(8 + bar * k, s - 10), Color(1, 1, 1, 0.9), 2.0)
+	var fg = _figur()
+	if fg != null:                                   # «Frei erkunden»: the figure (white arrow) and the marked place (red)
+		var fp := w2m(fg.global_position)
+		var fd := Vector2(-sin(float(fg.heading)), -cos(float(fg.heading)))
+		draw_colored_polygon(PackedVector2Array([fp + fd * 9.0, fp + fd.orthogonal() * 5.0 - fd * 5.0, fp - fd.orthogonal() * 5.0 - fd * 5.0]), Color(1, 1, 1))
+		draw_arc(fp, 7.0, 0.0, TAU, 16, Color(0.2, 0.5, 1.0), 2.0)
+		var zz = main.explore.person.sachen.ziel if main.explore.person.sachen != null else null
+		if zz is Vector3:
+			var zp := w2m(zz).clamp(Vector2(4, 4), Vector2(s - 4, s - 4))
+			draw_circle(zp, 4.0, Color(1.0, 0.35, 0.3))
 	draw_string(ThemeDB.fallback_font, Vector2(8, s - 14), "%d m" % int(bar), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.9))
 	if not has_meta("fenster"):                     # in a window frame (fenster.gd) the frame draws the corner
 		for j in range(3):

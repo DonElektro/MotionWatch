@@ -142,6 +142,9 @@ func _cleared(p: Vector3) -> bool:
 	return false
 
 
+const SITZ_ARTEN := {"bench": [0.45, "bank"], "rock": [0.5, "stein"]}   # «Frei erkunden»: seat height, kind
+
+
 func add(kind: String, p: Vector3, rot := 0.0, q := {}) -> Dictionary:
 	"""one thing at p (local to root, y = ground) turned by rot; returns its description (door, lights …)"""
 	if not (clear.is_empty() and keep.is_empty()) and _cleared(p):
@@ -159,6 +162,8 @@ func add(kind: String, p: Vector3, rot := 0.0, q := {}) -> Dictionary:
 		for part in d["p"]:
 			_part(part, xf, d["t"], str(d["lod"]), ck)
 	_extras(d, xf, rot)
+	if kind in SITZ_ARTEN and m.has_method("sitz_merken"):                                     # «Frei erkunden»: the own figure sits down on it (erkunden_welt.gd)
+		m.sitz_merken(to_world * p, float(SITZ_ARTEN[kind][0]) * sc, str(SITZ_ARTEN[kind][1]))
 	return d
 
 

@@ -487,6 +487,8 @@ func stones(n: int, dmin: float, dmax: float) -> void:
 		var sp: Vector3 = m.pos_of(rng.randf_range(-60, 60), rng.randf_range(dmin, dmax), 0.05)
 		sp.y += m.ground_y(sp.x, sp.z)                           # 3D-4.x: on the hills (gelaende.gd)
 		put(root, sph(r, r * 1.2), sp, Color(0.48, 0.48, 0.46), "stone")
+		if r >= 0.25:                                            # «Frei erkunden»: a stone to sit on (erkunden_welt.gd)
+			m.sitz_merken(sp, 0.3, "stein")
 
 
 func door_light_at(parent: Node3D, p: Vector3) -> void:

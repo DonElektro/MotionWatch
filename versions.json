@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-22 10:04",
+ "generated": "2026-11-22 11:49",
  "versions": [
   {
    "version": "4.20.0",
    "file": "webcam_bewegung_4_20_0.py",
    "url": "",
    "sha256": "654d7bac8dee9de6ab3b7fc8ab4338c564e08b3ca1061dad9af176a8b4d0230b",
-   "date": "2026-11-22 10:03",
+   "date": "2026-11-22 11:01",
    "notes": "«🔦 Gäste erwartet» (Einstellungen → Schutz, nur Administrator): solange an, lösen Gäste keinen Alarm aus (nur Protokoll und leiser Push «Gast kommt»; Sabotage, Diebstahl und SOS bleiben) – MoveEye leuchtet ihnen mit dem Licht etwa 2 m voraus den Weg; «bis HH:MM» oder Zeitplan. Bekannte Grenze: in der Nacht liegt die geschätzte Lage der Gäste 1,5–3,5 m daneben, der Lichtfleck ist darum noch nicht zuverlässig 2 m voraus; mit echter Hardware schwenkt die Lampe vorerst nur seitlich",
    "size": 4036305,
    "sig": "f70c86fc0acf7549d1ce9df007aa5207cb39a14eaeefcab2edc8eeeee9dcc8dde0430291cec529c2e23b316c3b7364aed9b7e12276af4a9438fc436006ea9d02",
@@ -204,41 +204,41 @@
    "sig": "3c0d6ad76326d81ce324c8914ca35b61596ef189eb0e83e04238c5088ad5e2954914805461e7194f7648bb37117d49454eb7d207ff54d89893e10667b26ea80a"
   },
   "pi": {
-   "ver": "3.75.0",
+   "ver": "3.76.0",
    "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 43376282,
-   "sha256": "38390e4e8a90d72849d6a05919ac77e6c0618d78130b1b219ac51c3d3673ff39",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.75.0/MoveEyeSim3D_Pi.zip",
-   "sig": "ed55a8067f9587c4b4e24a85394a4ded2c22f51e2fcfab36d8a680165f9d10c949c1f61e7622dbf9e5cbaffaf5c4b5013f976b54396c9b7fce8202f0d588e204"
+   "size": 43851206,
+   "sha256": "74dfb340ee75c406bab3a7aa5fed58f202c3f8f2cb51dacddb16d3674f18f2a5",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.76.0/MoveEyeSim3D_Pi.zip",
+   "sig": "06bd7d72e287d4652cc9c2a4c6d124b0ce45a6a221b2d39b4257a6236a3479a6a109955851076816405ab2487fcdb557fd64a44f3d0d406282b880fe45637c0a"
   },
   "anhang": {
-   "ver": "3.75.0",
-   "version": "3D-5.75.0",
-   "notes": "Bergtal-Karte: Antwort «bkarte» für MoveEye 4.19.0",
+   "ver": "3.76.0",
+   "version": "3D-5.76.0",
+   "notes": "Grossvater Kapitel 3, Frei erkunden, Gäste besuchen das Zelt",
    "mw_min": "3.55.0",
    "win": {
-    "ver": "3.75.0",
+    "ver": "3.76.0",
     "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
-    "size": 59848807,
-    "sha256": "cbab99911c5625cb368a72a7e3de103f00769d62038382aeec639bed1c5efaf8",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.75.0/MotionWatch3D_Simulator.zip",
-    "sig": "458d2fddb5f9c13d4f18a41ae64a34bae381508f7aff73030fd331ac3d8b66cfb566ae7aca8d38c4fab41219e58e1518e59043826a284e72c332797708a04007"
+    "size": 60315482,
+    "sha256": "bceef746d4960cc0e9c947f5e64e6dfeffdf30a7088f1954d17d49b88b57f947",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.76.0/MotionWatch3D_Simulator.zip",
+    "sig": "089fd5ea6d6bd9cdc5a15616cd2b3c96ce54e751e52fbbb285c6eb9d620467c0f07ed667884bd6d522752ae09ec4ef29a03d87f364d8a209b9b33583fe512e0b"
    },
    "linux": {
-    "ver": "3.75.0",
+    "ver": "3.76.0",
     "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
-    "size": 53896106,
-    "sha256": "b7aff0a3276931f772a30875922e384cbf6c250a3a476ebd67b27b64fc414fac",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.75.0/MoveEyeSim3D_Linux.zip",
-    "sig": "57d7fd18dee2f46446cb27058b5c03ec92483c6a77d3ab8eaf6307ceafe5ba5a88d4b992f113844d4e168f2df2c5886e42c5d91da8cf46d336a427b6b6a7cf0b"
+    "size": 54368349,
+    "sha256": "24246ef9afdd0c9a974185fa1eb908b238b4d863a846eb7b8219f7c8ac506d02",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.76.0/MoveEyeSim3D_Linux.zip",
+    "sig": "4c4e06bb5a9d08b2a965b994eac904656368998abda480eb2b51dd0f526decb8809da4cad0f3bead62d7ba47e445807deea122f600635fe36b39d47783f5de0b"
    },
    "web": {
-    "ver": "3.75.0",
+    "ver": "3.76.0",
     "file": "simulator3d/anhang/sim-web.zip",
-    "size": 78854874,
-    "sha256": "ff1d053f38d4132eaf432f5d658b6af1800ad42084f0a0e0b2115d5e4fa3a5a9",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.75.0/sim-web.zip",
-    "sig": "5259601d01f77fd10bb5b519ce307f466b67e0fccb72686644ee46154c3d09add2e3eef48a0909d58598a7a0e273f1bb54f1221d2b9a7b77ae3414d6e20c040f"
+    "size": 79793772,
+    "sha256": "efc78b0310b52aa585d072b6b24d6993ccf9691c41a64df5fd72e54e86afd714",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.76.0/sim-web.zip",
+    "sig": "d14eeccf56c8645fd8e36bd201a7d0c2b3c544db2d5d40891db91a480521815afd0ee3b3d4fd456dd6ec82be574f8c4b186cb5307e9badbbd6ec806d59eb9c01"
    }
   }
  }

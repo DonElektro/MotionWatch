@@ -489,6 +489,10 @@ func model() -> Dictionary:
 			quick.append({"v": "abenteuer", "icon": "🎒", "title": "Die Karte des Grossvaters",
 					"text": "Rucksack packen, mit Grossvaters Schatzkarte durchs Bergtal, Nacht mit MoveEye – Spielstand, Schwierigkeit und Jahreszeit wählst du beim Start.",
 					"pic": Pics.PICS.get("mission", "")})
+		if main.explore != null:                       # 21.11.2026: «🥾 Frei erkunden» - beside the adventure (explore_person.gd)
+			quick.append({"v": "frei_erkunden", "icon": "🥾", "title": "Frei erkunden",
+					"text": "Mit der eigenen Figur durch die Welt, die gerade geladen ist: gehen, rennen, ducken, kriechen, klettern, sitzen, schwimmen – MoveEye sieht dich.",
+					"pic": Pics.PICS.get("free", "")})
 	var opts := []
 	if step == 2 or step == 3:
 		for o in (OPTIONS if step == 2 else PLAYER_OPTS):
@@ -661,6 +665,10 @@ func op(d: Dictionary) -> Dictionary:
 					main.spielbereich.regal.weiter("grossvater")   # Geschichten-Menü: the same way as the card under «Spielen»
 				else:
 					main.abenteuer.open_ab()
+				return model()
+			if qv == "frei_erkunden" and main.explore != null:   # 21.11.2026: Erkunden as the own figure
+				close_wiz()
+				main.explore.frei_erkunden()
 				return model()
 			if qv == "escape_quick":                       # 3D-4.20: «Entkomme der Kamera» from the quick start of the parcours
 				W["game_mode"] = "escape"
