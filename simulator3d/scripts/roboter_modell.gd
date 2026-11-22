@@ -857,3 +857,12 @@ func contact_points(kinds := []) -> Array:
 		for ci in range(st.get_contact_count()):
 			out.append(st.get_contact_local_position(ci))
 	return out
+
+
+func foot_contact(i: int, s: int) -> bool:
+	"""does the lower leg of this leg touch something right now"""
+	for b in bodies:
+		if b["kind"] == "unter" and b["seg"] == i and b["side"] == s:
+			var st := PhysicsServer3D.body_get_direct_state((b["rb"] as RigidBody3D).get_rid())
+			return st != null and st.get_contact_count() > 0
+	return false

@@ -116,7 +116,11 @@ var gang_now := "welle"                # what «auto» picked
 var tempo := 0.06                      # m/s at full drive
 var drive := 0.0                       # -1 … 1 (W / S, the goal)
 var turn := 0.0                        # -1 … 1, + = links (A / D, the goal)
-var keys := Vector2.ZERO               # held keys: x = turn (+ links), y = drive
+var keys := Vector2.ZERO               # ring: x = turn (+ links), y = drive
+var cmd := Vector3.ZERO                # walking: x = seitwärts (+ links), y = vor / zurück, z = drehen (+ links)
+var side := 0.0                        # smooth strafe -1 … 1 (+ links)
+var anpassen := true                   # «Körper passt sich dem Untergrund an» (Stufe 4, Standard an)
+var plan := ""                         # what the goal planner does: kurve | seitwaerts | drehen | angekommen
 var schritt_laenge := 0.7              # Einheiten
 var schritt_hoehe := 0.35              # Einheiten
 var kurve_max := 20.0                  # ° per segment joint at full turn
@@ -154,6 +158,8 @@ func stop() -> void:
 	drive = 0.0
 	turn = 0.0
 	keys = Vector2.ZERO
+	cmd = Vector3.ZERO
+	side = 0.0
 	_amp = 0.0
 	apply(pose("ring" if m.latch["state"] == "locked" else "gerade"))   # never straighten against the closed latch
 
@@ -210,44 +216,38 @@ func step(dt: float) -> void:
 
 
 func _gang_step(dt: float) -> void:
+	"""Stufe 4 (Besitzer 22.11.2026 19:05): in alle Richtungen - vor / zurück, seitwärts (Krebsgang), schräg, an Ort drehen,
+	Kurven (der Körper biegt sich auf den Bogen). Jeder Fuss bekommt seinen eigenen Schritt-Vektor = Körper-Geschwindigkeit
+	+ Drehung × Hebel (Hüfte zur Körpermitte). Mit «anpassen» folgt der Körper dem Untergrund (Höhe je Segment, Neigung der
+	Segmentgelenke, jeder Fuss sucht seinen Boden und hält an, wenn er früher aufsetzt)."""
 	var sc: float = m.bp["massstab"]
 	var N: int = m.n()
-	# what is wanted: keys, else the goal
-	var dv := keys.y
-	var tv := keys.x
-	if goal != null and keys == Vector2.ZERO:
-		var p0: Vector3 = m.segment_xf(0).origin
-		var hd: Vector3 = m.segment_xf(0).basis.x
-		var to: Vector3 = (goal as Vector3) - p0
-		to.y = 0.0
-		hd.y = 0.0
-		var dist := to.length()
-		if dist < 0.12 or goal_reached:
-			goal_reached = true
-			dv = 0.0
-			tv = 0.0
-		else:
-			var err := atan2(hd.z * to.x - hd.x * to.z, hd.dot(to))     # + = goal on the left
-			tv = clampf(err / 0.6, -1.0, 1.0)
-			dv = clampf(dist / 0.3, 0.3, 1.0) * (1.0 - 0.5 * absf(tv))
-	drive = move_toward(drive, dv, dt * 2.0)
-	turn = move_toward(turn, tv, dt * 1.5)
-	var v := drive * tempo
-	if absf(turn) > 0.05 and absf(v) < 0.3 * tempo:
-		v = 0.3 * tempo * (1.0 if v >= 0.0 else -1.0)            # curves need a little forward speed (the body follows its arc)
-	# the gait
+	var P: float = m.pitch_len()
+	var want := cmd
+	if goal != null and cmd == Vector3.ZERO:
+		want = _plan_goal()
+	side = move_toward(side, want.x, dt * 2.0)
+	drive = move_toward(drive, want.y, dt * 2.0)
+	turn = move_toward(turn, want.z, dt * 1.5)
+	# arc (walk a curve: forward + turn) or omni (body straight: strafe, diagonal, turn on the spot)
+	var arc := absf(drive) > 0.25 and absf(side) < 0.15 and absf(turn) > 0.05
+	var vx := drive * tempo
+	var vz := -side * tempo                                    # + side = links = −Z of the robot
+	var half_len := maxf(P * N * 0.5, 0.05)
+	var om := 0.0 if arc else turn * 2.0 * tempo / half_len    # rad/s, + = links (the end feet at twice the walking speed)
+	var speed := Vector2(vx, vz).length() + absf(om) * half_len
 	gang_now = gang
 	if gang == "auto":
 		var over_leg := false
 		for id in m.overloaded():
 			if not str(id).begins_with("s"):
 				over_leg = true
-		gang_now = "dreifuss" if absf(v) > 0.1 and not over_leg else "welle"
-	if gang == "auto" and absf(v) > 0.01:
+		gang_now = "dreifuss" if speed > 0.1 and not over_leg else "welle"
+	if gang == "auto" and speed > 0.01 and absf(vx) > 0.5 * speed:
 		_prog_t += dt
 		if _prog_t >= 3.0:
 			var pnow: Vector3 = m.segment_xf(0).origin
-			if not angepasst and pnow.distance_to(_prog_p) < 0.25 * absf(v) * _prog_t:
+			if not angepasst and pnow.distance_to(_prog_p) < 0.25 * speed * _prog_t:
 				angepasst = true                  # stuck: higher steps, body higher (e.g. at a step or in gravel)
 				schritt_hoehe = maxf(schritt_hoehe, 0.8)
 				hoehe = maxf(hoehe, 1.2)
@@ -255,39 +255,124 @@ func _gang_step(dt: float) -> void:
 			_prog_p = pnow
 	var beta: float = BETA.get(gang_now, 0.75)
 	var amax := schritt_laenge * sc * 0.5
-	var moving := absf(v) > 0.002
+	var moving := speed > 0.002
 	_amp = move_toward(_amp, amax if moving else 0.0, dt * amax * 2.0)
+	var T := 1.0
 	if _amp > 0.0005:
-		var T := clampf(2.0 * amax / (beta * maxf(absf(v), 0.01)), 0.45, 6.0)
+		T = clampf(2.0 * amax / (beta * maxf(speed, 0.01)), 0.45, 6.0)
 		phase = fposmod(phase + dt / T, 1.0)
-	var dirx := 1.0 if v >= 0.0 else -1.0
-	var lift := schritt_hoehe * sc * clampf(_amp / maxf(amax, 1e-4), 0.0, 1.0)
+	var kamp := clampf(_amp / maxf(amax, 1e-4), 0.0, 1.0)
+	var lift := schritt_hoehe * sc * kamp
+	var hh: float = hoehe * sc
+	var w: float = m.u("halbe_breite")
+	# terrain: wanted height of every segment (ground under it, gaps narrower than ~2 segments bridged)
+	var ydes := []
+	var lvl := []
+	for i in range(N):
+		var xf: Transform3D = m.segment_xf(i)
+		var fx := xf.basis.x
+		fx.y = 0.0
+		fx = fx.normalized() if fx.length() > 0.1 else Vector3.RIGHT
+		lvl.append(Basis(fx, Vector3.UP, fx.cross(Vector3.UP)))
+		if anpassen:
+			var g := -1e9
+			for k in [-1.0, 0.0, 1.0]:
+				g = maxf(g, _ground_at(xf.origin + fx * P * k, xf.origin.y + 0.4, xf.origin.y - hh))
+			ydes.append(g + hh)
+		else:
+			ydes.append(xf.origin.y)
 	var d := {}
 	for i in range(N):
+		var xf: Transform3D = m.segment_xf(i)
+		var xi := (float(N - 1) * 0.5 - i) * P
 		for s in [-1, 1]:
+			var f := stand_foot(s)
+			var vf := Vector2(vx, vz) if arc else Vector2(vx + om * f.z, vz - om * xi)
+			var a2 := vf * beta * T * 0.5
+			if a2.length() > amax:
+				a2 = a2.normalized() * amax
+			a2 *= kamp
 			var u := fposmod(phase + phase_of(gang_now, i, s), 1.0)
-			var x := 0.0
+			var off := Vector2.ZERO
 			var y := 0.0
+			var swing_down := false
 			if u < beta:
-				x = _amp * (1.0 - 2.0 * u / beta)
+				off = a2 * (1.0 - 2.0 * u / beta)
 			else:
 				var q := (u - beta) / (1.0 - beta)
-				q = q * q * (3.0 - 2.0 * q)
-				x = _amp * (-1.0 + 2.0 * q)
-				y = lift * sin(PI * (u - beta) / (1.0 - beta))
-			var f := stand_foot(s)
-			f.x = x * dirx
-			f.y += y
-			var fs := level_foot(i, s, f)
+				swing_down = q > 0.5
+				var qs := q * q * (3.0 - 2.0 * q)
+				off = a2 * (-1.0 + 2.0 * qs)
+				y = lift * sin(PI * q)
+			f.x += off.x
+			f.z += off.y
+			if anpassen:
+				var fw: Vector3 = xf.origin + (lvl[i] as Basis) * Vector3(f.x, 0.0, f.z)
+				var gf := _ground_at(fw, xf.origin.y + 0.3, float(ydes[i]) - hh)
+				f.y = gf - float(ydes[i]) + y                      # as if the segment were at its wanted height
+				if swing_down and m.foot_contact(i, s):             # touched down early (stone, step): stop there
+					var meas: Vector3 = m.foot_world(i, s)
+					f.y = maxf(f.y, meas.y - float(ydes[i]))
+			else:
+				f.y += y
+			var fs: Vector3 = xf.basis.orthonormalized().inverse() * ((lvl[i] as Basis) * f) if anpassen else level_foot(i, s, f)
 			var a := leg_ik(s, fs)
 			var sd := "l" if s < 0 else "r"
 			d["hy%d%s" % [i, sd]] = a[0]
 			d["hp%d%s" % [i, sd]] = a[1]
 			d["kn%d%s" % [i, sd]] = a[2]
+	# body joints: yaw for the arc, pitch following the ground profile (+ the wave of the caterpillar gait)
+	var alpha := []
+	if anpassen:
+		var hj := []                                          # wanted height at the tips and joints, front to back
+		for k in range(N + 1):
+			var xf: Transform3D = m.segment_xf(mini(k, N - 1))
+			var p: Vector3 = xf * Vector3(P * 0.5 if k < N else -P * 0.5, 0, 0)
+			var g := -1e9
+			for dk in [-0.5, 0.0, 0.5]:
+				g = maxf(g, _ground_at(p + xf.basis.x * P * dk, xf.origin.y + 0.4, xf.origin.y - hh))
+			hj.append(g + hh)
+		for i in range(N):
+			alpha.append(rad_to_deg(atan2(float(hj[i]) - float(hj[i + 1]), P)))
 	for i in range(N - 1):
-		d["sy%d" % i] = -turn * kurve_max
-		d["sp%d" % i] = 8.0 * sin(TAU * (2.0 * phase - float(i) / maxf(1.0, N - 1))) if gang_now == "raupe" and _amp > 0.001 else 0.0
+		d["sy%d" % i] = -turn * kurve_max if arc else 0.0
+		var sp := 0.0
+		if anpassen:
+			sp = clampf(float(alpha[i]) - float(alpha[i + 1]), -40.0, 40.0)
+		if gang_now == "raupe" and _amp > 0.001:
+			sp += 8.0 * sin(TAU * (2.0 * phase - float(i) / maxf(1.0, N - 1)))
+		d["sp%d" % i] = sp
 	apply(d)
+
+
+func _plan_goal() -> Vector3:
+	"""the walk to the goal: [strafe, forward, turn]. Behind → turn on the spot; small side offset close by → walk
+	sideways / diagonally; otherwise forward on a curve"""
+	var p0: Vector3 = m.segment_xf(0).origin
+	var hd: Vector3 = m.segment_xf(0).origin - m.segment_xf(m.n() - 1).origin
+	hd.y = 0.0
+	hd = hd.normalized() if hd.length() > 0.01 else Vector3.RIGHT
+	var left := Vector3(hd.z, 0.0, -hd.x)
+	var to: Vector3 = (goal as Vector3) - p0
+	to.y = 0.0
+	var dist := to.length()
+	if dist < 0.12 or goal_reached:
+		goal_reached = true
+		plan = "angekommen"
+		return Vector3.ZERO
+	var xr := to.dot(hd)
+	var zl := to.dot(left)
+	var err := atan2(zl, xr)                                   # + = goal on the left
+	if absf(err) > deg_to_rad(110.0) and dist > 0.3:
+		plan = "drehen"
+		return Vector3(0.0, 0.0, signf(err))
+	if dist < 0.6 and absf(zl) < 0.3:
+		plan = "seitwaerts"
+		var v := Vector2(zl, xr).normalized() * clampf(dist / 0.3, 0.4, 1.0)
+		return Vector3(v.x, v.y, 0.0)
+	plan = "kurve"
+	var tv := clampf(err / 0.6, -1.0, 1.0)
+	return Vector3(0.0, clampf(dist / 0.3, 0.3, 1.0) * (1.0 - 0.5 * absf(tv)), tv)
 
 
 # ---- ganze Abläufe -------------------------------------------------------------------------------------------------------

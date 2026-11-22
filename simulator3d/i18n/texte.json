@@ -5321,6 +5321,24 @@
   "it": "passato a MoveEye",
   "rm": "dà vinavant a MoveEye"
  },
+ "an Ort drehen": {
+  "en": "turn on the spot",
+  "fr": "tourner sur place",
+  "it": "girare sul posto",
+  "rm": "sa volver al lieu"
+ },
+ "an Ort drehen links": {
+  "en": "turn on the spot left",
+  "fr": "tourner sur place à gauche",
+  "it": "girare sul posto a sinistra",
+  "rm": "sa volver al lieu a sanestra"
+ },
+ "an Ort drehen rechts": {
+  "en": "turn on the spot right",
+  "fr": "tourner sur place à droite",
+  "it": "girare sul posto a destra",
+  "rm": "sa volver al lieu a dretga"
+ },
  "An steilen Stellen abseilen (E an der Kante).": {
   "en": "Abseil down steep spots (E at the edge).",
   "fr": "Descendre en rappel aux endroits raides (E au bord).",
@@ -19433,11 +19451,11 @@
   "it": "Andature una dopo l’altra davanti alla telecamera (camminare, affrettarsi, correre, strisciare acquattati, gattonare)",
   "rm": "Moda da chaminar ina suenter l’autra davant la camera (ir, ir en prescha, currer, sa zuppar, ir a quatter pes)"
  },
- "Gangarten – mit Körperhöhe, Tempo und Kurven. W / S oder «Vorwärts», A / D oder der Regler «Kurve»; ein kurzer Klick in die Welt setzt ein Ziel, der Roboter plant den Weg selbst.": {
-  "en": "Gaits – with body height, speed and curves. W / S or «Forward», A / D or the slider «Curve»; a short click into the world sets a goal, the robot plans the way itself.",
-  "fr": "Allures – avec hauteur du corps, vitesse et virages. W / S ou «En avant», A / D ou le curseur «Virage» ; un clic court dans le monde fixe un but, le robot planifie lui-même le chemin.",
-  "it": "Andature – con altezza del corpo, velocità e curve. W / S o «Avanti», A / D o il cursore «Curva»; un breve clic nel mondo fissa una meta, il robot pianifica da solo il percorso.",
-  "rm": "Moda da chaminar – cun autezza dal corp, sveltezza e curvas. W / S u «Enavant», A / D u il reglader «Curva»; in clic curt en il mund fixescha ina finamira, il robot planisescha sez la via."
+ "Gangarten – mit Körperhöhe, Tempo und Kurven (vorwärts + Regler «Kurve» oder Q / E). Ein kurzer Klick in die Welt setzt ein Ziel: der Roboter plant selbst – Kurve, seitwärts bei kleinem Versatz, an Ort drehen, wenn das Ziel hinten liegt.": {
+  "en": "Gaits – with body height, speed and curves (forward + slider «Curve» or Q / E). A short click into the world sets a goal: the robot plans itself – curve, sideways for a small offset, turn on the spot when the goal is behind.",
+  "fr": "Allures – avec hauteur du corps, vitesse et virages (en avant + curseur «Virage» ou Q / E). Un clic court dans le monde fixe un but : le robot planifie lui-même – virage, de côté pour un petit décalage, tourner sur place quand le but est derrière.",
+  "it": "Andature – con altezza del corpo, velocità e curve (avanti + cursore «Curva» o Q / E). Un breve clic nel mondo fissa una meta: il robot pianifica da solo – curva, di lato per un piccolo spostamento, girare sul posto quando la meta è dietro.",
+  "rm": "Moda da chaminar – cun autezza dal corp, sveltezza e curvas (enavant + reglader «Curva» u Q / E). In clic curt en il mund fixescha ina finamira: il robot planisescha sez – curva, da la vart per ina pitschna distanza, sa volver al lieu, sche la finamira è davos."
  },
  "Ganz hinten im Seitental West stehen Mauern ohne Dach.": {
   "en": "At the very end of the west side valley stand walls without a roof.",
@@ -24654,6 +24672,12 @@
   "it": "Clicca in 3D",
   "rm": "Cliccar en 3D"
  },
+ "In alle Richtungen (W A S D, schräg = zwei Tasten, Q / E an Ort drehen):": {
+  "en": "In all directions (W A S D, diagonal = two keys, Q / E turn on the spot):",
+  "fr": "Dans toutes les directions (W A S D, en diagonale = deux touches, Q / E tourner sur place) :",
+  "it": "In tutte le direzioni (W A S D, in diagonale = due tasti, Q / E girare sul posto):",
+  "rm": "En tut las direcziuns (W A S D, diagonal = duas tastas, Q / E sa volver al lieu):"
+ },
  "In den Furggakehren ist die Strasse manchmal ganz voll. Nicht mit Autos.": {
   "en": "In the Furgga bends the road is sometimes completely full. Not with cars.",
   "fr": "Dans les lacets de la Furgga, la route est parfois complètement pleine. Pas de voitures.",
@@ -28317,6 +28341,12 @@
   "rm": "Curs %d° · ti vas %d°",
   "?": "rm: Neubau-Texte 22.11.2026 (Korrekturlesen)"
  },
+ "Kurve": {
+  "en": "curve",
+  "fr": "virage",
+  "it": "curva",
+  "rm": "curva"
+ },
  "Kurve (Schlange)": {
   "en": "Curve (snake)",
   "fr": "Virage (serpent)",
@@ -28484,6 +28514,12 @@
   "fr": "Meule de fromage",
   "it": "Forma di formaggio",
   "rm": "Tschantscha da chaschiel"
+ },
+ "Körper passt sich dem Untergrund an": {
+  "en": "Body adapts to the ground",
+  "fr": "Le corps s’adapte au sol",
+  "it": "Il corpo si adatta al terreno",
+  "rm": "Il corp s’adatta al terren"
  },
  "Körperhöhe über dem Boden": {
   "en": "Body height above the ground",
@@ -40364,6 +40400,24 @@
   "it": "Tronchesino, spelafili, pinzetta",
   "rm": "Tanaglia, tanaglia da dischlontanar, pinzetta"
  },
+ "seitwärts": {
+  "en": "sideways",
+  "fr": "de côté",
+  "it": "di lato",
+  "rm": "da la vart"
+ },
+ "seitwärts links": {
+  "en": "sideways left",
+  "fr": "de côté à gauche",
+  "it": "di lato a sinistra",
+  "rm": "da la vart a sanestra"
+ },
+ "seitwärts rechts": {
+  "en": "sideways right",
+  "fr": "de côté à droite",
+  "it": "di lato a destra",
+  "rm": "da la vart a dretga"
+ },
  "Selbst gebaut im Haus-Editor": {
   "en": "Self-built in the house editor",
   "fr": "Construit soi-même dans l’éditeur de maison",
@@ -47006,11 +47060,11 @@
   "it": "Uccelli e piccoli animali",
   "rm": "Utschels e pitschens animals"
  },
- "W / S vor / zurück · A / D Kurve · Leertaste Stopp · G Gehen · 1 – 4 Ansicht · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · H Bedienfeld · Esc schliessen": {
-  "en": "W / S forward / back · A / D curve · Space stop · G walk · 1 – 4 view · R set up again · P pause · F hold · K camera picture · H panel · Esc close",
-  "fr": "W / S avant / arrière · A / D virage · Espace stop · G marcher · 1 – 4 vue · R remettre en place · P pause · F tenir · K image caméra · H panneau · Échap fermer",
-  "it": "W / S avanti / indietro · A / D curva · Spazio stop · G camminare · 1 – 4 vista · R rimettere in piedi · P pausa · F tenere · K immagine · H pannello · Esc chiudere",
-  "rm": "W / S enavant / enavos · A / D curva · Spazi stop · G chaminar · 1 – 4 vista · R metter si da nov · P pausa · F tegnair · K maletg · H panel · Esc serrar"
+ "W / S vor / zurück · A / D seitwärts · Q / E drehen · Leertaste Stopp · G Gehen · 1 – 4 Ansicht · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · H Bedienfeld · Esc schliessen": {
+  "en": "W / S forward / back · A / D sideways · Q / E turn · Space stop · G walk · 1 – 4 view · R set up again · P pause · F hold · K camera picture · H panel · Esc close",
+  "fr": "W / S avant / arrière · A / D de côté · Q / E tourner · Espace stop · G marcher · 1 – 4 vue · R remettre en place · P pause · F tenir · K image caméra · H panneau · Échap fermer",
+  "it": "W / S avanti / indietro · A / D di lato · Q / E girare · Spazio stop · G camminare · 1 – 4 vista · R rimettere in piedi · P pausa · F tenere · K immagine · H pannello · Esc chiudere",
+  "rm": "W / S enavant / enavos · A / D da la vart · Q / E volver · Spazi stop · G chaminar · 1 – 4 vista · R metter si da nov · P pausa · F tegnair · K maletg · H panel · Esc serrar"
  },
  "W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc": {
   "en": "W A S D / arrows drive · Shift fast · V view · Page ↑↓ camera height · C observer · J players · Esc",
@@ -50671,6 +50725,12 @@
   "fr": "Retour",
   "it": "Indietro",
   "rm": "Enavos"
+ },
+ "zurück": {
+  "en": "back",
+  "fr": "arrière",
+  "it": "indietro",
+  "rm": "enavos"
  },
  "Zurück (Esc)": {
   "en": "Back (Esc)",

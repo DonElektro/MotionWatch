@@ -14,7 +14,7 @@ extends Node
 ## /control {"action": "roboter", "do": open | close | info | pose (name, snap) | set (id, value) | param (key, value) |
 ##           view (frei | seite | oben | roboter) | pause (on) | reset | hold (on) | tab (name) | pip (on) |
 ##           gang (name, drive, turn) | ablauf (name) | goal (pos [x, y, z]) | stop | ring (drive, turn) |
-##           gelaende (name | [names], ring)}
+##           gelaende (name | [names], ring) | anpassen (on)}   gang also takes strafe (+ links) and turn (+ links)
 
 const UI = preload("res://scripts/ui_style.gd")
 const T = preload("res://scripts/i18n.gd")
@@ -50,7 +50,7 @@ var pip_box: Control
 var model                              # roboter_modell.gd
 var bew                                # roboter_bewegung.gd
 var anz                                # roboter_anzeige.gd
-var manual := Vector2.ZERO             # Bewegen: turn slider (x, + links) and Vorwärts / Rückwärts (y)
+var manual := Vector3.ZERO             # Bewegen: x = seitwärts (+ links), y = vor / zurück, z = drehen / Kurve (+ links)
 var speed := 0.0                       # measured, m/s (smooth)
 var _last_com := Vector3.ZERO
 var _press := Vector2.ZERO
@@ -184,14 +184,17 @@ func _rebuild(new_pose: bool) -> void:
 func _physics_process(dt: float) -> void:
 	if not is_open() or model == null or paused:
 		return
-	var wasd := Vector2(float(Input.is_key_pressed(KEY_A)) - float(Input.is_key_pressed(KEY_D)),
-			float(Input.is_key_pressed(KEY_W)) - float(Input.is_key_pressed(KEY_S)))
-	if wasd != Vector2.ZERO and bew.mode not in ["gang", "ring"]:
+	var wasd := Vector3(float(Input.is_key_pressed(KEY_A)) - float(Input.is_key_pressed(KEY_D)),
+			float(Input.is_key_pressed(KEY_W)) - float(Input.is_key_pressed(KEY_S)),
+			float(Input.is_key_pressed(KEY_Q)) - float(Input.is_key_pressed(KEY_E)))
+	if wasd != Vector3.ZERO and bew.mode not in ["gang", "ring"]:
 		if model.latch["state"] == "locked":
 			bew.start_ring()
 		else:
 			bew.start_gang(bew.gang)
-	bew.keys = wasd if wasd != Vector2.ZERO else manual
+	var c := wasd if wasd != Vector3.ZERO else manual
+	bew.cmd = c
+	bew.keys = Vector2(clampf(c.z + c.x, -1.0, 1.0), c.y)       # in the ring: A / D and Q / E both steer
 	bew.step(dt)
 	model.step(dt)
 	if not terrain.is_empty():
@@ -390,7 +393,7 @@ func set_pip(on: bool) -> void:
 
 func stop_all() -> void:
 	bew.stop()
-	manual = Vector2.ZERO
+	manual = Vector3.ZERO
 	var ts: Dictionary = _w.get("turn_sl", {})
 	if not ts.is_empty():
 		(ts["sl"] as HSlider).set_value_no_signal(0.0)
@@ -412,7 +415,7 @@ func start_ablauf(name: String) -> void:
 
 func reset() -> void:
 	bew.stop()
-	manual = Vector2.ZERO
+	manual = Vector3.ZERO
 	model.place(true)
 	follow = true
 	_paint_toggles()
@@ -539,7 +542,7 @@ func _build_ui() -> void:
 	_page_anzeigen(_w["page_anzeigen"])
 	_page_gelaende(_w["page_gelaende"])
 	_page_ansicht(_w["page_ansicht"])
-	var keys := UI.small(T.t("W / S vor / zurück · A / D Kurve · Leertaste Stopp · G Gehen · 1 – 4 Ansicht · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · H Bedienfeld · Esc schliessen"))
+	var keys := UI.small(T.t("W / S vor / zurück · A / D seitwärts · Q / E drehen · Leertaste Stopp · G Gehen · 1 – 4 Ansicht · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · H Bedienfeld · Esc schliessen"))
 	pv.add_child(keys)
 
 
@@ -815,7 +818,7 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 		var b := _button(ga, T.t(a[1]), func(): start_ablauf(an))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_w["ab_" + an] = b
-	pg.add_child(UI.small(T.t("Gangarten – mit Körperhöhe, Tempo und Kurven. W / S oder «Vorwärts», A / D oder der Regler «Kurve»; ein kurzer Klick in die Welt setzt ein Ziel, der Roboter plant den Weg selbst.")))
+	pg.add_child(UI.small(T.t("Gangarten – mit Körperhöhe, Tempo und Kurven (vorwärts + Regler «Kurve» oder Q / E). Ein kurzer Klick in die Welt setzt ein Ziel: der Roboter plant selbst – Kurve, seitwärts bei kleinem Versatz, an Ort drehen, wenn das Ziel hinten liegt.")))
 	var gg := GridContainer.new()
 	gg.columns = 2
 	gg.add_theme_constant_override("h_separation", 6)
@@ -826,31 +829,37 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 		var b := _button(gg, T.t(g[1]), func(): start_gang(gn))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_w["gang_" + gn] = b
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 6)
-	pg.add_child(row)
-	for d in [["◀ " + T.t("Rückwärts"), -1.0], [T.t("Stopp"), 0.0], [T.t("Vorwärts") + " ▶", 1.0]]:
-		var dv: float = d[1]
-		var b := _button(row, d[0], func():
-			if dv == 0.0:
-				stop_all()
-			else:
-				manual.y = dv
-				bew.goal = null
-				if bew.mode not in ["gang", "ring"]:
-					if model.latch["state"] == "locked":
-						bew.start_ring()
-					else:
-						bew.start_gang(bew.gang)
-				_paint_gang())
+	pg.add_child(UI.small(T.t("In alle Richtungen (W A S D, schräg = zwei Tasten, Q / E an Ort drehen):")))
+	var pad := GridContainer.new()
+	pad.columns = 3
+	pad.add_theme_constant_override("h_separation", 4)
+	pad.add_theme_constant_override("v_separation", 4)
+	pg.add_child(pad)
+	# [symbol, strafe (+ links), vor, Hinweis]
+	for e in [["↖", 1.0, 1.0, "vorne links"], ["↑", 0.0, 1.0, "Vorwärts"], ["↗", -1.0, 1.0, "vorne rechts"],
+			["←", 1.0, 0.0, "seitwärts links"], ["■", 0.0, 0.0, "Stopp"], ["→", -1.0, 0.0, "seitwärts rechts"],
+			["↙", 1.0, -1.0, "hinten links"], ["↓", 0.0, -1.0, "Rückwärts"], ["↘", -1.0, -1.0, "hinten rechts"]]:
+		var sx: float = e[1]
+		var fy: float = e[2]
+		var b := _button(pad, e[0], func(): drive_dir(Vector3(sx, fy, 0.0)))
+		b.tooltip_text = T.t(e[3])
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.custom_minimum_size = Vector2(0, 34)
+	var rot := HBoxContainer.new()
+	rot.add_theme_constant_override("separation", 6)
+	pg.add_child(rot)
+	for e in [["⟲ " + T.t("an Ort drehen links") + " (Q)", 1.0], [T.t("an Ort drehen rechts") + " (E) ⟳", -1.0]]:
+		var rz: float = e[1]
+		var b := _button(rot, e[0], func(): drive_dir(Vector3(0.0, 0.0, rz)))
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_toggle(pg, T.t("Körper passt sich dem Untergrund an"), bew.anpassen, func(on: bool): bew.anpassen = on)
 	var rb := _button(pg, T.t("Im Ring rollen (die Füsse stossen, Kurve = Ring neigen)"), func():
 		if model.latch["state"] != "locked":
 			apply_pose("ring", true)
 		bew.start_ring()
 		_paint_gang())
 	_w["ring_btn"] = rb
-	_w["turn_sl"] = _slider(pg, T.t("Kurve (− rechts, + links)"), -1.0, 1.0, 0.05, 0.0, "", func(x: float): manual.x = x)
+	_w["turn_sl"] = _slider(pg, T.t("Kurve (− rechts, + links)"), -1.0, 1.0, 0.05, 0.0, "", func(x: float): manual.z = x)
 	_slider(pg, T.t("Tempo"), 0.01, 0.25, 0.01, bew.tempo, "m/s", func(x: float): bew.tempo = x)
 	_slider(pg, T.t("Körperhöhe über dem Boden"), 0.3, 1.8, 0.05, bew.hoehe, "E", func(x: float): bew.hoehe = x)
 	_slider(pg, T.t("Schrittlänge"), 0.2, 1.4, 0.05, bew.schritt_laenge, "E", func(x: float): bew.schritt_laenge = x)
@@ -858,6 +867,24 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 	var gi := UI.small("", UI.TXT)
 	pg.add_child(gi)
 	_w["gang_info"] = gi
+
+
+func drive_dir(c: Vector3) -> void:
+	"""pad / buttons: walk in this direction (x = seitwärts + links, y = vor, z = drehen + links); all 0 = stop"""
+	if c == Vector3.ZERO:
+		stop_all()
+		return
+	manual = c
+	bew.goal = null
+	var ts: Dictionary = _w.get("turn_sl", {})
+	if not ts.is_empty():
+		(ts["sl"] as HSlider).set_value_no_signal(c.z)
+	if bew.mode not in ["gang", "ring"]:
+		if model.latch["state"] == "locked":
+			bew.start_ring()
+		else:
+			bew.start_gang(bew.gang)
+	_paint_gang()
 
 
 func _paint_gang() -> void:
@@ -946,10 +973,10 @@ func terrain_start(names: Array, ring := false) -> void:
 	follow = true
 	if ring:
 		bew.start_ring()
-		manual = Vector2(0.0, 1.0)
+		manual = Vector3(0.0, 1.0, 0.0)
 	else:
 		bew.start_gang("auto")
-		manual = Vector2(0.0, 1.0)
+		manual = Vector3(0.0, 1.0, 0.0)
 	_paint_gang()
 
 
@@ -985,7 +1012,7 @@ func _terrain_step(dt: float) -> void:
 	var ring: bool = terrain["ring"]
 	terrain = {}
 	bew.stop()
-	manual = Vector2.ZERO
+	manual = Vector3.ZERO
 	if not q.is_empty():
 		terrain_start(q, ring)
 
@@ -1105,7 +1132,10 @@ func _move_text() -> String:
 	if bew.mode == "gang":
 		t = str(names.get(bew.gang_now, bew.gang_now)) + (" (" + T.t("automatisch") + ")" if bew.gang == "auto" else "")
 		if bew.goal != null:
-			t += " · " + (T.t("Ziel erreicht") if bew.goal_reached else T.t("zum Ziel"))
+			var pn := {"kurve": T.t("Kurve"), "seitwaerts": T.t("seitwärts"), "drehen": T.t("an Ort drehen")}
+			t += " · " + (T.t("Ziel erreicht") if bew.goal_reached else T.t("zum Ziel") + " (" + str(pn.get(bew.plan, "")) + ")")
+		elif bew.mode == "gang" and bew.cmd != Vector3.ZERO:
+			t += " · " + _dir_text(bew.cmd)
 	elif bew.mode == "ring":
 		t = T.t("Im Ring rollen") + " · " + T.t("Neigung %d°") % int(round(bew.ring_lean))
 		if model.latch["state"] != "locked":
@@ -1115,6 +1145,21 @@ func _move_text() -> String:
 	elif bew.mode == "ablauf":
 		t = T.t("Ablauf") + ": " + str(names.get(bew.seq_name, bew.seq_name))
 	return t + " · " + T.t("%.1f cm/s") % (speed * 100.0)
+
+
+func _dir_text(c: Vector3) -> String:
+	var parts := []
+	if c.y > 0.1:
+		parts.append(T.t("vor"))
+	elif c.y < -0.1:
+		parts.append(T.t("zurück"))
+	if c.x > 0.1:
+		parts.append(T.t("links"))
+	elif c.x < -0.1:
+		parts.append(T.t("rechts"))
+	if absf(c.z) > 0.05:
+		parts.append(T.t("Kurve") if absf(c.y) > 0.25 and absf(c.x) < 0.15 else T.t("an Ort drehen"))
+	return " + ".join(parts)
 
 
 # ---- /control «roboter» -----------------------------------------------------------------------------------------------------
@@ -1127,7 +1172,8 @@ func info() -> Dictionary:
 				"collide": model.colliding_names(), "pose": last_pose, "ticks": Engine.physics_ticks_per_second,
 				"mode": bew.mode, "gait": bew.gang_now, "sequence": bew.seq_name, "speed": speed, "tip_margin": anz.margin,
 				"tipping": anz.tipping, "goal_reached": bew.goal_reached, "ring_lean": bew.ring_lean,
-				"terrain": terrain.get("name", ""), "terrain_results": terrain_results, "adapted": bew.angepasst})
+				"terrain": terrain.get("name", ""), "terrain_results": terrain_results, "adapted": bew.angepasst,
+				"plan": bew.plan, "anpassen": bew.anpassen})
 	return d
 
 
@@ -1165,7 +1211,9 @@ func control(d: Dictionary) -> Dictionary:
 			if d.has("drive"):
 				manual.y = float(d["drive"])
 			if d.has("turn"):
-				manual.x = float(d["turn"])
+				manual.z = float(d["turn"])
+			if d.has("strafe"):
+				manual.x = float(d["strafe"])
 		"ablauf":
 			start_ablauf(str(d.get("name", "")))
 		"goal":
@@ -1177,7 +1225,9 @@ func control(d: Dictionary) -> Dictionary:
 			if model.latch["state"] != "locked":
 				apply_pose("ring", true)
 			bew.start_ring()
-			manual = Vector2(float(d.get("turn", 0.0)), float(d.get("drive", 0.0)))
+			manual = Vector3(0.0, float(d.get("drive", 0.0)), float(d.get("turn", 0.0)))
+		"anpassen":
+			bew.anpassen = bool(d.get("on", true))
 		"gelaende":
 			var names = d.get("name", "stufe")
 			terrain_start(names if names is Array else [str(names)], bool(d.get("ring", false)))

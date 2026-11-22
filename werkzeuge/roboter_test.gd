@@ -14,7 +14,8 @@ extends SceneTree
 ##   · Abläufe: «Aufstehen» endet stehend, «Einrollen und öffnen» läuft ohne Explosion durch (ob der Ring schliesst,
 ##     hängt vom Servo-Moment ab: nur gemeldet)
 ##   · Ring rollen: die Füsse stossen den verriegelten Ring vorwärts; mit «Kurve» neigt er sich und fährt nach links
-##   · Gelände-Test: die automatische Gangart schafft die Stufe (6 cm)
+##   · Stufe 4: seitwärts (Krebsgang), an Ort drehen ≥ 90°, schräg; Ziel hinten → zuerst an Ort drehen; «Körper passt sich
+##     dem Untergrund an»: Stufe 6 cm und Rampe 15° geschafft, nicht gekippt, Bodenabstand je Segment 0.5 … 15 cm
 ##   cd simulator3d && <godot> --headless --path . -s "$PWD/../werkzeuge/roboter_test.gd"   (absoluter Pfad nötig)
 ## Ende: «Robotertest OK» oder «SCRIPT ERROR: Robotertest: …» (Exit-Code 0 / 1).
 
@@ -64,6 +65,34 @@ func max_err(ids := []) -> Array:
 	return [e, who]
 
 
+func centre() -> Vector3:
+	var c := Vector3.ZERO
+	for k in range(m.n()):
+		c += m.segment_xf(k).origin
+	return c / m.n()
+
+
+func head() -> float:
+	var h: Vector3 = m.segment_xf(0).origin - m.segment_xf(m.n() - 1).origin
+	return rad_to_deg(atan2(-h.z, h.x))
+
+
+func sample_clearance() -> void:
+	"""belly to the local ground (the same gap-bridging profile the robot uses: highest of centre and ± one segment)"""
+	var w: float = m.u("halbe_breite")
+	for k in range(m.n()):
+		var xf: Transform3D = m.segment_xf(k)
+		var g := -9.0
+		for kk in [-1.0, 0.0, 1.0]:
+			g = maxf(g, lab.bew._ground_at(xf.origin + xf.basis.x * m.pitch_len() * kk, xf.origin.y + 0.4, -1.0))
+		var cl: float = xf.origin.y - w - g
+		set_meta("cnt", int(get_meta("cnt")) + 1)
+		if cl < 0.005 or cl > 0.15:
+			set_meta("bad", int(get_meta("bad")) + 1)
+	if lab._tipped():
+		set_meta("tip", true)
+
+
 func sane() -> bool:
 	for b in m.bodies:
 		var p: Vector3 = (b["rb"] as RigidBody3D).global_position
@@ -74,7 +103,7 @@ func sane() -> bool:
 
 func _process(_dt: float) -> bool:
 	var t := Time.get_ticks_msec() / 1000.0 - t_start
-	if t > 700.0:
+	if t > 850.0:
 		errs.append("Zeit abgelaufen in Schritt %d" % step)
 		return _end()
 	if m != null and m.built_ok:
@@ -278,17 +307,86 @@ func _process(_dt: float) -> bool:
 			var dz: float = c.z - (get_meta("c0") as Vector3).z
 			check("Ring lenken: neigt sich etwas (> 1°) und fährt links (−z)", dz < -0.2 and float(get_meta("leanmax")) > 1.0 and m.latch["state"] == "locked",
 					"dz %.2f m, Neigung bis %.1f°" % [dz, get_meta("leanmax")])
-			lab.control({"do": "gelaende", "name": "stufe"})
+			lab.stop_all()
+			lab.apply_pose("gerade", true)
+			lab.drive_dir(Vector3(1.0, 0.0, 0.0))
+			set_meta("c0", centre())
+			set_meta("h0", head())
 			next_step()
 		17:
-			if not lab.terrain.is_empty() and frames() < 120 * 100:
+			if frames() < 120 * 6:
 				return false
-			var r: Array = lab.terrain_results.get("stufe", [false, "kein Ergebnis"])
-			check("Gelände-Test Stufe 6 cm (automatische Gangart)", bool(r[0]), str(r[1]))
-			check("Keine Explosion im ganzen Test", vmax_all < 5.0, "%.2f m/s" % vmax_all)
-			main.roboter.control({"do": "close"})
+			var rel: Vector3 = centre() - (get_meta("c0") as Vector3)
+			var dh := wrapf(head() - float(get_meta("h0")), -180.0, 180.0)
+			check("Seitwärts (Krebsgang) links: ≥ 20 cm, Richtung bleibt", rel.z < -0.2 and absf(rel.x) < 0.05 and absf(dh) < 5.0, "dx %.2f dz %.2f m, %.1f°" % [rel.x, rel.z, dh])
+			lab.stop_all()
+			lab.reset()
+			lab.drive_dir(Vector3(0.0, 0.0, 1.0))
+			set_meta("c0", centre())
+			set_meta("h0", head())
 			next_step()
 		18:
+			if frames() < 120 * 12:
+				return false
+			var rel: Vector3 = centre() - (get_meta("c0") as Vector3)
+			var dh := wrapf(head() - float(get_meta("h0")), -180.0, 180.0)
+			check("An Ort drehen (Q): ≥ 90°, bleibt am Platz", dh >= 90.0 and Vector2(rel.x, rel.z).length() < 0.12, "%.1f°, %.2f m" % [dh, Vector2(rel.x, rel.z).length()])
+			lab.stop_all()
+			lab.reset()
+			lab.drive_dir(Vector3(-1.0, 1.0, 0.0))
+			set_meta("c0", centre())
+			set_meta("h0", head())
+			next_step()
+		19:
+			if frames() < 120 * 6:
+				return false
+			var rel: Vector3 = centre() - (get_meta("c0") as Vector3)
+			var dh := wrapf(head() - float(get_meta("h0")), -180.0, 180.0)
+			check("Schräg vorne rechts (W + D): vor und seitwärts", rel.x > 0.15 and rel.z > 0.15 and absf(dh) < 5.0, "dx %.2f dz %.2f m, %.1f°" % [rel.x, rel.z, dh])
+			lab.stop_all()
+			lab.reset()
+			var g: Vector3 = centre() - Vector3(1.0, 0.0, 0.0)
+			g.y = 0.0
+			set_meta("goal", g)
+			set_meta("spun", false)
+			lab.control({"do": "goal", "pos": [g.x, g.y, g.z]})
+			next_step()
+		20:
+			if lab.bew.plan == "drehen":
+				set_meta("spun", true)
+			if not lab.bew.goal_reached and frames() < 120 * 70:
+				return false
+			check("Ziel hinten: dreht zuerst an Ort, kommt an", lab.bew.goal_reached and bool(get_meta("spun")), "%.1f s, gedreht %s" % [frames() / 120.0, get_meta("spun")])
+			lab.stop_all()
+			lab.bew.tempo = 0.12
+			lab.bew.anpassen = true
+			lab.control({"do": "gelaende", "name": "stufe"})
+			set_meta("cnt", 0)
+			set_meta("bad", 0)
+			set_meta("tip", false)
+			next_step()
+		21, 22:
+			if frames() > 240:
+				sample_clearance()
+			var lane := "stufe" if step == 21 else "rampe"
+			if not lab.terrain.is_empty() and frames() < 120 * 90:
+				return false
+			var r: Array = lab.terrain_results.get(lane, [false, "kein Ergebnis"])
+			var cnt: int = get_meta("cnt")
+			var bad: int = get_meta("bad")
+			check("Untergrund anpassen: %s geschafft, nicht gekippt" % lane, bool(r[0]) and not bool(get_meta("tip")), str(r[1]))
+			check("Untergrund anpassen: %s Bodenabstand je Segment 0.5 … 15 cm (98 %%)" % lane, cnt > 100 and bad <= cnt * 0.02,
+					"%d von %d ausserhalb" % [bad, cnt])
+			if step == 21:
+				lab.control({"do": "gelaende", "name": "rampe"})
+				set_meta("cnt", 0)
+				set_meta("bad", 0)
+				next_step()
+			else:
+				check("Keine Explosion im ganzen Test", vmax_all < 5.0, "%.2f m/s" % vmax_all)
+				main.roboter.control({"do": "close"})
+				next_step()
+		23:
 			if frames() < 10:
 				return false
 			check("Geschlossen: Physik wieder wie vorher", Engine.physics_ticks_per_second == 30 and not main.roboter.is_open(), str(Engine.physics_ticks_per_second))
