@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-22 00:52",
+ "generated": "2026-11-22 02:47",
  "versions": [
   {
    "version": "4.18.1",
    "file": "webcam_bewegung_4_18_1.py",
    "url": "",
    "sha256": "d04f879664e0b21f2cd537b8ef1324b85dc3a55cb9efdaeb2d5f22e5d49df3dd",
-   "date": "2026-11-22 00:52",
+   "date": "2026-11-22 01:39",
    "notes": "Aufnahmen dürfen bis 8 GB brauchen (vorher 2 GB, höchstens die Hälfte des Laufwerks; beim Update 2 → 8 GB ab 16 GB mit Hinweis); Verlauf: Chip «⏪ bis …» (älteste Aufnahme, Tippen = älteste zuerst), Chip «… MB / … GB» führt zur Einstellung; Suche in den Einstellungen findet «Aufnahmeordner», «Zeitraffer-Ordner» und «Tagen löschen» (auch in «Einfach»)",
    "size": 4025336,
    "sig": "2cb3ddb4a2fc5f6f946d4efa40188cd8ec13cca539cd8eb499f1cdba081662705138c61890cbbb4a24ee2f836bb91389794a75786f44fff01faa3148f3cf4b0f",
@@ -24,7 +24,7 @@
    "file": "webcam_bewegung_4_17_1.py",
    "url": "",
    "sha256": "022c5a07ffa40c837a269b4d8aa6080cf4cb6da2ed34020ce4e870f819ab77d5",
-   "date": "2026-11-21 22:57",
+   "date": "2026-11-22 01:39",
    "notes": "Verlauf: «Zeitraffer» mit «Videos / Fotos», Hinweis ohne Video · Simulator verbinden / trennen ist kein Stromausfall (keine Push, kein Sabotage-Alarm), Schalter «keine Push, solange der Simulator verbunden ist»",
    "size": 4040696,
    "sig": "52c8cbdd682d56f0463910b6485b855768fe5ed71b5a9d7973b95c10e0ee2a14a50f9f79086912fa67ed5d715591437fa2724271f67c817a25da0e825ed97f0b",
@@ -204,41 +204,41 @@
    "sig": "3c0d6ad76326d81ce324c8914ca35b61596ef189eb0e83e04238c5088ad5e2954914805461e7194f7648bb37117d49454eb7d207ff54d89893e10667b26ea80a"
   },
   "pi": {
-   "ver": "3.73.0",
+   "ver": "3.74.0",
    "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 43168432,
-   "sha256": "bf4f2400b079c03d3d95e2170b908e9d43afa38e15142f66dc232a0cd2c6feb8",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.73.0/MoveEyeSim3D_Pi.zip",
-   "sig": "0e24096d92199b387007588aea45741b8f33bb77b08439371e7495de59650a68332a0dc19109fd569e827974526b3f42f5252d73345e1ded9ec32fb44c33950e"
+   "size": 43365459,
+   "sha256": "3d022dec45cb057ee28c83bfbb9a9e5b707f8b8f6fbaf07891ef51de75526813",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.74.0/MoveEyeSim3D_Pi.zip",
+   "sig": "6f3d981f279542221124a0dea188a82e5f3fc89a735338cab8f03f8f3142d2628d1adffa00561d996d0fc1a757ffa5036b46a300b7f408d111a233f2b56d1d0a"
   },
   "anhang": {
-   "ver": "3.73.0",
-   "version": "3D-5.73.0",
-   "notes": "Grossvater Kapitel 2 im neuen Modus, Musik und Stimmen, Bergtal-Fix, Testkanal",
+   "ver": "3.74.0",
+   "version": "3D-5.74.0",
+   "notes": "Grossvater Kapitel 1, Maggie-Fix Kapitel 2, Kamera / Innenraum",
    "mw_min": "3.55.0",
    "win": {
-    "ver": "3.73.0",
+    "ver": "3.74.0",
     "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
-    "size": 59635039,
-    "sha256": "bc19fed9b9625741ac8bb0576a82975dbb822ad84676fc5e9e72df14ca46309b",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.73.0/MotionWatch3D_Simulator.zip",
-    "sig": "094cad1f2055d1effdbcd687a105a861fe875a2e3b4eb475de1bcef73810996cb038dda755008d9178c8ef5610baa1cb8104399bc7866d2b82c0ca84e1f2b80f"
+    "size": 59830445,
+    "sha256": "4895d804c6ff9c3b3d9b8b161c2db4a9b01d4a69baec6c52cfbaf28ea4be6e53",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.74.0/MotionWatch3D_Simulator.zip",
+    "sig": "c7088b289ae8ea46c091d60deaa2c643d46204ef2f79831a15dc8b3a113a3028482d04bcf2133cdab06e0877bfecb2c1ee3a406a3d05df9f61c9db4e8037a00b"
    },
    "linux": {
-    "ver": "3.73.0",
+    "ver": "3.74.0",
     "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
-    "size": 53685687,
-    "sha256": "90eab97c853963048735ea15d3f29e432d25b3e3449ae4cd647e88dac4f4f738",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.73.0/MoveEyeSim3D_Linux.zip",
-    "sig": "40d9f281b0d703eca7ca972086176e85e87f5df2f27ac5452e45b2e5802acea2ce1ddc37ee8ba4282c65f43ec3da3c7416016d2e6314c960ddd26d404db54f06"
+    "size": 53883846,
+    "sha256": "2ec60be676765926145fce5e20e93821648f1345d926e993f7e48c81422b6234",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.74.0/MoveEyeSim3D_Linux.zip",
+    "sig": "492fba668743133825c2f232505061dab3130f74c8638d74253a3bdd140c14375520d27f372c3425a8d9f3081285b79f71f6da44ba43347192c23d86c6d06b06"
    },
    "web": {
-    "ver": "3.73.0",
+    "ver": "3.74.0",
     "file": "simulator3d/anhang/sim-web.zip",
-    "size": 78429261,
-    "sha256": "b6014907b7cf630e5a44c481168d32e4b57837d6050a086c1de3d58a6cbe99fa",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.73.0/sim-web.zip",
-    "sig": "8b9bc7c71dd2dca4f148388ad1e20eef9d2f09dea1c3cb947ec987653b03c1b74b40cf674349e6cb85ebb7074740b5798399beadb03f08e1f37e27604cba0d06"
+    "size": 78823975,
+    "sha256": "2b563697fe0ccf9c019d1584aac6bec765ccf818eb3e87a10180969b28009fef",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.74.0/sim-web.zip",
+    "sig": "8391b29979586addc156856b4c87e7718e5343e48b5be08f40eaa425c673dc0a532d26c2b5741ca4a0748bd4da575fcf0fcc026e48dedb8d1baf391e3772ba01"
    }
   }
  }
