@@ -317,7 +317,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_21_0.zip"
-ZD_SHA256 = "0ad5080e7193377a759bf4111f8ab34af9353f7d5703345082bd79e1f0c3ffde"
+ZD_SHA256 = "c0b9d7aa4ebc3e4696272e7841cf2b42e7688fe28c9c32973468e35511200ffc"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -91348,6 +91348,14 @@ zd_exec(PL_PY and "\n" * 289 + PL_PY, "639zzw_packlisten.py")
 
 
 
+KH_TAG = "hoehen-1"
+
+
+KH_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + KH_TAG + "/"}
+
+
+KH_FILE = {"name": "hoehe-ch-1.bin", "size": 60515168, "sha256": "8b26a5072db7f5ef5e3887313a756396b945434d177d73ea71d924678e0b2c29"}
+
 
 if "zd_exec" not in globals():
 
@@ -91364,7 +91372,7 @@ if "zd_exec" not in globals():
 
 
 KT_PY = _zd('639zzx_karten_touren/KT_PY', "")
-zd_exec(KT_PY and "\n" * 57 + KT_PY, "639zzx_karten_touren.py")
+zd_exec(KT_PY and "\n" * 65 + KT_PY, "639zzx_karten_touren.py")
 
 
 
