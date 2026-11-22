@@ -130,7 +130,7 @@ const SZENEN := [
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
 			{"t": 0.0, "k": "musik", "z": "spannung"},
-			{"t": 0.0, "k": "shot", "art": "fix", "tal": [-16.5, -9.5], "h": 1.6, "blick_tal": [-10.0, -16.5, 0.4], "d": 5.0, "ziel_tal": [-10.0, -16.5, 0.0], "groesse": 1.4},
+			{"t": 0.0, "k": "shot", "art": "fix", "tal": [-13.8, -12.6], "h": 1.6, "blick_tal": [-10.0, -16.5, 0.5], "d": 5.0, "ziel_tal": [-10.0, -16.5, 0.0], "groesse": 1.4},
 			{"t": 0.3, "k": "sag", "wer": "erzaehler", "text": "Am Morgen. Lias Zelt steht noch da – leer."},
 			{"t": 3.0, "k": "sag", "wer": "blinki", "text": "Keine Lia. Kein Notizbuch. Aber Fussspuren. Ich liebe Fussspuren."}]},
 		{"musik": "explore"},
@@ -147,7 +147,7 @@ const SZENEN := [
 	{"id": "s02_duft", "titel": "Maggies Nase", "start": [72.0, -1.0], "schritte": [
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
-			{"t": 0.0, "k": "shot", "art": "establish", "s": 80.0, "q": -9.0, "h": 6.0, "blick": [40.0, 30.0, 0.0], "d": 6.0, "ziel": [42.0, 40.0, 0.0], "groesse": 8.0},
+			{"t": 0.0, "k": "shot", "art": "establish", "s": 52.0, "q": 13.0, "h_see": 3.2, "blick_see": [42.0, 36.0, 2.0], "d": 6.0, "ziel_see": [42.0, 35.3, 0.0], "groesse": 5.0},
 			{"t": 0.3, "k": "sag", "wer": "erzaehler", "text": "Eine Stunde später. Am Ufer des Gumpisees."},
 			{"t": 3.0, "k": "sag", "wer": "figur", "text": "Da draussen im See – der grosse Felsblock. Das muss der Seeblock sein."},
 			{"t": 6.0, "k": "sag", "wer": "blinki", "text": "Lias Spur ist hier zu Ende. Für Augen. Nicht für Nasen."}]},
@@ -221,9 +221,9 @@ const SZENEN := [
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
 			{"t": 0.0, "k": "musik", "z": "spannung"},
-			{"t": 0.0, "k": "person", "id": "lia", "s": 42.6, "q": 40.6, "y_see": 5.0, "blick": [42.0, 33.0], "jacke": [0.86, 0.35, 0.3],
+			{"t": 0.0, "k": "person", "id": "lia", "s": 42.6, "q": 36.5, "y_see": 5.0, "blick": [42.0, 30.0], "jacke": [0.86, 0.35, 0.3],
 				"look": {"kopf": "zopf", "pack": true, "hose": [0.18, 0.2, 0.24], "umbrella": false, "lamp": ""}},
-			{"t": 0.0, "k": "shot", "art": "fix", "s": 40.2, "q": 31.4, "h_see": 1.4, "blick_see": [42.6, 40.6, 5.8], "d": 6.0, "ziel_see": [42.6, 40.6, 5.0], "groesse": 1.8},
+			{"t": 0.0, "k": "shot", "art": "fix", "s": 39.2, "q": 29.2, "h_see": 3.0, "blick_see": [42.4, 36.0, 4.6], "d": 6.0, "ziel_see": [42.6, 36.5, 5.0], "groesse": 1.7},
 			{"t": 0.3, "k": "sag", "wer": "lia", "text": "Ich war schneller. Schon wieder."},
 			{"t": 2.8, "k": "sag", "wer": "figur", "text": "Und trotzdem hast du die Kiste nicht aufgekriegt."},
 			{"t": 5.4, "k": "sag", "wer": "lia", "text": "Die Zeichen waren unter dem Moos. Ich hatte keine Zeit."},

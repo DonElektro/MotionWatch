@@ -50,6 +50,7 @@ var _schloss_rahmen: Array = []
 var schloss_wahl := [0, 0, 0]
 var schloss_sel := 0
 var schloss_falsch := 0
+var schloss_auf := false
 var _tasten := {}
 var _boe_box: PanelContainer
 var _boe_lab: Label
@@ -283,6 +284,8 @@ func aktion(art: String, ak: Dictionary) -> void:
 		"marke":
 			_marke_lesen(id)
 		"schloss":
+			if schloss_auf:                              # (aktion_fertig on opening comes here again)
+				return
 			kit.erledigt.erase(id)                       # done only when it opens
 			par.erledigt.erase(id)
 			schloss_oeffnen()
@@ -813,6 +816,7 @@ func _schloss_pruefen() -> void:
 	for i in range(3):
 		ok = ok and str(sy[int(schloss_wahl[i])]) == str(los[i])
 	if ok:
+		schloss_auf = true
 		_schloss_schliessen()
 		kit.ton("fund")
 		kit.aktion_fertig("schloss")
