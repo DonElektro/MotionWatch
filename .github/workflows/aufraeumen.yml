@@ -1,0 +1,79 @@
+# «Zweige aufräumen» (Besitzer 22.11.2026): löscht Hilfszweige, die nie gemergt werden.
+#   * hp-test/<name>  – Aufträge an den HP (hp_helfer.yml); automatisch jede Nacht, wenn der letzte Commit älter als 6 h ist
+#   * auftrag-<name>  – Auftragszweige der Helfer; nur von Hand (Knopf) und nur wenn angehakt
+# Knopf: GitHub → Actions → «Zweige aufräumen» → «Run workflow» (auch in der GitHub-App).
+# Sicherheit: nur dieses Repository, nur Namen, die genau mit «hp-test/» oder «auftrag-» beginnen; main, integration und
+# alle anderen Zweige werden nie angefasst. Zweige mit einem laufenden oder wartenden Lauf bleiben stehen.
+name: Zweige aufräumen
+
+on:
+  schedule:
+    - cron: "23 1 * * *"            # jede Nacht 01:23 UTC (02:23 Schweiz im Winter)
+  workflow_dispatch:
+    inputs:
+      alter_stunden:
+        description: "Nur Zweige löschen, deren letzter Commit älter ist als (Stunden)"
+        default: "1"
+      auftrag:
+        description: "Auch auftrag-*-Zweige löschen"
+        type: boolean
+        default: true
+      probe:
+        description: "Nur anzeigen, nichts löschen"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: zweige-aufraeumen
+  cancel-in-progress: false
+
+jobs:
+  aufraeumen:
+    if: github.repository_owner == 'DonElektro'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Zweige löschen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          R: ${{ github.repository }}
+          ALTER: ${{ github.event_name == 'workflow_dispatch' && inputs.alter_stunden || '6' }}
+          AUFTRAG: ${{ github.event_name == 'workflow_dispatch' && inputs.auftrag || false }}
+          PROBE: ${{ github.event_name == 'workflow_dispatch' && inputs.probe || false }}
+        run: |
+          set -euo pipefail
+          case "$ALTER" in ''|*[!0-9]*) echo "::error::alter_stunden muss eine ganze Zahl sein"; exit 1;; esac
+          grenze=$(( $(date +%s) - ALTER * 3600 ))
+          # Zweige mit laufendem oder wartendem Lauf (hp_helfer trägt den Zweig in den Titel / als Eingabe ein)
+          aktiv=$( { gh api "repos/$R/actions/runs?status=in_progress&per_page=100" --jq '.workflow_runs[] | .head_branch, .display_title';
+                     gh api "repos/$R/actions/runs?status=queued&per_page=100" --jq '.workflow_runs[] | .head_branch, .display_title'; } || true)
+          muster='heads/hp-test/'
+          [ "$AUFTRAG" = "true" ] && muster="$muster heads/auftrag-"
+          geloescht=0; behalten=0
+          echo "## Zweige aufräumen (älter als ${ALTER} h, Probe: $PROBE)" >> "$GITHUB_STEP_SUMMARY"
+          for m in $muster; do
+            for ref in $(gh api --paginate "repos/$R/git/matching-refs/$m" --jq '.[].ref'); do
+              zweig="${ref#refs/heads/}"
+              case "$zweig" in hp-test/?*|auftrag-?*) ;; *) echo "übersprungen (Name): $zweig"; continue;; esac
+              sha=$(gh api "repos/$R/git/$ref" --jq '.object.sha')
+              datum=$(gh api "repos/$R/commits/$sha" --jq '.commit.committer.date')
+              t=$(date -d "$datum" +%s)
+              if printf '%s\n' "$aktiv" | grep -qF -- "$zweig"; then
+                echo "- behalten (Lauf aktiv): \`$zweig\`" >> "$GITHUB_STEP_SUMMARY"; behalten=$((behalten+1)); continue
+              fi
+              if [ "$t" -gt "$grenze" ]; then
+                echo "- behalten (jünger als ${ALTER} h): \`$zweig\`" >> "$GITHUB_STEP_SUMMARY"; behalten=$((behalten+1)); continue
+              fi
+              if [ "$PROBE" = "true" ]; then
+                echo "- würde löschen: \`$zweig\`" >> "$GITHUB_STEP_SUMMARY"; continue
+              fi
+              gh api -X DELETE "repos/$R/git/refs/heads/$zweig" >/dev/null
+              echo "- gelöscht: \`$zweig\` ($datum)" >> "$GITHUB_STEP_SUMMARY"; geloescht=$((geloescht+1))
+            done
+          done
+          echo "" >> "$GITHUB_STEP_SUMMARY"; echo "**$geloescht gelöscht, $behalten behalten.**" >> "$GITHUB_STEP_SUMMARY"
+          echo "$geloescht gelöscht, $behalten behalten"
