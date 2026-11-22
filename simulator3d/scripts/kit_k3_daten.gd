@@ -15,9 +15,9 @@ const TITEL := "Der Seeblock"
 const ENDE := "Ende von Kapitel 3 – Fortsetzung folgt."
 
 const ACHSE := [Vector2(0.0, -300.0), Vector2(-1.0, 0.0)]
-# the camp (bergtal «frei»): on the east beach of the lake - the fire of scene 11 burns there
-const LAGER := Vector2(2.5, -295.0)
-const START := {"wetter": "clear", "stunde": 7.4}
+# the camp (bergtal «frei»: tent, MoveEye, the camp people): further east on the shore, away from the course
+const LAGER := Vector2(38.0, -293.0)
+const START := {"wetter": "clear", "stunde": 10.2}
 
 const ROLLEN := ["enkelin", "enkel", "tochter", "sohn"]
 const ROLLE_NAME := {"enkelin": "Enkelin", "enkel": "Enkel", "tochter": "Tochter", "sohn": "Sohn"}
@@ -57,9 +57,9 @@ const DINGE := [
 
 # the set of kit_k3.gd: the Seeblock (centre, half axes along s / q, height of the top over the lake), its landing (a ledge at
 # the water on the beach side), the crack with the sign of chapter 2, three marks and the box in a niche; the raft; the fire
-const SEEBLOCK := {"c": [42.0, 40.0], "rs": 4.6, "rq": 4.2, "top_see": 5.0,
+const SEEBLOCK := {"c": [42.0, 40.0], "rs": 4.6, "rq": 4.2, "top_see": 5.0, "deck_see": 4.75,
 		"steg": {"c": [42.0, 34.7], "ls": 3.0, "lq": 1.1, "top_see": 0.55},
-		"riss": [42.0, 35.75, 2.3],
+		"riss": [42.0, 0.0, 2.3],
 		"marken": [["marke1", 39.4, "I", "G"], ["marke2", 41.0, "II", "+"], ["marke3", 44.6, "III", "T"]],
 		"kiste": [42.8, 35.6]}
 const FLOSS := {"bau": [5.0, 4.4], "start": [6.0, 9.2], "kurs": [[14.0, 18.0], [28.0, 26.5], [42.0, 32.4]], "breite": 7.0,
@@ -98,7 +98,7 @@ const WEGE := {
 	"s09_lia": [[39.0, 34.7], [45.0, 34.7]],
 }
 
-const CHECKPOINTS := {"start": [13.0, -287.0], "spur": [72.0, -1.0], "bach": [27.0, -7.2], "felsen": [12.4, -5.0],
+const CHECKPOINTS := {"start": [7.4, -289.0], "spur": [72.0, -1.0], "bach": [27.0, -7.2], "felsen": [12.4, -5.0],
 		"strand": [4.0, 1.0], "block": [42.0, 34.7], "abend": [3.5, -1.0]}
 
 # =======================================================================================================================
@@ -126,7 +126,7 @@ const GV_JUNG := {"jacke": [0.55, 0.32, 0.18], "look": {"kopf": "hut", "pack": t
 const TONI_JUNG := {"jacke": [0.25, 0.4, 0.62], "look": {"kopf": "muetze", "pack": true, "hose": [0.2, 0.22, 0.3], "umbrella": false, "lamp": ""}}
 
 const SZENEN := [
-	{"id": "s01_zelt", "titel": "Der Morgen danach", "start": [13.0, -287.0], "schritte": [
+	{"id": "s01_zelt", "titel": "Der Morgen danach", "start": [7.4, -289.0], "schritte": [
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
 			{"t": 0.0, "k": "musik", "z": "spannung"},
@@ -143,8 +143,8 @@ const SZENEN := [
 			{"t": 3.4, "k": "sag", "wer": "maggie", "text": "Wuff!"},
 			{"t": 4.2, "k": "sag", "wer": "figur", "text": "Die Linie auf der Karte zeigt auch dorthin. Zum Seeblock. Los, Maggie!"},
 			{"t": 7.4, "k": "blende", "s": 1.8},
-			{"t": 8.3, "k": "zeit", "h": 9.2}]}]},
-	{"id": "s02_duft", "titel": "Maggies Nase", "start": [72.0, -1.0], "schritte": [
+			{"t": 8.3, "k": "zeit", "h": 11.6}]}]},
+	{"id": "s02_duft", "titel": "Maggies Nase", "start": [72.0, -1.0], "blick": [64.0, -2.0], "schritte": [
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
 			{"t": 0.0, "k": "shot", "art": "establish", "s": 52.0, "q": 13.0, "h_see": 3.2, "blick_see": [42.0, 36.0, 2.0], "d": 6.0, "ziel_see": [42.0, 35.3, 0.0], "groesse": 5.0},
@@ -157,7 +157,7 @@ const SZENEN := [
 			"hinweise": [[25.0, "Verloren? Drück die Aktion – dann schnüffelt Maggie die Spur neu.", "blinki"]]},
 		{"abzeichen": "spuernase", "wenn": "nicht:duft_verloren"},
 		{"sag": "Die Spur geht über den Bach. Lia ist hier rübergesprungen.", "wer": "figur"}]},
-	{"id": "s03_blockfeld", "titel": "Das Blockfeld", "start": [27.0, -7.2], "schritte": [
+	{"id": "s03_blockfeld", "titel": "Das Blockfeld", "start": [27.0, -7.2], "blick": [24.4, -7.0], "schritte": [
 		{"checkpoint": "bach"},
 		{"ziel": "Spring von Stein zu Stein über den Bach", "bis": "ort:12.6,-6.0,2.0",
 			"hinweise": [[20.0, "Lauf auf den ersten Stein zu und spring (Leertaste / Springen) – der nächste Stein ist nah.", "blinki"]]},
@@ -185,7 +185,7 @@ const SZENEN := [
 		{"abzeichen": "kapitaen", "wenn": "merker:kapitaen"},
 		{"musik": "explore"},
 		{"checkpoint": "block"}]},
-	{"id": "s06_seeblock", "titel": "Der Seeblock", "start": [42.0, 34.7], "schritte": [
+	{"id": "s06_seeblock", "titel": "Der Seeblock", "start": [42.0, 34.7], "blick": [42.0, 38.0], "schritte": [
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
 			{"t": 0.0, "k": "shot", "art": "fix", "s": 36.5, "q": 30.0, "h_see": 1.6, "blick_see": [42.0, 36.0, 1.8], "d": 5.0, "ziel_see": [42.0, 35.8, 1.5], "groesse": 3.0},
@@ -196,9 +196,10 @@ const SZENEN := [
 			{"t": 0.0, "k": "balken", "an": true},
 			{"t": 0.0, "k": "shot", "art": "fix", "s": 42.0, "q": 33.4, "h_see": 2.1, "blick_see": [42.0, 35.8, 2.8], "d": 4.0, "ziel_see": [42.0, 35.8, 2.85], "groesse": 0.8},
 			{"t": 0.0, "k": "riss_leuchtet"},
+			{"t": 0.0, "k": "setzen", "s": 44.8, "q": 35.0},
 			{"t": 0.3, "k": "sag", "wer": "figur", "text": "Zwei Linien und ein Kreuz – genau wie das Zeichen im Infrarot!"},
 			{"t": 3.4, "k": "sag", "wer": "blinki", "text": "Übereinstimmung: hundert Prozent. Ich bin beeindruckt. Von mir."}]}]},
-	{"id": "s07_kiste", "titel": "Die Kiste", "start": [42.0, 34.7], "schritte": [
+	{"id": "s07_kiste", "titel": "Die Kiste", "start": [42.0, 34.7], "blick": [42.0, 38.0], "schritte": [
 		{"sag": "Unter dem Riss: eine alte Kiste in einer Nische. Mit drei Rädchen statt einem Schlüssel.", "wer": "erzaehler"},
 		{"ziel": "Lies die drei eingeritzten Zeichen am Fels (Aktion)", "bis": "aktion:marken",
 			"hinweise": [[25.0, "Die Zeichen sind links und rechts der Kiste in den Fels geritzt.", "blinki"]]},
@@ -208,7 +209,8 @@ const SZENEN := [
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
 			{"t": 0.0, "k": "musik", "z": "entdeckung"},
-			{"t": 0.0, "k": "shot", "art": "fix", "s": 41.6, "q": 33.6, "h_see": 1.6, "blick_see": [42.8, 35.6, 0.75], "d": 5.0, "ziel_see": [42.8, 35.6, 0.75], "groesse": 0.6},
+			{"t": 0.0, "k": "setzen", "s": 44.8, "q": 34.6},
+			{"t": 0.0, "k": "shot", "art": "fix", "s": 43.6, "q": 34.6, "h_see": 1.6, "blick_see": [42.8, 35.6, 0.75], "d": 5.0, "ziel_see": [42.8, 35.6, 0.75], "groesse": 0.6},
 			{"t": 0.0, "k": "kiste_auf"},
 			{"t": 0.4, "k": "sag", "wer": "figur", "text": "Das zweite Kartenstück! Und ein Zettel …"},
 			{"t": 2.6, "k": "fund", "id": "kartenstueck"},
@@ -221,9 +223,9 @@ const SZENEN := [
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
 			{"t": 0.0, "k": "musik", "z": "spannung"},
-			{"t": 0.0, "k": "person", "id": "lia", "s": 42.6, "q": 36.5, "y_see": 5.0, "blick": [42.0, 30.0], "jacke": [0.86, 0.35, 0.3],
+			{"t": 0.0, "k": "person", "id": "lia", "s": 42.6, "q": 38.6, "y_see": 4.75, "blick": [42.0, 30.0], "jacke": [0.86, 0.35, 0.3],
 				"look": {"kopf": "zopf", "pack": true, "hose": [0.18, 0.2, 0.24], "umbrella": false, "lamp": ""}},
-			{"t": 0.0, "k": "shot", "art": "fix", "s": 39.2, "q": 29.2, "h_see": 3.0, "blick_see": [42.4, 36.0, 4.6], "d": 6.0, "ziel_see": [42.6, 36.5, 5.0], "groesse": 1.7},
+			{"t": 0.0, "k": "shot", "art": "fix", "s": 40.0, "q": 31.6, "h_see": 3.2, "blick_see": [42.4, 38.2, 5.3], "d": 6.0, "ziel_see": [42.6, 38.6, 4.75], "groesse": 1.7},
 			{"t": 0.3, "k": "sag", "wer": "lia", "text": "Ich war schneller. Schon wieder."},
 			{"t": 2.8, "k": "sag", "wer": "figur", "text": "Und trotzdem hast du die Kiste nicht aufgekriegt."},
 			{"t": 5.4, "k": "sag", "wer": "lia", "text": "Die Zeichen waren unter dem Moos. Ich hatte keine Zeit."},
@@ -240,7 +242,7 @@ const SZENEN := [
 			{"t": 0.8, "k": "person_weg", "id": "lia"},
 			{"t": 0.8, "k": "setzen", "s": -6.0, "q": -6.0},
 			{"t": 0.8, "k": "farbe", "art": "alt"},
-			{"t": 0.8, "k": "zeit", "h": 18.6},
+			{"t": 0.8, "k": "zeit", "h": 16.2},
 			{"t": 0.8, "k": "person", "id": "gv", "s": 4.6, "q": 1.4, "blick": [42.0, 40.0], "jacke": [0.55, 0.32, 0.18],
 				"look": {"kopf": "hut", "pack": true, "hose": [0.32, 0.3, 0.26], "umbrella": false, "lamp": ""}},
 			{"t": 0.8, "k": "person", "id": "toni", "s": 6.0, "q": 2.4, "blick": [42.0, 40.0], "jacke": [0.25, 0.4, 0.62],
@@ -258,7 +260,7 @@ const SZENEN := [
 	{"id": "s11_feuer", "titel": "Am Feuer", "start": [3.5, -1.0], "schritte": [
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
-			{"t": 0.0, "k": "zeit", "h": 20.4},
+			{"t": 0.0, "k": "zeit", "h": 19.7},
 			{"t": 0.0, "k": "feuer"},
 			{"t": 0.0, "k": "setzen", "s": 3.4, "q": -0.6},
 			{"t": 0.0, "k": "person", "id": "lia", "s": 0.8, "q": -2.6, "blick": [2.0, -2.0], "jacke": [0.86, 0.35, 0.3],

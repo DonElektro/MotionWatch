@@ -118,7 +118,7 @@ func _lauf() -> void:
 	# 1 the empty tent
 	await filme_weg()
 	pruef(szene() == "s01_zelt", "Szene 1: das leere Zelt")
-	ok = await geh([[11.6, -284.0], [9.5, -279.0]])
+	ok = await geh([[8.6, -284.5], [9.5, -279.0]])
 	pruef(ok, "zu den Spuren hinter dem Zelt")
 	await filme_weg()
 	ok = await _bis(func(): return szene() == "s02_duft", 8.0)

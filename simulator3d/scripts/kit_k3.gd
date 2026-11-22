@@ -112,29 +112,52 @@ func _sqw(sv: float, qv: float, y_tal: float) -> Vector3:
 	return Vector3(t.x, y_tal, t.y)
 
 
+func _flaeche(sv: float, h: float) -> float:
+	"""q of the south face of the Seeblock (an ellipsoid) at s and the height h over the lake"""
+	var sb: Dictionary = daten.SEEBLOCK
+	var cs := float(sb["c"][0])
+	var cq := float(sb["c"][1])
+	var k := 1.0 - pow(h / float(sb["top_see"]), 2.0) - pow((sv - cs) / float(sb["rs"]), 2.0)
+	return cq - float(sb["rq"]) * sqrt(maxf(k, 0.0))
+
+
+func _zum_steg(n: Node3D, sv: float, h: float, raus := 0.1) -> void:
+	"""a decal on the face: its +Z towards the landing (where one stands to look), a little out of the rock"""
+	var sb: Dictionary = daten.SEEBLOCK
+	var st: Dictionary = sb["steg"]
+	var auf: Vector3 = par.W(_sqw(sv, _flaeche(sv, h), wl + h))
+	var blick: Vector3 = par.W(_sqw(sv, float(st["c"][1]) - 0.6, wl + float(st["top_see"]) + 1.5))
+	var d := (blick - auf).normalized()
+	n.global_position = auf + d * raus
+	n.look_at(n.global_position - d, Vector3.UP)
+
+
 func _seeblock() -> void:
+	"""the boulder in the lake: a big rounded ellipsoid with lumps (half under water), a flat top as the deck for Lia,
+	the landing at the water on the beach side; the crack, the marks and the box on the face above the landing"""
 	var sb: Dictionary = daten.SEEBLOCK
 	var c: Vector2 = par.tal(float(sb["c"][0]), float(sb["c"][1]))
 	var rs := float(sb["rs"])
 	var rq := float(sb["rq"])
 	var top := wl + float(sb["top_see"])
-	var fels: Color = par.FELS
-	par._box(c, rq, rs, top, fels, "stone", 10.0)         # the block: steep sides, a rounded top
-	par._deck(c, rq, rs, top)
-	var n: Node3D = par.node(par.holder, Vector3(c.x, top, c.y), -par.rot)
-	for lump in [[Vector3(rq * 0.7, -1.6, rs * 0.55), Vector3(2.0, 2.6, 2.2)], [Vector3(-rq * 0.8, -2.4, -rs * 0.4), Vector3(2.2, 2.4, 2.6)],
-			[Vector3(rq * 0.2, -0.2, -rs * 0.9), Vector3(1.6, 1.2, 1.8)], [Vector3(-rq * 0.5, -3.8, rs * 0.85), Vector3(2.4, 2.0, 2.0)]]:
-		par.fels(par.part(n, par.sphm(1.0, -1.0, 12), lump[0], fels.lerp(Color(0.42, 0.44, 0.4), 0.25), "stone", Vector3.ZERO, lump[1]))
-	for sv in [-rs * 0.55, 0.0, rs * 0.55]:                # the camera keeps out (two layers of spheres along the block)
-		for hy in [1.2, 3.6]:
-			var kp: Vector2 = par.tal(float(sb["c"][0]) + sv, float(sb["c"][1]))
-			_kugeln.append([Vector3(kp.x, wl + hy, kp.y), minf(rq, rs) * 0.82])
+	var fels: Color = par.FELS.lerp(Color(0.5, 0.5, 0.48), 0.35)
+	var n: Node3D = par.node(par.holder, Vector3(c.x, wl, c.y), -par.rot)   # local x = q (north +), z = s
+	par.fels(par.part(n, par.sphm(1.0, -1.0, 18), Vector3.ZERO, fels, "stone", Vector3.ZERO, Vector3(rq, top - wl, rs)))
+	for lump in [[Vector3(rq * 0.55, -0.4, rs * 0.55), Vector3(2.8, 3.6, 2.9)], [Vector3(rq * 0.6, -0.6, -rs * 0.5), Vector3(3.0, 3.2, 2.7)],
+			[Vector3(-rq * 0.45, -0.8, rs * 0.95), Vector3(2.0, 2.2, 1.9)], [Vector3(-rq * 0.45, -0.9, -rs * 0.95), Vector3(2.1, 2.0, 2.0)],
+			[Vector3(rq * 0.25, float(sb["top_see"]) - 1.4, rs * 0.1), Vector3(1.9, 1.5, 2.3)]]:
+		par.fels(par.part(n, par.sphm(1.0, -1.0, 12), lump[0], fels.darkened(0.06), "stone", Vector3.ZERO, lump[1]))
+	par._deck(c, rq * 0.75, rs * 0.75, wl + float(sb.get("deck_see", float(sb["top_see"]) - 0.25)))
+	for sv in [-rs * 0.5, 0.0, rs * 0.5]:                  # the camera keeps out (spheres in two layers)
+		var kp: Vector2 = par.tal(float(sb["c"][0]) + sv, float(sb["c"][1]))
+		_kugeln.append([Vector3(kp.x, wl + 0.8, kp.y), rq * 0.86])
+		_kugeln.append([Vector3(kp.x, wl + 3.0, kp.y), rq * 0.62])
 	# the landing at the water (the raft lands here; a dry deck - around it the lake is water)
 	var st: Dictionary = sb["steg"]
 	var sc: Vector2 = par.tal(float(st["c"][0]), float(st["c"][1]))
-	par._box(sc, float(st["lq"]), float(st["ls"]), wl + float(st["top_see"]), par.FELS2, "stone", 10.0)
-	par._deck(sc, float(st["lq"]), float(st["ls"]), wl + float(st["top_see"]))
 	var steg_y := wl + float(st["top_see"])
+	par._box(sc, float(st["lq"]), float(st["ls"]), steg_y, par.FELS2, "stone", 10.0)
+	par._deck(sc, float(st["lq"]), float(st["ls"]), steg_y)
 	# the crack: two lines and a cross (the sign of chapter 2), dark - it glows warm when compared
 	var r: Array = sb["riss"]
 	_riss_mat = StandardMaterial3D.new()
@@ -142,16 +165,19 @@ func _seeblock() -> void:
 	_riss_mat.emission_enabled = true
 	_riss_mat.emission = Color(1.0, 0.7, 0.3)
 	_riss_mat.emission_energy_multiplier = 0.0
-	var rn: Node3D = par.node(par.holder, _sqw(float(r[0]), float(r[1]), steg_y + float(r[2])), -par.rot)
-	for z in [-0.22, 0.22]:
-		par.light_part(rn, par.boxm(0.05, 0.95, 0.07), Vector3(0, 0, z), _riss_mat)
+	var rn := Node3D.new()
+	par.holder.add_child(rn)
+	_zum_steg(rn, float(r[0]), float(st["top_see"]) + float(r[2]), 0.14)
+	for x in [-0.22, 0.22]:
+		par.light_part(rn, par.boxm(0.07, 0.95, 0.06), Vector3(x, 0, 0), _riss_mat)
 	for a in [PI * 0.25, -PI * 0.25]:
-		par.light_part(rn, par.boxm(0.05, 0.5, 0.07), Vector3(0, 0, 0.75), _riss_mat).rotation = Vector3(a, 0, 0)
+		par.light_part(rn, par.boxm(0.07, 0.5, 0.06), Vector3(0.72, 0, 0), _riss_mat).rotation = Vector3(0, 0, a)
 	# the marks: under moss on the face, a numeral and a sign scratched in
 	for m in sb["marken"]:
-		var mp := _sqw(float(m[1]), float(r[1]), steg_y + 1.15)
-		var mn: Node3D = par.node(par.holder, mp, -par.rot)
-		var moos: MeshInstance3D = par.part(mn, par.boxm(0.08, 0.5, 0.55), Vector3(-0.02, 0, 0), Color(0.3, 0.42, 0.2), "stone")
+		var mn := Node3D.new()
+		par.holder.add_child(mn)
+		_zum_steg(mn, float(m[1]), float(st["top_see"]) + 1.15, 0.12)
+		var moos: MeshInstance3D = par.part(mn, par.boxm(0.56, 0.5, 0.08), Vector3.ZERO, Color(0.3, 0.42, 0.2), "stone")
 		var lab := Label3D.new()
 		lab.text = "%s\n%s" % [str(m[2]), str(m[3])]
 		lab.font_size = 96
@@ -160,11 +186,8 @@ func _seeblock() -> void:
 		lab.outline_modulate = Color(0.12, 0.1, 0.08)
 		lab.outline_size = 10
 		lab.visible = false
-		par.holder.add_child(lab)
-		var aussen: Vector3 = par.W(mp)
-		var innen: Vector3 = par.W(_sqw(float(m[1]), float(r[1]) + 1.0, steg_y + 1.15))
-		lab.global_position = aussen + (aussen - innen).normalized() * 0.03
-		lab.look_at(lab.global_position + (innen - aussen).normalized(), Vector3.UP)
+		mn.add_child(lab)
+		lab.position = Vector3(0, 0, 0.05)                 # (+Z of the node faces the landing: so does the text)
 		_marken[str(m[0])] = {"moos": moos, "schrift": lab, "nr": str(m[2]), "zeichen": str(m[3])}
 	# the box in a niche at the landing: wood, three brass wheels, a lid on a hinge
 	var kp2: Array = sb["kiste"]
@@ -188,13 +211,13 @@ func kugeln_welt() -> Array:
 
 func _spuren() -> void:
 	"""scene 1: Lia's boot prints from her tent to the north"""
-	var mt: Material = par.m.mat(Color(0.2, 0.17, 0.13))
+	var mt: Material = par.m.mat(Color(0.5, 0.42, 0.3))    # pressed, muddy grass: lighter than the meadow
 	var z := -18.6
 	var i := 0
 	while z > -31.0:
 		var x := -9.9 + 0.04 * i + (0.13 if i % 2 == 0 else -0.13)
 		var p: Vector3 = par.G(x, z, 0.015)
-		par.light_part(par.node(par.holder, p, 0.05), par.boxm(0.11, 0.01, 0.27), Vector3.ZERO, mt)
+		par.light_part(par.node(par.holder, p, 0.05), par.boxm(0.14, 0.012, 0.3), Vector3.ZERO, mt)
 		z -= 0.72
 		i += 1
 
@@ -266,10 +289,43 @@ func tick(dt: float, ein: Dictionary) -> Dictionary:
 		ein = _floss_tick(dt, ein)
 	if _schloss != null:
 		ein = _schloss_tick(ein)
+	_besucher_t -= dt
+	if _besucher_t <= 0.0:
+		_besucher_t = 2.0
+		_besucher_weg()
 	if not kit.erledigt.has("staemme") and kit.funde.has("stamm1") and kit.funde.has("stamm2") and kit.funde.has("stamm3"):
 		kit.aktion_fertig("staemme")
 		kit.sag(kit.tx("Drei Stämme. Genug für ein kleines Floss."), "figur")
 	return ein
+
+
+var _besucher_t := 0.0
+
+
+func _besucher_weg() -> void:
+	"""no hikers or animals of the valley on the course at the lake or at the tent; the camping neighbours of
+	bergtal_erleben (meta «nachbar») stood on the boulders: hidden near the course"""
+	var orte := [par.welt(30.0, 10.0), par.W(par.G(-10.0, -16.5))]
+	var sr = main.scenes.root if main.get("scenes") != null else null
+	if sr != null:
+		for e in sr.get_children():
+			if not str(e.name).begins_with("bergtal_erleben"):
+				continue
+			for n in e.get_children():
+				if n is Node3D and n.has_meta("nachbar") and (n as Node3D).visible:
+					for o in orte:
+						if (n as Node3D).global_position.distance_to(o) < 70.0:
+							(n as Node3D).visible = false
+							break
+	if main.visitors == null:
+		return
+	for v in main.visitors.get_children():
+		if v == kit.figur.a or (kit.hund != null and v == kit.hund.hund) or kit.personen.values().has(v) or v.has_meta("kit_hund"):
+			continue
+		for o in orte:
+			if (v as Node3D).global_position.distance_to(o) < 60.0:
+				v.queue_free()
+				break
 
 
 func aktion(art: String, ak: Dictionary) -> void:
@@ -314,6 +370,15 @@ func film(e: Dictionary, sprung: bool) -> void:
 				_feuer_an = true
 				var f: Array = daten.FEUER
 				par.ofen_an(par.tal(float(f[0]), float(f[1])), 0.35)
+				var fl := OmniLight3D.new()                  # the fire lights the faces round it (the stove light is for a room)
+				fl.light_color = Color(1.0, 0.6, 0.3)
+				fl.light_energy = 2.4
+				fl.omni_range = 9.0
+				par.holder.add_child(fl)
+				fl.global_position = par.welt(float(f[0]), float(f[1]), 0.9)
+				var tw := fl.create_tween().set_loops()
+				tw.tween_property(fl, "light_energy", 1.9, 0.27)
+				tw.tween_property(fl, "light_energy", 2.6, 0.33)
 		"fund":
 			kit.fund(str(e["id"]))
 
@@ -333,6 +398,9 @@ func control(d: Dictionary) -> Dictionary:
 			return {"ok": true, "info": info()}
 		"schloss_zu":
 			_schloss_schliessen()
+		"floss_aus":                                       # pictures: off the raft (on the landing)
+			if not floss.is_empty() and bool(floss.get("an", false)):
+				_floss_angelegt()
 	return {"ok": true, "info": info()}
 
 
@@ -378,11 +446,11 @@ func _puff_neu() -> void:
 	_puff.name = "kit_duft"
 	par.holder.add_child(_puff)
 	_puff.global_position = w + Vector3(0, 0.35, 0)
-	_puff_mat = par.glow_mat(Color(0.9, 1.0, 0.55), 1.6, 0.55)
+	_puff_mat = par.glow_mat(Color(0.92, 1.0, 0.5), 2.4, 0.65)
 	_puff_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	for k in range(6):
 		var a := TAU * k / 6.0
-		par.light_part(_puff, par.sphm(0.16 + 0.05 * (k % 3), -1.0, 8), Vector3(cos(a) * 0.28, 0.12 * (k % 2) + 0.05 * k, sin(a) * 0.28), _puff_mat)
+		par.light_part(_puff, par.sphm(0.22 + 0.07 * (k % 3), -1.0, 8), Vector3(cos(a) * 0.36, 0.14 * (k % 2) + 0.07 * k, sin(a) * 0.36), _puff_mat)
 	var pt := CPUParticles3D.new()
 	pt.amount = 10
 	pt.lifetime = 1.8
@@ -424,8 +492,8 @@ func _duft_tick(dt: float, ein: Dictionary) -> Dictionary:
 	if _puff != null and is_instance_valid(_puff):
 		_puff.rotation.y += dt * 0.6
 		_puff.position.y += sin(kit.uhr * 2.0) * 0.002
-		_puff_mat.albedo_color.a = 0.6 * k
-		_puff_mat.emission_energy_multiplier = 1.6 * k
+		_puff_mat.albedo_color.a = 0.65 * k
+		_puff_mat.emission_energy_multiplier = 2.4 * k
 		_puff.visible = k > 0.02
 	if bool(duft["weg"]):
 		if bool(ein.get("aktion", false)):                  # Maggie sniffs the trail again

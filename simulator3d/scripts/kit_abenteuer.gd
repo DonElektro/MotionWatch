@@ -426,12 +426,18 @@ func szene_starten(n: int) -> void:
 	if karte_an:
 		karte_ende(false)
 	szene_i = clampi(n, 0, daten.SZENEN.size() - 1)
+	if hud != null:
+		hud.karte_bild("")                                 # (a map card of the scene before never stays)
 	var sz: Dictionary = daten.SZENEN[szene_i]
 	_log("szene:" + str(sz["id"]))
 	if sz.has("start") and szene_i > 0 and (sz["start"] as Array).size() >= 2:
 		var st: Array = sz["start"]
 		if figur.pos().distance_to(par.welt(float(st[0]), float(st[1]))) > 8.0:   # only when far away (else: just go on)
 			figur_setzen(float(st[0]), float(st[1]))
+		if sz.has("blick"):                                # Kapitel 3: facing where it goes on (the axis points the other way)
+			var bw: Vector3 = par.welt(float(sz["blick"][0]), float(sz["blick"][1])) - figur.pos()
+			figur.a.heading = atan2(-bw.x, -bw.z)
+			figur.a.rotation.y = figur.a.heading
 		regie.hinter_figur()
 	weg = par.weg_punkte(daten.WEGE.get(str(sz["id"]), []))
 	schritt_i = -1
