@@ -16,24 +16,27 @@ import sys
 import urllib.request
 
 R = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DATEN = os.path.join(R, "simulator3d", "scripts", "kit_k2_daten.gd")
+import glob
+DATEIEN = sorted(glob.glob(os.path.join(R, "simulator3d", "scripts", "kit_k*_daten.gd")))   # every chapter of the new mode
 HF = "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/de/de_DE/"
 STIMMEN = {   # role -> (voice, speaker speed): both Thorsten (CC0 - the voice MoveEye already uses), the grandfather / father
     # slower and lower (pitch below); other voices were left out: their training data has unclear licences (karlsson)
     "erzaehler": ("thorsten/high/de_DE-thorsten-high", 1.05),
     "grossvater": ("thorsten/high/de_DE-thorsten-high", 1.12),
+    "lia": ("kerstin/low/de_DE-kerstin-low", 1.0),   # the owner's choice 21.11.2026 (dataset-voice-kerstin, CC0)
 }
 TIEFER = {"grossvater": 0.88}  # pitch factor (ffmpeg asetrate + atempo: same speed, lower voice)
 JAHR_SPRECH = {"1974": "neunzehnhundertvierundsiebzig", "2000": "zweitausend"}
 
 
 def zeilen():
-    src = open(DATEN, encoding="utf-8").read()
     out = []
-    for m in re.finditer(r'"wer":\s*"(erzaehler|grossvater)",\s*"text":\s*"([^"]+)"', src):
-        out.append((m.group(1), m.group(2)))
-    for m in re.finditer(r'"sag":\s*"([^"]+)",\s*"wer":\s*"(erzaehler|grossvater)"', src):
-        out.append((m.group(2), m.group(1)))
+    for datei in DATEIEN:
+        src = open(datei, encoding="utf-8").read()
+        for m in re.finditer(r'"wer":\s*"(erzaehler|grossvater|lia)",\s*"text":\s*"([^"]+)"', src):
+            out.append((m.group(1), m.group(2)))
+        for m in re.finditer(r'"sag":\s*"([^"]+)",\s*"wer":\s*"(erzaehler|grossvater|lia)"', src):
+            out.append((m.group(2), m.group(1)))
     return out
 
 
