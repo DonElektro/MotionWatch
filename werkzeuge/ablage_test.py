@@ -131,42 +131,10 @@ def main():
 
         # ---- 2: growth in a throwaway repository ------------------------------------------------------------------------
         print("2  Wachstum pro Version (Wegwerf-Repository, git repack)")
-        # 4.20.1: also the zips that a newer version of the same X.Y removed from the folder (the git history keeps them) -
-        # otherwise 4.20.1 is compared with 4.18.1 instead of 4.20.0
-        quellen = {n: (lambda n=n: open(os.path.join(REPO, n), "rb").read()) for n in os.listdir(REPO)
-                   if re.match(r"^moveeye_daten_\d{1,3}_\d{1,3}_\d{1,3}\.zip$", n)}
-        def geloeschte():
-            r_ = subprocess.run(["git", "-C", REPO, "log", "--diff-filter=D", "--format=@%H", "--name-only", "-n", "20", "--",
-                                 "moveeye_daten_*.zip"], capture_output=True, text=True, timeout=60)
-            out_, c_ = {}, None
-            for ln in r_.stdout.splitlines():
-                if ln.startswith("@"):
-                    c_ = ln[1:]
-                elif ln.strip() and c_ and ln.strip() not in out_ and re.match(r"^moveeye_daten_\d{1,3}_\d{1,3}_\d{1,3}\.zip$", ln.strip()):
-                    out_[ln.strip()] = c_
-            return out_
-        try:
-            neuste = max((n for n in quellen if n != bauen.zd_name(v)), key=vkey, default="")
-            weg = geloeschte()
-            # the CI checks out one commit: fetch a little history (in small steps - every old zip is ~18 MB) until the
-            # zip that a newer X.Y.Z removed is found, at most 4 steps
-            for _i in range(4):
-                if any(vkey(n) > vkey(neuste) for n in weg if n != bauen.zd_name(v)) or subprocess.run(
-                        ["git", "-C", REPO, "rev-parse", "--is-shallow-repository"], capture_output=True, text=True,
-                        timeout=30).stdout.strip() != "true":
-                    break
-                subprocess.run(["git", "-C", REPO, "fetch", "-q", "--deepen=4"], capture_output=True, timeout=240)
-                weg = geloeschte()
-            for n_, c_ in weg.items():
-                if n_ not in quellen:
-                    quellen[n_] = (lambda c=c_, n=n_: subprocess.run(["git", "-C", REPO, "show", "%s^:%s" % (c, n)],
-                                                                    capture_output=True, timeout=120).stdout)
-        except (OSError, subprocess.SubprocessError):
-            pass
-        zips = sorted(quellen, key=vkey)[-2:]
+        zips = sorted((n for n in os.listdir(REPO) if re.match(r"^moveeye_daten_\d{1,3}_\d{1,3}_\d{1,3}\.zip$", n)), key=vkey)[-2:]
         folge_u, folge_g = [], []
         for n in zips:
-            with zipfile.ZipFile(io.BytesIO(quellen[n]())) as z:
+            with zipfile.ZipFile(os.path.join(REPO, n)) as z:
                 dj = z.read("daten.json")
             if json.loads(dj.decode("utf-8")).get("version") == v:
                 continue                                    # the zip of the version in quelle/ comes freshly built below
@@ -179,9 +147,16 @@ def main():
         if len(folge_u) >= 2:
             wu = wachstum(tmp, "ungepackt", folge_u)
             wg = wachstum(tmp, "gepackt", folge_g)
+            namen = [x[0] for x in wu]
+
             def ausnahme(fn):
-                m_ = re.match(r"^moveeye_daten_(\d+)_(\d+)_(\d+)\.zip$", fn)
-                return AUSNAHMEN.get(".".join(m_.groups())) if m_ else None
+                """the exceptions between the zip before (in the folder) and this one: 4.20.1 is compared with 4.18.1 when
+                4.20.0 is no longer in the folder - then the allowance of 4.20.0 counts too"""
+                i_ = namen.index(fn)
+                lo, hi = vkey(namen[i_ - 1]) if i_ else (0,), vkey(fn)
+                hits = [(g, r) for ver, (g, r) in AUSNAHMEN.items() if lo < tuple(int(x) for x in ver.split(".")) <= hi]
+                return (sum(g for g, _r in hits) + (GRENZE_MB if hits and tuple(int(x) for x in max(AUSNAHMEN)
+                        .split(".")) < hi else 0), "; ".join(r for _g, r in hits)) if hits else None
             for (fn, sz, plus), (_fn, szg, plusg) in list(zip(wu, wg))[1:]:
                 ax = ausnahme(fn)
                 g_ = ax[0] if ax else GRENZE_MB
