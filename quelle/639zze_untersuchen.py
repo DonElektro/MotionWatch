@@ -48,7 +48,27 @@ def unt_perms(g_):
     name = u["name"] if u else str(getattr(g_, "user", "") or "?")
     return {"admin": False, "live": "live" in P, "head": "head" in P, "key": name.lower(), "name": name}
 
+# Programmtext in der ZIP (Hauptdatei kleiner, 22.11.2026; Muster 639zzzzk / 639zzzzm): ab Zeile 72 steht der Teil in EINEM
+# Literal UNT_PY - bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert), zd_exec führt es hier aus (Zeilennummern wie
+# in dieser Datei). Keine Start-, Schutz-, Alarm-, Update- oder Reparatur-Funktion: ohne ZIP fehlt der Teil einfach. Was ohne
+# ZIP gelten muss (Einstellungen, Sperrlisten), steht oben ausserhalb des Literals.
 
+
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+UNT_PY = r'''
 def unt_box(b):
     """a region from the page: [x, y, w, h] 0..1 - clamped; a tap ([x, y] or w/h 0) = a square around the point; None = all"""
     if not isinstance(b, (list, tuple)) or len(b) < 2:
@@ -934,3 +954,5 @@ def unt_selftest():
 
 
 SELFTEST_EXTRA.append(("Examine a snapshot «🔍 Untersuchen» (639zze)", unt_selftest))
+'''
+zd_exec(UNT_PY and "\n" * 70 + UNT_PY, "639zze_untersuchen.py")   # line 1 of UNT_PY = line 71: the line numbers are those of this file

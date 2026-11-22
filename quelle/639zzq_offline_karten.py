@@ -81,7 +81,27 @@ KQ_RT = {"pm": {}, "db": None, "lock": threading.Lock(), "ok_t": 0.0, "have": {}
 for _k, _v in {"map_topo": True}.items():
     CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)   # 636 took its copy before this part
 
+# Programmtext in der ZIP (Hauptdatei kleiner, 22.11.2026; Muster 639zzzzk / 639zzzzm): ab Zeile 105 steht der Teil in EINEM
+# Literal KQ_PY - bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert), zd_exec führt es hier aus (Zeilennummern wie
+# in dieser Datei). Keine Start-, Schutz-, Alarm-, Update- oder Reparatur-Funktion: ohne ZIP fehlt der Teil einfach. Was ohne
+# ZIP gelten muss (Einstellungen, Sperrlisten), steht oben ausserhalb des Literals.
 
+
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+KQ_PY = r'''
 def kq_dir():
     return os.path.join(DATA_DIR, "karte")
 
@@ -1169,6 +1189,14 @@ body:not(.light) #kq-map{background:#1d2125}
 .kq-none{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--panel)}
 .kq-back{color:var(--acc2);text-decoration:none;font-weight:600;min-height:44px;min-width:44px;display:inline-flex;align-items:center;white-space:nowrap}
 .kq-lic{display:inline-block;margin-top:10px;font-size:12px}
+/* Vollbild (Besitzer 22.11.2026): the map box fills the screen - Fullscreen API, or fixed over the page (iPhone has no element fullscreen) */
+#kq-map.kq-fs{width:100%;height:100%;min-height:0;margin:0;border:0;border-radius:0}
+#kq-map.kq-fsp{position:fixed;inset:0;z-index:9000;width:auto;height:100vh;height:100dvh}
+#kq-map.kq-fs #kq-c{inset:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+#kq-map.kq-fs .kq-sw{top:calc(8px + env(safe-area-inset-top,0px));left:calc(8px + env(safe-area-inset-left,0px))}
+#kq-map.kq-fs #eo-bar{bottom:calc(22px + env(safe-area-inset-bottom,0px));left:calc(8px + env(safe-area-inset-left,0px));right:calc(8px + env(safe-area-inset-right,0px))}
+html.kq-fs-on,html.kq-fs-on body{overflow:hidden}
+.kq-fsc button{font-size:17px;line-height:29px;color:#333}
 </style></head><body>
 <header>
   <h1>MoveEye</h1>
@@ -1196,6 +1224,30 @@ body:not(.light) #kq-map{background:#1d2125}
 <script>
 /*COMMON*/
 /*KQPAGE*/
+// Vollbild (Besitzer 22.11.2026): «⛶» under the zoom / compass buttons of both maps (Schweiz, Bergtal), «✕» or Esc = back.
+// Fullscreen API on the map box (map, its buttons, the bar «📌 Setzen»); no element fullscreen (iPhone) = fixed over the page.
+window.kqFull = (m, box) => {
+  box = box || document.getElementById("kq-map"); if (!m || !box || box.__fs) return; box.__fs = 1;
+  const FT = {de: ["Vollbild", "Vollbild beenden"], fr: ["Plein écran", "Quitter le plein écran"], it: ["Schermo intero", "Esci dallo schermo intero"],
+    rm: ["Maletg entir", "Terminar il maletg entir"], en: ["Full screen", "Exit full screen"]};          // texts here: the page goes to the ZIP
+  const D = document, T = window.kqFullT = k => { let l = "de"; try { l = LANG || "de"; } catch (e) {} return (FT[l] || FT.en)[k === "Full screen" ? 0 : 1]; }, fsEl = () => D.fullscreenElement || D.webkitFullscreenElement;
+  const can = !!(D.fullscreenEnabled || D.webkitFullscreenEnabled) && !!(box.requestFullscreen || box.webkitRequestFullscreen);
+  const g = D.createElement("div"), b = D.createElement("button"); g.className = "maplibregl-ctrl maplibregl-ctrl-group kq-fsc"; b.type = "button"; b.id = "kq-full"; g.appendChild(b);
+  const on = () => fsEl() === box || box.classList.contains("kq-fsp");
+  const paint = () => { const v = on(); box.classList.toggle("kq-fs", v); D.documentElement.classList.toggle("kq-fs-on", v); b.textContent = v ? "✕" : "⛶";
+    const t = T(v ? "Exit full screen" : "Full screen"); b.title = t; b.setAttribute("aria-label", t); b.setAttribute("aria-pressed", v ? "true" : "false");
+    [0, 150, 500].forEach(ms => setTimeout(() => { try { m.resize(); } catch (e) {} }, ms)); };
+  const fake = v => { box.classList.toggle("kq-fsp", v); paint(); };
+  b.onclick = e => { e.stopPropagation();
+    if (fsEl()) { (D.exitFullscreen || D.webkitExitFullscreen).call(D); return; }
+    if (box.classList.contains("kq-fsp")) { fake(false); return; }
+    if (can) { try { const p = (box.requestFullscreen || box.webkitRequestFullscreen).call(box); if (p && p.catch) p.catch(() => fake(true)); return; } catch (x) {} }
+    fake(true); };
+  ["fullscreenchange", "webkitfullscreenchange"].forEach(n => D.addEventListener(n, paint));
+  D.addEventListener("keydown", e => { if (e.key === "Escape" && box.classList.contains("kq-fsp")) fake(false); });
+  addEventListener("orientationchange", () => { if (on()) paint(); });
+  m.addControl({onAdd: () => g, onRemove: () => g.remove()}, "top-right"); paint();
+};
 (async () => {
   await initAppearance();
   const K = window.KQ, T = kqT, P = new URLSearchParams(location.search), $ = s => document.querySelector(s);
@@ -1214,6 +1266,7 @@ body:not(.light) #kq-map{background:#1d2125}
   const m = await K.make($("#kq-c"), {center: start, zoom: isFinite(zz) ? zz : (isFinite(la) || me ? 14 : 7), minZoom: 5, maxZoom: 19, maxBounds: [[4.5, 45.0], [11.5, 48.6]]});
   window.KQMAP = m;
   m.addControl(new maplibregl.NavigationControl({showCompass: false}), "top-right");
+  kqFull(m);
   if (me) { const d = document.createElement("div"); d.title = T("Location of MoveEye"); d.style.cssText = "width:16px;height:16px;border-radius:50%;background:#2f7cf6;border:3px solid #fff;box-shadow:0 0 0 2px rgba(47,124,246,.4)";
     new maplibregl.Marker({element: d}).setLngLat(me).addTo(m); }
   let sel = null, selName = "";
@@ -1327,3 +1380,5 @@ def kq_selftest():
 
 
 SELFTEST_EXTRA.append(("Offline map of Switzerland (639zzq)", kq_selftest))
+'''
+zd_exec(KQ_PY and "\n" * 103 + KQ_PY, "639zzq_offline_karten.py")   # line 1 of KQ_PY = line 104: the line numbers are those of this file

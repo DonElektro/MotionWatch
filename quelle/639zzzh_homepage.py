@@ -65,6 +65,40 @@ LOCK_DENY_KEYS.update(_HP_CFG)
 APPKEY_DENY_PATHS.update({"/api/homepage", "/homepage"})
 LOCK_DENY_PATHS.add("/api/homepage")
 
+# Programmtext in der ZIP (Hauptdatei kleiner, 22.11.2026; Muster 639zzzzk / 639zzzzm): ab Zeile 101 steht der Teil in EINEM
+# Literal HP_PY - bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert), zd_exec führt es hier aus (Zeilennummern wie
+# in dieser Datei). Keine Start-, Schutz-, Alarm-, Update- oder Reparatur-Funktion: ohne ZIP fehlt der Teil einfach. Was ohne
+# ZIP gelten muss (Einstellungen, Sperrlisten, Rückfall-Funktionen für andere Teile), steht oben ausserhalb des Literals.
+
+HP = {"lock": threading.Lock(), "busy": "", "prog": {}, "cancel": False, "err": "", "msg": "", "run": False, "wait": False}
+
+
+def hp_quiet():
+    """False while an alarm is going on (red blinking, a person, a recording, the light after an alarm, GPS theft)"""
+    try:
+        if LED.get("alarm") or STATE.get("persons") or STATE.get("recording") or GPSMOD.get("alarm_t"):
+            return False
+        return not (LIGHTS.get("alarm_t") and time.time() - LIGHTS["alarm_t"] < 300)
+    except Exception:
+        return True
+
+
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+HP_PY = r'''
+
 HP_MAX_FILE = 100 * 1024 * 1024
 HP_MAX_TOTAL = 500 * 1024 * 1024
 HP_TRIES = 3
@@ -74,7 +108,7 @@ HP_TEST_HTTP = False                                       # tests only: http://
 HP_SIM_NAMES = ("index.html", "index.js", "index.wasm", "index.pck", "index_audio_worklet.js", "index.png", "index_icon.png",
                 "index_apple-touch-icon.png")
 _HP_NAME_RE = re.compile(r"^[A-Za-z0-9_-]{1,60}\.[a-z0-9]{1,12}$")
-HP = {"lock": threading.Lock(), "busy": "", "prog": {}, "cancel": False, "err": "", "msg": "", "run": False, "wait": False}
+
 _HP_TYPES = {"html": ("text/html",), "js": ("text/javascript", "application/javascript", "application/x-javascript"),
              "wasm": ("application/wasm",), "png": ("image/png",), "webmanifest": ("application/manifest+json", "application/json")}
 
@@ -387,14 +421,14 @@ def hp_content_id():
 
 
 # ---- the job (one thread, low priority) ------------------------------------------------------------------------------------------
-def hp_quiet():
-    """False while an alarm is going on (red blinking, a person, a recording, the light after an alarm, GPS theft)"""
-    try:
-        if LED.get("alarm") or STATE.get("persons") or STATE.get("recording") or GPSMOD.get("alarm_t"):
-            return False
-        return not (LIGHTS.get("alarm_t") and time.time() - LIGHTS["alarm_t"] < 300)
-    except Exception:
-        return True
+
+
+
+
+
+
+
+
 
 
 def _hp_wait_quiet():
@@ -1521,3 +1555,5 @@ def homepage_selftest():
 
 
 SELFTEST_EXTRA.append(("Homepage: web space upload, check of the public addresses, texts (639zzzh)", homepage_selftest))
+'''
+zd_exec(HP_PY and "\n" * 99 + HP_PY, "639zzzh_homepage.py")   # line 1 of HP_PY = line 100: the line numbers are those of this file
