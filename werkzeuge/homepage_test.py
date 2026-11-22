@@ -381,6 +381,13 @@ def lauf(datei, tmp):
     ok([x[2] for x in W.uploads()[n0:]] == ["index.html"] and b"Funk/" in W.files["index.html"] and "index.html" in ns["hp_state"]()["up"],
        f"Startseite an: index.html hochgeladen ({[x[2] for x in W.uploads()[n0:]]})")
     ok(any(r["line"].startswith("/: 200") for r in fmt(ns, j)["rows"]), "Startseite an: Prüfung mit /")
+    ix = W.files["index.html"].decode("utf-8")              # 4.17.0 (Besitzer): MoveEye beim Host und das Spiel direkt
+    ok('href="demo/"' in ix and 'href="Sim/?grossvater=1"' in ix and "📷 MoveEye" in ix and "Die Karte des Grossvaters" in ix,
+       "Startseite: «📷 MoveEye» → demo/, «🗺️ Die Karte des Grossvaters» → Sim/?grossvater=1")
+    tj = re.search(r"var T=(\{.*?\});", ix, re.S)
+    ok(tj and all(len(v) == 8 for v in json.loads(tj.group(1).replace("en:", '"en":').replace("fr:", '"fr":').replace("it:", '"it":')
+                                                        .replace("rm:", '"rm":')).values()) and ix.count('<a href=') == 4,
+       "Startseite: 4 Verweise, je 8 Texte in en / fr / it / rm (Deutsch im HTML)")
     code, j = api("admin", {"action": "start_on", "on": False})
     up_before = ns["hp_state"]()["up"].get("index.html")
     n0, nl = len(W.uploads()), len(W.log)

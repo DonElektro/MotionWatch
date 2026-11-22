@@ -14,12 +14,12 @@ spielt. Läuft als Benutzer des Runners (mwrunner) in den Workflows .github/work
       results.jsonl), pro Bildpaket (KI) bzw. pro Minute (Langzeittest) - ein Neustart rechnet genau dort weiter.
   dauer.py halten [--warten-max S] -- BEFEHL …
       einen Test betreuen (Erkennung (HP) von Hand): spielt jemand, den Test anhalten (SIGTERM, er sichert selbst), den
-      Bildschirm freigeben, warten, bis 15 Min. lang niemand mehr spielt, Bildschirm wieder nehmen und den Test mit
+      Bildschirm freigeben, warten, bis 3 Min. lang niemand mehr spielt, Bildschirm wieder nehmen und den Test mit
       demselben Ergebnis-Ordner neu starten (er überspringt, was schon gemessen ist).
   dauer.py status     Zustand zeigen (angefangenes Paket, erledigte Messungen)
 
 Spielen erkennt die Kiosk-Sitzung (simulator3d/beilagen_linux/hp_wache.py, testbild.py): Datei MW_SPIEL
-(/run/moveeye-spiel/spielen), ihr Änderungsdatum ist die letzte Aktivität; älter als 15 Min. = niemand spielt mehr.
+(/run/moveeye-spiel/spielen), ihr Änderungsdatum ist die letzte Aktivität; älter als 3 Min. = niemand spielt mehr.
 Sie gilt nur als Daten (normale Datei, keine Verknüpfung; nur das Datum zählt). Der Bildschirm gehört dem Test, solange die
 Pause-Datei MW_KIOSK_PAUSE da ist (job_start.sh legt sie an, job_ende.sh nimmt sie weg; dieses Skript nimmt sie beim
 Spielen weg und legt sie danach wieder an). Test-Simulator und Kiosk-Simulator laufen nie gleichzeitig (4 GB RAM).
@@ -45,7 +45,7 @@ HOME = os.environ.get("MW_RUNNER_HOME") or os.path.expanduser("~")
 DAUER = os.environ.get("MW_DAUER") or os.path.join(HOME, "dauer")
 PAUSE = os.environ.get("MW_KIOSK_PAUSE") or "/run/moveeye-test/kiosk_pause"
 SPIEL = os.environ.get("MW_SPIEL") or "/run/moveeye-spiel/spielen"
-RUHE_S = int(os.environ.get("MW_SPIEL_RUHE_S") or 900)
+RUHE_S = int(os.environ.get("MW_SPIEL_RUHE_S") or 180)   # Besitzer 21.11.2026: 3 Min. (vorher 15)
 HPU_STEMPEL = os.environ.get("MW_HPU_STEMPEL") or "/var/lib/moveeye-hp-update/letzter_lauf"
 HPU_FAELLIG_S = 20 * 3600
 # HP_FASSUNG 5: moveeye-hp-update legt diese Marke an, wenn ein neues signiertes Update auf eine Pause wartet - dann startet das
@@ -472,7 +472,7 @@ def betreuen(cmd, env=None, frist=None, warten_max=0, log_datei=None, grund="Tes
             kiosk_frei()
             if warten_max <= 0:
                 return "gespielt", None
-            log("Am HP wird gespielt - warte, bis 15 Min. lang niemand mehr spielt (höchstens %d Min.)" % (warten_max // 60))
+            log("Am HP wird gespielt - warte, bis 3 Min. lang niemand mehr spielt (höchstens %d Min.)" % (warten_max // 60))
             t_ende = time.time() + warten_max
             while spielt():
                 if time.time() > t_ende:
@@ -682,7 +682,7 @@ def rechnen(a):
         log("Zeit für diesen Lauf um - der nächste Lauf rechnet dort weiter")
     else:
         z["aktiv"] = ak
-        log("Pausiert fürs Spielen - nach 15 Min. ohne Spielen geht es dort weiter (Zeitplan alle 30 Min.)")
+        log("Pausiert fürs Spielen - nach 3 Min. ohne Spielen geht es dort weiter (Zeitplan alle 30 Min.)")
     zustand_schreiben(z)
     if update_faellig():
         weiter = 0                                             # das HP-Update ist dran: der HP bleibt frei

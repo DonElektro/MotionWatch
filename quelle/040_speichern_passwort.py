@@ -577,7 +577,8 @@ def _settings_migrations(cfg_in):
     except Exception as e:
         log_event("sys", f"Settings migration (135): {e}"[:150])
     for _f, _n in ((lambda: shortcut_migrate(cfg_in), "573"), (place_report_migrate, "317"), (lambda: heat_confirm_migrate(cfg_in), "639zw"),
-                   (lambda: tld_migrate(cfg_in), "639zzzv")):   # aufr: shortcut key -> app key, public path -> zone
+                   (lambda: tld_migrate(cfg_in), "639zzzv"),
+                   (lambda: rec8_migrate(cfg_in), "639zzzzs")):   # aufr: shortcut key -> app key, public path -> zone
         try:
             did = _f()
             if did:
