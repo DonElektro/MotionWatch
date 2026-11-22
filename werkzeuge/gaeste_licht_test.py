@@ -550,7 +550,7 @@ def teil_c(datei, tmp, bilder, godot):
         ok(r.get("ok"), "Ziel = Zelt des Simulators (%.1f / %.1f m)" % (tx, ty))
         shots, phases, t0 = [], [], time.time()
         want = {"guide": "gaeste_sim_fuehrt.jpg", "arrived": "gaeste_sim_am_zelt.jpg", "farewell": "gaeste_sim_abschied.jpg"}
-        while time.time() - t0 < 300 and len(shots) < 3:
+        while time.time() - t0 < 480 and len(shots) < 3:
             try:
                 g = http_json(web + "/api/gaeste", auth=auth)
             except Exception:
@@ -562,36 +562,52 @@ def teil_c(datei, tmp, bilder, godot):
                 time.sleep(1.5 if ph != "arrived" else 4.0)
                 open(os.path.join(bilder, want[ph]), "wb").write(http_bytes(sim + "/view.jpg", 20))
                 shots.append(want[ph])
+                bild_ins_log(os.path.join(bilder, want[ph]))            # at once (the artifact cannot always be fetched)
             time.sleep(0.8)
         print("  Ziel %.1f / %.1f m · Verlauf (s, Phase, Licht, %%, Gast, Licht-Ziel, ungesehen s, Ende):" % (tx, ty), flush=True)
-        for x in phases[::2][:90]:
+        idle = [x for x in phases if x[1] == "idle"]
+        for x in [x for x in phases if x[1] != "idle" or x in idle[::15]][:120]:
             print("   ", x, flush=True)
         ok("gaeste_sim_fuehrt.jpg" in shots, "Bild: Gast wird zum Zelt geführt (Licht vor den Füssen)")
         ok("gaeste_sim_am_zelt.jpg" in shots, "Bild: Gast am Zelt, Licht aus")
         ok("gaeste_sim_abschied.jpg" in shots, "Bild: Abschied - Licht leuchtet wieder voraus")
         g = http_json(web + "/api/gaeste", auth=auth)
         ok(int(g.get("notes") or 0) >= 1 and any(p[2] for p in phases), "«Gast kommt» notiert, Führungslicht war an")
-        # the phone: the simulator window upright (390 x 844, its phone layout) - the same night, a guest guided to the tent
         try:
-            os.killpg(sim_p.pid, signal.SIGTERM); sim_p.wait(20)
-        except Exception:
-            pass
-        sim_p = _sim_start(godot, senv, sp, "390x844", slog)
-        ok(_verbunden(web, auth, 300), "Simulator hochkant neu gestartet, wieder verbunden")
-        time.sleep(6)
-        http_json(sim + "/control", {"action": "gaeste", "do": "start", "n": 1, "stay": 25})
-        t1, got = time.time(), False
-        while time.time() - t1 < 150 and not got:
-            g = http_json(web + "/api/gaeste", auth=auth)
-            if g.get("phase") in ("guide", "farewell") and g.get("light") and float(g.get("pct") or 0) > 40:
-                time.sleep(1.5)
-                open(os.path.join(bilder, "gaeste_sim_handy.jpg"), "wb").write(http_bytes(sim + "/view.jpg", 20))
-                got = True
-            time.sleep(0.8)
-        ok(got, "Bild: Handy (Simulator hochkant 390 × 844), Gast im Führungslicht")
-        for fn in sorted(os.listdir(bilder)):
-            if fn.startswith("gaeste_sim_") and fn.endswith(".jpg"):
-                bild_ins_log(os.path.join(bilder, fn))
+            # the phone: the simulator window upright (390 x 844, its phone layout) - the same night, a guest guided to the tent
+            try:
+                os.killpg(sim_p.pid, signal.SIGTERM); sim_p.wait(20)
+            except Exception:
+                pass
+            time.sleep(3)
+            sim_p = _sim_start(godot, senv, sp, "390x844", slog)
+            up = False
+            for _i in range(120):                                  # the simulator answers again, MoveEye is connected again
+                try:
+                    up = bool(http_json(sim + "/control", {"action": "gaeste", "do": "info"}, timeout=4).get("ok"))
+                except Exception:
+                    up = False
+                if up:
+                    break
+                time.sleep(2)
+            ok(up and _verbunden(web, auth, 300), "Simulator hochkant neu gestartet, wieder verbunden")
+            time.sleep(10)
+            http_json(sim + "/control", {"action": "gaeste", "do": "start", "n": 1, "stay": 25}, timeout=20)
+            t1, got = time.time(), False
+            while time.time() - t1 < 240 and not got:
+                try:
+                    g = http_json(web + "/api/gaeste", auth=auth)
+                except Exception:
+                    time.sleep(1); continue
+                if g.get("phase") in ("guide", "farewell") and g.get("light") and float(g.get("pct") or 0) > 40:
+                    time.sleep(1.5)
+                    open(os.path.join(bilder, "gaeste_sim_handy.jpg"), "wb").write(http_bytes(sim + "/view.jpg", 20))
+                    bild_ins_log(os.path.join(bilder, "gaeste_sim_handy.jpg"))
+                    got = True
+                time.sleep(0.8)
+            ok(got, "Bild: Handy (Simulator hochkant 390 × 844), Gast im Führungslicht")
+        except Exception as ex:
+            ok(False, "Handy-Bild: %s" % ex)
         hits = []
         for wurzel, _d, files in os.walk(cfg):
             for fn in files:

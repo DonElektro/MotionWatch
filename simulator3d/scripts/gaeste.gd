@@ -61,8 +61,10 @@ func start(n := 0, stay := 0.0) -> Dictionary:
 	away.y = 0.0
 	var fwd: Vector3 = away.normalized() if away.length() > 0.5 else Vector3(0, 0, -1)
 	var lat := Vector3(-fwd.z, 0, fwd.x)
-	var from: Vector3 = main.stories._ground(tg + lat * side * 24.0 + fwd * randf_range(4.0, 9.0))
-	var out: Vector3 = main.stories._ground(tg - lat * side * 24.0 + fwd * randf_range(4.0, 9.0))
+	# from far behind the tent and out of the picture to the side: the way to the tent leads through the picture (the guide light
+	# has something to do); away the same way on the other side
+	var from: Vector3 = main.stories._ground(tg + fwd * randf_range(12.0, 16.0) + lat * side * randf_range(17.0, 21.0))
+	var out: Vector3 = main.stories._ground(tg + fwd * randf_range(12.0, 16.0) - lat * side * randf_range(17.0, 21.0))
 	var spot: Vector3 = main.stories._ground(main.free_spot(tg + lat * side * 1.3, 0.4, true))
 	var a = main.spawn("person", from, spot)
 	if a == null:
