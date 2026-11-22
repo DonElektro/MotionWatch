@@ -1015,7 +1015,7 @@ def startbilder_selftest():
         assert 'href="Funk/"' in h and 'href="Sim/"' in h and "📡 Handy-Funkgerät" in h and "Mein bLager/b" in h and 'class="strip"' in h
         assert [h.index('href="%s"' % x) for x in ("demo/", "Sim/?grossvater=1", "Funk/", "Sim/")] == sorted(h.index('href="%s"' % x) for x in ("demo/", "Sim/?grossvater=1", "Funk/", "Sim/")), "4.19.1: MoveEye · Karte · Funk · Sim"
         assert "📷 MoveEye" in h and "🗺️ Die Karte des Grossvaters" in h and '"btn.g": "🗺️ La carte du grand-père"' in h, "4.19.1: the links of HP_LINKS in 5 languages"
-        assert 'class="mweye"' in h and "mwe-blink" in h and "prefers-reduced-motion" in h, "4.19.1: animated eye at the title"
+        assert 'class="mweye"' in h and "mws-b" in h and 'class="mws-p"' in h and "prefers-reduced-motion" in h, "4.19.1 / 22.11.2026: animated symbol at the title"
         assert not re.search(r'(?:src|href|srcset)="(?:https?:)?//', h) and "@import" not in h and "fonts.g" not in h, "no external resources"
         assert h.index('href="Funk/"') < h.index('id="sc"'), "the buttons right under the title picture"
         assert '"titel.line"' not in h.split("var T=", 1)[1].split(",l=", 1)[0], "own text: in every language"

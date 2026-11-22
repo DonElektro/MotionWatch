@@ -324,7 +324,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_22_0.zip"
-ZD_SHA256 = "07e03e8956bb1cb2ed9a13267fb153620569e3f8973b8b97419bae901ec56496"
+ZD_SHA256 = "58f59c85ced9524cb87d24e83261884bc79b136bfa0f9af709dca5cbd7109e0d"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -14006,6 +14006,26 @@ def wordmark_h1(m):
 	tag=m.group(1)
 	tag=tag[:-1]+(' class="wm"'if "class="not in tag else "")+">"
 	return tag+WORDMARK_W6
+
+
+
+
+
+
+
+
+
+
+
+MW_SYMBOL_HTML = (_zd('144_logo_schriftzug/MW_SYMBOL_HTML', ZD_PAGE))
+
+MW_SYMBOL_CSS = (_zd('144_logo_schriftzug/MW_SYMBOL_CSS', ""))
+
+
+def mw_walker_svg():
+	""
+	m=re.search(r'<g class="mws-p".*?</g></g>',MW_SYMBOL_HTML or "")
+	return m.group(0)if m else ""
 
 
 
@@ -60739,7 +60759,11 @@ BLINKI_BUB = (
 	'<path class="bk-br" d="M37 33 V27 H43 M57 27 H63 V33 M63 45 V51 H57 M43 51 H37 V45"/>'
 	'<path class="bk-i bk-ip" d="M46 33.5 L54.5 39 L46 44.5"/>'
 	'<path class="bk-i bk-ih" d="M50 46 C42 40.5 42.5 33.5 46.5 33.5 C48.6 33.5 49.6 35 50 36.4 C50.4 35 51.4 33.5 53.5 33.5 C57.5 33.5 58 40.5 50 46 Z"/>'
-	'<g class="bk-i bk-it"><circle cx="43.5" cy="39" r="2.4"/><circle cx="50" cy="39" r="2.4"/><circle cx="56.5" cy="39" r="2.4"/></g></svg>')
+	'<g class="bk-i bk-it"><circle cx="43.5" cy="39" r="2.4"/><circle cx="50" cy="39" r="2.4"/><circle cx="56.5" cy="39" r="2.4"/></g>'
+	'<g class="bk-i bk-iw">__W__</g></svg>')
+
+
+
 
 BLINKI_CSS = _zd('589_blinki/BLINKI_CSS', "")
 
@@ -60747,7 +60771,8 @@ BLINKI_JS = _zd('589_blinki/BLINKI_JS', "")
 
 
 def blinki_js(L):
-	data={"on":bool(CFG.get("blinki_on",True)),"tx":{s:tr(s,L)for s in BLINKI_TX},"svg":BLINKI_SVG,"bub":BLINKI_BUB,"css":BLINKI_CSS}
+	data={"on":bool(CFG.get("blinki_on",True)),"tx":{s:tr(s,L)for s in BLINKI_TX},"svg":BLINKI_SVG,"bub":BLINKI_BUB.replace("__W__",mw_walker_svg()),
+			"css":BLINKI_CSS+MW_SYMBOL_CSS}
 	return "window.MW_BK="+json.dumps(data,ensure_ascii=False).replace("</","<\\/")+";\n"+BLINKI_JS
 
 
@@ -60845,6 +60870,8 @@ def blinki_tk_label(parent, height=64, mood="normal", bg=None):
 
 
 blinki_selftest = _zd_fn('589_blinki/blinki_selftest()')
+
+
 
 
 

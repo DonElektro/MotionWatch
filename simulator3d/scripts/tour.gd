@@ -368,7 +368,8 @@ class BlinkiView extends Control:
 		if _talk < 1.28:
 			tk = 0.5 - 0.5 * cos(TAU * _talk / 0.32)
 		var r: Rect2 = Icons.blinki_fit(size)            # centred in the box (the figure is lower without the fan)
-		Icons.blinki(self, r.position, r.size.y, mood, look, clampf(lid, 0.0, 1.0), line, hp, tk, red)
+		var em: String = "watch" if mood == "normal" and _say < SAY_S and not UI.motion_still else mood   # looks up at the walker
+		Icons.blinki(self, r.position, r.size.y, em, look, clampf(lid, 0.0, 1.0), line, hp, tk, red)
 		if _say < SAY_S:                                 # fade in 0.2 s, stay, fade out 0.3 s
 			var al := minf(clampf(_say / 0.2, 0.0, 1.0), clampf((SAY_S - _say) / 0.3, 0.0, 1.0))
 			Icons.blinki_bubble(self, r.position, r.size.y, mood, al, line, bub_bg, bub_line, red)

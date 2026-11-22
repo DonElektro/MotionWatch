@@ -42,7 +42,11 @@ BLINKI_BUB = (
     '<path class="bk-br" d="M37 33 V27 H43 M57 27 H63 V33 M63 45 V51 H57 M43 51 H37 V45"/>'
     '<path class="bk-i bk-ip" d="M46 33.5 L54.5 39 L46 44.5"/>'
     '<path class="bk-i bk-ih" d="M50 46 C42 40.5 42.5 33.5 46.5 33.5 C48.6 33.5 49.6 35 50 36.4 C50.4 35 51.4 33.5 53.5 33.5 C57.5 33.5 58 40.5 50 46 Z"/>'
-    '<g class="bk-i bk-it"><circle cx="43.5" cy="39" r="2.4"/><circle cx="50" cy="39" r="2.4"/><circle cx="56.5" cy="39" r="2.4"/></g></svg>')
+    '<g class="bk-i bk-it"><circle cx="43.5" cy="39" r="2.4"/><circle cx="50" cy="39" r="2.4"/><circle cx="56.5" cy="39" r="2.4"/></g>'
+    '<g class="bk-i bk-iw">__W__</g></svg>')
+# Besitzer 22.11.2026 («Symbol-Animation»): the mood «normal» shows the red walking person of the MoveEye symbol in the corners
+# (mw_walker_svg / MW_SYMBOL_CSS of part 144 - one source; it walks on the spot, the bubble is too narrow for ±9), the pupil
+# looks up at it while the bubble is there; the other moods keep their signs (arrow, heart, dots)
 
 BLINKI_CSS = r"""
 .bk{--bk-o:#ff9f43;--bk-o2:#e8590c;--bk-w:#fff;--bk-d:#0a0e14;--bk-hl:#fff;color:var(--txt,#e8eef5);width:56px;flex:none;align-self:flex-start;line-height:0;position:relative}
@@ -65,6 +69,7 @@ html.sxnight .bk{--bk-o:#7a160e;--bk-o2:#5a0f0a;--bk-w:#2a0606;--bk-d:#000;--bk-
 @keyframes bk-look{0%,8%,100%{transform:translate(0,0)}20%,36%{transform:translate(-5px,0)}52%,70%{transform:translate(5px,0)}84%{transform:translate(0,0)}}
 .bk[data-m=point] .bk-pup{animation:none;transform:translate(5px,-1px)}
 .bk[data-m=point] .bk-ip{display:inline}
+.bk[data-m=normal] .bk-iw{display:inline}.bk.say[data-m=normal] .bk-pup{animation:none;transform:translate(4px,-4.5px)}
 .bk[data-m=happy] .bk-pup{display:none}.bk[data-m=happy] .bk-hap{display:inline}.bk[data-m=happy] .bk-lid{animation:none}.bk[data-m=happy] .bk-ih{display:inline}
 .bk[data-m=think] .bk-pup{animation:none;transform:translate(-4px,-5px)}.bk[data-m=think] .bk-it{display:inline}
 .bk[data-m=think] .bk-it circle{animation:bk-dot 1.2s infinite}.bk[data-m=think] .bk-it circle:nth-child(2){animation-delay:.2s}.bk[data-m=think] .bk-it circle:nth-child(3){animation-delay:.4s}
@@ -123,7 +128,8 @@ BLINKI_JS = r"""
 
 
 def blinki_js(L):
-    data = {"on": bool(CFG.get("blinki_on", True)), "tx": {s: tr(s, L) for s in BLINKI_TX}, "svg": BLINKI_SVG, "bub": BLINKI_BUB, "css": BLINKI_CSS}
+    data = {"on": bool(CFG.get("blinki_on", True)), "tx": {s: tr(s, L) for s in BLINKI_TX}, "svg": BLINKI_SVG, "bub": BLINKI_BUB.replace("__W__", mw_walker_svg()),
+            "css": BLINKI_CSS + MW_SYMBOL_CSS}
     return "window.MW_BK=" + json.dumps(data, ensure_ascii=False).replace("</", "<\\/") + ";\n" + BLINKI_JS
 
 
@@ -230,6 +236,8 @@ def blinki_selftest():
     js = _g2_js_blinki("de")
     assert js.index("window.MWBlinki") < js.index("function g2()") and "Hallo, ich bin Blinki" in js and "__I__" in js
     assert "bk-fan" not in BLINKI_SVG and "A64 64" not in BLINKI_SVG and "bk-bub" in js and '"say", 2000' in js, "Blinki: no fan, mood bubble"
+    assert "bk-iw" in js and 'class=\\"mws-p\\"' in js and "__W__" not in js and "mws-s .7s" in js and "data-m=normal] .bk-iw" in js, \
+        "22.11.2026: mood «normal» = the walking person of the symbol (144) in the bubble"
     assert "MWBlinki" in G2_JS and "blinki_on" in DEFAULTS and tr("Show Blinki", "fr") != "Show Blinki"
     return True
 
