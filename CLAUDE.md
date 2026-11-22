@@ -259,7 +259,9 @@ Workflow `.github/workflows/hp_helfer.yml`, Fenster `HP_HELFER_BIS` dort auf mai
   Artefakt «hp-test-<name>-<nr>»). Der HP rechnet einen Job aufs Mal: Warten in der Schlange ist normal. Kein Lauf nach
   dem Push? `werkzeuge/ci_status.sh hp-test/<name> --start`.
 - `hp-test/*`-Zweige werden **nie gemergt** (auch `hp_test.txt` nicht in den Arbeitszweig übernehmen); der Integrator
-  löscht sie danach (`git push origin --delete hp-test/<name>`). Grün auf dem HP ersetzt nicht das CI auf GitHub.
+  löscht sie danach (`git push origin --delete hp-test/<name>`). **Ab 22.11.2026 automatisch:** Workflow «Zweige aufräumen» (`aufraeumen.yml`) löscht jede Nacht
+  `hp-test/*`-Zweige ohne laufenden Lauf, deren letzter Commit älter als 6 h ist; von Hand (Actions → «Zweige aufräumen» →
+  «Run workflow») auch `auftrag-*`, mit Alter in Stunden und «nur anzeigen». Grün auf dem HP ersetzt nicht das CI auf GitHub.
 
 ## Hardware
 
