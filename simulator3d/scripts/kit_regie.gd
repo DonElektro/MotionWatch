@@ -201,6 +201,14 @@ func _arm_frei(tp: Vector3, want: Vector3) -> float:
 					break
 		if zu:
 			return maxf(0.1, f - 1.0 / float(n))
+	# walls of buildings (Kapitel 1: inside the hut) are obstacles of main, not ground: the arm ends in front of them
+	var o: Dictionary = main.line_blocker(tp, want)
+	if o.is_empty():                                       # (line_blocker skips a wall right at its start - the figure at a wall)
+		o = main.line_blocker(want, tp)
+	if not o.is_empty() and int(o.get("id", -1)) >= 0 and main.has_method("_seg_hits"):
+		var t: float = main._seg_hits(o, Vector2(tp.x, tp.z), Vector2(want.x, want.z))
+		if t >= 0.0:
+			return clampf(t - 0.35 / maxf(L, 0.5), 0.1, 1.0)
 	return 1.0
 
 
@@ -248,13 +256,42 @@ func _folge_xform(tp: Vector3, d0: float, dt: float, heading: float) -> Transfor
 	_pit_ist = lerpf(_pit_ist, pit, clampf(dt * 3.0, 0.0, 1.0))
 	var back := Vector3(sin(yaw), 0, cos(yaw))
 	var want := _tp + back * d0 * cos(_pit_ist) + Vector3(0, d0 * sin(_pit_ist), 0)
+	var decke0: float = kit.decke_bei(want, kit.figur.pos().y) if steuer else INF   # inside: the arm itself stays under the ceiling
+	if decke0 < INF:
+		want.y = minf(want.y, decke0 - 0.25)
+	if steuer:
+		want = kit.raum_klemmen(want)
+	# in a room / at a wall: when the arm behind the figure is short, turn it to where there is room (gently)
+	var frei_jetzt := _arm_frei(_tp, want)
+	if frei_jetzt * d0 < 1.6:
+		var best := frei_jetzt
+		var best_off := 0.0
+		for off in [0.5, -0.5, 1.0, -1.0, 1.6, -1.6, 2.3, -2.3]:
+			var b2 := Vector3(sin(yaw + off), 0, cos(yaw + off))
+			var w2 := _tp + b2 * d0 * cos(_pit_ist) + Vector3(0, d0 * sin(_pit_ist), 0)
+			if decke0 < INF:
+				w2.y = minf(w2.y, decke0 - 0.25)
+			if steuer:
+				w2 = kit.raum_klemmen(w2)
+			var f2 := _arm_frei(_tp, w2)
+			if f2 > best + 0.2:
+				best = f2
+				best_off = off
+		if best_off != 0.0:
+			yaw = lerp_angle(yaw, yaw + best_off, clampf(dt * 2.5, 0.0, 1.0))
+			back = Vector3(sin(yaw), 0, cos(yaw))
+			want = _tp + back * d0 * cos(_pit_ist) + Vector3(0, d0 * sin(_pit_ist), 0)
+			if decke0 < INF:
+				want.y = minf(want.y, decke0 - 0.25)
+			if steuer:
+				want = kit.raum_klemmen(want)
 	# the spring arm with hysteresis; very close to a wall behind the figure: from higher up instead (over the wall)
 	var frei := _arm_frei(_tp, want)
 	if frei < 0.45:
 		var pit_hoch := maxf(_pit_ist, 1.0)
 		var want2 := _tp + back * d0 * cos(pit_hoch) + Vector3(0, d0 * sin(pit_hoch), 0)
 		var frei2 := _arm_frei(_tp, want2)
-		if frei2 > frei + 0.2:
+		if frei2 > frei + 0.2 and decke0 == INF:               # (under a ceiling: not up)
 			_pit_ist = lerpf(_pit_ist, pit_hoch, clampf(dt * 4.0, 0.0, 1.0))
 			want = _tp + back * d0 * cos(_pit_ist) + Vector3(0, d0 * sin(_pit_ist), 0)
 			frei = _arm_frei(_tp, want)
@@ -268,6 +305,16 @@ func _folge_xform(tp: Vector3, d0: float, dt: float, heading: float) -> Transfor
 	dist_ist = d0 * _arm
 	var at := _tp + back * dist_ist * cos(_pit_ist) + Vector3(0, dist_ist * sin(_pit_ist), 0)
 	at.y = maxf(at.y, main.ground_y(at.x, at.z) + 0.4)
+	var im_raum: Vector3 = kit.raum_klemmen(at) if steuer else at          # in the hut: inside its walls
+	var geklemmt: bool = steuer and im_raum != at
+	at = im_raum
+	var decke: float = kit.decke_bei(at, kit.figur.pos().y) if steuer else INF   # inside a building: under its ceiling
+	if decke < INF:
+		at.y = minf(at.y, decke - 0.2)
+	if not geklemmt and decke == INF:
+		var weg2: Vector2 = main.keep_out(Vector2(at.x, at.z), 0.45, false)   # near-clip guard outside: never in a wall
+		at.x = weg2.x
+		at.z = weg2.y
 	for k in _kugeln_nah(_tp, at):                          # near-clip guard: never inside a rock detail
 		var dk: Vector3 = at - (k[0] as Vector3)
 		var rr: float = float(k[1]) + 0.3
@@ -411,10 +458,31 @@ func frei_ziehen(at: Vector3, lk: Vector3) -> Vector3:
 		up += 1.0
 		last = _blocker(at + Vector3(0, up, 0), lk, n)
 	if last <= 0.0:
-		return at + Vector3(0, up, 0)
+		return wand_frei(at + Vector3(0, up, 0), lk)
 	last = _blocker(at, lk, n)
 	if last > 0.0:
 		at = at.lerp(lk, minf(last + 1.5 / maxf(at.distance_to(lk), 0.5), 0.9))
+		at.y = maxf(at.y, main.ground_y(at.x, at.z) + 0.35)
+	return wand_frei(at, lk)
+
+
+func wand_frei(at: Vector3, lk: Vector3) -> Vector3:
+	"""walls and boards (obstacles of main) between a film camera and its subject: the camera moves in front of them"""
+	if not main.has_method("line_blocker") or not main.has_method("_seg_hits"):
+		return at
+	for _i in range(3):
+		var o: Dictionary = main.line_blocker(at, lk)
+		if o.is_empty():
+			o = main.line_blocker(lk, at)
+		if o.is_empty() or int(o.get("id", -1)) < 0:
+			return at
+		var t: float = main._seg_hits(o, Vector2(at.x, at.z), Vector2(lk.x, lk.z))
+		if t < 0.0:
+			t = 1.0 - main._seg_hits(o, Vector2(lk.x, lk.z), Vector2(at.x, at.z))
+		if t < 0.0 or t > 1.0:
+			return at
+		var L := maxf(at.distance_to(lk), 0.5)
+		at = at.lerp(lk, minf(t + 0.4 / L, 0.85))
 		at.y = maxf(at.y, main.ground_y(at.x, at.z) + 0.35)
 	return at
 

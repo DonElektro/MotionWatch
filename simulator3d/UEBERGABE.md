@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 21.11.2026 · Version **3.73.0** · MoveEye **4.16.1** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 22.11.2026 · Version **3.74.0** · MoveEye **4.18.1** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -31,6 +31,14 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
   (Ziegelreihen / Kies). Wärmezwillinge und Hindernisse unverändert. Luftbild wird jetzt vor den 3D-Gebäuden gesetzt.
 - Seon ohne OSM (Overpass war aus): 117 Häuser, 44 Wohnblöcke, 24 Bauernhäuser, 3 Scheunen, 2 Chalets, 2 Garagen;
   Dachfarbe aus dem Luftbild 130, Palette 62 (Häuser ausserhalb des nahen Luftbilds).
+
+## NEU in 3.74.0 (MoveEye 4.18.1): Grossvater Kapitel 1, Maggie-Fix Kapitel 2, Kamera / Innenraum, 22 Stimmen
+
+- Zweig sim-grossvater-k1 @ cea8f34 (CI 44961985959 grün, Bilder geprüft: Murmeli-Rahmen gut, Loch-Bereich behoben).
+- Kapitel 1 «Die Karte» (10 Szenen); Fixes: Regen in der Hütte, Kamera im Raum, Murmeli-Kamera, Ofenlicht.
+- Kapitel 2 Szene 3: Maggie-Lücke und «hinter der Wand stecken» mit Rückholung.
+- Neue Tests kit_k1_test und kit_figur_test; 22 Piper-Stimmen (Lia = kerstin CC0, in den Credits); sim_pi.yml auftrag-<name>.
+- Dabei: HP-Kiosk 3-Minuten-Regel (hp_wache.py, testbild.py, kiosk_sitzung.sh).
 
 ## NEU in 3.73.0 (MoveEye 4.16.1): Grossvater Kapitel 2 im neuen Modus, Bergtal-Fix, Musik und Stimmen, Testkanal
 

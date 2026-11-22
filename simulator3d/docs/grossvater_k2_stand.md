@@ -123,3 +123,14 @@ Zweig `sim-grossvater-k2` (von origin/main 9f14de1), Worktree /tmp/claude-0/wt_g
 ## Hinweise
 - tier_modell.gd «previously freed»-Fehler beim Simulator-Start gab es schon vorher (nicht angefasst).
 - Xvfb-Bilder laufen mit 1–8 fps (Software-GL) – Zeiten in den Bild-Skripten grosszügig, auf Phase/fps warten.
+
+## Phase 2 – Kapitel 1 «Die Karte» (Zweig sim-grossvater-k1, 21.11. abends)
+- Daten: scripts/kit_k1_daten.gd (10 Szenen, Hütte Alp Tschuggen aus bergtal_orte.gd, Achse um die Hütte). Das Kit nimmt
+  das Kapitel aus start({"kapitel": 1|2}); Knopf «▶ Kapitel 1» auf der Karte der Geschichte, Steuerung spielbereich
+  story what=kapitel1.
+- Neu (alles in kit_abenteuer.gd / kit_parcours.gd / kit_hud.gd, kit_figur.gd unverändert): Dachboden als Ebene (Böden
+  nur oben, vor dem Hüttenboden), Decke für die Kamera (DECKEN) + Hauswände als Federarm-Hindernis, Stirnlampe (Funde nur
+  im Lichtkegel), Ofen (Licht, Rauch), Rucksack 3 von 6 (Spielstand «k_rucksack»), Maggie holt (maggie_such), Murmeltier,
+  Kartenbild halb/ganz, Abzeichen «Stöberer».
+- Test werkzeuge/kit_k1_test.gd: das ganze Kapitel gespielt (Figur geht über Stick-Eingabe, Leiter, Lampe, Wahl, Maggie)
+  + Kamera am Start jeder Szene und im Dachboden. Stimmen: Kapitel 1 dazu (22 Dateien); Lia (kerstin, CC0) im Werkzeug.

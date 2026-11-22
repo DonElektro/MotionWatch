@@ -516,6 +516,114 @@ func karte(on: bool) -> void:
 		toast(T.t("Dreh dich, bis die Linie auf der Karte zur Landschaft passt"), 4.0)
 
 
+# ---- Kapitel 1: the map card (half / whole) and the backpack choice --------------------------------------------------------
+var _kb: Control = null
+var _kb_teil := ""
+
+
+func karte_bild(teil: String) -> void:
+	"""the old map: «halb» (torn diagonally, a pencil line), «ganz» (with the corner Maggie found), "" = away"""
+	_kb_teil = teil
+	if _kb == null:
+		_kb = Control.new()
+		_kb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_kb.draw.connect(_kb_draw)
+		root.add_child(_kb)
+	_kb.visible = teil != ""
+	var s := _vs()
+	var w := minf(s.x * 0.7, 460.0)
+	_kb.size = Vector2(w, w * 0.66)
+	_kb.position = Vector2((s.x - w) * 0.5, s.y * 0.18)
+	_kb.queue_redraw()
+
+
+func _kb_draw() -> void:
+	var w := _kb.size.x
+	var h := _kb.size.y
+	var paper := Color(0.9, 0.82, 0.62, 0.95)
+	var ink := Color(0.35, 0.22, 0.12, 0.95)
+	var pts := PackedVector2Array([Vector2(0, 0), Vector2(w, 0), Vector2(w, h), Vector2(0, h)])
+	if _kb_teil == "halb":                                  # the corner is torn off (bottom right)
+		pts = PackedVector2Array([Vector2(0, 0), Vector2(w, 0), Vector2(w, h * 0.55), Vector2(w * 0.86, h * 0.62),
+				Vector2(w * 0.78, h * 0.78), Vector2(w * 0.66, h * 0.86), Vector2(w * 0.6, h), Vector2(0, h)])
+	_kb.draw_colored_polygon(pts, paper)
+	for i in range(1, 5):                                    # contour lines
+		var y0 := h * (0.15 + i * 0.16)
+		var L := PackedVector2Array()
+		for k in range(13):
+			var x := w * k / 12.0
+			L.append(Vector2(x, y0 + sin(k * 0.9 + i) * h * 0.04))
+		_kb.draw_polyline(L, Color(0.55, 0.42, 0.25, 0.5), 1.2)
+	var bach := PackedVector2Array([Vector2(w * 0.1, h * 0.2), Vector2(w * 0.3, h * 0.45), Vector2(w * 0.5, h * 0.55), Vector2(w * 0.72, h * 0.8), Vector2(w * 0.95, h * 0.95)])
+	_kb.draw_polyline(bach, Color(0.25, 0.45, 0.7, 0.8), 2.5)
+	var linie := PackedVector2Array([Vector2(w * 0.18, h * 0.16), Vector2(w * 0.35, h * 0.4), Vector2(w * 0.55, h * 0.5)])
+	if _kb_teil == "ganz":
+		linie.append(Vector2(w * 0.8, h * 0.82))
+		_kb.draw_string(ThemeDB.fallback_font, Vector2(w * 0.74, h * 0.94), "×", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(0.6, 0.1, 0.08))
+	_kb.draw_polyline(linie, ink, 2.0)
+	_kb.draw_string(ThemeDB.fallback_font, Vector2(w * 0.06, h * 0.1), "G+T", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, ink)
+	_kb.draw_rect(Rect2(Vector2(w * 0.12, h * 0.1), Vector2(10, 10)), ink)        # the hut
+
+
+var _wahl_panel: PanelContainer = null
+var _wahl_fertig := Callable()           # tests: {"action": "kit", "do": "wahl", "ids": [...]}
+
+
+func wahl(titel: String, optionen: Array, n: int, fertig: Callable) -> void:
+	"""choose n of the options ([[id, text], ...]); «Packen» when exactly n are chosen"""
+	if _wahl_panel != null:
+		_wahl_panel.queue_free()
+	_wahl_panel = PanelContainer.new()
+	_wahl_panel.add_theme_stylebox_override("panel", UI.box(Color(0.05, 0.07, 0.1, 0.94), Color(1, 0.8, 0.45, 0.6), 16, 18, 1))
+	root.add_child(_wahl_panel)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 10)
+	_wahl_panel.add_child(v)
+	var t := _label(20, Color(1, 0.9, 0.7))
+	t.text = titel
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(t)
+	var g := GridContainer.new()
+	g.columns = 2
+	g.add_theme_constant_override("h_separation", 8)
+	g.add_theme_constant_override("v_separation", 8)
+	v.add_child(g)
+	var gewaehlt := []
+	var ok := Button.new()
+	ok.text = T.t("Packen")
+	ok.custom_minimum_size = Vector2(200, 46)
+	ok.disabled = true
+	UI.primary(ok)
+	for o in optionen:
+		var b := Button.new()
+		b.text = str(o[1])
+		b.toggle_mode = true
+		b.custom_minimum_size = Vector2(150, 46)
+		var id := str(o[0])
+		b.toggled.connect(func(on: bool):
+			if on and gewaehlt.size() >= n:
+				b.set_pressed_no_signal(false)
+				return
+			if on:
+				gewaehlt.append(id)
+			else:
+				gewaehlt.erase(id)
+			ok.disabled = gewaehlt.size() != n)
+		g.add_child(b)
+	_wahl_fertig = fertig
+	ok.pressed.connect(func():
+		_wahl_panel.queue_free()
+		_wahl_panel = null
+		fertig.call(gewaehlt.duplicate()))
+	v.add_child(ok)
+	_wahl_panel.reset_size()
+	_wahl_panel.position = (_vs() - _wahl_panel.get_combined_minimum_size()) * 0.5
+
+
+func wahl_offen() -> bool:
+	return _wahl_panel != null
+
+
 func karte_lage(diff: float) -> void:
 	_karte_diff = diff
 	if _karte != null:
