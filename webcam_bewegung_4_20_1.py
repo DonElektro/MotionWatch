@@ -23,6 +23,11 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 4.20.1: «systemctl stop» endet sauber mit Exit-Code 0 – auch während MoveEye noch lädt (systemd zeigte sonst «failed»);
+    Selbsttest der Servo-Bewegung: der letzte Schritt bremst nie stärker als erlaubt, Zufallsschritte mit festem Startwert. CI:
+    Integration prüft nach Regeln statt immer alles (vollständig mit «[voll]» oder bei CI-Änderungen), main bei jedem Push und
+    jede Nacht alles; Gruppe «kern» geteilt (rund 20 statt 31 Minuten); wackelnde Tests behoben; der HP installiert ffmpeg,
+    Node.js und Chromium-Bibliotheken selbst.
   * 4.20.0: «🔦 Gäste erwartet» (Einstellungen → Schutz, nur Administrator): solange an, lösen Gäste keinen Alarm aus (nur
     Protokoll und leiser Push «Gast kommt»; Sabotage, Diebstahl und SOS bleiben) – MoveEye leuchtet ihnen mit dem Licht etwa 2 m voraus den Weg; «bis HH:MM» oder Zeitplan. Bekannte Grenze: in der Nacht liegt die
     geschätzte Lage der Gäste 1,5–3,5 m daneben, der Lichtfleck ist darum noch nicht zuverlässig 2 m voraus; mit echter Hardware
@@ -114,8 +119,6 @@ Features
   * 3.96.0: Fünf Teile. (1) Zeitraffer: jeden Tag automatisch ein Video. (2) CPU- und Akku-Chip in der Kopfzeile «Bedienung»,
     für Zuschauer in der Statuszeile. (3) Mehr → «🌐 Homepage»: öffentliche Seiten auf dem eigenen Webspace. (4) Alarm-Pushes mit
     Knopf «📷 Live öffnen». (5) «⏪ Zeitfenster»: Abstand der Bilder einstellbar.
-  * 3.95.1: Unter der Haube: die Programmdatei ist rund 340 KB kleiner (deutsche Texte der Übersetzungstabellen in der
-    Zusatzdatei, kein überflüssiger Leerraum im Code); am Verhalten ändert sich nichts.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -124,10 +127,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_4_20_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_4_20_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_4_20_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_4_20_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_4_20_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_4_20_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -138,13 +141,43 @@ Servo backends: gpiozero (works on Raspberry Pi 5) -> pigpio (older Pis, needs
 
 import argparse, atexit, random, functools, glob, hashlib, hmac, ipaddress, json, secrets, math, os, queue, re, shutil, signal, subprocess, sys, tempfile, threading, time, urllib.request, uuid, zipfile
 from collections import deque
+
+
+
+
+
+TERM_STOP = {"got": False}
+
+
+def _on_sigterm(*_):
+	if TERM_STOP["got"]:
+		return
+	TERM_STOP["got"]=True
+	raise SystemExit(0)
+
+
+def _term_exit0():
+	if TERM_STOP["got"]:
+		try:
+			sys.stdout.flush();sys.stderr.flush()
+		except Exception:
+			pass
+		os._exit(0)
+
+
+if __name__ == "__main__":
+	try:
+		signal.signal(signal.SIGTERM,_on_sigterm)
+		atexit.register(_term_exit0)
+	except(ValueError,OSError):
+		pass
 from datetime import datetime, timedelta
 
 import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "4.20.0"
+APP_VERSION = "4.20.1"
 
 
 def default_data_dir():
@@ -277,8 +310,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_4_20_0.zip"
-ZD_SHA256 = "4c74c62f2c23ff40fff4d17a7d2b9db86ec18bf9b0ec2eaf12dbf7381334f0c1"
+ZD_FILE = "moveeye_daten_4_20_1.zip"
+ZD_SHA256 = "fba97d7f353423d6b0444d646c11584d2696b181b57464992b8bc53cb0b498f8"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -6553,7 +6586,7 @@ def srv_axis_step(p, v, tgt, vmax, amax, dt):
 		return tgt,0.0
 	s=1.0 if e>0 else-1.0
 	d=abs(e);vt=v*s
-	if 0.0<=vt<=h*1.0001 and d<=(vt+h*0.5)*dt:
+	if 0.0<=vt<=h and d<=(vt+h*0.5)*dt:
 		return tgt,0.0
 	q=h*h/4.0+2.0*amax*d-h*vt
 	vs=-h/2.0+math.sqrt(q)if q>0 else 0.0
@@ -6562,7 +6595,7 @@ def srv_axis_step(p, v, tgt, vmax, amax, dt):
 	if vt>0.0 and v2*s<0.0:
 		v2=0.0
 	p2=p+(v+v2)*0.5*dt
-	if(tgt-p2)*s<0.0 and abs(v2)<=h*1.0001:
+	if(tgt-p2)*s<0.0 and abs(v)<=h:
 		return tgt,0.0
 	return p2,v2
 
@@ -7056,6 +7089,7 @@ def servo_state(lang=None):
 
 
 servo_planner_selftest = _zd_fn('072_servo_planer/servo_planner_selftest()')
+
 
 
 
@@ -50796,7 +50830,7 @@ class App:
 		self.watch=watch
 		self.web=web or WebStream(watch)
 		self.root=tk.Tk()
-		self.root.title("MoveEye 4.20.0")
+		self.root.title("MoveEye 4.20.1")
 		try:
 			import base64
 			self._icon=tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -51183,7 +51217,7 @@ class App:
 			if not small:
 				vl=tk.Label(tl,text=APP_VERSION,bg=C["bg"],fg=C["mut"],font=("DejaVu Sans",8),cursor="hand2");vl.pack(side="left",padx=(8,0),pady=(5,0))
 				vl.bind("<Button-1>",self._ver_tap,add="+");Tip(vl,tr("About MoveEye"))
-			Tip(nm,f"{tr('Build')} 4.20.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm,f"{tr('Build')} 4.20.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps=[]
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>",self._egg_tap,add="+")
@@ -117820,7 +117854,7 @@ if __name__ == "__main__":
 	if a.install_service:
 		sys.exit(install_service())
 	WEB_OPTS.update(bind=a.bind,https=a.https or bool(a.cert and a.key),cert=a.cert,key=a.key)
-	signal.signal(signal.SIGTERM,lambda*_:sys.exit(0))
+	signal.signal(signal.SIGTERM,_on_sigterm)
 	if a.demo:
 		DEMO["on"]=True
 		set_data_dir(a.config or os.path.join(tempfile.gettempdir(),"motionwatch-demo"))

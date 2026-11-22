@@ -187,6 +187,12 @@ class Dienst:
         d["NRestarts"] = int(d.get("NRestarts") or 0)
         return d
 
+    def aktiv(self, limit=30):
+        """the state once systemd itself says «active / running» (at most `limit` s): the web page can answer a moment
+        before (auto-restart after kill -9, systemctl start) - read once, that was «activating» on a full runner"""
+        warte(lambda: (lambda z: z.get("ActiveState") == "active" and z.get("SubState") == "running")(self.zeig()), limit)
+        return self.zeig()
+
     def journal(self, seit):
         """Zeilen des Dienst-Verwalters und von MoveEye seit `seit` (root liest das Journal; lokal ohne journald: "")"""
         if self.modus == "user":
@@ -494,7 +500,7 @@ def fall_a(L, v):
     t0 = time.time()
     t = warte(lambda: version_da(L.port) == v, L.a.limit)
     ok(t is not None, "Seite antwortet mit %s (%s s, Grenze %d s)" % (v, t, L.a.limit))
-    z = L.d.zeig()
+    z = L.d.aktiv()
     ok(z.get("ActiveState") == "active" and z.get("SubState") == "running", "Dienst active / running (%s / %s)" % (z.get("ActiveState"), z.get("SubState")))
     pid = z["MainPID"]
     try:
@@ -534,14 +540,19 @@ def fall_d(L, v):
     z2 = L.d.zeig()
     ok(t is not None, "nach kill -9: neuer Prozess, Seite antwortet wieder (%s s; RestartSec=5)" % t)
     ok(z2["NRestarts"] == z["NRestarts"] + 1, "NRestarts %d -> %d" % (z["NRestarts"], z2["NRestarts"]))
+    L.d.aktiv()                                                 # 22.11.2026: stop only once systemd itself says «active / running»
     ts = time.time()
     rc, _o, err = L.d.sctl("stop", UNIT, timeout=120)
     dt = time.time() - ts
     ok(rc == 0 and dt < 30, "systemctl --user stop in %.1f s (SIGTERM: Aufnahme beenden, speichern; Grenze 30 s)%s" % (dt, "" if rc == 0 else " " + err[:120]))
     time.sleep(12)                                              # Restart=always must not start it again after a stop
     z3 = L.d.zeig()
-    ok(z3.get("ActiveState") == "inactive" and web_aus(L.port), "bleibt aus nach «stop» (12 s gewartet: %s, Port %s)" % (
-        z3.get("ActiveState"), "zu" if web_aus(L.port) else "offen"))
+    ok(z3.get("ActiveState") == "inactive" and web_aus(L.port), "bleibt aus nach «stop» (12 s gewartet: %s, Result %s, ExecMainStatus %s, Port %s)" % (
+        z3.get("ActiveState"), z3.get("Result"), z3.get("ExecMainStatus"), "zu" if web_aus(L.port) else "offen"))
+    if z3.get("ActiveState") != "inactive":                     # CI 21.11.2026 once «failed»: say why (exit code / signal of MoveEye)
+        j = L.d.journal(ts - 1) or ""
+        zeilen = [x for x in j.splitlines() if re.search(r"motionwatch|Traceback|Error|Fatal|signal|status=|code=|Failed", x)]
+        print("    (Journal seit «stop», letzte Zeilen:)\n" + "\n".join("      " + x[:220] for x in zeilen[-40:]), flush=True)
     rc, _o, _e = L.d.sctl("start", UNIT)
     t = warte(lambda: version_da(L.port) == v, L.a.limit)
     ok(t is not None, "wieder gestartet (%s s)" % t)
@@ -646,7 +657,7 @@ def fall_f(L, v):
     t = warte(lambda: version_da(L.port) == v, L.a.limit + 30)
     ok(t is not None, "Port frei -> Seite antwortet mit %s (%s s; da: %s)" % (v, t, version_da(L.port) or "nichts"))
     ok("The last start hung" in L.log(), "Protokoll: «The last start hung …»")
-    z = L.d.zeig()
+    z = L.d.aktiv()
     ok(z.get("ActiveState") == "active", "Dienst active (%s)" % z.get("ActiveState"))
     if t is None:
         L.zeigen("f")
@@ -823,7 +834,7 @@ def update(L, von, nach, titel, live=False):
         ans = {"error": body[:200]}
     ok(c == 200 and ans.get("ok"), "«Update» %s -> %s angenommen (%s)" % (von, nach, ans.get("error") or "ok"))
     t = warte(lambda: version_da(L.port) == nach, L.a.limit)
-    z2 = L.d.zeig()
+    z2 = L.d.aktiv()
     ok(t is not None, "%s: neue Version %s antwortet nach %s s (Grenze %d s)" % (titel, nach, t, L.a.limit))
     ok(z2.get("ActiveState") == "active", "Dienst nach dem Update active (%s / %s)" % (z2.get("ActiveState"), z2.get("SubState")))
     ok(z2.get("InvocationID") == z.get("InvocationID") and z2["MainPID"] == z["MainPID"] and z2["NRestarts"] == z["NRestarts"],

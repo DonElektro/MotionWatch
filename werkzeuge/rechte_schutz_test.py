@@ -265,7 +265,13 @@ def pin_ueberall(G, pruef):
     key = G.kurz                                             # the key of the shortcut (in the settings file from the start:
     an(G)                                                    # the demo makes no new app keys)
     c, t = G.req("/k/%s/disarm" % key, wer=None)
-    pruef(c == 200 and G.schutz()["level"] == "off", "ohne PIN: Kurzbefehl «disarm» wie bisher (%d)" % c)
+    # CI (häufigster Wackler in «rechte», 22.11.2026): HTTP 200, aber beim EINEN Lesen danach war die Stufe noch nicht «off»
+    # (lokal in 4 Läufen nicht nachgestellt). Jetzt: auf den Zustand warten (höchstens 10 s); bleibt er an, stehen die Zeilen
+    # «Armed / Disarmed» des Protokolls im Fehler - damit die Ursache sichtbar wird, statt dass ein zweiter Versuch sie verdeckt.
+    aus = G.warte(lambda: G.schutz()["level"] == "off", 10.0)
+    if not aus:
+        print("    (Protokoll: %s)" % " · ".join(x.strip()[-90:] for x in G.log().splitlines() if re.search(r"Armed|Disarmed|Shortcut|Mode", x))[-1200:], flush=True)
+    pruef(c == 200 and aus, "ohne PIN: Kurzbefehl «disarm» wie bisher (%d, Stufe %s)" % (c, G.schutz()["level"]))
     c, j = G.req("/api/protect", {"action": "pin", "new": PIN})
     pruef(c == 200 and j.get("pin"), "PIN gesetzt")
     an(G)
@@ -299,7 +305,7 @@ def pin_ueberall(G, pruef):
     pruef(not j.get("need_pin") and (c == 200) == (G.schutz()["level"] == "off"), "richtige PIN: «Dieses Gerät aus» kommt durch die PIN-Prüfung (%d)" % c)
     an(G)
     c, t = G.req("/k/%s/disarm?pin=%s" % (key, PIN), wer=None)
-    pruef(c == 200 and G.schutz()["level"] == "off", "Kurzbefehl mit ?pin=: aus (%d)" % c)
+    pruef(c == 200 and G.warte(lambda: G.schutz()["level"] == "off", 10.0), "Kurzbefehl mit ?pin=: aus (%d)" % c)
     an(G)
     c, j = G.req("/api/arm", {"action": "disarm", "pin": PIN}, wer="Anna")
     pruef(c == 200 and G.schutz()["level"] == "off", "Familie mit der PIN: «Aus» (%d)" % c)

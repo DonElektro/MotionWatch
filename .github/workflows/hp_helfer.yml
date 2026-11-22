@@ -166,7 +166,22 @@ jobs:
           echo "$(nproc) Kerne · $(free -m | awk '/^Mem/ {print $7 " MB frei von " $2}') · Platz Cache $(frei_mb "$C") MB · Platz Temp $(frei_mb "$RUNNER_TEMP") MB · Cache hp_helfer $(du -sm "$C" | cut -f1) MB"
           [ "$(frei_mb "$RUNNER_TEMP")" -ge 2000 ] || fehler "Weniger als 2 GB frei auf dem HP - kein Test (Platz für Dauerrechnen bleibt)"
           # eigene venv nur für den HP-Testweg (Pakete wie die Web-Jobs im CI, Liste vom Stand main), Chromium daneben
-          H=$(sha256sum werkzeug/werkzeuge/ci_pakete.txt | cut -c1-16)
+          # 22.11.2026: der HP hat Ubuntu 26.04 mit Python 3.14 - für onnxruntime 1.20.1 / scipy 1.14.1 (ci_pakete.txt) gibt es dort
+          # keine Pakete, und Playwright 1.55 kennt «ubuntu26.04» nicht («does not support chromium»). Darum, ohne sudo, alles im
+          # Zwischenspeicher des Runners: Python 3.11 wie im CI über uv (python-build-standalone), und Chromium als Ubuntu-24.04-Build.
+          if python3 -c 'import sys; sys.exit(0 if (3, 10) <= sys.version_info[:2] <= (3, 13) else 1)'; then PYQ=system
+          else PYQ=uv311; fi
+          if grep -qE '^VERSION_ID="?(2[5-9]|[3-9][0-9])\.' /etc/os-release 2>/dev/null; then
+            export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64; echo "PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64" >> "$GITHUB_ENV"
+          fi
+          venv_neu() {   # venv_neu ORDNER: Python des Systems (3.10-3.13) oder 3.11 über uv
+            if [ "$PYQ" = system ]; then python3 -m venv "$1"; return; fi
+            python3 -m venv "$C/uvboot" && "$C/uvboot/bin/python3" -m pip install -q --no-cache-dir "uv>=0.5,<1" > /dev/null \
+              && UV_PYTHON_INSTALL_DIR="$C/uvpy" UV_CACHE_DIR="$C/uvcache" "$C/uvboot/bin/uv" venv -q --seed --python 3.11 "$1" \
+              && rm -rf "$C/uvcache"
+          }
+          echo "Python: $PYQ ($(python3 -V 2>&1)), Playwright-Plattform: ${PLAYWRIGHT_HOST_PLATFORM_OVERRIDE:-automatisch}"
+          H=$( (cat werkzeug/werkzeuge/ci_pakete.txt; echo "$PYQ") | sha256sum | cut -c1-16)
           # bereit = onnxruntime und playwright lassen sich laden und Chromium ist da (sonst werden die Browser- / Bild-Tests rot)
           bereit() { [ -x "$C/venv/bin/python3" ] && PLAYWRIGHT_BROWSERS_PATH="$C/ms-playwright" timeout 60 "$C/venv/bin/python3" -c "
           import onnxruntime
@@ -184,7 +199,7 @@ jobs:
           if [ "$(cat "$C/fertig" 2>/dev/null)" != "$H" ] || [ ! -x "$C/venv/bin/python3" ]; then
             [ "$(frei_mb "$C")" -ge 4000 ] || fehler "Weniger als 4 GB frei - die Test-Umgebung (etwa 1 GB) wird nicht angelegt"
             rm -rf "$C/venv" "$C/ms-playwright" "$C/fertig"
-            python3 -m venv "$C/venv" || fehler "python3 -m venv geht nicht"
+            venv_neu "$C/venv" || fehler "Python für die Tests nicht angelegt ($PYQ)"
             "$C/venv/bin/python3" -m pip install -q --no-cache-dir --upgrade pip > /dev/null || true
             if ! "$C/venv/bin/python3" -m pip install -q --no-cache-dir -r werkzeug/werkzeuge/ci_pakete.txt; then
               echo "::warning::nicht alle Pakete auf einmal - einzeln"

@@ -166,6 +166,31 @@ dafür `MOVEEYE_HP_KIOSK`): **«🎮 Controller koppeln»**, **«🌐 Browser»*
 - **Test:** `bash werkzeuge/test_runner/hp_knoepfe_test.sh` (Ersatz-systemctl, Ersatz-Browser), Godot:
   `werkzeuge/hp_kiosk_test.gd`. Echtes Ausschalten, BIOS-Start, Firefox über Openbox: nur am HP prüfbar.
 
+## Pakete für die Tests: ffmpeg, Node.js, Chromium (HP_FASSUNG 9, ohne Befehle)
+
+Der Besitzer tippt dafür nichts (22.11.2026). Es kommt mit dem nächsten Simulator-Release auf den HP:
+
+- **ffmpeg und Node.js** (Radio, Zeitraffer, Funkgerät, Botschaft im Bild, Apple Home): `moveeye-hp-update` prüft nach jedem
+  Lauf (alle 15 Min., auch wenn es nichts Neues gibt), ob `ffmpeg` und `node` fehlen, und installiert nur dann die Pakete
+  `ffmpeg` bzw. `nodejs` (apt, still, höchstens 15 Min.). Nur wenn der Test-Runner eingerichtet ist; nie, während gespielt wird
+  oder ein Test läuft (dann eine Zeile «später», höchstens stündlich). Jede Installation steht im Protokoll
+  `/var/log/moveeye-hp-update.log` («Pakete für die Tests installiert: …»). Neu eingerichtete HPs bekommen beides schon von
+  `runner_einrichten.sh`.
+- **Chromium** (Browser-Tests): lädt der HP-Testweg selbst, ohne sudo, in den Zwischenspeicher des Runners
+  (`/var/lib/mwrunner/cache/hp_helfer/ms-playwright`). Ubuntu 26.04 kennt Playwright 1.55 noch nicht: es nimmt den Build für
+  Ubuntu 24.04 (`PLAYWRIGHT_HOST_PLATFORM_OVERRIDE`). Fehlen diesem Chromium Bibliotheken (ldd), installiert
+  `moveeye-hp-update` sie aus einer festen Liste (CHROMIUM_LIBS in `hp_update.sh`) – nur was fehlt.
+- **Python 3.11** wie im CI (Ubuntu 26.04 hat 3.14, dafür gibt es onnxruntime / scipy der Tests nicht): der HP-Testweg holt
+  es über uv in den Zwischenspeicher des Runners, ohne sudo.
+- Prüfen (wer möchte): `moveeye-hp-update --status` zeigt die letzten Zeilen; ein HP-Testlauf meldet nicht mehr «auf dem HP
+  fehlt: node ffmpeg».
+
+Nur falls das automatische Update auf einem HP aus ist (`--entfernen`), von Hand dasselbe:
+
+```
+sudo apt-get install -y --no-install-recommends ffmpeg nodejs
+```
+
 ## 0. Automatisches Update (einmal eintippen)
 
 Am HP (Text-Konsole **Ctrl+Alt+F3** oder SSH), eine Zeile:

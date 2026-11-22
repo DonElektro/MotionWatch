@@ -1,13 +1,43 @@
 #@ Motion Watch – Teil 010: Importe, Version (APP_VERSION), Ordner für Einstellungen. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 import argparse, atexit, random, functools, glob, hashlib, hmac, ipaddress, json, secrets, math, os, queue, re, shutil, signal, subprocess, sys, tempfile, threading, time, urllib.request, uuid, zipfile
 from collections import deque
+
+# 4.20.1: «systemctl stop» (SIGTERM) is a clean end with exit code 0 - also while the program is still loading (before 640
+# installed its handler, Python ended by the signal: systemd showed «failed») and also when something in the shutdown fails.
+# The first SIGTERM ends the program (SystemExit 0: recording finished, settings saved by the atexit hooks); a second one
+# during the shutdown is ignored. The last atexit hook (registered first, runs last) leaves with 0 after a SIGTERM.
+TERM_STOP = {"got": False}
+
+
+def _on_sigterm(*_):
+    if TERM_STOP["got"]:
+        return
+    TERM_STOP["got"] = True
+    raise SystemExit(0)
+
+
+def _term_exit0():
+    if TERM_STOP["got"]:
+        try:
+            sys.stdout.flush(); sys.stderr.flush()
+        except Exception:
+            pass
+        os._exit(0)
+
+
+if __name__ == "__main__":
+    try:
+        signal.signal(signal.SIGTERM, _on_sigterm)
+        atexit.register(_term_exit0)
+    except (ValueError, OSError):
+        pass
 from datetime import datetime, timedelta
 
 import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "4.20.0"
+APP_VERSION = "4.20.1"
 
 
 def default_data_dir():

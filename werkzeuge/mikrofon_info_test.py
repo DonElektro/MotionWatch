@@ -101,8 +101,15 @@ def main():
         pruef(bool(mic) and mic["level"] == "off" and "Kein Mikrofon eingesteckt (z. B. USB-Kamera)" in mic["text"],
               "kein Mikrofon, nichts braucht es: grauer Hinweis «Kein Mikrofon eingesteckt (z. B. USB-Kamera)» (%s)" % mic)
         pruef(bool(mic) and "fehler" not in mic, "der Hinweis bietet kein «Mikrofon stört» / «Beheben» an")
-        pruef(hs.get("bad") == cnt.get("bad") and "Mikrofon" not in prot and "No such device" not in prot,
-              "zählt nicht als Problem (Kopf %s, Schutz-Ampel ohne Mikrofon)" % hs)
+        # 22.11.2026 (main CI 4.18.1 einmal rot): /api/health und /api/state sind zwei Anfragen - dazwischen kann sich «ai» /
+        # «cam» kurz nach dem Start von selbst ändern. Darum: lesen, bis beide Zähler übereinstimmen (höchstens 30 s); was
+        # geprüft wird, bleibt gleich (das Mikrofon ist nicht rot und steht nicht in der Schutz-Ampel).
+        t_ = time.time() + 30
+        while hs.get("bad") != cnt.get("bad") and time.time() < t_:
+            time.sleep(0.5)
+            mic, cnt, hs, prot = lage("off")
+        pruef(hs.get("bad") == cnt.get("bad") and "mic" not in lage.rot and "Mikrofon" not in prot and "No such device" not in prot,
+              "zählt nicht als Problem (Kopf %s = Selbstdiagnose %s, Schutz-Ampel ohne Mikrofon)" % (hs, cnt))
         bad0 = cnt.get("bad", 0)
         schlecht = lambda: sorted(x.get("id") for x in req("/api/health?lang=de").get("items") or [] if x.get("level") == "bad")
         bad0_ids = schlecht()
