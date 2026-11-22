@@ -58,12 +58,14 @@ const UPPER_HUT := Vector2(470, 300)
 const CLEARING := Vector2(-150, -800)
 # viewpoints (Aussichtspunkte, Besitzer 31.10.2026): [id, name, kind (gipfel | grat | kanzel | see | gletscher), x, z, furnishing
 # (bank_kreuz | fernrohr | tafel | wild), looking (degrees, 0 = north)]. Each is a reserved place and a sleeping spot.
+# 22.11.2026 (Besitzer): vp_gletscher und vp_pass an Orte mit echter Sicht verschoben (vorher 690/330: der Gletscher hinter
+# einer Grashalde; -30/850: die Sicht ins Tal hinter einer Kuppe) - gesucht über Sichtlinien im Gelände.
 const VIEWPOINTS := [["vp_horn", "Tschingelspitz (Gipfel West)", "gipfel", -790.0, 520.0, "bank_kreuz", 90.0],
 		["vp_grat", "Gratspitz über der Rüfi", "grat", -625.0, 125.0, "wild", 60.0],
 		["vp_kanzel", "Chanzle über dem Gumpisee", "kanzel", 262.0, -430.0, "fernrohr", -90.0],
 		["vp_seeblick", "Seeblick Gumpisee", "see", -250.0, -470.0, "tafel", 70.0],
-		["vp_gletscher", "Gletscherblick Wyssgletscher", "gletscher", 690.0, 330.0, "tafel", 135.0],
-		["vp_pass", "Passchanzle Furgga", "kanzel", -30.0, 850.0, "fernrohr", 0.0],
+		["vp_gletscher", "Gletscherblick Wyssgletscher", "gletscher", 540.0, 320.0, "tafel", 120.0],
+		["vp_pass", "Passchanzle Furgga", "kanzel", 120.0, 800.0, "fernrohr", 0.0],
 		["vp_ostgipfel", "Nüdelistock (Gipfel Ost)", "gipfel", 720.0, -260.0, "wild", -90.0],
 		["vp_moorsee", "Ob em Schwarzseeli", "see", -700.0, -380.0, "bank_kreuz", 30.0]]
 # the far peaks around the valley (silhouette ring, panorama boards): [name, azimuth from the valley centre (0 = north),
