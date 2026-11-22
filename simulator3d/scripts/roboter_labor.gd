@@ -229,6 +229,9 @@ func set_view(v: String) -> void:
 		var b: Button = _w.get("view_" + x[0])
 		if b != null:
 			_paint_btn(b, x[0] == view)
+	if is_inside_tree():
+		for n in get_tree().get_nodes_in_group("roboter_schild"):
+			(n as Node3D).visible = view in ["frei", "roboter"]
 	if pip_box != null:
 		pip_box.visible = pip and view != "roboter"
 		pip_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS if pip_box.visible else SubViewport.UPDATE_DISABLED
@@ -245,7 +248,7 @@ func _camera(dt: float) -> void:
 		"seite":
 			cam.projection = Camera3D.PROJECTION_ORTHOGONAL
 			cam.size = maxf(0.4, length * 1.3) * dist / 1.9
-			cam.global_transform = Transform3D(Basis(), target + Vector3(0, 0.25, 8.0))
+			cam.global_transform = Transform3D(Basis(), target + Vector3(0, 0.25, 1.2))   # close: the other lanes lie behind the camera
 			cam.look_at(target + Vector3(0, 0.25, 0), Vector3.UP)
 		"oben":
 			cam.projection = Camera3D.PROJECTION_ORTHOGONAL

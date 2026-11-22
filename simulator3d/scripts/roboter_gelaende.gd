@@ -198,4 +198,5 @@ static func _sign(world: Node3D, pos: Vector3, text: String) -> void:
 	l.modulate = Color("#1b2430")
 	l.outline_modulate = Color(1, 1, 1, 0.8)
 	l.outline_size = 10
+	l.add_to_group("roboter_schild")              # hidden in the side / top view (they would lie on top of each other)
 	world.add_child(l)
