@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-22 12:55",
+ "generated": "2026-11-22 16:14",
  "versions": [
+  {
+   "version": "4.21.0",
+   "file": "webcam_bewegung_4_21_0.py",
+   "url": "",
+   "sha256": "6334190e9cf076e9fb354e544117d0d99feb21bd9826cc09d5bb787d92bad862",
+   "date": "2026-11-22 16:13",
+   "notes": "Startseite der Homepage: Titel, Auge, Satz und alle Kacheln passen ohne Scrollen auf Laptop, iPad und Handy. ‹Die Karte des Grossvaters› hat jetzt ‹▶ Ganzes Spiel› und je einen Knopf pro Kapitel. Neue Kachel ‹ℹ️ Besucherseite›: MoveEye lädt die Produktseite als Info/ auf den Webspace (Schalter ‹Besucherseite (Info/)›, ab Werk an; dort ohne ‹✕›, ‹Senden› kopiert die Anfrage).",
+   "size": 4040648,
+   "sig": "666ef5a2d50611ece6533e9b58d009cc0f0a4ca256aa4b2b229d3dbaa8df7a6e14080cb3cebe0f3c0e16adf2254126b23161c4e1f70967ed247bf258bb416701",
+   "data": {
+    "file": "moveeye_daten_4_21_0.zip",
+    "url": "",
+    "sha256": "c18db018c730fca3f6c757c8693e53e81b5e8a221ac9021cb859ec3526a28a1d",
+    "size": 17810608,
+    "sig": "a739e6fcc56d3373162b054e2c2a2d596a38c1f8ee4999245ba3e2206147aeb46eb438d2bf4db14e25918e65c038dd1d466051c5fabf095f8d099f6024945404"
+   }
+  },
   {
    "version": "4.20.1",
    "file": "webcam_bewegung_4_20_1.py",
    "url": "",
    "sha256": "5b199294deae1c0b7eaac8c574269df95a16fd4db974a612436bfb6b63653b4a",
-   "date": "2026-11-22 12:55",
+   "date": "2026-11-22 16:01",
    "notes": "«systemctl stop» endet sauber mit Exit-Code 0 – auch während MoveEye noch lädt (systemd zeigte sonst «failed»); Selbsttest der Servo-Bewegung: der letzte Schritt bremst nie stärker als erlaubt, Zufallsschritte mit festem Startwert. CI: Integration prüft nach Regeln statt immer alles (vollständig mit «[voll]» oder bei CI-Änderungen), main bei jedem Push und jede Nacht alles; Gruppe «kern» geteilt (rund 20 statt 31 Minuten); wackelnde Tests behoben; der HP installiert ffmpeg, Node.js und Chromium-Bibliotheken selbst.",
    "size": 4037045,
    "sig": "62b2f62995c439e23bed8a4c8ea2a09a8cf1835f620e33c7a6fd42519b24d06ec88f9e8501260ac356c71074702340aeb30352f046c589c01a359d118e6f7105",
@@ -139,23 +156,6 @@
    }
   },
   {
-   "version": "4.11.0",
-   "file": "webcam_bewegung_4_11_0.py",
-   "url": "",
-   "sha256": "ac39f8e43386e6b20fad482aaa7a0a5bd2201abd96684c70a5e5235605a7b6b8",
-   "date": "2026-11-16 06:41",
-   "notes": "MoveEye als Demo im Internet: demo_start.py startet MoveEye auf einem Webhost unter /demo (nur gezeichnete Szene, alle Sperren an, keine Verbindung nach aussen); der Simulator im Browser kann sich mit dieser Demo verbinden · Homepage: der Simulator im Browser kommt in Teilen (index_pck1… .wasm) – die Prüfung meldet sie nicht mehr als falsch",
-   "size": 4026000,
-   "sig": "b638a746c19395b51909a9415c113a9d4b33a126aa69dace23a6da299faa72802b2a06789a056afdfb2e3fb0521c485a05b993a064bbbefc1308d6954d075b06",
-   "data": {
-    "file": "moveeye_daten_4_11_0.zip",
-    "url": "",
-    "sha256": "7f4c3e5ed342555406a7b2a0f1dfadad2c85bcf54f6e499dcd59d231392db73b",
-    "size": 14202809,
-    "sig": "516068777a420ab68564d59ce7362378471fe0f1daf883da94deb46e8f59986cf3119fb0b89474ca6f1885b565eb1648e95586821e2a5d427384ead5ed146705"
-   }
-  },
-  {
    "version": "3.80.0",
    "file": "webcam_bewegung_3_80_0.py",
    "url": "",
@@ -204,41 +204,41 @@
    "sig": "3c0d6ad76326d81ce324c8914ca35b61596ef189eb0e83e04238c5088ad5e2954914805461e7194f7648bb37117d49454eb7d207ff54d89893e10667b26ea80a"
   },
   "pi": {
-   "ver": "3.76.0",
+   "ver": "3.77.0",
    "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 43851206,
-   "sha256": "74dfb340ee75c406bab3a7aa5fed58f202c3f8f2cb51dacddb16d3674f18f2a5",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.76.0/MoveEyeSim3D_Pi.zip",
-   "sig": "06bd7d72e287d4652cc9c2a4c6d124b0ce45a6a221b2d39b4257a6236a3479a6a109955851076816405ab2487fcdb557fd64a44f3d0d406282b880fe45637c0a"
+   "size": 43859326,
+   "sha256": "fe76c3d5cc6aedd673ca9df355980443c05b2e0972ec8defa1d66ce2c7acb908",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.77.0/MoveEyeSim3D_Pi.zip",
+   "sig": "fedff62440f5c18200877881a56db59d7a0ce9075d7044bdf80a1b3e36a40a7f9c459c24f978bc4139d0223e0393b95d42fe0503705e94b76883c9dd76e95106"
   },
   "anhang": {
-   "ver": "3.76.0",
-   "version": "3D-5.76.0",
-   "notes": "Grossvater Kapitel 3, Frei erkunden, Gäste besuchen das Zelt",
+   "ver": "3.77.0",
+   "version": "3D-5.77.0",
+   "notes": "Wildruhezonen im Bergtal, Sprung zur schönsten Aussicht",
    "mw_min": "3.55.0",
    "win": {
-    "ver": "3.76.0",
+    "ver": "3.77.0",
     "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
-    "size": 60315482,
-    "sha256": "bceef746d4960cc0e9c947f5e64e6dfeffdf30a7088f1954d17d49b88b57f947",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.76.0/MotionWatch3D_Simulator.zip",
-    "sig": "089fd5ea6d6bd9cdc5a15616cd2b3c96ce54e751e52fbbb285c6eb9d620467c0f07ed667884bd6d522752ae09ec4ef29a03d87f364d8a209b9b33583fe512e0b"
+    "size": 60320747,
+    "sha256": "9f4a0f147534839e0b8792d1d044b9103cb9e6ea389d2da36a7c091899ca25ec",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.77.0/MotionWatch3D_Simulator.zip",
+    "sig": "fc795ae71a94fafd027fd62b45b7e9318899493c7b4fdbc712aa90e027f00be3104169e91b5f92c5630f4d7e810692ea380834b877d432217e26dd5771d45d00"
    },
    "linux": {
-    "ver": "3.76.0",
+    "ver": "3.77.0",
     "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
-    "size": 54368349,
-    "sha256": "24246ef9afdd0c9a974185fa1eb908b238b4d863a846eb7b8219f7c8ac506d02",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.76.0/MoveEyeSim3D_Linux.zip",
-    "sig": "4c4e06bb5a9d08b2a965b994eac904656368998abda480eb2b51dd0f526decb8809da4cad0f3bead62d7ba47e445807deea122f600635fe36b39d47783f5de0b"
+    "size": 54375226,
+    "sha256": "cc6f0f5a4c0d3e7d1bcff383f5b8e3b5468bf14f67c5eec4c806a8fe379f480d",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.77.0/MoveEyeSim3D_Linux.zip",
+    "sig": "e42b321cd948bb5daa6f1bd7b047360c37cc957079bed5ee815e02b44daf88f606fb601a3f031303aebb6ee9966fdc3af11bd669af0239d458bdd3b60c23ae0b"
    },
    "web": {
-    "ver": "3.76.0",
+    "ver": "3.77.0",
     "file": "simulator3d/anhang/sim-web.zip",
-    "size": 79793772,
-    "sha256": "efc78b0310b52aa585d072b6b24d6993ccf9691c41a64df5fd72e54e86afd714",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.76.0/sim-web.zip",
-    "sig": "d14eeccf56c8645fd8e36bd201a7d0c2b3c544db2d5d40891db91a480521815afd0ee3b3d4fd456dd6ec82be574f8c4b186cb5307e9badbbd6ec806d59eb9c01"
+    "size": 79804190,
+    "sha256": "733108acb31e7fc1b6b8c45565ad3582160968f21e20bff1b718c2bf5e667f94",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.77.0/sim-web.zip",
+    "sig": "d0d6679488c4579f67164b9d7d887ca4bb2a79cbf7ff0ab999290ee43b8e8b484618a4fefc2c4d3f56a295c76d4544cbdb22d7056e056645a416b09b077afe01"
    }
   }
  }

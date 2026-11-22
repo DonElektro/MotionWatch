@@ -44,9 +44,8 @@ def ok(c, what):
 
 def texte():
     src = open(os.path.join(ROOT, "quelle", "639zzq_offline_karten.py"), encoding="utf-8").read()
-    for k, de in (("Full screen", "Vollbild"), ("Exit full screen", "Vollbild beenden")):
-        m = re.search(r'^    "%s": \(("[^"]+"), ("[^"]+"), ("[^"]+"), ("[^"]+")\),$' % re.escape(k), src, re.M)
-        ok(bool(m) and m.group(1) == '"%s"' % de, f"Text «{k}» in de / fr / it / rm (+ en als Schlüssel)" + (f": {', '.join(m.groups())}" if m else ""))
+    m = re.search(r"const FT = \{(.*?)\};", src, re.S)
+    ok(bool(m) and all(f"{L}: [" in m.group(1) for L in ("de", "fr", "it", "rm", "en")) and "ß" not in m.group(1), "Texte «Vollbild» / «Vollbild beenden» in de / fr / it / rm / en (KQ_PAGE)")
 
 
 def main():
@@ -196,8 +195,8 @@ def main():
                 ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(base) or r.request.url.startswith(("data:", "blob:")) else (aussen.append(r.request.url[:120]), r.abort()))
                 pg = ctx.new_page(); pg.goto(base + "/karte?welt=berg")
                 pg.wait_for_function("() => window.KQMAP && document.getElementById('kq-full')", timeout=90000)
-                sp = pg.evaluate("""() => { const o = LANG, r = {now: document.getElementById('kq-full').title === kqT('Full screen')};
-                    for (const l of ['de', 'fr', 'it', 'rm', 'en']) { LANG = l; r[l] = [kqT('Full screen'), kqT('Exit full screen')]; } LANG = o; return r; }""")
+                sp = pg.evaluate("""() => { const o = LANG, r = {now: document.getElementById('kq-full').title === kqFullT('Full screen')};
+                    for (const l of ['de', 'fr', 'it', 'rm', 'en']) { LANG = l; r[l] = [kqFullT('Full screen'), kqFullT('Exit full screen')]; } LANG = o; return r; }""")
                 ok(sp["now"] and sp["de"] == ["Vollbild", "Vollbild beenden"] and sp["fr"] == ["Plein écran", "Quitter le plein écran"]
                    and sp["it"] == ["Schermo intero", "Esci dallo schermo intero"] and sp["rm"] == ["Maletg entir", "Terminar il maletg entir"]
                    and sp["en"] == ["Full screen", "Exit full screen"], f"Texte im Browser in 5 Sprachen ({sp})")

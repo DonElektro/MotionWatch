@@ -798,8 +798,6 @@ _HX_KQ = {
     "Saved": ("Gespeichert", "Enregistré", "Salvato", "Memorisà"),
     "Only in Switzerland": ("Nur in der Schweiz", "Seulement en Suisse", "Solo in Svizzera", "Mo en Svizra"),
     "Sources and licences": ("Quellen und Lizenzen", "Sources et licences", "Fonti e licenze", "Funtaunas e licenzas"),
-    "Full screen": ("Vollbild", "Plein écran", "Schermo intero", "Maletg entir"),
-    "Exit full screen": ("Vollbild beenden", "Quitter le plein écran", "Esci dallo schermo intero", "Terminar il maletg entir"),
     "kind-city": ("Stadt", "ville", "città", "citad"), "kind-town": ("Stadt", "ville", "città", "citad"),
     "kind-village": ("Dorf", "village", "villaggio", "vischnanca"), "kind-suburb": ("Quartier", "quartier", "quartiere", "quartier"),
     "kind-quarter": ("Quartier", "quartier", "quartiere", "quartier"), "kind-neighbourhood": ("Quartier", "quartier", "quartiere", "quartier"),
@@ -1210,7 +1208,9 @@ html.kq-fs-on,html.kq-fs-on body{overflow:hidden}
 // Fullscreen API on the map box (map, its buttons, the bar «📌 Setzen»); no element fullscreen (iPhone) = fixed over the page.
 window.kqFull = (m, box) => {
   box = box || document.getElementById("kq-map"); if (!m || !box || box.__fs) return; box.__fs = 1;
-  const D = document, T = k => window.kqT ? kqT(k) : k, fsEl = () => D.fullscreenElement || D.webkitFullscreenElement;
+  const FT = {de: ["Vollbild", "Vollbild beenden"], fr: ["Plein écran", "Quitter le plein écran"], it: ["Schermo intero", "Esci dallo schermo intero"],
+    rm: ["Maletg entir", "Terminar il maletg entir"], en: ["Full screen", "Exit full screen"]};          // texts here: the page goes to the ZIP
+  const D = document, T = window.kqFullT = k => { let l = "de"; try { l = LANG || "de"; } catch (e) {} return (FT[l] || FT.en)[k === "Full screen" ? 0 : 1]; }, fsEl = () => D.fullscreenElement || D.webkitFullscreenElement;
   const can = !!(D.fullscreenEnabled || D.webkitFullscreenEnabled) && !!(box.requestFullscreen || box.webkitRequestFullscreen);
   const g = D.createElement("div"), b = D.createElement("button"); g.className = "maplibregl-ctrl maplibregl-ctrl-group kq-fsc"; b.type = "button"; b.id = "kq-full"; g.appendChild(b);
   const on = () => fsEl() === box || box.classList.contains("kq-fsp");
