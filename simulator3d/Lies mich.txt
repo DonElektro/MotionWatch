@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.73.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.74.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -493,6 +493,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.74.0
+3.74.0: Abentüür «D Charte vom Grossvater», Kapitel 1 «Die Karte» (10 Szene) im neue Spielmodus. Im Kapitel 2 bliibt
+d Maggie nüme hinder ere Wand hange (und chunnt sälber wieder zrugg). Kamera und dinne: kei Räge meh i de Hütte, d Kamera
+bliibt im Zimmer, d Murmeli-Kamera und s Liecht vom Ofe sind gflickt. 22 neui Stimme (Quelle i klang/LIZENZEN.txt).
+So tesch: Abentüür ufmache → Kapitel 1 starte und dur alli 10 Szene; im Kapitel 2 Szene 3 mit dr Maggie bis zum Schluss.
 
 NEU IN 3.73.0
 3.73.0: Abenteuer «Die Karte des Grossvaters», Kapitel 2 «Wo der Bach zweimal fällt» im neuen Spielmodus (Standard; der
