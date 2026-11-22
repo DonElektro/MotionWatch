@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8667 (Stellen: 12025)
-Übersetzt: en 8667, fr 8667, it 8667, rm 8667
+Texte gesamt: 8693 (Stellen: 12056)
+Übersetzt: en 8693, fr 8693, it 8693, rm 8693
 Unsicher markiert: 514
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 553 Stellen
 Nicht mehr im Code (noch in texte.json): 416
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 31816, schlüssel 24726, keine Wörter 15851, index 11149, technisch 4058, doc 2798, einheit 363, log 204, englisch 150, pfad 130, stringname 107, html 69, klasse 48, shader 6
+Übersprungen (Grund: Anzahl): kennung 31888, schlüssel 24776, keine Wörter 15955, index 11279, technisch 4076, doc 2815, einheit 366, log 204, englisch 150, pfad 130, stringname 107, html 69, klasse 48, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -20,9 +20,9 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal.gd               190     5
   bergtal_horror.gd        160     3
   abenteuer_raetsel.gd     145     2
+  roboter_labor.gd         136     0
   maggie_story.gd          114     2
   zwei_bausteine.gd        113     2
-  roboter_labor.gd         113     0
   abenteuer_moveeye.gd     110    14
   bergtal_orte.gd          108     0
   bib_objekte.gd           108     0
@@ -148,6 +148,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   kit_k3.gd                 18     0
   thermsensor.gd            18     0
   gamelearn.gd              18     0
+  roboter_bewegung.gd       18     0
   grafik_hoch.gd            18     1
   quality.gd                17     1
   kompakt_hof.gd            17     0
@@ -161,7 +162,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamesneak.gd              15     0
   abenteuer_blinki.gd       14     0
   home_editor.gd            14     3
-  roboter_bewegung.gd       14     0
   kit_k4.gd                 14     0
   zimmertiere.gd            14     0
   abenteuer_inventar.gd     13     0

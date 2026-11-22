@@ -105,6 +105,7 @@ func apply(d: Dictionary) -> void:
 #   auto      wählt selbst: Wellengang langsam oder wenn ein Bein-Servo überlastet ist, sonst «Dreifuss»
 # Die Füsse rechnen in einem waagrechten Rahmen je Segment (Neigung aus der Physik): auf der Rampe bleiben die Beine
 # senkrecht, eine Welle im Rücken hebt die Füsse nicht vom Boden.
+const ANZ = preload("res://scripts/roboter_anzeige.gd")
 const GAENGE := [["welle", "Wellengang"], ["dreifuss", "Dreifuss"], ["raupe", "Raupengang"], ["auto", "Automatisch"]]
 const ABLAEUFE := [["raupenwelle", "Raupenwelle"], ["schlange", "Kurve (Schlange)"], ["einrollen", "Einrollen und öffnen"],
 		["aufstehen", "Aufstehen"]]
@@ -491,12 +492,197 @@ func ring_state() -> Dictionary:
 	fw.y = 0.0
 	fw = fw.normalized() if fw.length() > 0.1 else Vector3.RIGHT
 	var gy: float = c.y - (float(m.pitch_len()) * 0.5 / tan(PI / N) + float(m.u("halbe_breite")))
-	var cps: Array = m.contact_points(["seg", "buegel"])
-	if not cps.is_empty():
-		gy = 1e9
-		for q in cps:
-			gy = minf(gy, (q as Vector3).y)
+	gy = _ground_at(c, c.y + 0.1, gy)                     # the ground right under the centre (it may stand on its legs)
 	return {"c": c, "ax": ax, "fw": fw, "lean": rad_to_deg(asin(clampf(ax.y, -1.0, 1.0))), "gy": gy}
+
+
+# ---- Rund rollen (Besitzer 22.11.2026 21:33 / 21:36): Methoden, wie die Beine den Ring rollen lassen ---------------------
+#   stossen  wie bisher (8er): die Beine unten hinten stossen, sonst nichts
+#   a        «Beine stemmen an den Ecken»: zusätzlich halten die unteren Beine die Ringmitte auf Eckhöhe (der Ring liegt nie
+#            auf einer Seite auf → rollt wie über die Ecken, ohne abzusinken)
+#   b        «Beine als Speichen-Kreis»: alle Beine als Speichen in der Ringebene (gleichmässig verteilt), die Füsse
+#            auf einem Kreis; rollen durch längere Speichen hinten / kürzere vorne, lenken durch eine längere Seite
+#   c        «Füsse passen sich an»: wie a, dazu Regelung über die ganze Drehung - Höhe der Mitte (mit Integral), gleichmässiges
+#            Tempo (Stoss stärker / schwächer) und Vorhalt aus dem Ringwinkel (die nächste Ecke kommt)
+# Rundheit: über eine ganze Drehung (nach 30° Anlauf) die Schwankung der Mittenhöhe (cm) und des Tempos (% vom Mittel).
+const RING_METHODEN := [["stossen", "Nur stossen"], ["a", "A: Beine stemmen an den Ecken"], ["b", "B: Beine als Speichen-Kreis"],
+		["c", "C: Füsse passen sich an"]]
+var ring_methode := "stossen"
+var ring_meas := {}                    # running measurement
+var ring_result := {}                  # last finished measurement
+var _ring_i := 0.0                     # integral of the height error (c)
+var _ring_v := 0.0                     # smooth forward speed (c, measurement)
+var _ring_vt := 0.0                    # slow mean speed = the even speed wanted (c)
+var _ring_prev := Vector3.ZERO
+var _ring_phi := 0.0
+var ring_hoehe := 0.0                  # «Höhe über Boden» (m): body clearance while rolling (0 = on its corners, more = on stilts)
+var spur_rollen := 0.141               # «Spurbreite» beim Rollen (m): left foot to right foot (default = the tested 8er rolling)
+var c_lead := 0.15                     # c: s the wanted ring pose runs ahead
+var c_kh := 0.6                        # c: share of the height error corrected
+var c_kv := 0.6                        # c: share of the speed error corrected
+var c_win := 100.0                     # c: ° around the bottom where legs stand on the ground
+var c_tilt := -0.5                     # c: share of the lean error the wanted pose corrects (sign tested)
+var c_speed := 2.0                     # c: wanted roll speed = tempo × this (at least 8 cm/s)
+var _latch_ft := {}                    # c: planted feet (leg key -> world point), the ring rolls over them
+var _tip_t := 0
+var spoke_k := 0.18                    # b: relative spoke length change at full drive
+var spoke_turn := 0.08                 # b: one side longer for curves
+
+
+func ring_height_max() -> float:
+	"""the most clearance the legs can carry: the hips of the bottom segment must still reach the ground"""
+	var a: float = m.pitch_len() * 0.5 / tan(PI / m.n())
+	var reach: float = (m.u("oberschenkel") + m.u("unterschenkel")) * 0.85
+	return maxf(0.0, a + reach - corner_height())
+
+
+func ring_target() -> float:
+	"""wanted height of the ring centre above the ground"""
+	return corner_height() + clampf(ring_hoehe, 0.0, ring_height_max())
+
+
+func ring_lat() -> float:
+	"""lateral offset of a rolling foot from its hip (from the track width, within reach)"""
+	var w: float = m.u("halbe_breite")
+	var reach: float = m.u("oberschenkel") + m.u("unterschenkel")
+	return clampf(spur_rollen * 0.5 - w, 0.0, reach * 0.6)
+
+
+func spur_gehen() -> float:
+	"""track width when walking (m) = left foot to right foot"""
+	return 2.0 * (m.u("halbe_breite") + spreiz * float(m.bp["massstab"]))
+
+
+func set_spur_gehen(v: float) -> void:
+	var sc: float = m.bp["massstab"]
+	var reach: float = m.u("oberschenkel") + m.u("unterschenkel")
+	spreiz = clampf((v * 0.5 - m.u("halbe_breite")) / sc, 0.1, reach * 0.95 / sc)
+
+
+func ring_methods() -> Array:
+	return RING_METHODEN
+
+
+func _support(c: Vector3, ax: Vector3, ahead := 0.0) -> float:
+	"""how far the ring body reaches below its centre now (or turned «ahead» rad further about the axle)"""
+	var low := 0.0
+	var rot := Basis(ax, ahead)
+	for i in range(m.n()):
+		var bi: int = m.seg_body[i]
+		var xf: Transform3D = m.frame_of(bi)
+		var sh = (m.bodies[bi]["cs"] as CollisionShape3D).shape
+		if sh is ConvexPolygonShape3D:
+			for q in (sh as ConvexPolygonShape3D).points:
+				var p: Vector3 = rot * (xf * q - c)
+				low = maxf(low, -p.y)
+	return low
+
+
+var _corner := {}
+
+
+func corner_height() -> float:
+	"""the highest the ring centre gets when it rolls over its own body (on a corner)"""
+	if not m.built_ok or m.seg_body.size() < m.n():
+		return m.pitch_len() * 0.5 / tan(PI / m.n()) + m.u("halbe_breite")   # not built yet: a rough value, not kept
+	var key := "%d_%s" % [m.n(), str(m.bp.hash())]
+	if _corner.has(key):
+		return _corner[key]
+	_corner = {key: _corner_calc()}
+	return _corner[key]
+
+
+func _corner_calc() -> float:
+	var fr: Array = m.fk(pose("ring"), Transform3D(), true)
+	var pts := []
+	var c := Vector3.ZERO
+	for i in range(m.n()):
+		c += (fr[m.seg_body[i]] as Transform3D).origin
+	c /= m.n()
+	for i in range(m.n()):
+		var sh = (m.bodies[m.seg_body[i]]["cs"] as CollisionShape3D).shape
+		for q in (sh as ConvexPolygonShape3D).points:
+			pts.append((fr[m.seg_body[i]] as Transform3D) * q - c)
+	var best := 0.0
+	for k in range(180):
+		var dd := Vector3(cos(TAU * k / 180.0), sin(TAU * k / 180.0), 0.0)
+		var sup := 0.0
+		for p in pts:
+			sup = maxf(sup, (p as Vector3).dot(dd))
+		best = maxf(best, sup)
+	return best
+
+
+func ring_phi(rs: Dictionary) -> float:
+	"""angle of segment 0 about the axle (rad, world)"""
+	var v: Vector3 = m.segment_xf(0).origin - (rs["c"] as Vector3)
+	var ax: Vector3 = rs["ax"]
+	var up := Vector3.UP - ax * Vector3.UP.dot(ax)
+	up = up.normalized()
+	return atan2(ax.cross(up).dot(v), up.dot(v))
+
+
+func start_ring_measure() -> void:
+	ring_meas = {"rot": 0.0, "h": [], "v": [], "k": [], "low": [], "t": 0.0, "warm": deg_to_rad(30.0)}
+	ring_result = {}
+	_ring_phi = ring_phi(ring_state())
+	_ring_prev = ring_state()["c"]
+
+
+func _ring_measure(dt: float, rs: Dictionary, hgt: float) -> void:
+	var phi := ring_phi(rs)
+	var dphi := wrapf(phi - _ring_phi, -PI, PI)
+	_ring_phi = phi
+	var c: Vector3 = rs["c"]
+	var v := (c - _ring_prev).dot(rs["fw"]) / maxf(dt, 1e-4)
+	_ring_prev = c
+	_ring_v = lerpf(_ring_v, v, clampf(dt * 8.0, 0.0, 1.0))
+	if ring_meas.is_empty():
+		return
+	ring_meas["t"] = float(ring_meas["t"]) + dt
+	ring_meas["rot"] = float(ring_meas["rot"]) + absf(dphi)
+	if float(ring_meas["rot"]) < float(ring_meas["warm"]):
+		return
+	(ring_meas["h"] as Array).append(hgt)
+	(ring_meas["v"] as Array).append(absf(_ring_v))
+	_tip_t += 1
+	if _tip_t % 6 == 0:
+		var pts := PackedVector2Array()
+		for q in m.contact_points():
+			pts.append(Vector2((q as Vector3).x, (q as Vector3).z))
+		if pts.size() > 0:                                 # in the air for a moment: no support area, not counted here
+			var cm: Vector3 = m.com()
+			var mg: float = ANZ.signed_margin(Vector2(cm.x, cm.z), ANZ.hull(pts))
+			ring_meas["tip"] = minf(float(ring_meas.get("tip", 9.0)), mg)
+	var kc: int = m.ground_contacts()
+	(ring_meas["k"] as Array).append(kc)
+	if kc < 3:                                            # where (ring angle since the start of the turn) it drops below 3
+		var deg := int(rad_to_deg(float(ring_meas["rot"]) - float(ring_meas["warm"])))
+		var low: Array = ring_meas["low"]
+		if low.is_empty() or deg - int(low[low.size() - 1][1]) > 3:
+			low.append([deg, deg])
+		else:
+			low[low.size() - 1][1] = deg
+	if float(ring_meas["rot"]) >= float(ring_meas["warm"]) + TAU:
+		var hs: Array = ring_meas["h"]
+		var vs: Array = ring_meas["v"]
+		var vm := 0.0
+		for x in vs:
+			vm += float(x)
+		vm /= maxf(1.0, vs.size())
+		var var_ := 0.0
+		for x in vs:
+			var_ += pow(float(x) - vm, 2)
+		var sd := sqrt(var_ / maxf(1.0, vs.size()))
+		var ks: Array = ring_meas["k"]
+		var km := 0.0
+		for x in ks:
+			km += float(x)
+		ring_result = {"ok": true, "dh": (hs.max() - hs.min()) * 100.0, "v": vm * 100.0, "dv": sd / maxf(vm, 1e-4) * 100.0,
+				"t": float(ring_meas["t"]), "methode": ring_methode, "hoehe": ring_hoehe * 100.0, "kmin": ks.min(),
+				"kavg": km / maxf(1.0, ks.size()), "unter3": (ring_meas["low"] as Array).slice(0, 6),
+				"kipp": float(ring_meas.get("tip", 0.0)) * 100.0, "spur": spur_rollen * 100.0}
+		ring_meas = {}
 
 
 func _ring_step(dt: float) -> void:
@@ -530,13 +716,41 @@ func _ring_step(dt: float) -> void:
 	var ax: Vector3 = rs["ax"]
 	var fw: Vector3 = rs["fw"]
 	var gy: float = rs["gy"]
+	var meth := ring_methode
+	_ring_measure(dt, rs, c.y - gy)
+	if meth == "b":
+		_ring_spokes(rs)
+		return
 	var l1: float = m.u("oberschenkel")
 	var l2: float = m.u("unterschenkel")
 	var reach := (l1 + l2) * 0.97
 	var w: float = m.u("halbe_breite")
-	var lat := w * 0.4 + spreiz * float(m.bp["massstab"]) * 0.6
+	var lat := ring_lat()
 	var dirv := 1.0 if drive >= 0.0 else -1.0
 	var lean_err := deg_to_rad(turn * ring_lean_max - ring_lean)
+	if meth == "c":
+		_ring_c(dt, rs, lean_err)
+		return
+	_latch_ft = {}
+	# a: hold the centre at corner height (the legs carry the ring over its flat sides)
+	var hold := meth == "a"
+	var lift := 0.0
+	var push_k := 1.0
+	if hold:
+		var ht := ring_target()
+		ring_info["ht"] = ht
+		var herr := ht - (c.y - gy)                      # > 0: centre too low
+		lift = herr
+		if meth == "c":
+			_ring_i = clampf(_ring_i + herr * dt, -0.02, 0.02)
+			var om: float = (m.bodies[m.seg_body[0]]["rb"] as RigidBody3D).angular_velocity.dot(ax)
+			var ahead := _support(c, ax, om * 0.12) - _support(c, ax)   # the support shrinks soon (a corner passes): extend before
+			lift = herr + 4.0 * _ring_i - ahead
+			if m.ground_contacts() < 3:
+				lift += 0.01                                   # fewer than 3 contacts: press the planted feet harder
+			_ring_vt = lerpf(_ring_vt, absf(_ring_v), clampf(dt * 0.3, 0.0, 1.0))
+			if _ring_vt > 0.02:
+				push_k = clampf(1.0 + 1.5 * (_ring_vt - absf(_ring_v)) / _ring_vt, 0.3, 1.6)
 	var d := {}
 	var pushing := 0
 	for i in range(N):
@@ -549,14 +763,16 @@ func _ring_step(dt: float) -> void:
 			var hip: Vector3 = xf * Vector3(0, 0, s * w)
 			var h := hip.y - gy
 			var press := 0.012 + clampf(float(s) * lean_err * ring_k, -0.05, 0.04)   # lean: one side presses, the other lifts
+			if hold:
+				press = clampf(lift, -0.02, 0.08) + clampf(float(s) * lean_err * ring_k, -0.03, 0.03)
 			var foot := Vector3.ZERO
 			var use := false
 			if absf(drive) > 0.05 and behind > ring_push[0] and behind < ring_push[1]:
-				var back := sqrt(maxf(0.0, reach * reach - lat * lat - (h + press) * (h + press))) * absf(drive)
+				var back := sqrt(maxf(0.0, reach * reach - lat * lat - (h + press) * (h + press))) * absf(drive) * minf(push_k, 1.0 / 0.97)
 				foot = hip + ax * float(s) * lat - fw * dirv * back
 				use = true
 				pushing += 1
-			elif absf(drive) <= 0.05 and absf(ang) < 55.0:
+			elif (hold and absf(ang) < (100.0 if meth == "c" else 70.0)) or (absf(drive) <= 0.05 and absf(ang) < 55.0):
 				foot = hip + ax * float(s) * lat
 				use = true
 			if use:
@@ -581,7 +797,108 @@ func _ring_step(dt: float) -> void:
 				d["hp%d%s" % [i, sd]] = 0.0
 				d["kn%d%s" % [i, sd]] = 0.0
 	apply(d)
-	ring_info = {"ok": true, "lean": ring_lean, "pushing": pushing, "centre": c}
+	ring_info["ok"] = true
+	ring_info["lean"] = ring_lean
+	ring_info["pushing"] = pushing
+	ring_info["centre"] = c
+
+
+func _ring_c(dt: float, rs: Dictionary, lean_err: float) -> void:
+	"""c «Füsse passen sich an» (abrollen): every leg near the bottom plants its foot and keeps it there, the ring rolls
+	over the feet. Each step the legs aim at a wanted ring pose a little ahead: forward by the wanted speed, up / down to
+	the wanted height, turned as a wheel of that height would turn, tilted for curves. ≥ 3 contacts: all legs within
+	±100° of the bottom that reach the ground stand on it; fewer than 3 → they press harder."""
+	var N: int = m.n()
+	var c: Vector3 = rs["c"]
+	var ax: Vector3 = rs["ax"]
+	var fw: Vector3 = rs["fw"]
+	var gy: float = rs["gy"]
+	var w: float = m.u("halbe_breite")
+	var reach: float = (m.u("oberschenkel") + m.u("unterschenkel")) * 0.97
+	var lat := ring_lat()
+	var ht := ring_target()
+	var vt := drive * maxf(tempo * c_speed, 0.08)
+	var dx := vt * c_lead + c_kv * (vt - _ring_v) * c_lead
+	var dy := c_kh * (ht - (c.y - gy))
+	var pivot := c
+	var des := Transform3D(Basis(fw, lean_err * c_tilt) * Basis(ax, -dx / maxf(ht, 0.05)), Vector3.ZERO)
+	des = Transform3D(des.basis, pivot + fw * dx + Vector3.UP * dy - des.basis * pivot)
+	var press := 0.004 + (0.006 if m.ground_contacts() < 3 else 0.0)
+	var d := {}
+	var planted := 0
+	for i in range(N):
+		var xf: Transform3D = m.segment_xf(i)
+		var dxf: Transform3D = des * xf
+		var r := xf.origin - c
+		var ang := rad_to_deg(atan2(Vector3.DOWN.cross(r).dot(ax), Vector3.DOWN.dot(r)))
+		for s in [-1, 1]:
+			var key := "%d%d" % [i, s]
+			var sd := "l" if s < 0 else "r"
+			var hip: Vector3 = xf * Vector3(0, 0, s * w)
+			var want: Vector3 = hip + ax * float(s) * lat
+			var g := _ground_at(want, hip.y + 0.05, gy)
+			var ok := absf(ang) < c_win and hip.y - g < reach * 0.95
+			if ok and not _latch_ft.has(key):
+				_latch_ft[key] = Vector3(want.x, g, want.z)      # touch down below the hip
+			if _latch_ft.has(key) and (not ok or ((_latch_ft[key] as Vector3) - hip).length() > reach):
+				_latch_ft.erase(key)                            # left the window or stretched out: lift
+			if _latch_ft.has(key):
+				var ft: Vector3 = _latch_ft[key] - Vector3(0, press, 0)
+				var a := leg_ik(s, dxf.affine_inverse() * ft)
+				d["hy%d%s" % [i, sd]] = a[0]
+				d["hp%d%s" % [i, sd]] = a[1]
+				d["kn%d%s" % [i, sd]] = a[2]
+				planted += 1
+			else:
+				d["hy%d%s" % [i, sd]] = 0.0
+				d["hp%d%s" % [i, sd]] = 0.0
+				d["kn%d%s" % [i, sd]] = 0.0
+	apply(d)
+	ring_info["ok"] = true
+	ring_info["lean"] = ring_lean
+	ring_info["pushing"] = planted
+	ring_info["centre"] = c
+	ring_info["ht"] = ht
+
+
+func spoke_radius() -> float:
+	"""b: the biggest foot circle every leg reaches with room for ±spoke_k"""
+	var a: float = m.pitch_len() * 0.5 / tan(PI / m.n())
+	var reach: float = (m.u("oberschenkel") + m.u("unterschenkel")) * 0.92 / (1.0 + spoke_k)
+	var off := deg_to_rad(90.0 / m.n())                   # 2 N spokes, evenly spread (4er: ±22.5°, 6er: ±15°, 8er: ±11.25°)
+	var sn := sin(off)
+	var cs := cos(off)
+	# |(R sn, R cs − a)| = reach  →  R² − 2 R a cs + a² − reach² = 0
+	var disc := a * a * cs * cs - (a * a - reach * reach)
+	return a * cs + sqrt(maxf(0.0, disc))
+
+
+func _ring_spokes(rs: Dictionary) -> void:
+	"""b: every leg a spoke in the ring plane, the feet on a circle; drive = longer spokes behind, shorter ahead"""
+	var c: Vector3 = rs["c"]
+	var ax: Vector3 = rs["ax"]
+	var w: float = m.u("halbe_breite")
+	var rf := clampf(ring_target(), corner_height() + 0.005, spoke_radius())
+	var dirv := 1.0 if drive >= 0.0 else -1.0
+	var d := {}
+	for i in range(m.n()):
+		var xf: Transform3D = m.segment_xf(i)
+		var radial: Vector3 = -xf.basis.y.normalized()
+		for s in [-1, 1]:
+			var dir := Basis(ax, deg_to_rad(90.0 / m.n()) * float(s)) * radial
+			var ang := atan2(Vector3.DOWN.cross(dir).dot(ax), Vector3.DOWN.dot(dir))   # + = ahead of the bottom
+			var k := 1.0 - spoke_k * drive * sin(clampf(ang * dirv, -PI * 0.5, PI * 0.5)) * dirv
+			k *= 1.0 + spoke_turn * turn * float(s)
+			var foot: Vector3 = c + dir * rf * k + ax * float(s) * (w + ring_lat())
+			var a := leg_ik(s, xf.affine_inverse() * foot)
+			var sd := "l" if s < 0 else "r"
+			d["hy%d%s" % [i, sd]] = a[0]
+			d["hp%d%s" % [i, sd]] = a[1]
+			d["kn%d%s" % [i, sd]] = a[2]
+	apply(d)
+	ring_info["ok"] = true
+	ring_info["lean"] = ring_lean
+	ring_info["centre"] = c
 
 
 func _ground_at(p: Vector3, from_y: float, fallback: float) -> float:
