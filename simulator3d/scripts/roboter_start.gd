@@ -11,7 +11,8 @@ const UI = preload("res://scripts/ui_style.gd")
 const AUTOSTART_SEK := 3.0             # the start of the simulator first (scene, panel, news), then the lab
 const KLEIN_PT := 600.0
 
-static var klein_test = null           # tests: true / false instead of the size of the window
+# tests: the meta «klein_test» (true / false) of the lab node instead of the size of the window (no static var: with one,
+# Godot 4.3 crashed at the exit of other tests, signal 11 after «… OK»)
 
 
 static func autostart_ziel(args: PackedStringArray) -> String:
@@ -57,8 +58,8 @@ static func klein_fuer(size: Vector2) -> bool:
 
 
 static func klein(r) -> bool:
-	if klein_test != null:
-		return bool(klein_test)
+	if r.has_meta("klein_test"):
+		return bool(r.get_meta("klein_test"))
 	return r.is_inside_tree() and klein_fuer(r.get_viewport().get_visible_rect().size)
 
 

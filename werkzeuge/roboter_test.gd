@@ -128,7 +128,7 @@ func _process(_dt: float) -> bool:
 						and RS.autostart_ziel(PackedStringArray([])) == "")
 				check("Handy-Grösse: 390 × 844 klein, 1366 × 768 nicht", RS.klein_fuer(Vector2(390, 844)) and not RS.klein_fuer(Vector2(1366, 768)))
 				check("ohne --roboter bleibt das Labor zu", main.roboter == null or not main.roboter.is_open())
-				RS.klein_test = false                                # (the headless window is tiny: the PC case here, the phone at the end)
+				main.roboter.set_meta("klein_test", false)   # (the headless window is tiny: the PC case here, the phone at the end)
 				RS.autostart_pruefen(main, WEB.roboter_args({"roboter": "1"}))
 				return false
 			if not main.roboter.is_open():
@@ -416,7 +416,7 @@ func _process(_dt: float) -> bool:
 			if frames() < 10:
 				return false
 			check("Geschlossen: Physik wieder wie vorher", Engine.physics_ticks_per_second == 30 and not main.roboter.is_open(), str(Engine.physics_ticks_per_second))
-			RS.klein_test = true                                 # phone-sized: the hint, the panel closed, the button «Bedienfeld»
+			main.roboter.set_meta("klein_test", true)    # phone-sized: the hint, the panel closed, the button «Bedienfeld»
 			RS.oeffnen(main)
 			var d: Dictionary = main.control({"action": "roboter", "do": "info"})
 			var lw = main.roboter
@@ -435,7 +435,7 @@ func _process(_dt: float) -> bool:
 				return false
 			check("Handy: «OK» schliesst den Hinweis", main.roboter.layer.find_child("hinweis_pc", true, false) == null)
 			main.roboter.control({"do": "close"})
-			RS.klein_test = null
+			main.roboter.remove_meta("klein_test")
 			return _end()
 	return false
 
