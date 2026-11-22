@@ -431,6 +431,8 @@ func set_on(v: bool) -> void:
 		return
 	if v and fly:
 		set_fly(false)
+	if not v and person != null and person.get("ruhe") != null:
+		person.ruhe.aus()                                # 22.11.2026: the hidden panels back first (before the panel below)
 	on = v
 	if on and main.patrol != null and main.patrol.active:
 		main.patrol.set_active(false)                    # 3D-3.88: exploring and patrol exclude each other
@@ -532,6 +534,8 @@ func _input(ev: InputEvent) -> void:
 					person.sachen.feldstecher(false)            # … then the binoculars / the menu «Rucksack»
 					person.sachen.menu(false)
 					get_viewport().set_input_as_handled()
+				elif person != null and person.get("camp") != null and person.camp.frage_beim_ende(func(): set_on(false)):
+					get_viewport().set_input_as_handled()       # 22.11.2026: first «Camp stehen lassen oder einpacken?»
 				else:
 					set_on(false)
 			KEY_P:
