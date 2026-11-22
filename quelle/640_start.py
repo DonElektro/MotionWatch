@@ -43,7 +43,7 @@ if __name__ == "__main__":
     if a.install_service:
         sys.exit(install_service())
     WEB_OPTS.update(bind=a.bind, https=a.https or bool(a.cert and a.key), cert=a.cert, key=a.key)
-    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))          # systemd stop -> finish the recording, save the settings
+    signal.signal(signal.SIGTERM, _on_sigterm)                     # systemd stop -> finish the recording, save the settings (010: exit 0)
     if a.demo:
         DEMO["on"] = True
         set_data_dir(a.config or os.path.join(tempfile.gettempdir(), "motionwatch-demo"))
