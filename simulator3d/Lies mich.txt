@@ -498,7 +498,9 @@ NEU IN 3.77.0
 3.77.0: Im Bergtal gibt es jetzt erfundene Wildruhezonen zum Üben: sie stehen auf der Übersichtskarte, und «Hier
 übernachten» warnt, wenn der Platz in einer Zone liegt – passend zu «🏕 Wildcamp» auf der Karte von MoveEye 4.21.0
 (Bergtal-Karte 2). Neu im Entwickler-Bereich: «Zur schönsten Aussicht» springt direkt zur Chanzle über dem Gumpisee
-(auch aus einer anderen Szene).
+(auch aus einer anderen Szene). Frei erkunden: Der Schnelllauf hält sein Tempo jetzt auch bergauf und bergab (bei 40 m/s
+rund 38 m/s statt 12); erst an sehr steilen Hängen wird die Figur sanft langsamer, und sie bleibt beim schnellen
+Abwärtsrennen am Boden.
 So testest du: im Bergtal die Übersichtskarte öffnen (Wildruhezonen sichtbar), in einer Zone «Hier übernachten» wählen;
 in MoveEye /karte → «⛰ Bergtal» mit «🏕 Wildcamp»: dieselben Zonen.
 
