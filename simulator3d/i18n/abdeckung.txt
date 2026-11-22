@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8354 (Stellen: 11606)
-Übersetzt: en 8354, fr 8354, it 8354, rm 8354
+Texte gesamt: 8355 (Stellen: 11608)
+Übersetzt: en 8355, fr 8355, it 8355, rm 8355
 Unsicher markiert: 428
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 540 Stellen
 Nicht mehr im Code (noch in texte.json): 408
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 30695, schlüssel 23664, keine Wörter 15124, index 10592, technisch 3931, doc 2679, einheit 351, log 204, englisch 148, pfad 130, stringname 107, html 69, klasse 45, shader 6
+Übersprungen (Grund: Anzahl): kennung 30699, schlüssel 23666, keine Wörter 15124, index 10592, technisch 3933, doc 2680, einheit 351, log 204, englisch 148, pfad 130, stringname 107, html 69, klasse 45, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -30,7 +30,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   einbruch.gd              102     0
   spieltest.gd              99    20
   kit_k3_daten.gd           96     0
-  bergtal_aussicht.gd       94     4
+  bergtal_aussicht.gd       96     4
   testrun.gd                94     3
   templates.gd              94     6
   toolbar.gd                89     3
@@ -955,10 +955,10 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   werkstatt_einzel.gd:478  'keine'
   werkstatt_einzel.gd:478  'keine'
   werkstatt_einzel.gd:666  '&lang='
-  bergtal_aussicht.gd:358  'von'
-  bergtal_aussicht.gd:537  'von'
-  bergtal_aussicht.gd:1160  'Abzeichen: '
-  bergtal_aussicht.gd:1161  'von'
+  bergtal_aussicht.gd:370  'von'
+  bergtal_aussicht.gd:549  'von'
+  bergtal_aussicht.gd:1172  'Abzeichen: '
+  bergtal_aussicht.gd:1173  'von'
   camphys.gd:153  ' · %.1f Blenden zu dunkel'
   dataset.gd:54  'Spiel: '
   dataset.gd:319  ' · Vielfalt hoch'
