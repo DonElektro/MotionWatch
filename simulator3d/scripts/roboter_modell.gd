@@ -56,7 +56,8 @@ const FARBE := {"koerper": Color("#b4b2a9"), "gelenk": Color("#7f77dd"), "huefte
 		"knie": Color("#d85a30"), "kamera": Color("#2c2c2a"), "linse": Color("#378add"), "kupplung": Color("#ef9f27"),
 		"rot": Color("#ff2d2d"), "locked": Color("#639922")}
 
-var p := START.duplicate()
+var p := START.duplicate()          # what the sliders say (torque, speed, friction, current: live)
+var bp := START.duplicate()         # the shape the robot was built with (geometry, masses) - p until the next build
 var bodies: Array = []             # {rb, kind, seg, side, off (frame -> body), mis [MeshInstance3D], mat, shape_cs}
 var servos: Array = []             # see _servo()
 var seg_body: Array = []           # index of the body of segment i
@@ -80,10 +81,10 @@ var built_ok := false
 
 # ---- Masse (Einheiten -> Meter) ------------------------------------------------------------------------------------------
 func n() -> int:
-	return int(p["segmente"])
+	return int(bp["segmente"])
 
 func u(k: String) -> float:
-	return float(p[k]) * float(p["massstab"])
+	return float(bp[k]) * float(bp["massstab"])
 
 func run_len() -> float:                 # Länge der 45°-Schräge (Einheit Meter)
 	return maxf(0.0, u("halbe_breite") - u("halbe_breite_spitze"))
@@ -127,6 +128,7 @@ func build(at: Transform3D, angles := {}) -> void:
 	"""builds the robot with segment 0 at «at» in the zero pose (joints made there), then moves it into the pose «angles»
 	(servo id -> degrees; missing = 0) and onto the ground (lowest point at at.origin.y)"""
 	clear()
+	bp = p.duplicate()
 	root_xf = at
 	_mat_red = StandardMaterial3D.new()
 	_mat_red.albedo_color = FARBE["rot"]
@@ -135,8 +137,8 @@ func build(at: Transform3D, angles := {}) -> void:
 	var N := n()
 	var P := pitch_len()
 	var w := u("halbe_breite")
-	var ms := float(p["masse_segment"])
-	var mb := float(p["masse_bein"])
+	var ms := float(bp["masse_segment"])
+	var mb := float(bp["masse_bein"])
 	var lf := u("oberschenkel")
 	var lt := u("unterschenkel")
 	# bodies + servos (parent before child)

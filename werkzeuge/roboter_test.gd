@@ -86,6 +86,7 @@ func _process(_dt: float) -> bool:
 			check("63 Körper (8 Segmente, 7 Bügel, 16 × 3 Beinteile)", m.bodies.size() == 63, str(m.bodies.size()))
 			check("Physik 120 Schritte/s", Engine.physics_ticks_per_second == 120, str(Engine.physics_ticks_per_second))
 			lab.apply_pose("gerade", true)
+			set_meta("c0", m.com())
 			next_step()
 		1:
 			if frames() < 480:
@@ -95,7 +96,7 @@ func _process(_dt: float) -> bool:
 			check("Stehen: ruhig nach 4 s", m.max_speed() < 0.05 and sane(), "v %.3f m/s" % m.max_speed())
 			check("Stehen: Servos am Ziel", float(e[0]) < 3.0, "%.1f° bei %s" % e)
 			check("Stehen: Schwerpunkt 5 … 12 cm hoch", c.y > 0.05 and c.y < 0.12, "%.3f m" % c.y)
-			check("Stehen: nicht weggerutscht", Vector2(c.x + 0.57, c.z).length() < 0.08, str(c))
+			check("Stehen: nicht weggerutscht", Vector2(c.x - (get_meta("c0") as Vector3).x, c.z - (get_meta("c0") as Vector3).z).length() < 0.03, str(c))
 			check("Stehen: keine Überlast, keine Kollision", m.overloaded().is_empty() and m.collide.is_empty(), "%s %s" % [m.overloaded(), m.colliding_names()])
 			# leg maths = model
 			var bw = lab.bew

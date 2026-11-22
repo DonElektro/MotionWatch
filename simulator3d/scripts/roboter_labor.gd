@@ -83,7 +83,7 @@ func open() -> void:
 	Engine.physics_ticks_per_second = TICKS
 	_build_world()
 	_build_ui()
-	_fill_servo_sliders()
+	_start_physics()
 	set_view(view)
 	set_tab(tab)
 
@@ -136,6 +136,10 @@ func _build_world() -> void:
 	world.add_child(model)
 	bew = BEWEGUNG.new()
 	bew.m = model
+
+
+func _start_physics() -> void:
+	"""once the viewport is in the tree (joints need node paths): own space settings, then the robot"""
 	var sp: RID = vp.find_world_3d().space
 	model.space_rid = sp
 	PhysicsServer3D.space_set_param(sp, PhysicsServer3D.SPACE_PARAM_SOLVER_ITERATIONS, MODELL.LOESER)

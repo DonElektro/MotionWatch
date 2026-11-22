@@ -50,7 +50,7 @@ func _legs(d: Dictionary, i: int, foot_l: Vector3, foot_r: Vector3) -> void:
 
 
 func stand_foot(s: int, h := -1.0) -> Vector3:
-	var sc: float = m.p["massstab"]
+	var sc: float = m.bp["massstab"]
 	var hh := (hoehe if h < 0 else h) * sc
 	return Vector3(0, -hh, s * (m.u("halbe_breite") + spreiz * sc))
 
