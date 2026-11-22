@@ -28,6 +28,52 @@
 SB_LEISTE = ("leiste1", "leiste2", "leiste3", "leiste4", "leiste5", "leiste6")
 SB_SLOTS = ("titel", "grat", "grat_hoch", "lager", "abend", "nacht", "pano") + SB_LEISTE
 # place: (big, small, bytes of the big one, axis of the limit "w" / "h", at least px on that axis)
+
+# Programmtext in der ZIP (Hauptdatei kleiner, 22.11.2026; Muster 639zzzzk / 639zzzzm): ab Zeile 77 steht der Teil in EINEM
+# Literal SB_PY - bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert), zd_exec führt es hier aus (Zeilennummern wie
+# in dieser Datei). Keine Start-, Schutz-, Alarm-, Update- oder Reparatur-Funktion: ohne ZIP fehlt der Teil einfach. Was ohne
+# ZIP gelten muss (Einstellungen, Sperrlisten, Rückfall-Funktionen für andere Teile), steht oben ausserhalb des Literals.
+
+_SB_LOCK = threading.Lock()
+
+
+_SB_CFG = {"hp_start_variant": "B"}
+
+
+for _k, _v in _SB_CFG.items():
+    CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
+
+
+USER_SETTINGS_DENY.update(_SB_CFG)
+
+
+APPKEY_DENY_KEYS.update(_SB_CFG)
+
+
+LOCK_DENY_KEYS.update(_SB_CFG)
+
+
+APPKEY_DENY_PATHS.update({"/api/startbilder", "/startbilder"})
+
+
+LOCK_DENY_PATHS.add("/api/startbilder")
+
+
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+SB_PY = r'''
 SB_SPEC = {"titel": (1600, 900, 250000, "w", 600), "grat": (2400, 1200, 400000, "w", 900), "grat_hoch": (1050, 675, 300000, "w", 500),
            "lager": (1600, 900, 250000, "w", 600), "abend": (1600, 900, 250000, "w", 600), "nacht": (1600, 900, 250000, "w", 600),
            "pano": (2600, 1200, 400000, "w", 1200)}
@@ -38,15 +84,15 @@ SB_FIELDS = {"titel": ("line", "kick", "say"), "grat": ("kick", "say"), "lager":
 SB_CHAPTERS = ("grat", "lager", "abend", "nacht")             # A: the chapters 2 … 5 after the title picture
 SB_UPLOAD_MAX = 25 << 20
 SB_DIR = "Startbilder"
-_SB_LOCK = threading.Lock()
-_SB_CFG = {"hp_start_variant": "B"}
-for _k, _v in _SB_CFG.items():
-    CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
-USER_SETTINGS_DENY.update(_SB_CFG)
-APPKEY_DENY_KEYS.update(_SB_CFG)
-LOCK_DENY_KEYS.update(_SB_CFG)
-APPKEY_DENY_PATHS.update({"/api/startbilder", "/startbilder"})
-LOCK_DENY_PATHS.add("/api/startbilder")
+
+
+
+
+
+
+
+
+
 if isinstance(_HP_TYPES, dict):
     _HP_TYPES.setdefault("webp", ("image/webp",))             # the check of the public addresses (639zzzh)
 
@@ -999,3 +1045,5 @@ def startbilder_selftest():
 
 
 SELFTEST_EXTRA.append(("Start page: own pictures (A / B, focus, without EXIF, Startbilder/ on the web space) (639zzzzf)", startbilder_selftest))
+'''
+zd_exec(SB_PY and "\n" * 75 + SB_PY, "639zzzzf_startbilder.py")   # line 1 of SB_PY = line 76: the line numbers are those of this file

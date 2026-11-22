@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-22 18:16",
+ "generated": "2026-11-22 19:43",
  "versions": [
+  {
+   "version": "4.22.0",
+   "file": "webcam_bewegung_4_22_0.py",
+   "url": "",
+   "sha256": "f71a3a930b213ae970c1731ffc0d51e0bf8d3f836479a87673d11f8e6f442c98",
+   "date": "2026-11-22 19:43",
+   "notes": "Besucherseite /info/ neu gestaltet – feine Radar-Ringe mit langsamem Strahl im Hintergrund, Erkennungs-Ecken, Abschnittsleiste am PC, hell oder dunkel wie das Gerät. «Alle Funktionen» mit Suchfeld (Name und Satz, mit Anzahl) und einer Kachel mit der Anzahl Funktionen. Schwenkbereich ±135°. «Eine Nacht» spielt jeden Zeitpunkt ganz ab. Akku: Geekworm X1206 V2.0 als Standard, Waveshare UPS HAT (E) auch möglich. Die Fussnote nennt die Nummer dieser MoveEye.",
+   "size": 3622208,
+   "sig": "eb7dcd66de0644637a6e07c73ee921b680c1d1ec2085eb0f7c9ceb3d314b581f55d1163eb628197b940119deb10727263075eb69d5f584d01249371de10bbb0f",
+   "data": {
+    "file": "moveeye_daten_4_22_0.zip",
+    "url": "",
+    "sha256": "07e03e8956bb1cb2ed9a13267fb153620569e3f8973b8b97419bae901ec56496",
+    "size": 18208098,
+    "sig": "d7d896ec471a5cdf98945e1e41fd4bf63b9c17a7b0941c196cff9ecc5349bc27983c8f1dc78c58723411e27ce5862add50c0a5d6fc4dc6842ca1c71b9e3bbc0b"
+   }
+  },
   {
    "version": "4.21.0",
    "file": "webcam_bewegung_4_21_0.py",
    "url": "",
    "sha256": "6334190e9cf076e9fb354e544117d0d99feb21bd9826cc09d5bb787d92bad862",
-   "date": "2026-11-22 17:02",
+   "date": "2026-11-22 19:39",
    "notes": "Startseite der Homepage: Titel, Auge, Satz und alle Kacheln passen ohne Scrollen auf Laptop, iPad und Handy. ‹Die Karte des Grossvaters› hat jetzt ‹▶ Ganzes Spiel› und je einen Knopf pro Kapitel. Neue Kachel ‹ℹ️ Besucherseite›: MoveEye lädt die Produktseite als Info/ auf den Webspace (Schalter ‹Besucherseite (Info/)›, ab Werk an; dort ohne ‹✕›, ‹Senden› kopiert die Anfrage).",
    "size": 4040648,
    "sig": "666ef5a2d50611ece6533e9b58d009cc0f0a4ca256aa4b2b229d3dbaa8df7a6e14080cb3cebe0f3c0e16adf2254126b23161c4e1f70967ed247bf258bb416701",
@@ -136,23 +153,6 @@
     "sha256": "f1e41a9c3f50b9c502ee82276f94e7ce0aa4913ffc2ab2fde152297889a3e4c6",
     "size": 14249994,
     "sig": "0d6e6aff888f73d615dfb5aa3347d3712e24f39cfa1353f0fab4bec9200e467c773c48797bb2729637052421240430b01652b0085c14ed80ed05113096687e07"
-   }
-  },
-  {
-   "version": "4.12.0",
-   "file": "webcam_bewegung_4_12_0.py",
-   "url": "",
-   "sha256": "b268801d37aeae57875231bfe19ae6dfc4b247a3b8202d570fa4787df26fa6e9",
-   "date": "2026-11-16 10:03",
-   "notes": "Topo-Karte: die Offline-Karte der Schweiz als Wanderkarte mit Höhenlinien und Relief (Paket karten-2)",
-   "size": 4033604,
-   "sig": "b74aa014cb672bfec9151d48fced2f84b8a0c083641110ebb9a48b4a9a6e21b6966e9cf0eae14d16d62663758f952f6efbb34f4292acba6eb55dd27b2f20ed0a",
-   "data": {
-    "file": "moveeye_daten_4_12_0.zip",
-    "url": "",
-    "sha256": "61a3d25515473bc7bbed256a0bb5b6988f60c7c7b0589dc9a6c8e52919f86b40",
-    "size": 14221878,
-    "sig": "b7db78480ed52ba601066296f0445b87d702813876202f150c56655383f31ca640c75dfa0afcc05aa278d9efdec8be04ed33b5e5409b77a74f68aadab82f6306"
    }
   },
   {

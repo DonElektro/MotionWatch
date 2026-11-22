@@ -996,6 +996,7 @@ BK_JS = r"""
     try { map.touchZoomRotate.disableRotation(); map.keyboard.disableRotation(); } catch (e) {}
     window.KQMAP = map;
     map.addControl(new ml.NavigationControl({showCompass: true, visualizePitch: true}), "top-right");
+    if (window.kqFull) kqFull(map);                                     // «⛶» full screen under the compass (639zzq)
     map.on("styleimagemissing", e => { if (String(e.id).startsWith("bk-") && !map.hasImage(e.id)) map.addImage(e.id, icon(e.id.slice(3)), {pixelRatio: 2}); });
     const sw = el("div", "kq-sw bk-3d"); sw.setAttribute("role", "group"); sw.setAttribute("aria-label", "2D / 3D");
     [["2d", "2D"], ["3d", "3D"]].forEach(([v, n]) => { const x = btn(n, "", e => { e.stopPropagation(); set3d(v === "3d"); }); x.dataset.v = v; x.id = "bk-" + v; sw.appendChild(x); });

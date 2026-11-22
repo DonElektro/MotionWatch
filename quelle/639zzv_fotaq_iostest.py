@@ -27,6 +27,28 @@
 #   * Rückbau: diese Datei löschen (und den «Range»-Abschnitt in 340 – der schadet aber nicht).
 # Selbsttest fqt_selftest; Tests werkzeuge/fotaq_iostest.py (--moveeye: Laden, Pins, Port, Stücke; --paket: die Varianten im Browser).
 # ----------------------------------------------------------------------------
+
+# Programmtext in der ZIP (Hauptdatei kleiner, 22.11.2026; Muster 639zzzzk / 639zzzzm): ab Zeile 52 steht der Teil in EINEM
+# Literal FQT_PY - bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert), zd_exec führt es hier aus (Zeilennummern wie
+# in dieser Datei). Keine Start-, Schutz-, Alarm-, Update- oder Reparatur-Funktion: ohne ZIP fehlt der Teil einfach. Was ohne
+# ZIP gelten muss (Einstellungen, Sperrlisten), steht oben ausserhalb des Literals.
+
+
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+FQT_PY = r'''
 FQT_TAG = "fotaqios-10"                  # the probe release of the workflow «FOTAQ» (job «ios»); N of the file = N of the tag
 FQT_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + FQT_TAG + "/"}   # tests: local server
 # values from pins.txt of the probe release; size 0 = not released yet («comes with an update»)
@@ -395,3 +417,5 @@ def fqt_selftest():
 
 
 SELFTEST_EXTRA.append(("Flight of the Amazon Queen: iPhone test next to the game (639zzv)", fqt_selftest))
+'''
+zd_exec(FQT_PY and "\n" * 50 + FQT_PY, "639zzv_fotaq_iostest.py")   # line 1 of FQT_PY = line 51: the line numbers are those of this file
