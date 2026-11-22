@@ -208,6 +208,11 @@ def lauf(datei):
     ok(all(p in idx for p in sb), "index.html nennt jedes hochgeladene Bild")
     ok(idx.index('href="Funk/"') < idx.index('href="Sim/"') < idx.index('id="sc"') < idx.index('class="strip"'), "B: Titelbild, Knöpfe, Panorama, Leiste")
     ok("📡 Handy-Funkgerät" in idx and "Mein Lager, mein Wächter." in idx and "object-position:82.0% 70.0%" in idx, "📡, eigene Titelzeile, Fokuspunkt")
+    def links_ok(h_):
+        pos_ = [h_.find('href="%s"' % x) for x in ("demo/", "Sim/?grossvater=1", "Funk/", "Sim/")]
+        return min(pos_) >= 0 and pos_ == sorted(pos_) and "📷 MoveEye" in h_ and "🗺️ Die Karte des Grossvaters" in h_ \
+            and "La carte du grand-père" in h_ and "La charta dal tat" in h_ and 'class="mweye"' in h_ and "mwe-blink" in h_
+    ok(links_ok(idx), "4.19.1 B: alle Links (MoveEye · Karte des Grossvaters · Funkgerät · Simulator, 5 Sprachen) und das bewegte Auge")
     ok(not re.search(r'(?:src|href|srcset)="(?:https?:)?//', idx) and "http://" not in idx and "https://" not in idx, "keine fremden Adressen in der Seite")
     def lokal(p):
         m = re.fullmatch(r"Startbilder/([a-z0-9-]+?)(-k)?-[0-9a-f]{10}\.webp", p)
@@ -235,6 +240,7 @@ def lauf(datei):
     idx = W.files["index.html"].decode()
     ok(idx.index('href="Funk/"') < idx.index('id="story"') and idx.count('class="band') == 4 and 'media="(orientation:portrait)"' in idx,
        "A: Knöpfe unter dem Titelbild, 4 Kapitel, Hochformat fürs Handy")
+    ok(links_ok(idx), "4.19.1 A «Bildgeschichte»: alle Links (MoveEye · Karte des Grossvaters · Funkgerät · Simulator, 5 Sprachen) und das bewegte Auge")
     ok("prefers-reduced-motion" in idx and all(x in idx for x in ("Über den Grat", "Lagerplatz", "Abend", "Nacht", "Du schläfst. MoveEye wacht.")), "A: Kapitel und Bewegung nur auf Wunsch")
     ok('"titel.line"' not in idx.split("var T=", 1)[1].split(",l=", 1)[0] and '"grat.say"' in idx, "eigener Text in allen Sprachen, andere übersetzt")
     old = [p for p in sa if p.startswith("Startbilder/lager-") and "-k-" not in p][0]
@@ -359,8 +365,28 @@ def browser(datei, bilder, fotos):
                     p2.screenshot(path=os.path.join(bilder, "vorschau_%s_390.png" % v))
                     p2.evaluate("window.scrollTo(0, %d)" % (h * (1.6 if v == "A" else 1.0))); p2.wait_for_timeout(1500)
                     p2.screenshot(path=os.path.join(bilder, "vorschau_%s_390_weiter.png" % v))
+                ey = p2.evaluate("() => { const e = document.querySelector('h1 .mweye'), h = e && e.closest('h1'); if (!e) return null; const r = e.getBoundingClientRect(), "
+                                 "s = parseFloat(getComputedStyle(h).fontSize); return [r.width, r.height, s, r.left, getComputedStyle(e.querySelector('.e-lid')).animationName, "
+                                 "[...document.querySelectorAll('main a')].map(a => a.getAttribute('href')), "
+                                 "Math.max(...[...document.querySelectorAll('main a')].map(a => a.getBoundingClientRect().right))]; }")
+                ok(ey and ey[1] >= ey[2] * 0.9 and ey[1] <= ey[2] * 1.5 and ey[3] < 80 and ey[4] == "mwe-blink",
+                   "Vorschau %s: bewegtes Auge oben links beim Titel (B × H %s, Schrift %s px)" % (v, ey and [round(ey[0]), round(ey[1])], ey and ey[2]))
+                ok(ey and ey[5] == ["demo/", "Sim/?grossvater=1", "Funk/", "Sim/"] and ey[6] <= 390, "Vorschau %s 390 px: 4 Knöpfe in der Reihenfolge, nichts ragt hinaus %s" % (v, ey and ey[5]))
                 ok(not e2, "Vorschau %s: keine JS-Fehler %s" % (v, e2[:2]))
                 p2.close()
+            ctx3 = br.new_context(viewport={"width": 1024, "height": 1366}, device_scale_factor=2, reduced_motion="reduce",   # iPad, still
+                                  http_credentials={"username": "admin", "password": ADMIN_PW}, locale="de-CH")
+            p3 = ctx3.new_page(); e3 = []
+            p3.on("pageerror", lambda e: e3.append(str(e)))
+            for v in ("A", "B"):
+                p3.goto(base + "/startbilder/vorschau?v=" + v, wait_until="load"); p3.wait_for_timeout(1200)
+                st = p3.evaluate("() => { const l = document.querySelector('h1 .mweye .e-lid'); return l ? getComputedStyle(l).animationName : 'fehlt'; }")
+                ok(st == "none", "Vorschau %s iPad, «weniger Bewegung»: das Auge steht still (%s)" % (v, st))
+                ok(p3.evaluate("() => document.documentElement.scrollWidth") <= 1024, "Vorschau %s iPad: keine waagrechte Bildlaufleiste" % v)
+                if bilder:
+                    p3.screenshot(path=os.path.join(bilder, "vorschau_%s_ipad.png" % v))
+            ok(not e3, "Vorschau iPad: keine JS-Fehler %s" % e3[:2])
+            ctx3.close()
             br.close()
     finally:
         p.terminate()

@@ -80,14 +80,6 @@ SB_TX = {
     "alt.drawn": ("Zeichnung: Berge und ein Zelt", "Drawing: mountains and a tent", "Dessin : montagnes et une tente",
                   "Disegno: montagne e una tenda", "Dissegn: muntognas ed ina tenda"),
     "lab.strip": ("Weitere Bilder", "More pictures", "Autres images", "Altre immagini", "Ulteriurs maletgs"),
-    "btn.f": ("📡 Handy-Funkgerät", "📡 Phone radio", "📡 Radio du téléphone", "📡 Radio del telefono", "📡 Radio dal telefonin"),
-    "btn.fs": ("Morse und eigenes Protokoll, geht auch offline", "Morse and own protocol, works offline too",
-               "Morse et protocole propre, fonctionne aussi hors ligne", "Morse e protocollo proprio, funziona anche offline",
-               "Morse ed agen protocol, funcziuna er offline"),
-    "btn.s": ("🎮 Simulator (Demo)", "🎮 Simulator (demo)", "🎮 Simulateur (démo)", "🎮 Simulatore (demo)", "🎮 Simulatur (demo)"),
-    "btn.ss": ("Im Browser, ohne Verbindung zu MoveEye · ca. 80 MB", "In the browser, without a connection to MoveEye · about 80 MB",
-               "Dans le navigateur, sans connexion à MoveEye · env. 80 Mo", "Nel browser, senza connessione a MoveEye · ca. 80 MB",
-               "En il browser, senza colliaziun cun MoveEye · ca. 80 MB"),
 }
 _SB_LANGS = ("de", "en", "fr", "it", "rm")
 
@@ -267,7 +259,7 @@ body{margin:0;font:17px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif
 .kick{display:block;margin:0 0 6px;font-size:15px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--kick);text-shadow:0 1px 6px rgba(0,0,0,.7)}
 .line{display:block;font-size:clamp(24px,6vw,46px);font-weight:700;line-height:1.15;letter-spacing:-.01em;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.6);text-wrap:balance}
 main{padding:20px 24px 12px;max-width:420px;margin:0 auto}
-main a{display:block;margin:12px 0;padding:18px;border-radius:14px;background:var(--card);color:var(--fg);text-decoration:none;border:1px solid var(--line)}
+main a{display:block;margin:12px 0;padding:18px;border-radius:14px;background:var(--card);color:var(--fg);text-decoration:none;border:1px solid var(--line);overflow-wrap:anywhere;box-sizing:border-box}
 main a:hover,main a:focus-visible{border-color:#4a5563;outline:none}main a:focus-visible{box-shadow:0 0 0 3px #e8a54b}
 small{display:block;color:var(--mut);margin-top:4px}
 h2.lab{margin:0;padding:22px 20px 10px;font-size:15px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--kick)}
@@ -356,8 +348,13 @@ SB_DRAWN = ('<svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" r
             '<circle cx="1180" cy="230" r="46" fill="#f3d9a4" opacity=".85"/></svg>')
 
 
+def _sb_btn_tx():
+    """4.19.1: the texts of the buttons come from HP_LINKS (639zzzh) - the same links as the simple start page"""
+    return {("btn.%s" % k) + x: v for _h, k, t, s in HP_LINKS for x, v in (("", t), ("s", s))}
+
+
 def _sb_tx(key, L):
-    v = SB_TX.get(key) or ()
+    v = SB_TX.get(key) or (_sb_btn_tx().get(key) if key.startswith("btn.") else None) or ()
     i = _SB_LANGS.index(L) if L in _SB_LANGS else 0
     return v[i] if len(v) > i and v[i] else (v[0] if v else "")
 
@@ -398,13 +395,11 @@ def sb_page_html(variant=None, url=None, meta=None):
         return '<img src="%s"%s width="%d" height="%d" %s decoding="async" style="%s" %s>' % (
             e(url(slot, False)), srcset, s["w"], s["h"], 'loading="lazy"' if lazy else 'fetchpriority="high"', pos(slot), alt(alt_of or slot, key))
 
-    css = SB_CSS + (SB_CSS_A if v == "A" else SB_CSS_B)
+    css = SB_CSS + (SB_CSS_A if v == "A" else SB_CSS_B) + HP_EYE_CSS          # 4.19.1: the animated eye at the title
     hero = '<header class="hero">' + (img("titel", 72, lazy=False) if "titel" in S else SB_DRAWN.replace("{alt}", e(_sb_tx("alt.drawn", "de"))))
-    hero += ('<div class="top"><h1>MoveEye</h1><p data-t="titel.line">%s</p></div><div class="cap1"><span class="kick" data-t="titel.kick">%s</span>'
+    hero += ('<div class="top"><h1>' + HP_EYE_SVG + 'MoveEye</h1><p data-t="titel.line">%s</p></div><div class="cap1"><span class="kick" data-t="titel.kick">%s</span>'
              '<span class="line" data-t="titel.say">%s</span></div></header>' % (e(tx("titel", "line")), e(tx("titel", "kick")), e(tx("titel", "say"))))
-    btn = ('<main><a href="Funk/"><span data-t="btn.f">%s</span><small data-t="btn.fs">%s</small></a>'
-           '<a href="Sim/"><span data-t="btn.s">%s</span><small data-t="btn.ss">%s</small></a></main>'
-           % tuple(e(_sb_tx(k, "de")) for k in ("btn.f", "btn.fs", "btn.s", "btn.ss")))
+    btn = '<main>' + hp_links_html("de", ids=False) + '</main>'          # 4.19.1: all links of HP_LINKS (MoveEye · Karte · Funk · Sim)
     body, pre, post = "", "", ""
     if v == "A":
         ch = [k for k in SB_CHAPTERS if k in S or (k == "grat" and "grat_hoch" in S)]
@@ -444,7 +439,7 @@ def sb_page_html(variant=None, url=None, meta=None):
                 '<figure><img src="%s" width="%d" height="%d" loading="lazy" decoding="async" draggable="false" style="%s" %s></figure>'
                 % (e(url(k, False)), S[k]["w"], S[k]["h"], pos(k), alt(k, "alt.photo")) for k in strip) + "</div>"
         pre = SB_JS_B                                                # first: the drag hint gets its key, then the language
-    T = {L: {k: _sb_tx(k, L) for k in SB_TX if k not in own} for L in _SB_LANGS[1:]}
+    T = {L: {k: _sb_tx(k, L) for k in list(SB_TX) + list(_sb_btn_tx()) if k not in own} for L in _SB_LANGS[1:]}
     lang = SB_JS_LANG.replace("/*T*/", json.dumps(T, ensure_ascii=False, sort_keys=True).replace("</", "<\\/"), 1)
     head = ('<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
             '<title>MoveEye</title><meta name="color-scheme" content="dark"><meta name="theme-color" content="#111418"><style>' + css + "</style></head><body>")
@@ -970,6 +965,9 @@ def startbilder_selftest():
         assert all(_HP_NAME_RE.match(p.rsplit("/", 1)[-1]) for p in paths) and all(hp_part(p) == "start" and _hp_ours(p) for p in paths)
         h = items[0]["get"]().read().decode("utf-8")
         assert 'href="Funk/"' in h and 'href="Sim/"' in h and "📡 Handy-Funkgerät" in h and "Mein bLager/b" in h and 'class="strip"' in h
+        assert [h.index('href="%s"' % x) for x in ("demo/", "Sim/?grossvater=1", "Funk/", "Sim/")] == sorted(h.index('href="%s"' % x) for x in ("demo/", "Sim/?grossvater=1", "Funk/", "Sim/")), "4.19.1: MoveEye · Karte · Funk · Sim"
+        assert "📷 MoveEye" in h and "🗺️ Die Karte des Grossvaters" in h and '"btn.g": "🗺️ La carte du grand-père"' in h, "4.19.1: the links of HP_LINKS in 5 languages"
+        assert 'class="mweye"' in h and "mwe-blink" in h and "prefers-reduced-motion" in h, "4.19.1: animated eye at the title"
         assert not re.search(r'(?:src|href|srcset)="(?:https?:)?//', h) and "@import" not in h and "fonts.g" not in h, "no external resources"
         assert h.index('href="Funk/"') < h.index('id="sc"'), "the buttons right under the title picture"
         assert '"titel.line"' not in h.split("var T=", 1)[1].split(",l=", 1)[0], "own text: in every language"

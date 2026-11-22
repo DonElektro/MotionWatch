@@ -172,7 +172,11 @@ def main():
                 req("/api/produktbilder?action=box", json.dumps({"slot": "jetzt", "box": [40, 55, 25, 30], "label": "neu: Tisch"}).encode())
             browser(base, a.bilder, "nachher", "jetzt", a.foto)
         elif a.browser:
+            for s in ("live", "tag"):        # 4.19.1: the new page - own pictures also in «Live-Bild Handy» and «Sieh selbst: Tag»
+                req("/api/produktbilder?action=set&slot=%s&pos=50" % s, raw, ctype="application/octet-stream")
             browser(base, "", "", "jetzt", "")
+            for s in ("live", "tag"):
+                req("/api/produktbilder?action=reset", json.dumps({"slot": s}).encode())
         # back to the example
         c, _t, b = req("/api/produktbilder?action=reset", json.dumps({"slot": "jetzt"}).encode())
         ok(c == 200 and not next(s for s in json.loads(b)["slots"] if s["id"] == "jetzt")["custom"], "«Zurück zum Beispiel» (%d)" % c)
@@ -243,16 +247,39 @@ def browser(base, bilder, tag, slot, foto=""):
         p2 = ctx2.new_page(); e2 = []
         p2.on("pageerror", lambda e: e2.append(str(e)))
         p2.goto(base + "/info/", wait_until="load"); p2.wait_for_timeout(1500)
-        for sel in ("#sehen", "#zeitfenster", "#app"):
+        for sel in ("#sehen", "#app"):           # 4.19.1: the Zeitfenster is part of «Sieh selbst» (#sehen, #zf)
             p2.locator(sel).scroll_into_view_if_needed(); p2.wait_for_timeout(1800)
             p2.add_style_tag(content=".bar,.prog{visibility:hidden!important}")
             if bilder:
                 p2.locator(sel).screenshot(path=os.path.join(bilder, "info_%s_%s.png" % (sel[1:], tag)))
         if slot:
             st = p2.evaluate("() => { const i = document.getElementById('zf-now'), m = document.getElementById('zf-mark'); "
-                             "return [i.getAttribute('src'), i.naturalWidth, m.hidden, m.querySelector('span').textContent]; }")
+                             "return [i.getAttribute('src'), i.naturalWidth, m.hidden || getComputedStyle(m).display === 'none', (m.querySelector('span') || m).textContent]; }")
             ok(st[0].startswith("/info/bild/jetzt.webp") and st[1] > 0 and not st[2] and st[3].startswith("neu:"), "/info/: eigenes Bild und Markierung im Zeitfenster %s" % st)
-        ok(not e2, "keine JS-Fehler auf /info/ %s" % e2[:2])
+            ov = p2.evaluate("() => [...document.querySelectorAll('img[data-pb]')].map(i => [i.dataset.pb, (i.getAttribute('src') || '').slice(0, 24)])")
+            own = {k: v for k, v in ov}
+            ok(sorted(own) == ["damals", "jetzt", "live", "nacht", "tag"], "/info/: fünf Bildplätze data-pb (%s)" % sorted(own))
+            if not foto:
+                ok(own["live"].startswith("/info/bild/live.webp") and own["tag"].startswith("/info/bild/tag.webp") and own["nacht"].startswith("data:"),
+                   "/info/: eigene Bilder ersetzen «Live-Bild Handy» und «Sieh selbst: Tag», die anderen bleiben Beispiele (%s)" % ov)
+        wide = p2.evaluate("() => document.documentElement.scrollWidth")
+        ok(wide <= 390, "/info/ bei 390 px ohne waagrechtes Scrollen (%d px)" % wide)
+        ok(p2.evaluate("() => !!document.querySelector('[data-mw-exit]') && !!document.getElementById('ask') && document.querySelectorAll('.langs button[data-lang]').length >= 4"),
+           "/info/: Knopf data-mw-exit, Formular, Sprachwahl")
+        ok(not e2, "keine JS-Fehler auf /info/ (390 px) %s" % e2[:2])
+        ctx3 = br.new_context(viewport={"width": 1440, "height": 900}, locale="de-CH")
+        p3 = ctx3.new_page(); e3 = []
+        p3.on("pageerror", lambda e: e3.append(str(e)))
+        p3.goto(base + "/info/", wait_until="load"); p3.wait_for_timeout(1500)
+        for sel in ("#nacht", "#sehen", "#app", "#technik", "#kontakt"):
+            p3.locator(sel).scroll_into_view_if_needed(); p3.wait_for_timeout(700)
+        p3.evaluate("() => { const b = document.querySelector('.langs button[data-lang=fr]'); if (b) b.click(); }"); p3.wait_for_timeout(500)
+        ok(p3.evaluate("() => document.documentElement.lang") == "fr", "/info/ am PC: Sprachwahl fr")
+        p3.evaluate("() => { document.getElementById('f-name').value = 'Test'; document.getElementById('f-msg').value = 'Frage aus dem Test'; }")
+        p3.evaluate("() => document.getElementById('ask').requestSubmit()"); p3.wait_for_timeout(2500)
+        nt = p3.evaluate("() => document.getElementById('note').textContent")
+        ok(nt.startswith("✓"), "/info/: Formular geht als Mitteilung an MoveEye (%r)" % nt)
+        ok(not e3, "keine JS-Fehler auf /info/ (PC, 1440 px) %s" % e3[:2])
         br.close()
 
 

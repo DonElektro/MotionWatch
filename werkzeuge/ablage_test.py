@@ -35,6 +35,8 @@ import bauen  # noqa: E402
 
 FEHLER = []
 GRENZE_MB = 1.0                     # growth per version in the pack (measured 0.06 - 0.11 MB; the whole zip was 4.9 MB)
+# Ausnahmen, je an EINE Version gebunden (Entscheid Besitzer/Koordinator 22.11.2026) - die Grenze bleibt für alle anderen 1.0 MB
+AUSNAHMEN = {"4.20.0": (3.5, "neue Produktseite /info/ (Bildsatz B, Sim-Clip), einmalig")}
 GERAETE_MAX = 64 * 1024 * 1024      # ZD_MAX_BYTES in part 397 since the first data zip (926d265)
 
 
@@ -145,10 +147,17 @@ def main():
         if len(folge_u) >= 2:
             wu = wachstum(tmp, "ungepackt", folge_u)
             wg = wachstum(tmp, "gepackt", folge_g)
+            def ausnahme(fn):
+                m_ = re.match(r"^moveeye_daten_(\d+)_(\d+)_(\d+)\.zip$", fn)
+                return AUSNAHMEN.get(".".join(m_.groups())) if m_ else None
             for (fn, sz, plus), (_fn, szg, plusg) in list(zip(wu, wg))[1:]:
-                ok(plus <= GRENZE_MB * 1e6, "%s: +%.2f MB im Repository (Datei %.1f MB ungepackt; Grenze %.1f MB)" % (fn, plus / 1e6, sz / 1e6, GRENZE_MB))
+                ax = ausnahme(fn)
+                g_ = ax[0] if ax else GRENZE_MB
+                ok(plus <= g_ * 1e6, "%s: +%.2f MB im Repository (Datei %.1f MB ungepackt; Grenze %.1f MB%s)"
+                   % (fn, plus / 1e6, sz / 1e6, g_, " – Ausnahme: " + ax[1] if ax else ""))
                 print("       zum Vergleich gepackt wie bisher: +%.2f MB (Datei %.1f MB)" % (plusg / 1e6, szg / 1e6))
-            ok(all(g[2] > 4 * u[2] for u, g in list(zip(wu, wg))[1:]), "ungepackt wächst das Repository mindestens 4-mal weniger als gepackt")
+            ok(all(g[2] > 4 * u[2] for u, g in list(zip(wu, wg))[1:] if not ausnahme(u[0])),
+               "ungepackt wächst das Repository mindestens 4-mal weniger als gepackt (ohne die Ausnahmen %s)" % sorted(AUSNAHMEN))
 
         # ---- 3: nothing switches the comparison off ---------------------------------------------------------------------
         print("3  .gitattributes")

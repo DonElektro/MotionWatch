@@ -99,7 +99,42 @@ func _say(t: String) -> void:
 		_say_t = Time.get_ticks_msec() / 1000.0
 
 
+func sync() -> void:
+	"""the switches and choices show the current values (changed elsewhere too, e.g. the bar button «Rennen»)"""
+	if _state == null:
+		return
+	for w in _alle(_state.get_parent()):
+		if not w.has_meta("ctl"):
+			continue
+		var c: Dictionary = w.get_meta("ctl")
+		if c["get"] == null:
+			continue
+		var an_fn = c.extra.get("an", null)
+		if w is CheckButton:
+			(w as CheckButton).set_pressed_no_signal(bool(c["get"].call()))
+		elif w is OptionButton:
+			var ob: OptionButton = w
+			var cur := str(c["get"].call())
+			var opts: Array = c.extra.get("options", [])
+			for i in opts.size():
+				if str(opts[i][0]) == cur and ob.selected != i:
+					ob.select(i)
+			if an_fn is Callable:
+				ob.disabled = not bool(an_fn.call())
+
+
+func _alle(n: Node) -> Array:
+	var out := []
+	if n == null:
+		return out
+	for k in n.get_children():
+		out.append(k)
+		out.append_array(_alle(k))
+	return out
+
+
 func paint() -> void:
+	sync()
 	if _state == null or main == null or Time.get_ticks_msec() / 1000.0 - _say_t < 6.0:
 		return
 	var con: bool = main.mw_addr != "" and main.now() - main.mw_t <= 10.0
@@ -122,7 +157,7 @@ func _process(dt: float) -> void:
 		return
 	_t -= dt
 	if _t <= 0.0:
-		_t = 2.0
+		_t = 0.5
 		paint()
 
 

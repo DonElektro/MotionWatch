@@ -336,7 +336,8 @@ func _sim_tick(dt: float, devs: Array) -> void:
 	var hd := _devs_ok(devs, "head")
 	var hv := look(hd)
 	var pole := btn("l2", _devs_ok(devs, "pole"))
-	if not pole:
+	var figur_pad: bool = ex != null and ex.person_on()           # «Frei erkunden»: ✚ = jump / posture / sit / lie (explore_person.gd)
+	if not pole and not figur_pad:
 		hv += dpad(hd)
 	var t: float = main.now()
 	if hv != Vector2.ZERO and t - _head_t > 0.12:

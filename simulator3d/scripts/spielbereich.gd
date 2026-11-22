@@ -14,6 +14,8 @@ extends Node
 ##   * Stufe des Spielers (pro Spielstand, A6: user://spiel/spielbereich.json = Platz 1, sonst user://spielstand/<n>/):
 ##     steigt mit Entdeckungen, Abzeichen, geschafften Abenteuern und der Erfahrung aus dem Bergtal-Abenteuer (ein Level
 ##     für alles, spielstand.gd). Keine Rangliste.
+##   * «🥾 Frei erkunden» (Besitzer 21.11.2026) unter den Geschichten: Erkunden gleich mit der eigenen Figur, in der Welt, die
+##     gerade geladen ist (explore.gd frei_erkunden, explore_person.gd). /control {"action": "spielbereich", "do": "frei"}.
 ##   * Knöpfe: «Abenteuer starten» (Szene wechseln – Haken adventure_hooks[id] für das spätere Bergtal-Abenteuer),
 ##     «Spiel-Assistent» (gamewiz.gd), «Entdeckungsbuch» (entdecken.gd).
 ## /control {"action": "spielbereich", "do": "info" | "open" | "close" | "start" (id) | "seen" | "reset"} – MoveEye zeigt info().
@@ -391,6 +393,16 @@ func _paint() -> void:
 	# the stories (geschichten.gd)
 	list.add_child(_head(T.t("Geschichten"), fz))
 	list.add_child(regal.shelf(W))
+	list.add_child(_frei_knopf(W, fz))                    # 21.11.2026: «🥾 Frei erkunden» - the own figure, every world
+	for e in _frei_weiter():                              # Etappe 4: the remembered place, start points of other games
+		var wb := Button.new()
+		wb.text = "▶  " + str(e[1])
+		wb.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		wb.custom_minimum_size = Vector2(W, 40 if fz <= 1.0 else 48)
+		wb.add_theme_font_size_override("font_size", int(13 * fz))
+		var wid: String = str(e[0])
+		wb.pressed.connect(func(): close(); main.explore.frei_ab(wid))
+		list.add_child(wb)
 	# discovering: the places one after the other, with Blinki's tip
 	list.add_child(_head(T.t("Entdecken"), fz))
 	var bk: Dictionary = blinki(true)
@@ -444,6 +456,40 @@ func _paint() -> void:
 	cl.text = T.t("Schliessen")
 	cl.pressed.connect(close)
 	bt.add_child(cl)
+
+
+func _frei_knopf(W: float, fz: float) -> Control:
+	"""«🥾 Frei erkunden»: a wide button with one line what it is"""
+	var b := Button.new()
+	b.name = "frei_erkunden"
+	b.text = "🥾  " + T.t("Frei erkunden") + "  –  " + T.t("mit der eigenen Figur durch diese Welt: gehen, rennen, ducken, kriechen, klettern, schwimmen")
+	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.custom_minimum_size = Vector2(W, 48 if fz <= 1.0 else 56)
+	b.add_theme_font_size_override("font_size", int(14 * fz))
+	b.tooltip_text = T.t("Erkunden als Figur starten (zurück in den Mover: U)")
+	b.pressed.connect(frei_erkunden)
+	return b
+
+
+func _frei_weiter() -> Array:
+	"""[[id, text]] - «Weiter am gemerkten Ort (<Welt>)» and the start points other games offer (explore_person.extras)"""
+	var out := []
+	var ex = main.get("explore")
+	if ex == null or ex.person == null or ex.person.extras == null:
+		return out
+	var o: Dictionary = ex.person.extras.ort()
+	if not o.is_empty():
+		out.append(["ort", T.t("Weiter am gemerkten Ort (%s)") % str(o.get("name", ""))])
+	var sp: Dictionary = ex.person.extras.startpunkte()
+	for id in sp:
+		out.append([str(id), T.t("Frei erkunden ab: %s") % str(sp[id].get("name", id))])
+	return out
+
+
+func frei_erkunden() -> bool:
+	close()
+	return main.explore != null and main.explore.frei_erkunden()
 
 
 func _head(t: String, fz: float) -> Label:
@@ -575,6 +621,13 @@ func control(d: Dictionary) -> Dictionary:
 			open()
 		"close":
 			close()
+		"frei_ab":                                     # Etappe 4: «ort» or a start point
+			close()
+			var ok2: bool = main.explore != null and main.explore.frei_ab(str(d.get("id", "ort")))
+			return {"ok": ok2, "explore": main.explore.state() if main.explore != null else {}}
+		"frei":                                        # «🥾 Frei erkunden» (explore_person.gd)
+			var ok_ := frei_erkunden()
+			return {"ok": ok_, "explore": main.explore.state() if main.explore != null else {}}
 		"start":
 			var r := start_adventure(str(d.get("id", "")))
 			r.merge(info())
