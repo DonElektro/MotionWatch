@@ -242,6 +242,101 @@ func _vp(id: String) -> Dictionary:
 	return {}
 
 
+# ---- Ansicht beim Hinfliegen («visit», Entwickler-Knopf) ---------------------------------------------------------------------
+const VISIT_AHEAD := [3.0, 8.0, 15.0, 25.0, 35.0, 42.0]   # m vor dem Punkt (Kreuz 1.5 m, Steinmann 1 m, Fernrohr / Tafel 0 m bleiben
+                                           # hinter dem Auge); höchstens 42 m: «angekommen» gilt bis 45 m (observer)
+const VISIT_EYE := 2.7                     # m über dem Boden (Augenhöhe 1.7 m + 1 m)
+const VISIT_UP := [0.0, 2.5, 5.5]          # wenn eine Kuppe direkt davor die Sicht nimmt: etwas höher (kostet 15 m Sichtweite pro m)
+const VISIT_SPAN := 120.0                  # ° links / rechts der Blickrichtung aus VIEWPOINTS, die abgesucht werden
+
+
+func _sight(b, eye: Vector3, az: float, pitch: float, far := 1500.0) -> float:
+	"""how far one sees along azimuth az (degrees, valley coords) at this pitch before the ground is in the way"""
+	var dir := Vector2(sin(deg_to_rad(az)), -cos(deg_to_rad(az)))
+	var tp := tan(pitch)
+	var d := 2.0
+	while d < far:
+		var q := Vector2(eye.x, eye.z) + dir * d
+		if b.H(q.x, q.y) > eye.y + d * tp:
+			return d
+		d += 3.0 if d < 50.0 else (8.0 if d < 300.0 else 20.0)
+	return far
+
+
+func _free_line(b, eye: Vector3, to: Vector3) -> bool:
+	"""no ground between the eye and the point (1 m margin)"""
+	var n := int(clampf(eye.distance_to(to) / 6.0, 4.0, 400.0))
+	for i in range(1, n):
+		var p := eye.lerp(to, float(i) / n)
+		if b.H(p.x, p.z) > p.y - 1.0:
+			return false
+	return true
+
+
+func visit_view(v: Dictionary) -> Dictionary:
+	"""Besitzer 22.11.2026 (Vorschaubilder): the eye a little beyond the furnishing (cross, cairn, telescope, board are not in
+	the picture) and 1 m higher. Direction and place from the terrain: the deepest view (pitch −2°) within ± VISIT_SPAN of the
+	viewpoint's own direction, the eye 3 … 42 m ahead in that direction and if needed up to 5.5 m higher (a hill or lip right in
+	front, e.g. Passchanzle); turning, walking and rising cost a little (4 m per degree, 3 m per metre ahead, 15 m per metre
+	up), so a free view keeps the viewpoint's own direction. The glacier viewpoint: straight at the glacier, from the nearest
+	place that sees it, looking up to it if it is higher. Pitch otherwise: towards the ground about 400 m ahead (looking down
+	into the valley; a brow in front that hides it: 4° below the brow), between −12° and −2°. Valley coordinates: {eye: Vector3, az: degrees, pitch: rad, ahead: m, up: m}"""
+	var b = B()
+	var c: Vector2 = v.c
+	var look := float(v.look)
+	var glacier := str(v.kind) == "gletscher"
+	var gl: Vector2 = b.GLACIER
+	var gp := Vector3(gl.x, b.H(gl.x, gl.y) + 15.0, gl.y)
+	var best := -1e9
+	var best_az := look
+	var best_r: float = VISIT_AHEAD[0]
+	var best_up := 0.0
+	var a := -VISIT_SPAN
+	while a <= VISIT_SPAN + 0.1:
+		var az := look + a
+		for r in VISIT_AHEAD:
+			if glacier:
+				var g0 := gl - c
+				az = rad_to_deg(atan2(g0.x, -g0.y))
+			var f := Vector2(sin(deg_to_rad(az)), -cos(deg_to_rad(az)))
+			var q: Vector2 = c + f * float(r)
+			for up in VISIT_UP:
+				var eye := Vector3(q.x, b.H(q.x, q.y) + VISIT_EYE + float(up), q.y)
+				var score: float
+				if glacier:
+					score = (2000.0 if _free_line(b, eye, gp) else _sight(b, eye, az, deg_to_rad(-2.0)))
+				else:
+					score = _sight(b, eye, az, deg_to_rad(-2.0)) - 4.0 * absf(a)
+				score -= 3.0 * float(r) + 15.0 * float(up)
+				if score > best + 0.5:
+					best = score
+					best_az = az
+					best_r = float(r)
+					best_up = float(up)
+		if glacier:
+			break
+		a += 5.0
+	var fwd := Vector2(sin(deg_to_rad(best_az)), -cos(deg_to_rad(best_az)))
+	var qq := c + fwd * best_r
+	var y: float = b.H(qq.x, qq.y) + VISIT_EYE + best_up
+	if best_r <= VISIT_AHEAD[0] + 0.1:
+		y = maxf(y, b.H(c.x, c.y) + VISIT_EYE)            # a summit: not below the top
+	var tgt := qq + fwd * 400.0
+	var ty: float = b.H(tgt.x, tgt.y)
+	if glacier:
+		tgt = gl
+		ty = gp.y
+	var want := atan2(ty - y, qq.distance_to(tgt))
+	if not glacier:                                       # a brow in front hides that ground: look a little below the brow
+		var brow := -PI / 2.0
+		for k in range(1, 80):
+			var p: Vector2 = qq + fwd * (k * 5.0)
+			brow = maxf(brow, atan2(b.H(p.x, p.y) - y, k * 5.0))
+		want = maxf(want, brow - deg_to_rad(4.0))
+	var pitch := clampf(want, deg_to_rad(-12.0), deg_to_rad(25.0 if glacier else -2.0))
+	return {"eye": Vector3(qq.x, y, qq.y), "az": snappedf(fposmod(best_az, 360.0), 0.1), "pitch": pitch, "ahead": best_r, "up": best_up}
+
+
 func _short(id: String) -> String:
 	return id.trim_prefix("vp_")
 
@@ -1188,11 +1283,13 @@ func control(d: Dictionary) -> Dictionary:
 				m.fly_tw.kill()
 			if m.has_method("_to_free_view"):
 				m._to_free_view()
-			var eye: Vector3 = b.WG(v.c.x, v.c.y, 1.7)
-			var az := deg_to_rad(float(v.look))
+			var vw := visit_view(v)
+			var eye: Vector3 = b.tal.transform * vw.eye
+			var az: float = deg_to_rad(vw.az)
+			var pt: float = vw.pitch
 			m.view_cam.global_position = eye
-			m.view_cam.look_at(eye + b.tal.basis * Vector3(sin(az), -0.12, -cos(az)), Vector3.UP)
-			return {"ok": true, "vp": v.id, "eye": eye}
+			m.view_cam.look_at(eye + b.tal.basis * Vector3(sin(az) * cos(pt), sin(pt), -cos(az) * cos(pt)), Vector3.UP)
+			return {"ok": true, "vp": v.id, "eye": eye, "az": vw.az, "pitch_deg": snappedf(rad_to_deg(pt), 0.1), "ahead": vw.ahead, "up": vw.up}
 		"look":                                              # tests: turn the view (degrees, 0 = north of the valley)
 			var az2 := deg_to_rad(float(d.get("value", 0.0)))
 			var e2: Vector3 = m.view_cam.global_position
