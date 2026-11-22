@@ -137,6 +137,10 @@ func _initialize() -> void:
 	ok("target tent: the tent of the scene", g.target_world() == m.obj["pir"])
 	m.mw_t = m.t - 30.0
 	ok("old state (no connection): not on", not g.mw_on())
+	var G2 = load("res://scripts/gaeste.gd")                 # the debug marker: where the axis of the spot meets the ground
+	var hp = G2.ground_hit(Vector3(0, 1.6, 0), Vector3(0, -1, -1).normalized(), 0.0)
+	ok("spot axis 45° down from 1.6 m hits the ground 1.6 m ahead (%s)" % [hp], hp != null and (hp as Vector3).distance_to(Vector3(0, 0, -1.6)) < 0.001)
+	ok("spot axis upwards: no ground point", G2.ground_hit(Vector3(0, 1.6, 0), Vector3(0, 0.2, -1).normalized(), 0.0) == null)
 	var inf: Dictionary = g.info()
 	ok("info: tent in MoveEye metres", inf.has("tent_mw") and (inf["tent_mw"] as Array).size() == 2)
 	_end()

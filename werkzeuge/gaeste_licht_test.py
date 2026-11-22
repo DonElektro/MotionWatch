@@ -20,6 +20,7 @@ import argparse
 import base64
 import glob
 import json
+import math
 import os
 import re
 import shutil
@@ -109,6 +110,7 @@ sent = []
 class W:
     pass
 w = W()
+w.frame_out = None
 w.notifier = ns["Notifier"]()
 w.notifier._dispatch = lambda p, jpg, fn: sent.append((p.get("event"), p.get("info_title") or "", p.get("text") or ""))
 ns["Notifier"].configured = staticmethod(lambda: True)
@@ -149,6 +151,23 @@ out["alarm_on"] = run_alarms("on")
 ns["GL_ZD"]["ok"] = False
 out["alarm_nozip"] = run_alarms("nozip")
 ns["GL_ZD"]["ok"] = True
+# a motion detector (PIR) fired by the guest: no alarm; the door sensor still alarms (review 22.11.2026)
+def sensor(kind, nm):
+    sent.clear(); sirens.clear()
+    x = {"id": nm, "name": nm, "kind": kind, "alarm": "always", "src": "sim:" + nm}
+    ns["SENS"]["st"].pop(nm, None)
+    try:
+        ns["sens_fire"](x, "active")
+    except Exception as e:
+        out.setdefault("errs", []).append("sensor %s: %s" % (nm, e))
+    time.sleep(0.3)
+    return [list(sent and [y[0] for y in sent]), list(sirens)]
+C["gl_on"] = True
+out["pir_on"] = sensor("pir", "PIR Zelt")
+out["door_on"] = sensor("door", "Tuer")
+C["gl_on"] = False
+out["pir_off"] = sensor("pir", "PIR Zelt 2")
+C["gl_on"] = True
 # deterrence and relays
 reacted = []
 d = ns["Deterrence"](); d.react = lambda g, l: reacted.append(g)
@@ -298,6 +317,9 @@ def teil_a(datei, tmp):
     ok(a1["sent"].count("tamper") == 2 and {"tamper", "sensor"} <= set(a1["sirens"]) and "noise" in a1["alerts"],
        "an: Sabotage, Diebstahl, Sensor-Sirene und Geräusch wie immer (%s / %s)" % (a1["sent"], a1["sirens"]))
     ok("person" in an["sent"] and "person" in an["sirens"], "ohne Zusatz-ZIP: alter Schutz (Alarm wie immer)")
+    ok(e["pir_on"][1] == [] and "tamper" not in e["pir_on"][0], "an: Bewegungsmelder (PIR) vom Gast = kein Alarm, keine Sirene (%s)" % e["pir_on"])
+    ok("tamper" in e["door_on"][0] and "sensor" in e["door_on"][1], "an: Tür-Sensor alarmiert wie immer (%s)" % e["door_on"])
+    ok("tamper" in e["pir_off"][0] and "sensor" in e["pir_off"][1], "aus: Bewegungsmelder alarmiert wie immer (%s)" % e["pir_off"])
     ok(e["deter_on"] == [] and e["deter_off"] == ["person"], "Abschreckung: an = keine, aus = wie immer (%s / %s)" % (e["deter_on"], e["deter_off"]))
     ok(e["relays"] == ["door", "noise"], "Relais: Person / Wärme fallen weg, Tür / Geräusch bleiben (%s)" % e["relays"])
     lg = e["light_guide"]
@@ -568,7 +590,7 @@ def teil_c(datei, tmp, bilder, godot):
         http_json(sim + "/control", {"action": "gaeste", "do": "look"})
         r = http_json(web + "/api/gaeste", {"action": "target", "kind": "point", "x": tx, "y": ty, "name": "Zelt"}, auth=auth)
         ok(r.get("ok"), "Ziel = Zelt des Simulators (%.1f / %.1f m)" % (tx, ty))
-        shots, phases, t0 = [], [], time.time()
+        shots, phases, t0, meas = [], [], time.time(), []
         want = {"guide": "gaeste_sim_fuehrt.jpg", "arrived": "gaeste_sim_am_zelt.jpg", "farewell": "gaeste_sim_abschied.jpg"}
         while time.time() - t0 < 480 and len(shots) < 3:
             try:
@@ -579,6 +601,17 @@ def teil_c(datei, tmp, bilder, godot):
             phases.append((round(time.time() - t0), ph, g.get("light"), round(float(g.get("pct") or 0)), g.get("pos"), g.get("aim"), g.get("seen_s"),
                            (g.get("last_end") or {}).get("why")))
             if ph in want and want[ph] not in shots and (ph != "guide" or (g.get("light") and float(g.get("pct") or 0) > 40)):
+                if ph in ("guide", "farewell"):                   # the markers: red = axis of the spot on the ground, green = MoveEye's aim
+                    http_json(sim + "/control", {"action": "gaeste", "do": "look"})
+                    http_json(sim + "/control", {"action": "gaeste", "do": "debug", "on": True})
+                    for _k in range(5):
+                        time.sleep(0.5)
+                        d_ = http_json(sim + "/control", {"action": "gaeste", "do": "info"})
+                        meas.append(dict(d_.get("dbg") or {}, phase=ph, spot_deg=d_.get("spot_deg")))
+                    dn = "gaeste_sim_debug_%s.jpg" % ph
+                    open(os.path.join(bilder, dn), "wb").write(http_bytes(sim + "/view.jpg", 20))
+                    bild_ins_log(os.path.join(bilder, dn))
+                    http_json(sim + "/control", {"action": "gaeste", "do": "debug", "on": False})
                 time.sleep(1.5 if ph != "arrived" else 4.0)
                 http_json(sim + "/control", {"action": "gaeste", "do": "look"})
                 time.sleep(0.6)
@@ -595,6 +628,17 @@ def teil_c(datei, tmp, bilder, godot):
         idle = [x for x in phases if x[1] == "idle"]
         for x in [x for x in phases if x[1] != "idle" or x in idle[::15]][:120]:
             print("   ", x, flush=True)
+        print("  Marken (Lichtachse am Boden / Zielpunkt MoveEye / Gast, m vom Gerät):", flush=True)
+        for m_ in meas:
+            print("   ", m_, flush=True)
+        errs_ = sorted(float(m_["err_m"]) for m_ in meas if "err_m" in m_)
+        ok(bool(errs_) and errs_[len(errs_) // 2] < 1.0, "Licht trifft den Zielpunkt von MoveEye am Boden (Abweichung Median %s m)" % (errs_[len(errs_) // 2] if errs_ else "–"))
+        ahead = []
+        for m_ in meas:
+            if "aim_mw" in m_ and "guest_mw" in m_:
+                ahead.append(math.hypot(m_["aim_mw"][0] - m_["guest_mw"][0], m_["aim_mw"][1] - m_["guest_mw"][1]))
+        ok(bool(ahead), "Zielpunkt vor dem Gast: %s m (2 m, weniger wenn der Gast sonst aus dem Bild liefe)" % [round(x, 1) for x in ahead])
+        ok(any(abs(float(m_.get("spot_deg") or 0) - 13.0) < 0.5 for m_ in meas), "Führungslicht als schmaler Lichtkegel (13°)")
         ok("gaeste_sim_fuehrt.jpg" in shots, "Bild: Gast wird zum Zelt geführt (Licht vor den Füssen)")
         ok("gaeste_sim_am_zelt.jpg" in shots, "Bild: Gast am Zelt, Licht aus")
         ok("gaeste_sim_abschied.jpg" in shots, "Bild: Abschied - Licht leuchtet wieder voraus")

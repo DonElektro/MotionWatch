@@ -10,7 +10,7 @@ extends Node
 ##         «Gäste von selbst …» (Besuch → Verhalten, main.gaeste_auto).
 ##  Knopf  «Gäste besuchen das Zelt» (Besuch → Abläufe) - auch ohne MoveEye.
 ##  Die Gäste bleiben stehen, wenn das Licht angeht, nicht (sie erwarten es: Meta «gast», main.gd look_at_light).
-## Steuerung: {"action": "gaeste", "do": "info" | "start" (n = 1 / 2, stay = s) | "look" (freie Ansicht übers Gerät zum Ziel)} -> laufende Gäste, Ziel, Zelt in MoveEye-Metern.
+## Steuerung: {"action": "gaeste", "do": "info" | "start" (n = 1 / 2, stay = s) | "look" (freie Ansicht übers Gerät zum Ziel) | "debug" (on: Marken rot = Lichtachse am Boden, grün = Zielpunkt von MoveEye; info «dbg» mit Abstand err_m)} -> laufende Gäste, Ziel, Zelt in MoveEye-Metern.
 
 const GAST_FIRST_S := 6.0
 const GAST_EVERY := [110.0, 170.0]
@@ -22,6 +22,10 @@ var running: Array = []
 var next_t := -1.0
 var was_on := false
 var started := 0
+var debug := false                     # review 22.11.2026: markers - where the spot axis hits the ground (red) and MoveEye's aim (green)
+var _m_hit: MeshInstance3D
+var _m_aim: MeshInstance3D
+var dbg := {}
 
 
 func mw_on() -> bool:
@@ -88,9 +92,73 @@ func start(n := 0, stay := 0.0) -> Dictionary:
 	return info()
 
 
+func _marker(col: Color, r: float, h: float) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = r
+	cm.bottom_radius = r
+	cm.height = h
+	cm.radial_segments = 16
+	mi.mesh = cm
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.albedo_color = col
+	mi.material_override = m
+	mi.layers = main.HELPER_LAYER                     # only the operator's view, never a camera of MoveEye
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	main.add_child(mi)
+	return mi
+
+
+static func ground_hit(o: Vector3, d: Vector3, gy: float):
+	"""where a ray from o in direction d meets the ground (height gy) - null when it points up / along"""
+	if d.y > -0.01:
+		return null
+	return o + d * ((gy - o.y) / d.y)
+
+
+func _debug_tick() -> void:
+	if _m_hit == null:
+		_m_hit = _marker(Color(1.0, 0.15, 0.1), 0.18, 0.6)
+		_m_aim = _marker(Color(0.1, 1.0, 0.3), 0.35, 0.05)
+	dbg = {}
+	var wl: Node3D = main.white_light
+	var on: bool = wl != null and wl.light_energy > 0.0
+	var hit = ground_hit(wl.global_position, -wl.global_transform.basis.z.normalized(), main.rig.global_position.y) if on else null
+	_m_hit.visible = hit != null
+	if hit != null:
+		var p: Vector3 = hit
+		p.y = main.ground_y(p.x, p.z)
+		_m_hit.global_position = p + Vector3(0, 0.3, 0)
+		dbg["hit_mw"] = to_mw(p)
+	var g = main.mw.get("guests", {})
+	var a = g.get("aim") if typeof(g) == TYPE_DICTIONARY else null
+	_m_aim.visible = typeof(a) == TYPE_ARRAY and (a as Array).size() == 2
+	if _m_aim.visible:
+		var w := to_world(float(a[0]), float(a[1]))
+		_m_aim.global_position = w + Vector3(0, 0.03, 0)
+		dbg["aim_mw"] = [float(a[0]), float(a[1])]
+		if hit != null:
+			dbg["err_m"] = snappedf(Vector2(w.x - (hit as Vector3).x, w.z - (hit as Vector3).z).length(), 0.01)
+	var gp = g.get("pos") if typeof(g) == TYPE_DICTIONARY else null
+	if typeof(gp) == TYPE_ARRAY and (gp as Array).size() == 2:
+		dbg["guest_mw"] = gp
+	var near := 999.0                                       # the real guest next to MoveEye's estimate (the foot point)
+	for v in running:
+		if is_instance_valid(v) and typeof(gp) == TYPE_ARRAY:
+			near = minf(near, Vector2(v.position.x - to_world(float(gp[0]), float(gp[1])).x, v.position.z - to_world(float(gp[0]), float(gp[1])).z).length())
+	if near < 999.0:
+		dbg["guest_err_m"] = snappedf(near, 0.01)
+
+
 func _process(_dt: float) -> void:
 	if main == null or not main.sim_active:
 		return
+	if debug:
+		_debug_tick()
+	elif _m_hit != null:
+		_m_hit.visible = false
+		_m_aim.visible = false
 	running = running.filter(func(v): return is_instance_valid(v) and not v.done)
 	var on := mw_on()
 	var t: float = main.now()
@@ -106,7 +174,8 @@ func info() -> Dictionary:
 	var tg := target_world()
 	return {"ok": true, "running": running.filter(func(v): return is_instance_valid(v)).size(), "started": started, "mw_on": mw_on(),
 			"auto": main.gaeste_auto, "target": [snappedf(tg.x, 0.01), snappedf(tg.z, 0.01)], "target_mw": to_mw(tg),
-			"tent_mw": to_mw(main.obj["pir"]), "next_in": snappedf(maxf(0.0, next_t - main.now()), 0.1) if was_on else -1.0}
+			"tent_mw": to_mw(main.obj["pir"]), "next_in": snappedf(maxf(0.0, next_t - main.now()), 0.1) if was_on else -1.0,
+			"debug": debug, "dbg": dbg, "spot_deg": snappedf(main.get("white_light").spot_angle, 0.1) if main.get("white_light") != null else null}
 
 
 func look() -> Dictionary:
@@ -130,5 +199,8 @@ func control(d: Dictionary) -> Dictionary:
 			return start(int(d.get("n", 0)), float(d.get("stay", 0.0)))
 		"look":
 			return look()
+		"debug":                                         # {on}: markers spot axis on the ground (red) / MoveEye's aim (green)
+			debug = bool(d.get("on", true))
+			return info()
 		_:
 			return info()

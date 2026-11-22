@@ -425,6 +425,7 @@ var privat_on := true                 # Wunsch Nr. 2: normal visitors keep off y
 var privat                            # privatplatz.gd: the private circle round MoveEye and its tent
 var gaeste                            # gaeste.gd: «Gäste besuchen das Zelt» - for MoveEye's guide light («Gäste erwartet»)
 var gaeste_auto := true               # gaeste-licht: guests come by themselves while MoveEye has «Gäste erwartet» on
+const GUIDE_SPOT_DEG := 13.0          # gaeste-licht: half angle of the white spot while MoveEye guides (a pool ~2 m wide at 8 m)
 # ---- parts of main.gd in their own files (Vorschlag 24): main_*.gd, loaded at their first use ----
 var _mods := {}                       # "steuerung" -> main_steuerung.gd … (load, not preload: parsed only when needed)
 
@@ -2744,6 +2745,9 @@ func _process(dt: float) -> void:
 				v.startle()
 	var wl_k: float = clampf(float(L.get("white_level", 1.0)), 0.05, 1.0) if L.get("white", false) else 1.0   # gaeste-licht: MoveEye dims / fades (white_level)
 	white_light.light_energy = 9.0 * wl_k if wl_on else 0.0
+	# gaeste-licht (review 22.11.2026): MoveEye's guide light (lights.guide) is a narrow, readable pool on the ground;
+	# otherwise the wide light as before
+	white_light.spot_angle = GUIDE_SPOT_DEG if (bool(L.get("guide", false)) and bool(L.get("white", false))) else 32.0
 	rain.position = Vector3(0, 12, -8)
 	var t := now() - clock0
 	for i in range(anims.size() - 1, -1, -1):

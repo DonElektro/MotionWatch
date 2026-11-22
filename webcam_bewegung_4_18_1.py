@@ -271,7 +271,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_18_1.zip"
-ZD_SHA256 = "51c9af2fd376e5b69a38fdab381facad62cad71d81d4e2c1905d5908dd0e1a02"
+ZD_SHA256 = "e9c42bd54c5ce66edcefd4046454e907bbef51f5d7f57e3609f9125ac1628a45"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -117425,6 +117425,7 @@ zd_exec(SCHLAF_PY, '639zzzzz_schlaf_wecken.py')
 
 
 
+
 GL_DEF = {"gl_on": False, "gl_until": "", "gl_until_t": 0.0, "gl_animals": True, "gl_dark_only": True, "gl_push": True, "gl_pct": 60,
 		  "gl_fade_in_s": 3.0, "gl_fade_out_s": 4.0, "gl_lost_s": 10, "gl_still_s": 30, "gl_max_min": 5, "gl_target_r": 2.0, "gl_target": {}}
 for _k, _v in GL_DEF.items():
@@ -117563,6 +117564,21 @@ def obj_push(ev, ic, title, text, jpg=None, gap_key=None):
 	if ev=="obj_animal"and gl_active():
 		return False
 	return _gl_obj_push(ev,ic,title,text,jpg,gap_key)
+
+
+_gl_sens_fire = sens_fire
+
+
+
+def sens_fire(x, what):
+	try:
+		if isinstance(x,dict)and x.get("kind")=="pir"and what not in("test","missing")and gl_active():
+			log_event("sys",f"Sensor «{x.get('name', '')}»: motion - guests expected, no alarm")
+			_gl_call("gl_guest_note","motion sensor")
+			return None
+	except Exception:
+		pass
+	return _gl_sens_fire(x,what)
 
 
 
