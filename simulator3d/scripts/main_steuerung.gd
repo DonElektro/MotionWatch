@@ -523,6 +523,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return main.mehr.werk.control(d) if main.mehr != null and main.mehr.werk != null else {"ok": false, "error": "not ready"}
 	elif a == "werkstatt":                             # real-gehaeuse: {do: open | close | info | explode | xray | inner | v52 | v53 | pick | step | next | prev | view | real_case}
 		return main.werkstatt.control(d) if main.werkstatt != null else {"ok": false, "error": "not ready"}
+	elif a == "roboter":                               # Roboter-Labor (roboter_labor.gd): {do: open | close | info | pose | set | param | view | pause | reset | hold | tab | pip}
+		return main.roboter.control(d) if main.roboter != null else {"ok": false, "error": "not ready"}
 	elif a == "bkarte":                                # Bergtal-Karte (MoveEye 639zzzzzt): info | tour (pts, name, who) | stop
 		return main.bkarte.control(d) if main.bkarte != null else {"ok": false, "error": "no bkarte"}
 	elif a == "egg":                                   # Entwickler-Test (bergtal_ei.gd)

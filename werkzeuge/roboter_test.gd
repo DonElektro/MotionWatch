@@ -1,0 +1,215 @@
+extends SceneTree
+## Test «Roboter-Labor» (roboter_labor.gd, roboter_modell.gd, roboter_bewegung.gd): der Segment-Roboter des Besitzers in
+## seiner eigenen Welt. Ohne Bild. Geprüft:
+##   · Öffnen über /control «roboter»: 8 Segmente, 64 Antriebe, Physik mit 120 Schritten/s (nach dem Schliessen wieder wie vorher)
+##   · Stehen («Gerade»): ruhig nach 4 s (keine Explosion, kein Wegrutschen), Servos am Ziel, Körper in der richtigen Höhe
+##   · Gelenk-Grenzen: Ziele ausserhalb werden begrenzt, die Gelenke bleiben innerhalb (Segmentgelenk ±90°, Knie ±180°)
+##   · Bein-Rechnung: Fuss-Lage aus den Winkeln = gewünschte Lage (inverse Kinematik und Modell rechnen gleich)
+##   · Ring: 8 × 45°, die Kupplung verriegelt, der Ring bleibt stabil stehen
+##   · Servo-Grenze: schwache Bein-Servos geben nach und melden «überlastet»
+##   · Kollision rot: zwei Beine, die sich kreuzen, werden gefunden
+##   · Formregler: 6 Segmente → neuer Aufbau mit 2·5 + 6·6 + 2 = 48 Antrieben
+##   cd simulator3d && <godot> --headless --path . -s "$PWD/../werkzeuge/roboter_test.gd"   (absoluter Pfad nötig)
+## Ende: «Robotertest OK» oder «SCRIPT ERROR: Robotertest: …» (Exit-Code 0 / 1).
+
+var main
+var lab
+var m
+var errs := []
+var step := 0
+var f0 := 0
+var vmax_all := 0.0
+var t_start := 0.0
+var notes := []
+
+
+func _initialize() -> void:
+	main = load("res://main.tscn").instantiate()
+	root.add_child(main)
+	current_scene = main
+	t_start = Time.get_ticks_msec() / 1000.0
+
+
+func check(name: String, ok: bool, detail := "") -> void:
+	print(("  ok   " if ok else "  FEHLER ") + name + ("" if detail == "" else "  (" + detail + ")"))
+	if not ok:
+		errs.append(name + ("" if detail == "" else " (" + detail + ")"))
+
+
+func frames() -> int:
+	return Engine.get_physics_frames() - f0
+
+
+func next_step() -> void:
+	step += 1
+	f0 = Engine.get_physics_frames()
+
+
+func max_err(ids := []) -> Array:
+	var e := 0.0
+	var who := ""
+	for sv in m.servos:
+		if sv["parent"] < 0 or (not ids.is_empty() and not ids.has(sv["id"])):
+			continue
+		var d := absf(float(sv["angle"]) - float(sv["target"]))
+		if d > e:
+			e = d
+			who = sv["id"]
+	return [e, who]
+
+
+func sane() -> bool:
+	for b in m.bodies:
+		var p: Vector3 = (b["rb"] as RigidBody3D).global_position
+		if is_nan(p.x) or is_nan(p.y) or is_nan(p.z) or p.length() > 50.0:
+			return false
+	return true
+
+
+func _process(_dt: float) -> bool:
+	var t := Time.get_ticks_msec() / 1000.0 - t_start
+	if t > 240.0:
+		errs.append("Zeit abgelaufen in Schritt %d" % step)
+		return _end()
+	if m != null and m.built_ok:
+		vmax_all = maxf(vmax_all, m.max_speed() if step not in [6] else 0.0)
+	match step:
+		0:
+			if t < 2.0:
+				return false
+			var d: Dictionary = main.control({"action": "roboter", "do": "open"})
+			lab = main.roboter
+			m = lab.model
+			check("Labor offen", bool(d.get("open", false)), str(d))
+			check("8 Segmente", int(d.get("segments", 0)) == 8, str(d.get("segments")))
+			check("64 Antriebe (README: 14 + 48 + Kamera + Riegel)", int(d.get("actuators", 0)) == 64 and m.servos.size() == 64, str(d.get("actuators")))
+			check("63 Körper (8 Segmente, 7 Bügel, 16 × 3 Beinteile)", m.bodies.size() == 63, str(m.bodies.size()))
+			check("Physik 120 Schritte/s", Engine.physics_ticks_per_second == 120, str(Engine.physics_ticks_per_second))
+			lab.apply_pose("gerade", true)
+			next_step()
+		1:
+			if frames() < 480:
+				return false
+			var e := max_err()
+			var c: Vector3 = m.com()
+			check("Stehen: ruhig nach 4 s", m.max_speed() < 0.05 and sane(), "v %.3f m/s" % m.max_speed())
+			check("Stehen: Servos am Ziel", float(e[0]) < 3.0, "%.1f° bei %s" % e)
+			check("Stehen: Schwerpunkt 5 … 12 cm hoch", c.y > 0.05 and c.y < 0.12, "%.3f m" % c.y)
+			check("Stehen: nicht weggerutscht", Vector2(c.x + 0.57, c.z).length() < 0.08, str(c))
+			check("Stehen: keine Überlast, keine Kollision", m.overloaded().is_empty() and m.collide.is_empty(), "%s %s" % [m.overloaded(), m.colliding_names()])
+			# leg maths = model
+			var bw = lab.bew
+			var worst := 0.0
+			for foot in [Vector3(0.03, -0.08, 0.17), Vector3(-0.05, -0.02, 0.2), Vector3(0.0, -0.12, 0.1)]:
+				for s in [-1, 1]:
+					var want := Vector3(foot.x, foot.y, s * foot.z)
+					var a: Array = bw.leg_ik(s, want)
+					worst = maxf(worst, (bw.leg_fk(s, a[0], a[1], a[2]) - want).length())
+			check("Bein-Rechnung: Fuss dort, wo gewünscht", worst < 0.001, "%.5f m" % worst)
+			# FK of the model = the physics (the read angles give the same feet)
+			var fr: Array = m.fk(m.targets(), m.segment_xf(0), true)
+			var dev := 0.0
+			for bi in range(m.bodies.size()):
+				dev = maxf(dev, ((fr[bi] as Transform3D).origin - m.frame_of(bi).origin).length())
+			check("Modell-Kinematik = Physik", dev < 0.01, "%.4f m" % dev)
+			# joint limits (in the air)
+			lab.set_hold(true)
+			lab.apply_pose("gerade")
+			m.set_target("kn2l", 250.0)
+			m.set_target("hp2l", -150.0)
+			m.set_target("hy2r", 200.0)
+			m.set_target("sp0", 150.0)
+			check("Grenzen: Ziele begrenzt", is_equal_approx(float(m.servos[m.servo_index("kn2l")]["target"]), 180.0)
+					and is_equal_approx(float(m.servos[m.servo_index("hp2l")]["target"]), -90.0)
+					and is_equal_approx(float(m.servos[m.servo_index("sp0")]["target"]), 90.0), "")
+			next_step()
+		2:
+			if frames() < 300:
+				return false
+			var ok := true
+			var det := ""
+			for id in ["kn2l", "hp2l", "hy2r", "sp0"]:
+				var sv: Dictionary = m.servos[m.servo_index(id)]
+				var a := float(sv["angle"])
+				det += "%s %.0f° " % [id, a]
+				if a < float(sv["min"]) - 4.0 or a > float(sv["max"]) + 4.0:
+					ok = false
+			check("Grenzen: Gelenke bleiben innerhalb", ok, det)
+			check("Grenzen: Knie erreicht 180°", absf(float(m.servos[m.servo_index("kn2l")]["angle"]) - 180.0) < 6.0, det)
+			# collision: two legs on the same side crossing
+			lab.apply_pose("gerade")
+			m.set_target("hy0r", -90.0)
+			m.set_target("hy1r", 90.0)
+			m.set_target("hp0r", 0.0)
+			m.set_target("hp1r", 0.0)
+			m.set_target("kn0r", 0.0)
+			m.set_target("kn1r", 0.0)
+			next_step()
+		3:
+			if frames() < 240:
+				return false
+			var names: Array = m.colliding_names()
+			check("Kollision: gekreuzte Beine rot", names.has("ober_0_2") and names.has("ober_1_2"), str(names))
+			lab.set_hold(false)
+			lab.apply_pose("ring", true)
+			next_step()
+		4:
+			if frames() < 240:
+				return false
+			check("Ring: Kupplung verriegelt", m.latch["state"] == "locked", "%s, %.4f m, %.1f°" % [m.latch["state"], m.latch["err_pos"], m.latch["err_ang"]])
+			var ids := []
+			for i in range(7):
+				ids.append("sp%d" % i)
+			var worst := 0.0
+			for id in ids:
+				worst = maxf(worst, absf(float(m.servos[m.servo_index(id)]["angle"]) - 45.0))
+			check("Ring: alle Segmentgelenke 45°", worst < 4.0, "höchstens %.1f° daneben" % worst)
+			next_step()
+		5:
+			if frames() < 360:
+				return false
+			var c: Vector3 = m.com()
+			check("Ring: steht nach 3 s noch (kippt nicht, explodiert nicht)", sane() and m.max_speed() < 0.5 and c.y > 0.17 and c.y < 0.28 and m.latch["state"] == "locked",
+					"v %.3f, Schwerpunkt %.3f m" % [m.max_speed(), c.y])
+			check("Ring: keine Überlast", m.overloaded().is_empty(), str(m.overloaded()))
+			# weak leg servos: they give way
+			lab.apply_pose("gerade", true)
+			lab.set_shape("moment_bein", 0.1)
+			next_step()
+		6:
+			if frames() < 360:
+				return false
+			check("Schwache Servos: überlastet gemeldet", m.overloaded().size() >= 8, "%d überlastet" % m.overloaded().size())
+			check("Schwache Servos: Körper sinkt ab", m.com().y < 0.06, "%.3f m" % m.com().y)
+			lab.set_shape("moment_bein", 1.5)
+			lab.set_shape("segmente", 6)
+			next_step()
+		7:
+			if frames() < 120:
+				return false
+			check("Formregler: 6 Segmente, 48 Antriebe", m.n() == 6 and m.actuator_count() == 48 and m.servos.size() == 48, "%d / %d" % [m.n(), m.actuator_count()])
+			check("Formregler: steht", sane(), "")
+			lab.set_shape("segmente", 8)
+			next_step()
+		8:
+			if frames() < 240:
+				return false
+			check("Keine Explosion im ganzen Test", vmax_all < 5.0, "%.2f m/s" % vmax_all)
+			main.roboter.control({"do": "close"})
+			next_step()
+		9:
+			if frames() < 10:
+				return false
+			check("Geschlossen: Physik wieder wie vorher", Engine.physics_ticks_per_second == 30 and not main.roboter.is_open(), str(Engine.physics_ticks_per_second))
+			return _end()
+	return false
+
+
+func _end() -> bool:
+	if errs.is_empty():
+		print("Robotertest OK")
+		quit(0)
+	else:
+		printerr("SCRIPT ERROR: Robotertest: " + " | ".join(errs))
+		quit(1)
+	return true
