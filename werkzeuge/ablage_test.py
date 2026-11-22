@@ -131,10 +131,29 @@ def main():
 
         # ---- 2: growth in a throwaway repository ------------------------------------------------------------------------
         print("2  Wachstum pro Version (Wegwerf-Repository, git repack)")
-        zips = sorted((n for n in os.listdir(REPO) if re.match(r"^moveeye_daten_\d{1,3}_\d{1,3}_\d{1,3}\.zip$", n)), key=vkey)[-2:]
+        # 4.20.1: also the zips that a newer version of the same X.Y removed from the folder (the git history keeps them) -
+        # otherwise 4.20.1 is compared with 4.18.1 instead of 4.20.0
+        quellen = {n: (lambda n=n: open(os.path.join(REPO, n), "rb").read()) for n in os.listdir(REPO)
+                   if re.match(r"^moveeye_daten_\d{1,3}_\d{1,3}_\d{1,3}\.zip$", n)}
+        try:
+            if subprocess.run(["git", "-C", REPO, "rev-parse", "--is-shallow-repository"], capture_output=True, text=True,
+                              timeout=30).stdout.strip() == "true":   # the CI checks out 1 commit: fetch some history
+                subprocess.run(["git", "-C", REPO, "fetch", "-q", "--deepen=40"], capture_output=True, timeout=300)
+            r_ = subprocess.run(["git", "-C", REPO, "log", "--diff-filter=D", "--format=@%H", "--name-only", "-n", "20", "--",
+                                 "moveeye_daten_*.zip"], capture_output=True, text=True, timeout=60)
+            c_ = None
+            for ln in r_.stdout.splitlines():
+                if ln.startswith("@"):
+                    c_ = ln[1:]
+                elif ln.strip() and c_ and ln.strip() not in quellen and re.match(r"^moveeye_daten_\d{1,3}_\d{1,3}_\d{1,3}\.zip$", ln.strip()):
+                    quellen[ln.strip()] = (lambda c=c_, n=ln.strip(): subprocess.run(["git", "-C", REPO, "show", "%s^:%s" % (c, n)],
+                                                                                  capture_output=True, timeout=120).stdout)
+        except (OSError, subprocess.SubprocessError):
+            pass
+        zips = sorted(quellen, key=vkey)[-2:]
         folge_u, folge_g = [], []
         for n in zips:
-            with zipfile.ZipFile(os.path.join(REPO, n)) as z:
+            with zipfile.ZipFile(io.BytesIO(quellen[n]())) as z:
                 dj = z.read("daten.json")
             if json.loads(dj.decode("utf-8")).get("version") == v:
                 continue                                    # the zip of the version in quelle/ comes freshly built below
