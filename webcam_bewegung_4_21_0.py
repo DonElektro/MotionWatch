@@ -317,7 +317,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_21_0.zip"
-ZD_SHA256 = "27b056de7602a4f662e3ceb44f8604de1b80ce4ee30a9ddd07a5e27a46fd5dcf"
+ZD_SHA256 = "0ad5080e7193377a759bf4111f8ab34af9353f7d5703345082bd79e1f0c3ffde"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -91429,6 +91429,15 @@ def rucksack_alt_source(src):
 			if isinstance(d,_ast.Expr)and isinstance(d.value,_ast.Constant)and isinstance(d.value.value,str):
 				skip.add(id(d.value))
 	out=[]
+	for st in tree.body:
+		if(isinstance(st,_ast.Assign)and len(st.targets)==1 and isinstance(st.targets[0],_ast.Name)
+				and st.targets[0].id.endswith("_PY")and isinstance(st.value,_ast.Constant)and isinstance(st.value.value,str)):
+			try:
+				inner=rucksack_alt_source(st.value.value)
+			except SyntaxError:
+				continue
+			skip.add(id(st.value))
+			out+=[(st.value.lineno+ln-1,t)for ln,t in inner]
 	for nd in _ast.walk(tree):
 		if isinstance(nd,_ast.Constant)and isinstance(nd.value,str)and id(nd)not in skip and len(nd.value)>9:
 			hit=rucksack_alt_in(nd.value)

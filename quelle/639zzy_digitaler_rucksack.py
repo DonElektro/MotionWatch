@@ -63,6 +63,15 @@ def rucksack_alt_source(src):
             if isinstance(d, _ast.Expr) and isinstance(d.value, _ast.Constant) and isinstance(d.value.value, str):
                 skip.add(id(d.value))
     out = []
+    for st in tree.body:                                   # program text in the data zip (NAME_PY = r'''…''', zd_exec): judged as source
+        if (isinstance(st, _ast.Assign) and len(st.targets) == 1 and isinstance(st.targets[0], _ast.Name)
+                and st.targets[0].id.endswith("_PY") and isinstance(st.value, _ast.Constant) and isinstance(st.value.value, str)):
+            try:
+                inner = rucksack_alt_source(st.value.value)
+            except SyntaxError:
+                continue                                   # not program text: judged as a string below
+            skip.add(id(st.value))
+            out += [(st.value.lineno + ln - 1, t) for ln, t in inner]
     for nd in _ast.walk(tree):
         if isinstance(nd, _ast.Constant) and isinstance(nd.value, str) and id(nd) not in skip and len(nd.value) > 9:
             hit = rucksack_alt_in(nd.value)
