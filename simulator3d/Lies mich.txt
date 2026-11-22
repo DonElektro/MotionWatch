@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.77.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.78.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -493,6 +493,13 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.78.0
+3.78.0: Die Karte des Grossvaters: Kapitel 4 «Nebel im Couloir» – Wärmebild, Seilschaft und das alte Biwak; die
+Kapitel laufen nacheinander (Kapitelwahl, ?grossvater=1&kapitel=N); im Abenteuer ducken, kriechen, sitzen, liegen,
+schwimmen und die Ansichten wie beim Erkunden. Frei erkunden: Der Schnelllauf wird nie schneller als gewählt. «Zur schönsten Aussicht» zeigt die
+Aussichtspunkte ohne Möbel im Bild.
+So testest du: Abenteuer öffnen → Kapitel 4 wählen und bis zum alten Biwak gehen; im Browser Sim/?grossvater=1&kapitel=4.
 
 NEU IN 3.77.0
 3.77.0: Im Bergtal gibt es jetzt erfundene Wildruhezonen zum Üben: sie stehen auf der Übersichtskarte, und «Hier
