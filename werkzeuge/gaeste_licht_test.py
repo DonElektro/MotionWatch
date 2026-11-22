@@ -632,12 +632,13 @@ def teil_c(datei, tmp, bilder, godot):
         for m_ in meas:
             print("   ", m_, flush=True)
         rel = sorted(float(m_["err_m"]) / max(5.0, math.hypot(*m_["aim_mw"])) for m_ in meas if "err_m" in m_ and "aim_mw" in m_)
-        ok(bool(rel) and rel[len(rel) // 2] < 0.2, "Licht trifft den Zielpunkt von MoveEye am Boden (Abweichung Median %s %% des Abstands; "
+        ok(bool(rel) and rel[len(rel) // 2] < 0.2, "Licht trifft den Punkt am Boden, auf den MoveEye zielt (Abweichung Median %s %% des Abstands; "
            "der Kopf steht zwischen den Schritten still)" % (round(rel[len(rel) // 2] * 100) if rel else "–"))
         ahead = []
         for m_ in meas:
-            if "aim_mw" in m_ and "guest_mw" in m_:
-                ahead.append(math.hypot(m_["aim_mw"][0] - m_["guest_mw"][0], m_["aim_mw"][1] - m_["guest_mw"][1]))
+            k_ = "ideal_mw" if "ideal_mw" in m_ else "aim_mw"
+            if k_ in m_ and "guest_mw" in m_:
+                ahead.append(math.hypot(m_[k_][0] - m_["guest_mw"][0], m_[k_][1] - m_["guest_mw"][1]))
         ok(bool(ahead), "Zielpunkt vor dem Gast: %s m (2 m, weniger wenn der Gast sonst aus dem Bild liefe)" % [round(x, 1) for x in ahead])
         ok(any(abs(float(m_.get("spot_deg") or 0) - 13.0) < 0.5 for m_ in meas), "Führungslicht als schmaler Lichtkegel (13°)")
         ok("gaeste_sim_fuehrt.jpg" in shots, "Bild: Gast wird zum Zelt geführt (Licht vor den Füssen)")

@@ -10,6 +10,7 @@ extends Node
 ##         «Gäste von selbst …» (Besuch → Verhalten, main.gaeste_auto).
 ##  Knopf  «Gäste besuchen das Zelt» (Besuch → Abläufe) - auch ohne MoveEye.
 ##  Die Gäste bleiben stehen, wenn das Licht angeht, nicht (sie erwarten es: Meta «gast», main.gd look_at_light).
+## Marken (debug): rot = Achse des Lichts am Boden, grün = wohin MoveEye das Licht richtet (nach der Abwägung «Gast bleibt im Bild»).
 ## Steuerung: {"action": "gaeste", "do": "info" | "start" (n = 1 / 2, stay = s) | "look" (freie Ansicht übers Gerät zum Ziel) | "debug" (on: Marken rot = Lichtachse am Boden, grün = Zielpunkt von MoveEye; info «dbg» mit Abstand err_m)} -> laufende Gäste, Ziel, Zelt in MoveEye-Metern.
 
 const GAST_FIRST_S := 6.0
@@ -140,6 +141,9 @@ func _debug_tick() -> void:
 		dbg["aim_mw"] = [float(a[0]), float(a[1])]
 		if hit != null:
 			dbg["err_m"] = snappedf(Vector2(w.x - (hit as Vector3).x, w.z - (hit as Vector3).z).length(), 0.01)
+	var idl = g.get("ideal") if typeof(g) == TYPE_DICTIONARY else null
+	if typeof(idl) == TYPE_ARRAY and (idl as Array).size() == 2:
+		dbg["ideal_mw"] = [float(idl[0]), float(idl[1])]          # 2 m ahead (before the trade-off «the guest stays in the picture»)
 	var gp = g.get("pos") if typeof(g) == TYPE_DICTIONARY else null
 	if typeof(gp) == TYPE_ARRAY and (gp as Array).size() == 2:
 		dbg["guest_mw"] = gp

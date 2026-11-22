@@ -228,9 +228,26 @@ _gl_kopf_frame = kopf_frame
 
 # wraps: kopf_frame (410 calls it for every picture)
 def kopf_frame(w, candidates, person_boxes, warm_boxes, present, frame, pw, ph, t0):
+    rq0 = KOPF.get("turn_req")
     r = _gl_kopf_frame(w, candidates, person_boxes, warm_boxes, present, frame, pw, ph, t0)
+    if KOPF.get("turn_req") is not rq0 and KOPF.get("turn_req") and _gl_call("gl_holds_head"):
+        KOPF["turn_req"] = None                              # «turn to the alarm» (warm spot / movement): that is the guest
     _gl_call("gl_frame", w, candidates, person_boxes, warm_boxes, pw, ph, t0)
     return r
+
+
+_gl_kopf_noise_tick = _kopf_noise_tick
+_gl_kopf_ov_tick = _kopf_ov_tick
+
+
+# wraps: _kopf_noise_tick
+def _kopf_noise_tick(now):                                   # + 639zzzzzg: no turn to a noise / to the overview while guiding
+    return None if _gl_call("gl_holds_head") else _gl_kopf_noise_tick(now)
+
+
+# wraps: _kopf_ov_tick
+def _kopf_ov_tick(now):
+    return None if _gl_call("gl_holds_head") else _gl_kopf_ov_tick(now)
 
 
 _gl_lights_tick = lights_tick
@@ -885,6 +902,7 @@ def gl_head_to(g, person, now):
     fov = None if (GL["wide"] or person is None) else cam_fov()
     az, pitch = gl_aim_angles(g, person, h, fov)
     GL["look"] = (round(az, 1), round(pitch, 1))
+    GL["look_g"] = gl_dir_ground(az, pitch, h)                 # where the light should meet the ground (after the trade-off)
     p0, t0 = servo_pos_deg()
     want_t = pitch + gl_pitch_off()
     dpan, dtilt = gl_angdiff(az, p0), want_t - t0
@@ -928,7 +946,8 @@ def gl_sim_info():
     c = GL["core"]
     a = GL.get("aim")
     return {"on": gl_active(), "phase": c.phase, "lvl": round(gl_light_want(time.time())[0], 3),
-            "aim": [round(a[0], 2), round(a[1], 2)] if a and c.light_wanted() else None,
+            "aim": [round(v, 2) for v in (GL.get("look_g") or a)] if a and c.light_wanted() else None,
+            "ideal": [round(a[0], 2), round(a[1], 2)] if a and c.light_wanted() else None,
             "pos": [round(v, 2) for v in c.p] if c.p and c.phase != "idle" else None,
             "target": {"kind": tg.get("kind", "point"), "x": tg["x"], "y": tg["y"]} if tg else None}
 

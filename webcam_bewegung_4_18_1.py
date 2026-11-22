@@ -271,7 +271,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_18_1.zip"
-ZD_SHA256 = "2e43c3b015574305bbf4ccae6b63c0f236a877874d42db47e9a52f9388a98227"
+ZD_SHA256 = "7c7ebbace45468de61d8aeb436e128d85aef6188c0908fdcd19345f6461132da"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -117611,9 +117611,26 @@ _gl_kopf_frame = kopf_frame
 
 
 def kopf_frame(w, candidates, person_boxes, warm_boxes, present, frame, pw, ph, t0):
+	rq0=KOPF.get("turn_req")
 	r=_gl_kopf_frame(w,candidates,person_boxes,warm_boxes,present,frame,pw,ph,t0)
+	if KOPF.get("turn_req")is not rq0 and KOPF.get("turn_req")and _gl_call("gl_holds_head"):
+		KOPF["turn_req"]=None
 	_gl_call("gl_frame",w,candidates,person_boxes,warm_boxes,pw,ph,t0)
 	return r
+
+
+_gl_kopf_noise_tick = _kopf_noise_tick
+_gl_kopf_ov_tick = _kopf_ov_tick
+
+
+
+def _kopf_noise_tick(now):
+	return None if _gl_call("gl_holds_head")else _gl_kopf_noise_tick(now)
+
+
+
+def _kopf_ov_tick(now):
+	return None if _gl_call("gl_holds_head")else _gl_kopf_ov_tick(now)
 
 
 _gl_lights_tick = lights_tick
