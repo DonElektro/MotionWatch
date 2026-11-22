@@ -271,7 +271,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_18_1.zip"
-ZD_SHA256 = "d43005a7bc11445cd157d589d54aea6a948d4aac08b262e5bf029623166b7ce4"
+ZD_SHA256 = "94678197f4c5a95c927f86bf76343de34c6815b7a2f06a3b6d45598712fade89"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -117382,6 +117382,45 @@ LOCK_DENY_KEYS.update(SLP_DEF)
 
 SCHLAF_PY = _zd('639zzzzz_schlaf_wecken/SCHLAF_PY', "")
 zd_exec(SCHLAF_PY, '639zzzzz_schlaf_wecken.py')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BK_TAG = "bergkarte-1"
+BK_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"}
+
+BK_FILE = {"name": "bergtal-karte-1.zip", "size": 0, "sha256": "", "unpacked": 0, "sim": ""}
+BK_PY = _zd('639zzzzzt_bergtal_karte/BK_PY', "")
+zd_exec(BK_PY, "639zzzzzt_bergtal_karte.py")
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")
