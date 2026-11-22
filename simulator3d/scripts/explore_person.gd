@@ -57,6 +57,8 @@ const POSTUR := {"stehen": 0, "geduckt": 1, "kriechen": 2, "sitzen": 0, "liegen"
 const AUGE := {"stehen": 1.62, "geduckt": 1.05, "kriechen": 0.38, "sitzen": 1.15, "liegen": 0.3}   # Rückfall ohne Kopf
 const TEMPI := [1.8, 3.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0]   # m/s: Schnelllauf (rennen), Besitzer 21.11.2026 (bis 40)
 const V_MAX := 40.0
+const HANG_SANFT := 0.7             # rise / run (35°): up to here uphill at full speed (fast run too)
+const HANG_MIN_K := 0.45            # ... at the wall (kit_figur.STEIL 1.25): this part of the speed
 const V_RENNEN := 3.45               # m/s: normales Rennen (actor.PLAYER_SPEED[0] × 2.3) - Schnelllauf aus
 const SCHWIMM_V := 0.9               # m/s an der Oberfläche
 const SCHWIMM_TIEF := 0.25           # m: die Füsse so weit unter dem Wasserspiegel (der Körper liegt, der Kopf ist oben)
@@ -81,6 +83,7 @@ var sachen: Node = null              # erkunden_sachen.gd: Rucksack-Sachen und K
 var extras: Node = null              # erkunden_extras.gd: Fotomodus, Ort merken, Startpunkte (Etappe 4)
 var camp: Node = null                # erkunden_camp.gd: Camp aufstellen, Feuer, Nacht, einpacken (Besitzer 22.11.2026)
 var ruhe: Node = null                # erkunden_ruhe.gd: ruhiger Bildschirm beim Frei erkunden (Besitzer 22.11.2026)
+var _hang := 1.0                     # the slope factor, smoothed (_hang_k)
 var _abseil := {}                    # rappelling: {von, kante, nach, t, dauer}
 var _y_hoch := -INF                  # the highest point of the last flight (a hard landing, «Echt»)
 var _scene := ""
@@ -549,7 +552,23 @@ func _haltung_tick(ein: Dictionary) -> void:
 	if sachen != null:
 		actor.gear_speed *= sachen.tempo_faktor()            # Etappe 3: strength, snow without ice axe, hurt
 	actor.run_top = renn_tempo(main)
+	actor.gear_speed *= _hang_k()                            # really steep uphill: gently slower (never a drop to walking)
 	actor.frozen = haltung in ["sitzen", "liegen"]
+
+
+func _hang_k() -> float:
+	"""the slope ahead (rise / run over 2 m along the heading): up to HANG_SANFT (walkable) the full speed - also the fast run;
+	steeper slower in proportion, down to HANG_MIN_K at the wall (kit_figur.STEIL); smoothed, never a jump"""
+	var ziel := 1.0
+	if wasser == "" and figur != null and str(figur.zustand) == "boden" and main.has_method("hilly") and main.hilly():
+		var h := float(actor.heading)
+		var fw := Vector3(-sin(h), 0, -cos(h))
+		var p: Vector3 = actor.global_position
+		var s: float = (float(main.ground_y(p.x + fw.x, p.z + fw.z)) - float(main.ground_y(p.x - fw.x, p.z - fw.z))) / 2.0
+		if s > HANG_SANFT:
+			ziel = lerpf(1.0, HANG_MIN_K, clampf((s - HANG_SANFT) / (KitFigur.STEIL - HANG_SANFT), 0.0, 1.0))
+	_hang = lerpf(_hang, ziel, clampf(get_process_delta_time() * 4.0, 0.0, 1.0))
+	return _hang
 
 
 func _skelett() -> Skeleton3D:
