@@ -497,8 +497,9 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 NEU IN 3.78.0
 3.78.0: Die Karte des Grossvaters: Kapitel 4 «Nebel im Couloir» – Wärmebild, Seilschaft und das alte Biwak; die
 Kapitel laufen nacheinander (Kapitelwahl, ?grossvater=1&kapitel=N); im Abenteuer ducken, kriechen, sitzen, liegen,
-schwimmen und die Ansichten wie beim Erkunden. Frei erkunden: Der Schnelllauf wird nie schneller als gewählt. «Zur schönsten Aussicht» zeigt die
-Aussichtspunkte ohne Möbel im Bild.
+schwimmen und die Ansichten wie beim Erkunden. Frei erkunden: Der Schnelllauf wird nie schneller als gewählt. Bergtal: Der Sprung zu einem Aussichtspunkt zeigt
+jetzt den freien Blick (nicht mehr Kreuz, Steinmann oder Fernrohr im Bild); der Waldboden in der Nähe hat jetzt Struktur
+statt einer flachen Fläche.
 So testest du: Abenteuer öffnen → Kapitel 4 wählen und bis zum alten Biwak gehen; im Browser Sim/?grossvater=1&kapitel=4.
 
 NEU IN 3.77.0
