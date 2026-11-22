@@ -60,6 +60,8 @@ var _hilfe: Label
 var stick: Control
 var _btn_akt: Button
 var _btn_sprung: Button
+var _btn_haltung: Button
+var tap_haltung := false
 var _swipe: Control
 var _fade_tw: Tween
 var _sepia_k := 0.0
@@ -183,6 +185,8 @@ func _ready() -> void:
 	_btn_sprung = _rund(T.t("Springen/\nGreifen"), Color(0.4, 0.75, 1.0))
 	_btn_sprung.button_down.connect(func(): tap_sprung = true; halt_sprung = true)
 	_btn_sprung.button_up.connect(func(): halt_sprung = false)
+	_btn_haltung = _rund(T.t("Ducken"), Color(0.6, 0.85, 0.55))         # like «Frei erkunden»: stand → crouch → crawl
+	_btn_haltung.button_down.connect(func(): tap_haltung = true)
 	# fade (above everything but the menu)
 	_fade = ColorRect.new()
 	_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -262,8 +266,11 @@ func _bau_menu() -> void:
 	_hilfe.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_hilfe.custom_minimum_size = Vector2(260, 0)
 	_hilfe.text = T.t("PC: W A S D gehen · Shift rennen · Leertaste springen / greifen · E Aktion · Maus ziehen umschauen · Rad näher / weiter · Esc Pause") + "\n" + \
+			T.t("Haltung wie beim Erkunden: C stehen → geduckt → kriechen · X hinsetzen · Z hinlegen · V Ansicht (hinter dir, aus den Augen, von oben) · im tiefen Wasser schwimmen") + "\n" + \
 			T.t("Controller: linker Stick gehen · rechter Stick umschauen · A springen / greifen · X Aktion · R2 rennen · Start Pause") + "\n" + \
-			T.t("Handy / iPad: Stick links · rechts «Aktion» und «Springen/Greifen» · in der rechten Hälfte wischen = umschauen")
+			T.t("Controller: ✚ ↓ Haltung · ✚ ← sitzen · ✚ → liegen · R3 Ansicht") + "\n" + \
+			T.t("Handy / iPad: Stick links · rechts «Aktion» und «Springen/Greifen» · in der rechten Hälfte wischen = umschauen") + "\n" + \
+			T.t("Handy / iPad: der grüne Knopf über «Springen» = ducken, kriechen, aufstehen")
 	_hilfe.visible = false
 	v.add_child(_hilfe)
 
@@ -322,7 +329,10 @@ func _layout() -> void:
 	_btn_sprung.position = Vector2(s.x - b1 - pad * 1.5, s.y - b1 - pad * 1.5)
 	_btn_akt.size = Vector2(b2, b2)
 	_btn_akt.position = _btn_sprung.position + Vector2(-b2 - pad * 0.8, b1 - b2 - r * 0.55)
-	for b in [_btn_akt, _btn_sprung]:
+	var b3 := r * 0.8
+	_btn_haltung.size = Vector2(b3, b3)
+	_btn_haltung.position = _btn_sprung.position + Vector2(b1 - b3, -b3 - pad * 0.8)
+	for b in [_btn_akt, _btn_sprung, _btn_haltung]:
 		b.add_theme_font_size_override("font_size", int(15.0 * maxf(k, 0.9)))
 		for st in ["normal", "hover", "pressed", "focus"]:
 			var sb = b.get_theme_stylebox(st)
@@ -368,7 +378,24 @@ func _messen(real_dt: float) -> void:
 		_mess_t = 0.0
 
 
+func _kette_text() -> void:
+	if _kette_lab != null and is_instance_valid(_kette_lab):
+		_kette_lab.text = T.t("Weiter in %d s") % ceili(maxf(_kette_t, 0.0))
+
+
+func _kette_los() -> void:
+	if _kette_t < 0.0:
+		return
+	_kette_t = -1.0
+	kit.kapitel_weiter.call_deferred()
+
+
 func tick(real_dt: float) -> void:
+	if _kette_t >= 0.0 and _ende != null and is_instance_valid(_ende):
+		_kette_t = maxf(_kette_t - real_dt, 0.0)
+		_kette_text()
+		if _kette_t <= 0.0:
+			_kette_los()
 	if not has_meta("kein_messen"):
 		_messen(real_dt)
 	var s := _vs()
@@ -415,6 +442,10 @@ func tick(real_dt: float) -> void:
 	stick.visible = tv
 	_btn_akt.visible = tv
 	_btn_sprung.visible = tv
+	_btn_haltung.visible = tv and kit.haltung_frei()
+	if tv:
+		_setz("haltung_btn", T.t({"stehen": "Ducken", "geduckt": "Kriechen", "kriechen": "Aufstehen", "sitzen": "Aufstehen", "liegen": "Aufstehen"}.get(kit.halt.haltung, "Ducken")),
+				func(v): _btn_haltung.text = v)
 	_swipe.mouse_filter = Control.MOUSE_FILTER_STOP if tv else Control.MOUSE_FILTER_IGNORE
 	if tv:
 		stick.queue_redraw()
@@ -661,9 +692,16 @@ func blitz() -> void:
 	tw.tween_callback(func(): _fade.color = Color(0, 0, 0, 0))
 
 
-func ende(text: String, badges: Array) -> void:
+var _kette_t := -1.0                  # the end card: seconds until the next chapter starts (-1 = no chain)
+var _kette_lab: Label
+
+
+func ende(text: String, badges: Array, naechstes := -1, sek := 5.0) -> void:
+	"""the end card of a chapter: its badges; with a next released chapter a countdown, «Weiter» and «Zurück zum Menü»,
+	after the last one «Abenteuer beenden»"""
 	if _ende != null:
 		_ende.queue_free()
+	_kette_t = sek if naechstes > 0 else -1.0
 	_ende = PanelContainer.new()
 	_ende.add_theme_stylebox_override("panel", UI.box(Color(0.04, 0.05, 0.07, 0.9), Color(1, 0.8, 0.45, 0.7), 16, 22, 1))
 	root.add_child(_ende)
@@ -682,11 +720,37 @@ func ende(text: String, badges: Array) -> void:
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		l.custom_minimum_size = Vector2(minf(_vs().x - 80.0, 560.0), 0)
 		v.add_child(l)
-	var b := Button.new()
-	b.text = T.t("Abenteuer beenden")
-	b.custom_minimum_size = Vector2(240, 46)
-	b.pressed.connect(func(): kit.stop())
-	v.add_child(b)
+	if naechstes > 0:
+		_kette_lab = _label(16, Color(0.85, 0.88, 0.92))
+		_kette_lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		v.add_child(_kette_lab)
+		_kette_text()
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 10)
+		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		v.add_child(row)
+		var bw := Button.new()
+		bw.name = "weiter"
+		bw.text = T.t("Weiter ›")
+		bw.custom_minimum_size = Vector2(200, 46)
+		UI.primary(bw)
+		bw.pressed.connect(func(): _kette_los())
+		row.add_child(bw)
+		var bm := Button.new()
+		bm.name = "menue"
+		bm.text = T.t("Zurück zum Menü")
+		bm.custom_minimum_size = Vector2(200, 46)
+		bm.pressed.connect(func():
+			_kette_t = -1.0
+			kit.zum_menue())
+		row.add_child(bm)
+	else:
+		var b := Button.new()
+		b.name = "beenden"
+		b.text = T.t("Abenteuer beenden")
+		b.custom_minimum_size = Vector2(240, 46)
+		b.pressed.connect(func(): kit.stop())
+		v.add_child(b)
 	_ende.position = (_vs() - _ende.get_combined_minimum_size()) * 0.5
 
 
@@ -778,8 +842,9 @@ func _swipe_input(ev: InputEvent) -> void:
 
 func nimm_touch() -> Dictionary:
 	"""what the touch controls did since the last frame (then cleared)"""
-	var o := {"mv": stick_v, "look": look_d, "aktion": tap_akt, "sprung": tap_sprung, "sprung_h": halt_sprung}
+	var o := {"mv": stick_v, "look": look_d, "aktion": tap_akt, "sprung": tap_sprung, "sprung_h": halt_sprung, "haltung": tap_haltung}
 	look_d = Vector2.ZERO
+	tap_haltung = false
 	tap_akt = false
 	tap_sprung = false
 	return o

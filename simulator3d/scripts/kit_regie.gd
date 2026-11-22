@@ -54,7 +54,10 @@ func ziel_figur() -> Vector3:
 	var f = kit.figur
 	if str(f.zustand) == "haengen" and f.akt.get("griff", null) is Vector3:
 		return (f.akt["griff"] as Vector3) + Vector3(0, 0.25, 0)   # hanging: look at the hands on the edge (not under it)
-	return f.pos() + Vector3(0, 1.45, 0)
+	var kh := 1.45
+	if kit.has_method("kopf_hoehe"):
+		kh = float(kit.kopf_hoehe())                       # (the adventure: lower when crouching, crawling, lying, swimming)
+	return f.pos() + Vector3(0, kh, 0)
 
 
 # =======================================================================================================================

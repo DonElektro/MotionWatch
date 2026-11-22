@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.77.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.78.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -493,6 +493,19 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.78.0
+3.78.0: Die Karte des Grossvaters: Kapitel 4 «Nebel im Couloir» – Wärmebild, Seilschaft und das alte Biwak; die
+Kapitel laufen nacheinander (Kapitelwahl, ?grossvater=1&kapitel=N); im Abenteuer ducken, kriechen, sitzen, liegen,
+schwimmen und die Ansichten wie beim Erkunden. Frei erkunden: Der Schnelllauf wird nie schneller als gewählt. Bergtal: Der Sprung zu einem Aussichtspunkt zeigt
+jetzt den freien Blick (nicht mehr Kreuz, Steinmann oder Fernrohr im Bild); der Waldboden in der Nähe hat jetzt Struktur
+statt einer flachen Fläche. Frei erkunden – Camp aufstellen: Zelt, Tarp, Biwak oder Isomatte, Feuerstelle, Kocher und
+Kleines aus dem Rucksack mit Vorschau (grün = passt, rot = zu steil, zu nah oder im Wasser) aufstellen; Feuer anzünden,
+nachlegen, löschen, kochen und wärmen (mit «Echt»), Hinweis bei Feuerverbot; MoveEye auf dem Mini-Stativ bewacht das Camp,
+der Glut-Wächter prüft mit dem Wärmebild, ob das Feuer aus ist; beim Hinlegen «Nacht spulen» mit Bericht am Morgen oder
+«Live»; einzeln oder alles einpacken, ein stehen gelassenes Camp ist beim nächsten Mal wieder da; die lose Zeltplane
+erscheint nur mit Tarp im Rucksack; ruhiger Bildschirm beim Erkunden («☰ Menü» holt alles zurück).
+So testest du: Abenteuer öffnen → Kapitel 4 wählen und bis zum alten Biwak gehen; im Browser Sim/?grossvater=1&kapitel=4.
 
 NEU IN 3.77.0
 3.77.0: Im Bergtal gibt es jetzt erfundene Wildruhezonen zum Üben: sie stehen auf der Übersichtskarte, und «Hier

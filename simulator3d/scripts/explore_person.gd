@@ -44,23 +44,26 @@ const Begleiter = preload("res://scripts/erkunden_begleiter.gd")
 const Gestalten = preload("res://scripts/erkunden_gestalten.gd")
 const Sachen = preload("res://scripts/erkunden_sachen.gd")
 const Extras = preload("res://scripts/erkunden_extras.gd")
+const Haltung = preload("res://scripts/figur_haltung.gd")      # posture and water: shared with the Grossvater adventure
+const Camp = preload("res://scripts/erkunden_camp.gd")
+const Ruhe = preload("res://scripts/erkunden_ruhe.gd")
 
 const TURN := 2.4                    # rad/s: A / D drehen in der Ich-Sicht (und im Testgang pwalk)
 const LEASH := 110.0                 # m: so weit von der Gruppe weg in der Geschichte (wie abenteuer_zweit.gd)
 const EYE := 1.62                    # m: Augenhöhe stehend (Rückfall, wenn die Figur keinen Kopf-Knoten hat)
 const BOUND := 180.0                 # m: ausserhalb des Bergtals so weit wie der Mover (main._drive)
 const FULL := 0.95                   # Stick / grüne Kugel so weit draussen = rennen
-const HALTUNGEN := ["stehen", "geduckt", "kriechen"]
-const POSTUR := {"stehen": 0, "geduckt": 1, "kriechen": 2, "sitzen": 0, "liegen": 2}
-const AUGE := {"stehen": 1.62, "geduckt": 1.05, "kriechen": 0.38, "sitzen": 1.15, "liegen": 0.3}   # Rückfall ohne Kopf
+const HALTUNGEN := Haltung.HALTUNGEN
+const POSTUR := Haltung.POSTUR
+const AUGE := Haltung.AUGE            # Rückfall ohne Kopf
 const TEMPI := [1.8, 3.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0]   # m/s: Schnelllauf (rennen), Besitzer 21.11.2026 (bis 40)
 const V_MAX := 40.0
 const HANG_SANFT := 0.7             # rise / run (35°): up to here uphill at full speed (fast run too)
 const HANG_MIN_K := 0.45            # ... at the wall (kit_figur.STEIL 1.25): this part of the speed
 const V_RENNEN := 3.45               # m/s: normales Rennen (actor.PLAYER_SPEED[0] × 2.3) - Schnelllauf aus
-const SCHWIMM_V := 0.9               # m/s an der Oberfläche
-const SCHWIMM_TIEF := 0.25           # m: die Füsse so weit unter dem Wasserspiegel (der Körper liegt, der Kopf ist oben)
-const WATEN_K := 0.55                # waten: so viel vom Tempo
+const SCHWIMM_V := Haltung.SCHWIMM_V
+const SCHWIMM_TIEF := Haltung.SCHWIMM_TIEF
+const WATEN_K := Haltung.WATEN_K
 const LOOK := {"col": "red", "size": "", "build": "", "hat": "", "pack": true}
 
 var ex
@@ -79,6 +82,8 @@ var begleiter: Node = null           # erkunden_begleiter.gd: Maggie, Blinki, «
 var gestalten: CanvasLayer = null    # erkunden_gestalten.gd: die Figur gestalten (Etappe 2)
 var sachen: Node = null              # erkunden_sachen.gd: Rucksack-Sachen und Kraft (Etappe 3)
 var extras: Node = null              # erkunden_extras.gd: Fotomodus, Ort merken, Startpunkte (Etappe 4)
+var camp: Node = null                # erkunden_camp.gd: Camp aufstellen, Feuer, Nacht, einpacken (Besitzer 22.11.2026)
+var ruhe: Node = null                # erkunden_ruhe.gd: ruhiger Bildschirm beim Frei erkunden (Besitzer 22.11.2026)
 var _hang := 1.0                     # the slope factor, smoothed (_hang_k)
 var _abseil := {}                    # rappelling: {von, kante, nach, t, dauer}
 var _y_hoch := -INF                  # the highest point of the last flight (a hard landing, «Echt»)
@@ -195,6 +200,14 @@ func _ready() -> void:
 	extras.person = self
 	extras.main = main
 	add_child(extras)
+	camp = Camp.new()
+	camp.person = self
+	camp.main = main
+	add_child(camp)
+	ruhe = Ruhe.new()
+	ruhe.person = self
+	ruhe.main = main
+	add_child(ruhe)
 
 
 func _now() -> float:
@@ -355,6 +368,8 @@ func figur_setzen(d: Dictionary) -> void:
 
 
 func remove() -> void:
+	if camp != null:
+		camp.ende()                                          # a camp still standing: left standing (saved)
 	if begleiter != null:
 		begleiter.hund_weg()
 	if extras != null and extras.foto_an:
@@ -448,98 +463,30 @@ func touch_tipp(id: String) -> void:
 
 
 func haltung_weiter() -> void:
-	"""C: stehen → geduckt → kriechen → stehen (sitting / lying: up to standing)"""
-	if wasser == "schwimmen":
-		return
-	if haltung in ["sitzen", "liegen"]:
-		_aufstehen("stehen")
-		return
-	set_haltung(HALTUNGEN[(HALTUNGEN.find(haltung) + 1) % HALTUNGEN.size()])
+	"""C: stehen → geduckt → kriechen → stehen (sitting / lying: up to standing) - figur_haltung.gd"""
+	Haltung.weiter(self)
 
 
 func set_haltung(h: String) -> void:
-	if not h in POSTUR or not ok():
+	if not ok():
 		return
-	if wasser == "schwimmen" and h != "stehen":
-		return                                              # swimming: no posture
-	if h == haltung:
-		return
-	if haltung == "sitzen" and h != "sitzen":
-		_aufstehen(h)
-		return
-	if h == "sitzen":
-		_hinsetzen()
-		return
-	if h == "liegen" and wasser != "":
-		main.start_info = T.t("Im Wasser kann man sich nicht hinlegen")
-		return
-	haltung = h
+	Haltung.setzen(self, h)
 
 
 func _hinsetzen() -> void:
-	if wasser != "":
-		main.start_info = T.t("Im Wasser kann man sich nicht hinsetzen")
-		return
-	if figur.zustand != "boden":
-		return
-	var s: Dictionary = Welt.sitz(main, actor.global_position, float(actor.heading))
-	sitz = s
-	haltung = "sitzen"
-	actor.cur_speed = 0.0
-	actor.sit_seat = float(s["h"])
-	actor.idle_kind = "sit"
-	actor.idle_until = actor.now_s() + 1.0e6
-	actor.ctl_sit = true
-	if str(s["art"]) != "boden":
-		var sp: Vector3 = s["p"]
-		actor.position = Vector3(sp.x, actor.position.y, sp.z)
-		actor.heading = float(s["yaw"])
-		actor.rotation.y = actor.heading
-		figur._p0 = actor.position
+	Haltung.hinsetzen(self)
 
 
 func _aufstehen(nach: String) -> void:
-	if haltung == "sitzen":
-		actor.ctl_sit = false
-		actor.idle_until = 0.0
-		actor.idle_kind = ""
-		if str(sitz.get("art", "boden")) != "boden":        # off the bench: a step away from it
-			var q: Vector2 = main.keep_out(Vector2(actor.position.x, actor.position.z), float(actor.radius), true, true)
-			actor.position.x = q.x
-			actor.position.z = q.y
-			figur._p0 = actor.position
-		sitz = {}
-	haltung = nach if nach in POSTUR and nach != "sitzen" else "stehen"
+	Haltung.aufstehen(self, nach)
 
 
 func _haltung_tick(ein: Dictionary) -> void:
-	var mv: Vector2 = ein.get("mv", Vector2.ZERO)
-	if bool(_wunsch.get("haltung", false)):
-		haltung_weiter()
-	if bool(_wunsch.get("sitzen", false)):
-		if haltung == "sitzen":
-			_aufstehen("stehen")
-		else:
-			set_haltung("sitzen")
-	if bool(_wunsch.get("liegen", false)):
-		set_haltung("stehen" if haltung == "liegen" else "liegen")
-	if haltung == "sitzen" and mv.length() > 0.3:
-		_aufstehen("stehen")                                # walking off: up from the seat
-	elif haltung == "liegen" and mv.length() > 0.3:
-		haltung = "kriechen"                                # lying still, then moving: crawling on
-	if wasser == "schwimmen" and haltung != "stehen":
-		if haltung == "sitzen":
-			_aufstehen("stehen")
-		haltung = "stehen"
-	# what actor.gd does with it
-	actor.ctl_posture = 2 if wasser == "schwimmen" else int(POSTUR[haltung])
-	actor.gear_speed = (SCHWIMM_V / float(ActorS.PLAYER_SPEED[2])) if wasser == "schwimmen" else (WATEN_K if wasser == "waten" else 1.0)
-	actor.gear_norun = wasser != "" or (sachen != null and not sachen.darf_rennen())
+	var k := 1.0
 	if sachen != null:
-		actor.gear_speed *= sachen.tempo_faktor()            # Etappe 3: strength, snow without ice axe, hurt
-	actor.run_top = renn_tempo(main)
-	actor.gear_speed *= _hang_k()                            # really steep uphill: gently slower (never a drop to walking)
-	actor.frozen = haltung in ["sitzen", "liegen"]
+		k = sachen.tempo_faktor()                           # Etappe 3: strength, snow without ice axe, hurt
+	k *= _hang_k()                                           # really steep uphill: gently slower (never a drop to walking)
+	Haltung.tick(self, ein, _wunsch, k, sachen == null or sachen.darf_rennen(), renn_tempo(main))
 
 
 func _hang_k() -> float:
@@ -717,28 +664,7 @@ func spaet(dt: float, real_dt: float) -> void:
 		if sachen != null:
 			sachen.gelandet(_y_hoch - figur.y)                # Etappe 3: a hard landing («Echt»)
 		_y_hoch = -INF
-	var w: Dictionary = Welt.wasser(main, actor.position)
-	var art: String = Welt.art_fuer_tiefe(float(w.get("tiefe", 0.0)), str(w.get("art", "")) == "bach")
-	if art == "schwimmen" and (zs == "boden" or (zs == "luft" and figur.y <= float(w["spiegel"]) - SCHWIMM_TIEF + 0.05)):
-		if wasser != "schwimmen":
-			ton("platsch")
-			figur.nass += 1
-			if haltung == "sitzen":
-				_aufstehen("stehen")
-			haltung = "stehen"
-		wasser = "schwimmen"
-		spiegel = float(w["spiegel"])
-		if zs == "luft":
-			figur.geh_zu("boden")
-		figur.y = spiegel - SCHWIMM_TIEF
-		figur.vy = 0.0
-		actor.position.y = figur.y
-		figur._p0 = actor.position
-	else:
-		if wasser == "schwimmen":                            # out of the deep water: the feet on the bed / the bank
-			figur.y = main.ground_y(actor.position.x, actor.position.z)
-			figur._p0 = Vector3(figur._p0.x, figur.y, figur._p0.z)
-		wasser = art if art != "schwimmen" else ""
+	if not Haltung.wasser_tick(self, ton):
 		figur.nach(dt, _ein)
 	_bounds()
 	_kamera(dt, real_dt)
@@ -1077,5 +1003,7 @@ func state() -> Dictionary:
 	o["sachen"] = sachen.info() if sachen != null and ok() else {}
 	o["abseilen"] = not _abseil.is_empty()
 	o["extras"] = extras.info() if extras != null else {}
+	o["camp"] = camp.info() if camp != null else {}
+	o["ruhe"] = ruhe.info() if ruhe != null else {}
 	o["gestalten"] = gestalten.info() if gestalten != null else {}
 	return o

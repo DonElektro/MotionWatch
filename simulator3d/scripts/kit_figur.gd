@@ -213,6 +213,14 @@ func _boden(dt: float) -> void:
 	var ende: Vector3 = a.position
 	var start: Vector3 = _p0
 	var Lg := Vector2(ende.x - start.x, ende.z - start.z).length()
+	var top: float = float(a.get("run_top")) if a.get("run_top") != null else 0.0
+	if top > 0.0 and float(a.cur_speed) > 4.0:            # fast run: never more than the chosen speed in a frame
+		var lim := maxf(float(a.cur_speed), top * float(a.gear_speed)) * dt + 0.001
+		if Lg > lim:
+			ende = Vector3(start.x + (ende.x - start.x) * lim / Lg, ende.y, start.z + (ende.z - start.z) * lim / Lg)
+			a.position.x = ende.x
+			a.position.z = ende.z
+			Lg = lim
 	var n := maxi(1, int(ceil(Lg / BODEN_SCHRITT)))
 	var vh_voll := Vector3(ende.x - start.x, 0, ende.z - start.z) / maxf(dt, 0.001)
 	for i in range(1, n + 1):

@@ -852,7 +852,7 @@ func aktion_bei(w: Vector3, nur_offen := true) -> Dictionary:
 	var best := {}
 	var bd := 1.0e9
 	for a in aktionen:
-		if float(a["r"]) <= 0.0 or (nur_offen and erledigt.has(a["id"]) and str(a["art"]) in ["maggie_heben", "fund", "karte", "ofen", "moveeye", "maggie_such", "floss_bauen", "marke", "zeichen", "schloss"]):
+		if float(a["r"]) <= 0.0 or (nur_offen and erledigt.has(a["id"]) and str(a["art"]) in ["maggie_heben", "fund", "karte", "ofen", "moveeye", "maggie_such", "floss_bauen", "marke", "zeichen", "schloss", "haken", "anker"]):
 			continue
 		if (a["d"] as Dictionary).has("ebene") and not bool(ebene_an.get(str(a["d"]["ebene"]), false)):
 			continue                                       # Kapitel 1: an action of the attic only up there
