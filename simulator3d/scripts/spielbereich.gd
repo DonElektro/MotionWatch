@@ -597,22 +597,12 @@ func control(d: Dictionary) -> Dictionary:
 				"unlock":
 					regal.unlock(str(d.get("id", "")))
 					return {"ok": true}
-				"kapitel2":                                # «▶ Kapitel 2 spielen (neu)» (Grossvater-Neubau), wie der Knopf auf der Karte
+				"kapitel", "kapitel1", "kapitel2", "kapitel3", "kapitel4", "ganz":   # the chapter chooser of the card (22.11.2026)
+					var w := str(d.get("what", ""))
+					var n := 1 if w == "ganz" else (int(w.substr(7)) if w.length() > 7 else int(d.get("n", 1)))
 					regal._close_play()
-					main.abenteuer.neu_starten()
-					return {"ok": true}
-				"kapitel1":                                # «▶ Kapitel 1» (Phase 2), wie der Knopf auf der Karte
-					regal._close_play()
-					main.abenteuer.neu_starten(1)
-					return {"ok": true}
-				"kapitel3":                                # «▶ Kapitel 3» (Phase 2)
-					regal._close_play()
-					main.abenteuer.neu_starten(3)
-					return {"ok": true}
-				"kapitel4":                                # «▶ Kapitel 4» (Phase 2)
-					regal._close_play()
-					main.abenteuer.neu_starten(4)
-					return {"ok": true}
+					regal.kapitel_starten(n)
+					return {"ok": true, "kapitel": n}
 				"trailer":                                 # «Trailer ansehen» (trailer.gd), wie der Knopf auf der Karte
 					regal.trailer(str(d.get("id", "")))
 					return {"ok": true}

@@ -81,31 +81,54 @@ var _karte := {}
 var fotos := 0
 
 
+# the released chapters (22.11.2026): the chooser, the chain from chapter to chapter and the homepage tile offer these
+const KAPITEL_FERTIG := [1, 2, 3, 4]
+const KETTE_SEK := 5.0                  # the end card counts down, then the next chapter starts
+const SS = preload("res://scripts/spielstand.gd")
 const PROBE_DATEI := "res://inhalte/grossvater_probe.json"   # only in the probe package of the owner (delete before merging)
 
 
+static func autostart_ziel(args: PackedStringArray) -> Dictionary:
+	"""what the start options ask for: {"an": the Grossvater mode, "kapitel": N (0 = the chapter chooser)}
+	--grossvater-neu (browser ?grossvater=1) = the chooser, plus --grossvater-kapitel=N (browser &kapitel=N) = chapter N"""
+	var o := {"an": "--grossvater-neu" in args, "kapitel": 0}
+	for x in args:
+		if str(x).begins_with("--grossvater-kapitel="):
+			var n := int(str(x).substr(21))
+			o["an"] = true
+			o["kapitel"] = n if n in KAPITEL_FERTIG else 0          # (a chapter that is not out yet: the chooser)
+	return o
+
+
 static func autostart_pruefen(m) -> void:
-	"""the probe package for the owner: with res://inhalte/grossvater_probe.json ({"autostart": true}) or the start option
-	--grossvater-neu (browser: …?grossvater=1) the simulator goes straight into chapter 2 of the new mode (start card first)"""
-	var an := "--grossvater-neu" in (OS.get_cmdline_args() + OS.get_cmdline_user_args() + preload("res://scripts/web.gd").args())
+	"""the start options --grossvater-neu (browser: …?grossvater=1) open the chapter chooser, --grossvater-kapitel=N
+	(browser: …?grossvater=1&kapitel=N) starts chapter N - the hero card first when no hero is saved. The probe package of the
+	owner: res://inhalte/grossvater_probe.json ({"autostart": true}) starts like --grossvater-neu"""
+	var alle := OS.get_cmdline_args() + OS.get_cmdline_user_args() + preload("res://scripts/web.gd").args()
+	var ziel := autostart_ziel(alle)
+	var an := bool(ziel["an"])
 	if not an and FileAccess.file_exists(PROBE_DATEI):
 		var j = JSON.parse_string(FileAccess.get_file_as_string(PROBE_DATEI))
 		an = j is Dictionary and bool(j.get("autostart", false))
-	var nur_datei := not "--grossvater-neu" in (OS.get_cmdline_args() + OS.get_cmdline_user_args() + preload("res://scripts/web.gd").args())
-	if not an or (nur_datei and "--no-tour" in OS.get_cmdline_user_args()):
-		return                                             # (tests and CI start with --no-tour: the file alone never starts them)
+		if an and "--no-tour" in OS.get_cmdline_user_args():
+			return                                         # (tests and CI start with --no-tour: the file alone never starts them)
+	if not an:
+		return
 	await m.get_tree().create_timer(3.0).timeout          # the start of the simulator first (scene, panel, news)
 	if m.get("news") != null and m.news.has_method("close"):
 		m.news.close()
 	var k = ensure(m)
-	if not k.running:
-		var o := {"rolle": "tochter"}                       # the start card asks for the role and the name (default «Nina»)
-		for x in (OS.get_cmdline_user_args() + preload("res://scripts/web.gd").args()):
-			if str(x).begins_with("--kit-name="):
-				o["name"] = str(x).substr(11)               # (tests: a name = no start card)
-			elif str(x).begins_with("--kit-szene="):
-				o["szene"] = str(x).substr(12)
-		k.start(o)
+	if k.running:
+		return
+	var o := {"kapitel": int(ziel["kapitel"])}
+	for x in alle:
+		if str(x).begins_with("--kit-name="):
+			o["name"] = str(x).substr(11)                   # (tests: a name = no hero card)
+		elif str(x).begins_with("--kit-szene="):
+			o["szene"] = str(x).substr(12)
+			if int(o["kapitel"]) == 0:
+				o["kapitel"] = 2                            # (the old phone tests: a scene of chapter 2)
+	k.grossvater(o)
 
 
 static func ensure(m):
@@ -151,13 +174,14 @@ signal start_gewaehlt
 func start(o := {}) -> void:
 	if running:
 		stop()
+	kapitel = clampi(int(o.get("kapitel", 2)), 1, 4)           # Phase 2 (21.11.2026): the chapter's data file
+	daten = load("res://scripts/kit_k%d_daten.gd" % kapitel)
 	if not o.has("name") and not bool(o.get("figur_test", false)):
 		var w: Dictionary = await _start_karte(str(o.get("rolle", "tochter")), "Nina")   # the owner: «Nina» as the default name
 		o = o.duplicate()
 		o["rolle"] = w["rolle"]
 		o["name"] = w["name"]
-	kapitel = clampi(int(o.get("kapitel", 2)), 1, 4)           # Phase 2 (21.11.2026): the chapter's data file
-	daten = load("res://scripts/kit_k%d_daten.gd" % kapitel)
+		held_speichern(str(w["rolle"]), str(w["name"]))
 	rolle = str(o.get("rolle", "enkelin"))
 	if not rolle in daten.ROLLEN:
 		rolle = "enkelin"
@@ -165,6 +189,7 @@ func start(o := {}) -> void:
 	if name_ == "":
 		name_ = T.t(str(daten.ROLLE_NAME[rolle]))
 	kinder = bool(o.get("kinder", main.get("kids_on") == true))
+	kette = bool(o.get("kette", true))
 	if o.has("touch"):
 		_touch_force = 1 if bool(o["touch"]) else 0
 	running = true
@@ -279,7 +304,7 @@ func _start_karte(rolle0: String, name0: String) -> Dictionary:
 	v.add_theme_constant_override("separation", 12)
 	pc.add_child(v)
 	var t := Label.new()
-	t.text = T.t("Die Karte des Grossvaters") + " · " + T.t("Kapitel 2") + "\n" + T.t(str(daten.TITEL))
+	t.text = T.t("Die Karte des Grossvaters") + " · " + T.t("Kapitel %d") % kapitel + "\n" + T.t(str(daten.TITEL))
 	t.add_theme_font_size_override("font_size", 22)
 	t.add_theme_color_override("font_color", Color(1, 0.88, 0.6))
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -335,6 +360,170 @@ func _start_karte(rolle0: String, name0: String) -> Dictionary:
 
 
 var _start_karte_offen := false
+var kette := true                        # at the end the next chapter follows (tests of one chapter: "kette": false)
+
+
+# ---- the chapters one after the other (22.11.2026): the hero, the chooser, the chain ----------------------------------------
+static func kapitel_liste() -> Array:
+	"""the chapters one can play (the chooser, the homepage tile)"""
+	return KAPITEL_FERTIG.duplicate()
+
+
+static func naechstes_kapitel(n: int) -> int:
+	"""the released chapter after n, -1 after the last one («Fortsetzung folgt»)"""
+	for k in KAPITEL_FERTIG:
+		if int(k) > n:
+			return int(k)
+	return -1
+
+
+static func held() -> Dictionary:
+	"""the saved hero {rolle, name} of this game state ({} = none yet: the hero card comes first)"""
+	var h = SS.setting("k_held", {})
+	if h is Dictionary and str(h.get("rolle", "")) != "" and str(h.get("name", "")).strip_edges() != "":
+		return h
+	return {}
+
+
+static func held_speichern(rolle_: String, name__: String) -> void:
+	SS.set_setting("k_held", {"rolle": rolle_, "name": name__.strip_edges().left(16)})
+
+
+func grossvater(o := {}) -> void:
+	"""the one way into the story (homepage tile, start options, Steuerbefehl, the story card): kapitel N > 0 starts that
+	chapter, 0 opens the chooser. The hero card comes first when no hero is saved (or held_neu)."""
+	var n := int(o.get("kapitel", 0))
+	var h := held()
+	if n > 0 and not n in KAPITEL_FERTIG:
+		n = 0
+	if n == 0:
+		if h.is_empty() and not o.has("name"):
+			daten = load("res://scripts/kit_k1_daten.gd")
+			kapitel = 1
+			var w: Dictionary = await _start_karte(str(o.get("rolle", "tochter")), "Nina")
+			held_speichern(str(w["rolle"]), str(w["name"]))
+		waehler(o)
+		return
+	var s := o.duplicate()
+	s["kapitel"] = n
+	if not s.has("name") and not bool(o.get("held_neu", false)) and not h.is_empty():
+		s["rolle"] = h["rolle"]
+		s["name"] = h["name"]
+	elif not s.has("rolle") and not h.is_empty():
+		s["rolle"] = h["rolle"]
+	s.erase("held_neu")
+	start(s)
+
+
+var _wahl_layer: CanvasLayer = null
+
+
+func waehler_offen() -> bool:
+	return _wahl_layer != null and is_instance_valid(_wahl_layer)
+
+
+func waehler(o := {}) -> void:
+	"""the chapter chooser: «Ganzes Spiel ab Kapitel 1», a button for every released chapter, «Held wählen», «Schliessen»"""
+	waehler_zu()
+	var UI = preload("res://scripts/ui_style.gd")
+	_wahl_layer = CanvasLayer.new()
+	_wahl_layer.layer = 116
+	add_child(_wahl_layer)
+	var bg := ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.02, 0.03, 0.05, 0.82)
+	_wahl_layer.add_child(bg)
+	var pc := PanelContainer.new()
+	pc.theme = UI.theme()
+	pc.add_theme_stylebox_override("panel", UI.box(Color(0.06, 0.08, 0.11, 0.97), Color(1, 0.8, 0.45, 0.7), 16, 20, 1))
+	_wahl_layer.add_child(pc)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 10)
+	pc.add_child(v)
+	var t := Label.new()
+	t.text = T.t("Die Karte des Grossvaters")
+	t.add_theme_font_size_override("font_size", 22)
+	t.add_theme_color_override("font_color", Color(1, 0.88, 0.6))
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(t)
+	var h := held()
+	if not h.is_empty():
+		var hl := Label.new()
+		var D1 = load("res://scripts/kit_k1_daten.gd")
+		hl.text = T.t("Du spielst: %s (%s)") % [str(h["name"]), T.t(str(D1.ROLLE_NAME.get(str(h["rolle"]), "")))]
+		hl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		v.add_child(hl)
+	var wahl := func(n: int, neu: bool):
+		waehler_zu()
+		var s := o.duplicate()
+		s["kapitel"] = n
+		if neu:
+			s["held_neu"] = true
+		grossvater(s)
+	var ganz := Button.new()
+	ganz.name = "ganz"
+	ganz.text = T.t("Ganzes Spiel ab Kapitel 1")
+	ganz.custom_minimum_size = Vector2(320, 50)
+	UI.primary(ganz)
+	ganz.pressed.connect(func(): wahl.call(int(KAPITEL_FERTIG[0]), false))
+	v.add_child(ganz)
+	for n in KAPITEL_FERTIG:
+		var D = load("res://scripts/kit_k%d_daten.gd" % int(n))
+		var b := Button.new()
+		b.name = "kapitel%d" % int(n)
+		b.text = T.t("Kapitel %d") % int(n) + " · " + T.t(str(D.TITEL))
+		b.custom_minimum_size = Vector2(320, 44)
+		var nn := int(n)
+		b.pressed.connect(func(): wahl.call(nn, false))
+		v.add_child(b)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	v.add_child(row)
+	if not h.is_empty():
+		var bh := Button.new()
+		bh.name = "held"
+		bh.text = T.t("Held wählen")
+		bh.custom_minimum_size = Vector2(150, 40)
+		bh.pressed.connect(func(): wahl.call(int(KAPITEL_FERTIG[0]), true))
+		row.add_child(bh)
+	var bz := Button.new()
+	bz.name = "zu"
+	bz.text = T.t("Schliessen")
+	bz.custom_minimum_size = Vector2(150, 40)
+	bz.pressed.connect(func(): waehler_zu())
+	row.add_child(bz)
+	var place := func():
+		if not is_instance_valid(pc):
+			return
+		var sz := get_viewport().get_visible_rect().size
+		pc.size = Vector2.ZERO
+		pc.position = (sz - pc.get_combined_minimum_size()) * 0.5
+	place.call_deferred()
+
+
+func waehler_zu() -> void:
+	if waehler_offen():
+		_wahl_layer.queue_free()
+	_wahl_layer = null
+
+
+func kapitel_weiter() -> void:
+	"""the end card: «Weiter» (or its countdown) - the next chapter with the same hero; the backpack (k_rucksack) stays saved"""
+	var nx := naechstes_kapitel(kapitel)
+	if nx < 0:
+		return
+	var o := {"kapitel": nx, "rolle": rolle, "name": name_, "kinder": kinder}
+	if _touch_force >= 0:
+		o["touch"] = _touch_force == 1
+	start(o)
+
+
+func zum_menue() -> void:
+	"""the end card: «Zurück zum Menü» - the adventure ends, the menu «Spielen» opens"""
+	stop()
+	if main.get("spielbereich") != null and main.spielbereich.has_method("open"):
+		main.spielbereich.open()
 
 
 func stop() -> void:
@@ -1207,7 +1396,11 @@ func film_eintrag(e: Dictionary, sprung: bool) -> void:
 		"ende":
 			phase = "ende"
 			ziel_text = ""
-			hud.ende(tx(str(e.get("text", ""))), abzeichen.keys())
+			var nx := naechstes_kapitel(kapitel) if kette else -1
+			if nx > 0:                                       # the chain: the next released chapter starts by itself
+				hud.ende(T.t("Kapitel %d geschafft – weiter mit Kapitel %d …") % [kapitel, nx], abzeichen.keys(), nx, KETTE_SEK)
+			else:
+				hud.ende(tx(str(e.get("text", ""))), abzeichen.keys())
 			musik("entdeckung")
 		_:
 			if k3 != null:
@@ -1945,6 +2138,30 @@ static func control(m, d: Dictionary) -> Dictionary:
 		"startwahl":                                        # tests / screenshots: confirm the start card
 			if k._start_karte_offen:
 				k.start_gewaehlt.emit()
+			return {"ok": true}
+		"grossvater":                                       # like the homepage tile: {kapitel: N} starts N, without = the chooser
+			k.grossvater.call_deferred(d)
+			return {"ok": true, "kapitel": k.kapitel_liste()}
+		"kapitel_liste":
+			return {"ok": true, "kapitel": k.kapitel_liste(), "held": k.held()}
+		"waehler":                                          # tests: the chooser's buttons ({wahl: "ganz" | "kapitelN" | "held" | "zu"})
+			if not k.waehler_offen():
+				return {"ok": false, "error": "kein Kapitelwähler"}
+			if d.has("wahl"):
+				var b = k._wahl_layer.find_child(str(d["wahl"]), true, false)
+				if b is Button:
+					(b as Button).pressed.emit()
+					return {"ok": true}
+				return {"ok": false, "error": "kein Knopf " + str(d["wahl"])}
+			var knoepfe: Array = []
+			for b in k._wahl_layer.find_children("*", "Button", true, false):
+				knoepfe.append(str(b.name))
+			return {"ok": true, "knoepfe": knoepfe}
+		"weiter":                                           # tests: the end card's «Weiter» / «Zurück zum Menü»
+			if str(d.get("was", "weiter")) == "menue":
+				k.zum_menue()
+			else:
+				k.kapitel_weiter()
 			return {"ok": true}
 		"stop":
 			k.stop()

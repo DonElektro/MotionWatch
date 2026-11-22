@@ -368,7 +368,24 @@ func _messen(real_dt: float) -> void:
 		_mess_t = 0.0
 
 
+func _kette_text() -> void:
+	if _kette_lab != null and is_instance_valid(_kette_lab):
+		_kette_lab.text = T.t("Weiter in %d s") % ceili(maxf(_kette_t, 0.0))
+
+
+func _kette_los() -> void:
+	if _kette_t < 0.0:
+		return
+	_kette_t = -1.0
+	kit.kapitel_weiter.call_deferred()
+
+
 func tick(real_dt: float) -> void:
+	if _kette_t >= 0.0 and _ende != null and is_instance_valid(_ende):
+		_kette_t -= real_dt
+		_kette_text()
+		if _kette_t <= 0.0:
+			_kette_los()
 	if not has_meta("kein_messen"):
 		_messen(real_dt)
 	var s := _vs()
@@ -661,9 +678,16 @@ func blitz() -> void:
 	tw.tween_callback(func(): _fade.color = Color(0, 0, 0, 0))
 
 
-func ende(text: String, badges: Array) -> void:
+var _kette_t := -1.0                  # the end card: seconds until the next chapter starts (-1 = no chain)
+var _kette_lab: Label
+
+
+func ende(text: String, badges: Array, naechstes := -1, sek := 5.0) -> void:
+	"""the end card of a chapter: its badges; with a next released chapter a countdown, «Weiter» and «Zurück zum Menü»,
+	after the last one «Abenteuer beenden»"""
 	if _ende != null:
 		_ende.queue_free()
+	_kette_t = sek if naechstes > 0 else -1.0
 	_ende = PanelContainer.new()
 	_ende.add_theme_stylebox_override("panel", UI.box(Color(0.04, 0.05, 0.07, 0.9), Color(1, 0.8, 0.45, 0.7), 16, 22, 1))
 	root.add_child(_ende)
@@ -682,11 +706,37 @@ func ende(text: String, badges: Array) -> void:
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		l.custom_minimum_size = Vector2(minf(_vs().x - 80.0, 560.0), 0)
 		v.add_child(l)
-	var b := Button.new()
-	b.text = T.t("Abenteuer beenden")
-	b.custom_minimum_size = Vector2(240, 46)
-	b.pressed.connect(func(): kit.stop())
-	v.add_child(b)
+	if naechstes > 0:
+		_kette_lab = _label(16, Color(0.85, 0.88, 0.92))
+		_kette_lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		v.add_child(_kette_lab)
+		_kette_text()
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 10)
+		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		v.add_child(row)
+		var bw := Button.new()
+		bw.name = "weiter"
+		bw.text = T.t("Weiter ›")
+		bw.custom_minimum_size = Vector2(200, 46)
+		UI.primary(bw)
+		bw.pressed.connect(func(): _kette_los())
+		row.add_child(bw)
+		var bm := Button.new()
+		bm.name = "menue"
+		bm.text = T.t("Zurück zum Menü")
+		bm.custom_minimum_size = Vector2(200, 46)
+		bm.pressed.connect(func():
+			_kette_t = -1.0
+			kit.zum_menue())
+		row.add_child(bm)
+	else:
+		var b := Button.new()
+		b.name = "beenden"
+		b.text = T.t("Abenteuer beenden")
+		b.custom_minimum_size = Vector2(240, 46)
+		b.pressed.connect(func(): kit.stop())
+		v.add_child(b)
 	_ende.position = (_vs() - _ende.get_combined_minimum_size()) * 0.5
 
 

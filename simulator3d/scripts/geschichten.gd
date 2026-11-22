@@ -396,16 +396,28 @@ func card(s: Dictionary, w: float) -> Control:
 			bo.tooltip_text = T.t("Nur für den Besitzer (nicht im Kinder-Modus). Das Passwort bleibt, die Warnung kommt trotzdem.")
 		return p
 	if id == "grossvater" and main.abenteuer != null and main.abenteuer.neu_modus_an():
-		var brn := HBoxContainer.new()                     # Neubau (21.11.2026): chapter 2 in the new mode - the default
+		# the chapter chooser (22.11.2026): the whole game from chapter 1, then every released chapter; each one goes on to the
+		# next by itself (kit_abenteuer.gd KAPITEL_FERTIG, the same list as the homepage tile)
+		var KA = preload("res://scripts/kit_abenteuer.gd")
+		var brg := HBoxContainer.new()
+		brg.name = "kapitelwahl_ganz"
+		tv.add_child(brg)
+		var bg := _btn(brg, T.t("▶ Ganzes Spiel ab Kapitel 1"), func(): _close_play(); kapitel_starten(int(KA.KAPITEL_FERTIG[0])), true)
+		bg.name = "ganz"
+		bg.tooltip_text = T.t("Kapitel um Kapitel, mit deiner Figur. Am Ende jedes Kapitels geht es nach 5 s weiter.")
+		var brn := HFlowContainer.new()
+		brn.name = "kapitelwahl"
+		brn.add_theme_constant_override("h_separation", 6)
+		brn.add_theme_constant_override("v_separation", 6)
 		tv.add_child(brn)
-		var b1 := _btn(brn, T.t("▶ Kapitel 1"), func(): _close_play(); main.abenteuer.neu_starten(1), true)   # Phase 2 (21.11.2026)
-		b1.tooltip_text = T.t("Kapitel 1 «Die Karte»: der Abend an der Alp Tschuggen")
-		var bn := _btn(brn, T.t("▶ Kapitel 2 spielen (neu)"), func(): _close_play(); main.abenteuer.neu_starten(), true)
-		bn.tooltip_text = T.t("Eigene Figur, Kamera hinter dir, Maggie dabei. Der alte Ablauf: «Weiterspielen» / «Neu beginnen».")
-		var b3 := _btn(brn, T.t("▶ Kapitel 3"), func(): _close_play(); main.abenteuer.neu_starten(3), true)   # Phase 2 (22.11.2026)
-		b3.tooltip_text = T.t("Kapitel 3 «Der Seeblock»: Lias Spur, ein Floss und die Kiste im See")
-		var b4 := _btn(brn, T.t("▶ Kapitel 4"), func(): _close_play(); main.abenteuer.neu_starten(4), true)   # Phase 2 (22.11.2026)
-		b4.tooltip_text = T.t("Kapitel 4 «Nebel im Couloir»: Wärmebild, Seilschaft und das alte Biwak")
+		for n in KA.kapitel_liste():
+			var D = load("res://scripts/kit_k%d_daten.gd" % int(n))
+			var nn := int(n)
+			var bk := _btn(brn, T.t("Kapitel %d") % nn, func(): _close_play(); kapitel_starten(nn))
+			bk.name = "kapitel%d" % nn
+			bk.size_flags_horizontal = Control.SIZE_FILL
+			bk.custom_minimum_size.x = 96
+			bk.tooltip_text = T.t("Kapitel %d") % nn + " «" + T.t(str(D.TITEL)) + "»"
 	var can := bool(s["started"]) and (not bool(s["done"]) or id == "grossvater")
 	var bw := _btn(br, T.t("Weiterspielen"), func(): weiter(id), can and not (id == "grossvater" and main.abenteuer != null and main.abenteuer.neu_modus_an()))
 	if id == "grossvater" and main.abenteuer != null and main.abenteuer.neu_modus_an():
@@ -418,6 +430,13 @@ func card(s: Dictionary, w: float) -> Control:
 		var bt := _btn(br3, T.t("Trailer ansehen"), func(): trailer(id))
 		bt.tooltip_text = T.t("Etwa 3 Minuten · Esc oder Klick = zurück")
 	return p
+
+
+func kapitel_starten(n: int) -> void:
+	"""a chapter of «Die Karte des Grossvaters» (new mode): the saved hero, or the hero card first"""
+	if main.abenteuer != null:
+		main.abenteuer.close_ab()
+	preload("res://scripts/kit_abenteuer.gd").ensure(main).grossvater({"kapitel": n})
 
 
 func _btn(parent: Control, text: String, cb: Callable, primary := false) -> Button:
