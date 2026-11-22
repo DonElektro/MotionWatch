@@ -99,6 +99,18 @@ const TRAILS := [["Seeweg", [Vector2(178, -40), Vector2(110, -20), Vector2(60, 0
 		["Tobelweg", Ziele.TOBELWEG, 0],                       # real-berg-orte: to the Tuffwasserfall (bergtal_ziele.gd)
 		["Gipfelweg Chalchstock", Ziele.GIPFELWEG, 1]]
 
+# 4.21 «Wildcamp» (Besitzer 22.11.2026): ERFUNDENE Wildruhezonen des Bergtals zum Üben - auf der Karte von MoveEye (Teil 639zzzzzw,
+# über werkzeuge/bergkarte/export.gd + paket.py: vektor.json t = «wrz»), in der Übersichtskarte und bei «Hier übernachten».
+# Felder wie die Daten des Bundes: z Schutzzeit, s v verbindlich / e empfohlen, b Bestimmung (R20 Zutrittsverbot, R30 nur auf
+# dem Weg durchqueren, E10 bitte nicht betreten). Punkte in Tal-Metern (x = Osten, z = Süden).
+const WILDRUHEZONEN := [
+		{"id": "gratspitz", "name": "Gratspitz-Murmelboden", "z": "20.12. - 30.04.", "s": "v", "b": "R30",
+			"ring": [Vector2(-720, 40), Vector2(-540, 10), Vector2(-420, 130), Vector2(-440, 270), Vector2(-580, 330), Vector2(-710, 240)]},
+		{"id": "riedmoos", "name": "Riedmoos-Schwarzseeli", "z": "01.11. - 30.04.", "s": "v", "b": "R20",
+			"ring": [Vector2(-700, -370), Vector2(-540, -390), Vector2(-380, -310), Vector2(-360, -190), Vector2(-520, -150), Vector2(-690, -210)]},
+		{"id": "schattwald", "name": "Schattwald (Auerhuhn)", "z": "01.04. - 15.07.", "s": "e", "b": "E10",
+			"ring": [Vector2(-200, -720), Vector2(10, -740), Vector2(90, -640), Vector2(40, -560), Vector2(-140, -560)]}]
+
 # the suggested sleeping spots: id -> [name, x, z, looking (degrees, 0 = north / down the valley, 90 = east), what it is]
 const SPOTS := {"seeufer": ["Am Ufer des Gumpisees", -142.0, -332.0, 20.0, "See"],
 		"felsnische": ["Felsnische beim Murmelboden", -255.0, 262.0, 150.0, "Fels"],
@@ -219,6 +231,14 @@ static func _lite() -> bool:
 
 
 static var _vp_pos := {}                     # viewpoint id -> where it really is (summits: the top)
+
+
+static func wrz_at(x: float, z: float) -> Dictionary:
+	"""the invented Wildruhezone at this point of the valley ({} = none): {id, name, z (period), s, b}"""
+	for wz in WILDRUHEZONEN:
+		if Geometry2D.is_point_in_polygon(Vector2(x, z), PackedVector2Array(wz["ring"])):
+			return {"id": wz["id"], "name": wz["name"], "z": wz["z"], "s": wz["s"], "b": wz["b"]}
+	return {}
 
 
 static func vp_xz(vp: Array) -> Vector2:
@@ -2776,6 +2796,12 @@ func _publish() -> void:
 			var wp := WG(q.x, q.y)
 			ll.append(Vector2(wp.x, wp.z))
 		lines.append([ll, Color(0.3, 0.55, 0.85), 2.0])
+	for wz in WILDRUHEZONEN:                                # «Wildcamp»: the invented Wildruhezonen (outline, vermillion like on MoveEye's map)
+		var wl := PackedVector2Array()
+		for q in wz["ring"] + [wz["ring"][0]]:
+			var wp := WG(q.x, q.y)
+			wl.append(Vector2(wp.x, wp.z))
+		lines.append([wl, Color(0.84, 0.37, 0.0), 2.0])
 	s.data["map_lines"] = lines
 	s.data["road_line"] = rl
 	s.data["road_z"] = 900.0                                # (cars without a road near: far away, not over the meadow)

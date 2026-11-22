@@ -273,7 +273,7 @@ def teil_a(datei, zp, data, unp, exp):
 # ---- B) in the browser --------------------------------------------------------------------------------------------------------------
 def gepatcht(datei, tmp, data, unp, url):
     src = open(datei, encoding="utf-8").read()
-    neu = 'BK_FILE = {"name": "bergtal-karte-1.zip", "size": %d, "sha256": "%s", "unpacked": %d, "sim": "test"}' % (len(data), hashlib.sha256(data).hexdigest(), unp)
+    neu = 'BK_FILE = {"name": "%s", "size": %d, "sha256": "%s", "unpacked": %d, "sim": "test"}' % (BP.NAME, len(data), hashlib.sha256(data).hexdigest(), unp)
     src, n = re.subn(r'^BK_FILE = \{"name": "[^"]*", "size": \d+, "sha256": "[0-9a-f]*", "unpacked": \d+, "sim": "[^"]*"\}', neu, src, flags=re.M)
     alt = 'BK_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"}'
     assert n == 1 and src.count(alt) == 1
@@ -292,7 +292,7 @@ def teil_b(datei, data, unp, bilder):
     print("B) im Browser (390 px DPR 2 und PC)", flush=True)
     tmp = tempfile.mkdtemp(prefix="mw_bk_b_")
     srv = Srv()
-    srv.files["/bergkarte-1/bergtal-karte-1.zip"] = data
+    srv.files["/%s/%s" % (BP.TAG, BP.NAME)] = data
     d2 = gepatcht(datei, tmp, data, unp, srv.url)
     with socket.socket() as sk:
         sk.bind(("127.0.0.1", 0)); port = sk.getsockname()[1]

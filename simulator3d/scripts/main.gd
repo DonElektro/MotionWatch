@@ -1503,6 +1503,11 @@ func bt_take(r: Dictionary) -> Dictionary:
 	mover_home()
 	set_scene("bergtal")
 	start_info = "%s %s" % [preload("res://scripts/i18n.gd").t("Neuer Schlafplatz:"), preload("res://scripts/i18n.gd").t(str(r.get("note", "")))]
+	var wz: Dictionary = preload("res://scripts/bergtal.gd").wrz_at(float(r["x"]), float(r["z"]))   # «Wildcamp»: an invented Wildruhezone
+	if not wz.is_empty():
+		r["wildruhezone"] = wz
+		start_info += " · ⚠ " + preload("res://scripts/i18n.gd").t("In der (erfundenen) Wildruhezone «{name}», Schutzzeit {zeit} – hier besser nicht übernachten.",
+				{"name": str(wz["name"]), "zeit": str(wz["z"]).replace(" - ", "–")})
 	r["rating"] = scenes.data["bergtal"].rating if scenes.data.has("bergtal") else {}
 	return r
 
