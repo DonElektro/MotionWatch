@@ -36,6 +36,8 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
 
 - sim-grossvater-k4 @ 968499c (CI 45032754170 grün): Kapitel 4 «Nebel im Couloir» (Fixes), Kapitelkette und Kapitelwahl (KAPITEL_FERTIG [1,2,3,4]; ?grossvater=1&kapitel=N; --grossvater-kapitel=N; Steuerbefehl kit grossvater kapitel), Haltungen aus Erkunden im Abenteuer (figur_haltung.gd), Tests kit_kette_test.gd + kit_haltung_test.gd.
 - sim-frei-erkunden @ 18c9fa8: Schnelllauf waagrecht pro Bild begrenzt (nie schneller als gewählt), Test misst mit den Bildzeiten der Engine.
+- sim-camp @ 84bf08f: Camp aufstellen (Zelt, Tarp, Feuer, MoveEye auf dem Mini-Stativ, Nacht spulen), ruhiger Bildschirm beim Erkunden, Test erkunden_camp_test.gd.
+- sim-aussicht-sprung @ 509f2bf: freier Blick an den Aussichtspunkten, Waldboden mit Struktur.
 - MoveEye 4.21.0 zeigt auf der Startseite die Kapitel-Knöpfe 1–4 ab dieser Version (HP_GV_KAPITEL).
 
 ## NEU in 3.77.0 (MoveEye 4.21.0): Wildruhezonen im Bergtal, Sprung zur schönsten Aussicht

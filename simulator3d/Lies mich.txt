@@ -499,7 +499,12 @@ NEU IN 3.78.0
 Kapitel laufen nacheinander (Kapitelwahl, ?grossvater=1&kapitel=N); im Abenteuer ducken, kriechen, sitzen, liegen,
 schwimmen und die Ansichten wie beim Erkunden. Frei erkunden: Der Schnelllauf wird nie schneller als gewählt. Bergtal: Der Sprung zu einem Aussichtspunkt zeigt
 jetzt den freien Blick (nicht mehr Kreuz, Steinmann oder Fernrohr im Bild); der Waldboden in der Nähe hat jetzt Struktur
-statt einer flachen Fläche.
+statt einer flachen Fläche. Frei erkunden – Camp aufstellen: Zelt, Tarp, Biwak oder Isomatte, Feuerstelle, Kocher und
+Kleines aus dem Rucksack mit Vorschau (grün = passt, rot = zu steil, zu nah oder im Wasser) aufstellen; Feuer anzünden,
+nachlegen, löschen, kochen und wärmen (mit «Echt»), Hinweis bei Feuerverbot; MoveEye auf dem Mini-Stativ bewacht das Camp,
+der Glut-Wächter prüft mit dem Wärmebild, ob das Feuer aus ist; beim Hinlegen «Nacht spulen» mit Bericht am Morgen oder
+«Live»; einzeln oder alles einpacken, ein stehen gelassenes Camp ist beim nächsten Mal wieder da; die lose Zeltplane
+erscheint nur mit Tarp im Rucksack; ruhiger Bildschirm beim Erkunden («☰ Menü» holt alles zurück).
 So testest du: Abenteuer öffnen → Kapitel 4 wählen und bis zum alten Biwak gehen; im Browser Sim/?grossvater=1&kapitel=4.
 
 NEU IN 3.77.0
