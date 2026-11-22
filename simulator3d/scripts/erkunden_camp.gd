@@ -1376,12 +1376,13 @@ func _layout() -> void:
 	var s: Vector2 = get_viewport().get_visible_rect().size
 	var schmal := s.x < 600.0
 	knopf.text = "⛺ " + T.t("Camp") if not schmal else T.t("Camp")
-	knopf.size = Vector2(0, 0)
+	var kg := knopf.get_combined_minimum_size()
+	knopf.size = kg
 	var oben := 8.0
 	var ruhe = person.get("ruhe")
 	if ruhe != null and ruhe.has_method("knopf_unten"):
 		oben = float(ruhe.knopf_unten()) + 6.0
-	knopf.position = Vector2(s.x - knopf.size.x - 10.0, oben) if not schmal else Vector2(s.x - knopf.size.x - 8.0, oben)
+	knopf.position = Vector2(s.x - kg.x - (8.0 if schmal else 10.0), oben)
 	if _panel.visible:
 		var mw := minf(460.0, s.x - 16.0)
 		_panel.custom_minimum_size = Vector2(mw, 0)

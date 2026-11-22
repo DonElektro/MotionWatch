@@ -137,7 +137,7 @@ func aus() -> void:
 
 func knopf_unten() -> float:
 	"""where the «Camp» button may begin (below this one)"""
-	return knopf.position.y + knopf.size.y if knopf.visible else 4.0
+	return knopf.position.y + knopf.get_combined_minimum_size().y if knopf.visible else 4.0
 
 
 func _process(_dt: float) -> void:
@@ -153,8 +153,8 @@ func _process(_dt: float) -> void:
 	knopf.text = "☰ " + (T.t("Ruhig") if menu_zeigen else T.t("Menü"))
 	knopf.tooltip_text = T.t("Alle Fenster und Menüs wieder zeigen / wieder ausblenden")
 	var vs: Vector2 = knopf.get_viewport_rect().size
-	knopf.size = Vector2.ZERO
-	knopf.position = Vector2(vs.x - knopf.get_combined_minimum_size().x - 8.0, 8.0)
+	knopf.size = knopf.get_combined_minimum_size()
+	knopf.position = Vector2(vs.x - knopf.size.x - 8.0, 8.0)
 	if menu_zeigen:
 		return
 	if not an:
