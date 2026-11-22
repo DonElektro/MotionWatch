@@ -1,9 +1,10 @@
 # CI: die schweren Prüfungen auf GitHub statt auf dem lokalen Rechner (Nov. 2026). Lokal abfragen / warten:
 #   werkzeuge/ci_status.sh [zweig|commit] [--warten] [--fehler]
 #  - Push auf real-*: nur was die Änderung betrifft (Job «Auswahl», Regeln in werkzeuge/ci_auswahl.py), ohne Export
-#  - Push auf integration: dasselbe gegenüber main, dazu der Export; ist derselbe Commit schon auf main, nur die Grundprüfungen
-#  - Push auf main: IMMER ALLES, dazu Export Linux + Windows + Pi (ohne Signatur) als Artefakt
-#  - von Hand (Actions -> CI -> Run workflow): alles (Haken «alles» weg: nur was die Änderung betrifft), Export abwählbar;
+#  - Push auf integration (und von Hand ohne Haken): dasselbe gegenüber main, dazu der Export; ist derselbe Commit schon auf
+#    main, nur die Grundprüfungen. ALLES nur bei Änderungen an den CI-Dateien, «[voll]» in der Commit-Nachricht oder dem Haken
+#  - Push auf main: IMMER ALLES, dazu Export Linux + Windows + Pi (ohne Signatur) als Artefakt; dazu jede Nacht ein voller Lauf
+#  - von Hand (Actions -> CI -> Run workflow): ab 22.11.2026 nach den Regeln (Haken «alles» setzen = alles), Export abwählbar;
 #    «[export]» in der Commit-Nachricht: Export auch auf real-*
 # Aufbau: Auswahl -> parallel [MoveEye · Grundprüfungen | MoveEye · Web · <Gruppe> | Simulator … | HP-Update | USB-Installer | Pi-Dienst | Export]
 #         -> Ergebnis (Torwächter: rot, wenn etwas rot ist oder fehlt; auf main auch, wenn irgendetwas übersprungen wurde).
@@ -14,12 +15,14 @@ name: CI
 on:
   push:
     branches: ["real-*", integration, main]
+  schedule:
+    - cron: "37 1 * * *"                # Nachtlauf (Besitzer 22.11.2026): jede Nacht ALLES auf main (02:37 Schweizer Winterzeit)
   workflow_dispatch:
     inputs:
       alles:
-        description: "alles prüfen (auch die Spiele-Tests), egal was geändert wurde"
+        description: "alles prüfen (auch Spiele, Pi-Dienst, USB), egal was geändert wurde - ohne Haken: nach den Regeln (ci_auswahl.py)"
         type: boolean
-        default: true
+        default: false
       export:
         description: "Simulator exportieren (Linux + Windows, ohne Signatur)"
         type: boolean
@@ -32,7 +35,8 @@ permissions:
   contents: read
 concurrency:
   # (a probe run by hand never cancels another run and is never cancelled)
-  group: ci-${{ github.ref }}${{ github.event.inputs.probe && format('-probe-{0}', github.run_id) || '' }}
+  # (the nightly run has its own group: GitHub keeps one waiting run per group - it must never replace a waiting push on main)
+  group: ci-${{ github.ref }}${{ github.event.inputs.probe && format('-probe-{0}', github.run_id) || '' }}${{ github.event_name == 'schedule' && '-nacht' || '' }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/heads/real-') }}
 env:
   GODOT_VER: "4.3"
@@ -69,6 +73,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CI_ALLES: ${{ github.event.inputs.alles }}
           CI_PROBE: ${{ github.event.inputs.probe }}
+          CI_NACHRICHT: ${{ github.event.head_commit.message }}     # «[voll]» = alles (von Hand: fragt GitHub nach der Nachricht)
         run: python3 werkzeuge/ci_auswahl.py --auswahl
 
   # ---------------------------------------------------------------- MoveEye
@@ -105,7 +110,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        gruppe: ${{ fromJSON(needs.auswahl.outputs.gruppen || '["kern","rechte","live","daten","spiele-1","spiele-2"]') }}
+        gruppe: ${{ fromJSON(needs.auswahl.outputs.gruppen || '["kern","kern-2","rechte","live","daten","spiele-1","spiele-2"]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -127,17 +132,18 @@ jobs:
         run: |
           printf '%s\n' 'Acquire::Retries "5";' 'Acquire::http::Timeout "30";' 'Acquire::https::Timeout "30";' \
             'DPkg::Lock::Timeout "180";' | sudo tee /etc/apt/apt.conf.d/80-mw-robust > /dev/null
+      # 22.11.2026: the system packages of Chromium as .deb files in a cache too (key = runner image + Playwright): next time
+      # «dpkg -i» without network and without «apt-get update»; nothing missing = no apt at all (werkzeuge/ci_chromium.sh)
+      - name: Abbild des Runners (für den Schlüssel)
+        run: echo "IMG=${ImageOS:-ubuntu}-${ImageVersion:-0}" >> "$GITHUB_ENV"
+      - name: Chromium-Systempakete (Cache)
+        uses: actions/cache@v4
+        with:
+          path: ~/apt-chromium
+          key: apt-chromium-${{ env.IMG }}-playwright-1.55.0
       - name: Chromium installieren
         timeout-minutes: 20
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        run: |
-          for i in 1 2 3; do
-            if [ "${{ steps.pwcache.outputs.cache-hit }}" = "true" ]; then timeout 360 python3 -m playwright install-deps chromium && break
-            else timeout 360 python3 -m playwright install --with-deps chromium && break; fi
-            echo "::warning::Chromium: Versuch $i ging nicht - nochmal"; sudo apt-get update -qq || true
-          done
-          python3 -c "from playwright.sync_api import sync_playwright as s; p = s().start(); b = p.chromium.launch(); b.close(); p.stop()"
+        run: bash werkzeuge/ci_chromium.sh ~/apt-chromium
       - name: ffmpeg (Cache)
         if: ${{ matrix.gruppe == 'kern' }}
         id: ffcache

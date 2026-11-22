@@ -13,6 +13,9 @@
 #     xhost +SI:localuser:<Runner> in der laufenden Sitzung als Benutzer des Kiosks (nie «xhost +»), einmal.
 #  4. Controller koppeln (HP_FASSUNG 4): controller_koppeln.sh / controller_fenster.py, Pfad-Einheit + Dienst (nur die
 #     feste Aufgabe, kein sudo / polkit für den Kiosk), Ctrl+Alt+B in openbox.xml (einmal), bluez / rfkill nachinstalliert.
+#  7. Pakete für die Tests (HP_FASSUNG 9): ffmpeg / nodejs nur wenn «ffmpeg» / «node» fehlen, Bibliotheken von Chromium nur
+#     wenn ldd am Chromium des Runners etwas vermisst; nie beim Spielen / während eines Tests; ohne Runner nichts; nichts fehlt =
+#     kein apt (apt-get ist ein Ersatz, der nur aufzeichnet).
 #  6. Simulator-Anhang: das Linux-Paket als Release-Asset («sim.anhang»). Sprung 1: ein HP mit dem ALTEN Skript (Testdaten
 #     hp_update_fassung6.sh) spielt weiter das Paket im Repository ein und bekommt damit das neue Skript; Sprung 2: das neue
 #     Skript holt den Anhang - nur in einer Pause (nie beim Spielen, nie während der HP rechnet). Asset fehlt / verändert /
@@ -135,6 +138,8 @@ printf 'SIM=%q\nSIM_ARGS=(--fullscreen)\n' "$SIMD/MoveEyeSim3D.x86_64" > "$X/etc
 sed -n "/^schreibe \"\$LIB\/openbox.xml\" 644 <<'EOF'\$/,/^EOF\$/p" "$R/simulator3d/beilagen_linux/kiosk_ein.sh" | sed '1d;$d' \
 	| grep -v 'kiosk_sitzung.sh koppeln\|hp_knoepfe.sh zurueck\|<margins>\|irefox\|hromium' > "$X/usr/local/lib/moveeye-kiosk/openbox.xml"   # … und vor HP_FASSUNG 8
 grep -q 'kiosk_sitzung.sh neustart' "$X/usr/local/lib/moveeye-kiosk/openbox.xml" || fehler "Testaufbau: openbox.xml"
+# ldd (HP_FASSUNG 9): meldet eine fehlende Bibliothek nur, wenn MW_T_LDD gesetzt ist
+printf '#!/bin/sh\necho "ldd $*" >> "%s/aufrufe.txt"\n[ -n "${MW_T_LDD:-}" ] && echo "\tlibnss3.so => not found"\nexit 0\n' "$W" > "$B/ldd"; chmod 755 "$B/ldd"
 for b in systemctl apt-get apt-cache systemd-run systemd-tmpfiles modinfo udevadm; do
 	printf '#!/bin/sh\necho "%s $*" >> "%s/aufrufe.txt"\n[ "%s $1 $2" = "systemctl is-active -q" ] && exit 0\n[ "%s $1 $2 $3" = "systemctl is-enabled -q bluetooth.service" ] && exit 1\nexit 0\n' "$b" "$W" "$b" "$b" > "$B/$b"
 	chmod 755 "$B/$b"
@@ -186,6 +191,7 @@ sed -e "s#^UPDATE_PUBKEY=\"[0-9a-f]*\"#UPDATE_PUBKEY=\"$(cat "$W/pub.txt")\"#" \
 	-e "s#\"/usr/local/#\"$X/usr/local/#g" -e "s#\"/etc/#\"$X/etc/#g" -e "s#\"/var/lib/#\"$X/var/lib/#g" \
 	-e "s#\"/var/log/#\"$X/var/log/#g" -e "s#\"/run/moveeye-test/#\"$X/run/moveeye-test/#g" \
 	-e "s#\"/run/moveeye-spiel/#\"$X/run/moveeye-spiel/#g" \
+	-e 's#^TEST_PAKETE=".*#TEST_PAKETE="${MW_T_PAKETE:-sh:mw-test-sh}"#' -e 's#^CHROMIUM_LIBS=".*#CHROMIUM_LIBS="${MW_T_LIBS:-mw-test-libnss3}"#' \
 	-e "s#/run/lock/moveeye-hp-update.lock#$W/sperre#g" -e 's#^RU="mwrunner"#RU="daemon"#' "$U" > "$T"
 grep -q "$(cat "$W/pub.txt")" "$T" || fehler "Test-Schlüssel nicht eingesetzt"
 mkdir -p "$X/var/log"
@@ -252,7 +258,7 @@ grep -q "systemctl enable bluetooth.service" "$W/aufrufe.txt" && ! grep -q "syst
 	&& ok "bluetooth.service eingeschaltet, nicht gestartet (startet nur mit Adapter)" || fehler "bluetooth.service"
 if compgen -G '/sys/class/bluetooth/hci*' >/dev/null; then echo "  (dieser Rechner hat einen Bluetooth-Adapter: «ohne Adapter» hier nicht prüfbar)"
 else ! grep -q "systemctl start --no-block moveeye-controller-koppeln.service" "$W/aufrufe.txt" && ok "ohne Bluetooth-Adapter: der Dienst wird nicht gestartet (kein Fehler, keine Wartezeit)" || fehler "Dienst ohne Adapter gestartet"; fi
-grep -q "^HP_FASSUNG=8 " "$U" && [ "$(cat "$X/var/lib/moveeye-hp-update/fassung")" = 8 ] && ok "HP_FASSUNG 8 gemerkt" || fehler "HP_FASSUNG"
+grep -q "^HP_FASSUNG=9 " "$U" && [ "$(cat "$X/var/lib/moveeye-hp-update/fassung")" = 9 ] && ok "HP_FASSUNG 9 gemerkt" || fehler "HP_FASSUNG"
 # 4c. Knöpfe des Simulator-PCs (HP_FASSUNG 8): Ausschalten, Browser
 [ "$(stat -c %U:%a "$KL/hp_knoepfe.sh")" = root:755 ] && [ "$(stat -c %U:%a "$KL/hp_aus.sh")" = root:755 ] && [ "$(stat -c %U:%a "$KL/browser_leiste.py")" = root:644 ] \
 	&& cmp -s "$KL/hp_aus.sh" "$R/simulator3d/beilagen_linux/hp_aus.sh" && cmp -s "$KL/hp_knoepfe.sh" "$R/simulator3d/beilagen_linux/hp_knoepfe.sh" \
@@ -452,6 +458,7 @@ kopie() {   # kopie QUELLE ZIEL: Test-Schlüssel und Pfade der Ersatz-Wurzel (wi
 		-e "s#\"/usr/local/#\"$X/usr/local/#g" -e "s#\"/etc/#\"$X/etc/#g" -e "s#\"/var/lib/#\"$X/var/lib/#g" \
 		-e "s#\"/var/log/#\"$X/var/log/#g" -e "s#\"/run/moveeye-test/#\"$X/run/moveeye-test/#g" \
 		-e "s#\"/run/moveeye-spiel/#\"$X/run/moveeye-spiel/#g" \
+		-e 's#^TEST_PAKETE=".*#TEST_PAKETE="${MW_T_PAKETE:-sh:mw-test-sh}"#' -e 's#^CHROMIUM_LIBS=".*#CHROMIUM_LIBS="${MW_T_LIBS:-mw-test-libnss3}"#' \
 		-e "s#/run/lock/moveeye-hp-update.lock#$W/sperre#g" -e 's#^RU="mwrunner"#RU="daemon"#' "$1" > "$2"
 }
 laufa() { PATH="$B:$PATH" MOVEEYE_HP_QUELLE="file://$W/$1" MOVEEYE_HP_ANHANG="${2:-file://$W/anhang}" bash "$T" > "$W/lauf.log" 2>&1; }
@@ -555,6 +562,52 @@ fi
 laufa a95; grep -q "Sim 9.5.0 eingespielt" "$W/lauf.log" && grep -q "aus: versions.json «sim»" "$W/lauf.log" && unveraendert sim95 9.5.0 \
 	&& ok "Zurück: neuere Nummer im Repository ohne Anhang wird eingespielt (nur die Liste und das Repository ändern)" || { fehler "Zurück ins Repository"; sed 's/^/    /' "$W/lauf.log"; }
 [ "$(reste)" = "$R0" ] && ok "kein Arbeitsordner bleibt liegen" || fehler "Arbeitsordner in /var/tmp geblieben"
+
+# ---------------------------------------------------------------- 7. Pakete für die Tests des Runners (HP_FASSUNG 9)
+echo "--- 7. Pakete für die Tests (ffmpeg, nodejs, Bibliotheken von Chromium) - nur was fehlt, nie beim Spielen / Testen"
+T="$W/hp_update_kopie.sh"; kopie "$U" "$T"
+grep -q '^HP_FASSUNG=9 ' "$U" && grep -q '^TEST_PAKETE="ffmpeg:ffmpeg node:nodejs"' "$U" && ok "HP_FASSUNG 9, TEST_PAKETE = ffmpeg, nodejs" || fehler "HP_FASSUNG / TEST_PAKETE"
+rm -f "$X/run/moveeye-test/kiosk_pause" "$X/run/moveeye-spiel/spielen"
+tp() { : > "$W/aufrufe.txt"; PATH="$B:$PATH" MOVEEYE_HP_QUELLE="file://$W/q" MW_T_PAKETE="mwfehltffmpeg:mw-test-ffmpeg mwfehltnode:mw-test-nodejs" "$@" bash "$T" > "$W/lauf.log" 2>&1; }
+tp
+grep -q "apt-get install -y -q --no-install-recommends mw-test-ffmpeg mw-test-nodejs" "$W/aufrufe.txt" && grep -q "Pakete für die Tests installiert: mw-test-ffmpeg mw-test-nodejs" "$X/var/log/moveeye-hp-update.log" \
+	&& ok "fehlen ffmpeg und node: genau diese zwei Pakete, eine Zeile im Protokoll" || { fehler "ffmpeg / nodejs"; sed 's/^/    /' "$W/lauf.log" "$W/aufrufe.txt"; }
+printf '#!/bin/sh\nexit 0\n' > "$B/mwfehltffmpeg"; chmod 755 "$B/mwfehltffmpeg"
+tp
+grep -q "apt-get install -y -q --no-install-recommends mw-test-nodejs$" "$W/aufrufe.txt" && ! grep -q "install.*mw-test-ffmpeg" "$W/aufrufe.txt" \
+	&& ok "ffmpeg da: nur nodejs" || { fehler "nur nodejs"; sed 's/^/    /' "$W/aufrufe.txt"; }
+printf '#!/bin/sh\nexit 0\n' > "$B/mwfehltnode"; chmod 755 "$B/mwfehltnode"
+tp
+! grep -q "apt-get" "$W/aufrufe.txt" && ok "alles da: kein apt (auch kein apt-get update)" || { fehler "apt trotz allem da"; sed 's/^/    /' "$W/aufrufe.txt"; }
+rm -f "$B/mwfehltffmpeg" "$B/mwfehltnode"
+touch "$X/run/moveeye-test/kiosk_pause"; rm -f "$X/var/lib/moveeye-hp-update/test_pakete_wartet"
+tp
+! grep -q "apt-get install.*mw-test" "$W/aufrufe.txt" && grep -q "Pakete für die Tests fehlen: mw-test-ffmpeg mw-test-nodejs - Es läuft ein Test, später" "$W/lauf.log" \
+	&& ok "Test läuft: nichts installiert, eine Zeile mit dem Grund" || { fehler "während eines Tests"; sed 's/^/    /' "$W/lauf.log" "$W/aufrufe.txt"; }
+tp
+! grep -q "Pakete für die Tests fehlen" "$W/lauf.log" && ok "die Zeile «später» höchstens stündlich" || { fehler "Zeile zu oft"; sed 's/^/    /' "$W/lauf.log"; }
+rm -f "$X/run/moveeye-test/kiosk_pause" "$X/var/lib/moveeye-hp-update/test_pakete_wartet"
+mkdir -p "$X/run/moveeye-spiel"; echo '{"grund": "test"}' > "$X/run/moveeye-spiel/spielen"
+tp
+! grep -q "apt-get install.*mw-test" "$W/aufrufe.txt" && grep -q "Pakete für die Tests fehlen:.* - Am HP wird gespielt, später" "$W/lauf.log" \
+	&& ok "es wird gespielt: nichts installiert" || { fehler "beim Spielen"; sed 's/^/    /' "$W/lauf.log" "$W/aufrufe.txt"; }
+rm -f "$X/run/moveeye-spiel/spielen"
+# Chromium des HP-Testwegs: nur wenn ldd etwas vermisst, nur Pakete aus der Liste
+CH="$X/var/lib/mwrunner/cache/hp_helfer/ms-playwright/chromium_headless_shell-1187/chrome-linux"
+mkdir -p "$CH"; printf 'x' > "$CH/headless_shell"
+tp env MW_T_PAKETE="sh:mw-test-sh"
+grep -q "ldd $CH/headless_shell" "$W/aufrufe.txt" && ! grep -q "apt-get" "$W/aufrufe.txt" && ok "Chromium vollständig (ldd): nichts installiert" || { fehler "Chromium ok"; sed 's/^/    /' "$W/aufrufe.txt"; }
+tp env MW_T_PAKETE="sh:mw-test-sh" MW_T_LDD=1
+grep -q "apt-get install -y -q --no-install-recommends mw-test-libnss3$" "$W/aufrufe.txt" && ok "Chromium vermisst eine Bibliothek: Pakete aus CHROMIUM_LIBS nachinstalliert" \
+	|| { fehler "Chromium-Bibliotheken"; sed 's/^/    /' "$W/lauf.log" "$W/aufrufe.txt"; }
+rm -rf "$X/var/lib/mwrunner/cache"
+mv "$X/usr/local/lib/moveeye-runner" "$X/usr/local/lib/moveeye-runner.weg"
+tp
+! grep -q "apt-get install.*mw-test" "$W/aufrufe.txt" && ok "ohne Test-Runner: keine Pakete für die Tests" || { fehler "ohne Runner"; sed 's/^/    /' "$W/aufrufe.txt"; }
+mv "$X/usr/local/lib/moveeye-runner.weg" "$X/usr/local/lib/moveeye-runner"
+: > "$W/aufrufe.txt"; PATH="$B:$PATH" MOVEEYE_HP_QUELLE="file://$W/q" MW_T_PAKETE="mwfehltffmpeg:mw-test-ffmpeg" bash "$T" --pruefen > "$W/lauf.log" 2>&1
+! grep -q "apt-get install.*mw-test" "$W/aufrufe.txt" && ok "--pruefen: nichts installiert" || { fehler "--pruefen installiert"; sed 's/^/    /' "$W/aufrufe.txt"; }
+grep -q 'ffmpeg nodejs' "$HIER/runner_einrichten.sh" && ok "runner_einrichten.sh: ffmpeg und nodejs bei neuen Geräten" || fehler "runner_einrichten.sh ohne ffmpeg / nodejs"
 
 echo
 if [ $F -eq 0 ]; then echo "HP-Update-Test: OK"; else echo "HP-Update-Test: $F Fehler"; fi

@@ -204,7 +204,7 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
   Godot-4.3-Parse-Check («Schnittstelle: OK»), jeder `werkzeuge/*_test.gd` und `sim_texte.py --pruefen`; auf `integration` /
   `main` (oder von Hand, oder «[export]» in der Commit-Nachricht) dazu der Export Linux + Windows ohne Signatur als Artefakt. Helfer und Integrator pushen und warten:
   `werkzeuge/ci_status.sh [zweig|commit] --warten --fehler` (Exit 0 = grün; ohne `--warten` nur die letzten Läufe;
-  `--start` startet von Hand, geht erst wenn ci.yml auf main ist). Signieren bleibt lokal, der Schlüssel kommt nie ins CI.
+  `--start` startet von Hand nach den Regeln, `--start --voll` alles; geht erst wenn ci.yml auf main ist). Signieren bleibt lokal, der Schlüssel kommt nie ins CI.
 - **Release in zwei Stufen** (Workflow muss von main laufen und legt Release-Dateien an, deren Prüfsummen erst danach in die
   signierte Fassung kommen – fertige Spiele 3.74.0, Offline-Karten 3.81.0): Stufe 1 = Quelle + gebaute Datei + Workflow auf main,
   OHNE Eintrag in versions.json, dazu `vorstufe.json` neben versions.json (`{"version": "X.Y.Z", "grund": "…", "bis":
@@ -215,7 +215,7 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
 - **CI in Gruppen** (ab Nov. 2026): die Tests stehen in `werkzeuge/ci_tests.txt` – **neuer Test = eine Zeile dort**
   (`Gruppe | Limit | Nochmal | Befehl | Name`), `ci.yml` bleibt wie es ist. Jede `werkzeuge/*_test.py` muss dort stehen
   (in einer Gruppe oder in «hand» mit Grund), sonst ist `python3 werkzeuge/ci_lauf.py --pruefen` rot. Gruppen = parallele
-  Jobs: `basis` (ohne Browser, läuft immer), `kern`, `rechte`, `live`, `daten`, `spiele-1`, `spiele-2`, `simlive` (gegen
+  Jobs: `basis` (ohne Browser, läuft immer), `kern`, `kern-2`, `rechte`, `live`, `daten`, `spiele-1`, `spiele-2`, `simlive` (gegen
   einen laufenden Simulator). Lokal eine Gruppe wie im CI: `python3 werkzeuge/ci_lauf.py --gruppe live`. Was läuft,
   entscheidet `werkzeuge/ci_auswahl.py` (Vergleich des ganzen Zweigs mit main; `--dateien …` / `--simulieren 20` zeigt es
   lokal): **auf main immer alles**; sonst alles ausser den Spiele-Tests (nur bei Änderungen an `games/`, den Spiele-Teilen
@@ -223,6 +223,23 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
   `feedback/` → nur die Grundprüfungen; Änderungen an den CI-Dateien → alles. Übersprungenes steht mit «übersprungen,
   weil …» in der Zusammenfassung des Laufs; der Job «Ergebnis» ist der eine Haken (auf main rot, sobald irgendetwas
   übersprungen wurde). «1x» in der Liste = genau ein zweiter Versuch für Tests, die unter Last wackeln (wird als Warnung gemeldet).
+- **Schnellere Releases ohne Qualitätsverlust** (Besitzer 22.11.2026, `ci_auswahl.py`):
+  - **main:** jeder Push ALLES wie bisher, dazu **jede Nacht ein voller Lauf** (`schedule` 01:37 UTC, eigene concurrency-Gruppe,
+    ersetzt nie einen wartenden Push-Lauf).
+  - **integration:** nicht mehr immer alles. Immer: Grundprüfungen (Bau, Selbsttest, Update, Versionen), `sim_texte.py`, Export.
+    Dazu die Gruppen, die der GANZE Unterschied integration ↔ main betrifft (dieselben Regeln wie oben, also meist ohne
+    Spiele / USB-Installer / Pi-Dienst). **ALLES** nur bei Änderungen an den CI-Dateien (`ci.yml`, `werkzeuge/ci_*`),
+    mit **«[voll]» in der Commit-Nachricht** (jeder Zweig) oder von Hand mit Haken «alles». Was übersprungen ist, prüft main
+    nach dem Merge und der Nachtlauf; die Zusammenfassung nennt es mit Grund.
+  - **Von Hand** (`werkzeuge/ci_status.sh --start`, Actions → Run workflow): ab jetzt nach den Regeln, der Haken «alles» ist ab
+    Werk aus; alles = `werkzeuge/ci_status.sh <zweig> --start --voll`.
+  - `kern` ist geteilt in **`kern` + `kern-2`** (allein 28 Min., bestimmte die Wanduhr; jetzt je ~14 Min., die Wanduhr ~20
+    statt ~31 Min.). Lokal: `python3 werkzeuge/ci_auswahl.py --integration 10` (letzte Stände von main als integration, mit
+    geschätzter Zeit), `--selbsttest`.
+  - Chromium-Systempakete liegen als .deb im Cache (`werkzeuge/ci_chromium.sh`, Schlüssel = Runner-Abbild + Playwright): fehlt
+    nichts, läuft kein apt.
+  - Wackelnde Tests: die Ursache beheben (auf den Zustand warten statt einmal lesen / feste Wartezeit, eigener Port / Ordner),
+    nicht «1x» oder ein längeres Limit. «1x» steht nur noch, wo die letzten 200 Läufe einen zweiten Versuch zeigen.
 - `python3 -m py_compile` und JavaScript-Prüfung (`node --check` der gerenderten Seiten).
 - Programm mit simulierter Kamera starten (`open_source` ersetzen) und mit Playwright prüfen:
   Handy hoch (390 × 844) und quer, PC; keine JS-Fehler; Bildschirmfotos ansehen.

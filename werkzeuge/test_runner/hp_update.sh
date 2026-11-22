@@ -56,6 +56,11 @@
 # «sim.linux» bleibt für immer Sim 3.67.2 (Paket im Repository): ein HP mit einem älteren Skript spielt wie bisher 3.67.2
 # ein, bekommt damit dieses Skript und holt beim nächsten Lauf den Anhang (zwei Schritte). Geladen wird in den
 # Arbeitsordner; fehlt das Asset, stimmt die Prüfsumme nicht oder antwortet GitHub nicht: nichts wird eingespielt.
+# Pakete für die Tests (HP_FASSUNG 9, Besitzer 22.11.2026 «ohne Befehle tippen»): nur wenn der Test-Runner eingerichtet ist und
+# nur was fehlt - ffmpeg (fehlt «ffmpeg»), nodejs (fehlt «node») und die Bibliotheken, die dem Chromium des HP-Testwegs fehlen
+# (ldd auf dessen headless_shell im Zwischenspeicher von mwrunner; nur Pakete aus der festen Liste CHROMIUM_LIBS). Nach JEDER
+# Prüfung (auch «nichts Neues»), aber nie, während gespielt wird oder ein Test läuft (dann eine Zeile höchstens stündlich);
+# apt mit Zeitgrenzen, still, jede Installation eine Zeile im Protokoll. Chromium selbst lädt der HP-Testweg ohne sudo.
 # Einstellungen: /etc/moveeye-hp-update.conf (SIMULATOR=nein: den Simulator nicht ersetzen). Protokoll: /var/log/moveeye-hp-update.log
 set -u
 REPO_RAW="${MOVEEYE_HP_QUELLE:-https://raw.githubusercontent.com/DonElektro/MotionWatch}"   # nur zum Prüfen änderbar
@@ -76,10 +81,14 @@ PAUSE="/run/moveeye-test/kiosk_pause"
 SPIEL="/run/moveeye-spiel/spielen"
 SPIEL_TMPFILES="/etc/tmpfiles.d/moveeye-spiel.conf"
 KIOSK_TEST="/etc/moveeye-kiosk-test.conf"   # von runner_einrichten.sh (Pause-Datei, TEST_BENUTZER); runner_entfernen.sh nimmt sie weg
-HP_FASSUNG=8                     # 8 = Knöpfe des Simulator-PCs (Ausschalten, Browser; moveeye-aus, openbox.xml); 7 = Controller verwalten (Liste, Trennen, Vergessen, udev-Regel, Adapter einstecken genügt); 6 = Zeitplan prüft jedes Mal kurz, Neues wartet höchstens 6 Std. auf eine Pause (Marke «wartet»); 5 = Bildschirm für die Testläufe (TEST_BENUTZER, xhost), 4 = Controller koppeln (Bluetooth), 3 = drei Spuren (Sim aus versions.json «sim»); erhöhen, wenn dieses Skript bei gleicher Version mehr einspielt als die Fassung davor
+HP_FASSUNG=9                     # 9 = Pakete für die Tests des Runners (ffmpeg, nodejs, fehlende Bibliotheken von Chromium); 8 = Knöpfe des Simulator-PCs (Ausschalten, Browser; moveeye-aus, openbox.xml); 7 = Controller verwalten (Liste, Trennen, Vergessen, udev-Regel, Adapter einstecken genügt); 6 = Zeitplan prüft jedes Mal kurz, Neues wartet höchstens 6 Std. auf eine Pause (Marke «wartet»); 5 = Bildschirm für die Testläufe (TEST_BENUTZER, xhost), 4 = Controller koppeln (Bluetooth), 3 = drei Spuren (Sim aus versions.json «sim»); erhöhen, wenn dieses Skript bei gleicher Version mehr einspielt als die Fassung davor
 STATUS_PORT=8761
 # Pakete, die Kiosk und Testbild brauchen (nur fehlende werden installiert, nichts wird entfernt)
 PAKETE="python3-tk x11-xserver-utils libxss1 unzip curl bluez rfkill usbutils pciutils"   # bluez, rfkill: Controller per Bluetooth koppeln; usbutils, pciutils: HP-Diagnose (lsusb, lspci)
+TEST_PAKETE="ffmpeg:ffmpeg node:nodejs"   # Befehl:Paket - für die Tests des Runners (radio_test / Zeitraffer: ffmpeg; Funk, Stego, Apple Home: node)
+# Bibliotheken von Chromium (Playwright, Ubuntu 24.04 / 26.04); installiert wird nur, was ldd am Chromium des Runners vermisst
+CHROMIUM_LIBS="libasound2t64 libatk-bridge2.0-0t64 libatk1.0-0t64 libatspi2.0-0t64 libcairo2 libcups2t64 libdbus-1-3 libdrm2 libgbm1 libglib2.0-0t64 libnspr4 libnss3 libpango-1.0-0 libx11-6 libxcb1 libxcomposite1 libxdamage1 libxext6 libxfixes3 libxkbcommon0 libxrandr2"
+RH_RUNNER="/var/lib/mwrunner"   # Zuhause von mwrunner (runner_einrichten.sh); der HP-Testweg legt Chromium unter cache/hp_helfer ab
 KOPPELN_DIENST="/etc/systemd/system/moveeye-controller-koppeln.service"
 KOPPELN_PFAD="/etc/systemd/system/moveeye-controller-koppeln.path"
 UDEV_REGEL="/etc/udev/rules.d/71-moveeye-controller.rules"
@@ -373,6 +382,46 @@ pakete() {
 	apt-get update -q >/dev/null 2>&1 || log "Hinweis: apt-get update meldet Fehler"
 	# shellcheck disable=SC2086
 	apt-get install -y -q --no-install-recommends $fehlt >/dev/null 2>&1 || log "FEHLER: Pakete nicht installiert:$fehlt"
+}
+
+paket_da() { dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q 'install ok installed'; }
+test_pakete() {   # HP_FASSUNG 9: was den Tests des Runners fehlt (idempotent: nichts fehlt = nichts geschieht, kein apt)
+	local x b p fehlt="" sh lib
+	[ -d "$RUNNER_LIB" ] || return 0                                   # ohne Test-Runner: nichts
+	for x in $TEST_PAKETE; do
+		b="${x%%:*}" p="${x#*:}"
+		[[ "$p" =~ ^[a-z0-9][a-z0-9.+-]{1,60}$ ]] || continue
+		command -v "$b" >/dev/null 2>&1 || paket_da "$p" || fehlt="$fehlt $p"
+	done
+	for sh in "$RH_RUNNER"/cache/hp_helfer/ms-playwright/chromium_headless_shell-*/chrome-linux/headless_shell; do
+		if [ ! -f "$sh" ] || [ -L "$sh" ]; then continue; fi
+		if timeout 30 ldd "$sh" 2>/dev/null | grep -q 'not found'; then
+			for lib in $CHROMIUM_LIBS; do
+				paket_da "$lib" || { apt-cache show "$lib" >/dev/null 2>&1 && fehlt="$fehlt $lib"; }
+			done
+		fi
+		break
+	done
+	[ -z "$fehlt" ] && { rm -f "$ZUSTAND/test_pakete_wartet"; return 0; }
+	local b2
+	b2="$(beschaeftigt)"
+	if [ -z "$b2" ] && test_laeuft; then b2="Es läuft ein Test"; fi       # auch nach TROTZ_TEST: nie mitten in einem Test
+	if [ -n "$b2" ]; then
+		if [ ! -f "$ZUSTAND/test_pakete_wartet" ] || [ $(( $(date +%s) - $(stat -c %Y "$ZUSTAND/test_pakete_wartet") )) -ge 3600 ]; then
+			mkdir -p "$ZUSTAND" && touch "$ZUSTAND/test_pakete_wartet"
+			log "Pakete für die Tests fehlen:$fehlt - $b2, später (nächste solche Zeile in einer Stunde)."
+		fi
+		return 0
+	fi
+	log "Pakete für die Tests nachinstallieren:$fehlt"
+	export DEBIAN_FRONTEND=noninteractive
+	timeout 300 apt-get update -q >/dev/null 2>&1 || log "Hinweis: apt-get update meldet Fehler"
+	# shellcheck disable=SC2086  # Paketnamen aus den festen Listen oben, geprüft
+	if timeout 900 apt-get install -y -q --no-install-recommends $fehlt >/dev/null 2>&1; then
+		log "Pakete für die Tests installiert:$fehlt"; rm -f "$ZUSTAND/test_pakete_wartet"
+	else
+		log "FEHLER: Pakete für die Tests nicht installiert:$fehlt (nächster Versuch bei der nächsten Prüfung)"
+	fi
 }
 
 modul_pakete() {   # Treiber des PS5-Controllers (hid-playstation) und für USB-Bluetooth-Sticks (btusb): fehlt einer,
@@ -969,7 +1018,7 @@ case "$MODUS" in
 			kuerzen
 			exec 9> /run/lock/moveeye-hp-update.lock
 			flock -n 9 || { echo "Läuft schon."; exit 0; }
-			lauf 0 2>&1 | tee -a "$LOG"
+			{ lauf 0; rc=$?; test_pakete; exit $rc; } 2>&1 | tee -a "$LOG"
 			exit "${PIPESTATUS[0]}"
 		fi
 		;;
@@ -978,7 +1027,7 @@ case "$MODUS" in
 		kuerzen
 		exec 9> /run/lock/moveeye-hp-update.lock
 		flock -n 9 || { log "Läuft schon - beendet."; exit 0; }
-		lauf 0 2>&1 | tee -a "$LOG"
+		{ lauf 0; rc=$?; test_pakete; exit $rc; } 2>&1 | tee -a "$LOG"
 		exit "${PIPESTATUS[0]}"
 		;;
 esac
