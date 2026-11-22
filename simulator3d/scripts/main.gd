@@ -730,6 +730,7 @@ func _ready() -> void:
 	_register_controls()
 	_order_controls()
 	preload("res://scripts/kit_abenteuer.gd").autostart_pruefen.call_deferred(self)   # probe package: straight into the new mode
+	preload("res://scripts/roboter_start.gd").autostart_pruefen.call_deferred(self)   # --roboter / Browser ?roboter=1: gleich ins Roboter-Labor
 	mwpc = Mwpc.new()
 	mwpc.main = self
 	add_child(mwpc)

@@ -397,8 +397,8 @@ def lauf(datei, tmp):
     ok(tj and sorted(json.loads(tj.group(1))) == ["en", "fr", "it", "rm"] and all(len(v) == nt for v in json.loads(tj.group(1)).values())
        and ix.count('class="tile t-') == 5 and 'href="Info/"' in ix and "ℹ️ Besucherseite" in ix,
        "Startseite: 5 Kacheln (mit ℹ️ Besucherseite → Info/), je %d Texte in en / fr / it / rm (Deutsch im HTML)" % nt)
-    ok('href="Sim/?grossvater=1" data-t="gv.all"' in ix and "kapitel=" not in ix,
-       "Simulator für den Browser noch nicht veröffentlicht: nur «▶ Ganzes Spiel», keine Kapitel")
+    ok('href="Sim/?grossvater=1" data-t="gv.all"' in ix and "kapitel=" not in ix and "roboter=1" not in ix and "🤖" not in ix.split("<script>")[0],
+       "Simulator für den Browser noch nicht veröffentlicht: nur «▶ Ganzes Spiel», keine Kapitel, keine Kachel «🤖 Roboter-Labor»")
     code, j = api("admin", {"action": "start_on", "on": False})
     up_before = ns["hp_state"]()["up"].get("index.html")
     n0, nl = len(W.uploads()), len(W.log)
@@ -446,6 +446,13 @@ def lauf(datei, tmp):
     ok(want == [n for n, _v in ns["HP_GV_KAPITEL"]] and want[:3] == [1, 2, 3] and all('href="Sim/?grossvater=1&amp;kapitel=%d"' % n in ix for n in want)
        and "kapitel=%d" % (len(want) + 1) not in ix, f"Sim 3.95.0: Kapitel-Knöpfe {want} (Parameter «kapitel»)")
     ok(ns["hp_gv_kapitel"]("3.76.0") == [] and ns["hp_gv_kapitel"]("") == [], "Sim 3.76.0 (ohne «kapitel»): keine Kapitel-Knöpfe")
+    ok('<a class="tile t-r" href="Sim/?roboter=1">' in ix and ix.count('class="tile t-') == 6 and "🤖 Roboter-Labor" in ix
+       and "Segment-Roboter mit Physik ausprobieren (am PC)" in ix and '"btn.rs": "Try out the segment robot with physics (on a PC)"' in ix
+       and ix.index('href="Sim/"') < ix.index('href="Sim/?roboter=1"') < ix.index('href="Info/"'),
+       "Sim 3.95.0: Kachel «🤖 Roboter-Labor» → Sim/?roboter=1 (6 Kacheln, nach dem Simulator, 5 Sprachen)")
+    rs = ns["HP_ROBOTER_SIM"]
+    ok(not ns["hp_roboter"]("3.79.0") and ns["hp_roboter"](rs) and not ns["hp_roboter"]("") and "roboter=1" not in ns["hp_index_html"]([], ns["hp_roboter"]("3.79.0")),
+       f"Kachel «Roboter-Labor» erst ab Sim {rs} (3.79.0 kennt ?roboter=1 nicht)")
     ok(all(re.fullmatch(r"[^.]+\.[a-z0-9]+", p.rsplit("/", 1)[-1]) for p in W.files), "jede Datei auf dem Webspace hat genau einen Punkt")
 
     print("5) nur Geändertes", flush=True)

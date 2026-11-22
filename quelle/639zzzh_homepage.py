@@ -1121,6 +1121,8 @@ HP_EYE_CSS = (".mweye{display:inline-block;height:1.15em;width:1.03em;vertical-a
 # page with pictures (639zzzzf) build their buttons from it (before, the variant A had only Funk/ and Sim/). Order and texts
 # (de, en, fr, it, rm) as in 4.17.0. Title (data-t «btn.k») and line below («btn.ks»).
 # 22.11.2026: + «ℹ️ Besucherseite» (Info/, the part «info»); the tile of the game («g») gets the chips of HP_GV_KAPITEL.
+# 22.11.2026 (Besitzer 21:25): + «🤖 Roboter-Labor» (Sim/?roboter=1, the parameter of simulator3d/scripts/web.gd roboter_args):
+# only when the released browser simulator has it (HP_ROBOTER_SIM), otherwise the page has the 5 tiles as before.
 HP_LINKS = (
     ("demo/", "m", ("📷 MoveEye", "📷 MoveEye", "📷 MoveEye", "📷 MoveEye", "📷 MoveEye"),
      ("Das echte MoveEye, live mit Simulator-Kamera", "The real MoveEye, live with the simulator camera",
@@ -1137,6 +1139,10 @@ HP_LINKS = (
      ("Im Browser, ohne Verbindung zu MoveEye · ca. 80 MB", "In the browser, without a connection to MoveEye · about 80 MB",
       "Dans le navigateur, sans connexion à MoveEye · env. 80 Mo", "Nel browser, senza connessione a MoveEye · ca. 80 MB",
       "En il browser, senza colliaziun cun MoveEye · ca. 80 MB")),
+    ("Sim/?roboter=1", "r", ("🤖 Roboter-Labor", "🤖 Robot lab", "🤖 Labo du robot", "🤖 Laboratorio robot", "🤖 Labor dal robot"),
+     ("Segment-Roboter mit Physik ausprobieren (am PC)", "Try out the segment robot with physics (on a PC)",
+      "Essayer le robot à segments avec physique (sur PC)", "Provare il robot a segmenti con fisica (al PC)",
+      "Empruvar il robot da segments cun fisica (al PC)")),
     ("Info/", "i", ("ℹ️ Besucherseite", "ℹ️ Visitor page", "ℹ️ Page visiteurs", "ℹ️ Pagina visitatori", "ℹ️ Pagina per visitaders"),
      ("Was MoveEye kann, Pakete und Anfrage", "What MoveEye can do, packages and enquiry", "Ce que MoveEye sait faire, offres et demande",
       "Cosa sa fare MoveEye, pacchetti e richiesta", "Tge che MoveEye sa, pachets e dumonda")),
@@ -1151,6 +1157,7 @@ HP_GV_KAPITEL = (                                            # 4.21.0: «kapitel
     (3, "3.78.0"),
     (4, "3.78.0"),
 )
+HP_ROBOTER_SIM = "3.80.0"                                   # the first Sim whose browser version knows ?roboter=1 (Roboter-Labor)
 HP_GV_TX = {                                                 # the chips of the game tile: (de, en, fr, it, rm)
     "gv.all": ("▶ Ganzes Spiel", "▶ Whole game", "▶ Jeu complet", "▶ Gioco completo", "▶ Gieu cumplet"),
     "gv.kap": ("Kapitel", "Chapter", "Chapitre", "Capitolo", "Chapitel"),
@@ -1158,16 +1165,27 @@ HP_GV_TX = {                                                 # the chips of the 
 _HP_LANGS = ("de", "en", "fr", "it", "rm")
 
 
-def hp_gv_kapitel(ver=None):
-    """the chapters of HP_GV_KAPITEL the released browser simulator already has (ver: its number, default SIM3D_WEB)"""
+def _hp_web_vkey(ver=None):
+    """the number of the released browser simulator (ver, default SIM3D_WEB) as a key, None without one"""
     if ver is None:
         try:
             sim_manifest_load()
             ver = SIM3D_WEB["version"] if SIM3D_WEB.get("size") else ""
         except Exception:
             ver = ""
-    v = sim_vkey(ver) if ver else None
+    return sim_vkey(ver) if ver else None
+
+
+def hp_gv_kapitel(ver=None):
+    """the chapters of HP_GV_KAPITEL the released browser simulator already has (ver: its number, default SIM3D_WEB)"""
+    v = _hp_web_vkey(ver)
     return [n for n, ab in HP_GV_KAPITEL if v and v >= sim_vkey(ab)]
+
+
+def hp_roboter(ver=None):
+    """the tile «🤖 Roboter-Labor»: the released browser simulator knows ?roboter=1 (at least HP_ROBOTER_SIM)"""
+    v = _hp_web_vkey(ver)
+    return bool(v and v >= sim_vkey(HP_ROBOTER_SIM))
 
 
 def hp_tiles_tx():
@@ -1179,15 +1197,19 @@ def hp_tiles_tx():
     return d
 
 
-def hp_links_html(L="de", kap=None):
+def hp_links_html(L="de", kap=None, rob=None):
     """the tiles of the start page (HP_LINKS) in one language, texts with data-t (the script of the page translates them);
-    the game «g»: no link of its own but «▶ Ganzes Spiel» and one chip per chapter (kap, default hp_gv_kapitel())"""
+    the game «g»: no link of its own but «▶ Ganzes Spiel» and one chip per chapter (kap, default hp_gv_kapitel());
+    the robot lab «r» only with rob (default hp_roboter())"""
     import html as _h
     i = _HP_LANGS.index(L) if L in _HP_LANGS else 0
     kap = hp_gv_kapitel() if kap is None else kap
+    rob = hp_roboter() if rob is None else rob
     e = lambda x: _h.escape(x, quote=True)
     out = []
     for href, k, t, s in HP_LINKS:
+        if k == "r" and not rob:
+            continue
         head = '<span class="tt" id="t-%s" data-t="btn.%s">%s</span><small data-t="btn.%ss">%s</small>' % (k, k, e(t[i]), k, e(s[i]))
         if k != "g":
             out.append('<a class="tile t-%s" href="%s">%s</a>' % (k, e(href), head))
@@ -1198,11 +1220,13 @@ def hp_links_html(L="de", kap=None):
             chips += '<span class="kl" data-t="gv.kap">%s</span>' % kw + "".join(
                 '<a class="chip" href="%s"><span class="kw" data-t="gv.kap">%s</span><b>%d</b></a>' % (e("%s&kapitel=%d" % (href, n)), kw, n) for n in kap)
         out.append('<div class="tile t-g">%s<div class="chips" role="group" aria-labelledby="t-g">%s</div></div>' % (head, chips))
-    return '<main class="tiles">' + "".join(out) + '</main>'
+    return '<main class="tiles n%d">' % len(out) + "".join(out) + '</main>'
 
 
 # the tiles (simple page and every variant of 639zzzzf): one screen high together with the title (.first), clamp() by width AND
 # height (--vh: svh where the browser has it - the visible height on phones with the address bar)
+# 6 tiles (.n6, with «🤖 Roboter-Labor»): on the phone the robot lab and the visitor page side by side, from 1000 px two rows of
+# three (the game tile without span); the chips of the chapters tighter, below 320 px without the word «Kapitel»
 HP_TILES_CSS = r""":root{--vh:1vh}@supports (height:1svh){:root{--vh:1svh}}
 .tiles{display:grid;grid-template-columns:1fr;gap:clamp(7px,calc(1.3*var(--vh)),14px);width:100%;max-width:1100px;margin:0 auto;box-sizing:border-box;
  padding:clamp(10px,calc(2*var(--vh)),22px) 16px clamp(12px,calc(2.4*var(--vh)),26px)}
@@ -1218,16 +1242,19 @@ a.tile:hover,a.tile:focus-visible{border-color:#4a5563;outline:none}.tiles a:foc
 .chip b{font-weight:600}.chip:hover{border-color:#5a6573}
 .chip.go{background:#e8a54b;border-color:#e8a54b;color:#15181c;font-weight:600}.chip.go:hover{background:#f0b765}
 .kl{display:none;font-size:13px;color:var(--mut,#9aa3ad);margin-left:4px}
-@container gv (max-width:430px){.kl{display:inline}.chip .kw{display:none}.chip:not(.go){min-width:36px;justify-content:center;padding:0 10px}}
-@media (min-width:600px){.tiles{grid-template-columns:1fr 1fr}.t-i:last-child{grid-column:1/-1}}
-@media (min-width:1000px){.tiles{grid-template-columns:repeat(3,1fr)}.t-g{grid-column:span 2}.t-i:last-child{grid-column:auto}}
+@container gv (max-width:430px){.kl{display:inline;margin-left:2px}.chip .kw{display:none}.chip:not(.go){min-width:32px;justify-content:center;padding:0 7px}
+ .chips{gap:4px}}
+@container gv (max-width:319px){.kl{display:none}}
+@media (max-width:599px){.tiles.n6{grid-template-columns:1fr 1fr}.n6>.tile{grid-column:1/-1}.n6>.t-r,.n6>.t-i{grid-column:auto}}
+@media (min-width:600px){.tiles{grid-template-columns:1fr 1fr}.n5 .t-i:last-child{grid-column:1/-1}}
+@media (min-width:1000px){.tiles{grid-template-columns:repeat(3,1fr)}.t-g{grid-column:span 2}.n5 .t-i:last-child{grid-column:auto}.n6 .t-g{grid-column:auto}}
 @media (max-height:520px) and (orientation:landscape){.tile small{display:none}}
 """
 HP_JS_LANG = r"""(function(){var T=/*T*/,l=(navigator.language||"de").slice(0,2).toLowerCase(),t=T[l];if(!t)return;document.documentElement.lang=l;
 document.querySelectorAll("[data-t]").forEach(function(e){var v=t[e.getAttribute("data-t")];if(v)e.textContent=v;});})();"""
 
 
-def hp_index_html(kap=None):
+def hp_index_html(kap=None, rob=None):
     """the simple start page (without own pictures): title with the animated eye, the tiles of HP_LINKS, 5 languages"""
     tx = hp_tiles_tx()
     T = {L: {k: v[i] for k, v in tx.items()} for i, L in enumerate(_HP_LANGS) if L != "de"}
@@ -1235,7 +1262,7 @@ def hp_index_html(kap=None):
             '<title>MoveEye</title><style>body{margin:0;font:17px system-ui,sans-serif;background:#111418;color:#e8eaed}\n'
             '.first{display:flex;flex-direction:column;justify-content:center;min-height:100vh;min-height:100svh;box-sizing:border-box;padding:16px 0}'
             'h1{margin:0 auto;padding:0 16px;width:100%;max-width:1100px;box-sizing:border-box;font-size:clamp(30px,calc(6*var(--vh)),44px)}\n'
-            + HP_TILES_CSS + HP_EYE_CSS + '</style></head><body><div class="first"><h1>' + HP_EYE_SVG + 'MoveEye</h1>\n' + hp_links_html("de", kap)
+            + HP_TILES_CSS + HP_EYE_CSS + '</style></head><body><div class="first"><h1>' + HP_EYE_SVG + 'MoveEye</h1>\n' + hp_links_html("de", kap, rob)
             + '\n</div><script>' + HP_JS_LANG.replace("/*T*/", json.dumps(T, ensure_ascii=False, sort_keys=True).replace("</", "<\\/"), 1)
             + '</script></body></html>\n')
 
@@ -1525,15 +1552,19 @@ def homepage_selftest():
     assert set(f) == {"index.html", "manifest.webmanifest", "sw.js", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "stego.js"}, sorted(f)
     assert b'"stego.js"' in f["sw.js"] and b'<script src="stego.js"></script>' in f["index.html"] and b"MWStego" in f["stego.js"]
     assert all(_HP_NAME_RE.match(n) for n in f) and all(_HP_NAME_RE.match(n) for n in HP_SIM_NAMES)
-    ix = hp_index_html([1, 2, 3])
+    ix = hp_index_html([1, 2, 3], True)
     assert "Funk/" in ix and "Sim/" in ix and "index_audio_worklet.js" in HP_TEST_HTML
     assert 'href="demo/"' in ix and 'href="Sim/?grossvater=1"' in ix, "4.17.0: links to MoveEye and the game"
     assert [ix.index('href="%s"' % x[0]) for x in HP_LINKS] == sorted(ix.index('href="%s"' % x[0]) for x in HP_LINKS), "order of HP_LINKS"
-    assert [x[0] for x in HP_LINKS] == ["demo/", "Sim/?grossvater=1", "Funk/", "Sim/", "Info/"] and all(len(x[2]) == len(x[3]) == 5 and all(x[2]) and all(x[3]) for x in HP_LINKS)
+    assert [x[0] for x in HP_LINKS] == ["demo/", "Sim/?grossvater=1", "Funk/", "Sim/", "Sim/?roboter=1", "Info/"] and all(len(x[2]) == len(x[3]) == 5 and all(x[2]) and all(x[3]) for x in HP_LINKS)
     assert all(s in ix for x in HP_LINKS for s in x[2] + x[3]), "4.19.1: every text of HP_LINKS (5 languages) on the simple page"
     assert 'class="mweye"' in ix and "mwe-blink" in ix and "prefers-reduced-motion" in ix, "4.19.1: animated eye, still without motion"
     assert all('href="Sim/?grossvater=1&amp;kapitel=%d"' % n in ix for n in (1, 2, 3)) and "kapitel=4" not in ix, "22.11.2026: chapter chips"
     assert "kapitel=" not in hp_index_html([]) and "gv.all" in hp_index_html([]), "without chapters: only «Ganzes Spiel»"
+    ix5 = hp_index_html([], False)
+    assert ix.count('class="tile t-') == 6 and 'class="tiles n6"' in ix and ix5.count('class="tile t-') == 5 and "roboter=1" not in ix5 \
+        and 'class="tiles n5"' in ix5, "22.11.2026: «🤖 Roboter-Labor» only with a Sim that knows ?roboter=1"
+    assert not hp_roboter("3.79.0") and hp_roboter(HP_ROBOTER_SIM) and hp_roboter("3.95.0") and not hp_roboter(""), "HP_ROBOTER_SIM"
     assert hp_gv_kapitel("3.77.0") == [] and hp_gv_kapitel("3.78.0") == [n for n, _v in HP_GV_KAPITEL] == [1, 2, 3, 4] and hp_gv_kapitel("") == []
     assert all(len(v) == 5 and all(v) for v in HP_GV_TX.values()), "chips: 5 languages"
     assert DEFAULTS.get("hp_info_on") is True and "hp_info_on" in USER_SETTINGS_DENY and hp_part("Info/index.html") == "info" and _hp_ours("Info/index.html")
