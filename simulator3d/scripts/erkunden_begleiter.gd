@@ -259,7 +259,9 @@ func _process(dt: float) -> void:
 		sieht = im_bild()
 		_blinki_tick()
 	_layout()
-	auge.visible = bool(main.get("ex_auge"))
+	var ruhig: bool = (person.sachen != null and person.sachen.fernglas) or (person.extras != null and person.extras.foto_an) \
+			or (person.gestalten != null and person.gestalten.offen)
+	auge.visible = bool(main.get("ex_auge")) and not ruhig
 	var z := "off" if not bool(main.get("ex_mw_sieht")) else ("open" if sieht else "shut")
 	if auge.zustand != z or auge.get_node("text").text == "":
 		auge.zustand = z

@@ -817,7 +817,8 @@ func _process(dt: float) -> void:
 		orbit = lerp_angle(orbit, 0.0, clampf(dt * 0.8, 0.0, 1.0))   # driving: the view swings back behind the rover
 	main.view_mode = 0
 	_invite_tick()
-	visible = not info_hidden
+	var ruhig: bool = person_on() and ((person.sachen != null and person.sachen.fernglas) or (person.extras != null and person.extras.foto_an))
+	visible = not info_hidden and not ruhig                # binoculars / photo mode: the picture without the bar
 	if main.spectate:                                    # the spectator moves the view
 		_info.text = "Erkunden · Beobachter: %s\nC / X = zurück zur eigenen Ansicht · J / Steuerkreuz → = Mitspieler einladen" % main.spec_label
 		return

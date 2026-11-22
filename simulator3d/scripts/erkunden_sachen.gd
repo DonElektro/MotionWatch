@@ -653,8 +653,9 @@ func _menu_bauen() -> void:
 		b.focus_mode = Control.FOCUS_NONE
 		b.disabled = not bool(e[2])
 		b.tooltip_text = str(e[3]) if not bool(e[2]) else ""
-		b.custom_minimum_size = Vector2(160, 40)
-		b.clip_text = true
+		b.custom_minimum_size = Vector2(170, 40)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		var id := str(e[0])
 		b.pressed.connect(func(): tu(id))
 		g.add_child(b)
@@ -672,7 +673,7 @@ func _process(dt: float) -> void:
 		if fernglas:
 			feldstecher(false)
 		return
-	_hud.visible = true
+	_hud.visible = not ((person.gestalten != null and person.gestalten.offen) or (person.extras != null and person.extras.foto_an))
 	_kraft_tick(dt)
 	var s: Vector2 = get_viewport().get_visible_rect().size
 	var oben: float = 160.0
@@ -696,7 +697,7 @@ func _process(dt: float) -> void:
 	if _msg.visible and main.now() > _msg_bis:
 		_msg.visible = false
 	if _menu.visible:
-		var mw := minf(380.0, s.x - 20.0)
+		var mw := minf(440.0, s.x - 16.0)
 		_menu.position = Vector2((s.x - mw) * 0.5, maxf(oben + 40.0, s.y * 0.3))
 		_menu.size = Vector2(mw, 0)
 		_menu.custom_minimum_size = Vector2(mw, 0)

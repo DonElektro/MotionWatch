@@ -5,6 +5,8 @@ extends SceneTree
 ##       -- --no-update --no-tour --aus <ordner/prefix_> [--handy]
 ## --handy: 390 × 844 Punkte mit Faktor 2 (780 × 1688 Pixel), die Touch-Knöpfe sichtbar; sonst PC 1280 × 720.
 ## --etappe2: «Figur gestalten» (Fenster offen, Vorschau), Begleiter (Maggie, Blinki) und das Auge «MoveEye sieht dich».
+## --etappe3: Rucksack packen, Feldstecher (Reh mit Name und Distanz), Menü «Rucksack» mit Kompass / Uhr / Kraft, Lager.
+## --etappe4: Reiter «Welt» (Tageszeit, Wetter, Ort), Fotomodus, «Spielen» mit «Weiter am gemerkten Ort».
 ## --kriechen: das Kriechen (Robben) von der Seite und von hinten, in Bewegung und still liegend (vorher / nachher).
 
 const Welt = preload("res://scripts/erkunden_welt.gd")
@@ -14,6 +16,7 @@ var out := "/tmp/erkunden_"
 var handy := false
 var etappe2 := false
 var kriechen := false
+var etappe := 0
 
 
 func _initialize() -> void:
@@ -24,6 +27,7 @@ func _initialize() -> void:
 	handy = "--handy" in args
 	etappe2 = "--etappe2" in args
 	kriechen = "--kriechen" in args
+	etappe = 3 if "--etappe3" in args else (4 if "--etappe4" in args else 0)
 	if handy:
 		DisplayServer.window_set_size(Vector2i(780, 1688))
 		root.content_scale_factor = 2.0
@@ -105,6 +109,14 @@ func _run() -> void:
 		return
 	if kriechen:
 		await _kriechen(p)
+		quit(0)
+		return
+	if etappe == 3:
+		await _etappe3(ex, p)
+		quit(0)
+		return
+	if etappe == 4:
+		await _etappe4(ex, p)
 		quit(0)
 		return
 	# crouched
@@ -235,3 +247,75 @@ func _kriechen(p) -> void:
 	await wait(0.8)
 	await _bild("kriechen_still")
 	print("KRIECHEN still hoehe %.2f" % p.hoehe())
+
+
+func _etappe3(ex, p) -> void:
+	main.ex_rucksack = {"pack": "50", "n": {"stirnlampe": 1, "feldstecher": 1, "kompass": 1, "taschenuhr": 1, "essen": 3, "wasser": 2,
+			"kocher": 1, "einmannzelt": 1, "sommerschlafsack": 1, "isomatte": 1, "seil": 1, "jacke": 1}}
+	main.ex_kraft_echt = true
+	ex.figur_gestalten(true)
+	p.gestalten.druecke("reiter:rucksack")
+	await wait(1.5)
+	await _bild("rucksack_packen")
+	ex.figur_gestalten(false)
+	await wait(0.5)
+	p.sachen.ort_merken()
+	p.figur.setzen(p.figur.pos() + Vector3(6, 0, 6), float(p.actor.heading))
+	p.sachen.kraft = 62.0
+	p.sachen.durst = 35.0
+	p.sachen.menu(true)
+	await wait(1.0)
+	await _bild("rucksack_menu")
+	p.sachen.menu(false)
+	var fw := Vector3(-sin(float(p.actor.heading)), 0, -cos(float(p.actor.heading)))
+	var at: Vector3 = p.figur.pos() + fw * 35.0
+	var deer = main.spawn("deer", at, at + Vector3(0.2, 0, 0.2))
+	if deer != null:
+		deer.speed = 0.0
+	await wait(1.0)
+	p.sachen.feldstecher(true)
+	p.sachen.set_zoom(5.0)
+	await wait(1.5)
+	await _bild("feldstecher")
+	p.sachen.tu_fernglas("nacht")
+	await wait(0.6)
+	await _bild("feldstecher_nacht")
+	p.sachen.feldstecher(false)
+	main.set_hour(21.5)
+	await wait(0.5)
+	p.sachen.lampe()
+	await wait(0.8)
+	await _bild("stirnlampe_nacht")
+	p.sachen.uebernachten()
+	await wait(1.5)
+	_seitlich(p, 2.5)
+	p.regie.dist = 5.0
+	await wait(1.0)
+	await _bild("lager_morgen")
+
+
+func _etappe4(ex, p) -> void:
+	ex.figur_gestalten(true)
+	p.gestalten.druecke("reiter:welt")
+	p.gestalten.druecke("zeit=Abend")
+	await wait(1.5)
+	await _bild("welt_reiter")
+	p.gestalten.druecke("zeit=Mittag")
+	ex.figur_gestalten(false)
+	p.extras.ort_merken()
+	ex.startpunkt_melden("grossvater_grat", "Grat beim Sonnenaufgang", str(main.scene), p.figur.pos() + Vector3(10, 0, 10), 0.0)
+	p.extras.fotomodus(true)
+	ex.dist += 4.0
+	await wait(1.5)
+	await _bild("fotomodus")
+	var fp: String = await p.extras.foto()
+	print("FOTO ", fp)
+	var img := Image.load_from_file(fp) if fp != "" and FileAccess.file_exists(fp) else null
+	if img != null:
+		img.save_png(out + "fotomodus_foto.png")
+	p.extras.fotomodus(false)
+	ex.set_on(false)
+	await wait(0.5)
+	main.spielbereich.open()
+	await wait(1.5)
+	await _bild("spielen_weiter")
