@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-22 09:55",
+ "generated": "2026-11-22 10:04",
  "versions": [
   {
-   "version": "4.19.1",
-   "file": "webcam_bewegung_4_19_1.py",
+   "version": "4.20.0",
+   "file": "webcam_bewegung_4_20_0.py",
    "url": "",
-   "sha256": "f2fdd9dca4be52490610f36269db487f198b4d11cfc86591cae7f776838e8421",
-   "date": "2026-11-22 09:55",
-   "notes": "Homepage-Startseite: alle Varianten (auch «A · Bildgeschichte») zeigen jetzt alle Links – MoveEye (Demo), Die Karte des Grossvaters, Handy-Funkgerät, Simulator – und oben das bewegte MoveEye-Auge beim Titel (blinzelt, schaut sich um)",
-   "size": 4030478,
-   "sig": "049bf3da6b8678d0c153f1722029f4bbbefc7de979a6c128dada6deda5be02017b7a990984d933c7ebcae1632c5825cb4433ae324a17ff14539316c5bdf43203",
+   "sha256": "654d7bac8dee9de6ab3b7fc8ab4338c564e08b3ca1061dad9af176a8b4d0230b",
+   "date": "2026-11-22 10:03",
+   "notes": "«🔦 Gäste erwartet» (Einstellungen → Schutz, nur Administrator): solange an, lösen Gäste keinen Alarm aus (nur Protokoll und leiser Push «Gast kommt»; Sabotage, Diebstahl und SOS bleiben) – MoveEye leuchtet ihnen mit dem Licht etwa 2 m voraus den Weg; «bis HH:MM» oder Zeitplan. Bekannte Grenze: in der Nacht liegt die geschätzte Lage der Gäste 1,5–3,5 m daneben, der Lichtfleck ist darum noch nicht zuverlässig 2 m voraus; mit echter Hardware schwenkt die Lampe vorerst nur seitlich",
+   "size": 4036305,
+   "sig": "f70c86fc0acf7549d1ce9df007aa5207cb39a14eaeefcab2edc8eeeee9dcc8dde0430291cec529c2e23b316c3b7364aed9b7e12276af4a9438fc436006ea9d02",
    "data": {
-    "file": "moveeye_daten_4_19_1.zip",
+    "file": "moveeye_daten_4_20_0.zip",
     "url": "",
-    "sha256": "4cf3a4fb888b77cd64dbf626d54038aa8528141195b2d88f2f7f9d842a452248",
-    "size": 17618367,
-    "sig": "1268af30bc996e58a40f6897d3ddd36a287923d84bcf30d4b0599eeb5463871d6889b468f5620609dbe1c92c221a1cc741d852b1477df55168f2fa9598081809"
+    "sha256": "4c74c62f2c23ff40fff4d17a7d2b9db86ec18bf9b0ec2eaf12dbf7381334f0c1",
+    "size": 17702177,
+    "sig": "36e399659a945f0cfd522bd21aada6d8cc679e7b6b0d714575cb0276df6100f123cf0d9c65e5dbd63efb72497ab31544d2ef01003a71564c319d5e3ab796310f"
    }
   },
   {

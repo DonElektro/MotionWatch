@@ -23,9 +23,13 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
-  * 4.19.1: Homepage-Startseite: alle Varianten (auch «A · Bildgeschichte») zeigen jetzt alle Links – MoveEye (Demo), Die Karte
+  * 4.20.0: «🔦 Gäste erwartet» (Einstellungen → Schutz, nur Administrator): solange an, lösen Gäste keinen Alarm aus (nur
+    Protokoll und leiser Push «Gast kommt»; Sabotage, Diebstahl und SOS bleiben) – MoveEye leuchtet ihnen mit dem Licht etwa 2 m voraus den Weg; «bis HH:MM» oder Zeitplan. Bekannte Grenze: in der Nacht liegt die
+    geschätzte Lage der Gäste 1,5–3,5 m daneben, der Lichtfleck ist darum noch nicht zuverlässig 2 m voraus; mit echter Hardware
+    schwenkt die Lampe vorerst nur seitlich
+  * 4.20.0: Homepage-Startseite: alle Varianten (auch «A · Bildgeschichte») zeigen jetzt alle Links – MoveEye (Demo), Die Karte
     des Grossvaters, Handy-Funkgerät, Simulator – und oben das bewegte MoveEye-Auge beim Titel (blinzelt, schaut sich um)
-  * 4.19.1: Produktseite /info/ neu: Abschnitte beim Scrollen, ruhige Landschaftsbilder ohne Personen, kurzer Film aus dem
+  * 4.20.0: Produktseite /info/ neu: Abschnitte beim Scrollen, ruhige Landschaftsbilder ohne Personen, kurzer Film aus dem
     Simulator, Liste «Alle Funktionen» (441) zum Durchsuchen und Kopieren; eigene Fotos (Mehr → Homepage → Produktseite:
     Bilder) ersetzen weiterhin die Beispiele
   * 4.19.0: Karte: neuer Schalter «🗺 Schweiz | ⛰ Bergtal» auf /karte – die Karte des Simulator-Tals wie die Landeskarte (Relief,
@@ -120,10 +124,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_4_19_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_4_20_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_4_19_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_4_19_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_4_20_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_4_20_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -140,7 +144,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "4.19.1"
+APP_VERSION = "4.20.0"
 
 
 def default_data_dir():
@@ -273,8 +277,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_4_19_1.zip"
-ZD_SHA256 = "4cf3a4fb888b77cd64dbf626d54038aa8528141195b2d88f2f7f9d842a452248"
+ZD_FILE = "moveeye_daten_4_20_0.zip"
+ZD_SHA256 = "4c74c62f2c23ff40fff4d17a7d2b9db86ec18bf9b0ec2eaf12dbf7381334f0c1"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -50792,7 +50796,7 @@ class App:
 		self.watch=watch
 		self.web=web or WebStream(watch)
 		self.root=tk.Tk()
-		self.root.title("MoveEye 4.19.1")
+		self.root.title("MoveEye 4.20.0")
 		try:
 			import base64
 			self._icon=tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -51179,7 +51183,7 @@ class App:
 			if not small:
 				vl=tk.Label(tl,text=APP_VERSION,bg=C["bg"],fg=C["mut"],font=("DejaVu Sans",8),cursor="hand2");vl.pack(side="left",padx=(8,0),pady=(5,0))
 				vl.bind("<Button-1>",self._ver_tap,add="+");Tip(vl,tr("About MoveEye"))
-			Tip(nm,f"{tr('Build')} 4.19.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm,f"{tr('Build')} 4.20.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps=[]
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>",self._egg_tap,add="+")
@@ -58385,7 +58389,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 346
+INFO_PARTS = 347
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -117452,6 +117456,287 @@ LOCK_DENY_KEYS.update(SLP_DEF)
 
 SCHLAF_PY = _zd('639zzzzz_schlaf_wecken/SCHLAF_PY', "")
 zd_exec(SCHLAF_PY, '639zzzzz_schlaf_wecken.py')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GL_DEF = {"gl_on": False, "gl_until": "", "gl_until_t": 0.0, "gl_animals": True, "gl_dark_only": True, "gl_push": True, "gl_pct": 60,
+		  "gl_fade_in_s": 3.0, "gl_fade_out_s": 4.0, "gl_lost_s": 10, "gl_still_s": 30, "gl_max_min": 5, "gl_target_r": 2.0, "gl_target": {}}
+for _k, _v in GL_DEF.items():
+	CFG.setdefault(_k,json.loads(json.dumps(_v)));DEFAULTS.setdefault(_k,json.loads(json.dumps(_v)))
+	FACTORY_CFG.setdefault(_k,json.loads(json.dumps(_v)))
+USER_SETTINGS_DENY.update(GL_DEF)
+APPKEY_DENY_KEYS.update(GL_DEF)
+APPKEY_DENY_PATHS.update({"/api/gaeste"})
+LOCK_DENY_PATHS.add("/api/gaeste")
+LOCK_DENY_KEYS.update(GL_DEF)
+SCHED_FEATURES.append(("gl_on", "Guests expected (guide light)"))
+SCHED_KEYS.append("gl_on")
+GL_KINDS = ("person", "prealarm", "warm")
+GL_ZD = {"ok": False}
+GL_LIGHT = {"drive": False, "pct": 0.0, "was": False}
+GL_DIM = "light_pct" in globals()
+
+
+def gl_active(now=None):
+	""
+	if not(GL_ZD["ok"]and CFG.get("gl_on")):
+		return False
+	u=CFG.get("gl_until_t")or 0
+	return not(isinstance(u,(int,float))and 0<u<=(time.time()if now is None else now))
+
+
+def _gl_call(name, *a):
+	""
+	try:
+		f=globals().get(name)
+		return f(*a)if f is not None and GL_ZD["ok"]else None
+	except Exception:
+		return None
+
+
+def _gl_quiet(kind):
+	try:
+		if kind in GL_KINDS and gl_active():
+			_gl_call("gl_guest_note",kind)
+			return True
+	except Exception:
+		pass
+	return False
+
+
+
+_gl_push_alert = push_alert
+
+
+
+def push_alert(kind, text="", **extra):
+	if _gl_quiet(kind):
+		return None
+	return _gl_push_alert(kind,text,**extra)
+
+
+_gl_siren_alarm = siren_alarm
+
+
+
+def siren_alarm(kind):
+	if _gl_quiet(kind):
+		return None
+	return _gl_siren_alarm(kind)
+
+
+_gl_light_alarm = light_alarm
+
+
+
+def light_alarm():
+	if gl_active()and(STATE.get("persons")or STATE.get("warm")or "prealarm"in(STATE.get("present")or[])):
+		return None
+	return _gl_light_alarm()
+
+
+_gl_np_person = Notifier.person
+_gl_np_prealarm = Notifier.prealarm
+
+
+def _gl_person(self, count, snapshot_path=None, frame=None):
+	if count and _gl_quiet("person"):
+		STATE["notify_status"]="guests expected"
+		return None
+	return _gl_np_person(self,count,snapshot_path,frame)
+
+
+def _gl_prealarm(self, frame, event="prealarm"):
+	if event in("prealarm","warm")and _gl_quiet(event):
+		return False
+	return _gl_np_prealarm(self,frame,event)
+
+
+
+Notifier.person = _gl_person
+
+Notifier.prealarm = _gl_prealarm
+_gl_relays_update = RelayManager.update
+
+
+def _gl_relays(self, present):
+	if gl_active():
+		present=set(present)-{"person","warm","prealarm","animal"}
+	return _gl_relays_update(self,present)
+
+
+
+RelayManager.update = _gl_relays
+_gl_deter_check = Deterrence.check
+
+
+def _gl_deter(self, present, t0):
+	if gl_active():
+		self.seen.clear()
+		return None
+	return _gl_deter_check(self,present,t0)
+
+
+
+Deterrence.check = _gl_deter
+_gl_crawl_push = crawl_push
+
+
+
+def crawl_push(notifier, frame, d, ln):
+	if _gl_quiet("prealarm"):
+		return False
+	return _gl_crawl_push(notifier,frame,d,ln)
+
+
+_gl_obj_push = obj_push
+
+
+
+def obj_push(ev, ic, title, text, jpg=None, gap_key=None):
+	if ev=="obj_animal"and gl_active():
+		return False
+	return _gl_obj_push(ev,ic,title,text,jpg,gap_key)
+
+
+_gl_sens_fire = sens_fire
+
+
+
+def sens_fire(x, what):
+	try:
+		if isinstance(x,dict)and x.get("kind")=="pir"and what not in("test","missing")and gl_active():
+			log_event("sys",f"Sensor «{x.get('name', '')}»: motion - guests expected, no alarm")
+			_gl_call("gl_guest_note","motion sensor")
+			return None
+	except Exception:
+		pass
+	return _gl_sens_fire(x,what)
+
+
+
+_gl_kp = [p for p in KOPF_PRIO if p != "guide"]
+_gl_ki = _gl_kp.index("marker") + 1 if "marker" in _gl_kp else _gl_kp.index("alarm") + 1
+KOPF_PRIO = tuple(_gl_kp[:_gl_ki] + ["guide"] + _gl_kp[_gl_ki:])
+_gl_kopf_claims = kopf_claims
+
+
+
+def kopf_claims():
+	c=_gl_kopf_claims()
+	if _gl_call("gl_holds_head"):
+		if "alarm"in c and not(KOPF["alarm"]or KOPF["tamper"]):
+			c.discard("alarm")
+		c.add("guide")
+	return c
+
+
+_gl_kopf_track_blocked = kopf_track_blocked
+
+
+
+def kopf_track_blocked():
+	return bool(_gl_call("gl_holds_head"))or _gl_kopf_track_blocked()
+
+
+_gl_kopf_frame = kopf_frame
+
+
+
+def kopf_frame(w, candidates, person_boxes, warm_boxes, present, frame, pw, ph, t0):
+	rq0=KOPF.get("turn_req")
+	r=_gl_kopf_frame(w,candidates,person_boxes,warm_boxes,present,frame,pw,ph,t0)
+	if KOPF.get("turn_req")is not rq0 and KOPF.get("turn_req")and _gl_call("gl_holds_head"):
+		KOPF["turn_req"]=None
+	_gl_call("gl_frame",w,candidates,person_boxes,warm_boxes,pw,ph,t0)
+	return r
+
+
+_gl_kopf_noise_tick = _kopf_noise_tick
+_gl_kopf_ov_tick = _kopf_ov_tick
+
+
+
+def _kopf_noise_tick(now):
+	return None if _gl_call("gl_holds_head")else _gl_kopf_noise_tick(now)
+
+
+
+def _kopf_ov_tick(now):
+	return None if _gl_call("gl_holds_head")else _gl_kopf_ov_tick(now)
+
+
+_gl_lights_tick = lights_tick
+
+
+
+def lights_tick():
+	_gl_call("gl_lights_pre")
+	res=_gl_lights_tick()
+	_gl_call("gl_lights_post",res)
+	return res
+
+
+if GL_DIM:
+	_gl_light_pct=light_pct
+
+
+	def light_pct(n):
+		return GL_LIGHT["pct"]if n=="white"and GL_LIGHT["drive"]else _gl_light_pct(n)
+_gl_sim_state = sim_state
+
+
+
+def sim_state():
+	d=_gl_sim_state()
+	d["guests"]=_gl_call("gl_sim_patch",d)or{"on":False}
+	return d
+
+
+
+GAESTE_PY = _zd('639zzzzzg_gaeste_licht/GAESTE_PY', "")
+zd_exec(GAESTE_PY, '639zzzzzg_gaeste_licht.py')
 
 
 
