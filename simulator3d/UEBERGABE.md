@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 22.11.2026 · Version **3.76.0** · MoveEye **4.20.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 22.11.2026 · Version **3.78.0** · MoveEye **4.21.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -31,6 +31,20 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
   (Ziegelreihen / Kies). Wärmezwillinge und Hindernisse unverändert. Luftbild wird jetzt vor den 3D-Gebäuden gesetzt.
 - Seon ohne OSM (Overpass war aus): 117 Häuser, 44 Wohnblöcke, 24 Bauernhäuser, 3 Scheunen, 2 Chalets, 2 Garagen;
   Dachfarbe aus dem Luftbild 130, Palette 62 (Häuser ausserhalb des nahen Luftbilds).
+
+## NEU in 3.78.0 (MoveEye 4.21.0): Grossvater Kapitel 4, Kapitelwahl, Haltungen im Abenteuer
+
+- sim-grossvater-k4 @ 968499c (CI 45032754170 grün): Kapitel 4 «Nebel im Couloir» (Fixes), Kapitelkette und Kapitelwahl (KAPITEL_FERTIG [1,2,3,4]; ?grossvater=1&kapitel=N; --grossvater-kapitel=N; Steuerbefehl kit grossvater kapitel), Haltungen aus Erkunden im Abenteuer (figur_haltung.gd), Tests kit_kette_test.gd + kit_haltung_test.gd.
+- sim-frei-erkunden @ 18c9fa8: Schnelllauf waagrecht pro Bild begrenzt (nie schneller als gewählt), Test misst mit den Bildzeiten der Engine.
+- sim-camp @ 84bf08f: Camp aufstellen (Zelt, Tarp, Feuer, MoveEye auf dem Mini-Stativ, Nacht spulen), ruhiger Bildschirm beim Erkunden, Test erkunden_camp_test.gd.
+- sim-aussicht-sprung @ 509f2bf: freier Blick an den Aussichtspunkten, Waldboden mit Struktur.
+- MoveEye 4.21.0 zeigt auf der Startseite die Kapitel-Knöpfe 1–4 ab dieser Version (HP_GV_KAPITEL).
+
+## NEU in 3.77.0 (MoveEye 4.21.0): Wildruhezonen im Bergtal, Sprung zur schönsten Aussicht
+
+- wildcamp-karte @ 5c5f18d (CI 45018484609 grün): bergtal.gd erfundene Wildruhezonen (Übersichtskarte, Warnung «Hier übernachten»), bergkarte.gd / export.gd -> vektor.json t = «wrz» (Bergtal-Paket bergkarte-2).
+- sim-aussicht-sprung @ 6a034a1: Entwickler-Knopf «Zur schönsten Aussicht springen» (vp_kanzel, wechselt ins Bergtal).
+- Dabei: hp_update.sh HP_FASSUNG 9 und Beilagen aus ci-tempo.
 
 ## NEU in 3.76.0 (MoveEye 4.20.0): Grossvater Kapitel 3, Frei erkunden, Gäste besuchen das Zelt
 

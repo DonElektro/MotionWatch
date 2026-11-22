@@ -16,6 +16,7 @@ const Figur = preload("res://scripts/figur.gd")
 const STUFE := 0.45                  # m: so hoch steigt man ohne Springen
 const FALL_OK := 1.05                # m: so tief geht man einfach hinunter (tiefer: Rand, nur mit Sprung)
 const STEIL := 1.25                  # Steigung (dh / Weg): steiler = Wand
+const BODEN_SCHRITT := 0.25          # m: the ground is checked in steps of at most this (fast run: several per frame)
 const GRAV := 13.0
 const SPRUNG_V := 4.4
 const HAENGEN_S := 4.0               # s am Rand, bis es zurück zum Checkpoint geht
@@ -207,6 +208,38 @@ func nach(dt: float, ein: Dictionary) -> void:
 
 
 func _boden(dt: float) -> void:
+	"""on the ground: the move of this frame, checked in steps of at most BODEN_SCHRITT (fast run up to 40 m/s: a frame is
+	0.7 m - checked at once a slope looked like a step / an edge: blocked, a mantle, flying off downhill). Slow: one step, as ever."""
+	var ende: Vector3 = a.position
+	var start: Vector3 = _p0
+	var Lg := Vector2(ende.x - start.x, ende.z - start.z).length()
+	var top: float = float(a.get("run_top")) if a.get("run_top") != null else 0.0
+	if top > 0.0 and float(a.cur_speed) > 4.0:            # fast run: never more than the chosen speed in a frame
+		var lim := maxf(float(a.cur_speed), top * float(a.gear_speed)) * dt + 0.001
+		if Lg > lim:
+			ende = Vector3(start.x + (ende.x - start.x) * lim / Lg, ende.y, start.z + (ende.z - start.z) * lim / Lg)
+			a.position.x = ende.x
+			a.position.z = ende.z
+			Lg = lim
+	var n := maxi(1, int(ceil(Lg / BODEN_SCHRITT)))
+	var vh_voll := Vector3(ende.x - start.x, 0, ende.z - start.z) / maxf(dt, 0.001)
+	for i in range(1, n + 1):
+		var f := float(i) / float(n)
+		a.position.x = lerpf(start.x, ende.x, f)
+		a.position.z = lerpf(start.z, ende.z, f)
+		var r := _boden_teil(dt, vh_voll)
+		if r != 0:
+			if r == 2:
+				return                                    # in the air / a step up: another state
+			break                                         # blocked: stays at the last good step
+		_p0 = Vector3(a.position.x, y, a.position.z)
+	var gf: Dictionary = par.gefahr_bei(a.position)
+	if not gf.is_empty() and str(gf["art"]) == "wasser":
+		_ins_wasser()
+
+
+func _boden_teil(dt: float, vh_voll: Vector3) -> int:
+	"""one step from _p0 to a.position: 0 = walked on (y on the ground), 1 = blocked (back at _p0), 2 = another state"""
 	var p: Vector3 = a.position
 	var g: float = main.ground_y(p.x, p.z)
 	var mv := Vector2(p.x - _p0.x, p.z - _p0.z)
@@ -234,22 +267,21 @@ func _boden(dt: float) -> void:
 			a.position.x = _p0.x
 			a.position.z = _p0.z
 			_hochziehen(Vector3(vorn.x, g2, vorn.z), Vector3(_p0.x, g2, _p0.z) + dir * 0.3)
-			return
+			return 2
 	if block:
 		a.position.x = _p0.x
 		a.position.z = _p0.z
 		a.cur_speed = minf(float(a.cur_speed), 0.4)
 		g = main.ground_y(_p0.x, _p0.z)
-	if y - g > 0.22:                                      # a small step down: a short fall
+	var ab_ok := maxf(0.22, L * STEIL) if not block else 0.22   # down a walkable slope (fast: a long step) - on the ground
+	if y - g > ab_ok:                                     # a small step down: a short fall
 		vy = 0.0
-		vh = Vector3(a.position.x - _p0.x, 0, a.position.z - _p0.z) / maxf(dt, 0.001)
+		vh = vh_voll if not block else Vector3.ZERO       # (the speed of the whole frame, not of the step)
 		_absprung = {"p": _p0, "top": y, "ding": par.ding_bei(_p0)}
 		geh_zu("luft")
-		return
+		return 2
 	y = g
-	var gf: Dictionary = par.gefahr_bei(a.position)
-	if not gf.is_empty() and str(gf["art"]) == "wasser":
-		_ins_wasser()
+	return 1 if block else 0
 
 
 func _springen(mv: Vector2) -> void:

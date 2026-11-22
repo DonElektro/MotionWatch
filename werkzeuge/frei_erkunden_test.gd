@@ -64,11 +64,97 @@ func _ctl(d: Dictionary) -> Dictionary:
 
 
 func _speed(p, secs: float) -> float:
+	"""the speed over secs: the way, frame by frame, through the engine's own frame times (what the figure moves by) - not the
+	wall clock (on a busy machine the frame times drift from it, a fast run then looked faster / slower than it is)"""
 	var a: Node3D = p.actor
-	var p0 := _xz(a)
-	var t0: float = main.now()
-	await wait(secs)
-	return _xz(a).distance_to(p0) / maxf(0.01, main.now() - t0)
+	var q := _xz(a)
+	var weg := 0.0
+	var t := 0.0
+	while t < secs:
+		await process_frame
+		t += get_root().get_process_delta_time()
+		var q2 := _xz(a)
+		weg += q2.distance_to(q)
+		q = q2
+	return weg / maxf(0.01, t)
+
+
+func _linie(o: Vector3, d: Vector3, L: float) -> Dictionary:
+	"""a straight line on the ground: mean slope, steepest metre up / down - {} with an obstacle or water on it"""
+	var g0: float = main.ground_y(o.x, o.z)
+	var prev := g0
+	var smax := 0.0
+	var smin := 99.0
+	for i in range(1, int(L) + 1):
+		var q := o + d * float(i)
+		var g: float = main.ground_y(q.x, q.z)
+		smax = maxf(smax, g - prev)
+		smin = minf(smin, g - prev)
+		prev = g
+		if i % 3 == 0 and (main.keep_out(Vector2(q.x, q.z), 0.4, true).distance_to(Vector2(q.x, q.z)) > 0.01 or not Welt.wasser(main, q).is_empty()):
+			return {}
+	return {"mean": (prev - g0) / L, "max": smax, "min": smin}
+
+
+func _hang_suchen(p0: Vector3, lo: float, hi: float) -> Dictionary:
+	for r in [0.0, 40.0, 80.0, 120.0, 180.0, 250.0]:
+		for k in range(12):
+			var c: Vector3 = p0 + Vector3(cos(k * 0.52), 0, sin(k * 0.52)) * float(r)
+			for j in range(16):
+				var d := Vector3(cos(j * PI / 8.0), 0, sin(j * PI / 8.0))
+				var l: Dictionary = _linie(c, d, 60.0)
+				if not l.is_empty() and float(l["mean"]) >= lo and float(l["mean"]) <= hi and float(l["max"]) < 1.1 and float(l["min"]) > -0.2:
+					return {"o": c, "d": d, "l": l}
+	return {}
+
+
+func _hang_lauf(p, o: Vector3, d: Vector3, v: float) -> Dictionary:
+	"""run along d from o (fast run v, or the normal run with v < 4): the speed after speeding up, frames off the ground"""
+	main.ex_schnell = v > 4.0
+	p.set_tempo(v if v > 4.0 else 3.0)
+	p.figur.setzen(o, atan2(-d.x, -d.z))
+	p.actor.cur_speed = 0.0
+	await wait(0.1)
+	p.test_walk(Vector2(1, 0), 3.0, true)
+	await wait(1.1)
+	var a: Node3D = p.actor
+	var q := _xz(a)
+	var weg := 0.0
+	var t := 0.0
+	var luft := 0
+	var tief := 0.0
+	while t < 0.5:
+		await process_frame
+		t += get_root().get_process_delta_time()
+		weg += _xz(a).distance_to(q)
+		q = _xz(a)
+		if str(p.figur.zustand) != "boden":
+			luft += 1
+		tief = minf(tief, a.global_position.y - main.ground_y(a.global_position.x, a.global_position.z))
+	var r := {"v": weg / maxf(0.01, t), "luft": luft, "tief": tief}
+	p.test_walk(Vector2.ZERO, 0.1, false)
+	await wait(0.3)
+	return r
+
+
+func _hang_test(p, b) -> void:
+	"""Besitzer 22.11.2026: fast run uphill got slow (a slope seen as a step per frame) - now: the chosen speed up to the
+	walkable slope, on the ground (no flying off downhill, never into the ground)"""
+	var schnell0: bool = main.ex_schnell
+	var f := _hang_suchen(p.actor.global_position, 0.3, 0.6)
+	ok("Bergtal: ein Hang (Steigung 0,3 … 0,6) gefunden", not f.is_empty())
+	if f.is_empty():
+		return
+	print("  Hang: ", f["l"])
+	for v in [10.0, 20.0, 40.0]:
+		var r: Dictionary = await _hang_lauf(p, f["o"], f["d"], v)
+		ok("bergauf %d m/s: %.1f m/s, am Boden, nicht im Gelände" % [int(v), r["v"]], r["v"] > v * 0.85 and r["luft"] == 0 and r["tief"] > -0.05)
+	var dn: Dictionary = await _hang_lauf(p, f["o"] + f["d"] * 60.0, -f["d"], 40.0)
+	ok("bergab 40 m/s: %.1f m/s, am Boden (fliegt nicht ab)" % dn["v"], dn["v"] > 40.0 * 0.85 and dn["luft"] <= 2 and dn["tief"] > -0.05)
+	var nr: Dictionary = await _hang_lauf(p, f["o"], f["d"], 3.45)
+	ok("ohne Schnelllauf bergauf: normal rennen (%.2f m/s)" % nr["v"], nr["v"] > 2.6 and nr["v"] < 4.0 and nr["luft"] == 0)
+	main.ex_schnell = schnell0
+	p.set_tempo(3.0)
 
 
 func _run() -> void:
@@ -472,6 +558,7 @@ func _run() -> void:
 		p.place(lw)
 		await wait(0.6)
 		ok("im Bergsee: schwimmt", p.wasser == "schwimmen" and absf(p.figur.y - (float(wd["spiegel"]) - p.SCHWIMM_TIEF)) < 0.1)
+		await _hang_test(p, b)
 		ex.set_on(false)
 	if errs.is_empty():
 		print("Frei-Erkunden-Test OK (%d Prüfungen)" % n_ok)

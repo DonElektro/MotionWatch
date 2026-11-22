@@ -770,6 +770,8 @@ func _explore_person(d: Dictionary) -> void:
 		p.sachen.tu(str(d["sache"]))
 	if d.has("zoom"):
 		p.sachen.set_zoom(float(d["zoom"]))
+	if d.has("camp") and d["camp"] is Dictionary and p.get("camp") != null:   # «Camp aufstellen» (22.11.2026): erkunden_camp.gd steuern()
+		p.camp.steuern(d["camp"])
 	if d.has("kraft"):                                   # tests: {kraft, hunger, durst, waerme}
 		for kk in ["kraft", "hunger", "durst", "waerme"]:
 			if d.has(kk):

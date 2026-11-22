@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.76.0"
+const VERSION := "3.78.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -1510,6 +1510,11 @@ func bt_take(r: Dictionary) -> Dictionary:
 	mover_home()
 	set_scene("bergtal")
 	start_info = "%s %s" % [preload("res://scripts/i18n.gd").t("Neuer Schlafplatz:"), preload("res://scripts/i18n.gd").t(str(r.get("note", "")))]
+	var wz: Dictionary = preload("res://scripts/bergtal.gd").wrz_at(float(r["x"]), float(r["z"]))   # «Wildcamp»: an invented Wildruhezone
+	if not wz.is_empty():
+		r["wildruhezone"] = wz
+		start_info += " · ⚠ " + preload("res://scripts/i18n.gd").t("In der (erfundenen) Wildruhezone «{name}», Schutzzeit {zeit} – hier besser nicht übernachten.",
+				{"name": str(wz["name"]), "zeit": str(wz["z"]).replace(" - ", "–")})
 	r["rating"] = scenes.data["bergtal"].rating if scenes.data.has("bergtal") else {}
 	return r
 

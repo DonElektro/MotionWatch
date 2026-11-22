@@ -13,7 +13,8 @@ Geprüft (MoveEye im selben Python, Flask-Test-Client):
     Funk/ unberührt; Bild ersetzt → neuer Name, alter gelöscht; alle Bilder weg → schlichte Startseite; «Startseite» aus →
     weder hochgeladen noch gelöscht.
   * --browser: echte MoveEye (--headless --demo) und Chromium bei 390 px: /startbilder (keine waagrechte Bildlaufleiste, keine
-    JS-Fehler, Knopf in der Karte «Homepage»), Vorschau A und B; --bilder ORDNER: Bildschirmfotos; --fotos ORDNER: dort die
+    JS-Fehler, Knopf in der Karte «Homepage»), Vorschau A und B; die erste Ansicht (Titel, Satz, 5 Kacheln) passt ohne Scrollen
+    bei 1366 × 768, 1536 × 864, 1280 × 720, 1280 × 650, 820 × 1180 und 390 × 844 (22.11.2026); Kapitel-Knöpfe nur mit Sim ≥ HP_GV_KAPITEL; --bilder ORDNER: Bildschirmfotos; --fotos ORDNER: dort die
     Bilder nach Platz-Namen (titel.jpg, pano.jpg, …) hochladen statt erzeugter (z. B. die Fotos des Besitzers, nur lokal).
 
   python3 werkzeuge/startbilder_test.py [--datei X.py] [--browser] [--bilder ORDNER] [--fotos ORDNER]
@@ -152,7 +153,7 @@ def lauf(datei):
        "Karte «Homepage»: Variante und Knopf unter «Startseite»")
     r = c.get("/startbilder/vorschau?v=B", headers=H["admin"])
     pv = r.get_data(as_text=True)                                   # (MoveEye adds its «✕ Zurück» to every page it serves)
-    ok(r.status_code == 200 and pv.startswith(ns["HP_INDEX_HTML"].split("</body>")[0]) and "/api/startbilder/bild/" not in pv,
+    ok(r.status_code == 200 and pv.startswith(ns["hp_index_html"]().split("</body>")[0]) and "/api/startbilder/bild/" not in pv,
        "Vorschau ohne Bilder = schlichte Startseite (%d)" % r.status_code)
 
     print("2) hochladen, EXIF weg, Grössen", flush=True)
@@ -209,10 +210,22 @@ def lauf(datei):
     ok(idx.index('href="Funk/"') < idx.index('href="Sim/"') < idx.index('id="sc"') < idx.index('class="strip"'), "B: Titelbild, Knöpfe, Panorama, Leiste")
     ok("📡 Handy-Funkgerät" in idx and "Mein Lager, mein Wächter." in idx and "object-position:82.0% 70.0%" in idx, "📡, eigene Titelzeile, Fokuspunkt")
     def links_ok(h_):
-        pos_ = [h_.find('href="%s"' % x) for x in ("demo/", "Sim/?grossvater=1", "Funk/", "Sim/")]
-        return min(pos_) >= 0 and pos_ == sorted(pos_) and "📷 MoveEye" in h_ and "🗺️ Die Karte des Grossvaters" in h_ \
+        pos_ = [h_.find('href="%s"' % x) for x in ("demo/", "Sim/?grossvater=1", "Funk/", "Sim/", "Info/")]
+        return min(pos_) >= 0 and pos_ == sorted(pos_) and "📷 MoveEye" in h_ and "🗺️ Die Karte des Grossvaters" in h_ and "ℹ️ Besucherseite" in h_ \
+            and '"btn.i": "ℹ️ Visitor page"' in h_ and '"gv.all": "▶ Jeu complet"' in h_ and h_.count('class="tile t-') == 5 \
             and "La carte du grand-père" in h_ and "La charta dal tat" in h_ and 'class="mweye"' in h_ and "mwe-blink" in h_
-    ok(links_ok(idx), "4.19.1 B: alle Links (MoveEye · Karte des Grossvaters · Funkgerät · Simulator, 5 Sprachen) und das bewegte Auge")
+    ok(links_ok(idx), "4.19.1 B: alle Links (MoveEye · Karte des Grossvaters · Funkgerät · Simulator · Besucherseite, 5 Sprachen) und das bewegte Auge")
+    ok("kapitel=" not in idx and 'data-t="gv.all"' in idx, "ohne veröffentlichten Browser-Simulator: nur «▶ Ganzes Spiel»")
+    m_ = ns["sb_meta"]()
+    for ver, want in (("3.77.0", []), ("3.78.0", [1, 2, 3, 4])):
+        hk = ns["sb_page_html"]("A", lambda s_, k_: "x.webp", m_, ns["hp_gv_kapitel"](ver))
+        got = [int(x) for x in re.findall(r'href="Sim/\?grossvater=1&amp;kapitel=(\d+)"', hk)]
+        ok(got == want and (not want or hk.count('class="chip"') == len(want)), "A mit Sim %s: Kapitel-Knöpfe %s" % (ver, got))
+    sv = dict(ns["SIM3D_WEB"])
+    ns["SIM3D_WEB"].update(version="3.78.0", size=1, sha256="0" * 64)
+    ok(ns["hp_gv_kapitel"]() == [1, 2, 3, 4] and "kapitel=4" in ns["hp_fixed_items"]()[0]["get"]().read().decode(),
+       "Kapitel nach dem veröffentlichten Browser-Simulator (SIM3D_WEB 3.78.0): 1 · 2 · 3 · 4 auf der Startseite")
+    ns["SIM3D_WEB"].clear(); ns["SIM3D_WEB"].update(sv)
     ok(not re.search(r'(?:src|href|srcset)="(?:https?:)?//', idx) and "http://" not in idx and "https://" not in idx, "keine fremden Adressen in der Seite")
     def lokal(p):
         m = re.fullmatch(r"Startbilder/([a-z0-9-]+?)(-k)?-[0-9a-f]{10}\.webp", p)
@@ -240,7 +253,7 @@ def lauf(datei):
     idx = W.files["index.html"].decode()
     ok(idx.index('href="Funk/"') < idx.index('id="story"') and idx.count('class="band') == 4 and 'media="(orientation:portrait)"' in idx,
        "A: Knöpfe unter dem Titelbild, 4 Kapitel, Hochformat fürs Handy")
-    ok(links_ok(idx), "4.19.1 A «Bildgeschichte»: alle Links (MoveEye · Karte des Grossvaters · Funkgerät · Simulator, 5 Sprachen) und das bewegte Auge")
+    ok(links_ok(idx), "4.19.1 A «Bildgeschichte»: alle Links (MoveEye · Karte des Grossvaters · Funkgerät · Simulator · Besucherseite, 5 Sprachen) und das bewegte Auge")
     ok("prefers-reduced-motion" in idx and all(x in idx for x in ("Über den Grat", "Lagerplatz", "Abend", "Nacht", "Du schläfst. MoveEye wacht.")), "A: Kapitel und Bewegung nur auf Wunsch")
     ok('"titel.line"' not in idx.split("var T=", 1)[1].split(",l=", 1)[0] and '"grat.say"' in idx, "eigener Text in allen Sprachen, andere übersetzt")
     old = [p for p in sa if p.startswith("Startbilder/lager-") and "-k-" not in p][0]
@@ -257,7 +270,7 @@ def lauf(datei):
     ok(len(W.uploads()) == n0 and any(p.startswith("Startbilder/") for p in W.files), "Startseite aus: nichts hochgeladen, nichts gelöscht")
     hp({"action": "start_on", "on": True})
     code, j = hp({"action": "publish"})
-    ok(not any(p.startswith("Startbilder/") for p in W.files) and W.files.get("index.html") == ns["HP_INDEX_HTML"].encode(), "alle Bilder entfernt: schlichte Startseite, Startbilder/ gelöscht")
+    ok(not any(p.startswith("Startbilder/") for p in W.files) and W.files.get("index.html") == ns["hp_index_html"]().encode(), "alle Bilder entfernt: schlichte Startseite, Startbilder/ gelöscht")
     ok(all(W.files.get("Funk/" + n) for n in ("index.html", "sw.js")), "Funk/ unberührt")
     ok(not [f for f in os.listdir(sbd) if f.endswith(".webp")], "Daten-Ordner ohne Bilder")
     logp = ns["LOG_FILE"]
@@ -371,9 +384,27 @@ def browser(datei, bilder, fotos):
                                  "Math.max(...[...document.querySelectorAll('main a')].map(a => a.getBoundingClientRect().right))]; }")
                 ok(ey and ey[1] >= ey[2] * 0.9 and ey[1] <= ey[2] * 1.5 and ey[3] < 80 and ey[4] == "mwe-blink",
                    "Vorschau %s: bewegtes Auge oben links beim Titel (B × H %s, Schrift %s px)" % (v, ey and [round(ey[0]), round(ey[1])], ey and ey[2]))
-                ok(ey and ey[5] == ["demo/", "Sim/?grossvater=1", "Funk/", "Sim/"] and ey[6] <= 390, "Vorschau %s 390 px: 4 Knöpfe in der Reihenfolge, nichts ragt hinaus %s" % (v, ey and ey[5]))
+                ok(ey and ey[5] == ["demo/", "Sim/?grossvater=1", "Funk/", "Sim/", "Info/"] and ey[6] <= 390,
+                   "Vorschau %s 390 px: 5 Kacheln in der Reihenfolge, nichts ragt hinaus %s" % (v, ey and ey[5]))
                 ok(not e2, "Vorschau %s: keine JS-Fehler %s" % (v, e2[:2]))
                 p2.close()
+            # 22.11.2026 (Besitzer: «Titel oben abgeschnitten, Kacheln unter dem Bildschirm»): die erste Ansicht passt ohne Scrollen
+            fit = ("() => { const r = e => e.getBoundingClientRect(), h = r(document.querySelector('h1')), t = [...document.querySelectorAll('main .tile')].map(r), "
+                   "l = r(document.querySelector('.cap1 .line')); return [Math.round(h.top), Math.round(Math.max(...t.map(x => x.bottom))), innerHeight, "
+                   "document.documentElement.scrollWidth, innerWidth, t.length, Math.round(l.bottom), Math.round(Math.min(...t.map(x => x.top)))]; }")
+            for w, h, mob in ((1366, 768, False), (1536, 864, False), (1280, 720, False), (1280, 650, False), (820, 1180, True), (390, 844, True)):
+                cf = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=1 if not mob else 2, is_mobile=mob, has_touch=mob,
+                                    http_credentials={"username": "admin", "password": ADMIN_PW}, locale="de-CH")
+                pf = cf.new_page()
+                for v in ("A", "B"):
+                    pf.goto(base + "/startbilder/vorschau?v=" + v, wait_until="load"); pf.wait_for_timeout(800)
+                    pf.evaluate("() => { const b = document.querySelector('.mw-back, #mw-back'); if (b) b.remove(); }")
+                    f = pf.evaluate(fit)
+                    ok(f[0] >= 0 and f[1] <= f[2] and f[3] <= f[4] and f[5] == 5 and f[6] <= f[7],
+                       "Vorschau %s %d × %d: Titel ganz sichtbar (oben %d px), alle 5 Kacheln im Bild (unten %d ≤ %d), Satz über den Kacheln" % (v, w, h, f[0], f[1], f[2]))
+                    if bilder:
+                        pf.screenshot(path=os.path.join(bilder, "passt_%s_%dx%d.png" % (v, w, h)))
+                cf.close()
             ctx3 = br.new_context(viewport={"width": 1024, "height": 1366}, device_scale_factor=2, reduced_motion="reduce",   # iPad, still
                                   http_credentials={"username": "admin", "password": ADMIN_PW}, locale="de-CH")
             p3 = ctx3.new_page(); e3 = []
