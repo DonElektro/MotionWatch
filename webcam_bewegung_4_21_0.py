@@ -312,7 +312,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_21_0.zip"
-ZD_SHA256 = "0fad1dccbf7a0fd6612b62aa30deaf88dc743aa20bc23cf2467231dcf197a799"
+ZD_SHA256 = "7b606d64100704cd0e65b625f2fa76511394995a62fcb74ae43469c5453cc6be"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -94021,6 +94021,8 @@ _HX_KQ = _zd_hxk('639zzq_offline_karten/HX_KQ', [
 	('Saved', 'Gespeichert'),
 	('Only in Switzerland', 'Nur in der Schweiz'),
 	('Sources and licences', 'Quellen und Lizenzen'),
+	('Full screen', 'Vollbild'),
+	('Exit full screen', 'Vollbild beenden'),
 	('kind-city', 'Stadt'),
 	('kind-town', 'Stadt'),
 	('kind-village', 'Dorf'),
