@@ -246,9 +246,9 @@ Push-Nachrichten). Einrichtung: `docs/Einrichtung_Raspberry_Pi.md`, Gehäuse: `h
 - Echte Prozess-Tests für Neustart/Pause/Update (`os.execv`, gleiche PID).
 - Fenster ohne Bildschirm: Xvfb, oder notfalls ein Tkinter-Ersatz (nur Rauchtest).
 
-## HP-Testweg (nur bis 22.11.2026, 22:00 Uhr Schweizer Zeit)
+## HP-Testweg (nur bis Montag 23.11.2026, 07:00 Uhr Schweizer Zeit)
 
-Der lokale Container ist mit allen Helfern überlastet: Tests dürfen bis Sonntag 22.11.2026, 22:00 auf dem HP rechnen (Besitzer, 15.11.2026, verlängert 21.11.2026;
+Der lokale Container ist mit allen Helfern überlastet: Tests dürfen bis Montag 23.11.2026, 07:00 auf dem HP rechnen (Besitzer, 15.11.2026, verlängert 21.11. und 22.11.2026;
 Workflow `.github/workflows/hp_helfer.yml`, Fenster `HP_HELFER_BIS` dort auf main; danach hört jeder Lauf sofort auf).
 - **Starten:** der Zweig muss main mit `hp_helfer.yml` enthalten (`git merge origin/main`), dann
   `git push origin HEAD:hp-test/<name>` (`<name>`: A-Z a-z 0-9 . _ -). Was läuft: `hp_test.txt` im Wurzelordner des Zweigs
@@ -259,7 +259,9 @@ Workflow `.github/workflows/hp_helfer.yml`, Fenster `HP_HELFER_BIS` dort auf mai
   Artefakt «hp-test-<name>-<nr>»). Der HP rechnet einen Job aufs Mal: Warten in der Schlange ist normal. Kein Lauf nach
   dem Push? `werkzeuge/ci_status.sh hp-test/<name> --start`.
 - `hp-test/*`-Zweige werden **nie gemergt** (auch `hp_test.txt` nicht in den Arbeitszweig übernehmen); der Integrator
-  löscht sie danach (`git push origin --delete hp-test/<name>`). Grün auf dem HP ersetzt nicht das CI auf GitHub.
+  löscht sie danach (`git push origin --delete hp-test/<name>`). **Ab 22.11.2026 automatisch:** Workflow «Zweige aufräumen» (`aufraeumen.yml`) löscht jede Nacht
+  `hp-test/*`-Zweige ohne laufenden Lauf, deren letzter Commit älter als 6 h ist; von Hand (Actions → «Zweige aufräumen» →
+  «Run workflow») auch `auftrag-*`, mit Alter in Stunden und «nur anzeigen». Grün auf dem HP ersetzt nicht das CI auf GitHub.
 
 ## Hardware
 

@@ -18,7 +18,7 @@
 #   * Webspace (639zzzh): hp_fixed_items() bekommt mit «Startseite» und mindestens einem eigenen Bild der gewählten Variante
 #     die Seite aus sb_page_html() und die Bilder als Startbilder/<platz>-<sha10>.webp (Name ändert mit dem Inhalt: kein altes
 #     Bild aus dem Zwischenspeicher; das alte wird als eigene Datei gelöscht). Ohne eigene Bilder bleibt die schlichte Seite
-#     HP_INDEX_HTML. Fehlt nur das Titelbild, zeigt die Seite einen gezeichneten Platzhalter (kein Foto). hp_part / _hp_ours
+#     hp_index_html(). Fehlt nur das Titelbild, zeigt die Seite einen gezeichneten Platzhalter (kein Foto). hp_part / _hp_ours
 #     kennen Startbilder/ (Teil «start»: aus = nie hochgeladen, nie gelöscht), die Prüfung erwartet image/webp.
 #   * /startbilder (Seite), /startbilder/vorschau?v=A|B (die Seite mit den Bildern von MoveEye), /api/startbilder (Zustand,
 #     Hochladen mit dem Bild als Körper, Fokus, Texte, Entfernen, Variante), /api/startbilder/bild/<platz>. Nur Rolle admin
@@ -248,25 +248,25 @@ def sb_read(slot, small=False):
 SB_CSS = r""":root{--bg:#111418;--card:#1d2229;--line:#2c333c;--fg:#e8eaed;--mut:#9aa3ad;--kick:#f3c37a}
 *{box-sizing:border-box}html{background:var(--bg)}
 body{margin:0;font:17px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--fg)}
-.hero{position:relative;height:72svh;min-height:400px;max-height:900px;overflow:hidden;background:#0b0d10}
-.hero img,.hero svg{display:block;width:100%;height:100%;object-fit:cover}
-.top{position:absolute;top:0;left:0;right:0;padding:calc(22px + env(safe-area-inset-top)) 20px 90px;
- background:linear-gradient(to bottom,rgba(8,10,13,.75) 0%,rgba(8,10,13,.42) 55%,rgba(8,10,13,0) 100%)}
-.top h1{margin:0;font-size:clamp(36px,8vw,64px);line-height:1.05;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.5)}
-.top p{margin:6px 0 0;font-size:clamp(17px,3.8vw,22px);color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.7);max-width:36ch}
-.cap1{position:absolute;left:0;right:0;bottom:0;padding:100px 20px 26px;
- background:linear-gradient(to top,rgba(8,10,13,.85) 0%,rgba(8,10,13,.5) 45%,rgba(8,10,13,0) 100%)}
-.kick{display:block;margin:0 0 6px;font-size:15px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--kick);text-shadow:0 1px 6px rgba(0,0,0,.7)}
-.line{display:block;font-size:clamp(24px,6vw,46px);font-weight:700;line-height:1.15;letter-spacing:-.01em;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.6);text-wrap:balance}
-main{padding:20px 24px 12px;max-width:420px;margin:0 auto}
-main a{display:block;margin:12px 0;padding:18px;border-radius:14px;background:var(--card);color:var(--fg);text-decoration:none;border:1px solid var(--line);overflow-wrap:anywhere;box-sizing:border-box}
-main a:hover,main a:focus-visible{border-color:#4a5563;outline:none}main a:focus-visible{box-shadow:0 0 0 3px #e8a54b}
-small{display:block;color:var(--mut);margin-top:4px}
+.first{display:flex;flex-direction:column;min-height:100vh;min-height:100svh}
+.hero{position:relative;flex:1 1 auto;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;background:#0b0d10;
+ min-height:calc(34*var(--vh,1vh))}
+.hero>img,.hero>svg{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover}
+.hero::before,.hero::after{content:"";position:absolute;left:0;right:0;pointer-events:none;z-index:1}
+.hero::before{top:0;height:min(70%,calc(34*var(--vh,1vh)) + 60px);background:linear-gradient(to bottom,rgba(8,10,13,.75) 0%,rgba(8,10,13,.4) 55%,rgba(8,10,13,0) 100%)}
+.hero::after{bottom:0;height:min(75%,calc(30*var(--vh,1vh)) + 60px);background:linear-gradient(to top,rgba(8,10,13,.88) 0%,rgba(8,10,13,.5) 50%,rgba(8,10,13,0) 100%)}
+.top,.cap1{position:relative;z-index:2;padding-left:clamp(16px,4vw,32px);padding-right:clamp(16px,4vw,32px)}
+.top{padding-top:calc(clamp(10px,calc(3*var(--vh,1vh)),28px) + env(safe-area-inset-top));margin-bottom:clamp(12px,calc(5*var(--vh,1vh)),80px)}
+.top h1{margin:0;font-size:clamp(30px,min(8vw,calc(8.5*var(--vh,1vh))),64px);line-height:1.08;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+.top p{margin:clamp(2px,calc(.8*var(--vh,1vh)),6px) 0 0;font-size:clamp(15px,min(3.8vw,calc(3*var(--vh,1vh))),22px);color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.7);max-width:36ch}
+.cap1{padding-bottom:clamp(8px,calc(2.4*var(--vh,1vh)),26px)}
+.kick{display:block;margin:0 0 clamp(2px,calc(.8*var(--vh,1vh)),6px);font-size:clamp(12px,calc(2*var(--vh,1vh)),15px);font-weight:600;letter-spacing:.08em;
+ text-transform:uppercase;color:var(--kick);text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.line{display:block;font-size:clamp(20px,min(6vw,calc(5.6*var(--vh,1vh))),46px);font-weight:700;line-height:1.15;letter-spacing:-.01em;color:#fff;
+ text-shadow:0 2px 12px rgba(0,0,0,.6);text-wrap:balance}
 h2.lab{margin:0;padding:22px 20px 10px;font-size:15px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--kick)}
 @media (min-width:900px){
- .hero{height:min(78vh,800px)}
  .top,.cap1{padding-left:max(32px,calc((100vw - 1100px)/2));padding-right:max(32px,calc((100vw - 1100px)/2))}
- main{max-width:860px;display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-top:28px}main a{margin:0}
  h2.lab{padding:28px max(32px,calc((100vw - 1100px)/2)) 12px}
 }
 """
@@ -349,18 +349,20 @@ SB_DRAWN = ('<svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" r
 
 
 def _sb_btn_tx():
-    """4.19.1: the texts of the buttons come from HP_LINKS (639zzzh) - the same links as the simple start page"""
-    return {("btn.%s" % k) + x: v for _h, k, t, s in HP_LINKS for x, v in (("", t), ("s", s))}
+    """4.19.1: the texts of the buttons come from HP_LINKS (639zzzh) - the same links as the simple start page (22.11.2026: + the
+    chips of the game, HP_GV_TX)"""
+    return hp_tiles_tx()
 
 
 def _sb_tx(key, L):
-    v = SB_TX.get(key) or (_sb_btn_tx().get(key) if key.startswith("btn.") else None) or ()
+    v = SB_TX.get(key) or (_sb_btn_tx().get(key) if key.startswith(("btn.", "gv.")) else None) or ()
     i = _SB_LANGS.index(L) if L in _SB_LANGS else 0
     return v[i] if len(v) > i and v[i] else (v[0] if v else "")
 
 
-def sb_page_html(variant=None, url=None, meta=None):
-    """the start page with the own pictures: url(place, small) -> address of the picture; None without any own picture of the variant"""
+def sb_page_html(variant=None, url=None, meta=None, kap=None):
+    """the start page with the own pictures: url(place, small) -> address of the picture; None without any own picture of the variant;
+    kap: the chapters of the game tile (default hp_gv_kapitel(), 639zzzh)"""
     import html as _h
     m = meta if meta is not None else sb_meta()
     v = variant if variant in SB_VARIANTS else sb_variant()
@@ -395,11 +397,11 @@ def sb_page_html(variant=None, url=None, meta=None):
         return '<img src="%s"%s width="%d" height="%d" %s decoding="async" style="%s" %s>' % (
             e(url(slot, False)), srcset, s["w"], s["h"], 'loading="lazy"' if lazy else 'fetchpriority="high"', pos(slot), alt(alt_of or slot, key))
 
-    css = SB_CSS + (SB_CSS_A if v == "A" else SB_CSS_B) + HP_EYE_CSS          # 4.19.1: the animated eye at the title
-    hero = '<header class="hero">' + (img("titel", 72, lazy=False) if "titel" in S else SB_DRAWN.replace("{alt}", e(_sb_tx("alt.drawn", "de"))))
+    css = HP_TILES_CSS + SB_CSS + (SB_CSS_A if v == "A" else SB_CSS_B) + HP_EYE_CSS          # 4.19.1: the animated eye at the title
+    hero = '<div class="first"><header class="hero">' + (img("titel", 72, lazy=False) if "titel" in S else SB_DRAWN.replace("{alt}", e(_sb_tx("alt.drawn", "de"))))
     hero += ('<div class="top"><h1>' + HP_EYE_SVG + 'MoveEye</h1><p data-t="titel.line">%s</p></div><div class="cap1"><span class="kick" data-t="titel.kick">%s</span>'
              '<span class="line" data-t="titel.say">%s</span></div></header>' % (e(tx("titel", "line")), e(tx("titel", "kick")), e(tx("titel", "say"))))
-    btn = '<main>' + hp_links_html("de", ids=False) + '</main>'          # 4.19.1: all links of HP_LINKS (MoveEye · Karte · Funk · Sim)
+    btn = hp_links_html("de", kap) + '</div>'                    # 4.19.1: all links of HP_LINKS (22.11.2026: + chapters, Info/; one screen with the title)
     body, pre, post = "", "", ""
     if v == "A":
         ch = [k for k in SB_CHAPTERS if k in S or (k == "grat" and "grat_hoch" in S)]
@@ -591,7 +593,7 @@ def smalltv_routes(app, reply, body):                        # + 639zzzzf: page,
         v = str(request.args.get("v") or sb_variant()).upper()
         m = sb_meta()
         h = sb_page_html(v if v in SB_VARIANTS else sb_variant(), lambda s, k: "/api/startbilder/bild/%s?k=%d&v=%s" % (s, 1 if k else 0, m["slots"][s].get("v")), m)
-        return Response(h or HP_INDEX_HTML, mimetype="text/html", headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
+        return Response(h or hp_index_html(), mimetype="text/html", headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
 
     @app.route("/api/startbilder", methods=["GET", "POST"])
     def api_sb():
@@ -928,16 +930,16 @@ def startbilder_selftest():
     from PIL import Image
     import tempfile as _tf
     global DATA_DIR
-    old, c0 = DATA_DIR, {k: CFG.get(k) for k in ("hp_start_on", "hp_start_variant", "hp_funk_on", "hp_sim_on")}
+    old, c0 = DATA_DIR, {k: CFG.get(k) for k in ("hp_start_on", "hp_start_variant", "hp_funk_on", "hp_sim_on", "hp_info_on")}
     d = _tf.mkdtemp(prefix="mw_sb_")
     try:
         DATA_DIR = d
-        CFG.update(hp_start_on=True, hp_start_variant="B", hp_funk_on=False, hp_sim_on=False)
+        CFG.update(hp_start_on=True, hp_start_variant="B", hp_funk_on=False, hp_sim_on=False, hp_info_on=False)
         b = io.BytesIO(); ex = Image.Exif(); ex[0x010F] = "TestCam"; ex[0x8825] = {1: "N", 2: (47.0, 3.0, 0.0)}
         Image.new("RGB", (2400, 1800), (40, 120, 60)).save(b, "JPEG", exif=ex.tobytes()); raw = b.getvalue()
         assert b"TestCam" in raw
         assert [(it["path"], it["sha"]) for it in hp_fixed_items()] == [(it["path"], it["sha"]) for it in _hp_fixed_items_639zzzzf()] == [
-            ("index.html", hashlib.sha256(HP_INDEX_HTML.encode("utf-8")).hexdigest())], "without pictures: simple page"
+            ("index.html", hashlib.sha256(hp_index_html().encode("utf-8")).hexdigest())], "without pictures: simple page"
         sb_set("titel", raw, 82, 70)
         data = open(os.path.join(sb_dir(), "titel.webp"), "rb").read(); im = Image.open(io.BytesIO(data))
         assert im.size == (1600, 1200) and b"TestCam" not in data and b"EXIF" not in data and b"Exif" not in data and not im.getexif(), "1600 px, no EXIF"
@@ -976,7 +978,7 @@ def startbilder_selftest():
         assert not any("pano" in p or "leiste" in p for p in pa) and any("titel" in p for p in pa), "A: only the pictures of A"
         sb_reset("titel")
         ha = hp_fixed_items()[0]["get"]().read()
-        assert ha == HP_INDEX_HTML.encode("utf-8"), "A without own pictures: simple page"
+        assert ha == hp_index_html().encode("utf-8"), "A without own pictures: simple page"
         CFG["hp_start_variant"] = "B"
         hb = hp_fixed_items()[0]["get"]().read().decode()
         assert "<svg" in hb and 'data-a="alt.drawn"' in hb, "B without title picture: drawn placeholder"

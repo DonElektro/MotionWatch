@@ -9,8 +9,8 @@ Beim Packen kommt dazu, was MoveEye an der Seite braucht (wie bisher von Hand):
   * die fünf Bildplätze data-pb="live|tag|nacht|damals|jetzt" (eigene Fotos, Teil 639zzzze),
   * das kleine Skript für Markierung / Text der eigenen Fotos (window.PB),
   * die Nummern in der Fussnote von «Alle Funktionen» (const MWV): MoveEye aus APP_VERSION (Teil 010), Simulator aus
-    simulator3d/scripts/main.gd. Auf dem Gerät setzt info_html() (620) zusätzlich window.MW_VER mit der eigenen Nummer und
-    dem neuesten bekannten Simulator – so veraltet die Fussnote nicht, auch wenn die Seite länger nicht neu gepackt wird.
+    simulator3d/scripts/main.gd. Auf dem Gerät setzt INFO_INJECT (620) zusätzlich window.MW_VER = {app: APP_VERSION} –
+    die MoveEye-Nummer stimmt so immer, auch wenn die Seite länger nicht neu gepackt wird.
 gzip ohne Zeitstempel (mtime 0): dieselbe Seite gibt Byte für Byte dasselbe Literal.
 """
 import base64, gzip, json, os, re, sys

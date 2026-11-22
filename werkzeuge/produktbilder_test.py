@@ -283,8 +283,8 @@ def browser(base, bilder, tag, slot, foto=""):
                          "document.querySelector('.af-fine').textContent, (window.MW_VER || {}).app || '', (window.MW_VER || {}).sim || '']")
         ok(af[0] > 300 and 0 < af[1] < af[0] and af[2] == str(af[0]) and af[3].startswith(str(af[1]) + " sur "),
            "/info/: Suche in «Alle Funktionen» (%d von %d, Kachel %s, %r)" % (af[1], af[0], af[2], af[3]))
-        ok(bool(re.match(r"^\d+\.\d+\.\d+$", af[5])) and ("MoveEye %s " % af[5]) in af[4] and bool(af[6]) and af[6] in af[4],
-           "/info/: Fussnote mit der Nummer dieser MoveEye und des Simulators (%r)" % af[4])
+        ok(bool(re.match(r"^\d+\.\d+\.\d+$", af[5])) and ("MoveEye %s " % af[5]) in af[4] and bool(re.search(r"simulateur \d+\.\d+\.\d+\.", af[4])),
+           "/info/: Fussnote mit der Nummer dieser MoveEye (window.MW_VER) und des Simulators (%r)" % af[4])
         p3.keyboard.press("Escape"); p3.keyboard.press("Escape"); p3.wait_for_timeout(300)
         ok(p3.evaluate("() => document.getElementById('af-ov').hidden"), "/info/: Esc leert die Suche, zweites Esc schliesst")
         p3.evaluate("() => { document.getElementById('f-name').value = 'Test'; document.getElementById('f-msg').value = 'Frage aus dem Test'; }")
