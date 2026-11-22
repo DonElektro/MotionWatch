@@ -64,7 +64,7 @@ const VIEWPOINTS := [["vp_horn", "Tschingelspitz (Gipfel West)", "gipfel", -790.
 		["vp_grat", "Gratspitz über der Rüfi", "grat", -625.0, 125.0, "wild", 60.0],
 		["vp_kanzel", "Chanzle über dem Gumpisee", "kanzel", 262.0, -430.0, "fernrohr", -90.0],
 		["vp_seeblick", "Seeblick Gumpisee", "see", -250.0, -470.0, "tafel", 70.0],
-		["vp_gletscher", "Gletscherblick Wyssgletscher", "gletscher", 540.0, 320.0, "tafel", 120.0],
+		["vp_gletscher", "Gletscherblick Wyssgletscher", "gletscher", 730.0, 370.0, "tafel", 135.0],
 		["vp_pass", "Passchanzle Furgga", "kanzel", 120.0, 800.0, "fernrohr", 0.0],
 		["vp_ostgipfel", "Nüdelistock (Gipfel Ost)", "gipfel", 720.0, -260.0, "wild", -90.0],
 		["vp_moorsee", "Ob em Schwarzseeli", "see", -700.0, -380.0, "bank_kreuz", 30.0]]

@@ -44,8 +44,8 @@ const STORY_PTS := [
 		Vector2(70, -70), Vector2(100, 775), Vector2(102, 32), Vector2(110, -20), Vector2(110, 80), Vector2(115, -148), Vector2(120, -40), Vector2(120, 800),
 		Vector2(160, 28), Vector2(170, 40), Vector2(178, -200), Vector2(178, -40), Vector2(182, -300), Vector2(190, -500), Vector2(190, -400), Vector2(192, -688),
 		Vector2(200, -600), Vector2(200, -300), Vector2(205, -690), Vector2(210, -700), Vector2(214, -330), Vector2(250, 845), Vector2(262, -430), Vector2(420, 60),
-		Vector2(470, 300), Vector2(470, 310), Vector2(480, 368), Vector2(540, 320), Vector2(542, 208), Vector2(590, 360), Vector2(600, 430), Vector2(632, 450),
-		Vector2(688, 328), Vector2(720, -260), Vector2(790, 470)]
+		Vector2(470, 300), Vector2(470, 310), Vector2(480, 368), Vector2(542, 208), Vector2(590, 360), Vector2(600, 430), Vector2(632, 450), Vector2(688, 328),
+		Vector2(720, -260), Vector2(730, 370), Vector2(790, 470)]
 # Wege der Rätsel (abenteuer_raetsel.gd LAWINE_PTS, SEIL_PTS)
 const STORY_LINES := [[Vector2(-700, -130), Vector2(-705, 40), Vector2(-680, 240), Vector2(-650, 430)],
 		[Vector2(-700, 470), Vector2(-790, 462), Vector2(-870, 450)]]
