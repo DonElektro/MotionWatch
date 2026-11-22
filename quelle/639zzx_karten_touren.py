@@ -34,6 +34,36 @@
 # Selbsttest kt_selftest; Tests werkzeuge/touren_test.py (Leser mit bösen und grossen Dateien unter Zeitgrenze, Zahlen,
 # Rechte, Gäste, Export, Höhenpaket mit Ersatz-Datei, Seite im Browser bei 390 px).
 # ----------------------------------------------------------------------------
+
+# Programmtext in der ZIP (Hauptdatei kleiner, 22.11.2026; Muster 639zzzzk / 639zzzzm): ab Zeile 67 steht der Teil in EINEM
+# Literal KT_PY - bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert), zd_exec führt es hier aus (Zeilennummern wie
+# in dieser Datei). Keine Start-, Schutz-, Alarm-, Update- oder Reparatur-Funktion: ohne ZIP fehlt der Teil einfach. Was ohne
+# ZIP gelten muss (Einstellungen, Sperrlisten, Rückfall-Funktionen für andere Teile), steht oben ausserhalb des Literals.
+
+KH_TAG = "hoehen-1"
+
+
+KH_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + KH_TAG + "/"}   # Tests: lokaler Server
+
+
+KH_FILE = {"name": "hoehe-ch-1.bin", "size": 60515168, "sha256": "8b26a5072db7f5ef5e3887313a756396b945434d177d73ea71d924678e0b2c29"}
+
+
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+KT_PY = r'''
 import math as _kt_math
 
 KT_IMPORT_MAX = 5 * 1024 * 1024                           # an import file (KML / GPX)
@@ -538,10 +568,10 @@ def kt_file_name(t, ext):
 
 
 # ---- «Höhendaten Schweiz»: one file, read block by block ---------------------------------------------------------------------------
-KH_TAG = "hoehen-1"
-KH_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/" + KH_TAG + "/"}   # Tests: lokaler Server
+
+
 # Werte aus werkzeuge/karten/hoehe.py (pins.txt des Workflows «Höhendaten»); size 0 = noch nicht freigegeben
-KH_FILE = {"name": "hoehe-ch-1.bin", "size": 60515168, "sha256": "8b26a5072db7f5ef5e3887313a756396b945434d177d73ea71d924678e0b2c29"}
+
 KH_MAX = 1500 * 1000 * 1000
 KH_LINE_MAX_M = 300000.0                                   # 3.87.1: heights only for routes up to 300 km (kh_line)
 KH_LINE_MAX_BLOCKS = 200                                   # 3.87.1: at most so many unpacked blocks for one route (~1.4 ms each)
@@ -1500,3 +1530,5 @@ def kt_selftest():
 
 
 SELFTEST_EXTRA.append(("Tours on the offline map (639zzx)", kt_selftest))
+'''
+zd_exec(KT_PY and "\n" * 65 + KT_PY, "639zzx_karten_touren.py")   # line 1 of KT_PY = line 66: the line numbers are those of this file

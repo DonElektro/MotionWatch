@@ -113,7 +113,30 @@ def simpi_running():
     d = _simpi_read()
     return bool(d.get("pid")) and _simpi_pid_alive(d.get("pid"), d.get("exe", ""))
 
+# Programmtext in der ZIP (Hauptdatei kleiner, 22.11.2026; Muster 639zzzzk / 639zzzzm): ab Zeile 140 steht der Teil in EINEM
+# Literal SIMPI_PY - bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert), zd_exec führt es hier aus (Zeilennummern wie
+# in dieser Datei). Keine Start-, Schutz-, Alarm-, Update- oder Reparatur-Funktion: ohne ZIP fehlt der Teil einfach. Was ohne
+# ZIP gelten muss (Einstellungen, Sperrlisten, Rückfall-Funktionen für andere Teile), steht oben ausserhalb des Literals.
 
+def simpi_tk_build(app, parent):                          # 570 calls it: without the zip there is no row «Simulator intern» (real one in SIMPI_PY)
+    return None
+
+
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+SIMPI_PY = r'''
 def simpi_resources():
     """freier Arbeitsspeicher (MB), Gesamt (MB), Temperatur (°C), Last pro Kern, freier Platz (MB) - None = unbekannt"""
     out = {"ram_free": None, "ram_total": None, "temp": None, "load": None, "disk_free": None}
@@ -1058,3 +1081,5 @@ def simpi_selftest():
 
 
 SELFTEST_EXTRA.append(("Simulator intern on the Pi (639zx)", simpi_selftest))
+'''
+zd_exec(SIMPI_PY and "\n" * 138 + SIMPI_PY, "639zx_sim_intern.py")   # line 1 of SIMPI_PY = line 139: the line numbers are those of this file

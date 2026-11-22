@@ -19,6 +19,28 @@
 # 2.98.85 (Koordinator, bis Besitzer entscheidet): «Spielen» steht unter «Mehr» (zweite Zeile nach «Übersicht») statt als 7. Reiter -
 # mit 7 Reitern passt die Leiste am Handy nicht mehr, «Mehr» wäre erst nach dem Wischen sichtbar. Als eigener Reiter wieder:
 # NAV_ITEMS.insert([k for k, *_r in NAV_ITEMS].index("more"), ("play", "/play", "Play area", "Playing"))  (+ NAV_SUB/NAV_OF-Zeilen weg)
+
+# Programmtext in der ZIP (Hauptdatei kleiner, 22.11.2026; Muster 639zzzzk / 639zzzzm): ab Zeile 44 steht der Teil in EINEM
+# Literal PLAY_PY - bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert), zd_exec führt es hier aus (Zeilennummern wie
+# in dieser Datei). Keine Start-, Schutz-, Alarm-, Update- oder Reparatur-Funktion: ohne ZIP fehlt der Teil einfach. Was ohne
+# ZIP gelten muss (Einstellungen, Sperrlisten), steht oben ausserhalb des Literals.
+
+
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+PLAY_PY = r'''
 NAV_SUB["more"].insert(1, ("play", "/play", "Play area"))   # not «Play» (= «Abspielen» / «Lire» of videos)
 NAV_OF["play"] = "more"
 _PLAY = {"t": 0.0, "d": None}
@@ -673,3 +695,5 @@ if _hp_en_story > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_story(HELP_X[_L], _L)
+'''
+zd_exec(PLAY_PY and "\n" * 42 + PLAY_PY, "639i_spielbereich.py")   # line 1 of PLAY_PY = line 43: the line numbers are those of this file

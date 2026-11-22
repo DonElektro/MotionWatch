@@ -39,6 +39,28 @@ for _k, _v in {"tausch_smb": False, "tausch_smb_st": {}}.items():
 USER_SETTINGS_DENY.update({"tausch_smb", "tausch_smb_st"})
 LOCK_DENY_PATHS.add("/api/tausch/smb")                    # operator mode (390)
 
+# Programmtext in der ZIP (Hauptdatei kleiner, 22.11.2026; Muster 639zzzzk / 639zzzzm): ab Zeile 63 steht der Teil in EINEM
+# Literal SMB_PY - bauen.py legt es in die Zusatz-ZIP (über ZD_SHA256 mit signiert), zd_exec führt es hier aus (Zeilennummern wie
+# in dieser Datei). Keine Start-, Schutz-, Alarm-, Update- oder Reparatur-Funktion: ohne ZIP fehlt der Teil einfach. Was ohne
+# ZIP gelten muss (Einstellungen, Sperrlisten), steht oben ausserhalb des Literals.
+
+
+if "zd_exec" not in globals():                              # only without 639zzzzk (Blinki defines it first)
+    # wraps: zd_exec
+    def zd_exec(src, name):
+        """run the program text of a part that bauen.py moved into the data zip (same as 639zzzzk): src comes from _zd (Teil
+        012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program. Real file name for compile +
+        linecache (tracebacks show the lines of the part). Only for functions outside start, protection, alarm, update, repair."""
+        if not src:
+            return False
+        import linecache
+        linecache.cache[name] = (len(src), None, src.splitlines(True), name)
+        exec(compile(src, name, "exec"), globals())
+        return True
+
+
+SMB_PY = r'''
+
 SMB_USER = "rucksack"                                     # the user name of the share (shown on the page)
 SMB_SHARE = "rucksack"
 SMB_DIR = "netz"                                          # <Rucksack>/netz = the shared folder
@@ -1157,3 +1179,5 @@ def rucksack_smb_selftest():
 
 
 SELFTEST_EXTRA.append(("Digital backpack in the network: Samba file, rules, texts (639zzzn)", rucksack_smb_selftest))
+'''
+zd_exec(SMB_PY and "\n" * 61 + SMB_PY, "639zzzn_rucksack_netz.py")   # line 1 of SMB_PY = line 62: the line numbers are those of this file

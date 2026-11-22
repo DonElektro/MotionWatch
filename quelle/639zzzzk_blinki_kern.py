@@ -26,6 +26,7 @@
 # legt es in die Zusatz-ZIP, beim Start läuft es hier an seinem Platz (zd_exec, Teil 639zzzzk_blinki_kern). Ohne ZIP gibt es
 # «Blinki fragen» nicht - es gehört nicht zu Start, Schutz oder Alarm. Die ZIP ist über ZD_SHA256 (Teil 012) mit signiert.
 
+# wraps: zd_exec
 def zd_exec(src, name):
     """run the program text of a part that bauen.py moved into the data zip (639zzzzk «Blinki fragen»): src comes from _zd
     (Teil 012), i.e. only from a zip whose SHA-256 matched ZD_SHA256 of this signed program - no own loader. Real file name
