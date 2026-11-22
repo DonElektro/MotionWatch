@@ -20587,6 +20587,24 @@
   "it": "Camosci",
   "rm": "Chamutschs"
  },
+ "Gäste besuchen das Zelt (ohne Lampe – für «Gäste erwartet» von MoveEye)": {
+  "en": "Guests visit the tent (without a torch – for MoveEye’s «Guests expected»)",
+  "fr": "Des invités viennent à la tente (sans lampe – pour « Invités attendus » de MoveEye)",
+  "it": "Ospiti visitano la tenda (senza lampada – per «Ospiti attesi» di MoveEye)",
+  "rm": "Giasts visitan la tenda (senza lampa – per «Giasts spetgads» da MoveEye)"
+ },
+ "Gäste kommen von selbst, wenn MoveEye «Gäste erwartet» an hat": {
+  "en": "Guests come by themselves while MoveEye has «Guests expected» on",
+  "fr": "Des invités viennent d’eux-mêmes quand MoveEye a activé « Invités attendus »",
+  "it": "Gli ospiti arrivano da soli quando MoveEye ha attivato «Ospiti attesi»",
+  "rm": "Giasts vegnan da sasez, cura che MoveEye ha activà «Giasts spetgads»"
+ },
+ "Gäste kommen zum Zelt – ohne Taschenlampe, MoveEye leuchtet ihnen den Weg.": {
+  "en": "Guests are coming to the tent – without a torch, MoveEye lights their way.",
+  "fr": "Des invités viennent à la tente – sans lampe de poche, MoveEye leur éclaire le chemin.",
+  "it": "Arrivano ospiti alla tenda – senza torcia, MoveEye illumina loro la strada.",
+  "rm": "Giasts vegnan a la tenda – senza lampa, MoveEye als glischa la via."
+ },
  "Gästebuch Hospiz Furgga": {
   "en": "Guest book Hospice Furgga",
   "fr": "Livre d’or de l’hospice Furgga",

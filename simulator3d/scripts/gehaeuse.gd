@@ -45,6 +45,11 @@ const GLOW_IR := 0.35                          # 850 nm: das Auge sieht nur ein 
 # Weitwinkel-Modul (Camera Module 3 Wide, 25 × 24 mm) auf dem Kopfdach, wenn es «Kopf vorne / hinten» montiert ist
 const WMOD_FRONT := Vector3(0.0, 0.0445, -0.030)
 const WMOD_REAR := Vector3(0.0, 0.0445, 0.016)
+# gaeste-licht (Besitzer 21.11.2026): die Lampen (Weisslicht, IR) und ihre Linsen hängen am Drehteller (modelle.json «gruppe»
+# pan) und kippten bisher nicht mit dem Kopf - der Scheinwerfer zeigte nur in die Schwenk-Richtung. Jetzt hängen sie an einem
+# eigenen Drehpunkt in ihrer Mitte (lamp_pivot), der jedes Bild so kippt wie main.head_pitch (lamp_follow), und das Licht der
+# Szene (main.white_light / ir_light) sitzt in der Linse und kippt mit. Ohne echtes Gehäuse wie bisher am head_pitch.
+const LAMP_IDS := ["lamp1", "lamp2", "lens_w", "lens_ir"]
 
 var main
 var on := true                                 # gespeichert (user://gehaeuse.json)
@@ -65,6 +70,8 @@ var lod := false                               # Normal: feine Teile in der Näh
 var tris_lod := 0
 var glow_on := {"white": false, "ir": false, "ir_wide": false}
 var wmod: Node3D                               # sim-echte-kamera: Weitwinkel-Modul am Kopf (Halterung «Kopf vorne / hinten»)
+var lamp: Node3D                               # gaeste-licht: Drehpunkt der Lampen (kippt wie main.head_pitch)
+var _light_home := {}                          # gaeste-licht: wo die Lichter ohne Gehäuse hängen {name: [parent, position]}
 
 
 func _ready() -> void:
@@ -162,6 +169,7 @@ func build() -> void:
 				(mi as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	lists = L
 	tris = int(L["tris"])
+	lamp = lamp_pivot(pan)
 	ok = true
 	apply()
 
@@ -303,7 +311,7 @@ static func build_copy(rig: Node3D, head: Node3D, pitch: Node3D) -> Dictionary:
 	pitch.add_child(tilt)
 	var L := place_parts(m, ms, b, pan, tilt, materials(m), true, 0.0, FAR_M, GeometryInstance3D.SHADOW_CASTING_SETTING_ON)
 	show_variant(L, false, true, gewaehlt_v53())       # Gerät 2: ohne Weitwinkel im Gehäuse (Blindstopfen 12)
-	return {"ok": true, "base": b, "nodes": [b, pan, tilt], "lists": L, "tris": int(L["tris"]),
+	return {"ok": true, "base": b, "nodes": [b, pan, tilt], "lists": L, "tris": int(L["tris"]), "lamp": lamp_pivot(pan),
 			"drop": float(m.get("kippachse_ueber_boden_m", 0.1258)) + float(m.get("fuesse_m", 0.006))}
 
 
@@ -351,6 +359,7 @@ func apply() -> void:
 		wmod.visible = false
 	if not real:
 		main.set_mast(main.mast_h)
+	_lights_place(real)
 	var sl = main.get("statusled")
 	if sl != null and sl.get("_rig") != null and is_instance_valid(sl._rig):
 		var rg: Node3D = sl._rig
@@ -380,6 +389,7 @@ func _process(_dt: float) -> void:
 		apply()                                       # the LED is built later than the case
 	elif wide_in_case(main) != weit:
 		apply()                                       # v5.2: the mount of the wide camera changed (lens or plug 12)
+	lamp_follow(lamp, main.head_pitch)
 	_glow_tick()
 	_wmod_tick()
 
@@ -391,6 +401,81 @@ func _glow_tick() -> void:
 	var iw: bool = main.weit != null and main.weit.has_method("ir_wide_on") and main.weit.ir_wide_on() and weit
 	glow_on = {"white": w, "ir": ir, "ir_wide": iw}
 	set_glow(lists, w, ir, iw, main.is_dark())
+
+
+static func _lamp_id(n: String) -> String:
+	for id in LAMP_IDS:
+		if n == "geh_" + id or n.begins_with("geh_" + id + "_"):
+			return id
+	return ""
+
+
+static func lamp_pivot(pan: Node3D) -> Node3D:
+	"""gaeste-licht: ein Knoten in der Mitte der Lampen am Drehteller; die Lampen und Linsen (alle Sätze: fein, grob, Schatten)
+	hängen danach an ihm, an derselben Stelle. Meta «lens_w» / «lens_ir» = Mitte der Linse im Knoten (dort sitzt das Licht).
+	null, wenn es keine Lampen gibt."""
+	if pan == null:
+		return null
+	var mis: Array = []
+	for c in pan.get_children():
+		if c is MeshInstance3D and _lamp_id(str(c.name)) != "":
+			mis.append(c)
+	if mis.is_empty():
+		return null
+	var box := AABB()
+	var lens := {}
+	var first := true
+	for mi in mis:
+		var a: AABB = (mi as MeshInstance3D).transform * (mi as MeshInstance3D).get_aabb()
+		box = a if first else box.merge(a)
+		first = false
+		var id := _lamp_id(str(mi.name))
+		if id.begins_with("lens_"):
+			lens[id] = a if not lens.has(id) else (lens[id] as AABB).merge(a)
+	var pv := Node3D.new()
+	pv.name = "GehaeuseLampe"
+	pv.position = box.get_center()
+	pan.add_child(pv)
+	for mi in mis:
+		var tf: Transform3D = (mi as Node3D).transform
+		pan.remove_child(mi)
+		pv.add_child(mi)
+		(mi as Node3D).transform = Transform3D(tf.basis, tf.origin - pv.position)
+	for id in lens:
+		pv.set_meta(id, (lens[id] as AABB).get_center() - pv.position)
+	return pv
+
+
+static func lamp_follow(pv: Node3D, pitch: Node3D) -> void:
+	"""gaeste-licht: die Lampen kippen wie der Kopf (dieselbe Neigung wie die Kamera: main.head_pitch)"""
+	if pv != null and pitch != null and is_instance_valid(pv):
+		pv.rotation.x = pitch.rotation.x
+
+
+static func light_to(l: Node3D, parent: Node3D, pos: Vector3) -> void:
+	if l == null or parent == null:
+		return
+	if l.get_parent() != parent:
+		if l.get_parent() != null:
+			l.get_parent().remove_child(l)
+		parent.add_child(l)
+	l.position = pos
+	l.rotation = Vector3.ZERO
+
+
+func _lights_place(real: bool) -> void:
+	"""gaeste-licht: mit echtem Gehäuse sitzen Weiss- und IR-Licht in ihren Linsen (kippen mit den Lampen), sonst wie bisher"""
+	for nm in ["white_light", "ir_light"]:
+		var l = main.get(nm)
+		if l == null:
+			continue
+		if not _light_home.has(nm):
+			_light_home[nm] = [l.get_parent(), l.position]
+		var id := "lens_w" if nm == "white_light" else "lens_ir"
+		if real and lamp != null and lamp.has_meta(id):
+			light_to(l, lamp, lamp.get_meta(id) + Vector3(0, 0, -0.01))
+		elif _light_home[nm][0] != null:
+			light_to(l, _light_home[nm][0], _light_home[nm][1])
 
 
 static func head_mount_pos(rear: bool) -> Vector3:
@@ -449,5 +534,6 @@ func info() -> Dictionary:
 	var hp: Vector3 = main.head.global_position if main.head != null and main.head.is_inside_tree() else Vector3.ZERO
 	return {"on": on, "ok": ok, "why": why, "lite": lite, "tris": tris, "version": str(man.get("version", "")), "v52": v52, "v53": v53, "weit": weit,
 			"lod": lod, "tris_lod": tris_lod, "glow": glow_on, "wmod": wmod != null and wmod.visible,
+			"lamp_tilt": snappedf(rad_to_deg(lamp.rotation.x), 0.1) if lamp != null else null,
 			"head_pos": [snappedf(hp.x, 0.001), snappedf(hp.y, 0.001), snappedf(hp.z, 0.001)],
 			"quelle_sha256": str(man.get("quelle_sha256", "")).substr(0, 12)}
