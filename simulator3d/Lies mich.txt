@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.74.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.75.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -493,6 +493,12 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.75.0
+3.75.0: MoveEye zeigt s Bergtal jetzt als Charte (MoveEye 4.19.0, /karte → «⛰ Bergtal»). Dr Simulator seit MoveEye, wo
+du und dr Mover grad sind und weli gheime Ort du scho gfunde hesch – erscht denn stöh si uf dr Charte. Neu: e Tour vo dr
+Charte im Sim nachelaufe (d Figur lauft si ab).
+So tesch: Simulator mit MoveEye verbinde, is Bergtal gah, in MoveEye /karte → «⛰ Bergtal» ufmache: dr Punkt lauft mit.
 
 NEU IN 3.74.0
 3.74.0: Abentüür «D Charte vom Grossvater», Kapitel 1 «Die Karte» (10 Szene) im neue Spielmodus. Im Kapitel 2 bliibt

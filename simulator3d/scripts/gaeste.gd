@@ -120,8 +120,8 @@ static func ground_hit(o: Vector3, d: Vector3, gy: float):
 
 func _debug_tick() -> void:
 	if _m_hit == null:
-		_m_hit = _marker(Color(1.0, 0.15, 0.1), 0.18, 0.6)
-		_m_aim = _marker(Color(0.1, 1.0, 0.3), 0.35, 0.05)
+		_m_hit = _marker(Color(1.0, 0.15, 0.1), 0.12, 1.4)          # red pole: the axis of the spot meets the ground here
+		_m_aim = _marker(Color(0.1, 1.0, 0.3), 0.55, 0.06)          # green disc: where MoveEye points the light
 	dbg = {}
 	var wl: Node3D = main.white_light
 	var on: bool = wl != null and wl.light_energy > 0.0
@@ -130,7 +130,7 @@ func _debug_tick() -> void:
 	if hit != null:
 		var p: Vector3 = hit
 		p.y = main.ground_y(p.x, p.z)
-		_m_hit.global_position = p + Vector3(0, 0.3, 0)
+		_m_hit.global_position = p + Vector3(0, 0.7, 0)
 		dbg["hit_mw"] = to_mw(p)
 	var g = main.mw.get("guests", {})
 	var a = g.get("aim") if typeof(g) == TYPE_DICTIONARY else null
@@ -185,14 +185,18 @@ func info() -> Dictionary:
 func look() -> Dictionary:
 	"""the free view looks over the device to the target (pictures of the guide light: device, beam, guest and tent)"""
 	main._to_free_view()
-	var tg := target_world()
+	var tg: Vector3 = target_world()
 	var dev: Vector3 = main.rig.global_position
+	var g = main.mw.get("guests", {})                     # the guest MoveEye sees, else the target
+	var gp = g.get("pos") if typeof(g) == TYPE_DICTIONARY else null
+	if typeof(gp) == TYPE_ARRAY and (gp as Array).size() == 2:
+		tg = to_world(float(gp[0]), float(gp[1]))
 	var dir: Vector3 = tg - dev
 	dir.y = 0.0
 	dir = dir.normalized() if dir.length() > 0.3 else Vector3(0, 0, -1)
 	var side := Vector3(-dir.z, 0, dir.x)
-	main.view_cam.global_position = dev - dir * 5.0 + side * 3.5 + Vector3(0, 3.4, 0)
-	main.view_cam.look_at(dev.lerp(tg, 0.6) + Vector3(0, 0.4, 0), Vector3.UP)
+	main.view_cam.global_position = dev - dir * 3.0 + side * 2.5 + Vector3(0, 3.6, 0)
+	main.view_cam.look_at(dev.lerp(tg, 0.85), Vector3.UP)
 	main.view_want_t = main.now()
 	return info()
 

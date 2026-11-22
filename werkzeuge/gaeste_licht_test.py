@@ -587,6 +587,7 @@ def teil_c(datei, tmp, bilder, godot):
         ok(info.get("ok") and info.get("mw_on"), "Simulator sieht «Gäste erwartet» von MoveEye (%s)" % info)
         ok(int(info.get("started") or 0) >= 1, "Gäste kommen von selbst, weil MoveEye «Gäste erwartet» an hat")
         tx, ty = info["tent_mw"]
+        http_json(sim + "/control", {"action": "set", "id": "show_det3d", "value": False})   # the judge labels of the simulator off (pictures)
         http_json(sim + "/control", {"action": "gaeste", "do": "look"})
         r = http_json(web + "/api/gaeste", {"action": "target", "kind": "point", "x": tx, "y": ty, "name": "Zelt"}, auth=auth)
         ok(r.get("ok"), "Ziel = Zelt des Simulators (%.1f / %.1f m)" % (tx, ty))
@@ -665,6 +666,7 @@ def teil_c(datei, tmp, bilder, godot):
                 time.sleep(2)
             ok(up and _verbunden(web, auth, 300), "Simulator hochkant neu gestartet, wieder verbunden")
             time.sleep(10)
+            http_json(sim + "/control", {"action": "set", "id": "show_det3d", "value": False}, timeout=20)
             http_json(sim + "/control", {"action": "gaeste", "do": "start", "n": 1, "stay": 25}, timeout=20)
             http_json(sim + "/control", {"action": "gaeste", "do": "look"}, timeout=20)
             t1, got = time.time(), False
@@ -674,6 +676,7 @@ def teil_c(datei, tmp, bilder, godot):
                 except Exception:
                     time.sleep(1); continue
                 if g.get("phase") in ("guide", "farewell") and g.get("light") and float(g.get("pct") or 0) > 40:
+                    http_json(sim + "/control", {"action": "gaeste", "do": "look"}, timeout=20)
                     time.sleep(1.5)
                     open(os.path.join(bilder, "gaeste_sim_handy.jpg"), "wb").write(http_bytes(sim + "/view.jpg", 20))
                     bild_ins_log(os.path.join(bilder, "gaeste_sim_handy.jpg"))
