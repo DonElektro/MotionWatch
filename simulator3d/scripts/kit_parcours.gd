@@ -28,6 +28,78 @@ var _wf: Array = []                  # waterfall materials (time)
 var _glanz: Array = []               # [node, base y] of finds
 var schlucht = null                  # kit_schlucht.gd: the own gorge (its ground wins over bergtal.H)
 var _nur_ir: Array = []              # things only seen with the IR light
+var nur_lampe: Array = []            # Kapitel 1: things only seen in the cone of the headlamp
+var ebenen_decks := {}               # Kapitel 1: level -> its decks (in bt.decks only while it is on)
+var ebene_an := {}
+
+
+func boden_tal(c: Vector2) -> float:
+	"""the floor at a valley point as main.ground_y sees it (the deck of a building), as valley height"""
+	var w := W(Vector3(c.x, _H(c.x, c.y), c.y))
+	return float(m.ground_y(w.x, w.z)) + float(bt.h0)
+
+
+func ebene(id: String, on: bool) -> void:
+	"""a level (the attic): its floors count only while one is up there - a deck counts everywhere under it"""
+	if bool(ebene_an.get(id, false)) == on:
+		return
+	ebene_an[id] = on
+	for dk in ebenen_decks.get(id, []):
+		if on:
+			bt.decks.insert(0, dk)                         # (first: bergtal.gy takes the first deck under a point - the hut floor is one)
+			_decks.append(dk)
+		else:
+			bt.decks.erase(dk)
+			_decks.erase(dk)
+
+
+var _ofen_licht: OmniLight3D = null
+
+
+func ofen_an(c: Vector2, h: float) -> void:
+	"""Kapitel 1: the stove burns - warm flickering light in the room, smoke out of the chimney"""
+	if _ofen_licht != null:
+		return
+	var y := boden_tal(c) + h
+	_ofen_licht = OmniLight3D.new()
+	_ofen_licht.light_color = Color(1.0, 0.62, 0.3)
+	_ofen_licht.light_energy = 1.6
+	_ofen_licht.omni_range = 6.5
+	_ofen_licht.shadow_enabled = false
+	_ofen_licht.position = Vector3(c.x, y, c.y)
+	holder.add_child(_ofen_licht)
+	var tw := _ofen_licht.create_tween().set_loops()
+	tw.tween_property(_ofen_licht, "light_energy", 1.25, 0.23)
+	tw.tween_property(_ofen_licht, "light_energy", 1.7, 0.31)
+	light_part(holder, sphm(0.12, -1.0, 8), Vector3(c.x, y - 0.25, c.y), glow_mat(Color(1.0, 0.5, 0.15), 3.0))
+	var rauch := CPUParticles3D.new()
+	rauch.amount = 14 if lite else 26
+	rauch.lifetime = 4.0
+	rauch.direction = Vector3(0.2, 1, 0)
+	rauch.spread = 12.0
+	rauch.initial_velocity_min = 0.5
+	rauch.initial_velocity_max = 0.9
+	rauch.gravity = Vector3(0.25, 0.15, 0)
+	rauch.scale_amount_min = 0.8
+	rauch.scale_amount_max = 2.0
+	var pm := QuadMesh.new()
+	pm.size = Vector2(0.6, 0.6)
+	var mt := StandardMaterial3D.new()
+	mt.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mt.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mt.albedo_texture = _weich_tex()
+	mt.albedo_color = Color(0.75, 0.75, 0.78, 0.45)
+	mt.vertex_color_use_as_albedo = true
+	mt.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	pm.material = mt
+	rauch.mesh = pm
+	var fade := Gradient.new()
+	fade.set_color(0, Color(1, 1, 1, 0.6))
+	fade.set_color(1, Color(1, 1, 1, 0.0))
+	rauch.color_ramp = fade
+	var kam: Vector2 = tal(0.0, 2.7)                       # the chimney of the hut (local x 2.7, z 0)
+	rauch.position = Vector3(kam.x, boden_tal(c) + 6.9, kam.y)
+	holder.add_child(rauch)
 var _planken: Array = []             # the bridge: [q, node, deck]
 
 
@@ -276,6 +348,8 @@ func _ding(d: Dictionary) -> void:
 	if d.has("boden_bei"):
 		vorn = tal(float(d["boden_bei"][0]), float(d["boden_bei"][1]))
 	var top := _H(vorn.x, vorn.y) + float(d.get("top", 0.0))
+	if bool(d.get("boden_deck", false)) or d.has("ebene"):   # Kapitel 1: over the floor of the hut (its deck), not the terrain
+		top = boden_tal(c) + float(d.get("top", 0.0))
 	var e := {"d": d, "c": c, "top": top, "decks": [], "node": null}
 	match str(d["art"]):
 		"stein":
@@ -310,8 +384,12 @@ func _ding(d: Dictionary) -> void:
 			part(n3, cylm(0.2, 0.24, ls * 2.0 + 0.4, 10), Vector3.ZERO, Color(0.36, 0.27, 0.18), "tree", Vector3(PI * 0.5, 0, 0))
 			e["node"] = n3
 		"leiter":
-			var base := _H(c.x, c.y)
+			var base := boden_tal(c) if bool(d.get("boden_deck", false)) else _H(c.x, c.y)
 			var h2 := float(d.get("top", 4.0))
+			if bool(d.get("unsichtbar", false)):           # Kapitel 1: the ladder of the hut is there already
+				e["top"] = base + h2
+				dinge[id] = e
+				return
 			var n4 := node(holder, Vector3(c.x, base, c.y), -rot)
 			var eisen := Color(0.36, 0.36, 0.38)
 			var k := 0.35                                  # Klettersteig: iron rungs (bügel) in the rock and a steel cable beside
@@ -396,12 +474,55 @@ func _ding(d: Dictionary) -> void:
 		"fund":
 			var n7 := node(holder, Vector3(c.x, top + 0.12, c.y), 0.0)
 			light_part(n7, sphm(0.09, -1.0, 8), Vector3.ZERO, glow_mat(Color(1.0, 0.9, 0.6), 2.5))
-			part(n7, cylm(0.035, 0.035, 0.12, 6), Vector3(0, 0.02, 0), Color(0.6, 0.62, 0.66), 10.0, Vector3(0, 0, 0.5))
+			match str(d.get("form", "")):                  # Kapitel 1: what lies there
+				"dose":
+					part(n7, cylm(0.11, 0.11, 0.09, 12), Vector3(0, -0.06, 0), Color(0.55, 0.5, 0.42), 10.0)
+				"schuh":
+					part(n7, boxm(0.12, 0.14, 0.3), Vector3(0, -0.04, 0), Color(0.36, 0.22, 0.12), 10.0)
+				"nest":
+					part(n7, sphm(0.13, 0.12, 8), Vector3(0, -0.06, 0), Color(0.78, 0.74, 0.62), 12.0)
+				_:
+					part(n7, cylm(0.035, 0.035, 0.12, 6), Vector3(0, 0.02, 0), Color(0.6, 0.62, 0.66), 10.0, Vector3(0, 0, 0.5))
 			e["node"] = n7
-			_glanz.append([n7, n7.position.y])
+			if str(d.get("form", "")) == "":
+				_glanz.append([n7, n7.position.y])
 			if bool(d.get("nur_ir", false)):                # only seen in MoveEye's infrared light
 				n7.visible = false
 				_nur_ir.append(n7)
+			if bool(d.get("nur_lampe", false)):             # Kapitel 1: only in the cone of the headlamp
+				n7.visible = false
+				nur_lampe.append(n7)
+			if bool(d.get("versteckt", false)):             # shown by the story (Maggie brings it)
+				n7.visible = false
+		"deck":                                            # Kapitel 1: an invisible floor of a level (the attic) - off at first
+			var dk := [c, Vector2(lq, ls), rot, top]
+			e["decks"].append(dk)
+			ebenen_decks[str(d.get("ebene", ""))] = ebenen_decks.get(str(d.get("ebene", "")), []) + [dk]
+		"licht":                                           # Kapitel 1: a warm light (the lantern on the table, light from the window)
+			var lt := OmniLight3D.new()
+			lt.light_color = Color(1.0, 0.72, 0.42)
+			lt.light_energy = float(d.get("energie", 0.6))
+			lt.omni_range = float(d.get("weite", 5.0))
+			lt.shadow_enabled = false
+			lt.position = Vector3(c.x, top, c.y)
+			holder.add_child(lt)
+			if bool(d.get("glas", false)):
+				light_part(holder, sphm(0.06, -1.0, 8), Vector3(c.x, top, c.y), glow_mat(Color(1.0, 0.7, 0.35), 3.0))
+			e["node"] = lt
+		"decke":                                           # Kapitel 1: a ceiling under the roof of the hut (from inside the roof was open)
+			var nd := node(holder, Vector3(c.x, top, c.y), -rot)
+			part(nd, boxm(lq * 2.0, 0.08, ls * 2.0), Vector3.ZERO, Color(0.32, 0.22, 0.14), "tree")
+			for k3 in range(5):                            # beams
+				part(nd, boxm(lq * 2.0, 0.16, 0.14), Vector3(0, -0.1, -ls + (k3 + 0.5) * ls * 2.0 / 5.0), Color(0.26, 0.18, 0.11), "tree")
+			e["node"] = nd
+		"holz":                                            # Kapitel 1: the wood pile beside the hut
+			var nh := node(holder, Vector3(c.x, _H(c.x, c.y), c.y), -rot)
+			for r in range(3):
+				for k2 in range(5 - r):
+					part(nh, cylm(0.11, 0.11, 1.0, 8), Vector3(0, 0.12 + r * 0.2, (k2 - (4 - r) * 0.5) * 0.23),
+							Color(0.5, 0.36, 0.22).darkened(randf() * 0.2), "tree", Vector3(0, 0, PI * 0.5))
+			e["decks"].append(_deck(c, 0.55, 0.65, _H(c.x, c.y) + 0.75))
+			e["node"] = nh
 	dinge[id] = e
 
 
@@ -714,8 +835,12 @@ func aktion_bei(w: Vector3, nur_offen := true) -> Dictionary:
 	var best := {}
 	var bd := 1.0e9
 	for a in aktionen:
-		if float(a["r"]) <= 0.0 or (nur_offen and erledigt.has(a["id"]) and str(a["art"]) in ["maggie_heben", "fund", "karte"]):
+		if float(a["r"]) <= 0.0 or (nur_offen and erledigt.has(a["id"]) and str(a["art"]) in ["maggie_heben", "fund", "karte", "ofen", "moveeye", "maggie_such"]):
 			continue
+		if (a["d"] as Dictionary).has("ebene") and not bool(ebene_an.get(str(a["d"]["ebene"]), false)):
+			continue                                       # Kapitel 1: an action of the attic only up there
+		if str(a["art"]) == "leiter" and bool(ebene_an.get("dach", false)) and str(a["d"].get("ding", "")) == "dachleiter":
+			continue                                       # (up there: down by «runter», not the ladder from below)
 		if str(a["art"]) == "fund" and dinge.has(str(a["d"].get("ding", ""))) and not (dinge[str(a["d"]["ding"])]["node"] as Node3D).is_visible_in_tree():
 			continue
 		var dd: float = v.distance_to(a["p"])

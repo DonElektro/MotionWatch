@@ -654,6 +654,10 @@ func control(d: Dictionary) -> Dictionary:
 					regal._close_play()
 					main.abenteuer.neu_starten()
 					return {"ok": true}
+				"kapitel1":                                # «▶ Kapitel 1» (Phase 2), wie der Knopf auf der Karte
+					regal._close_play()
+					main.abenteuer.neu_starten(1)
+					return {"ok": true}
 				"trailer":                                 # «Trailer ansehen» (trailer.gd), wie der Knopf auf der Karte
 					regal.trailer(str(d.get("id", "")))
 					return {"ok": true}

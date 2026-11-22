@@ -398,6 +398,8 @@ func card(s: Dictionary, w: float) -> Control:
 	if id == "grossvater" and main.abenteuer != null and main.abenteuer.neu_modus_an():
 		var brn := HBoxContainer.new()                     # Neubau (21.11.2026): chapter 2 in the new mode - the default
 		tv.add_child(brn)
+		var b1 := _btn(brn, T.t("▶ Kapitel 1"), func(): _close_play(); main.abenteuer.neu_starten(1), true)   # Phase 2 (21.11.2026)
+		b1.tooltip_text = T.t("Kapitel 1 «Die Karte»: der Abend an der Alp Tschuggen")
 		var bn := _btn(brn, T.t("▶ Kapitel 2 spielen (neu)"), func(): _close_play(); main.abenteuer.neu_starten(), true)
 		bn.tooltip_text = T.t("Eigene Figur, Kamera hinter dir, Maggie dabei. Der alte Ablauf: «Weiterspielen» / «Neu beginnen».")
 	var can := bool(s["started"]) and (not bool(s["done"]) or id == "grossvater")
