@@ -19,7 +19,7 @@
 # Zuschauer in MoveEye (Reiter Live offen, Puls an hp_wache.py) oder ein Handy auf der Spiel-Seite schreibt SPIEL_DATEI
 # (eine Verbindung MoveEye <-> Simulator allein zählt nicht);
 # der Test-Runner hält an, sichert den Stand und nimmt die Pause-Datei weg - dann startet der Simulator gleich, ohne
-# Zusammenfassung. 15 Min. ohne Eingabe und ohne Verbindung: weiterrechnen. Während des Rechnens schaltet DPMS den Bildschirm
+# Zusammenfassung. 3 Min. ohne Eingabe und ohne Verbindung: weiterrechnen. Während des Rechnens schaltet DPMS den Bildschirm
 # nach SCHLAF_S (10 Min.) ohne Maus / Taste aus, das Testbild schläft; beim Simulator bleibt er an wie bisher.
 # Controller (PS5 / Gamepad): Eingaben am Gamepad zählen in hp_wache.py als Spielen; Ctrl+Alt+B bzw. der Knopf im Testbild legt die
 # Wunsch-Datei «controller_koppeln» neben SPIEL_DATEI an, der Dienst moveeye-controller-koppeln (root, moveeye-hp-update)
@@ -60,7 +60,7 @@ TEST_BENUTZER=""
 FORTSCHRITT_DATEI=""
 TESTBILD_ENDE_S=120                       # so lange bleibt nach dem Test die Zusammenfassung stehen
 SPIEL_DATEI="/run/moveeye-spiel/spielen"  # Spielen-Wunsch (hp_wache.py, testbild.py; Ordner: moveeye-hp-update)
-SPIEL_RUHE_S=900                          # so lange gilt er nach der letzten Eingabe / Verbindung
+SPIEL_RUHE_S=180                          # so lange gilt er nach der letzten Eingabe / Verbindung
 STATUS_PORT=8761                          # Status fürs eigene Netz (MoveEye «HP rechnet»), 0 = aus
 SCHLAF_S=600                              # Testbild und Bildschirm schlafen nach so vielen s ohne Maus / Taste
 CONTROLLER_KNOPF="${CONTROLLER_KNOPF:-aus}"   # kleiner Knopf «Controller koppeln» in einer Ecke (ab Werk aus = keiner)

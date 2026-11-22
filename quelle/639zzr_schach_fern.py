@@ -18,7 +18,10 @@
 # Who may create / join: whoever may open the game corner today (no new right). At most SF_GRENZEN["spiele"] games;
 # a game ends after 24 h without activity, a finished game is kept 30 minutes (rematch), then removed.
 # ----------------------------------------------------------------------------
-SF_START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+# 4.18.0 (Hauptdatei klein, wie 639zzzzo «Eigene Orte»): der Programmtext dieses Teils steht in EINEM Literal - werkzeuge/bauen.py
+# legt es in die Zusatz-ZIP, beim Start läuft es hier an seinem Platz (exec wie HOST_PY). Ohne ZIP gibt es «Schach zu zweit» nicht - es
+# gehört nicht zu Start, Schutz, Alarm, Update oder Reparatur. Die ZIP ist über ZD_SHA256 (Teil 012) mit signiert.
+SCHACHF_PY = r'''SF_START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 SF_ABC = "ACDEFHJKMNPQRTUVWXY3479"                  # easy to read, say and type (no 0/O, 1/I/L, 2/Z, 5/S, 6/G, 8/B)
 SF_GRENZEN = {"spiele": 10, "frist": 24 * 3600, "nach_ende": 1800, "posts": (12, 10.0), "neu_ip": (8, 600.0),
               "falsch_ip": (15, 300.0), "warten": 15.0, "warter": 40, "online": 25.0, "idle_weg": 600.0}
@@ -753,3 +756,8 @@ def sf_selftest():
 
 
 SELFTEST_EXTRA.append(("Chess for two phones: relay and rules (639zzr)", sf_selftest))
+'''
+if SCHACHF_PY:                                              # (like HOST_PY, 639zzzzw: zd_exec of 639zzzzk comes later)
+    import linecache as _sflc
+    _sflc.cache["639zzr_schach_fern.py"] = (len(SCHACHF_PY), None, SCHACHF_PY.splitlines(True), "639zzr_schach_fern.py")
+    exec(compile(SCHACHF_PY, "639zzr_schach_fern.py", "exec"), globals())

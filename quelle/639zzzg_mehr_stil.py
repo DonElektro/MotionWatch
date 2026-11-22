@@ -1171,6 +1171,11 @@ MS_TEXT_JS = r"""{
 "timelapse"
 ],
 [
+"sec:Recording",
+"d:rec",
+"rec"
+],
+[
 "sec:Window to the past",
 "d:zf",
 "zf"

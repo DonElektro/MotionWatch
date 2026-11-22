@@ -312,12 +312,23 @@ def storage_candidates():
     return out
 
 
+def rec_limit_gb():
+    """4.18.1: the limit that really counts - record_max_gb (8 GB from the factory), but at most half of the drive of the
+    recordings (a small card is never filled up by the recordings)"""
+    try:
+        half = shutil.disk_usage(rec_dir() if os.path.isdir(rec_dir()) else os.path.dirname(rec_dir()) or "/").total / 2 / 1024 ** 3
+    except OSError:
+        half = None
+    lim = float(CFG["record_max_gb"])
+    return round(min(lim, half), 1) if half else lim
+
+
 def storage_info():
     sysdev, _mp, _fs = _mount_of("/")
     rdev, rmp, rfs = _mount_of(rec_dir() if os.path.isdir(rec_dir()) else os.path.dirname(rec_dir()) or "/")
     return {"system": _dev_kind(sysdev), "rec": _dev_kind(rdev), "rec_mount": rmp, "rec_fs": rfs, "rec_dir": rec_dir(),
             "want": CFG["storage_path"], "fallback": STORE["fallback"], "moving": STORE["moving"], "msg": STORE["msg"],
-            "candidates": storage_candidates()}
+            "candidates": storage_candidates(), "limit_gb": float(CFG["record_max_gb"]), "limit_eff_gb": rec_limit_gb()}
 
 
 def storage_apply(start=False):

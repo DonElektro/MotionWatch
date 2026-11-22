@@ -1,13 +1,47 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-18 23:16",
+ "generated": "2026-11-22 00:52",
  "versions": [
+  {
+   "version": "4.18.1",
+   "file": "webcam_bewegung_4_18_1.py",
+   "url": "",
+   "sha256": "d04f879664e0b21f2cd537b8ef1324b85dc3a55cb9efdaeb2d5f22e5d49df3dd",
+   "date": "2026-11-22 00:52",
+   "notes": "Aufnahmen dürfen bis 8 GB brauchen (vorher 2 GB, höchstens die Hälfte des Laufwerks; beim Update 2 → 8 GB ab 16 GB mit Hinweis); Verlauf: Chip «⏪ bis …» (älteste Aufnahme, Tippen = älteste zuerst), Chip «… MB / … GB» führt zur Einstellung; Suche in den Einstellungen findet «Aufnahmeordner», «Zeitraffer-Ordner» und «Tagen löschen» (auch in «Einfach»)",
+   "size": 4025336,
+   "sig": "2cb3ddb4a2fc5f6f946d4efa40188cd8ec13cca539cd8eb499f1cdba081662705138c61890cbbb4a24ee2f836bb91389794a75786f44fff01faa3148f3cf4b0f",
+   "data": {
+    "file": "moveeye_daten_4_18_1.zip",
+    "url": "",
+    "sha256": "d43005a7bc11445cd157d589d54aea6a948d4aac08b262e5bf029623166b7ce4",
+    "size": 14449814,
+    "sig": "33ed98415f25f240c83efced915c871bd8f31b2f629111636da2567ac94370819bb9de57bf0c77a2ac1d5fb722e302e3ce9d1c05022cc4f3ae95a8c787ec9e08"
+   }
+  },
+  {
+   "version": "4.17.1",
+   "file": "webcam_bewegung_4_17_1.py",
+   "url": "",
+   "sha256": "022c5a07ffa40c837a269b4d8aa6080cf4cb6da2ed34020ce4e870f819ab77d5",
+   "date": "2026-11-21 22:57",
+   "notes": "Verlauf: «Zeitraffer» mit «Videos / Fotos», Hinweis ohne Video · Simulator verbinden / trennen ist kein Stromausfall (keine Push, kein Sabotage-Alarm), Schalter «keine Push, solange der Simulator verbunden ist»",
+   "size": 4040696,
+   "sig": "52c8cbdd682d56f0463910b6485b855768fe5ed71b5a9d7973b95c10e0ee2a14a50f9f79086912fa67ed5d715591437fa2724271f67c817a25da0e825ed97f0b",
+   "data": {
+    "file": "moveeye_daten_4_17_1.zip",
+    "url": "",
+    "sha256": "dd1945f0811f2eaa7c6ae393752a06d64d1e25d91892650695895b985c6a98a5",
+    "size": 14319680,
+    "sig": "bc604df0841bede2ba35f416b556887e98a6e760abcb744c69207456d14edd93ef7cf67de338a48691ec53d1054f4cdc151efc57446a50be6e53e56cd6659205"
+   }
+  },
   {
    "version": "4.16.1",
    "file": "webcam_bewegung_4_16_1.py",
    "url": "",
    "sha256": "53e8719a9845a2b57372efdeb831d3cac766a3d3ed0efded6a154226860124be",
-   "date": "2026-11-18 23:16",
+   "date": "2026-11-21 22:04",
    "notes": "OpenCV bleibt bei 4.x (opencv-python-headless>=4.8,<5 in requirements.txt, CI, Prüfsatz, HP und Einrichtung): OpenCV 5 kann das KI-Modell nicht lesen – klare Meldung «OpenCV 5.x cannot read this model» mit Hinweis pip install \"opencv-python-headless<5\" in der Fehlerhilfe",
    "size": 4037653,
    "sig": "6e3922696dfac9124b5d0087b927485751cc6fa5f741c9b573cfd240ca01a8a75d1782e470dbb1dad9635baeadfc7e0c94419bfa08ec9f6d184cf37b5764a500",
@@ -122,40 +156,6 @@
    }
   },
   {
-   "version": "4.9.0",
-   "file": "webcam_bewegung_4_9_0.py",
-   "url": "",
-   "sha256": "eba8cef06b86f2eacf7d189740a952c36af097ddb8e117f9a50f8ca01b891a20",
-   "date": "2026-11-16 01:45",
-   "notes": "Digitaler Rucksack bei Import und Export: überall eine Datei aus dem Rucksack wählen oder einen Export direkt dort ablegen · Mein Handy-Hotspot bevorzugen: ein gespeichertes Netz markieren, MoveEye wechselt hin, sobald es da ist (Schalter, ab Werk aus) · 📖 Vorlesen und Datei-Ansicht im Digitalen Rucksack: Geschichten (.txt, .md, .epub, .docx, .pdf) mit der Piper-Stimme vorlesen, mit Lesezeichen",
-   "size": 4019435,
-   "sig": "e53228c6fbae55995bb7152a4bd8c9c0e6d75afa63d29a4e6facd94d8124205a2d9c870c0012dc1195ff579bbf7a180d21ca0b4e2919ca4caae7bae03beaa307",
-   "data": {
-    "file": "moveeye_daten_4_9_0.zip",
-    "url": "",
-    "sha256": "8361333f0fe863f2fbd855e0853be107bb1ef451c72a17e9e7ba23e3b11924ba",
-    "size": 13784611,
-    "sig": "5faf9e4b288ad1e12eca17c984b75d2b50079f18768e695efedeb94fe903e9922affda64051c6f34dce394c942f57865d7fc571af2eafc3c7f402a5564f8c902"
-   }
-  },
-  {
-   "version": "4.8.0",
-   "file": "webcam_bewegung_4_8_0.py",
-   "url": "",
-   "sha256": "fab8aafffe8a17dac270925b1e904580fe8463459500dee630fd06ec02f2a98b",
-   "date": "2026-11-16 01:46",
-   "notes": "Startseite mit eigenen Bildern: Variante A Bildgeschichte oder B Panorama mit Bildleiste (nur Administrator lädt hoch) · Spielesammlung GS-1.25: «Verschollen im Bergtal» zeigt den Fortschritt pro Kapitel (oben und im Menü) und läuft bis 16× schnell; in «Gipfeltreffen» trifft Antippen am Handy wieder die richtige Stelle",
-   "size": 3957146,
-   "sig": "c1c73cddd00bf6615a9df3ae1295343647e3ace0e5e808137c2e78775fffe71b7a348876e26b73ae31f10e35f620da17ca715e1085aac8e7ea157cbfffe20e0b",
-   "data": {
-    "file": "moveeye_daten_4_8_0.zip",
-    "url": "",
-    "sha256": "bb1b8d40de731391cf3bd8be3ed809f3bfdfb6336e433dc77b8e825f406ee99a",
-    "size": 13603898,
-    "sig": "a5e3df59cc77e94d1cca18d3706f2adfb1fb5a5604ac697ce5fffe70ebf41901a534cf2361bc7e1e2bcd8439994a12fe7a9a2558c4ed666328e31382f577f90d"
-   }
-  },
-  {
    "version": "3.80.0",
    "file": "webcam_bewegung_3_80_0.py",
    "url": "",
@@ -204,41 +204,41 @@
    "sig": "3c0d6ad76326d81ce324c8914ca35b61596ef189eb0e83e04238c5088ad5e2954914805461e7194f7648bb37117d49454eb7d207ff54d89893e10667b26ea80a"
   },
   "pi": {
-   "ver": "3.72.0",
+   "ver": "3.73.0",
    "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 38112326,
-   "sha256": "71fb1372cc478672c48aef7d71d7ca5745802987e035afdce9b829ae63567f43",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.72.0/MoveEyeSim3D_Pi.zip",
-   "sig": "2c23d5b86831d729188b6591276c6556a4eef5887a79b8cd6a19b508cedef5287134b312aabf9ae77cc921a989c3138488e054dd209d1b3b21991c6489e02c08"
+   "size": 43168432,
+   "sha256": "bf4f2400b079c03d3d95e2170b908e9d43afa38e15142f66dc232a0cd2c6feb8",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.73.0/MoveEyeSim3D_Pi.zip",
+   "sig": "0e24096d92199b387007588aea45741b8f33bb77b08439371e7495de59650a68332a0dc19109fd569e827974526b3f42f5252d73345e1ded9ec32fb44c33950e"
   },
   "anhang": {
-   "ver": "3.72.0",
-   "version": "3D-5.72.0",
-   "notes": "Tab im Hintergrund: MoveEye auf der Homepage behält das Bild; Schalter «Mit MoveEye auf der Homepage verbinden»",
+   "ver": "3.73.0",
+   "version": "3D-5.73.0",
+   "notes": "Grossvater Kapitel 2 im neuen Modus, Musik und Stimmen, Bergtal-Fix, Testkanal",
    "mw_min": "3.55.0",
    "win": {
-    "ver": "3.72.0",
+    "ver": "3.73.0",
     "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
-    "size": 54579305,
-    "sha256": "5e0fe298455ed1a191f5c7fb4ef6178e255c4b34c6ea808d2864a5f57d535490",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.72.0/MotionWatch3D_Simulator.zip",
-    "sig": "3d1801508ab097903f2429cb486b0a6836b9dfca421bca170a39319029a435475401065a085ab20db1615236c7313815e2a5dddb1f4bfcee8ae775cf4be94203"
+    "size": 59635039,
+    "sha256": "bc19fed9b9625741ac8bb0576a82975dbb822ad84676fc5e9e72df14ca46309b",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.73.0/MotionWatch3D_Simulator.zip",
+    "sig": "094cad1f2055d1effdbcd687a105a861fe875a2e3b4eb475de1bcef73810996cb038dda755008d9178c8ef5610baa1cb8104399bc7866d2b82c0ca84e1f2b80f"
    },
    "linux": {
-    "ver": "3.72.0",
+    "ver": "3.73.0",
     "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
-    "size": 48626836,
-    "sha256": "aea7de796d5d0a2468e1ee9452d841cd33b2a678d98091b84e60a33e9142021d",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.72.0/MoveEyeSim3D_Linux.zip",
-    "sig": "b1fab6538ae91b80df40171a5e2d7cfa48d2ca7b48efe79a0ff9f8f1cc1cdcd7f2853f587701a00ebe20e7d13c6dc76ee050366dc86558aba0ccf18a6a07f808"
+    "size": 53685687,
+    "sha256": "90eab97c853963048735ea15d3f29e432d25b3e3449ae4cd647e88dac4f4f738",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.73.0/MoveEyeSim3D_Linux.zip",
+    "sig": "40d9f281b0d703eca7ca972086176e85e87f5df2f27ac5452e45b2e5802acea2ce1ddc37ee8ba4282c65f43ec3da3c7416016d2e6314c960ddd26d404db54f06"
    },
    "web": {
-    "ver": "3.72.0",
+    "ver": "3.73.0",
     "file": "simulator3d/anhang/sim-web.zip",
-    "size": 68299743,
-    "sha256": "3b89a65f7ce0387411c5173f34ad03ab55803a972789a56b7fd44c0dc60a126a",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.72.0/sim-web.zip",
-    "sig": "a8588dee33c702438dcc4e5520cdb5fce78739af0f2fca99a4092cc3b06190afe4ab217adbc48b7a9381e5727e1306e54d1dabd774fa7fcf9f27b0e2e8340c0d"
+    "size": 78429261,
+    "sha256": "b6014907b7cf630e5a44c481168d32e4b57837d6050a086c1de3d58a6cbe99fa",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.73.0/sim-web.zip",
+    "sig": "8b9bc7c71dd2dca4f148388ad1e20eef9d2f09dea1c3cb947ec987653b03c1b74b40cf674349e6cb85ebb7074740b5798399beadb03f08e1f37e27604cba0d06"
    }
   }
  }

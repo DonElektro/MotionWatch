@@ -6,7 +6,7 @@
 #  1b. Controller (Gamepad) = Spielen: Ersatz-Geräte (FIFO statt /dev/input/js0 bzw. event0 mit udev-Eintrag): Taste oder
 #     deutlicher Stick-Ausschlag -> Spielen-Datei (auch während gerechnet wird), Rauschen / Startwerte nicht; frischt auf.
 #  2. dauer.py halten mit hp_wache.py: Test läuft (MoveEye verbunden, niemand schaut), Zuschauer-Puls -> Test in Sekunden
-#     angehalten, Pause-Datei weg (Bildschirm frei), Stand gesichert (nur ganze Fälle); Puls hört auf, 15 Min. später
+#     angehalten, Pause-Datei weg (Bildschirm frei), Stand gesichert (nur ganze Fälle); Puls hört auf, 3 Min. später
 #     (schnelle Uhr: das Datum der Spielen-Datei wird zurückgestellt) -> Pause wieder da, der Test rechnet genau dort weiter.
 #  3. dauer.py waehlen / rechnen: Spielen -> «nichts»; HP-Update fällig -> «nichts»; reihum Erkennung -> KI -> Langzeit;
 #     angehaltenes Paket kommt beim nächsten Lauf wieder dran und wird fertig.
@@ -40,7 +40,7 @@ export MW_HPU_STEMPEL="$W/letzter_lauf" MW_HPU_WARTET="$W/hpu_wartet" MW_HPU_FAS
 export MW_RESTE_NUR="$W"
 D="$HIER/dauer.py"
 spielen() { printf '{"grund": "test", "seit": %s}\n' "$(date +%s)" > "$MW_SPIEL"; }
-ruhig_15min() { touch -d '16 minutes ago' "$MW_SPIEL"; }     # schnelle Uhr: 16 Min. ohne Spielen
+ruhig_15min() { touch -d '4 minutes ago' "$MW_SPIEL"; }      # schnelle Uhr: 4 Min. ohne Spielen (Grenze 3 Min.)
 pause_da() { [ -f "$MW_KIOSK_PAUSE" ]; }
 pause_weg() { [ ! -e "$MW_KIOSK_PAUSE" ]; }
 zeilen() { [ -f "$1" ] && grep -c . "$1" || echo 0; }
@@ -80,7 +80,7 @@ PB=$(( 20000 + RANDOM % 20000 ))
 SP1=$((PB + 1)) SP2=$((PB + 2)) STP=$((PB + 3))
 touch "$MW_KIOSK_PAUSE"
 mkdir -p "$W/keine_pads"
-python3 -I "$R/simulator3d/beilagen_linux/hp_wache.py" --spiel-datei "$MW_SPIEL" --pause "$MW_KIOSK_PAUSE" --ruhe-s 900 \
+python3 -I "$R/simulator3d/beilagen_linux/hp_wache.py" --spiel-datei "$MW_SPIEL" --pause "$MW_KIOSK_PAUSE" --ruhe-s 180 \
 	--status-port "$STP" --sim-ports "$SP2" --zuschauer-s 3 --pad-quelle "$W/keine_pads" > "$W/wache.log" 2>&1 &
 WP=$!; PIDS+=("$WP")
 get() { python3 -c 'import sys, urllib.request
@@ -132,7 +132,7 @@ warte 5 status_ist spielen && ok "Status: spielen" || fehler "Status nicht «spi
 get "http://127.0.0.1:$STP/bild.png" | grep -q '^404' && ok "kein Bild beim Spielen" || fehler "/bild.png"
 get "http://127.0.0.1:$STP/../../etc/passwd" | grep -q '^404' && ok "unbekannte Pfade: 404" || fehler "Pfad"
 sleep 4; ruhig_15min
-warte 5 status_ist rechnet && ok "Puls vorbei, 15 Min. ruhig -> wieder «rechnet»" || fehler "nach 15 Min."
+warte 5 status_ist rechnet && ok "Puls vorbei, 3 Min. ruhig -> wieder «rechnet»" || fehler "nach 3 Min."
 rm -f "$MW_SPIEL"
 warte 5 handy_lauscht; warte 5 test -f "$MW_SPIEL" && python3 -c 'import json, sys; assert json.load(open(sys.argv[1]))["grund"] == "handy"' "$MW_SPIEL" \
 	&& ok "Handy öffnet die Spiel-Seite -> Spielen" || fehler "Handy-Seite"
@@ -153,7 +153,7 @@ a = sys.argv[1:]
 sys.stdout.buffer.write(b"".join(struct.pack("llHHi", 0, 0, int(a[i], 0), int(a[i + 1], 0), int(a[i + 2])) for i in range(0, len(a), 3)))' "$@" >&8; }
 STP2=$((PB + 4)) SP3=$((PB + 5))
 touch "$MW_KIOSK_PAUSE"
-python3 -I "$R/simulator3d/beilagen_linux/hp_wache.py" --spiel-datei "$MW_SPIEL" --pause "$MW_KIOSK_PAUSE" --ruhe-s 900 \
+python3 -I "$R/simulator3d/beilagen_linux/hp_wache.py" --spiel-datei "$MW_SPIEL" --pause "$MW_KIOSK_PAUSE" --ruhe-s 180 \
 	--status-port "$STP2" --sim-ports "$SP3" --pad-quelle "$W/pads" --pad-scan-s 0.3 > "$W/wache_pad.log" 2>&1 &
 WP=$!; PIDS+=("$WP")
 status2() { get "http://127.0.0.1:$STP2/status.json" | grep -q "\"zustand\": \"$1\""; }
@@ -169,17 +169,17 @@ warte 5 test -f "$MW_SPIEL" && python3 -c 'import json, sys; assert json.load(op
 	&& ok "Taste am Controller während des Rechnens -> Spielen nach $(( ($(date +%s%N) - T0) / 1000000 )) ms (grund «controller»)" \
 	|| { fehler "Taste ohne Wirkung"; cat "$W/wache_pad.log"; }
 warte 5 status2 spielen && ok "Status: spielen" || fehler "Status nicht «spielen»"
-touch -d '10 minutes ago' "$MW_SPIEL"
+touch -d '2 minutes ago' "$MW_SPIEL"
 js 2 -30000 0                                                # Stick ganz nach links
 sleep 4
 [ "$(( $(date +%s) - $(stat -c %Y "$MW_SPIEL") ))" -lt 60 ] && ok "Stick-Ausschlag beim Spielen frischt die Spielen-Datei auf" || fehler "nicht aufgefrischt"
-touch -d '10 minutes ago' "$MW_SPIEL"
+touch -d '2 minutes ago' "$MW_SPIEL"
 sleep 4                                                      # der Stick bleibt am Anschlag (keine neuen Ereignisse)
 [ "$(( $(date +%s) - $(stat -c %Y "$MW_SPIEL") ))" -lt 60 ] && ok "gehaltener Stick (am Anschlag, ohne neue Ereignisse) zählt weiter als Spielen" || fehler "gehaltener Stick zählt nicht"
 js 2 -1000 0                                                 # losgelassen: zurück zur Mitte
 sleep 21                                                     # eine Eingabe gilt 20 s
 ruhig_15min
-warte 6 status2 rechnet && ok "15 Min. ohne Controller -> wieder «rechnet»" || fehler "nach 15 Min."
+warte 6 status2 rechnet && ok "3 Min. ohne Controller -> wieder «rechnet»" || fehler "nach 3 Min."
 rm -f "$MW_SPIEL"
 js 2 300 0  2 -300 0  2 400 0  2 -200 0                      # Rauschen um die Mitte summiert sich nicht
 sleep 4
@@ -202,7 +202,7 @@ warte 5 test -f "$MW_SPIEL" && ok "Fenster zu: die nächste Taste am Controller 
 kill "$WP" 2>/dev/null; wait "$WP" 2>/dev/null
 rm -f "$MW_SPIEL"
 # ohne js*: event-Gerät, das udev als Joystick kennt (nur Tasten / Steuerkreuz)
-python3 -I "$R/simulator3d/beilagen_linux/hp_wache.py" --spiel-datei "$MW_SPIEL" --pause "$MW_KIOSK_PAUSE" --ruhe-s 900 \
+python3 -I "$R/simulator3d/beilagen_linux/hp_wache.py" --spiel-datei "$MW_SPIEL" --pause "$MW_KIOSK_PAUSE" --ruhe-s 180 \
 	--status-port "$STP2" --sim-ports "$SP3" --pad-quelle "$W/pads_ev" --pad-scan-s 0.3 --pad-udev "$W/udev" > "$W/wache_ev.log" 2>&1 &
 WP=$!; PIDS+=("$WP")
 warte 10 grep -q "Controller event0 erkannt" "$W/wache_ev.log" || { fehler "event-Gerät nicht erkannt"; cat "$W/wache_ev.log"; }
@@ -215,13 +215,13 @@ kill "$WP" 2>/dev/null; wait "$WP" 2>/dev/null
 exec 7>&- 8>&-
 rm -f "$MW_SPIEL" "$MW_KIOSK_PAUSE"
 # die Wache von Teil 1 wieder (Teil 2 schickt ihr Zuschauer-Pulse)
-python3 -I "$R/simulator3d/beilagen_linux/hp_wache.py" --spiel-datei "$MW_SPIEL" --pause "$MW_KIOSK_PAUSE" --ruhe-s 900 \
+python3 -I "$R/simulator3d/beilagen_linux/hp_wache.py" --spiel-datei "$MW_SPIEL" --pause "$MW_KIOSK_PAUSE" --ruhe-s 180 \
 	--status-port "$STP" --sim-ports "$SP2" --zuschauer-s 3 --pad-quelle "$W/keine_pads" >> "$W/wache.log" 2>&1 &
 WP=$!; PIDS+=("$WP")
 warte 10 status_ist frei || fehler "Wache startet nicht wieder"
 
-# ---------------------------------------------------------------- 2. halten: Zuschauer -> Pause + Sicherung -> 15 Min. -> weiter
-echo "--- 2. dauer.py halten (Zuschauer hält an, Stand gesichert, ohne Puls nach 15 Min. weiter)"
+# ---------------------------------------------------------------- 2. halten: Zuschauer -> Pause + Sicherung -> 3 Min. -> weiter
+echo "--- 2. dauer.py halten (Zuschauer hält an, Stand gesichert, ohne Puls nach 3 Min. weiter)"
 O="$W/erk"
 touch "$MW_KIOSK_PAUSE"
 python3 "$D" halten --warten-max 120 -- python3 "$W/ersatz.py" --aus "$O" --faelle 20 > "$W/halten.log" 2>&1 &
@@ -240,8 +240,8 @@ pgrep -f "^python3 $W/ersatz.py" >/dev/null && fehler "Ersatz-Test läuft noch" 
 kill -0 "$HP" 2>/dev/null && ok "Job wartet (es wird zugeschaut)" || fehler "Job beendet statt zu warten"
 pause_weg && ok "Pause bleibt weg, solange zugeschaut wird" || fehler "Pause zu früh zurück"
 sleep 4                                                    # Puls hört auf (Zuschauer-Zeit im Test 3 s) ...
-ruhig_15min                                                # ... und 15 Min. vergehen (schnelle Uhr)
-warte 10 pause_da && ok "kein Puls mehr, 15 Min. später -> Pause wieder da (Kiosk-Simulator aus)" || fehler "Pause nicht zurück"
+ruhig_15min                                                # ... und 3 Min. vergehen (schnelle Uhr)
+warte 10 pause_da && ok "kein Puls mehr, 3 Min. später -> Pause wieder da (Kiosk-Simulator aus)" || fehler "Pause nicht zurück"
 warte 20 mehr_als 20 && ok "weitergerechnet bis 20 Fälle" || fehler "nicht fertig ($(zeilen "$O/results.jsonl"))"
 wait "$HP"; rc=$?
 [ "$rc" = 0 ] && ok "halten: Exit 0" || fehler "halten: Exit $rc"

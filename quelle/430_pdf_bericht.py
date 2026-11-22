@@ -249,6 +249,18 @@ def _parse_day(s):
         return None
 
 
+def rec_oldest(files):
+    """4.18.1: {"time", "name"} of the oldest kept recording (video or snapshot of the recordings folder - the cleanup counts
+    only these against record_max_gb; time-lapse and continuous recording have their own limits) or None"""
+    best = None
+    for stem, kinds in files.items():
+        n, st = kinds.get("video") or kinds.get("image")
+        dt = parse_stamp(n) or datetime.fromtimestamp(st.st_mtime)
+        if best is None or dt < best[0]:
+            best = (dt, n)
+    return {"time": best[0].strftime("%Y-%m-%d %H:%M:%S"), "name": best[1]} if best else None
+
+
 def list_recordings(args, watch=None):
     """Filtered, sorted, paged list of recordings. Filters: kind, from, to, schedule, source, q, sort, offset, limit."""
     d = rec_dir()
@@ -285,16 +297,24 @@ def list_recordings(args, watch=None):
         items.append({"n": n, "st": st, "kind": kind, "dt": dt, "meta": meta, "snap": snap[0] if snap else None,
                       "sched": [i for i, s in enumerate(plans) if schedule_window_contains(s, dt)],
                       "gps": rec_gps(n, meta, d, snap[0] if snap else None)})
-    # timelapse: the videos always, the single photos only with the filter "Timelapse"
+    # timelapse: the videos always, the single photos only with the filter «Timelapse → Photos» (4.17.1, Besitzer: ~1640
+    # photos buried the videos). kind=timelapse (old address) = timelapse_video: the videos only
     kind_req = args.get("kind", "")
-    if kind_req in ("", "timelapse", "video"):
+    if kind_req == "timelapse":
+        kind_req = "timelapse_video"
+    tl_info = {"videos": 0, "photos": 0, "last_day": ""}
+    if kind_req in ("", "timelapse_video", "timelapse_photo", "video"):
         try:
             tl_names = os.listdir(tl_dir())
         except OSError:
             tl_names = []
         for n in tl_names:
             is_v = bool(TL_VIDEO_RE.match(n))
-            if not is_v and not (kind_req == "timelapse" and TL_PHOTO_RE.match(n)):
+            if is_v:
+                tl_info["videos"] += 1
+            elif TL_PHOTO_RE.match(n):
+                tl_info["photos"] += 1; tl_info["last_day"] = max(tl_info["last_day"], n[3:11])
+            if not is_v and not (kind_req == "timelapse_photo" and TL_PHOTO_RE.match(n)):
                 continue
             try:
                 st = os.stat(os.path.join(tl_dir(), n))
@@ -307,15 +327,15 @@ def list_recordings(args, watch=None):
                           "sched": [], "tl": True, "gps": rec_gps(n, meta, tl_dir()) if not is_v else None})
 
     # filters that do not depend on the schedule
-    kind_f, src_f, q = args.get("kind", ""), args.get("source", ""), (args.get("q", "") or "").strip().lower()
+    kind_f, src_f, q = kind_req, args.get("source", ""), (args.get("q", "") or "").strip().lower()
     d_from, d_to = _parse_day(args.get("from", "")), _parse_day(args.get("to", ""))
     sources = sorted({it["meta"].get("source") for it in items if it["meta"].get("source")})
     places = places_assign(items)
     no_place = sum(1 for it in items if not it.get("gps"))
     if kind_f in ("video", "image"):
         items = [it for it in items if it["kind"] == kind_f]
-    elif kind_f == "timelapse":
-        items = [it for it in items if it.get("tl")]
+    elif kind_f in ("timelapse_video", "timelapse_photo"):
+        items = [it for it in items if it.get("tl") and it["kind"] == ("video" if kind_f[10] == "v" else "image")]
     if d_from:
         items = [it for it in items if it["dt"] >= d_from]
     if d_to:
@@ -381,8 +401,9 @@ def list_recordings(args, watch=None):
             "schedules": [{"index": i, "name": s["name"], "enabled": s["enabled"], "days": s["days"], "start": s["start"],
                            "end": s["end"], "active_now": schedule_active(s, now), "count": counts.get(str(i), 0)}
                           for i, s in enumerate(plans)],
-            "disk": {"files": len(files), "mb": int(total_bytes / 1024 ** 2), "limit_gb": CFG["record_max_gb"]},
-            "ffmpeg": shutil.which("ffmpeg") is not None}
+            "disk": {"files": len(files), "mb": int(total_bytes / 1024 ** 2), "limit_gb": rec_limit_gb(),
+                     "oldest": rec_oldest(files)},     # 4.18.1: how far back the kept recordings reach (the cleanup deletes the oldest)
+            "ffmpeg": shutil.which("ffmpeg") is not None, "tl": tl_info}
 
 
 def _write_sidecar(name, meta):
@@ -753,5 +774,3 @@ def rec_delete(names, watch=None):
     if n_ok:
         log_event("rec", f"{n_ok} recording(s) deleted from the preview page")
     return n_ok
-
-
