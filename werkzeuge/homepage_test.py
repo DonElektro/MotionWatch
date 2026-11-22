@@ -392,7 +392,7 @@ def lauf(datei, tmp):
     ix = W.files["index.html"].decode("utf-8")              # 4.17.0 (Besitzer): MoveEye beim Host und das Spiel direkt
     ok('href="demo/"' in ix and 'href="Sim/?grossvater=1"' in ix and "📷 MoveEye" in ix and "Die Karte des Grossvaters" in ix,
        "Startseite: «📷 MoveEye» → demo/, «🗺️ Die Karte des Grossvaters» → Sim/?grossvater=1")
-    tj = re.search(r"var T=(\{.*?\});", ix, re.S)
+    tj = re.search(r"var T=(\{.*?\}),l=", ix, re.S)
     nt = len(ns["hp_tiles_tx"]())
     ok(tj and sorted(json.loads(tj.group(1))) == ["en", "fr", "it", "rm"] and all(len(v) == nt for v in json.loads(tj.group(1)).values())
        and ix.count('class="tile t-') == 5 and 'href="Info/"' in ix and "ℹ️ Besucherseite" in ix,
