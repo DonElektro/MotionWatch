@@ -3414,7 +3414,7 @@ let tlSeen = null;
 function fmtDay(d) { return d.slice(6, 8) + "." + d.slice(4, 6) + "." + d.slice(0, 4); }
 async function tlLoad() {
   let j; try { j = await (await fetch("/api/timelapse")).json(); } catch (e) { return; }
-  const img = $("#tl-img"); if (!img) return;
+  const img = $("#tl-img"); if (!img || !j || !Array.isArray(j.days)) return;   // 4.18.1: no right (Kind) -> {error}, nothing to show
   if (j.latest) { img.src = "/timelapse/" + j.latest; img.hidden = false; $("#tl-open").href = "/timelapse/" + j.latest; } else { img.hidden = true; }
   const cnt = $("#tl-count"); cnt.textContent = j.count + " " + t("photos");
   const sel = $("#tl-day"), keep = sel.value; sel.textContent = "";
@@ -3422,7 +3422,7 @@ async function tlLoad() {
   j.days.forEach(x => { const o = el("option", "", fmtDay(x.day) + " (" + x.count + ")"); o.value = x.day; sel.appendChild(o); });
   sel.value = keep;
   const L = $("#tl-videos"); L.textContent = "";
-  j.videos.forEach(v => {
+  (j.videos || []).forEach(v => {
     const row = el("div", "row"); row.style.marginTop = "4px";
     const a = el("a", "", v.name); a.href = "/timelapse/" + v.name; a.target = "_blank"; a.style.color = "var(--acc2)"; a.style.wordBreak = "break-all";
     const dl = el("a", "", "⬇"); dl.href = "/timelapse/" + v.name + "?dl=1"; dl.title = t("Download"); dl.style.color = "var(--acc2)";

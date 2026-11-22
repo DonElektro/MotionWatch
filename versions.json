@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-22 00:08",
+ "generated": "2026-11-22 00:52",
  "versions": [
   {
    "version": "4.18.1",
    "file": "webcam_bewegung_4_18_1.py",
    "url": "",
-   "sha256": "ee13c4958350cccc47d4e7735fa908347dc3d3376bf34bf5adceeb9643d39cbc",
-   "date": "2026-11-22 00:08",
+   "sha256": "d04f879664e0b21f2cd537b8ef1324b85dc3a55cb9efdaeb2d5f22e5d49df3dd",
+   "date": "2026-11-22 00:52",
    "notes": "Aufnahmen dürfen bis 8 GB brauchen (vorher 2 GB, höchstens die Hälfte des Laufwerks; beim Update 2 → 8 GB ab 16 GB mit Hinweis); Verlauf: Chip «⏪ bis …» (älteste Aufnahme, Tippen = älteste zuerst), Chip «… MB / … GB» führt zur Einstellung; Suche in den Einstellungen findet «Aufnahmeordner», «Zeitraffer-Ordner» und «Tagen löschen» (auch in «Einfach»)",
    "size": 4025336,
-   "sig": "8dc822ba4ec5918ec0df88cdd22dc9b591f40f4c3acc24f409a7868b463c3ebd5c3a19538eafec0f88863a179d649f48c2034d5ca0710fbd060e4c268c447c0a",
+   "sig": "2cb3ddb4a2fc5f6f946d4efa40188cd8ec13cca539cd8eb499f1cdba081662705138c61890cbbb4a24ee2f836bb91389794a75786f44fff01faa3148f3cf4b0f",
    "data": {
     "file": "moveeye_daten_4_18_1.zip",
     "url": "",
-    "sha256": "b66b5357166e7d94b51521170cb907fb848ea2d42f463ef33cebec2f8382b1b9",
-    "size": 14449717,
-    "sig": "7eb8c4ed12252c72a735aea382ea6bd828e3dffefeebc82bda81699dcb0681ac5a0197d158270b4b4d38ec3fa96c60695a8b4edd9b0096e2a0d0326263c8a603"
+    "sha256": "d43005a7bc11445cd157d589d54aea6a948d4aac08b262e5bf029623166b7ce4",
+    "size": 14449814,
+    "sig": "33ed98415f25f240c83efced915c871bd8f31b2f629111636da2567ac94370819bb9de57bf0c77a2ac1d5fb722e302e3ce9d1c05022cc4f3ae95a8c787ec9e08"
    }
   },
   {
