@@ -271,7 +271,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_18_0.zip"
-ZD_SHA256 = "d2db1184c673a0e855afdecec13e8ec7c8f8e0aeb3b0f6c83e58e0efb17c5216"
+ZD_SHA256 = "dd5c333e609520b515a0585e3bb025af5f1470e51f7e53d691a4178fccdad26d"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -117291,6 +117291,8 @@ LOCK_DENY_KEYS.update(SLP_DEF)
 
 SCHLAF_PY = _zd('639zzzzz_schlaf_wecken/SCHLAF_PY', "")
 zd_exec(SCHLAF_PY, '639zzzzz_schlaf_wecken.py')
+
+
 
 
 

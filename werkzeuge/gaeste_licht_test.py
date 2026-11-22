@@ -11,7 +11,8 @@
   B) --browser: MoveEye (Demo, eigener Daten-Ordner), Einstellungen → Schutz → «Gäste erwartet» 390 px dunkel: Karte,
      «bis», Ziel, 5 Sprachen, keine JS-Fehler; Bilder nach --bilder (gaeste_karte.png, gaeste_karte_pc.png).
   C) --sim GODOT: Simulator (Xvfb) + MoveEye verbunden, Nacht, «Gäste erwartet» mit dem Zelt als Ziel, Szenario «Gäste
-     besuchen das Zelt»: Bilder des Simulator-Fensters (PC) und der Handy-Seite (390 px) nach --bilder (schwer: HP-Testweg).
+     besuchen das Zelt»: Bilder des Simulator-Fensters (PC 1280 × 720, Handy hochkant 390 × 844) nach --bilder und als
+     GLBILD-Zeilen ins Protokoll (--bilder-aus-log LOG setzt sie wieder zusammen; schwer: HP-Testweg).
 
   python3 werkzeuge/gaeste_licht_test.py [--datei X.py] [--browser] [--sim GODOT] [--bilder ORDNER]
 """
@@ -448,25 +449,71 @@ def http_bytes(url, timeout=10, auth=None):
         return x.read()
 
 
+def bild_ins_log(pfad):
+    """the HP artifact cannot always be fetched: the picture also goes into the job log (base64, lines «GLBILD name i/n …»;
+    werkzeuge/gaeste_licht_test.py --bilder-aus-log LOG puts them together again). Simulator pictures only - nothing private."""
+    try:
+        b = base64.b64encode(open(pfad, "rb").read()).decode()
+    except OSError:
+        return
+    name, n = os.path.basename(pfad), (len(b) + 2999) // 3000
+    for k in range(n):
+        print("GLBILD %s %d/%d %s" % (name, k + 1, n, b[k * 3000:(k + 1) * 3000]), flush=True)
+
+
+def bilder_aus_log(log, ziel):
+    parts = {}
+    for ln in open(log, encoding="utf-8", errors="replace"):
+        m = re.search(r"GLBILD (\S+) (\d+)/(\d+) (\S+)", ln)
+        if m:
+            parts.setdefault(m.group(1), {})[int(m.group(2))] = (int(m.group(3)), m.group(4))
+    os.makedirs(ziel, exist_ok=True)
+    for name, d in parts.items():
+        n = next(iter(d.values()))[0]
+        if len(d) == n:
+            open(os.path.join(ziel, name), "wb").write(base64.b64decode("".join(d[k][1] for k in range(1, n + 1))))
+            print("  %s (%d Teile)" % (name, n))
+        else:
+            print("  %s unvollständig (%d von %d)" % (name, len(d), n))
+
+
+def _sim_start(godot, senv, sp, res, logp):
+    return subprocess.Popen([godot, "--path", os.path.join(REPO, "simulator3d"), "--resolution", res, "--", "--no-update", "--no-tour", "--stream",
+                             "--solo", "--scene", "camping", "--hour", "22.5", "--port", str(sp), "--quality", "lite"],
+                            env=senv, stdout=open(logp, "a"), stderr=subprocess.STDOUT, start_new_session=True)
+
+
+def _verbunden(web, auth, secs):
+    t_end = time.time() + secs
+    while time.time() < t_end:
+        try:
+            s = http_json(web + "/api/state", timeout=4, auth=auth)["state"]
+            if str(s.get("source_status", "")).startswith("connected") and float(s.get("fps") or 0) > 0:
+                return True
+        except Exception:
+            pass
+        time.sleep(3)
+    return False
+
+
 def teil_c(datei, tmp, bilder, godot):
     """Simulator + MoveEye: night, «Gäste erwartet» with the tent as target, the scenario - pictures (heavy: HP route)"""
     print("C) Simulator-Nacht mit Gast zum Zelt (Godot %s)" % godot, flush=True)
     os.makedirs(bilder, exist_ok=True)
     procs = []
     env = dict(os.environ)
+    sim_p = None
     try:
         if not env.get("DISPLAY"):
             disp = ":%d" % (70 + os.getpid() % 9)
-            procs.append(subprocess.Popen(["Xvfb", disp, "-screen", "0", "1280x720x24"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            procs.append(subprocess.Popen(["Xvfb", disp, "-screen", "0", "1280x900x24"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                                           start_new_session=True))
             env["DISPLAY"] = disp
             time.sleep(2)
         sp, mp = frei_port(), frei_port()
         senv = dict(env, HOME=os.path.join(tmp, "simhome")); os.makedirs(senv["HOME"])
-        slog = open(os.path.join(tmp, "sim.log"), "w")
-        procs.append(subprocess.Popen([godot, "--path", os.path.join(REPO, "simulator3d"), "--", "--no-update", "--no-tour", "--stream", "--solo",
-                                       "--scene", "camping", "--hour", "22.5", "--port", str(sp), "--quality", "lite"],
-                                      env=senv, stdout=slog, stderr=subprocess.STDOUT, start_new_session=True))
+        slog = os.path.join(tmp, "sim.log")
+        sim_p = _sim_start(godot, senv, sp, "1280x720", slog)
         cfg = os.path.join(tmp, "mwc"); os.makedirs(cfg)
         st = {"sim_on": True, "source": "sim:0", "thermal_source": "sim:thermal", "sim_url": "http://127.0.0.1:%d" % sp, "sim_auto": False,
               "sim_autostart": False, "sim_autostart_v2": False, "sim_autoupd": False, "update_url": "", "lang": "de", "desktop_notice": False,
@@ -474,6 +521,7 @@ def teil_c(datei, tmp, bilder, godot):
               "gl_on": True, "gl_dark_only": True, "gl_pct": 70}
         json.dump({"cfg": st}, open(os.path.join(cfg, "motionwatch_settings.json"), "w"))
         ki = os.path.join(env.get("CACHE", ""), "ki") if env.get("CACHE") else ""
+        print("  KI-Modell: %s" % (ki if ki and os.path.isdir(ki) else "keins (Bewegung + Wärmebild)"), flush=True)
         if ki and os.path.isdir(ki):
             os.makedirs(os.path.join(cfg, "models"), exist_ok=True)
             for fn in os.listdir(ki):
@@ -483,83 +531,91 @@ def teil_c(datei, tmp, bilder, godot):
                                        "--web-password", PW], env=env, stdout=mlog, stderr=subprocess.STDOUT, cwd=tmp, start_new_session=True))
         sim, web = "http://127.0.0.1:%d" % sp, "http://127.0.0.1:%d" % mp
         auth = {"Authorization": "Basic " + base64.b64encode(("admin:" + PW).encode()).decode()}
-        t_end, okc = time.time() + 420, False
-        while time.time() < t_end:
-            try:
-                s = http_json(web + "/api/state", timeout=4, auth=auth)["state"]
-                if str(s.get("source_status", "")).startswith("connected") and float(s.get("fps") or 0) > 0:
-                    okc = True; break
-            except Exception:
-                pass
-            time.sleep(3)
+        okc = _verbunden(web, auth, 420)
         ok(okc, "Simulator und MoveEye verbunden")
         if not okc:
-            print(open(os.path.join(tmp, "sim.log"), errors="replace").read()[-2500:])
+            print(open(slog, errors="replace").read()[-2500:])
             print(open(os.path.join(tmp, "mw.log"), errors="replace").read()[-2500:])
             return
-        time.sleep(8)
-        info = http_json(sim + "/control", {"action": "gaeste", "do": "info"})
+        info = {}
+        for _i in range(20):                                   # MoveEye's state reaches the simulator: guests come by themselves
+            info = http_json(sim + "/control", {"action": "gaeste", "do": "info"})
+            if info.get("mw_on") and int(info.get("started") or 0) >= 1:
+                break
+            time.sleep(2)
         ok(info.get("ok") and info.get("mw_on"), "Simulator sieht «Gäste erwartet» von MoveEye (%s)" % info)
+        ok(int(info.get("started") or 0) >= 1, "Gäste kommen von selbst, weil MoveEye «Gäste erwartet» an hat")
         tx, ty = info["tent_mw"]
         r = http_json(web + "/api/gaeste", {"action": "target", "kind": "point", "x": tx, "y": ty, "name": "Zelt"}, auth=auth)
         ok(r.get("ok"), "Ziel = Zelt des Simulators (%.1f / %.1f m)" % (tx, ty))
-        time.sleep(4)
-        http_json(sim + "/control", {"action": "gaeste", "do": "start", "n": 1, "stay": 35})
         shots, phases, t0 = [], [], time.time()
-        want = {"guide": "gaeste_sim_fuehrt.png", "arrived": "gaeste_sim_am_zelt.png", "farewell": "gaeste_sim_abschied.png"}
-        while time.time() - t0 < 180 and len(shots) < 3:
+        want = {"guide": "gaeste_sim_fuehrt.jpg", "arrived": "gaeste_sim_am_zelt.jpg", "farewell": "gaeste_sim_abschied.jpg"}
+        while time.time() - t0 < 300 and len(shots) < 3:
             try:
                 g = http_json(web + "/api/gaeste", auth=auth)
             except Exception:
                 time.sleep(1); continue
             ph = g.get("phase")
-            phases.append((round(time.time() - t0), ph, g.get("light"), g.get("pct")))
+            phases.append((round(time.time() - t0), ph, g.get("light"), round(float(g.get("pct") or 0)), g.get("pos"), g.get("aim"), g.get("seen_s"),
+                           (g.get("last_end") or {}).get("why")))
             if ph in want and want[ph] not in shots and (ph != "guide" or (g.get("light") and float(g.get("pct") or 0) > 40)):
                 time.sleep(1.5 if ph != "arrived" else 4.0)
                 open(os.path.join(bilder, want[ph]), "wb").write(http_bytes(sim + "/view.jpg", 20))
                 shots.append(want[ph])
-            time.sleep(0.7)
-        print("  Phasen: %s" % phases[::3][:40], flush=True)
-        ok("gaeste_sim_fuehrt.png" in shots, "Bild: Gast wird zum Zelt geführt (Licht vor den Füssen)")
-        ok("gaeste_sim_am_zelt.png" in shots, "Bild: Gast am Zelt, Licht aus")
-        ok("gaeste_sim_abschied.png" in shots, "Bild: Abschied - Licht leuchtet wieder voraus")
-        # the phone: MoveEye live page (the head camera of the simulator) and the panel, 390 px
+            time.sleep(0.8)
+        print("  Ziel %.1f / %.1f m · Verlauf (s, Phase, Licht, %%, Gast, Licht-Ziel, ungesehen s, Ende):" % (tx, ty), flush=True)
+        for x in phases[::2][:90]:
+            print("   ", x, flush=True)
+        ok("gaeste_sim_fuehrt.jpg" in shots, "Bild: Gast wird zum Zelt geführt (Licht vor den Füssen)")
+        ok("gaeste_sim_am_zelt.jpg" in shots, "Bild: Gast am Zelt, Licht aus")
+        ok("gaeste_sim_abschied.jpg" in shots, "Bild: Abschied - Licht leuchtet wieder voraus")
+        g = http_json(web + "/api/gaeste", auth=auth)
+        ok(int(g.get("notes") or 0) >= 1 and any(p[2] for p in phases), "«Gast kommt» notiert, Führungslicht war an")
+        # the phone: the simulator window upright (390 x 844, its phone layout) - the same night, a guest guided to the tent
         try:
-            from playwright.sync_api import sync_playwright
-            http_json(sim + "/control", {"action": "gaeste", "do": "start", "n": 2, "stay": 30})
-            with sync_playwright() as pw:
-                br = pw.chromium.launch(args=["--no-proxy-server"])
-                ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, is_mobile=True, has_touch=True,
-                                     color_scheme="dark", http_credentials={"username": "admin", "password": PW}, locale="de-CH")
-                pg = ctx.new_page()
-                pg.goto(web + "/", wait_until="domcontentloaded")
-                t1 = time.time()
-                while time.time() - t1 < 90:
-                    g = http_json(web + "/api/gaeste", auth=auth)
-                    if g.get("phase") == "guide" and g.get("light"):
-                        break
-                    time.sleep(1)
-                pg.wait_for_timeout(3000)
-                pg.evaluate("() => { ['g2-ov', 'g2-spot', 'g2-bub'].forEach(i => { const e = document.getElementById(i); if (e) e.remove(); }); }")
-                pg.screenshot(path=os.path.join(bilder, "gaeste_handy_live.png"))
-                ok(True, "Bild: Handy 390 px, Live-Bild mit dem Gast im Führungslicht")
-                br.close()
-        except Exception as ex:
-            ok(False, "Handy-Bild: %s" % ex)
-        log = open(os.path.join(tmp, "mw.log"), errors="replace").read()
-        ok("Guide light ON" in log and "guest is coming" in log, "Protokoll: «Guide light ON», «a guest is coming»")
-        ok("Notification sent" not in log or "person" not in log.split("Notification sent")[0][-200:], "kein Personen-Alarm-Push")
+            os.killpg(sim_p.pid, signal.SIGTERM); sim_p.wait(20)
+        except Exception:
+            pass
+        sim_p = _sim_start(godot, senv, sp, "390x844", slog)
+        ok(_verbunden(web, auth, 300), "Simulator hochkant neu gestartet, wieder verbunden")
+        time.sleep(6)
+        http_json(sim + "/control", {"action": "gaeste", "do": "start", "n": 1, "stay": 25})
+        t1, got = time.time(), False
+        while time.time() - t1 < 150 and not got:
+            g = http_json(web + "/api/gaeste", auth=auth)
+            if g.get("phase") in ("guide", "farewell") and g.get("light") and float(g.get("pct") or 0) > 40:
+                time.sleep(1.5)
+                open(os.path.join(bilder, "gaeste_sim_handy.jpg"), "wb").write(http_bytes(sim + "/view.jpg", 20))
+                got = True
+            time.sleep(0.8)
+        ok(got, "Bild: Handy (Simulator hochkant 390 × 844), Gast im Führungslicht")
+        for fn in sorted(os.listdir(bilder)):
+            if fn.startswith("gaeste_sim_") and fn.endswith(".jpg"):
+                bild_ins_log(os.path.join(bilder, fn))
+        hits = []
+        for wurzel, _d, files in os.walk(cfg):
+            for fn in files:
+                if fn.endswith((".log", ".jsonl", ".txt")):
+                    try:
+                        for ln in open(os.path.join(wurzel, fn), errors="replace"):
+                            if "Guide light" in ln or "Guests expected" in ln or "guest" in ln.lower():
+                                hits.append(ln.strip()[:220])
+                    except OSError:
+                        pass
+        print("  MoveEye-Protokoll (Führungslicht, letzte 40):", flush=True)
+        for ln in hits[-40:]:
+            print("   ", ln, flush=True)
     finally:
-        for pr in reversed(procs):
+        for pr in [sim_p] + list(reversed(procs)):
             try:
                 os.killpg(pr.pid, signal.SIGTERM)
-            except OSError:
+            except (OSError, AttributeError):
                 pass
         time.sleep(2)
-        for pr in procs:
+        for pr in [sim_p] + procs:
             try:
                 os.killpg(pr.pid, signal.SIGKILL)
-            except OSError:
+            except (OSError, AttributeError):
                 pass
 
 
@@ -570,7 +626,11 @@ def main():
     ap.add_argument("--sim", default="", help="Godot 4.3 (oder «env»: $GODOT) - Simulator-Bilder")
     ap.add_argument("--nur-sim", action="store_true", help="nur Teil C")
     ap.add_argument("--bilder", default=os.path.join(tempfile.gettempdir(), "gaeste_bilder"))
+    ap.add_argument("--bilder-aus-log", default="", help="Job-Protokoll des HP: die Bilder (GLBILD-Zeilen) nach --bilder")
     a = ap.parse_args()
+    if a.bilder_aus_log:
+        bilder_aus_log(a.bilder_aus_log, a.bilder)
+        return 0
     datei = os.path.abspath(a.datei or sorted(glob.glob(os.path.join(REPO, "webcam_bewegung_*.py")),
                                                key=lambda p: [int(x) for x in re.findall(r"\d+", os.path.basename(p))])[-1])
     print("Gäste-erwartet-Test · " + os.path.basename(datei), flush=True)

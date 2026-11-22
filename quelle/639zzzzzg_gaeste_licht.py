@@ -29,6 +29,8 @@
 #              Personen weniger als 2 m. Sieht die Weitwinkel-Kamera fest am Gerät (nicht am Kopf, cam_on_head) die Person
 #              (639zw, Treffer < GL_WIDE_S), darf der Kopf frei zielen: die Richtung kommt dann vom Weitwinkel. Das Wärmebild
 #              sitzt beim Gerät mit am Kopf (gleiche Grenze, es macht die Person nur nachts sicherer sichtbar).
+#              Der Kopf folgt in Schritten (ab GL_HEAD_DEAD, danach GL_HOLD_S still): Bewegung und Wärmebild erkennen nur
+#              in ruhigen Bildern; ist der Gast kurz weg, geht seine Stelle mit seiner Geschwindigkeit weiter (GL_PREDICT_S).
 #  Ziel        freiwillig: Zelt («Platz einrichten» 317), Feuerstelle (Glut-Wächter 639zzzw), ein Teach-in-Punkt (076, mit
 #              Abstand der Markier-Karte 639zzzzm), «wohin der Kopf jetzt schaut» oder ein Punkt im Bild antippen. Gespeichert
 #              als Bodenpunkt (gl_target). Erreicht der Gast das Ziel (gl_target_r, ~2 m), blendet das Licht aus; der Kopf
@@ -256,8 +258,10 @@ GL_STAY_MAX_S = 4 * 3600  # at the target at most 4 h, then the guide ends (the 
 GL_BLOCK_S = 120.0        # after «stands still» / «max. duration»: no new guide at the same place for 2 min
 GL_BLOCK_M = 3.0
 GL_MARGIN = 0.12          # part of the field of view kept free at each edge (the person stays in the picture)
-GL_HEAD_DPS = 35.0        # °/s the guide turns the head at most
-GL_HEAD_DEAD = 0.8        # ° dead zone
+GL_HEAD_STEP = 25.0       # ° the head turns at most in one step (the planner 072 drives it smoothly)
+GL_HEAD_DEAD = 3.0        # ° dead zone: smaller changes wait (a still head = a picture the detection can use)
+GL_HOLD_S = 1.0           # s the head stands still after each step (movement / thermal detection need a still picture)
+GL_PREDICT_S = 2.5        # s: not seen for a moment - the guest walks on in its direction (the head does not stop behind it)
 GL_WIDE_S = 1.5           # s: a hit of the fixed wide camera counts this long
 GL_PERSON_H = 1.7
 GL_LOOK_S = 0.25          # the head gets a new aim at most every 0.25 s (the planner 072 drives smoothly)
@@ -489,15 +493,23 @@ class GuideCore:
     def light_wanted(self):
         return self.phase in ("guide", "farewell")
 
-    def aim(self, target=None):
+    def where(self, now=None):
+        """the guest now: the last position, while unseen for a moment moved on with its speed (at most GL_PREDICT_S)"""
+        if self.p is None or now is None or self.phase not in ("guide", "farewell") or self.speed < GL_WALK_MS:
+            return self.p
+        gap = min(GL_PREDICT_S, max(0.0, now - self.seen_t))
+        return (self.p[0] + self.v[0] * gap, self.p[1] + self.v[1] * gap)
+
+    def aim(self, target=None, now=None):
         """ground point for the light (guide / farewell), the target to watch (arrived), None idle"""
         if self.p is None or self.phase == "idle":
             return None
         if self.phase == "arrived":
             return target or self.p
+        p = self.where(now)
         if self.head is None:
-            return self.p
-        return (self.p[0] + GL_AHEAD_M * self.head[0], self.p[1] + GL_AHEAD_M * self.head[1])
+            return p
+        return (p[0] + GL_AHEAD_M * self.head[0], p[1] + GL_AHEAD_M * self.head[1])
 
 
 GL["core"] = GuideCore()
@@ -798,11 +810,11 @@ def _gl_frame(w, candidates, person_boxes, warm_boxes, pw, ph, t0):
         gl_event(e, now)
     gl_phase_watch(now)
     gl_light_set(c.light_wanted(), now)
-    a = c.aim(tg)
+    a = c.aim(tg, now)
     GL["aim"] = a
     if a is None:
         return
-    gl_head_to(a, c.p if c.phase != "arrived" else None, now)
+    gl_head_to(a, c.where(now) if c.phase != "arrived" else None, now)
 
 
 def gl_event(e, now):
@@ -840,7 +852,7 @@ def gl_phase_watch(now):
 
 def gl_head_to(g, person, now):
     """turn the head to the ground point g (light), keeping the person in the picture of the head camera"""
-    if now - GL["pan_t"] < GL_LOOK_S:
+    if now - GL["pan_t"] < GL_LOOK_S or now - GL.get("move_t", 0.0) < GL_HOLD_S:
         return
     GL["pan_t"] = now
     if not CFG.get("kopf_on", True) or not kopf_may("guide") or servo_blocked() or manual_active() or CFG.get("kopf_transport"):
@@ -854,8 +866,8 @@ def gl_head_to(g, person, now):
     dpan, dtilt = gl_angdiff(az, p0), want_t - t0
     if abs(dpan) < GL_HEAD_DEAD and abs(dtilt) < GL_HEAD_DEAD:
         return
-    step = GL_HEAD_DPS * GL_LOOK_S * 2.0
-    dpan = max(-step, min(step, dpan)); dtilt = max(-step, min(step, dtilt))
+    GL["move_t"] = now
+    dpan = max(-GL_HEAD_STEP, min(GL_HEAD_STEP, dpan)); dtilt = max(-GL_HEAD_STEP, min(GL_HEAD_STEP, dtilt))
     cp, ct = servo_pos()
     CFG["pan"] = kopf_pan_add(cp, dpan)
     CFG["tilt"] = kopf_tilt_add(ct, dtilt)
@@ -901,7 +913,7 @@ def gl_state(lang=None):
     return {"on": bool(CFG.get("gl_on")), "active": gl_active(), "until": CFG.get("gl_until") or "", "until_t": float(CFG.get("gl_until_t") or 0.0),
             "phase": c.phase, "kind": c.kind, "level": round(gl_light_want(time.time())[0], 2), "light": GL_LIGHT["drive"], "pct": GL_LIGHT["pct"],
             "dim": bool(GL_DIM), "dark": gl_dark_ok(), "dark_only": bool(CFG.get("gl_dark_only", True)), "wide": GL["wide"],
-            "pos": [round(v, 1) for v in c.p] if c.p else None, "aim": [round(v, 1) for v in GL["aim"]] if GL["aim"] else None,
+            "pos": [round(v, 1) for v in c.p] if c.p else None, "seen_s": round(time.time() - c.seen_t, 1) if c.p else None, "aim": [round(v, 1) for v in GL["aim"]] if GL["aim"] else None,
             "target": tg, "targets": gl_targets(L), "last_end": {"why": le["why"], "t": le["t"]} if le else None,
             "notes": GL_NOTE["n"], "light_out": bool(CFG.get("light_white_out")) or bool(CFG.get("sim_on")),
             "sched": "gl_on" in (SCHED.get("base") or {})}
