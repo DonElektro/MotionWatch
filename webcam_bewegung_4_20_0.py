@@ -278,7 +278,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_20_0.zip"
-ZD_SHA256 = "4c74c62f2c23ff40fff4d17a7d2b9db86ec18bf9b0ec2eaf12dbf7381334f0c1"
+ZD_SHA256 = "0a1b30d95e3c01fcb3aeb149f7214dd087d41a3b062d866e9792acd6730297eb"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -102965,8 +102965,20 @@ if "App" in globals():
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 _HP_CFG = {"hp_key": "", "hp_base": "https://kevlaschef.com", "hp_auto": True, "hp_start_on": False, "hp_funk_on": True,
-		   "hp_sim_on": True, "hp_public": ""}
+		   "hp_sim_on": True, "hp_public": "", "hp_info_on": True}
 for _k, _v in _HP_CFG.items():
 	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
 USER_SETTINGS_DENY.update(_HP_CFG)
@@ -103166,8 +103178,30 @@ def _hp_item(path, data):
 
 
 HP_START = "index.html"
-HP_PARTS = ("start", "funk", "sim")
-_HP_PART_DIR = {"start": "", "funk": "Funk/", "sim": "Sim/"}
+HP_PARTS = ("start", "funk", "sim", "info")
+_HP_PART_DIR = {"start": "", "funk": "Funk/", "sim": "Sim/", "info": "Info/"}
+HP_INFO = "Info/index.html"
+_HP_INFO_CACHE = {}
+
+
+def hp_info_page():
+	"""
+"""
+	import base64
+	import gzip
+	src=INFO_HTML_GZ
+	if not src:
+		return b""
+	if _HP_INFO_CACHE.get("id")is not src:
+		try:
+			h=gzip.decompress(base64.b64decode(src)).decode("utf-8")
+		except Exception:
+			return b""
+		inj='<style>[data-mw-exit]{display:none!important}</style>'
+		h=h.replace("</head>",inj+"</head>",1)
+		h=h.replace("</body>","<script>"+HP_INFO_WEB_JS+"</script></body>",1)if "</body>"in h else h+"<script>"+HP_INFO_WEB_JS+"</script>"
+		_HP_INFO_CACHE.update(id=src,page=h.encode("utf-8"))
+	return _HP_INFO_CACHE["page"]
 
 
 def hp_part_on(part):
@@ -103180,7 +103214,7 @@ def hp_start_on():
 
 def hp_part(p):
 	""
-	return "start"if p==HP_START else "funk"if p.startswith("Funk/")else "sim"if p.startswith("Sim/")else None
+	return "start"if p==HP_START else "funk"if p.startswith("Funk/")else "sim"if p.startswith("Sim/")else "info"if p.startswith("Info/")else None
 
 
 def hp_any_on():
@@ -103188,10 +103222,12 @@ def hp_any_on():
 
 
 def hp_fixed_items():
-	out=[_hp_item(HP_START,HP_INDEX_HTML.encode("utf-8"))]if hp_part_on("start")else[]
+	out=[_hp_item(HP_START,hp_index_html().encode("utf-8"))]if hp_part_on("start")else[]
 	if hp_part_on("funk"):
 		out+=[_hp_item("Funk/"+n,b)for n,b in sorted(hp_funk_files().items())]
-	return out+([_hp_item("Sim/test.html",HP_TEST_HTML.encode("utf-8"))]if hp_part_on("sim")else[])
+	out+=[_hp_item("Sim/test.html",HP_TEST_HTML.encode("utf-8"))]if hp_part_on("sim")else[]
+	info=hp_info_page()if hp_part_on("info")else b""
+	return out+([_hp_item(HP_INFO,info)]if info else[])
 
 
 def hp_sim_check(p):
@@ -103349,7 +103385,7 @@ def _hp_put(it):
 
 
 def _hp_ours(p):
-	return p=="index.html"or p.startswith(("Funk/","Sim/"))
+	return p=="index.html"or p.startswith(("Funk/","Sim/","Info/"))
 
 
 def hp_publish(auto=False):
@@ -103610,7 +103646,7 @@ def hp_status():
 	""
 	st,p,pk=hp_state(),HP["prog"],SIM3D_WEB
 	return{"ok":True,"key_set":bool(CFG.get("hp_key")),"base":CFG.get("hp_base")or "","auto":bool(CFG.get("hp_auto")),
-			"start_on":hp_part_on("start"),"funk_on":hp_part_on("funk"),"sim_on":hp_part_on("sim"),
+			"start_on":hp_part_on("start"),"funk_on":hp_part_on("funk"),"sim_on":hp_part_on("sim"),"info_on":hp_part_on("info"),
 			"busy":HP["busy"],"wait":HP["wait"],"prog":{k:p.get(k)for k in("i","n","bytes","total","file")}if p.get("n")else None,
 			"err":[HP["err"],HP["msg"]]if HP["err"]else None,"cancelled":HP["msg"]=="cancel","last":st.get("last"),
 			"check":st.get("check"),"public":hp_public_url(),"public_set":hp_public_ok(CFG.get("hp_public")),
@@ -103659,10 +103695,10 @@ def hp_action(d, lang=None):
 		CFG["hp_auto"]=bool(d.get("on"))
 		save_settings()
 		return True,""
-	if a in("start_on","funk_on","sim_on"):
+	if a in("start_on","funk_on","sim_on","info_on"):
 		CFG["hp_"+a]=bool(d.get("on"))
 		save_settings()
-		log_event("sys","Homepage: "+{"start_on":"start page","funk_on":"phone radio","sim_on":"simulator"}[a]+(
+		log_event("sys","Homepage: "+{"start_on":"start page","funk_on":"phone radio","sim_on":"simulator","info_on":"visitor page"}[a]+(
 			" on"if CFG["hp_"+a]else " off"))
 		return True,""
 	if a in("publish","check"):
@@ -103764,28 +103800,6 @@ HP_FUNK_PNG = _zd('639zzzh_homepage/HP_FUNK_PNG', "")
 
 
 
-
-
-HP_LINKS = (
-	("demo/", "m", ("📷 MoveEye", "📷 MoveEye", "📷 MoveEye", "📷 MoveEye", "📷 MoveEye"),
-	 ("Das echte MoveEye, live mit Simulator-Kamera", "The real MoveEye, live with the simulator camera",
-	  "Le vrai MoveEye, en direct avec la caméra du simulateur", "Il vero MoveEye, dal vivo con la telecamera del simulatore",
-	  "Il vair MoveEye, live cun la camera dal simulatur")),
-	("Sim/?grossvater=1", "g", ("🗺️ Die Karte des Grossvaters", "🗺️ Grandfather’s map", "🗺️ La carte du grand-père", "🗺️ La mappa del nonno",
-								"🗺️ La charta dal tat"),
-	 ("Abenteuer im Browser · Kapitel 2", "Adventure in the browser · Chapter 2", "Aventure dans le navigateur · Chapitre 2",
-	  "Avventura nel browser · Capitolo 2", "Aventura en il browser · Chapitel 2")),
-	("Funk/", "f", ("📡 Handy-Funkgerät", "📡 Phone radio", "📡 Radio du téléphone", "📡 Radio del telefono", "📡 Radio dal telefonin"),
-	 ("Morse und eigenes Protokoll, geht auch offline", "Morse and own protocol, works offline too",
-	  "Morse et protocole propre, fonctionne aussi hors ligne", "Morse e protocollo proprio, funziona anche offline",
-	  "Morse ed agen protocol, funcziuna er offline")),
-	("Sim/", "s", ("🎮 Simulator (Demo)", "🎮 Simulator (demo)", "🎮 Simulateur (démo)", "🎮 Simulatore (demo)", "🎮 Simulatur (demo)"),
-	 ("Im Browser, ohne Verbindung zu MoveEye · ca. 80 MB", "In the browser, without a connection to MoveEye · about 80 MB",
-	  "Dans le navigateur, sans connexion à MoveEye · env. 80 Mo", "Nel browser, senza connessione a MoveEye · ca. 80 MB",
-	  "En il browser, senza colliaziun cun MoveEye · ca. 80 MB")),
-)
-
-
 HP_EYE_SVG = ('<span class="mweye" aria-hidden="true"><svg viewBox="0 0 100 112" focusable="false"><defs><linearGradient id="mweg" x1="0" y1="1" '
 			  'x2="0" y2="0"><stop offset="0" stop-color="#ff9f43"/><stop offset="1" stop-color="#ff9f43" stop-opacity=".4"/></linearGradient>'
 			  '<clipPath id="mwec"><circle cx="50" cy="80" r="16.6"/></clipPath></defs><g class="e-all">'
@@ -103805,33 +103819,117 @@ HP_EYE_CSS = (".mweye{display:inline-block;height:1.15em;width:1.03em;vertical-a
 			  "@media (prefers-reduced-motion:reduce){.mweye *{animation:none!important}}")
 
 
-def hp_links_html(L="de", ids=True):
+
+
+
+
+
+HP_LINKS = (
+	("demo/", "m", ("📷 MoveEye", "📷 MoveEye", "📷 MoveEye", "📷 MoveEye", "📷 MoveEye"),
+	 ("Das echte MoveEye, live mit Simulator-Kamera", "The real MoveEye, live with the simulator camera",
+	  "Le vrai MoveEye, en direct avec la caméra du simulateur", "Il vero MoveEye, dal vivo con la telecamera del simulatore",
+	  "Il vair MoveEye, live cun la camera dal simulatur")),
+	("Sim/?grossvater=1", "g", ("🗺️ Die Karte des Grossvaters", "🗺️ Grandfather’s map", "🗺️ La carte du grand-père", "🗺️ La mappa del nonno",
+								"🗺️ La charta dal tat"),
+	 ("Abenteuer im Browser", "Adventure in the browser", "Aventure dans le navigateur", "Avventura nel browser", "Aventura en il browser")),
+	("Funk/", "f", ("📡 Handy-Funkgerät", "📡 Phone radio", "📡 Radio du téléphone", "📡 Radio del telefono", "📡 Radio dal telefonin"),
+	 ("Morse und eigenes Protokoll, geht auch offline", "Morse and own protocol, works offline too",
+	  "Morse et protocole propre, fonctionne aussi hors ligne", "Morse e protocollo proprio, funziona anche offline",
+	  "Morse ed agen protocol, funcziuna er offline")),
+	("Sim/", "s", ("🎮 Simulator (Demo)", "🎮 Simulator (demo)", "🎮 Simulateur (démo)", "🎮 Simulatore (demo)", "🎮 Simulatur (demo)"),
+	 ("Im Browser, ohne Verbindung zu MoveEye · ca. 80 MB", "In the browser, without a connection to MoveEye · about 80 MB",
+	  "Dans le navigateur, sans connexion à MoveEye · env. 80 Mo", "Nel browser, senza connessione a MoveEye · ca. 80 MB",
+	  "En il browser, senza colliaziun cun MoveEye · ca. 80 MB")),
+	("Info/", "i", ("ℹ️ Besucherseite", "ℹ️ Visitor page", "ℹ️ Page visiteurs", "ℹ️ Pagina visitatori", "ℹ️ Pagina per visitaders"),
+	 ("Was MoveEye kann, Pakete und Anfrage", "What MoveEye can do, packages and enquiry", "Ce que MoveEye sait faire, offres et demande",
+	  "Cosa sa fare MoveEye, pacchetti e richiesta", "Tge che MoveEye sa, pachets e dumonda")),
+)
+
+
+
+
+HP_GV_KAPITEL = (
+	(1, "3.77.0"),
+	(2, "3.77.0"),
+	(3, "3.77.0"),
+)
+HP_GV_TX = {
+	"gv.all": ("▶ Ganzes Spiel", "▶ Whole game", "▶ Jeu complet", "▶ Gioco completo", "▶ Gieu cumplet"),
+	"gv.kap": ("Kapitel", "Chapter", "Chapitre", "Capitolo", "Chapitel"),
+}
+_HP_LANGS = ("de", "en", "fr", "it", "rm")
+
+
+def hp_gv_kapitel(ver=None):
 	""
+	if ver is None:
+		try:
+			sim_manifest_load()
+			ver=SIM3D_WEB["version"]if SIM3D_WEB.get("size")else ""
+		except Exception:
+			ver=""
+	v=sim_vkey(ver)if ver else None
+	return[n for n,ab in HP_GV_KAPITEL if v and v>=sim_vkey(ab)]
+
+
+def hp_tiles_tx():
+	""
+	d={}
+	for _h,k,t,s in HP_LINKS:
+		d["btn."+k],d["btn.%ss"%k]=t,s
+	d.update(HP_GV_TX)
+	return d
+
+
+def hp_links_html(L="de", kap=None):
+	"""
+"""
 	import html as _h
-	i=("de","en","fr","it","rm").index(L)if L in("de","en","fr","it","rm")else 0
-	a1,a2=('id="%s"','id="%ss"')if ids else('data-t="btn.%s"','data-t="btn.%ss"')
-	return "".join(('<a href="%s"><span '+a1+'>%s</span><small '+a2+'>%s</small></a>')
-				   %(href,k,_h.escape(t[i]),k,_h.escape(s[i]))for href,k,t,s in HP_LINKS)
+	i=_HP_LANGS.index(L)if L in _HP_LANGS else 0
+	kap=hp_gv_kapitel()if kap is None else kap
+	e=lambda x:_h.escape(x,quote=True)
+	out=[]
+	for href,k,t,s in HP_LINKS:
+		head='<span class="tt" id="t-%s" data-t="btn.%s">%s</span><small data-t="btn.%ss">%s</small>'%(k,k,e(t[i]),k,e(s[i]))
+		if k!="g":
+			out.append('<a class="tile t-%s" href="%s">%s</a>'%(k,e(href),head))
+			continue
+		chips='<a class="chip go" href="%s" data-t="gv.all">%s</a>'%(e(href),e(HP_GV_TX["gv.all"][i]))
+		if kap:
+			kw=e(HP_GV_TX["gv.kap"][i])
+			chips+='<span class="kl" data-t="gv.kap">%s</span>'%kw+"".join(
+				'<a class="chip" href="%s"><span class="kw" data-t="gv.kap">%s</span><b>%d</b></a>'%(e("%s&kapitel=%d"%(href,n)),kw,n)for n in kap)
+		out.append('<div class="tile t-g">%s<div class="chips" role="group" aria-labelledby="t-g">%s</div></div>'%(head,chips))
+	return '<main class="tiles">'+"".join(out)+'</main>'
 
 
-def hp_index_html():
+
+
+HP_TILES_CSS = _zd('639zzzh_homepage/HP_TILES_CSS', "")
+HP_JS_LANG = r"""(function(){var T=/*T*/,l=(navigator.language||"de").slice(0,2).toLowerCase(),t=T[l];if(!t)return;document.documentElement.lang=l;
+document.querySelectorAll("[data-t]").forEach(function(e){var v=t[e.getAttribute("data-t")];if(v)e.textContent=v;});})();"""
+
+
+def hp_index_html(kap=None):
 	""
-	T={L:[x for _h,_k,t,s in HP_LINKS for x in(t[i],s[i])]for i,L in enumerate(("de","en","fr","it","rm"))if L!="de"}
-	ids=[x for _h,k,_t,_s in HP_LINKS for x in(k,k+"s")]
+	tx=hp_tiles_tx()
+	T={L:{k:v[i]for k,v in tx.items()}for i,L in enumerate(_HP_LANGS)if L!="de"}
 	return('<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-			'<title>MoveEye</title><style>body{margin:0;font:17px system-ui,sans-serif;background:#111418;color:#e8eaed;display:flex;min-height:100vh;'
-			'align-items:center;justify-content:center}\nmain{padding:24px;max-width:420px;width:100%;box-sizing:border-box}h1{margin:0 0 20px}'
-			'a{display:block;margin:12px 0;padding:18px;border-radius:14px;background:#1d2229;color:#e8eaed;text-decoration:none;border:1px solid #2c333c;'
-			'overflow-wrap:anywhere}\nsmall{display:block;color:#9aa3ad;margin-top:4px}'+HP_EYE_CSS+'</style></head><body><main><h1>'
-			+HP_EYE_SVG+'MoveEye</h1>\n'+hp_links_html("de")+'\n</main><script>(function(){var T='+json.dumps(T,ensure_ascii=False)
-			+';\nvar l=(navigator.language||"de").slice(0,2).toLowerCase(),t=T[l];if(!t)return;document.documentElement.lang=l;\n'
-			+json.dumps(ids)+'.forEach(function(id,i){document.getElementById(id).textContent=t[i];});})();</script></body></html>\n')
+			'<title>MoveEye</title><style>body{margin:0;font:17px system-ui,sans-serif;background:#111418;color:#e8eaed}\n'
+			'.first{display:flex;flex-direction:column;justify-content:center;min-height:100vh;min-height:100svh;box-sizing:border-box;padding:16px 0}'
+			'h1{margin:0 auto;padding:0 16px;width:100%;max-width:1100px;box-sizing:border-box;font-size:clamp(30px,calc(6*var(--vh)),44px)}\n'
+			+HP_TILES_CSS+HP_EYE_CSS+'</style></head><body><div class="first"><h1>'+HP_EYE_SVG+'MoveEye</h1>\n'+hp_links_html("de",kap)
+			+'\n</div><script>'+HP_JS_LANG.replace("/*T*/",json.dumps(T,ensure_ascii=False,sort_keys=True).replace("</","<\\/"),1)
+			+'</script></body></html>\n')
 
 
-HP_INDEX_HTML = hp_index_html()
 
 
 HP_TEST_HTML = _zd('639zzzh_homepage/HP_TEST_HTML', ZD_PAGE)
+
+
+
+HP_INFO_WEB_JS = _zd('639zzzh_homepage/HP_INFO_WEB_JS', "")
 
 
 HP_FMT_JS = _zd('639zzzh_homepage/HP_FMT_JS', "")
@@ -103862,6 +103960,15 @@ for _L in ("fr", "it", "rm"):
 
 
 homepage_selftest = _zd_fn('639zzzh_homepage/homepage_selftest()')
+
+
+
+
+
+
+
+
+
 
 
 
@@ -113207,18 +113314,20 @@ SB_DRAWN = ('<svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" r
 
 
 def _sb_btn_tx():
-	""
-	return{("btn.%s"%k)+x:v for _h,k,t,s in HP_LINKS for x,v in(("",t),("s",s))}
+	"""
+"""
+	return hp_tiles_tx()
 
 
 def _sb_tx(key, L):
-	v=SB_TX.get(key)or(_sb_btn_tx().get(key)if key.startswith("btn.")else None)or()
+	v=SB_TX.get(key)or(_sb_btn_tx().get(key)if key.startswith(("btn.","gv."))else None)or()
 	i=_SB_LANGS.index(L)if L in _SB_LANGS else 0
 	return v[i]if len(v)>i and v[i]else(v[0]if v else "")
 
 
-def sb_page_html(variant=None, url=None, meta=None):
-	""
+def sb_page_html(variant=None, url=None, meta=None, kap=None):
+	"""
+"""
 	import html as _h
 	m=meta if meta is not None else sb_meta()
 	v=variant if variant in SB_VARIANTS else sb_variant()
@@ -113253,11 +113362,11 @@ def sb_page_html(variant=None, url=None, meta=None):
 		return '<img src="%s"%s width="%d" height="%d" %s decoding="async" style="%s" %s>'%(
 			e(url(slot,False)),srcset,s["w"],s["h"],'loading="lazy"'if lazy else 'fetchpriority="high"',pos(slot),alt(alt_of or slot,key))
 
-	css=SB_CSS+(SB_CSS_A if v=="A"else SB_CSS_B)+HP_EYE_CSS
-	hero='<header class="hero">'+(img("titel",72,lazy=False)if "titel"in S else SB_DRAWN.replace("{alt}",e(_sb_tx("alt.drawn","de"))))
+	css=HP_TILES_CSS+SB_CSS+(SB_CSS_A if v=="A"else SB_CSS_B)+HP_EYE_CSS
+	hero='<div class="first"><header class="hero">'+(img("titel",72,lazy=False)if "titel"in S else SB_DRAWN.replace("{alt}",e(_sb_tx("alt.drawn","de"))))
 	hero+=('<div class="top"><h1>'+HP_EYE_SVG+'MoveEye</h1><p data-t="titel.line">%s</p></div><div class="cap1"><span class="kick" data-t="titel.kick">%s</span>'
 			 '<span class="line" data-t="titel.say">%s</span></div></header>'%(e(tx("titel","line")),e(tx("titel","kick")),e(tx("titel","say"))))
-	btn='<main>'+hp_links_html("de",ids=False)+'</main>'
+	btn=hp_links_html("de",kap)+'</div>'
 	body,pre,post="","",""
 	if v=="A":
 		ch=[k for k in SB_CHAPTERS if k in S or(k=="grat"and "grat_hoch"in S)]
@@ -113449,7 +113558,7 @@ def smalltv_routes(app, reply, body):
 		v=str(request.args.get("v")or sb_variant()).upper()
 		m=sb_meta()
 		h=sb_page_html(v if v in SB_VARIANTS else sb_variant(),lambda s,k:"/api/startbilder/bild/%s?k=%d&v=%s"%(s,1 if k else 0,m["slots"][s].get("v")),m)
-		return Response(h or HP_INDEX_HTML,mimetype="text/html",headers={"Cache-Control":"no-store","X-Robots-Tag":"noindex"})
+		return Response(h or hp_index_html(),mimetype="text/html",headers={"Cache-Control":"no-store","X-Robots-Tag":"noindex"})
 
 	@app.route("/api/startbilder",methods=["GET","POST"])
 	def api_sb():

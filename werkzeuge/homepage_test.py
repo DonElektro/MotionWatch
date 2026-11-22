@@ -10,7 +10,7 @@ Content-Security-Policy (connect-src 'none', script-src ohne 'wasm-unsafe-eval')
 Geprüft: nur der Admin (Seite, API, /api/set, Eintrag unter «Mehr»); der Schlüssel steht nirgends ausser in der
 Einstellungs-Datei (Zustand, Status, Protokoll, alle anderen Dateien, Export für Nicht-Admins, Fehlertexte des Servers); alles
 hochgeladen (Funk/ = funk/ des Repositorys, Sim/ = sim-web.zip, test.html; drei Schalter Startseite (ab Werk aus) /
-Funkgerät / Simulator (ab Werk an): ein Teil aus = weder hochgeladen noch gelöscht, die Prüfung überspringt ihn, alle aus = gesperrt); nur Geändertes; nur eigene Dateien
+Funkgerät / Simulator / Besucherseite Info/ (ab Werk an; 22.11.2026: Produktseite ohne Senden und ohne Kontaktadresse, Kapitel-Knöpfe nur mit einem Sim, der «kapitel» kennt): ein Teil aus = weder hochgeladen noch gelöscht, die Prüfung überspringt ihn, alle aus = gesperrt); nur Geändertes; nur eigene Dateien
 gelöscht; falscher Schlüssel, Platz voll, zu grosse Datei; Wiederholen nach 500; Umleitung beim Hochladen nie befolgt; die
 Prüfung findet 404, Umleitung auf andere Herkunft, falschen Typ, nosniff und die CSP-Sperren; automatisch nur, wenn sich der
 Inhalt geändert hat, nie während eines Alarms; das Paket sim-web.zip nur mit der signierten Prüfsumme (Teil 300 «anhang.web»),
@@ -354,16 +354,24 @@ def lauf(datei, tmp):
 
     print("3) veröffentlichen (Simulator für den Browser noch nicht veröffentlicht), Startseite ab Werk aus", flush=True)
     owner_start = b"<html>Startseite des Besitzers, von Hand hochgeladen</html>"
+    CFG["info_mail"] = "kontakt-test@example.invalid"                # 22.11.2026: die Kontaktadresse von /info/ kommt nie auf den Webspace
+    ok(CFG["hp_info_on"] is True and ns["DEFAULTS"]["hp_info_on"] is True, "ab Werk: Besucherseite (Info/) an")
     W.files["index.html"] = owner_start                              # schon auf dem Webspace (nicht von MoveEye)
     code, j = api("admin", {"action": "publish"})
     funk = {n: open(os.path.join(REPO, "funk", n), "rb").read() for n in os.listdir(os.path.join(REPO, "funk"))}
     ok(code == 200 and not j.get("err") and fmt(ns, j)["note"].startswith("Der Simulator für den Browser ist noch nicht"), f"ohne Sim-Paket: {fmt(ns, j)['err']} {fmt(ns, j)}")
-    ok(fmt(ns, j)["last"].startswith("Fertig: 8 hochgeladen, 0 unverändert, 0 gelöscht. · "), "Meldung (Startseite aus): " + fmt(ns, j)["last"])
+    ok(fmt(ns, j)["last"].startswith("Fertig: 9 hochgeladen, 0 unverändert, 0 gelöscht. · "), "Meldung (Startseite aus): " + fmt(ns, j)["last"])
+    info = W.files.get("Info/index.html", b"").decode("utf-8")
+    ok(info.encode() == ns["hp_info_page"]() and len(info) > 1000000 and "Interesse? Frag unverbindlich an." in info,
+       "Info/index.html = die Produktseite von /info/ (%d KB)" % (len(info) // 1024))
+    ok("[data-mw-exit]{display:none!important}" in info and "Text kopieren" in info and "/info/ask" not in info
+       and "kontakt-test@example.invalid" not in info and "__MAIL__" not in info and "/info/bild/" not in info,
+       "Info/: «✕» versteckt, «Text kopieren» statt Senden, keine Kontaktadresse, keine eigenen Kamerabilder")
     ok(all(W.files.get("Funk/" + n) == b for n, b in funk.items()) and len(funk) == 7, "Funk/ = die 7 Dateien von funk/ (Byte für Byte)")
     ok("Sim/test.html" in W.files, "Sim/test.html bleibt dabei")
     ok("index.html" not in [x[2] for x in W.uploads()] and W.files.get("index.html") == owner_start, "Startseite aus: index.html nicht hochgeladen, vorhandene bleibt")
     ok(not any(x[0] == "DELETE" for x in W.log), "Startseite aus: nichts gelöscht")
-    ok(len(W.uploads()) == 8, f"8 Dateien hochgeladen ({len(W.uploads())})")
+    ok(len(W.uploads()) == 9, f"9 Dateien hochgeladen ({len(W.uploads())})")
     ok(j.get("start_on") is False, "Status: start_on aus")
     F = fmt(ns, j)
     rows3 = [r["line"] for r in F["rows"]]
@@ -385,9 +393,12 @@ def lauf(datei, tmp):
     ok('href="demo/"' in ix and 'href="Sim/?grossvater=1"' in ix and "📷 MoveEye" in ix and "Die Karte des Grossvaters" in ix,
        "Startseite: «📷 MoveEye» → demo/, «🗺️ Die Karte des Grossvaters» → Sim/?grossvater=1")
     tj = re.search(r"var T=(\{.*?\});", ix, re.S)
-    ok(tj and all(len(v) == 8 for v in json.loads(tj.group(1).replace("en:", '"en":').replace("fr:", '"fr":').replace("it:", '"it":')
-                                                        .replace("rm:", '"rm":')).values()) and ix.count('<a href=') == 4,
-       "Startseite: 4 Verweise, je 8 Texte in en / fr / it / rm (Deutsch im HTML)")
+    nt = len(ns["hp_tiles_tx"]())
+    ok(tj and sorted(json.loads(tj.group(1))) == ["en", "fr", "it", "rm"] and all(len(v) == nt for v in json.loads(tj.group(1)).values())
+       and ix.count('class="tile') == 5 and 'href="Info/"' in ix and "ℹ️ Besucherseite" in ix,
+       "Startseite: 5 Kacheln (mit ℹ️ Besucherseite → Info/), je %d Texte in en / fr / it / rm (Deutsch im HTML)" % nt)
+    ok('href="Sim/?grossvater=1" data-t="gv.all"' in ix and "kapitel=" not in ix,
+       "Simulator für den Browser noch nicht veröffentlicht: nur «▶ Ganzes Spiel», keine Kapitel")
     code, j = api("admin", {"action": "start_on", "on": False})
     up_before = ns["hp_state"]()["up"].get("index.html")
     n0, nl = len(W.uploads()), len(W.log)
@@ -427,7 +438,13 @@ def lauf(datei, tmp):
     code, j = api("admin", {"action": "publish"})
     with zipfile.ZipFile(zp) as z:
         ok(all(W.files.get("Sim/" + n) == z.read(n) for n in z.namelist()), "Sim/ = die 8 Dateien aus sim-web.zip")
-    ok(len(W.uploads()) - n0 == 10 and not j["last"].get("ren"), f"nur die 10 neuen Dateien (8 + 2 Pack-Teile) hochgeladen ({len(W.uploads()) - n0}), keine Umbenennung")
+    ok(len(W.uploads()) - n0 == 11 and "index.html" in [x[2] for x in W.uploads()[n0:]] and not j["last"].get("ren"),
+       f"nur die 10 neuen Dateien (8 + 2 Pack-Teile) + index.html (jetzt mit Kapiteln) hochgeladen ({len(W.uploads()) - n0}), keine Umbenennung")
+    ix = W.files["index.html"].decode("utf-8")
+    want = ns["hp_gv_kapitel"]("3.95.0")
+    ok(want == [n for n, _v in ns["HP_GV_KAPITEL"]] and want[:3] == [1, 2, 3] and all('href="Sim/?grossvater=1&amp;kapitel=%d"' % n in ix for n in want)
+       and "kapitel=%d" % (len(want) + 1) not in ix, f"Sim 3.95.0: Kapitel-Knöpfe {want} (Parameter «kapitel»)")
+    ok(ns["hp_gv_kapitel"]("3.76.0") == [] and ns["hp_gv_kapitel"]("") == [], "Sim 3.76.0 (ohne «kapitel»): keine Kapitel-Knöpfe")
     ok(all(re.fullmatch(r"[^.]+\.[a-z0-9]+", p.rsplit("/", 1)[-1]) for p in W.files), "jede Datei auf dem Webspace hat genau einen Punkt")
 
     print("5) nur Geändertes", flush=True)
@@ -454,11 +471,11 @@ def lauf(datei, tmp):
     api("admin", {"action": "publish"})
     ok("Sim/alt_index.js" not in W.files and W.files.get("sim/index.html") and W.files.get("Sim/eigene.txt"), "nur eigene alte Datei gelöscht (sim/ und fremde bleiben)")
 
-    print("5b) drei Schalter: Funkgerät / Simulator einzeln aus, alle aus", flush=True)
+    print("5b) vier Schalter: Funkgerät / Simulator / Besucherseite einzeln aus, alle aus", flush=True)
     ok(CFG["hp_funk_on"] is True and CFG["hp_sim_on"] is True and ns["DEFAULTS"]["hp_funk_on"] is True and ns["DEFAULTS"]["hp_sim_on"] is True,
        "ab Werk: Funkgerät und Simulator an")
     api("admin", {"action": "publish"})
-    for part, pre, wort in (("funk", "Funk/", "Funkgerät (Funk/)"), ("sim", "Sim/", "Simulator (Sim/ + Test-Seite)")):
+    for part, pre, wort in (("funk", "Funk/", "Funkgerät (Funk/)"), ("sim", "Sim/", "Simulator (Sim/ + Test-Seite)"), ("info", "Info/", "Besucherseite (Info/)")):
         mine = {p: b for p, b in W.files.items() if p.startswith(pre)}
         up0 = {p: v for p, v in ns["hp_state"]()["up"].items() if p.startswith(pre)}
         cid_on = ns["hp_content_id"]()
@@ -481,7 +498,7 @@ def lauf(datei, tmp):
         ok(ns["hp_auto_tick"]() is True, f"{part} wieder an: automatisch ein Lauf")
         warte(HP)
         ok([x[2] for x in W.uploads()[n0:]] == [weg] and W.files.get(weg) == mine[weg], f"{part} wieder an: {weg} hochgeladen ({[x[2] for x in W.uploads()[n0:]]})")
-    for part in ("start", "funk", "sim"):
+    for part in ("start", "funk", "sim", "info"):
         api("admin", {"action": part + "_on", "on": False})
     n0, nl = len(W.uploads()), len(W.log)
     code, j = api("admin", {"action": "publish"})
@@ -496,8 +513,8 @@ def lauf(datei, tmp):
     ok(I[0].startswith("Nichts gewählt") and I[1] == "MoveEye lädt auf deinen Webspace: Handy-Funkgerät (Funk/) und Simulator im Browser mit Test-Seite (Sim/)."
        and I[2].startswith("MoveEye lädt auf deinen Webspace: Startseite, Handy-Funkgerät"), f"Text oben nennt die Auswahl: {I}")
     pg = c.get("/homepage", headers=H["admin"]).get_data(as_text=True)
-    ok(all(f'id="{x}"' in pg for x in ("hp-start", "hp-funk", "hp-sim-on", "hp-none")), "drei Schalter + Hinweis auf der Seite")
-    for part in ("start", "funk", "sim"):
+    ok(all(f'id="{x}"' in pg for x in ("hp-start", "hp-funk", "hp-sim-on", "hp-info-on", "hp-none")), "vier Schalter + Hinweis auf der Seite")
+    for part in ("start", "funk", "sim", "info"):
         api("admin", {"action": part + "_on", "on": True})
     api("admin", {"action": "publish"})
 
