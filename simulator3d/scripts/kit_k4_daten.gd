@@ -242,7 +242,7 @@ const SZENEN := [
 			{"t": 0.0, "k": "setzen", "s": 51.6, "q": 1.0},
 			{"t": 0.0, "k": "person_k4", "id": "lia", "s": 51.5, "q": 2.3, "blick": [51.0, 2.3]},
 			{"t": 0.0, "k": "shot", "art": "fix", "s": 49.2, "q": 1.6, "h": 1.2, "blick": [55.5, 1.7, 8.0], "d": 3.0, "himmel": true},
-			{"t": 3.0, "k": "shot", "art": "fix", "s": 47.0, "q": -0.8, "h": 5.3, "blick": [53.0, 2.0, 2.6], "d": 12.0, "ziel": [52.6, 2.4, 0.0], "groesse": 3.2},
+			{"t": 3.0, "k": "shot", "art": "fix", "s": 47.0, "q": -0.8, "h": 5.3, "blick": [53.0, 2.0, 2.6], "d": 12.0, "ziel": [52.0, 1.8, 0.0], "groesse": 3.2},
 			{"t": 0.3, "k": "sag", "wer": "erzaehler", "text": "Die Nacht kommt. Über dem Biwak die Sterne."},
 			{"t": 3.0, "k": "sag", "wer": "figur", "text": "Die Karte endet oben am Grat. Beim Sonnenaufgang."},
 			{"t": 6.0, "k": "sag", "wer": "lia", "text": "Dann gehen wir in der Nacht. Mit Stirnlampen. Zusammen."},

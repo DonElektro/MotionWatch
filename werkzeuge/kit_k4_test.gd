@@ -282,6 +282,9 @@ func _film_shots() -> void:
 				var r: Dictionary = k.regie.pruef_shot(e)
 				if r.get("folge", false):
 					continue
+				if bool(e.get("himmel", false)):                # a look at the sky (no subject): only free of rock
+					pruef(bool(r["frei"]), "Film-Einstellung %s: Blick zum Himmel frei" % sz["id"])
+					continue
 				var at: Vector3 = k.regie._p(e)
 				var lk: Vector3 = k.regie._blick(e)
 				var neig: float = rad_to_deg(asin(clampf((lk - at).normalized().y, -1.0, 1.0)))
