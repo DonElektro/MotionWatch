@@ -60,11 +60,18 @@ func _erlaubt(n: Node) -> bool:
 	return false
 
 
+func _haelt_erlaubtes(n: Node) -> bool:
+	"""n holds something that stays (the frame of the green stick, the layer of «Erkunden»): not hidden as a whole"""
+	for a in [main.get("rover_pad"), main.get("explore"), _layer, person]:
+		if a != null and is_instance_valid(a) and n.is_ancestor_of(a):
+			return true
+	return false
+
+
 func _ist_bild(c: Control) -> bool:
-	"""a full-screen picture effect (lens, fade, night) - not a panel: stays"""
+	"""full screen and click-through: a picture effect (lens, fade, night) or a holder of other things - not a panel itself"""
 	var s: Vector2 = c.get_viewport_rect().size
-	return c.mouse_filter == Control.MOUSE_FILTER_IGNORE and c.size.x >= s.x * 0.9 and c.size.y >= s.y * 0.9 \
-			and c.find_children("*", "BaseButton", true, false).is_empty()
+	return c.mouse_filter == Control.MOUSE_FILTER_IGNORE and c.size.x >= s.x * 0.9 and c.size.y >= s.y * 0.9
 
 
 func kandidaten() -> Array:
@@ -85,13 +92,22 @@ func kandidaten() -> Array:
 		var tief: int = e[1]
 		if _erlaubt(n) and n != main:
 			continue
+		if n != main and _haelt_erlaubtes(n):
+			if tief < 6:                                              # (e.g. the window frame round the green stick): look inside
+				for k in n.get_children():
+					stapel.append([k, tief + 1])
+			continue
 		if n is Window and n != tree.root:
 			if (n as Window).visible:
 				out.append(n)
 			continue
 		if n is Control and n != main:
 			var c := n as Control
-			if c.visible and not _ist_bild(c):
+			if c.visible and _ist_bild(c):
+				if tief < 6:                                          # a full-screen holder (no buttons of its own): look inside
+					for k in c.get_children():
+						stapel.append([k, tief + 1])
+			elif c.visible:
 				out.append(c)
 			continue                                                  # (its children go with it)
 		if tief < 4:
@@ -135,6 +151,16 @@ func aus() -> void:
 	an = false
 
 
+func spalte() -> Vector2:
+	"""narrow screen with the edge buttons (erkunden_touch.gd): where the column ends at the top, else (-1, -1)"""
+	var t = person.get("touch") if person != null else null
+	var vs: Vector2 = knopf.get_viewport_rect().size
+	if vs.x >= 600.0 or t == null or not t.visible or not (t.knoepfe as Dictionary).has("rucksack"):
+		return Vector2(-1, -1)
+	var b: Control = t.knoepfe["rucksack"]
+	return Vector2(b.position.x, b.position.y - 6.0)
+
+
 func knopf_unten() -> float:
 	"""where the «Camp» button may begin (below this one)"""
 	return knopf.position.y + knopf.get_combined_minimum_size().y if knopf.visible else 4.0
@@ -154,7 +180,15 @@ func _process(_dt: float) -> void:
 	knopf.tooltip_text = T.t("Alle Fenster und Menüs wieder zeigen / wieder ausblenden")
 	var vs: Vector2 = knopf.get_viewport_rect().size
 	knopf.size = knopf.get_combined_minimum_size()
-	knopf.position = Vector2(vs.x - knopf.size.x - 8.0, 8.0)
+	var sp := spalte()
+	if sp.x >= 0.0:                                                   # phone: in the column of the edge buttons, above «Camp»
+		knopf.position = Vector2(sp.x, sp.y - 2.0 * (knopf.size.y + 8.0))
+	elif vs.x < 600.0:                                                # narrow without touch buttons: below the bar of «Erkunden»
+		var ex = main.get("explore")
+		var unten: float = (ex as Control).get_global_rect().end.y + 52.0 if ex is Control else 160.0
+		knopf.position = Vector2(vs.x - knopf.size.x - 8.0, unten)
+	else:
+		knopf.position = Vector2(vs.x - knopf.size.x - 8.0, 8.0)
 	if menu_zeigen:
 		return
 	if not an:

@@ -1382,7 +1382,11 @@ func _layout() -> void:
 	var ruhe = person.get("ruhe")
 	if ruhe != null and ruhe.has_method("knopf_unten"):
 		oben = float(ruhe.knopf_unten()) + 6.0
-	knopf.position = Vector2(s.x - kg.x - (8.0 if schmal else 10.0), oben)
+	var sp: Vector2 = ruhe.spalte() if ruhe != null and ruhe.has_method("spalte") else Vector2(-1, -1)
+	if sp.x >= 0.0:
+		knopf.position = Vector2(sp.x, sp.y - kg.y - 8.0)               # phone: above the edge buttons
+	else:
+		knopf.position = Vector2(s.x - kg.x - (8.0 if schmal else 10.0), oben)
 	if _panel.visible:
 		var mw := minf(460.0, s.x - 16.0)
 		_panel.custom_minimum_size = Vector2(mw, 0)
