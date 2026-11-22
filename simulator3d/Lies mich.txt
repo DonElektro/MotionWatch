@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.78.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.79.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -493,6 +493,15 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.79.0
+3.79.0: Roboter-Labor (Mehr → Roboter): eigene 3D-Welt für den Segment-Roboter – Form nur über Regler (Startwerte aus
+modell.json), echte Physik mit Servo-Momenten, jedes Gelenk von Hand, fertige Posen und ganze Abläufe (auch Einrollen zum
+Ring mit Riegel), Gangarten in alle Richtungen (vor, zurück, seitwärts, schräg, an Ort drehen, Kurven) mit Ziel per Klick,
+Körper passt sich dem Untergrund an, im Ring rollen und lenken, Anzeigen für Servo-Last, Strom, Schwerpunkt und Kippgefahr,
+Gelände-Test mit Rampe, Stufe, Kies und Graben. Vorerst nur am PC. Bergtal: Beim Sprung zum Gletscherblick und zur
+Passchanzle ist die Ansicht jetzt von Hand gesetzt – man sieht den Wyssgletscher und schaut über die Passstrasse ins Tal.
+So testest du: am PC Mehr → Roboter öffnen, eine Gangart wählen und ein Ziel anklicken; im Gelände-Test über Rampe und Stufe.
 
 NEU IN 3.78.0
 3.78.0: Die Karte des Grossvaters: Kapitel 4 «Nebel im Couloir» – Wärmebild, Seilschaft und das alte Biwak; die

@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-22 19:43",
+ "generated": "2026-11-22 21:11",
  "versions": [
   {
    "version": "4.22.0",
    "file": "webcam_bewegung_4_22_0.py",
    "url": "",
    "sha256": "f71a3a930b213ae970c1731ffc0d51e0bf8d3f836479a87673d11f8e6f442c98",
-   "date": "2026-11-22 19:43",
+   "date": "2026-11-22 20:26",
    "notes": "Besucherseite /info/ neu gestaltet – feine Radar-Ringe mit langsamem Strahl im Hintergrund, Erkennungs-Ecken, Abschnittsleiste am PC, hell oder dunkel wie das Gerät. «Alle Funktionen» mit Suchfeld (Name und Satz, mit Anzahl) und einer Kachel mit der Anzahl Funktionen. Schwenkbereich ±135°. «Eine Nacht» spielt jeden Zeitpunkt ganz ab. Akku: Geekworm X1206 V2.0 als Standard, Waveshare UPS HAT (E) auch möglich. Die Fussnote nennt die Nummer dieser MoveEye.",
    "size": 3622208,
    "sig": "eb7dcd66de0644637a6e07c73ee921b680c1d1ec2085eb0f7c9ceb3d314b581f55d1163eb628197b940119deb10727263075eb69d5f584d01249371de10bbb0f",
@@ -204,41 +204,41 @@
    "sig": "3c0d6ad76326d81ce324c8914ca35b61596ef189eb0e83e04238c5088ad5e2954914805461e7194f7648bb37117d49454eb7d207ff54d89893e10667b26ea80a"
   },
   "pi": {
-   "ver": "3.78.0",
+   "ver": "3.79.0",
    "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 44361554,
-   "sha256": "403c4e44f151f71f1e7516faa251f73c103bdf36432bf45bae3be2521665424b",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.78.0/MoveEyeSim3D_Pi.zip",
-   "sig": "b8411dfe7f9a945481c18e905e8b2e9ba0c772475591ede4ed0e2c039f5e48bf525d4fba01d84491ed2127824f1e5c1b45311343999de0de8851407a58e6b706"
+   "size": 44474391,
+   "sha256": "345dbb1baf943fd93fcca32be92a703aaa1abec487c7f531d1cb4ba7eaa2f12b",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.79.0/MoveEyeSim3D_Pi.zip",
+   "sig": "01639d251a1314e8ee2f586e83ef745de33c61c701c3dbd09bba76f142c1daab8c85da2b89127b06f17a49ed7c484637f3e3933c82a37887d83738746165dc09"
   },
   "anhang": {
-   "ver": "3.78.0",
-   "version": "3D-5.78.0",
-   "notes": "Grossvater Kapitel 4, Kapitelwahl, Haltungen im Abenteuer, Camp",
+   "ver": "3.79.0",
+   "version": "3D-5.79.0",
+   "notes": "Roboter-Labor, Aussichtspunkte von Hand gesetzt",
    "mw_min": "3.55.0",
    "win": {
-    "ver": "3.78.0",
+    "ver": "3.79.0",
     "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
-    "size": 60830457,
-    "sha256": "d27d23a76ff4841c35c75c6317ead3160f28fe915389fe83c27293276597e776",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.78.0/MotionWatch3D_Simulator.zip",
-    "sig": "237df5a580ae1b3fffa5a4768d6938e2b7da5fa483daaec9b587fa4e3c1aafd512f9147fd4ae4d8e30a937151c88bea23b3b095eefe2d97e0200f226ede35106"
+    "size": 60934731,
+    "sha256": "4dc20e0c9107c3de9f84f6a4ca836e0375296e4bd789ff96ade7ae1bb0af185f",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.79.0/MotionWatch3D_Simulator.zip",
+    "sig": "8ebba867a90391c53b251075d9cf3eaa5b9b7a73287e86a86c6a41c6d852a923e2af4e48570f672c4b56e2aa33a2b8371cd8c1312c6390126e9311c35647f40f"
    },
    "linux": {
-    "ver": "3.78.0",
+    "ver": "3.79.0",
     "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
-    "size": 54884065,
-    "sha256": "e84423986c078304cc43b8a4e9207f2d6251fe51eb05eefbf4abb68f536d4dcc",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.78.0/MoveEyeSim3D_Linux.zip",
-    "sig": "8ad691a0c7be6fbf40e02aa2b134d6b2d787f720be04099766a58ec2496d53930c77fba97de1dd7bae0047dd2913ee131e16e5b2808294c3ef5bdb23eb40130a"
+    "size": 54988687,
+    "sha256": "1cb35691dc40e76173a5d9522be99879ae9591061785f4125129178401d2f422",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.79.0/MoveEyeSim3D_Linux.zip",
+    "sig": "58adbaed224242e2699ac18128e2366cc3594096c15cde1d0eb2f0224110b0345464838396e152767ee7f0b5e6d583b4fe90a6b0bbae8400e6115de27596030a"
    },
    "web": {
-    "ver": "3.78.0",
+    "ver": "3.79.0",
     "file": "simulator3d/anhang/sim-web.zip",
-    "size": 80821854,
-    "sha256": "b9a1abf89ad9a726a9160c3327688fa394ffc4e11d94297f7677d3adda8c447e",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.78.0/sim-web.zip",
-    "sig": "69dc306a4850eaa464a32e1e62a0d463baf812aa8108a847370d8e5a84fc6776aca197ff401f54a52c85c5bfd5cc0de7dd5afca0ce923b04feb674b9a364c604"
+    "size": 81040375,
+    "sha256": "2e631f447b7f34cd57d6b30bf2172deb83fa00c6b2539c224efb1f69a697c86d",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.79.0/sim-web.zip",
+    "sig": "1dfca53d69d9155da918529510831e3e1f1ad43d054dafb95aabb3134732298f02b881ee9d8c224471f826fb82c2a9b678ab220b1c41092be84e46cade509d0d"
    }
   }
  }

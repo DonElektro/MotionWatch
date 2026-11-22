@@ -1339,6 +1339,12 @@
   "it": "%d pezzi su questo piatto",
   "rm": "%d parts sin questa platta"
  },
+ "%d Teile berühren sich (rot)": {
+  "en": "%d parts touch each other (red)",
+  "fr": "%d pièces se touchent (rouge)",
+  "it": "%d parti si toccano (rosso)",
+  "rm": "%d parts sa tutgan (cotschen)"
+ },
  "%d Treffer – bitte einen auswählen.": {
   "en": "%d results – please pick one.",
   "fr": "%d résultats – merci d’en choisir un.",
@@ -3609,6 +3615,12 @@
   "it": "Transenna",
   "rm": "Cancel da serrar"
  },
+ "Abstand im Gelenk": {
+  "en": "Gap in the joint",
+  "fr": "Écart dans l’articulation",
+  "it": "Distanza nel giunto",
+  "rm": "Distanza en l’artitgel"
+ },
  "Abstandsbolzen M2,5 × 17 mm, Innen-/Aussengewinde (durch den Pi in die Bolzen des Adapters 28)": {
   "en": "Standoff M2.5 × 17 mm, female/male (through the Pi into the posts of adapter 28)",
   "fr": "Entretoise M2,5 × 17 mm, femelle/mâle (à travers le Pi dans les plots de l'adaptateur 28)",
@@ -4170,6 +4182,12 @@
   "fr": "Tout le monde à la maison",
   "it": "Tutti a casa",
   "rm": "Tuts a chasa"
+ },
+ "Alle nacheinander": {
+  "en": "All one after the other",
+  "fr": "Tous l’un après l’autre",
+  "it": "Tutti uno dopo l’altro",
+  "rm": "Tuts in suenter l’auter"
  },
  "Alle notierten Runden löschen (zweimal klicken)": {
   "en": "Delete all noted rounds (click twice)",
@@ -5303,6 +5321,24 @@
   "it": "passato a MoveEye",
   "rm": "dà vinavant a MoveEye"
  },
+ "an Ort drehen": {
+  "en": "turn on the spot",
+  "fr": "tourner sur place",
+  "it": "girare sul posto",
+  "rm": "sa volver al lieu"
+ },
+ "an Ort drehen links": {
+  "en": "turn on the spot left",
+  "fr": "tourner sur place à gauche",
+  "it": "girare sul posto a sinistra",
+  "rm": "sa volver al lieu a sanestra"
+ },
+ "an Ort drehen rechts": {
+  "en": "turn on the spot right",
+  "fr": "tourner sur place à droite",
+  "it": "girare sul posto a destra",
+  "rm": "sa volver al lieu a dretga"
+ },
  "An steilen Stellen abseilen (E an der Kante).": {
   "en": "Abseil down steep spots (E at the edge).",
   "fr": "Descendre en rappel aux endroits raides (E au bord).",
@@ -5503,6 +5539,12 @@
   "it": "ruotare e inclinare la vista (se il mover si muove, le frecce lo guidano)",
   "rm": "volver ed inclinar la vista (sch'il mover charra, manischan las frizzas el)"
  },
+ "Ansicht folgt dem Roboter": {
+  "en": "View follows the robot",
+  "fr": "La vue suit le robot",
+  "it": "La vista segue il robot",
+  "rm": "La vista suonda il robot"
+ },
  "Ansicht mit der Maus: links ziehen = verschieben · rechts ziehen = drehen · Rad = zoomen · Doppelklick = hinfliegen\nTasten: 0 frei · 1 / 2 Kameras · 3 Wärmebild · M Karte · L Livebild · H Bedienfeld · Esc Punkte fertig": {
   "en": "View with the mouse: drag left = move · drag right = turn · wheel = zoom · double click = fly there\nKeys: 0 free · 1 / 2 cameras · 3 thermal image · M map · L live picture · H control panel · Esc points done",
   "fr": "Vue à la souris : glisser à gauche = déplacer · glisser à droite = tourner · molette = zoomer · double-clic = y voler\nTouches : 0 libre · 1 / 2 caméras · 3 image thermique · M carte · L image en direct · H panneau · Esc points terminés",
@@ -5610,6 +5652,12 @@
   "fr": "Affichage en haut (commande, vitesse, mât)",
   "it": "Indicazione in alto (comandi, velocità, palo)",
   "rm": "Indicaziun si sura (manischament, tempo, pal)"
+ },
+ "Anzeigen": {
+  "en": "Displays",
+  "fr": "Affichages",
+  "it": "Indicatori",
+  "rm": "Indicaziuns"
  },
  "Anzünden": {
   "en": "Light",
@@ -7335,6 +7383,24 @@
   "it": "Alla tenda (prato delle tende)",
   "rm": "Tar la tenda (prà da tendas)"
  },
+ "Bein %d": {
+  "en": "Leg %d",
+  "fr": "Patte %d",
+  "it": "Zampa %d",
+  "rm": "Chomma %d"
+ },
+ "Beine an Segment %d": {
+  "en": "Legs on segment %d",
+  "fr": "Pattes du segment %d",
+  "it": "Zampe del segmento %d",
+  "rm": "Chommas dal segment %d"
+ },
+ "Beine eingeklappt": {
+  "en": "Legs folded",
+  "fr": "Pattes repliées",
+  "it": "Zampe ripiegate",
+  "rm": "Chommas plegadas"
+ },
  "Beispiel": {
   "en": "Example",
   "fr": "Exemple",
@@ -7694,6 +7760,12 @@
   "fr": "Objets surveillés – enlever et voir si MoveEye le remarque (scan de référence ; vélo et glacière aussi but du jeu «Vol») :",
   "it": "Oggetti sorvegliati – togliere e vedere se MoveEye se ne accorge (scansione di riferimento; bici e borsa frigo anche obiettivo del gioco «Furto»):",
   "rm": "Objects survegliads – prender davent e guardar, sche MoveEye al remartga (scan da referenza; velo e chista da fraid er finamira dal gieu «Engul»):"
+ },
+ "Bewegen": {
+  "en": "Move",
+  "fr": "Bouger",
+  "it": "Muovere",
+  "rm": "Mover"
  },
  "Bewegen und Ansicht: Erkunden mit dem Mover, Patrouille, Folgen, Kopf drehen, Versetzen, Höhe der Kamera, Mitspieler, Ansicht, Bedienfeld ein / aus, Hell / Rotlicht / Dunkel und «?». Mit der Maus über ein Symbol: sein Name.": {
   "en": "Moving and view: explore with the mover, patrol, follow, turn head, move, camera height, players, view, control panel on / off, light / red light / dark and «?». Mouse over a symbol: its name.",
@@ -8319,6 +8391,12 @@
   "fr": "Brouillard au sol : plus dense près du sol, irrégulier (dans l'image pour MoveEye)",
   "it": "Nebbia al suolo: più densa vicino al terreno, a chiazze (nell'immagine per MoveEye)",
   "rm": "Tschajera al terren: pli spessa sur il terren, a flatgs (en il maletg per MoveEye)"
+ },
+ "Bogen": {
+  "en": "Arch",
+  "fr": "Arc",
+  "it": "Arco",
+  "rm": "Artg"
  },
  "Boje": {
   "en": "Buoy",
@@ -12495,6 +12573,12 @@
   "it": "Il varco guarda a est - la prima luce lo attraversa verso l'altro lato, sul lago nascosto.",
   "rm": "La sfessa guarda vers ost - l'emprima glisch croda tras ella sin l'autra vart, al lai zuppà."
  },
+ "Die meistbelasteten Servos (Last = nötiges Moment / Servo-Moment):": {
+  "en": "The most loaded servos (load = needed torque / servo torque):",
+  "fr": "Les servos les plus chargés (charge = couple nécessaire / couple du servo) :",
+  "it": "I servo più caricati (carico = coppia necessaria / coppia del servo):",
+  "rm": "Ils servos il pli chargiads (chargia = moment necessari / moment dal servo):"
+ },
  "die meisten Fundstücke": {
   "en": "the most finds",
   "fr": "le plus de trouvailles",
@@ -13873,6 +13957,12 @@
   "it": "Tre giorni prima.",
   "rm": "Trais dis pli baud.",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Dreifuss": {
+  "en": "Tripod",
+  "fr": "Trépied",
+  "it": "Treppiede",
+  "rm": "Trepe"
  },
  "Drift (Modul wird mit dem Pi warm, Geräte-Fehler, langsames Wandern)": {
   "en": "Drift (module warms up with the Pi, unit error, slow wandering)",
@@ -16076,6 +16166,12 @@
   "it": "Metterla via e tornare al sentiero",
   "rm": "Pachetar e turnar a la senda"
  },
+ "Einrollen und öffnen": {
+  "en": "Roll up and open",
+  "fr": "S’enrouler et s’ouvrir",
+  "it": "Arrotolarsi e aprirsi",
+  "rm": "Rullar en ed avrir"
+ },
  "Einsames Bergtal 2 × 2 km: Alp, Bergsee, Pass, Gletscher – Schlafplatz frei wählbar, 7 Orte": {
   "en": "Lonely mountain valley 2 × 2 km: alp, mountain lake, pass, glacier – choose your sleeping spot, 7 places",
   "fr": "Vallée isolée 2 × 2 km : alpage, lac, col, glacier – lieu de bivouac au choix, 7 lieux",
@@ -17908,6 +18004,12 @@
   "it": "Kit pronti (città, bosco, avventura) in stile uniforme.",
   "rm": "Chaschettas da construcziun finidas (citad, guaud, aventura) en in stil unitar."
  },
+ "Fertige Posen: die Servos fahren mit ihrem Tempo hin (die Physik rechnet mit). «Sofort» setzt den Roboter ohne Weg in die Pose.": {
+  "en": "Ready poses: the servos move there at their speed (physics included). «At once» puts the robot into the pose without the way.",
+  "fr": "Poses prêtes : les servos s’y rendent à leur vitesse (avec la physique). «Tout de suite» met le robot dans la pose sans trajet.",
+  "it": "Pose pronte: i servo ci vanno alla loro velocità (con la fisica). «Subito» mette il robot nella posa senza percorso.",
+  "rm": "Posas finidas: ils servos van là cun lur sveltezza (la fisica quinta cun). «Immediat» metta il robot en la posa senza via."
+ },
  "Fertige Szenen": {
   "en": "Ready-made scenes",
   "fr": "Scènes toutes prêtes",
@@ -17931,6 +18033,12 @@
   "fr": "Tests fixes : toujours les mêmes visiteurs sur les mêmes chemins. Le simulateur sait qui était bien visible pour la caméra de la tête et compare avec les signalements de MoveEye. Sur ce PC (avec carte graphique), les chiffres sont plus réalistes que sur GitHub.",
   "it": "Test fissi: sempre gli stessi visitatori sugli stessi percorsi. Il simulatore sa chi era ben visibile per la telecamera della testa e lo confronta con le segnalazioni di MoveEye. Su questo PC (con scheda grafica) i numeri sono più realistici che su GitHub.",
   "rm": "Tests fixs: adina ils medems visitaders sin las medemas vias. Il simulatur sa, tgi ch’era bain visibel per la camera dal chau, e cumparegliescha quai cun ils messadis da MoveEye. Sin quest PC (cun carta grafica) èn las cifras pli realisticas che sin GitHub."
+ },
+ "Festhalten: mittleres Segment in der Luft (F)": {
+  "en": "Hold: middle segment in the air (F)",
+  "fr": "Tenir : segment du milieu en l’air (F)",
+  "it": "Tenere: segmento centrale in aria (F)",
+  "rm": "Tegnair: segment dal mez en l’aria (F)"
  },
  "Festival · Eingang": {
   "en": "Festival · Entrance",
@@ -18424,6 +18532,12 @@
   "fr": "Food trucks",
   "it": "Food truck",
   "rm": "Food trucks"
+ },
+ "Form": {
+  "en": "Shape",
+  "fr": "Forme",
+  "it": "Forma",
+  "rm": "Furma"
  },
  "Forststrasse": {
   "en": "Forest road",
@@ -19270,6 +19384,18 @@
   "it": "Incollare i piedini e premere il dado per treppiede 1/4\" nella sede esagonale dall'interno. Incollare l'altoparlante nell'anello sopra la griglia con 3–4 punti di colla a caldo.",
   "rm": "Tatgar ils peis e smatgar la mutra da stativ 1/4\" da l'intern en la tastga sisagulara. Tatgar l'autpledader en l'anè sur la grilla dal fund cun 3–4 puncts cola chauda."
  },
+ "Füsse höher": {
+  "en": "feet higher",
+  "fr": "pieds plus hauts",
+  "it": "piedi più alti",
+  "rm": "pes pli auts"
+ },
+ "Füsse seitlich": {
+  "en": "Feet to the side",
+  "fr": "Pieds sur le côté",
+  "it": "Piedi di lato",
+  "rm": "Pes da la vart"
+ },
  "Füsse unter das Unterteil v5.2 kleben und die Stativmutter 1/4\" von innen in die Sechskanttasche drücken. Den Lautsprecher mit 3–4 Tupfen Heisskleber in den Ring über dem Bodengitter kleben.": {
   "en": "Glue the feet under the lower part v5.2 and press the 1/4\" tripod nut into the hex pocket from the inside. Glue the speaker into the ring above the floor grille with 3–4 dots of hot glue.",
   "fr": "Coller les pieds sous la partie inférieure v5.2 et enfoncer l'écrou de trépied 1/4\" dans la poche hexagonale depuis l'intérieur. Coller le haut-parleur dans l'anneau au-dessus de la grille du fond avec 3–4 points de colle chaude.",
@@ -19324,6 +19450,12 @@
   "fr": "Allures l’une après l’autre devant la caméra (marcher, se presser, courir, se faufiler, ramper)",
   "it": "Andature una dopo l’altra davanti alla telecamera (camminare, affrettarsi, correre, strisciare acquattati, gattonare)",
   "rm": "Moda da chaminar ina suenter l’autra davant la camera (ir, ir en prescha, currer, sa zuppar, ir a quatter pes)"
+ },
+ "Gangarten – mit Körperhöhe, Tempo und Kurven (vorwärts + Regler «Kurve» oder Q / E). Ein kurzer Klick in die Welt setzt ein Ziel: der Roboter plant selbst – Kurve, seitwärts bei kleinem Versatz, an Ort drehen, wenn das Ziel hinten liegt.": {
+  "en": "Gaits – with body height, speed and curves (forward + slider «Curve» or Q / E). A short click into the world sets a goal: the robot plans itself – curve, sideways for a small offset, turn on the spot when the goal is behind.",
+  "fr": "Allures – avec hauteur du corps, vitesse et virages (en avant + curseur «Virage» ou Q / E). Un clic court dans le monde fixe un but : le robot planifie lui-même – virage, de côté pour un petit décalage, tourner sur place quand le but est derrière.",
+  "it": "Andature – con altezza del corpo, velocità e curve (avanti + cursore «Curva» o Q / E). Un breve clic nel mondo fissa una meta: il robot pianifica da solo – curva, di lato per un piccolo spostamento, girare sul posto quando la meta è dietro.",
+  "rm": "Moda da chaminar – cun autezza dal corp, sveltezza e curvas (enavant + reglader «Curva» u Q / E). In clic curt en il mund fixescha ina finamira: il robot planisescha sez – curva, da la vart per ina pitschna distanza, sa volver al lieu, sche la finamira è davos."
  },
  "Ganz hinten im Seitental West stehen Mauern ohne Dach.": {
   "en": "At the very end of the west side valley stand walls without a roof.",
@@ -19397,6 +19529,12 @@
   "fr": "Silence total",
   "it": "Silenzio totale",
   "rm": "Tut quiet"
+ },
+ "Ganze Abläufe": {
+  "en": "Whole sequences",
+  "fr": "Séquences complètes",
+  "it": "Sequenze complete",
+  "rm": "Andaments entirs"
  },
  "ganze Geschichte": {
   "en": "whole story",
@@ -19889,6 +20027,12 @@
   "it": "Corridore fantasma: il tuo miglior percorso corre con te come fantasma (lo vedono solo i giocatori)",
   "rm": "Currider spiert: l’atgna meglra via curra cun sco spiert (mo ils giugaders la vesan)"
  },
+ "gekippt nach %d s": {
+  "en": "tipped over after %d s",
+  "fr": "renversé après %d s",
+  "it": "ribaltato dopo %d s",
+  "rm": "sturnà suenter %d s"
+ },
  "Gelb": {
   "en": "Yellow",
   "fr": "Jaune",
@@ -19907,6 +20051,18 @@
   "it": "Ladro occasionale",
   "rm": "Lader d’occasiun"
  },
+ "Gelenk %d": {
+  "en": "Joint %d",
+  "fr": "Articulation %d",
+  "it": "Giunto %d",
+  "rm": "Artitgel %d"
+ },
+ "Gelenke": {
+  "en": "Joints",
+  "fr": "Articulations",
+  "it": "Giunti",
+  "rm": "Artitgels"
+ },
  "Gelände": {
   "en": "Terrain",
   "fr": "Terrain",
@@ -19918,6 +20074,12 @@
   "fr": "Terrain et surface (arbres, toits) comme modèle d’altitude – pour ton propre terrain dans Blender.",
   "it": "Terreno e superficie (alberi, tetti) come modello altimetrico – per un proprio terreno in Blender.",
   "rm": "Terren e surfatscha (plantas, tetgs) sco model d’autezza – per agen terren en Blender."
+ },
+ "Gelände-Test: der Roboter startet vor der Prüfstrecke und geht mit der automatischen Gangart (oder rollt im Ring) hinüber. Geschafft = das hinterste Segment ist darüber. «Automatisch» hebt die Füsse und den Körper, wenn er nicht vorwärts kommt.": {
+  "en": "Terrain test: the robot starts in front of the test track and crosses it with the automatic gait (or rolls in the ring). Made it = the rearmost segment is across. «Automatic» lifts the feet and the body when it does not get on.",
+  "fr": "Test de terrain : le robot part devant la piste d’essai et la traverse avec l’allure automatique (ou roule en anneau). Réussi = le dernier segment est passé. «Automatique» lève les pieds et le corps quand il n’avance pas.",
+  "it": "Test del terreno: il robot parte davanti al percorso di prova e lo attraversa con l’andatura automatica (o rotola ad anello). Riuscito = l’ultimo segmento è passato. «Automatica» alza i piedi e il corpo quando non avanza.",
+  "rm": "Test dal terren: il robot partescha davant la stretga da test e la traversa cun la moda da chaminar automatica (u rulla en il rintg). Reussì = l’ultim segment è passà. «Automatic» auza ils pes ed il corp, sch’el na vegn betg enavant."
  },
  "Gelände: leichte Hügel und Senken statt flachem Boden (Camping-Platz; baut die Szene neu)": {
   "en": "Terrain: gentle hills and hollows instead of flat ground (camping site; rebuilds the scene)",
@@ -20008,6 +20170,12 @@
   "fr": "Des pavés usés par les mulets et les muletiers mènent de l’hospice vers le sud.",
   "it": "Pietre lastricate, consumate da muli e mulattieri, portano dall’ospizio verso sud.",
   "rm": "Crappa da salaschada, consumada da mils e sumaders, maina da l’ospezi vers il sid."
+ },
+ "Gerade": {
+  "en": "Straight",
+  "fr": "Droit",
+  "it": "Dritto",
+  "rm": "Dretg"
  },
  "gerade beschäftigt": {
   "en": "busy right now",
@@ -20206,6 +20374,12 @@
   "fr": "Réussi - ensemble par-dessus le ressaut !",
   "it": "Fatto - insieme oltre il gradino di roccia!",
   "rm": "Fatg - ensemen sur la stgalim da crap!"
+ },
+ "geschafft in %d s": {
+  "en": "made it in %d s",
+  "fr": "réussi en %d s",
+  "it": "riuscito in %d s",
+  "rm": "reussì en %d s"
  },
  "Geschafft!": {
   "en": "Done!",
@@ -21003,11 +21177,23 @@
   "it": "GPS: rimettere",
   "rm": "GPS: metter enavos"
  },
+ "Graben %d cm": {
+  "en": "Ditch %d cm",
+  "fr": "Fossé %d cm",
+  "it": "Fosso %d cm",
+  "rm": "Foss %d cm"
+ },
  "Graben / Holen": {
   "en": "Dig / Fetch",
   "fr": "Creuser / Rapporter",
   "it": "Scavare / Riportare",
   "rm": "Chavar / Purtar"
+ },
+ "Graben 20 cm": {
+  "en": "Ditch 20 cm",
+  "fr": "Fossé 20 cm",
+  "it": "Fosso 20 cm",
+  "rm": "Foss 20 cm"
  },
  "Grafik": {
   "en": "Graphics",
@@ -21805,6 +21991,18 @@
   "fr": "Avez-vous vu quelque chose de spécial en route ?",
   "it": "Ha visto qualcosa di speciale per strada?",
   "rm": "Avais Vus vis insatge spezial en viadi?"
+ },
+ "Halbe Breite": {
+  "en": "Half width",
+  "fr": "Demi-largeur",
+  "it": "Mezza larghezza",
+  "rm": "Mesa ladezza"
+ },
+ "Halbe Breite Spitze": {
+  "en": "Half width of the tip",
+  "fr": "Demi-largeur de la pointe",
+  "it": "Mezza larghezza della punta",
+  "rm": "Mesa ladezza da la piz"
  },
  "Hallo": {
   "en": "Hi",
@@ -22955,6 +23153,12 @@
   "rm": "Si / giu",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
+ "hoch / runter": {
+  "en": "up / down",
+  "fr": "haut / bas",
+  "it": "su / giù",
+  "rm": "si / giu"
+ },
  "Hoch aktiv (Forward+ / Vulkan)": {
   "en": "High active (Forward+ / Vulkan)",
   "fr": "Élevé actif (Forward+ / Vulkan)",
@@ -23678,6 +23882,18 @@
   "it": "Senti fruscii e grugniti tra le foglie? Allora ci sono cinghiali vicino.",
   "rm": "Audas ti a fruschar e grugnir en il fegliam? Lura èn portgs selvadis datiers."
  },
+ "Hüfte hoch / runter": {
+  "en": "hip up / down",
+  "fr": "hanche haut / bas",
+  "it": "anca su / giù",
+  "rm": "anca si / giu"
+ },
+ "Hüfte vor / zurück": {
+  "en": "hip forward / back",
+  "fr": "hanche avant / arrière",
+  "it": "anca avanti / indietro",
+  "rm": "anca enavant / enavos"
+ },
  "Hühner (mit Hühnerstall)": {
   "en": "Chickens (with chicken coop)",
   "fr": "Poules (avec poulailler)",
@@ -24173,6 +24389,24 @@
   "it": "La legna scoppietta nella stufa, la minestra fuma. La borraccia è di nuovo piena.",
   "rm": "La laina scrocla en la pigna, la suppa fima. La buttiglia è puspè plaina."
  },
+ "Im Ring rollen": {
+  "en": "Rolling in the ring",
+  "fr": "Rouler en anneau",
+  "it": "Rotolare ad anello",
+  "rm": "Rullar en il rintg"
+ },
+ "Im Ring rollen (die Füsse stossen, Kurve = Ring neigen)": {
+  "en": "Roll in the ring (the feet push, curve = tilt the ring)",
+  "fr": "Rouler en anneau (les pieds poussent, virage = incliner l’anneau)",
+  "it": "Rotolare ad anello (i piedi spingono, curva = inclinare l’anello)",
+  "rm": "Rullar en il rintg (ils pes stuschan, curva = inclinar il rintg)"
+ },
+ "Im Ring rollen statt gehen": {
+  "en": "Roll in the ring instead of walking",
+  "fr": "Rouler en anneau au lieu de marcher",
+  "it": "Rotolare ad anello invece di camminare",
+  "rm": "Rullar en il rintg empè da chaminar"
+ },
  "Im Rucksack: %s": {
   "en": "In the backpack: %s",
   "fr": "Dans le sac : %s",
@@ -24437,6 +24671,12 @@
   "fr": "Cliquer en 3D",
   "it": "Clicca in 3D",
   "rm": "Cliccar en 3D"
+ },
+ "In alle Richtungen (W A S D, schräg = zwei Tasten, Q / E an Ort drehen):": {
+  "en": "In all directions (W A S D, diagonal = two keys, Q / E turn on the spot):",
+  "fr": "Dans toutes les directions (W A S D, en diagonale = deux touches, Q / E tourner sur place) :",
+  "it": "In tutte le direzioni (W A S D, in diagonale = due tasti, Q / E girare sul posto):",
+  "rm": "En tut las direcziuns (W A S D, diagonal = duas tastas, Q / E sa volver al lieu):"
  },
  "In den Furggakehren ist die Strasse manchmal ganz voll. Nicht mit Autos.": {
   "en": "In the Furgga bends the road is sometimes completely full. Not with cars.",
@@ -25295,6 +25535,12 @@
   "it": "Ogni corridore è un’immagine 3D propria sul PC e un video proprio in rete. Laptop: circa 4, PC con scheda grafica: 6–8. Da 5 corridori le immagini diventano automaticamente più piccole.",
   "rm": "Mintga currider è in agen maletg 3D sin il PC ed in agen video sur la rait. Laptop: circa 4, PC cun carta grafica: 6–8. A partir da 5 curriders daventan ils maletgs automaticamain pli pitschens."
  },
+ "Jedes Gelenk von Hand: Soll (Regler) und Ist (Zahl rechts). Rot = Servo überlastet.": {
+  "en": "Every joint by hand: target (slider) and actual (number on the right). Red = servo overloaded.",
+  "fr": "Chaque articulation à la main : consigne (curseur) et réel (chiffre à droite). Rouge = servo surchargé.",
+  "it": "Ogni giunto a mano: valore voluto (cursore) e reale (numero a destra). Rosso = servo sovraccarico.",
+  "rm": "Mintga artitgel a maun: giavischà (reglader) ed effectiv (cifra a dretga). Cotschen = servo surchargià."
+ },
  "Jedes Tal hat seine Geschichten.": {
   "en": "Every valley has its stories.",
   "fr": "Chaque vallée a ses histoires.",
@@ -25783,6 +26029,12 @@
   "it": "Allineare la fotocamera",
   "rm": "Drizzar la camera"
  },
+ "Kamera schwenken": {
+  "en": "Pan the camera",
+  "fr": "Tourner la caméra",
+  "it": "Ruotare la telecamera",
+  "rm": "Volver la camera"
+ },
  "Kamera von MoveEye": {
   "en": "MoveEye camera",
   "fr": "Caméra de MoveEye",
@@ -25843,6 +26095,12 @@
   "fr": "Image de la caméra",
   "it": "Immagine della telecamera",
   "rm": "Maletg da la camera"
+ },
+ "Kamerabild klein einblenden (K)": {
+  "en": "Show the camera picture small (K)",
+  "fr": "Afficher l’image de la caméra en petit (K)",
+  "it": "Mostrare l’immagine della telecamera piccola (K)",
+  "rm": "Mussar il maletg da la camera pitschen (K)"
  },
  "Kamerabilder": {
   "en": "Camera pictures",
@@ -26855,6 +27113,12 @@
   "it": "nessuna classe (%s)",
   "rm": "nagina classa (%s)"
  },
+ "keine Kollision": {
+  "en": "no collision",
+  "fr": "aucune collision",
+  "it": "nessuna collisione",
+  "rm": "nagina collisiun"
+ },
  "keine Leben mehr": {
   "en": "no lives left",
   "fr": "plus de vies",
@@ -27131,6 +27395,12 @@
   "it": "IA: spenta",
   "rm": "IA: deactivada"
  },
+ "Kies": {
+  "en": "Gravel",
+  "fr": "Gravier",
+  "it": "Ghiaia",
+  "rm": "Gera"
+ },
  "Kind": {
   "en": "Child",
   "fr": "Enfant",
@@ -27259,6 +27529,18 @@
   "fr": "Kiosque de plage",
   "it": "Chiosco sulla spiaggia",
   "rm": "Kiosc sin la riva"
+ },
+ "Kipp-Reserve %.1f cm": {
+  "en": "Tip margin %.1f cm",
+  "fr": "Marge de basculement %.1f cm",
+  "it": "Margine di ribaltamento %.1f cm",
+  "rm": "Reserva da sa sturnar %.1f cm"
+ },
+ "KIPPGEFAHR": {
+  "en": "DANGER OF TIPPING",
+  "fr": "RISQUE DE BASCULEMENT",
+  "it": "PERICOLO DI RIBALTAMENTO",
+  "rm": "PRIVEL DA SA STURNAR"
  },
  "Kirche": {
   "en": "Church",
@@ -27540,6 +27822,12 @@
   "fr": "Moment le plus serré  %d:%02d  ·  rouge = vu",
   "it": "Momento più stretto  %d:%02d  ·  rosso = visto",
   "rm": "Il mument il pli stretg  %d:%02d  ·  cotschen = vis"
+ },
+ "Knie": {
+  "en": "knee",
+  "fr": "genou",
+  "it": "ginocchio",
+  "rm": "schanugl"
  },
  "Knopf": {
   "en": "Button",
@@ -28028,6 +28316,18 @@
   "it": "Tenda a cupola",
   "rm": "Tenda a cupla"
  },
+ "Kupplung greift": {
+  "en": "Coupling engaging",
+  "fr": "L’accouplement s’enclenche",
+  "it": "L’accoppiamento si innesta",
+  "rm": "La cuplaziun tschiffa"
+ },
+ "Kupplung offen": {
+  "en": "Coupling open",
+  "fr": "Accouplement ouvert",
+  "it": "Accoppiamento aperto",
+  "rm": "Cuplaziun averta"
+ },
  "Kurbeln": {
   "en": "Turning",
   "fr": "Tourner",
@@ -28040,6 +28340,36 @@
   "it": "Rotta %d° · cammini a %d°",
   "rm": "Curs %d° · ti vas %d°",
   "?": "rm: Neubau-Texte 22.11.2026 (Korrekturlesen)"
+ },
+ "Kurve": {
+  "en": "curve",
+  "fr": "virage",
+  "it": "curva",
+  "rm": "curva"
+ },
+ "Kurve (Schlange)": {
+  "en": "Curve (snake)",
+  "fr": "Virage (serpent)",
+  "it": "Curva (serpente)",
+  "rm": "Curva (serp)"
+ },
+ "Kurve (− rechts, + links)": {
+  "en": "Curve (− right, + left)",
+  "fr": "Virage (− droite, + gauche)",
+  "it": "Curva (− destra, + sinistra)",
+  "rm": "Curva (− dretga, + sanestra)"
+ },
+ "Kurve links": {
+  "en": "Curve left",
+  "fr": "Virage à gauche",
+  "it": "Curva a sinistra",
+  "rm": "Curva a sanestra"
+ },
+ "Kurve rechts": {
+  "en": "Curve right",
+  "fr": "Virage à droite",
+  "it": "Curva a destra",
+  "rm": "Curva a dretga"
  },
  "Kurz": {
   "en": "Short",
@@ -28184,6 +28514,18 @@
   "fr": "Meule de fromage",
   "it": "Forma di formaggio",
   "rm": "Tschantscha da chaschiel"
+ },
+ "Körper passt sich dem Untergrund an": {
+  "en": "Body adapts to the ground",
+  "fr": "Le corps s’adapte au sol",
+  "it": "Il corpo si adatta al terreno",
+  "rm": "Il corp s’adatta al terren"
+ },
+ "Körperhöhe über dem Boden": {
+  "en": "Body height above the ground",
+  "fr": "Hauteur du corps au-dessus du sol",
+  "it": "Altezza del corpo dal suolo",
+  "rm": "Autezza dal corp sur il terren"
  },
  "Küche": {
   "en": "Kitchen",
@@ -29272,6 +29614,12 @@
   "it": "Tirare la paratoia sinistra",
   "rm": "Trair la porta sanestra"
  },
+ "links / rechts": {
+  "en": "left / right",
+  "fr": "gauche / droite",
+  "it": "sinistra / destra",
+  "rm": "sanester / dretg"
+ },
  "Links in der Wand – das kleine Loch!": {
   "en": "On the left in the wall – the little hole!",
   "fr": "À gauche dans la paroi – le petit trou !",
@@ -29606,6 +29954,18 @@
   "it": "caricamento ",
   "rm": "chargiar "
  },
+ "Länge %.2f m · Breite %.2f m · Bein %.2f m · Masse %.2f kg · %d Antriebe": {
+  "en": "Length %.2f m · width %.2f m · leg %.2f m · mass %.2f kg · %d actuators",
+  "fr": "Longueur %.2f m · largeur %.2f m · patte %.2f m · masse %.2f kg · %d actionneurs",
+  "it": "Lunghezza %.2f m · larghezza %.2f m · zampa %.2f m · massa %.2f kg · %d attuatori",
+  "rm": "Lunghezza %.2f m · ladezza %.2f m · chomma %.2f m · massa %.2f kg · %d motors"
+ },
+ "Länge Mittelteil": {
+  "en": "Length of the middle part",
+  "fr": "Longueur de la partie centrale",
+  "it": "Lunghezza della parte centrale",
+  "rm": "Lunghezza da la part dal mez"
+ },
  "Länge nicht angegeben": {
   "en": "length not given",
   "fr": "longueur non indiquée",
@@ -29683,6 +30043,12 @@
   "fr": "En marche depuis %s.",
   "it": "Attivo da %s.",
   "rm": "Funcziuna dapi %s."
+ },
+ "läuft …": {
+  "en": "running …",
+  "fr": "en cours …",
+  "it": "in corso …",
+  "rm": "è en funcziun …"
  },
  "läuft: %s": {
   "en": "running: %s",
@@ -30264,11 +30630,35 @@
   "it": "Cancella maschera",
   "rm": "Stizzar la mascra"
  },
+ "Masse %.2f kg · Schwerpunkt %.0f cm über dem Boden · Strom ca. %.1f A": {
+  "en": "Mass %.2f kg · centre of mass %.0f cm above the ground · current approx. %.1f A",
+  "fr": "Masse %.2f kg · centre de gravité à %.0f cm du sol · courant env. %.1f A",
+  "it": "Massa %.2f kg · baricentro a %.0f cm dal suolo · corrente circa %.1f A",
+  "rm": "Massa %.2f kg · center da gravitad %.0f cm sur il terren · current ca. %.1f A"
+ },
+ "Masse je Bein": {
+  "en": "Mass per leg",
+  "fr": "Masse par patte",
+  "it": "Massa per zampa",
+  "rm": "Massa per chomma"
+ },
+ "Masse je Segment": {
+  "en": "Mass per segment",
+  "fr": "Masse par segment",
+  "it": "Massa per segmento",
+  "rm": "Massa per segment"
+ },
  "Masse «Nachmessen» vor dem Druck prüfen": {
   "en": "check the «measure first» dimensions before printing",
   "fr": "vérifier les cotes «à mesurer» avant l'impression",
   "it": "verificare le misure «da misurare» prima della stampa",
   "rm": "controllar las mesiras «mesirar» avant la stampa"
+ },
+ "Massstab (Meter pro Einheit)": {
+  "en": "Scale (metres per unit)",
+  "fr": "Échelle (mètres par unité)",
+  "it": "Scala (metri per unità)",
+  "rm": "Scala (meters per unitad)"
  },
  "Massstab 1:25 000. Eine Linie mit Bleistift. Und am Rand: «G+T».": {
   "en": "Scale 1:25,000. A pencil line. And in the margin: «G+T».",
@@ -30288,6 +30678,12 @@
   "fr": "Mât (scène) – comme avant, à 3 m de l’appareil",
   "it": "Palo (scena) – come prima, a 3 m dall’apparecchio",
   "rm": "Pal (scena) – sco fin ussa, 3 m sper l’apparat"
+ },
+ "Mast der Kamera": {
+  "en": "Camera mast",
+  "fr": "Mât de la caméra",
+  "it": "Asta della telecamera",
+  "rm": "Pitga da la camera"
  },
  "Mast höher / tiefer (beim Erkunden auch ohne Shift)": {
   "en": "mast up / down (when exploring also without Shift)",
@@ -33875,6 +34271,12 @@
   "it": "Inclinazione bloccata",
   "rm": "Inclinar stgatschà"
  },
+ "Neigung %d°": {
+  "en": "Tilt %d°",
+  "fr": "Inclinaison %d°",
+  "it": "Inclinazione %d°",
+  "rm": "Inclinaziun %d°"
+ },
  "nein": {
   "en": "no",
   "fr": "non",
@@ -33970,6 +34372,12 @@
   "fr": "Réorganiser",
   "it": "Riordina",
   "rm": "Reordinar"
+ },
+ "Neu aufstellen (R)": {
+  "en": "Set up again (R)",
+  "fr": "Remettre en place (R)",
+  "it": "Rimettere in piedi (R)",
+  "rm": "Metter si da nov (R)"
  },
  "Neu auswerten": {
   "en": "Evaluate again",
@@ -35105,6 +35513,12 @@
   "it": "Ob em Schwarzseeli",
   "rm": "Ob em Schwarzseeli"
  },
+ "Oben": {
+  "en": "Top",
+  "fr": "Dessus",
+  "it": "Dall’alto",
+  "rm": "Da sura"
+ },
  "Oben am Grat ist es windig – eine Jacke hilft.": {
   "en": "It is windy up on the ridge – a jacket helps.",
   "fr": "Il y a du vent sur l’arête – une veste aide.",
@@ -35176,6 +35590,12 @@
   "fr": "Surfaces (bois, gravier, gazon, béton) pour tes propres modèles dans Blender.",
   "it": "Superfici (legno, ghiaia, prato, cemento) per i propri modelli in Blender.",
   "rm": "Surfatschas (lain, gera, pastgira, betun) per atgns models en Blender."
+ },
+ "Oberschenkel": {
+  "en": "Upper leg",
+  "fr": "Cuisse",
+  "it": "Coscia",
+  "rm": "Coscha"
  },
  "Oberseite": {
   "en": "top side",
@@ -36197,6 +36617,30 @@
   "it": "Le pozzanghere dopo la pioggia riflettono fari e lampade, schizzi quando ci si cammina dentro",
   "rm": "Puzs suenter la plievgia reflecteschan cazzolas e lampas, sbrinzlas cun ir en"
  },
+ "Physik": {
+  "en": "Physics",
+  "fr": "Physique",
+  "it": "Fisica",
+  "rm": "Fisica"
+ },
+ "Physik angehalten": {
+  "en": "Physics paused",
+  "fr": "Physique en pause",
+  "it": "Fisica in pausa",
+  "rm": "Fisica en pausa"
+ },
+ "Physik anhalten (P)": {
+  "en": "Pause physics (P)",
+  "fr": "Mettre la physique en pause (P)",
+  "it": "Mettere in pausa la fisica (P)",
+  "rm": "Fermar la fisica (P)"
+ },
+ "Physik läuft": {
+  "en": "Physics running",
+  "fr": "Physique en marche",
+  "it": "Fisica in corso",
+  "rm": "Fisica è en funcziun"
+ },
  "Pi 5: Bilder pro Sekunde der Kopfkamera": {
   "en": "Pi 5: frames per second of the head camera",
   "fr": "Pi 5 : images par seconde de la caméra de la tête",
@@ -36583,6 +37027,12 @@
   "fr": "Ports",
   "it": "Porte",
   "rm": "Ports"
+ },
+ "Posen": {
+  "en": "Poses",
+  "fr": "Poses",
+  "it": "Pose",
+  "rm": "Posas"
  },
  "Postauto": {
   "en": "PostBus",
@@ -37040,6 +37490,18 @@
   "it": "Riquadri di MoveEye sulle figure: verde rilevato, rosso falso allarme, arancione mancato",
   "rm": "Roms da MoveEye sur las figuras: verd identifitgà, cotschen fauss alarm, oransch surveis"
  },
+ "Rampe %d°": {
+  "en": "Ramp %d°",
+  "fr": "Rampe %d°",
+  "it": "Rampa %d°",
+  "rm": "Rampa %d°"
+ },
+ "Rampe 15°": {
+  "en": "Ramp 15°",
+  "fr": "Rampe 15°",
+  "it": "Rampa 15°",
+  "rm": "Rampa 15°"
+ },
  "Rangliste des Abends zurücksetzen": {
   "en": "Reset the ranking of the evening",
   "fr": "Remettre à zéro le classement de la soirée",
@@ -37184,6 +37646,18 @@
   "fr": "Pièce (intérieur)",
   "it": "Stanza (interno)",
   "rm": "Stanza (endadens)"
+ },
+ "Raupengang": {
+  "en": "Caterpillar gait",
+  "fr": "Allure chenille",
+  "it": "Andatura a bruco",
+  "rm": "Chaminar sco ina ruja"
+ },
+ "Raupenwelle": {
+  "en": "Caterpillar wave",
+  "fr": "Vague de chenille",
+  "it": "Onda del bruco",
+  "rm": "Unda da ruja"
  },
  "Rauschen (wie der Sensor: mehr Verstärkung = mehr Rauschen, am Tag sauber)": {
   "en": "Noise (like the sensor: more gain = more noise, clean by day)",
@@ -37382,6 +37856,12 @@
   "fr": "Harde de chevreuils",
   "it": "Branco di caprioli",
   "rm": "Muntanella da chavriels"
+ },
+ "Reibung am Boden": {
+  "en": "Friction on the ground",
+  "fr": "Frottement au sol",
+  "it": "Attrito al suolo",
+  "rm": "Fricziun sin il terren"
  },
  "Reichweite des Infrarot-Lichts": {
   "en": "Range of the infrared light",
@@ -37595,6 +38075,12 @@
   "it": "Riedspitz",
   "rm": "Riedspitz"
  },
+ "Riegel darf schliessen (Ring)": {
+  "en": "Latch may close (ring)",
+  "fr": "Le verrou peut se fermer (anneau)",
+  "it": "Il chiavistello può chiudersi (anello)",
+  "rm": "Il clavitschel dastga serrar (rintg)"
+ },
  "riesig, rostroter Bauch, keilförmiger Schwanz": {
   "en": "huge, rust-red belly, wedge-shaped tail",
   "fr": "immense, ventre roux, queue en losange",
@@ -37613,11 +38099,53 @@
   "it": "Enormi tracce nella neve – finiscono presso un pupazzo di neve con veri scarponi. Se si guarda altrove, gira la testa.",
   "rm": "Fastizs enormas en la naiv – ellas fineschan tar in um da naiv cun veritabels chalzers da viandar. Sch'ins guarda davent, volva el il chau."
  },
+ "Ring": {
+  "en": "Ring",
+  "fr": "Anneau",
+  "it": "Anello",
+  "rm": "Rintg"
+ },
+ "Ring nicht verriegelt": {
+  "en": "Ring not locked",
+  "fr": "Anneau non verrouillé",
+  "it": "Anello non bloccato",
+  "rm": "Rintg betg serrà"
+ },
  "Ring rund ums Gerät (8 m)": {
   "en": "Ring around the device (8 m)",
   "fr": "Anneau autour de l’appareil (8 m)",
   "it": "Anello intorno all’apparecchio (8 m)",
   "rm": "Rintg enturn l’apparat (8 m)"
+ },
+ "Ring verriegelt": {
+  "en": "Ring locked",
+  "fr": "Anneau verrouillé",
+  "it": "Anello bloccato",
+  "rm": "Rintg serrà"
+ },
+ "Roboter": {
+  "en": "Robot",
+  "fr": "Robot",
+  "it": "Robot",
+  "rm": "Robot"
+ },
+ "Roboter-Kamera": {
+  "en": "Robot camera",
+  "fr": "Caméra du robot",
+  "it": "Telecamera del robot",
+  "rm": "Camera dal robot"
+ },
+ "Roboter-Labor": {
+  "en": "Robot lab",
+  "fr": "Labo du robot",
+  "it": "Laboratorio robot",
+  "rm": "Labor dal robot"
+ },
+ "Roboter-Labor: Segment-Roboter mit Physik, Gelenken und Posen (nur am PC)": {
+  "en": "Robot lab: segment robot with physics, joints and poses (PC only)",
+  "fr": "Labo du robot : robot à segments avec physique, articulations et poses (PC seulement)",
+  "it": "Laboratorio robot: robot a segmenti con fisica, giunti e pose (solo PC)",
+  "rm": "Labor dal robot: robot da segments cun fisica, artitgels e posas (mo al PC)"
  },
  "Rohdaten (eine JSON-Datei pro Runde) und der Bericht mit den Vorschlägen (Markdown) in einer ZIP-Datei": {
   "en": "Raw data (one JSON file per round) and the report with the suggestions (Markdown) in one ZIP file",
@@ -37672,6 +38200,12 @@
   "fr": "Rouge %d : %d Bleu",
   "it": "Rosso %d : %d Blu",
   "rm": "Cotschen %d : %d Blau"
+ },
+ "Rot = Teile des Roboters, die sich berühren oder durchdringen (z. B. Knie am Körper).": {
+  "en": "Red = parts of the robot that touch or pass through each other (e.g. knee on the body).",
+  "fr": "Rouge = pièces du robot qui se touchent ou se traversent (p. ex. genou contre le corps).",
+  "it": "Rosso = parti del robot che si toccano o si compenetrano (p. es. ginocchio contro il corpo).",
+  "rm": "Cotschen = parts dal robot che sa tutgan u sa penetreschan (p. ex. schanugl vi dal corp)."
  },
  "Rot gegen Blau (nur bei «Fahne erobern»)": {
   "en": "Red against Blue (only for «Capture the flag»)",
@@ -38237,6 +38771,12 @@
   "fr": "face arrière en bas (seulement sans module IR ; la vis sans tête M3 le tient)",
   "it": "lato posteriore in basso (solo senza modulo IR; il grano M3 lo tiene)",
   "rm": "vart davos sut (mo senza modul IR; la sbarra M3 al tegna)"
+ },
+ "Rückwärts": {
+  "en": "Backward",
+  "fr": "En arrière",
+  "it": "Indietro",
+  "rm": "Enavos"
  },
  "Rüebli": {
   "en": "Carrot",
@@ -39254,6 +39794,18 @@
   "it": "Il microfono sente i passi su ghiaia, foglie e neve",
   "rm": "Il microfon auda pass sin gera, feglia e naiv"
  },
+ "Schritthöhe": {
+  "en": "Step height",
+  "fr": "Hauteur du pas",
+  "it": "Altezza del passo",
+  "rm": "Autezza dal pass"
+ },
+ "Schrittlänge": {
+  "en": "Step length",
+  "fr": "Longueur du pas",
+  "it": "Lunghezza del passo",
+  "rm": "Lunghezza dal pass"
+ },
  "Schubkarre": {
   "en": "Wheelbarrow",
   "fr": "Brouette",
@@ -39428,6 +39980,24 @@
   "fr": "difficile (seulement les panneaux)",
   "it": "difficile (solo segnavia)",
   "rm": "grev (mo indicaturs)"
+ },
+ "Schwerkraft": {
+  "en": "Gravity",
+  "fr": "Gravité",
+  "it": "Gravità",
+  "rm": "Gravitad"
+ },
+ "Schwerkraft, Reibung und Servo-Grenzen. Die Servos halten höchstens ihr Moment – mehr Last = sie geben nach (rot).": {
+  "en": "Gravity, friction and servo limits. The servos hold at most their torque – more load = they give way (red).",
+  "fr": "Gravité, frottement et limites des servos. Les servos tiennent au plus leur couple – plus de charge = ils cèdent (rouge).",
+  "it": "Gravità, attrito e limiti dei servo. I servo reggono al massimo la loro coppia – più carico = cedono (rosso).",
+  "rm": "Gravitad, fricziun e limits dals servos. Ils servos tegnan maximalmain lur moment – dapli chargia = els ceden (cotschen)."
+ },
+ "Schwerpunkt und Stützfläche": {
+  "en": "Centre of mass and support area",
+  "fr": "Centre de gravité et surface d’appui",
+  "it": "Baricentro e superficie d’appoggio",
+  "rm": "Center da gravitad e surfatscha da sustegn"
  },
  "Schwierige Bedingungen": {
   "en": "Difficult conditions",
@@ -39672,6 +40242,24 @@
   "it": "Barca a vela",
   "rm": "Bartga a vela"
  },
+ "Segment-Roboter – Form, Gelenke und Physik ausprobieren": {
+  "en": "Segment robot – try out shape, joints and physics",
+  "fr": "Robot à segments – essayer forme, articulations et physique",
+  "it": "Robot a segmenti – provare forma, giunti e fisica",
+  "rm": "Robot da segments – empruvar furma, artitgels e fisica"
+ },
+ "Segmente": {
+  "en": "Segments",
+  "fr": "Segments",
+  "it": "Segmenti",
+  "rm": "Segments"
+ },
+ "Segmentgelenk %d (zwischen Segment %d und %d)": {
+  "en": "Segment joint %d (between segment %d and %d)",
+  "fr": "Articulation %d (entre les segments %d et %d)",
+  "it": "Giunto %d (tra il segmento %d e %d)",
+  "rm": "Artitgel %d (tranter il segment %d e %d)"
+ },
  "Sehr gut. Dann sind Sie besser als meine ganze letzte Klasse.": {
   "en": "Very good. Then you're better than my whole last class.",
   "fr": "Très bien. Alors vous êtes meilleur que toute ma dernière classe.",
@@ -39770,6 +40358,12 @@
   "it": "Il suo nome compare molte volte nel libro della capanna. Quello che voleva dirti è sulla tua carta - non da me.",
   "rm": "Ses num stat bleras giadas en il cudesch da la chamona. Tge ch'el ta vuleva dir, stat sin tia charta - betg tar mai."
  },
+ "Seite": {
+  "en": "Side",
+  "fr": "Côté",
+  "it": "Lato",
+  "rm": "Vart"
+ },
  "Seite %d:": {
   "en": "Page %d:",
   "fr": "Page %d :",
@@ -39805,6 +40399,24 @@
   "fr": "Pince coupante, pince à dénuder, pincette",
   "it": "Tronchesino, spelafili, pinzetta",
   "rm": "Tanaglia, tanaglia da dischlontanar, pinzetta"
+ },
+ "seitwärts": {
+  "en": "sideways",
+  "fr": "de côté",
+  "it": "di lato",
+  "rm": "da la vart"
+ },
+ "seitwärts links": {
+  "en": "sideways left",
+  "fr": "de côté à gauche",
+  "it": "di lato a sinistra",
+  "rm": "da la vart a sanestra"
+ },
+ "seitwärts rechts": {
+  "en": "sideways right",
+  "fr": "de côté à droite",
+  "it": "di lato a destra",
+  "rm": "da la vart a dretga"
  },
  "Selbst gebaut im Haus-Editor": {
   "en": "Self-built in the house editor",
@@ -39998,6 +40610,30 @@
   "it": "Servo di nuovo libero",
   "rm": "Servo puspè liber"
  },
+ "Servo-Last an den Gelenken (grün → rot)": {
+  "en": "Servo load at the joints (green → red)",
+  "fr": "Charge des servos aux articulations (vert → rouge)",
+  "it": "Carico dei servo ai giunti (verde → rosso)",
+  "rm": "Chargia dals servos vi dals artitgels (verd → cotschen)"
+ },
+ "Servo-Moment Bein": {
+  "en": "Servo torque leg",
+  "fr": "Couple servo patte",
+  "it": "Coppia servo zampa",
+  "rm": "Moment servo chomma"
+ },
+ "Servo-Moment Segmentgelenk": {
+  "en": "Servo torque segment joint",
+  "fr": "Couple servo articulation",
+  "it": "Coppia servo giunto",
+  "rm": "Moment servo artitgel"
+ },
+ "Servo-Tempo": {
+  "en": "Servo speed",
+  "fr": "Vitesse des servos",
+  "it": "Velocità dei servo",
+  "rm": "Sveltezza dals servos"
+ },
  "Servo-Weg": {
   "en": "Servo travel",
   "fr": "Course des servos",
@@ -40045,6 +40681,12 @@
   "fr": "Servos réalistes : vitesse MG90S selon la tension, jeu d'engrenage, dépassement, courant de démarrage",
   "it": "Servo realistici: velocità MG90S secondo la tensione, gioco degli ingranaggi, oscillazione, corrente di spunto",
   "rm": "Servos sco en realitad: svelt MG90S tenor tensiun, gieu dals rodals, surpassament, current da partenza"
+ },
+ "Servos: %d · überlastet: %d · Strom ca. %.1f A": {
+  "en": "Servos: %d · overloaded: %d · current approx. %.1f A",
+  "fr": "Servos : %d · surchargés : %d · courant env. %.1f A",
+  "it": "Servo: %d · sovraccarichi: %d · corrente circa %.1f A",
+  "rm": "Servos: %d · surchargiads: %d · current ca. %.1f A"
  },
  "Servos: beim ersten Einschalten Finger weg vom Drehteller und vom Kopf; zuerst die Grenzen setzen (Pan ±90°, Tilt ±60°). Der Not-Aus steht auf der Seite Servos.": {
   "en": "Servos: keep your fingers away from the turntable and the head at the first start; set the limits first (pan ±90°, tilt ±60°). The emergency stop is on the page Servos.",
@@ -40551,6 +41193,12 @@
   "fr": "Canapé",
   "it": "Divano",
   "rm": "Sofa"
+ },
+ "Sofort (ohne Weg)": {
+  "en": "At once (without the way)",
+  "fr": "Tout de suite (sans trajet)",
+  "it": "Subito (senza percorso)",
+  "rm": "Immediat (senza via)"
  },
  "Sofort hinüber zum anderen Schieber rennen": {
   "en": "Run across to the other gate at once",
@@ -41581,6 +42229,18 @@
   "it": "Pagina iniziale con riquadro del simulatore",
   "rm": "Pagina da partenza cun platta dal simulatur"
  },
+ "Startwerte (modell.json)": {
+  "en": "Start values (modell.json)",
+  "fr": "Valeurs de départ (modell.json)",
+  "it": "Valori iniziali (modell.json)",
+  "rm": "Valurs da partenza (modell.json)"
+ },
+ "Startwerte aus modell.json (Einheiten der Vorlage, «E»). Nach einer Änderung baut das Labor den Roboter neu auf.": {
+  "en": "Start values from modell.json (units of the design, «E»). After a change the lab builds the robot again.",
+  "fr": "Valeurs de départ de modell.json (unités du modèle, «E»). Après un changement, le labo reconstruit le robot.",
+  "it": "Valori iniziali da modell.json (unità del modello, «E»). Dopo una modifica il laboratorio ricostruisce il robot.",
+  "rm": "Valurs da partenza da modell.json (unitads dal model, «E»). Suenter ina midada construescha il labor il robot da nov."
+ },
  "Stationen: %d gespielt, %d im Schnitt, %d erzwungen, %d offen": {
   "en": "Stations: %d played, %d in a cut, %d forced, %d open",
   "fr": "Étapes : %d jouées, %d dans une coupure, %d forcées, %d ouvertes",
@@ -41688,6 +42348,12 @@
   "fr": "enlever la poussière ; température CPU sous 80 °C ?",
   "it": "togliere la polvere; temperatura CPU sotto 80 °C?",
   "rm": "allontanar la pulvra; temperatura CPU sut 80 °C?"
+ },
+ "steckt fest (%d s ohne Fortschritt)": {
+  "en": "stuck (%d s without progress)",
+  "fr": "bloqué (%d s sans progrès)",
+  "it": "bloccato (%d s senza progressi)",
+  "rm": "è bloccà (%d s senza progress)"
  },
  "Steg": {
   "en": "Jetty",
@@ -42228,6 +42894,12 @@
   "it": "Corrente",
   "rm": "Current"
  },
+ "Strom ca. %.1f A (Körper %.1f A · Beine %.1f A · Kamera und Riegel %.2f A)": {
+  "en": "Current approx. %.1f A (body %.1f A · legs %.1f A · camera and latch %.2f A)",
+  "fr": "Courant env. %.1f A (corps %.1f A · pattes %.1f A · caméra et verrou %.2f A)",
+  "it": "Corrente circa %.1f A (corpo %.1f A · zampe %.1f A · telecamera e chiavistello %.2f A)",
+  "rm": "Current ca. %.1f A (corp %.1f A · chommas %.1f A · camera e clavitschel %.2f A)"
+ },
  "Strom für MoveEye bis zum Morgen, auch bei Kälte.": {
   "en": "Power for MoveEye until the morning, also in the cold.",
   "fr": "Du courant pour MoveEye jusqu'au matin, même par le froid.",
@@ -42239,6 +42911,12 @@
   "fr": "mesurer le courant : INA219 (ina, 0x44)",
   "it": "misurare la corrente: INA219 (ina, 0x44)",
   "rm": "mesirar il current: INA219 (ina, 0x44)"
+ },
+ "Strom: Schätzung je Servo = Ruhestrom + Blockierstrom × Last (Regler unter «Physik»). Kipp-Reserve: Abstand des Schwerpunkt-Lots vom Rand der Stützfläche (alle Bodenkontakte).": {
+  "en": "Current: estimate per servo = idle current + stall current × load (sliders under «Physics»). Tip margin: distance of the centre-of-mass plumb line from the edge of the support area (all ground contacts).",
+  "fr": "Courant : estimation par servo = courant de repos + courant de blocage × charge (curseurs sous «Physique»). Marge de basculement : distance entre l’aplomb du centre de gravité et le bord de la surface d’appui (tous les contacts au sol).",
+  "it": "Corrente: stima per servo = corrente a riposo + corrente di stallo × carico (cursori sotto «Fisica»). Margine di ribaltamento: distanza della verticale del baricentro dal bordo della superficie d’appoggio (tutti i contatti col suolo).",
+  "rm": "Current: stima per servo = current da ruaus + current da blocada × chargia (regladers sut «Fisica»). Reserva da sa sturnar: distanza dal plumb dal center da gravitad fin a l’ur da la surfatscha da sustegn (tut ils contacts cun il terren)."
  },
  "Stromausfall": {
   "en": "Power cut",
@@ -42288,6 +42966,12 @@
   "it": "Livello %d",
   "rm": "Stgalim %d"
  },
+ "Stufe %d cm": {
+  "en": "Step %d cm",
+  "fr": "Marche %d cm",
+  "it": "Gradino %d cm",
+  "rm": "Stgalim %d cm"
+ },
  "Stufe %d · %d Erfahrung": {
   "en": "Level %d · %d experience",
   "fr": "Niveau %d · %d d'expérience",
@@ -42305,6 +42989,12 @@
   "fr": "Niveau %d : %s",
   "it": "Livello %d: %s",
   "rm": "Stgalim %d: %s"
+ },
+ "Stufe 6 cm": {
+  "en": "Step 6 cm",
+  "fr": "Marche 6 cm",
+  "it": "Gradino 6 cm",
+  "rm": "Stgalim 6 cm"
  },
  "Stufe «%s» · %d Bilder/s · %s": {
   "en": "Level «%s» · %d frames/s · %s",
@@ -44553,6 +45243,12 @@
   "it": "Suoni dell'ambiente (vento, pioggia, acqua, animali, strada, voci)",
   "rm": "Ramurs da l'ambient (vent, plievgia, aua, animals, via, vuschs)"
  },
+ "umgefallen nach %d s": {
+  "en": "fell over after %d s",
+  "fr": "tombé après %d s",
+  "it": "caduto dopo %d s",
+  "rm": "dà enturn suenter %d s"
+ },
  "Umgehängt. Weiter.": {
   "en": "Clipped over. Onwards.",
   "fr": "Changé de mousqueton. On continue.",
@@ -44870,6 +45566,12 @@
   "fr": "Sous une dalle inclinée se trouve une vieille caisse en bois, avec l’inscription pâlie : CAFFÈ. Vide – depuis longtemps.",
   "it": "Sotto una lastra di pietra inclinata c’è una vecchia cassa di legno, con la scritta sbiadita: CAFFÈ. Vuota – da tanto tempo.",
   "rm": "Sut ina platta da crap sbiechia stat ina veglia chista da lain, sin quella smarvida: CAFFÈ. Vida – gia daditg."
+ },
+ "Unterschenkel": {
+  "en": "Lower leg",
+  "fr": "Jambe",
+  "it": "Stinco",
+  "rm": "Chomma sut"
  },
  "Unterseite – Rille fein drucken": {
   "en": "underside – print the groove fine",
@@ -46322,6 +47024,12 @@
   "it": "mancano nella distinta le resistenze del LED RGB",
   "rm": "las resistenzas da la LED RGB mancan en la glista"
  },
+ "Vorwärts": {
+  "en": "Forward",
+  "fr": "En avant",
+  "it": "Avanti",
+  "rm": "Enavant"
+ },
  "Vreni, die Sennerin": {
   "en": "Vreni, the cheesemaker",
   "fr": "Vreni, la fromagère d'alpage",
@@ -46351,6 +47059,12 @@
   "fr": "Oiseaux et petits animaux",
   "it": "Uccelli e piccoli animali",
   "rm": "Utschels e pitschens animals"
+ },
+ "W / S vor / zurück · A / D seitwärts · Q / E drehen · Leertaste Stopp · G Gehen · 1 – 4 Ansicht · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · H Bedienfeld · Esc schliessen": {
+  "en": "W / S forward / back · A / D sideways · Q / E turn · Space stop · G walk · 1 – 4 view · R set up again · P pause · F hold · K camera picture · H panel · Esc close",
+  "fr": "W / S avant / arrière · A / D de côté · Q / E tourner · Espace stop · G marcher · 1 – 4 vue · R remettre en place · P pause · F tenir · K image caméra · H panneau · Échap fermer",
+  "it": "W / S avanti / indietro · A / D di lato · Q / E girare · Spazio stop · G camminare · 1 – 4 vista · R rimettere in piedi · P pausa · F tenere · K immagine · H pannello · Esc chiudere",
+  "rm": "W / S enavant / enavos · A / D da la vart · Q / E volver · Spazi stop · G chaminar · 1 – 4 vista · R metter si da nov · P pausa · F tegnair · K maletg · H panel · Esc serrar"
  },
  "W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc": {
   "en": "W A S D / arrows drive · Shift fast · V view · Page ↑↓ camera height · C observer · J players · Esc",
@@ -47528,6 +48242,12 @@
   "fr": "Quel animal t'a le plus plu ?",
   "it": "Quale animale ti è piaciuto di più?",
   "rm": "Tgenin animal t'ha plaschì il meglier?"
+ },
+ "Wellengang": {
+  "en": "Wave gait",
+  "fr": "Allure en vague",
+  "it": "Andatura a onda",
+  "rm": "Chaminar en undas"
  },
  "Wellensittich": {
   "en": "Budgie",
@@ -49376,6 +50096,12 @@
   "it": "Tira una paratoia e corri subito all'altra - regge solo poco.",
   "rm": "Trai ina porta e curra immediatamain tar l'autra - ella tegna mo curt."
  },
+ "ziehen = drehen · rechts ziehen = verschieben · Rad = zoomen": {
+  "en": "drag = turn · right drag = move · wheel = zoom",
+  "fr": "glisser = tourner · glisser à droite = déplacer · molette = zoom",
+  "it": "trascinare = ruotare · trascinare a destra = spostare · rotella = zoom",
+  "rm": "trair = volver · trair a dretga = spustar · rodella = zoom"
+ },
  "Ziehen = drehen · rechts ziehen = verschieben · Rad = zoomen · Teil anklicken = was ist das?": {
   "en": "Drag = turn · right drag = move · wheel = zoom · click a part = what is it?",
   "fr": "Glisser = tourner · glisser à droite = déplacer · molette = zoom · cliquer une pièce = qu'est-ce que c'est ?",
@@ -49616,6 +50342,12 @@
   "fr": "trop lent",
   "it": "troppo lento",
   "rm": "memia plaun"
+ },
+ "zu langsam (über %d s)": {
+  "en": "too slow (over %d s)",
+  "fr": "trop lent (plus de %d s)",
+  "it": "troppo lento (oltre %d s)",
+  "rm": "memia plaun (sur %d s)"
  },
  "Zu langsam. 😉": {
   "en": "Too slow. 😉",
@@ -49934,6 +50666,12 @@
   "it": "Salta al mattino",
   "rm": "Siglir a la damaun"
  },
+ "zum Ziel": {
+  "en": "to the goal",
+  "fr": "vers le but",
+  "it": "verso la meta",
+  "rm": "vers la finamira"
+ },
  "Zum Ziel schleichen": {
   "en": "Sneak to the goal",
   "fr": "Se faufiler jusqu’à l’arrivée",
@@ -49987,6 +50725,12 @@
   "fr": "Retour",
   "it": "Indietro",
   "rm": "Enavos"
+ },
+ "zurück": {
+  "en": "back",
+  "fr": "arrière",
+  "it": "indietro",
+  "rm": "enavos"
  },
  "Zurück (Esc)": {
   "en": "Back (Esc)",
@@ -51021,6 +51765,12 @@
   "fr": "Transmission à MoveEye …",
   "it": "Consegna a MoveEye …",
   "rm": "Transmetter a MoveEye …"
+ },
+ "Überlastet: %s": {
+  "en": "Overloaded: %s",
+  "fr": "Surchargés : %s",
+  "it": "Sovraccarichi: %s",
+  "rm": "Surchargiads: %s"
  },
  "Übernachten im Bergtal": {
   "en": "Sleeping in the mountain valley",

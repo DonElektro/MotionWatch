@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3.78.0"
+const VERSION := "3.79.0"
 const Versionen = preload("res://scripts/versionen.gd")   # Versionierung 3.0.0: from 3.0.0 VERSION = "X.Y.Z" like MoveEye (see there)
 const Stimme = preload("res://scripts/abenteuer_stimme.gd")   # 3.23: the one switch «Stimme» (an | aus | untertitel)
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
@@ -358,6 +358,13 @@ var werkstatt = null:                 # werkstatt.gd (real-gehaeuse): Mehr → W
 			werkstatt.main = self
 			add_child(werkstatt)
 		return werkstatt
+var roboter = null:                  # roboter_labor.gd (Besitzer 22.11.2026): Mehr → «Roboter» (Roboter-Labor, eigene Welt)
+	get:                              # made at its first use (Mehr → Roboter, /control «roboter»), not at the start
+		if roboter == null and is_inside_tree():
+			roboter = load("res://scripts/roboter_labor.gd").new()
+			roboter.main = self
+			add_child(roboter)
+		return roboter
 var head_box: MeshInstance3D          # the dark box of the head (hidden while the real case is shown, gehaeuse.gd)
 var tasten                            # tasten.gd: + / − zoomen, Bild ↑ / ↓ blättern, Pfeile drehen, F1 Tasten-Hilfe (ohne Mausrad)
 var view_zoom := 1.0                  # tasten.gd: + / − in the camera views 1 / 2 (only the picture on the screen)
