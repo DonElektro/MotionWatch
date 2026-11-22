@@ -137,7 +137,7 @@ func _run() -> void:
 	ok("ruhiger Bildschirm an, %d Fenster weg (%s)" % [int(ru.info()["versteckt"]), ", ".join(PackedStringArray(ru.info()["namen"]))], bool(ru.info()["an"]) and int(ru.info()["versteckt"]) >= 1)
 	var noch := []
 	for n in vorher:
-		if is_instance_valid(n) and (n as CanvasItem).visible:
+		if is_instance_valid(n) and (n as CanvasItem).is_visible_in_tree():   # (a window frame round it may be what is hidden)
 			noch.append(str(n.name))
 	ok("… Leisten / Karte / Handy-Leiste weg (noch sichtbar: %s)" % ", ".join(PackedStringArray(noch)), noch.is_empty())
 	ok("… der grüne Stick, Camp-Knopf und «☰ Menü» bleiben", (main.rover_pad == null or ru._erlaubt(main.rover_pad)) and cp.knopf.visible and ru.knopf.visible)
