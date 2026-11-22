@@ -31,7 +31,7 @@
 WC_TAG = "wildcamp-1"
 WC_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"}   # + <tag>/<name>; Tests: lokaler Server
 # Werte aus werkzeuge/wildcamp/paket.py (pins_wildcamp.txt des Workflows «Wildcamp»); size 0 = noch nicht freigegeben
-WC_FILE = {"name": "wildcamp-ch-1.zip", "size": 0, "sha256": "", "unpacked": 0, "datum": ""}
+WC_FILE = {"name": "wildcamp-ch-1.zip", "size": 2425742, "sha256": "3cf1b73ea72ebdefe342ff0a1b9bd54b97b555a0a084fc3bfe5522dd6f2ecd1e", "unpacked": 10886755, "datum": "2026-11-22"}
 WC_PY = r'''WC_FORMAT = 1
 WC_MAX = 40 * 1000 * 1000                                  # hard limit of the package (also unpacked)
 WC_FREE_MIN = 200 * 1000 * 1000                            # so much stays free after the install
