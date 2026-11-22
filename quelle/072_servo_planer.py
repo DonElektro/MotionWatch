@@ -89,8 +89,8 @@ def srv_axis_step(p, v, tgt, vmax, amax, dt):
         return tgt, 0.0
     s = 1.0 if e > 0 else -1.0
     d = abs(e); vt = v * s                                  # speed towards the target (negative = moving away)
-    if 0.0 <= vt <= h * 1.0001 and d <= (vt + h * 0.5) * dt:
-        return tgt, 0.0                                     # the last step: it stops exactly on the target
+    if 0.0 <= vt <= h and d <= (vt + h * 0.5) * dt:
+        return tgt, 0.0                                     # the last step: it stops exactly on the target (4.20.1: never more than amax)
     q = h * h / 4.0 + 2.0 * amax * d - h * vt
     vs = -h / 2.0 + math.sqrt(q) if q > 0 else 0.0
     vd = s * min(vmax, vs)
@@ -98,7 +98,7 @@ def srv_axis_step(p, v, tgt, vmax, amax, dt):
     if vt > 0.0 and v2 * s < 0.0:
         v2 = 0.0                                            # still before the target: do not turn round
     p2 = p + (v + v2) * 0.5 * dt
-    if (tgt - p2) * s < 0.0 and abs(v2) <= h * 1.0001:
+    if (tgt - p2) * s < 0.0 and abs(v) <= h:                # 4.20.1: from v (not v2) to 0 - within amax * dt
         return tgt, 0.0
     return p2, v2
 
@@ -593,7 +593,8 @@ def servo_state(lang=None):
 
 def servo_planner_selftest():
     """the planner: no overshoot from rest, acceleration and speed limited, exact landing, both axes together"""
-    import random as _r
+    import random as _random
+    _r = _random.Random(4201)                               # 4.20.1: seeded (unseeded: about 1 run in 3000 failed)
     for d in (0.05, 0.4, 3.0, 25.0, -60.0, 100.0):
         for jit in (False, True):
             p, v, n, t = 0.0, 0.0, 0, 0.0

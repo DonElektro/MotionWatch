@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-22 11:49",
+ "generated": "2026-11-22 12:55",
  "versions": [
   {
-   "version": "4.20.0",
-   "file": "webcam_bewegung_4_20_0.py",
+   "version": "4.20.1",
+   "file": "webcam_bewegung_4_20_1.py",
    "url": "",
-   "sha256": "654d7bac8dee9de6ab3b7fc8ab4338c564e08b3ca1061dad9af176a8b4d0230b",
-   "date": "2026-11-22 11:01",
-   "notes": "«🔦 Gäste erwartet» (Einstellungen → Schutz, nur Administrator): solange an, lösen Gäste keinen Alarm aus (nur Protokoll und leiser Push «Gast kommt»; Sabotage, Diebstahl und SOS bleiben) – MoveEye leuchtet ihnen mit dem Licht etwa 2 m voraus den Weg; «bis HH:MM» oder Zeitplan. Bekannte Grenze: in der Nacht liegt die geschätzte Lage der Gäste 1,5–3,5 m daneben, der Lichtfleck ist darum noch nicht zuverlässig 2 m voraus; mit echter Hardware schwenkt die Lampe vorerst nur seitlich",
-   "size": 4036305,
-   "sig": "f70c86fc0acf7549d1ce9df007aa5207cb39a14eaeefcab2edc8eeeee9dcc8dde0430291cec529c2e23b316c3b7364aed9b7e12276af4a9438fc436006ea9d02",
+   "sha256": "5b199294deae1c0b7eaac8c574269df95a16fd4db974a612436bfb6b63653b4a",
+   "date": "2026-11-22 12:55",
+   "notes": "«systemctl stop» endet sauber mit Exit-Code 0 – auch während MoveEye noch lädt (systemd zeigte sonst «failed»); Selbsttest der Servo-Bewegung: der letzte Schritt bremst nie stärker als erlaubt, Zufallsschritte mit festem Startwert. CI: Integration prüft nach Regeln statt immer alles (vollständig mit «[voll]» oder bei CI-Änderungen), main bei jedem Push und jede Nacht alles; Gruppe «kern» geteilt (rund 20 statt 31 Minuten); wackelnde Tests behoben; der HP installiert ffmpeg, Node.js und Chromium-Bibliotheken selbst.",
+   "size": 4037045,
+   "sig": "62b2f62995c439e23bed8a4c8ea2a09a8cf1835f620e33c7a6fd42519b24d06ec88f9e8501260ac356c71074702340aeb30352f046c589c01a359d118e6f7105",
    "data": {
-    "file": "moveeye_daten_4_20_0.zip",
+    "file": "moveeye_daten_4_20_1.zip",
     "url": "",
-    "sha256": "4c74c62f2c23ff40fff4d17a7d2b9db86ec18bf9b0ec2eaf12dbf7381334f0c1",
-    "size": 17702177,
-    "sig": "36e399659a945f0cfd522bd21aada6d8cc679e7b6b0d714575cb0276df6100f123cf0d9c65e5dbd63efb72497ab31544d2ef01003a71564c319d5e3ab796310f"
+    "sha256": "fba97d7f353423d6b0444d646c11584d2696b181b57464992b8bc53cb0b498f8",
+    "size": 17704001,
+    "sig": "1d6dc0ea8b552e07d20c48ba46e17528652b05ddd29b5d5bcaebcfffc6a9f4176858a2f60df5a63f49dd9a403fb724734e3ec6ce3f1599aaa369b3b62640ef03"
    }
   },
   {

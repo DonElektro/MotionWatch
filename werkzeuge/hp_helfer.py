@@ -11,7 +11,7 @@ Workflow .github/workflows/hp_helfer.yml (Push auf hp-test/** -> Lauf vom Stand 
 
 hp_test.txt (im Wurzelordner des gepushten Zweigs, eine Zeile pro Befehl, «#» = Kommentar, höchstens 40 Zeilen). Erlaubt
 ist NUR (keine Shell - die Zeile wird in Wörter zerlegt und ohne Shell gestartet):
-  python3 werkzeuge/ci_lauf.py --gruppe basis|kern|rechte|live|daten|spiele-1|spiele-2   (auch --pruefen, --liste)
+  python3 werkzeuge/ci_lauf.py --gruppe basis|kern|kern-2|rechte|live|daten|spiele-1|spiele-2   (auch --pruefen, --liste)
   python3 [-W ignore] [-u] werkzeuge/<pfad>.py [Argumente]       (nicht werkzeuge/test_runner/)
   godot werkzeuge/<name>_test.gd                                  (Godot 4.3 headless wie im CI, Import vorher)
   davor erlaubt: Variablen MW_…=…, CI_…=…, SIM_…=…, TEST_…=…
@@ -29,8 +29,8 @@ import sys
 import threading
 import time
 
-GRUPPEN_HP = ["basis", "kern", "rechte", "live", "daten", "spiele-1", "spiele-2"]   # not simlive (needs a running sim), pidienst (sudo/systemd)
-WEB = ["kern", "rechte", "live", "daten", "spiele-1", "spiele-2"]
+GRUPPEN_HP = ["basis", "kern", "kern-2", "rechte", "live", "daten", "spiele-1", "spiele-2"]   # not simlive (needs a running sim), pidienst (sudo/systemd)
+WEB = ["kern", "kern-2", "rechte", "live", "daten", "spiele-1", "spiele-2"]
 SICHER = re.compile(r"[A-Za-z0-9_.,=:/+@%-]+")
 VAR = re.compile(r"(MW|CI|SIM|TEST)_[A-Z0-9_]{1,40}=[A-Za-z0-9_.,:/+@%-]{0,200}")
 SKRIPT = re.compile(r"werkzeuge/[A-Za-z0-9_][A-Za-z0-9_-]*(/[A-Za-z0-9_][A-Za-z0-9_-]*)*\.py")
@@ -163,7 +163,7 @@ def aus_auswahl(text):
     except ValueError:
         gruppen = None
     if not isinstance(gruppen, list):
-        gruppen = WEB[:4]                                   # selection broken: like ci.yml, every web group but the games
+        gruppen = WEB[:5]                                   # selection broken: like ci.yml, every web group but the games
     befehle = ["python3 werkzeuge/ci_lauf.py --pruefen", "python3 werkzeuge/ci_lauf.py --gruppe basis"]
     befehle += ["python3 werkzeuge/ci_lauf.py --gruppe %s" % g for g in gruppen if g in WEB]
     return befehle
@@ -410,7 +410,7 @@ def aufraeumen(a):
 
 # ------------------------------------------------------------------ Selbsttest
 def selbsttest():
-    gut = ["python3 werkzeuge/ci_lauf.py --gruppe kern", "python3 werkzeuge/ci_lauf.py --pruefen",
+    gut = ["python3 werkzeuge/ci_lauf.py --gruppe kern", "python3 werkzeuge/ci_lauf.py --gruppe kern-2", "python3 werkzeuge/ci_lauf.py --pruefen",
            "python3 -W ignore werkzeuge/karten_test.py", "python3 werkzeuge/bauen.py --pruefen",
            "MW_SELFTEST_NO_SIG=1 python3 werkzeuge/web_rauchtest.py --browser --url=http://127.0.0.1:8080/",
            "godot werkzeuge/gelenke_test.gd", "python3 -u werkzeuge/erkennungstest/bericht.py --x=1"]

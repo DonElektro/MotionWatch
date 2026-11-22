@@ -147,9 +147,16 @@ def main():
         if len(folge_u) >= 2:
             wu = wachstum(tmp, "ungepackt", folge_u)
             wg = wachstum(tmp, "gepackt", folge_g)
+            namen = [x[0] for x in wu]
+
             def ausnahme(fn):
-                m_ = re.match(r"^moveeye_daten_(\d+)_(\d+)_(\d+)\.zip$", fn)
-                return AUSNAHMEN.get(".".join(m_.groups())) if m_ else None
+                """the exceptions between the zip before (in the folder) and this one: 4.20.1 is compared with 4.18.1 when
+                4.20.0 is no longer in the folder - then the allowance of 4.20.0 counts too"""
+                i_ = namen.index(fn)
+                lo, hi = vkey(namen[i_ - 1]) if i_ else (0,), vkey(fn)
+                hits = [(g, r) for ver, (g, r) in AUSNAHMEN.items() if lo < tuple(int(x) for x in ver.split(".")) <= hi]
+                return (sum(g for g, _r in hits) + (GRENZE_MB if hits and tuple(int(x) for x in max(AUSNAHMEN)
+                        .split(".")) < hi else 0), "; ".join(r for _g, r in hits)) if hits else None
             for (fn, sz, plus), (_fn, szg, plusg) in list(zip(wu, wg))[1:]:
                 ax = ausnahme(fn)
                 g_ = ax[0] if ax else GRENZE_MB
