@@ -115,7 +115,7 @@ func _run() -> void:
 	main.set_hour(14.0)
 	var ex = main.explore
 	var sr = main.simreal
-	ok("lose Zeltplane in der Szene (simreal.gd)", sr.zeltplane != null and is_instance_valid(sr.zeltplane) and sr.zeltplane.visible)
+	ok("lose Zeltplane in der Szene (simreal.gd)", sr.zeltplane_da())
 	# ---- the clean screen: what is on the screen before ----
 	var vorher := {}
 	for n in [main.toolbar, main.minimap, main.view_bar, main.get("handy")]:
@@ -149,10 +149,10 @@ func _run() -> void:
 	ok("☰ nochmals: wieder ruhig", bool(ru.info()["an"]) and not main.ui_root.visible)
 	# ---- the loose tarp: no tarp in the pack ----
 	await wait(0.2)
-	ok("ohne Tarp im Rucksack: lose Zeltplane weg", not sr.zeltplane.visible)
+	ok("ohne Tarp im Rucksack: lose Zeltplane weg", not sr.zeltplane_da())
 	main.ex_rucksack = RS.dazu(RS.norm(main.ex_rucksack), "tarp", 1)["d"]
 	await wait(0.2)
-	ok("mit Tarp im Rucksack: die Zeltplane ist da (die eigene)", sr.zeltplane.visible)
+	ok("mit Tarp im Rucksack: die Zeltplane ist da (die eigene)", sr.zeltplane_da())
 	main.ex_rucksack = RS.dazu(RS.norm(main.ex_rucksack), "tarp", -1)["d"]
 	await wait(0.2)
 	# ---- placing: the preview ----
@@ -256,7 +256,7 @@ func _run() -> void:
 		if is_instance_valid(n) and (n as CanvasItem).visible != bool(vorher[n]):
 			bleibt.append(str(n.name))
 	ok("ruhiger Bildschirm aus: alles wie vorher (anders: %s)" % ", ".join(PackedStringArray(bleibt)), bleibt.is_empty() and main.ui_root.visible == ui_vorher)
-	ok("lose Zeltplane wieder wie vorher (da)", sr.zeltplane.visible)
+	ok("lose Zeltplane wieder wie vorher (da)", sr.zeltplane_da())
 	var gs: Dictionary = cp.gespeichert()
 	ok("gespeichert: Zelt, Stuhl, Kocher, MoveEye, Feuerstelle", (gs.get("stehen", []) as Array).size() == 5)
 	# ---- next time: the camp is there again ----
