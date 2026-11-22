@@ -56,6 +56,8 @@ const POSTUR := Haltung.POSTUR
 const AUGE := Haltung.AUGE            # Rückfall ohne Kopf
 const TEMPI := [1.8, 3.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0]   # m/s: Schnelllauf (rennen), Besitzer 21.11.2026 (bis 40)
 const V_MAX := 40.0
+const HANG_SANFT := 0.7             # rise / run (35°): up to here uphill at full speed (fast run too)
+const HANG_MIN_K := 0.45            # ... at the wall (kit_figur.STEIL 1.25): this part of the speed
 const V_RENNEN := 3.45               # m/s: normales Rennen (actor.PLAYER_SPEED[0] × 2.3) - Schnelllauf aus
 const SCHWIMM_V := Haltung.SCHWIMM_V
 const SCHWIMM_TIEF := Haltung.SCHWIMM_TIEF
@@ -78,6 +80,7 @@ var begleiter: Node = null           # erkunden_begleiter.gd: Maggie, Blinki, «
 var gestalten: CanvasLayer = null    # erkunden_gestalten.gd: die Figur gestalten (Etappe 2)
 var sachen: Node = null              # erkunden_sachen.gd: Rucksack-Sachen und Kraft (Etappe 3)
 var extras: Node = null              # erkunden_extras.gd: Fotomodus, Ort merken, Startpunkte (Etappe 4)
+var _hang := 1.0                     # the slope factor, smoothed (_hang_k)
 var _abseil := {}                    # rappelling: {von, kante, nach, t, dauer}
 var _y_hoch := -INF                  # the highest point of the last flight (a hard landing, «Echt»)
 var _scene := ""
@@ -468,7 +471,23 @@ func _haltung_tick(ein: Dictionary) -> void:
 	var k := 1.0
 	if sachen != null:
 		k = sachen.tempo_faktor()                           # Etappe 3: strength, snow without ice axe, hurt
+	k *= _hang_k()                                           # really steep uphill: gently slower (never a drop to walking)
 	Haltung.tick(self, ein, _wunsch, k, sachen == null or sachen.darf_rennen(), renn_tempo(main))
+
+
+func _hang_k() -> float:
+	"""the slope ahead (rise / run over 2 m along the heading): up to HANG_SANFT (walkable) the full speed - also the fast run;
+	steeper slower in proportion, down to HANG_MIN_K at the wall (kit_figur.STEIL); smoothed, never a jump"""
+	var ziel := 1.0
+	if wasser == "" and figur != null and str(figur.zustand) == "boden" and main.has_method("hilly") and main.hilly():
+		var h := float(actor.heading)
+		var fw := Vector3(-sin(h), 0, -cos(h))
+		var p: Vector3 = actor.global_position
+		var s: float = (float(main.ground_y(p.x + fw.x, p.z + fw.z)) - float(main.ground_y(p.x - fw.x, p.z - fw.z))) / 2.0
+		if s > HANG_SANFT:
+			ziel = lerpf(1.0, HANG_MIN_K, clampf((s - HANG_SANFT) / (KitFigur.STEIL - HANG_SANFT), 0.0, 1.0))
+	_hang = lerpf(_hang, ziel, clampf(get_process_delta_time() * 4.0, 0.0, 1.0))
+	return _hang
 
 
 func _skelett() -> Skeleton3D:
