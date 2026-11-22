@@ -359,6 +359,17 @@ func _register_controls() -> void:
 	main.add_control("button", "dev_open", "Entwickler-Fenster öffnen", null, func(): main.dev_window("schalter"), "Entwickler", {"expert": true})
 	main.add_control("button", "pruef_open", "Prüfstand öffnen", null, func(): main.pruef.open(not main.pruef.visible), "Entwickler", {"expert": true, "devwin": true})
 	main.add_control("button", "simint_open", "Störungen testen", null, func(): main._open_stoer(), "Entwickler", {"expert": true, "devwin": true})
+	# «Frei erkunden» (Besitzer 21.11.2026): fast run of the own figure for tests - off = the normal running speed
+	main.add_control("toggle", "ex_schnell", "Schnelllauf beim Erkunden (Figur rennt bis 40 m/s, zum Testen)", func(): return main.ex_schnell,
+			func(v): main.ex_schnell = bool(v); main._settings_dirty = true, "Entwickler", {"expert": true, "devwin": true})
+	# ... and its speed (Besitzer 22.11.2026): the same setting as the bar button «Rennen: x m/s ›» (main.ex_ptempo), both always in step
+	var EP = preload("res://scripts/explore_person.gd")
+	var tempi := []
+	for t in EP.TEMPI:
+		tempi.append([EP._num(float(t)), EP._num(float(t)) + " m/s"])
+	main.add_control("select", "ex_ptempo", "Rennen beim Erkunden", func(): return EP._num(EP.tempo_naechste(float(main.ex_ptempo))),
+			func(v): main.ex_ptempo = clampf(float(v), 1.0, EP.V_MAX); main._settings_dirty = true, "Entwickler",
+			{"expert": true, "devwin": true, "options": tempi, "an": func(): return bool(main.ex_schnell)})
 	preload("res://scripts/spieltest.gd").add_controls(main)   # Spieltest-Assistent + «Spieltest-Meldungen» (wie MoveEye Entwickler)
 	preload("res://scripts/maggie_vorfuehrung.gd").add_controls(main)   # Vorführmodus «Maggie» (Entwickler, Reiter «Vorführung»)
 	preload("res://scripts/trailer.gd").add_controls(main)   # Trailer der Geschichten (Entwickler; dazu oben im Entwickler-Fenster)
@@ -605,6 +616,8 @@ func _load_settings() -> void:
 				v = bool(v)
 			elif typeof(old) == TYPE_FLOAT:
 				v = float(v)
+			elif typeof(old) == TYPE_DICTIONARY:              # «Frei erkunden»: the own figure (ex_figur)
+				v = v if typeof(v) == TYPE_DICTIONARY else old
 			else:
 				v = str(v)
 			main.set(k, v)
@@ -616,6 +629,12 @@ func _load_settings() -> void:
 	if main.game_mode == "teamguard":                          # Balance 30.10.2026: «Team gegen Team» is gone
 		main.game_mode = "guard"
 	main.ex_speed = clampf(float(main.ex_speed), 0.5, 10.0)      # 13.11.2026: the speed of exploring (explore.gd SPEEDS)
+	main.ex_ptempo = clampf(float(main.ex_ptempo), 1.0, 40.0)    # 21.11.2026: the fast run of the figure (explore_person.gd)
+	main.ex_schnell = bool(main.ex_schnell)
+	main.ex_figur = preload("res://scripts/erkunden_figur.gd").norm(main.ex_figur)   # Etappe 2: the own figure, always complete
+	main.ex_rucksack = preload("res://scripts/erkunden_rucksack.gd").norm(main.ex_rucksack)   # Etappe 3: the pack
+	for k in ["ex_maggie", "ex_blinki", "ex_mw_sieht", "ex_auge", "ex_kraft_echt"]:
+		main.set(k, bool(main.get(k)))
 	if d.has("hour_now") and not "--hour" in OS.get_cmdline_user_args() and not "--hour" in OS.get_cmdline_args() and not main.real_time:
 		# 3D-3.76: the time as it was set; a short break (update, restart) - the clock went on meanwhile, like outside
 		main.speed = clampf(float(d.get("speed_now", 1.0)), 1.0, 120.0)

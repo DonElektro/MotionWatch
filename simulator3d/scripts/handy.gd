@@ -452,6 +452,9 @@ func _layout() -> void:
 	top.position = Vector2(roundf((fr.size.x - top.size.x) / 2.0), 10)
 	win_box.position = Vector2(10, 64 if not ls else 10)
 	var other: bool = main.get("waechter") != null and main.waechter.big_open   # ein anderes grosses Fenster ist offen
+	var ex0 = main.get("explore")                     # «Frei erkunden»: «Figur gestalten» offen braucht den Platz unten
+	if ex0 != null and ex0.person != null and ex0.person.get("gestalten") != null and (bool(ex0.person.gestalten.offen) or ex0.person.ruhig()):
+		other = true
 	dpad.visible = big_id == "" and cur == "" and not other and not panel_x.visible
 	win_box.modulate.a = 0.0 if other or panel_x.visible else 1.0
 	win_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
