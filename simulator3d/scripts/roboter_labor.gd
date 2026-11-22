@@ -530,14 +530,16 @@ func _build_ui() -> void:
 
 
 func _overlay(area: Control) -> void:
+	var sp := PanelContainer.new()
+	sp.position = Vector2(10, 8)
+	sp.add_theme_stylebox_override("panel", UI.box(Color(1, 1, 1, 0.72), Color(1, 1, 1, 0.0), 8, 8, 0))
+	sp.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	area.add_child(sp)
 	var st := Label.new()
-	st.position = Vector2(14, 10)
 	st.add_theme_font_size_override("font_size", 14)
 	st.add_theme_color_override("font_color", Color("#16202c"))
-	st.add_theme_color_override("font_outline_color", Color(1, 1, 1, 0.85))
-	st.add_theme_constant_override("outline_size", 6)
 	st.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	area.add_child(st)
+	sp.add_child(st)
 	_w["status"] = st
 	var vb := HBoxContainer.new()
 	vb.add_theme_constant_override("separation", 4)
