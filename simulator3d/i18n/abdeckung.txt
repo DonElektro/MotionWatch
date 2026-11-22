@@ -6,7 +6,7 @@ Unsicher markiert: 514
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 553 Stellen
 Nicht mehr im Code (noch in texte.json): 417
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 31460, schlüssel 24459, keine Wörter 15707, index 10832, technisch 3986, doc 2764, einheit 352, log 204, englisch 148, pfad 130, stringname 107, html 69, klasse 48, shader 6
+Übersprungen (Grund: Anzahl): kennung 31463, schlüssel 24473, keine Wörter 15707, index 10832, technisch 3986, doc 2764, einheit 352, log 204, englisch 148, pfad 130, stringname 107, html 69, klasse 48, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -1059,10 +1059,10 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   werkstatt_einzel.gd:478  'keine'
   werkstatt_einzel.gd:478  'keine'
   werkstatt_einzel.gd:666  '&lang='
-  bergtal_aussicht.gd:465  'von'
-  bergtal_aussicht.gd:644  'von'
-  bergtal_aussicht.gd:1267  'Abzeichen: '
-  bergtal_aussicht.gd:1268  'von'
+  bergtal_aussicht.gd:485  'von'
+  bergtal_aussicht.gd:664  'von'
+  bergtal_aussicht.gd:1287  'Abzeichen: '
+  bergtal_aussicht.gd:1288  'von'
   camphys.gd:153  ' · %.1f Blenden zu dunkel'
   dataset.gd:54  'Spiel: '
   dataset.gd:319  ' · Vielfalt hoch'

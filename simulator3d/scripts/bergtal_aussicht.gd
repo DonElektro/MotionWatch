@@ -248,6 +248,14 @@ const VISIT_AHEAD := [3.0, 8.0, 15.0, 25.0, 35.0, 42.0]   # m vor dem Punkt (Kre
 const VISIT_EYE := 2.7                     # m über dem Boden (Augenhöhe 1.7 m + 1 m)
 const VISIT_UP := [0.0, 2.5, 5.5]          # wenn eine Kuppe direkt davor die Sicht nimmt: etwas höher (kostet 15 m Sichtweite pro m)
 const VISIT_SPAN := 120.0                  # ° links / rechts der Blickrichtung aus VIEWPOINTS, die abgesucht werden
+# Besitzer 22.11.2026 19:16: zwei Aussichtspunkte von Hand (die Punkte selbst bleiben, VIEWPOINTS unverändert). Gesucht über
+# Sichtlinien (Gelände und Wald, Kronen ~18 m) im Umkreis von 40 m: off = Auge gegenüber dem Punkt (Tal-Meter x, z), up = m über
+# dem Boden; target = Tal-Punkt, auf den die Ansicht zielt (Höhe: Boden + 1 m) oder az / pitch in Grad.
+#   vp_gletscher: 12 m über dem Punkt sieht man 26 von 33 Messpunkten der Gletscherzunge (2.7 m: Grashalde davor), Mitte 884 / 497.
+#   vp_pass: vom Punkt aus nimmt eine Kuppe die Sicht; 20 m höher, 10 m östlich, 20 m nördlich geht sie über die Passstrasse
+#   das Tal hinunter (im Mittel ca. 1450 m weit).
+const VISIT_CAM := {"vp_gletscher": {"off": Vector2(0, 0), "up": 12.0, "target": Vector2(884, 497)},
+		"vp_pass": {"off": Vector2(10, -20), "up": 20.0, "az": 0.0, "pitch": -8.0}}
 
 
 func _sight(b, eye: Vector3, az: float, pitch: float, far := 1500.0) -> float:
@@ -280,9 +288,21 @@ func visit_view(v: Dictionary) -> Dictionary:
 	front, e.g. Passchanzle); turning, walking and rising cost a little (4 m per degree, 3 m per metre ahead, 15 m per metre
 	up), so a free view keeps the viewpoint's own direction. The glacier viewpoint: straight at the glacier, from the nearest
 	place that sees it, looking up to it if it is higher. Pitch otherwise: towards the ground about 400 m ahead (looking down
-	into the valley; a brow in front that hides it: 4° below the brow), between −12° and −2°. Valley coordinates: {eye: Vector3, az: degrees, pitch: rad, ahead: m, up: m}"""
+	into the valley; a brow in front that hides it: 4° below the brow), between −12° and −2°. vp_gletscher and vp_pass: by hand
+	(VISIT_CAM). Valley coordinates: {eye: Vector3, az: degrees, pitch: rad, ahead: m, up: m}"""
 	var b = B()
 	var c: Vector2 = v.c
+	if VISIT_CAM.has(str(v.id)):                           # by hand (VISIT_CAM)
+		var vc: Dictionary = VISIT_CAM[str(v.id)]
+		var q: Vector2 = c + vc.off
+		var e := Vector3(q.x, b.H(q.x, q.y) + float(vc.up), q.y)
+		var caz := float(vc.get("az", 0.0))
+		var cpt := deg_to_rad(float(vc.get("pitch", 0.0)))
+		if vc.has("target"):
+			var t: Vector2 = vc.target
+			caz = rad_to_deg(atan2((t - q).x, -(t - q).y))
+			cpt = atan2(b.H(t.x, t.y) + 1.0 - e.y, q.distance_to(t))
+		return {"eye": e, "az": snappedf(fposmod(caz, 360.0), 0.1), "pitch": cpt, "ahead": snappedf(vc.off.length(), 0.1), "up": float(vc.up)}
 	var look := float(v.look)
 	var glacier := str(v.kind) == "gletscher"
 	var gl: Vector2 = b.GLACIER
