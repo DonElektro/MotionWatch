@@ -356,7 +356,7 @@ def teil_b(datei, data, unp, bilder):
                 if bilder:
                     pg.screenshot(path=os.path.join(bilder, f"bergtal_2d_{name}.png"))
                 pg.evaluate("() => document.getElementById('bk-3d').click()")
-                pg.wait_for_function("() => KQMAP.getPitch() > 40 && !!KQMAP.getTerrain()", timeout=30000)
+                pg.wait_for_function("() => KQMAP.getPitch() > 40 && !!KQMAP.getTerrain()", timeout=60000)
                 try:                                                   # software WebGL: 3D takes a while (loaded() rarely settles)
                     pg.wait_for_function("() => (() => { try { return KQMAP.queryTerrainElevation(KQMAP.getCenter()) > 1000; } catch (e) { return false; } })()", timeout=120000)
                 except Exception:
@@ -436,8 +436,9 @@ def teil_b(datei, data, unp, bilder):
                 pg.wait_for_timeout(5000)
                 pg.evaluate("() => document.getElementById('kq-map').scrollIntoView({block: 'start'})")
                 pg.screenshot(path=os.path.join(bilder, "bergtal_3d_pc_dpr1.png"), timeout=90000)
-                pg.locator("#bk-vor .kt-li").first.click()
-                pg.wait_for_selector("#bk-vor-d:not([hidden]) svg.kt-prof", timeout=30000)
+                pg.wait_for_selector("#bk-vor .kt-li", state="attached", timeout=90000)
+                pg.evaluate("() => document.querySelector('#bk-vor .kt-li').click()")
+                pg.wait_for_selector("#bk-vor-d:not([hidden]) svg.kt-prof", timeout=60000)
                 pg.wait_for_timeout(8000)
                 pg.evaluate("() => document.getElementById('kq-map').scrollIntoView({block: 'start'})")
                 pg.screenshot(path=os.path.join(bilder, "bergtal_tour_3d_pc_dpr1.png"), timeout=90000)

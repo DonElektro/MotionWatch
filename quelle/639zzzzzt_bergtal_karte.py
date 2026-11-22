@@ -705,6 +705,7 @@ body.bk-berg #eo{display:none!important}
 .bk-leg i.bk-dot{display:inline-block;width:11px;height:11px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.35);background:var(--c)}
 .bk-grid{font-size:12px;color:var(--mut,#8a93a0);margin:2px}
 .bk-vor{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}.bk-vor h2{font-size:18px;margin:0 0 6px}
+.bk-vor .kt-li,.bk-vor .kt-li>span{text-align:left}.bk-vor .kt-li{min-height:44px}
 .bk-inst{margin-top:10px;padding:10px 12px;border:1px solid var(--line,#334);border-radius:12px}.bk-inst progress{flex:1 1 120px}
 .bk-warn{color:var(--warn,#e9a23b);font-weight:600}
 """
@@ -841,17 +842,16 @@ BK_JS = r"""
                                                                         // is false while 3D tiles stream in - then 2D did nothing)
     if (v) { map.setTerrain(D3); map.dragRotate.enable(); map.touchZoomRotate.enableRotation(); map.touchPitch.enable(); map.keyboard.enableRotation();
       try { map.setSky({"sky-color": dark() ? "#1b2a40" : "#9cc7ef", "horizon-color": dark() ? "#3a4a60" : "#eef4fa", "fog-color": dark() ? "#2a3340" : "#eef2f5", "sky-horizon-blend": 0.5, "horizon-fog-blend": 0.8, "fog-ground-blend": 0.25}); } catch (e) {}
-      map.easeTo({pitch: 58, bearing: map.getBearing() || -25, zoom: Math.min(Math.max(map.getZoom(), 15.2), 15.2), duration: quick ? 0 : 700});
-      // MapLibre takes the height under the centre when the terrain is switched on - before its tiles are there (0 m: the
-      // camera would stand inside the mountain, empty picture, measured). Once everything is loaded: a tiny move = new height.
-      // (a timer, not «idle»: a big canvas with software WebGL never gets idle - measured)
+      // first the terrain, then the tilt: MapLibre places the 3D camera by the height under the centre - before its DEM tile
+      // is there that height is 0 m and the camera stands inside the mountain (empty picture, measured with software WebGL).
+      // So: wait (at most 20 s) until the height is known, nudge the centre by 2 m if it does not come, then tilt.
       clearInterval(BK.nudgeT); let n = 0;
-      const nudge = () => { clearInterval(BK.nudgeT);                 // after the tilt (a jumpTo would stop it)
-        BK.nudgeT = setInterval(() => { if (!BK.d3 || !map.getTerrain() || ++n > 120) { clearInterval(BK.nudgeT); return; }
-          let el = 0; try { el = map.queryTerrainElevation(map.getCenter()) || 0; } catch (e) {}     // throws while the terrain starts
-          if (el > 0 && n > 2) { clearInterval(BK.nudgeT); return; }
-          const c = map.getCenter(); map.jumpTo({center: [c.lng + (n % 2 ? 2e-5 : -2e-5), c.lat]}); }, 1000); };   // ±2 m
-      if (quick) nudge(); else map.once("moveend", nudge); }
+      const elev = () => { try { return map.queryTerrainElevation(map.getCenter()) || 0; } catch (e) { return 0; } };
+      const tilt = () => map.easeTo({pitch: 58, bearing: map.getBearing() || -25, zoom: Math.min(Math.max(map.getZoom(), 15.2), 15.2), duration: quick ? 0 : 700});
+      BK.nudgeT = setInterval(() => { if (!BK.d3 || !map.getTerrain()) { clearInterval(BK.nudgeT); return; }
+        n++; if (elev() > 0 || n > 40) { clearInterval(BK.nudgeT); tilt();
+          map.once("moveend", () => { if (BK.d3) { const c = map.getCenter(); map.jumpTo({center: [c.lng + 2e-5, c.lat]}); } }); return; }
+        if (n % 3 === 0) { const c = map.getCenter(); map.jumpTo({center: [c.lng + (n % 2 ? 2e-5 : -2e-5), c.lat]}); } }, 500); }
     else { map.setTerrain(null); map.dragRotate.disable(); map.touchZoomRotate.disableRotation(); map.touchPitch.disable(); map.keyboard.disableRotation(); map.easeTo({pitch: 0, bearing: 0, duration: quick ? 0 : 500}); }
   }
   function addLive() {
