@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-22 02:47",
+ "generated": "2026-11-22 09:02",
  "versions": [
+  {
+   "version": "4.19.0",
+   "file": "webcam_bewegung_4_19_0.py",
+   "url": "",
+   "sha256": "a2e44e85a504d3320602eb5cdd156cd62c660d04b02375c611ffe27db5c155f4",
+   "date": "2026-11-22 09:02",
+   "notes": "Karte: neuer Schalter «🗺 Schweiz | ⛰ Bergtal» auf /karte – die Karte des Simulator-Tals wie die Landeskarte (Relief, Höhenlinien, 3D, Orte, Wanderwege, Bäche, Seen), geheime Orte erst nach dem Finden im Simulator, live MoveEye / Figur / Mover, Touren mit Bergtal-Höhen, «Tour im Sim nachlaufen», Vorschläge",
+   "size": 4025727,
+   "sig": "662d6877476b6df52ecdb4248973686cf70d4c96d95a982415aa93400654947a5acaee2c894fab817a2a85f800060214335d75b190609d4811d463b8fc2b8307",
+   "data": {
+    "file": "moveeye_daten_4_19_0.zip",
+    "url": "",
+    "sha256": "58430b980ed66752757f15976ecb3c8df1ba60188833dd2405b7c193a256fae0",
+    "size": 14537720,
+    "sig": "53836a23fba7836572e8a061379b1b0af4dadb0d14974aa5bd66ba48985fd903abc56ba22979670b23f35712026c37687649a0e49b06d30fc3cf13cb9d496b0b"
+   }
+  },
   {
    "version": "4.18.1",
    "file": "webcam_bewegung_4_18_1.py",
    "url": "",
    "sha256": "d04f879664e0b21f2cd537b8ef1324b85dc3a55cb9efdaeb2d5f22e5d49df3dd",
-   "date": "2026-11-22 01:39",
+   "date": "2026-11-22 08:00",
    "notes": "Aufnahmen dürfen bis 8 GB brauchen (vorher 2 GB, höchstens die Hälfte des Laufwerks; beim Update 2 → 8 GB ab 16 GB mit Hinweis); Verlauf: Chip «⏪ bis …» (älteste Aufnahme, Tippen = älteste zuerst), Chip «… MB / … GB» führt zur Einstellung; Suche in den Einstellungen findet «Aufnahmeordner», «Zeitraffer-Ordner» und «Tagen löschen» (auch in «Einfach»)",
    "size": 4025336,
    "sig": "2cb3ddb4a2fc5f6f946d4efa40188cd8ec13cca539cd8eb499f1cdba081662705138c61890cbbb4a24ee2f836bb91389794a75786f44fff01faa3148f3cf4b0f",
@@ -139,23 +156,6 @@
    }
   },
   {
-   "version": "4.10.0",
-   "file": "webcam_bewegung_4_10_0.py",
-   "url": "",
-   "sha256": "28c87c3996911ea7a83f076d7f3175a80907dc617e87370442e1986d7ea5b1ef",
-   "date": "2026-11-16 01:58",
-   "notes": "💬 Blinki fragen: Blinki beantwortet Fragen zur Bedienung und erklärt Fehler – offline auf dem Gerät (Sprachmodell auf Knopfdruck laden), wahlweise mit eigener Cloud; Fragen auch gesprochen (Handy 🎙, am Gerät nach 2× klatschen, Knopf oder QR-Karte – ab Werk aus) · 📌 Eigene Orte auf der Offline-Karte (setzen, ziehen, bearbeiten; gespeichert im Digitalen Rucksack, GPX / KML / GeoJSON) · 📍 Markier-Karte (experimentell, ab Werk aus): eine gedruckte Karte vor die Kopf-Kamera halten, der Kopf folgt ihr und merkt sich Punkte",
-   "size": 4024875,
-   "sig": "42d71804af5016402db1f0873595bb0544785c07d24fc84b98314cf71f358a79cb1c0605d1371a2af0b776fa9b4840cd592269bac45326978bd24d21329bb805",
-   "data": {
-    "file": "moveeye_daten_4_10_0.zip",
-    "url": "",
-    "sha256": "97814075cadc8ad92c85dfeae94e2ca54099f1ff0a48388e4cae07eddddd875d",
-    "size": 14159525,
-    "sig": "9440b47a651ba6896525762f6fd2c54ba8bddcb06b443fe27e5c902a5957be0376079b0096f345ab378c3ddb144bf643a8ad05c96aabaafbb8348248428b6405"
-   }
-  },
-  {
    "version": "3.80.0",
    "file": "webcam_bewegung_3_80_0.py",
    "url": "",
@@ -204,41 +204,41 @@
    "sig": "3c0d6ad76326d81ce324c8914ca35b61596ef189eb0e83e04238c5088ad5e2954914805461e7194f7648bb37117d49454eb7d207ff54d89893e10667b26ea80a"
   },
   "pi": {
-   "ver": "3.74.0",
+   "ver": "3.75.0",
    "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 43365459,
-   "sha256": "3d022dec45cb057ee28c83bfbb9a9e5b707f8b8f6fbaf07891ef51de75526813",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.74.0/MoveEyeSim3D_Pi.zip",
-   "sig": "6f3d981f279542221124a0dea188a82e5f3fc89a735338cab8f03f8f3142d2628d1adffa00561d996d0fc1a757ffa5036b46a300b7f408d111a233f2b56d1d0a"
+   "size": 43376282,
+   "sha256": "38390e4e8a90d72849d6a05919ac77e6c0618d78130b1b219ac51c3d3673ff39",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.75.0/MoveEyeSim3D_Pi.zip",
+   "sig": "ed55a8067f9587c4b4e24a85394a4ded2c22f51e2fcfab36d8a680165f9d10c949c1f61e7622dbf9e5cbaffaf5c4b5013f976b54396c9b7fce8202f0d588e204"
   },
   "anhang": {
-   "ver": "3.74.0",
-   "version": "3D-5.74.0",
-   "notes": "Grossvater Kapitel 1, Maggie-Fix Kapitel 2, Kamera / Innenraum",
+   "ver": "3.75.0",
+   "version": "3D-5.75.0",
+   "notes": "Bergtal-Karte: Antwort «bkarte» für MoveEye 4.19.0",
    "mw_min": "3.55.0",
    "win": {
-    "ver": "3.74.0",
+    "ver": "3.75.0",
     "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
-    "size": 59830445,
-    "sha256": "4895d804c6ff9c3b3d9b8b161c2db4a9b01d4a69baec6c52cfbaf28ea4be6e53",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.74.0/MotionWatch3D_Simulator.zip",
-    "sig": "c7088b289ae8ea46c091d60deaa2c643d46204ef2f79831a15dc8b3a113a3028482d04bcf2133cdab06e0877bfecb2c1ee3a406a3d05df9f61c9db4e8037a00b"
+    "size": 59848807,
+    "sha256": "cbab99911c5625cb368a72a7e3de103f00769d62038382aeec639bed1c5efaf8",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.75.0/MotionWatch3D_Simulator.zip",
+    "sig": "458d2fddb5f9c13d4f18a41ae64a34bae381508f7aff73030fd331ac3d8b66cfb566ae7aca8d38c4fab41219e58e1518e59043826a284e72c332797708a04007"
    },
    "linux": {
-    "ver": "3.74.0",
+    "ver": "3.75.0",
     "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
-    "size": 53883846,
-    "sha256": "2ec60be676765926145fce5e20e93821648f1345d926e993f7e48c81422b6234",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.74.0/MoveEyeSim3D_Linux.zip",
-    "sig": "492fba668743133825c2f232505061dab3130f74c8638d74253a3bdd140c14375520d27f372c3425a8d9f3081285b79f71f6da44ba43347192c23d86c6d06b06"
+    "size": 53896106,
+    "sha256": "b7aff0a3276931f772a30875922e384cbf6c250a3a476ebd67b27b64fc414fac",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.75.0/MoveEyeSim3D_Linux.zip",
+    "sig": "57d7fd18dee2f46446cb27058b5c03ec92483c6a77d3ab8eaf6307ceafe5ba5a88d4b992f113844d4e168f2df2c5886e42c5d91da8cf46d336a427b6b6a7cf0b"
    },
    "web": {
-    "ver": "3.74.0",
+    "ver": "3.75.0",
     "file": "simulator3d/anhang/sim-web.zip",
-    "size": 78823975,
-    "sha256": "2b563697fe0ccf9c019d1584aac6bec765ccf818eb3e87a10180969b28009fef",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.74.0/sim-web.zip",
-    "sig": "8391b29979586addc156856b4c87e7718e5343e48b5be08f40eaa425c673dc0a532d26c2b5741ca4a0748bd4da575fcf0fcc026e48dedb8d1baf391e3772ba01"
+    "size": 78854874,
+    "sha256": "ff1d053f38d4132eaf432f5d658b6af1800ad42084f0a0e0b2115d5e4fa3a5a9",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.75.0/sim-web.zip",
+    "sig": "5259601d01f77fd10bb5b519ce307f466b67e0fccb72686644ee46154c3d09add2e3eef48a0909d58598a7a0e273f1bb54f1221d2b9a7b77ae3414d6e20c040f"
    }
   }
  }
