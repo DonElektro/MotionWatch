@@ -1225,8 +1225,9 @@ def hp_links_html(L="de", kap=None, rob=None):
 
 # the tiles (simple page and every variant of 639zzzzf): one screen high together with the title (.first), clamp() by width AND
 # height (--vh: svh where the browser has it - the visible height on phones with the address bar)
-# 6 tiles (.n6, with «🤖 Roboter-Labor»): on the phone the robot lab and the visitor page side by side, from 1000 px two rows of
-# three (the game tile without span); the chips of the chapters tighter, below 320 px without the word «Kapitel»
+# 6 tiles (.n6, with «🤖 Roboter-Labor»): on the phone the robot lab and the visitor page side by side (title only), from 1000 px
+# two rows of three (the game tile without span). The chips of the chapters: on narrow tiles always ONE line (the number chips
+# shrink, at most 40 px), below 320 px without the word «Kapitel» - the fonts differ (CI runner: the row wrapped at 390 px)
 HP_TILES_CSS = r""":root{--vh:1vh}@supports (height:1svh){:root{--vh:1svh}}
 .tiles{display:grid;grid-template-columns:1fr;gap:clamp(7px,calc(1.3*var(--vh)),14px);width:100%;max-width:1100px;margin:0 auto;box-sizing:border-box;
  padding:clamp(10px,calc(2*var(--vh)),22px) 16px clamp(12px,calc(2.4*var(--vh)),26px)}
@@ -1242,10 +1243,10 @@ a.tile:hover,a.tile:focus-visible{border-color:#4a5563;outline:none}.tiles a:foc
 .chip b{font-weight:600}.chip:hover{border-color:#5a6573}
 .chip.go{background:#e8a54b;border-color:#e8a54b;color:#15181c;font-weight:600}.chip.go:hover{background:#f0b765}
 .kl{display:none;font-size:13px;color:var(--mut,#9aa3ad);margin-left:4px}
-@container gv (max-width:430px){.kl{display:inline;margin-left:2px}.chip .kw{display:none}.chip:not(.go){min-width:32px;justify-content:center;padding:0 7px}
- .chips{gap:4px}}
+@container gv (max-width:430px){.kl{display:inline;margin-left:2px;flex:none}.chip .kw{display:none}.chips{gap:4px;flex-wrap:nowrap}.chip.go{flex:none}
+ .chip:not(.go){flex:1 1 0;min-width:0;max-width:40px;justify-content:center;padding:0 4px}}
 @container gv (max-width:319px){.kl{display:none}}
-@media (max-width:599px){.tiles.n6{grid-template-columns:1fr 1fr}.n6>.tile{grid-column:1/-1}.n6>.t-r,.n6>.t-i{grid-column:auto}}
+@media (max-width:599px){.tiles.n6{grid-template-columns:1fr 1fr}.n6>.tile{grid-column:1/-1}.n6>.t-r,.n6>.t-i{grid-column:auto}.n6>.t-r small,.n6>.t-i small{display:none}}
 @media (min-width:600px){.tiles{grid-template-columns:1fr 1fr}.n5 .t-i:last-child{grid-column:1/-1}}
 @media (min-width:1000px){.tiles{grid-template-columns:repeat(3,1fr)}.t-g{grid-column:span 2}.n5 .t-i:last-child{grid-column:auto}.n6 .t-g{grid-column:auto}}
 @media (max-height:520px) and (orientation:landscape){.tile small{display:none}}
