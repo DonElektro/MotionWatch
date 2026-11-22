@@ -252,6 +252,10 @@ func set_variante(v: String) -> void:
 	if was_open:
 		_save_store()
 		close()
+	rund_rows = {}                                   # the measurements belong to their variant (saved above)
+	rund_best = ""
+	rund_jobs = []
+	rund_job = {}
 	variante = v
 	_store["aktiv"] = v
 	if was_open:
