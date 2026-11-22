@@ -678,6 +678,9 @@ body.selecting .chk{display:block}
       <div class="seg" id="f-kind">
         <button data-kind="" data-i18n="All">All</button><button data-kind="video" data-i18n="Videos">Videos</button><button data-kind="image" data-i18n="Images">Images</button><button data-kind="timelapse" data-i18n="Timelapse">Timelapse</button>
       </div>
+      <div class="seg" id="f-tlk" hidden style="margin-top:6px">
+        <button data-tlk="timelapse_video" data-i18n="Videos">Videos</button><button data-tlk="timelapse_photo" data-i18n="Photos">Photos</button>
+      </div>
     </div>
     <div id="w-sched"><label for="f-sched" data-i18n="Schedule">Schedule</label><select id="f-sched"></select></div>
     <div id="w-src"><label for="f-src" data-i18n="Video source">Video source</label><select id="f-src"></select></div>
@@ -716,7 +719,8 @@ body.selecting .chk{display:block}
   </section>
   <div id="grid"></div>
   <div class="empty" id="empty" hidden><span id="empty-t" data-i18n="No recordings match the filters">No recordings match the filters</span>
-    <div><button class="sec" type="button" id="empty-reset" data-i18n="Reset filters">Reset filters</button></div></div>
+    <div><button class="sec" type="button" id="empty-reset" data-i18n="Reset filters">Reset filters</button>
+    <button class="sec" type="button" id="empty-tlmk" hidden data-i18n="Create video">Create video</button></div></div>
   <div style="text-align:center;margin:14px"><button class="sec" id="more" hidden data-i18n="Load more">Load more</button></div>
 </main>
 <div class="modal" id="modal" hidden>
@@ -759,6 +763,9 @@ Object.assign(I18N.de, {
   "Statistics": "Statistik", "Events per weekday and hour": "Ereignisse pro Wochentag und Stunde", "Last 14 days (click a day)": "Letzte 14 Tage (Tag anklicken)",
   "Favorites": "Favoriten", "Protect selected": "Auswahl schützen", "Download ZIP": "ZIP laden", "events": "Ereignisse", "Timeline": "Zeitleiste", "Open the timeline of this day": "Zeitleiste dieses Tages öffnen",
   "Favorites are never deleted by the automatic cleanup": "Favoriten werden vom automatischen Aufräumen nie gelöscht", "Timelapse": "Zeitraffer",
+  "Photos": "Fotos", "Create video": "Video erstellen",
+  "No timelapse video yet – one is made every night at about 00:20 from yesterday's photos (Settings → Timelapse)":
+    "Noch kein Zeitraffer-Video – entsteht jede Nacht um ca. 00:20 aus den Fotos von gestern (Einstellungen → Zeitraffer)",
   "Place": "Ort", "All places": "Alle Orte", "Without location": "Ohne Ort", "Map": "Karte", "Show only this place": "Nur diesen Ort zeigen",
   "Rename place": "Ort umbenennen", "Name of this place (empty = automatic)": "Name dieses Orts (leer = automatisch)", "Fit": "Alles zeigen",
   "recordings with location": "Aufnahmen mit Ort",
@@ -801,8 +808,12 @@ async function load(reset) {
   $("#empty").hidden = items.length > 0; $("#more").hidden = items.length >= j.total;
   // 3.88 (Klar stage 1): no recordings at all is not «nothing matches the filters»; the filters sit behind «Filter (n)»
   const nf = fltCount(), none = !(j.disk && j.disk.files);
-  const et = none && !nf ? "No recordings yet. MoveEye records as soon as it detects something." : "No recordings match the filters";
-  $("#empty-t").dataset.i18n = et; $("#empty-t").textContent = t(et); $("#empty-reset").hidden = !nf;
+  // 4.17.1: «Timelapse → Videos» without any video yet: when and where it is made (and «Create video» from the photos)
+  const tlNone = F.kind === "timelapse_video" && j.tl && !j.tl.videos && !items.length;
+  const et = tlNone ? "No timelapse video yet – one is made every night at about 00:20 from yesterday's photos (Settings → Timelapse)"
+    : none && !nf ? "No recordings yet. MoveEye records as soon as it detects something." : "No recordings match the filters";
+  $("#empty-t").dataset.i18n = et; $("#empty-t").textContent = t(et); $("#empty-reset").hidden = !nf || tlNone;
+  $("#empty-tlmk").hidden = !(tlNone && j.tl.photos >= 2); $("#empty-tlmk").dataset.day = (j.tl && j.tl.last_day) || "";
   $("#flt-n").textContent = nf ? "(" + nf + ")" : "";
   fillOptions(j);
   if (reset && MAP.on) mapLoad();
@@ -982,8 +993,23 @@ document.querySelectorAll(".quick button").forEach(b => b.onclick = () => {
 });
 $("#f-from").onchange = () => { F.from = $("#f-from").value; load(true); };
 $("#f-to").onchange = () => { F.to = $("#f-to").value; load(true); };
-document.querySelectorAll("#f-kind button").forEach(b => b.onclick = () => { F.kind = b.dataset.kind; markKind(); load(true); });
-function markKind() { document.querySelectorAll("#f-kind button").forEach(b => b.classList.toggle("sel", b.dataset.kind === F.kind)); }
+// 4.17.1: «Timelapse» = the videos (default), a second choice «Videos / Photos» below (the ~1640 photos buried the videos)
+document.querySelectorAll("#f-kind button").forEach(b => b.onclick = () => { F.kind = b.dataset.kind === "timelapse" ? "timelapse_video" : b.dataset.kind; markKind(); load(true); });
+document.querySelectorAll("#f-tlk button").forEach(b => b.onclick = () => { F.kind = b.dataset.tlk; markKind(); load(true); });
+function markKind() {
+  if (F.kind === "timelapse") F.kind = "timelapse_video";
+  const tl = F.kind.indexOf("timelapse") === 0;
+  document.querySelectorAll("#f-kind button").forEach(b => b.classList.toggle("sel", tl ? b.dataset.kind === "timelapse" : b.dataset.kind === F.kind));
+  $("#f-tlk").hidden = !tl;
+  document.querySelectorAll("#f-tlk button").forEach(b => b.classList.toggle("sel", b.dataset.tlk === F.kind));
+}
+$("#empty-tlmk").onclick = async () => {
+  const b = $("#empty-tlmk"); b.disabled = true;
+  try { const r = await (await fetch("/api/timelapse", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({action: "render", day: (b.dataset.day || "").replace(/-/g, ""), lang: LANG})})).json();
+    $("#empty-t").textContent = r.ok ? t("Preparing video…") : t("Error") + ": " + (r.error || "?"); } catch (e) {}
+  setTimeout(() => { b.disabled = false; }, 3000);
+};
 $("#f-sched").onchange = () => { F.schedule = $("#f-sched").value; load(true); };
 $("#f-src").onchange = () => { F.source = $("#f-src").value; load(true); };
 $("#f-place").onchange = () => { F.place = $("#f-place").value; load(true); };
@@ -1172,6 +1198,8 @@ $("#more").onclick = () => load(false);
 (async () => {
   await initAppearance(); markKind(); updateSelBtn();
   const q_ = new URLSearchParams(location.search), d_ = q_.get("day") || "";   // 2.98.14: from the timeline (?open=name&day=…)
+  const k_ = q_.get("kind") || "";                                           // 4.17.1: ?kind=video|image|timelapse|timelapse_video|timelapse_photo
+  if (["video", "image", "timelapse", "timelapse_video", "timelapse_photo"].includes(k_)) { F.kind = k_; markKind(); }
   if (q_.get("open")) { openAfter = q_.get("open"); if (/^\d{4}-\d{2}-\d{2}$/.test(d_)) { tlDay = d_; F.from = F.to = d_; $("#f-from").value = $("#f-to").value = d_; } }
   load(true); loadStats();
 })();
