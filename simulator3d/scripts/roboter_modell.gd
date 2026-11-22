@@ -843,3 +843,15 @@ func overloaded() -> Array:
 		if float(sv["load"]) > 1.0:
 			out.append(sv["id"])
 	return out
+
+
+func contact_points() -> Array:
+	"""world points where the robot touches the ground right now (feet, belly, legs)"""
+	var out := []
+	for b in bodies:
+		var st := PhysicsServer3D.body_get_direct_state((b["rb"] as RigidBody3D).get_rid())
+		if st == null:
+			continue
+		for ci in range(st.get_contact_count()):
+			out.append(st.get_contact_local_position(ci))
+	return out

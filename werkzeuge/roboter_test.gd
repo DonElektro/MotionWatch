@@ -9,6 +9,10 @@ extends SceneTree
 ##   · Servo-Grenze: schwache Bein-Servos geben nach und melden «überlastet»
 ##   · Kollision rot: zwei Beine, die sich kreuzen, werden gefunden
 ##   · Formregler: 6 Segmente → neuer Aufbau mit 2·5 + 6·6 + 2 = 48 Antrieben
+##   · Wellengang läuft vorwärts und kippt nie; Strom und Last werden gerechnet
+##   · Automatisch: ein Ziel links vorne wird selbst erreicht (Kurve + Gang)
+##   · Abläufe: «Aufstehen» endet stehend, «Einrollen und öffnen» läuft ohne Explosion durch (ob der Ring schliesst,
+##     hängt vom Servo-Moment ab: nur gemeldet)
 ##   cd simulator3d && <godot> --headless --path . -s "$PWD/../werkzeuge/roboter_test.gd"   (absoluter Pfad nötig)
 ## Ende: «Robotertest OK» oder «SCRIPT ERROR: Robotertest: …» (Exit-Code 0 / 1).
 
@@ -68,7 +72,7 @@ func sane() -> bool:
 
 func _process(_dt: float) -> bool:
 	var t := Time.get_ticks_msec() / 1000.0 - t_start
-	if t > 240.0:
+	if t > 420.0:
 		errs.append("Zeit abgelaufen in Schritt %d" % step)
 		return _end()
 	if m != null and m.built_ok:
@@ -195,10 +199,58 @@ func _process(_dt: float) -> bool:
 		8:
 			if frames() < 240:
 				return false
+			lab.apply_pose("gerade", true)
+			lab.control({"do": "gang", "name": "welle", "drive": 1.0})
+			set_meta("x0", m.segment_xf(0).origin)
+			set_meta("tipmin", 99.0)
+			next_step()
+		9:
+			if frames() > 120:
+				set_meta("tipmin", minf(get_meta("tipmin"), lab.anz.margin))
+			if frames() < 720:
+				return false
+			var dx: float = m.segment_xf(0).origin.x - (get_meta("x0") as Vector3).x
+			check("Wellengang: läuft vorwärts (6 s)", dx > 0.15 and sane(), "%.3f m" % dx)
+			check("Wellengang: kippt nie (Reserve > 0)", float(get_meta("tipmin")) > 0.0, "kleinste Reserve %.3f m" % get_meta("tipmin"))
+			check("Anzeigen: Strom und Last gerechnet", m.total_current > 1.0 and lab.anz.top_loads(3).size() == 3, "%.1f A" % m.total_current)
+			lab.stop_all()
+			lab.reset()
+			var g: Vector3 = m.segment_xf(0).origin + Vector3(1.0, 0.0, -0.6)
+			g.y = 0.0
+			set_meta("goal", g)
+			lab.control({"do": "goal", "pos": [g.x, g.y, g.z]})
+			next_step()
+		10:
+			if not lab.bew.goal_reached and frames() < 120 * 45:
+				return false
+			var dg: float = Vector2(m.segment_xf(0).origin.x - (get_meta("goal") as Vector3).x, m.segment_xf(0).origin.z - (get_meta("goal") as Vector3).z).length()
+			check("Automatisch: Ziel links vorne erreicht", lab.bew.goal_reached and dg < 0.2, "%.1f s, %.2f m vom Ziel" % [frames() / 120.0, dg])
+			lab.stop_all()
+			lab.apply_pose("eingeklappt", true)
+			next_step()
+		11:
+			if frames() < 120:
+				return false
+			lab.control({"do": "ablauf", "name": "aufstehen"})
+			next_step()
+		12:
+			if frames() < 120 * 6:
+				return false
+			check("Ablauf Aufstehen: steht danach", m.com().y > 0.07 and lab.bew.mode == "", "Schwerpunkt %.3f m, %s" % [m.com().y, lab.bew.mode])
+			lab.control({"do": "ablauf", "name": "einrollen"})
+			set_meta("locked", false)
+			next_step()
+		13:
+			if m.latch["state"] == "locked":
+				set_meta("locked", true)
+			if frames() < 120 * 18:
+				return false
+			print("  info Ablauf Einrollen: Ring %s (mit %.1f N·m je Segmentgelenk)" % ["verriegelt" if get_meta("locked") else "NICHT geschlossen", m.p["moment_koerper"]])
+			check("Ablauf Einrollen und öffnen: fertig, ohne Explosion", lab.bew.mode == "" and sane(), lab.bew.mode)
 			check("Keine Explosion im ganzen Test", vmax_all < 5.0, "%.2f m/s" % vmax_all)
 			main.roboter.control({"do": "close"})
 			next_step()
-		9:
+		14:
 			if frames() < 10:
 				return false
 			check("Geschlossen: Physik wieder wie vorher", Engine.physics_ticks_per_second == 30 and not main.roboter.is_open(), str(Engine.physics_ticks_per_second))

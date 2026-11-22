@@ -12,16 +12,19 @@ extends Node
 ## R neu aufstellen · P Physik anhalten · F festhalten · K Kamerabild klein · H Bedienfeld · + / − zoomen · Esc schliessen.
 ## Maus in der 3D-Ansicht: ziehen = drehen, rechts / Mitte ziehen = verschieben, Rad = zoomen.
 ## /control {"action": "roboter", "do": open | close | info | pose (name, snap) | set (id, value) | param (key, value) |
-##           view (frei | seite | oben | roboter) | pause (on) | reset | hold (on) | tab (name) | pip (on)}
+##           view (frei | seite | oben | roboter) | pause (on) | reset | hold (on) | tab (name) | pip (on) |
+##           gang (name, drive, turn) | ablauf (name) | goal (pos [x, y, z]) | stop}
 
 const UI = preload("res://scripts/ui_style.gd")
 const T = preload("res://scripts/i18n.gd")
 const MODELL = preload("res://scripts/roboter_modell.gd")
 const BEWEGUNG = preload("res://scripts/roboter_bewegung.gd")
 const GELAENDE = preload("res://scripts/roboter_gelaende.gd")
+const ANZEIGE = preload("res://scripts/roboter_anzeige.gd")
 const TICKS := 120
 const PANEL_W := 380.0
-const TABS := [["form", "Form"], ["gelenke", "Gelenke"], ["posen", "Posen"], ["physik", "Physik"], ["ansicht", "Ansicht"]]
+const TABS := [["form", "Form"], ["gelenke", "Gelenke"], ["posen", "Posen"], ["bewegen", "Bewegen"], ["anzeigen", "Anzeigen"],
+		["physik", "Physik"], ["ansicht", "Ansicht"]]
 const VIEWS := [["frei", "Frei"], ["seite", "Seite"], ["oben", "Oben"], ["roboter", "Roboter-Kamera"]]
 const FORM := [   # [key, name, unit, step]
 	["segmente", "Segmente", "", 1.0], ["halbe_breite", "Halbe Breite", "E", 0.01], ["halbe_breite_spitze", "Halbe Breite Spitze", "E", 0.01],
@@ -45,6 +48,12 @@ var pip_cam: Camera3D
 var pip_box: Control
 var model                              # roboter_modell.gd
 var bew                                # roboter_bewegung.gd
+var anz                                # roboter_anzeige.gd
+var manual := Vector2.ZERO             # Bewegen: turn slider (x, + links) and Vorwärts / Rückwärts (y)
+var speed := 0.0                       # measured, m/s (smooth)
+var _last_com := Vector3.ZERO
+var _press := Vector2.ZERO
+var _anz_t := 0.0
 var starts := {}                       # lane -> Transform3D (roboter_gelaende.gd)
 var view := "frei"
 var tab := "form"
@@ -140,6 +149,10 @@ func _build_world() -> void:
 	world.add_child(model)
 	bew = BEWEGUNG.new()
 	bew.m = model
+	anz = ANZEIGE.new()
+	anz.name = "anzeige"
+	anz.m = model
+	world.add_child(anz)
 
 
 func _start_physics() -> void:
@@ -166,6 +179,12 @@ func _rebuild(new_pose: bool) -> void:
 func _physics_process(dt: float) -> void:
 	if not is_open() or model == null or paused:
 		return
+	var wasd := Vector2(float(Input.is_key_pressed(KEY_A)) - float(Input.is_key_pressed(KEY_D)),
+			float(Input.is_key_pressed(KEY_W)) - float(Input.is_key_pressed(KEY_S)))
+	if wasd != Vector2.ZERO and bew.mode != "gang":
+		bew.start_gang(bew.gang)
+	bew.keys = wasd if wasd != Vector2.ZERO else manual
+	bew.step(dt)
 	model.step(dt)
 
 
@@ -178,6 +197,15 @@ func _process(dt: float) -> void:
 			_rebuild(false)
 			_refresh_form_info()
 	_camera(dt)
+	_anz_t -= dt
+	if _anz_t <= 0.0 and anz != null:
+		_anz_t = 0.1
+		anz.goal = bew.goal if bew.mode == "gang" and not bew.goal_reached else null
+		anz.update_all()
+		var c: Vector3 = model.com()
+		var dv := Vector2(c.x - _last_com.x, c.z - _last_com.z).length() / 0.1
+		speed = lerpf(speed, dv, 0.3) if dv < 3.0 else speed
+		_last_com = c
 	_ui_t -= dt
 	if _ui_t <= 0.0:
 		_ui_t = 0.2
@@ -240,6 +268,11 @@ func _view_input(ev: InputEvent) -> void:
 			zoom(-1)
 		elif mb.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
 			_drag = mb.button_index if mb.pressed else 0
+			if mb.button_index == MOUSE_BUTTON_LEFT:
+				if mb.pressed:
+					_press = mb.position
+				elif mb.position.distance_to(_press) < 5.0 and view != "roboter":
+					click_goal(mb.position)
 	elif ev is InputEventMouseMotion and _drag != 0:
 		var rel := (ev as InputEventMouseMotion).relative
 		if _drag == MOUSE_BUTTON_LEFT and view == "frei":
@@ -254,6 +287,26 @@ func _view_input(ev: InputEvent) -> void:
 			target -= (right * rel.x - upv * rel.y) * k
 			if view == "oben":
 				target.y = maxf(target.y, 0.0)
+
+
+func click_goal(pos: Vector2) -> void:
+	"""a short click in the 3D view: the point on the floor becomes the goal of the automatic walk"""
+	var o := cam.project_ray_origin(pos)
+	var d := cam.project_ray_normal(pos)
+	var hit = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(o, o + d * 60.0, 1))
+	var p: Vector3
+	if not hit.is_empty():
+		p = hit["position"]
+	elif absf(d.y) > 1e-4 and -o.y / d.y > 0.0:
+		p = o + d * (-o.y / d.y)
+	else:
+		return
+	set_goal(p)
+
+
+func set_goal(p: Vector3) -> void:
+	bew.set_goal(p)
+	_paint_gang()
 
 
 func zoom(dir: int) -> void:
@@ -280,6 +333,14 @@ func _input(ev: InputEvent) -> void:
 			set_view("roboter")
 		KEY_R:
 			reset()
+		KEY_SPACE:
+			stop_all()
+		KEY_G:
+			if bew.mode == "gang":
+				stop_all()
+			else:
+				bew.start_gang(bew.gang)
+				_paint_gang()
 		KEY_P:
 			set_paused(not paused)
 		KEY_F:
@@ -314,7 +375,31 @@ func set_pip(on: bool) -> void:
 	_paint_toggles()
 
 
+func stop_all() -> void:
+	bew.stop()
+	manual = Vector2.ZERO
+	var ts: Dictionary = _w.get("turn_sl", {})
+	if not ts.is_empty():
+		(ts["sl"] as HSlider).set_value_no_signal(0.0)
+	_paint_gang()
+	_sync_servo_sliders()
+
+
+func start_gang(g: String) -> void:
+	bew.start_gang(g)
+	if manual.y == 0.0 and bew.goal == null:
+		manual.y = 1.0
+	_paint_gang()
+
+
+func start_ablauf(name: String) -> void:
+	bew.start_ablauf(name)
+	_paint_gang()
+
+
 func reset() -> void:
+	bew.stop()
+	manual = Vector2.ZERO
 	model.place(true)
 	follow = true
 	_paint_toggles()
@@ -322,6 +407,8 @@ func reset() -> void:
 
 func apply_pose(name: String, snap := false) -> void:
 	last_pose = name
+	bew.mode = ""
+	bew.goal = null
 	bew.apply(bew.pose(name))
 	if snap:
 		model.place(true)
@@ -435,8 +522,10 @@ func _build_ui() -> void:
 	_page_gelenke(_w["page_gelenke"])
 	_page_posen(_w["page_posen"])
 	_page_physik(_w["page_physik"])
+	_page_bewegen(_w["page_bewegen"])
+	_page_anzeigen(_w["page_anzeigen"])
 	_page_ansicht(_w["page_ansicht"])
-	var keys := UI.small(T.t("1 frei · 2 Seite · 3 oben · 4 Roboter-Kamera · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · H Bedienfeld · Esc schliessen"))
+	var keys := UI.small(T.t("W / S vor / zurück · A / D Kurve · Leertaste Stopp · G Gehen · 1 – 4 Ansicht · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · H Bedienfeld · Esc schliessen"))
 	pv.add_child(keys)
 
 
@@ -657,6 +746,7 @@ func _servo_slider(parent: Control, id: String, title: String) -> void:
 	var sv: Dictionary = model.servos[si]
 	var d := _slider(parent, title, float(sv["min"]), float(sv["max"]), 1.0, float(sv["target"]), "°", func(x: float):
 		model.set_target(id, x)
+		bew.mode = ""
 		last_pose = "")
 	_sl[id] = d
 
@@ -695,6 +785,110 @@ func _page_posen(pg: VBoxContainer) -> void:
 		if last_pose in ["gerade", "kurve_links", "kurve_rechts", "bogen"]:
 			apply_pose(last_pose))
 	_button(pg, T.t("Neu aufstellen (R)"), reset)
+
+
+func _page_bewegen(pg: VBoxContainer) -> void:
+	pg.add_child(UI.small(T.t("Ganze Abläufe")))
+	var ga := GridContainer.new()
+	ga.columns = 2
+	ga.add_theme_constant_override("h_separation", 6)
+	ga.add_theme_constant_override("v_separation", 6)
+	pg.add_child(ga)
+	for a in BEWEGUNG.ABLAEUFE:
+		var an: String = a[0]
+		var b := _button(ga, T.t(a[1]), func(): start_ablauf(an))
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_w["ab_" + an] = b
+	pg.add_child(UI.small(T.t("Gangarten – mit Körperhöhe, Tempo und Kurven. W / S oder «Vorwärts», A / D oder der Regler «Kurve»; ein kurzer Klick in die Welt setzt ein Ziel, der Roboter plant den Weg selbst.")))
+	var gg := GridContainer.new()
+	gg.columns = 2
+	gg.add_theme_constant_override("h_separation", 6)
+	gg.add_theme_constant_override("v_separation", 6)
+	pg.add_child(gg)
+	for g in BEWEGUNG.GAENGE:
+		var gn: String = g[0]
+		var b := _button(gg, T.t(g[1]), func(): start_gang(gn))
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_w["gang_" + gn] = b
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	pg.add_child(row)
+	for d in [["◀ " + T.t("Rückwärts"), -1.0], [T.t("Stopp"), 0.0], [T.t("Vorwärts") + " ▶", 1.0]]:
+		var dv: float = d[1]
+		var b := _button(row, d[0], func():
+			if dv == 0.0:
+				stop_all()
+			else:
+				manual.y = dv
+				bew.goal = null
+				if bew.mode != "gang":
+					bew.start_gang(bew.gang)
+				_paint_gang())
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_w["turn_sl"] = _slider(pg, T.t("Kurve (− rechts, + links)"), -1.0, 1.0, 0.05, 0.0, "", func(x: float): manual.x = x)
+	_slider(pg, T.t("Tempo"), 0.01, 0.25, 0.01, bew.tempo, "m/s", func(x: float): bew.tempo = x)
+	_slider(pg, T.t("Körperhöhe über dem Boden"), 0.3, 1.8, 0.05, bew.hoehe, "E", func(x: float): bew.hoehe = x)
+	_slider(pg, T.t("Schrittlänge"), 0.2, 1.4, 0.05, bew.schritt_laenge, "E", func(x: float): bew.schritt_laenge = x)
+	_slider(pg, T.t("Schritthöhe"), 0.1, 0.9, 0.05, bew.schritt_hoehe, "E", func(x: float): bew.schritt_hoehe = x)
+	var gi := UI.small("", UI.TXT)
+	pg.add_child(gi)
+	_w["gang_info"] = gi
+
+
+func _paint_gang() -> void:
+	for g in BEWEGUNG.GAENGE:
+		var b: Button = _w.get("gang_" + g[0])
+		if b != null:
+			_paint_btn(b, bew.mode == "gang" and bew.gang == g[0])
+	for a in BEWEGUNG.ABLAEUFE:
+		var b: Button = _w.get("ab_" + a[0])
+		if b != null:
+			_paint_btn(b, bew.mode == "ablauf" and bew.seq_name == a[0])
+
+
+func _page_anzeigen(pg: VBoxContainer) -> void:
+	_toggle(pg, T.t("Servo-Last an den Gelenken (grün → rot)"), anz.show_load, func(on: bool): anz.show_load = on)
+	_toggle(pg, T.t("Schwerpunkt und Stützfläche"), anz.show_support, func(on: bool): anz.show_support = on)
+	var tip := Label.new()
+	tip.add_theme_font_size_override("font_size", 14)
+	pg.add_child(tip)
+	_w["tip"] = tip
+	var cur := UI.small("", UI.TXT)
+	pg.add_child(cur)
+	_w["cur"] = cur
+	pg.add_child(UI.small(T.t("Die meistbelasteten Servos (Last = nötiges Moment / Servo-Moment):")))
+	var bars := VBoxContainer.new()
+	bars.add_theme_constant_override("separation", 2)
+	pg.add_child(bars)
+	_w["bars"] = []
+	for i in range(10):
+		var h := HBoxContainer.new()
+		bars.add_child(h)
+		var l := Label.new()
+		l.custom_minimum_size = Vector2(150, 0)
+		l.add_theme_font_size_override("font_size", 12)
+		h.add_child(l)
+		var pb := ProgressBar.new()
+		pb.max_value = 1.5
+		pb.show_percentage = false
+		pb.custom_minimum_size = Vector2(0, 12)
+		pb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		pb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		h.add_child(pb)
+		_w["bars"].append([l, pb])
+	pg.add_child(UI.small(T.t("Strom: Schätzung je Servo = Ruhestrom + Blockierstrom × Last (Regler unter «Physik»). Kipp-Reserve: Abstand des Schwerpunkt-Lots vom Rand der Stützfläche (alle Bodenkontakte).")))
+
+
+func servo_name(id: String) -> String:
+	"""sy3 -> «Gelenk 4 links/rechts», hp2l -> «Bein 3 links Hüfte hoch/runter»"""
+	var k := id.substr(0, 2)
+	if k in ["sy", "sp"]:
+		return T.t("Gelenk %d") % (int(id.substr(2)) + 1) + " " + (T.t("links / rechts") if k == "sy" else T.t("hoch / runter"))
+	if k in ["hy", "hp", "kn"]:
+		var side := T.t("links") if id.ends_with("l") else T.t("rechts")
+		var what: String = {"hy": T.t("Hüfte vor / zurück"), "hp": T.t("Hüfte hoch / runter"), "kn": T.t("Knie")}[k]
+		return T.t("Bein %d") % (int(id.substr(2, id.length() - 3)) + 1) + " " + side + " " + what
+	return id
 
 
 func _page_physik(pg: VBoxContainer) -> void:
@@ -741,13 +935,30 @@ func _refresh() -> void:
 	var over: Array = model.overloaded()
 	var lines := [T.t("Roboter-Labor") + " · " + (T.t("Physik angehalten") if paused else T.t("Physik läuft")) + (" · " + T.t("festgehalten") if model.hold else ""),
 			str(lstate.get(model.latch["state"], "")) + " · " + (T.t("%d Teile berühren sich (rot)") % red if red > 0 else T.t("keine Kollision")),
-			T.t("Servos: %d · überlastet: %d · Strom ca. %.1f A") % [model.actuator_count(), over.size(), model.total_current]]
+			T.t("Servos: %d · überlastet: %d · Strom ca. %.1f A") % [model.actuator_count(), over.size(), model.total_current],
+			(T.t("KIPPGEFAHR") + " · " if anz.tipping else "") + T.t("Kipp-Reserve %.1f cm") % (anz.margin * 100.0) + " · " + _move_text()]
 	(_w["status"] as Label).text = "\n".join(lines)
 	var pi: Label = _w.get("phys_info")
 	if pi != null and pi.is_visible_in_tree():
 		var c: Vector3 = model.com()
 		pi.text = T.t("Masse %.2f kg · Schwerpunkt %.0f cm über dem Boden · Strom ca. %.1f A") % [model.total_mass, c.y * 100.0, model.total_current] \
 				+ ("\n" + T.t("Überlastet: %s") % ", ".join(over) if not over.is_empty() else "")
+	if tab == "anzeigen":
+		var tl: Label = _w["tip"]
+		tl.text = (T.t("KIPPGEFAHR") + " – " if anz.tipping else "") + T.t("Kipp-Reserve %.1f cm") % (anz.margin * 100.0)
+		tl.add_theme_color_override("font_color", UI.RED if anz.tipping else UI.GRN)
+		var cs: Dictionary = anz.currents()
+		(_w["cur"] as Label).text = T.t("Strom ca. %.1f A (Körper %.1f A · Beine %.1f A · Kamera und Riegel %.2f A)") % [cs["total"], cs["koerper"], cs["beine"], cs["rest"]]
+		var tops: Array = anz.top_loads(10)
+		for i in range(10):
+			var pr: Array = _w["bars"][i]
+			if i < tops.size():
+				(pr[0] as Label).text = "%s  %.2f N·m" % [servo_name(tops[i][0]), absf(tops[i][2])]
+				(pr[1] as ProgressBar).value = minf(1.5, tops[i][1])
+				(pr[1] as ProgressBar).modulate = ANZEIGE.load_color(tops[i][1])
+	if tab == "bewegen":
+		(_w["gang_info"] as Label).text = _move_text()
+		_paint_gang()
 	if tab == "gelenke":
 		for id in _sl:
 			var si: int = model.servo_index(id)
@@ -759,6 +970,22 @@ func _refresh() -> void:
 			(d["val"] as Label).add_theme_color_override("font_color", UI.RED if float(sv["load"]) > 1.0 else (UI.ORG if float(sv["load"]) > 0.7 else UI.MUT))
 
 
+func _move_text() -> String:
+	var names := {}
+	for g in BEWEGUNG.GAENGE:
+		names[g[0]] = T.t(g[1])
+	for a in BEWEGUNG.ABLAEUFE:
+		names[a[0]] = T.t(a[1])
+	var t := T.t("steht")
+	if bew.mode == "gang":
+		t = str(names.get(bew.gang_now, bew.gang_now)) + (" (" + T.t("automatisch") + ")" if bew.gang == "auto" else "")
+		if bew.goal != null:
+			t += " · " + (T.t("Ziel erreicht") if bew.goal_reached else T.t("zum Ziel"))
+	elif bew.mode == "ablauf":
+		t = T.t("Ablauf") + ": " + str(names.get(bew.seq_name, bew.seq_name))
+	return t + " · " + T.t("%.1f cm/s") % (speed * 100.0)
+
+
 # ---- /control «roboter» -----------------------------------------------------------------------------------------------------
 func info() -> Dictionary:
 	var d := {"ok": true, "open": is_open()}
@@ -766,7 +993,9 @@ func info() -> Dictionary:
 		d.merge({"segments": model.n(), "servos": model.servos.size(), "actuators": model.actuator_count(), "view": view, "tab": tab,
 				"paused": paused, "hold": model.hold, "latch": model.latch["state"], "com": [model.com().x, model.com().y, model.com().z],
 				"mass": model.total_mass, "current": model.total_current, "overloaded": model.overloaded(),
-				"collide": model.colliding_names(), "pose": last_pose, "ticks": Engine.physics_ticks_per_second})
+				"collide": model.colliding_names(), "pose": last_pose, "ticks": Engine.physics_ticks_per_second,
+				"mode": bew.mode, "gait": bew.gang_now, "sequence": bew.seq_name, "speed": speed, "tip_margin": anz.margin,
+				"tipping": anz.tipping, "goal_reached": bew.goal_reached})
 	return d
 
 
@@ -799,4 +1028,17 @@ func control(d: Dictionary) -> Dictionary:
 			set_tab(str(d.get("value", "form")))
 		"pip":
 			set_pip(bool(d.get("on", true)))
+		"gang":
+			start_gang(str(d.get("name", "auto")))
+			if d.has("drive"):
+				manual.y = float(d["drive"])
+			if d.has("turn"):
+				manual.x = float(d["turn"])
+		"ablauf":
+			start_ablauf(str(d.get("name", "")))
+		"goal":
+			var g: Array = d.get("pos", [0, 0, 0])
+			set_goal(Vector3(float(g[0]), float(g[1]), float(g[2])))
+		"stop":
+			stop_all()
 	return info()
