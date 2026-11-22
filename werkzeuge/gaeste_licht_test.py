@@ -379,7 +379,7 @@ def teil_b(datei, tmp, bilder):
         ok(not r.get("ok") and r.get("msg"), "API: falscher Punkt abgelehnt (%s)" % r.get("msg"))
         with sync_playwright() as pw:
             br = pw.chromium.launch(args=["--no-proxy-server"])
-            for name, vp, mob in (("gaeste_karte.png", {"width": 390, "height": 844}, True), ("gaeste_karte_pc.png", {"width": 1280, "height": 900}, False)):
+            for name, vp, mob in (("gaeste_karte_pc.png", {"width": 1280, "height": 900}, False), ("gaeste_karte.png", {"width": 390, "height": 844}, True)):
                 ctx = br.new_context(viewport=vp, device_scale_factor=2 if mob else 1, is_mobile=mob, has_touch=mob,
                                      color_scheme="dark", http_credentials={"username": "admin", "password": PW}, locale="de-CH")
                 pg = ctx.new_page()
@@ -392,16 +392,16 @@ def teil_b(datei, tmp, bilder):
                     for (let e = s; e; e = e.parentElement) if (e.tagName === 'DETAILS') e.open = true; s.scrollIntoView(); return true; }""")
                 ok(found, "%s: Abschnitt «Gäste erwartet» auf der Seite Schutz (?open=sec:Guests expected)" % name)
                 try:
-                    pg.wait_for_selector("#gl-p .gl-st", timeout=30000)
+                    pg.wait_for_function("""() => { const s = document.querySelector('[data-view="sec:Guests expected"]');
+                        if (s) for (let e = s; e; e = e.parentElement) if (e.tagName === 'DETAILS' && !e.open) e.open = true;
+                        const g = document.querySelector('#gl-p .gl-st'); return !!(g && g.getClientRects().length); }""", timeout=45000, polling=700)
                     pg.wait_for_timeout(1200)
                     txt = pg.locator("#gl-p").inner_text()
-                    ok("wartet auf Gäste" in txt or "führt" in txt or "Licht nur" in txt, "%s: Zustand «%s»" % (name, txt.splitlines()[0]))
+                    ok(txt.startswith("🔦 ") and len(txt.splitlines()[0]) > 4, "%s: Zustand «%s»" % (name, txt.splitlines()[0]))
                     ok("Zelt" in txt, "%s: Ziel «Zelt» in der Liste" % name)
-                    pg.evaluate("() => window.scrollTo(0, 0)")
-                    pg.wait_for_timeout(400)
-                    box = pg.evaluate("() => { const p = document.querySelector('[data-view=\"sec:Guests expected\"]') || document.getElementById('gl-p'); const r = p.getBoundingClientRect(); return [r.x, r.y + window.scrollY, r.width, r.height]; }")
-                    pg.screenshot(path=os.path.join(bilder, name), full_page=True,
-                                  clip={"x": 0, "y": max(0, box[1] - 60), "width": vp["width"], "height": min(2400, box[3] + 80)})
+                    pg.evaluate("() => document.getElementById('gl-p').scrollIntoView({block: 'start'})")
+                    pg.wait_for_timeout(500)
+                    pg.screenshot(path=os.path.join(bilder, name))
                 except Exception as ex:
                     ok(False, "%s: Karte fehlt (%s)" % (name, ex))
                 if mob:

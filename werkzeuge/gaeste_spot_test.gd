@@ -62,6 +62,7 @@ func measuring() -> bool:
 
 
 func _initialize() -> void:
+	await process_frame                                         # the root is ready: added nodes are in the tree (global transforms)
 	var G = load("res://scripts/gehaeuse.gd")
 	# ---- 1. the lamp pivot -----------------------------------------------------------------------------------------------------------
 	var rig := Node3D.new()
