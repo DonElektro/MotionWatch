@@ -267,7 +267,7 @@ func _process(dt: float) -> void:
 		auge.zustand = z
 		auge.get_node("text").text = T.t("MoveEye sieht dich") if z == "open" else (T.t("MoveEye sieht dich nicht (aus)") if z == "off" else T.t("Nicht im Bild von MoveEye"))
 		auge.queue_redraw()
-	blinki.visible = bool(main.get("ex_blinki"))
+	blinki.visible = bool(main.get("ex_blinki")) and not ruhig
 	_bl_box.visible = blinki.visible and main.now() < _bl_bis
 	blinki.mood = "point" if sieht else "normal"
 

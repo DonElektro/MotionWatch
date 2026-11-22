@@ -421,6 +421,11 @@ func wunsch(k: String) -> void:
 	_wunsch[k] = true
 
 
+func ruhig() -> bool:
+	"""binoculars or the photo mode: the picture alone (no stick, no edge buttons, no bar)"""
+	return (sachen != null and sachen.fernglas) or (extras != null and extras.foto_an)
+
+
 func touch_tipp(id: String) -> void:
 	if id == "ansicht":
 		ex.next_view()

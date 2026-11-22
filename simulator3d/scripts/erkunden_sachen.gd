@@ -75,7 +75,7 @@ var _fg_nacht: ColorRect
 var _fg_maske: ColorRect
 var _fg_text: Label
 var _fg_labels: Control
-var _fg_knoepfe: HBoxContainer
+var _fg_knoepfe: HFlowContainer
 var _msg: Label
 var _msg_bis := 0.0
 var _fotos := 0
@@ -147,8 +147,10 @@ func _ready() -> void:
 	_fg_labels.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_fg_labels.draw.connect(_fg_labels_draw)
 	_fg.add_child(_fg_labels)
-	_fg_knoepfe = HBoxContainer.new()
-	_fg_knoepfe.add_theme_constant_override("separation", 8)
+	_fg_knoepfe = HFlowContainer.new()                           # two rows on the phone
+	_fg_knoepfe.add_theme_constant_override("h_separation", 8)
+	_fg_knoepfe.add_theme_constant_override("v_separation", 8)
+	_fg_knoepfe.alignment = FlowContainer.ALIGNMENT_CENTER
 	_fg.add_child(_fg_knoepfe)
 	for e in [["minus", "−"], ["plus", "+"], ["foto", "Foto"], ["nacht", "Nachtsicht"], ["zurueck", "Zurück"]]:
 		var b := Button.new()
@@ -685,7 +687,7 @@ func _process(dt: float) -> void:
 	_kompass.position = Vector2((s.x - kw) * 0.5 + (20.0 if s.x < 768.0 else 0.0), oben)
 	_kompass.size = Vector2(kw, 30)
 	_kompass.queue_redraw()
-	_uhr.visible = hat("taschenuhr")
+	_uhr.visible = hat("taschenuhr") and not fernglas
 	_uhr.text = "◷ " + _zeit()
 	_uhr.position = Vector2(_kompass.position.x + kw - 64.0, oben + (34.0 if _kompass.visible else 0.0))
 	_bars.visible = echt() and not fernglas
@@ -704,9 +706,10 @@ func _process(dt: float) -> void:
 	if fernglas:
 		(_fg_maske.material as ShaderMaterial).set_shader_parameter("aspect", s.x / maxf(1.0, s.y))
 		_fg_text.text = str(int(round(zoom))) + "×" + (("  " + T.t("Nachtsicht")) if nacht else "")
-		_fg_text.position = Vector2(16, s.y - 200.0)
-		var bw := 64.0 * 5.0 + 32.0
-		_fg_knoepfe.position = Vector2((s.x - bw) * 0.5, s.y - 150.0)
+		_fg_text.position = Vector2(16, s.y - (280.0 if s.x < 600.0 else 200.0))
+		var bw := minf(s.x - 16.0, 520.0)
+		_fg_knoepfe.size = Vector2(bw, 0)
+		_fg_knoepfe.position = Vector2((s.x - bw) * 0.5, s.y - (230.0 if s.x < 600.0 else 150.0))
 		for b in _fg_knoepfe.get_children():
 			(b as Button).text = T.t(str(b.get_meta("t")))
 		_fg_labels.queue_redraw()
