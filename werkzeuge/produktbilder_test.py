@@ -271,7 +271,7 @@ def browser(base, bilder, tag, slot, foto=""):
         p3 = ctx3.new_page(); e3 = []
         p3.on("pageerror", lambda e: e3.append(str(e)))
         p3.goto(base + "/info/", wait_until="load"); p3.wait_for_timeout(1500)
-        for sel in ("#nacht", "#sehen", "#app", "#funktionen", "#kontakt"):
+        for sel in ("#nacht", "#sehen", "#app", "#technik", "#kontakt"):
             p3.locator(sel).scroll_into_view_if_needed(); p3.wait_for_timeout(700)
         p3.evaluate("() => { const b = document.querySelector('.langs button[data-lang=fr]'); if (b) b.click(); }"); p3.wait_for_timeout(500)
         ok(p3.evaluate("() => document.documentElement.lang") == "fr", "/info/ am PC: Sprachwahl fr")
