@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-22 09:02",
+ "generated": "2026-11-22 09:49",
  "versions": [
   {
-   "version": "4.19.0",
-   "file": "webcam_bewegung_4_19_0.py",
+   "version": "4.19.1",
+   "file": "webcam_bewegung_4_19_1.py",
    "url": "",
-   "sha256": "a2e44e85a504d3320602eb5cdd156cd62c660d04b02375c611ffe27db5c155f4",
-   "date": "2026-11-22 09:02",
-   "notes": "Karte: neuer Schalter «🗺 Schweiz | ⛰ Bergtal» auf /karte – die Karte des Simulator-Tals wie die Landeskarte (Relief, Höhenlinien, 3D, Orte, Wanderwege, Bäche, Seen), geheime Orte erst nach dem Finden im Simulator, live MoveEye / Figur / Mover, Touren mit Bergtal-Höhen, «Tour im Sim nachlaufen», Vorschläge",
-   "size": 4025727,
-   "sig": "662d6877476b6df52ecdb4248973686cf70d4c96d95a982415aa93400654947a5acaee2c894fab817a2a85f800060214335d75b190609d4811d463b8fc2b8307",
+   "sha256": "6e2e3bf5ce7f9ccbcda93c21ff5cd932b3fb8e242167d4a8d2ebdfedb711218a",
+   "date": "2026-11-22 09:49",
+   "notes": "Homepage-Startseite: alle Varianten (auch «A · Bildgeschichte») zeigen jetzt alle Links – MoveEye (Demo), Die Karte des Grossvaters, Handy-Funkgerät, Simulator – und oben das bewegte MoveEye-Auge beim Titel (blinzelt, schaut sich um)",
+   "size": 4030183,
+   "sig": "7477ea42094cebc9d42e6b3a46bbfb0239daa348bbc95ff8c1f09f9e8fc6f8a61d32cebd65c48e2860aeb90c63fb3b520fca2a0a094a8f3382893b0fb9ce0f0b",
    "data": {
-    "file": "moveeye_daten_4_19_0.zip",
+    "file": "moveeye_daten_4_19_1.zip",
     "url": "",
-    "sha256": "58430b980ed66752757f15976ecb3c8df1ba60188833dd2405b7c193a256fae0",
-    "size": 14537720,
-    "sig": "53836a23fba7836572e8a061379b1b0af4dadb0d14974aa5bd66ba48985fd903abc56ba22979670b23f35712026c37687649a0e49b06d30fc3cf13cb9d496b0b"
+    "sha256": "aaa5266ee9592ca7f5017adfcbdcf70a4d8fe22f5ae5740a91316a6091ac7a35",
+    "size": 14538157,
+    "sig": "a7aaddb9cde6c2c67f933e9d422143b64b4d1781232ea85ff699c6c43ee4be0fe25e29e621086b450b110f1aeebabcc1c6ccd230eadfa6924028f3886f256207"
    }
   },
   {

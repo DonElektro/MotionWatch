@@ -23,6 +23,8 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 4.19.1: Homepage-Startseite: alle Varianten (auch «A · Bildgeschichte») zeigen jetzt alle Links – MoveEye (Demo), Die Karte
+    des Grossvaters, Handy-Funkgerät, Simulator – und oben das bewegte MoveEye-Auge beim Titel (blinzelt, schaut sich um)
   * 4.19.0: Karte: neuer Schalter «🗺 Schweiz | ⛰ Bergtal» auf /karte – die Karte des Simulator-Tals wie die Landeskarte (Relief,
     Höhenlinien, 3D, Orte, Wanderwege, Bäche, Seen), geheime Orte erst nach dem Finden im Simulator, live MoveEye / Figur /
     Mover, Touren mit Bergtal-Höhen, «Tour im Sim nachlaufen», Vorschläge
@@ -107,8 +109,6 @@ Features
     Knopf «📷 Live öffnen». (5) «⏪ Zeitfenster»: Abstand der Bilder einstellbar.
   * 3.95.1: Unter der Haube: die Programmdatei ist rund 340 KB kleiner (deutsche Texte der Übersetzungstabellen in der
     Zusatzdatei, kein überflüssiger Leerraum im Code); am Verhalten ändert sich nichts.
-  * 3.95.0: Zwei Teile. (1) «⏪ Zeitfenster» im Live-Bild: Damals / Jetzt pro Blickrichtung. (2) «🔥 Glut-Wächter»: die
-    Feuerstelle merken und fragen «Ist das Feuer aus?».
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -117,10 +117,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_4_19_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_4_19_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_4_19_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_4_19_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_4_19_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_4_19_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -137,7 +137,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "4.19.0"
+APP_VERSION = "4.19.1"
 
 
 def default_data_dir():
@@ -270,8 +270,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_4_19_0.zip"
-ZD_SHA256 = "58430b980ed66752757f15976ecb3c8df1ba60188833dd2405b7c193a256fae0"
+ZD_FILE = "moveeye_daten_4_19_1.zip"
+ZD_SHA256 = "aaa5266ee9592ca7f5017adfcbdcf70a4d8fe22f5ae5740a91316a6091ac7a35"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -50789,7 +50789,7 @@ class App:
 		self.watch=watch
 		self.web=web or WebStream(watch)
 		self.root=tk.Tk()
-		self.root.title("MoveEye 4.19.0")
+		self.root.title("MoveEye 4.19.1")
 		try:
 			import base64
 			self._icon=tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -51176,7 +51176,7 @@ class App:
 			if not small:
 				vl=tk.Label(tl,text=APP_VERSION,bg=C["bg"],fg=C["mut"],font=("DejaVu Sans",8),cursor="hand2");vl.pack(side="left",padx=(8,0),pady=(5,0))
 				vl.bind("<Button-1>",self._ver_tap,add="+");Tip(vl,tr("About MoveEye"))
-			Tip(nm,f"{tr('Build')} 4.19.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm,f"{tr('Build')} 4.19.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps=[]
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>",self._egg_tap,add="+")
@@ -103756,7 +103756,72 @@ HP_FUNK_SW_JS = (_zd('639zzzh_homepage/HP_FUNK_SW_JS', ""))
 HP_FUNK_PNG = _zd('639zzzh_homepage/HP_FUNK_PNG', "")
 
 
-HP_INDEX_HTML = _zd('639zzzh_homepage/HP_INDEX_HTML', ZD_PAGE)
+
+
+
+HP_LINKS = (
+	("demo/", "m", ("📷 MoveEye", "📷 MoveEye", "📷 MoveEye", "📷 MoveEye", "📷 MoveEye"),
+	 ("Das echte MoveEye, live mit Simulator-Kamera", "The real MoveEye, live with the simulator camera",
+	  "Le vrai MoveEye, en direct avec la caméra du simulateur", "Il vero MoveEye, dal vivo con la telecamera del simulatore",
+	  "Il vair MoveEye, live cun la camera dal simulatur")),
+	("Sim/?grossvater=1", "g", ("🗺️ Die Karte des Grossvaters", "🗺️ Grandfather’s map", "🗺️ La carte du grand-père", "🗺️ La mappa del nonno",
+								"🗺️ La charta dal tat"),
+	 ("Abenteuer im Browser · Kapitel 2", "Adventure in the browser · Chapter 2", "Aventure dans le navigateur · Chapitre 2",
+	  "Avventura nel browser · Capitolo 2", "Aventura en il browser · Chapitel 2")),
+	("Funk/", "f", ("📡 Handy-Funkgerät", "📡 Phone radio", "📡 Radio du téléphone", "📡 Radio del telefono", "📡 Radio dal telefonin"),
+	 ("Morse und eigenes Protokoll, geht auch offline", "Morse and own protocol, works offline too",
+	  "Morse et protocole propre, fonctionne aussi hors ligne", "Morse e protocollo proprio, funziona anche offline",
+	  "Morse ed agen protocol, funcziuna er offline")),
+	("Sim/", "s", ("🎮 Simulator (Demo)", "🎮 Simulator (demo)", "🎮 Simulateur (démo)", "🎮 Simulatore (demo)", "🎮 Simulatur (demo)"),
+	 ("Im Browser, ohne Verbindung zu MoveEye · ca. 80 MB", "In the browser, without a connection to MoveEye · about 80 MB",
+	  "Dans le navigateur, sans connexion à MoveEye · env. 80 Mo", "Nel browser, senza connessione a MoveEye · ca. 80 MB",
+	  "En il browser, senza colliaziun cun MoveEye · ca. 80 MB")),
+)
+
+
+HP_EYE_SVG = ('<span class="mweye" aria-hidden="true"><svg viewBox="0 0 100 112" focusable="false"><defs><linearGradient id="mweg" x1="0" y1="1" '
+			  'x2="0" y2="0"><stop offset="0" stop-color="#ff9f43"/><stop offset="1" stop-color="#ff9f43" stop-opacity=".4"/></linearGradient>'
+			  '<clipPath id="mwec"><circle cx="50" cy="80" r="16.6"/></clipPath></defs><g class="e-all">'
+			  '<ellipse fill="#e8590c" cx="39" cy="105.5" rx="7.5" ry="3.8"/><ellipse fill="#e8590c" cx="61" cy="105.5" rx="7.5" ry="3.8"/>'
+			  '<path fill="url(#mweg)" d="M50 80 L10.6 29.6 A64 64 0 0 1 89.4 29.6 Z"/>'
+			  '<path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" '
+			  'd="M37 33 V27 H43 M57 27 H63 V33 M63 45 V51 H57 M43 51 H37 V45"/>'
+			  '<circle fill="#fff" cx="50" cy="80" r="17"/><g clip-path="url(#mwec)"><g class="e-pup"><circle fill="#ff9f43" cx="50" cy="80" r="10.5"/>'
+			  '<circle fill="#0a0e14" cx="50" cy="80" r="5.2"/><circle fill="#fff" cx="53.2" cy="76.6" r="2"/></g>'
+			  '<rect class="e-lid" fill="#e8590c" x="32" y="62" width="36" height="36"/></g>'
+			  '<circle fill="none" stroke="#e8590c" stroke-width="2.6" cx="50" cy="80" r="17"/></g></svg></span>')
+HP_EYE_CSS = (".mweye{display:inline-block;height:1.15em;width:1.03em;vertical-align:-.16em;margin-right:.22em;line-height:0;color:currentColor}"
+			  ".mweye svg{display:block;width:100%;height:100%;overflow:visible}.mweye .e-pup{transform-box:view-box;animation:mwe-look 7s ease-in-out infinite}"
+			  ".mweye .e-lid{transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0);animation:mwe-blink 4.8s infinite}"
+			  "@keyframes mwe-blink{0%,90%,100%{transform:scaleY(0)}93%,94.5%{transform:scaleY(1)}}"
+			  "@keyframes mwe-look{0%,8%,100%{transform:translate(0,0)}20%,36%{transform:translate(-5px,0)}52%,70%{transform:translate(5px,0)}84%{transform:translate(0,0)}}"
+			  "@media (prefers-reduced-motion:reduce){.mweye *{animation:none!important}}")
+
+
+def hp_links_html(L="de", ids=True):
+	""
+	import html as _h
+	i=("de","en","fr","it","rm").index(L)if L in("de","en","fr","it","rm")else 0
+	a1,a2=('id="%s"','id="%ss"')if ids else('data-t="btn.%s"','data-t="btn.%ss"')
+	return "".join(('<a href="%s"><span '+a1+'>%s</span><small '+a2+'>%s</small></a>')
+				   %(href,k,_h.escape(t[i]),k,_h.escape(s[i]))for href,k,t,s in HP_LINKS)
+
+
+def hp_index_html():
+	""
+	T={L:[x for _h,_k,t,s in HP_LINKS for x in(t[i],s[i])]for i,L in enumerate(("de","en","fr","it","rm"))if L!="de"}
+	ids=[x for _h,k,_t,_s in HP_LINKS for x in(k,k+"s")]
+	return('<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+			'<title>MoveEye</title><style>body{margin:0;font:17px system-ui,sans-serif;background:#111418;color:#e8eaed;display:flex;min-height:100vh;'
+			'align-items:center;justify-content:center}\nmain{padding:24px;max-width:420px;width:100%;box-sizing:border-box}h1{margin:0 0 20px}'
+			'a{display:block;margin:12px 0;padding:18px;border-radius:14px;background:#1d2229;color:#e8eaed;text-decoration:none;border:1px solid #2c333c;'
+			'overflow-wrap:anywhere}\nsmall{display:block;color:#9aa3ad;margin-top:4px}'+HP_EYE_CSS+'</style></head><body><main><h1>'
+			+HP_EYE_SVG+'MoveEye</h1>\n'+hp_links_html("de")+'\n</main><script>(function(){var T='+json.dumps(T,ensure_ascii=False)
+			+';\nvar l=(navigator.language||"de").slice(0,2).toLowerCase(),t=T[l];if(!t)return;document.documentElement.lang=l;\n'
+			+json.dumps(ids)+'.forEach(function(id,i){document.getElementById(id).textContent=t[i];});})();</script></body></html>\n')
+
+
+HP_INDEX_HTML = hp_index_html()
 
 
 HP_TEST_HTML = _zd('639zzzh_homepage/HP_TEST_HTML', ZD_PAGE)
@@ -103790,6 +103855,10 @@ for _L in ("fr", "it", "rm"):
 
 
 homepage_selftest = _zd_fn('639zzzh_homepage/homepage_selftest()')
+
+
+
+
 
 
 
@@ -112886,14 +112955,6 @@ SB_TX = {
 	"alt.drawn": ("Zeichnung: Berge und ein Zelt", "Drawing: mountains and a tent", "Dessin : montagnes et une tente",
 				  "Disegno: montagne e una tenda", "Dissegn: muntognas ed ina tenda"),
 	"lab.strip": ("Weitere Bilder", "More pictures", "Autres images", "Altre immagini", "Ulteriurs maletgs"),
-	"btn.f": ("📡 Handy-Funkgerät", "📡 Phone radio", "📡 Radio du téléphone", "📡 Radio del telefono", "📡 Radio dal telefonin"),
-	"btn.fs": ("Morse und eigenes Protokoll, geht auch offline", "Morse and own protocol, works offline too",
-			   "Morse et protocole propre, fonctionne aussi hors ligne", "Morse e protocollo proprio, funziona anche offline",
-			   "Morse ed agen protocol, funcziuna er offline"),
-	"btn.s": ("🎮 Simulator (Demo)", "🎮 Simulator (demo)", "🎮 Simulateur (démo)", "🎮 Simulatore (demo)", "🎮 Simulatur (demo)"),
-	"btn.ss": ("Im Browser, ohne Verbindung zu MoveEye · ca. 80 MB", "In the browser, without a connection to MoveEye · about 80 MB",
-			   "Dans le navigateur, sans connexion à MoveEye · env. 80 Mo", "Nel browser, senza connessione a MoveEye · ca. 80 MB",
-			   "En il browser, senza colliaziun cun MoveEye · ca. 80 MB"),
 }
 _SB_LANGS = ("de", "en", "fr", "it", "rm")
 
@@ -113138,8 +113199,13 @@ SB_DRAWN = ('<svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" r
 			'<circle cx="1180" cy="230" r="46" fill="#f3d9a4" opacity=".85"/></svg>')
 
 
+def _sb_btn_tx():
+	""
+	return{("btn.%s"%k)+x:v for _h,k,t,s in HP_LINKS for x,v in(("",t),("s",s))}
+
+
 def _sb_tx(key, L):
-	v=SB_TX.get(key)or()
+	v=SB_TX.get(key)or(_sb_btn_tx().get(key)if key.startswith("btn.")else None)or()
 	i=_SB_LANGS.index(L)if L in _SB_LANGS else 0
 	return v[i]if len(v)>i and v[i]else(v[0]if v else "")
 
@@ -113180,13 +113246,11 @@ def sb_page_html(variant=None, url=None, meta=None):
 		return '<img src="%s"%s width="%d" height="%d" %s decoding="async" style="%s" %s>'%(
 			e(url(slot,False)),srcset,s["w"],s["h"],'loading="lazy"'if lazy else 'fetchpriority="high"',pos(slot),alt(alt_of or slot,key))
 
-	css=SB_CSS+(SB_CSS_A if v=="A"else SB_CSS_B)
+	css=SB_CSS+(SB_CSS_A if v=="A"else SB_CSS_B)+HP_EYE_CSS
 	hero='<header class="hero">'+(img("titel",72,lazy=False)if "titel"in S else SB_DRAWN.replace("{alt}",e(_sb_tx("alt.drawn","de"))))
-	hero+=('<div class="top"><h1>MoveEye</h1><p data-t="titel.line">%s</p></div><div class="cap1"><span class="kick" data-t="titel.kick">%s</span>'
+	hero+=('<div class="top"><h1>'+HP_EYE_SVG+'MoveEye</h1><p data-t="titel.line">%s</p></div><div class="cap1"><span class="kick" data-t="titel.kick">%s</span>'
 			 '<span class="line" data-t="titel.say">%s</span></div></header>'%(e(tx("titel","line")),e(tx("titel","kick")),e(tx("titel","say"))))
-	btn=('<main><a href="Funk/"><span data-t="btn.f">%s</span><small data-t="btn.fs">%s</small></a>'
-		   '<a href="Sim/"><span data-t="btn.s">%s</span><small data-t="btn.ss">%s</small></a></main>'
-		   %tuple(e(_sb_tx(k,"de"))for k in("btn.f","btn.fs","btn.s","btn.ss")))
+	btn='<main>'+hp_links_html("de",ids=False)+'</main>'
 	body,pre,post="","",""
 	if v=="A":
 		ch=[k for k in SB_CHAPTERS if k in S or(k=="grat"and "grat_hoch"in S)]
@@ -113226,7 +113290,7 @@ def sb_page_html(variant=None, url=None, meta=None):
 				'<figure><img src="%s" width="%d" height="%d" loading="lazy" decoding="async" draggable="false" style="%s" %s></figure>'
 				%(e(url(k,False)),S[k]["w"],S[k]["h"],pos(k),alt(k,"alt.photo"))for k in strip)+"</div>"
 		pre=SB_JS_B
-	T={L:{k:_sb_tx(k,L)for k in SB_TX if k not in own}for L in _SB_LANGS[1:]}
+	T={L:{k:_sb_tx(k,L)for k in list(SB_TX)+list(_sb_btn_tx())if k not in own}for L in _SB_LANGS[1:]}
 	lang=SB_JS_LANG.replace("/*T*/",json.dumps(T,ensure_ascii=False,sort_keys=True).replace("</","<\\/"),1)
 	head=('<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
 			'<title>MoveEye</title><meta name="color-scheme" content="dark"><meta name="theme-color" content="#111418"><style>'+css+"</style></head><body>")
@@ -113536,6 +113600,9 @@ for _L in ("fr", "it", "rm"):
 
 
 startbilder_selftest = _zd_fn('639zzzzf_startbilder/startbilder_selftest()')
+
+
+
 
 
 
