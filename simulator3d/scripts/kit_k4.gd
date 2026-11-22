@@ -193,6 +193,34 @@ func _biwak_bauen() -> void:
 	lab.outline_size = 8
 	n.add_child(lab)
 	lab.position = Vector3(0.3, h - 0.25, ls + 0.01)      # on the door wall (west), its text towards the couloir
+	# a small window in the door wall (south of the door): dark glass by day, warm candle light at night
+	_fenster_mat = StandardMaterial3D.new()
+	_fenster_mat.albedo_color = Color(0.12, 0.13, 0.15)
+	_fenster_mat.emission_enabled = true
+	_fenster_mat.emission = Color(1.0, 0.68, 0.32)
+	_fenster_mat.emission_energy_multiplier = 0.0
+	var fenster := MeshInstance3D.new()
+	fenster.mesh = par.boxm(0.62, 0.46, 0.04)
+	fenster.material_override = _fenster_mat
+	n.add_child(fenster)
+	fenster.position = Vector3(1.15, 1.3, ls + 0.005)
+	par.part(n, par.boxm(0.04, 0.5, 0.06), Vector3(1.15, 1.3, ls + 0.02), Color(0.36, 0.25, 0.16), "tree")      # the cross of the frame
+	par.part(n, par.boxm(0.66, 0.04, 0.06), Vector3(1.15, 1.3, ls + 0.02), Color(0.36, 0.25, 0.16), "tree")
+	par.part(n, par.boxm(0.74, 0.06, 0.1), Vector3(1.15, 1.04, ls + 0.04), Color(0.36, 0.25, 0.16), "tree")      # the sill
+	var kerze := OmniLight3D.new()                       # the candle on the shelf: lights the room, the door and the window
+	kerze.light_color = Color(1.0, 0.62, 0.3)
+	kerze.omni_range = 4.5
+	kerze.light_energy = 0.0
+	kerze.shadow_enabled = false
+	n.add_child(kerze)
+	kerze.position = Vector3(0.4, 1.2, -ls + 0.6)
+	var schein := OmniLight3D.new()                      # its glow outside, in front of the window and the door
+	schein.light_color = Color(1.0, 0.6, 0.28)
+	schein.omni_range = 3.2
+	schein.light_energy = 0.0
+	n.add_child(schein)
+	schein.position = Vector3(0.6, 1.1, ls + 0.7)
+	_biwak_lichter = [kerze, schein]
 	# walls for people and for the camera (the door stays open)
 	var mitte: Vector3 = par.W(Vector3(c.x, y0, c.y))
 	var rot_y: float = -par.rot
@@ -246,14 +274,60 @@ func _warme_koerper() -> Array:
 
 
 var nacht := false
+var _fenster_mat: StandardMaterial3D
+var _biwak_lichter: Array = []
+var _himmel_t := 0.0
+var _detail_vorher := -1.0
 
 
-func _process(_dt: float) -> void:
+func nacht_setzen(on: bool) -> void:
+	"""the last scene: a clear night over the bivouac - a dark sky with stars, the candle in the window"""
+	nacht = on
+	if _fenster_mat != null:
+		_fenster_mat.emission_energy_multiplier = 3.2 if on else 0.0
+	for l in _biwak_lichter:
+		if is_instance_valid(l):
+			(l as OmniLight3D).light_energy = (2.2 if l == _biwak_lichter[0] else 1.1) if on else 0.0
+	if main.sky_mat != null:
+		main.sky_mat.set_shader_parameter("star_vis", 1.0 if on else -1.0)
+		main.sky_mat.set_shader_parameter("milky", 0.55 if on else 0.0)
+		if on and _detail_vorher < 0.0:                  # (stars need the sky's detail - simple graphics too, for this short film)
+			_detail_vorher = float(main.sky_mat.get_shader_parameter("detail"))
+		elif not on and _detail_vorher >= 0.0:
+			main.sky_mat.set_shader_parameter("detail", _detail_vorher)
+			_detail_vorher = -1.0
+	if not on and main.env != null:
+		main.env.fog_sky_affect = 0.35                   # (main's value; colors.gd sets the aerial perspective again)
+	if on:
+		nebel_an = false
+		if main.env != null and main.sky_mat != null:
+			_nacht_licht(true)                               # (at once - not one frame of the day's sky)
+
+
+func _process(dt: float) -> void:
 	if nebel_an and main.env != null and kit.running:
 		main.env.fog_density = 0.02 if waerme_an else 0.075     # (the thermal picture sees through the fog)
-	if nacht and main.env != null and kit.running:            # the last scene: a dark night (the moon lit it like a grey day)
-		main.env.tonemap_exposure = 0.42
-		main.env.ambient_light_energy = minf(float(main.env.ambient_light_energy), 0.35)
+	if nacht and main.env != null and main.sky_mat != null and kit.running:   # the last scene: a clear, dark night
+		_himmel_t -= dt
+		_nacht_licht(_himmel_t <= 0.0)
+
+
+func _nacht_licht(himmel: bool) -> void:
+	if himmel and not bool(main.get("sim_active")) and main.has_method("_update_sky"):
+		_himmel_t = 0.5                                       # (main only updates the sky while the simulation runs)
+		main._update_sky()
+	main.sky_mat.set_shader_parameter("star_vis", 1.0)        # (others set the stars too: every frame)
+	main.sky_mat.set_shader_parameter("milky", 0.55)
+	main.sky_mat.set_shader_parameter("detail", 1.0)
+	main.env.tonemap_exposure = 0.9
+	main.env.ambient_light_color = Color(0.32, 0.4, 0.6)
+	main.env.ambient_light_energy = 0.2
+	main.env.fog_density = 0.0025
+	main.env.fog_light_color = Color(0.05, 0.07, 0.12)
+	main.env.fog_aerial_perspective = 0.0                     # (it takes the fog colour from the sky's light map - still the day's)
+	main.env.fog_sky_affect = 0.1
+	if kit.bt != null and kit.bt.get("_fog_k") != null:
+		kit.bt._fog_k = 0.0
 
 
 # =======================================================================================================================
@@ -290,6 +364,11 @@ func tick(dt: float, ein: Dictionary) -> Dictionary:
 	if not anker.is_empty() or kit.szene_i >= 0 and str(kit.daten.SZENEN[kit.szene_i]["id"]) == "s05_querung":
 		ein = _klettersteig_tick(ein)
 	_seil_zeichnen()
+	_innen_kamera_tick()
+	if _buch != null and (kit.szene_i < 0 or str(kit.daten.SZENEN[kit.szene_i]["id"]) != "s10_eintrag"):
+		_buch_zeigen(false)                              # (the card belongs to its scene only - also after a skip)
+	if nacht and kit.szene_i >= 0 and str(kit.daten.SZENEN[kit.szene_i]["id"]) != "s12_nacht":
+		nacht_setzen(false)                              # (tests and pictures jump back to earlier scenes)
 	if rucksack and kit.hund != null and kit.hund.hund != null:
 		var fp: Vector3 = kit.figur.pos()
 		var back: Vector3 = fp - kit.figur.vorne() * 0.32 + Vector3(0, 1.05, 0)
@@ -309,6 +388,49 @@ func tick(dt: float, ein: Dictionary) -> Dictionary:
 			kit.merke("gestuerzt")
 			kit.sag(kit.tx("Halt dich fest! – Lia hält das Seil."), "lia")
 	return ein
+
+
+# the camera inside the bivouac: a fixed corner on the door wall (the one further from the figure), looking at the
+# shelf with the book and turning a little after the figure; the follow camera would look down onto the head
+const INNEN_ECKEN := [[52.75, 0.75], [52.75, 4.05]]     # s, q: the two corners of the door (west) wall
+const INNEN_REGAL := [55.3, 2.6, 0.75]                   # the shelf on the east wall
+var _innen_shot := {}
+var _innen_ecke := -1
+
+
+func im_biwak(w: Vector3) -> bool:
+	var d: Dictionary = daten.DECKEN[0]
+	var sq: Vector2 = par.sq_von(w)
+	return absf(sq.x - float(d["s"])) < float(d["ls"]) - 0.12 and absf(sq.y - float(d["q"])) < float(d["lq"]) - 0.12
+
+
+func _innen_kamera_tick() -> void:
+	var r = kit.regie
+	var eigen: bool = not _innen_shot.is_empty() and r.art == "shot" and is_same(r._shot, _innen_shot)
+	var drin: bool = kit.phase == "spiel" and not r.film_an and kit.figur.ok() and im_biwak(kit.figur.pos())
+	if not drin:
+		if eigen:
+			r.zur_folge(0.5)
+		_innen_shot = {}
+		_innen_ecke = -1
+		return
+	if r.art != "folge" and not eigen:
+		return
+	if not eigen:
+		_innen_ecke = -1
+	var sq: Vector2 = par.sq_von(kit.figur.pos())
+	var dist := []
+	for e in INNEN_ECKEN:
+		dist.append(Vector2(float(e[0]), float(e[1])).distance_to(sq))
+	var beste := 0 if dist[0] > dist[1] else 1
+	if _innen_ecke < 0 or (beste != _innen_ecke and dist[beste] > dist[_innen_ecke] + 0.6):   # (with a little hysteresis)
+		_innen_ecke = beste
+		var e: Array = INNEN_ECKEN[beste]
+		_innen_shot = {"art": "fix", "s": float(e[0]), "q": float(e[1]), "h": 1.8, "fov": 74.0, "blick": INNEN_REGAL.duplicate(), "blende": 0.4}
+		r.shot(_innen_shot, eigen)                   # (a soft blend on entering, a cut between the corners)
+	var rg: Vector2 = Vector2(float(INNEN_REGAL[0]), float(INNEN_REGAL[1]))
+	var mitte: Vector2 = rg.lerp(sq, 0.55)
+	_innen_shot["blick"] = [mitte.x, mitte.y, lerpf(float(INNEN_REGAL[2]), 1.1, 0.55)]
 
 
 func _peilung_tick() -> void:
@@ -531,7 +653,7 @@ func film(e: Dictionary, sprung: bool) -> void:
 			if not rucksack and kit.hund != null:
 				kit.hund.setzen_welt(kit.figur.pos() + kit.figur.vorne().cross(Vector3.UP) * 0.9)
 		"nacht":
-			nacht = bool(e.get("an", true))
+			nacht_setzen(bool(e.get("an", true)))
 		"logbuch_zeigen":
 			_buch_zeigen(true)
 		"logbuch_weg":
@@ -544,16 +666,17 @@ func _steinschlag(sprung: bool) -> void:
 	kit.regie.schuetteln(0.5)
 	var a = kit.personen.get("lia", null)
 	var ziel: Vector3 = (a as Node3D).global_position if a != null and is_instance_valid(a) else kit.figur.pos()
-	for i in range(5):
+	for i in range(7):
 		var st := MeshInstance3D.new()
-		st.mesh = par.sphm(0.12 + 0.06 * (i % 3), -1.0, 6)
-		st.material_override = par.m.mat(Color(0.45, 0.42, 0.38))
+		st.mesh = par.sphm(0.2 + 0.08 * (i % 3), -1.0, 6)
+		st.scale = Vector3(1.0, 0.75, 0.9)
+		st.material_override = par.m.mat(Color(0.3, 0.28, 0.26))
 		main.add_child(st)
-		var von := ziel + Vector3(0.6 * (i - 2), 9.0 + i * 0.8, 1.4 - 0.5 * i)
+		var von := ziel + Vector3(0.5 * (i - 3), 4.5 + i * 0.6, 1.2 - 0.4 * i)
 		st.global_position = von
 		var tw := st.create_tween()
-		tw.tween_property(st, "global_position", ziel + Vector3(0.9 * (i - 2), 0.1, 1.0 + 0.3 * i), 0.9 + 0.12 * i).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-		tw.tween_interval(2.0)
+		tw.tween_property(st, "global_position", ziel + Vector3(0.8 * (i - 3), 0.15, 0.9 + 0.25 * i), 1.1 + 0.18 * i).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		tw.tween_interval(6.0)
 		tw.tween_callback(st.queue_free)
 
 
@@ -592,11 +715,23 @@ func control(d: Dictionary) -> Dictionary:
 
 func info() -> Dictionary:
 	return {"nebel": nebel_an, "waerme": waerme_an, "peilung": peilung.get("grad", -1), "seil": bool(seil["an"]),
-		"haken": (seil["haken"] as Array).size(), "anker": anker.keys(), "rucksack": rucksack, "gestuerzt": gestuerzt}
+		"haken": (seil["haken"] as Array).size(), "anker": anker.keys(), "rucksack": rucksack, "gestuerzt": gestuerzt, "nacht": nacht,
+		"himmel": _himmel_info()}
+
+
+func _himmel_info() -> Dictionary:
+	if main.sky_mat == null:
+		return {}
+	var sm: ShaderMaterial = main.sky_mat
+	var top = sm.get_shader_parameter("top_color")
+	return {"nacht": sm.get_shader_parameter("night"), "sterne": sm.get_shader_parameter("star_vis"), "detail": sm.get_shader_parameter("detail"),
+		"oben": (top as Color).to_html(false) if top is Color else "", "hell": snappedf(float(main.env.tonemap_exposure), 0.01) if main.env != null else 0.0}
 
 
 func aufraeumen() -> void:
 	waerme_schalten(false)
+	if nacht:
+		nacht_setzen(false)
 	if _layer != null and is_instance_valid(_layer):
 		_layer.queue_free()
 	if _seil_mi != null and is_instance_valid(_seil_mi):

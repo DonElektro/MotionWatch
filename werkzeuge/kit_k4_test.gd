@@ -104,7 +104,7 @@ func _lauf() -> void:
 	for i in range(120):
 		await process_frame
 	await _warte(2.0)
-	c({"do": "start", "kapitel": 4, "rolle": "enkelin", "name": "Test", "touch": false})
+	c({"do": "start", "kapitel": 4, "rolle": "enkelin", "name": "Test", "touch": false, "kette": false})
 	var ok: bool = await _bis(func(): return str(info().get("phase", "")) in ["film", "spiel"], 60.0)
 	pruef(ok, "Start Kapitel 4")
 	if not ok:
@@ -216,9 +216,61 @@ func _lauf() -> void:
 			break
 	ok = await _bis(func(): return k.phase == "ende", 30.0)
 	pruef(ok and k.hud._ende != null, "Ende von Kapitel 4")
+	var sm: ShaderMaterial = m.sky_mat
+	var oben: Color = sm.get_shader_parameter("top_color")
+	pruef(k.k3.nacht and float(sm.get_shader_parameter("night")) > 0.9 and oben.get_luminance() < 0.08 and float(sm.get_shader_parameter("star_vis")) >= 1.0,
+			"die Nacht am Biwak: dunkler Himmel (%.3f), Sterne %s" % [oben.get_luminance(), str(sm.get_shader_parameter("star_vis"))])
+	pruef(k.k3._fenster_mat.emission_energy_multiplier > 1.0 and (k.k3._biwak_lichter[0] as OmniLight3D).light_energy > 1.0, "das Biwakfenster leuchtet")
 	await _film_shots()
 	await _kameras()
+	await _rollen()
 	_ende()
+
+
+func _rollen() -> void:
+	"""the book card and the flashback name the year and the relation of the role: Tochter / Sohn 2000 and «Vater»,
+	Enkelin / Enkel 1974 and «Grossvater» (the text, the speaker's name and the pre-spoken voice line)"""
+	var karte: Dictionary = {}
+	if FileAccess.file_exists("res://klang/stimmen/stimmen.json"):
+		karte = JSON.parse_string(FileAccess.get_file_as_string("res://klang/stimmen/stimmen.json")).get("zeilen", {})
+	for r in [["tochter", "2000", "1974", "Vater"], ["sohn", "2000", "1974", "Vater"], ["enkelin", "1974", "2000", "Grossvater"]]:
+		k.rolle = str(r[0])
+		var jahr := str(r[1])
+		var falsch := str(r[2])
+		c({"do": "eintrag", "e": {"k": "logbuch_zeigen"}})
+		var texte: Array = []
+		if k.k3._buch != null:
+			for l in k.k3._buch.find_children("*", "Label", true, false):
+				texte.append((l as Label).text)
+		var buch := " | ".join(texte)
+		pruef(buch.contains("Biwakbuch · " + jahr) and not buch.contains(falsch), "Rolle %s: Biwakbuch-Karte nennt %s (%s)" % [r[0], jahr, buch.substr(0, 40)])
+		c({"do": "eintrag", "e": {"k": "logbuch_weg"}})
+		pruef(k.tx(str(k.daten.FUNDE["logbuch"][0])) == "Biwakbuch " + jahr, "Rolle %s: der Fund heisst «Biwakbuch %s»" % [r[0], jahr])
+		# the flashback: its title, the narrator's year, the grandfather / father as the speaker, the voice of the line
+		var titel := ""
+		var sturm := ""
+		var gv := ""
+		for sz in k.daten.SZENEN:
+			if str(sz["id"]) == "s09_rueckblende":
+				titel = k.tx(str(sz["titel"]))
+				for e in sz["schritte"][0]["film"]:
+					if str(e.get("k", "")) == "sag" and str(e["text"]).contains("Sturm kam"):
+						sturm = k.tx(str(e["text"]))
+		c({"do": "szene", "value": "s09_rueckblende"})
+		var gesehen := {}
+		for i in range(160):
+			await _warte(0.1)
+			var t: String = k.hud._sub.text
+			if t.contains("Sturm kam"):
+				gesehen["sturm"] = t
+			if t.contains("Ich steige ab"):
+				gv = k.hud._sub_wer.text
+				break
+		pruef(titel == jahr and sturm.begins_with(jahr + ".") and str(gesehen.get("sturm", "")) == sturm, "Rolle %s: Rückblende «%s» – %s" % [r[0], titel, str(gesehen.get("sturm", "(kein Untertitel)"))])
+		pruef(gv == str(r[3]), "Rolle %s: in der Rückblende spricht «%s»" % [r[0], gv])
+		pruef(karte.has(sturm) and karte.has(k.tx("Das alte Biwak. Seit {jahr} hat sich hier wenig verändert.")), "Rolle %s: die Stimme für das Jahr %s ist da" % [r[0], jahr])
+		c({"do": "skip"})
+		await _bis(func(): return k.phase != "film", 4.0)
 
 
 func _film_shots() -> void:
@@ -230,6 +282,10 @@ func _film_shots() -> void:
 				var r: Dictionary = k.regie.pruef_shot(e)
 				if r.get("folge", false):
 					continue
+				var at: Vector3 = k.regie._p(e)
+				var lk: Vector3 = k.regie._blick(e)
+				var neig: float = rad_to_deg(asin(clampf((lk - at).normalized().y, -1.0, 1.0)))
+				pruef(absf(neig) < 22.0 or bool(e.get("himmel", false)), "Film-Einstellung %s: Neigung %.0f° (keine steile Untersicht / Aufsicht)" % [sz["id"], neig])
 				pruef(bool(r["ok"]), "Film-Einstellung %s %s: Anteil %.2f, im Bild %s, frei %s, Abstand %.1f m" % [sz["id"], str(e.get("art", "")), float(r["anteil"]), str(r["im_bild"]), str(r["frei"]), float(r["abstand"])])
 
 
@@ -243,6 +299,9 @@ func _kameras() -> void:
 	orte.append(["stufe2", 28.3, 0.0])
 	orte.append(["stahlseil", 37.3, -3.6])
 	orte.append(["biwak_innen", 54.0, 2.4])
+	orte.append(["biwak_regal", 54.9, 2.6])
+	orte.append(["biwak_tuer", 52.9, 1.9])
+	orte.append(["biwak_bank", 54.2, 3.6])
 	for o in orte:
 		for i in range(8):
 			var blick := TAU * i / 8.0
@@ -266,6 +325,12 @@ func _kameras() -> void:
 				var l2: Dictionary = m.line_blocker(kopf_p, cp)
 				var frei: bool = bl < 0.0 and l1.is_empty() and l2.is_empty()
 				var gut: bool = ueber_boden and unter_decke and im_bild and frei
+				if str(o[0]).begins_with("biwak_"):          # inside: a fixed corner camera, not the follow camera from above
+					var vorn: Vector3 = -cam.global_transform.basis.z
+					var regal: Vector3 = k.par.welt(55.3, 2.6, 0.75)
+					var innen_ok: bool = k.regie.art == "shot" and vorn.y > -0.6 and cam.is_position_in_frustum(regal) and cp.y - k.figur.pos().y < 2.1
+					if not innen_ok or i == 0:
+						pruef(innen_ok, "Biwak-Kamera %s Blick %d/8: Eckkamera %s, Neigung %.2f, Regal im Bild %s" % [o[0], i, k.regie.art, vorn.y, cam.is_position_in_frustum(regal)])
 				if not gut or i % 4 == 0:
 					pruef(gut, "Kamera %s Blick %d/8%s: Boden %s, Decke %s, Figur im Bild %s, Sicht frei %s %s" % [o[0], i, " gedreht" if zieh != 0.0 else "", ueber_boden, unter_decke, im_bild, frei,
 							"" if frei else "(Boden/Fels %.2f, Hindernis %s / %s)" % [bl, str(l1.get("id", "")), str(l2.get("id", ""))]])
