@@ -207,12 +207,37 @@ func kugeln_welt() -> Array:
 	return []
 
 
+var _glut_t := 0.0
+
+
+var _hund_glut: MeshInstance3D = null
+
+
+func _glut_setzen(on: bool) -> void:
+	"""the glow on the meshes of the warm bodies; Maggie gets a glowing body of her own (her model ignored the overlay)"""
+	if kit.hund != null and kit.hund.hund != null and is_instance_valid(kit.hund.hund):
+		if on and (_hund_glut == null or not is_instance_valid(_hund_glut)):
+			_hund_glut = MeshInstance3D.new()
+			_hund_glut.mesh = par.sphm(1.0, -1.0, 10)
+			_hund_glut.scale = Vector3(0.17, 0.2, 0.36)
+			_hund_glut.position = Vector3(0, 0.36, 0)
+			_hund_glut.material_override = _glut_mat
+			kit.hund.hund.add_child(_hund_glut)
+		elif not on and _hund_glut != null and is_instance_valid(_hund_glut):
+			_hund_glut.queue_free()
+			_hund_glut = null
+	for n in _warme_koerper():
+		for mi in n.find_children("*", "MeshInstance3D", true, false):
+			if (mi as MeshInstance3D).layers & 1:
+				(mi as MeshInstance3D).material_overlay = _glut_mat if on else null
+
+
 func _warme_koerper() -> Array:
 	var out: Array = []
 	if kit.figur != null and kit.figur.ok():
 		out.append(kit.figur.a)
-	if kit.hund != null and kit.hund.hund != null and is_instance_valid(kit.hund.hund):
-		out.append(kit.hund.hund)
+	if kit.hund != null and is_instance_valid(kit.hund):
+		out.append(kit.hund)
 	for id in kit.personen:
 		var a = kit.personen[id]
 		if a != null and is_instance_valid(a):
@@ -220,9 +245,15 @@ func _warme_koerper() -> Array:
 	return out
 
 
+var nacht := false
+
+
 func _process(_dt: float) -> void:
 	if nebel_an and main.env != null and kit.running:
 		main.env.fog_density = 0.02 if waerme_an else 0.075     # (the thermal picture sees through the fog)
+	if nacht and main.env != null and kit.running:            # the last scene: a dark night (the moon lit it like a grey day)
+		main.env.tonemap_exposure = 0.42
+		main.env.ambient_light_energy = minf(float(main.env.ambient_light_energy), 0.35)
 
 
 # =======================================================================================================================
@@ -267,6 +298,10 @@ func tick(dt: float, ein: Dictionary) -> Dictionary:
 		kit.hund.place(kit.hund.hund, q, true)
 		kit.hund.hund.rotation.y = kit.figur.a.rotation.y
 	if waerme_an:
+		_glut_t -= dt
+		if _glut_t <= 0.0:                                 # (models are swapped / added later: Maggie, Lia)
+			_glut_t = 0.5
+			_glut_setzen(true)
 		_waerme_lab.position = Vector2((_layer.get_viewport().get_visible_rect().size.x - _waerme_lab.size.x) * 0.5, 64)
 	if kit.figur.zustand == "haengen" and kit.szene_i >= 0 and str(kit.daten.SZENEN[kit.szene_i]["id"]) == "s05_querung":
 		if not gestuerzt:
@@ -326,10 +361,7 @@ func waerme_schalten(on: bool) -> void:
 		gs.code = WAERME_GLUT
 		_glut_mat.shader = gs
 	_schirm.visible = on
-	for n in _warme_koerper():
-		for mi in n.find_children("*", "MeshInstance3D", true, false):
-			if (mi as MeshInstance3D).layers & 1:
-				(mi as MeshInstance3D).material_overlay = _glut_mat if on else null
+	_glut_setzen(on)
 	_waerme_lab.visible = on
 	if on:
 		kit.erledigt["waerme"] = true
@@ -355,12 +387,25 @@ func _einhaengen(id: String) -> void:
 	_lia_zum_stand(i)
 
 
+func _lia_sicher(sv: float, qv: float):
+	"""Lia as a figure of the kit (created when missing, e.g. after a jump between scenes)"""
+	var a = kit.personen.get("lia", null)
+	if a == null or not is_instance_valid(a):
+		var d: Dictionary = (daten.LIA as Dictionary).duplicate(true)
+		d["s"] = sv
+		d["q"] = qv
+		d["blick"] = [sv + 1.0, qv]
+		kit._person("lia", d)
+		a = kit.personen.get("lia", null)
+	return a
+
+
 func _lia_zum_stand(i: int) -> void:
 	var L: Array = daten.SEIL["lia_stand"]
 	if i >= L.size():
 		return
 	_stand_i = i
-	var a = kit.personen.get("lia", null)
+	var a = _lia_sicher(float(L[i][0]), float(L[i][1]))
 	if a == null or not is_instance_valid(a):
 		return
 	var w: Vector3 = par.welt(float(L[i][0]), float(L[i][1]))
@@ -449,6 +494,8 @@ func film(e: Dictionary, sprung: bool) -> void:
 			if not nebel_an and main.env != null:
 				main.env.fog_density = 0.0035
 				main.weather = "cloudy"
+				if kit.bt != null and kit.bt.get("_fog_k") != null:
+					kit.bt._fog_k = 0.0                       # (the valley's fog would fade for 40 s - and light the night)
 				waerme_schalten(false)
 		"waerme":
 			waerme_schalten(bool(e.get("an", false)))
@@ -483,6 +530,8 @@ func film(e: Dictionary, sprung: bool) -> void:
 			rucksack = bool(e.get("an", true))
 			if not rucksack and kit.hund != null:
 				kit.hund.setzen_welt(kit.figur.pos() + kit.figur.vorne().cross(Vector3.UP) * 0.9)
+		"nacht":
+			nacht = bool(e.get("an", true))
 		"logbuch_zeigen":
 			_buch_zeigen(true)
 		"logbuch_weg":

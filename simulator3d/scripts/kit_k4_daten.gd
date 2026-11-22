@@ -158,7 +158,7 @@ const SZENEN := [
 			{"t": 0.0, "k": "musik", "z": "action"},
 			{"t": 0.0, "k": "seil_aus"},
 			{"t": 0.0, "k": "person_k4", "id": "lia", "s": 39.6, "q": -3.6},
-			{"t": 0.0, "k": "shot", "art": "fix", "s": 42.6, "q": 0.4, "h": 2.0, "blick": [40.0, -3.0, 1.1], "d": 4.0, "ziel": [39.6, -3.6, 0.0], "groesse": 1.7},
+			{"t": 0.0, "k": "shot", "art": "fix", "s": 41.6, "q": 2.6, "h": 1.9, "blick": [39.9, -3.0, 1.1], "d": 4.0, "ziel": [39.6, -3.6, 0.0], "groesse": 1.7},
 			{"t": 0.4, "k": "steinschlag"},
 			{"t": 0.5, "k": "qte", "id": "lia_gewarnt", "text": "Steinschlag! – Warnen!", "s": 1.8},
 			{"t": 0.6, "k": "sag", "wer": "blinki", "text": "Achtung – oben löst sich Fels!"},
@@ -235,7 +235,8 @@ const SZENEN := [
 	{"id": "s12_nacht", "titel": "Zum Grat", "start": [49.6, 0.6], "schritte": [
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
-			{"t": 0.0, "k": "zeit", "h": 21.9},
+			{"t": 0.0, "k": "zeit", "h": 22.4},
+			{"t": 0.0, "k": "nacht", "an": true},
 			{"t": 0.0, "k": "wetter", "w": "clear"},
 			{"t": 0.0, "k": "shot", "art": "fix", "s": 46.6, "q": -2.6, "h": 2.0, "blick": [53.0, 2.4, 3.0], "d": 12.0, "ziel": [52.0, 1.8, 0.0], "groesse": 2.4},
 			{"t": 0.3, "k": "sag", "wer": "erzaehler", "text": "Die Nacht kommt. Über dem Biwak die Sterne."},
