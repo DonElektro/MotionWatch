@@ -15,7 +15,7 @@ const GRABEN_T := 0.15
 
 const GRID_SHADER := """
 shader_type spatial;
-uniform vec3 base : source_color = vec3(0.56, 0.58, 0.61);
+uniform vec3 base : source_color = vec3(0.40, 0.42, 0.45);
 varying vec3 wp;
 void vertex() { wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
 float lines(vec2 g) {
@@ -190,7 +190,7 @@ static func _sign(world: Node3D, pos: Vector3, text: String) -> void:
 	l.text = text
 	l.position = pos
 	l.font_size = 64
-	l.pixel_size = 0.004
+	l.pixel_size = 0.0022
 	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	l.modulate = Color("#1b2430")
 	l.outline_modulate = Color(1, 1, 1, 0.8)

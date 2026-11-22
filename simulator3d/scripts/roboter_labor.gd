@@ -53,11 +53,12 @@ var pip := true
 var follow := true
 var gravity := 9.81
 var yaw := -35.0
-var pitch := 24.0
-var dist := 3.2
+var pitch := 22.0
+var dist := 1.9
 var target := Vector3(-0.5, 0.1, 0)
 var last_pose := "gerade"
 var _old_ticks := 30
+var _old_3d := false
 var _w := {}                           # widgets
 var _sl := {}                          # servo id -> {sl, val}
 var _drag := 0
@@ -81,6 +82,8 @@ func open() -> void:
 	add_child(layer)
 	_old_ticks = Engine.physics_ticks_per_second
 	Engine.physics_ticks_per_second = TICKS
+	_old_3d = get_viewport().disable_3d
+	get_viewport().disable_3d = true                  # the window shows only the lab: the world of MoveEye is not drawn meanwhile
 	_build_world()
 	_build_ui()
 	_start_physics()
@@ -98,6 +101,7 @@ func close() -> void:
 	_sl = {}
 	_w = {}
 	Engine.physics_ticks_per_second = _old_ticks
+	get_viewport().disable_3d = _old_3d
 
 
 # ---- die Welt ------------------------------------------------------------------------------------------------------------
@@ -115,13 +119,13 @@ func _build_world() -> void:
 	e.background_color = Color("#c9d3dc")
 	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	e.ambient_light_color = Color("#b8c4d0")
-	e.ambient_light_energy = 0.55
+	e.ambient_light_energy = 0.45
 	e.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.environment = e
 	world.add_child(env)
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-55, -35, 0)
-	sun.light_energy = 1.1
+	sun.light_energy = 0.85
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 25.0
 	world.add_child(sun)
@@ -202,12 +206,12 @@ func _camera(dt: float) -> void:
 	match view:
 		"seite":
 			cam.projection = Camera3D.PROJECTION_ORTHOGONAL
-			cam.size = maxf(0.5, length * 1.5) * dist / 3.2
+			cam.size = maxf(0.4, length * 1.3) * dist / 1.9
 			cam.global_transform = Transform3D(Basis(), target + Vector3(0, 0.25, 8.0))
 			cam.look_at(target + Vector3(0, 0.25, 0), Vector3.UP)
 		"oben":
 			cam.projection = Camera3D.PROJECTION_ORTHOGONAL
-			cam.size = maxf(0.5, length * 1.6) * dist / 3.2
+			cam.size = maxf(0.4, length * 1.4) * dist / 1.9
 			cam.global_transform = Transform3D(Basis(), target + Vector3(0, 9.0, 0.001))
 			cam.look_at(target, Vector3.FORWARD)
 		"roboter":
@@ -332,6 +336,10 @@ func set_gravity(g: float) -> void:
 
 func set_shape(key: String, v: float) -> void:
 	model.set_param(key, v)
+	var d: Dictionary = _w.get("form_" + key, {})
+	if not d.is_empty() and not is_equal_approx((d["sl"] as HSlider).value, float(model.p[key])):
+		(d["sl"] as HSlider).set_value_no_signal(float(model.p[key]))
+		(d["val"] as Label).text = (d["fmt"] as Callable).call(float(model.p[key])).strip_edges()
 	if key in ["reibung"]:
 		for b in model.bodies:
 			((b["rb"] as RigidBody3D).physics_material_override as PhysicsMaterial).friction = float(model.p["reibung"])
@@ -695,7 +703,7 @@ func _page_physik(pg: VBoxContainer) -> void:
 	for f in PHYSIK:
 		var g: Array = MODELL.GRENZEN[f[0]]
 		var key: String = f[0]
-		_slider(pg, T.t(f[1]), g[0], g[1], f[3], float(model.p[key]), f[2], func(x: float): set_shape(key, x))
+		_w["form_" + key] = _slider(pg, T.t(f[1]), g[0], g[1], f[3], float(model.p[key]), f[2], func(x: float): set_shape(key, x))
 	_w["t_pause"] = _toggle(pg, T.t("Physik anhalten (P)"), paused, set_paused)
 	_w["t_hold"] = _toggle(pg, T.t("Festhalten: mittleres Segment in der Luft (F)"), false, set_hold)
 	var info := UI.small("", UI.TXT)

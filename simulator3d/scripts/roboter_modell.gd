@@ -52,7 +52,7 @@ const LOESER := 24                 # Löser-Durchgänge in der eigenen Welt (Phy
 # leichten Beine im iterativen Löser steif (ohne: 2–4° bleibender Fehler bei kleiner Last, gemessen 22.11.2026).
 const ARMATUR := {"buegel": 2.0e-3, "seg": 1.0e-3, "huefte": 6.0e-4, "ober": 6.0e-4, "unter": 4.0e-4}
 const K_LAGE := 14.0               # 1/s: Motor-Geschwindigkeit pro Winkelfehler
-const FARBE := {"koerper": Color("#b4b2a9"), "gelenk": Color("#7f77dd"), "huefte": Color("#1d9e75"), "bein": Color("#5f5e5a"),
+const FARBE := {"koerper": Color("#a3a198"), "gelenk": Color("#7f77dd"), "huefte": Color("#1d9e75"), "bein": Color("#5f5e5a"),
 		"knie": Color("#d85a30"), "kamera": Color("#2c2c2a"), "linse": Color("#378add"), "kupplung": Color("#ef9f27"),
 		"rot": Color("#ff2d2d"), "locked": Color("#639922")}
 
@@ -294,7 +294,7 @@ func _mesh(parent: Node3D, m: Mesh, xf: Transform3D, col: Color) -> MeshInstance
 	mi.transform = xf
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = col
-	mat.roughness = 0.75
+	mat.roughness = 0.85
 	mi.material_override = mat
 	mi.set_meta("mat", mat)
 	parent.add_child(mi)
