@@ -5,13 +5,17 @@
   python3 werkzeuge/ci_auswahl.py --ergebnis              # im CI (Job «Ergebnis»): Tabelle, rot wenn etwas fehlt
   python3 werkzeuge/ci_auswahl.py --dateien a b c         # lokal: was liefe bei genau diesen geänderten Dateien?
   python3 werkzeuge/ci_auswahl.py --simulieren 20 [REF]   # lokal: die letzten 20 Commits (Standard origin/main), je ein Push
+  python3 werkzeuge/ci_auswahl.py --integration 10        # lokal: die letzten 10 Stände von main, als wären sie auf integration
+                                                          #   geprüft worden (Unterschied zum Stand davor) - mit geschätzter Zeit
   python3 werkzeuge/ci_auswahl.py --selbsttest            # die Regeln an festen Beispielen
   Auf GitHub von Hand (Run workflow, nicht auf main): Feld «probe» = Dateien -> der Lauf tut so, als wären nur sie geändert.
 
 Grundsatz: im Zweifel laufen lassen. MoveEye wird aus vielen Teilen zu EINER Datei gebaut - darum gibt es für die
 Web-Gruppen keine feinen Pfad-Filter. Übersprungen wird nur, was sicher unbeteiligt ist:
 
-  main, von Hand mit «alles»      -> immer ALLES, nichts wird übersprungen (der Torwächter prüft das noch einmal)
+  main (Push und Nachtlauf)       -> immer ALLES, nichts wird übersprungen (der Torwächter prüft das noch einmal)
+  von Hand mit «alles» (Haken)    -> alles (ab 22.11.2026 ist der Haken ab Werk AUS: von Hand = nach diesen Regeln)
+  «[voll]» in der Commit-Nachricht-> alles (jeder Zweig, auch integration)
   Änderung an den CI-Dateien      -> alles
   nur Ergebnisse / Notizen        -> nur die Grundprüfungen          (NICHTS: Prüfstand-Verlauf, feedback/, ki_training/ …)
   nur der USB-Installer           -> nur dessen Prüfungen            (er wird mit nichts anderem zusammen gebaut)
@@ -20,6 +24,11 @@ Web-Gruppen keine feinen Pfad-Filter. Übersprungen wird nur, was sicher unbetei
   alles andere                    -> alles ausser: Spiele-Tests (nur wenn Spiele-Dateien dabei sind), USB-Installer und
                                      Pi-Dienst (nur bei Start, Update, Web-Server, Dienst: PIDIENST_QUELLE)
   derselbe Commit läuft auf main  -> auf integration nur die Grundprüfungen (der Lauf auf main prüft alles)
+
+integration (Besitzer 22.11.2026 «schnellere Releases ohne Qualitätsverlust»): dieselben Regeln, verglichen mit main - also die
+Gruppen, die der GANZE Unterschied integration <-> main betrifft (alle Helfer-Zweige seit dem letzten Release zusammen, nicht
+nur der letzte Merge). Jeder Helfer-Zweig war vorher auf real-* bzw. seinem Zweig grün; was nichts davon betrifft (meist die
+Spiele, der USB-Installer, der Pi-Dienst), prüft spätestens main nach dem Release und der Nachtlauf jede Nacht.
 
 Verglichen wird der ganze Zweig mit main (nicht nur der letzte Push): ein Zweig mit einer Spiele-Änderung prüft die Spiele
 bei jedem Push, bis er in main ist. Kann der Vergleich nicht gemacht werden (GitHub antwortet nicht, über 250 Dateien),
@@ -34,7 +43,7 @@ import subprocess
 import sys
 import urllib.request
 
-WEB = ["kern", "rechte", "live", "daten"]                   # groups of werkzeuge/ci_tests.txt, one job each
+WEB = ["kern", "kern-2", "rechte", "live", "daten"]         # groups of werkzeuge/ci_tests.txt, one job each
 SPIELE = ["spiele-1", "spiele-2"]
 EINHEITEN = ["web", "spiele", "sim", "hp", "usb", "pidienst"]   # what can be skipped (the basic checks never)
 NAME = {"web": "Web-Gruppen (%s)" % ", ".join(WEB), "spiele": "Spiele-Tests (%s)" % ", ".join(SPIELE),
@@ -77,14 +86,20 @@ def klasse(pfad):
     return "sonst"
 
 
-def entscheiden(ref, ereignis="push", alles=False, dateien=None, doppelt=""):
+VOLL = "[voll]"                                              # in the commit message: everything, on any branch
+
+
+def entscheiden(ref, ereignis="push", alles=False, dateien=None, doppelt="", nachricht=""):
     """-> {"laeuft": {einheit: bool}, "grund": {einheit: text}, "kurz": text}
-    dateien None = unknown (then everything runs); doppelt = address of the run of the same commit on main"""
+    dateien None = unknown (then everything runs); doppelt = address of the run of the same commit on main;
+    nachricht = commit message of the tested commit («[voll]» = everything)"""
     alle = {e: True for e in EINHEITEN}
     if ref == "refs/heads/main":
-        return {"laeuft": alle, "grund": {}, "kurz": "main: immer alles"}
+        return {"laeuft": alle, "grund": {}, "kurz": "main: immer alles" + (" (Nachtlauf)" if ereignis == "schedule" else "")}
     if ereignis == "workflow_dispatch" and alles:
         return {"laeuft": alle, "grund": {}, "kurz": "von Hand mit «alles»"}
+    if VOLL in (nachricht or "").lower():
+        return {"laeuft": alle, "grund": {}, "kurz": "«%s» in der Commit-Nachricht: alles" % VOLL}
     if doppelt:
         g = "derselbe Commit läuft vollständig auf main (%s)" % doppelt
         return {"laeuft": {e: False for e in EINHEITEN}, "grund": {e: g for e in EINHEITEN}, "kurz": "gleicher Commit wie main"}
@@ -112,8 +127,10 @@ def entscheiden(ref, ereignis="push", alles=False, dateien=None, doppelt=""):
             "usb": "werkzeuge/usb_installer/ nicht geändert – läuft auf main immer",
             "pidienst": "weder Start, Update, Web-Server noch Dienst geändert (quelle/010 012 040 140 145 380 390 397 400 420 550 578 640, "
                         "werkzeuge/pi_dienst_test.py) – läuft auf main immer"}
-    grund = {e: fest.get(e, warum + " – läuft auf main immer") for e in EINHEITEN if not laeuft[e]}
-    kurz = "%d Dateien gegenüber main" % n + (": " + ", ".join("%d× %s" % (len(v), k) for k, v in sorted(kl.items())) if kl else "")
+    nach = " – läuft auf main immer, auch im Nachtlauf; ganz: «%s» in der Commit-Nachricht" % VOLL
+    grund = {e: (fest[e].replace(" – läuft auf main immer", nach) if e in fest else warum + nach) for e in EINHEITEN if not laeuft[e]}
+    kurz = ("integration: " if ref == "refs/heads/integration" else "") + "%d Dateien gegenüber main" % n + \
+        (": " + ", ".join("%d× %s" % (len(v), k) for k, v in sorted(kl.items())) if kl else "")
     return {"laeuft": laeuft, "grund": grund, "kurz": kurz}
 
 
@@ -190,7 +207,8 @@ def ausgeben(e):
 def auswahl():
     """job «Auswahl». Never fails on its own trouble: when something cannot be found out, everything runs."""
     ref, ereignis, sha = os.environ.get("GITHUB_REF", ""), os.environ.get("GITHUB_EVENT_NAME", "push"), os.environ.get("GITHUB_SHA", "")
-    alles = os.environ.get("CI_ALLES", "true").lower() != "false"
+    alles = os.environ.get("CI_ALLES", "false").lower() == "true"
+    nachricht = os.environ.get("CI_NACHRICHT", "")
     dateien, doppelt = None, ""
     probe = [x for x in re.split(r"[\s,]+", os.environ.get("CI_PROBE", "")) if x]
     if probe and ereignis == "workflow_dispatch" and ref != "refs/heads/main":
@@ -200,7 +218,10 @@ def auswahl():
         ausgeben(e)
         return 0
     try:
-        if ref != "refs/heads/main" and not (ereignis == "workflow_dispatch" and alles):
+        if ref != "refs/heads/main" and not nachricht and sha:  # by hand / schedule: no head_commit in the event -> ask GitHub
+            d = api_mehrmals("commits/%s" % sha, mal=2)
+            nachricht = str(((d or {}).get("commit") or {}).get("message") or "")
+        if ref != "refs/heads/main" and not (ereignis == "workflow_dispatch" and alles) and VOLL not in nachricht.lower():
             dateien, in_main = geaendert_github(sha)
             if in_main:
                 doppelt = lauf_auf_main(sha)
@@ -209,7 +230,7 @@ def auswahl():
     except Exception as e:
         print("Auswahl: %s - es läuft alles" % str(e)[:200])
         dateien, doppelt = None, ""
-    ausgeben(entscheiden(ref, ereignis, alles, dateien, doppelt))
+    ausgeben(entscheiden(ref, ereignis, alles, dateien, doppelt, nachricht))
     return 0
 
 
@@ -333,6 +354,44 @@ def simulieren(n, ref):
     return 0
 
 
+# measured on GitHub (CI run 44997431485, integration, 22.11.2026, all groups): minutes per job incl. setup. «kern» was
+# 30 min before the split into kern / kern-2 (the tests of kern 27:52 -> about 14 + 13 min)
+DAUER = {"basis": 11.5, "kern": 16.0, "kern-2": 15.0, "rechte": 16.0, "live": 20.0, "daten": 17.0, "spiele-1": 13.0,
+         "spiele-2": 9.5, "sim": 11.0, "pidienst": 8.0, "hp": 5.0, "usb": 6.0}
+
+
+def schaetzen(e):
+    """(wall clock minutes, sum of job minutes) of a selection - the jobs run in parallel"""
+    l = e["laeuft"]
+    jobs = ["basis"] + (WEB if l["web"] else []) + (SPIELE if l["spiele"] else []) + \
+        [x for x in ("sim", "pidienst", "hp", "usb") if l[x]]
+    return max(DAUER[j] for j in jobs), sum(DAUER[j] for j in jobs)
+
+
+def integration_simulieren(n, ref="origin/main"):
+    """the last n states of main (first parent), each as if integration had been tested against the main before it"""
+    r = subprocess.run(["git", "log", "--first-parent", "-%d" % n, "--format=%h %s", ref], capture_output=True, text=True, check=True)
+    voll_w, voll_s = schaetzen(entscheiden("refs/heads/main"))
+    alt_w = 31.5                                              # measured before 22.11.2026: always everything, «kern» alone 30 min
+    sw = ss = 0.0
+    k = 0
+    print("%-9s %-58s %6s  %s" % ("Commit", "läuft (+) / übersprungen (-)", "Min.", "Grund · Titel"))
+    for ln in r.stdout.splitlines():
+        h, titel = ln.split(" ", 1)
+        d = subprocess.run(["git", "diff", "--name-only", h + "^1", h], capture_output=True, text=True)
+        dateien = [x for x in d.stdout.splitlines() if x] if d.returncode == 0 else None
+        m = subprocess.run(["git", "log", "-1", "--format=%B", h], capture_output=True, text=True).stdout
+        e = entscheiden("refs/heads/integration", "push", False, dateien, "", m)
+        w, su = schaetzen(e)
+        sw += w; ss += su; k += 1
+        print("%-9s %s %6.0f  %s" % (h, zeigen(e)[:58].ljust(58), w, titel[:50]))
+    if k:
+        print("\nWanduhr im Mittel: %.0f Min. (vorher immer alles mit «kern» am Stück: %.0f Min.; alles nach der Teilung: %.0f Min.)"
+              % (sw / k, alt_w, voll_w))
+        print("Rechenzeit der Jobs im Mittel: %.0f Min. (alles: %.0f Min.)" % (ss / k, voll_s))
+    return 0
+
+
 def selbsttest():
     f = []
 
@@ -379,6 +438,32 @@ def selbsttest():
     t("leer", entscheiden(R, "push", False, []), **keins)
     t("doppelt", entscheiden("refs/heads/integration", "push", False, [], "https://x"), **keins)
     t("gemischt", entscheiden(R, "push", False, ["pruefstand/VERLAUF.md", "games/a", "werkzeuge/usb_installer/x", "quelle/010_grundlagen.py"]), **alle)
+    # 22.11.2026: integration nach Regeln (nicht mehr immer alles), «[voll]», Nachtlauf auf main
+    I = "refs/heads/integration"
+    t("Nachtlauf main", entscheiden("refs/heads/main", "schedule", False, None), **alle)
+    t("Nachtlauf main ohne Änderung", entscheiden("refs/heads/main", "schedule", False, []), **alle)
+    t("integration Programm", entscheiden(I, "push", False, ["quelle/560_uebersetzungen_de.py", "webcam_bewegung_4_19_0.py"]),
+      web=True, sim=True, hp=True, spiele=False, usb=False, pidienst=False)
+    t("integration von Hand ohne Haken", entscheiden(I, "workflow_dispatch", False, ["quelle/560_uebersetzungen_de.py"]),
+      web=True, spiele=False, usb=False, pidienst=False)
+    t("integration von Hand mit Haken", entscheiden(I, "workflow_dispatch", True, ["README.md"]), **alle)
+    t("integration [voll]", entscheiden(I, "push", False, ["README.md"], "", "Merge x [voll]"), **alle)
+    t("integration [VOLL] gross", entscheiden(I, "push", False, ["README.md"], "", "Release [VOLL]"), **alle)
+    t("integration [voll] ohne Liste", entscheiden(I, "workflow_dispatch", False, None, "", "a\n\n[voll]"), **alle)
+    t("integration voll ohne Klammern", entscheiden(I, "push", False, ["README.md"], "", "voll geprüft"), **keins)
+    t("integration CI-Datei", entscheiden(I, "push", False, ["quelle/560_uebersetzungen_de.py", "werkzeuge/ci_auswahl.py"]), **alle)
+    t("integration Spiel + Programm", entscheiden(I, "push", False, ["games/a/b.js", "quelle/400_x.py"]), web=True, spiele=True, pidienst=True)
+    t("integration gleicher Commit wie main", entscheiden(I, "push", False, [], "https://x"), **keins)
+    t("integration unbekannt", entscheiden(I, "push", False, None), **alle)
+    g = entscheiden(I, "push", False, ["quelle/560_uebersetzungen_de.py"])["grund"]
+    if not all("[voll]" in v and "Nachtlauf" in v for v in g.values()) or set(g) != {"spiele", "usb", "pidienst"}:
+        f.append("integration: Grund ohne «[voll]» / Nachtlauf: %s" % g)
+    if "kern-2" not in WEB or len(set(WEB + SPIELE)) != len(WEB + SPIELE):
+        f.append("Gruppen: %s" % WEB)
+    import ci_lauf
+    da = {x["gruppe"] for x in ci_lauf.lesen()}
+    if set(WEB + SPIELE) - da:
+        f.append("Gruppen ohne Test in ci_tests.txt: %s" % sorted(set(WEB + SPIELE) - da))
     for x in f:
         print("FEHLER: " + x)
     print("ci_auswahl Selbsttest: %s" % ("OK" if not f else "%d Fehler" % len(f)))
@@ -392,6 +477,7 @@ def main():
     ap.add_argument("--selbsttest", action="store_true")
     ap.add_argument("--dateien", nargs="*", default=None)
     ap.add_argument("--simulieren", type=int, default=0)
+    ap.add_argument("--integration", type=int, default=0)
     ap.add_argument("ref", nargs="?", default="origin/main")
     a = ap.parse_args()
     if a.auswahl:
@@ -402,6 +488,8 @@ def main():
         return selbsttest()
     if a.simulieren:
         return simulieren(a.simulieren, a.ref)
+    if a.integration:
+        return integration_simulieren(a.integration, a.ref)
     if a.dateien is not None:
         ausgeben(entscheiden("refs/heads/real-x", "push", False, a.dateien))
         return 0

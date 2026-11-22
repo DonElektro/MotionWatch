@@ -5,20 +5,23 @@
 #   werkzeuge/ci_status.sh 1a2b3c4            # ein Commit (kurz oder lang)
 #   werkzeuge/ci_status.sh real-xyz --warten  # auf den neusten Lauf warten (Exit 0 = grün, 1 = rot)
 #   werkzeuge/ci_status.sh --warten --fehler  # warten, bei Rot die Protokolle der fehlgeschlagenen Schritte zeigen
-#   werkzeuge/ci_status.sh --start            # Lauf von Hand auf dem Zweig starten (workflow_dispatch, mit Export)
+#   werkzeuge/ci_status.sh --start            # Lauf von Hand auf dem Zweig starten (workflow_dispatch, mit Export) - ab
+#                                             # 22.11.2026 nach den Regeln von ci_auswahl.py (nicht mehr immer alles)
+#   werkzeuge/ci_status.sh --start --voll     # dasselbe, aber ALLES (Haken «alles»; auf main läuft ohnehin alles)
 #   werkzeuge/ci_status.sh hp-test/<name> --warten --fehler   # HP-Testweg (hp_helfer.yml): Weiterreichen + Tests auf dem HP
 # Braucht gh (angemeldet). Repository: DonElektro/MotionWatch (CI_REPO überschreibt).
 set -u
 REPO="${CI_REPO:-DonElektro/MotionWatch}"
 WF="${CI_WORKFLOW:-ci.yml}"      # file (for --start)
 NAME="${CI_NAME:-CI}"           # workflow name (list / wait: also works before ci.yml is on main)
-ziel="" warten=0 fehler=0 start=0
+ziel="" warten=0 fehler=0 start=0 voll_lauf=0
 for a in "$@"; do
   case "$a" in
     --warten|-w) warten=1 ;;
     --fehler|-f) fehler=1 ;;
     --start) start=1 ;;
-    -h|--help) sed -n '2,10p' "$0"; exit 0 ;;
+    --voll) voll_lauf=1 ;;
+    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
     *) ziel="$a" ;;
   esac
 done
@@ -78,8 +81,8 @@ fi
 
 if [ $start -eq 1 ]; then
   [ "$art" = "Zweig" ] || { echo "--start braucht einen Zweig"; exit 2; }
-  gh workflow run "$WF" -R "$REPO" --ref "$ziel" || exit 1
-  echo "gestartet auf $ziel"; sleep 5; warten=1
+  gh workflow run "$WF" -R "$REPO" --ref "$ziel" -f alles="$([ $voll_lauf -eq 1 ] && echo true || echo false)" || exit 1
+  echo "gestartet auf $ziel ($([ $voll_lauf -eq 1 ] && echo "alles" || echo "nach den Regeln - alles: --voll"))"; sleep 5; warten=1
 fi
 
 echo "CI «$NAME» · $art $ziel"

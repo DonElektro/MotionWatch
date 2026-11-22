@@ -92,7 +92,8 @@ beilage() {   # beilage ZIEL QUELLE_IM_REPO MODUS [datei]: aus dem Repository ne
 schritt "1. Pakete"
 PAKETE="ca-certificates curl git tar unzip xvfb x11-xserver-utils python3 python3-venv python3-pip python3-numpy python3-opencv
 python3-flask python3-pil python3-cryptography python3-psutil libgl1 libgl1-mesa-dri libglu1-mesa libxcursor1 libxinerama1
-libxrandr2 libxi6 libasound2t64"
+libxrandr2 libxi6 libasound2t64 ffmpeg nodejs"   # ffmpeg, nodejs (22.11.2026): Tests des HP-Testwegs (radio_test, Zeitraffer; Funk, Stego)
+# (fehlen dem Chromium des HP-Testwegs später Bibliotheken, zieht moveeye-hp-update sie nach - test_pakete, HP_FASSUNG 9)
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -q || warn "apt-get update"
 # shellcheck disable=SC2086
