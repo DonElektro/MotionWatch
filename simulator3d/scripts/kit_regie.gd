@@ -168,12 +168,17 @@ static func feder1(x: float, v: float, ziel: float, w: float, dt: float) -> Arra
 func _kugeln_nah(tp: Vector3, want: Vector3) -> Array:
 	"""the rock details (kit_schlucht.gd kugeln: boulders, chunks, slabs - not in main.ground_y) near the arm"""
 	var sch = kit.par.schlucht if kit.par != null else null
-	if sch == null:
+	var alle := []
+	if sch != null:
+		alle = sch.kugeln_welt(Callable(kit.par, "W"))
+	if kit.get("k3") != null:                              # Kapitel 3: the Seeblock
+		alle += kit.k3.kugeln_welt()
+	if alle.is_empty():
 		return []
 	var out := []
 	var mid := (tp + want) * 0.5
 	var r0 := tp.distance_to(want) * 0.5 + 3.0
-	for k in sch.kugeln_welt(Callable(kit.par, "W")):
+	for k in alle:
 		if (k[0] as Vector3).distance_to(mid) < r0 + float(k[1]):
 			out.append(k)
 	return out
@@ -372,12 +377,17 @@ func shot(sh: Dictionary, schnitt := true) -> void:
 
 
 func _p(sh: Dictionary, key_s := "s", key_q := "q", key_h := "h") -> Vector3:
+	if sh.has("h_see"):                                    # Kapitel 3: over the lake (the ground under it is the lake bed)
+		return kit.par.welt_abs(float(sh.get(key_s, 0.0)), float(sh.get(key_q, 0.0)), kit.par.see_y() + float(sh["h_see"]))
 	if sh.has("tal"):
 		return kit.par.W(kit.par.G(float(sh["tal"][0]), float(sh["tal"][1]), float(sh.get(key_h, 0.0))))
 	return kit.par.welt(float(sh.get(key_s, 0.0)), float(sh.get(key_q, 0.0)), float(sh.get(key_h, 0.0)))
 
 
 func _blick(sh: Dictionary) -> Vector3:
+	var bs = sh.get("blick_see", null)
+	if bs is Array:
+		return kit.par.welt_abs(float(bs[0]), float(bs[1]), kit.par.see_y() + float(bs[2]))
 	var bt_ = sh.get("blick_tal", null)
 	if bt_ is Array:
 		return kit.par.W(kit.par.G(float(bt_[0]), float(bt_[1]), float(bt_[2])))
@@ -666,7 +676,10 @@ func pruef_shot(sh: Dictionary, aspect := 16.0 / 9.0) -> Dictionary:
 	_shot = alt
 	_shot_t = alt_t
 	var ziel: Vector3
-	if sh.get("ziel_tal", null) is Array:
+	if sh.get("ziel_see", null) is Array:
+		var zs: Array = sh["ziel_see"]
+		ziel = kit.par.welt_abs(float(zs[0]), float(zs[1]), kit.par.see_y() + float(zs[2]))
+	elif sh.get("ziel_tal", null) is Array:
 		var zt: Array = sh["ziel_tal"]
 		ziel = kit.par.W(kit.par.G(float(zt[0]), float(zt[1]), float(zt[2])))
 	elif sh.get("ziel", null) is Array:
@@ -675,7 +688,7 @@ func pruef_shot(sh: Dictionary, aspect := 16.0 / 9.0) -> Dictionary:
 	else:
 		ziel = _blick(sh)
 	var gr := float(sh.get("groesse", 1.7))
-	var mitte := ziel + Vector3(0, gr * 0.5, 0) if sh.has("ziel") or sh.has("ziel_tal") else ziel
+	var mitte := ziel + Vector3(0, gr * 0.5, 0) if sh.has("ziel") or sh.has("ziel_tal") or sh.has("ziel_see") else ziel
 	var v := mitte - tr.origin
 	var fw := -tr.basis.z
 	var zt2 := v.dot(fw)
@@ -684,7 +697,7 @@ func pruef_shot(sh: Dictionary, aspect := 16.0 / 9.0) -> Dictionary:
 	var x := v.dot(tr.basis.x) / maxf(0.01, zt2 * th * aspect)
 	var y := v.dot(tr.basis.y) / maxf(0.01, zt2 * th)
 	var im_bild := zt2 > 0.1 and absf(x) < 0.9 and absf(y) < 0.9
-	var frei := _blocker(tr.origin, mitte, 24) <= 0.0
+	var frei: bool = _blocker(tr.origin, mitte, 24) <= 0.0 and main.line_blocker(tr.origin, mitte).is_empty() and main.line_blocker(mitte, tr.origin).is_empty()
 	return {"anteil": snappedf(anteil, 0.01), "im_bild": im_bild, "frei": frei, "ok": im_bild and frei and anteil >= PRUEF_ANTEIL,
 		"kamera": tr.origin, "abstand": snappedf(zt2, 0.1)}
 

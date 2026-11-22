@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8102 (Stellen: 11246)
-Übersetzt: en 8102, fr 8102, it 8102, rm 8102
-Unsicher markiert: 329
+Texte gesamt: 8201 (Stellen: 11372)
+Übersetzt: en 8103, fr 8103, it 8103, rm 8103
+Unsicher markiert: 330
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
 Nicht mehr im Code (noch in texte.json): 404
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29499, schlüssel 22736, keine Wörter 14387, index 10297, technisch 3828, doc 2571, einheit 344, log 204, englisch 146, pfad 130, stringname 107, html 69, klasse 42, shader 6
+Übersprungen (Grund: Anzahl): kennung 29879, schlüssel 23263, keine Wörter 14824, index 10409, technisch 3871, doc 2583, einheit 345, log 204, englisch 146, pfad 130, stringname 107, html 69, klasse 42, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -29,6 +29,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   main_menues.gd           106     2
   einbruch.gd              102     0
   spieltest.gd              99    20
+  kit_k3_daten.gd           96     0
   bergtal_aussicht.gd       94     4
   testrun.gd                94     3
   templates.gd              94     6
@@ -47,7 +48,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   diagnose.gd               76    10
   kids.gd                   74     1
   pruefstand.gd             72     8
-  geschichten.gd            69     0
+  geschichten.gd            71     0
   feedback.gd               69    18
   abenteuer_zweit.gd        66     0
   bib_berg.gd               64     0
@@ -93,10 +94,10 @@ Pro Datei (Texte / davon dynamische Stellen):
   fotomodus.gd              38     0
   mikrofon.gd               37     0
   simreal.gd                37     0
+  kit_abenteuer.gd          36     1
   gamemore.gd               36     1
   maggie_vorfuehrung.gd     35     7
   fenster.gd                34     0
-  kit_abenteuer.gd          34     1
   gameziele.gd              34     0
   devtool_notizen.gd        34     1
   gametools.gd              33     2
@@ -136,6 +137,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   devtool_vorfuehrung.gd    18     0
   kompakt_pfadi.gd          18     0
   planner.gd                18     0
+  kit_k3.gd                 18     0
   thermsensor.gd            18     0
   gamelearn.gd              18     0
   grafik_hoch.gd            18     1
@@ -287,6 +289,7 @@ Unsicher:
   'Hopp!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Du steuerst jetzt Maggie': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Drüben! Maggie läuft zum Riegel.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Hoppla! Nochmal, Maggie – rauf auf den Sims.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
   'MoveEye: IR-Licht an.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Foto im Rucksack (Tagebuch)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Kit läuft nicht': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
@@ -971,7 +974,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inventar.gd:308  '\nKI: – = die KI von MoveEye kennt es nicht (Prüfstand: darf keinen Alarm auslösen)'
   inventar.gd:332  'KI: '
   kids.gd:338  ' Du hast jetzt %d Sterne.'
-  kit_abenteuer.gd:1832  'keine Szene '
+  kit_abenteuer.gd:1965  'keine Szene '
   kitrain.gd:93  '1/3 Paket: '
   kitrain.gd:157  'Ohne GitHub-Schlüssel: die ZIP liegt hier: %s\nSo kommt sie ins Training: 1. GitHub → Releases → «ki-daten» → Edit → ZIP hineinziehen → Update release '
   kitrain.gd:158  '(beim ersten Mal «Draft a new release», Tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye holt das neue Modell danach selbst.\n'

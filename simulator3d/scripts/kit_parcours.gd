@@ -195,6 +195,11 @@ func _H(x: float, z: float) -> float:
 	return Bt.H(x, z)
 
 
+func see_y() -> float:
+	"""the level of the Gumpisee (valley y) - Kapitel 3"""
+	return Bt.level_of(Bt.LAKE1)
+
+
 func G(x: float, z: float, dy := 0.0) -> Vector3:
 	return Vector3(x, _H(x, z) + dy, z)
 
@@ -350,6 +355,8 @@ func _ding(d: Dictionary) -> void:
 	var top := _H(vorn.x, vorn.y) + float(d.get("top", 0.0))
 	if bool(d.get("boden_deck", false)) or d.has("ebene"):   # Kapitel 1: over the floor of the hut (its deck), not the terrain
 		top = boden_tal(c) + float(d.get("top", 0.0))
+	if d.has("top_see"):                                   # Kapitel 3: over the level of the lake (stones in the brook mouth)
+		top = see_y() + float(d["top_see"])
 	var e := {"d": d, "c": c, "top": top, "decks": [], "node": null}
 	match str(d["art"]):
 		"stein":
@@ -423,8 +430,8 @@ func _ding(d: Dictionary) -> void:
 			seil_zu(id, tal(float(d["von"][0]), float(d["von"][1])), top + 1.6)
 		"wasser", "spalt":
 			gefahren.append({"id": id, "art": str(d["art"]), "c": c, "hs": ls, "hq": lq})
-			if str(d["art"]) == "wasser":
-				var n6 := node(holder, Vector3(c.x, _H(c.x, c.y) + 0.06, c.y), -rot)
+			if str(d["art"]) == "wasser" and not bool(d.get("unsichtbar", false)):
+				var n6 := node(holder, Vector3(c.x, (top if d.has("top_see") else _H(c.x, c.y) + 0.06), c.y), -rot)
 				var wm := ShaderMaterial.new()
 				var psh := Shader.new()
 				psh.code = POOL_SHADER
@@ -479,6 +486,8 @@ func _ding(d: Dictionary) -> void:
 					part(n7, cylm(0.11, 0.11, 0.09, 12), Vector3(0, -0.06, 0), Color(0.55, 0.5, 0.42), 10.0)
 				"schuh":
 					part(n7, boxm(0.12, 0.14, 0.3), Vector3(0, -0.04, 0), Color(0.36, 0.22, 0.12), 10.0)
+				"holz":                                    # Kapitel 3: driftwood for the raft
+					part(n7, cylm(0.15, 0.17, 2.3, 10), Vector3(0, -0.04, 0), Color(0.6, 0.52, 0.4), "tree", Vector3(PI * 0.5, 0.6, 0))
 				"nest":
 					part(n7, sphm(0.13, 0.12, 8), Vector3(0, -0.06, 0), Color(0.78, 0.74, 0.62), 12.0)
 				_:
@@ -835,7 +844,7 @@ func aktion_bei(w: Vector3, nur_offen := true) -> Dictionary:
 	var best := {}
 	var bd := 1.0e9
 	for a in aktionen:
-		if float(a["r"]) <= 0.0 or (nur_offen and erledigt.has(a["id"]) and str(a["art"]) in ["maggie_heben", "fund", "karte", "ofen", "moveeye", "maggie_such"]):
+		if float(a["r"]) <= 0.0 or (nur_offen and erledigt.has(a["id"]) and str(a["art"]) in ["maggie_heben", "fund", "karte", "ofen", "moveeye", "maggie_such", "floss_bauen", "marke", "zeichen", "schloss"]):
 			continue
 		if (a["d"] as Dictionary).has("ebene") and not bool(ebene_an.get(str(a["d"]["ebene"]), false)):
 			continue                                       # Kapitel 1: an action of the attic only up there

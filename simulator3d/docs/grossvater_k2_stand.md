@@ -134,3 +134,17 @@ Zweig `sim-grossvater-k2` (von origin/main 9f14de1), Worktree /tmp/claude-0/wt_g
   Kartenbild halb/ganz, Abzeichen «Stöberer».
 - Test werkzeuge/kit_k1_test.gd: das ganze Kapitel gespielt (Figur geht über Stick-Eingabe, Leiter, Lampe, Wahl, Maggie)
   + Kamera am Start jeder Szene und im Dachboden. Stimmen: Kapitel 1 dazu (22 Dateien); Lia (kerstin, CC0) im Werkzeug.
+
+## Phase 2 – Kapitel 3 «Der Seeblock» (Zweig sim-grossvater-k3, 22.11.)
+- Daten: scripts/kit_k3_daten.gd (11 Szenen). Ort: Südufer des Gumpisees (bergtal LAKE1), Achse am Ufer (s = −x, q = −z − 300).
+  Szene 1 am leeren Zelt von Kapitel 2, dann Blende an den See. «top_see» / «h_see» / «blick_see» / «ziel_see» / «y_see» =
+  Höhen über dem Seespiegel (Steine im Bachdelta, Kamera und Lia über dem Wasser).
+- Neu in scripts/kit_k3.gd (eigene Datei; kit_abenteuer.gd hängt sie nur ein, kit_figur.gd unverändert):
+  Duftspur (Wolken verblassen beim Trödeln, Aktion = Maggie schnüffelt neu, Abzeichen «Spürnase»), Floss aus drei Stämmen
+  (Stick relativ zur Kamera, Bojen, Windböen mit Warnbalken – Aktion im richtigen Moment = gehalten; vom Kurs = zurück zur
+  letzten Boje; Abzeichen «Kapitän»), Seeblock mit Steg, Riss (Zeichen aus Kapitel 2), drei Marken unter Moos, Kiste mit
+  Zahlenschloss (drei Rädchen mit Zeichen; Tasten, Maus, Touch), Lias Fussspuren, Feuer am Ufer.
+- Kamera: der Seeblock hält die Kamera fern (Kugeln wie die Felsen der Schlucht); pruef_shot prüft jetzt auch Wände (line_blocker).
+- Test werkzeuge/kit_k3_test.gd: das ganze Kapitel wie ein Spieler (Stick + Springen über die Steine, Kante, Floss mit Stick
+  relativ zur Kamera und Aktion bei den Böen, Schloss erst falsch, dann richtig), jede Filmeinstellung, die Kamera an allen
+  Szenenstarts + Steinen + Steg (8 Richtungen), Duftspur verloren / neu, Floss vom Kurs.
