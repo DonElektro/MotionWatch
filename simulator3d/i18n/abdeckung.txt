@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8201 (Stellen: 11372)
-Übersetzt: en 8103, fr 8103, it 8103, rm 8103
-Unsicher markiert: 330
+Texte gesamt: 8279 (Stellen: 11472)
+Übersetzt: en 8201, fr 8201, it 8201, rm 8201
+Unsicher markiert: 428
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 535 Stellen
 Nicht mehr im Code (noch in texte.json): 404
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 29879, schlüssel 23263, keine Wörter 14824, index 10409, technisch 3871, doc 2583, einheit 345, log 204, englisch 146, pfad 130, stringname 107, html 69, klasse 42, shader 6
+Übersprungen (Grund: Anzahl): kennung 30172, schlüssel 23679, keine Wörter 15187, index 10457, technisch 3913, doc 2597, einheit 345, log 204, englisch 146, pfad 130, stringname 107, html 69, klasse 43, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -42,13 +42,14 @@ Pro Datei (Texte / davon dynamische Stellen):
   kit_k1_daten.gd           82     0
   objects.gd                81     0
   objekte_neu.gd            80     0
+  kit_k4_daten.gd           79     0
   maggie_gefahr.gd          79     0
   maggie_zwei.gd            78     0
   werkstatt.gd              77     1
   diagnose.gd               76    10
   kids.gd                   74     1
+  geschichten.gd            73     0
   pruefstand.gd             72     8
-  geschichten.gd            71     0
   feedback.gd               69    18
   abenteuer_zweit.gd        66     0
   bib_berg.gd               64     0
@@ -153,6 +154,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   gamesneak.gd              15     0
   abenteuer_blinki.gd       14     0
   home_editor.gd            14     3
+  kit_k4.gd                 14     0
   zimmertiere.gd            14     0
   abenteuer_inventar.gd     13     0
   bedienleiste.gd           13     0
@@ -248,6 +250,8 @@ Unsicher:
   'Kapitel 1 «Die Karte»: der Abend an der Alp Tschuggen': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
   '▶ Kapitel 2 spielen (neu)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Eigene Figur, Kamera hinter dir, Maggie dabei. Der alte Ablauf: «Weiterspielen» / «Neu beginnen».': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  '▶ Kapitel 3': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Kapitel 3 «Der Seeblock»: Lias Spur, ein Floss und die Kiste im See': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
   'Der alte Ablauf (Rucksack, Tour auf der Karte)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Kamera von MoveEye': rm automatisch
   'PS5-Controller per Bluetooth koppeln, Liste mit Akku, Trennen, Vergessen': rm: Fachwörter (herunterfahren / BIOS / Browser) ohne Vorlage aus MoveEye übersetzt
@@ -295,6 +299,7 @@ Unsicher:
   'Kit läuft nicht': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'keine Szene ': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'keine Wahl offen': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
+  'kein Kapitel 3': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
   'keine Maggie': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Springen: von Stein zu Stein.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Hochklettern': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
@@ -491,6 +496,101 @@ Unsicher:
   'Lia? … Das Zelt ist leer.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Tonis Notizbuch. Aufgeschlagen.': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   '«Er hat mich zurückgelassen.»': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Drei Stämme. Genug für ein kleines Floss.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Dafür brauche ich noch mehr Holz.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Such, Maggie! … Da lang!': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Spur verloren! Drück die Aktion – Maggie schnüffelt neu.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Zu früh! Warte, bis der Balken fast voll ist.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Vom Kurs abgekommen – zurück zur letzten Boje.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Böe von links!': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Böe von rechts!': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Gleich: Aktion – Stange einstemmen': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Gehalten!': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Die Böe schiebt das Floss!': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Unter dem Moos: «%s» – und daneben «%s».': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Die Kiste: drei Rädchen': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  '←/→ Rädchen · ↑/↓ Zeichen · Enter öffnen · Esc zurück': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Klick. Nichts. Die Zeichen am Fels haben Nummern.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Zuerst I, dann II, dann III.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Der Seeblock': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Ende von Kapitel 3 – Fortsetzung folgt.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'III': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Maggies Duftspur bis zum Bach – ohne sie ein einziges Mal zu verlieren.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Kapitän': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Mit dem Floss zum Seeblock – auf Kurs geblieben und jede Böe gehalten.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Treibholz': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Ein langer, gerader Stamm – angeschwemmt und trocken.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Ein zweiter Stamm, etwas krumm, aber stark.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Der dritte Stamm. Mit dem Seil aus dem Rucksack wird das ein Floss.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Zweites Kartenstück': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Die fehlende Hälfte der Karte: der Weg vom See hinauf zum Biwak.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Notiz «Treffpunkt Biwak»': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  '«Treffpunkt Biwak. Wer zuerst da ist, macht Tee. – G.» ({jahr})': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Der Morgen danach': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Am Morgen. Lias Zelt steht noch da – leer.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Keine Lia. Kein Notizbuch. Aber Fussspuren. Ich liebe Fussspuren.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Sieh dir die Spuren hinter dem Zelt an': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Ihre Schuhe. Sie ist Richtung Norden gegangen … zum Gumpisee.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Die Linie auf der Karte zeigt auch dorthin. Zum Seeblock. Los, Maggie!': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Maggies Nase': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Eine Stunde später. Am Ufer des Gumpisees.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Da draussen im See – der grosse Felsblock. Das muss der Seeblock sein.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Lias Spur ist hier zu Ende. Für Augen. Nicht für Nasen.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Maggie hat Lias Duft. Folge den Duftwolken – sie verblassen schnell!': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Folge Maggies Nase: von Duftwolke zu Duftwolke': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Verloren? Drück die Aktion – dann schnüffelt Maggie die Spur neu.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Die Spur geht über den Bach. Lia ist hier rübergesprungen.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Das Blockfeld': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Spring von Stein zu Stein über den Bach': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Lauf auf den ersten Stein zu und spring (Leertaste / Springen) – der nächste Stein ist nah.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Klettere über die Felsblöcke (Aktion an der Kante)': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'An der hellen Kante: Aktion zum Hochklettern. Der zweite Block ist nur eine Stufe höher.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Von hier oben sieht man den ganzen See. Und da drüben – Treibholz!': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Ein Floss': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Sammle drei Stämme Treibholz am Ufer': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Die Stämme liegen am Ufer verstreut – der leuchtende Punkt zeigt den nächsten.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Bau am Ufer das Floss (Aktion)': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Drei Stämme, das Seil aus dem Rucksack … fertig!': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Schwimmfähigkeit: wahrscheinlich. Maggie ist skeptisch.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Wuff.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Wind auf dem See': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Mit der Stange staken: in die Richtung lenken, in die es gehen soll. Bei einer Böe: Aktion – Stange einstemmen!': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Stake das Floss zum Seeblock': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Folge den Bojen: der leuchtende Punkt zeigt die nächste.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Der Seeblock. Von Nahem ist er riesig.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Da ist ein Riss im Fels. Erinnert dich das an etwas?': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Vergleiche den Riss mit dem Zeichen aus der Schlucht (Aktion)': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Zwei Linien und ein Kreuz – genau wie das Zeichen im Infrarot!': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Übereinstimmung: hundert Prozent. Ich bin beeindruckt. Von mir.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Die Kiste': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Unter dem Riss: eine alte Kiste in einer Nische. Mit drei Rädchen statt einem Schlüssel.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Lies die drei eingeritzten Zeichen am Fels (Aktion)': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Die Zeichen sind links und rechts der Kiste in den Fels geritzt.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Öffne die Kiste mit den drei Zeichen (Aktion)': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Die Zeichen am Fels haben Nummern: I, II, III. In dieser Reihenfolge.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Das zweite Stück': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Das zweite Kartenstück! Und ein Zettel …': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  '«Treffpunkt Biwak. Wer zuerst da ist, macht Tee.»': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Die Karte ist ganz. Der Weg geht hinauf zum Biwak.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Ich war schneller. Schon wieder.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Und trotzdem hast du die Kiste nicht aufgekriegt.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Die Zeichen waren unter dem Moos. Ich hatte keine Zeit.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Dein {bezug} hat meinen im Sturm zurückgelassen. Das weisst du, oder?': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Das stimmt nicht! … Ich weiss nicht, was damals passiert ist.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Vorschlag: Waffenstillstand. Zwei Leute, eine Karte, ein Hund.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Na gut. Bis zum Biwak. Dann sehen wir weiter.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  '{jahr}. Am selben Ufer.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Versprich mir was. Wenn einer von uns nicht weiterkann …': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  '… bringt der andere die Karte zu Ende. Versprochen. Bis zum Sonnenaufgang auf dem Grat.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Und wer zuerst oben ist –': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  '– zahlt den Kaffee. Ich weiss, Toni.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Am Feuer': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Am Abend. Ein Feuer am Ufer.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Das hier hat Toni geschrieben. Lies.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Vielleicht war es anders, als es aussieht.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Toni lebt noch, weisst du. Er redet nur nicht darüber. Nie.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Dann finden wir es raus. Am Biwak.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Neue Akte: «Team». Mitglieder: drei. Plus ich.': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
   '<%d Bytes %s>': technisch (Log)
   'request %d': technisch (Log)
   'KI-Trainingsdaten': GitHub-Release-Titel – nicht umhüllen
@@ -974,7 +1074,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inventar.gd:308  '\nKI: – = die KI von MoveEye kennt es nicht (Prüfstand: darf keinen Alarm auslösen)'
   inventar.gd:332  'KI: '
   kids.gd:338  ' Du hast jetzt %d Sterne.'
-  kit_abenteuer.gd:1965  'keine Szene '
+  kit_abenteuer.gd:1973  'keine Szene '
   kitrain.gd:93  '1/3 Paket: '
   kitrain.gd:157  'Ohne GitHub-Schlüssel: die ZIP liegt hier: %s\nSo kommt sie ins Training: 1. GitHub → Releases → «ki-daten» → Edit → ZIP hineinziehen → Update release '
   kitrain.gd:158  '(beim ersten Mal «Draft a new release», Tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye holt das neue Modell danach selbst.\n'

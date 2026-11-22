@@ -20,7 +20,6 @@ const Hud = preload("res://scripts/kit_hud.gd")
 const Par = preload("res://scripts/kit_parcours.gd")
 const Hund = preload("res://scripts/kit_maggie.gd")
 const Klang = preload("res://scripts/klang.gd")
-const K3 = preload("res://scripts/kit_k3.gd")
 const Quality = preload("res://scripts/quality.gd")
 const BUSY := "Die Karte des Grossvaters (neu)"
 
@@ -36,7 +35,7 @@ var hud
 var par
 var hund
 var bt
-var k3 = null                         # Kapitel 3: kit_k3.gd (scent trail, raft, lock, the set at the lake)
+var k3 = null                         # the chapter module (Kapitel 3: kit_k3.gd, Kapitel 4: kit_k4.gd …), same hooks
 var weg := PackedVector2Array()
 var rolle := "enkelin"
 var name_ := ""
@@ -157,7 +156,7 @@ func start(o := {}) -> void:
 		o = o.duplicate()
 		o["rolle"] = w["rolle"]
 		o["name"] = w["name"]
-	kapitel = clampi(int(o.get("kapitel", 2)), 1, 3)           # Phase 2 (21.11.2026): the chapter's data file
+	kapitel = clampi(int(o.get("kapitel", 2)), 1, 4)           # Phase 2 (21.11.2026): the chapter's data file
 	daten = load("res://scripts/kit_k%d_daten.gd" % kapitel)
 	rolle = str(o.get("rolle", "enkelin"))
 	if not rolle in daten.ROLLEN:
@@ -239,8 +238,9 @@ func start(o := {}) -> void:
 	add_child(hud)
 	hud.set_touch(touch_an())
 	_layers_aus()
-	if kapitel == 3:                                         # (after _layers_aus: its own layer stays visible)
-		k3 = K3.new(self)
+	var modul_pfad := "res://scripts/kit_k%d.gd" % kapitel   # Kapitel 3+: the chapter's own parts (same hooks; «k3» = the module)
+	if ResourceLoader.exists(modul_pfad):                    # (after _layers_aus: its own layer stays visible)
+		k3 = load(modul_pfad).new(self)
 		add_child(k3)
 		k3.bauen()
 	checkpoint_setzen("start")
@@ -659,6 +659,8 @@ func _hinweise_tick() -> void:
 # ---- the marker at the current target: a ring on the ground and a soft beam of light, pulsing --------------------------------
 func _marker_tick(real_dt: float) -> void:
 	var zp = ziel_welt() if phase == "spiel" else null
+	if k3 != null and k3.has_method("kein_marker") and k3.kein_marker():
+		zp = null                                          # Kapitel 4: on the bearing only the compass
 	if not (zp is Vector3):
 		if _marker != null:
 			_marker.visible = false

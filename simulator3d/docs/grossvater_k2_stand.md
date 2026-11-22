@@ -151,3 +151,14 @@ Zweig `sim-grossvater-k2` (von origin/main 9f14de1), Worktree /tmp/claude-0/wt_g
 - Lias Zelt (art «zelt», auch Kapitel 2): stehendes Firstzelt (Prisma), offen und leer; der Test prüft die Höhe.
 - Für das Finale (Kapitel 5, Sonnenaufgang): Haken des Frei-erkunden-Helfers beim Abschluss aufrufen –
   main.explore.startpunkt_melden("grossvater_grat", T.t("Grat beim Sonnenaufgang"), "bergtal", welt_pos, heading).
+
+## Phase 2 – Kapitel 4 «Nebel im Couloir» (Zweig sim-grossvater-k4, 22.11.)
+- Daten: scripts/kit_k4_daten.gd (12 Szenen). Ort: ein Couloir am Osthang über dem Gumpisee (kit_schlucht.gd, SCHLUCHT),
+  Achse s = x − 138 (hinauf nach Osten), oben auf der Schulter das alte Biwak (DECKEN: Kamera unter dem Dach).
+- Neu in scripts/kit_k4.gd (kit_abenteuer.gd lädt je Kapitel kit_k<n>.gd mit denselben Haken; kit_figur.gd unverändert,
+  verträglich mit explore_person.gd): Nebel (eigene Dichte nach dem Nebel-Tick von bergtal.gd), Wärmebild (Bildschirm in
+  kalter Palette, warme Körper leuchten durch den Nebel), Peilung (nur Kompass, kein Leuchtpunkt, Kurs in Grad), Seilschaft
+  (Haken einhängen vor dem Klettern, Lia sichert von Stand zu Stand, sichtbares Seil), Stahlseil-Querung (ohne Umhängen
+  kein Weiterkommen), Steinschlag mit QTE, Maggie im Rucksack, das Biwak mit dem Buch; Abzeichen «Seilschaft».
+- Test werkzeuge/kit_k4_test.gd: das ganze Kapitel wie ein Spieler, alle Filmeinstellungen, Kamera an allen Szenenstarts,
+  auf den Stufen, am Stahlseil und im Biwak (unter dem Dach).

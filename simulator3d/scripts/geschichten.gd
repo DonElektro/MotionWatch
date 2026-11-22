@@ -404,6 +404,8 @@ func card(s: Dictionary, w: float) -> Control:
 		bn.tooltip_text = T.t("Eigene Figur, Kamera hinter dir, Maggie dabei. Der alte Ablauf: «Weiterspielen» / «Neu beginnen».")
 		var b3 := _btn(brn, T.t("▶ Kapitel 3"), func(): _close_play(); main.abenteuer.neu_starten(3), true)   # Phase 2 (22.11.2026)
 		b3.tooltip_text = T.t("Kapitel 3 «Der Seeblock»: Lias Spur, ein Floss und die Kiste im See")
+		var b4 := _btn(brn, T.t("▶ Kapitel 4"), func(): _close_play(); main.abenteuer.neu_starten(4), true)   # Phase 2 (22.11.2026)
+		b4.tooltip_text = T.t("Kapitel 4 «Nebel im Couloir»: Wärmebild, Seilschaft und das alte Biwak")
 	var can := bool(s["started"]) and (not bool(s["done"]) or id == "grossvater")
 	var bw := _btn(br, T.t("Weiterspielen"), func(): weiter(id), can and not (id == "grossvater" and main.abenteuer != null and main.abenteuer.neu_modus_an()))
 	if id == "grossvater" and main.abenteuer != null and main.abenteuer.neu_modus_an():
