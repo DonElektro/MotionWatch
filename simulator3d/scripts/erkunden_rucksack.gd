@@ -12,10 +12,15 @@ const EXTRA := {"feldstecher": ["Feldstecher", 0.6, 1.0, "sehen", "Zoom 2–10×
 		"taschenuhr": ["Taschenuhr", 0.1, 0.1, "sehen", "Zeigt die Zeit; vor- und zurückspulen (, und .).", 1],
 		"seil": ["Seil", 1.8, 4.0, "sicher", "An steilen Stellen abseilen (E an der Kante).", 1],
 		"pickel": ["Pickel", 0.5, 1.0, "sicher", "Auf Schnee und Eis sicher und schneller; höhere Kanten hoch.", 1],
-		"hut": ["Hut", 0.1, 0.0, "kleider", "Sieht gut aus.", 1]}
+		"hut": ["Hut", 0.1, 0.0, "kleider", "Sieht gut aus.", 1],
+		# «Camp aufstellen» (Besitzer 22.11.2026, erkunden_camp.gd): was man im Camp hinstellt
+		"zuendhoelzer": ["Zündhölzer", 0.02, 0.0, "kochen", "Für die Feuerstelle im Camp: anzünden (Holz findest du vor Ort).", 1],
+		"sitzkissen": ["Sitzkissen", 0.1, 1.0, "lager", "Warm und trocken sitzen im Camp.", 1],
+		"stuhl": ["Campingstuhl", 0.9, 3.0, "lager", "Bequem am Feuer sitzen. Etwas schwer.", 1],
+		"waescheleine": ["Wäscheleine", 0.1, 0.2, "lager", "Nasse Sachen im Camp aufhängen.", 1]}
 const ORDER := ["isomatte", "einmannzelt", "kuppelzelt", "tarp", "biwaksack", "sommerschlafsack", "winterschlafsack", "kocher", "essen",
 		"wasser", "stirnlampe", "feldstecher", "kompass", "taschenuhr", "seil", "pickel", "stoecke", "jacke", "apotheke", "ministativ",
-		"powerbank", "hut", "karabiner"]
+		"powerbank", "hut", "karabiner", "zuendhoelzer", "sitzkissen", "stuhl", "waescheleine"]
 const DACH := ["einmannzelt", "kuppelzelt", "tarp", "biwaksack"]
 const SCHLAF := ["sommerschlafsack", "winterschlafsack"]
 const DEFAULT := {"pack": "50", "n": {"stirnlampe": 1, "kompass": 1, "taschenuhr": 1, "feldstecher": 1, "essen": 2, "wasser": 1, "jacke": 1}}

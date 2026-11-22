@@ -100,7 +100,7 @@ func _welt() -> void:
 	for i in range(120):
 		await process_frame
 	await _warte(2.0)
-	c({"do": "start", "rolle": "sohn", "name": "Test", "figur_test": true, "touch": true})
+	c({"do": "start", "rolle": "sohn", "name": "Test", "figur_test": true, "touch": true, "kette": false})
 	var ok: bool = await _bis(func(): return str(info().get("phase", "")) == "spiel", 60.0)
 	pruef(ok, "Start: Spiel läuft")
 	if not ok:

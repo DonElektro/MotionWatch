@@ -170,7 +170,12 @@ void fragment() {
 		}
 		if (forest > 0.01) {                              // the forest seen from far (above): crowns, gaps
 			vec3 fw = textureGrad(t_wald, lpos.xz / 95.0, gx / 95.0, gy / 95.0).rgb;
-			g = mix(g, on_photo(c, fw, mean_of(t_wald), 0.8, 0.3), forest * smoothstep(40.0, 160.0, dist));
+			float fd = smoothstep(40.0, 160.0, dist);
+			g = mix(g, on_photo(c, fw, mean_of(t_wald), 0.8, 0.3), forest * fd);
+			// Vorschaubilder 22.11.2026: near the floor under the trees was the bare zone colour (flat, dark, no structure);
+			// now the structure of the scree photo on the forest colour (stones, needles, twigs), a little lighter
+			vec3 fb = tex_var(t_geroell, lpos.xz / 2.6 + 0.29, gx / 2.6, gy / 2.6, k1 * 0.9, 1.0);
+			g = mix(g, on_photo(c * 1.25, fb, mean_of(t_geroell), 1.0, 0.08), forest * (1.0 - fd));
 		}
 		pk = near * max(grassy, max(stony, forest * 0.5));
 		c = mix(c, g, near);

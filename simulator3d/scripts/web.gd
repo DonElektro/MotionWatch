@@ -37,8 +37,20 @@ static func args() -> PackedStringArray:
 	a.append_array(PackedStringArray(["--hour", str(q.get("stunde", DEMO_HOUR))]))
 	if q.has("qualitaet"):
 		a.append_array(PackedStringArray(["--quality", str(q["qualitaet"])]))
+	a.append_array(grossvater_args(q))
+	return a
+
+
+static func grossvater_args(q: Dictionary) -> PackedStringArray:
+	"""die Kachel auf der Startseite (22.11.2026): ?grossvater=1 = der Kapitelwähler (vorher die Heldenwahl, wenn keiner
+	gespeichert ist), ?grossvater=1&kapitel=N = gleich Kapitel N; danach geht es Kapitel um Kapitel weiter (kit_abenteuer.gd)"""
+	var a := PackedStringArray()
 	if str(q.get("grossvater", "")) in ["1", "neu", "k2"]:
-		a.append("--grossvater-neu")                    # Abenteuer-Kit: straight into the new chapter 2 (kit_abenteuer.gd)
+		a.append("--grossvater-neu")
+		if str(q.get("kapitel", "")).is_valid_int():
+			a.append("--grossvater-kapitel=" + str(int(str(q["kapitel"]))))
+		elif str(q["grossvater"]) == "k2":                  # (the old address of chapter 2)
+			a.append("--grossvater-kapitel=2")
 		if q.has("name"):                               # tests on the phone: without the start card (…&name=Nina&k2szene=s06_bruecke)
 			a.append("--kit-name=" + str(q["name"]).uri_decode().left(20))
 		if q.has("messen"):                             # a line with frame times in the game (phone / iPad tests)
