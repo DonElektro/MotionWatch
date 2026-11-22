@@ -10,7 +10,7 @@ einem MoveEye (eigener Prozess, Laden über HTTP), Browser 390 × 844 (Handy, DP
   * Esc und «✕» = zurück, Karte wieder so gross wie vorher
   * ohne Element-Vollbild (wie iPhone Safari): fest über der Seite (Klasse kq-fsp), Karte = Bildschirm, Drehen (quer) passt
     sich an, Esc / «✕» zurück
-  * keine JS-Fehler, keine Anfrage nach aussen
+  * Texte des Knopfs im Browser in 5 Sprachen; keine JS-Fehler, keine Anfrage nach aussen
 --vorher: nur Bildschirmfotos (für ein Programm ohne den Knopf).
 """
 import argparse
@@ -55,7 +55,7 @@ def main():
     ap.add_argument("--web")
     ap.add_argument("--bilder")
     ap.add_argument("--vorher", action="store_true")
-    ap.add_argument("--nur-sprache", action="store_true", help="nur der Teil «fr» (schnell)")
+    ap.add_argument("--nur-sprache", action="store_true", help="nur die Texte im Browser (schnell)")
     a = ap.parse_args()
     datei = os.path.abspath(a.datei or KA.neueste_datei())
     print(f"Karte Vollbild · {os.path.basename(datei)}", flush=True)
@@ -191,18 +191,16 @@ def main():
                         ok(abs(g4[1] - g0[1]) <= 1, f"{wo}: «✕» = zurück ({g4[1]:.0f} px hoch)")
                     ok(not errs, f"{name} ({art}): keine JS-Fehler" + (f" ({errs[:2]})" if errs else ""))
                     ctx.close()
-            if not a.vorher:                                             # one more language: French
+            if not a.vorher:                                             # the texts of the button in all 5 languages (kqT of the page)
                 ctx = br.new_context(viewport={"width": 390, "height": 844}, http_credentials={"username": "admin", "password": PW})
-                ctx.add_init_script("try{localStorage.setItem('mw-lang','fr')}catch(e){}")
                 ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(base) or r.request.url.startswith(("data:", "blob:")) else (aussen.append(r.request.url[:120]), r.abort()))
                 pg = ctx.new_page(); pg.goto(base + "/karte?welt=berg")
                 pg.wait_for_function("() => window.KQMAP && document.getElementById('kq-full')", timeout=90000)
-                try:
-                    pg.wait_for_function("() => document.getElementById('kq-full').title === 'Plein écran'", timeout=15000)
-                except Exception:
-                    pass
-                fr = pg.evaluate("() => [document.getElementById('kq-full').title, window.LANG]")
-                ok(fr[0] == "Plein écran", f"fr: «Plein écran» ({fr})")
+                sp = pg.evaluate("""() => { const o = LANG, r = {now: document.getElementById('kq-full').title === kqT('Full screen')};
+                    for (const l of ['de', 'fr', 'it', 'rm', 'en']) { LANG = l; r[l] = [kqT('Full screen'), kqT('Exit full screen')]; } LANG = o; return r; }""")
+                ok(sp["now"] and sp["de"] == ["Vollbild", "Vollbild beenden"] and sp["fr"] == ["Plein écran", "Quitter le plein écran"]
+                   and sp["it"] == ["Schermo intero", "Esci dallo schermo intero"] and sp["rm"] == ["Maletg entir", "Terminar il maletg entir"]
+                   and sp["en"] == ["Full screen", "Exit full screen"], f"Texte im Browser in 5 Sprachen ({sp})")
                 ctx.close()
             ok(not aussen, "keine Anfrage nach aussen" + (f" ({aussen[:3]})" if aussen else ""))
             br.close()
