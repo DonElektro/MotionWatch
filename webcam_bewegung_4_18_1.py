@@ -23,6 +23,9 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 4.18.1: Aufnahmen dürfen bis 8 GB brauchen (vorher 2 GB, höchstens die Hälfte des Laufwerks; beim Update 2 → 8 GB ab 16 GB
+    mit Hinweis); Verlauf: Chip «⏪ bis …» (älteste Aufnahme, Tippen = älteste zuerst), Chip «… MB / … GB» führt zur Einstellung;
+    Suche in den Einstellungen findet «Aufnahmeordner», «Zeitraffer-Ordner» und «Tagen löschen» (auch in «Einfach»)
   * 4.18.0: Akku (Geekworm X1206): Kälteschutz beim Laden (GPIO 16), Notladen, «Akku schonen», gelernte Laufzeit, «Voll in …»,
     Akku-Gesundheit · Schlafen und Wecken mit der Uhr (RTC) · Licht in Prozent dimmen · Servo 270° prüfen
   * 4.17.1: Verlauf: «Zeitraffer» mit «Videos / Fotos», Hinweis ohne Video · Simulator verbinden / trennen ist kein
@@ -106,9 +109,6 @@ Features
   * 3.94.0: Drei Teile. (1) Live-Bild: ruhige Animationen und ein CPU-Chip im Bild. (2) «🧳 Transportmodus» für die
     Transportkappe: der Kopf fährt in die Transport-Lage und bleibt dort. (3) Digitaler Rucksack im Netzwerk: auf Wunsch eine
     Freigabe «rucksack» über SMB (ab Werk aus), damit PC und Handy im eigenen Netz direkt darauf zugreifen.
-  * 3.93.0: Drei Teile. (1) Design «Klar», Etappe 2 – der Kopf: Reiter mit ruhigen Linien-Symbolen, klarere Kopf-Knöpfe, auch im
-    Pi-Fenster. (2) Schach: Bewertungsbalken links neben dem Brett wie bei Lichess (Spielesammlung GS-1.22). (3) Morse-Modus:
-    «Eigenes Protokoll (2 Töne)» und «📻 Handy-Funkgerät» – ein Handy wird zum Sender und Empfänger, auch ohne MoveEye.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -117,10 +117,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_4_18_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_4_18_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_4_18_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_4_18_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_4_18_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_4_18_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -137,7 +137,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "4.18.0"
+APP_VERSION = "4.18.1"
 
 
 def default_data_dir():
@@ -270,8 +270,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_4_18_0.zip"
-ZD_SHA256 = "dd5c333e609520b515a0585e3bb025af5f1470e51f7e53d691a4178fccdad26d"
+ZD_FILE = "moveeye_daten_4_18_1.zip"
+ZD_SHA256 = "d43005a7bc11445cd157d589d54aea6a948d4aac08b262e5bf029623166b7ce4"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -500,7 +500,7 @@ CFG = {
 	"ext_on": False, "ext_token": "", "rtsp_on": False, "rtsp_port": 8554,
 	"storage_path": "",
 	"record": True, "record_dir": "recordings", "record_tail": 3.0,
-	"record_max_gb": 2.0,
+	"record_max_gb": 8.0,
 	"snapshot_on_person": True,
 	"rec_marks": "thin",
 
@@ -2650,7 +2650,8 @@ def _settings_migrations(cfg_in):
 	except Exception as e:
 		log_event("sys",f"Settings migration (135): {e}"[:150])
 	for _f,_n in((lambda:shortcut_migrate(cfg_in),"573"),(place_report_migrate,"317"),(lambda:heat_confirm_migrate(cfg_in),"639zw"),
-				   (lambda:tld_migrate(cfg_in),"639zzzv")):
+				   (lambda:tld_migrate(cfg_in),"639zzzv"),
+				   (lambda:rec8_migrate(cfg_in),"639zzzzs")):
 		try:
 			did=_f()
 			if did:
@@ -34312,7 +34313,7 @@ class MotionWatch:
 		items.sort(key=lambda g:g[0])
 		total=sum(g[1]for g in items)
 		removable=[g for g in items if not _read_sidecar(g[2]+".json").get("fav")]
-		limit=CFG["record_max_gb"]*1024**3
+		limit=rec_limit_gb()*1024**3
 		removed=0
 
 		def card_full():
@@ -38427,12 +38428,23 @@ def storage_candidates():
 	return out
 
 
+def rec_limit_gb():
+	"""
+"""
+	try:
+		half=shutil.disk_usage(rec_dir()if os.path.isdir(rec_dir())else os.path.dirname(rec_dir())or "/").total/2/1024**3
+	except OSError:
+		half=None
+	lim=float(CFG["record_max_gb"])
+	return round(min(lim,half),1)if half else lim
+
+
 def storage_info():
 	sysdev,_mp,_fs=_mount_of("/")
 	rdev,rmp,rfs=_mount_of(rec_dir()if os.path.isdir(rec_dir())else os.path.dirname(rec_dir())or "/")
 	return{"system":_dev_kind(sysdev),"rec":_dev_kind(rdev),"rec_mount":rmp,"rec_fs":rfs,"rec_dir":rec_dir(),
 			"want":CFG["storage_path"],"fallback":STORE["fallback"],"moving":STORE["moving"],"msg":STORE["msg"],
-			"candidates":storage_candidates()}
+			"candidates":storage_candidates(),"limit_gb":float(CFG["record_max_gb"]),"limit_eff_gb":rec_limit_gb()}
 
 
 def storage_apply(start=False):
@@ -39489,6 +39501,18 @@ def _parse_day(s):
 		return None
 
 
+def rec_oldest(files):
+	"""
+"""
+	best=None
+	for stem,kinds in files.items():
+		n,st=kinds.get("video")or kinds.get("image")
+		dt=parse_stamp(n)or datetime.fromtimestamp(st.st_mtime)
+		if best is None or dt<best[0]:
+			best=(dt,n)
+	return{"time":best[0].strftime("%Y-%m-%d %H:%M:%S"),"name":best[1]}if best else None
+
+
 def list_recordings(args, watch=None):
 	""
 	d=rec_dir()
@@ -39629,7 +39653,8 @@ def list_recordings(args, watch=None):
 			"schedules":[{"index":i,"name":s["name"],"enabled":s["enabled"],"days":s["days"],"start":s["start"],
 						   "end":s["end"],"active_now":schedule_active(s,now),"count":counts.get(str(i),0)}
 						  for i,s in enumerate(plans)],
-			"disk":{"files":len(files),"mb":int(total_bytes/1024**2),"limit_gb":CFG["record_max_gb"]},
+			"disk":{"files":len(files),"mb":int(total_bytes/1024**2),"limit_gb":rec_limit_gb(),
+					 "oldest":rec_oldest(files)},
 			"ffmpeg":shutil.which("ffmpeg")is not None,"tl":tl_info}
 
 
@@ -50764,7 +50789,7 @@ class App:
 		self.watch=watch
 		self.web=web or WebStream(watch)
 		self.root=tk.Tk()
-		self.root.title("MoveEye 4.18.0")
+		self.root.title("MoveEye 4.18.1")
 		try:
 			import base64
 			self._icon=tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -51151,7 +51176,7 @@ class App:
 			if not small:
 				vl=tk.Label(tl,text=APP_VERSION,bg=C["bg"],fg=C["mut"],font=("DejaVu Sans",8),cursor="hand2");vl.pack(side="left",padx=(8,0),pady=(5,0))
 				vl.bind("<Button-1>",self._ver_tap,add="+");Tip(vl,tr("About MoveEye"))
-			Tip(nm,f"{tr('Build')} 4.18.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm,f"{tr('Build')} 4.18.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps=[]
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>",self._egg_tap,add="+")
@@ -58357,7 +58382,7 @@ App._refresh = _kr_tk_refresh
 
 
 
-INFO_PARTS = 344
+INFO_PARTS = 345
 INFO_START = "2026-10-16"
 FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
 
@@ -109023,6 +109048,8 @@ SELFTEST_EXTRA.append(("Timelapse: every day a video automatically (639zzzv)", t
 
 _HX_VTL = _zd('639zzzv_zeitraffer_taeglich/HX_VTL', _zd_hx_en((
 	"No timelapse video yet – one is made every night at about 00:20 from yesterday's photos (Settings → Timelapse)",
+	'back to {d}',
+	'Oldest kept recording – when the folder is full, the oldest are deleted first (time-lapse and continuous recording have their own limits)',
 )))
 for _k, _v in _HX_VTL.items():
 	DE.setdefault(_k,_v[0])
@@ -115231,6 +115258,70 @@ SELFTEST_EXTRA.append(("Backpack for import / export: export list, private, scri
 
 
 
+for _k, _v in (("rec8_mig", False), ("rec8_note", ""), ("rec8_seen", [])):
+	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v)
+REC8_MIN_DRIVE = 14.5 * 1024 ** 3
+SIMPLE_KEYS.update({"record_max_gb", "rec_keep_days", "timelapse_max_gb"}); SIMPLE_SECTIONS.add("Timelapse")
+REC8_NOTE = "New: recordings may now use up to 8 GB (before 2 GB) – the oldest are still deleted first. Change it: Settings → Recording → «Max recordings folder (GB)»."
+
+
+def rec8_migrate(cfg_in):
+	""
+	if not isinstance(cfg_in,dict)or cfg_in.get("rec8_mig")or HOST.get("on"):
+		return[]
+	CFG["rec8_mig"]=True
+	try:
+		old=float(cfg_in["record_max_gb"])
+	except(KeyError,TypeError,ValueError):
+		return[]
+	if abs(old-2.0)>1e-9:
+		return[]
+	try:
+		total=shutil.disk_usage(rec_dir()if os.path.isdir(rec_dir())else os.path.dirname(rec_dir())or "/").total
+	except OSError:
+		return[]
+	if total<REC8_MIN_DRIVE:
+		return[]
+	CFG["record_max_gb"]=8.0;CFG["rec8_note"]="pending";CFG["rec8_seen"]=[]
+	return[f"recordings folder 2 GB -> 8 GB (drive {total / 1024 ** 3:.0f} GB)"]
+
+
+_news_state_639zzzzs = news_state
+_news_seen_639zzzzs = news_seen
+
+
+
+def news_state(who="web", lang=None):
+	st=_news_state_639zzzzs(who,lang)
+	if CFG.get("rec8_note")=="pending"and who not in(CFG.get("rec8_seen")or[]):
+		it={"v":APP_VERSION,"t":"🗄 "+tr(REC8_NOTE,lang),"href":"/settings?setting=record_max_gb"}
+		st=dict(st,items=[it]+list(st.get("items")or[]),show=True)
+	return st
+
+
+
+def news_seen(who="web"):
+	if CFG.get("rec8_note")=="pending":
+		CFG["rec8_seen"]=sorted(set(CFG.get("rec8_seen")or[])|{who})
+	return _news_seen_639zzzzs(who)
+
+
+_HX_REC8 = _zd_hxk('639zzzzs_aufnahme_8gb/HX_REC8', [
+	(REC8_NOTE, 'Neu: Aufnahmen dürfen jetzt bis 8 GB brauchen (vorher 2 GB) – die ältesten werden weiterhin zuerst gelöscht. Ändern: Einstellungen → Aufnahme → «Max. Aufnahmeordner (GB)».'),
+	('The drive is small: at most {n} GB for recordings (half of the drive)', 'Das Laufwerk ist klein: höchstens {n} GB für Aufnahmen (die Hälfte des Laufwerks)'),
+])
+for _k, _v in _HX_REC8.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+
+
+
+
+
+
+
+
 
 
 
@@ -117291,254 +117382,6 @@ LOCK_DENY_KEYS.update(SLP_DEF)
 
 SCHLAF_PY = _zd('639zzzzz_schlaf_wecken/SCHLAF_PY', "")
 zd_exec(SCHLAF_PY, '639zzzzz_schlaf_wecken.py')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-GL_DEF = {"gl_on": False, "gl_until": "", "gl_until_t": 0.0, "gl_animals": True, "gl_dark_only": True, "gl_push": True, "gl_pct": 60,
-		  "gl_fade_in_s": 3.0, "gl_fade_out_s": 4.0, "gl_lost_s": 10, "gl_still_s": 30, "gl_max_min": 5, "gl_target_r": 2.0, "gl_target": {}}
-for _k, _v in GL_DEF.items():
-	CFG.setdefault(_k,json.loads(json.dumps(_v)));DEFAULTS.setdefault(_k,json.loads(json.dumps(_v)))
-	FACTORY_CFG.setdefault(_k,json.loads(json.dumps(_v)))
-USER_SETTINGS_DENY.update(GL_DEF)
-APPKEY_DENY_KEYS.update(GL_DEF)
-APPKEY_DENY_PATHS.update({"/api/gaeste"})
-LOCK_DENY_PATHS.add("/api/gaeste")
-LOCK_DENY_KEYS.update(GL_DEF)
-SCHED_FEATURES.append(("gl_on", "Guests expected (guide light)"))
-SCHED_KEYS.append("gl_on")
-GL_KINDS = ("person", "prealarm", "warm")
-GL_ZD = {"ok": False}
-GL_LIGHT = {"drive": False, "pct": 0.0, "was": False}
-GL_DIM = "light_pct" in globals()
-
-
-def gl_active(now=None):
-	""
-	if not(GL_ZD["ok"]and CFG.get("gl_on")):
-		return False
-	u=CFG.get("gl_until_t")or 0
-	return not(isinstance(u,(int,float))and 0<u<=(time.time()if now is None else now))
-
-
-def _gl_call(name, *a):
-	""
-	try:
-		f=globals().get(name)
-		return f(*a)if f is not None and GL_ZD["ok"]else None
-	except Exception:
-		return None
-
-
-def _gl_quiet(kind):
-	try:
-		if kind in GL_KINDS and gl_active():
-			_gl_call("gl_guest_note",kind)
-			return True
-	except Exception:
-		pass
-	return False
-
-
-
-_gl_push_alert = push_alert
-
-
-
-def push_alert(kind, text="", **extra):
-	if _gl_quiet(kind):
-		return None
-	return _gl_push_alert(kind,text,**extra)
-
-
-_gl_siren_alarm = siren_alarm
-
-
-
-def siren_alarm(kind):
-	if _gl_quiet(kind):
-		return None
-	return _gl_siren_alarm(kind)
-
-
-_gl_light_alarm = light_alarm
-
-
-
-def light_alarm():
-	if gl_active()and(STATE.get("persons")or STATE.get("warm")or "prealarm"in(STATE.get("present")or[])):
-		return None
-	return _gl_light_alarm()
-
-
-_gl_np_person = Notifier.person
-_gl_np_prealarm = Notifier.prealarm
-
-
-def _gl_person(self, count, snapshot_path=None, frame=None):
-	if count and _gl_quiet("person"):
-		STATE["notify_status"]="guests expected"
-		return None
-	return _gl_np_person(self,count,snapshot_path,frame)
-
-
-def _gl_prealarm(self, frame, event="prealarm"):
-	if event in("prealarm","warm")and _gl_quiet(event):
-		return False
-	return _gl_np_prealarm(self,frame,event)
-
-
-
-Notifier.person = _gl_person
-
-Notifier.prealarm = _gl_prealarm
-_gl_relays_update = RelayManager.update
-
-
-def _gl_relays(self, present):
-	if gl_active():
-		present=set(present)-{"person","warm","prealarm","animal"}
-	return _gl_relays_update(self,present)
-
-
-
-RelayManager.update = _gl_relays
-_gl_deter_check = Deterrence.check
-
-
-def _gl_deter(self, present, t0):
-	if gl_active():
-		self.seen.clear()
-		return None
-	return _gl_deter_check(self,present,t0)
-
-
-
-Deterrence.check = _gl_deter
-_gl_crawl_push = crawl_push
-
-
-
-def crawl_push(notifier, frame, d, ln):
-	if _gl_quiet("prealarm"):
-		return False
-	return _gl_crawl_push(notifier,frame,d,ln)
-
-
-_gl_obj_push = obj_push
-
-
-
-def obj_push(ev, ic, title, text, jpg=None, gap_key=None):
-	if ev=="obj_animal"and gl_active():
-		return False
-	return _gl_obj_push(ev,ic,title,text,jpg,gap_key)
-
-
-
-_gl_kp = [p for p in KOPF_PRIO if p != "guide"]
-_gl_ki = _gl_kp.index("marker") + 1 if "marker" in _gl_kp else _gl_kp.index("alarm") + 1
-KOPF_PRIO = tuple(_gl_kp[:_gl_ki] + ["guide"] + _gl_kp[_gl_ki:])
-_gl_kopf_claims = kopf_claims
-
-
-
-def kopf_claims():
-	c=_gl_kopf_claims()
-	if _gl_call("gl_holds_head"):
-		if "alarm"in c and not(KOPF["alarm"]or KOPF["tamper"]or KOPF["back"]):
-			c.discard("alarm")
-		c.add("guide")
-	return c
-
-
-_gl_kopf_track_blocked = kopf_track_blocked
-
-
-
-def kopf_track_blocked():
-	return bool(_gl_call("gl_holds_head"))or _gl_kopf_track_blocked()
-
-
-_gl_kopf_frame = kopf_frame
-
-
-
-def kopf_frame(w, candidates, person_boxes, warm_boxes, present, frame, pw, ph, t0):
-	r=_gl_kopf_frame(w,candidates,person_boxes,warm_boxes,present,frame,pw,ph,t0)
-	_gl_call("gl_frame",w,candidates,person_boxes,warm_boxes,pw,ph,t0)
-	return r
-
-
-_gl_lights_tick = lights_tick
-
-
-
-def lights_tick():
-	_gl_call("gl_lights_pre")
-	res=_gl_lights_tick()
-	_gl_call("gl_lights_post",res)
-	return res
-
-
-if GL_DIM:
-	_gl_light_pct=light_pct
-
-
-	def light_pct(n):
-		return GL_LIGHT["pct"]if n=="white"and GL_LIGHT["drive"]else _gl_light_pct(n)
-_gl_sim_state = sim_state
-
-
-
-def sim_state():
-	d=_gl_sim_state()
-	d["guests"]=_gl_call("gl_sim_patch",d)or{"on":False}
-	return d
-
-
-
-GAESTE_PY = _zd('639zzzzzg_gaeste_licht/GAESTE_PY', "")
-zd_exec(GAESTE_PY, '639zzzzzg_gaeste_licht.py')
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")

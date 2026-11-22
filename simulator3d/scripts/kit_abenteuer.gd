@@ -25,6 +25,7 @@ const BUSY := "Die Karte des Grossvaters (neu)"
 
 var main
 var daten = preload("res://scripts/kit_k2_daten.gd")
+var kapitel := 2
 var running := false
 var phase := ""                      # laden | spiel | film | pause
 var uhr := 0.0                       # own clock (with slow motion)
@@ -154,6 +155,8 @@ func start(o := {}) -> void:
 		o = o.duplicate()
 		o["rolle"] = w["rolle"]
 		o["name"] = w["name"]
+	kapitel = clampi(int(o.get("kapitel", 2)), 1, 2)           # Phase 2 (21.11.2026): the chapter's data file
+	daten = load("res://scripts/kit_k%d_daten.gd" % kapitel)
 	rolle = str(o.get("rolle", "enkelin"))
 	if not rolle in daten.ROLLEN:
 		rolle = "enkelin"
@@ -202,8 +205,9 @@ func start(o := {}) -> void:
 		main.start_info = T.t("Das Bergtal fehlt – das Abenteuer braucht die Szene Bergtal.")
 		stop()
 		return
-	main.weather = "clear"
-	main.set_hour(10.5)
+	var st0: Dictionary = daten.get_script_constant_map().get("START", {})
+	main.weather = str(st0.get("wetter", "clear"))
+	main.set_hour(float(st0.get("stunde", 10.5)))
 	main._set_speed(0.0)
 	par = Par.new()
 	if not par.binden(main, daten):
@@ -211,6 +215,9 @@ func start(o := {}) -> void:
 		return
 	bt.s.root.add_child(par)
 	par.bauen()
+	_decke_boden = {}
+	for dc in daten.get_script_constant_map().get("DECKEN", []):
+		decke_bei(par.welt(float(dc["s"]), float(dc["q"])), 0.0)   # (the floor measured now, while no level is on)
 	weg = par.weg_punkte()
 	figur = Figur.new(self)
 	figur.kinder = kinder
@@ -329,6 +336,10 @@ func stop() -> void:
 		return
 	running = false
 	phase = ""
+	for n in _versteckt:
+		if is_instance_valid(n):
+			n.visible = true
+	_versteckt.clear()
 	if regie != null:
 		regie.zeitlupe_aus()
 	Engine.time_scale = 1.0
@@ -361,6 +372,9 @@ func stop() -> void:
 	main.bt_bed = str(_saved.get("bt_bed", "tent"))
 	if _saved.get("bt_wall", null) != null:
 		main.bt_wall = _saved["bt_wall"]
+	for n in [main.get("rain"), main.get("splashes")]:
+		if n != null and is_instance_valid(n):
+			(n as Node3D).visible = true
 	if _saved.has("tone") and main.env != null:
 		var tn: Array = _saved["tone"]
 		main.env.tonemap_mode = int(tn[0])
@@ -426,7 +440,7 @@ func _naechster_schritt() -> void:
 		if szene_i + 1 < daten.SZENEN.size() and not bool(daten.SZENEN[szene_i + 1].get("offen", false)):
 			szene_starten(szene_i + 1)
 		else:
-			ziel_text = tx("Ende von Kapitel 2 – Fortsetzung folgt.")
+			ziel_text = tx(str(daten.get_script_constant_map().get("ENDE", "Ende von Kapitel 2 – Fortsetzung folgt.")))
 			_ziel_p = null
 			schritt = {}
 		return
@@ -459,7 +473,10 @@ func _naechster_schritt() -> void:
 	elif schritt.has("abzeichen"):
 		var w := str(schritt.get("wenn", ""))
 		var ok := true
-		if w == "trocken":
+		if w == "funde_alle":
+			for f0 in daten.FUNDE_ALLE:
+				ok = ok and funde.has(f0)
+		elif w == "trocken":
 			ok = int(figur.nass) == 0
 		elif w.begins_with("nicht:"):
 			ok = not merker.has(w.substr(6))
@@ -468,6 +485,8 @@ func _naechster_schritt() -> void:
 		if ok:
 			abzeichen_geben(str(schritt["abzeichen"]))
 		_naechster_schritt()
+	elif schritt.has("wahl"):                               # Kapitel 1: pack the backpack (3 of 6) - a card, the game waits
+		_wahl_zeigen()
 	elif schritt.has("maggie"):
 		if hund != null and str(schritt["maggie"]) == "riechen":
 			hund.riechen(par.welt(float(schritt["s"]), float(schritt["q"])))
@@ -789,6 +808,9 @@ func spaet(dt: float, real_dt: float) -> void:
 		nach_klettern = {}
 		if alt.has("d"):
 			figur._balance_start(alt["d"])
+	_ebene_tick()
+	_lampe_tick()
+	_dach_tick()
 	_schritt_tick()
 	_marker_tick(real_dt)
 	_licht()
@@ -1038,7 +1060,7 @@ var _stimme_player: AudioStreamPlayer = null
 
 
 func _stimme(text: String, wer: String) -> float:
-	if not wer in ["erzaehler", "grossvater"] or T.lang() != "de":
+	if not wer in ["erzaehler", "grossvater", "lia"] or T.lang() != "de":
 		return 0.0
 	if preload("res://scripts/abenteuer_stimme.gd").modus() != "an":
 		return 0.0
@@ -1125,6 +1147,39 @@ func film_eintrag(e: Dictionary, sprung: bool) -> void:
 		"maggie_warnen_tal":
 			if hund != null and not sprung:
 				hund.warnen(par.W(par.G(float(e["x"]), float(e["z"]))))
+		"ofen":                                            # Kapitel 1: the stove burns
+			var ak: Dictionary = par.aktion("ofen")
+			if not ak.is_empty():
+				par.ofen_an(ak["p"] + (par.tal(2.6, 3.0) - par.tal(1.9, 2.4)), 0.6)
+		"ebene":
+			_ebene(str(e["id"]), bool(e.get("an", true)))
+		"setzen":
+			film_hang = false
+			figur.setzen(par.welt(float(e["s"]), float(e["q"])))
+			if hund != null:
+				hund.setzen_welt(par.welt(float(e["s"]) - 0.8, float(e["q"]) + 0.6))
+		"wetter":
+			main.weather = str(e.get("w", "clear"))
+		"maggie_lauf":
+			if hund != null and not sprung:
+				hund.zur_figur_laufen(par.welt(float(e["s"]), float(e["q"])))
+		"karte_zeigen":
+			hud.karte_bild(str(e.get("teil", "halb")))
+		"karte_weg":
+			hud.karte_bild("")
+		"tier_k1":
+			if bt != null:
+				var tp: Vector3 = par.G(par.tal(float(e["s"]), float(e["q"])).x, par.tal(float(e["s"]), float(e["q"])).y)
+				var lb: Array = e.get("blick", [float(e["s"]) + 1.0, float(e["q"])])
+				var tl: Vector2 = par.tal(float(lb[0]), float(lb[1]))
+				var tier = par.marmot(tp, par.G(tl.x, tl.y))
+				tier.name = "kit_tier"
+				personen["tier"] = tier
+		"tier_weg":
+			var tw = personen.get("tier", null)
+			if tw != null and is_instance_valid(tw):
+				tw.queue_free()
+			personen.erase("tier")
 		"ende":
 			phase = "ende"
 			ziel_text = ""
@@ -1183,6 +1238,199 @@ func aktion_fertig(id: String) -> void:
 	if par != null:
 		par.erledigt[id] = true
 	_log("aktion:" + id)
+	var ak: Dictionary = par.aktion(id) if par != null else {}
+	if not ak.is_empty():
+		_aktion_effekt(str(ak["art"]), ak)
+
+
+# ---- Kapitel 1 (Phase 2, 21.11.2026): the new actions - all here, kit_figur.gd stays as it is (its default branch calls
+# aktion_fertig); the attic as a level, the headlamp, Maggie fetches, the backpack ------------------------------------------
+var lampe_an := false
+var _lampe: SpotLight3D = null
+
+
+func _aktion_effekt(art: String, ak: Dictionary) -> void:
+	match art:
+		"lampe":
+			lampe_schalten(not lampe_an)
+		"runter":
+			_ebene(str(ak["d"].get("ebene", "")), false)
+			var n: Array = ak["d"]["nach"]
+			figur.setzen(par.welt(float(n[0]), float(n[1])))
+			figur.geh_zu("boden")
+		"maggie_such":
+			_maggie_holt(ak["d"])
+		"moveeye", "ofen":
+			pass                                           # (the step's film does the rest)
+
+
+func lampe_schalten(on: bool) -> void:
+	lampe_an = on
+	if on and _lampe == null and figur != null and figur.ok():
+		_lampe = SpotLight3D.new()
+		_lampe.spot_range = 9.0
+		_lampe.spot_angle = 26.0
+		_lampe.light_energy = 2.2
+		_lampe.light_color = Color(1.0, 0.96, 0.88)
+		_lampe.shadow_enabled = false
+		var hd: Node3D = figur.a.head if figur.a.head != null else figur.a
+		hd.add_child(_lampe)
+		_lampe.position = Vector3(0, 0.12, -0.12)
+		_lampe.rotation = Vector3(-0.25, 0, 0)
+	if _lampe != null:
+		_lampe.visible = on
+	ton("klick" if on else "klick")
+
+
+func _lampe_tick() -> void:
+	"""the finds that only the headlamp shows: visible in its cone (35°, 7 m)"""
+	if par == null or par.nur_lampe.is_empty():
+		return
+	var fp: Vector3 = figur.pos()
+	var fw: Vector3 = figur.vorne()                          # the lamp looks where the figure looks (a little down: the floor ahead)
+	fw.y = 0.0
+	for n in par.nur_lampe:
+		if not is_instance_valid(n) or bool(n.get_meta("genommen", false)):
+			continue
+		var to: Vector3 = (n as Node3D).global_position - fp
+		var vh := Vector3(to.x, 0, to.z)
+		var nah: bool = vh.length() < 0.6                   # right at the feet: lit
+		var hell: bool = lampe_an and absf(to.y) < 2.0 and vh.length() < 7.0 and (nah or fw.normalized().dot(vh.normalized()) > cos(deg_to_rad(40.0)))
+		if hell != (n as Node3D).visible:
+			(n as Node3D).visible = hell
+
+
+func _ebene(id: String, on: bool) -> void:
+	"""a level of the chapter (the attic): its floors on / off; Maggie comes along («Terrier können keine Leitern.» – she can)"""
+	if par == null or id == "":
+		return
+	par.ebene(id, on)
+	if hund != null and figur != null:
+		hund.setzen_welt(figur.pos() + figur.vorne().cross(Vector3.UP) * 0.7)
+	if not on and lampe_an:
+		lampe_schalten(false)
+
+
+var _decke_boden := {}
+
+
+func raum_klemmen(p: Vector3) -> Vector3:
+	"""the camera stays inside the room the figure is in (Kapitel 1: the hut, DECKEN) - 0.4 m from its walls"""
+	if par == null or figur == null:
+		return p
+	var fs: Vector2 = par.sq_von(figur.pos())
+	for dc in daten.get_script_constant_map().get("DECKEN", []):
+		var ls := float(dc["ls"])
+		var lq := float(dc["lq"])
+		if absf(fs.x - float(dc["s"])) < ls and absf(fs.y - float(dc["q"])) < lq:
+			var sq: Vector2 = par.sq_von(p)
+			var s2 := clampf(sq.x, float(dc["s"]) - ls + 0.5, float(dc["s"]) + ls - 0.5)
+			var q2 := clampf(sq.y, float(dc["q"]) - lq + 0.5, float(dc["q"]) + lq - 0.5)
+			if s2 != sq.x or q2 != sq.y:
+				var w: Vector3 = par.welt(s2, q2)
+				return Vector3(w.x, p.y, w.z)
+	return p
+
+
+func decke_bei(w: Vector3, figur_y: float) -> float:
+	"""the ceiling over a world point for the camera (Kapitel 1: the hut - under the attic floor in the room, under the roof in
+	the attic), INF = open sky"""
+	if par == null:
+		return INF
+	var L: Array = daten.get_script_constant_map().get("DECKEN", [])
+	for i in range(L.size()):
+		var dc: Dictionary = L[i]
+		var sq: Vector2 = par.sq_von(w)
+		if absf(sq.x - float(dc["s"])) < float(dc["ls"]) and absf(sq.y - float(dc["q"])) < float(dc["lq"]):
+			if not _decke_boden.has(i):                       # the floor of the room (measured once, before any level is on)
+				_decke_boden[i] = par.y_welt(par.boden_tal(par.tal(float(dc["s"]), float(dc["q"])))) if not bool(par.ebene_an.get("dach", false)) else figur_y - 2.5
+			var boden: float = float(_decke_boden[i])
+			var auf_boden := figur_y - boden
+			return boden + (float(dc["oben"]) if auf_boden > float(dc["trenn"]) else float(dc["unten"]))
+	return INF
+
+
+var _tiere_t := 0.0
+
+
+func _tiere_weg() -> void:
+	"""Kapitel 1: no cow or sheep of the valley walks into the hut (in the attic they stood on its floor) - every 2 s"""
+	_tiere_t -= get_process_delta_time()
+	if _tiere_t > 0.0 or main.visitors == null:
+		return
+	_tiere_t = 2.0
+	var mitte: Vector3 = par.welt(0.0, 0.0)
+	for v in main.visitors.get_children():
+		if v == figur.a or v == (hund.hund if hund != null else null) or not v.has_method("is_animal") or personen.values().has(v):
+			continue
+		if v.is_animal() and (v as Node3D).global_position.distance_to(mitte) < 14.0 and not v.has_meta("kit_hund"):
+			v.queue_free()
+	# the tarp of the sim scene (simreal: blue cloth on two poles beside the tent) stood in front of the hut and the marmot
+	var sr = main.scenes.root if main.get("scenes") != null else null
+	if sr != null:
+		for n in sr.get_children():
+			if n is MeshInstance3D and n.visible and (n as Node3D).global_position.distance_to(mitte) < 14.0 \
+					and (n as MeshInstance3D).get_aabb().get_longest_axis_size() < 3.0:
+				n.visible = false
+				n.set_meta("kit_versteckt", true)
+				_versteckt.append(n)
+
+
+var _versteckt: Array = []
+
+
+func _dach_tick() -> void:
+	"""under a roof (the camera in the hut): no rain drops and splashes in the picture (the sound stays outside)"""
+	if not daten.get_script_constant_map().has("DECKEN"):
+		return
+	_tiere_weg()
+	var cam: Camera3D = main.view_cam
+	var drin: bool = cam != null and decke_bei(cam.global_position, figur.pos().y) < INF
+	for n in [main.get("rain"), main.get("splashes")]:
+		if n != null and is_instance_valid(n) and (n as Node3D).visible == drin:
+			(n as Node3D).visible = not drin
+
+
+func _ebene_tick() -> void:
+	"""up the ladder of the hut: at the top the attic counts (the floors) and the step «up» is done"""
+	if par == null or not par.ebenen_decks.has("dach"):
+		return
+	if figur.zustand == "leiter" and str(figur.akt.get("d", {}).get("ding", "")) == "dachleiter" and not bool(par.ebene_an.get("dach", false)):
+		var top: float = par.top_welt("dachleiter")
+		if figur.pos().y > top - 1.0:
+			_ebene("dach", true)
+	if bool(par.ebene_an.get("dach", false)) and figur.zustand == "boden" and not erledigt.has("dach_hoch_oben"):
+		aktion_fertig("dach_hoch_oben")
+		sag(tx("Terrier können keine Leitern. – Wuff! – Gut, dann eben doch."), "blinki")
+
+
+func _maggie_holt(d: Dictionary) -> void:
+	"""«Maggie, such!»: she runs to the wood pile, digs, and brings back the find"""
+	if hund == null:
+		fund(str(d["ding"]))
+		return
+	var z: Array = d["ziel"]
+	var ziel: Vector3 = hund.VL(par.welt(float(z[0]), float(z[1])))
+	var zu: Vector3 = hund.VL(figur.pos() + figur.vorne() * 0.8)
+	var id := str(d["ding"])
+	hund.modus = "folgen"
+	hund._aktion([{"t": "walk", "p": Vector3(ziel.x, 0, ziel.z), "spd": 2.6}, {"t": "idle", "k": "sniff", "s": 1.2},
+		{"t": "idle", "k": "dig", "s": 1.6}, {"t": "bark", "n": 1},
+		{"t": "walk", "p": Vector3(zu.x, 0, zu.z), "spd": 2.4},
+		{"t": "call", "fn": func(): fund(id)}])
+	sag(tx("Maggie, such!"), "figur")
+
+
+func _wahl_zeigen() -> void:
+	var L: Array = []
+	for r in daten.get_script_constant_map().get("RUCKSACK", []):
+		L.append([str(r[0]), tx(str(r[1]))])
+	hud.wahl(tx(str(schritt.get("titel", "Wähle"))), L, int(schritt.get("n", 3)), func(ids: Array):
+		for i in ids:
+			merke("rucksack_" + str(i))
+		preload("res://scripts/spielstand.gd").set_setting("k_rucksack", ids)
+		_log("rucksack:" + ",".join(ids))
+		_naechster_schritt())
 
 
 func fund(id: String) -> void:
@@ -1195,6 +1443,8 @@ func fund(id: String) -> void:
 	funde[id] = true
 	aktion_fertig(id)
 	par.fund_weg(id)
+	if par.dinge.has(id) and par.dinge[id]["node"] != null:
+		(par.dinge[id]["node"] as Node).set_meta("genommen", true)   # (the headlamp does not show it again)
 	figur.a.aktion("aufheben", 1.4)
 	var f: Array = daten.FUNDE.get(id, [id, ""])
 	hud.toast(T.t("Gefunden: %s") % tx(str(f[0])), 3.5)
@@ -1329,6 +1579,8 @@ func maggie_boden(von: Vector2, nach: Vector2, y_jetzt := -1.0e9):
 		var fe = d.get("fenster", null)
 		if fe is Array and absf(sqn.y - float(fe[0])) < float(fe[1]) and hv != null:
 			return hv                                        # through the window at ledge height
+		if fe is Array and absf(sqn.y - float(fe[0])) < float(fe[1]) + 0.3 and par.sq(von).x > float(d["s"]) and sqn.x >= par.sq(von).x - 0.05:
+			return null                                      # just down behind the wall: on and away from it (3.73.0 she stuck here)
 		return false
 	if hn_id != "":
 		var top := float(par.dinge[hn_id]["top"])
@@ -1336,6 +1588,13 @@ func maggie_boden(von: Vector2, nach: Vector2, y_jetzt := -1.0e9):
 		if top - cur > 0.6:
 			return false
 		return top
+	if hv != null and not ak.is_empty() and sqn.x < float(ak["d"].get("hinter_wand", 37.5)) - 0.4 and ak["d"].has("fenster"):
+		# up on the ledge, still this side of the wall: no jumping off into the gap - only on towards the window
+		# (the owner, 3.73.0: she fell into the gap in front of the hole and never got through)
+		var fq := float(ak["d"]["fenster"][1])
+		var g0: float = bt.H(nach.x, nach.y)
+		if float(hv) - g0 > 0.3 and absf(sqn.y - fq) > 0.45:
+			return false
 	if hv != null:
 		var g: float = bt.H(nach.x, nach.y)
 		if float(hv) - g > 0.05:
@@ -1384,6 +1643,9 @@ func _maggie_ziel_pruefen(fertig_machen := false) -> void:
 	var hs: Vector2 = par.sq(Vector2(hp.x, hp.z))
 	var hy: float = hund.VL(hund.hund.global_position).y
 	var unten: bool = hy < par._H(hp.x, hp.z) + 0.3
+	if not _maggie_auto and hs.x < float(ak["d"].get("hinter_wand", 37.5)) - 0.4 and erledigt.has("maggie_heben") and hy < _sims_top() - 0.6:
+		maggie_zurueck()                                    # fell off the ledge this side of the wall: back up onto it
+		return
 	if not _maggie_auto and hs.x > float(ak["d"].get("hinter_wand", 37.5)) and unten and hs.distance_to(Vector2(float(z[0]), float(z[1]))) >= 1.3:
 		_maggie_auto = true
 		var zt: Vector2 = par.tal(float(z[0]), float(z[1]))
@@ -1400,6 +1662,31 @@ func _maggie_ziel_pruefen(fertig_machen := false) -> void:
 		abzeichen_merk_maggie()
 
 
+var maggie_zurueck_n := 0
+
+
+func _sims_top() -> float:
+	"""the valley height of the ledge she was lifted onto (-INF without one)"""
+	var hk: Dictionary = par.aktion("maggie_heben")
+	if hk.is_empty() or not par.dinge.has(str(hk["d"]["ding"])):
+		return -INF
+	return float(par.dinge[str(hk["d"]["ding"])]["top"])
+
+
+func maggie_zurueck() -> void:
+	"""recovery while steering: Maggie is down on the ground in front of the wall - she is lifted back onto the ledge"""
+	var hk: Dictionary = par.aktion("maggie_heben")
+	if hk.is_empty() or hund == null:
+		return
+	var na: Array = hk["d"]["nach"]
+	var e: Dictionary = par.dinge[str(hk["d"]["ding"])]
+	var t: Vector2 = par.tal(float(na[0]), float(na[1]))
+	maggie_zurueck_n += 1
+	hund.place(hund.hund, Vector3(t.x, float(e["top"]), t.y), true)
+	hund.modus = "oben"
+	sag(tx("Hoppla! Nochmal, Maggie – rauf auf den Sims."), "figur")
+
+
 func abzeichen_merk_maggie() -> void:
 	merke("maggie_riegel")
 
@@ -1411,6 +1698,10 @@ func _licht() -> void:
 		return
 	var tag := clampf(float(main.sun.light_energy) / 1.4, 0.0, 1.0)
 	if tag < 0.05:
+		if kapitel == 1:                                     # Kapitel 1 at the hut: a moonlit night one can read (21.11.)
+			main.env.ambient_light_color = Color(0.36, 0.44, 0.62)
+			main.env.ambient_light_energy = maxf(float(main.env.ambient_light_energy), 0.75)
+			main.env.tonemap_exposure = 1.3
 		return                                               # the night stays as main makes it
 	# balanced (owner 21.11.: «nicht ausgewaschen, nicht hart»): a warm, softer sun, a cooler sky fill for depth in the
 	# shade, filmic tone mapping with a little headroom (no white-clipped rock on bright laptop screens), light haze
@@ -1676,6 +1967,22 @@ static func control(m, d: Dictionary) -> Dictionary:
 		"abschnitt":                                       # «Zum nächsten Abschnitt springen» (tests: also before 90 s)
 			k.abschnitt_springen()
 			return {"ok": true, "kit": k.info()}
+		"ebene":                                           # tests / pictures (Kapitel 1): a level on / off (the attic)
+			k._ebene(str(d.get("id", "")), bool(d.get("an", true)))
+			return {"ok": true}
+		"lampe":
+			k.lampe_schalten(bool(d.get("an", true)))
+			return {"ok": true}
+		"eintrag":                                         # tests / pictures: one film key now (zeit, ir, wetter, ofen …)
+			k.film_eintrag(d.get("e", {}), true)
+			return {"ok": true}
+		"wahl":                                            # tests: the backpack card (Kapitel 1) answered with these ids
+			if k.hud.wahl_offen() and k.hud._wahl_fertig.is_valid():
+				k.hud._wahl_panel.queue_free()
+				k.hud._wahl_panel = null
+				k.hud._wahl_fertig.call(d.get("ids", []))
+				return {"ok": true}
+			return {"ok": false, "error": "keine Wahl offen"}
 		"frei":                                            # tests: walking only, no steps
 			k.test_frei = bool(d.get("on", true))
 			return {"ok": true}

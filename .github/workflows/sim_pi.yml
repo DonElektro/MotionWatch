@@ -64,7 +64,7 @@ on:
         description: "Testkanal: kurzer Name der Testversion (im Simulator angezeigt)"
         default: ""
       auftrag:
-        description: "Statt bauen: musik-vorschau | musik-ganz | stimmen (Ergebnis als Artefakt, nie im Repository / Release)"
+        description: "Statt bauen: musik-vorschau | musik-ganz | stimmen | stimmproben (Ergebnis: Zweig auftrag-<name>, nie Release)"
         default: ""
 permissions:
   contents: write
@@ -490,22 +490,29 @@ jobs:
           cat "$RUNNER_TEMP/musik/LIESMICH.md" >> "$GITHUB_STEP_SUMMARY"
           ls -la "$RUNNER_TEMP/musik"
       - name: Stimmen (Piper, Ogg)
-        if: inputs.auftrag == 'stimmen'
+        if: inputs.auftrag == 'stimmen' || inputs.auftrag == 'stimmproben'
         run: |
           set -e
           curl -fsSL -o piper.tgz https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz
           tar xzf piper.tgz && ./piper/piper --help > /dev/null 2>&1 || true
-          python3 werkzeuge/stimmen/stimmen.py "$RUNNER_TEMP/musik"
+          if [ "${{ inputs.auftrag }}" = "stimmproben" ]; then
+            python3 werkzeuge/stimmen/proben.py "$RUNNER_TEMP/musik"
+          else
+            python3 werkzeuge/stimmen/stimmen.py "$RUNNER_TEMP/musik"
+          fi
           ls -la "$RUNNER_TEMP/musik" | head -40
-      - name: Ergebnis an die Vorabversion sim-test hängen (der Proxy der Bauumgebung lässt Artefakte nicht durch)
+      - name: Ergebnis auf den Zweig auftrag-<name> (ohne Geschichte; der Proxy der Bauumgebung lässt Artefakte nicht durch)
         env:
           GH_TOKEN: ${{ github.token }}
+          NAME: ${{ inputs.auftrag }}
         run: |
           set -e
-          pre=$(gh release view sim-test -R "$GITHUB_REPOSITORY" --json isPrerelease --jq .isPrerelease)
-          [ "$pre" = "true" ] || { echo "::error::sim-test ist keine Vorabversion"; exit 1; }
-          cd "$RUNNER_TEMP/musik" && zip -q -r "$RUNNER_TEMP/${{ inputs.auftrag }}.zip" . && cd -
-          gh release upload sim-test -R "$GITHUB_REPOSITORY" --clobber "$RUNNER_TEMP/${{ inputs.auftrag }}.zip"
+          echo "$NAME" | grep -Eq '^[a-z-]+$'
+          cd "$RUNNER_TEMP/musik"
+          git init -q -b "auftrag-$NAME" . && git config user.name "sim-pakete" && git config user.email "sim-pakete@users.noreply.github.com"
+          git add -A && git commit -q -m "Auftrag $NAME (Lauf $GITHUB_RUN_ID)"
+          git push -q --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/auftrag-$NAME"
+          echo "Ergebnis: Zweig auftrag-$NAME" >> "$GITHUB_STEP_SUMMARY"
       - name: Ergebnis als Artefakt (nicht im Repository)
         uses: actions/upload-artifact@v4
         with:

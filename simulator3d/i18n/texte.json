@@ -4530,6 +4530,13 @@
   "it": "Vecchia passerella di legno sul Moorbach (capitolo 3)",
   "rm": "Vegl punt da lain sur il Moorbach (chapitel 3)"
  },
+ "Alter Skischuh": {
+  "en": "Old ski boot",
+  "fr": "Vieille chaussure de ski",
+  "it": "Vecchio scarpone da sci",
+  "rm": "Vegl chalzer da skis",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Alter Säumerweg": {
   "en": "Old mule track",
   "fr": "Ancien chemin muletier",
@@ -4777,6 +4784,13 @@
   "fr": "Le matin, il y a souvent des canards au ponton.",
   "it": "Al mattino al pontile ci sono spesso delle anatre.",
   "rm": "La damaun hai savens andas tar la punt da bartga."
+ },
+ "Am Morgen.": {
+  "en": "In the morning.",
+  "fr": "Le matin.",
+  "it": "Al mattino.",
+  "rm": "La damaun.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Am Ostufer des Gumpisees fällt ein Wasserfall über die Wand. Was ist wohl dahinter?": {
   "en": "On the east shore of the Gumpisee a waterfall drops over the cliff. What could be behind it?",
@@ -5219,6 +5233,13 @@
   "it": "Cliccare: riquadro di nuovo grande · trascinare: spostare",
   "rm": "Cliccar: stgatletta puspè gronda · trair: spustar"
  },
+ "Ankunft im Regen": {
+  "en": "Arrival in the rain",
+  "fr": "Arrivée sous la pluie",
+  "it": "Arrivo sotto la pioggia",
+  "rm": "Arrivada en la plievgia",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Anleitung": {
   "en": "Manual",
   "fr": "Mode d'emploi",
@@ -5435,6 +5456,13 @@
   "it": "Mela",
   "rm": "Mail"
  },
+ "Apotheke": {
+  "en": "First-aid kit",
+  "fr": "Trousse de secours",
+  "it": "Kit di pronto soccorso",
+  "rm": "Apoteca",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "April": {
   "en": "April",
   "fr": "Avril",
@@ -5519,6 +5547,13 @@
   "fr": "Sur le Chalchstock",
   "it": "Sul Chalchstock",
   "rm": "Sin il Chalchstock"
+ },
+ "Auf dem Dachboden alles gefunden – auch das Mäusenest.": {
+  "en": "Found everything in the attic – even the mouse nest.",
+  "fr": "Tout trouvé au grenier – même le nid de souris.",
+  "it": "Trovato tutto in soffitta – anche il nido di topi.",
+  "rm": "Chattà tut sin il palantschin – era il gnieu da mieurs.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Auf dem Eis liegt ein Stück Papier. Das Eis ist zu dünn für dich!": {
   "en": "A piece of paper lies on the ice. The ice is too thin for you!",
@@ -5935,6 +5970,13 @@
   "fr": "L’hermine sort la tête de chaque trou du vieux mur, de plus en plus vite – et à la fin la tête d’un côté et le bout noir de la queue d’un autre trou.",
   "it": "L’ermellino sbuca da ogni buco del vecchio muro, sempre più in fretta – e alla fine la testa da una parte e la punta nera della coda da un altro buco.",
   "rm": "L’ermellin guarda ord mintga foss dal vegl mir, adina pli svelt – e la fin il chau d’ina vart e la piz naira da la cua ord in auter foss."
+ },
+ "Aus Zeitungspapier. Die Zeitung ist von {jahr}.": {
+  "en": "Made of newspaper. The paper is from {jahr}.",
+  "fr": "En papier journal. Le journal date de {jahr}.",
+  "it": "Di carta di giornale. Il giornale è del {jahr}.",
+  "rm": "Da palpiri da gasetta. La gasetta è da {jahr}.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "aus – jeder wählt selbst": {
   "en": "off – everyone chooses",
@@ -7421,6 +7463,13 @@
   "it": "MOVIMENTO",
   "rm": "MOVIMENT"
  },
+ "Bewegung am Fenster! Grösse: klein. Gefahr: … flauschig.": {
+  "en": "Movement at the window! Size: small. Danger: … fluffy.",
+  "fr": "Mouvement à la fenêtre ! Taille : petite. Danger : … duveteux.",
+  "it": "Movimento alla finestra! Taglia: piccola. Pericolo: … soffice.",
+  "rm": "Moviment tar la fanestra! Grondezza: pitschna. Privel: … lanus.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Bewegung im Nebel": {
   "en": "Movement in the fog",
   "fr": "Mouvement dans le brouillard",
@@ -7757,6 +7806,13 @@
   "fr": "Bleu scène · blanc lieu · jaune point de vue · vert emplacement pour dormir / position · rose vignette · brun pièce · ▲ vue · ● MoveEye — clic = y sauter, molette = zoom, glisser = déplacer",
   "it": "Blu scena · bianco luogo · giallo punto panoramico · verde posto per dormire / posizione · rosa vignetta · marrone stanza · ▲ vista · ● MoveEye — clic = saltare lì, rotella = zoom, trascinare = spostare",
   "rm": "Blau scena · alv lieu · mellen punct da vista · verd plazza da durmir / posiziun · rosa vignetta · brin stanza · ▲ vista · ● MoveEye — clic = siglir là, roda = zoom, trair = spustar"
+ },
+ "Blechdose": {
+  "en": "Tin box",
+  "fr": "Boîte en fer",
+  "it": "Scatola di latta",
+  "rm": "Stgatla da tola",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Bleib beim Haken und halte das Seil fest.": {
   "en": "Stay at the hook and hold the rope tight.",
@@ -8106,6 +8162,13 @@
   "it": "Brava Maggie!",
   "rm": "Brava Maggie!",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Brave Maggie! Die Ecke passt.": {
+  "en": "Good Maggie! The corner fits.",
+  "fr": "Brave Maggie ! Le coin s’ajuste.",
+  "it": "Brava Maggie! L’angolo combacia.",
+  "rm": "Brava Maggie! Il chantun tutga.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Breit und dunkel – am besten in der Nacht.": {
   "en": "Wide and dark – best at night.",
@@ -8936,6 +8999,13 @@
   "fr": "Alors tu as eu de la chance. La prochaine fois, installe MoveEye - tu auras la preuve.",
   "it": "Allora sei stato fortunato. La prossima volta piazza MoveEye - così avrai la prova.",
   "rm": "Lura has ti gì cletg. La proxima giada metter si MoveEye - lura has ti la cumprova."
+ },
+ "Dann sind wir ja sicher.": {
+  "en": "Then we are safe.",
+  "fr": "Alors nous sommes en sécurité.",
+  "it": "Allora siamo al sicuro.",
+  "rm": "Lura essan nus segirs.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Dann such schon mal dein Portemonnaie, Toni.": {
   "en": "Then start looking for your wallet, Toni.",
@@ -10266,6 +10336,13 @@
   "it": "il D36V50F5 non ha regolazione MPPT: senza regolatore la tensione crolla con poco sole",
   "rm": "il D36V50F5 n'ha nagina regulaziun MPPT: senza regulatur croda la tensiun cun pauc sulegl"
  },
+ "Der Dachboden": {
+  "en": "The attic",
+  "fr": "Le grenier",
+  "it": "La soffitta",
+  "rm": "Il palantschin",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Der Download liess sich nicht starten.": {
   "en": "The download could not be started.",
   "fr": "Le téléchargement n’a pas pu démarrer.",
@@ -10381,6 +10458,13 @@
   "fr": "Le ski en bois dans le glacier",
   "it": "Lo sci di legno nel ghiacciaio",
   "rm": "Il skis da lain en il glatscher"
+ },
+ "Der Holzstapel liegt neben der Hütte, auf der Seite des Ofens.": {
+  "en": "The wood pile is beside the hut, on the side of the stove.",
+  "fr": "Le tas de bois est à côté de la cabane, du côté du poêle.",
+  "it": "La catasta di legna è accanto alla capanna, dal lato della stufa.",
+  "rm": "La pigna da laina è sper la chamona, da la vart da la pigna.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Der Horror-Modus ist gesperrt.": {
   "en": "The horror mode is locked.",
@@ -10687,6 +10771,13 @@
   "fr": "La vanne de droite est baissée - %d secondes, puis elle retombe !",
   "it": "La paratoia destra è giù - %d secondi, poi ricade!",
   "rm": "La porta dretga è giu - %d secundas, lura croda ella enavos!"
+ },
+ "Der Regen hört auf. Es wird Nacht.": {
+  "en": "The rain stops. Night falls.",
+  "fr": "La pluie cesse. La nuit tombe.",
+  "it": "La pioggia smette. Scende la notte.",
+  "rm": "La plievgia chala. I vegn notg.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "der Reihe nach": {
   "en": "in turn",
@@ -11061,6 +11152,13 @@
   "it": "Il recinto è troppo alto. Si passa solo dal piccolo buco.",
   "rm": "La saiv è memia auta. Mo tras la pitschna foura vegn ins sur."
  },
+ "Der {bezug} hat erzählt, auf dem Dachboden liege noch etwas von ihm.": {
+  "en": "{bezug} said something of his is still up in the attic.",
+  "fr": "{bezug} a raconté qu’il reste quelque chose à lui au grenier.",
+  "it": "{bezug} ha raccontato che in soffitta c’è ancora qualcosa di suo.",
+  "rm": "Il {bezug} ha raquintà ch’i saja anc insatge dad el sin il palantschin.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Der Älpler": {
   "en": "The alpine herdsman",
   "fr": "L'armailli",
@@ -11114,6 +11212,13 @@
   "fr": "Joints, couvercle, bouchon",
   "it": "Guarnizioni, coperchio, tappo",
   "rm": "Tegnidas, viertgel, cluchet"
+ },
+ "Die Alp Tschuggen. Regen seit Mittag.": {
+  "en": "Alp Tschuggen. Rain since noon.",
+  "fr": "L’alpage Tschuggen. Pluie depuis midi.",
+  "it": "L’alpe Tschuggen. Pioggia da mezzogiorno.",
+  "rm": "L’alp Tschuggen. Plievgia dapi mezdi.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Die alte Seilbahn": {
   "en": "The old cable way",
@@ -11322,6 +11427,13 @@
   "it": "La torcia si è spenta. Al punto di sosta ne ricevi una nuova.",
   "rm": "La fatschla è stizzada. A la plazza da pausa survegns ti ina nova."
  },
+ "Die fehlende Ecke der Karte – Maggie hat sie im Holzstapel gefunden.": {
+  "en": "The missing corner of the map – Maggie found it in the wood pile.",
+  "fr": "Le coin manquant de la carte – Maggie l’a trouvé dans le tas de bois.",
+  "it": "L’angolo mancante della mappa – Maggie l’ha trovato nella catasta.",
+  "rm": "Il chantun mancant da la charta – Maggie l’ha chattà en la pigna da laina.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Die Felsen werfen lange Schatten. Fast wirkt es, als würde jemand zuschauen.": {
   "en": "The rocks cast long shadows. It almost feels as if someone were watching.",
   "fr": "Les rochers projettent de longues ombres. On dirait presque que quelqu'un regarde.",
@@ -11442,6 +11554,13 @@
   "it": "Il camoscio sull’ospizio",
   "rm": "Il chamutsch sin l’ospizi"
  },
+ "Die halbe Karte": {
+  "en": "Half a map",
+  "fr": "La moitié de carte",
+  "it": "Mezza mappa",
+  "rm": "La mesa charta",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "die Handtasche": {
   "en": "the handbag",
   "fr": "le sac à main",
@@ -11521,6 +11640,13 @@
   "it": "La telecamera ci mette di più a notarti, strisciare è quasi sicuro. Vite illimitate, 4 minuti, vedi dove guardano le telecamere.",
   "rm": "La camera dovra dapli temp per ta remartgar, sa trair è quasi segir. Vitas illimitadas, 4 minutas, ti vesas, nua che las cameras guardan."
  },
+ "Die Karte": {
+  "en": "The map",
+  "fr": "La carte",
+  "it": "La mappa",
+  "rm": "La charta",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Die Karte des Bergführers": {
   "en": "The mountain guide's map",
   "fr": "La carte du guide de montagne",
@@ -11546,6 +11672,13 @@
   "it": "La mappa di {bezug} porta nella gola sotto l’alpe.",
   "rm": "La charta da {bezug} maina en la foppa dal flum sut l’alp.",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Die Karte ist an der Ecke abgerissen. Vielleicht liegt das Stück noch hier irgendwo …": {
+  "en": "The map is torn at the corner. Maybe the piece is still around here somewhere …",
+  "fr": "La carte est déchirée au coin. Le morceau est peut-être encore quelque part ici …",
+  "it": "La mappa è strappata all’angolo. Forse il pezzo è ancora qui da qualche parte …",
+  "rm": "La charta è stgarpada al chantun. Forsa è il toc anc insanua qua …",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "die Karte zeigt jetzt, was man von hier sieht.": {
   "en": "the map now shows what you can see from here.",
@@ -11662,6 +11795,13 @@
   "it": "La barra in basso",
   "rm": "La trav giusut"
  },
+ "Die Leiter steht hinten rechts, neben dem Ofen.": {
+  "en": "The ladder is at the back right, next to the stove.",
+  "fr": "L’échelle est au fond à droite, à côté du poêle.",
+  "it": "La scala è in fondo a destra, accanto alla stufa.",
+  "rm": "La stgala è davos a dretga, sper la pigna.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Die letzte Seite": {
   "en": "The last page",
   "fr": "La dernière page",
@@ -11680,6 +11820,20 @@
   "it": "La linea sulla mappa … indica il masso del lago!",
   "rm": "La lingia sin la charta … ella mussa al crap dal lai!",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Die Linie führt hinunter in die Schlucht. Zum Bach. Und weiter.": {
+  "en": "The line leads down into the gorge. To the stream. And on.",
+  "fr": "La ligne descend dans la gorge. Jusqu’au ruisseau. Et plus loin.",
+  "it": "La linea scende nella gola. Al ruscello. E oltre.",
+  "rm": "La lingia maina giu en la foppa. Tar il dutg. E vinavant.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
+ "Die Linie zeigt in die Bachschlucht. Gehen wir, Maggie.": {
+  "en": "The line points into the stream gorge. Let’s go, Maggie.",
+  "fr": "La ligne montre la gorge du ruisseau. Allons-y, Maggie.",
+  "it": "La linea indica la gola del ruscello. Andiamo, Maggie.",
+  "rm": "La lingia mussa en la foppa dal dutg. Giain, Maggie.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Die Lösung: {s}": {
   "en": "The solution: {s}",
@@ -14201,6 +14355,13 @@
   "it": "Una marmotta fischia e ti guarda. Conosce tutti i passaggi segreti qui.",
   "rm": "Ina muntanella tschivla e ta guarda. Ella enconuscha tut ils passadis secrets qua."
  },
+ "Ein Murmeltier. Maggie, das ist kein Einbrecher.": {
+  "en": "A marmot. Maggie, that is not a burglar.",
+  "fr": "Une marmotte. Maggie, ce n’est pas un cambrioleur.",
+  "it": "Una marmotta. Maggie, non è un ladro.",
+  "rm": "Ina muntanella. Maggie, quai n’è nagin lader.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "ein Ort": {
   "en": "a place",
   "fr": "un lieu",
@@ -14592,6 +14753,13 @@
   "it": "l'intruso non era nell'immagine",
   "rm": "l'intrus n'era betg en il maletg"
  },
+ "Eine alte Blechdose unter einem losen Brett. Darin: eine halbe Karte.": {
+  "en": "An old tin box under a loose board. Inside: half a map.",
+  "fr": "Une vieille boîte en fer sous une planche détachée. Dedans : une moitié de carte.",
+  "it": "Una vecchia scatola di latta sotto un’asse allentata. Dentro: mezza mappa.",
+  "rm": "Ina veglia stgatla da tola sut in aissa loma. Lien: ina mesa charta.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Eine alte Holzbaracke, rundherum rostige Stacheldraht-Reste aus dem Aktivdienst.": {
   "en": "An old wooden barrack, surrounded by rusty barbed wire left from wartime service.",
   "fr": "Une vieille baraque en bois, entourée de restes rouillés de barbelés du service actif.",
@@ -14712,6 +14880,13 @@
   "it": "Un ponte sospeso. Vecchio. Molto vecchio.",
   "rm": "Ina punt pendenta. Veglia. Fitg veglia.",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Eine Karte. Halb. Jemand hat sie mittendurch gerissen.": {
+  "en": "A map. Half of it. Someone tore it right through the middle.",
+  "fr": "Une carte. À moitié. Quelqu’un l’a déchirée en deux.",
+  "it": "Una mappa. A metà. Qualcuno l’ha strappata a metà.",
+  "rm": "Ina charta. Mesa. Insatgi l’ha stgarpada per mez.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Eine Kuh hat mir heute fast eine Socke gestohlen. Pass auf deine Schuhe auf!": {
   "en": "A cow almost stole one of my socks today. Watch your shoes!",
@@ -15192,6 +15367,13 @@
   "fr": "Fin de la démonstration",
   "it": "Fine della dimostrazione",
   "rm": "Fin da la demonstraziun"
+ },
+ "Ende von Kapitel 1 – weiter mit Kapitel 2 «Wo der Bach zweimal fällt».": {
+  "en": "End of chapter 1 – continue with chapter 2 «Where the stream falls twice».",
+  "fr": "Fin du chapitre 1 – suite au chapitre 2 «Là où le ruisseau tombe deux fois».",
+  "it": "Fine del capitolo 1 – continua con il capitolo 2 «Dove il ruscello cade due volte».",
+  "rm": "Fin dal chapitel 1 – vinavant cun il chapitel 2 «Nua ch’il dutg croda duas giadas».",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Ende von Kapitel 2 – Fortsetzung folgt.": {
   "en": "End of chapter 2 – to be continued.",
@@ -16001,6 +16183,13 @@
   "fr": "Environ 3 minutes · Échap ou clic = retour",
   "it": "Circa 3 minuti · Esc o clic = indietro",
   "rm": "Var 3 minutas · Esc u clic = enavos"
+ },
+ "Etwas am Fenster": {
+  "en": "Something at the window",
+  "fr": "Quelque chose à la fenêtre",
+  "it": "Qualcosa alla finestra",
+  "rm": "Insatge tar la fanestra",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Etwas fällt ins Gras": {
   "en": "Something falls into the grass",
@@ -18151,6 +18340,13 @@
   "it": "In fondo alla valle laterale ovest ci sono muri senza tetto.",
   "rm": "Dal tuttafatg davos en la val laterala vest stattan mirs senza tetg."
  },
+ "Ganz hinten links, unter einem losen Brett.": {
+  "en": "At the very back on the left, under a loose board.",
+  "fr": "Tout au fond à gauche, sous une planche détachée.",
+  "it": "In fondo a sinistra, sotto un’asse allentata.",
+  "rm": "Dal tut davos a sanestra, sut in aissa loma.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Ganz hinten steht noch ein Zelt – du bist doch nicht ganz allein im Tal.": {
   "en": "Far back there is another tent – you are not quite alone in the valley after all.",
   "fr": "Tout au fond, il y a encore une tente – tu n’es pas tout seul dans la vallée.",
@@ -18508,11 +18704,25 @@
   "rm": "Va tras il portun",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
+ "Geh hinaus und stell MoveEye beim Weg auf (Aktion)": {
+  "en": "Go outside and set up MoveEye by the path (action)",
+  "fr": "Sors et installe MoveEye près du chemin (action)",
+  "it": "Esci e installa MoveEye vicino al sentiero (azione)",
+  "rm": "Va ora e plazza MoveEye tar la via (acziun)",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Geh lieber langsam. Maggie warnt dich, wenn eine Schlange nah ist.": {
   "en": "Better walk slowly. Maggie warns you when a snake is near.",
   "fr": "Marche plutôt lentement. Maggie t'avertit quand un serpent est proche.",
   "it": "Meglio camminare piano. Maggie ti avvisa se un serpente è vicino.",
   "rm": "Va plitost plaun. Maggie ta avertescha, sch'ina serp è datiers."
+ },
+ "Geh mit Maggie zum Holzstapel und lass sie suchen (Aktion)": {
+  "en": "Go to the wood pile with Maggie and let her search (action)",
+  "fr": "Va au tas de bois avec Maggie et laisse-la chercher (action)",
+  "it": "Vai alla catasta con Maggie e lasciala cercare (azione)",
+  "rm": "Va cun Maggie tar la pigna da laina e la lascha tschertgar (acziun)",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Geh nah zum Steinbock.": {
   "en": "Go close to the ibex.",
@@ -18544,6 +18754,13 @@
   "fr": "Va au brasero et appuie sur %s : le feu garde les loups dans leur tanière.",
   "it": "Vai al braciere e premi %s: il fuoco tiene i lupi nella tana.",
   "rm": "Va tar la cuppa da fieu e smatga %s: il fieu tegna ils lufs en lur tana."
+ },
+ "Geh zur Hütte": {
+  "en": "Go to the hut",
+  "fr": "Va à la cabane",
+  "it": "Vai alla capanna",
+  "rm": "Va tar la chamona",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Geh über den Viperweg bis zum Steinmann – wenn gestampft wird.": {
   "en": "Walk over the viper path to the cairn – while someone stamps.",
@@ -20255,6 +20472,13 @@
   "it": "Buona notte! Ora MoveEye ha bisogno dell’infrarosso.",
   "rm": "Buna notg! Ussa dovra MoveEye infracotschen."
  },
+ "Gute Wahl. Wahrscheinlich. Ich hätte die Batterien genommen.": {
+  "en": "Good choice. Probably. I would have taken the batteries.",
+  "fr": "Bon choix. Probablement. J’aurais pris les piles.",
+  "it": "Buona scelta. Probabilmente. Io avrei preso le batterie.",
+  "rm": "Buna tscherna. Probablamain. Jau avess prendì las battarias.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Guten Abend": {
   "en": "Good evening",
   "fr": "Bonsoir",
@@ -21739,6 +21963,13 @@
   "it": "Ops!",
   "rm": "Oha!",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Hoppla! Nochmal, Maggie – rauf auf den Sims.": {
+  "en": "Oops! Again, Maggie – back up on the ledge.",
+  "fr": "Oups ! Encore une fois, Maggie – remonte sur la corniche.",
+  "it": "Ops! Ancora una volta, Maggie – di nuovo sulla cengia.",
+  "rm": "Oha! Anc ina giada, Maggie – puspè si sin la cengia.",
+  "?": "rm: Neubau-Texte 22.11.2026 (Korrekturlesen)"
  },
  "Horizont": {
   "en": "Horizon",
@@ -24053,6 +24284,13 @@
   "it": "Notte fredda in vetta",
   "rm": "Notg fraida sin il piz"
  },
+ "Kalte Stube": {
+  "en": "A cold room",
+  "fr": "Une pièce froide",
+  "it": "Una stanza fredda",
+  "rm": "Ina stiva fraida",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Kaltes, klares Bergwasser.": {
   "en": "Cold, clear mountain water.",
   "fr": "De l'eau de montagne froide et claire.",
@@ -24468,6 +24706,13 @@
   "it": "Capitolo 1 - La lettera",
   "rm": "Chapitel 1 - La brev"
  },
+ "Kapitel 1 «Die Karte»: der Abend an der Alp Tschuggen": {
+  "en": "Chapter 1 «The map»: the evening at Alp Tschuggen",
+  "fr": "Chapitre 1 «La carte» : la soirée à l’alpage Tschuggen",
+  "it": "Capitolo 1 «La mappa»: la sera all’alpe Tschuggen",
+  "rm": "Chapitel 1 «La charta»: la saira a l’alp Tschuggen",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Kapitel 2": {
   "en": "Chapter 2",
   "fr": "Chapitre 2",
@@ -24673,6 +24918,13 @@
   "fr": "Carte : ",
   "it": "Mappa: ",
   "rm": "Charta: "
+ },
+ "Kartenecke": {
+  "en": "Map corner",
+  "fr": "Coin de carte",
+  "it": "Angolo della mappa",
+  "rm": "Chantun da la charta",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Kartenleser": {
   "en": "Map reader",
@@ -25159,6 +25411,13 @@
   "fr": "pas de connexion",
   "it": "nessuna connessione",
   "rm": "nagina connexiun"
+ },
+ "keine Wahl offen": {
+  "en": "no choice open",
+  "fr": "aucun choix ouvert",
+  "it": "nessuna scelta aperta",
+  "rm": "nagina tscherna averta",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "keine Wunschliste: ": {
   "en": "no wish list: ",
@@ -26902,6 +27161,13 @@
   "it": "LED: attende MoveEye",
   "rm": "LED: spetga MoveEye"
  },
+ "Leder, Grösse 44. Riecht nach 1974.": {
+  "en": "Leather, size 44. Smells like 1974.",
+  "fr": "Cuir, pointure 44. Sent 1974.",
+  "it": "Cuoio, numero 44. Sa di 1974.",
+  "rm": "Curom, grondezza 44. Savura da 1974.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Leer %.1f kg · bequem bis %d kg": {
   "en": "Empty %.1f kg · comfortable up to %d kg",
   "fr": "Vide %.1f kg · confortable jusqu'à %d kg",
@@ -27083,6 +27349,13 @@
   "fr": "Retirer la dernière photo",
   "it": "Togli l’ultima foto",
   "rm": "Allontanar l’ultima foto"
+ },
+ "Leuchte langsam herum: was im Licht glänzt, kann man nehmen.": {
+  "en": "Shine the light around slowly: what glints in the light can be taken.",
+  "fr": "Éclaire lentement autour : ce qui brille dans la lumière peut être pris.",
+  "it": "Illumina lentamente intorno: ciò che brilla alla luce si può prendere.",
+  "rm": "Glischa plaun enturn: quai che glischa en la glisch pon ins prender.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Leute beim Lager": {
   "en": "People at the camp",
@@ -27867,6 +28140,13 @@
   "rm": "Fa ina fotografia cun MoveEye (buttun da foto u P)",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
+ "Mach Feuer im Ofen (Aktion)": {
+  "en": "Light a fire in the stove (action)",
+  "fr": "Allume le feu dans le poêle (action)",
+  "it": "Accendi il fuoco nella stufa (azione)",
+  "rm": "Fa fieu en la pigna (acziun)",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Macht ein Trainingspaket, legt es auf GitHub (Release «ki-daten») und startet dort das Training. MoveEye holt das neue Modell danach selbst, wenn es nicht schlechter ist.": {
   "en": "Makes a training package, puts it on GitHub (release «ki-daten») and starts the training there. MoveEye fetches the new model itself afterwards if it is not worse.",
   "fr": "Crée un paquet d’entraînement, le dépose sur GitHub (release «ki-daten») et y lance l’entraînement. MoveEye récupère ensuite lui-même le nouveau modèle s’il n’est pas moins bon.",
@@ -28196,6 +28476,13 @@
   "it": "Maggie, il piccolo terrier dal buon naso",
   "rm": "Maggie, il pitschen terrier cun il bun nas"
  },
+ "Maggie, such!": {
+  "en": "Maggie, search!",
+  "fr": "Maggie, cherche !",
+  "it": "Maggie, cerca!",
+  "rm": "Maggie, tschertga!",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Maggie-Geschichte": {
   "en": "Maggie story",
   "fr": "Histoire de Maggie",
@@ -28245,6 +28532,13 @@
   "fr": "vérifier les cotes «à mesurer» avant l'impression",
   "it": "verificare le misure «da misurare» prima della stampa",
   "rm": "controllar las mesiras «mesirar» avant la stampa"
+ },
+ "Massstab 1:25 000. Eine Linie mit Bleistift. Und am Rand: «G+T».": {
+  "en": "Scale 1:25,000. A pencil line. And in the margin: «G+T».",
+  "fr": "Échelle 1:25 000. Une ligne au crayon. Et dans la marge : «G+T».",
+  "it": "Scala 1:25 000. Una linea a matita. E sul bordo: «G+T».",
+  "rm": "Scala 1:25 000. Ina lingia cun rispli. Ed a l’ur: «G+T».",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Mast (Szene) – 3 m neben dem Gerät": {
   "en": "Mast (scene) – 3 m beside the device",
@@ -29494,6 +29788,13 @@
   "it": "Mattina 07:00",
   "rm": "Damaun 07:00"
  },
+ "Morgen geht es los. Drei Sachen passen noch in den Rucksack.": {
+  "en": "We set off tomorrow. Three more things fit in the backpack.",
+  "fr": "On part demain. Trois choses tiennent encore dans le sac.",
+  "it": "Domani si parte. Nello zaino ci stanno ancora tre cose.",
+  "rm": "Damaun partin nus. Trais chaussas han anc plaz en il satgados.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Morgen nach der {n}. Nacht": {
   "en": "Morning after night {n}",
   "fr": "Matin après la nuit {n}",
@@ -30015,6 +30316,13 @@
   "fr": "MoveEye n’est pas encore connecté : activer la simulation dans MoveEye, saisir l’adresse – ou sans Pi : démarrer MoveEye sur ce PC.",
   "it": "MoveEye non è ancora collegato: attivare la simulazione in MoveEye, inserire l’indirizzo – o senza Pi: avviare MoveEye su questo PC.",
   "rm": "MoveEye n’è anc betg collià: activar la simulaziun en MoveEye, endatar l’adressa – u senza Pi: cumenzar MoveEye sin quest PC."
+ },
+ "MoveEye ist wach. Infrarot an. Ich sehe: Gras. Viel Gras.": {
+  "en": "MoveEye is awake. Infrared on. I see: grass. Lots of grass.",
+  "fr": "MoveEye est éveillé. Infrarouge allumé. Je vois : de l’herbe. Beaucoup d’herbe.",
+  "it": "MoveEye è sveglio. Infrarosso acceso. Vedo: erba. Tanta erba.",
+  "rm": "MoveEye è sveglia. Infracotschen en. Jau ves: erva. Bler erva.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "MoveEye kommt nicht durch – vielleicht blockiert die Firewall": {
   "en": "MoveEye does not get through – maybe the firewall blocks it",
@@ -30848,6 +31156,13 @@
   "it": "Marzo",
   "rm": "Mars"
  },
+ "Mäusenest": {
+  "en": "Mouse nest",
+  "fr": "Nid de souris",
+  "it": "Nido di topi",
+  "rm": "Gnieu da mieurs",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Möchten Sie etwas tauschen?": {
   "en": "Would you like to trade something?",
   "fr": "Voulez-vous échanger quelque chose ?",
@@ -31407,6 +31722,13 @@
   "fr": "Amplification nocturne des caméras (maximum)",
   "it": "Amplificazione notturna delle telecamere (massimo)",
   "rm": "Amplificaziun da notg da las cameras (il pli bler)"
+ },
+ "Nachtwache": {
+  "en": "Night watch",
+  "fr": "Veille de nuit",
+  "it": "Guardia notturna",
+  "rm": "Guardia da notg",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Nahe am Weg: es kommen Leute vorbei": {
   "en": "Close to the trail: people pass by",
@@ -32070,6 +32392,13 @@
   "fr": "jamais",
   "it": "mai",
   "rm": "mai"
+ },
+ "Niederschlag: viel. Laune von Maggie: trotzdem gut.": {
+  "en": "Precipitation: lots. Maggie’s mood: good anyway.",
+  "fr": "Précipitations : beaucoup. Humeur de Maggie : bonne quand même.",
+  "it": "Precipitazioni: tante. Umore di Maggie: buono lo stesso.",
+  "rm": "Precipitaziun: bler. Luna da Maggie: tuttina buna.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Niemand schleicht: mindestens einen Bot (oder ein Handy als Läufer) dazunehmen.": {
   "en": "Nobody is sneaking: add at least one bot (or a phone as runner).",
@@ -32977,6 +33306,13 @@
   "it": "Aperto – qualcosa resta irrisolto",
   "rm": "Avert – insatge resta betg scleri"
  },
+ "Offen. Und drinnen ist es kälter als draussen.": {
+  "en": "Open. And it is colder inside than outside.",
+  "fr": "Ouvert. Et il fait plus froid dedans que dehors.",
+  "it": "Aperto. E dentro fa più freddo che fuori.",
+  "rm": "Avert. Ed endadens èsi pli fraid che dadora.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Offene Chipstüte": {
   "en": "Open crisp bag",
   "fr": "Sachet de chips ouvert",
@@ -33349,6 +33685,13 @@
   "fr": "Décompression de Python …",
   "it": "Decomprimo Python …",
   "rm": "Decumprimer Python …"
+ },
+ "Packen": {
+  "en": "Pack",
+  "fr": "Emballer",
+  "it": "Fai lo zaino",
+  "rm": "Pachetar",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Paket": {
   "en": "Parcel",
@@ -34783,6 +35126,13 @@
   "it": "Fumo e vapore: griglia, fornello a gas, scintille del falò, banchi di nebbia nelle notti umide",
   "rm": "Fim e vapur: grill, cuschinet da gas, sbrinzlas dal fieu da campadi, vels da tschajera en notgs umidas"
  },
+ "Rauch: viel. Wärme: noch wenig. Klappe am Ofenrohr: zu. Ich sage ja nur.": {
+  "en": "Smoke: lots. Warmth: not yet. Flue damper: closed. Just saying.",
+  "fr": "Fumée : beaucoup. Chaleur : pas encore. Clapet du tuyau : fermé. Je dis ça comme ça.",
+  "it": "Fumo: tanto. Calore: poco. Valvola della canna fumaria: chiusa. Lo dico e basta.",
+  "rm": "Fim: bler. Chalur: anc pauc. Clappa da la tschamenada: serrada. Jau di be.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "raucht / dampft": {
   "en": "smokes / steams",
   "fr": "fume / dégage de la vapeur",
@@ -35457,6 +35807,13 @@
   "it": "Prepara lo zaino, attraverso la valle con la mappa del tesoro del nonno, una notte con MoveEye – partita, difficoltà e stagione si scelgono all’inizio.",
   "rm": "Pachetar il satg, cun la charta da stgazi dal tat tras la val, ina notg cun MoveEye – stadi dal gieu, grevezza e stagiun tschernas ti al cumenzament."
  },
+ "Rucksack packen: wähle 3 Sachen": {
+  "en": "Pack the backpack: choose 3 things",
+  "fr": "Faire le sac : choisis 3 choses",
+  "it": "Prepara lo zaino: scegli 3 cose",
+  "rm": "Pachetar il satgados: tscherna 3 chaussas",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Rucksackgurt": {
   "en": "backpack strap",
   "fr": "sangle du sac",
@@ -36052,6 +36409,13 @@
   "rm": "Envida la glisch IR da MoveEye (acziun tar il champ)",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
+ "Schalte die Stirnlampe ein (Aktion)": {
+  "en": "Switch on the headlamp (action)",
+  "fr": "Allume la lampe frontale (action)",
+  "it": "Accendi la lampada frontale (azione)",
+  "rm": "Envida la glisch da fronta (acziun)",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Schalter": {
   "en": "Switches",
   "fr": "Commandes",
@@ -36238,6 +36602,13 @@
   "fr": "Dormir : %s",
   "it": "Dormire: %s",
   "rm": "Durmir: %s"
+ },
+ "Schlafenszeit. Ich wache. MoveEye wacht. Maggie … schnarcht.": {
+  "en": "Bedtime. I keep watch. MoveEye keeps watch. Maggie … snores.",
+  "fr": "L’heure de dormir. Je veille. MoveEye veille. Maggie … ronfle.",
+  "it": "Ora di dormire. Io veglio. MoveEye veglia. Maggie … russa.",
+  "rm": "Temp da durmir. Jau fatsch la guardia. MoveEye fa la guardia. Maggie … ronca.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Schlafplatz": {
   "en": "Sleeping spot",
@@ -38782,6 +39153,13 @@
   "it": "Più tardi - prosegui",
   "rm": "Pli tard - ir vinavant"
  },
+ "Später. Der Himmel ist klar. Unten rauscht der Bach.": {
+  "en": "Later. The sky is clear. Below, the stream rushes.",
+  "fr": "Plus tard. Le ciel est dégagé. En bas, le ruisseau gronde.",
+  "it": "Più tardi. Il cielo è sereno. Sotto scorre il ruscello.",
+  "rm": "Pli tard. Il tschiel è cler. Sutvart sbratga il dutg.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Spülbecken": {
   "en": "Sink",
   "fr": "Évier",
@@ -39100,6 +39478,13 @@
   "it": "Passerella riparata",
   "rm": "Punt reparada"
  },
+ "Steig die Leiter auf den Dachboden": {
+  "en": "Climb the ladder to the attic",
+  "fr": "Monte l’échelle jusqu’au grenier",
+  "it": "Sali la scala fino alla soffitta",
+  "rm": "Va si per la stgala sin il palantschin",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Steigen": {
   "en": "Rise",
   "fr": "Monter",
@@ -39342,6 +39727,13 @@
   "it": "Costellazione: dov'è il nord?",
   "rm": "Constellaziun: nua è il nord?"
  },
+ "Sterne": {
+  "en": "Stars",
+  "fr": "Étoiles",
+  "it": "Stelle",
+  "rm": "Stailas",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Sternennacht": {
   "en": "Starry night",
   "fr": "Nuit étoilée",
@@ -39464,6 +39856,13 @@
   "fr": "Lampe frontale",
   "it": "Lampada frontale",
   "rm": "Cazzola da frunt"
+ },
+ "Stockdunkel hier oben.": {
+  "en": "Pitch dark up here.",
+  "fr": "Il fait noir comme dans un four ici.",
+  "it": "Buio pesto quassù.",
+  "rm": "Stgir sco en in satg qua si.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "STOP": {
   "en": "STOP",
@@ -39658,6 +40057,13 @@
   "it": "Raffica di vento",
   "rm": "Buffada da vent"
  },
+ "Stöberer": {
+  "en": "Rummager",
+  "fr": "Fouineur",
+  "it": "Frugatore",
+  "rm": "Tschertgader",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Störung: %s-Servo blockiert am Anschlag – der Kopf klemmt": {
   "en": "Fault: %s servo blocked at the stop – the head is stuck",
   "fr": "Panne : servo %s bloqué en butée – la tête est coincée",
@@ -39711,6 +40117,13 @@
   "fr": "Cherche la petite tache chaude de l'enregistrement – à quelques pas de la tente.",
   "it": "Cerca la piccola macchia calda della registrazione – a pochi passi dalla tenda.",
   "rm": "Tschertga il pitschen fleck chaud da la registraziun – paucs pass davant la tenda."
+ },
+ "Such im Licht der Stirnlampe nach der Blechdose": {
+  "en": "Search for the tin box in the light of the headlamp",
+  "fr": "Cherche la boîte en fer à la lumière de la lampe frontale",
+  "it": "Cerca la scatola di latta alla luce della frontale",
+  "rm": "Tschertga la stgatla da tola en la glisch da la glisch da fronta",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Suche": {
   "en": "Searching",
@@ -40642,6 +41055,13 @@
   "fr": "Terrarium (grossier)",
   "it": "Terrarium (grossolano)",
   "rm": "Terrarium (grop)"
+ },
+ "Terrier können keine Leitern. – Wuff! – Gut, dann eben doch.": {
+  "en": "Terriers can’t do ladders. – Woof! – Fine, apparently they can.",
+  "fr": "Les terriers ne savent pas monter aux échelles. – Ouaf ! – Bon, apparemment si.",
+  "it": "I terrier non sanno salire le scale. – Bau! – Va bene, a quanto pare sì.",
+  "rm": "Terriers na san betg ir sin stgalas. – Wuff! – Bun, lura tuttina.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Test": {
   "en": "Test",
@@ -43658,6 +44078,13 @@
   "it": "Aspetta – arriva aiuto!",
   "rm": "Spetga – agid vegn!"
  },
+ "Warte, bis Maggie etwas bringt": {
+  "en": "Wait until Maggie brings something",
+  "fr": "Attends que Maggie rapporte quelque chose",
+  "it": "Aspetta che Maggie porti qualcosa",
+  "rm": "Spetga fin che Maggie porta insatge",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Warten (10 Min.)": {
   "en": "Wait (10 min)",
   "fr": "Attendre (10 min)",
@@ -43747,6 +44174,13 @@
   "fr": "Qu'est-ce qui brille dans les feuilles ?",
   "it": "Cosa luccica tra le foglie?",
   "rm": "Tge glitscha en il fegliam?"
+ },
+ "Was hast du hier oben versteckt, {bezug}?": {
+  "en": "What did you hide up here, {bezug}?",
+  "fr": "Qu’as-tu caché ici, {bezug} ?",
+  "it": "Che cosa hai nascosto quassù, {bezug}?",
+  "rm": "Tge has ti zuppentà qua si, {bezug}?",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Was hat dich heute überrascht?": {
   "en": "What surprised you today?",
@@ -44585,6 +45019,13 @@
   "fr": "quand le panneau est fermé (H)",
   "it": "quando il pannello è chiuso (H)",
   "rm": "cura che la panela è serrada (H)"
+ },
+ "Wenn einer von uns nicht zurückkommt, holt der andere die Dose.": {
+  "en": "If one of us does not come back, the other fetches the box.",
+  "fr": "Si l’un de nous ne revient pas, l’autre va chercher la boîte.",
+  "it": "Se uno di noi non torna, l’altro va a prendere la scatola.",
+  "rm": "Sch’in da nus na returna betg, va l’auter per la stgatla.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "wenn man lange nichts findet": {
   "en": "when you find nothing for a long time",
@@ -45448,6 +45889,13 @@
   "it": "Seguiamo: %s",
   "rm": "Nus suandain: %s"
  },
+ "Wir kommen beide zurück, Toni. Versprochen.": {
+  "en": "We will both come back, Toni. I promise.",
+  "fr": "Nous reviendrons tous les deux, Toni. Promis.",
+  "it": "Torneremo entrambi, Toni. Promesso.",
+  "rm": "Nus returnain omadus, Toni. Empermess.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Wird frei: ": {
   "en": "Unlocks: ",
   "fr": "Se débloque : ",
@@ -45725,6 +46173,13 @@
   "rm": "Vau!",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
+ "Wuff! (Doch.)": {
+  "en": "Woof! (Yes, it is.)",
+  "fr": "Ouaf ! (Si.)",
+  "it": "Bau! (Invece sì.)",
+  "rm": "Wuff! (Tuttina.)",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "Wuff! Ein Hund kommt.": {
   "en": "Woof! A dog is coming.",
   "fr": "Ouaf ! Un chien arrive.",
@@ -45838,6 +46293,13 @@
   "fr": "Gardien : MoveEye (IA)",
   "it": "Guardiano: MoveEye (IA)",
   "rm": "Guardian: MoveEye (IA)"
+ },
+ "Wähle": {
+  "en": "Choose",
+  "fr": "Choisis",
+  "it": "Scegli",
+  "rm": "Tscherna",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "Wähle, was du gibst und was du dafür bekommst.": {
   "en": "Choose what you give and what you get for it.",
@@ -47150,6 +47612,13 @@
   "rm": "{jahr}",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
+ "{jahr}. Am selben Tisch.": {
+  "en": "{jahr}. At the same table.",
+  "fr": "{jahr}. À la même table.",
+  "it": "{jahr}. Allo stesso tavolo.",
+  "rm": "{jahr}. A la medema maisa.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "{jahr}. Genau hier.": {
   "en": "{jahr}. Right here.",
   "fr": "{jahr}. Juste ici.",
@@ -47937,6 +48406,13 @@
   "it": "— nessuna —",
   "rm": "— nagina —"
  },
+ "… jetzt ist sie offen.": {
+  "en": "… now it is open.",
+  "fr": "… maintenant il est ouvert.",
+  "it": "… ora è aperta.",
+  "rm": "… ussa è ella averta.",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
+ },
  "… und %d weitere": {
   "en": "… and %d more",
   "fr": "… et %d autres",
@@ -48124,6 +48600,13 @@
   "fr": "▶ Rejouer à l'identique (même seed, mêmes décisions)",
   "it": "▶ Rigiocare esattamente uguale (stesso seed, stesse decisioni)",
   "rm": "▶ Giugar anc ina giada exactamain uschia (medem seed, medemas decisiuns)"
+ },
+ "▶ Kapitel 1": {
+  "en": "▶ Chapter 1",
+  "fr": "▶ Chapitre 1",
+  "it": "▶ Capitolo 1",
+  "rm": "▶ Chapitel 1",
+  "?": "rm: Kapitel 1 21.11.2026 (Korrekturlesen)"
  },
  "▶ Kapitel 2 spielen (neu)": {
   "en": "▶ Play chapter 2 (new)",

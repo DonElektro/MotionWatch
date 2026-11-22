@@ -2312,9 +2312,9 @@ func neu_modus_an() -> bool:
 	return bool(P.get("neu_modus", true))
 
 
-func neu_starten() -> void:
+func neu_starten(kapitel := 2) -> void:
 	close_ab()
-	var o := {"rolle": _neu_rolle}
+	var o := {"rolle": _neu_rolle, "kapitel": kapitel}
 	if _neu_name.strip_edges() != "":
 		o["name"] = _neu_name                             # else the start card asks (role + name, «Nina»)
 	preload("res://scripts/kit_abenteuer.gd").ensure(main).start(o)
