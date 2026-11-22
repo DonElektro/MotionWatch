@@ -652,6 +652,9 @@ Features
     infrared night picture - persons near the camera are now seen at night).
   * 4.19.1: Homepage-Startseite: alle Varianten (auch «A · Bildgeschichte») zeigen jetzt alle Links – MoveEye (Demo), Die Karte
     des Grossvaters, Handy-Funkgerät, Simulator – und oben das bewegte MoveEye-Auge beim Titel (blinzelt, schaut sich um)
+  * 4.19.1: Produktseite /info/ neu: Abschnitte beim Scrollen, ruhige Landschaftsbilder ohne Personen, kurzer Film aus dem
+    Simulator, Liste «Alle Funktionen» (441) zum Durchsuchen und Kopieren; eigene Fotos (Mehr → Homepage → Produktseite:
+    Bilder) ersetzen weiterhin die Beispiele
   * 4.19.0: Karte: neuer Schalter «🗺 Schweiz | ⛰ Bergtal» auf /karte – die Karte des Simulator-Tals wie die Landeskarte (Relief,
     Höhenlinien, 3D, Orte, Wanderwege, Bäche, Seen), geheime Orte erst nach dem Finden im Simulator, live MoveEye / Figur /
     Mover, Touren mit Bergtal-Höhen, «Tour im Sim nachlaufen», Vorschläge

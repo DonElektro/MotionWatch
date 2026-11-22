@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-22 09:49",
+ "generated": "2026-11-22 09:55",
  "versions": [
   {
    "version": "4.19.1",
    "file": "webcam_bewegung_4_19_1.py",
    "url": "",
-   "sha256": "6e2e3bf5ce7f9ccbcda93c21ff5cd932b3fb8e242167d4a8d2ebdfedb711218a",
-   "date": "2026-11-22 09:49",
+   "sha256": "f2fdd9dca4be52490610f36269db487f198b4d11cfc86591cae7f776838e8421",
+   "date": "2026-11-22 09:55",
    "notes": "Homepage-Startseite: alle Varianten (auch «A · Bildgeschichte») zeigen jetzt alle Links – MoveEye (Demo), Die Karte des Grossvaters, Handy-Funkgerät, Simulator – und oben das bewegte MoveEye-Auge beim Titel (blinzelt, schaut sich um)",
-   "size": 4030183,
-   "sig": "7477ea42094cebc9d42e6b3a46bbfb0239daa348bbc95ff8c1f09f9e8fc6f8a61d32cebd65c48e2860aeb90c63fb3b520fca2a0a094a8f3382893b0fb9ce0f0b",
+   "size": 4030478,
+   "sig": "049bf3da6b8678d0c153f1722029f4bbbefc7de979a6c128dada6deda5be02017b7a990984d933c7ebcae1632c5825cb4433ae324a17ff14539316c5bdf43203",
    "data": {
     "file": "moveeye_daten_4_19_1.zip",
     "url": "",
-    "sha256": "aaa5266ee9592ca7f5017adfcbdcf70a4d8fe22f5ae5740a91316a6091ac7a35",
-    "size": 14538157,
-    "sig": "a7aaddb9cde6c2c67f933e9d422143b64b4d1781232ea85ff699c6c43ee4be0fe25e29e621086b450b110f1aeebabcc1c6ccd230eadfa6924028f3886f256207"
+    "sha256": "4cf3a4fb888b77cd64dbf626d54038aa8528141195b2d88f2f7f9d842a452248",
+    "size": 17618367,
+    "sig": "1268af30bc996e58a40f6897d3ddd36a287923d84bcf30d4b0599eeb5463871d6889b468f5620609dbe1c92c221a1cc741d852b1477df55168f2fa9598081809"
    }
   },
   {

@@ -25,6 +25,9 @@ Features
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
   * 4.19.1: Homepage-Startseite: alle Varianten (auch «A · Bildgeschichte») zeigen jetzt alle Links – MoveEye (Demo), Die Karte
     des Grossvaters, Handy-Funkgerät, Simulator – und oben das bewegte MoveEye-Auge beim Titel (blinzelt, schaut sich um)
+  * 4.19.1: Produktseite /info/ neu: Abschnitte beim Scrollen, ruhige Landschaftsbilder ohne Personen, kurzer Film aus dem
+    Simulator, Liste «Alle Funktionen» (441) zum Durchsuchen und Kopieren; eigene Fotos (Mehr → Homepage → Produktseite:
+    Bilder) ersetzen weiterhin die Beispiele
   * 4.19.0: Karte: neuer Schalter «🗺 Schweiz | ⛰ Bergtal» auf /karte – die Karte des Simulator-Tals wie die Landeskarte (Relief,
     Höhenlinien, 3D, Orte, Wanderwege, Bäche, Seen), geheime Orte erst nach dem Finden im Simulator, live MoveEye / Figur /
     Mover, Touren mit Bergtal-Höhen, «Tour im Sim nachlaufen», Vorschläge
@@ -271,7 +274,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_19_1.zip"
-ZD_SHA256 = "aaa5266ee9592ca7f5017adfcbdcf70a4d8fe22f5ae5740a91316a6091ac7a35"
+ZD_SHA256 = "4cf3a4fb888b77cd64dbf626d54038aa8528141195b2d88f2f7f9d842a452248"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
