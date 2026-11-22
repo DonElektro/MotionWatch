@@ -21,6 +21,9 @@ const Par = preload("res://scripts/kit_parcours.gd")
 const Hund = preload("res://scripts/kit_maggie.gd")
 const Klang = preload("res://scripts/klang.gd")
 const Quality = preload("res://scripts/quality.gd")
+const Haltung = preload("res://scripts/figur_haltung.gd")   # posture and water, the same as «Frei erkunden» (22.11.2026)
+const ExPerson = preload("res://scripts/explore_person.gd")
+const Welt = preload("res://scripts/erkunden_welt.gd")
 const BUSY := "Die Karte des Grossvaters (neu)"
 
 var main
@@ -522,7 +525,8 @@ func kapitel_weiter() -> void:
 func zum_menue() -> void:
 	"""the end card: «Zurück zum Menü» - the adventure ends, the menu «Spielen» opens"""
 	stop()
-	if main.get("spielbereich") != null and main.spielbereich.has_method("open"):
+	await get_tree().create_timer(0.8).timeout              # (after the scene and the windows of stop())
+	if not running and main.get("spielbereich") != null and main.spielbereich.has_method("open"):
 		main.spielbereich.open()
 
 
@@ -531,6 +535,12 @@ func stop() -> void:
 		return
 	running = false
 	phase = ""
+	if figur != null and figur.ok():
+		halt.actor = figur.a
+		Haltung.zuruecksetzen(halt)
+		figur.a.run_top = 0.0
+	ansicht = "folge"
+	_hw = {}
 	for n in _versteckt:
 		if is_instance_valid(n):
 			n.visible = true
@@ -1001,7 +1011,13 @@ func _process(dt: float) -> void:
 		if to.length() <= 0.4:
 			_figur_zug = null
 			regie.zug_fertig("figur")
-	figur.vor(dt, ein)
+	if _haltung_frame(ein):
+		figur.a.puppet = false                                # swimming at the surface (figur_haltung.gd)
+		figur.a.frozen = false
+		figur.a.ctl_move = ein.get("mv", Vector2.ZERO)
+		figur.a.ctl_run = false
+	else:
+		figur.vor(dt, ein)
 	set_meta("_ein", ein)
 	if hud.touch != touch_an():
 		hud.set_touch(touch_an())
@@ -1015,7 +1031,8 @@ func spaet(dt: float, real_dt: float) -> void:
 	if not running or phase == "laden" or figur == null or not figur.ok():
 		return
 	var ein: Dictionary = get_meta("_ein", {})
-	figur.nach(dt, ein)
+	if not _wasser_frame():
+		figur.nach(dt, ein)
 	if not nach_klettern.is_empty() and figur.zustand == "boden":
 		var alt := nach_klettern
 		nach_klettern = {}
@@ -1028,6 +1045,7 @@ func spaet(dt: float, real_dt: float) -> void:
 	_marker_tick(real_dt)
 	_licht()
 	regie.tick(dt, real_dt, ein)
+	_ansicht_tick(dt)
 	hud.tick(real_dt)
 
 
@@ -1068,6 +1086,9 @@ func eingabe(dt: float) -> Dictionary:
 		sp_h = _taste(KEY_SPACE)
 		sp = _neu("space", sp_h)
 		akt = _neu("e", _taste(KEY_E) or _taste(KEY_F))
+		for kw in [["c", KEY_C, "haltung"], ["x", KEY_X, "sitzen"], ["z", KEY_Z, "liegen"], ["v", KEY_V, "ansicht"]]:
+			if _neu(str(kw[0]), _taste(int(kw[1]))):
+				_hw[str(kw[2])] = true                          # like «Frei erkunden»: C posture, X sit, Z lie, V view
 		_foto_wunsch = _foto_wunsch or _neu("p", _taste(KEY_P))
 	var k := Vector2(f, r)
 	var pm = main.get("padmap")
@@ -1083,6 +1104,9 @@ func eingabe(dt: float) -> Dictionary:
 		sp_h = sp_h or pm.btn("a")
 		sp = sp or pm.hit("a")
 		akt = akt or pm.hit("x") or pm.hit("b")
+		for kw in [["down", "haltung"], ["left", "sitzen"], ["right", "liegen"], ["r3", "ansicht"]]:
+			if pm.hit(str(kw[0])):
+				_hw[str(kw[1])] = true                          # ✚ ↓ posture, ✚ ← sit, ✚ → lie, R3 view
 		if pm.hit("start"):
 			_pause_druck()
 	if hud != null:
@@ -1095,6 +1119,8 @@ func eingabe(dt: float) -> Dictionary:
 		sp = sp or bool(tc["sprung"])
 		sp_h = sp_h or bool(tc["sprung_h"])
 		akt = akt or bool(tc["aktion"])
+		if bool(tc.get("haltung", false)):
+			_hw["haltung"] = true
 	look += _maus_look
 	_maus_look = Vector2.ZERO
 	zoom = _zoom
@@ -1118,6 +1144,8 @@ func eingabe(dt: float) -> Dictionary:
 	k = k.limit_length(1.0)
 	var cam: Camera3D = main.view_cam
 	var fw := -cam.global_transform.basis.z
+	if absf(fw.y) > 0.97:
+		fw = cam.global_transform.basis.y                      # the view from above: «up» on the screen is forward
 	fw.y = 0.0
 	fw = fw.normalized() if fw.length() > 0.01 else Vector3(0, 0, -1)
 	var rt := fw.cross(Vector3.UP).normalized()
@@ -1137,6 +1165,113 @@ func eingabe(dt: float) -> Dictionary:
 		hud.tap_foto = false
 	return {"foto": fo, "mv": Vector2(mv3.x, mv3.z), "run": run, "sprung": sp, "sprung_h": sp_h, "aktion": akt, "vor": k.x,
 		"quer": quer, "look": look, "zoom": zoom}
+
+
+# ---- the movements of «Frei erkunden» (22.11.2026): posture, sitting, lying, wading, swimming, the views ---------------------
+class HaltWirt:
+	"""what figur_haltung.gd works on (the kit has a function «wasser»)"""
+	var main
+	var actor
+	var figur
+	var haltung := "stehen"
+	var wasser := ""
+	var spiegel := 0.0
+	var sitz := {}
+
+
+var halt := HaltWirt.new()
+var _hw := {}                           # the wishes since the last frame: haltung | sitzen | liegen | ansicht
+var ansicht := "folge"                  # folge (behind) | augen (own eyes) | oben (from above) - V, like «Frei erkunden»
+const ANSICHTEN := ["folge", "augen", "oben"]
+
+
+func haltung_frei() -> bool:
+	"""postures everywhere in the game - not in a film, while climbing / hanging / balancing (zustand), steering Maggie,
+	on the map, or where the chapter needs its own action (k3.haltung_erlaubt(): the raft)"""
+	if phase != "spiel" or figur == null or not figur.ok() or str(figur.zustand) != "boden":
+		return false
+	if steuer_maggie or karte_an or _figur_zug is Vector3:
+		return false
+	if k3 != null and k3.has_method("haltung_erlaubt") and not k3.haltung_erlaubt():
+		return false
+	return true
+
+
+func _haltung_frame(ein: Dictionary) -> bool:
+	"""before the actors: the wishes, what actor.gd does with the posture; true = the figure swims (no kit_figur steps)"""
+	var hw := _hw
+	_hw = {}
+	if bool(hw.get("ansicht", false)) and phase == "spiel":
+		ansicht = ANSICHTEN[(ANSICHTEN.find(ansicht) + 1) % ANSICHTEN.size()]
+		if ansicht == "folge":
+			regie.hinter_figur()
+	if figur == null or not figur.ok() or phase == "pause":
+		return false
+	halt.main = main
+	halt.actor = figur.a
+	halt.figur = figur
+	if not haltung_frei():
+		if halt.haltung != "stehen" or halt.wasser != "":
+			var lag := halt.haltung in ["sitzen", "liegen"]
+			Haltung.zuruecksetzen(halt)                      # a film, a climb, the raft: standing (and dry) again
+			if lag and str(figur.zustand) == "boden":
+				figur.a.frozen = false
+		return false
+	# the fast run of «Frei erkunden» (developer switch ex_schnell, step ex_ptempo) - never slower than the normal run: the
+	# jumps of the chapters are made for it
+	Haltung.tick(halt, ein, hw, 1.0, true, maxf(ExPerson.renn_tempo(main), ExPerson.V_RENNEN))
+	Haltung.sprung_filter(halt, ein)
+	return halt.wasser == "schwimmen"
+
+
+func _wasser_frame() -> bool:
+	"""after the actors: deep water of the world = swimming; the water of a puzzle (parcours «wasser»: the stream, the lake
+	of the raft) stays what it is - back to the last point (kit_figur.gd), so swimming never skips a gate"""
+	if not haltung_frei():
+		return false
+	var gf: Dictionary = par.gefahr_bei(figur.a.position) if par != null else {}
+	if not gf.is_empty() and str(gf.get("art", "")) == "wasser":
+		if halt.wasser == "schwimmen":
+			halt.wasser = ""
+			figur.y = main.ground_y(figur.a.position.x, figur.a.position.z)
+			figur.geh_zu("boden")
+		return false
+	var wa: Dictionary = Welt.wasser(main, figur.a.position)
+	if halt.wasser != "schwimmen" and (wa.is_empty() or float(figur.y) > float(wa["spiegel"]) + 0.12):
+		halt.wasser = ""                                     # dry - also on a stone, a bridge or a block above the water
+		return false
+	return Haltung.wasser_tick(halt, func(n): ton(n))
+
+
+func kopf_hoehe() -> float:
+	"""kit_regie.gd: where the follow camera looks (the head) - lower when crouching, crawling, sitting, lying, swimming"""
+	if halt.wasser == "schwimmen":
+		return 0.45
+	return {"stehen": 1.45, "geduckt": 1.0, "kriechen": 0.55, "sitzen": 1.0, "liegen": 0.4}.get(halt.haltung, 1.45)
+
+
+var _eye_p := Vector3.ZERO
+
+
+func _ansicht_tick(dt: float) -> void:
+	"""V: the own eyes or from above (only in the game; films and fixed shots keep their camera)"""
+	if ansicht == "folge" or phase != "spiel" or regie.film_an or regie.art != "folge" or not figur.ok():
+		return
+	var cam: Camera3D = main.view_cam
+	var yw := float(regie.yaw)
+	var fw := Vector3(-sin(yw), 0, -cos(yw))
+	if ansicht == "augen":
+		var want: Vector3 = figur.pos() + Vector3(0, Haltung.augen_hoehe(halt.haltung) if halt.wasser != "schwimmen" else 0.35, 0) + fw * 0.15
+		_eye_p = want if _eye_p.distance_to(want) > 2.0 else _eye_p.lerp(want, clampf(dt * 14.0, 0.0, 1.0))
+		cam.fov = 70.0
+		cam.near = 0.05
+		cam.global_position = _eye_p
+		cam.look_at(_eye_p + fw * 10.0 + Vector3(0, -1.2 + (0.38 - float(regie.pitch)) * 4.0, 0), Vector3.UP)
+	else:
+		var tp: Vector3 = figur.pos() + Vector3(0, 0.8, 0)
+		cam.fov = 70.0
+		cam.global_position = tp + Vector3(0.01, float(regie.dist) * 2.6 + 6.0, 0.01)
+		cam.look_at(tp, fw)
 
 
 var _maus_look := Vector2.ZERO
@@ -2117,7 +2252,8 @@ func info() -> Dictionary:
 		"checkpoint": checkpoint_id, "erledigt": erledigt.keys(), "funde": funde.keys(), "abzeichen": abzeichen.keys(),
 		"merker": merker.keys(), "musik": musik_z, "touch": touch_an(), "log": log_.slice(-12), "lite": Quality.lite(),
 		"steuer_maggie": steuer_maggie, "fps": fps_log.slice(-10), "time_scale": Engine.time_scale, "k3": k3.info() if k3 != null else {},
-		"abschnitt_angebot": abschnitt_angebot, "ueber_i": int(schritt.get("_ueber_i", 0)), "weg": weg.size()}
+		"abschnitt_angebot": abschnitt_angebot, "ueber_i": int(schritt.get("_ueber_i", 0)), "weg": weg.size(),
+		"haltung": halt.haltung, "wasser": halt.wasser, "ansicht": ansicht, "haltung_frei": haltung_frei() if running else false}
 	if running and figur != null and figur.ok():
 		o["figur"] = figur.info()
 		o["kamera"] = regie.info()
@@ -2214,6 +2350,16 @@ static func control(m, d: Dictionary) -> Dictionary:
 		"aktion":
 			k.aktion_fertig(str(d.get("id", "")))
 			return {"ok": true}
+		"haltung":                                         # like the keys: {wunsch: haltung | sitzen | liegen | ansicht} or {setzen: geduckt …}
+			if d.has("setzen"):
+				k.halt.main = k.main
+				k.halt.actor = k.figur.a
+				k.halt.figur = k.figur
+				if k.haltung_frei():
+					Haltung.setzen(k.halt, str(d["setzen"]))
+			else:
+				k._hw[str(d.get("wunsch", "haltung"))] = true
+			return {"ok": true, "haltung": k.halt.haltung, "frei": k.haltung_frei()}
 		"abschnitt":                                       # «Zum nächsten Abschnitt springen» (tests: also before 90 s)
 			k.abschnitt_springen()
 			return {"ok": true, "kit": k.info()}

@@ -6038,6 +6038,13 @@
   "it": "Valutare le immagini (%d aperte) - che animale è?",
   "rm": "Evaluar ils maletgs (%d averts) - tge animal è quai?"
  },
+ "Aufstehen": {
+  "en": "Stand up",
+  "fr": "Se lever",
+  "it": "Alzati",
+  "rm": "Star si",
+  "?": "rm: Neubau-Texte 22.11.2026 (Korrekturlesen)"
+ },
  "Aufstell-Planer: Wo soll MoveEye hin?": {
   "en": "Placement planner: where should MoveEye go?",
   "fr": "Planificateur d’emplacement : où placer MoveEye ?",
@@ -8993,6 +9000,13 @@
   "it": "Controller: levetta sinistra camminare · levetta destra guardarsi intorno · A saltare / afferrare · X azione · R2 correre · Start pausa",
   "rm": "Controller: stick sanester ir · stick dretg guardar enturn · A siglir / tschiffar · X acziun · R2 currer · Start pausa",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Controller: ✚ ↓ Haltung · ✚ ← sitzen · ✚ → liegen · R3 Ansicht": {
+  "en": "Controller: ✚ ↓ posture · ✚ ← sit · ✚ → lie down · R3 view",
+  "fr": "Manette : ✚ ↓ posture · ✚ ← s’asseoir · ✚ → s’allonger · R3 vue",
+  "it": "Controller: ✚ ↓ postura · ✚ ← sedersi · ✚ → sdraiarsi · R3 vista",
+  "rm": "Controller: ✚ ↓ posiziun · ✚ ← seser · ✚ → giaschair · R3 vista",
+  "?": "rm: Neubau-Texte 22.11.2026 (Korrekturlesen)"
  },
  "Countdown": {
   "en": "Countdown",
@@ -14134,6 +14148,13 @@
   "fr": "Dubhe (Grande Ourse)",
   "it": "Dubhe (Grande Carro)",
   "rm": "Dubhe (Char grond)"
+ },
+ "Ducken": {
+  "en": "Crouch",
+  "fr": "S’accroupir",
+  "it": "Accovacciati",
+  "rm": "Sa sbassar",
+  "?": "rm: Neubau-Texte 22.11.2026 (Korrekturlesen)"
  },
  "Duell: MoveEye %d : %d %s": {
   "en": "Duel: MoveEye %d : %d %s",
@@ -21602,6 +21623,13 @@
   "it": "Cambiare postura (C): in piedi → accovacciato → strisciare",
   "rm": "Midar la posiziun (C): star en pe → sbassà → ruschnar"
  },
+ "Haltung wie beim Erkunden: C stehen → geduckt → kriechen · X hinsetzen · Z hinlegen · V Ansicht (hinter dir, aus den Augen, von oben) · im tiefen Wasser schwimmen": {
+  "en": "Posture as when exploring: C stand → crouch → crawl · X sit down · Z lie down · V view (behind you, own eyes, from above) · swim in deep water",
+  "fr": "Posture comme en exploration : C debout → accroupi → ramper · X s’asseoir · Z s’allonger · V vue (derrière toi, tes yeux, d’en haut) · nager en eau profonde",
+  "it": "Postura come nell’esplorazione: C in piedi → accovacciato → strisciare · X sedersi · Z sdraiarsi · V vista (dietro di te, dai tuoi occhi, dall’alto) · nuotare in acqua profonda",
+  "rm": "Posiziun sco cun explorar: C star → sbassà → ruschnar · X seser · Z giaschair · V vista (davos tai, ord tes egls, da sura) · nudar en aua profunda",
+  "?": "rm: Neubau-Texte 22.11.2026 (Korrekturlesen)"
+ },
  "Hamster im Laufrad": {
   "en": "Hamster in the wheel",
   "fr": "Hamster dans sa roue",
@@ -21625,6 +21653,13 @@
   "fr": "Téléphone",
   "it": "Telefonino",
   "rm": "Telefonin"
+ },
+ "Handy / iPad: der grüne Knopf über «Springen» = ducken, kriechen, aufstehen": {
+  "en": "Phone / iPad: the green button above «Jump» = crouch, crawl, stand up",
+  "fr": "Téléphone / iPad : le bouton vert au-dessus de «Sauter» = s’accroupir, ramper, se lever",
+  "it": "Telefono / iPad: il pulsante verde sopra «Salta» = accovacciarsi, strisciare, alzarsi",
+  "rm": "Telefonin / iPad: il buttun verd sur «Siglir» = sa sbassar, ruschnar, star si",
+  "?": "rm: Neubau-Texte 22.11.2026 (Korrekturlesen)"
  },
  "Handy / iPad: Stick links · rechts «Aktion» und «Springen/Greifen» · in der rechten Hälfte wischen = umschauen": {
   "en": "Phone / iPad: stick on the left · «Action» and «Jump/Grab» on the right · swipe in the right half = look around",
@@ -27433,6 +27468,13 @@
   "fr": "Pro de la reptation",
   "it": "Campione di strisciata",
   "rm": "Profi da sa trair"
+ },
+ "Kriechen": {
+  "en": "Crawl",
+  "fr": "Ramper",
+  "it": "Striscia",
+  "rm": "Ruschnar",
+  "?": "rm: Neubau-Texte 22.11.2026 (Korrekturlesen)"
  },
  "Kriechend bist du ganz klein im Bild von MoveEye.": {
   "en": "Crawling, you are tiny in MoveEye’s picture.",

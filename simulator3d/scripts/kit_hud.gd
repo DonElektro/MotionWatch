@@ -60,6 +60,8 @@ var _hilfe: Label
 var stick: Control
 var _btn_akt: Button
 var _btn_sprung: Button
+var _btn_haltung: Button
+var tap_haltung := false
 var _swipe: Control
 var _fade_tw: Tween
 var _sepia_k := 0.0
@@ -183,6 +185,8 @@ func _ready() -> void:
 	_btn_sprung = _rund(T.t("Springen/\nGreifen"), Color(0.4, 0.75, 1.0))
 	_btn_sprung.button_down.connect(func(): tap_sprung = true; halt_sprung = true)
 	_btn_sprung.button_up.connect(func(): halt_sprung = false)
+	_btn_haltung = _rund(T.t("Ducken"), Color(0.6, 0.85, 0.55))         # like «Frei erkunden»: stand → crouch → crawl
+	_btn_haltung.button_down.connect(func(): tap_haltung = true)
 	# fade (above everything but the menu)
 	_fade = ColorRect.new()
 	_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -262,8 +266,11 @@ func _bau_menu() -> void:
 	_hilfe.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_hilfe.custom_minimum_size = Vector2(260, 0)
 	_hilfe.text = T.t("PC: W A S D gehen · Shift rennen · Leertaste springen / greifen · E Aktion · Maus ziehen umschauen · Rad näher / weiter · Esc Pause") + "\n" + \
+			T.t("Haltung wie beim Erkunden: C stehen → geduckt → kriechen · X hinsetzen · Z hinlegen · V Ansicht (hinter dir, aus den Augen, von oben) · im tiefen Wasser schwimmen") + "\n" + \
 			T.t("Controller: linker Stick gehen · rechter Stick umschauen · A springen / greifen · X Aktion · R2 rennen · Start Pause") + "\n" + \
-			T.t("Handy / iPad: Stick links · rechts «Aktion» und «Springen/Greifen» · in der rechten Hälfte wischen = umschauen")
+			T.t("Controller: ✚ ↓ Haltung · ✚ ← sitzen · ✚ → liegen · R3 Ansicht") + "\n" + \
+			T.t("Handy / iPad: Stick links · rechts «Aktion» und «Springen/Greifen» · in der rechten Hälfte wischen = umschauen") + "\n" + \
+			T.t("Handy / iPad: der grüne Knopf über «Springen» = ducken, kriechen, aufstehen")
 	_hilfe.visible = false
 	v.add_child(_hilfe)
 
@@ -322,7 +329,10 @@ func _layout() -> void:
 	_btn_sprung.position = Vector2(s.x - b1 - pad * 1.5, s.y - b1 - pad * 1.5)
 	_btn_akt.size = Vector2(b2, b2)
 	_btn_akt.position = _btn_sprung.position + Vector2(-b2 - pad * 0.8, b1 - b2 - r * 0.55)
-	for b in [_btn_akt, _btn_sprung]:
+	var b3 := r * 0.8
+	_btn_haltung.size = Vector2(b3, b3)
+	_btn_haltung.position = _btn_sprung.position + Vector2(b1 - b3, -b3 - pad * 0.8)
+	for b in [_btn_akt, _btn_sprung, _btn_haltung]:
 		b.add_theme_font_size_override("font_size", int(15.0 * maxf(k, 0.9)))
 		for st in ["normal", "hover", "pressed", "focus"]:
 			var sb = b.get_theme_stylebox(st)
@@ -382,7 +392,7 @@ func _kette_los() -> void:
 
 func tick(real_dt: float) -> void:
 	if _kette_t >= 0.0 and _ende != null and is_instance_valid(_ende):
-		_kette_t -= real_dt
+		_kette_t = maxf(_kette_t - real_dt, 0.0)
 		_kette_text()
 		if _kette_t <= 0.0:
 			_kette_los()
@@ -432,6 +442,10 @@ func tick(real_dt: float) -> void:
 	stick.visible = tv
 	_btn_akt.visible = tv
 	_btn_sprung.visible = tv
+	_btn_haltung.visible = tv and kit.haltung_frei()
+	if tv:
+		_setz("haltung_btn", T.t({"stehen": "Ducken", "geduckt": "Kriechen", "kriechen": "Aufstehen", "sitzen": "Aufstehen", "liegen": "Aufstehen"}.get(kit.halt.haltung, "Ducken")),
+				func(v): _btn_haltung.text = v)
 	_swipe.mouse_filter = Control.MOUSE_FILTER_STOP if tv else Control.MOUSE_FILTER_IGNORE
 	if tv:
 		stick.queue_redraw()
@@ -828,8 +842,9 @@ func _swipe_input(ev: InputEvent) -> void:
 
 func nimm_touch() -> Dictionary:
 	"""what the touch controls did since the last frame (then cleared)"""
-	var o := {"mv": stick_v, "look": look_d, "aktion": tap_akt, "sprung": tap_sprung, "sprung_h": halt_sprung}
+	var o := {"mv": stick_v, "look": look_d, "aktion": tap_akt, "sprung": tap_sprung, "sprung_h": halt_sprung, "haltung": tap_haltung}
 	look_d = Vector2.ZERO
+	tap_haltung = false
 	tap_akt = false
 	tap_sprung = false
 	return o

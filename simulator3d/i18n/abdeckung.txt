@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8429 (Stellen: 11711)
-Übersetzt: en 8429, fr 8429, it 8429, rm 8429
-Unsicher markiert: 508
+Texte gesamt: 8435 (Stellen: 11721)
+Übersetzt: en 8435, fr 8435, it 8435, rm 8435
+Unsicher markiert: 514
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 541 Stellen
 Nicht mehr im Code (noch in texte.json): 417
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 31039, schlüssel 24080, keine Wörter 15462, index 10647, technisch 3973, doc 2700, einheit 351, log 204, englisch 148, pfad 130, stringname 107, html 69, klasse 46, shader 6
+Übersprungen (Grund: Anzahl): kennung 31088, schlüssel 24109, keine Wörter 15475, index 10652, technisch 3974, doc 2712, einheit 351, log 204, englisch 148, pfad 130, stringname 107, html 69, klasse 46, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -98,6 +98,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   fotomodus.gd              38     0
   mikrofon.gd               37     0
   simreal.gd                37     0
+  kit_hud.gd                37     0
   gamemore.gd               36     1
   maggie_vorfuehrung.gd     35     7
   fenster.gd                34     0
@@ -105,7 +106,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   devtool_notizen.gd        34     1
   gametools.gd              33     2
   tour.gd                   31     1
-  kit_hud.gd                31     0
   bergtal_wegweiser.gd      30     0
   b3d.gd                    29     5
   zwilling.gd               29     3
@@ -155,7 +155,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   main_start.gd             16     2
   menschen.gd               16     0
   gamesneak.gd              15     0
-  explore_person.gd         15     0
   abenteuer_blinki.gd       14     0
   erkunden_rucksack.gd      14     0
   home_editor.gd            14     3
@@ -165,6 +164,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   bedienleiste.gd           13     0
   life.gd                   13     0
   fahrzeuge.gd              13     1
+  explore_person.gd         13     0
   gamekihilfe.gd            13     4
   gameturm.gd               13     0
   tasten.gd                 13     0
@@ -223,6 +223,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   ui_style.gd                3     0
   abenteuer_bestenliste.gd     2     0
   anim_mensch.gd             2     0
+  figur_haltung.gd           2     0
   kidaten.gd                 2     0
   versionen.gd               2     0
   spielstand.gd              1     0
@@ -332,6 +333,7 @@ Unsicher:
   'II': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Pause (Esc)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Springen/\nGreifen': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Ducken': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
   'Foto mit MoveEye (P)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Zum letzten Checkpoint': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Steuerung': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
@@ -339,12 +341,17 @@ Unsicher:
   'Abenteuer beenden': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   '⏭ Zum nächsten Abschnitt springen': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'PC: W A S D gehen · Shift rennen · Leertaste springen / greifen · E Aktion · Maus ziehen umschauen · Rad näher / weiter · Esc Pause': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Haltung wie beim Erkunden: C stehen → geduckt → kriechen · X hinsetzen · Z hinlegen · V Ansicht (hinter dir, aus den Augen, von oben) · im tiefen Wasser schwimmen': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
   'Controller: linker Stick gehen · rechter Stick umschauen · A springen / greifen · X Aktion · R2 rennen · Start Pause': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Controller: ✚ ↓ Haltung · ✚ ← sitzen · ✚ → liegen · R3 Ansicht': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
   'Handy / iPad: Stick links · rechts «Aktion» und «Springen/Greifen» · in der rechten Hälfte wischen = umschauen': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Handy / iPad: der grüne Knopf über «Springen» = ducken, kriechen, aufstehen': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
   'Weiter in %d s': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
   'Leertaste': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Tippen oder halten: hochziehen!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Gleichgewicht: gegensteuern (A / D, Stick)': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
+  'Kriechen': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
+  'Aufstehen': rm: Neubau-Texte 22.11.2026 (Korrekturlesen)
   'Dreh dich, bis die Linie auf der Karte zur Landschaft passt': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
   'Packen': rm: Kapitel 1 21.11.2026 (Korrekturlesen)
   'passt!': rm: Neubau-Texte 21.11.2026 (Korrekturlesen)
@@ -1168,8 +1175,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   inventar.gd:308  '\nKI: – = die KI von MoveEye kennt es nicht (Prüfstand: darf keinen Alarm auslösen)'
   inventar.gd:332  'KI: '
   kids.gd:338  ' Du hast jetzt %d Sterne.'
-  kit_abenteuer.gd:2155  'kein Knopf '
-  kit_abenteuer.gd:2190  'keine Szene '
+  kit_abenteuer.gd:2285  'kein Knopf '
+  kit_abenteuer.gd:2320  'keine Szene '
   kitrain.gd:93  '1/3 Paket: '
   kitrain.gd:157  'Ohne GitHub-Schlüssel: die ZIP liegt hier: %s\nSo kommt sie ins Training: 1. GitHub → Releases → «ki-daten» → Edit → ZIP hineinziehen → Update release '
   kitrain.gd:158  '(beim ersten Mal «Draft a new release», Tag ki-daten). 2. Actions → «KI-Modell» → Run workflow. MoveEye holt das neue Modell danach selbst.\n'

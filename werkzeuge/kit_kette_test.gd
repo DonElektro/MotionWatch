@@ -35,6 +35,8 @@ func info() -> Dictionary:
 
 func pruef(ok: bool, was: String) -> void:
 	print(("ok   " if ok else "FEHL ") + was)
+	if not ok and k != null:
+		print("     kit: kapitel %d, phase %s, running %s, name %s, rolle %s" % [k.kapitel, k.phase, k.running, k.name_, k.rolle])
 	if not ok:
 		errs.append(was)
 
@@ -162,10 +164,13 @@ func _lauf() -> void:
 	ok = await _bis(func(): return _laeuft(3), 60.0)
 	await _zum_ende()
 	var bm := _knopf("menue")
-	if bm != null:
+	var hat_menue := bm != null
+	if hat_menue:
 		bm.pressed.emit()
-	await _warte(KA.KETTE_SEK + 1.0)
-	pruef(bm != null and not k.running and m.spielbereich.is_open(), "«Zurück zum Menü»: das Abenteuer endet, «Spielen» ist offen, keine Kette")
+	await _warte(2.0)
+	pruef(hat_menue and not k.running and m.spielbereich.is_open(), "«Zurück zum Menü»: das Abenteuer endet, «Spielen» ist offen")
+	await _warte(KA.KETTE_SEK)
+	pruef(not k.running, "… und kein Countdown startet danach Kapitel 4")
 	_ende()
 
 
