@@ -283,6 +283,8 @@ var _detail_vorher := -1.0
 func nacht_setzen(on: bool) -> void:
 	"""the last scene: a clear night over the bivouac - a dark sky with stars, the candle in the window"""
 	nacht = on
+	if on:
+		_buch_zeigen(false)
 	if _fenster_mat != null:
 		_fenster_mat.emission_energy_multiplier = 3.2 if on else 0.0
 	for l in _biwak_lichter:
@@ -703,7 +705,7 @@ func _buch_zeigen(on: bool) -> void:
 	_layer.get_child(0).add_child(_buch)
 	_buch.reset_size()
 	var vs: Vector2 = _layer.get_viewport().get_visible_rect().size
-	_buch.position = Vector2((vs.x - _buch.size.x) * 0.5, vs.y * 0.12)
+	_buch.position = Vector2(maxf(8.0, vs.x - _buch.size.x - maxf(16.0, vs.x * 0.03)), vs.y * 0.12)   # (on the right: Lia and the figure stay free)
 
 
 func control(d: Dictionary) -> Dictionary:

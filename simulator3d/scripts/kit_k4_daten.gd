@@ -169,6 +169,7 @@ const SZENEN := [
 	{"id": "s07_rucksack", "titel": "Maggie im Rucksack", "start": [42.2, 0.0], "schritte": [
 		{"film": [
 			{"t": 0.0, "k": "balken", "an": true},
+			{"t": 0.0, "k": "setzen", "s": 42.2, "q": 0.0},
 			{"t": 0.0, "k": "shot", "art": "fix", "s": 42.4, "q": 3.4, "h": 1.5, "blick": [42.3, 0.2, 1.1], "d": 5.0, "ziel": [42.2, 0.0, 0.0], "groesse": 1.7},
 			{"t": 0.3, "k": "sag", "wer": "figur", "text": "Maggie mag nicht mehr. Na komm – rein in den Rucksack."},
 			{"t": 2.6, "k": "maggie_rucksack", "an": true},
