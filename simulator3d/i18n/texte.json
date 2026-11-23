@@ -2628,6 +2628,12 @@
   "it": "1 falso allarme provocato",
   "rm": "1 fauss alarm provocà"
  },
+ "1 Finger: drehen · 2 Finger: zoomen, verschieben": {
+  "en": "1 finger: turn · 2 fingers: zoom, move",
+  "fr": "1 doigt : tourner · 2 doigts : zoom, déplacer",
+  "it": "1 dito: ruotare · 2 dita: zoom, spostare",
+  "rm": "1 det: volver · 2 dets: zoom, spustar"
+ },
  "1 Hinweis": {
   "en": "1 note",
   "fr": "1 remarque",
@@ -50317,12 +50323,6 @@
   "fr": "Glisser = tourner · glisser à droite = déplacer · molette = zoom · cliquer une pièce = qu'est-ce que c'est ?",
   "it": "Trascinare = ruotare · trascinare col destro = spostare · rotella = zoom · clic su un pezzo = cos'è?",
   "rm": "Trair = rotar · trair a dretga = spustar · rodella = zoom · cliccar ina part = tge è quai?"
- },
- "ziehen = drehen · zwei Finger: auseinander / zusammen = zoomen, schieben = verschieben": {
-  "en": "drag = turn · two fingers: apart / together = zoom, slide = move",
-  "fr": "glisser = tourner · deux doigts : écarter / rapprocher = zoom, glisser = déplacer",
-  "it": "trascinare = ruotare · due dita: allargare / avvicinare = zoom, scorrere = spostare",
-  "rm": "trair = volver · dus dets: separar / unir = zoom, stuschar = spustar"
  },
  "Ziehen zum Verschieben · Doppelklick: zurück an den Platz": {
   "en": "Drag to move · double click: back to its place",

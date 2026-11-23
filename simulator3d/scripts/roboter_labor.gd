@@ -767,6 +767,7 @@ func _overlay(area: Control) -> void:
 		b.text = T.t(v[1])
 		b.focus_mode = Control.FOCUS_NONE
 		b.pressed.connect(set_view.bind(v[0]))
+		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		vb.add_child(b)
 		_w["view_" + v[0]] = b
 	for c in [["chip_pip", "Kamera", "Kamerabild ein / aus (K)", func(): set_pip(not pip)],
@@ -777,9 +778,10 @@ func _overlay(area: Control) -> void:
 		b.tooltip_text = T.t(c[2])
 		b.focus_mode = Control.FOCUS_NONE
 		b.pressed.connect(c[3])
+		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		vb.add_child(b)
 		_w[c[0]] = b
-	var hint := UI.small(T.t("ziehen = drehen · zwei Finger: auseinander / zusammen = zoomen, schieben = verschieben") if touch
+	var hint := UI.small(T.t("1 Finger: drehen · 2 Finger: zoomen, verschieben") if touch
 			else T.t("ziehen = drehen · rechts ziehen = verschieben · Rad = zoomen"), Color("#2a3644"))
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.custom_minimum_size = Vector2(160, 0)
@@ -858,6 +860,11 @@ func _layout_overlay() -> void:
 	var vb: Control = _w.get("viewbar")
 	if tr == null or vb == null or pip_box == null:
 		return
+	var p: Control = _w.get("panel")
+	if p != null:                                     # phone across: a narrower panel, more of the view
+		var pw := 320.0 if get_viewport().get_visible_rect().size.x < 1000.0 else PANEL_W
+		if p.custom_minimum_size.x != pw:
+			p.custom_minimum_size = Vector2(pw, 0)
 	var sz := Vector2(176, 110) if compact() else Vector2(320, 200)
 	if tr.custom_minimum_size != sz:
 		tr.custom_minimum_size = sz
