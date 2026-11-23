@@ -48,6 +48,24 @@ func _key(code: int) -> void:
 		await process_frame
 
 
+func _rennen(secs: float) -> void:
+	"""22.11.2026 (CI-Wackler «rennen macht müde» 99.1): vom selben Ort aus geradeaus rennen, genau secs Bildzeit, und warten,
+	bis das Rennen fertig ist. Vorher: feste Wartezeit (SceneTreeTimer) neben einem Rennen nach der Wanduhr - unter Last
+	zählen Godot-Timer, das dt der Bilder und die Wanduhr verschieden (Godot kürzt das dt nach Hängern und holt es später
+	nach), die Figur rannte dann spürbar kürzer oder länger als 3 s. Jetzt zählen Rennen und Kraft mit demselben dt; vom
+	selben Ort aus, damit «mit / ohne Stöcke» auf demselben Boden verglichen wird."""
+	var p = main.explore.person
+	p.figur.setzen(Vector3.ZERO, 0.0)
+	for _i in 3:
+		await process_frame
+	p.sachen.kraft = 100.0
+	p.test_walk(Vector2(1, 0), secs, true)
+	var n := 0
+	while p.test_laeuft() and n < 3000:                    # (Notbremse: läuft die Figur nicht, schlagen die Prüfungen fehl)
+		await process_frame
+		n += 1
+
+
 func _run() -> void:
 	await wait(2.0)
 	main.eco_idle = false
@@ -158,21 +176,15 @@ func _run() -> void:
 	# ---- strength ----
 	_ctl({"action": "explore", "kraft_echt": true})
 	ok("Kraft «Echt»", bool(sa.echt()))
-	sa.kraft = 100.0
-	p.test_walk(Vector2(1, 0), 3.0, true)
-	await wait(3.1)
+	await _rennen(3.0)
 	var k1: float = sa.kraft
 	print("  Kraft nach 3 s rennen: %.1f" % k1)
 	ok("rennen macht müde", k1 < 99.0)
 	_ctl({"action": "explore", "rucksack": {"pack": "70", "n": {"essen": 1, "apotheke": 1, "seil": 1, "ministativ": 1, "powerbank": 1, "kuppelzelt": 1, "sommerschlafsack": 1}}})
-	sa.kraft = 100.0
-	p.test_walk(Vector2(1, 0), 3.0, true)
-	await wait(3.1)
+	await _rennen(3.0)
 	var k_ohne: float = 100.0 - sa.kraft
 	_ctl({"action": "explore", "rucksack": {"pack": "70", "n": {"essen": 1, "apotheke": 1, "seil": 1, "ministativ": 1, "powerbank": 1, "kuppelzelt": 1, "sommerschlafsack": 1, "stoecke": 1}}})
-	sa.kraft = 100.0
-	p.test_walk(Vector2(1, 0), 3.0, true)
-	await wait(3.1)
+	await _rennen(3.0)
 	var k_mit: float = 100.0 - sa.kraft
 	print("  verbraucht ohne / mit Stöcken: %.2f / %.2f" % [k_ohne, k_mit])
 	ok("Stöcke: weniger müde", k_mit < k_ohne)

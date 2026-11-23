@@ -312,6 +312,50 @@ NORM_PROBEN = ["Zürich", "Genève", "La Chaux-de-Fonds", "Sant’Antonio", "Gro
                "  Mont-Soleil ", "Bürglen (UR)", "Lac de Neuchâtel", "Zuoz", "Tschlin – Strada", "Æbeltoft", "São Paulo", "ß"]
 
 
+def web_cache_pfad():
+    """wo das gebaute Web-Paket der Tests liegt (CI: actions/cache «karte-web-…» in ci.yml, Gruppe daten)"""
+    return os.environ.get("MW_KARTE_WEB_CACHE") or os.path.join(os.path.expanduser("~"), ".cache", "moveeye", "karte-web")
+
+
+def web_gebaut(P, ziel):
+    """karte-web-N.zip für die Tests (22.11.2026, CI-Wackler orte_test / karten_test / touren_test: «Connection reset by peer»
+    beim Laden der Schriften von GitHub). Bisher baute jeder Karten-Test das Web-Paket selbst aus dem Internet (MapLibre und
+    Stil von npm, 9 Schriften, 8 Sprites, OFL - fünf Tests pro Lauf, je rund 20 Downloads). Jetzt einmal bauen und im Cache
+    ablegen; der Schlüssel ist der Inhalt von paket.py + stil.py (Versionen, Schriften, Bereiche, Stil-Regeln) - ändert sich
+    dort etwas, wird neu gebaut. Der Inhalt ist derselbe wie vorher (paket.baue_web), es wird nichts weniger geprüft."""
+    h = hashlib.sha256(b"karte-web maxzoom=14\n")
+    for f in ("paket.py", "stil.py"):
+        with open(os.path.join(HIER, "karten", f), "rb") as fh:
+            h.update(fh.read())
+    d = web_cache_pfad()
+    c = os.path.join(d, "karte-web-test-%s.zip" % h.hexdigest()[:20])
+
+    def brauchbar(p):
+        try:
+            with zipfile.ZipFile(p) as z:
+                return z.testzip() is None and "karte.json" in z.namelist() and any(n.startswith("fonts/") for n in z.namelist())
+        except (OSError, zipfile.BadZipFile):
+            return False
+    if os.path.isfile(c) and brauchbar(c):
+        print("  (%s aus dem Cache: %s)" % (P.NAMEN["web"], c), flush=True)
+        shutil.copyfile(c, ziel)
+        return
+    print("  (%s wird gebaut: paket.py --web, braucht node und Internet; danach im Cache %s)" % (P.NAMEN["web"], d), flush=True)
+    t = tempfile.mkdtemp(prefix="karte-web-bau-")
+    try:
+        gebaut = P.baue_web(t, 14)
+        shutil.copyfile(gebaut, ziel)
+        try:                                            # atomar ablegen (zwei Tests gleichzeitig auf demselben Rechner)
+            os.makedirs(d, exist_ok=True)
+            tmp_c = c + ".%d.part" % os.getpid()
+            shutil.copyfile(gebaut, tmp_c)
+            os.replace(tmp_c, c)
+        except OSError as e:
+            print("  (Cache nicht geschrieben: %s)" % e, flush=True)
+    finally:
+        shutil.rmtree(t, ignore_errors=True)
+
+
 def dateien_bauen(tmp, web_zip):
     """the five test files + their pins (with the tag of their release, like pins.txt)"""
     P = paket_modul()
@@ -325,8 +369,7 @@ def dateien_bauen(tmp, web_zip):
     if web_zip:
         shutil.copyfile(web_zip, os.path.join(out, P.NAMEN["web"]))
     else:
-        print("  (%s wird gebaut: paket.py --web, braucht node und Internet)" % P.NAMEN["web"], flush=True)
-        P.baue_web(out, 14)
+        web_gebaut(P, os.path.join(out, P.NAMEN["web"]))
     pins = {}
     tg = P.tags()
     for r_, n in P.NAMEN.items():
