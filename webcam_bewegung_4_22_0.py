@@ -324,7 +324,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_22_0.zip"
-ZD_SHA256 = "ea21fe2a9916414f5152aaad5952c7862a401dbc2e36cbd18f738320beb49edc"
+ZD_SHA256 = "3720275c95a5373d52a93913b6b5587f41e6acfe441eed3f89e80aa8b9b22b58"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -95142,8 +95142,13 @@ if "App" in globals():
 
 
 
+
+
+
+
+
 _HP_CFG = {"hp_key": "", "hp_base": "https://kevlaschef.com", "hp_auto": True, "hp_start_on": False, "hp_funk_on": True,
-		   "hp_sim_on": True, "hp_public": "", "hp_info_on": True}
+		   "hp_sim_on": True, "hp_public": "", "hp_info_on": True, "hp_info_own": True}
 for _k, _v in _HP_CFG.items():
 	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
 USER_SETTINGS_DENY.update(_HP_CFG)

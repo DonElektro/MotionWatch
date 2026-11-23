@@ -411,6 +411,47 @@ def lauf(datei, tmp):
     api("admin", {"action": "start_on", "on": True})                  # ab hier wie bisher mit Startseite
     ok(CFG["hp_start_on"] is True, "Schalter wieder an")
 
+    print("3b) eigene Bilder der Produktseite auf dem Webspace (Besitzer 23.11.2026, Schalter ab Werk an)", flush=True)
+    from PIL import Image as _Im
+    ok(CFG.get("hp_info_own") is True and ns["DEFAULTS"].get("hp_info_own") is True and "hp_info_own" in ns["USER_SETTINGS_DENY"],
+       "ab Werk: «Eigene Bilder auf dem Webspace zeigen» an, nur der Admin")
+    bj = io.BytesIO(); ex = _Im.Exif(); ex[0x010F] = "TestCamFirma"; ex[0x8825] = {2: (47.0, 3.0, 0.0), 1: "N"}
+    _Im.new("RGB", (1600, 900), (40, 120, 60)).save(bj, "JPEG", exif=ex.tobytes())
+    ns["pbild_set"]("app_kamera", bj.getvalue(), 50)
+    ns["pbild_set"]("jetzt", bj.getvalue(), 50, [10, 20, 30, 40], "neu: Bank")
+    nl = len(W.log)
+    code, j = api("admin", {"action": "publish"})
+    info = W.files.get("Info/index.html", b"").decode("utf-8")
+    cam, jetzt = W.files.get("Info/bild/app_kamera.webp", b""), W.files.get("Info/bild/jetzt.webp", b"")
+    ok(code == 200 and cam[:4] == b"RIFF" and jetzt[:4] == b"RIFF" and cam == open(os.path.join(ns["pbild_dir"](), "app_kamera.webp"), "rb").read(),
+       "eigene Bilder als Info/bild/<platz>.webp hochgeladen (%d + %d KB)" % (len(cam) // 1024, len(jetzt) // 1024))
+    ok(re.search(r'<img src="bild/app_kamera\.webp\?v=\d+"[^>]*id="app-cam"', info) and re.search(r'src="bild/jetzt\.webp\?v=\d+"', info)
+       and "window.PB=" in info and "neu: Bank" in info and "/info/bild/" not in info, "Info/index.html zeigt die eigenen Bilder (bild/…) und die Markierung")
+    ok(all(x not in cam + jetzt for x in (b"TestCamFirma", b"Exif", b"EXIF", b"XMP")) and not _Im.open(io.BytesIO(cam)).getexif(),
+       "ohne EXIF / GPS / Kamera")
+    ok("kontakt-test@example.invalid" not in info and "/info/ask" not in info and "Text kopieren" in info
+       and not [p for p in W.files if p.startswith("Info/") and p not in ("Info/index.html", "Info/bild/app_kamera.webp", "Info/bild/jetzt.webp")],
+       "sonst nichts vom Gerät: keine Kontaktadresse, kein Senden, nur Seite + eigene Bilder unter Info/")
+    nl = len(W.log)
+    b2 = io.BytesIO(); _Im.new("RGB", (1600, 900), (150, 60, 40)).save(b2, "JPEG")
+    ns["pbild_set"]("app_kamera", b2.getvalue(), 50)                            # changed picture -> new upload of picture + page
+    ok(ns["hp_content_id"]() != ns["hp_state"]().get("done_id"), "geändertes Bild: der Inhalt gilt als geändert (automatisch neu)")
+    api("admin", {"action": "publish"})
+    ok({x[2] for x in W.log[nl:] if x[0] == "POST"} >= {"Info/bild/app_kamera.webp", "Info/index.html"}
+       and "Info/bild/jetzt.webp" not in {x[2] for x in W.log[nl:] if x[0] == "POST"}, "nur das geänderte Bild und die Seite neu hochgeladen %s" % sorted({x[2] for x in W.log[nl:] if x[0] == "POST"}))
+    code, j = api("admin", {"action": "info_own", "on": False})
+    ok(code == 200 and j.get("info_own") is False and CFG["hp_info_own"] is False, "Schalter aus")
+    api("admin", {"action": "publish"})
+    info = W.files.get("Info/index.html", b"").decode("utf-8")
+    ok("bild/app_kamera.webp" not in info and "window.PB=" not in info and not [p for p in W.files if p.startswith("Info/bild/")],
+       "Schalter aus: Beispielbilder, eigene Bilder auf dem Webspace gelöscht")
+    api("admin", {"action": "info_own", "on": True})
+    for k in ("app_kamera", "jetzt"):
+        ns["pbild_reset"](k)
+    api("admin", {"action": "publish"})
+    ok(not [p for p in W.files if p.startswith("Info/bild/")] and "bild/" not in re.sub(r'data:[^"]+', "", W.files.get("Info/index.html", b"").decode("utf-8")).replace("/info/bild/", ""),
+       "zurück zum Beispiel: keine eigenen Bilder mehr auf dem Webspace")
+
     print("4) Paket sim-web.zip nur mit der signierten Prüfsumme (Teil 300 «anhang.web»)", flush=True)
     sha = hashlib.sha256(open(zp, "rb").read()).hexdigest()
     size = os.path.getsize(zp)

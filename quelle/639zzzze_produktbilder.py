@@ -189,13 +189,14 @@ def pbild_default(slot):
     return _PB_DEF.get(slot)
 
 
-def pbild_apply(h):
-    """the product page with the own pictures of the admin (src, neutral text, window.PB)"""
+def pbild_apply(h, base="/info/bild/"):
+    """the product page with the own pictures of the admin (src, neutral text, window.PB); base: where the pictures are
+    (/info/bild/ on MoveEye, «bild/» next to Info/index.html on the web space, 639zzzh)"""
     m = pbild_meta()
     if not m:
         return h
     for k, v in m.items():
-        url = "/info/bild/%s.webp?v=%s" % (k, int(v.get("v") or 0))
+        url = "%s%s.webp?v=%s" % (base, k, int(v.get("v") or 0))
 
         def tag_(mt, url=url, k=k):
             t = re.sub(r'\s(?:src|data-same|data-alt|alt)="[^"]*"', "", mt.group(0))
