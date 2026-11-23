@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 22.11.2026 · Version **3.79.0** · MoveEye **4.22.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 23.11.2026 · Version **3.80.0** · MoveEye **4.23.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -31,6 +31,12 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
   (Ziegelreihen / Kies). Wärmezwillinge und Hindernisse unverändert. Luftbild wird jetzt vor den 3D-Gebäuden gesetzt.
 - Seon ohne OSM (Overpass war aus): 117 Häuser, 44 Wohnblöcke, 24 Bauernhäuser, 3 Scheunen, 2 Chalets, 2 Garagen;
   Dachfarbe aus dem Luftbild 130, Palette 62 (Häuser ausserhalb des nahen Luftbilds).
+
+## NEU in 3.80.0 (MoveEye 4.23.0): Roboter-Labor 6 / 4 Segmente, «Rund rollen», Start direkt ins Labor
+
+- sim-roboter-4 @ a4574f9 (CI 45072790302 grün): 6 und 4 Segmente, Reiter «Rund rollen» (vier Methoden, Messung, Vergleich), Spurbreite, roboter4_test.gd.
+- roboter-link @ 2364b2a: ?roboter=1|4|6 / --roboter=<Variante> (web.gd, roboter_start.gd); MoveEye 4.23.0 Kachel «🤖 Roboter-Labor».
+- ci-wackler @ 1a9dba9: inhalte.gd beendet sauber (curl als Prozess, Faden mit wait_to_finish), Erkunden-Tests in Bildzeit.
 
 ## NEU in 3.79.0 (MoveEye 4.22.0): Roboter-Labor, Aussichtspunkte von Hand gesetzt
 

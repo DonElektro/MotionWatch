@@ -1417,6 +1417,12 @@
   "it": "%d guardiani",
   "rm": "%d guardians"
  },
+ "%d/%d geschafft · Mitte ± %.1f cm · Tempo %.0f cm/s ± %.0f %% · Kontakte min %d / Ø %.1f · Kipp-Reserve %.1f cm": {
+  "en": "%d/%d made it · centre ± %.1f cm · speed %.0f cm/s ± %.0f %% · contacts min %d / avg %.1f · tip margin %.1f cm",
+  "fr": "%d/%d réussis · centre ± %.1f cm · vitesse %.0f cm/s ± %.0f %% · contacts min %d / moy. %.1f · marge de basculement %.1f cm",
+  "it": "%d/%d riusciti · centro ± %.1f cm · velocità %.0f cm/s ± %.0f %% · contatti min %d / media %.1f · margine di ribaltamento %.1f cm",
+  "rm": "%d/%d reussì · center ± %.1f cm · sveltezza %.0f cm/s ± %.0f %% · contacts min %d / Ø %.1f · reserva da sa sturnar %.1f cm"
+ },
  "%d:%02d / %d:%02d  ·  rot = gesehen": {
   "en": "%d:%02d / %d:%02d  ·  red = seen",
   "fr": "%d:%02d / %d:%02d  ·  rouge = vu",
@@ -3156,6 +3162,12 @@
   "it": "anche 4 GB (SC1111) basta",
   "rm": "er 4 GB (SC1111) basta"
  },
+ "4 Segmente": {
+  "en": "4 segments",
+  "fr": "4 segments",
+  "it": "4 segmenti",
+  "rm": "4 segments"
+ },
  "4 Ziffern": {
   "en": "4 digits",
   "fr": "4 chiffres",
@@ -3258,11 +3270,23 @@
   "it": "Uscita 5,1 V XH2.54 (2 poli) dell'X1206 → fusibile lamellare 5 A (portafusibile volante, vicino all'X1206). L'X1206 fornisce 6 A in tutto (Pi e tutto questo)",
   "rm": "Sortida 5,1 V XH2.54 (2 pols) dal X1206 → segirezza plata 5 A (purtader liber, datiers dal X1206). Il X1206 furnescha 6 A en tut (Pi e tut quai)"
  },
+ "6 Segmente": {
+  "en": "6 segments",
+  "fr": "6 segments",
+  "it": "6 segmenti",
+  "rm": "6 segments"
+ },
  "8 Minuten": {
   "en": "8 minutes",
   "fr": "8 minutes",
   "it": "8 minuti",
   "rm": "8 minutas"
+ },
+ "8 Segmente": {
+  "en": "8 segments",
+  "fr": "8 segments",
+  "it": "8 segmenti",
+  "rm": "8 segments"
  },
  "850 nm statt 940 nm (NoIR sieht es besser)": {
   "en": "850 nm instead of 940 nm (NoIR sees it better)",
@@ -3336,6 +3360,12 @@
   "fr": "A, B ou C",
   "it": "A, B o C",
   "rm": "A, B u C"
+ },
+ "A: Beine stemmen an den Ecken": {
+  "en": "A: legs prop at the corners",
+  "fr": "A : les pattes s’appuient aux coins",
+  "it": "A: le zampe puntellano agli angoli",
+  "rm": "A: las chommas sa sustegnan als chantuns"
  },
  "ab %d Jahren": {
   "en": "from %d years",
@@ -4177,6 +4207,12 @@
   "it": "Tutte le lezioni 1–7",
   "rm": "Tut las lecziuns 1–7"
  },
+ "Alle Methoden vergleichen": {
+  "en": "Compare all methods",
+  "fr": "Comparer toutes les méthodes",
+  "it": "Confrontare tutti i metodi",
+  "rm": "Cumparegliar tut las metodas"
+ },
  "Alle nach Hause": {
   "en": "Everyone home",
   "fr": "Tout le monde à la maison",
@@ -4763,6 +4799,12 @@
   "fr": "en montagne",
   "it": "in montagna",
   "rm": "en muntogna"
+ },
+ "Am besten am PC": {
+  "en": "Best on a PC",
+  "fr": "Mieux sur un PC",
+  "it": "Meglio su un PC",
+  "rm": "Il meglier al PC"
  },
  "Am Bootssteg": {
   "en": "At the jetty",
@@ -6642,6 +6684,12 @@
   "it": "Ahi! Atterraggio duro – continua piano",
   "rm": "Ai! Aterrà dir – vinavant plaunsieu"
  },
+ "B: Beine als Speichen-Kreis": {
+  "en": "B: legs as a circle of spokes",
+  "fr": "B : pattes en cercle de rayons",
+  "it": "B: zampe come cerchio di raggi",
+  "rm": "B: chommas sco rintg da radis"
+ },
  "Bach": {
   "en": "Creek",
   "fr": "Ruisseau",
@@ -6974,6 +7022,12 @@
   "fr": "BB 6 mm 0,20 g",
   "it": "BB 6 mm 0,20 g",
   "rm": "BB 6 mm 0,20 g"
+ },
+ "Bedienfeld": {
+  "en": "Controls",
+  "fr": "Panneau",
+  "it": "Pannello",
+  "rm": "Panel"
  },
  "Bedienfeld ausblenden (H)": {
   "en": "Hide control panel (H)",
@@ -7616,6 +7670,12 @@
   "fr": "Objectif embué (rosée le matin, voile laiteux)",
   "it": "Obiettivo appannato (rugiada al mattino, velo lattiginoso)",
   "rm": "Lentilla bagnada (rusada la damaun, vel da latg)"
+ },
+ "Beste Methode als Standard übernehmen": {
+  "en": "Use the best method as default",
+  "fr": "Prendre la meilleure méthode par défaut",
+  "it": "Usare il metodo migliore come predefinito",
+  "rm": "Utilisar la meglra metoda sco standard"
  },
  "Beste Schlafplätze": {
   "en": "Best sleeping places",
@@ -8842,6 +8902,12 @@
   "it": "C-Media CM108",
   "rm": "C-Media CM108"
  },
+ "C: Füsse passen sich an": {
+  "en": "C: feet adapt",
+  "fr": "C : les pieds s’adaptent",
+  "it": "C: i piedi si adattano",
+  "rm": "C: ils pes s’adattan"
+ },
  "ca. %s g (geschätzt)": {
   "en": "about %s g (estimated)",
   "fr": "env. %s g (estimé)",
@@ -9949,6 +10015,12 @@
   "fr": "Le car postal monte la route du col et klaxonne avec son triton avant le lacet serré – on l’entend dans toute la vallée.",
   "it": "L’autopostale sale sulla strada del passo e suona il suo tritono prima del tornante stretto – lo si sente in tutta la valle.",
   "rm": "L’auto da posta va si per la via dal pass e tuna cun ses tritun avant la storta stretga – quai auda ins en l’entira val."
+ },
+ "Das Roboter-Labor ist für Maus, Tastatur und einen grossen Bildschirm gebaut. Auf dem Handy geht es trotzdem – das Bedienfeld öffnest du mit «Bedienfeld».": {
+  "en": "The robot lab is made for a mouse, a keyboard and a large screen. It works on a phone anyway – open the controls with «Controls».",
+  "fr": "Le labo du robot est fait pour une souris, un clavier et un grand écran. Il fonctionne quand même sur le téléphone – ouvre le panneau avec «Panneau».",
+  "it": "Il laboratorio robot è fatto per mouse, tastiera e uno schermo grande. Funziona comunque sul telefono – apri il pannello con «Pannello».",
+  "rm": "Il labor dal robot è fatg per mieur, tastatura ed in grond visur. Sin il telefonin funcziuna el tuttina – il panel avras ti cun «Panel»."
  },
  "Das Rätsel": {
   "en": "The puzzle",
@@ -23810,6 +23882,12 @@
   "it": "Velocità massima del mover",
   "rm": "Sveltezza maximala dal mover"
  },
+ "Höhe %.1f cm · Spur %.1f cm": {
+  "en": "Height %.1f cm · track %.1f cm",
+  "fr": "Hauteur %.1f cm · voie %.1f cm",
+  "it": "Altezza %.1f cm · carreggiata %.1f cm",
+  "rm": "Autezza %.1f cm · ladezza dals pes %.1f cm"
+ },
  "Höhe %.1f m": {
   "en": "Height %.1f m",
   "fr": "Hauteur %.1f m",
@@ -23851,6 +23929,12 @@
   "fr": "Hauteur corrigée de %.1f m (10 %% : %.1f, 50 %% : %.1f, 90 %% : %.1f, %d maisons)",
   "it": "Altezza corretta di %.1f m (10 %%: %.1f, 50 %%: %.1f, 90 %%: %.1f, %d case)",
   "rm": "Autezza curregida per %.1f m (10 %%: %.1f, 50 %%: %.1f, 90 %%: %.1f, %d chasas)"
+ },
+ "Höhe über Boden (0 = auf den Ecken, mehr = auf Stelzen)": {
+  "en": "Height above ground (0 = on the corners, more = on stilts)",
+  "fr": "Hauteur au-dessus du sol (0 = sur les coins, plus = sur échasses)",
+  "it": "Altezza dal suolo (0 = sugli angoli, di più = sui trampoli)",
+  "rm": "Autezza sur il terren (0 = sin ils chantuns, dapli = sin chommas)"
  },
  "Höhe: %.2f m": {
   "en": "Height: %.2f m",
@@ -31112,6 +31196,12 @@
   "it": "Message: ",
   "rm": "Message: "
  },
+ "Messen (diese Methode)": {
+  "en": "Measure (this method)",
+  "fr": "Mesurer (cette méthode)",
+  "it": "Misurare (questo metodo)",
+  "rm": "Mesirar (questa metoda)"
+ },
  "Messer": {
   "en": "Knife",
   "fr": "Couteau",
@@ -31135,6 +31225,12 @@
   "fr": "une mesure est en cours",
   "it": "è in corso una misurazione",
   "rm": "ina mesiraziun è en funcziun"
+ },
+ "Messung läuft … noch %d": {
+  "en": "Measuring … %d to go",
+  "fr": "Mesure en cours … encore %d",
+  "it": "Misura in corso … ancora %d",
+  "rm": "Mesiraziun en funcziun … anc %d"
  },
  "MG90S": {
   "en": "MG90S",
@@ -31713,6 +31809,18 @@
   "fr": "Centre",
   "it": "Centro",
   "rm": "Center"
+ },
+ "Mitte %.1f cm über Boden · %d Kontakte · Neigung %d° · %.1f cm/s": {
+  "en": "Centre %.1f cm above ground · %d contacts · tilt %d° · %.1f cm/s",
+  "fr": "Centre à %.1f cm du sol · %d contacts · inclinaison %d° · %.1f cm/s",
+  "it": "Centro a %.1f cm dal suolo · %d contatti · inclinazione %d° · %.1f cm/s",
+  "rm": "Center %.1f cm sur il terren · %d contacts · inclinaziun %d° · %.1f cm/s"
+ },
+ "Mitte ± %.1f cm · Tempo ± %.0f %% · Kontakte min %d / Ø %.1f": {
+  "en": "centre ± %.1f cm · speed ± %.0f %% · contacts min %d / avg %.1f",
+  "fr": "centre ± %.1f cm · vitesse ± %.0f %% · contacts min %d / moy. %.1f",
+  "it": "centro ± %.1f cm · velocità ± %.0f %% · contatti min %d / media %.1f",
+  "rm": "center ± %.1f cm · sveltezza ± %.0f %% · contacts min %d / Ø %.1f"
  },
  "Mittel": {
   "en": "Medium",
@@ -34605,6 +34713,12 @@
   "it": "non salvato",
   "rm": "betg salvà"
  },
+ "nicht geschafft": {
+  "en": "did not make it",
+  "fr": "pas réussi",
+  "it": "non riuscito",
+  "rm": "betg reussì"
+ },
  "nicht hier": {
   "en": "not here",
   "fr": "pas ici",
@@ -35428,6 +35542,12 @@
   "fr": "Surfaces seulement (ciel comme avant)",
   "it": "Solo superfici (cielo come prima)",
   "rm": "Mo surfatschas (tschiel sco fin ussa)"
+ },
+ "Nur stossen": {
+  "en": "Push only",
+  "fr": "Pousser seulement",
+  "it": "Solo spingere",
+  "rm": "Mo stuschar"
  },
  "nur Tiere": {
   "en": "animals only",
@@ -37875,6 +37995,18 @@
   "it": "Portata ora a %.0f °C: di traverso %.1f m · frontale %.1f m",
   "rm": "Distanza ussa tar %.0f °C: a travers %.1f m · frontal %.1f m"
  },
+ "Reihe Höhe (C)": {
+  "en": "Series height (C)",
+  "fr": "Série hauteur (C)",
+  "it": "Serie altezza (C)",
+  "rm": "Seria autezza (C)"
+ },
+ "Reihe Spurbreite (C)": {
+  "en": "Series track width (C)",
+  "fr": "Série largeur de voie (C)",
+  "it": "Serie carreggiata (C)",
+  "rm": "Seria ladezza dals pes (C)"
+ },
  "Reisetagebuch": {
   "en": "Travel diary",
   "fr": "Carnet de voyage",
@@ -38519,6 +38651,12 @@
   "fr": "Ruines de l'ancien abri",
   "it": "Rovina del vecchio riparo",
   "rm": "Ruina dal vegl sustegn"
+ },
+ "Rund rollen": {
+  "en": "Roll round",
+  "fr": "Rouler rond",
+  "it": "Rotolare tondo",
+  "rm": "Rullar radund"
  },
  "Rund um %s": {
   "en": "Around %s",
@@ -40254,6 +40392,12 @@
   "it": "Segmenti",
   "rm": "Segments"
  },
+ "Segmente (fest bei dieser Variante)": {
+  "en": "Segments (fixed in this variant)",
+  "fr": "Segments (fixe dans cette variante)",
+  "it": "Segmenti (fisso in questa variante)",
+  "rm": "Segments (fix en questa varianta)"
+ },
  "Segmentgelenk %d (zwischen Segment %d und %d)": {
   "en": "Segment joint %d (between segment %d and %d)",
   "fr": "Articulation %d (entre les segments %d et %d)",
@@ -41938,6 +42082,18 @@
   "it": "Traccia persa! Premi azione – Maggie annusa di nuovo.",
   "rm": "Fastiz pers! Smatga acziun – Maggie sniffla da nov.",
   "?": "rm: Neubau-Texte 22.11.2026 (Korrekturlesen)"
+ },
+ "Spurbreite beim Gehen (Fuss links bis Fuss rechts)": {
+  "en": "Track width when walking (left foot to right foot)",
+  "fr": "Largeur de voie en marchant (pied gauche à pied droit)",
+  "it": "Carreggiata camminando (piede sinistro – piede destro)",
+  "rm": "Ladezza dals pes cun chaminar (pe sanester fin pe dretg)"
+ },
+ "Spurbreite beim Rollen (Fuss links bis Fuss rechts)": {
+  "en": "Track width when rolling (left foot to right foot)",
+  "fr": "Largeur de voie en roulant (pied gauche à pied droit)",
+  "it": "Carreggiata rotolando (piede sinistro – piede destro)",
+  "rm": "Ladezza dals pes cun rullar (pe sanester fin pe dretg)"
  },
  "Spuren": {
   "en": "Tracks",
@@ -45487,6 +45643,12 @@
   "it": "Giù!",
   "rm": "Giusut!"
  },
+ "unter 3 Kontakten bei: %s": {
+  "en": "below 3 contacts at: %s",
+  "fr": "moins de 3 contacts à : %s",
+  "it": "sotto 3 contatti a: %s",
+  "rm": "sut 3 contacts tar: %s"
+ },
  "Unter Bergsteigern kennt man den Namen. Mit dem Hut bist du hier überall willkommen.": {
   "en": "Among mountaineers the name is known. With that hat you're welcome everywhere here.",
   "fr": "Chez les alpinistes, on connaît ce nom. Avec ce chapeau, tu es le bienvenu partout ici.",
@@ -46247,6 +46409,12 @@
   "fr": "Comparaison ",
   "it": "Confronto ",
   "rm": "Cumparegliaziun "
+ },
+ "Vergleich 8 / 6 / 4 (jeweils die beste Messung):": {
+  "en": "Comparison 8 / 6 / 4 (the best measurement of each):",
+  "fr": "Comparaison 8 / 6 / 4 (la meilleure mesure de chacun) :",
+  "it": "Confronto 8 / 6 / 4 (la misura migliore di ciascuno):",
+  "rm": "Cumparegliaziun 8 / 6 / 4 (mintgamai la meglra mesiraziun):"
  },
  "Vergleiche den Riss mit dem Zeichen aus der Schlucht (Aktion)": {
   "en": "Compare the crack with the sign from the gorge (action)",
@@ -48751,6 +48919,12 @@
   "fr": "Fréquence des visites",
   "it": "Frequenza delle visite",
   "rm": "Quant savens che visita vegn"
+ },
+ "Wie rund rollt der Ring? Gemessen über eine ganze Drehung: Schwankung der Mittenhöhe, des Tempos, Zahl der Bodenkontakte (Ziel: immer mindestens 3) und Kipp-Reserve. Je Einstellung 3 Versuche.": {
+  "en": "How round does the ring roll? Measured over a full turn: variation of the centre height and of the speed, number of ground contacts (goal: always at least 3) and tip margin. 3 trials per setting.",
+  "fr": "L’anneau roule-t-il rond ? Mesuré sur un tour complet : variation de la hauteur du centre et de la vitesse, nombre de contacts au sol (but : toujours au moins 3) et marge de basculement. 3 essais par réglage.",
+  "it": "Quanto tondo rotola l’anello? Misurato su un giro completo: variazione dell’altezza del centro e della velocità, numero di contatti col suolo (obiettivo: sempre almeno 3) e margine di ribaltamento. 3 prove per impostazione.",
+  "rm": "Co radund rulla il rintg? Mesirà sur ina rotaziun entira: variaziun da l’autezza dal center e da la sveltezza, dumber da contacts cun il terren (finamira: adina almain 3) e reserva da sa sturnar. 3 emprovas per configuraziun."
  },
  "Wie schwierig - und was ist dein Ziel?": {
   "en": "How difficult - and what is your goal?",

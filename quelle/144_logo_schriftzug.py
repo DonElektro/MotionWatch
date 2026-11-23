@@ -75,3 +75,47 @@ def wordmark_h1(m):
     tag = m.group(1)
     tag = tag[:-1] + (' class="wm"' if "class=" not in tag else "") + ">"
     return tag + WORDMARK_W6                    # 3.88: W1 (stacked) is no longer shown - one line everywhere (owner)
+
+
+# ----------------------------------------------------------------------------
+# Besitzer 22.11.2026 22:31 («Symbol-Animation», Vorschau freigegeben): das MoveEye-SYMBOL (Sichtfächer, Erkennungs-Ecken,
+# rundes Auge, zwei Füsse - wie /info/ und die Startseite der Homepage) bekommt die gehende rote Person aus _wm_walk in den
+# Ecken: Ecken + Person gehen in 7 s ±9 hin und her (ease-in-out), der Fächer schwenkt ±12° um die Augenmitte mit, die
+# Pupille schaut der Person nach oben nach (±3.8, −5.2), zweimal blinzeln in 23 s, Schritt 0.7 s (Bein / Arm einen halben
+# Schritt versetzt), prefers-reduced-motion = still. EINE Quelle für alle Stellen: MW_SYMBOL_HTML (__I__ = eigene id je
+# Stelle) + MW_SYMBOL_CSS. Besitzer 23.11.2026: NUR auf der Startseite der Homepage (639zzzh / 639zzzzf) und der
+# Produktseite; Blinki (589) und das Simulator-Logo (mw_logo.gd) bleiben wie vorher.
+# ----------------------------------------------------------------------------
+MW_SYMBOL_HTML = ('<svg class="mws" viewBox="0 0 100 112" focusable="false" aria-hidden="true"><defs>'
+                 '<linearGradient id="mwsg__I__" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff9f43"/>'
+                 '<stop offset="1" stop-color="#ff9f43" stop-opacity=".35"/></linearGradient>'
+                 '<clipPath id="mwsc__I__"><circle cx="50" cy="80" r="16.6"/></clipPath></defs>'
+                 '<ellipse fill="#e8590c" cx="39" cy="105.5" rx="7.5" ry="3.8"/><ellipse fill="#e8590c" cx="61" cy="105.5" rx="7.5" ry="3.8"/>'
+                 '<path class="mws-f" fill="url(#mwsg__I__)" d="M50 80 L10.6 29.6 A64 64 0 0 1 89.4 29.6 Z"/>'
+                 '<g class="mws-w"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" '
+                 'd="M37 33 V27 H43 M57 27 H63 V33 M63 45 V51 H57 M43 51 H37 V45"/>'
+                 '<g class="mws-p" transform="translate(50 41.5) scale(0.62)" fill="#e0242b" stroke="#e0242b" stroke-linecap="round" '
+                 'stroke-linejoin="round"><circle cx="1" cy="-15.5" r="5.2" stroke="none"/><path d="M0.5 -9 L-0.5 3" stroke-width="8"/>'
+                 '<g class="mws-l1"><path d="M-0.5 3 L-5 13.5" stroke-width="4.6" fill="none"/></g>'
+                 '<g class="mws-l2"><path d="M-0.5 3 L4.5 13" stroke-width="4.6" fill="none"/></g>'
+                 '<g class="mws-a1"><path d="M0.5 -6 L-5.5 0.5" stroke-width="3.6" fill="none"/></g>'
+                 '<g class="mws-a2"><path d="M0.5 -6 L6 -0.5" stroke-width="3.6" fill="none"/></g></g></g>'
+                 '<circle fill="#fff" cx="50" cy="80" r="17"/><g clip-path="url(#mwsc__I__)"><g class="mws-e">'
+                 '<circle fill="#ff9f43" cx="50" cy="80" r="10.5"/><circle fill="#0a0e14" cx="50" cy="80" r="5.2"/>'
+                 '<circle fill="#fff" cx="53.2" cy="76.6" r="2"/></g>'
+                 '<rect class="mws-lid" fill="#e8590c" x="32" y="62" width="36" height="36"/></g>'
+                 '<circle fill="none" stroke="#e8590c" stroke-width="2.6" cx="50" cy="80" r="17"/></svg>')
+MW_SYMBOL_CSS = (".mws{overflow:visible}.mws .mws-f,.mws .mws-w,.mws .mws-e{transform-box:view-box}"
+                 ".mws .mws-f{transform-origin:50px 80px;animation:mws-f 7s ease-in-out infinite}"
+                 ".mws .mws-w{animation:mws-w 7s ease-in-out infinite}.mws .mws-e{animation:mws-e 7s ease-in-out infinite}"
+                 ".mws-l1,.mws-l2,.mws-a1,.mws-a2{transform-box:fill-box;transform-origin:50% 0}.mws-a1,.mws-a2{transform-origin:100% 0}"
+                 ".mws-l1,.mws-a2{animation:mws-s .7s ease-in-out infinite}.mws-l2,.mws-a1{animation:mws-s .7s ease-in-out -.35s infinite}"
+                 ".mws .mws-lid{transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0);animation:mws-b 23s linear infinite}"
+                 "@keyframes mws-w{0%,100%{transform:translateX(-9px)}50%{transform:translateX(9px)}}"
+                 "@keyframes mws-f{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}"
+                 "@keyframes mws-e{0%,100%{transform:translate(-3.8px,-5.2px)}50%{transform:translate(3.8px,-5.2px)}}"
+                 "@keyframes mws-s{0%,100%{transform:rotate(18deg)}50%{transform:rotate(-18deg)}}"
+                 "@keyframes mws-b{0%,39.6%,40.5%,95.6%,96.5%,100%{transform:scaleY(0)}39.85%,40.15%,95.85%,96.15%{transform:scaleY(1)}}"
+                 "@media (prefers-reduced-motion:reduce){.mws .mws-f,.mws .mws-w,.mws .mws-e,.mws .mws-lid,.mws-l1,.mws-l2,.mws-a1,.mws-a2"
+                 "{animation:none!important}}")
+

@@ -367,6 +367,9 @@ def lauf(datei, tmp):
     ok("[data-mw-exit]{display:none!important}" in info and "Text kopieren" in info and "/info/ask" not in info
        and "kontakt-test@example.invalid" not in info and "__MAIL__" not in info and "/info/bild/" not in info,
        "Info/: «✕» versteckt, «Text kopieren» statt Senden, keine Kontaktadresse, keine eigenen Kamerabilder")
+    pbs = re.findall(r'<(?:img|video)\b[^>]*\bdata-pb="(\w+)"[^>]*\b(?:src|poster)="(data:image/[a-z]+;base64,)', info)
+    ok(sorted(k for k, _u in pbs) == ["app_kamera", "app_live", "app_tagebuch", "damals", "jetzt", "live", "nacht", "tag", "zelt"],
+       "Info/: alle neun Bildplätze mit den Beispielbildern (4.22.x: auch die App-Galerie) %s" % sorted(k for k, _u in pbs))
     ok(all(W.files.get("Funk/" + n) == b for n, b in funk.items()) and len(funk) == 7, "Funk/ = die 7 Dateien von funk/ (Byte für Byte)")
     ok("Sim/test.html" in W.files, "Sim/test.html bleibt dabei")
     ok("index.html" not in [x[2] for x in W.uploads()] and W.files.get("index.html") == owner_start, "Startseite aus: index.html nicht hochgeladen, vorhandene bleibt")
@@ -397,8 +400,8 @@ def lauf(datei, tmp):
     ok(tj and sorted(json.loads(tj.group(1))) == ["en", "fr", "it", "rm"] and all(len(v) == nt for v in json.loads(tj.group(1)).values())
        and ix.count('class="tile t-') == 5 and 'href="Info/"' in ix and "ℹ️ Besucherseite" in ix,
        "Startseite: 5 Kacheln (mit ℹ️ Besucherseite → Info/), je %d Texte in en / fr / it / rm (Deutsch im HTML)" % nt)
-    ok('href="Sim/?grossvater=1" data-t="gv.all"' in ix and "kapitel=" not in ix,
-       "Simulator für den Browser noch nicht veröffentlicht: nur «▶ Ganzes Spiel», keine Kapitel")
+    ok('href="Sim/?grossvater=1" data-t="gv.all"' in ix and "kapitel=" not in ix and "roboter=1" not in ix and "🤖" not in ix.split("<script>")[0],
+       "Simulator für den Browser noch nicht veröffentlicht: nur «▶ Ganzes Spiel», keine Kapitel, keine Kachel «🤖 Roboter-Labor»")
     code, j = api("admin", {"action": "start_on", "on": False})
     up_before = ns["hp_state"]()["up"].get("index.html")
     n0, nl = len(W.uploads()), len(W.log)
@@ -407,6 +410,47 @@ def lauf(datei, tmp):
        and ns["hp_state"]()["up"].get("index.html") == up_before, "wieder aus: eigene index.html nicht gelöscht, Eintrag in der eigenen Liste bleibt")
     api("admin", {"action": "start_on", "on": True})                  # ab hier wie bisher mit Startseite
     ok(CFG["hp_start_on"] is True, "Schalter wieder an")
+
+    print("3b) eigene Bilder der Produktseite auf dem Webspace (Besitzer 23.11.2026, Schalter ab Werk an)", flush=True)
+    from PIL import Image as _Im
+    ok(CFG.get("hp_info_own") is True and ns["DEFAULTS"].get("hp_info_own") is True and "hp_info_own" in ns["USER_SETTINGS_DENY"],
+       "ab Werk: «Eigene Bilder auf dem Webspace zeigen» an, nur der Admin")
+    bj = io.BytesIO(); ex = _Im.Exif(); ex[0x010F] = "TestCamFirma"; ex[0x8825] = {2: (47.0, 3.0, 0.0), 1: "N"}
+    _Im.new("RGB", (1600, 900), (40, 120, 60)).save(bj, "JPEG", exif=ex.tobytes())
+    ns["pbild_set"]("app_kamera", bj.getvalue(), 50)
+    ns["pbild_set"]("jetzt", bj.getvalue(), 50, [10, 20, 30, 40], "neu: Bank")
+    nl = len(W.log)
+    code, j = api("admin", {"action": "publish"})
+    info = W.files.get("Info/index.html", b"").decode("utf-8")
+    cam, jetzt = W.files.get("Info/bild/app_kamera.webp", b""), W.files.get("Info/bild/jetzt.webp", b"")
+    ok(code == 200 and cam[:4] == b"RIFF" and jetzt[:4] == b"RIFF" and cam == open(os.path.join(ns["pbild_dir"](), "app_kamera.webp"), "rb").read(),
+       "eigene Bilder als Info/bild/<platz>.webp hochgeladen (%d + %d KB)" % (len(cam) // 1024, len(jetzt) // 1024))
+    ok(re.search(r'<img src="bild/app_kamera\.webp\?v=\d+"[^>]*id="app-cam"', info) and re.search(r'src="bild/jetzt\.webp\?v=\d+"', info)
+       and "window.PB=" in info and "neu: Bank" in info and "/info/bild/" not in info, "Info/index.html zeigt die eigenen Bilder (bild/…) und die Markierung")
+    ok(all(x not in cam + jetzt for x in (b"TestCamFirma", b"Exif", b"EXIF", b"XMP")) and not _Im.open(io.BytesIO(cam)).getexif(),
+       "ohne EXIF / GPS / Kamera")
+    ok("kontakt-test@example.invalid" not in info and "/info/ask" not in info and "Text kopieren" in info
+       and not [p for p in W.files if p.startswith("Info/") and p not in ("Info/index.html", "Info/bild/app_kamera.webp", "Info/bild/jetzt.webp")],
+       "sonst nichts vom Gerät: keine Kontaktadresse, kein Senden, nur Seite + eigene Bilder unter Info/")
+    nl = len(W.log)
+    b2 = io.BytesIO(); _Im.new("RGB", (1600, 900), (150, 60, 40)).save(b2, "JPEG")
+    ns["pbild_set"]("app_kamera", b2.getvalue(), 50)                            # changed picture -> new upload of picture + page
+    ok(ns["hp_content_id"]() != ns["hp_state"]().get("done_id"), "geändertes Bild: der Inhalt gilt als geändert (automatisch neu)")
+    api("admin", {"action": "publish"})
+    ok({x[2] for x in W.log[nl:] if x[0] == "POST"} >= {"Info/bild/app_kamera.webp", "Info/index.html"}
+       and "Info/bild/jetzt.webp" not in {x[2] for x in W.log[nl:] if x[0] == "POST"}, "nur das geänderte Bild und die Seite neu hochgeladen %s" % sorted({x[2] for x in W.log[nl:] if x[0] == "POST"}))
+    code, j = api("admin", {"action": "info_own", "on": False})
+    ok(code == 200 and j.get("info_own") is False and CFG["hp_info_own"] is False, "Schalter aus")
+    api("admin", {"action": "publish"})
+    info = W.files.get("Info/index.html", b"").decode("utf-8")
+    ok("bild/app_kamera.webp" not in info and "window.PB=" not in info and not [p for p in W.files if p.startswith("Info/bild/")],
+       "Schalter aus: Beispielbilder, eigene Bilder auf dem Webspace gelöscht")
+    api("admin", {"action": "info_own", "on": True})
+    for k in ("app_kamera", "jetzt"):
+        ns["pbild_reset"](k)
+    api("admin", {"action": "publish"})
+    ok(not [p for p in W.files if p.startswith("Info/bild/")] and "bild/" not in re.sub(r'data:[^"]+', "", W.files.get("Info/index.html", b"").decode("utf-8")).replace("/info/bild/", ""),
+       "zurück zum Beispiel: keine eigenen Bilder mehr auf dem Webspace")
 
     print("4) Paket sim-web.zip nur mit der signierten Prüfsumme (Teil 300 «anhang.web»)", flush=True)
     sha = hashlib.sha256(open(zp, "rb").read()).hexdigest()
@@ -446,6 +490,13 @@ def lauf(datei, tmp):
     ok(want == [n for n, _v in ns["HP_GV_KAPITEL"]] and want[:3] == [1, 2, 3] and all('href="Sim/?grossvater=1&amp;kapitel=%d"' % n in ix for n in want)
        and "kapitel=%d" % (len(want) + 1) not in ix, f"Sim 3.95.0: Kapitel-Knöpfe {want} (Parameter «kapitel»)")
     ok(ns["hp_gv_kapitel"]("3.76.0") == [] and ns["hp_gv_kapitel"]("") == [], "Sim 3.76.0 (ohne «kapitel»): keine Kapitel-Knöpfe")
+    ok('<a class="tile t-r" href="Sim/?roboter=1">' in ix and ix.count('class="tile t-') == 6 and "🤖 Roboter-Labor" in ix
+       and "Segment-Roboter mit Physik ausprobieren (am PC)" in ix and '"btn.rs": "Try out the segment robot with physics (on a PC)"' in ix
+       and ix.index('href="Sim/"') < ix.index('href="Sim/?roboter=1"') < ix.index('href="Info/"'),
+       "Sim 3.95.0: Kachel «🤖 Roboter-Labor» → Sim/?roboter=1 (6 Kacheln, nach dem Simulator, 5 Sprachen)")
+    rs = ns["HP_ROBOTER_SIM"]
+    ok(not ns["hp_roboter"]("3.79.0") and ns["hp_roboter"](rs) and not ns["hp_roboter"]("") and "roboter=1" not in ns["hp_index_html"]([], ns["hp_roboter"]("3.79.0")),
+       f"Kachel «Roboter-Labor» erst ab Sim {rs} (3.79.0 kennt ?roboter=1 nicht)")
     ok(all(re.fullmatch(r"[^.]+\.[a-z0-9]+", p.rsplit("/", 1)[-1]) for p in W.files), "jede Datei auf dem Webspace hat genau einen Punkt")
 
     print("5) nur Geändertes", flush=True)

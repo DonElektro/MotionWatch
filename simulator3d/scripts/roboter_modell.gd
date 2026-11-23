@@ -866,3 +866,13 @@ func foot_contact(i: int, s: int) -> bool:
 			var st := PhysicsServer3D.body_get_direct_state((b["rb"] as RigidBody3D).get_rid())
 			return st != null and st.get_contact_count() > 0
 	return false
+
+
+func ground_contacts() -> int:
+	"""how many parts touch the ground right now (each body counts once; parts never touch each other)"""
+	var k := 0
+	for b in bodies:
+		var st := PhysicsServer3D.body_get_direct_state((b["rb"] as RigidBody3D).get_rid())
+		if st != null and st.get_contact_count() > 0:
+			k += 1
+	return k

@@ -360,7 +360,11 @@ class H(BaseHTTPRequestHandler):
                                 open(os.path.join(e, "labels_meta", t, "%05d_wald_tag.json" % i), "w").write("{}")
                     if modus == "immer" or (modus in ("absturz1", "teil") and start == 1):
                         print("Speicherzugriffsfehler (nachgestellt)", flush=True)
-                        os.kill(os.getpid(), signal.SIGSEGV)
+                        # 22.11.2026 (CI-Wackler «Teilpaket (Exit 0)»): os.kill(getpid) trifft den Hauptfaden - dieser
+                        # Anfrage-Faden lief unter Last noch weiter, schrieb das ZIP und antwortete «fertig» (Paket 1
+                        # fertig, Absturz erst bei Paket 2). Jetzt das Signal an genau diesen Faden, danach nichts mehr.
+                        signal.pthread_kill(threading.get_ident(), signal.SIGSEGV)
+                        time.sleep(60)
                     if modus == "haengt" or (modus == "langsam" and g <= 2):
                         time.sleep(100 if modus == "haengt" else 2.5)   # länger als MW_KI_ANTWORT_S
                     if z["busy"] and time.time() > z["bis"]:

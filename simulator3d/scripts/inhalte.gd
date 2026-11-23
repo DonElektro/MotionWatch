@@ -63,6 +63,9 @@ var _t := 0.0
 var _lite_was := false
 var _http: HTTPRequest
 var _sky_on := false
+var _img_th: Thread = null              # Faden zum Einlesen der Bilder (_load_textures), _exit_tree holt ihn ab
+var _stop := false                    # Programm endet: der Faden liest kein weiteres Bild
+var _curl_pid := 0                    # laufender curl (_download), _exit_tree beendet ihn
 var _crash_note := ""                 # Startfix: Hinweis nach einem Absturz beim Laden (einmal als Meldung zeigen)
 
 
@@ -109,6 +112,17 @@ func _crash_check() -> void:
 
 
 func _exit_tree() -> void:
+	# 22.11.2026: sauber beenden, auch mitten im Laden - laufenden curl beenden, den Faden zum Einlesen der Bilder abholen
+	# (er hört nach dem aktuellen Bild auf). Vorher blieb er ohne wait_to_finish und lief beim Abbau weiter (Signal 11).
+	_stop = true
+	if _curl_pid > 0:
+		OS.kill(_curl_pid)
+		_curl_pid = 0
+	if _img_th != null:
+		var th: Thread = _img_th
+		_img_th = null
+		if th.is_started():
+			th.wait_to_finish()
 	_mark(false)                                          # normal beendet (auch mitten im Laden): kein Absturz
 
 
@@ -275,15 +289,25 @@ func _download(u: String, to: String) -> String:
 	"""eine Datei laden: curl (Windows: curl.exe mit Zertifikaten und Proxy von Windows), sonst Godot. "" = gut"""
 	var why := ""
 	var curl := "curl.exe" if OS.get_name() == "Windows" else "curl"
-	var th := Thread.new()
-	th.start(func():
-		var out := []
-		var code := OS.execute(curl, ["-L", "--fail", "-s", "-S", "--retry", "2", "--max-time", "300", "-A", "MoveEyeSim3D-Inhalte",
-				"-o", to, u], out, true, false)
-		return [code, "\n".join(out)])
-	while th.is_alive():
-		await get_tree().create_timer(0.25).timeout
-	var c: Array = th.wait_to_finish()
+	# 22.11.2026 (CI-Wackler erkunden_extras_test): curl als eigener Prozess statt OS.execute in einem Faden - beim Beenden
+	# mitten im Laden blieb sonst ein Faden ohne wait_to_finish übrig (Absturz Signal 11 nach dem Ende). Jetzt merkt sich
+	# _curl_pid den Prozess, _exit_tree beendet ihn. Meldung von curl über --stderr in eine Datei; den Exit-Code nur mit
+	# get_process_exit_code abfragen (-1 = läuft noch; nicht is_process_running, das liefert in Godot 4.3 unter Linux danach
+	# den rohen Status).
+	var err_file := to + ".err"
+	var pid := OS.create_process(curl, ["-L", "--fail", "-s", "-S", "--retry", "2", "--max-time", "300", "-A", "MoveEyeSim3D-Inhalte",
+			"--stderr", err_file, "-o", to, u])
+	var code := -1
+	if pid > 0:
+		_curl_pid = pid
+		code = OS.get_process_exit_code(pid)
+		while code == -1:
+			await get_tree().create_timer(0.25).timeout
+			code = OS.get_process_exit_code(pid)
+		_curl_pid = 0
+	var c: Array = [code if pid > 0 else 127, FileAccess.get_file_as_string(err_file) if FileAccess.file_exists(err_file) else ""]
+	if FileAccess.file_exists(err_file):
+		DirAccess.remove_absolute(err_file)
 	if int(c[0]) == 0 and FileAccess.file_exists(to) and FileAccess.get_file_as_bytes(to).size() > 0:
 		return ""
 	why = "curl: " + (str(c[1]).strip_edges().left(120) if str(c[1]).strip_edges() != "" else "Fehler %d" % int(c[0]))
@@ -462,13 +486,19 @@ func _load_textures() -> void:
 	if jobs.is_empty():
 		return
 	var th := Thread.new()
+	_img_th = th                                          # _exit_tree wartet auf ihn (sauber beenden, mitten im Einlesen)
 	th.start(func():
 		var out := []
 		for j in jobs:
+			if _stop:                                     # Ende des Programms: kein weiteres Bild mehr
+				break
 			out.append([j[0], j[1], _img_job(j[2], j[1], can)])
 		return out)
 	while th.is_alive():
 		await get_tree().create_timer(0.1).timeout
+	if _img_th != th:                                     # schon von _exit_tree abgeholt
+		return
+	_img_th = null
 	var res: Array = th.wait_to_finish()
 	var vram := 0
 	for r in res:

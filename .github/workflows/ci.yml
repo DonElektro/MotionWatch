@@ -144,6 +144,15 @@ jobs:
       - name: Chromium installieren
         timeout-minutes: 20
         run: bash werkzeuge/ci_chromium.sh ~/apt-chromium
+      # 22.11.2026 (CI-Wackler orte_test / karten_test: «Connection reset» beim Laden der Schriften): das Web-Paket der
+      # Offline-Karte (MapLibre, Stil, Schriften, Sprites) bauen die Karten-Tests nur einmal und legen es hier ab
+      # (karten_test.web_gebaut); der Schlüssel folgt paket.py + stil.py - dann braucht kein Test mehr das Internet
+      - name: Web-Paket der Offline-Karte (Cache)
+        if: ${{ matrix.gruppe == 'daten' }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/moveeye/karte-web
+          key: karte-web-${{ hashFiles('werkzeuge/karten/paket.py', 'werkzeuge/karten/stil.py') }}
       - name: ffmpeg (Cache)
         if: ${{ startsWith(matrix.gruppe, 'kern') }}
         id: ffcache
