@@ -74,7 +74,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_4_22_0.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_4_23_0.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -650,6 +650,19 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 4.23.0: Besucherseite /info/: Jede Karte in «Ein Blick in die App» hat einen eigenen Bildplatz (Mehr → Homepage →
+    Produktseite: Bilder) – das Kamerabild im Live-Bild-Handy, der ganze Bildschirm, das Tagebuch und «Nachts am Zelt». Ohne
+    eigenes Bild bleiben die bisherigen Bilder. Bildtexte angepasst; das MoveEye-Symbol zeigt die gehende Person im Sichtfeld.
+  * 4.23.0: Besucherseite auf dem Webspace (Info/): Deine eigenen Bilder der Produktseite erscheinen jetzt auch dort – mit
+    Markierung, ohne Standortdaten. Neuer Schalter «Eigene Bilder auf dem Webspace zeigen» (ab Werk an). Ändert sich ein Bild,
+    wird es von selbst neu hochgeladen; ausgeschaltet oder «Zurück zum Beispiel» entfernt es wieder. Vom Gerät kommt sonst
+    nichts auf den Webspace.
+  * 4.23.0: Das MoveEye-Symbol auf der Startseite der Homepage lebt: Im Sichtfeld geht eine rote Person hin und her, Ecken
+    und Sichtfeld gehen mit, das Auge schaut ihr nach und blinzelt ab und zu. Mit «Weniger Bewegung» steht es still.
+  * 4.23.0: Startseite der Homepage: neue Kachel «🤖 Roboter-Labor» – öffnet den Simulator im Browser direkt im
+    Roboter-Labor (ab Sim 3.80.0).
+  * 4.23.0: CI: wackelnde Tests behoben (Erkunden, Teilpaket im HP-Dauertest, Karten-Tests ohne Internet – das Web-Paket der
+    Karte kommt aus dem Cache).
   * 4.22.0: Besucherseite /info/ neu gestaltet – feine Radar-Ringe mit langsamem Strahl im Hintergrund, Erkennungs-Ecken,
     Abschnittsleiste am PC, hell oder dunkel wie das Gerät. «Alle Funktionen» mit Suchfeld (Name und Satz, mit Anzahl) und einer
     Kachel mit der Anzahl Funktionen. Schwenkbereich ±135°. «Eine Nacht» spielt jeden Zeitpunkt ganz ab. Akku: Geekworm X1206
@@ -1649,10 +1662,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_4_22_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_4_23_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_4_22_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_4_22_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_4_23_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_4_23_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)

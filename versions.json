@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-22 21:11",
+ "generated": "2026-11-23 07:39",
  "versions": [
+  {
+   "version": "4.23.0",
+   "file": "webcam_bewegung_4_23_0.py",
+   "url": "",
+   "sha256": "42030cfb51c1ab546b810f6189d55fbff5e7eed23eaea6fa2abb707f814a1b6c",
+   "date": "2026-11-23 07:39",
+   "notes": "Besucherseite /info/: Jede Karte in «Ein Blick in die App» hat einen eigenen Bildplatz (Mehr → Homepage → Produktseite: Bilder) – das Kamerabild im Live-Bild-Handy, der ganze Bildschirm, das Tagebuch und «Nachts am Zelt». Ohne eigenes Bild bleiben die bisherigen Bilder. Bildtexte angepasst; das MoveEye-Symbol zeigt die gehende Person im Sichtfeld.",
+   "size": 3623234,
+   "sig": "50d757a3313d8e3fe1795d050b8a7376456b52969abaf56cdf44ace2a7e8b366e1bf477852794acc24528640f506f23c0d97a20a86ad6f37c71d38745099630b",
+   "data": {
+    "file": "moveeye_daten_4_23_0.zip",
+    "url": "",
+    "sha256": "169fe5d99e3bb39ae99c7a20f436d42016da56497d1103aba7e0fea1c28e7d17",
+    "size": 18251763,
+    "sig": "1f61fd917f8cff284af48751753f34378666765e9c4b44baec207afb9d0c31555649908d6b9c6b447f34591dc0af1d6362d0e482a716e131e6261d63cc274006"
+   }
+  },
   {
    "version": "4.22.0",
    "file": "webcam_bewegung_4_22_0.py",
    "url": "",
    "sha256": "f71a3a930b213ae970c1731ffc0d51e0bf8d3f836479a87673d11f8e6f442c98",
-   "date": "2026-11-22 20:26",
+   "date": "2026-11-23 07:33",
    "notes": "Besucherseite /info/ neu gestaltet – feine Radar-Ringe mit langsamem Strahl im Hintergrund, Erkennungs-Ecken, Abschnittsleiste am PC, hell oder dunkel wie das Gerät. «Alle Funktionen» mit Suchfeld (Name und Satz, mit Anzahl) und einer Kachel mit der Anzahl Funktionen. Schwenkbereich ±135°. «Eine Nacht» spielt jeden Zeitpunkt ganz ab. Akku: Geekworm X1206 V2.0 als Standard, Waveshare UPS HAT (E) auch möglich. Die Fussnote nennt die Nummer dieser MoveEye.",
    "size": 3622208,
    "sig": "eb7dcd66de0644637a6e07c73ee921b680c1d1ec2085eb0f7c9ceb3d314b581f55d1163eb628197b940119deb10727263075eb69d5f584d01249371de10bbb0f",
@@ -136,23 +153,6 @@
     "sha256": "7c9ef6b5288d89d3c3871bc486e72c6e427c0e0e47b0d4f2ba4ff6d002f68cc4",
     "size": 14270212,
     "sig": "c2b8dc7d5062c03a69ee4bd7db7b6bedae6ca81d156af538b066eba16ed2f75e7b626b3a11d8e4230ecfe915a2d049d97060b452ab8d2dfd6b12d0c5fb0b1b0f"
-   }
-  },
-  {
-   "version": "4.13.0",
-   "file": "webcam_bewegung_4_13_0.py",
-   "url": "",
-   "sha256": "e3fbd12044c90093eb841ed1ee28dac2ef12958c0a323f89fced47f825027d25",
-   "date": "2026-11-16 19:41",
-   "notes": "Akku: Geekworm X1206 V2.0 wird erkannt (I2C 0x36, nach dem UPS HAT (E)); GPIO 6 und 16 gehören dann der Platine und werden nie geschaltet; neue Geräte: Lade-LED GPIO 13, Taste «Schutz» GPIO 12 (ältere Einstellungen behalten 6 / 16)",
-   "size": 4036602,
-   "sig": "7a839fb3db7e1bc978a4bda44a5ef1d3d5a220904674cb82777a831eba9c161db01c66cff5e3a9fff5ac37fea669b9a91cda659b27105dee76ef2997b56a4a07",
-   "data": {
-    "file": "moveeye_daten_4_13_0.zip",
-    "url": "",
-    "sha256": "f1e41a9c3f50b9c502ee82276f94e7ce0aa4913ffc2ab2fde152297889a3e4c6",
-    "size": 14249994,
-    "sig": "0d6e6aff888f73d615dfb5aa3347d3712e24f39cfa1353f0fab4bec9200e467c773c48797bb2729637052421240430b01652b0085c14ed80ed05113096687e07"
    }
   },
   {

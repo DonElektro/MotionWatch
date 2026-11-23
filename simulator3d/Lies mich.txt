@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.79.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.80.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -493,6 +493,14 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.80.0
+3.80.0: Roboter-Labor: neu auch mit 6 und 4 Segmenten (Ring 6 × 60° bzw. 4 × 90°), jede Variante mit eigenen Reglern und
+Werten. Neuer Reiter «Rund rollen»: vier Methoden (Nur stossen, Beine stemmen an den Ecken, Beine als Speichen-Kreis, Füsse
+passen sich an) mit Höhe über Boden und Spurbreite; Messung über eine ganze Drehung (Mittenhöhe, Tempo, Bodenkontakte,
+Kipp-Reserve) und Vergleich 8 / 6 / 4 – die beste Methode wird Standard. Spurbreite auch beim Gehen.
+Sim/?roboter=1 bzw. --roboter öffnet direkt das Roboter-Labor; ?roboter=4 / =6 wählt den 4er bzw. 6er.
+So testest du: am PC Mehr → Roboter, Variante 6 wählen, Reiter «Rund rollen» – eine Methode messen und vergleichen.
 
 NEU IN 3.79.0
 3.79.0: Roboter-Labor (Mehr → Roboter): eigene 3D-Welt für den Segment-Roboter – Form nur über Regler (Startwerte aus
