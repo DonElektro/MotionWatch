@@ -38,7 +38,18 @@ static func args() -> PackedStringArray:
 	if q.has("qualitaet"):
 		a.append_array(PackedStringArray(["--quality", str(q["qualitaet"])]))
 	a.append_array(grossvater_args(q))
+	a.append_array(roboter_args(q))
 	return a
+
+
+static func roboter_args(q: Dictionary) -> PackedStringArray:
+	"""die Kachel «Roboter-Labor» auf der Startseite (Besitzer 22.11.2026): ?roboter=1 öffnet nach dem Laden gleich das
+	Roboter-Labor (Startoption --roboter=<Wert>, roboter_start.gd); zusammen mit ?grossvater=… gilt das Spiel. Der Wert geht
+	unverändert als «variante» an das Labor (control {"do": "open", "variante": …}; z. B. 4 = der 4er-Roboter), 0 / false = aus"""
+	var v := str(q.get("roboter", "")).to_lower().strip_edges()
+	if q.has("grossvater") or v in ["", "0", "false"] or not v.is_valid_identifier() and not v.is_valid_int():
+		return PackedStringArray()
+	return PackedStringArray(["--roboter=" + v.left(12)])
 
 
 static func grossvater_args(q: Dictionary) -> PackedStringArray:

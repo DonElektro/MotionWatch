@@ -16,6 +16,8 @@ extends SceneTree
 ##   · Ring rollen: die Füsse stossen den verriegelten Ring vorwärts; mit «Kurve» neigt er sich und fährt nach links
 ##   · Stufe 4: seitwärts (Krebsgang), an Ort drehen ≥ 90°, schräg; Ziel hinten → zuerst an Ort drehen; «Körper passt sich
 ##     dem Untergrund an»: Stufe 6 cm und Rampe 15° geschafft, nicht gekippt, Bodenabstand je Segment 0.5 … 15 cm
+##   · Direkt öffnen (Homepage-Kachel, 22.11.2026): Browser ?roboter=1 → --roboter=1 (nicht zusammen mit ?grossvater), das Labor
+##     geht nach dem Start von selbst auf; kleiner Bildschirm (Handy): Hinweis «Am besten am PC», Bedienfeld zu, Knopf «Bedienfeld»
 ##   cd simulator3d && <godot> --headless --path . -s "$PWD/../werkzeuge/roboter_test.gd"   (absoluter Pfad nötig)
 ## Ende: «Robotertest OK» oder «SCRIPT ERROR: Robotertest: …» (Exit-Code 0 / 1).
 
@@ -28,6 +30,8 @@ var f0 := 0
 var vmax_all := 0.0
 var t_start := 0.0
 var notes := []
+const RS = preload("res://scripts/roboter_start.gd")
+const WEB = preload("res://scripts/web.gd")
 
 
 func _initialize() -> void:
@@ -115,7 +119,29 @@ func _process(_dt: float) -> bool:
 		0:
 			if t < 2.0:
 				return false
-			var d: Dictionary = main.control({"action": "roboter", "do": "open"})
+			if not has_meta("auto"):
+				set_meta("auto", t)
+				set_meta("auto_f", Engine.get_process_frames())
+				check("?roboter=1 → --roboter=1 (Wert geht als «variante» ans Labor)", Array(WEB.roboter_args({"roboter": "1"})) == ["--roboter=1"]
+						and Array(WEB.roboter_args({"roboter": "4"})) == ["--roboter=4"] and Array(WEB.roboter_args({"szene": "wald"})).is_empty()
+						and Array(WEB.roboter_args({"roboter": "0"})).is_empty() and Array(WEB.roboter_args({"roboter": "1", "grossvater": "1"})).is_empty()
+						and Array(WEB.roboter_args({"roboter": "<x>"})).is_empty())
+				check("Startoption --roboter: Labor, mit dem Spiel nicht", RS.autostart_ziel(PackedStringArray(["--scene", "garten", "--roboter"])) == "1"
+						and RS.autostart_ziel(PackedStringArray(["--roboter=4"])) == "4" and RS.autostart_ziel(PackedStringArray(["--roboter", "--grossvater-neu"])) == ""
+						and RS.autostart_ziel(PackedStringArray([])) == "")
+				check("Handy-Grösse: 390 × 844 klein, 1366 × 768 nicht", RS.klein_fuer(Vector2(390, 844)) and not RS.klein_fuer(Vector2(1366, 768)))
+				check("ohne --roboter bleibt das Labor zu", main.roboter == null or not main.roboter.is_open())
+				main.roboter.set_meta("klein_test", false)   # (the headless window is tiny: the PC case here, the phone at the end)
+				RS.autostart_pruefen(main, WEB.roboter_args({"roboter": "1"}))
+				return false
+			if not main.roboter.is_open():
+				if t - float(get_meta("auto")) < RS.AUTOSTART_SEK + 10.0 or Engine.get_process_frames() - int(get_meta("auto_f")) < 300:
+					return false
+				errs.append("--roboter: das Labor ging nicht auf")
+				return _end()
+			var d: Dictionary = main.control({"action": "roboter", "do": "info"})
+			check("--roboter: das Labor geht nach dem Start von selbst auf (am PC Bedienfeld offen, kein Hinweis)", bool(d.get("open", false))
+					and (main.roboter._w["panel"] as Control).visible and main.roboter.layer.find_child("hinweis_pc", true, false) == null)
 			lab = main.roboter
 			m = lab.model
 			check("Labor offen", bool(d.get("open", false)), str(d))
@@ -394,6 +420,26 @@ func _process(_dt: float) -> bool:
 			if frames() < 10:
 				return false
 			check("Geschlossen: Physik wieder wie vorher", Engine.physics_ticks_per_second == 30 and not main.roboter.is_open(), str(Engine.physics_ticks_per_second))
+			main.roboter.set_meta("klein_test", true)    # phone-sized: the hint, the panel closed, the button «Bedienfeld»
+			RS.oeffnen(main)
+			var d: Dictionary = main.control({"action": "roboter", "do": "info"})
+			var lw = main.roboter
+			var hint: Node = lw.layer.find_child("hinweis_pc", true, false)
+			var pb: Button = lw.layer.find_child("bedienfeld_knopf", true, false)
+			check("Handy: Hinweis «Am besten am PC», Bedienfeld zu, Labor trotzdem offen", bool(d.get("open")) and hint != null
+					and not (lw._w["panel"] as Control).visible and int(d.get("segments", 0)) == 8)
+			if pb != null:
+				pb.pressed.emit()
+			check("Handy: Knopf «Bedienfeld» öffnet das Bedienfeld", pb != null and (lw._w["panel"] as Control).visible)
+			if hint != null:
+				(hint.find_child("ok", true, false) as Button).pressed.emit()
+			next_step()
+		24:
+			if frames() < 10:
+				return false
+			check("Handy: «OK» schliesst den Hinweis", main.roboter.layer.find_child("hinweis_pc", true, false) == null)
+			main.roboter.control({"do": "close"})
+			main.roboter.remove_meta("klein_test")
 			return _end()
 	return false
 

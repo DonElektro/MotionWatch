@@ -14,7 +14,8 @@ Geprüft (MoveEye im selben Python, Flask-Test-Client):
     weder hochgeladen noch gelöscht.
   * --browser: echte MoveEye (--headless --demo) und Chromium bei 390 px: /startbilder (keine waagrechte Bildlaufleiste, keine
     JS-Fehler, Knopf in der Karte «Homepage»), Vorschau A und B; die erste Ansicht (Titel, Satz, 5 Kacheln) passt ohne Scrollen
-    bei 1366 × 768, 1536 × 864, 1280 × 720, 1280 × 650, 820 × 1180 und 390 × 844 (22.11.2026); Kapitel-Knöpfe nur mit Sim ≥ HP_GV_KAPITEL; --bilder ORDNER: Bildschirmfotos; --fotos ORDNER: dort die
+    bei 1366 × 768, 1536 × 864, 1280 × 720, 1280 × 650, 820 × 1180 und 390 × 844 (22.11.2026; auch mit 6 Kacheln = «🤖 Roboter-Labor»
+    und Kapiteln 1–4, Variante A / B und schlichte Seite); Kapitel-Knöpfe nur mit Sim ≥ HP_GV_KAPITEL; --bilder ORDNER: Bildschirmfotos; --fotos ORDNER: dort die
     Bilder nach Platz-Namen (titel.jpg, pano.jpg, …) hochladen statt erzeugter (z. B. die Fotos des Besitzers, nur lokal).
 
   python3 werkzeuge/startbilder_test.py [--datei X.py] [--browser] [--bilder ORDNER] [--fotos ORDNER]
@@ -89,9 +90,14 @@ def main():
     return 1 if FEHLER else 0
 
 
+VOLL = {}                                                   # the full start page (chapters 1-4 + «Roboter-Labor») for the browser test
+
+
 def lauf(datei):
     from PIL import Image
     ns = HT.laden(datei)
+    VOLL.update(main=ns["hp_links_html"]("de", [1, 2, 3, 4], True), main5=ns["hp_links_html"]("de", [1, 2, 3, 4], False), plain6=ns["hp_index_html"]([1, 2, 3, 4], True),
+                plain5=ns["hp_index_html"]([], False))
     CFG, HP = ns["CFG"], ns["HP"]
     ns["HP_TEST_HTTP"] = True
     ns["HP_RETRY"][:] = [0.05, 0.1]
@@ -221,10 +227,20 @@ def lauf(datei):
         hk = ns["sb_page_html"]("A", lambda s_, k_: "x.webp", m_, ns["hp_gv_kapitel"](ver))
         got = [int(x) for x in re.findall(r'href="Sim/\?grossvater=1&amp;kapitel=(\d+)"', hk)]
         ok(got == want and (not want or hk.count('class="chip"') == len(want)), "A mit Sim %s: Kapitel-Knöpfe %s" % (ver, got))
+    for v_ in ("A", "B"):
+        for rob, n in ((False, 5), (True, 6)):
+            hk = ns["sb_page_html"](v_, lambda s_, k_: "x.webp", m_, [1, 2, 3, 4], rob)
+            ok(hk.count('class="tile t-') == n and ('href="Sim/?roboter=1"' in hk) == rob and 'class="tiles n%d"' % n in hk,
+               "%s %s Kachel «🤖 Roboter-Labor»: %d Kacheln" % (v_, "mit" if rob else "ohne", n))
     sv = dict(ns["SIM3D_WEB"])
     ns["SIM3D_WEB"].update(version="3.78.0", size=1, sha256="0" * 64)
     ok(ns["hp_gv_kapitel"]() == [1, 2, 3, 4] and "kapitel=4" in ns["hp_fixed_items"]()[0]["get"]().read().decode(),
        "Kapitel nach dem veröffentlichten Browser-Simulator (SIM3D_WEB 3.78.0): 1 · 2 · 3 · 4 auf der Startseite")
+    ok("roboter=1" not in ns["hp_fixed_items"]()[0]["get"]().read().decode(), "SIM3D_WEB 3.78.0: keine Kachel «Roboter-Labor»")
+    ns["SIM3D_WEB"].update(version=ns["HP_ROBOTER_SIM"])
+    hr = ns["hp_fixed_items"]()[0]["get"]().read().decode()
+    ok('href="Sim/?roboter=1"' in hr and hr.count('class="tile t-') == 6,
+       "SIM3D_WEB %s: Kachel «🤖 Roboter-Labor» → Sim/?roboter=1 auf der Startseite (6 Kacheln)" % ns["HP_ROBOTER_SIM"])
     ns["SIM3D_WEB"].clear(); ns["SIM3D_WEB"].update(sv)
     ok(not re.search(r'(?:src|href|srcset)="(?:https?:)?//', idx) and "http://" not in idx and "https://" not in idx, "keine fremden Adressen in der Seite")
     def lokal(p):
@@ -392,18 +408,40 @@ def browser(datei, bilder, fotos):
             fit = ("() => { const r = e => e.getBoundingClientRect(), h = r(document.querySelector('h1')), t = [...document.querySelectorAll('main .tile')].map(r), "
                    "l = r(document.querySelector('.cap1 .line')); return [Math.round(h.top), Math.round(Math.max(...t.map(x => x.bottom))), innerHeight, "
                    "document.documentElement.scrollWidth, innerWidth, t.length, Math.round(l.bottom), Math.round(Math.min(...t.map(x => x.top)))]; }")
+            def voll(route):                                  # 22.11.2026: the tiles as with a released Sim (chapters 1-4; «main»: + Roboter-Labor)
+                if not VOLL.get("jetzt"):
+                    return route.continue_()
+                r_ = route.fetch()
+                body_ = re.sub(r'<main class="tiles[^"]*">.*?</main>', lambda _m: VOLL[VOLL["jetzt"]], r_.text(), count=1, flags=re.S)
+                route.fulfill(response=r_, body=body_)
             for w, h, mob in ((1366, 768, False), (1536, 864, False), (1280, 720, False), (1280, 650, False), (820, 1180, True), (390, 844, True)):
                 cf = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=1 if not mob else 2, is_mobile=mob, has_touch=mob,
                                     http_credentials={"username": "admin", "password": ADMIN_PW}, locale="de-CH")
                 pf = cf.new_page()
-                for v in ("A", "B"):
+                pf.route("**/startbilder/vorschau*", voll)
+                for v, n, kap in (("A", 5, ""), ("B", 5, ""), ("A", 5, "main5"), ("B", 5, "main5"), ("A", 6, "main"), ("B", 6, "main")):
+                    VOLL["jetzt"] = kap
                     pf.goto(base + "/startbilder/vorschau?v=" + v, wait_until="load"); pf.wait_for_timeout(800)
                     pf.evaluate("() => { const b = document.querySelector('.mw-back, #mw-back'); if (b) b.remove(); }")
                     f = pf.evaluate(fit)
-                    ok(f[0] >= 0 and f[1] <= f[2] and f[3] <= f[4] and f[5] == 5 and f[6] <= f[7],
-                       "Vorschau %s %d × %d: Titel ganz sichtbar (oben %d px), alle 5 Kacheln im Bild (unten %d ≤ %d), Satz über den Kacheln" % (v, w, h, f[0], f[1], f[2]))
+                    ok(f[0] >= 0 and f[1] <= f[2] and f[3] <= f[4] and f[5] == n and f[6] <= f[7],
+                       "Vorschau %s %d × %d: Titel ganz sichtbar (oben %d px), alle %d Kacheln im Bild (unten %d ≤ %d), Satz über den Kacheln"
+                       % (v, w, h, f[0], n, f[1], f[2]))
+                    if kap:
+                        ok(pf.evaluate("() => [...document.querySelectorAll('main a')].every(a => a.getBoundingClientRect().right <= innerWidth + 0.5)"),
+                           "Vorschau %s %d × %d mit Kapiteln 1–4%s: nichts ragt seitlich hinaus" % (v, w, h, " und «🤖 Roboter-Labor»" if n == 6 else ""))
                     if bilder:
-                        pf.screenshot(path=os.path.join(bilder, "passt_%s_%dx%d.png" % (v, w, h)))
+                        pf.screenshot(path=os.path.join(bilder, "passt_%s%s_%dx%d.png" % (v, {"": "", "main5": "_kap", "main": "_6"}[kap], w, h)))
+                pf.unroute("**/startbilder/vorschau*")
+                for nm, n in (("plain5", 5), ("plain6", 6)):    # the simple page (no own pictures)
+                    pf.set_content(VOLL[nm]); pf.wait_for_timeout(300)
+                    f = pf.evaluate("() => { const r = e => e.getBoundingClientRect(), h = r(document.querySelector('h1')), t = [...document.querySelectorAll('main .tile')].map(r); "
+                                    "return [Math.round(h.top), Math.round(Math.max(...t.map(x => x.bottom))), innerHeight, document.documentElement.scrollWidth, innerWidth, t.length, "
+                                    "Math.round(Math.max(...[...document.querySelectorAll('main a')].map(a => a.getBoundingClientRect().right)))]; }")
+                    ok(f[0] >= 0 and f[1] <= f[2] and f[3] <= f[4] and f[5] == n and f[6] <= f[4],
+                       "schlichte Startseite %d × %d: Titel und alle %d Kacheln im Bild (unten %d ≤ %d)" % (w, h, n, f[1], f[2]))
+                    if bilder:
+                        pf.screenshot(path=os.path.join(bilder, "passt_schlicht%s_%dx%d.png" % ("_6" if n == 6 else "", w, h)))
                 cf.close()
             ctx3 = br.new_context(viewport={"width": 1024, "height": 1366}, device_scale_factor=2, reduced_motion="reduce",   # iPad, still
                                   http_credentials={"username": "admin", "password": ADMIN_PW}, locale="de-CH")

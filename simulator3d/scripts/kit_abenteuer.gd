@@ -119,7 +119,7 @@ static func autostart_pruefen(m) -> void:
 		return
 	await m.get_tree().create_timer(3.0).timeout          # the start of the simulator first (scene, panel, news)
 	if m.get("news") != null and m.news.has_method("close"):
-		m.news.close()
+		m.news.close(false)                                 # (like «OK» on the card; before: close() without the argument = script error)
 	var k = ensure(m)
 	if k.running:
 		return

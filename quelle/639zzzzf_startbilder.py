@@ -406,9 +406,9 @@ def _sb_tx(key, L):
     return v[i] if len(v) > i and v[i] else (v[0] if v else "")
 
 
-def sb_page_html(variant=None, url=None, meta=None, kap=None):
+def sb_page_html(variant=None, url=None, meta=None, kap=None, rob=None):
     """the start page with the own pictures: url(place, small) -> address of the picture; None without any own picture of the variant;
-    kap: the chapters of the game tile (default hp_gv_kapitel(), 639zzzh)"""
+    kap: the chapters of the game tile (default hp_gv_kapitel(), 639zzzh); rob: the tile «Roboter-Labor» (default hp_roboter())"""
     import html as _h
     m = meta if meta is not None else sb_meta()
     v = variant if variant in SB_VARIANTS else sb_variant()
@@ -447,7 +447,7 @@ def sb_page_html(variant=None, url=None, meta=None, kap=None):
     hero = '<div class="first"><header class="hero">' + (img("titel", 72, lazy=False) if "titel" in S else SB_DRAWN.replace("{alt}", e(_sb_tx("alt.drawn", "de"))))
     hero += ('<div class="top"><h1>' + HP_EYE_SVG + 'MoveEye</h1><p data-t="titel.line">%s</p></div><div class="cap1"><span class="kick" data-t="titel.kick">%s</span>'
              '<span class="line" data-t="titel.say">%s</span></div></header>' % (e(tx("titel", "line")), e(tx("titel", "kick")), e(tx("titel", "say"))))
-    btn = hp_links_html("de", kap) + '</div>'                    # 4.19.1: all links of HP_LINKS (22.11.2026: + chapters, Info/; one screen with the title)
+    btn = hp_links_html("de", kap, rob) + '</div>'                    # 4.19.1: all links of HP_LINKS (22.11.2026: + chapters, Info/; one screen with the title)
     body, pre, post = "", "", ""
     if v == "A":
         ch = [k for k in SB_CHAPTERS if k in S or (k == "grat" and "grat_hoch" in S)]

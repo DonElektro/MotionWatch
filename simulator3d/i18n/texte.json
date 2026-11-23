@@ -4800,6 +4800,12 @@
   "it": "in montagna",
   "rm": "en muntogna"
  },
+ "Am besten am PC": {
+  "en": "Best on a PC",
+  "fr": "Mieux sur un PC",
+  "it": "Meglio su un PC",
+  "rm": "Il meglier al PC"
+ },
  "Am Bootssteg": {
   "en": "At the jetty",
   "fr": "Au ponton",
@@ -7016,6 +7022,12 @@
   "fr": "BB 6 mm 0,20 g",
   "it": "BB 6 mm 0,20 g",
   "rm": "BB 6 mm 0,20 g"
+ },
+ "Bedienfeld": {
+  "en": "Controls",
+  "fr": "Panneau",
+  "it": "Pannello",
+  "rm": "Panel"
  },
  "Bedienfeld ausblenden (H)": {
   "en": "Hide control panel (H)",
@@ -10003,6 +10015,12 @@
   "fr": "Le car postal monte la route du col et klaxonne avec son triton avant le lacet serré – on l’entend dans toute la vallée.",
   "it": "L’autopostale sale sulla strada del passo e suona il suo tritono prima del tornante stretto – lo si sente in tutta la valle.",
   "rm": "L’auto da posta va si per la via dal pass e tuna cun ses tritun avant la storta stretga – quai auda ins en l’entira val."
+ },
+ "Das Roboter-Labor ist für Maus, Tastatur und einen grossen Bildschirm gebaut. Auf dem Handy geht es trotzdem – das Bedienfeld öffnest du mit «Bedienfeld».": {
+  "en": "The robot lab is made for a mouse, a keyboard and a large screen. It works on a phone anyway – open the controls with «Controls».",
+  "fr": "Le labo du robot est fait pour une souris, un clavier et un grand écran. Il fonctionne quand même sur le téléphone – ouvre le panneau avec «Panneau».",
+  "it": "Il laboratorio robot è fatto per mouse, tastiera e uno schermo grande. Funziona comunque sul telefono – apri il pannello con «Pannello».",
+  "rm": "Il labor dal robot è fatg per mieur, tastatura ed in grond visur. Sin il telefonin funcziuna el tuttina – il panel avras ti cun «Panel»."
  },
  "Das Rätsel": {
   "en": "The puzzle",

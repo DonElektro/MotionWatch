@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8693 (Stellen: 12056)
-Übersetzt: en 8693, fr 8693, it 8693, rm 8693
+Texte gesamt: 8696 (Stellen: 12059)
+Übersetzt: en 8696, fr 8696, it 8696, rm 8696
 Unsicher markiert: 514
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 553 Stellen
 Nicht mehr im Code (noch in texte.json): 416
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 31889, schlüssel 24776, keine Wörter 15956, index 11281, technisch 4077, doc 2816, einheit 366, log 204, englisch 150, pfad 130, stringname 107, html 69, klasse 48, shader 6
+Übersprungen (Grund: Anzahl): kennung 31914, schlüssel 24779, keine Wörter 15964, index 11281, technisch 4078, doc 2822, einheit 366, log 205, englisch 151, pfad 130, stringname 107, html 69, klasse 48, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -226,6 +226,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_ei.gd              3     0
   erkunden_ruhe.gd           3     0
   padtest.gd                 3     1
+  roboter_start.gd           3     0
   ui_style.gd                3     0
   abenteuer_bestenliste.gd     2     0
   anim_mensch.gd             2     0
@@ -983,16 +984,16 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   hp_kiosk.gd:157  'aus'
   hp_kiosk.gd:197  'aus'
   licht.gd:42  'aus'
-  main.gd:797  ' (Port %d)'
-  main.gd:1706  '  %.0f Mbit/s'
-  main.gd:2366  ' (von MoveEye)'
-  main.gd:2399  'Der Simulator ist belegt: '
-  main.gd:3244  'aus'
-  main.gd:3244  'ein'
-  main.gd:3321  'Sabotage-Test: '
-  main.gd:3321  'aus'
-  main.gd:3375  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
-  main.gd:3378  '\n🚨 Bewacht und weg: '
+  main.gd:798  ' (Port %d)'
+  main.gd:1707  '  %.0f Mbit/s'
+  main.gd:2367  ' (von MoveEye)'
+  main.gd:2400  'Der Simulator ist belegt: '
+  main.gd:3245  'aus'
+  main.gd:3245  'ein'
+  main.gd:3322  'Sabotage-Test: '
+  main.gd:3322  'aus'
+  main.gd:3376  ' · letzter Vergleich: %d fehlt, %d neu, %d verändert'
+  main.gd:3379  '\n🚨 Bewacht und weg: '
   main_status.gd:14  'Echt-Abgleich: '
   main_status.gd:24  'Trainingspaket: '
   main_status.gd:33  ' · %d offen · %.1f MB'
