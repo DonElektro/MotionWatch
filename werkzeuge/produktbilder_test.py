@@ -121,6 +121,12 @@ def main():
         for s in ["live", "tag", "nacht", "damals", "jetzt", "app_kamera", "app_live", "app_tagebuch", "zelt"]:
             c, t, b = req("/api/produktbilder/bild/" + s)
             ok(c == 200 and t.startswith("image/") and b[:4] == b"RIFF", "Vorschau Beispiel «%s» (%d, %s)" % (s, c, t))
+        # 23.11.2026: the push popup sits on the card «Nachts am Zelt» (not on the Live-Bild phone)
+        c, _t, h0 = req("/info/", auth=False); h0 = h0.decode()
+        fz = h0[h0.index('<video data-pb="zelt"'):]; fz = fz[:fz.index("</figure>")]
+        fl = h0[h0.index('id="app-live"'):]; fl = fl[:fl.index("</figure>")]
+        ok('<div class="push">' in fz and 'class="pu-tier">Fuchs</span> beim Zelt' in fz and "23:36 · 4 m · Bild ansehen" in fz and 'class="push"' not in fl
+           and h0.count('<div class="push">') == 1, "Push «Fuchs beim Zelt · 23:36» auf der Karte «Nachts am Zelt», nicht mehr im Live-Bild-Handy")
         # rights
         g = [req("/produktbilder", user="gast", pw="gast-pw-123")[0], req("/api/produktbilder", user="gast", pw="gast-pw-123")[0],
              req("/api/produktbilder?action=set&slot=jetzt&pos=50", foto_jpeg(), user="gast", pw="gast-pw-123", ctype="application/octet-stream")[0],
@@ -185,6 +191,8 @@ def main():
         elif a.browser:
             for s in ("live", "tag", "app_kamera", "zelt"):   # 4.19.1 + 4.22.x: own pictures also in the gallery cards
                 req("/api/produktbilder?action=set&slot=%s&pos=50" % s, raw, ctype="application/octet-stream")
+            c, _t, b = req("/api/produktbilder?action=box", json.dumps({"slot": "zelt", "box": [30, 40, 20, 25], "label": "Dachs"}).encode())
+            ok(c == 200 and next(s for s in json.loads(b)["slots"] if s["id"] == "zelt")["label"] == "Dachs", "«Nachts am Zelt»: Markierung mit Text")
             browser(base, "", "", "jetzt", "")
             for s in ("live", "tag", "app_kamera", "zelt"):
                 req("/api/produktbilder?action=reset", json.dumps({"slot": s}).encode())
@@ -276,6 +284,9 @@ def browser(base, bilder, tag, slot, foto=""):
             gal = p2.evaluate("() => { const c = document.getElementById('app-cam'), l = document.getElementById('app-cam-live'), z = document.querySelector('[data-pb=zelt]'); "
                               "return [(c.getAttribute('src') || '').slice(0, 21), c.naturalWidth, !c.hidden, !l.hidden, z.tagName, (z.getAttribute('src') || '').slice(0, 17), !!document.getElementById('clip'), "
                               "(document.getElementById('app-live').getAttribute('src') || '').slice(0, 10)]; }")
+            pz = p2.evaluate("() => { const t = document.querySelector('.pu-tier'), b = document.getElementById('box-zelt'); "
+                             "return [t.textContent, t.closest('figure').contains(document.querySelector('[data-pb=zelt]')), !b.hidden && getComputedStyle(b).display !== 'none', b.textContent]; }")
+            ok(pz == ["Dachs", True, True, "Dachs"], "Push auf der Karte «Nachts am Zelt» nennt das Tier der eigenen Markierung, Markierung sichtbar %s" % pz)
             ok(gal[0] == "/info/bild/app_kamera" and gal[1] > 0 and gal[2] and gal[3] and gal[4] == "IMG" and gal[5] == "/info/bild/zelt.w" and not gal[6] and gal[7] == "data:image",
                "/info/: eigenes Kamerabild im Live-Bild-Handy (mit «LIVE»), eigenes Bild statt des Films, die App rundherum bleibt %s" % gal)
             if not foto:
@@ -294,6 +305,9 @@ def browser(base, bilder, tag, slot, foto=""):
             p3.locator(sel).scroll_into_view_if_needed(); p3.wait_for_timeout(700)
         p3.evaluate("() => { const b = document.querySelector('.langs button[data-lang=fr]'); if (b) b.click(); }"); p3.wait_for_timeout(500)
         ok(p3.evaluate("() => document.documentElement.lang") == "fr", "/info/ am PC: Sprachwahl fr")
+        if slot:
+            pt = p3.evaluate("() => [document.querySelector('.pu-tier').textContent, document.querySelector('[data-i=pu_h]').textContent]")
+            ok(pt[0] == "Dachs" and "près de la tente" in pt[1], "fr: der Push nennt weiter das Tier der Markierung %s" % pt)
         # 4.21.0: «Alle Funktionen» with search, tile with the number, footnote with this MoveEye's number (window.MW_VER)
         p3.evaluate("() => document.getElementById('af-tile').click()"); p3.wait_for_timeout(600)
         p3.fill("#af-q", "batterie"); p3.wait_for_timeout(400)

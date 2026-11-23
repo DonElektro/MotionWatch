@@ -26,7 +26,7 @@ PB_SCRIPT = """<script>
 /* image slots: window.PB = {slot: {box, label}} for the own pictures of the admin (MoveEye part 639zzzze) */
 (function () {
   const PB = window.PB || {};
-  [["box-day", "tag"], ["box-night", "nacht"], ["zf-mark", "jetzt"]].forEach(([id, k]) => {
+  [["box-day", "tag"], ["box-night", "nacht"], ["zf-mark", "jetzt"], ["box-zelt", "zelt"]].forEach(([id, k]) => {
     const el = document.getElementById(id), c = PB[k]; if (!el || !c) return;      // the example: unchanged
     if (!c.box) { el.style.setProperty("display", "none", "important"); return; }  // own picture without a mark
     const b = c.box; el.style.left = b[0] + "%"; el.style.top = b[1] + "%";
@@ -39,6 +39,8 @@ PB_SCRIPT = """<script>
   const cam = document.getElementById("app-cam"), lab = document.getElementById("app-cam-live");   // the camera picture in the Live-Bild phone
   if (cam && PB.app_kamera) { if (lab) lab.hidden = false; }          // own picture: the «LIVE» label on top (the example has it in the picture)
   else if (cam && PB.app_live) cam.hidden = true;                    // own whole screen without own camera picture: the screen as it is
+  const tier = () => { const c = PB.zelt; if (c && c.label) document.querySelectorAll(".pu-tier").forEach(e => { e.textContent = c.label; }); };
+  tier(); document.addEventListener("mw-lang", () => setTimeout(tier, 0));   // the push at the tent names the animal of the own mark
 })();
 </script>
 """
