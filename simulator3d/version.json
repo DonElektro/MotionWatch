@@ -15,37 +15,37 @@
  },
  "pi": {
   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.79.0",
-  "size": 44474391,
-  "sha256": "345dbb1baf943fd93fcca32be92a703aaa1abec487c7f531d1cb4ba7eaa2f12b",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.79.0/MoveEyeSim3D_Pi.zip"
+  "ver": "3.80.0",
+  "size": 44503212,
+  "sha256": "7e29b55c43a5216bd75b6dc426d8a85190d3c39dc271a81212d9a1970c51bc12",
+  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.0/MoveEyeSim3D_Pi.zip"
  },
  "anhang": {
-  "ver": "3.79.0",
-  "version": "3D-5.79.0",
-  "name": "MoveEye Sim 3.79.0",
-  "notes": "Roboter-Labor, Aussichtspunkte von Hand gesetzt",
+  "ver": "3.80.0",
+  "version": "3D-5.80.0",
+  "name": "MoveEye Sim 3.80.0",
+  "notes": "Roboter-Labor 6 / 4 Segmente, Rund rollen",
   "mw_min": "3.55.0",
   "win": {
    "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
-   "ver": "3.79.0",
-   "size": 60934731,
-   "sha256": "4dc20e0c9107c3de9f84f6a4ca836e0375296e4bd789ff96ade7ae1bb0af185f",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.79.0/MotionWatch3D_Simulator.zip"
+   "ver": "3.80.0",
+   "size": 60965999,
+   "sha256": "f8765ab756fb7ef93f1ecc6d460f7077471966f0bc5fefe1f5a1dae146a3acdf",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.0/MotionWatch3D_Simulator.zip"
   },
   "linux": {
    "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
-   "ver": "3.79.0",
-   "size": 54988687,
-   "sha256": "1cb35691dc40e76173a5d9522be99879ae9591061785f4125129178401d2f422",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.79.0/MoveEyeSim3D_Linux.zip"
+   "ver": "3.80.0",
+   "size": 55018789,
+   "sha256": "b58cf6a2fc4e0669a1d3482120a2172f152328f44c371b09d1f6359e1ea5e708",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.0/MoveEyeSim3D_Linux.zip"
   },
   "web": {
    "file": "simulator3d/anhang/sim-web.zip",
-   "ver": "3.79.0",
-   "size": 81040375,
-   "sha256": "2e631f447b7f34cd57d6b30bf2172deb83fa00c6b2539c224efb1f69a697c86d",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.79.0/sim-web.zip"
+   "ver": "3.80.0",
+   "size": 81101166,
+   "sha256": "e20b08b2984102e063358ee75c048f43858c27a3ae5a5fc5c58651024a51e18f",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.0/sim-web.zip"
   }
  }
 }
