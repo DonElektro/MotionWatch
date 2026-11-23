@@ -54,9 +54,14 @@
 #     die Produktseite von /info/ (Teil 620, ohne die eigenen Kamerabilder von 639zzzze und ohne die Kontaktadresse) als
 #     Info/index.html. Auf dem Webspace gibt es kein MoveEye dahinter: der Knopf «✕» (data-mw-exit) ist versteckt, «Senden»
 #     heisst «Text kopieren» und legt die Anfrage in die Zwischenablage (HP_INFO_WEB_JS).
+# Entscheid des Besitzers (23.11.2026): seine eigenen Bilder der Produktseite (639zzzze, alle Bildplätze) kommen auch auf den
+#   Webspace – Schalter «Eigene Bilder auf dem Webspace zeigen» (hp_info_own, ab Werk an). Hochgeladen werden nur diese Bilder
+#   (schon beim Speichern verkleinert, ohne EXIF / GPS) als Info/bild/<platz>.webp und die Seite zeigt sie (window.PB mit
+#   Markierung / Text); sonst nichts vom Gerät (keine Aufnahmen, keine Kontaktadresse, kein Senden). Ändert sich ein Bild,
+#   ändern sich Seite und Datei – die bestehende Erkennung (hp_content_id) lädt neu, gelöschte Bilder werden entfernt.
 # ----------------------------------------------------------------------------
 _HP_CFG = {"hp_key": "", "hp_base": "https://kevlaschef.com", "hp_auto": True, "hp_start_on": False, "hp_funk_on": True,
-           "hp_sim_on": True, "hp_public": "", "hp_info_on": True}
+           "hp_sim_on": True, "hp_public": "", "hp_info_on": True, "hp_info_own": True}
 for _k, _v in _HP_CFG.items():
     CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v); FACTORY_CFG.setdefault(_k, _v)
 USER_SETTINGS_DENY.update(_HP_CFG)
@@ -296,6 +301,20 @@ HP_INFO = "Info/index.html"                                 # the visitor page (
 _HP_INFO_CACHE = {}
 
 
+def hp_info_own():
+    """the own pictures of the product page for the web space: {slot: bytes} (empty when switched off or none)"""
+    if not CFG.get("hp_info_own") or "pbild_meta" not in globals():
+        return {}
+    out = {}
+    for k in pbild_meta():
+        try:
+            with open(os.path.join(pbild_dir(), k + ".webp"), "rb") as f:
+                out[k] = f.read()
+        except OSError:
+            pass
+    return out
+
+
 def hp_info_page():
     """the product page for the web space: the page of /info/ (620) without the device parts - no own camera pictures (639zzzze),
     no contact address, no sender to /info/ask; HP_INFO_WEB_JS hides «✕» and turns «Send» into «Copy the text» -> bytes or b"" """
@@ -304,15 +323,19 @@ def hp_info_page():
     src = INFO_HTML_GZ
     if not src:
         return b""
-    if _HP_INFO_CACHE.get("id") is not src:                 # decompressed once per program run (about 3.3 MB)
+    own = hp_info_own()
+    key = (id(src), json.dumps({k: pbild_meta().get(k) for k in sorted(own)}, sort_keys=True) if own else "")
+    if _HP_INFO_CACHE.get("id") != key:                      # decompressed once per program run / change of the own pictures
         try:
             h = gzip.decompress(base64.b64decode(src)).decode("utf-8")
         except Exception:
             return b""
+        if own:                                              # 23.11.2026: the owner's own pictures, next to the page (Info/bild/)
+            h = pbild_apply(h, "bild/")
         inj = '<style>[data-mw-exit]{display:none!important}</style>'
         h = h.replace("</head>", inj + "</head>", 1)
         h = h.replace("</body>", "<script>" + HP_INFO_WEB_JS + "</script></body>", 1) if "</body>" in h else h + "<script>" + HP_INFO_WEB_JS + "</script>"
-        _HP_INFO_CACHE.update(id=src, page=h.encode("utf-8"))
+        _HP_INFO_CACHE.update(id=key, page=h.encode("utf-8"))
     return _HP_INFO_CACHE["page"]
 
 
@@ -339,7 +362,9 @@ def hp_fixed_items():
         out += [_hp_item("Funk/" + n, b) for n, b in sorted(hp_funk_files().items())]
     out += [_hp_item("Sim/test.html", HP_TEST_HTML.encode("utf-8"))] if hp_part_on("sim") else []
     info = hp_info_page() if hp_part_on("info") else b""
-    return out + ([_hp_item(HP_INFO, info)] if info else [])
+    if not info:
+        return out
+    return out + [_hp_item(HP_INFO, info)] + [_hp_item("Info/bild/%s.webp" % k, b) for k, b in sorted(hp_info_own().items())]
 
 
 def hp_sim_check(p):
@@ -759,7 +784,7 @@ def hp_status():
     st, p, pk = hp_state(), HP["prog"], SIM3D_WEB
     return {"ok": True, "key_set": bool(CFG.get("hp_key")), "base": CFG.get("hp_base") or "", "auto": bool(CFG.get("hp_auto")),
             "start_on": hp_part_on("start"), "funk_on": hp_part_on("funk"), "sim_on": hp_part_on("sim"), "info_on": hp_part_on("info"),
-            "busy": HP["busy"], "wait": HP["wait"], "prog": {k: p.get(k) for k in ("i", "n", "bytes", "total", "file")} if p.get("n") else None,
+            "info_own": bool(CFG.get("hp_info_own")), "busy": HP["busy"], "wait": HP["wait"], "prog": {k: p.get(k) for k in ("i", "n", "bytes", "total", "file")} if p.get("n") else None,
             "err": [HP["err"], HP["msg"]] if HP["err"] else None, "cancelled": HP["msg"] == "cancel", "last": st.get("last"),
             "check": st.get("check"), "public": hp_public_url(), "public_set": hp_public_ok(CFG.get("hp_public")),
             "sim": {"ver": pk["version"] if pk["size"] else "", "ready": bool(pk["size"]) and sim3d_ready(pk)}}
@@ -806,6 +831,11 @@ def hp_action(d, lang=None):
     if a == "auto":
         CFG["hp_auto"] = bool(d.get("on"))
         save_settings()
+        return True, ""
+    if a == "info_own":                                     # 23.11.2026: own pictures on the web space
+        CFG["hp_info_own"] = bool(d.get("on"))
+        save_settings()
+        log_event("sys", "Homepage: own pictures on the visitor page " + ("on" if CFG["hp_info_own"] else "off"))
         return True, ""
     if a in ("start_on", "funk_on", "sim_on", "info_on"):
         CFG["hp_" + a] = bool(d.get("on"))
@@ -1070,6 +1100,8 @@ HP_TEXTS = {
                                                          "Simulatore (Sim/ + pagina di test): non caricato (spento)",
                                                          "Simulatur (Sim/ + pagina da test): betg chargià (deactivà)"),
     "ℹ️ Visitor page (Info/)": ("ℹ️ Besucherseite (Info/)", "ℹ️ Page visiteurs (Info/)", "ℹ️ Pagina visitatori (Info/)", "ℹ️ Pagina per visitaders (Info/)"),
+    "Show my own pictures on the web space": ("Eigene Bilder auf dem Webspace zeigen", "Montrer mes propres images sur l’espace web",
+                                              "Mostrare le mie immagini sullo spazio web", "Mussar mes atgens maletgs sin il spazi web"),
     "visitor page (Info/)": ("Besucherseite (Info/)", "page visiteurs (Info/)", "pagina visitatori (Info/)", "pagina per visitaders (Info/)"),
     "Visitor page (Info/): not uploaded (off)": ("Besucherseite (Info/): nicht hochgeladen (aus)", "Page visiteurs (Info/) : pas envoyée (désactivé)",
                                                  "Pagina visitatori (Info/): non caricata (spento)", "Pagina per visitaders (Info/): betg chargiada (deactivà)"),
@@ -1381,6 +1413,7 @@ background:var(--field);color:var(--txt);border:1px solid var(--line);border-rad
 .hp-res ul{margin:4px 0 0 18px;padding:0;color:var(--red)}.hp-res details{font-size:12px;color:var(--mut)}
 label.hp-chk{display:flex;gap:8px;align-items:center;min-height:44px}
 .hp-parts{border-top:1px solid var(--line);padding-top:8px;display:flex;flex-direction:column}
+.hp-chk.hp-sub{padding-left:26px}
 section.card h3{margin:0 0 10px}
 </style></head><body>
 <header>
@@ -1406,6 +1439,7 @@ section.card h3{margin:0 0 10px}
       <label class="hp-chk"><input type="checkbox" id="hp-funk"><span id="hp-funk-l"></span></label>
       <label class="hp-chk"><input type="checkbox" id="hp-sim-on"><span id="hp-sim-l"></span></label>
       <label class="hp-chk"><input type="checkbox" id="hp-info-on"><span id="hp-info-l"></span></label>
+      <label class="hp-chk hp-sub"><input type="checkbox" id="hp-info-own"><span id="hp-info-own-l"></span></label>
       <div class="hp-hint" id="hp-start-h"></div>
       <div class="hp-hint hp-bad" id="hp-none" hidden></div></div>
     <div class="hp-hint" id="hp-sim"></div>
@@ -1447,7 +1481,7 @@ section.card h3{margin:0 0 10px}
   $("hp-auto-h").textContent = t("Only changed files are uploaded, in the background and never during an alarm.");
   $("hp-parts-t").textContent = t("Public on the homepage"); $("hp-start-l").textContent = t("Start page");
   $("hp-funk-l").textContent = t("📻 Phone radio (Funk/)"); $("hp-sim-l").textContent = t("🎮 Simulator (Sim/ + test page)");
-  $("hp-info-l").textContent = t("ℹ️ Visitor page (Info/)");
+  $("hp-info-l").textContent = t("ℹ️ Visitor page (Info/)"); $("hp-info-own-l").textContent = t("Show my own pictures on the web space");
   $("hp-start-h").textContent = t("Off: this part is not uploaded – and never deleted on the web space.");
   $("hp-none").textContent = t("Nothing chosen – switch on at least one part.");
   $("hp-acc-t").textContent = t("Access"); $("hp-base-l").textContent = t("Address of the web space"); $("hp-base-b").textContent = t("Save the address");
@@ -1473,6 +1507,7 @@ section.card h3{margin:0 0 10px}
     $("hp-go").disabled = !!j.busy || !j.key_set || !any; $("hp-chk").disabled = !!j.busy; $("hp-stop").hidden = !j.busy;
     $("hp-auto").checked = !!j.auto; $("hp-start").checked = !!j.start_on;
     $("hp-funk").checked = !!j.funk_on; $("hp-sim-on").checked = !!j.sim_on; $("hp-info-on").checked = !!j.info_on;
+    $("hp-info-own").checked = !!j.info_own; $("hp-info-own").disabled = !j.info_on;
     if (document.activeElement !== $("hp-base")) $("hp-base").value = j.base || "";
     $("hp-key-st").textContent = j.key_set ? "🔑 " + t("Upload key is set (never shown again).") : t("No upload key set.");
     $("hp-key-b").textContent = j.key_set ? t("Replace the key") : t("Set the key"); $("hp-key-d").hidden = !j.key_set;
@@ -1500,6 +1535,7 @@ section.card h3{margin:0 0 10px}
   $("hp-funk").onchange = () => act({action: "funk_on", on: $("hp-funk").checked});
   $("hp-sim-on").onchange = () => act({action: "sim_on", on: $("hp-sim-on").checked});
   $("hp-info-on").onchange = () => act({action: "info_on", on: $("hp-info-on").checked});
+  $("hp-info-own").onchange = () => act({action: "info_own", on: $("hp-info-own").checked});
   $("hp-base-b").onclick = () => act({action: "base", base: $("hp-base").value.trim()}, $("hp-base-b"));
   $("hp-pub-b").onclick = () => act({action: "public", public: $("hp-pub").value.trim()}, $("hp-pub-b"));
   $("hp-key-b").onclick = async () => { const k = $("hp-key").value.trim(); if (!k) return; const j = await act({action: "key", key: k}, $("hp-key-b"));
@@ -1571,7 +1607,7 @@ def homepage_selftest():
     assert DEFAULTS.get("hp_info_on") is True and "hp_info_on" in USER_SETTINGS_DENY and hp_part("Info/index.html") == "info" and _hp_ours("Info/index.html")
     pg = hp_info_page().decode("utf-8")
     assert not INFO_HTML_GZ or ("[data-mw-exit]{display:none!important}" in pg and "/info/ask" not in pg
-                                 and "Text kopieren" in pg and "__MAIL__" not in pg and "window.PB=" not in pg), "visitor page for the web space"
+                                 and "Text kopieren" in pg and "__MAIL__" not in pg and ("window.PB=" not in pg) == (not hp_info_own())), "visitor page for the web space"
     assert DEFAULTS.get("hp_start_on") is False and "hp_start_on" in USER_SETTINGS_DENY, "start page: off by default, admin only"
     assert DEFAULTS.get("hp_funk_on") is True and DEFAULTS.get("hp_sim_on") is True and "hp_sim_on" in USER_SETTINGS_DENY, "funk / sim: on by default"
     assert hp_public_ok("https://moveeye.kevlaschef.com") == "https://moveeye.kevlaschef.com/" and not hp_public_ok("http://moveeye.kevlaschef.com/")
