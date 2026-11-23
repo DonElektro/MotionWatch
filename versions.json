@@ -1,22 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-23 20:55",
+ "generated": "2026-11-23 21:04",
  "versions": [
   {
-   "version": "4.23.0",
-   "file": "webcam_bewegung_4_23_0.py",
+   "version": "4.23.1",
+   "file": "webcam_bewegung_4_23_1.py",
    "url": "",
-   "sha256": "42030cfb51c1ab546b810f6189d55fbff5e7eed23eaea6fa2abb707f814a1b6c",
-   "date": "2026-11-23 20:54",
-   "notes": "Besucherseite /info/: Jede Karte in «Ein Blick in die App» hat einen eigenen Bildplatz (Mehr → Homepage → Produktseite: Bilder) – das Kamerabild im Live-Bild-Handy, der ganze Bildschirm, das Tagebuch und «Nachts am Zelt». Ohne eigenes Bild bleiben die bisherigen Bilder. Bildtexte angepasst; das MoveEye-Symbol zeigt die gehende Person im Sichtfeld.",
-   "size": 3623234,
-   "sig": "50d757a3313d8e3fe1795d050b8a7376456b52969abaf56cdf44ace2a7e8b366e1bf477852794acc24528640f506f23c0d97a20a86ad6f37c71d38745099630b",
+   "sha256": "da4c2075e0c8ce05375ab94d9146cfc4e174e21f1b4326726e558c3a54a73674",
+   "date": "2026-11-23 21:04",
+   "notes": "Besucherseite /info/: Die Push-Nachricht in «Ein Blick in die App» erscheint jetzt beim Bild «Nachts am Zelt» – «MoveEye · Fuchs beim Zelt, 23:36». Hast du dort ein eigenes Bild mit einer beschrifteten Markierung, nennt die Nachricht diesen Text statt «Fuchs».",
+   "size": 3623021,
+   "sig": "2f7b90b4621cff76844cb0e0cbcf513e8d4910e12e963c95fede3ef3b55f9f82516a1c7db2c0f19990f1c7577f12d34a0947c7bb2deb839b6316bb5090abb209",
    "data": {
-    "file": "moveeye_daten_4_23_0.zip",
+    "file": "moveeye_daten_4_23_1.zip",
     "url": "",
-    "sha256": "169fe5d99e3bb39ae99c7a20f436d42016da56497d1103aba7e0fea1c28e7d17",
-    "size": 18251763,
-    "sig": "1f61fd917f8cff284af48751753f34378666765e9c4b44baec207afb9d0c31555649908d6b9c6b447f34591dc0af1d6362d0e482a716e131e6261d63cc274006"
+    "sha256": "3645323be15743cd20bdde3191a54c3ab86ae0091f9249f6098a9a9b98304a91",
+    "size": 18252461,
+    "sig": "295d2bdb88798e851b1ab084eb9ed4915cfa38c53b98a6ffa6011b58d52f9dd5a17e01110917d9ef35fd2fbd9fa2686623eca4055f23923b1f72827be4e59f04"
    }
   },
   {
