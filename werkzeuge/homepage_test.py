@@ -39,6 +39,7 @@ HIER = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HIER)
 sys.path.insert(0, HIER)
 import sim_web_paket  # noqa: E402
+import sim_web_speicher  # noqa: E402
 
 FEHLER = []
 N = {"ok": 0}
@@ -207,7 +208,7 @@ def fake_sim_zip(ordner, wasm_extra=b""):
                            "\t\tsetStatusMode('progress');\n\t\tengine.startGame({\n\t\t\t'onProgress': function () {},\n"
                            "\t\t}).then(() => {\n\t\t\tsetStatusMode('hidden');\n\t\t}, displayFailureNotice);\n\t}\n</script></body></html>",
              "index.js": "function locate(path){ if (path.endsWith('.audio.worklet.js')) {\n return `${loadPath}.audio.worklet.js`;\n} }\n"
-                         + "".join(a for a, _ in sb.JS_ERSATZ),
+                         + "".join(a for a, _ in sb.JS_ERSATZ) + "".join(a for a, _ in sim_web_speicher.JS_ERSATZ),
              "index.audio.worklet.js": "class W extends AudioWorkletProcessor{}", "index.wasm": b"\0asm\x01\0\0\0" + os.urandom(3000) + wasm_extra,
              "index.pck": os.urandom(12000000 + 5000), "index.png": b"\x89PNG-boot", "index.icon.png": b"\x89PNG-icon", "index.apple-touch-icon.png": b"\x89PNG-apple"}
     for n, d in files.items():

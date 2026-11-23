@@ -15,6 +15,40 @@ static func on() -> bool:
 	return OS.has_feature("web")
 
 
+## Spar-Modus im Browser (Besitzer 23.11.2026, iPad Pro 12.9": «WebGL context lost» schon beim Laden): Safari auf iPhone / iPad
+## gibt einer Seite nur wenig Grafikspeicher und nimmt ihn bei Knappheit ganz weg. Das iPad Pro zeichnete mit Pixeldichte 2 auf
+## 2732 × 2048 Bildpunkte – 3.5-mal so viele wie ein iPhone mit der Schärfe 0.67. Darum:
+##   «ios»  = iPhone / iPad (iPadOS meldet sich als Mac: Touch-Punkte > 1) - automatisch, ohne Angabe in der Adresse
+##   «lite» = ?lite=1 in der Adresse (Knopf «Im Spar-Modus neu laden» der Meldung in index.html, werkzeuge/sim_web_speicher.py)
+## Die Seite (index.html) begrenzt dazu schon die Pixeldichte der Leinwand (iOS 1.5, lite 1.0); hier kommt die 3D-Ansicht dazu.
+const SPAR_PX := {"ios": 1800000.0, "lite": 1000000.0}      # höchstens so viele Bildpunkte zeichnet die 3D-Ansicht
+
+
+static func spar() -> String:
+	"""«» (normal) / «ios» / «lite» - einmal gefragt, danach aus der Engine-Meta (in Tests von aussen setzbar)"""
+	if Engine.has_meta("web_spar"):
+		return str(Engine.get_meta("web_spar"))
+	var s := ""
+	if on():
+		if str(_query().get("lite", "")).to_lower() in ["1", "true", "ja", "an", "on"]:
+			s = "lite"
+		else:
+			var ios = JavaScriptBridge.eval("(/iPad|iPhone|iPod/.test(navigator.userAgent || '') || (/Mac/.test(navigator.platform || '') && navigator.maxTouchPoints > 1)) ? 1 : 0", true)
+			if typeof(ios) in [TYPE_INT, TYPE_FLOAT] and int(ios) == 1:
+				s = "ios"
+	Engine.set_meta("web_spar", s)
+	return s
+
+
+static func spar_scale(px: Vector2i, k: float) -> float:
+	"""die Schärfe k der 3D-Ansicht, im Spar-Modus so weit gesenkt, dass höchstens SPAR_PX Bildpunkte gezeichnet werden"""
+	var s := spar()
+	var n := float(maxi(px.x, 1) * maxi(px.y, 1)) * k * k
+	if not SPAR_PX.has(s) or n <= float(SPAR_PX[s]):
+		return k
+	return clampf(k * sqrt(float(SPAR_PX[s]) / n), 0.5, k)
+
+
 static func _query() -> Dictionary:
 	var out := {}
 	if not on():
@@ -85,6 +119,14 @@ static func start(main: Node) -> void:
 		if typeof(nav) == TYPE_STRING and str(nav) in T.codes():
 			T.set_moveeye_lang(str(nav))             # wie die Sprache, die MoveEye meldet: eine eigene Wahl gilt vor
 	_symbols()
+	var spm := spar()
+	if spm != "":                                    # schon vor dem Aufbau der Welt: kein MSAA, 3D-Ansicht im Rahmen von SPAR_PX
+		var vp := main.get_viewport()
+		vp.msaa_3d = Viewport.MSAA_DISABLED
+		vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
+		vp.scaling_3d_scale = spar_scale(main.get_tree().root.size, vp.scaling_3d_scale)
+		print("web: Spar-Modus «%s» (Fenster %d × %d, 3D-Schärfe %.2f)" % [spm, main.get_tree().root.size.x,
+			main.get_tree().root.size.y, vp.scaling_3d_scale])
 	var demo = preload("res://scripts/web_demo.gd").new()
 	demo.name = "WebDemo"
 	demo.main = main
