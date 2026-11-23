@@ -23,6 +23,9 @@ Features
   * Native desktop app (Tkinter) + web page (Flask, port 5000) with live stream, pan/tilt pad,
     all settings, snapshot, CPU graph and event log  ->  http://<pi-ip>:5000/
   (Ältere Einträge: in der Zusatzdatei moveeye_daten_X_Y_Z.zip; vollständig in quelle/000_kopf_aenderungen.py)
+  * 4.23.1: Besucherseite /info/: Die Push-Nachricht in «Ein Blick in die App» erscheint jetzt beim Bild «Nachts am Zelt» –
+    «MoveEye · Fuchs beim Zelt, 23:36». Hast du dort ein eigenes Bild mit einer beschrifteten Markierung, nennt die Nachricht
+    diesen Text statt «Fuchs».
   * 4.23.0: Besucherseite /info/: Jede Karte in «Ein Blick in die App» hat einen eigenen Bildplatz (Mehr → Homepage →
     Produktseite: Bilder) – das Kamerabild im Live-Bild-Handy, der ganze Bildschirm, das Tagebuch und «Nachts am Zelt». Ohne
     eigenes Bild bleiben die bisherigen Bilder. Bildtexte angepasst; das MoveEye-Symbol zeigt die gehende Person im Sichtfeld.
@@ -137,10 +140,6 @@ Features
     und Schutzschale zum Drucken (einzeln oder als ZIP mit Anleitung), in der 3D-Werkstatt mit einem Schalter einblendbar. Die
     Gehäuse-Nummer bleibt 5.3.1. Neu auch auf der Seite «Handy-Funkgerät»: Reiter «🔏 Bild» – Botschaft im Bild
     verstecken und lesen, ganz ohne Netz.
-  * 3.99.0: Zwei Teile. (1) «📻 Radio» (Mehr → Unterwegs): Internet-Radio über den Lautsprecher, Sender suchen im offenen
-    Verzeichnis radio-browser.info, Einschlaf-Timer, Radio als Wecker; Sirene, Ansagen, Gegensprechen und Morse haben Vorrang.
-    (2) «🏠 Apple Home» (Beta, Einstellungen → Netz & Zugang, nur Admin, ab Werk aus): Kamera, Bewegungsmelder, Schutz, Kopf und
-    Licht in der Home-App über Homebridge; Ausschalten mit PIN bleibt abgelehnt, ausser der Besitzer erlaubt es.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -149,10 +148,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_4_23_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_4_23_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_4_23_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_4_23_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_4_23_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_4_23_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -199,7 +198,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "4.23.0"
+APP_VERSION = "4.23.1"
 
 
 def default_data_dir():
@@ -332,8 +331,8 @@ def prepare_settings_file():
 
 
 
-ZD_FILE = "moveeye_daten_4_23_0.zip"
-ZD_SHA256 = "169fe5d99e3bb39ae99c7a20f436d42016da56497d1103aba7e0fea1c28e7d17"
+ZD_FILE = "moveeye_daten_4_23_1.zip"
+ZD_SHA256 = "3645323be15743cd20bdde3191a54c3ab86ae0091f9249f6098a9a9b98304a91"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -50866,7 +50865,7 @@ class App:
 		self.watch=watch
 		self.web=web or WebStream(watch)
 		self.root=tk.Tk()
-		self.root.title("MoveEye 4.23.0")
+		self.root.title("MoveEye 4.23.1")
 		try:
 			import base64
 			self._icon=tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -51253,7 +51252,7 @@ class App:
 			if not small:
 				vl=tk.Label(tl,text=APP_VERSION,bg=C["bg"],fg=C["mut"],font=("DejaVu Sans",8),cursor="hand2");vl.pack(side="left",padx=(8,0),pady=(5,0))
 				vl.bind("<Button-1>",self._ver_tap,add="+");Tip(vl,tr("About MoveEye"))
-			Tip(nm,f"{tr('Build')} 4.23.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+			Tip(nm,f"{tr('Build')} 4.23.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
 			self._egg_taps=[]
 			for w_ in tl.winfo_children():
 				w_.bind("<Button-1>",self._egg_tap,add="+")
