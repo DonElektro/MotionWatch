@@ -14,6 +14,8 @@ Dazu (offizielles Paket, wie die vom Besitzer geprüfte Fassung «sim_fix3»):
     Sandbox ohne CORS aus; die Teile lädt index.html selbst (fetch, Fortschritt), setzt sie zusammen und gibt sie Godot als
     index.pck (preloadFile + --main-pack). index.pck bleibt im Paket, weil MoveEye bis 4.6.0 (Teil 639zzzh, HP_SIM_NAMES)
     es als Pflichtdatei verlangt; die Seite lädt es nicht mehr.
+  - Grafikspeicher iPhone / iPad aus sim_web_speicher.py (index.js / index.html): Pixeldichte der Leinwand begrenzt,
+    statt alert «WebGL context lost» eine Meldung «Grafikspeicher voll – im Spar-Modus neu laden?» (Besitzer 23.11.2026).
   - Cache-Buster: index.html lädt «index.js?v=<Prüfsumme>», damit ein Handy nach dem Update nicht das alte index.js nimmt.
 Die Dateien liegen ohne Ordner in der ZIP (so lädt MoveEye sie nach Sim/ hoch). Nur der Release-Workflow «Sim-Pakete»
 (.github/workflows/sim_pi.yml, Paket «web») und die Tests rufen das auf; MoveEye nimmt das Paket nur mit der signierten
@@ -30,6 +32,7 @@ import zipfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import sim_web_sandbox  # noqa: E402
+import sim_web_speicher  # noqa: E402
 
 PFLICHT = ("index.html", "index.js", "index.wasm", "index.pck", "index_audio_worklet.js")
 NAME_RE = re.compile(r"^[A-Za-z0-9_-]{1,60}\.[a-z0-9]{1,12}$")        # genau ein Punkt: der Webspace ändert nichts mehr
@@ -49,26 +52,30 @@ LADER_NEU = r"""		setStatusMode('progress');
 		const TOTAL = %(total)d;
 		let done = 0;
 		const prog = (n) => { done += n; statusProgress.value = done; statusProgress.max = TOTAL; };
+		// Speicher (iPhone / iPad, 23.11.2026): die Teile gleich an ihren Platz im einen Puffer schreiben (keine Zwischenkopien)
+		// und ihn nach dem Start loslassen - Godot kopiert ihn ins eigene Dateisystem
+		let all = new Uint8Array(%(pck)d);
+		let pos = 0;
+		const put = (u) => {
+			if (pos + u.length > all.length) { throw new Error('index.pck: mehr als %(pck)d Bytes'); }
+			all.set(u, pos); pos += u.length; prog(u.length);
+		};
 		const getPart = (f) => fetch(f).then((r) => {
 			if (!r.ok) { throw new Error(f + ': ' + r.status); }
-			if (!r.body || !r.body.getReader) { return r.arrayBuffer().then((b) => { prog(b.byteLength); return new Uint8Array(b); }); }
-			const rd = r.body.getReader(); const chunks = []; let len = 0;
-			const pump = () => rd.read().then(({ done: d, value }) => {
-				if (d) { const out = new Uint8Array(len); let o = 0; for (const c of chunks) { out.set(c, o); o += c.length; } return out; }
-				chunks.push(value); len += value.length; prog(value.length); return pump();
-			});
+			if (!r.body || !r.body.getReader) { return r.arrayBuffer().then((b) => { put(new Uint8Array(b)); }); }
+			const rd = r.body.getReader();
+			const pump = () => rd.read().then(({ done: d, value }) => { if (d) { return null; } put(value); return pump(); });
 			return pump();
 		});
-		const packP = PARTS.reduce((p, f) => p.then((acc) => getPart(f).then((u) => { acc.push(u); return acc; })), Promise.resolve([])).then((list) => {
-			let len = 0; for (const u of list) { len += u.length; }
-			if (len !== %(pck)d) { throw new Error('index.pck: ' + len + ' statt %(pck)d Bytes'); }
-			const all = new Uint8Array(len); let o = 0; for (const u of list) { all.set(u, o); o += u.length; }
-			return all.buffer;
+		let packP = PARTS.reduce((p, f) => p.then(() => getPart(f)), Promise.resolve()).then(() => {
+			if (pos !== %(pck)d) { throw new Error('index.pck: ' + pos + ' statt %(pck)d Bytes'); }
+			const buf = all.buffer; all = null;
+			return buf;
 		});
 		engine.config.update({ 'onProgress': function (current, total) { if (current > 0) { statusProgress.value = done + current; statusProgress.max = TOTAL; } } });
 		engine.config.args = ['--main-pack', 'index.pck'].concat(engine.config.args);
 		Promise.all([engine.init('index'), packP.then((buf) => engine.preloadFile(buf, 'index.pck'))])
-			.then(() => engine.start())
+			.then(() => { packP = null; return engine.start(); })
 			.then(() => { setStatusMode('hidden'); }, displayFailureNotice);
 """
 
@@ -88,9 +95,9 @@ def packen(ordner, ziel):
     js = daten.get("index.js", b"").decode("utf-8")
     if js.count(WORKLET_ALT) != 1:
         raise SystemExit("index.js: %s nicht genau einmal (andere Godot-Fassung?)" % WORKLET_ALT)
-    js = sim_web_sandbox.patch_js(js.replace(WORKLET_ALT, WORKLET_NEU))
+    js = sim_web_speicher.patch_js(sim_web_sandbox.patch_js(js.replace(WORKLET_ALT, WORKLET_NEU)))
     daten["index.js"] = js.encode("utf-8")
-    html = sim_web_sandbox.patch_html(daten.get("index.html", b"").decode("utf-8"))
+    html = sim_web_speicher.patch_html(sim_web_sandbox.patch_html(daten.get("index.html", b"").decode("utf-8")))
     for alt, neu in umben.items():
         if alt != neu and alt.endswith(".png"):
             html = html.replace('"%s"' % alt, '"%s"' % neu)
@@ -156,6 +163,8 @@ def pruefen(pfad):
                     f.append("index.wasm ist kein WebAssembly")
                 if sim_web_sandbox.MARKE_JS not in js or sim_web_sandbox.MARKE_HTML not in html:
                     f.append("Sandbox-Patch fehlt")
+                if sim_web_speicher.MARKE_JS not in js or sim_web_speicher.MARKE_HTML not in html:
+                    f.append("Grafikspeicher-Patch fehlt (sim_web_speicher.py)")
                 m = re.search(r'<script src="index\.js\?v=([0-9a-f]{12})"></script>', html)
                 if not m or m.group(1) != hashlib.sha256(z.read("index.js")).hexdigest()[:12]:
                     f.append("index.html lädt index.js nicht mit ?v=<Prüfsumme>")
