@@ -201,7 +201,7 @@ static func blinki(d: CanvasItem, pos: Vector2, height: float, mood := "normal",
 			q.append(ec + Vector2(-9.5 + 19.0 * t, 3.5 - 25.0 * t * (1.0 - t)) * ke)
 		d.draw_polyline(q, dk, max(1.0, 3.6 * ke), true)
 	else:
-		var off: Vector2 = {"point": Vector2(5, -1), "think": Vector2(-4, -5), "watch": Vector2(4, -4.5)}.get(mood, Vector2(5.0 * clampf(look, -1.0, 1.0), 0.0))
+		var off: Vector2 = {"point": Vector2(5, -1), "think": Vector2(-4, -5)}.get(mood, Vector2(5.0 * clampf(look, -1.0, 1.0), 0.0))
 		d.draw_circle(ec + off * ke, 10.5 * ke, o)
 		d.draw_circle(ec + off * ke, 5.2 * ke, dk)
 		if not red:
@@ -264,20 +264,6 @@ static func blinki_bubble(d: CanvasItem, pos: Vector2, height: float, mood: Stri
 	elif mood == "think":
 		for cx in [43.5, 50.0, 56.5]:
 			d.draw_circle(B.call(cx, 39.0), 2.4 * s * k, lc)
-	elif mood == "normal":                                # 22.11.2026: the red walking person of the MoveEye symbol (mw_logo.gd,
-		var Logo = load("res://scripts/mw_logo.gd")        # MW_SYMBOL_HTML of 144 / 589), on the spot; load, not
-		var stp: float = Logo.step(Time.get_ticks_msec() / 1000.0)   # preload: no cycle mehr_icons -> ui_style while loading
-		var rc := Color(Logo.RED, a)
-		var sc := 0.62
-		var Qp := func(x: float, y: float) -> Vector2: return B.call(50.0 + x * sc, 41.5 + y * sc)
-		var u := s * k * sc
-		d.draw_circle(Qp.call(1.0, -15.5), 5.2 * u, rc)
-		d.draw_line(Qp.call(0.5, -9.0), Qp.call(-0.5, 3.0), rc, max(1.0, 8.0 * u), true)
-		for lm in [[Vector2(-0.5, 3), Vector2(-5, 13.5), 18.0, 4.6], [Vector2(-0.5, 3), Vector2(4.5, 13), -18.0, 4.6],
-				[Vector2(0.5, -6), Vector2(-5.5, 0.5), -18.0, 3.6], [Vector2(0.5, -6), Vector2(6, -0.5), 18.0, 3.6]]:
-			var p0: Vector2 = lm[0]
-			var e: Vector2 = p0 + (Vector2(lm[1]) - p0).rotated(deg_to_rad(float(lm[2]) * stp))
-			d.draw_line(Qp.call(p0.x, p0.y), Qp.call(e.x, e.y), rc, max(1.0, float(lm[3]) * u), true)
 	elif mood == "happy":                                 # a heart
 		var hc := Color(o2, a)
 		d.draw_circle(B.call(46.6, 37.6), 3.9 * s * k, hc)

@@ -83,8 +83,8 @@ def wordmark_h1(m):
 # Ecken: Ecken + Person gehen in 7 s ±9 hin und her (ease-in-out), der Fächer schwenkt ±12° um die Augenmitte mit, die
 # Pupille schaut der Person nach oben nach (±3.8, −5.2), zweimal blinzeln in 23 s, Schritt 0.7 s (Bein / Arm einen halben
 # Schritt versetzt), prefers-reduced-motion = still. EINE Quelle für alle Stellen: MW_SYMBOL_HTML (__I__ = eigene id je
-# Stelle) + MW_SYMBOL_CSS; mw_walker_svg() gibt nur die Person (Blinkis Sprechblase im Zustand «normal», 589).
-# Simulator: dieselbe Bewegung in simulator3d/scripts/mw_logo.gd (eine Quelle für alle Sim-Stellen).
+# Stelle) + MW_SYMBOL_CSS. Besitzer 23.11.2026: NUR auf der Startseite der Homepage (639zzzh / 639zzzzf) und der
+# Produktseite; Blinki (589) und das Simulator-Logo (mw_logo.gd) bleiben wie vorher.
 # ----------------------------------------------------------------------------
 MW_SYMBOL_HTML = ('<svg class="mws" viewBox="0 0 100 112" focusable="false" aria-hidden="true"><defs>'
                  '<linearGradient id="mwsg__I__" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff9f43"/>'
@@ -105,7 +105,6 @@ MW_SYMBOL_HTML = ('<svg class="mws" viewBox="0 0 100 112" focusable="false" aria
                  '<circle fill="#fff" cx="53.2" cy="76.6" r="2"/></g>'
                  '<rect class="mws-lid" fill="#e8590c" x="32" y="62" width="36" height="36"/></g>'
                  '<circle fill="none" stroke="#e8590c" stroke-width="2.6" cx="50" cy="80" r="17"/></svg>')
-# the gait (.mws-l1 … .mws-a2) is not scoped to .mws: Blinki's bubble (589) uses the same person
 MW_SYMBOL_CSS = (".mws{overflow:visible}.mws .mws-f,.mws .mws-w,.mws .mws-e{transform-box:view-box}"
                  ".mws .mws-f{transform-origin:50px 80px;animation:mws-f 7s ease-in-out infinite}"
                  ".mws .mws-w{animation:mws-w 7s ease-in-out infinite}.mws .mws-e{animation:mws-e 7s ease-in-out infinite}"
@@ -120,8 +119,3 @@ MW_SYMBOL_CSS = (".mws{overflow:visible}.mws .mws-f,.mws .mws-w,.mws .mws-e{tran
                  "@media (prefers-reduced-motion:reduce){.mws .mws-f,.mws .mws-w,.mws .mws-e,.mws .mws-lid,.mws-l1,.mws-l2,.mws-a1,.mws-a2"
                  "{animation:none!important}}")
 
-
-def mw_walker_svg():
-    """only the red walking person of MW_SYMBOL_HTML (same coordinates: centre of the corner frame 50 / 41.5); without the zip empty"""
-    m = re.search(r'<g class="mws-p".*?</g></g>', MW_SYMBOL_HTML or "")
-    return m.group(0) if m else ""

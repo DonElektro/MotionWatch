@@ -1521,7 +1521,6 @@ def homepage_selftest():
     assert 'class="mweye"' in ix and "mws-b" in ix and "prefers-reduced-motion" in ix, "4.19.1: animated eye, still without motion"
     assert 'class="mws-p"' in ix and LOGO_RED in ix and "mws-w 7s" in ix and "mws-s .7s" in ix and "rotate(12deg)" in ix and ix.count('id="mwsg') == 1, \
         "22.11.2026: the shared symbol (144) with the walking red person"
-    assert mw_walker_svg().startswith('<g class="mws-p"') and mw_walker_svg().endswith("</g></g>") and mw_walker_svg().count("<g") == 5
     assert all('href="Sim/?grossvater=1&amp;kapitel=%d"' % n in ix for n in (1, 2, 3)) and "kapitel=4" not in ix, "22.11.2026: chapter chips"
     assert "kapitel=" not in hp_index_html([]) and "gv.all" in hp_index_html([]), "without chapters: only «Ganzes Spiel»"
     assert hp_gv_kapitel("3.77.0") == [] and hp_gv_kapitel("3.78.0") == [n for n, _v in HP_GV_KAPITEL] == [1, 2, 3, 4] and hp_gv_kapitel("") == []
