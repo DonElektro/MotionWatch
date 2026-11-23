@@ -20,7 +20,7 @@ static func on() -> bool:
 ## 2732 × 2048 Bildpunkte – 3.5-mal so viele wie ein iPhone mit der Schärfe 0.67. Darum:
 ##   «ios»  = iPhone / iPad (iPadOS meldet sich als Mac: Touch-Punkte > 1) - automatisch, ohne Angabe in der Adresse
 ##   «lite» = ?lite=1 in der Adresse (Knopf «Im Spar-Modus neu laden» der Meldung in index.html, werkzeuge/sim_web_speicher.py)
-## Die Seite (index.html) begrenzt dazu schon die Pixeldichte der Leinwand (iOS 1.5, lite 1.0); hier kommt die 3D-Ansicht dazu.
+## Die Seite (index.html) begrenzt dazu schon die Pixeldichte der Leinwand (iOS höchstens 2 und 3.2 Mio. Bildpunkte: iPad Pro 1.53; lite 1.0); hier kommt die 3D-Ansicht dazu.
 const SPAR_PX := {"ios": 1800000.0, "lite": 1000000.0}      # höchstens so viele Bildpunkte zeichnet die 3D-Ansicht
 
 

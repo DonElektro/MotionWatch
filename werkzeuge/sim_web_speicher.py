@@ -7,7 +7,7 @@ Leinwand mit der vollen Pixeldichte (iPad Pro: 2 -> 2732 × 2048 Bildpunkte) und
 Dieser Patch (für sim_web_paket.py, wie sim_web_sandbox.py: Text rein, Text raus, jede Stelle genau einmal):
   index.js
     - GodotDisplayScreen.getPixelRatio fragt window.mwPixelRatio(d): die Pixeldichte der Leinwand begrenzt
-      (iPhone / iPad automatisch höchstens 1.5 und rund 3.2 Mio. Bildpunkte; mit ?lite=1 überall 1.0 und 1.6 Mio.;
+      (iPhone / iPad automatisch höchstens 2 und 3.2 Mio. Bildpunkte - iPad Pro 12.9" 1.53, iPhone 2; mit ?lite=1 überall 1.0 und 1.6 Mio.;
       sonst unverändert). Dieselbe Zahl liefert Godot DisplayServer.screen_get_scale -> Oberfläche und Leinwand passen.
     - «webglcontextlost»: statt alert() window.mwContextLost(ev) (Rückfall: das alte alert).
   index.html (vor <script src="index.js">)
@@ -104,7 +104,7 @@ def _block():
 	const lite = /^(1|true|ja|an|on)$/i.test(q.get('lite') || '');
 	const ua = navigator.userAgent || '';
 	const ios = /iPad|iPhone|iPod/.test(ua) || (/Mac/.test(navigator.platform || '') && navigator.maxTouchPoints > 1);
-	const MAX_DPR = lite ? 1 : (ios ? 1.5 : 0);
+	const MAX_DPR = lite ? 1 : (ios ? 2 : 0);
 	const MAX_PX = lite ? 1.6e6 : (ios ? 3.2e6 : 0);
 	window.mwGpu = { ios: ios, lite: lite, maxDpr: MAX_DPR, maxPx: MAX_PX, lost: 0 };
 	window.mwPixelRatio = function (d) {

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Test für sim_web_speicher.py (Grafikspeicher iPhone / iPad, Besitzer 23.11.2026: iPad Pro 12.9" «WebGL context lost»):
   1. jede Godot-Stelle wird genau einmal ersetzt, zweiter Lauf ändert nichts, fehlt eine Stelle -> Abbruch
-  2. Node: window.mwPixelRatio - PC unverändert, iPhone / iPad (iPadOS meldet sich als «MacIntel» mit Touch) höchstens 1.5 und
+  2. Node: window.mwPixelRatio - PC unverändert, iPhone / iPad (iPadOS meldet sich als «MacIntel» mit Touch) höchstens 2 und
      3.2 Mio. Bildpunkte, ?lite=1 überall 1.0; nie unter 1 (ausser das Gerät selbst)
   3. --browser (Chromium, Playwright): eine Seite mit dem Block aus index.html, einer WebGL-Leinwand und genau dem gepatchten
      Godot-Listener; WEBGL_lose_context -> Meldung in der Seite statt alert(), 5 Sprachen, «Im Spar-Modus neu laden» lädt mit
      lite=1 (andere Angaben der Adresse bleiben), mit lite=1 nur «Neu laden»; Bilder mit --bilder ORDNER (390 px, DPR 2)
   4. --ordner EXPORT (fertiger Godot-Web-Export oder entpacktes sim-web.zip): echtes index.js; als iPad (Safari-Kennung,
-     Touch) ist die Leinwand höchstens 1.5-fach, und ein Verlust des WebGL-Kontexts zeigt die Meldung, kein alert()
+     Touch) ist die Leinwand höchstens 1.54-fach, und ein Verlust des WebGL-Kontexts zeigt die Meldung, kein alert()
 
     python3 werkzeuge/sim_web_speicher_test.py [--browser] [--bilder ORDNER] [--ordner EXPORT]   # Ende: «… OK» (Exit 0)
 WebKit hat Playwright hier nicht - Chromium mit der Kennung eines iPad ersetzt kein echtes iPad.
@@ -80,11 +80,12 @@ def teil2():
     fall = [  # (Name, userAgent, platform, maxTouchPoints, Suche, innerW, innerH, dpr, erwartet höchstens, erwartet mindestens)
         ("PC 2x", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130", "Win32", 0, "", 1920, 1080, 2.0, 2.0, 2.0),
         ("Mac 2x (ohne Touch)", IPAD_UA, "MacIntel", 0, "", 1512, 945, 2.0, 2.0, 2.0),
-        ("iPad Pro 12.9 quer", IPAD_UA, "MacIntel", 5, "", 1366, 1024, 2.0, 1.5, 1.27),
-        ("iPad Pro 12.9 hoch", IPAD_UA, "MacIntel", 5, "?grossvater=1", 1024, 1366, 2.0, 1.5, 1.27),
-        ("iPhone 3x", "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) Safari", "iPhone", 5, "", 430, 932, 3.0, 1.5, 1.5),
+        ("iPad Pro 12.9 quer", IPAD_UA, "MacIntel", 5, "", 1366, 1024, 2.0, 1.54, 1.5),
+        ("iPad Pro 12.9 hoch", IPAD_UA, "MacIntel", 5, "?grossvater=1", 1024, 1366, 2.0, 1.54, 1.5),
+        ("iPhone 3x", "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) Safari", "iPhone", 5, "", 430, 932, 3.0, 2.0, 2.0),
         ("iPad lite", IPAD_UA, "MacIntel", 5, "?lite=1", 1366, 1024, 2.0, 1.0, 1.0),
         ("PC lite", "Mozilla/5.0 (X11; Linux x86_64) Chrome/130", "Linux x86_64", 0, "?roboter=1&lite=1", 2560, 1440, 1.0, 1.0, 1.0),
+        ("iPad mini", IPAD_UA, "MacIntel", 5, "", 1133, 744, 2.0, 2.0, 1.9),
         ("altes Gerät 0.75", "x", "x", 0, "?lite=1", 800, 600, 0.75, 0.75, 0.75),
     ]
     prog = "const S = " + json.dumps(script_aus_block()) + ";\nconst F = " + json.dumps(fall) + ";\nconst out = [];\n" + r"""
@@ -195,11 +196,12 @@ def teil4(ordner, bilder):
     try:
         with sync_playwright() as p:
             b = p.chromium.launch(args=["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
-            for name, such, vw, vh, maxdpr in [("iPad Pro quer", "?test=1", 1366, 1024, 1.5), ("iPad lite", "?test=1&lite=1", 1366, 1024, 1.0)]:
+            for name, such, vw, vh, maxdpr in [("iPad Pro quer", "?test=1", 1366, 1024, 1.54), ("iPad lite", "?test=1&lite=1", 1366, 1024, 1.0)]:
                 ctx = b.new_context(viewport={"width": vw, "height": vh}, device_scale_factor=2, is_mobile=True, has_touch=True,
                                     user_agent=IPAD_UA, locale="de-CH")
                 pg = ctx.new_page()
-                pg.add_init_script("Object.defineProperty(navigator, 'platform', {get: () => 'MacIntel'});")
+                pg.add_init_script("Object.defineProperty(navigator, 'platform', {get: () => 'MacIntel'});"   # wie iPadOS-Safari
+                                  "Object.defineProperty(navigator, 'maxTouchPoints', {get: () => 5});")      # (Chromium: 1)
                 alerts, logs = [], []
                 pg.on("dialog", lambda dlg: (alerts.append(dlg.message), dlg.dismiss()))
                 pg.on("console", lambda m: logs.append(m.text))
