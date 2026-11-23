@@ -44,7 +44,8 @@ import shutil
 
 PB_SLOTS = ("live", "tag", "nacht", "damals", "jetzt", "app_kamera", "app_live", "app_tagebuch", "zelt")
 PB_SIZE = {"app_live": ((520, 1125), (360, 780)), "app_tagebuch": ((520, 1125), (360, 780)), "zelt": ((1280, 592), (640, 296))}   # (size, minimum)
-PB_BOXED = ("tag", "nacht", "jetzt")                           # these places can have a mark with a text
+PB_BOXED = ("tag", "nacht", "jetzt", "zelt")                   # these places can have a mark with a text (zelt: its text names the
+                                                               # animal in the push popup of the card, 23.11.2026)
 PB_W, PB_H, PB_BYTES, PB_UPLOAD_MAX, PB_MIN = 1280, 720, 220000, 25 << 20, (640, 360)
 PB_DEFAULT_BOX = {"jetzt": [58, 75.5, 16, 17]}
 PB_APP = ("app_live", "app_tagebuch")                          # screenshots of the app: no «Kamerabild» text                 # the mark of the example (stones), as in the page
