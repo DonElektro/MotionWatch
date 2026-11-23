@@ -34,7 +34,7 @@ concurrency:
   cancel-in-progress: false
 env:
   # Erlaubtes Fenster: danach hört jeder Job sofort auf, ohne etwas zu rechnen. Verlängern nur mit Erlaubnis des Besitzers.
-  HP_HELFER_BIS: "2026-11-23T07:00+01:00"
+  HP_HELFER_BIS: "2026-11-29T22:00+01:00"
   PYTHONUNBUFFERED: "1"
 
 jobs:
