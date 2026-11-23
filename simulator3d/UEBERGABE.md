@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 23.11.2026 · Version **3.80.0** · MoveEye **4.23.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
+Stand: 23.11.2026 · Version **3.80.1** · MoveEye **4.23.0** (Drei Spuren ab 03.11.2026: Simulator und MoveEye mit eigenen Nummern, Verträglichkeit über `MW_MIN` in `scripts/abgleich.gd` / `SIM_MIN` in MoveEye Teil 545; 3.0.0 bis 3.55.2 eine gemeinsame Nummer; vorher Simulator 3D-4.85 / MoveEye 2.98.116)
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -31,6 +31,11 @@ Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weite
   (Ziegelreihen / Kies). Wärmezwillinge und Hindernisse unverändert. Luftbild wird jetzt vor den 3D-Gebäuden gesetzt.
 - Seon ohne OSM (Overpass war aus): 117 Häuser, 44 Wohnblöcke, 24 Bauernhäuser, 3 Scheunen, 2 Chalets, 2 Garagen;
   Dachfarbe aus dem Luftbild 130, Palette 62 (Häuser ausserhalb des nahen Luftbilds).
+
+## NEU in 3.80.1 (MoveEye 4.23.0): iPad-WebGL-Speicher, Roboter-Labor-Ansicht
+
+- sim-ipad-webgl @ fcf8e67 (CI 45241221144 grün): Web-Paket mit Speicher-Grenze (werkzeuge/sim_web_speicher.py in sim_web_paket.py), web.gd / main_start.gd, project.godot msaa_3d.web=0, Spar-Modus-Hinweis; Test sim_web_speicher_test.py.
+- sim-roboter-ansicht @ aae2a63 (CI 45241524153 grün): Kamera / Info / Bedienfeld ausblendbar, schmale Bildschirme, Touch-Hinweise.
 
 ## NEU in 3.80.0 (MoveEye 4.23.0): Roboter-Labor 6 / 4 Segmente, «Rund rollen», Start direkt ins Labor
 

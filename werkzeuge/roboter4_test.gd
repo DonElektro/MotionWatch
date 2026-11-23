@@ -7,6 +7,7 @@ extends SceneTree
 ##   · Gehen: Wellengang vorwärts, seitwärts; Spurbreite beim Gehen
 ##   · Rund rollen, Methode C «Füsse passen sich an»: eine ganze Drehung, Messwerte (Mittenhöhe, Tempo, Kontakte) da
 ##   · 6er (Besitzer 21:54): 6 Segmente, 48 Antriebe, Ring 6 × 60° verriegelt ohne Kollision
+##   · Ansicht (Besitzer 23.11.2026): Kamerabild und Info-Feld mit I / K, Knopf «Bedienfeld» aus / ein, je Variante gespeichert
 ##   cd simulator3d && <godot> --headless --path . -s "$PWD/../werkzeuge/roboter4_test.gd"   (absoluter Pfad nötig)
 ## Ende: «Roboter4-Test OK» oder «SCRIPT ERROR: Roboter4-Test: …» (Exit-Code 0 / 1).
 
@@ -75,15 +76,35 @@ func _process(_dt: float) -> bool:
 			check("4er offen", bool(d.get("open", false)) and str(d.get("variante", "")) == "4", str(d.get("variante")))
 			check("4 Segmente, 32 Antriebe, 31 Körper", m.n() == 4 and m.actuator_count() == 32 and m.servos.size() == 32 and m.bodies.size() == 31,
 					"%d / %d / %d" % [m.n(), m.actuator_count(), m.bodies.size()])
+			# Besitzer 23.11.2026: Kamerabild und Info-Feld ausblenden (✕, Leiste, K / I), je Variante gespeichert
+			check("Kamerabild und Info-Feld zu Beginn sichtbar, Knöpfe in der Leiste", lab.pip_box.visible and (lab._w["info_box"] as Control).visible
+					and lab._w.has("chip_pip") and lab._w.has("chip_info") and lab._w.has("chip_panel"), "")
+			var kev := InputEventKey.new()
+			kev.pressed = true
+			kev.keycode = KEY_I
+			lab._input(kev)
+			kev.keycode = KEY_K
+			lab._input(kev)
+			check("Taste I / K blendet Info-Feld und Kamerabild aus", not (lab._w["info_box"] as Control).visible and not lab.pip_box.visible,
+					"info %s, kamera %s" % [(lab._w["info_box"] as Control).visible, lab.pip_box.visible])
+			(lab._w["chip_panel"] as Button).pressed.emit()
+			check("Knopf «Bedienfeld» blendet das Bedienfeld aus", not (lab._w["panel"] as Control).visible, "")
+			(lab._w["chip_panel"] as Button).pressed.emit()
 			lab.set_shape("oberschenkel", 1.4)
 			lab.set_shape("segmente", 7)
 			check("4er: Segmente bleiben 4", int(m.p["segmente"]) == 4, str(m.p["segmente"]))
 			lab.set_variante("8")
 			m = lab.model
 			check("Wechsel auf 8: eigene Werte (Startwert)", m.n() == 8 and is_equal_approx(float(m.p["oberschenkel"]), 1.19), "%d, %.2f" % [m.n(), m.p["oberschenkel"]])
+			check("8er: eigene Ansicht (Kamerabild und Info sichtbar)", lab.pip and lab.info_on and lab.pip_box.visible and (lab._w["info_box"] as Control).visible, "")
 			lab.set_variante("4")
 			m = lab.model
 			check("Zurück auf 4: der geänderte Wert ist noch da", m.n() == 4 and is_equal_approx(float(m.p["oberschenkel"]), 1.4), "%.2f" % m.p["oberschenkel"])
+			check("Zurück auf 4: Kamerabild und Info bleiben ausgeblendet (gespeichert)", not lab.pip and not lab.info_on and not lab.pip_box.visible
+					and not (lab._w["info_box"] as Control).visible, "pip %s info %s" % [lab.pip, lab.info_on])
+			lab.control({"do": "pip", "on": true})
+			lab.control({"do": "info", "on": true})
+			check("Wieder einblenden über /control", lab.pip_box.visible and (lab._w["info_box"] as Control).visible, "")
 			lab.set_shape("oberschenkel", 1.19)
 			next_step()
 		1:
