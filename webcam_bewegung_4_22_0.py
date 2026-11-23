@@ -324,7 +324,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_22_0.zip"
-ZD_SHA256 = "b6e31a4605a3836abf9cfefe6fb628e8ced7cde5794f51659be8636bcc513a59"
+ZD_SHA256 = "07e03e8956bb1cb2ed9a13267fb153620569e3f8973b8b97419bae901ec56496"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -14006,20 +14006,6 @@ def wordmark_h1(m):
 	tag=m.group(1)
 	tag=tag[:-1]+(' class="wm"'if "class="not in tag else "")+">"
 	return tag+WORDMARK_W6
-
-
-
-
-
-
-
-
-
-
-
-MW_SYMBOL_HTML = (_zd('144_logo_schriftzug/MW_SYMBOL_HTML', ZD_PAGE))
-MW_SYMBOL_CSS = (_zd('144_logo_schriftzug/MW_SYMBOL_CSS', ""))
-
 
 
 
