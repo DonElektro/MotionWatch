@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8696 (Stellen: 12059)
+Texte gesamt: 8696 (Stellen: 12061)
 Übersetzt: en 8696, fr 8696, it 8696, rm 8696
 Unsicher markiert: 514
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 553 Stellen
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 555 Stellen
 Nicht mehr im Code (noch in texte.json): 416
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 31914, schlüssel 24779, keine Wörter 15964, index 11281, technisch 4078, doc 2822, einheit 366, log 205, englisch 151, pfad 130, stringname 107, html 69, klasse 48, shader 6
+Übersprungen (Grund: Anzahl): kennung 31928, schlüssel 24785, keine Wörter 15968, index 11281, technisch 4078, doc 2824, einheit 366, log 206, englisch 151, pfad 130, stringname 107, html 69, klasse 48, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -229,6 +229,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   roboter_start.gd           3     0
   ui_style.gd                3     0
   abenteuer_bestenliste.gd     2     0
+  web.gd                     2     2
   anim_mensch.gd             2     0
   figur_haltung.gd           2     0
   kidaten.gd                 2     0
@@ -851,6 +852,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   karte.gd:506  'Dazu kommen: '
   karte.gd:514  'ja'
   karte.gd:514  'keine'
+  web.gd:33  'an'
+  web.gd:33  'ja'
   abenteuer_moveeye.gd:136  'offen'
   abenteuer_moveeye.gd:142  'offen'
   abenteuer_moveeye.gd:251  'offen'
@@ -1232,8 +1235,8 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   tier_modell.gd:123  'Modell fehlt: '
   main_menues.gd:324  'Blinde Flecken: '
   main_menues.gd:863  ': in die Welt ziehen, oder anklicken und in die Welt klicken'
-  main_start.gd:395  'Autostart: '
-  main_start.gd:406  'Autologon: '
+  main_start.gd:400  'Autostart: '
+  main_start.gd:411  'Autologon: '
   main_steuerung.gd:459  'Dein Platz: '
   mwpc.gd:22  'Aus'
   mwpc.gd:75  'MoveEye hat sich beendet. Protokoll: '

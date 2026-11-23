@@ -59,7 +59,10 @@ func phone_scale() -> float:
 	"""Schärfe der 3D-Ansicht im Browser: volle Auflösung bis zur doppelten Pixeldichte (iPhone 3× -> 2× = 0.67 der
 	Bildpunkte, sieht gleich scharf aus und braucht weniger als die Hälfte); am PC-Browser (1× / 2×) 100 %"""
 	var dpr := DisplayServer.screen_get_scale() if OS.has_feature("web") else 1.0
-	return clampf(2.0 / maxf(dpr, 1.0), 0.5, 1.0)
+	var k := clampf(2.0 / maxf(dpr, 1.0), 0.5, 1.0)
+	if OS.has_feature("web"):                         # Spar-Modus (iPhone / iPad, ?lite=1): höchstens web.gd SPAR_PX Bildpunkte
+		k = preload("res://scripts/web.gd").spar_scale(main.get_tree().root.size, k)
+	return k
 
 
 func handy_gfx(on: bool) -> void:
@@ -67,6 +70,8 @@ func handy_gfx(on: bool) -> void:
 	der Ferne weg), dazu einfache harte Schatten der Sonne nur in der Nähe - statt einer unscharfen Ansicht"""
 	if main.sun == null or main.quality != "simple":
 		return
+	if on and OS.has_feature("web") and preload("res://scripts/web.gd").spar() == "lite":
+		on = false                                    # ?lite=1 (nach «Grafikspeicher voll»): auch ohne die kleinen Schatten
 	main.sun.shadow_enabled = on
 	if on:
 		main.sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL

@@ -285,6 +285,7 @@ func diag(d := {}) -> Dictionary:
 	var w := get_tree().root
 	return {"ok": true, "fps": Engine.get_frames_per_second(), "scene": main.scene, "quality": main.quality,
 		"lite": main.get("lite_why"), "scale3d": vp.scaling_3d_scale, "window": [w.size.x, w.size.y],
+		"spar": preload("res://scripts/web.gd").spar(), "msaa": vp.msaa_3d, "shadow": main.sun.shadow_enabled if main.sun != null else null,
 		"content_scale": w.content_scale_factor, "dpr": DisplayServer.screen_get_scale(),
 		"cam": {"near": cam.near, "far": cam.far, "pos": [cam.global_position.x, cam.global_position.y, cam.global_position.z],
 			"cull": cam.cull_mask} if cam != null else null,
