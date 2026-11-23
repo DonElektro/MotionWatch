@@ -7041,6 +7041,12 @@
   "it": "pannello di comando on / off",
   "rm": "panel da cumond en / ora"
  },
+ "Bedienfeld ein / aus (H)": {
+  "en": "Panel on / off (H)",
+  "fr": "Panneau oui / non (H)",
+  "it": "Pannello sì / no (H)",
+  "rm": "Panel en / ora (H)"
+ },
  "Bedienfeld zeigen (H)": {
   "en": "Show control panel (H)",
   "fr": "Afficher le panneau (H)",
@@ -25098,11 +25104,29 @@
   "it": "Info",
   "rm": "Info"
  },
+ "Info ausblenden (I)": {
+  "en": "Hide info (I)",
+  "fr": "Masquer les infos (I)",
+  "it": "Nascondere le info (I)",
+  "rm": "Zuppentar las infos (I)"
+ },
  "Info oben": {
   "en": "Info at the top",
   "fr": "Info en haut",
   "it": "Info in alto",
   "rm": "Infurmaziun si sura"
+ },
+ "Info-Feld ein / aus (I)": {
+  "en": "Info field on / off (I)",
+  "fr": "Champ d’infos oui / non (I)",
+  "it": "Campo info sì / no (I)",
+  "rm": "Champ d’infos en / ora (I)"
+ },
+ "Info-Feld oben links einblenden (I)": {
+  "en": "Show the info field top left (I)",
+  "fr": "Afficher le champ d’infos en haut à gauche (I)",
+  "it": "Mostrare il campo info in alto a sinistra (I)",
+  "rm": "Mussar il champ d’infos sura a sanestra (I)"
  },
  "Infotafel": {
   "en": "Information board",
@@ -26179,6 +26203,18 @@
   "fr": "Image de la caméra",
   "it": "Immagine della telecamera",
   "rm": "Maletg da la camera"
+ },
+ "Kamerabild ausblenden (K)": {
+  "en": "Hide the camera picture (K)",
+  "fr": "Masquer l’image de la caméra (K)",
+  "it": "Nascondere l’immagine della telecamera (K)",
+  "rm": "Zuppentar il maletg da la camera (K)"
+ },
+ "Kamerabild ein / aus (K)": {
+  "en": "Camera picture on / off (K)",
+  "fr": "Image de la caméra oui / non (K)",
+  "it": "Immagine della telecamera sì / no (K)",
+  "rm": "Maletg da la camera en / ora (K)"
  },
  "Kamerabild klein einblenden (K)": {
   "en": "Show the camera picture small (K)",
@@ -47228,11 +47264,11 @@
   "it": "Uccelli e piccoli animali",
   "rm": "Utschels e pitschens animals"
  },
- "W / S vor / zurück · A / D seitwärts · Q / E drehen · Leertaste Stopp · G Gehen · 1 – 4 Ansicht · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · H Bedienfeld · Esc schliessen": {
-  "en": "W / S forward / back · A / D sideways · Q / E turn · Space stop · G walk · 1 – 4 view · R set up again · P pause · F hold · K camera picture · H panel · Esc close",
-  "fr": "W / S avant / arrière · A / D de côté · Q / E tourner · Espace stop · G marcher · 1 – 4 vue · R remettre en place · P pause · F tenir · K image caméra · H panneau · Échap fermer",
-  "it": "W / S avanti / indietro · A / D di lato · Q / E girare · Spazio stop · G camminare · 1 – 4 vista · R rimettere in piedi · P pausa · F tenere · K immagine · H pannello · Esc chiudere",
-  "rm": "W / S enavant / enavos · A / D da la vart · Q / E volver · Spazi stop · G chaminar · 1 – 4 vista · R metter si da nov · P pausa · F tegnair · K maletg · H panel · Esc serrar"
+ "W / S vor / zurück · A / D seitwärts · Q / E drehen · Leertaste Stopp · G Gehen · 1 – 4 Ansicht · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · I Info · H Bedienfeld · Esc schliessen": {
+  "en": "W / S forward / back · A / D sideways · Q / E turn · Space stop · G walk · 1 – 4 view · R set up again · P pause · F hold · K camera picture · I info · H panel · Esc close",
+  "fr": "W / S avant / arrière · A / D de côté · Q / E tourner · Espace stop · G marcher · 1 – 4 vue · R remettre en place · P pause · F tenir · K image caméra · I infos · H panneau · Échap fermer",
+  "it": "W / S avanti / indietro · A / D di lato · Q / E girare · Spazio stop · G camminare · 1 – 4 vista · R rimettere in piedi · P pausa · F tenere · K immagine · I info · H pannello · Esc chiudere",
+  "rm": "W / S enavant / enavos · A / D da la vart · Q / E volver · Spazi stop · G chaminar · 1 – 4 vista · R metter si da nov · P pausa · F tegnair · K maletg · I infos · H panel · Esc serrar"
  },
  "W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc": {
   "en": "W A S D / arrows drive · Shift fast · V view · Page ↑↓ camera height · C observer · J players · Esc",
@@ -50281,6 +50317,12 @@
   "fr": "Glisser = tourner · glisser à droite = déplacer · molette = zoom · cliquer une pièce = qu'est-ce que c'est ?",
   "it": "Trascinare = ruotare · trascinare col destro = spostare · rotella = zoom · clic su un pezzo = cos'è?",
   "rm": "Trair = rotar · trair a dretga = spustar · rodella = zoom · cliccar ina part = tge è quai?"
+ },
+ "ziehen = drehen · zwei Finger: auseinander / zusammen = zoomen, schieben = verschieben": {
+  "en": "drag = turn · two fingers: apart / together = zoom, slide = move",
+  "fr": "glisser = tourner · deux doigts : écarter / rapprocher = zoom, glisser = déplacer",
+  "it": "trascinare = ruotare · due dita: allargare / avvicinare = zoom, scorrere = spostare",
+  "rm": "trair = volver · dus dets: separar / unir = zoom, stuschar = spustar"
  },
  "Ziehen zum Verschieben · Doppelklick: zurück an den Platz": {
   "en": "Drag to move · double click: back to its place",

@@ -9,7 +9,10 @@ extends Node
 ## Physik: eigene World3D (SubViewport own_world_3d) mit 24 Löser-Durchgängen; solange das Labor offen ist, rechnet die
 ## Physik mit 120 Schritten pro Sekunde (sonst 30, beim Schliessen zurück).
 ## Bedienfeld rechts: Form · Gelenke · Posen · Physik · Ansicht. Tasten: 1 frei · 2 Seite · 3 oben · 4 Roboter-Kamera ·
-## R neu aufstellen · P Physik anhalten · F festhalten · K Kamerabild klein · H Bedienfeld · + / − zoomen · Esc schliessen.
+## R neu aufstellen · P Physik anhalten · F festhalten · K Kamerabild klein · I Info-Feld · H Bedienfeld · + / − zoomen ·
+## Esc schliessen. Besitzer 23.11.2026: Kamerabild und Info-Feld lassen sich ausblenden (✕ am Feld, Knöpfe «Kamera» /
+## «Info» / «Bedienfeld» in der Leiste unten, K / I), je Variante gespeichert; auf schmalen Bildschirmen und Touch ist das
+## Kamerabild kleiner, die Leiste bricht um und zeigt Touch-Hinweise (ein Finger dreht, zwei Finger zoomen / verschieben).
 ## Maus in der 3D-Ansicht: ziehen = drehen, rechts / Mitte ziehen = verschieben, Rad = zoomen.
 ## /control {"action": "roboter", "do": open | close | info | pose (name, snap) | set (id, value) | param (key, value) |
 ##           view (frei | seite | oben | roboter) | pause (on) | reset | hold (on) | tab (name) | pip (on) |
@@ -88,6 +91,10 @@ var view := "frei"
 var tab := "form"
 var paused := false
 var pip := true
+var info_on := true                    # the info field top left (status lines)
+var touch := false                     # touch screen (or --touch for tests / pictures): touch hints, two-finger gestures
+var _touches := {}                     # finger index -> position
+var _pinch := 0.0
 var follow := true
 var gravity := 9.81
 var yaw := -35.0
@@ -131,6 +138,7 @@ func open() -> void:
 	add_child(layer)
 	_old_ticks = Engine.physics_ticks_per_second
 	Engine.physics_ticks_per_second = TICKS
+	touch = DisplayServer.is_touchscreen_available() or "--touch" in OS.get_cmdline_user_args()
 	_old_3d = get_viewport().disable_3d
 	get_viewport().disable_3d = true                  # the window shows only the lab: the world of MoveEye is not drawn meanwhile
 	_build_world()
@@ -196,6 +204,9 @@ func _build_world() -> void:
 	elif int(model.p["segmente"]) in [4, 6]:
 		model.p["segmente"] = 8
 	last_pose = str((_store.get(variante, {}) as Dictionary).get("pose", "gerade"))
+	var an: Dictionary = (_store.get(variante, {}) as Dictionary).get("ansicht", {})
+	pip = bool(an.get("pip", true))
+	info_on = bool(an.get("info", true))
 	world.add_child(model)
 	bew = BEWEGUNG.new()
 	bew.m = model
@@ -230,7 +241,7 @@ func _save_store() -> void:
 	for k in BEW_KEYS:
 		b[k] = bew.get(k)
 	var old: Dictionary = _store.get(variante, {})
-	_store[variante] = {"p": model.p.duplicate(), "pose": last_pose, "bew": b, "rund": rund_summary() if not rund_rows.is_empty() else old.get("rund", []),
+	_store[variante] = {"p": model.p.duplicate(), "pose": last_pose, "bew": b, "ansicht": {"pip": pip, "info": info_on}, "rund": rund_summary() if not rund_rows.is_empty() else old.get("rund", []),
 			"rund_best": rund_best if rund_best != "" else str(old.get("rund_best", ""))}
 	_store["aktiv"] = variante
 	var f := FileAccess.open(SPEICHER, FileAccess.WRITE)
@@ -318,6 +329,7 @@ func _process(dt: float) -> void:
 			_rebuild(false)
 			_refresh_form_info()
 	_camera(dt)
+	_layout_overlay()
 	_anz_t -= dt
 	if _anz_t <= 0.0 and anz != null:
 		_anz_t = 0.1
@@ -343,6 +355,7 @@ func set_view(v: String) -> void:
 	if is_inside_tree():
 		for n in get_tree().get_nodes_in_group("roboter_schild"):
 			(n as Node3D).visible = view in ["frei", "roboter"]
+	_paint_chips()
 	if pip_box != null:
 		pip_box.visible = pip and view != "roboter"
 		pip_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS if pip_box.visible else SubViewport.UPDATE_DISABLED
@@ -384,6 +397,32 @@ func _camera(dt: float) -> void:
 
 
 func _view_input(ev: InputEvent) -> void:
+	if ev is InputEventScreenTouch:                      # two fingers: pinch = zoom, move = pan (one finger = the mouse)
+		var tch := ev as InputEventScreenTouch
+		if tch.pressed:
+			_touches[tch.index] = tch.position
+		else:
+			_touches.erase(tch.index)
+		_pinch = 0.0
+		if _touches.size() >= 2:
+			_drag = 0
+		return
+	if ev is InputEventScreenDrag and _touches.size() >= 2:
+		var dr := ev as InputEventScreenDrag
+		var old_mid: Vector2 = (_touches.values()[0] + _touches.values()[1]) * 0.5
+		_touches[dr.index] = dr.position
+		var p: Array = _touches.values()
+		var dd: float = (p[0] as Vector2).distance_to(p[1])
+		if _pinch > 0.0 and dd > 1.0:
+			dist = clampf(dist * _pinch / dd, 0.3, 25.0)
+		_pinch = dd
+		var mid: Vector2 = ((p[0] as Vector2) + (p[1] as Vector2)) * 0.5
+		var rel := mid - old_mid
+		follow = false
+		target -= (cam.global_transform.basis.x * rel.x - cam.global_transform.basis.y * rel.y) * dist * 0.0016
+		return
+	if _touches.size() >= 2 and (ev is InputEventMouseMotion or ev is InputEventMouseButton):
+		return                                           # the emulated mouse of the first finger does not turn meanwhile
 	if ev is InputEventMouseButton:
 		var mb := ev as InputEventMouseButton
 		if mb.pressed and mb.button_index == MOUSE_BUTTON_WHEEL_UP:
@@ -472,8 +511,9 @@ func _input(ev: InputEvent) -> void:
 		KEY_K:
 			set_pip(not pip)
 		KEY_H:
-			_panel_on = not _panel_on
-			(_w["panel"] as Control).visible = _panel_on
+			set_panel(not _panel_on)
+		KEY_I:
+			set_info(not info_on)
 		KEY_PLUS, KEY_KP_ADD, KEY_EQUAL:
 			zoom(1)
 		KEY_MINUS, KEY_KP_SUBTRACT:
@@ -493,7 +533,26 @@ func set_hold(on: bool) -> void:
 	_paint_toggles()
 
 
+func set_info(on: bool) -> void:
+	info_on = on
+	var ip: Control = _w.get("info_box")
+	if ip != null:
+		ip.visible = on
+	_paint_chips()
+	_paint_toggles()
+	mark_dirty()
+
+
+func set_panel(on: bool) -> void:
+	_panel_on = on
+	var p: Control = _w.get("panel")
+	if p != null:
+		p.visible = on
+	_paint_chips()
+
+
 func set_pip(on: bool) -> void:
+	mark_dirty()
 	pip = on
 	set_view(view)
 	_paint_toggles()
@@ -663,7 +722,7 @@ func _build_ui() -> void:
 	_page_gelaende(_w["page_gelaende"])
 	_page_rund(_w["page_rund"])
 	_page_ansicht(_w["page_ansicht"])
-	var keys := UI.small(T.t("W / S vor / zurück · A / D seitwärts · Q / E drehen · Leertaste Stopp · G Gehen · 1 – 4 Ansicht · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · H Bedienfeld · Esc schliessen"))
+	var keys := UI.small(T.t("W / S vor / zurück · A / D seitwärts · Q / E drehen · Leertaste Stopp · G Gehen · 1 – 4 Ansicht · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · I Info · H Bedienfeld · Esc schliessen"))
 	pv.add_child(keys)
 
 
@@ -673,19 +732,34 @@ func _overlay(area: Control) -> void:
 	sp.add_theme_stylebox_override("panel", UI.box(Color(1, 1, 1, 0.72), Color(1, 1, 1, 0.0), 8, 8, 0))
 	sp.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	area.add_child(sp)
+	_w["info_box"] = sp
+	var sh := HBoxContainer.new()
+	sh.add_theme_constant_override("separation", 6)
+	sp.add_child(sh)
 	var st := Label.new()
 	st.add_theme_font_size_override("font_size", 14)
 	st.add_theme_color_override("font_color", Color("#16202c"))
 	st.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sp.add_child(st)
+	sh.add_child(st)
 	_w["status"] = st
-	var vb := HBoxContainer.new()
-	vb.add_theme_constant_override("separation", 4)
+	var sx := _close_btn(Color("#16202c"), T.t("Info ausblenden (I)"), func(): set_info(false))
+	sx.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	sh.add_child(sx)
+	sp.visible = info_on
+	# the bar at the bottom: views, show / hide, hints - it wraps on narrow screens
+	var vb := HFlowContainer.new()
+	vb.add_theme_constant_override("h_separation", 4)
+	vb.add_theme_constant_override("v_separation", 4)
+	vb.anchor_left = 0.0
+	vb.anchor_right = 1.0
 	vb.anchor_top = 1.0
 	vb.anchor_bottom = 1.0
-	vb.offset_left = 14
-	vb.offset_top = -50
-	vb.offset_bottom = -12
+	vb.offset_left = 12
+	vb.offset_right = -12
+	vb.offset_top = -10
+	vb.offset_bottom = -10
+	vb.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	vb.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	area.add_child(vb)
 	_w["viewbar"] = vb
 	for v in VIEWS:
@@ -695,10 +769,25 @@ func _overlay(area: Control) -> void:
 		b.pressed.connect(set_view.bind(v[0]))
 		vb.add_child(b)
 		_w["view_" + v[0]] = b
-	var hint := UI.small(T.t("ziehen = drehen · rechts ziehen = verschieben · Rad = zoomen"), Color("#2a3644"))
-	hint.autowrap_mode = TextServer.AUTOWRAP_OFF
+	for c in [["chip_pip", "Kamera", "Kamerabild ein / aus (K)", func(): set_pip(not pip)],
+			["chip_info", "Info", "Info-Feld ein / aus (I)", func(): set_info(not info_on)],
+			["chip_panel", "Bedienfeld", "Bedienfeld ein / aus (H)", func(): set_panel(not _panel_on)]]:
+		var b := Button.new()
+		b.text = T.t(c[1])
+		b.tooltip_text = T.t(c[2])
+		b.focus_mode = Control.FOCUS_NONE
+		b.pressed.connect(c[3])
+		vb.add_child(b)
+		_w[c[0]] = b
+	var hint := UI.small(T.t("ziehen = drehen · zwei Finger: auseinander / zusammen = zoomen, schieben = verschieben") if touch
+			else T.t("ziehen = drehen · rechts ziehen = verschieben · Rad = zoomen"), Color("#2a3644"))
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.custom_minimum_size = Vector2(160, 0)
+	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hint.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	vb.add_child(hint)
-	# the picture of the front camera (small, bottom right of the view)
+	_w["hint"] = hint
+	# the picture of the front camera (bottom right of the view, smaller on narrow screens)
 	pip_vp = SubViewport.new()
 	pip_vp.size = Vector2i(320, 200)
 	pip_vp.world_3d = vp.find_world_3d()
@@ -715,22 +804,74 @@ func _overlay(area: Control) -> void:
 	box.anchor_right = 1.0
 	box.anchor_top = 1.0
 	box.anchor_bottom = 1.0
-	box.offset_left = -344
-	box.offset_right = -14
-	box.offset_top = -262
+	box.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	box.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	box.offset_right = -12
+	box.offset_left = -12
 	box.offset_bottom = -60
+	box.offset_top = -60
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	area.add_child(box)
 	var bv := VBoxContainer.new()
 	box.add_child(bv)
+	var ch := HBoxContainer.new()
+	bv.add_child(ch)
 	var cl := UI.small(T.t("Roboter-Kamera"), UI.TXT)
-	bv.add_child(cl)
+	cl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ch.add_child(cl)
+	ch.add_child(_close_btn(UI.TXT, T.t("Kamerabild ausblenden (K)"), func(): set_pip(false)))
 	var tr := TextureRect.new()
 	tr.texture = pip_vp.get_texture()
+	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tr.stretch_mode = TextureRect.STRETCH_SCALE
 	tr.custom_minimum_size = Vector2(320, 200)
 	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bv.add_child(tr)
+	_w["pip_tex"] = tr
 	pip_box = box
+
+
+func _close_btn(col: Color, tip: String, cb: Callable) -> Button:
+	"""a small ✕ to hide a field (bigger for a finger on touch screens)"""
+	var b := Button.new()
+	b.text = "✕"
+	b.flat = true
+	b.tooltip_text = tip
+	b.focus_mode = Control.FOCUS_NONE
+	b.mouse_filter = Control.MOUSE_FILTER_STOP
+	b.add_theme_color_override("font_color", col)
+	b.add_theme_font_size_override("font_size", 16 if touch else 13)
+	b.custom_minimum_size = Vector2(36, 32) if touch else Vector2(22, 20)
+	b.pressed.connect(cb)
+	return b
+
+
+func compact() -> bool:
+	"""narrow screen (phone across) or touch: the camera picture smaller"""
+	var a: Control = _w.get("area")
+	return touch or (a != null and a.size.x < 900.0) or get_viewport().get_visible_rect().size.y < 600.0
+
+
+func _layout_overlay() -> void:
+	"""every frame (cheap): the size of the camera picture and its place above the bar"""
+	var tr: TextureRect = _w.get("pip_tex")
+	var vb: Control = _w.get("viewbar")
+	if tr == null or vb == null or pip_box == null:
+		return
+	var sz := Vector2(176, 110) if compact() else Vector2(320, 200)
+	if tr.custom_minimum_size != sz:
+		tr.custom_minimum_size = sz
+		pip_box.reset_size()
+	pip_box.offset_bottom = -(vb.size.y + 18.0)
+	pip_box.offset_top = pip_box.offset_bottom
+	pip_box.offset_left = pip_box.offset_right
+
+
+func _paint_chips() -> void:
+	for c in [["chip_pip", pip], ["chip_info", info_on], ["chip_panel", _panel_on]]:
+		var b: Button = _w.get(c[0])
+		if b != null:
+			_paint_btn(b, bool(c[1]))
 
 
 func add_child_pip() -> void:
@@ -1444,13 +1585,14 @@ func _page_ansicht(pg: VBoxContainer) -> void:
 		var b := _button(gr, T.t(v[1]), set_view.bind(v[0]))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_w["t_pip"] = _toggle(pg, T.t("Kamerabild klein einblenden (K)"), pip, set_pip)
+	_w["t_info"] = _toggle(pg, T.t("Info-Feld oben links einblenden (I)"), info_on, set_info)
 	_w["t_follow"] = _toggle(pg, T.t("Ansicht folgt dem Roboter"), follow, func(on: bool):
 		follow = on)
 	pg.add_child(UI.small(T.t("Rot = Teile des Roboters, die sich berühren oder durchdringen (z. B. Knie am Körper).")))
 
 
 func _paint_toggles() -> void:
-	for k in [["t_pause", paused], ["t_hold", model != null and model.hold], ["t_pip", pip], ["t_follow", follow]]:
+	for k in [["t_pause", paused], ["t_hold", model != null and model.hold], ["t_pip", pip], ["t_info", info_on], ["t_follow", follow]]:
 		var c: CheckButton = _w.get(k[0])
 		if c != null:
 			c.set_pressed_no_signal(bool(k[1]))
@@ -1563,7 +1705,7 @@ func info() -> Dictionary:
 				"mode": bew.mode, "gait": bew.gang_now, "sequence": bew.seq_name, "speed": speed, "tip_margin": anz.margin,
 				"tipping": anz.tipping, "goal_reached": bew.goal_reached, "ring_lean": bew.ring_lean,
 				"terrain": terrain.get("name", ""), "terrain_results": terrain_results, "adapted": bew.angepasst,
-				"plan": bew.plan, "anpassen": bew.anpassen, "variante": variante, "ring_methode": bew.ring_methode,
+				"plan": bew.plan, "anpassen": bew.anpassen, "variante": variante, "pip": pip, "info_on": info_on, "panel": _panel_on, "compact": compact() if is_open() else false, "touch": touch, "ring_methode": bew.ring_methode,
 				"rund": rund_summary(), "rund_best": rund_best, "rund_laeuft": not rund_jobs.is_empty() or not rund_job.is_empty()})
 	return d
 
@@ -1600,6 +1742,10 @@ func control(d: Dictionary) -> Dictionary:
 			set_tab(str(d.get("value", "form")))
 		"pip":
 			set_pip(bool(d.get("on", true)))
+		"info":
+			set_info(bool(d.get("on", true)))
+		"panel":
+			set_panel(bool(d.get("on", true)))
 		"gang":
 			start_gang(str(d.get("name", "auto")))
 			if d.has("drive"):
