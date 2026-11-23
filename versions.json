@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-23 08:21",
+ "generated": "2026-11-23 20:55",
  "versions": [
   {
    "version": "4.23.0",
    "file": "webcam_bewegung_4_23_0.py",
    "url": "",
    "sha256": "42030cfb51c1ab546b810f6189d55fbff5e7eed23eaea6fa2abb707f814a1b6c",
-   "date": "2026-11-23 08:18",
+   "date": "2026-11-23 20:54",
    "notes": "Besucherseite /info/: Jede Karte in «Ein Blick in die App» hat einen eigenen Bildplatz (Mehr → Homepage → Produktseite: Bilder) – das Kamerabild im Live-Bild-Handy, der ganze Bildschirm, das Tagebuch und «Nachts am Zelt». Ohne eigenes Bild bleiben die bisherigen Bilder. Bildtexte angepasst; das MoveEye-Symbol zeigt die gehende Person im Sichtfeld.",
    "size": 3623234,
    "sig": "50d757a3313d8e3fe1795d050b8a7376456b52969abaf56cdf44ace2a7e8b366e1bf477852794acc24528640f506f23c0d97a20a86ad6f37c71d38745099630b",
@@ -204,41 +204,41 @@
    "sig": "3c0d6ad76326d81ce324c8914ca35b61596ef189eb0e83e04238c5088ad5e2954914805461e7194f7648bb37117d49454eb7d207ff54d89893e10667b26ea80a"
   },
   "pi": {
-   "ver": "3.80.0",
+   "ver": "3.80.1",
    "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 44503212,
-   "sha256": "7e29b55c43a5216bd75b6dc426d8a85190d3c39dc271a81212d9a1970c51bc12",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.0/MoveEyeSim3D_Pi.zip",
-   "sig": "5c67540513123e21200925fc1433cb3704bcb48697897bef7d0b09bacb64e30c5aff40bbb2c6b176d68a099c027efb8469f8a3a4b4833550e2b2d0fa6352f500"
+   "size": 44511127,
+   "sha256": "97076a7c073ed2786e726f25539cce4d44d93a88774d8d2204b58caeec34774f",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.1/MoveEyeSim3D_Pi.zip",
+   "sig": "a4a0caed49b4c106adc69ed2746e7dce3db012e4e3717071f8080f0b426148fbf67321a455b17578fc9a7fed591b07d3d2aaf6fa133fab5cc9cda3b899754708"
   },
   "anhang": {
-   "ver": "3.80.0",
-   "version": "3D-5.80.0",
-   "notes": "Roboter-Labor 6 / 4 Segmente, Rund rollen",
+   "ver": "3.80.1",
+   "version": "3D-5.80.1",
+   "notes": "iPad-WebGL-Speicher, Roboter-Labor-Ansicht",
    "mw_min": "3.55.0",
    "win": {
-    "ver": "3.80.0",
+    "ver": "3.80.1",
     "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
-    "size": 60965999,
-    "sha256": "f8765ab756fb7ef93f1ecc6d460f7077471966f0bc5fefe1f5a1dae146a3acdf",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.0/MotionWatch3D_Simulator.zip",
-    "sig": "6b9c7d45a488db5eeb9da080a52d1432d1746dd7c9ec26dcf2df5114b7b00683c6892783a8219fdb6a70b6a3381d1488effe8597e6993102a461d282fbb1810b"
+    "size": 60976836,
+    "sha256": "852fbeb99eb87024621c88555f51e1734ce222e65bf08f85ca458e5919905eef",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.1/MotionWatch3D_Simulator.zip",
+    "sig": "6abceb358f569ad6eb4c952eebdba91d174939940f73a7d7afb48f9c8d3dc9a0160149df0085345ac328934372e643bfa2e9885847e80ca8fcdd38374b22e808"
    },
    "linux": {
-    "ver": "3.80.0",
+    "ver": "3.80.1",
     "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
-    "size": 55018789,
-    "sha256": "b58cf6a2fc4e0669a1d3482120a2172f152328f44c371b09d1f6359e1ea5e708",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.0/MoveEyeSim3D_Linux.zip",
-    "sig": "0150ed82adbebc68db899ab4cc98eae1e8f4704369c931e1331807ed7471e20859316c5217d8b61b5383e960f18efbb7b0a1020c7d62d5069845b85e5a91b607"
+    "size": 55028423,
+    "sha256": "31db5d0d826cef598dd5575782f904f3f95a5dbf482fafbe889a28a70494854e",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.1/MoveEyeSim3D_Linux.zip",
+    "sig": "cc44463ae7eca1d77867d67915f1dd3d5c7dd0e12f6ac0bda3d31565f116b071130e5da5a5af82da95c155c1219b0c0af3d858ff142b23a8d27bd086a235d807"
    },
    "web": {
-    "ver": "3.80.0",
+    "ver": "3.80.1",
     "file": "simulator3d/anhang/sim-web.zip",
-    "size": 81101166,
-    "sha256": "e20b08b2984102e063358ee75c048f43858c27a3ae5a5fc5c58651024a51e18f",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.0/sim-web.zip",
-    "sig": "31f5180301884ebb4c256831dba14e87d9466efe1dd478d27a8c5a9b614a53839cea1619b90779b64b7ac6dcd73220efa2ec4361b98c584c82966a1f2cb69207"
+    "size": 81117636,
+    "sha256": "fd98b0f289fa3a8a4f3d533ff31b95c7e713cab7faf4b6c93b2f37203399f8d7",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.1/sim-web.zip",
+    "sig": "2021c52b3a1e249d67b96b8d38620999b882e80792680a87fe3f8eb9ffe987d8556ae74e7c69a856116a26591259dc716adbb8096c677533f433e2b12f5c7200"
    }
   }
  }

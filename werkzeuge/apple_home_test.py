@@ -580,6 +580,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ev.didFinishLaunching(); await sleep(1500);
   const names = () => [...acc.values()].map(a => a.displayName).sort();
   const res = {first: names()};
+  require('fs').writeFileSync(path.join(persist, 'first.done'), '1');   // the test adds the new point only now
   for (const step of JSON.parse(script)) {
     if (step.wait) { await sleep(step.wait); continue; }
     if (step.names) { res[step.names] = names(); continue; }
@@ -627,7 +628,10 @@ def teil_b(datei):
     CFG["light_white"] = "off"
     # while the harness runs: a new taught point after 2 s, the light switched on in MoveEye, the Home app paired
     def later():
-        time.sleep(2.2)
+        # 23.11.2026: after the harness has its first list (marker file) - a fixed 2.2 s was too short on a slow CI runner
+        t_ = time.time()
+        while not os.path.exists(os.path.join(persist, "first.done")) and time.time() - t_ < 40:
+            time.sleep(0.05)
         ns["WAYPOINTS"].append([60.0, 40.0, "Zelt"])
         CFG["light_white"] = "on"
         with open(os.path.join(persist, "AccessoryInfo." + pc["username"].replace(":", "") + ".json"), "w") as f:
