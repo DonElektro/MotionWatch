@@ -367,6 +367,9 @@ def lauf(datei, tmp):
     ok("[data-mw-exit]{display:none!important}" in info and "Text kopieren" in info and "/info/ask" not in info
        and "kontakt-test@example.invalid" not in info and "__MAIL__" not in info and "/info/bild/" not in info,
        "Info/: «✕» versteckt, «Text kopieren» statt Senden, keine Kontaktadresse, keine eigenen Kamerabilder")
+    pbs = re.findall(r'<(?:img|video)\b[^>]*\bdata-pb="(\w+)"[^>]*\b(?:src|poster)="(data:image/[a-z]+;base64,)', info)
+    ok(sorted(k for k, _u in pbs) == ["app_kamera", "app_live", "app_tagebuch", "damals", "jetzt", "live", "nacht", "tag", "zelt"],
+       "Info/: alle neun Bildplätze mit den Beispielbildern (4.22.x: auch die App-Galerie) %s" % sorted(k for k, _u in pbs))
     ok(all(W.files.get("Funk/" + n) == b for n, b in funk.items()) and len(funk) == 7, "Funk/ = die 7 Dateien von funk/ (Byte für Byte)")
     ok("Sim/test.html" in W.files, "Sim/test.html bleibt dabei")
     ok("index.html" not in [x[2] for x in W.uploads()] and W.files.get("index.html") == owner_start, "Startseite aus: index.html nicht hochgeladen, vorhandene bleibt")
