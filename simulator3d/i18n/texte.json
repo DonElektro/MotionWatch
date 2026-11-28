@@ -11594,6 +11594,12 @@
   "it": "Il pesce gigante",
   "rm": "Il pesch gigantic"
  },
+ "Der Ring rollt den Riegel nach oben, öffnet ihn und streckt sich weich in die Haltung «Gerade». Bei geschlossenem Ring nehmen alle Haltungen ausser «Ring» diesen Weg.": {
+  "en": "The ring rolls the latch to the top, opens it and stretches smoothly into the pose «Straight». With the ring closed, every pose except «Ring» takes this way.",
+  "fr": "L’anneau fait rouler le verrou vers le haut, l’ouvre et s’étire en douceur dans la posture «Droit». Quand l’anneau est fermé, toutes les postures sauf «Anneau» passent par là.",
+  "it": "L’anello porta il chiavistello in alto rotolando, lo apre e si distende dolcemente nella posa «Dritto». Ad anello chiuso, tutte le pose tranne «Anello» seguono questa via.",
+  "rm": "Il rintg rulla il clavitschel ensi, al avra e sa stenda plaunsieu en la posiziun «Dretg». Cun il rintg serrà prendan tut las posiziuns danor «Rintg» questa via."
+ },
  "Der Rucksack ist zu voll - etwas herausnehmen oder einen grösseren nehmen.": {
   "en": "The backpack is too full - take something out or take a bigger one.",
   "fr": "Le sac est trop plein - enlève quelque chose ou prends-en un plus grand.",
@@ -38512,6 +38518,18 @@
   "fr": "Anneau verrouillé",
   "it": "Anello bloccato",
   "rm": "Rintg serrà"
+ },
+ "Ring öffnen": {
+  "en": "Open the ring",
+  "fr": "Ouvrir l’anneau",
+  "it": "Aprire l’anello",
+  "rm": "Avrir il rintg"
+ },
+ "Ring öffnen (gerade)": {
+  "en": "Open the ring (straight)",
+  "fr": "Ouvrir l’anneau (droit)",
+  "it": "Aprire l’anello (dritto)",
+  "rm": "Avrir il rintg (dretg)"
  },
  "Roboter": {
   "en": "Robot",
