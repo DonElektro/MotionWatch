@@ -15,37 +15,37 @@
  },
  "pi": {
   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-  "ver": "3.80.2",
-  "size": 44511755,
-  "sha256": "aa447caa957de25a0324bd9756ca21988d24c00cbfbe1c0a45502fed459a634f",
-  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.2/MoveEyeSim3D_Pi.zip"
+  "ver": "3.81.0",
+  "size": 44669832,
+  "sha256": "57676b98bcadb038294eea891bcd7c7f0ce40a50d8c069cc7729de9ea3df4760",
+  "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.81.0/MoveEyeSim3D_Pi.zip"
  },
  "anhang": {
-  "ver": "3.80.2",
-  "version": "3D-5.80.2",
-  "name": "MoveEye Sim 3.80.2",
-  "notes": "Roboter-Labor: «Ring öffnen (gerade)» öffnet den geschlossenen Ring und streckt sich in «Gerade»",
+  "ver": "3.81.0",
+  "version": "3D-5.81.0",
+  "name": "MoveEye Sim 3.81.0",
+  "notes": "Roboter-Labor neu: Menü, freie Steuerung, Gang-KI mit Lernen, neue Modelle; matte Figuren",
   "mw_min": "3.55.0",
   "win": {
    "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
-   "ver": "3.80.2",
-   "size": 60979594,
-   "sha256": "e1b1cacdcfce5e161256db668adb3b66de8e159c2ef89a8937fe6731a8e72edd",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.2/MotionWatch3D_Simulator.zip"
+   "ver": "3.81.0",
+   "size": 61133033,
+   "sha256": "c9b1b0ffdc55347a04a857f85ed04f52d55d2f27750a83d3072c1aa3933ed307",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.81.0/MotionWatch3D_Simulator.zip"
   },
   "linux": {
    "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
-   "ver": "3.80.2",
-   "size": 55030899,
-   "sha256": "fd86100539119820ddf3263044338379a89c378c02325f3973dda2e4b00258dc",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.2/MoveEyeSim3D_Linux.zip"
+   "ver": "3.81.0",
+   "size": 55185076,
+   "sha256": "6beebe51cfdb5284ce7a79fa79517987573717a8e2823e1fdce602cf33367148",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.81.0/MoveEyeSim3D_Linux.zip"
   },
   "web": {
    "file": "simulator3d/anhang/sim-web.zip",
-   "ver": "3.80.2",
-   "size": 81125876,
-   "sha256": "2d4d9b0d3a0f1bf1689121a990618522ee26c162b9f8e083d5dd23717f979918",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.2/sim-web.zip"
+   "ver": "3.81.0",
+   "size": 81431816,
+   "sha256": "83e41875a16372285a9a7dc131f4aac3f49a6d6f605c548024e3a800dd40bc4b",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.81.0/sim-web.zip"
   }
  }
 }
