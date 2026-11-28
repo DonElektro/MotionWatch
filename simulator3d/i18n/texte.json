@@ -2898,6 +2898,12 @@
   "it": "2 bot",
   "rm": "2 bots"
  },
+ "2 Segmente": {
+  "en": "2 segments",
+  "fr": "2 segments",
+  "it": "2 segmenti",
+  "rm": "2 segments"
+ },
  "2 Spieler": {
   "en": "2 players",
   "fr": "2 joueurs",
@@ -3017,6 +3023,12 @@
   "fr": "3 nuits, environ 10 min chacune",
   "it": "3 notti, circa 10 min ciascuna",
   "rm": "3 notgs, mintgina var 10 min."
+ },
+ "3 Segmente": {
+  "en": "3 segments",
+  "fr": "3 segments",
+  "it": "3 segmenti",
+  "rm": "3 segments"
  },
  "3,3 V Pin 1 · GND Pin 6 · SDA Pin 3 (GPIO 2) · SCL Pin 5 (GPIO 3) · I2C 0x41 (Lötbrücke A0)": {
   "en": "3.3 V pin 1 · GND pin 6 · SDA pin 3 (GPIO 2) · SCL pin 5 (GPIO 3) · I2C 0x41 (solder bridge A0)",
@@ -38279,6 +38291,12 @@
   "it": "Anello",
   "rm": "Rintg"
  },
+ "Ring braucht mindestens 4 Segmente": {
+  "en": "A ring needs at least 4 segments",
+  "fr": "L’anneau demande au moins 4 segments",
+  "it": "L’anello richiede almeno 4 segmenti",
+  "rm": "In rintg dovra almain 4 segments"
+ },
  "Ring nicht verriegelt": {
   "en": "Ring not locked",
   "fr": "Anneau non verrouillé",
@@ -44914,6 +44932,12 @@
   "fr": "TowerPro MG90S",
   "it": "TowerPro MG90S",
   "rm": "TowerPro MG90S"
+ },
+ "Trab (diagonal)": {
+  "en": "Trot (diagonal)",
+  "fr": "Trot (diagonal)",
+  "it": "Trotto (diagonale)",
+  "rm": "Trot (diagonal)"
  },
  "Trag ihn hoch und lass ihn vor der Kamera «Fallen».": {
   "en": "Carry it up and let it «Fall» in front of the camera.",
