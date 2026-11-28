@@ -112,6 +112,10 @@ const GAENGE := [["welle", "Wellengang"], ["dreifuss", "Dreifuss"], ["raupe", "R
 const ABLAEUFE := [["raupenwelle", "Raupenwelle"], ["schlange", "Kurve (Schlange)"], ["einrollen", "Einrollen und öffnen"],
 		["aufstehen", "Aufstehen"]]
 const BETA := {"welle": 0.75, "dreifuss": 0.55, "raupe": 0.8}
+const SWAY_K := 0.4                    # 2 Segmente: Körper um 0.4 × (Hüfte des abhebenden Beins) verschieben (Stützdreieck: 1/3)
+const SWAY_VOR := 0.1                  # Phase vor dem Abheben, in der er hinüberschiebt (= die Pause mit 4 Füssen am Boden)
+const SWAY_NACH := 0.1                 # Phase nach dem Aufsetzen, in der er zurückgeht (zugleich zum nächsten Bein)
+const BETA_2 := {"welle": 0.85, "raupe": 0.85, "dreifuss": 0.7}   # 2 Segmente: längere Standzeit, Pausen zum Verschieben
 
 var mode := ""                         # "" (von Hand / Pose) | "gang" | "ablauf"
 var gang := "auto"
@@ -275,6 +279,8 @@ func _gang_step(dt: float) -> void:
 			_prog_t = 0.0
 			_prog_p = pnow
 	var beta: float = BETA.get(gang_now, 0.75)
+	if N == 2:
+		beta = BETA_2.get(gang_now, beta)
 	var amax := schritt_laenge * sc * 0.5
 	var moving := speed > 0.002
 	_amp = move_toward(_amp, amax if moving else 0.0, dt * amax * 2.0)
@@ -302,12 +308,30 @@ func _gang_step(dt: float) -> void:
 			ydes.append(g + hh)
 		else:
 			ydes.append(xf.origin.y)
+	# 4 Beine (2 Segmente): bei symmetrischem Stand liegt der Schwerpunkt genau auf der Diagonale der drei Standbeine -
+	# vor jedem Schritt den Körper vom Bein weg schieben, das gleich abhebt (die Füsse rücken relativ zum Körper hin), so
+	# liegt der Schwerpunkt im Stützdreieck (statisch stabil)
+	var sway := Vector2.ZERO
+	if N == 2 and gang_now != "dreifuss" and _amp > 0.0005:
+		for i in range(N):
+			for s in [-1, 1]:
+				var u0 := fposmod(phase + phase_of(gang_now, i, s), 1.0)
+				var wgt := 0.0
+				if u0 >= beta:
+					wgt = 1.0
+				elif u0 > beta - SWAY_VOR:
+					wgt = smoothstep(beta - SWAY_VOR, beta, u0)
+				elif u0 < SWAY_NACH:
+					wgt = 1.0 - smoothstep(0.0, SWAY_NACH, u0)
+				sway += Vector2((0.5 - i) * P, stand_foot(s).z) * wgt * SWAY_K * kamp
 	var d := {}
 	for i in range(N):
 		var xf: Transform3D = m.segment_xf(i)
 		var xi := (float(N - 1) * 0.5 - i) * P
 		for s in [-1, 1]:
 			var f := stand_foot(s)
+			f.x += sway.x
+			f.z += sway.y
 			var vf := Vector2(vx, vz) if arc else Vector2(vx + om * f.z, vz - om * xi)
 			var a2 := vf * beta * T * 0.5
 			if a2.length() > amax:
@@ -360,7 +384,7 @@ func _gang_step(dt: float) -> void:
 		var sp := 0.0
 		if anpassen:
 			sp = clampf(float(alpha[i]) - float(alpha[i + 1]), -40.0, 40.0)
-		if gang_now == "raupe" and _amp > 0.001:
+		if gang_now == "raupe" and _amp > 0.001 and N > 2:          # 2 Segmente: keine Welle im Rücken (kippt)
 			sp += 8.0 * sin(TAU * (2.0 * phase - float(i) / maxf(1.0, N - 1)))
 		d["sp%d" % i] = sp
 	apply(d)
