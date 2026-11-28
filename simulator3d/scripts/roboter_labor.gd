@@ -27,6 +27,8 @@ const GELAENDE = preload("res://scripts/roboter_gelaende.gd")
 const ANZEIGE = preload("res://scripts/roboter_anzeige.gd")
 const STEUERUNG = preload("res://scripts/roboter_steuerung.gd")
 const STICK = preload("res://scripts/roboter_stick.gd")   # Tastatur, Controller, Maus, Körper verschieben (28.11.2026)
+const KI = preload("res://scripts/roboter_ki_gang.gd")
+const KI_LERNEN := "res://scripts/roboter_ki_lernen.gd"   # Stufe 3 (Helfer B), nur wenn vorhanden
 const TICKS := 120
 # Zwei Varianten (Besitzer 22.11.2026 21:33): «8 Segmente» (Ring 8 × 45°) und «4 Segmente» (Ring 4 × 90°, die 45°-Schrägen
 # liegen flach aneinander). Jede Variante hat ihre eigenen Regler, Pose und Gang-Werte (user://roboter_labor.json).
@@ -54,10 +56,11 @@ const TABS := [["fahren", "Fahren"], ["haltung", "Haltung"], ["bauen", "Labor|Ba
 # die früheren 9 Reiter (/control «tab», ältere Tests, Haken anderer Zweige) -> [neuer Reiter, Gruppe]
 const TAB_ALT := {"form": ["bauen", "form"], "gelenke": ["bauen", "gelenke"], "posen": ["haltung", "posen"],
 		"bewegen": ["fahren", "gang"], "anzeigen": ["messen", "anzeigen"], "rund": ["messen", "rund"],
-		"gelaende": ["welt", "gelaende"], "physik": ["welt", "physik"], "ansicht": ["welt", "ansicht"]}
+		"gelaende": ["welt", "gelaende"], "physik": ["welt", "physik"], "ansicht": ["welt", "ansicht"],
+		"ki": ["fahren", "ki"]}
 # die Gruppen in den Reitern, in dieser Reihenfolge: [id, Titel, Reiter]
 const GRUPPEN := [["gang", "Gangart", "fahren"], ["richtung", "Richtung", "fahren"], ["tempo", "Tempo und Schritt", "fahren"],
-		["ring", "Im Ring rollen", "fahren"], ["steuerung", "Steuerung", "fahren"],
+		["ring", "Im Ring rollen", "fahren"], ["ki", "Gang-KI", "fahren"], ["steuerung", "Steuerung", "fahren"],
 		["posen", "Posen", "haltung"], ["ablaeufe", "Ganze Abläufe", "haltung"], ["koerper", "Körper verschieben", "haltung"],
 		["form", "Form", "bauen"], ["gelenke", "Gelenke", "bauen"],
 		["gelaende", "Gelände", "welt"], ["physik", "Physik", "welt"], ["ansicht", "Ansicht", "welt"],
@@ -91,6 +94,8 @@ var model                              # roboter_modell.gd
 var bew                                # roboter_bewegung.gd
 var anz                                # roboter_anzeige.gd
 var steu                               # roboter_steuerung.gd
+var ki                                 # roboter_ki_gang.gd (Gang-KI Stufe 1 + 2)
+var ki_lernen = null                   # roboter_ki_lernen.gd (Stufe 3), null wenn es die Datei nicht gibt
 var manual := Vector3.ZERO             # Bewegen: x = seitwärts (+ links), y = vor / zurück, z = drehen / Kurve (+ links)
 var speed := 0.0                       # measured, m/s (smooth)
 var _last_com := Vector3.ZERO
@@ -250,6 +255,17 @@ func _build_world() -> void:
 	anz.name = "anzeige"
 	anz.m = model
 	world.add_child(anz)
+	ki = KI.new()
+	ki.m = model
+	ki.bew = bew
+	ki.anz = anz
+	ki.labor = self
+	bew.ki = ki
+	if ResourceLoader.exists(KI_LERNEN):
+		ki_lernen = load(KI_LERNEN).new()
+		ki_lernen.set("ki", ki)
+		ki_lernen.set("labor", self)
+		ki.lernen = ki_lernen
 
 
 func _load_store() -> void:
@@ -339,7 +355,12 @@ func _physics_process(dt: float) -> void:
 		var c := wasd if wasd != Vector3.ZERO else manual
 		bew.cmd = c
 		bew.keys = Vector2(clampf(c.z + c.x, -1.0, 1.0), c.y)       # in the ring: A / D and Q / E both steer
+		ki.setze_befehl(Vector3(c.y, c.x, c.z))                  # Gang-KI: the drive command (also from the stick / controller)
+		ki.step(dt)
+		if ki_lernen != null:
+			ki_lernen.tick(dt)
 		bew.step(dt)
+		ki.vorne_neigen()
 	model.step(dt)
 	if not terrain.is_empty():
 		_terrain_step(dt)
@@ -856,6 +877,7 @@ func _build_ui() -> void:
 	_page_anzeigen(gruppe("anzeigen"))
 	_page_rund(gruppe("rund"))
 	_page_steuerung()
+	ki.baue_seite(gruppe("ki"), self)                  # Gang-KI (sim-gang-ki-a / -b): group «Gang-KI» in Fahren
 	for tb in TABS:                                   # one width for all tabs (the widest), the panel does not jump
 		(_w["page_" + tb[0]] as Control).visible = true
 	_panel_w = maxf(PANEL_W, panel.get_combined_minimum_size().x)
@@ -1872,6 +1894,11 @@ func _page_gelaende(pg: VBoxContainer) -> void:
 	ring.focus_mode = Control.FOCUS_NONE
 	pg.add_child(ring)
 	_w["terrain_ring"] = ring
+	var mit_ki := CheckButton.new()
+	mit_ki.text = T.t("Mit der Gang-KI gehen")
+	mit_ki.focus_mode = Control.FOCUS_NONE
+	pg.add_child(mit_ki)
+	_w["terrain_ki"] = mit_ki
 	for t in GELAENDE.NAMEN:
 		var tn: String = t[0]
 		var h := HBoxContainer.new()
@@ -1889,11 +1916,12 @@ func _page_gelaende(pg: VBoxContainer) -> void:
 		stop_all())
 
 
-func terrain_start(names: Array, ring := false) -> void:
+func terrain_start(names: Array, ring := false, mit_ki := false) -> void:
 	if names.is_empty():
 		return
 	var tn: String = names[0]
 	stop_all()
+	ki.neu_start()
 	bew.angepasst = false
 	bew.hoehe = 0.9
 	bew.schritt_hoehe = 0.35
@@ -1906,7 +1934,10 @@ func terrain_start(names: Array, ring := false) -> void:
 		bew.start_ring()
 		manual = Vector3(0.0, 1.0, 0.0)
 	else:
-		bew.start_gang("auto")
+		var tk: CheckButton = _w.get("terrain_ki")
+		mit_ki = mit_ki or (tk != null and tk.button_pressed)
+		terrain["ki"] = mit_ki
+		bew.start_gang("ki" if mit_ki else "auto")
 		manual = Vector3(0.0, 1.0, 0.0)
 	_paint_gang()
 
@@ -1941,11 +1972,12 @@ func _terrain_step(dt: float) -> void:
 	terrain_results[tn] = res
 	var q: Array = terrain["queue"]
 	var ring: bool = terrain["ring"]
+	var mit_ki: bool = terrain.get("ki", false)
 	terrain = {}
 	bew.stop()
 	manual = Vector3.ZERO
 	if not q.is_empty():
-		terrain_start(q, ring)
+		terrain_start(q, ring, mit_ki)
 
 
 func _tipped() -> bool:
@@ -2056,6 +2088,8 @@ func _refresh() -> void:
 			if l != null and not r.is_empty():
 				l.text = str(r[1])
 				l.add_theme_color_override("font_color", UI.GRN if r[0] else (UI.TXT if str(r[1]) == T.t("läuft …") else UI.RED))
+	if _gruppen.has("ki") and (_gruppen["ki"] as Control).is_visible_in_tree():
+		ki.auffrischen()
 	if _sichtbar("gang_info") or _sichtbar("ring_btn"):
 		(_w["gang_info"] as Label).text = _move_text()
 		_paint_gang()
@@ -2129,7 +2163,7 @@ func info() -> Dictionary:
 				"tipping": anz.tipping, "goal_reached": bew.goal_reached, "ring_lean": bew.ring_lean,
 				"terrain": terrain.get("name", ""), "terrain_results": terrain_results, "adapted": bew.angepasst,
 				"plan": bew.plan, "anpassen": bew.anpassen, "variante": variante, "pip": pip, "info_on": info_on, "panel": _panel_on, "compact": compact() if is_open() else false, "touch": touch, "ring_methode": bew.ring_methode,
-				"rund": rund_summary(), "rund_best": rund_best, "rund_laeuft": not rund_jobs.is_empty() or not rund_job.is_empty()})
+				"rund": rund_summary(), "rund_best": rund_best, "ki": ki.info(), "rund_laeuft": not rund_jobs.is_empty() or not rund_job.is_empty()})
 		if steu != null:
 			d["steuerung"] = steu.info()
 	return d
@@ -2208,5 +2242,7 @@ func control(d: Dictionary) -> Dictionary:
 			steu.control(d)
 		"gelaende":
 			var names = d.get("name", "stufe")
-			terrain_start(names if names is Array else [str(names)], bool(d.get("ring", false)))
+			terrain_start(names if names is Array else [str(names)], bool(d.get("ring", false)), bool(d.get("ki", false)))
+		"ki":
+			ki.steuern(d)
 	return info()

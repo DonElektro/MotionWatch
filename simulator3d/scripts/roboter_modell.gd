@@ -578,7 +578,7 @@ func _loads(_dt: float) -> void:
 		g = Vector3(0, -float(PhysicsServer3D.area_get_param(space_rid, PhysicsServer3D.AREA_PARAM_GRAVITY)), 0)
 	var F := []
 	var M := []
-	var pdt := 1.0 / float(Engine.physics_ticks_per_second)
+	var pdt := get_physics_process_delta_time() if is_inside_tree() else 1.0 / float(Engine.physics_ticks_per_second)   # = the real step (also in a test with Zeitraffer)
 	for b in bodies:
 		var rb: RigidBody3D = b["rb"]
 		var f: Vector3 = g * rb.mass

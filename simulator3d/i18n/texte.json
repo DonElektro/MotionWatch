@@ -1135,6 +1135,30 @@
   "it": "%d fotogrammi/s · %s · %s · 3D %s (%d %%) · telecamere per MoveEye %s · livello «%s» · %s",
   "rm": "%d maletgs/s · %s · %s · 3D %s (%d %%) · cameras per MoveEye %s · nivel «%s» · %s"
  },
+ "%d cm breit, %d cm tief": {
+  "en": "%d cm wide, %d cm deep",
+  "fr": "%d cm de large, %d cm de profondeur",
+  "it": "largo %d cm, profondo %d cm",
+  "rm": "%d cm lad, %d cm profund"
+ },
+ "%d cm breit, ohne Boden": {
+  "en": "%d cm wide, no bottom",
+  "fr": "%d cm de large, sans fond",
+  "it": "largo %d cm, senza fondo",
+  "rm": "%d cm lad, senza fund"
+ },
+ "%d cm frei darunter": {
+  "en": "%d cm clear below",
+  "fr": "%d cm libres en dessous",
+  "it": "%d cm liberi sotto",
+  "rm": "%d cm liber sutvart"
+ },
+ "%d cm hoch": {
+  "en": "%d cm high",
+  "fr": "%d cm de haut",
+  "it": "alto %d cm",
+  "rm": "%d cm aut"
+ },
  "%d Controller verbunden.": {
   "en": "%d controllers connected.",
   "fr": "%d manettes connectées.",
@@ -1200,6 +1224,13 @@
   "fr": "%d signalés · %d manqués · %d hors de l'image",
   "it": "%d segnalati · %d mancati · %d fuori dall'immagine",
   "rm": "%d annunziads · %d manchentads · %d betg en il maletg"
+ },
+ "%d gemerkt": {
+  "en": "%d remembered",
+  "fr": "%d mémorisés",
+  "it": "%d memorizzati",
+  "rm": "%d memorisads",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "%d High-Fives": {
   "en": "%d high fives",
@@ -1309,6 +1340,12 @@
   "it": "%d partite eliminate.",
   "rm": "%d rundas stizzadas."
  },
+ "%d s · %.2f Wh · Kipp-Reserve min. %d %%": {
+  "en": "%d s · %.2f Wh · tip margin min. %d %%",
+  "fr": "%d s · %.2f Wh · réserve de basculement min. %d %%",
+  "it": "%d s · %.2f Wh · riserva di ribaltamento min. %d %%",
+  "rm": "%d s · %.2f Wh · reserva da sa stgarpitschar min. %d %%"
+ },
  "%d Schleicher": {
   "en": "%d sneakers",
   "fr": "%d furtifs",
@@ -1332,6 +1369,12 @@
   "fr": "%d joueurs",
   "it": "%d giocatori",
   "rm": "%d giugaders"
+ },
+ "%d Stufen, %d cm hoch": {
+  "en": "%d steps, %d cm high",
+  "fr": "%d marches, %d cm de haut",
+  "it": "%d gradini, alto %d cm",
+  "rm": "%d stgalims, %d cm aut"
  },
  "%d Teile auf dieser Platte": {
   "en": "%d parts on this plate",
@@ -1434,6 +1477,12 @@
   "fr": "%d° signifie : depuis le nord dans le sens des aiguilles d'une montre - 90° est l'est, 180° le sud, 270° l'ouest. Depuis le lieu de référence dans cette direction, puis %d m (le trait en bas mesure 500 m).",
   "it": "%d° significa: dal nord in senso orario - 90° è est, 180° sud, 270° ovest. Dal luogo di riferimento in questa direzione, poi %d m (la linea in basso è 500 m).",
   "rm": "%d° vul dir: dal nord en la direcziun da l'ura - 90° è ost, 180° sid, 270° vest. Dal lieu da referenza en questa direcziun, lura %d m (la lingia giusut è 500 m)."
+ },
+ "%d° steil": {
+  "en": "%d° steep",
+  "fr": "pente de %d°",
+  "it": "pendenza %d°",
+  "rm": "%d° stip"
  },
  "%d× %s": {
   "en": "%d× %s",
@@ -4447,6 +4496,12 @@
   "it": "Tutto ciò che hai scoperto e i distintivi",
   "rm": "Tut quai che ti has scuvrì e las insignas"
  },
+ "Alles Gelernte dieser Variante löschen": {
+  "en": "Delete everything learnt for this variant",
+  "fr": "Effacer tout ce qui a été appris pour cette variante",
+  "it": "Cancella tutto ciò che è stato appreso per questa variante",
+  "rm": "Stizzar tut quai che è vegnì emprendì per questa variante"
+ },
  "Alles gewählt? Dann «Szene bauen».": {
   "en": "Everything chosen? Then «Build scene».",
   "fr": "Tout est choisi ? Alors «Construire la scène».",
@@ -6818,6 +6873,18 @@
   "rm": "Balantschar",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
+ "Balken": {
+  "en": "Beam",
+  "fr": "Poutre",
+  "it": "Trave",
+  "rm": "Trav"
+ },
+ "Balken 16 cm hoch": {
+  "en": "Beam 16 cm high",
+  "fr": "Poutre à 16 cm",
+  "it": "Trave a 16 cm",
+  "rm": "Trav a 16 cm"
+ },
  "Ball": {
   "en": "Ball",
   "fr": "Ballon",
@@ -7796,6 +7863,20 @@
   "fr": "meilleure place",
   "it": "posto migliore",
   "rm": "meglier plaz"
+ },
+ "Bestes: %s · %.1f s · %.2f Wh · Kipp-Reserve %d %%": {
+  "en": "Best: %s · %.1f s · %.2f Wh · tipping margin %d %%",
+  "fr": "Meilleur : %s · %.1f s · %.2f Wh · marge de basculement %d %%",
+  "it": "Migliore: %s · %.1f s · %.2f Wh · margine di ribaltamento %d %%",
+  "rm": "Il meglier: %s · %.1f s · %.2f Wh · reserva da sa sturnar %d %%",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
+ "Bestes: noch kein Erfolg": {
+  "en": "Best: no success yet",
+  "fr": "Meilleur : pas encore de réussite",
+  "it": "Migliore: ancora nessun successo",
+  "rm": "Il meglier: anc nagin success",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "Besuch": {
   "en": "Visit",
@@ -8827,6 +8908,12 @@
   "it": "Vasca della fontana",
   "rm": "Bigl"
  },
+ "Brücke": {
+  "en": "Bridge",
+  "fr": "Pont",
+  "it": "Ponte",
+  "rm": "Punt"
+ },
  "Brücken, die schwanken.": {
   "en": "Bridges that sway.",
   "fr": "Des ponts qui tanguent.",
@@ -9385,6 +9472,30 @@
   "fr": "CSV dans le presse-papiers",
   "it": "CSV negli appunti",
   "rm": "CSV en la tabla d'intermediar"
+ },
+ "D-Down": {
+  "en": "D-Down",
+  "fr": "D-Down",
+  "it": "D-Down",
+  "rm": "D-Down"
+ },
+ "D-Left": {
+  "en": "D-Left",
+  "fr": "D-Left",
+  "it": "D-Left",
+  "rm": "D-Left"
+ },
+ "D-Right": {
+  "en": "D-Right",
+  "fr": "D-Right",
+  "it": "D-Right",
+  "rm": "D-Right"
+ },
+ "D-Up": {
+  "en": "D-Up",
+  "fr": "D-Up",
+  "it": "D-Up",
+  "rm": "D-Up"
  },
  "Da draussen im See – der grosse Felsblock. Das muss der Seeblock sein.": {
   "en": "Out there in the lake – the big boulder. That must be the lake boulder.",
@@ -14229,6 +14340,12 @@
   "it": "Tempo di stampa: stima, controllare nello slicer.",
   "rm": "Temp da stampa: stimaziun, guardar en il slicer."
  },
+ "Drunter durch kriechen": {
+  "en": "Crawl underneath",
+  "fr": "Ramper dessous",
+  "it": "Strisciare sotto",
+  "rm": "Sgrattar sutvart"
+ },
  "Drüben!": {
   "en": "Across!",
   "fr": "De l'autre côté !",
@@ -16358,6 +16475,12 @@
   "it": "Metterla via e tornare al sentiero",
   "rm": "Pachetar e turnar a la senda"
  },
+ "Einrollen und rollen": {
+  "en": "Curl up and roll",
+  "fr": "S'enrouler et rouler",
+  "it": "Arrotolarsi e rotolare",
+  "rm": "Sa rullar en e rullar"
+ },
  "Einrollen und öffnen": {
   "en": "Roll up and open",
   "fr": "S’enrouler et s’ouvrir",
@@ -16429,6 +16552,12 @@
   "fr": "Insérer les inserts à chaud, préparer la partie inférieure",
   "it": "Inserire gli inserti a caldo, preparare la parte inferiore",
   "rm": "Fonder en ils inserts, preparar la part sut"
+ },
+ "Einzelne Stufe": {
+  "en": "Single step",
+  "fr": "Marche",
+  "it": "Gradino",
+  "rm": "Stgalim singul"
  },
  "Einzelteil": {
   "en": "Single part",
@@ -19191,6 +19320,12 @@
   "it": "vista libera · camera 1 · camera 2 · immagine termica",
   "rm": "vista libra · camera 1 · camera 2 · maletg termic"
  },
+ "freie Bahn": {
+  "en": "clear path",
+  "fr": "voie libre",
+  "it": "via libera",
+  "rm": "via libra"
+ },
  "Freie Wahl (ausgelost)": {
   "en": "Free choice (drawn by lot)",
   "fr": "Libre choix (tiré au sort)",
@@ -19600,6 +19735,12 @@
   "it": "piedi più alti",
   "rm": "pes pli auts"
  },
+ "Füsse rutschen": {
+  "en": "feet slipping",
+  "fr": "les pieds glissent",
+  "it": "i piedi scivolano",
+  "rm": "ils pes sglischan"
+ },
  "Füsse seitlich": {
   "en": "Feet to the side",
   "fr": "Pieds sur le côté",
@@ -19654,6 +19795,18 @@
   "fr": "Aller aux WC / à la douche (la nuit avec une lampe de poche)",
   "it": "Andare al WC / alla doccia (di notte con la torcia)",
   "rm": "Ir al WC / a la duscha (la notg cun ina lampa da giaglioffa)"
+ },
+ "Gang-KI": {
+  "en": "Gait AI",
+  "fr": "IA de marche",
+  "it": "IA di andatura",
+  "rm": "IA da chaminar"
+ },
+ "Gang-KI: du gibst nur Richtung und Stil vor. Der Roboter sieht das Gelände vor sich (Höhenraster 1.5 × 1 m), erkennt Hindernisse, wählt eine Strategie und setzt jeden Fuss auf sicheren Boden.": {
+  "en": "Walking AI: you only give direction and style. The robot sees the ground ahead (height grid 1.5 × 1 m), recognises obstacles, picks a strategy and puts every foot on safe ground.",
+  "fr": "IA de marche : tu donnes seulement la direction et le style. Le robot voit le terrain devant lui (grille de hauteur 1,5 × 1 m), reconnaît les obstacles, choisit une stratégie et pose chaque pied sur un sol sûr.",
+  "it": "IA di camminata: indichi solo direzione e stile. Il robot vede il terreno davanti a sé (griglia di altezze 1,5 × 1 m), riconosce gli ostacoli, sceglie una strategia e appoggia ogni piede su un terreno sicuro.",
+  "rm": "IA da chaminar: ti das mo la direcziun ed il stil. Il robot vesa il terren davant el (rasters d'autezza 1,5 × 1 m), renconuscha impediments, tscherna ina strategia e metta mintga pe sin terren segir."
  },
  "Gangart": {
   "en": "Gait",
@@ -20321,6 +20474,13 @@
   "it": "Terreno: leggere colline e avvallamenti invece di un suolo piatto (campeggio; ricostruisce la scena)",
   "rm": "Terren: collinas e foppas levas empè d’in terren plat (camping; construescha la scena da nov)"
  },
+ "Geländestufe": {
+  "en": "Step",
+  "fr": "Marche",
+  "it": "Gradino",
+  "rm": "Grad dal terren",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
  "gelöscht, dampft noch": {
   "en": "put out, still steaming",
   "fr": "éteint, fume encore",
@@ -20579,6 +20739,12 @@
   "it": "Rumori del mondo al microfono di MoveEye",
   "rm": "Canera dal mund al microfon da MoveEye"
  },
+ "Geröll": {
+  "en": "Rubble",
+  "fr": "Éboulis",
+  "it": "Detriti",
+  "rm": "Grip"
+ },
  "Geröll versperrt eine kleine Nische. Etwas schaut heraus.": {
   "en": "Loose rocks block a small niche. Something is sticking out.",
   "fr": "Des cailloux bloquent une petite niche. Quelque chose dépasse.",
@@ -20783,6 +20949,12 @@
   "fr": "Hier, un parapente a atterri au milieu du pâturage. Les vaches étaient ravies.",
   "it": "Ieri un parapendio è atterrato in mezzo al pascolo delle mucche. Le mucche erano entusiaste.",
   "rm": "Ier è in parapendist atterrà amez la pastira da las vatgas. Las vatgas eran entusiasmadas."
+ },
+ "gestürzt": {
+  "en": "fell over",
+  "fr": "tombé",
+  "it": "caduto",
+  "rm": "crudà"
  },
  "Getauscht": {
   "en": "Traded",
@@ -21411,6 +21583,12 @@
   "it": "GPS: rimettere",
   "rm": "GPS: metter enavos"
  },
+ "Graben": {
+  "en": "Ditch",
+  "fr": "Fossé",
+  "it": "Fossato",
+  "rm": "Foss"
+ },
  "Graben %d cm": {
   "en": "Ditch %d cm",
   "fr": "Fossé %d cm",
@@ -21736,6 +21914,12 @@
   "fr": "La montre de poche du grand-père",
   "it": "L'orologio da tasca del nonno",
   "rm": "L'ura da giaglioffa dal tat"
+ },
+ "Grund-Strategien von Hand ausprobieren (vor dem Hindernis):": {
+  "en": "Try the basic strategies by hand (in front of the obstacle):",
+  "fr": "Essayer les stratégies de base à la main (devant l'obstacle) :",
+  "it": "Provare a mano le strategie di base (davanti all'ostacolo):",
+  "rm": "Empruvar a maun las strategias da basa (davant l'impediment):"
  },
  "Grundrauschen": {
   "en": "Background noise",
@@ -23435,6 +23619,12 @@
   "it": "In alto, pietre calde – e vipere.",
   "rm": "Ad aut, craps chauds – e vipras."
  },
+ "Hoch steigen": {
+  "en": "Step high",
+  "fr": "Lever haut",
+  "it": "Passo alto",
+  "rm": "Pass aut"
+ },
  "Hoch über dem Gumpisee zieht ein schmaler Grat nach Süden.": {
   "en": "High above the Gumpisee a narrow ridge runs south.",
   "fr": "Haut au-dessus du Gumpisee, une crête étroite file vers le sud.",
@@ -24947,6 +25137,12 @@
   "fr": "IMX708",
   "it": "IMX708",
   "rm": "IMX708"
+ },
+ "in %d cm": {
+  "en": "in %d cm",
+  "fr": "à %d cm",
+  "it": "a %d cm",
+  "rm": "en %d cm"
  },
  "In 3D anklicken": {
   "en": "Click in 3D",
@@ -27126,6 +27322,13 @@
   "it": "Non fare il fuoco",
   "rm": "Betg far fieu"
  },
+ "kein Fortschritt": {
+  "en": "no progress",
+  "fr": "aucun progrès",
+  "it": "nessun progresso",
+  "rm": "nagin progress",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
  "kein Foto": {
   "en": "no photo",
   "fr": "pas de photo",
@@ -27854,6 +28057,12 @@
   "it": "Margine di ribaltamento %.1f cm",
   "rm": "Reserva da sa sturnar %.1f cm"
  },
+ "Kipp-Reserve klein": {
+  "en": "tip margin small",
+  "fr": "réserve de basculement faible",
+  "it": "riserva di ribaltamento piccola",
+  "rm": "reserva da sa stgarpitschar pitschna"
+ },
  "KIPPGEFAHR": {
   "en": "DANGER OF TIPPING",
   "fr": "RISQUE DE BASCULEMENT",
@@ -28422,6 +28631,12 @@
   "fr": "Copié : %d entrées dans le presse-papiers.",
   "it": "Copiato: %d voci negli appunti.",
   "rm": "Copià: %d inscripziuns en la memoria intermediara."
+ },
+ "Korrekturen %d (zuletzt: %s)": {
+  "en": "Corrections %d (last: %s)",
+  "fr": "Corrections %d (dernière : %s)",
+  "it": "Correzioni %d (ultima: %s)",
+  "rm": "Correcturas %d (l'ultima: %s)"
  },
  "Krach!": {
   "en": "Crash!",
@@ -29696,6 +29911,32 @@
   "it": "Imparare",
   "rm": "Emprender"
  },
+ "Lernen (Stufe 3) ist noch nicht eingebaut": {
+  "en": "Learning (stage 3) is not built in yet",
+  "fr": "L'apprentissage (étape 3) n'est pas encore intégré",
+  "it": "L'apprendimento (livello 3) non è ancora integrato",
+  "rm": "L'emprender (stgalim 3) n'è anc betg integrà"
+ },
+ "Lernen im Hintergrund": {
+  "en": "Learn in the background",
+  "fr": "Apprendre en arrière-plan",
+  "it": "Apprendere in background",
+  "rm": "Emprender en il fund"
+ },
+ "Lernen: aus": {
+  "en": "Learning: off",
+  "fr": "Apprentissage : désactivé",
+  "it": "Apprendimento: disattivato",
+  "rm": "Emprender: deactivà",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
+ "Lernen: wartet auf ein Hindernis": {
+  "en": "Learning: waiting for an obstacle",
+  "fr": "Apprentissage : attend un obstacle",
+  "it": "Apprendimento: in attesa di un ostacolo",
+  "rm": "Emprender: spetga in impediment",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
  "letzte Meldung: %s": {
   "en": "last message: %s",
   "fr": "dernier message : %s",
@@ -29731,6 +29972,13 @@
   "fr": "Dernier passage : %s",
   "it": "Ultimo passaggio: %s",
   "rm": "Ultim passagi: %s"
+ },
+ "Letzter Versuch: %s": {
+  "en": "Last attempt: %s",
+  "fr": "Dernier essai : %s",
+  "it": "Ultimo tentativo: %s",
+  "rm": "Ultim emprova: %s",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "Letztes Foto weg": {
   "en": "Remove last photo",
@@ -30016,17 +30264,41 @@
   "it": "Stick sinistro",
   "rm": "Stick sanester"
  },
+ "Linker Stick hoch": {
+  "en": "Left stick up",
+  "fr": "Stick gauche en haut",
+  "it": "Stick sinistro su",
+  "rm": "Stick sanester ensi"
+ },
  "Linker Stick hoch / runter": {
   "en": "Left stick up / down",
   "fr": "Stick gauche haut / bas",
   "it": "Stick sinistro su / giù",
   "rm": "Stick sanester si / giu"
  },
+ "Linker Stick links": {
+  "en": "Left stick left",
+  "fr": "Stick gauche à gauche",
+  "it": "Stick sinistro a sinistra",
+  "rm": "Stick sanester a sanestra"
+ },
  "Linker Stick links / rechts": {
   "en": "Left stick left / right",
   "fr": "Stick gauche gauche / droite",
   "it": "Stick sinistro sinistra / destra",
   "rm": "Stick sanester sanestra / dretga"
+ },
+ "Linker Stick rechts": {
+  "en": "Left stick right",
+  "fr": "Stick gauche à droite",
+  "it": "Stick sinistro a destra",
+  "rm": "Stick sanester a dretga"
+ },
+ "Linker Stick runter": {
+  "en": "Left stick down",
+  "fr": "Stick gauche en bas",
+  "it": "Stick sinistro giù",
+  "rm": "Stick sanester engiu"
  },
  "Linker Trigger (LT)": {
   "en": "Left trigger (LT)",
@@ -30536,6 +30808,24 @@
   "fr": "Fer à souder régulé, étain (sans plomb), support",
   "it": "Saldatore regolabile, stagno (senza piombo), supporto",
   "rm": "Fier da lotar regulabel, stagn (senza plum), suport"
+ },
+ "Lücke": {
+  "en": "Gap",
+  "fr": "Trou",
+  "it": "Varco",
+  "rm": "Fora"
+ },
+ "Lücke 15 cm": {
+  "en": "Gap 15 cm",
+  "fr": "Trou 15 cm",
+  "it": "Varco 15 cm",
+  "rm": "Fora 15 cm"
+ },
+ "Lücke 30 cm": {
+  "en": "Gap 30 cm",
+  "fr": "Trou 30 cm",
+  "it": "Varco 30 cm",
+  "rm": "Fora 30 cm"
  },
  "Lückenfinder": {
   "en": "Gap finder",
@@ -31982,6 +32272,18 @@
   "fr": "avec ton propre personnage dans ce monde : marcher, courir, s’accroupir, ramper, grimper, nager",
   "it": "con il tuo personaggio in questo mondo: camminare, correre, accovacciarsi, strisciare, arrampicarsi, nuotare",
   "rm": "cun tia atgna figura tras quest mund: ir, currer, sa sbassar, ruschnar, s’enrampignar, nudar"
+ },
+ "Mit der Gang-KI gehen": {
+  "en": "Walk with the walking AI",
+  "fr": "Marcher avec l'IA de marche",
+  "it": "Camminare con l'IA di camminata",
+  "rm": "Chaminar cun l'IA da chaminar"
+ },
+ "Mit der KI gehen": {
+  "en": "Walk with the AI",
+  "fr": "Marcher avec l'IA",
+  "it": "Camminare con l'IA",
+  "rm": "Chaminar cun l'IA"
  },
  "Mit der Materialseilbahn fahren (Bergtal)": {
   "en": "Ride the goods cable car (mountain valley)",
@@ -34877,6 +35179,13 @@
   "it": "Rimettere in piedi",
   "rm": "Metter si da nov"
  },
+ "neu aufstellen": {
+  "en": "setting up again",
+  "fr": "remise en place",
+  "it": "riposizionamento",
+  "rm": "metter si da nov",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
  "Neu aufstellen (R)": {
   "en": "Set up again (R)",
   "fr": "Remettre en place (R)",
@@ -35662,6 +35971,12 @@
   "it": "Normale (come prima)",
   "rm": "Normal (sco fin ussa)"
  },
+ "Normal gehen": {
+  "en": "Walk normally",
+  "fr": "Marcher normalement",
+  "it": "Camminare normalmente",
+  "rm": "Chaminar normal"
+ },
  "Normales Bergwetter, Tiere in der Nacht, nur Kompass.": {
   "en": "Normal mountain weather, animals at night, compass only.",
   "fr": "Météo de montagne normale, animaux la nuit, seulement la boussole.",
@@ -36341,6 +36656,12 @@
   "fr": "Sans lampe, il fait vraiment nuit après le coucher du soleil.",
   "it": "Senza lampada dopo il tramonto è davvero buio.",
   "rm": "Senza cazzola èsi propi stgir suenter il rendiu dal sulegl."
+ },
+ "Ohne Lernen: die KI wählt nach festen Regeln (Versuch %d).": {
+  "en": "Without learning: the AI picks by fixed rules (try %d).",
+  "fr": "Sans apprentissage : l'IA choisit selon des règles fixes (essai %d).",
+  "it": "Senza apprendimento: l'IA sceglie secondo regole fisse (tentativo %d).",
+  "rm": "Senza emprender: l'IA tscherna tenor reglas fixas (emprova %d)."
  },
  "Ohne MoveEye bewacht der Kopf selbst": {
   "en": "Without MoveEye the head guards by itself",
@@ -38024,6 +38345,12 @@
   "it": "Riquadri di MoveEye sulle figure: verde rilevato, rosso falso allarme, arancione mancato",
   "rm": "Roms da MoveEye sur las figuras: verd identifitgà, cotschen fauss alarm, oransch surveis"
  },
+ "Rampe": {
+  "en": "Ramp",
+  "fr": "Rampe",
+  "it": "Rampa",
+  "rm": "Rampa"
+ },
  "Rampe %d°": {
   "en": "Ramp %d°",
   "fr": "Rampe %d°",
@@ -38271,17 +38598,41 @@
   "it": "stick destro camminare · ✚ ↑ saltare · ✚ ↓ postura · ✚ ← sedersi · ✚ → sdraiarsi · R1 + stick destro guardarsi intorno · R3 vista · Select ⏱ mover",
   "rm": "stick dretg ir · ✚ ↑ siglir · ✚ ↓ posiziun · ✚ ← seser · ✚ → giaschair · R1 + stick dretg guardar enturn · R3 vista · Select ⏱ mover"
  },
+ "Rechter Stick hoch": {
+  "en": "Right stick up",
+  "fr": "Stick droit en haut",
+  "it": "Stick destro su",
+  "rm": "Stick dretg ensi"
+ },
  "Rechter Stick hoch / runter": {
   "en": "Right stick up / down",
   "fr": "Stick droit haut / bas",
   "it": "Stick destro su / giù",
   "rm": "Stick dretg si / giu"
  },
+ "Rechter Stick links": {
+  "en": "Right stick left",
+  "fr": "Stick droit à gauche",
+  "it": "Stick destro a sinistra",
+  "rm": "Stick dretg a sanestra"
+ },
  "Rechter Stick links / rechts": {
   "en": "Right stick left / right",
   "fr": "Stick droit gauche / droite",
   "it": "Stick destro sinistra / destra",
   "rm": "Stick dretg sanestra / dretga"
+ },
+ "Rechter Stick rechts": {
+  "en": "Right stick right",
+  "fr": "Stick droit à droite",
+  "it": "Stick destro a destra",
+  "rm": "Stick dretg a dretga"
+ },
+ "Rechter Stick runter": {
+  "en": "Right stick down",
+  "fr": "Stick droit en bas",
+  "it": "Stick destro giù",
+  "rm": "Stick dretg engiu"
  },
  "Rechter Trigger (RT)": {
   "en": "Right trigger (RT)",
@@ -38694,6 +39045,12 @@
   "it": "Anello intorno all’apparecchio (8 m)",
   "rm": "Rintg enturn l’apparat (8 m)"
  },
+ "Ring schliesst nicht": {
+  "en": "ring does not close",
+  "fr": "l'anneau ne se ferme pas",
+  "it": "l'anello non si chiude",
+  "rm": "l'anè na sa serra betg"
+ },
  "Ring verriegelt": {
   "en": "Ring locked",
   "fr": "Anneau verrouillé",
@@ -38741,6 +39098,24 @@
   "fr": "Données brutes (un fichier JSON par partie) et le rapport avec les suggestions (Markdown) dans un fichier ZIP",
   "it": "Dati grezzi (un file JSON per partita) e il rapporto con i suggerimenti (Markdown) in un file ZIP",
   "rm": "Datas brutas (ina datoteca JSON per runda) ed il rapport cun las propostas (Markdown) en ina datoteca ZIP"
+ },
+ "Rohr": {
+  "en": "Pipe",
+  "fr": "Tuyau",
+  "it": "Tubo",
+  "rm": "Bischen"
+ },
+ "Rohr 10 cm": {
+  "en": "Pipe 10 cm",
+  "fr": "Tuyau 10 cm",
+  "it": "Tubo 10 cm",
+  "rm": "Bischen 10 cm"
+ },
+ "Rohr 6 cm": {
+  "en": "Pipe 6 cm",
+  "fr": "Tuyau 6 cm",
+  "it": "Tubo 6 cm",
+  "rm": "Bischen 6 cm"
  },
  "Rollen": {
   "en": "Roles",
@@ -40165,6 +40540,12 @@
   "it": "Palina da neve",
   "rm": "Pal da naiv"
  },
+ "Schnell": {
+  "en": "Fast",
+  "fr": "Rapide",
+  "it": "Veloce",
+  "rm": "Svelt"
+ },
  "Schnell - aber ein Fuchs riecht ihn.": {
   "en": "Quick - but a fox smells it.",
   "fr": "Rapide - mais un renard le sent.",
@@ -41013,6 +41394,12 @@
   "it": "Leggi le pagine",
   "rm": "Leger las paginas"
  },
+ "Seitenlage zu gross": {
+  "en": "leaning too far sideways",
+  "fr": "trop penché sur le côté",
+  "it": "troppo inclinato di lato",
+  "rm": "memia stort da la vart"
+ },
  "Seitenschneider, Abisolierzange, Pinzette": {
   "en": "Side cutter, wire stripper, tweezers",
   "fr": "Pince coupante, pince à dénuder, pincette",
@@ -41355,6 +41742,12 @@
   "it": "Maiusc + Pag ↑ / ↓",
   "rm": "Shift + Pagina ↑ / ↓"
  },
+ "Sicher": {
+  "en": "Safe",
+  "fr": "Sûr",
+  "it": "Sicuro",
+  "rm": "Segir"
+ },
  "Sicher (2 Min.).": {
   "en": "Safe (2 min).",
   "fr": "Sûr (2 min).",
@@ -41553,6 +41946,12 @@
   "fr": "Ça a de l’allure.",
   "it": "Sta bene.",
   "rm": "Para bain."
+ },
+ "Sieht:": {
+  "en": "Sees:",
+  "fr": "Voit :",
+  "it": "Vede:",
+  "rm": "Vesa:"
  },
  "Silikon- oder Lagerfett": {
   "en": "Silicone or bearing grease",
@@ -41993,6 +42392,12 @@
   "fr": "Mode économie : PC peu puissant détecté (%s) – mode graphique Lite. Modifier : Système › Graphisme › Mode graphique.",
   "it": "Modalità risparmio: PC debole rilevato (%s) – modalità grafica Lite. Cambiare: Sistema › Grafica › Modalità grafica.",
   "rm": "Modus da spargn: PC flaivel renconuschì (%s) – modus grafic Lite. Midar: Sistem › Grafica › Modus grafic."
+ },
+ "Sparsam": {
+  "en": "Economical",
+  "fr": "Économe",
+  "it": "Parsimonioso",
+  "rm": "Spargnus"
  },
  "Spatz-Zelte": {
   "en": "Small scout tents",
@@ -43421,6 +43826,12 @@
   "it": "Scambiare gli stick (sinistra rover / camminare, destra testa / guardare)",
   "rm": "Barattar ils sticks (sanester rover / ir, dretg chau / guardar)"
  },
+ "Stil": {
+  "en": "Style",
+  "fr": "Style",
+  "it": "Stile",
+  "rm": "Stil"
+ },
  "Still": {
   "en": "Silent",
   "fr": "En silence",
@@ -43556,6 +43967,12 @@
   "it": "Lampione (si accende di notte)",
   "rm": "Lampa da via (s’envida da notg)"
  },
+ "Strategie: %s": {
+  "en": "Strategy: %s",
+  "fr": "Stratégie : %s",
+  "it": "Strategia: %s",
+  "rm": "Strategia: %s"
+ },
  "Streichelzoo": {
   "en": "Petting zoo",
   "fr": "Mini-ferme",
@@ -43681,6 +44098,12 @@
   "fr": "Niveau %d : %s",
   "it": "Livello %d: %s",
   "rm": "Stgalim %d: %s"
+ },
+ "Stufe 10 cm": {
+  "en": "Step 10 cm",
+  "fr": "Marche 10 cm",
+  "it": "Gradino 10 cm",
+  "rm": "Stgalim 10 cm"
  },
  "Stufe 6 cm": {
   "en": "Step 6 cm",
@@ -45616,6 +46039,12 @@
   "it": "Scala",
   "rm": "Stgala"
  },
+ "Treppe 3 × 4 cm": {
+  "en": "Stairs 3 × 4 cm",
+  "fr": "Escalier 3 × 4 cm",
+  "it": "Scala 3 × 4 cm",
+  "rm": "Stgala 3 × 4 cm"
+ },
  "Treue Begleiterin": {
   "en": "Loyal companion",
   "fr": "Fidèle compagne",
@@ -45639,6 +46068,12 @@
   "fr": "Boire (%d L)",
   "it": "Bere (%d L)",
   "rm": "Baiver (%d L)"
+ },
+ "Tritte %d · versetzt %d · ins Leere %d · Beine in der Luft %d": {
+  "en": "Steps %d · moved %d · into nothing %d · legs in the air %d",
+  "fr": "Pas %d · déplacés %d · dans le vide %d · pattes en l'air %d",
+  "it": "Passi %d · spostati %d · nel vuoto %d · zampe in aria %d",
+  "rm": "Pass %d · spustads %d · en il vid %d · chommas en l'aria %d"
  },
  "Trockene Füsse": {
   "en": "Dry feet",
@@ -45982,6 +46417,12 @@
   "fr": "tombé après %d s",
   "it": "caduto dopo %d s",
   "rm": "dà enturn suenter %d s"
+ },
+ "Umgehen": {
+  "en": "Go around",
+  "fr": "Contourner",
+  "it": "Aggirare",
+  "rm": "Ir enturn"
  },
  "Umgehängt. Weiter.": {
   "en": "Clipped over. Onwards.",
@@ -46971,6 +47412,12 @@
   "it": "Percorso di inseguimento: lezioni",
   "rm": "Parcours da persequitar: lecziuns"
  },
+ "Vergessen": {
+  "en": "Forget",
+  "fr": "Oublier",
+  "it": "Dimenticare",
+  "rm": "Emblidar"
+ },
  "Vergessener Rucksack": {
   "en": "Forgotten backpack",
   "fr": "Sac à dos oublié",
@@ -47274,6 +47721,13 @@
   "fr": "Module amplificateur PAM8403",
   "it": "Modulo amplificatore PAM8403",
   "rm": "Modul amplificatur PAM8403"
+ },
+ "Versuch %d": {
+  "en": "Attempt %d",
+  "fr": "Essai %d",
+  "it": "Tentativo %d",
+  "rm": "Emprova %d",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "Versunkenes Boot": {
   "en": "Sunken boat",
@@ -47734,6 +48188,12 @@
   "it": "Interrompi la lettura",
   "rm": "Fermar la lectura"
  },
+ "Vorne aufrichten": {
+  "en": "Raise the front",
+  "fr": "Relever l'avant",
+  "it": "Alzare la parte anteriore",
+  "rm": "Auzar davant"
+ },
  "Vorne malen": {
   "en": "Paint in front",
   "fr": "Peindre devant",
@@ -48155,6 +48615,18 @@
   "fr": "Pourquoi es-tu parti si tôt ?",
   "it": "Perché sei partito così presto?",
   "rm": "Pertge es ti partì uschè marvegl?"
+ },
+ "Was der Roboter sieht: oben = vorne, grau = eben, grün bis rot = höher, blau = tiefer, schwarz = kein Boden, violett = Balken darüber, helle Linien = Spur der Füsse": {
+  "en": "What the robot sees: top = ahead, grey = flat, green to red = higher, blue = lower, black = no ground, violet = beam above, light lines = lane of the feet",
+  "fr": "Ce que voit le robot : haut = devant, gris = plat, du vert au rouge = plus haut, bleu = plus bas, noir = pas de sol, violet = poutre au-dessus, lignes claires = voie des pieds",
+  "it": "Cosa vede il robot: in alto = avanti, grigio = piano, dal verde al rosso = più alto, blu = più basso, nero = nessun suolo, viola = trave sopra, linee chiare = traccia dei piedi",
+  "rm": "Quai che il robot vesa: sisum = davant, grisch = plaun, da verd fin cotschen = pli aut, blau = pli bass, nair = nagin terren, violet = trav survart, lingias clers = fastizs dals pes"
+ },
+ "Was der Roboter sieht: oben = vorne, grau = eben, grün → rot = höher, blau = tiefer, schwarz = kein Boden, violett = Balken darüber, helle Linien = Spur der Füsse": {
+  "en": "What the robot sees: top = ahead, grey = flat, green → red = higher, blue = lower, black = no ground, violet = beam above, light lines = lane of the feet",
+  "fr": "Ce que voit le robot : haut = devant, gris = plat, vert → rouge = plus haut, bleu = plus bas, noir = pas de sol, violet = poutre au-dessus, lignes claires = voie des pieds",
+  "it": "Cosa vede il robot: in alto = avanti, grigio = piano, verde → rosso = più alto, blu = più basso, nero = nessun suolo, viola = trave sopra, linee chiare = traccia dei piedi",
+  "rm": "Quai che il robot vesa: sisum = davant, grisch = plaun, verd → cotschen = pli aut, blau = pli bass, nair = nagin terren, violet = trav survart, lingias clers = fastizs dals pes"
  },
  "Was gefehlt hat": {
   "en": "What was missing",
@@ -51150,6 +51622,20 @@
   "fr": "Trop près de : %s",
   "it": "Troppo vicino a: %s",
   "rm": "Memia datiers da: %s"
+ },
+ "zu schwer": {
+  "en": "too difficult",
+  "fr": "trop difficile",
+  "it": "troppo difficile",
+  "rm": "memia grev",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
+ "Zu schwer: nach %d Versuchen wird es umgangen": {
+  "en": "Too difficult: after %d attempts it is avoided",
+  "fr": "Trop difficile : après %d essais, il est contourné",
+  "it": "Troppo difficile: dopo %d tentativi viene aggirato",
+  "rm": "Memia grev: suenter %d emprovas vegn el evità",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "zu spät auf dem Gipfel": {
   "en": "too late on the summit",

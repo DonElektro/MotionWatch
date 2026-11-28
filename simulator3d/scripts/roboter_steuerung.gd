@@ -37,7 +37,7 @@ const AKTIONEN := [
 const ACHSEN := [[JOY_AXIS_LEFT_X, "Linker Stick links / rechts"], [JOY_AXIS_LEFT_Y, "Linker Stick hoch / runter"],
 		[JOY_AXIS_RIGHT_X, "Rechter Stick links / rechts"], [JOY_AXIS_RIGHT_Y, "Rechter Stick hoch / runter"],
 		[JOY_AXIS_TRIGGER_LEFT, "Linker Trigger (LT)"], [JOY_AXIS_TRIGGER_RIGHT, "Rechter Trigger (RT)"]]
-const KNOPF_NAMEN := ["A", "B", "X", "Y", "Back", "Guide", "Start", "L3", "R3", "LB", "RB", "↑", "↓", "←", "→", "Misc",
+const KNOPF_NAMEN := ["A", "B", "X", "Y", "Back", "Guide", "Start", "L3", "R3", "LB", "RB", "D-Up", "D-Down", "D-Left", "D-Right", "Misc",   # D-Pad as words: the font has no arrows
 		"P1", "P2", "P3", "P4", "Touchpad"]
 
 var lab                                # roboter_labor.gd
@@ -317,13 +317,13 @@ static func pad_text(b: Dictionary) -> String:
 	var d := int(b.get("d", 1))
 	match i:
 		JOY_AXIS_LEFT_X:
-			return T.t("Linker Stick") + (" →" if d > 0 else " ←")
+			return T.t("Linker Stick rechts") if d > 0 else T.t("Linker Stick links")
 		JOY_AXIS_LEFT_Y:
-			return T.t("Linker Stick") + (" ↓" if d > 0 else " ↑")
+			return T.t("Linker Stick runter") if d > 0 else T.t("Linker Stick hoch")
 		JOY_AXIS_RIGHT_X:
-			return T.t("Rechter Stick") + (" →" if d > 0 else " ←")
+			return T.t("Rechter Stick rechts") if d > 0 else T.t("Rechter Stick links")
 		JOY_AXIS_RIGHT_Y:
-			return T.t("Rechter Stick") + (" ↓" if d > 0 else " ↑")
+			return T.t("Rechter Stick runter") if d > 0 else T.t("Rechter Stick hoch")
 		JOY_AXIS_TRIGGER_LEFT:
 			return "LT"
 		JOY_AXIS_TRIGGER_RIGHT:
