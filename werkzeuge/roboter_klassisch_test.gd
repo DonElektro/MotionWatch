@@ -167,7 +167,7 @@ func _check_curve(nm: String) -> void:
 
 func _check_pose(nm: String, ps: String) -> void:
 	var h: float = body().origin.y
-	var ok := not lab._tipped() and m.overloaded().is_empty()
+	var ok: bool = not lab._tipped() and m.overloaded().is_empty()
 	if ps == "liegen":
 		ok = ok and h < float(m.u("halbe_hoehe")) + 0.02
 	if ps == "sitzen":
