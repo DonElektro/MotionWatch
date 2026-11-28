@@ -917,7 +917,7 @@ def topo_im_browser(pg, base, name, bilder, mob, echt, ansicht=None, ausschnitt=
     pg.wait_for_timeout(700)
     f0 = pg.evaluate("() => KQ.file()")
     ok(f0 == "style_topo_dark.json", f"{name}: Vorgabe Topo, dunkel wie die Seite ({f0})")
-    ok(pg.locator(".kq-sw").is_visible() and pg.locator(".kq-sw button.on").inner_text() == "Topo", f"{name}: Schalter «Standard | Topo» sichtbar, Topo an")
+    ok(pg.locator(".kq-sw:not(.kq-3d)").is_visible() and pg.locator(".kq-sw:not(.kq-3d) button.on").inner_text() == "Topo", f"{name}: Schalter «Standard | Topo» sichtbar, Topo an")
     at = pg.inner_text("#kq-at")
     ok("OpenStreetMap-Mitwirkende" in at and "swisstopo" in at, f"{name}: Quellenangabe Topo «{at}»")
     leg = pg.locator(".kq-leg")
