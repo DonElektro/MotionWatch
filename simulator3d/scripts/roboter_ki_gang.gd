@@ -128,6 +128,14 @@ func abbrechen() -> void:
 	lauf = {}
 
 
+func neu_start() -> void:
+	"""the robot was placed somewhere else: forget the old picture and the legs, see again first"""
+	abbrechen()
+	bild = {}
+	_seh_t = 0.0
+	_bein = {}
+
+
 func neu_aufstellen(hindernis: Dictionary) -> void:
 	"""the robot stands ~0.5 m before the obstacle, looking at it (for the next try)"""
 	abbrechen()
@@ -149,6 +157,8 @@ func neu_aufstellen(hindernis: Dictionary) -> void:
 	else:
 		bew.apply(bew.pose("gerade"))
 		m.place(true)
+	bild = {}
+	_seh_t = 0.0
 	_bein = {}
 	bew.start_gang("ki")
 
