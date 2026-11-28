@@ -124,7 +124,7 @@ func _initialize() -> void:
 	var ok_worst: float = l0.bewerte({"erfolg": true, "zeit": 999.0, "energie": 99.0, "kipp_min": 0.0})
 	check("jeder Erfolg zählt mehr als jeder Fehlschlag", ok_worst > fail_best, "%.2f > %.2f" % [ok_worst, fail_best])
 	check("Sturz zählt schlechter als nur nicht geschafft", l0.bewerte({"erfolg": false, "gestuerzt": true}) < l0.bewerte({"erfolg": false}))
-	check("Schlüssel: Art + gerundete Masse", L.schluessel({"art": "stufe", "hoehe": 0.121, "breite": 0.98, "tiefe": 0.41}) == "stufe|h12|b100|t40|n0",
+	check("Schlüssel: Art + gerundete Masse", L.schluessel({"art": "stufe", "hoehe": 0.121, "breite": 0.98, "tiefe": 0.41}) == "stufe|h12|b100|t40|n0|s0",
 			L.schluessel({"art": "stufe", "hoehe": 0.121, "breite": 0.98, "tiefe": 0.41}))
 	# 2) Lernen konvergiert (5 Startwerte)
 	l0.stil = "schnell"

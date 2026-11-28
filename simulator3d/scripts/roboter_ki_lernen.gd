@@ -20,11 +20,11 @@ const T = preload("res://scripts/i18n.gd")
 const FORMAT := 1
 const VERSUCHE_MAX := 12          # tries without any success, then «umgehen» + hint
 const VERSUCHE_LERNEN := 30       # after that only the best (with a small variation)
-const NAH := 0.9                  # m: an obstacle this close starts a try
-const STILL := 12.0               # s without 3 cm progress = stuck
-const ZEIT_MAX := 60.0            # s per try
+const NAH := 0.6                  # m: an obstacle this close starts a try (the KI sets the robot up 0.5 m before it)
+const STILL := 20.0               # s without 3 cm progress = stuck (the KI has its own 12 s; this is the safety net)
+const ZEIT_MAX := 100.0           # s per try (the KI stops at 90 s)
 const RUHE := 1.0                 # s after «neu aufstellen» before the next try
-const ZEIT_REF := 8.0             # s: score of the time 1 / (1 + zeit / ZEIT_REF)
+const ZEIT_REF := 20.0            # s: score of the time 1 / (1 + zeit / ZEIT_REF)
 const E_REF := 0.3                # Wh: score of the energy 1 / (1 + energie / E_REF)
 const ELITE := 0.3
 const HALTON := [2, 3, 5, 7, 11, 13, 17, 19]
@@ -33,9 +33,10 @@ const STILE := ["schnell", "sparsam", "sicher"]
 const GEWICHTE := {"schnell": {"zeit": 0.6, "energie": 0.2, "kipp": 0.2},
 		"sparsam": {"zeit": 0.2, "energie": 0.6, "kipp": 0.2},
 		"sicher": {"zeit": 0.15, "energie": 0.15, "kipp": 0.7}}
-# rounding of the key and scale of the similarity (m / m / m / °)
-const RASTER := {"hoehe": 0.02, "breite": 0.1, "tiefe": 0.05, "neigung": 5.0}
-const SKALA := {"hoehe": 0.04, "breite": 0.5, "tiefe": 0.15, "neigung": 8.0}
+# rounding of the key and scale of the similarity (m / m / m / ° / steps); like sehen() of the KI: breite = in walking
+# direction (span of a ditch, diameter of a pipe), tiefe = downwards
+const RASTER := {"hoehe": 0.02, "breite": 0.05, "tiefe": 0.05, "neigung": 5.0, "stufen": 1.0}
+const SKALA := {"hoehe": 0.04, "breite": 0.1, "tiefe": 0.1, "neigung": 8.0, "stufen": 1.0}
 const AEHNLICH := 3.0             # distance (in SKALA units) up to which an experience counts as «ähnlich»
 # the numbers B varies: [lowest, highest, start] (if the KI brings its own PARAM_RAUM, that one wins)
 const PARAM_RAUM := {"schritt_hoehe": [0.1, 1.0, 0.35], "koerper_hoehe": [0.5, 1.4, 0.9], "neigung": [-30.0, 30.0, 0.0],
@@ -59,6 +60,7 @@ var lauf := {}                    # the running try: {phase, h, strategie, param
 var vorbei := []                  # positions of obstacles already passed (no new try there)
 var letzte := {}                  # the last finished try for the field: {key, strategie, erfolg, score, grund}
 var _seh_t := 0.0
+var _geladen := false             # the store of the lab's variant is read at the first tick
 
 
 func _init(v := "8") -> void:
@@ -72,6 +74,7 @@ func datei() -> String:
 
 
 func laden(v = null) -> void:
+	_geladen = true
 	if v != null:
 		variante = str(v)
 	daten = {}
@@ -128,8 +131,8 @@ static func masse(h: Dictionary) -> Dictionary:
 
 static func schluessel(h: Dictionary) -> String:
 	var m := masse(h)
-	return "%s|h%d|b%d|t%d|n%d" % [str(h.get("art", "?")), roundi(m["hoehe"] * 100.0), roundi(m["breite"] * 100.0),
-			roundi(m["tiefe"] * 100.0), roundi(m["neigung"])]
+	return "%s|h%d|b%d|t%d|n%d|s%d" % [str(h.get("art", "?")), roundi(m["hoehe"] * 100.0), roundi(m["breite"] * 100.0),
+			roundi(m["tiefe"] * 100.0), roundi(m["neigung"]), roundi(m["stufen"])]
 
 
 static func abstand(a: Dictionary, b: Dictionary) -> float:
@@ -143,8 +146,9 @@ static func abstand(a: Dictionary, b: Dictionary) -> float:
 func raum() -> Dictionary:
 	if ki != null and ki.get_script() != null:
 		var cm: Dictionary = ki.get_script().get_script_constant_map()
-		if typeof(cm.get("PARAM_RAUM")) == TYPE_DICTIONARY and not (cm["PARAM_RAUM"] as Dictionary).is_empty():
-			return cm["PARAM_RAUM"]
+		for n in ["PARAM_RAUM", "PARAM"]:
+			if typeof(cm.get(n)) == TYPE_DICTIONARY and not (cm[n] as Dictionary).is_empty():
+				return cm[n]
 	return PARAM_RAUM
 
 
@@ -262,8 +266,12 @@ func waehle(h: Dictionary) -> Array:
 		var st: Dictionary = e.get("start", {})
 		if n == 0 and not st.is_empty():
 			return [st["strategie"], (st["param"] as Dictionary).duplicate()]   # gleich das, was beim Ähnlichen ging
+		if n == 0 and ki != null and ki.has_method("regel"):
+			var rg: Array = ki.regel(h)                   # nothing learnt yet: first what the KI does by itself (Stufe 2)
+			if str(rg[0]) != "umgehen":
+				return [rg[0], _probe(e, rg[0], h, true)]
 		s = _ucb(e, str(h.get("art", "")))
-	return [s, _probe(e, s)]
+	return [s, _probe(e, s, h)]
 
 
 func _ucb(e: Dictionary, art: String, mindest := 1) -> String:
@@ -303,7 +311,7 @@ func _ucb(e: Dictionary, art: String, mindest := 1) -> String:
 	return bs
 
 
-func _probe(e: Dictionary, s: String) -> Dictionary:
+func _probe(e: Dictionary, s: String, h := {}, nur_start := false) -> Dictionary:
 	"""Kreuzentropie: Mittel / Streuung aus den besten Versuchen dieser Strategie, daraus ziehen"""
 	var r := raum()
 	var res: Array = e["strategien"].get(s, {"res": []})["res"]
@@ -314,6 +322,8 @@ func _probe(e: Dictionary, s: String) -> Dictionary:
 		var lo: float = r[p][0]
 		var hi: float = r[p][1]
 		mu[p] = float(r[p][2]) if (r[p] as Array).size() > 2 else (lo + hi) * 0.5
+		if ki != null and ki.has_method("_vorschlag") and not h.is_empty():
+			mu[p] = float(ki._vorschlag(s, p, h))          # the KI's own value for this strategy and obstacle
 		if str(st.get("strategie", "")) == s and (st["param"] as Dictionary).has(p):
 			mu[p] = float(st["param"][p])
 		sd[p] = 0.3 * (hi - lo)
@@ -346,6 +356,8 @@ func _probe(e: Dictionary, s: String) -> Dictionary:
 				v += pow(float(x["p"].get(p, mu[p])) - m, 2.0)
 			mu[p] = m
 			sd[p] = clampf(sqrt(v / el.size()) * 1.3, (0.15 if el.size() < 3 else 0.05) * (hi - lo), 0.3 * (hi - lo))
+	if nur_start or (res.is_empty() and ki != null and ki.has_method("_vorschlag") and not h.is_empty()):
+		return mu                                         # a strategy's first try: exactly the KI's own values
 	var out := {}
 	for p in r:
 		out[p] = clampf(rng.randfn(float(mu[p]), float(sd[p])), float(r[p][0]), float(r[p][1]))
@@ -419,6 +431,10 @@ func eintrag(h: Dictionary) -> Dictionary:
 # ---- Ablauf im Hintergrund ----------------------------------------------------------------------------------------------
 func tick(dt: float) -> void:
 	"""jedes Physik-Bild (aus dem Labor): sehen → wählen → ausführen → melden; Fehlschlag → neu aufstellen → nochmals"""
+	if not _geladen:
+		_geladen = true
+		if labor != null and labor.get("variante") != null:
+			laden(str(labor.variante))
 	if not an or ki == null:
 		if not lauf.is_empty() and ki != null:
 			ki.abbrechen()
@@ -505,7 +521,9 @@ func _versuch(h: Dictionary, erst: bool) -> void:
 	if w[0] == "umgehen":
 		vorbei.append(h.get("pos", Vector3.ZERO))         # the KI walks around it; no more tries here (hint in the field)
 		letzte = {"key": schluessel(h), "strategie": "umgehen", "erfolg": false, "grund": "zu schwer"}
-	ki.strategie_ausfuehren(w[0], w[1])
+	var pk: Dictionary = (w[1] as Dictionary).duplicate()
+	pk["hindernis"] = h                                   # the KI aims at exactly this obstacle
+	ki.strategie_ausfuehren(w[0], pk)
 	if w[0] == "umgehen":
 		lauf = {}
 
@@ -551,7 +569,9 @@ func text_hindernis(h: Dictionary) -> String:
 	if art in ["rampe"]:
 		return t + " %d°" % roundi(m["neigung"])
 	if art in ["graben", "luecke"]:
-		return t + " %d cm" % roundi(m["tiefe"] * 100.0)
+		return t + " %d cm" % roundi(m["breite"] * 100.0)
+	if art == "treppe" and int(m["stufen"]) > 1:
+		return t + " %d × %d cm" % [int(m["stufen"]), roundi(m["hoehe"] * 100.0)]
 	return t + " %d cm" % roundi(m["hoehe"] * 100.0)
 
 
@@ -625,8 +645,7 @@ func anzeige_zeilen() -> PackedStringArray:
 	if e.is_empty():
 		z.append(T.t("Lernen: wartet auf ein Hindernis") + " · " + T.t("%d gemerkt") % daten.size())
 		return z
-	var hh := h if not h.is_empty() else {"art": e["art"], "hoehe": e["masse"]["hoehe"], "tiefe": e["masse"]["tiefe"],
-			"neigung": e["masse"]["neigung"]}
+	var hh: Dictionary = h if not h.is_empty() else (e["masse"] as Dictionary).merged({"art": e["art"]})
 	var n := int(e["versuche"]) + (1 if str(lauf.get("phase", "")) == "versuch" else 0)
 	var zeile := text_hindernis(hh) + " · " + T.t("Versuch %d") % n
 	if (e["best"] as Dictionary).is_empty():
