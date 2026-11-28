@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-28 13:03",
+ "generated": "2026-11-28 15:34",
  "versions": [
   {
    "version": "4.24.0",
    "file": "webcam_bewegung_4_24_0.py",
    "url": "",
    "sha256": "692fd93736a6607ce278b9f54775981b7f63e2b669d7b3e4da1eac38ef2286de",
-   "date": "2026-11-28 13:03",
+   "date": "2026-11-28 13:16",
    "notes": "Schweizer Karte in 3D: Schalter «2D | 3D» auf der Karte (Mehr → Karte), Gelände zum Neigen und Drehen, auch im Vollbild; Höhen aus dem Relief der Topo-Karte oder aus den Höhendaten Schweiz (MoveEye rechnet die Höhen-Kacheln selbst und speichert höchstens 256 MB).",
    "size": 3622994,
    "sig": "ed1b7a5067a7402091f32fc04fd985160a9b1393be75ccfcdf35c2da60d540a975bb4f24e3eb0ae5a0198fdbce637ffaaf17665ce0c17850a7676242aa64260a",
@@ -24,7 +24,7 @@
    "file": "webcam_bewegung_4_23_1.py",
    "url": "",
    "sha256": "8067235b4ebaf21341e89720b4718e733b7015cdd6ea458f5252677c6337b3bd",
-   "date": "2026-11-28 11:59",
+   "date": "2026-11-28 13:16",
    "notes": "Besucherseite /info/: Die Push-Nachricht in «Ein Blick in die App» erscheint jetzt beim Bild «Nachts am Zelt» – «MoveEye · Fuchs beim Zelt, 23:36». Hast du dort ein eigenes Bild mit einer beschrifteten Markierung, nennt die Nachricht diesen Text statt «Fuchs».",
    "size": 3623132,
    "sig": "331b583721f78975ec9f4ba40c1a3fcfd171a2b93ba0de5504a69276c74f6a20ba94084a7d0a461179509230635b933de60594f6c2a37e799eee3980bce9320c",
@@ -203,34 +203,42 @@
    "sha256": "fa02a9c4733950a97c7ede0b6c86743118ee3461bd38b9545d6564ba2ac70b45",
    "sig": "3c0d6ad76326d81ce324c8914ca35b61596ef189eb0e83e04238c5088ad5e2954914805461e7194f7648bb37117d49454eb7d207ff54d89893e10667b26ea80a"
   },
+  "pi": {
+   "ver": "3.80.2",
+   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
+   "size": 44511755,
+   "sha256": "aa447caa957de25a0324bd9756ca21988d24c00cbfbe1c0a45502fed459a634f",
+   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.2/MoveEyeSim3D_Pi.zip",
+   "sig": "ac71f56b4db71b080d0bf7891e95bdea99a00b8db55e8c12ffffe3b99689bd3332bbf716f45af077df8c5aa4b83cbb8845b5bd221f9c9c99e3f22be4a9be3208"
+  },
   "anhang": {
-   "ver": "3.80.1",
-   "version": "3D-5.80.1",
-   "notes": "iPad-WebGL-Speicher, Roboter-Labor-Ansicht",
+   "ver": "3.80.2",
+   "version": "3D-5.80.2",
+   "notes": "Roboter-Labor: «Ring öffnen (gerade)» öffnet den geschlossenen Ring und streckt sich in «Gerade»",
    "mw_min": "3.55.0",
    "win": {
-    "ver": "3.80.1",
+    "ver": "3.80.2",
     "file": "simulator3d/anhang/MotionWatch3D_Simulator.zip",
-    "size": 60976836,
-    "sha256": "852fbeb99eb87024621c88555f51e1734ce222e65bf08f85ca458e5919905eef",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.1/MotionWatch3D_Simulator.zip",
-    "sig": "6abceb358f569ad6eb4c952eebdba91d174939940f73a7d7afb48f9c8d3dc9a0160149df0085345ac328934372e643bfa2e9885847e80ca8fcdd38374b22e808"
+    "size": 60979594,
+    "sha256": "e1b1cacdcfce5e161256db668adb3b66de8e159c2ef89a8937fe6731a8e72edd",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.2/MotionWatch3D_Simulator.zip",
+    "sig": "1c07f3216852c93e4eddc61aa56f1698937d2fca6d949d3c175a692960e5a61d3a8a92dcb0697b9382c2c3b753483154d77266dce80202c647da2c46c35e3309"
    },
    "linux": {
-    "ver": "3.80.1",
+    "ver": "3.80.2",
     "file": "simulator3d/anhang/MoveEyeSim3D_Linux.zip",
-    "size": 55028423,
-    "sha256": "31db5d0d826cef598dd5575782f904f3f95a5dbf482fafbe889a28a70494854e",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.1/MoveEyeSim3D_Linux.zip",
-    "sig": "cc44463ae7eca1d77867d67915f1dd3d5c7dd0e12f6ac0bda3d31565f116b071130e5da5a5af82da95c155c1219b0c0af3d858ff142b23a8d27bd086a235d807"
+    "size": 55030899,
+    "sha256": "fd86100539119820ddf3263044338379a89c378c02325f3973dda2e4b00258dc",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.2/MoveEyeSim3D_Linux.zip",
+    "sig": "35fbb461794d1bb1d0c7dd51b9dd613cc817d905e2cfa45e9264bc2a2d3a8a6e30b183b1b1a54e29fe3bf7e7bfe0f0cfd199432d954f8126757db639bbc4c703"
    },
    "web": {
-    "ver": "3.80.1",
+    "ver": "3.80.2",
     "file": "simulator3d/anhang/sim-web.zip",
-    "size": 81117636,
-    "sha256": "fd98b0f289fa3a8a4f3d533ff31b95c7e713cab7faf4b6c93b2f37203399f8d7",
-    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.1/sim-web.zip",
-    "sig": "2021c52b3a1e249d67b96b8d38620999b882e80792680a87fe3f8eb9ffe987d8556ae74e7c69a856116a26591259dc716adbb8096c677533f433e2b12f5c7200"
+    "size": 81125876,
+    "sha256": "2d4d9b0d3a0f1bf1689121a990618522ee26c162b9f8e083d5dd23717f979918",
+    "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.2/sim-web.zip",
+    "sig": "1e9d07bbbd22fe435e3585c0c1365540ed456e5b0b440b545e6846b38f8223ec4703b65687a3690f6e1d6eda4e9344b37d1a6fca9ba351a18a0819cda166f404"
    }
   }
  }
