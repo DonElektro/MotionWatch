@@ -1,0 +1,4 @@
+python3 werkzeuge/ci_lauf.py --gruppe basis
+godot werkzeuge/figuren_matt_test.gd
+godot werkzeuge/erkunden_figur_test.gd
+godot werkzeuge/kit_figur_test.gd
