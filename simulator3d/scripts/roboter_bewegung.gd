@@ -139,6 +139,11 @@ var traveled := 0.0                    # metres the front segment went (gait tes
 var angepasst := false                 # «auto» raised the steps and the body because it got stuck
 var _prog_t := 0.0
 var _prog_p := Vector3.ZERO
+# Ring öffnen (Besitzer 28.11.2026: «Gerade» kämpfte gegen den geschlossenen Riegel): der Riegel geht auf, die Kette streckt
+# sich weich; «Riegel darf schliessen» kommt erst zurück, wenn die Enden weit auseinander sind (sonst zieht der Greif-Zug
+# sie gleich wieder zusammen)
+var latch_back := true                 # the value of the switch «Riegel darf schliessen (Ring)» while the ring opens
+var latch_wait := false                # true: latch_wanted is off until the ends are apart
 
 
 func start_gang(g: String) -> void:
@@ -214,6 +219,8 @@ func step(dt: float) -> void:
 		_gang_step(dt)
 	elif mode == "ring":
 		_ring_step(dt)
+	if latch_wait and not (mode == "ablauf" and seq_name == "oeffnen") and m.latch["state"] == "open" and ends_apart():
+		latch_restore()
 
 
 func _gang_step(dt: float) -> void:
@@ -393,6 +400,8 @@ func start_ablauf(name: String) -> void:
 	for i in range(N - 1):
 		ring_body["sp%d" % i] = 360.0 / N
 		ring_body["sy%d" % i] = 0.0
+	if name != "oeffnen":
+		latch_restore()
 	match name:
 		"raupenwelle":
 			seq = [{"t": 1.0, "pose": pose("gerade")},
@@ -418,6 +427,24 @@ func start_ablauf(name: String) -> void:
 			seq = [{"t": 1.2, "pose": lie}, {"t": 0.0, "do": "latch_on"}, {"t": 5.0, "pose": ring_all}, {"t": 2.5, "pose": ring_all},
 					{"t": 0.0, "do": "latch_off"}, {"t": 5.0, "pose": lie}, {"t": 0.0, "do": "latch_on"},
 					{"t": 2.0, "pose": pose("gerade")}]
+		"oeffnen":
+			# the open ring cannot carry its own halves (the segment servos are too weak, the halves fold through each
+			# other): first roll the latch to the top, then open there - the joints at the bottom straighten first, the
+			# two arms fold down outward one joint pair after the other (≈ 3.5 s rolling + 4 s opening + 1.5 s pose)
+			var gap := 0.8                                 # s between the joint pairs
+			var dur := 1.6                                 # s one joint needs to straighten
+			var steps := int(N / 2)
+			seq = [{"t": 14.0, "roll": true}, {"t": 0.0, "do": "latch_off"},
+					{"t": gap * (steps - 1) + dur, "fn": func(t: float) -> Dictionary:
+						var d := {}
+						for i in range(N - 1):
+							var r := steps - 1 - mini(i, N - 2 - i)   # 0 = the joint at the bottom (the latch is on top)
+							var k := clampf((t - r * gap) / dur, 0.0, 1.0)
+							k = k * k * (3.0 - 2.0 * k)
+							for key in ["sp%d" % i, "sy%d" % i]:
+								d[key] = lerpf(float(_open_s0.get(key, 0.0)), 0.0, k)
+						return d},
+					{"t": 1.5, "pose": pose(open_to)}]
 		"aufstehen":
 			var low := {}
 			for i in range(N):
@@ -434,6 +461,47 @@ func start_ablauf(name: String) -> void:
 	_seq_from = m.targets()
 
 
+var open_to := "gerade"                # Ring öffnen: the pose at the end
+var _open_s0 := {}                     # Ring öffnen: the joint targets when the latch opens
+
+
+func latch_phi() -> float:
+	"""angle of the latch (between segment 0 and N-1) about the ring axle, 0 = on top (rad)"""
+	var rs := ring_state()
+	var v: Vector3 = (m.segment_xf(0).origin + m.segment_xf(m.n() - 1).origin) * 0.5 - (rs["c"] as Vector3)
+	var ax: Vector3 = rs["ax"]
+	var up := (Vector3.UP - ax * Vector3.UP.dot(ax)).normalized()
+	return atan2(ax.cross(up).dot(v), up.dot(v))
+
+
+func start_oeffnen(to := "gerade") -> void:
+	"""Ring öffnen: stop, latch off (unlock), in 4.5 s softly into the pose `to` (like the opening in «Einrollen und öffnen»);
+	afterwards latch_wanted = the switch again, once the ends are far enough apart (see step)"""
+	if not latch_wait:
+		latch_back = m.latch_wanted
+	latch_wait = true
+	open_to = to if to != "ring" else "gerade"
+	drive = 0.0
+	turn = 0.0
+	keys = Vector2.ZERO
+	cmd = Vector3.ZERO
+	side = 0.0
+	_amp = 0.0
+	start_ablauf("oeffnen")
+
+
+func ends_apart() -> bool:
+	"""the latch ends are clearly outside the zone where the cone pulls them together (P / 4 and 25°, roboter_modell.gd)"""
+	return float(m.latch["err_pos"]) > m.pitch_len() * 0.6 or float(m.latch["err_ang"]) > 45.0
+
+
+func latch_restore() -> void:
+	"""give the switch «Riegel darf schliessen» its say again (a new sequence, rolling in the ring, the ring pose)"""
+	if latch_wait:
+		latch_wait = false
+		m.latch_wanted = latch_back
+
+
 func _seq_step(dt: float) -> void:
 	if seq_i >= seq.size():
 		mode = ""
@@ -443,10 +511,19 @@ func _seq_step(dt: float) -> void:
 	seq_t += dt
 	var dur := float(e.get("t", 0.0))
 	var k := clampf(seq_t / maxf(dur, 1e-3), 0.0, 1.0)
-	if e.has("do"):
+	if e.has("roll"):
+		# Ring öffnen: roll (feet push) until the latch is on top; not locked (grip, open): nothing to roll
+		if m.latch["state"] != "locked" or absf(latch_phi()) < deg_to_rad(12.0):
+			seq_t = dur
+			keys = Vector2.ZERO
+		else:
+			keys = Vector2(0.0, 1.0)
+			_ring_step(dt)
+	elif e.has("do"):
 		m.latch_wanted = e["do"] == "latch_on"
 		if e["do"] == "latch_off":
 			m.unlock()
+			_open_s0 = m.targets()
 	elif e.has("pose"):
 		var d := {}
 		var to: Dictionary = e["pose"]
@@ -912,6 +989,7 @@ func _ground_at(p: Vector3, from_y: float, fallback: float) -> float:
 
 
 func start_ring() -> void:
+	latch_restore()
 	mode = "ring"
 	seq = []
 	seq_name = ""
