@@ -3459,6 +3459,7 @@ function tlExtras(d) {
 }
 function thExtras(d) {
   const st = el("div", "mut", ""); st.id = "th-status"; st.style.margin = "6px 0";
+  const thfix = el("div", "trow", ""); thfix.id = "th-fix"; thfix.hidden = true; thfix.style.margin = "0 0 6px";   // 4.25.x: «Install driver»
   const hint = el("div", "mut", t("The thermal camera must look in the same direction as the main camera. Choose it in the list after a camera scan (Video source).")); hint.style.marginTop = "4px";
   // three parts: alarm / picture / camera & alignment
   const parts = [["th:alarm", "🚨 " + t("Alarm"), ["thermal_alarm", "thermal_need_motion", "thermal_delta", "thermal_min_area"]],
@@ -3470,7 +3471,7 @@ function thExtras(d) {
     keys.forEach(k => { const r = rowOf(k); if (r) S.appendChild(r); });
     if (view === "th:cam") { Object.assign(I18N.de, {"Align the thermal picture (warm hand)": "Wärmebild ausrichten (warme Hand)"});   // 557
       const al = el("a", "btn sec", "🖐 " + t("Align the thermal picture (warm hand)")); al.href = "/thermal_align"; al.style.marginTop = "6px";
-      S.append(st, hint, al); }
+      S.append(st, thfix, hint, al); }
     if (S.children.length > 1) d.appendChild(S);
   });
 }
@@ -4334,8 +4335,50 @@ function updateExtras(s) {
   if (s.timelapse_last !== tlSeen) { if (tlSeen !== null) tlLoad(); tlSeen = s.timelapse_last; }
   if ((s.timelapse_render || "").startsWith("video ready") && r && !r.dataset.done) { r.dataset.done = "1"; tlLoad(); }
   if (!(s.timelapse_render || "").startsWith("video ready") && r) delete r.dataset.done;
-  const h = $("#th-status"); if (h) h.textContent = tlTxt(s.thermal) + (s.thermal === "connected" && s.thermal_res ? " · " + s.thermal_res : "")
+  const h = $("#th-status"); if (h) h.textContent = thTxt(s) + (s.thermal === "connected" && s.thermal_res ? " · " + s.thermal_res : "")
     + (s.thermal === "connected" && s.thermal_max != null ? " · max " + s.thermal_max.toFixed(1) + " °C" : "");
+  const fx = $("#th-fix"); if (fx) thFix(fx, s);
+}
+// 4.25.x (Besitzer: status English on a German screen, no way on): the thermal status in the language of the page (080
+//   thermal_tx), and right below it the way out - «Install driver» when pysenxor is missing, else «Check and repair» (639zzzzzx)
+function thTxt(s) {
+  const x = s.thermal_tx, L = String(LANG || "en").slice(0, 2);
+  return (x && x.src === s.thermal && x[L]) || tlTxt(s.thermal);
+}
+Object.assign(I18N.de, {"Install driver": "Treiber installieren", "Check and repair": "Prüfen und reparieren", "working…": "läuft …",
+  "tc-q-install": "Den Waveshare-Treiber pysenxor jetzt auf dem Pi installieren? MoveEye lädt ihn von der offiziellen Waveshare-Seite (files.waveshare.com) und installiert fehlende Systempakete mit apt. Braucht Internet, rückgängig machbar."});
+let thJob = null, thLines = [];
+function thFix(fx, s) {
+  const th = String(s.thermal || "");
+  const calm = !th || th === "connected" || th === "off" || th === "connecting…" || th === "same camera as the main picture" || th === "no thermal camera selected";
+  const m = thJob ? "job" : /pysenxor/.test(th) && !calm ? "inst" : calm ? "" : "chk";
+  if (fx.dataset.m === m) return;
+  fx.dataset.m = m; fx.textContent = ""; fx.hidden = !m;
+  if (m === "inst") {
+    const b = el("button", "", "🔧 " + t("Install driver")); b.type = "button";
+    b.onclick = async () => {
+      if (!confirm(t("tc-q-install"))) return;
+      thJob = true; fx.dataset.m = ""; thFix(fx, s);
+      const r = await post("/api/thermal_check", {action: "senxor_install", lang: LANG});
+      if (!r.started) { thJob = null; toast((r.ok ? "✓ " : "⚠ ") + (r.msg || r.error || "")); return; }
+      const poll = async () => {
+        let j = null; try { j = await (await fetch("/api/thermal_check?job=1&lang=" + LANG, {cache: "no-store"})).json(); } catch (e) {}
+        const jb = (j && j.job) || {}, out = $("#th-fixmsg");
+        thLines = jb.lines || []; if (out) out.textContent = thLines.join("\n");
+        if (jb.state === "running") { setTimeout(poll, 2000); return; }
+        thJob = null; toast((jb.ok ? "✓ " : "⚠ ") + (jb.msg || ""));
+        const k = $("#th-fix"); if (k) k.dataset.m = "";
+      };
+      setTimeout(poll, 1500);
+    };
+    fx.appendChild(b);
+  }
+  if (m === "chk" || m === "inst") {
+    const a = el("a", "btn sec", "🩺 " + t("Check and repair")); a.href = "/tools#thcheck"; a.style.marginLeft = "6px"; fx.appendChild(a);
+  }
+  if (m === "job") fx.appendChild(el("span", "mut", "⏳ " + t("working…")));
+  if (m === "job" || thLines.length) { const pre = el("pre", "mut", thLines.join("\n")); pre.id = "th-fixmsg";
+    pre.style.cssText = "white-space:pre-wrap;font-size:12px;margin:4px 0 0;flex-basis:100%"; fx.appendChild(pre); fx.hidden = false; }
 }
 
 function drawSpark(hist) {

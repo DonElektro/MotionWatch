@@ -337,7 +337,7 @@ def thermal_check(lang=None, wait=2.0):
         _tc_step(steps, "senxor", False if senx else None, "Driver pysenxor for MoveEye's Python",
                  (sx.get("err") or "")[:120] + (" · " + tr("found, but only in", lang) + ": " + ", ".join(venvs) if venvs else
                                                 " · " + tr("not found in the home folder", lang)),
-                 fix="senxor" if venvs else None, lang=lang)
+                 fix="senxor" if venvs else "senxor_install", lang=lang)
     miss_apt = [p for n, p in (("spidev", "python3-spidev"), ("crcmod", "python3-crcmod"), ("gpiozero", "python3-gpiozero"), ("lgpio", "python3-lgpio"))
                 if pr and not (pr.get(n) or {}).get("ok")]
     if pr and not ((pr.get("smbus") or {}).get("ok") or (pr.get("smbus2") or {}).get("ok")):
@@ -359,7 +359,7 @@ def thermal_check(lang=None, wait=2.0):
             _tc_step(steps, "module", True, "Module answers (ID, firmware)",
                      " · ".join(x for x in (L.get("id"), ("FW " + L["fw"]) if L.get("fw") else "") if x) or "ok", lang=lang)
         elif L.get("err"):
-            _tc_step(steps, "module", False, "Module answers (ID, firmware)", f"{L.get('step')}: {L.get('err')}", lang=lang)
+            _tc_step(steps, "module", False, "Module answers (ID, firmware)", f"{L.get('step')}: " + thermal_status_tr(L.get("err"), lang), lang=lang)
         else:
             _tc_step(steps, "module", None, "Module answers (ID, firmware)", tr("not tried yet", lang), lang=lang)
     w_ = WATCH_REF.get("w")
@@ -376,7 +376,7 @@ def thermal_check(lang=None, wait=2.0):
     st = str(STATE.get("thermal") or "")
     age = time.time() - th.t if th is not None and th.t else None
     _tc_step(steps, "frame", st == "connected" and fps > 0, "Thermal picture arrives (picture rate)",
-             st + (f" · {fps:.1f} " + tr("pictures/s", lang) if fps or st == "connected" else "")
+             thermal_status_tr(st, lang) + (f" · {fps:.1f} " + tr("pictures/s", lang) if fps or st == "connected" else "")
              + (f" · {STATE.get('thermal_res', '')}" if STATE.get("thermal_res") else "")
              + (f" · max {STATE.get('thermal_max')} °C" if st == "connected" and STATE.get("thermal_max") is not None else "")
              + (f" · " + tr("last picture", lang) + f" {age:.0f} s" if age is not None and age > 3 else ""), lang=lang)
@@ -424,7 +424,7 @@ def _tc_undo_save(d):
 
 def tc_undo_list():
     d = _tc_undo_load()
-    return [k for k in ("overlay", "senxor", "pip") if d.get(k)]
+    return [k for k in ("overlay", "senxor", "senxor_install", "pip") if d.get(k)]
 
 
 def _tc_user_site():
@@ -527,6 +527,8 @@ def tc_fix(action, lang=None):
     if action == "restart":
         ok = selfheal_restart("thermal", "thermal camera check: restart by hand")
         return ok, tr("MoveEye restarts", lang) if ok else tr("busy - please wait", lang)
+    if action == "senxor_install":
+        return tc_senxor_install(lang)
     if action.startswith("undo:"):
         what = action[5:]
         x = d.get(what)
@@ -543,6 +545,10 @@ def tc_fix(action, lang=None):
                         os.remove(p)
                 except OSError as e:
                     return False, str(e)[:160]
+        elif what == "senxor_install":
+            ok_, msg_ = tc_senxor_uninstall(x)
+            if not ok_:
+                return False, msg_
         elif what == "pip":
             for name, ver, k in x:
                 cmd = [sys.executable, "-m", "pip", "install", "--break-system-packages"] + (["--user"] if k == "pip-user" else []) + [f"{name}=={ver}" if ver else name]
@@ -554,8 +560,308 @@ def tc_fix(action, lang=None):
         return True, tr("undone - restart so that it takes effect", lang)
     return False, "unknown action"
 
+# ---- «Install driver» (4.25.x, Besitzer: «no picture: Waveshare driver missing (pysenxor)» on the real Pi; he types nothing) ----
+# Source: the Waveshare wiki «Thermal Camera HAT» / «Thermal-Camera-Module», section Raspberry Pi Bookworm: demo
+#   https://files.waveshare.com/wiki/common/Thermal_Camera_Hat.zip -> pysenxor-master (the Meridian MI48 driver «senxor»).
+#   Waveshare publishes no checksum and no version; there is no official git repository with tags. So: only exactly this
+#   address, only HTTPS with a checked certificate, no redirect to another host, at most 150 MB; the SHA-256 is written to the
+#   log and kept in the undo note (TC_SENXOR_SHA256 = a fixed value would be checked - empty = not pinned, said in the report).
+#   From the ZIP only the package folder senxor/ (*.py and data, no setup.py, nothing is run) goes to DATA_DIR/treiber/pysenxor;
+#   a .pth in the user folder of Python + 080 senxor_driver_path() make it visible; NO pip (Bookworm: numpy / OpenCV from apt
+#   only - pip numpy breaks picamera2). Dependencies only from apt (python3-numpy, -spidev, -smbus, -crcmod, -gpiozero, -lgpio,
+#   -serial; more when the import names one, TC_APT_MAP). Undo = the .pth and the folder away.
+TC_SENXOR_URL = "https://files.waveshare.com/wiki/common/Thermal_Camera_Hat.zip"
+TC_SENXOR_HOST = "files.waveshare.com"
+TC_SENXOR_SHA256 = ""                                    # Waveshare gives none: not pinned (the report says so)
+TC_SENXOR_MAX = 150 * 1024 * 1024
+TC_PTH2 = "moveeye-pysenxor-treiber.pth"
+TC_APT_MAP = {"numpy": "python3-numpy", "spidev": "python3-spidev", "smbus": "python3-smbus", "smbus2": "python3-smbus2",
+              "crcmod": "python3-crcmod", "gpiozero": "python3-gpiozero", "lgpio": "python3-lgpio", "serial": "python3-serial",
+              "cv2": "python3-opencv", "matplotlib": "python3-matplotlib", "scipy": "python3-scipy", "PIL": "python3-pil",
+              "imageio": "python3-imageio", "yaml": "python3-yaml", "usb": "python3-usb"}
+TC_SENXOR_PROBE = r"""
+import json, sys
+out = {}
+for n in ("numpy", "spidev", "smbus", "smbus2", "crcmod", "gpiozero", "lgpio", "serial"):
+    try:
+        __import__(n); out[n] = True
+    except BaseException:
+        out[n] = False
+try:
+    import senxor, senxor.mi48, senxor.interfaces
+    out["senxor"] = str(getattr(senxor, "__file__", "") or "?")
+except ModuleNotFoundError as e:
+    out["senxor"] = False; out["missing"] = str(getattr(e, "name", "") or "")
+except BaseException as e:
+    out["senxor"] = False; out["err"] = (type(e).__name__ + ": " + str(e))[:160]
+print(json.dumps(out))
+"""
 
-TC_ACTIONS = ("overlay", "senxor", "apt", "pip", "reboot", "restart", "undo:overlay", "undo:senxor", "undo:pip")
+
+def tc_job_view(lang=None):
+    j = dict(TC.get("job") or {})
+    j["lines"] = list(j.get("lines") or [])
+    return j
+
+
+def _tc_say(line):
+    j = TC.get("job")
+    if isinstance(j, dict) and j.get("state") == "running":
+        j.setdefault("lines", []).append(str(line)[:300])
+
+
+def _tc_senxor_url():
+    """the one official address; tests may name a local server (MW_TEST_SENXOR_URL, only http://127.0.0.1)"""
+    t_ = os.environ.get("MW_TEST_SENXOR_URL") or ""
+    if t_.startswith("http://127.0.0.1:"):
+        return t_, True
+    return TC_SENXOR_URL, False
+
+
+class _TcNoOtherHost(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        from urllib.parse import urlsplit
+        u = urlsplit(newurl)
+        if u.scheme != "https" or u.hostname != TC_SENXOR_HOST:
+            raise urllib.error.URLError("redirect to another address refused: " + newurl[:120])
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def tc_senxor_download(dest, lang=None):
+    """-> (ok, sha256 or error). HTTPS with the system certificates, exactly TC_SENXOR_URL, size limit"""
+    import ssl
+    from urllib.parse import urlsplit
+    url, test = _tc_senxor_url()
+    u = urlsplit(url)
+    if not test and (u.scheme != "https" or u.hostname != TC_SENXOR_HOST):
+        return False, "address not allowed"
+    hs = [urllib.request.HTTPSHandler(context=ssl.create_default_context()), _TcNoOtherHost()]
+    if test:
+        hs.append(urllib.request.ProxyHandler({}))
+    op = urllib.request.build_opener(*hs)
+    h = hashlib.sha256(); n = 0
+    try:
+        with op.open(urllib.request.Request(url, headers={"User-Agent": "MoveEye/" + APP_VERSION}), timeout=60) as r, open(dest, "wb") as f:
+            fu = urlsplit(r.geturl())
+            if not test and (fu.scheme != "https" or fu.hostname != TC_SENXOR_HOST):
+                return False, "redirect to another address refused"
+            while True:
+                c = r.read(256 * 1024)
+                if not c:
+                    break
+                n += len(c)
+                if n > TC_SENXOR_MAX:
+                    return False, tr("the download is too big", lang)
+                h.update(c); f.write(c)
+    except Exception as e:
+        return False, tr("download failed", lang) + f": {type(e).__name__}: {e}"[:200]
+    dig = h.hexdigest()
+    if TC_SENXOR_SHA256 and dig != TC_SENXOR_SHA256:
+        return False, tr("the checksum does not match", lang) + ": " + dig[:16] + "…"
+    _tc_say(f"✓ {tr('downloaded', lang)}: {n // 1024} KiB · SHA-256 {dig}")
+    return True, dig
+
+
+def _tc_zip_find(zf):
+    """the prefix of the folder senxor/ in a ZIP (the one with mi48.py, pysenxor-master preferred) or None"""
+    names = [i.filename.replace("\\", "/") for i in zf.infolist()]
+    cands = [n[:-len("senxor/__init__.py")] for n in names if n.endswith("senxor/__init__.py")
+             and (n == "senxor/__init__.py" or n.endswith("/senxor/__init__.py"))]
+    cands = [c for c in cands if c + "senxor/mi48.py" in names]
+    cands.sort(key=lambda c: (0 if "pysenxor" in c.lower() else 1, len(c)))
+    return cands[0] if cands else None
+
+
+def tc_senxor_unpack(zpath, target, lang=None):
+    """only the package senxor/ from the ZIP (or from a ZIP inside it) to target/senxor; safe names, regular files, 30 MB"""
+    import io
+    zf = zipfile.ZipFile(zpath)
+    pre = _tc_zip_find(zf)
+    if pre is None:
+        for i in zf.infolist():
+            if i.filename.lower().endswith(".zip") and i.file_size < 80 * 1024 * 1024:
+                try:
+                    inner = zipfile.ZipFile(io.BytesIO(zf.read(i)))
+                except (zipfile.BadZipFile, OSError):
+                    continue
+                p_ = _tc_zip_find(inner)
+                if p_ is not None:
+                    zf, pre = inner, p_; break
+    if pre is None:
+        return False, tr("no folder senxor (pysenxor) in the download", lang)
+    base = pre + "senxor/"; total = 0; nfiles = 0
+    os.makedirs(os.path.join(target, "senxor"), exist_ok=True)
+    for i in zf.infolist():
+        n = i.filename.replace("\\", "/")
+        if not n.startswith(base) or n.endswith("/") or "/__pycache__/" in n or n.endswith((".pyc", ".pyo")):
+            continue
+        rel = n[len(base):]
+        parts = rel.split("/")
+        if not rel or any(x in ("", ".", "..") for x in parts) or rel.startswith("/") or ":" in rel:
+            continue
+        if (i.external_attr >> 16) & 0o170000 not in (0, 0o100000):      # links or devices: never
+            continue
+        total += i.file_size
+        if total > 30 * 1024 * 1024:
+            return False, tr("the download is too big", lang)
+        out = os.path.join(target, "senxor", *parts)
+        if not os.path.realpath(out).startswith(os.path.realpath(target) + os.sep):
+            continue
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        with zf.open(i) as src_, open(out, "wb") as dst:
+            shutil.copyfileobj(src_, dst)
+        nfiles += 1
+    if not os.path.isfile(os.path.join(target, "senxor", "mi48.py")):
+        return False, tr("no folder senxor (pysenxor) in the download", lang)
+    _tc_say(f"✓ {tr('unpacked', lang)}: senxor ({nfiles})")
+    return True, pre.rstrip("/") or "/"
+
+
+def _tc_apt(pk, lang=None):
+    """apt-get install of the packages (tests: MW_TEST_APT_LOG writes the list instead) -> (ok, text)"""
+    if not pk:
+        return True, ""
+    tl = os.environ.get("MW_TEST_APT_LOG")
+    if tl:
+        with open(tl, "a") as f:
+            f.write(" ".join(pk) + "\n")
+        return True, ""
+    cmd = _tc_root(["apt-get", "install", "-y", "--no-install-recommends"] + list(pk))
+    rc, o, e = _tc_run(cmd, 900)
+    if rc != 0 and "Unable to locate package" in (e + o):
+        _tc_run(_tc_root(["apt-get", "update"]), 600)
+        rc, o, e = _tc_run(cmd, 900)
+    log_event("sys", f"Thermal camera: apt install {' '.join(pk)} -> {rc}")
+    if rc == 0:
+        return True, ""
+    return False, (tr("no permission (sudo)", lang) + ": " if "sudo" in e or "password" in e else "") + (e or o)[-200:]
+
+
+def _tc_senxor_probe():
+    rc, out, err = _tc_run([sys.executable, "-c", TC_SENXOR_PROBE], 60)
+    try:
+        return json.loads(out.strip().splitlines()[-1])
+    except Exception:
+        return {"senxor": False, "err": (err or out or str(rc))[-200:]}
+
+
+def tc_senxor_install(lang=None):
+    """download -> unpack -> apt -> .pth -> import check -> thermal camera opened again. -> (ok, message)"""
+    t0 = time.time()
+    base = os.path.join(DATA_DIR, "treiber"); target = os.path.join(DATA_DIR, SENXOR_DRV_SUB)
+    url, _test = _tc_senxor_url()
+    os.makedirs(base, exist_ok=True)
+    _tc_say(f"⏳ {tr('download', lang)}: {url}")
+    dl = os.path.join(base, ".pysenxor-download.zip"); new = target + ".neu"
+    try:
+        ok, dig = tc_senxor_download(dl, lang)
+        if not ok:
+            return False, dig
+        if os.path.isdir(new):
+            shutil.rmtree(new)
+        try:
+            ok, where = tc_senxor_unpack(dl, new, lang)
+        except (zipfile.BadZipFile, OSError) as e:
+            ok, where = False, tr("the download is not a ZIP", lang) + f": {e}"[:120]
+        if not ok:
+            shutil.rmtree(new, ignore_errors=True)
+            return False, where
+        if os.path.isdir(target):
+            shutil.rmtree(target)
+        os.replace(new, target)
+        _tc_say("→ " + target)
+    finally:
+        try:
+            os.remove(dl)
+        except OSError:
+            pass
+    # dependencies from apt only (never pip)
+    pr = _tc_senxor_probe()
+    want = ["numpy", "spidev", "crcmod", "gpiozero", "serial"]
+    if os.path.exists("/proc/device-tree/model") or os.environ.get("MW_TEST_APT_LOG"):
+        want.append("lgpio")                                # Pi 5: gpiozero needs lgpio
+    pk = [TC_APT_MAP[n] for n in want if not pr.get(n)]
+    if not (pr.get("smbus") or pr.get("smbus2")):
+        pk.append("python3-smbus")
+    apt_ok, apt_msg = _tc_apt(pk, lang)
+    _tc_say(("✓ " + tr("system packages", lang) + ": " + (", ".join(pk) if pk else tr("all there", lang))) if apt_ok
+            else ("⚠ " + tr("system packages", lang) + " (" + ", ".join(pk) + "): " + apt_msg))
+    # visible for MoveEye's Python: .pth in the user folder (+ 080 senxor_driver_path for the running program)
+    us = _tc_user_site(); pth = os.path.join(us, TC_PTH2) if us else ""
+    if pth:
+        try:
+            os.makedirs(us, exist_ok=True)
+            with open(pth, "w") as f:
+                f.write(target + "\n")
+        except OSError as e:
+            pth = ""; _tc_say("⚠ .pth: " + str(e)[:120])
+    d = _tc_undo_load()
+    d["senxor_install"] = {"dir": target, "pth": pth, "url": url, "sha256": dig, "pinned": bool(TC_SENXOR_SHA256),
+                           "from": where, "t": datetime.now().strftime("%Y-%m-%d %H:%M")}
+    _tc_undo_save(d)
+    log_event("sys", f"Thermal camera: pysenxor installed from {url} ({where}, SHA-256 {dig}"
+                     + (", pinned" if TC_SENXOR_SHA256 else ", no fixed checksum from Waveshare") + f") -> {target}")
+    # a package that the import still asks for: from apt, once
+    pr = _tc_senxor_probe()
+    if not pr.get("senxor") and pr.get("missing") in TC_APT_MAP:
+        more = TC_APT_MAP[pr["missing"]]
+        ok2, m2 = _tc_apt([more], lang)
+        _tc_say(("✓ " if ok2 else "⚠ ") + tr("system packages", lang) + ": " + more + ("" if ok2 else " · " + m2))
+        pr = _tc_senxor_probe()
+    if pr.get("senxor"):
+        _tc_say("✓ " + tr("Driver pysenxor for MoveEye's Python", lang) + ": " + str(pr["senxor"])[:120])
+    else:
+        _tc_say("⚠ " + tr("Driver pysenxor for MoveEye's Python", lang) + ": "
+                + (("No module named '" + pr["missing"] + "'") if pr.get("missing") else str(pr.get("err") or "?")))
+    # the running program: path, then open the thermal camera again and show what happens
+    senxor_driver_path()
+    try:
+        import importlib
+        importlib.invalidate_caches()
+    except Exception:
+        pass
+    th = THERMAL
+    if th is not None:
+        th.last_err = None; th.retry_at = 0.0
+    res = ""
+    if str(CFG.get("thermal_source") or "").startswith("senxor") and th is not None:
+        end = time.time() + 15.0
+        while time.time() < end:
+            st = str(STATE.get("thermal") or "")
+            if float(SENXOR_LAST.get("t") or 0) > t0 and st not in ("connecting…", "") and not th.opening:
+                if st == "connected" or time.time() > end - 9.0:
+                    break
+            time.sleep(0.5)
+        res = str(STATE.get("thermal") or "")
+        _tc_say(("✓ " if res == "connected" else "⚠ ") + tr("Thermal camera", lang) + ": " + thermal_status_tr(res, lang))
+    note = "" if TC_SENXOR_SHA256 else " · " + tr("Waveshare publishes no checksum: loaded without a fixed checksum (SHA-256 in the log)", lang)
+    if res == "connected":
+        return True, tr("driver installed - the thermal camera is connected", lang) + note
+    if pr.get("senxor"):
+        return True, tr("driver installed", lang) + (" · " + thermal_status_tr(res, lang) if res else "") + note
+    return False, tr("driver unpacked, but MoveEye's Python cannot load it yet", lang) + (" · " + apt_msg if not apt_ok else "")
+
+
+def tc_senxor_uninstall(x):
+    """undo of «Install driver»: the .pth and the folder DATA_DIR/treiber/pysenxor away (nothing else)"""
+    base = os.path.realpath(os.path.join(DATA_DIR, "treiber")) + os.sep
+    pth = x.get("pth") or ""
+    try:
+        if pth and os.path.basename(pth) == TC_PTH2 and os.path.isfile(pth):
+            os.remove(pth)
+        d_ = x.get("dir") or ""
+        if d_ and os.path.realpath(d_).startswith(base) and os.path.isdir(d_):
+            shutil.rmtree(d_)
+        if d_ in sys.path:
+            sys.path.remove(d_)
+    except OSError as e:
+        return False, str(e)[:160]
+    log_event("sys", "Thermal camera: pysenxor of MoveEye removed (undo)")
+    return True, ""
+
+
+
+TC_ACTIONS = ("overlay", "senxor", "senxor_install", "apt", "pip", "reboot", "restart", "undo:overlay", "undo:senxor", "undo:senxor_install", "undo:pip")
 
 
 def thermal_check_routes(app, reply, body):
@@ -566,12 +872,28 @@ def thermal_check_routes(app, reply, body):
         if getattr(g, "role", "admin") != "admin":
             return reply({"ok": False, "error": "not allowed"}, 403)
         lang = norm_lang(request.args.get("lang") or CFG.get("lang"))
+        if request.method == "GET" and request.args.get("job"):
+            return reply({"ok": True, "job": tc_job_view(lang)})
         if request.method == "POST":
             d = body(); lang = norm_lang(d.get("lang") or lang); a = str(d.get("action") or "")
             if a not in TC_ACTIONS:
                 return reply({"ok": False, "error": "unknown action"}, 400)
             if TC["busy"]:
                 return reply({"ok": False, "error": tr("busy - please wait", lang)}, 409)
+            if a == "senxor_install":                       # takes minutes (download, apt): in the background, the page asks ?job=1
+                TC["busy"] = True
+                TC["job"] = {"action": a, "state": "running", "ok": None, "msg": "", "lines": [], "t": time.time()}
+
+                def work():
+                    try:
+                        ok_, msg_ = tc_fix(a, lang)
+                    except Exception as e:
+                        ok_, msg_ = False, f"{type(e).__name__}: {e}"[:200]
+                    finally:
+                        TC["busy"] = False
+                    TC["job"].update(state="done", ok=bool(ok_), msg=msg_)
+                threading.Thread(target=work, daemon=True).start()
+                return reply({"ok": True, "started": True, "msg": tr("working…", lang)})
             TC["busy"] = True
             try:
                 ok, msg = tc_fix(a, lang)
@@ -598,7 +920,7 @@ TC_SECTION_HTML = '''<section class="tool" id="c-thcheck" data-k="thcheck" hidde
       <div class="tht"><h2 data-i18n="Check the thermal camera">Check the thermal camera</h2></div><div class="tact"><button id="tc-run" type="button" data-i18n="Check">Check</button></div></div>
     <div class="tbd">
     <div class="mut" data-i18n="tc-note">tc-note</div>
-    <div id="tc-msg" class="mut" style="margin:6px 0"></div>
+    <div id="tc-msg" class="mut" style="margin:6px 0;white-space:pre-wrap"></div>
     <ul id="tc-list" style="list-style:none;padding:0;margin:6px 0"></ul>
     <div id="tc-undo" class="trow"></div>
     <details id="tc-logw" hidden><summary data-i18n="Log (camera / thermal)">Log (camera / thermal)</summary><pre id="tc-log" style="white-space:pre-wrap;font-size:12px"></pre></details>
@@ -614,9 +936,10 @@ TC_PAGE_JS = r'''
   const tt = k => { try { return typeof t === "function" ? t(k) : k; } catch (e) { return k; } };
   const FIX = {overlay: ["Add the missing lines to config.txt (a backup is kept)", "tc-q-overlay"],
                senxor: ["Make pysenxor visible for MoveEye", "tc-q-senxor"],
+               senxor_install: ["Install driver", "tc-q-install"],
                apt: ["Install the missing system packages", "tc-q-apt"],
                pip: ["Remove the pip packages that cover the system", "tc-q-pip"]};
-  const UNDO = {overlay: "Undo: config.txt back", senxor: "Undo: pysenxor link away", pip: "Undo: pip packages back"};
+  const UNDO = {overlay: "Undo: config.txt back", senxor: "Undo: pysenxor link away", senxor_install: "Undo: remove the installed driver", pip: "Undo: pip packages back"};
   let REP = "";
   const say = s => { $i("tc-msg").textContent = s || ""; };
   const req = (m, b) => fetch("/api/thermal_check?lang=" + L(), m === "GET" ? {cache: "no-store"} :
@@ -625,7 +948,13 @@ TC_PAGE_JS = r'''
   function doFix(a, q) {
     if (q && !confirm(tt(q))) return;
     say("⏳ " + tt("working…"));
-    req("POST", {action: a}).then(r => { say((r.ok ? "✓ " : "⚠ ") + (r.msg || r.error || "")); if (a !== "reboot" && a !== "restart") setTimeout(run, 400); });
+    req("POST", {action: a}).then(r => {
+      if (r.started) { const poll = () => fetch("/api/thermal_check?job=1&lang=" + L(), {cache: "no-store"}).then(x => x.json()).catch(() => ({})).then(j => {
+          const jb = (j && j.job) || {}; say("⏳ " + tt("working…") + "\n" + (jb.lines || []).join("\n"));
+          if (jb.state === "running") { setTimeout(poll, 2000); return; }
+          const tail = (jb.lines || []).join("\n"); run().then(() => say((jb.ok ? "✓ " : "⚠ ") + (jb.msg || "") + (tail ? "\n" + tail : ""))); });
+        setTimeout(poll, 1500); return; }
+      say((r.ok ? "✓ " : "⚠ ") + (r.msg || r.error || "")); if (a !== "reboot" && a !== "restart") setTimeout(run, 400); });
   }
   function paint(r) {
     const ul = $i("tc-list"); ul.textContent = "";
@@ -743,6 +1072,94 @@ for _k, _v in _HX_TC.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX_TC.update({
+    "Install driver": ("Treiber installieren", "Installer le pilote", "Installare il driver", "Installar il driver"),
+    "Check and repair": ("Prüfen und reparieren", "Vérifier et réparer", "Controllare e riparare", "Controllar e reparar"),
+    "Undo: remove the installed driver": ("Rückgängig: installierten Treiber entfernen", "Annuler : retirer le pilote installé", "Annulla: rimuovere il driver installato", "Revocar: allontanar il driver installà"),
+    "tc-q-install": ("Den Waveshare-Treiber pysenxor jetzt auf dem Pi installieren? MoveEye lädt ihn von der offiziellen Waveshare-Seite (files.waveshare.com) und installiert fehlende Systempakete mit apt. Braucht Internet, rückgängig machbar.",
+                     "Installer maintenant le pilote Waveshare pysenxor sur le Pi ? MoveEye le télécharge depuis le site officiel de Waveshare (files.waveshare.com) et installe les paquets système manquants avec apt. Internet nécessaire, annulable.",
+                     "Installare ora il driver Waveshare pysenxor sul Pi? MoveEye lo scarica dal sito ufficiale di Waveshare (files.waveshare.com) e installa con apt i pacchetti di sistema mancanti. Serve Internet, annullabile.",
+                     "Installar ussa il driver Waveshare pysenxor sin il Pi? MoveEye al chargia giu da la pagina uffiziala da Waveshare (files.waveshare.com) ed installescha ils pachets dal sistem che mancan cun apt. Dovra internet, revocabel."),
+    "download": ("Herunterladen", "Téléchargement", "Download", "Chargiar giu"),
+    "downloaded": ("heruntergeladen", "téléchargé", "scaricato", "chargià giu"),
+    "download failed": ("Herunterladen fehlgeschlagen", "échec du téléchargement", "download non riuscito", "chargiar giu n’è betg reussì"),
+    "the download is too big": ("der Download ist zu gross", "le téléchargement est trop volumineux", "il download è troppo grande", "la chargiada è memia gronda"),
+    "the checksum does not match": ("die Prüfsumme stimmt nicht", "la somme de contrôle ne correspond pas", "il checksum non corrisponde", "la summa da controlla na correspunda betg"),
+    "the download is not a ZIP": ("der Download ist kein ZIP", "le téléchargement n’est pas un ZIP", "il download non è uno ZIP", "la chargiada n’è nagin ZIP"),
+    "no folder senxor (pysenxor) in the download": ("kein Ordner senxor (pysenxor) im Download", "pas de dossier senxor (pysenxor) dans le téléchargement", "nessuna cartella senxor (pysenxor) nel download", "nagin ordinatur senxor (pysenxor) en la chargiada"),
+    "unpacked": ("entpackt", "décompressé", "estratto", "decumprimì"),
+    "system packages": ("Systempakete", "paquets système", "pacchetti di sistema", "pachets dal sistem"),
+    "all there": ("alle vorhanden", "tous présents", "tutti presenti", "tuts avant maun"),
+    "Thermal camera": ("Wärmebildkamera", "Caméra thermique", "Termocamera", "Camera termica"),
+    "Waveshare publishes no checksum: loaded without a fixed checksum (SHA-256 in the log)": (
+        "Waveshare veröffentlicht keine Prüfsumme: ohne feste Prüfsumme geladen (SHA-256 im Protokoll)",
+        "Waveshare ne publie pas de somme de contrôle : chargé sans somme fixe (SHA-256 dans le journal)",
+        "Waveshare non pubblica un checksum: scaricato senza checksum fisso (SHA-256 nel registro)",
+        "Waveshare na publitgescha nagina summa da controlla: chargià senza summa fixa (SHA-256 en il protocol)"),
+    "driver installed - the thermal camera is connected": ("Treiber installiert – die Wärmebildkamera ist verbunden", "pilote installé – la caméra thermique est connectée", "driver installato – la termocamera è collegata", "driver installà – la camera termica è colliada"),
+    "driver installed": ("Treiber installiert", "pilote installé", "driver installato", "driver installà"),
+    "driver unpacked, but MoveEye's Python cannot load it yet": ("Treiber entpackt, aber MoveEyes Python kann ihn noch nicht laden", "pilote décompressé, mais le Python de MoveEye ne peut pas encore le charger", "driver estratto, ma il Python di MoveEye non riesce ancora a caricarlo", "driver decumprimì, ma il Python da MoveEye na po anc betg al chargiar"),
+})
+# the status texts of the Thermal-90 (080 SENXOR_TX, 230): same keys, placeholders stay
+_HX_THX = {
+    SENXOR_TX["driver"]: ("Waveshare-Treiber pysenxor fehlt ({e}) – «Treiber installieren» in den Wärmebild-Einstellungen installiert ihn",
+                          "Le pilote Waveshare pysenxor manque ({e}) – «Installer le pilote» dans les réglages de la caméra thermique l’installe",
+                          "Manca il driver Waveshare pysenxor ({e}) – «Installare il driver» nelle impostazioni della termocamera lo installa",
+                          "Il driver Waveshare pysenxor manca ({e}) – «Installar il driver» en las configuraziuns da la camera termica al installescha"),
+    SENXOR_TX["pkg"]: ("Systempaket {pkg} fehlt – «Wärmebild prüfen und reparieren» installiert es",
+                       "Paquet système {pkg} manquant – «Vérifier et réparer la caméra thermique» l’installe",
+                       "Manca il pacchetto di sistema {pkg} – «Controllare e riparare la termocamera» lo installa",
+                       "Il pachet dal sistem {pkg} manca – «Controllar e reparar la camera termica» al installescha"),
+    SENXOR_TX["gpio_cs"]: ("GPIO {cs} (CS) belegt: der SPI-Treiber hält ihn – config.txt braucht dtoverlay=spi0-0cs unter dtparam=spi=on, dann den Pi neu starten",
+                           "GPIO {cs} (CS) occupé : le pilote SPI le tient – config.txt a besoin de dtoverlay=spi0-0cs sous dtparam=spi=on, puis redémarrer le Pi",
+                           "GPIO {cs} (CS) occupato: lo tiene il driver SPI – config.txt richiede dtoverlay=spi0-0cs sotto dtparam=spi=on, poi riavviare il Pi",
+                           "GPIO {cs} (CS) occupà: il driver SPI al tegna – config.txt dovra dtoverlay=spi0-0cs sut dtparam=spi=on, lura reaviar il Pi"),
+    SENXOR_TX["gpio_busy"]: ("ein GPIO der Wärmebildkamera ist belegt (anderes Programm oder Einstellung): {m}",
+                             "un GPIO de la caméra thermique est occupé (autre programme ou réglage) : {m}",
+                             "un GPIO della termocamera è occupato (altro programma o impostazione): {m}",
+                             "in GPIO da la camera termica è occupà (auter program u configuraziun): {m}"),
+    SENXOR_TX["spi_off"]: ("SPI ist aus (kein /dev/spidev0.0): SPI einschalten (raspi-config) und den Pi neu starten",
+                           "SPI est désactivé (pas de /dev/spidev0.0) : activer SPI (raspi-config) et redémarrer le Pi",
+                           "SPI è spento (nessun /dev/spidev0.0): attivare SPI (raspi-config) e riavviare il Pi",
+                           "SPI è deactivà (nagin /dev/spidev0.0): activar SPI (raspi-config) e reaviar il Pi"),
+    SENXOR_TX["spi_perm"]: ("keine Berechtigung für /dev/spidev0.0: der MoveEye-Benutzer muss in der Gruppe spi sein",
+                            "pas d’autorisation pour /dev/spidev0.0 : l’utilisateur MoveEye doit être dans le groupe spi",
+                            "nessuna autorizzazione per /dev/spidev0.0: l’utente MoveEye deve essere nel gruppo spi",
+                            "nagin permiss per /dev/spidev0.0: l’utilisader MoveEye sto esser en la gruppa spi"),
+    SENXOR_TX["i2c_off"]: ("I2C ist aus (kein /dev/i2c-1): I2C einschalten (raspi-config) und den Pi neu starten",
+                           "I2C est désactivé (pas de /dev/i2c-1) : activer I2C (raspi-config) et redémarrer le Pi",
+                           "I2C è spento (nessun /dev/i2c-1): attivare I2C (raspi-config) e riavviare il Pi",
+                           "I2C è deactivà (nagin /dev/i2c-1): activar I2C (raspi-config) e reaviar il Pi"),
+    SENXOR_TX["i2c_none"]: ("keine Antwort auf I2C 0x40 (errno 121): SDA (GPIO 2), SCL (GPIO 3), 5 V / 3,3 V und GND des Moduls prüfen",
+                            "pas de réponse sur I2C 0x40 (errno 121) : vérifier SDA (GPIO 2), SCL (GPIO 3), 5 V / 3,3 V et GND du module",
+                            "nessuna risposta su I2C 0x40 (errno 121): controllare SDA (GPIO 2), SCL (GPIO 3), 5 V / 3,3 V e GND del modulo",
+                            "nagina resposta sin I2C 0x40 (errno 121): controllar SDA (GPIO 2), SCL (GPIO 3), 5 V / 3,3 V e GND dal modul"),
+    SENXOR_TX["frame"]: ("Modul antwortet, kein Bild: DATA READY (GPIO {drdy}) nie hoch – D_READY, nRESET (GPIO {rst}), CS (GPIO {cs}), MISO 9 / MOSI 10 / CLK 11 prüfen",
+                         "le module répond, pas d’image : DATA READY (GPIO {drdy}) jamais haut – vérifier D_READY, nRESET (GPIO {rst}), CS (GPIO {cs}), MISO 9 / MOSI 10 / CLK 11",
+                         "il modulo risponde, nessuna immagine: DATA READY (GPIO {drdy}) mai alto – controllare D_READY, nRESET (GPIO {rst}), CS (GPIO {cs}), MISO 9 / MOSI 10 / CLK 11",
+                         "il modul respunda, nagin maletg: DATA READY (GPIO {drdy}) mai aut – controllar D_READY, nRESET (GPIO {rst}), CS (GPIO {cs}), MISO 9 / MOSI 10 / CLK 11"),
+    SENXOR_TX["nodrdy"]: ("kein DATA READY", "pas de DATA READY", "nessun DATA READY", "nagin DATA READY"),
+    SENXOR_TX["empty"]: ("leeres Bild (CRC / SPI)", "image vide (CRC / SPI)", "immagine vuota (CRC / SPI)", "maletg vid (CRC / SPI)"),
+    SENXOR_TX["shape"]: ("Bildform: {e}", "forme de l’image : {e}", "forma dell’immagine: {e}", "furma dal maletg: {e}"),
+    "no picture": ("kein Bild", "pas d’image", "nessuna immagine", "nagin maletg"),
+    "not found": ("nicht gefunden", "introuvable", "non trovato", "betg chattà"),
+    "error": ("Fehler", "erreur", "errore", "errur"),
+}
+for _k, _v in list(_HX_TC.items()) + list(_HX_THX.items()):
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_tc_tl_status_text_base = tl_status_text
+
+
+def tl_status_text(text):                                  # + 639zzzzzx: the composed thermal status (080) in the language too
+    s = str(text or "")
+    if s.startswith(tuple(p_ for p_, _k in THERMAL_TX_PRE)) or any(rx.fullmatch(s) for rx, _t in _thx_res()):
+        return thermal_status_tr(s)
+    return _tc_tl_status_text_base(text)
+
+
+USER_UI_ADMIN = USER_UI_ADMIN + ",#th-fix"                 # the buttons «Install driver» / «Check and repair»: admin only
 SET_HELP["senxor_cs"] = ("Where SS / CS of the Waveshare thermal camera is wired. Waveshare (HAT and single module): GPIO 7 (pin 26) - "
                          "then config.txt needs dtoverlay=spi0-0cs. nRESET: GPIO 23 (pin 16), D_READY: GPIO 24 (pin 18).", "GPIO 7.")
 _HX_TC_HELP = {SET_HELP["senxor_cs"][0]: (
@@ -771,14 +1188,20 @@ TC_HELP = (
      "MoveEye prüft der Reihe nach config.txt (SPI, I2C, <code>dtoverlay=spi0-0cs</code>), die Geräte /dev/spidev0.0 und /dev/i2c-1, "
      "die Gruppen, die I2C-Adressen (0x40 Wärmebild, 0x41 PCA9685, 0x36 X1206), den Treiber pysenxor (auch wenn er nur in einer venv "
      "liegt), numpy / OpenCV / picamera2, die Pins (CS GPIO 7, nRESET GPIO 23, D_READY GPIO 24 – einstellbar), das Kopfbild und das "
-     "Wärmebild mit Bildrate. Wo es geht, repariert ein Knopf (mit Rückfrage und Rückgängig). Der Bericht lässt sich kopieren und enthält "
+     "Wärmebild mit Bildrate. Wo es geht, repariert ein Knopf (mit Rückfrage und Rückgängig). Fehlt der Treiber, installiert "
+     "<b>«Treiber installieren»</b> (auch direkt unter der Statuszeile in den Wärmebild-Einstellungen) pysenxor von der offiziellen "
+     "Waveshare-Seite (files.waveshare.com, nur HTTPS) in den MoveEye-Ordner und fehlende Systempakete mit apt – kein pip; Waveshare "
+     "veröffentlicht keine Prüfsumme, MoveEye schreibt die SHA-256 ins Protokoll. Der Bericht lässt sich kopieren und enthält "
      "keine Passwörter. Kommt kein Wärmebild, läuft das Kopfbild trotzdem weiter; die Ansicht «Wärmebild» zeigt «⚠ kein Wärmebild».</p>"),
     ('<section id="thermal" data-icon="🌡"><h2>Thermal camera</h2>',
      "<p><b>🩺 Check and repair the thermal camera</b> (More → Tools, administrator only; in the window: Settings → Thermal camera): "
      "MoveEye checks config.txt (SPI, I2C, <code>dtoverlay=spi0-0cs</code>), the devices /dev/spidev0.0 and /dev/i2c-1, the groups, the "
      "I2C addresses (0x40 thermal, 0x41 PCA9685, 0x36 X1206), the driver pysenxor (also when it is only in a venv), numpy / OpenCV / "
      "picamera2, the pins (CS GPIO 7, nRESET GPIO 23, D_READY GPIO 24 – adjustable), the head picture and the thermal picture with its "
-     "rate. Where possible a button repairs it (with a question and undo). The report can be copied and holds no passwords. Without a "
+     "rate. Where possible a button repairs it (with a question and undo). Without the driver, <b>«Install driver»</b> (also right below "
+     "the status line in the thermal camera settings) installs pysenxor from the official Waveshare site (files.waveshare.com, HTTPS "
+     "only) into the MoveEye folder and missing system packages with apt - no pip; Waveshare publishes no checksum, MoveEye writes the "
+     "SHA-256 to the log. The report can be copied and holds no passwords. Without a "
      "thermal picture the head picture keeps running; the view «Thermal» shows «⚠ no thermal picture».</p>"),
 )
 for _a, _b in TC_HELP:
@@ -878,6 +1301,18 @@ def thermal_check_selftest():
     finally:
         CFG.update(keep)
     assert 'data-k="thcheck"' in TOOLS_PAGE and 'id="c-thcheck"' in TOOLS_PAGE
+    # 4.25.x: the status of the Thermal-90 in German / French, not English; the official address of the driver
+    st_ = "no picture: " + SENXOR_TX["driver"].format(e="No module named 'senxor'")
+    de_, fr_ = thermal_status_tr(st_, "de"), thermal_status_tr(st_, "fr")
+    assert de_.startswith("kein Bild: Waveshare-Treiber pysenxor fehlt (No module named 'senxor')"), de_
+    assert fr_.replace("’", "'").startswith("pas d'image") and "pilote Waveshare pysenxor manque" in fr_, fr_
+    assert "Treiber installieren" in de_ and "missing" not in de_, de_
+    assert "GPIO 24" in thermal_status_tr("no picture: " + SENXOR_TX["frame"].format(drdy=24, rst=23, cs=7), "de")
+    assert thermal_status_tr("connected", "de") == "verbunden"
+    assert TC_SENXOR_URL.startswith("https://" + TC_SENXOR_HOST + "/") and "senxor_install" in TC_ACTIONS
+    assert "#th-fix" in USER_UI_ADMIN
+    for k in _HX_THX:
+        assert all(_HX_THX[k]) and set(re.findall(r"\{(\w+)\}", k)) == set(re.findall(r"\{(\w+)\}", _HX_THX[k][0])), k
     for k in _HX_TC:
         assert all(_HX_TC[k]), k
     return True

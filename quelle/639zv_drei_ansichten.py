@@ -265,7 +265,9 @@ VIEW3_JS = r"""
     vimg.dataset.v3 = kb ? "kw" : c;
     TAG.hidden = !kb && c === "head"; TAG.textContent = kb ? kb.ic + " " + kb.lb : IC[c] + " " + T(LB[c]);
     const ths = String((J().state || {}).thermal || "");      // 4.24.x: thermal view without a thermal picture - say so (the head picture stays)
-    if (!kb && c === "thermal" && ths && ths !== "connected") { TAG.textContent += " · ⚠ " + T("no thermal picture"); TAG.title = ths; } else TAG.title = "";
+    if (!kb && c === "thermal" && ths && ths !== "connected") { TAG.textContent += " · ⚠ " + T("no thermal picture");
+      const tx = (J().state || {}).thermal_tx, lg = String((typeof LANG !== "undefined" && LANG) || document.documentElement.lang || "en").slice(0, 2);
+      TAG.title = (tx && tx.src === ths && tx[lg]) || ths; } else TAG.title = "";
     if (h && OV.parentNode !== h) h.appendChild(OV);
     if (h && MB.parentNode !== h) h.appendChild(MB);
     const showM = !!h && V.pip && avail("wide") && !sv && !kb;

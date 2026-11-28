@@ -2,7 +2,7 @@
 # ----------------------------------------------------------------------------
 # Waveshare Thermal-90 / Thermal-44 (80 x 62, Meridian MI48 "SenXor"): SPI for the pictures, I2C (0x40) for the settings,
 #   GPIO 23 = reset, 24 = data ready, 7 = chip select. Uses the driver of Waveshare (pysenxor, from their wiki:
-#   Thermal_Camera_Hat.zip -> pysenxor-master -> pip install -e ./). /boot/firmware/config.txt: dtparam=spi=on +
+#   Thermal_Camera_Hat.zip -> pysenxor-master -> pip install -e ./; MoveEye can install it: 639zzzzzx «Install driver»). /boot/firmware/config.txt: dtparam=spi=on +
 #   dtoverlay=spi0-0cs, I2C on. The picture is the temperature in degrees per pixel (float).
 # ----------------------------------------------------------------------------
 SENXOR_PIN_DEF = {"senxor_cs": "7", "senxor_rst": "23", "senxor_drdy": "24"}     # Waveshare wiki (HAT and single module)
@@ -21,6 +21,40 @@ def senxor_pins():
     return tuple(out)
 
 
+# 4.25.x (Besitzer, real Pi 5: the status in the settings was English on a German screen): every text of the Thermal-90
+#   start is a template (English key with {placeholders}); thermal_status_tr() (below) finds the template again in the
+#   status and translates it with tr() / DE / TRX - the numbers and the technical error stay as they are.
+SENXOR_TX = {
+    "driver": "Waveshare driver pysenxor missing ({e}) - «Install driver» in the thermal camera settings installs it",
+    "pkg": "system package {pkg} missing - «Check the thermal camera» installs it",
+    "gpio_cs": "GPIO {cs} (CS) busy: the SPI driver holds it - config.txt needs dtoverlay=spi0-0cs below dtparam=spi=on, then restart the Pi",
+    "gpio_busy": "a GPIO of the thermal camera is busy (another program or setting): {m}",
+    "spi_off": "SPI is off (no /dev/spidev0.0): switch on SPI (raspi-config) and restart the Pi",
+    "spi_perm": "no permission for /dev/spidev0.0: the MoveEye user must be in the group spi",
+    "i2c_off": "I2C is off (no /dev/i2c-1): switch on I2C (raspi-config) and restart the Pi",
+    "i2c_none": "no answer on I2C 0x40 (errno 121): check SDA (GPIO 2), SCL (GPIO 3), 5 V / 3.3 V and GND of the module",
+    "frame": "module answers, no picture: DATA READY (GPIO {drdy}) never high - check D_READY, nRESET (GPIO {rst}), CS (GPIO {cs}), MISO 9 / MOSI 10 / CLK 11",
+    "nodrdy": "no DATA READY",
+    "empty": "empty picture (CRC / SPI)",
+    "shape": "picture shape: {e}",
+}
+SENXOR_DRV_SUB = os.path.join("treiber", "pysenxor")    # 639zzzzzx «Install driver»: DATA_DIR/treiber/pysenxor/senxor
+
+
+def senxor_driver_path():
+    """the folder of a pysenxor installed by MoveEye (DATA_DIR/treiber/pysenxor) on sys.path - also when the user site of
+    Python is off (the .pth then does not count); '' when there is none"""
+    try:
+        d = os.path.join(DATA_DIR, SENXOR_DRV_SUB)
+        if os.path.isfile(os.path.join(d, "senxor", "mi48.py")):
+            if d not in sys.path:
+                sys.path.append(d)
+            return d
+    except Exception:
+        pass
+    return ""
+
+
 def senxor_explain(step, e, pins=None):
     """an error of the Thermal-90 start -> a clear sentence (English key text, translated where it is shown)"""
     cs, rst, drdy = pins or senxor_pins()
@@ -28,19 +62,78 @@ def senxor_explain(step, e, pins=None):
     low = m.lower()
     if step == "gpio" and "busy" in low:
         if "BCM%d" % cs in m or step == "gpio" and getattr(e, "_mw_pin", None) == cs:
-            return f"GPIO {cs} (CS) busy: the SPI driver holds it - config.txt needs dtoverlay=spi0-0cs below dtparam=spi=on, then restart the Pi"
-        return f"a GPIO of the thermal camera is busy (another program or setting): {m[:80]}"
+            return SENXOR_TX["gpio_cs"].format(cs=cs)
+        return SENXOR_TX["gpio_busy"].format(m=m[:80])
     if step == "spi" and ("no such file" in low or "errno 2]" in low):
-        return "SPI is off (no /dev/spidev0.0): switch on SPI (raspi-config) and restart the Pi"
+        return SENXOR_TX["spi_off"]
     if step == "spi" and ("permission" in low or "errno 13" in low):
-        return "no permission for /dev/spidev0.0: the MoveEye user must be in the group spi"
+        return SENXOR_TX["spi_perm"]
     if step == "i2c" and ("no such file" in low or "errno 2]" in low):
-        return "I2C is off (no /dev/i2c-1): switch on I2C (raspi-config) and restart the Pi"
+        return SENXOR_TX["i2c_off"]
     if step == "module" and any(k in low for k in ("errno 121", "remote i/o", "errno 6]", "errno 110", "timed out")):
-        return f"no answer on I2C 0x40 (errno 121): check SDA (GPIO 2), SCL (GPIO 3), 5 V / 3.3 V and GND of the module"
+        return SENXOR_TX["i2c_none"]
     if step == "frame":
-        return f"module answers, no picture: DATA READY (GPIO {drdy}) never high - check D_READY, nRESET (GPIO {rst}), CS (GPIO {cs}), MISO 9 / MOSI 10 / CLK 11"
+        return SENXOR_TX["frame"].format(drdy=drdy, rst=rst, cs=cs)
     return f"{step}: {m[:140]}"
+
+
+def _senxor_data_to_frame(data, shape, hflip=False):
+    """the same as senxor.utils.data_to_frame (used when senxor.utils needs a package that is not there, e.g. cmapy)"""
+    nc, nr = shape
+    fr = np.asarray(data).reshape(nr, nc)
+    return np.flip(fr, 1) if hflip else fr
+
+
+_THX_RE = []
+
+
+def _thx_res():
+    if not _THX_RE:
+        for k, t_ in SENXOR_TX.items():
+            pat = re.escape(t_)
+            for ph in set(re.findall(r"\{(\w+)\}", t_)):
+                pat = pat.replace(re.escape("{" + ph + "}"), "(?P<" + ph + ">.*?)", 1)
+            _THX_RE.append((re.compile(pat), t_))
+    return _THX_RE
+
+
+THERMAL_TX_PRE = (("no picture: ", "no picture"), ("not found: ", "not found"), ("error: ", "error"))
+
+
+def thermal_status_tr(s, lang=None):
+    """the thermal status (STATE["thermal"], SENXOR_LAST["err"]) in the language: prefix + template + the rest unchanged"""
+    s = str(s or "")
+    for pre, key in THERMAL_TX_PRE:
+        if s.startswith(pre):
+            return tr(key, lang) + ": " + thermal_status_tr(s[len(pre):], lang)
+    for rx, t_ in _thx_res():
+        m_ = rx.fullmatch(s)
+        if m_:
+            try:
+                return tr(t_, lang).format(**m_.groupdict())
+            except (KeyError, IndexError, ValueError):
+                return s
+    m_ = re.fullmatch(r"(driver|spi|i2c|gpio|module|frame): (.*)", s, re.S)
+    if m_:
+        return m_.group(1) + ": " + thermal_status_tr(m_.group(2), lang)
+    return tr(s, lang)
+
+
+THERMAL_TX = {"src": None}
+
+
+def thermal_tx_tick():
+    """STATE["thermal_tx"] = the thermal status in all five languages (the web page picks its own; 230 calls it in its loop)"""
+    s = str(STATE.get("thermal") or "")
+    if THERMAL_TX.get("src") == s:
+        return
+    try:
+        tx = {"src": s}
+        for L in ("de", "fr", "it", "rm", "en"):
+            tx[L] = thermal_status_tr(s, L)
+        STATE["thermal_tx"] = tx; THERMAL_TX["src"] = s
+    except Exception:
+        pass
 
 
 class SenxorSource:
@@ -57,28 +150,31 @@ class SenxorSource:
         SENXOR_LAST.update(step="", err="", t=time.time(), pins=self.pins)
         step = "driver"
         try:
+            senxor_driver_path()                              # 639zzzzzx: a driver installed by MoveEye
             try:
                 from senxor.mi48 import MI48
                 from senxor.interfaces import SPI_Interface, I2C_Interface
-                from senxor.utils import data_to_frame
             except ImportError as e:
-                raise RuntimeError("Waveshare driver missing (pysenxor): MoveEye's Python does not find it (" + str(e)[:60] + ") - "
-                                   "Tools → «Check the thermal camera» shows the way") from None
+                raise RuntimeError(SENXOR_TX["driver"].format(e=str(e)[:60])) from None
+            try:
+                from senxor.utils import data_to_frame
+            except ImportError:
+                data_to_frame = _senxor_data_to_frame         # senxor.utils may need cmapy / matplotlib: not needed here
             try:
                 from spidev import SpiDev
             except ImportError:
-                raise RuntimeError("python3-spidev missing (sudo apt install python3-spidev)") from None
+                raise RuntimeError(SENXOR_TX["pkg"].format(pkg="python3-spidev")) from None
             try:
                 from smbus import SMBus
             except ImportError:
                 try:
                     from smbus2 import SMBus
                 except ImportError:
-                    raise RuntimeError("python3-smbus missing (sudo apt install python3-smbus2)") from None
+                    raise RuntimeError(SENXOR_TX["pkg"].format(pkg="python3-smbus")) from None
             try:
                 from gpiozero import DigitalInputDevice, DigitalOutputDevice
             except ImportError:
-                raise RuntimeError("python3-gpiozero missing (sudo apt install python3-gpiozero)") from None
+                raise RuntimeError(SENXOR_TX["pkg"].format(pkg="python3-gpiozero")) from None
             self._to_frame = data_to_frame
             step = "spi"
             devd = os.environ.get("MW_TEST_DEV_DIR") or "/dev"          # tests: a folder with made-up device files
@@ -141,7 +237,7 @@ class SenxorSource:
             while time.time() < end and not ok:
                 ok, fr = self.read()
             if not ok:
-                raise RuntimeError(self.read_err or "no DATA READY")
+                raise RuntimeError(self.read_err or SENXOR_TX["nodrdy"])
             self._first = fr
         except Exception as e:
             self.release()
@@ -157,7 +253,7 @@ class SenxorSource:
             return True, fr0
         try:
             if not self.ready.wait_for_active(timeout=1.0):
-                self.read_err = "no DATA READY"
+                self.read_err = SENXOR_TX["nodrdy"]
                 return False, None
             self.cs.on(); time.sleep(0.0001)
             data, _header = self.mi48.read()
@@ -170,14 +266,14 @@ class SenxorSource:
                 pass
             return False, None
         if data is None:
-            self.read_err = "empty picture (CRC / SPI)"
+            self.read_err = SENXOR_TX["empty"]
             return False, None
         try:
             fr = np.asarray(self._to_frame(data, self.shape), dtype=np.float32)
             if fr.ndim != 2:
                 fr = fr.reshape(62, 80)
         except Exception as e:
-            self.read_err = f"picture shape: {e}"[:120]
+            self.read_err = SENXOR_TX["shape"].format(e=str(e)[:100])
             return False, None
         if fr.size and float(np.median(fr)) > 200:          # deci-Kelvin -> degrees Celsius (older driver versions)
             fr = fr / 10.0 - 273.15

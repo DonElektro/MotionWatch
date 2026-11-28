@@ -85,6 +85,7 @@ class ThermalCam:
     def loop(self):
         while True:
             try:
+                thermal_tx_tick()                          # 4.25.x: the status in all languages for the web page (080)
                 want = self.wanted()
                 if self.src is not None and (want != self.spec or getattr(self.src, "pins", None) not in (None, senxor_pins())):
                     self._close()                              # 4.24.x: other pins chosen for the Thermal-90 -> open again

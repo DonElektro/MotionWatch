@@ -12,6 +12,10 @@ der Test es im Lauf umschalten kann) und erfundenen Gerätedateien (MW_TEST_DEV_
                              offen und jeder neue Versuch scheiterte mit «GPIO busy»);
   5. alles gut            -> «connected», die Prüfung zeigt Modul-ID und Bildrate > 0;
   6. anderer CS-Pin (8)   -> MoveEye öffnet das Modul neu mit GPIO 8.
+  7. (4.25.x) Treiber gar nicht da (kein senxor auf dem Pfad): Status deutsch / französisch statt englisch (thermal_tx),
+     «Treiber installieren» lädt eine Test-ZIP von einem lokalen Server (MW_TEST_SENXOR_URL, nachgestelltes Waveshare-ZIP mit
+     pysenxor-master/senxor und einem bösen Eintrag «../»), apt nur nachgestellt (MW_TEST_APT_LOG), .pth im eigenen
+     PYTHONUSERBASE -> senxor importierbar, Wärmebild verbunden; Rückgängig -> Ordner und .pth weg, nicht mehr importierbar.
 Bei jedem Schritt liefert /video_feed weiter Bilder (das Kopfbild hält nie an) und die Live-Ansicht bekommt den Status.
 Rechte (nur Admin) prüft der Test nicht (Benutzer mit Passwort-Hash wären nötig): role-Abfrage in thermal_check_routes.
 
@@ -193,20 +197,24 @@ def frei_port():
 
 
 class MW:
-    def __init__(self, datei, tmp):
+    def __init__(self, datei, tmp, senxor=True, env_extra=None, mode="nodriver"):
         self.tmp = tmp
         self.cfg = os.path.join(tmp, "mw"); os.makedirs(self.cfg)
-        fake = os.path.join(tmp, "fake"); os.makedirs(os.path.join(fake, "senxor"))
-        for n, t in (("_fake_common.py", FAKE_COMMON), ("gpiozero.py", FAKE_GPIOZERO), ("spidev.py", FAKE_SPIDEV),
-                     ("smbus2.py", FAKE_SMBUS2), ("senxor/__init__.py", FAKE_SENXOR_INIT), ("senxor/interfaces.py", FAKE_SENXOR_IF),
-                     ("senxor/utils.py", FAKE_SENXOR_UTILS), ("senxor/mi48.py", FAKE_SENXOR_MI48)):
+        fake = os.path.join(tmp, "fake"); os.makedirs(os.path.join(fake, "senxor")); self.fake = fake
+        files = [("_fake_common.py", FAKE_COMMON), ("gpiozero.py", FAKE_GPIOZERO), ("spidev.py", FAKE_SPIDEV), ("smbus2.py", FAKE_SMBUS2)]
+        if senxor:
+            files += [("senxor/__init__.py", FAKE_SENXOR_INIT), ("senxor/interfaces.py", FAKE_SENXOR_IF),
+                      ("senxor/utils.py", FAKE_SENXOR_UTILS), ("senxor/mi48.py", FAKE_SENXOR_MI48)]
+        else:
+            os.rmdir(os.path.join(fake, "senxor"))
+        for n, t in files:
             with open(os.path.join(fake, n), "w") as f:
                 f.write(t)
         dev = os.path.join(tmp, "dev"); os.makedirs(dev)
         for n in ("spidev0.0", "i2c-1"):
             open(os.path.join(dev, n), "w").close()
         self.modef = os.path.join(tmp, "mode.txt"); self.pinsf = os.path.join(tmp, "pins.json")
-        self.mode("nodriver")
+        self.mode(mode)
         st = {"source": "demo", "extra_cams": [], "kopf_ov": "", "thermal_source": "senxor:0", "thermal_on": True,
               "thermal_alpha": 0.5, "thermal_hot": True, "thermal_hot_pct": 80, "thermal_zoom": 65, "thermal_dx": 0,
               "sim_on": False, "sim_auto": False, "sim_autostart": False, "sim_autostart_v2": False, "sim_autoupd": False,
@@ -216,7 +224,8 @@ class MW:
         self.port = frei_port()
         self.logf = open(os.path.join(tmp, "log.txt"), "w")
         env = dict(os.environ, PYTHONPATH=fake, MW_TEST_V4L="", MW_TEST_DEV_DIR=dev,
-                   MW_FAKE_SENXOR_MODE=self.modef, MW_FAKE_SENXOR_PINS=self.pinsf)
+                   MW_FAKE_SENXOR_MODE=self.modef, MW_FAKE_SENXOR_PINS=self.pinsf, **(env_extra or {}))
+        self.env = env
         self.p = subprocess.Popen([sys.executable, datei, "--headless", "--port", str(self.port), "--bind", "127.0.0.1",
                                    "--config", self.cfg, "--web-password", PASSWORT],
                                   stdout=self.logf, stderr=subprocess.STDOUT, cwd=tmp, env=env)
@@ -306,6 +315,98 @@ class MW:
         self.logf.close()
 
 
+def test_zip(pfad):
+    """wie das Waveshare-Demo (Thermal_Camera_Hat.zip): pysenxor-master/senxor + Beispiele + ein böser Eintrag"""
+    import zipfile
+    with zipfile.ZipFile(pfad, "w") as z:
+        b = "Thermal_Camera_Hat/pysenxor-master/"
+        z.writestr(b + "setup.py", "raise SystemExit('setup.py darf nie laufen')\n")
+        z.writestr(b + "example/stream_spi.py", "print('demo')\n")
+        z.writestr(b + "senxor/__init__.py", "from _fake_common import mode\n")
+        z.writestr(b + "senxor/interfaces.py", FAKE_SENXOR_IF)
+        z.writestr(b + "senxor/utils.py", "import cmapy  # gibt es nicht: MoveEye nimmt dann die eigene data_to_frame\n")
+        z.writestr(b + "senxor/mi48.py", FAKE_SENXOR_MI48)
+        z.writestr(b + "senxor/__pycache__/x.cpython-311.pyc", b"x")
+        z.writestr(b + "senxor/../../boese.py", "BOESE = 1\n")
+
+
+def installieren(datei, tmp, pruef):
+    """Teil 7: «Treiber installieren» mit nachgestelltem Download, Meldungen deutsch / französisch, Rückgängig"""
+    import http.server
+    import threading
+    os.makedirs(tmp)
+    www = os.path.join(tmp, "www"); os.makedirs(www); test_zip(os.path.join(www, "Thermal_Camera_Hat.zip"))
+    hits = []
+
+    class H(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *a, **k):
+            super().__init__(*a, directory=www, **k)
+
+        def log_message(self, *a):
+            hits.append(self.path)
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), H)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    ub = os.path.join(tmp, "userbase"); aptlog = os.path.join(tmp, "apt.txt")
+    env = {"MW_TEST_SENXOR_URL": "http://127.0.0.1:%d/Thermal_Camera_Hat.zip" % srv.server_address[1],
+           "MW_TEST_APT_LOG": aptlog, "PYTHONUSERBASE": ub}
+    M = None
+    try:
+        M = MW(datei, tmp, senxor=False, env_extra=env, mode="ok")
+
+        def importierbar():
+            p = subprocess.run([sys.executable, "-c", "import senxor.mi48, senxor.interfaces; print(senxor.__file__)"],
+                               capture_output=True, text=True, env=dict(M.env), cwd=tmp, timeout=60)
+            return p.returncode == 0, (p.stdout + p.stderr).strip()[-200:]
+        s7 = M.warte(lambda: (lambda st: st if "pysenxor" in str(st.get("thermal")) and (st.get("thermal_tx") or {}).get("src") == st.get("thermal") else None)(M.state()), 60)
+        tx = (s7 or {}).get("thermal_tx") or {}
+        pruef(bool(s7), f"7 kein Treiber: Status nennt pysenxor ({(s7 or {}).get('thermal')})")
+        pruef(tx.get("de", "").startswith("kein Bild: Waveshare-Treiber pysenxor fehlt") and "missing" not in tx.get("de", "")
+              and "Treiber installieren" in tx.get("de", ""), f"7 Status deutsch ({tx.get('de')})")
+        pruef(tx.get("fr", "").replace("’", "'").startswith("pas d'image") and "Le pilote Waveshare pysenxor manque" in tx.get("fr", ""), f"7 Status französisch ({tx.get('fr')})")
+        pruef(tx.get("en", "") == (s7 or {}).get("thermal") and "missing" in tx.get("en", ""), "7 Status englisch bleibt englisch")
+        pruef(not importierbar()[0], "7 senxor vorher nicht importierbar")
+        r = M.get("/api/thermal_check?lang=de", timeout=90)
+        sx = next((x for x in r.get("steps", []) if x["id"] == "senxor"), {})
+        pruef(sx.get("ok") is False and sx.get("fix") == "senxor_install" and sx.get("title") == "Treiber pysenxor für MoveEyes Python",
+              f"7 Prüfung: Knopf «Treiber installieren» ({sx})")
+        rf = M.get("/api/thermal_check?lang=fr", timeout=90)
+        mo = next((x for x in rf.get("steps", []) if x["id"] == "module"), {})
+        pruef("Le pilote Waveshare pysenxor manque" in mo.get("detail", "") and mo.get("title") == "Le module répond (ID, micrologiciel)",
+              f"7 Prüfung französisch ({mo})")
+        a = M.post("/api/thermal_check", {"action": "senxor_install", "lang": "de"})
+        pruef(a.get("ok") and a.get("started"), f"7 Installation gestartet ({a})")
+        j = M.warte(lambda: (lambda x: x if x.get("state") == "done" else None)(M.get("/api/thermal_check?job=1&lang=de").get("job") or {}), 120) or {}
+        zeilen = "\n".join(j.get("lines") or [])
+        pruef(j.get("ok") is True and "Wärmebildkamera ist verbunden" in j.get("msg", "") and "ohne feste Prüfsumme" in j.get("msg", ""),
+              f"7 Installation fertig, deutsch ({j.get('msg')})\n{zeilen}")
+        pruef("SHA-256" in zeilen and "heruntergeladen" in zeilen and "entpackt" in zeilen, "7 Ablauf auf Deutsch mit SHA-256")
+        pruef(hits and all(h_.endswith("Thermal_Camera_Hat.zip") for h_ in hits), f"7 nur die eine Adresse geladen ({hits})")
+        pruef(M.state().get("thermal") == "connected", f"7 Wärmebild danach verbunden ({M.state().get('thermal')})")
+        drv = glob.glob(os.path.join(M.cfg, "**", "treiber", "pysenxor", "senxor", "mi48.py"), recursive=True)
+        pruef(len(drv) == 1, f"7 Treiber in DATA_DIR/treiber/pysenxor ({drv})")
+        root = os.path.dirname(os.path.dirname(os.path.dirname(drv[0]))) if drv else M.cfg
+        pruef(not glob.glob(os.path.join(tmp, "**", "boese.py"), recursive=True) and not os.path.exists(os.path.join(root, "boese.py")),
+              "7 böser Eintrag «../» nicht entpackt")
+        pruef(not glob.glob(os.path.join(root, "treiber", "pysenxor", "setup.py")) and not glob.glob(os.path.join(root, "treiber", "pysenxor", "senxor", "__pycache__")),
+              "7 nur der Ordner senxor (kein setup.py, kein __pycache__)")
+        pth = glob.glob(os.path.join(ub, "lib", "python3*", "site-packages", "moveeye-pysenxor-treiber.pth"))
+        pruef(len(pth) == 1, f"7 .pth im Benutzer-Ordner von Python ({pth})")
+        ok_i, wo = importierbar()
+        pruef(ok_i and "treiber" in wo, f"7 senxor für MoveEyes Python importierbar ({wo})")
+        apt = open(aptlog).read().split() if os.path.exists(aptlog) else []
+        pruef(all(x.startswith("python3-") for x in apt) and "python3-numpy" not in apt, f"7 Abhängigkeiten nur aus apt, numpy schon da ({apt})")
+        u = M.post("/api/thermal_check", {"action": "undo:senxor_install", "lang": "fr"})
+        pruef(u.get("ok") and "annulé" in u.get("msg", ""), f"7 Rückgängig, französisch ({u})")
+        pruef(not glob.glob(os.path.join(M.cfg, "**", "treiber", "pysenxor"), recursive=True) and not glob.glob(os.path.join(ub, "lib", "python3*", "site-packages", "moveeye-pysenxor-treiber.pth")),
+              "7 Rückgängig: Ordner und .pth weg")
+        pruef(not importierbar()[0], "7 Rückgängig: senxor nicht mehr importierbar")
+        pruef(M.frames() >= 2, "7 Kopfbild läuft weiter (/video_feed)")
+    finally:
+        if M is not None:
+            M.ende()
+        srv.shutdown(); srv.server_close()
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--datei", default="")
@@ -330,7 +431,7 @@ def main():
 
         def step_of(res, sid):
             return next((x for x in res.get("steps", []) if x["id"] == sid), {})
-        s1 = M.warte(th_has("driver missing"), 60)
+        s1 = M.warte(th_has("pysenxor missing"), 60)
         pruef(bool(s1), f"1 Treiber fehlt: Status nennt es ({s1 or M.state().get('thermal')})")
         pruef(M.frames() >= 2, "1 Kopfbild läuft weiter (/video_feed)")
         r = M.get("/api/thermal_check?lang=de", timeout=90)
@@ -367,6 +468,11 @@ def main():
         pruef(bool(s6), f"6 neu geöffnet mit GPIO 8 ({M.pins()}, {M.state().get('thermal')})")
         lg = M.log()
         pruef("Camera loop error" not in lg, "keine Fehler der Kamera-Schleife im Protokoll")
+        M.ende()
+        if fehler:
+            print("---- Protokoll (Ende) ----\n" + M.log()[-4000:])
+        M = None
+        installieren(datei, os.path.join(tmp, "teil7"), pruef)
     finally:
         if M is not None:
             M.ende()
