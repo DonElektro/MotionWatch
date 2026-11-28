@@ -1,13 +1,30 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-28 15:34",
+ "generated": "2026-11-28 19:20",
  "versions": [
+  {
+   "version": "4.25.0",
+   "file": "webcam_bewegung_4_25_0.py",
+   "url": "",
+   "sha256": "e7a0a58a65a2e5d2e473a55346042db1f13d1d960839cd5aa36d72cf3f19f300",
+   "date": "2026-11-28 19:20",
+   "notes": "Wärmebild prüfen und reparieren (Mehr → Werkzeuge, nur Administrator): MoveEye prüft config.txt, SPI, I2C, Treiber pysenxor, Python-Pakete, Pins, Kopf- und Wärmebild und repariert, was geht (mit Rückfrage und Rückgängig). Die Thermal-90 nennt beim Start den genauen Grund, wenn sie nicht geht, schliesst danach alle Pins wieder und versucht es neu; das Kopfbild läuft immer weiter. Pins CS, nRESET und D_READY sind einstellbar.",
+   "size": 3673857,
+   "sig": "9a178ff9054cd7bf794f3ce062efb7dfa96bf5824d4db145d93e9b1091b9ddd052dde9125220257cb4ec5a89c2dacbc8c88c8ed7dfb287b53ad04f32cd474707",
+   "data": {
+    "file": "moveeye_daten_4_25_0.zip",
+    "url": "",
+    "sha256": "57eceaee3ec1f13d364a6fb7b45916a8729b49d29c4f9863584857799f2a8748",
+    "size": 18367792,
+    "sig": "aaaedd51718867f709e728d8a7527f1a269c67b24a8937f5d89d58839858e56ffd3ccaf156a7d79ec7297ba94151204068fc3bb7dee38c724bf64a99f5e5620a"
+   }
+  },
   {
    "version": "4.24.0",
    "file": "webcam_bewegung_4_24_0.py",
    "url": "",
    "sha256": "692fd93736a6607ce278b9f54775981b7f63e2b669d7b3e4da1eac38ef2286de",
-   "date": "2026-11-28 13:16",
+   "date": "2026-11-28 18:48",
    "notes": "Schweizer Karte in 3D: Schalter «2D | 3D» auf der Karte (Mehr → Karte), Gelände zum Neigen und Drehen, auch im Vollbild; Höhen aus dem Relief der Topo-Karte oder aus den Höhendaten Schweiz (MoveEye rechnet die Höhen-Kacheln selbst und speichert höchstens 256 MB).",
    "size": 3622994,
    "sig": "ed1b7a5067a7402091f32fc04fd985160a9b1393be75ccfcdf35c2da60d540a975bb4f24e3eb0ae5a0198fdbce637ffaaf17665ce0c17850a7676242aa64260a",
@@ -136,23 +153,6 @@
     "sha256": "1b94d5e5de4bd5ce503e9cfe484bb32534ae75e4cdf5db192a2303a4084799c6",
     "size": 14308616,
     "sig": "7a7f527964eaf8d1e5468f75ed439eee3d5a568eb2942ba02b16d0e60b876db5617df51e2f0722eb668d0a5db7c222d52a8474986a8403b808ce1a585a7fa803"
-   }
-  },
-  {
-   "version": "4.15.1",
-   "file": "webcam_bewegung_4_15_1.py",
-   "url": "",
-   "sha256": "aaa204ccec8a5f4bcf6e307f399f9269116b0557a8a15c475d670b142418ed49",
-   "date": "2026-11-28 00:41",
-   "notes": "Beim Host: das Bild des Simulators kommt als Einzelbilder durch die Leitung (kein Stau mehr, kein «Simulator nicht erreichbar»), Hinweis auf den Simulator der Homepage · Spiele beim Host: Spielesammlung, Amazon Queen und die anderen fertigen Spiele lassen sich laden (nur von GitHub, mit Prüfsumme, bis 400 MB)",
-   "size": 4036222,
-   "sig": "97e687131886477db66dbc7d7e3c134e2d6f9f9a72c570fb715b0530b11394aab191102c83123622c1d8694d46dd8df3b19a7ed0426738968ee041345135fb07",
-   "data": {
-    "file": "moveeye_daten_4_15_1.zip",
-    "url": "",
-    "sha256": "6a3dc45182934c3003d2ed8d4a6d6d26c6d99f2a43ff24c95551e117ee961cf2",
-    "size": 14284135,
-    "sig": "5873124887c78b9e6769a69795360586c1a0c66fe190b4678e13bf0bc3a28e0f0815ede2e998a19091c0f47d4d86bb4ed7e11a0ddfce04249ee3f7153ec0940d"
    }
   },
   {
