@@ -370,25 +370,29 @@ class GoProBleClient:
                     pass
         return cb
 
-    def write(self, uuid_short, payload, timeout=8.0):
+    def write(self, uuid_short, payload, timeout=8.0, frame=True):
         """send one message; the answer of the matching notify characteristic (header removed), b"" if it has none, None if
-        nothing came / not connected"""
+        nothing came / not connected. frame=False (G3, old Hero 8 commands): payload goes out unchanged in one packet (it already
+        carries its header, e.g. 03 17 01 01); the answer is still put together from the notify characteristic."""
         try:
-            return _gpb_run(self._awrite(str(uuid_short).lower(), bytes(payload), float(timeout)), float(timeout) + 5)
+            return _gpb_run(self._awrite(str(uuid_short).lower(), bytes(payload), float(timeout), bool(frame)), float(timeout) + 5)
         except Exception as e:
             self.last_err = str(e) or type(e).__name__
             return None
 
-    async def _awrite(self, u, payload, timeout):
+    async def _awrite(self, u, payload, timeout, frame=True):
         c = self._c
         if c is None:
             raise GpbError("not connected")
         r, fut = GPB_RESP.get(u), None
-        if r and payload:
+        body = payload
+        if not frame and len(payload) >= 2 and payload[0] >> 5 == 0 and payload[0] == len(payload) - 1:
+            body = payload[1:]                               # the message behind its own 5-bit header
+        if r and body:
             fut = asyncio.get_running_loop().create_future()
-            self._wait.setdefault(r, []).append((gpb_match(u, payload), fut))
+            self._wait.setdefault(r, []).append((gpb_match(u, body), fut))
         try:
-            for fr in (gpb_frames(payload) if u in GPB_FRAMED else [payload]):
+            for fr in (gpb_frames(payload) if (u in GPB_FRAMED and frame) else [payload]):
                 await c.write_gatt_char(gpb_uuid(u), fr, response=True)
             if fut is None:
                 return b""

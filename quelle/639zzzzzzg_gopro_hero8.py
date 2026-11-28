@@ -29,9 +29,9 @@
 # Passwort (Koordinator 28.11.2026: so machen): nur im Speicher (H8_SECRET). Die NetworkManager-Verbindung hat psk-flags=2
 #   («nicht speichern»), das Passwort geht bei jedem Verbinden über stdin (passwd-file /dev/stdin) an nmcli – nie in
 #   argv, nie in eine Datei, nie ins Protokoll, nie an den Browser (h8_scrub über jede Meldung).
-# BLE: die Grundfunktionen von G2 (gopro_ble_client / gopro_ble_scan, Teil 639zzzzzzf) – das Senden aber nur, wenn G2s write()
-#   «frame=False» kennt (G2 setzt sonst seinen 13-bit-Kopf vor unsere Bytes mit 5-bit-Kopf; ob die HERO8 das versteht, ist
-#   unbekannt); sonst ein kleiner Rückfall mit bleak (rohe Pakete wie dokumentiert). Tests: H8["ble_factory"].
+# BLE: die Grundfunktionen von G2 (gopro_ble_client / gopro_ble_scan, Teil 639zzzzzzf, bleak); gesendet wird mit frame=False:
+#   unsere Bytes mit dem 5-bit-Kopf der älteren Befehle gehen unverändert hinaus (G2 setzt sonst den 13-bit-Kopf davor; ob die
+#   HERO8 den versteht, ist unbekannt). Tests: H8["ble_factory"] / H8["scan_factory"].
 # Rechte: Steuern nur der Administrator (nacht_may, nicht im Bedienermodus). /api/gopro/hero8 (GET Stand, POST do=…).
 # Bedienung: G1s Seite /gopro («GoPro hinzufügen», Einstellungen → Kameras): in jeder Karte einer GoPro mit dem Weg
 #   «hero8_ble» erscheint die Schritt-Karte dieses Teils (H8_JS, window.goproH8.render), dazu der Hilfe-Absatz (DE / EN). Test: werkzeuge/gopro_hero8_test.py (Fake-BLE, erfundenes nmcli / ip, UDP-Strom
@@ -57,7 +57,6 @@ if "zd_exec" not in globals():                              # only without 639zz
 
 
 H8_PY = r'''
-import asyncio as _h8_asyncio
 import socket as _h8_socket
 import select as _h8_select
 
@@ -294,71 +293,13 @@ def h8_wifi_down(dev_id):
     _run(["nmcli", "connection", "down", "id", h8_conn_name(dev_id)], 15)
 
 
-# ---- Bluetooth (G2's basics when there, else bleak) -------------------------------------------------------------------------
-class _H8Bleak:
-    """small fallback with bleak (BlueZ): connect (wakes the camera), pair, notifications, write / read"""
-
-    def __init__(self, addr):
-        self.addr, self.c, self.q, self.loop = addr, None, {}, None
-
-    def _do(self, coro, t):
-        return _h8_asyncio.run_coroutine_threadsafe(coro, self.loop).result(t)
-
-    def _cb(self, short):
-        qq = self.q.setdefault(short, queue.Queue())
-        return lambda _h, data: qq.put(bytes(data))
-
-    def connect(self, timeout=20.0):
-        import bleak
-        self.loop = _h8_asyncio.new_event_loop()
-        threading.Thread(target=self.loop.run_forever, daemon=True, name="h8-ble").start()
-
-        async def go():
-            self.c = bleak.BleakClient(self.addr, timeout=timeout)
-            await self.c.connect()
-            try:
-                await self.c.pair()
-            except Exception:
-                pass
-            for s in ("0073", "0075", "0077"):
-                try:
-                    await self.c.start_notify(h8_uuid(s), self._cb(s))
-                except Exception:
-                    pass
-        self._do(go(), timeout + 10)
-
-    def write(self, short, data, wait=3.0):
-        resp = "%04x" % (int(short, 16) + 1)
-        qq = self.q.setdefault(resp, queue.Queue())
-        while not qq.empty():
-            qq.get_nowait()
-        self._do(self.c.write_gatt_char(h8_uuid(short), bytes(data), response=True), 10)
-        try:
-            return qq.get(timeout=wait)
-        except queue.Empty:
-            return None
-
-    def read(self, short):
-        return bytes(self._do(self.c.read_gatt_char(h8_uuid(short)), 10))
-
-    def close(self):
-        try:
-            if self.c is not None:
-                self._do(self.c.disconnect(), 10)
-        except Exception:
-            pass
-        try:
-            self.loop.call_soon_threadsafe(self.loop.stop)
-        except Exception:
-            pass
-
-
+# ---- Bluetooth (G2's basics, 639zzzzzzf) --------------------------------------------------------------------------------------
 def h8_ble_ok():
+    """Bluetooth usable: G2's client (639zzzzzzf) and bleak"""
     if H8.get("ble_factory"):
         return True
     try:
-        import importlib.util
-        return importlib.util.find_spec("bleak") is not None
+        return "gopro_ble_client" in globals() and gpb_bleak() is not None
     except Exception:
         return False
 
@@ -386,50 +327,23 @@ class _H8G2:
         self.cl.close()
 
 
-def _h8_g2_ok():
-    """G2's client can send our packets unframed (frame=False)? Otherwise its 13-bit header would wrap our 5-bit one."""
-    try:
-        import inspect
-        f = globals().get("GoProBleClient")
-        return f is not None and "frame" in inspect.signature(f.write).parameters
-    except Exception:
-        return False
-
-
 def h8_ble(addr):
     if H8.get("ble_factory"):
         return H8["ble_factory"](addr)
-    if "gopro_ble_client" in globals() and _h8_g2_ok():
-        return _H8G2(globals()["gopro_ble_client"](addr))
     if not h8_ble_ok():
         raise RuntimeError("Bluetooth library missing (python3-bleak).")
-    return _H8Bleak(addr)
+    return _H8G2(gopro_ble_client(addr))
 
 
 def h8_scan(timeout=8.0):
     """-> ([{addr, name, rssi}], English error or '')"""
     if H8.get("scan_factory"):
         res = H8["scan_factory"](timeout)
-    elif "gopro_ble_scan" in globals():
+    elif h8_ble_ok():
         try:
-            res = globals()["gopro_ble_scan"](timeout)
+            res = gopro_ble_scan(timeout)
         except Exception as e:
             return [], ("Bluetooth library missing (python3-bleak)." if "bleak" in str(e) else "Bluetooth: " + str(e)[:120])
-    elif h8_ble_ok():
-        import bleak
-
-        async def go():
-            found = await bleak.BleakScanner.discover(timeout=timeout, return_adv=True)
-            out = []
-            for d, adv in found.values():
-                uu = [u.lower() for u in (adv.service_uuids or [])]
-                if any(u.startswith("0000fea6") for u in uu) or (d.name or "").lower().startswith("gopro"):
-                    out.append({"addr": d.address, "name": (d.name or "GoPro")[:40], "rssi": adv.rssi})
-            return out
-        try:
-            res = _h8_asyncio.run(go())
-        except Exception as e:
-            return [], "Bluetooth: " + str(e)[:120]
     else:
         return [], "Bluetooth library missing (python3-bleak)."
     res = [r for r in (res or []) if isinstance(r, dict) and r.get("addr")]
@@ -979,4 +893,4 @@ def h8_selftest():
 
 SELFTEST_EXTRA.append(("GoPro Hero 8 over Bluetooth (639zzzzzzg)", h8_selftest))
 '''
-zd_exec(H8_PY and "\n" * 57 + H8_PY, "639zzzzzzg_gopro_hero8.py")   # line 1 of H8_PY = line 58: the line numbers are those of this file
+zd_exec(H8_PY and "\n" * 58 + H8_PY, "639zzzzzzg_gopro_hero8.py")   # line 1 of H8_PY = line 59: the line numbers are those of this file

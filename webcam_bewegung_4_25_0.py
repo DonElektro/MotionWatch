@@ -336,7 +336,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_25_0.zip"
-ZD_SHA256 = "2f32809dc0e07184e07038f865cda5cc0639092896867bb43a9d13e266c68a59"
+ZD_SHA256 = "730c07fdcd48ca7359f5dfc6ef5562ff2266fd771f384647c85b0bb4fb6571e1"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -107954,7 +107954,7 @@ if "zd_exec" not in globals():
 
 
 H8_PY = _zd('639zzzzzzg_gopro_hero8/H8_PY', "")
-zd_exec(H8_PY and "\n" * 57 + H8_PY, "639zzzzzzg_gopro_hero8.py")
+zd_exec(H8_PY and "\n" * 58 + H8_PY, "639zzzzzzg_gopro_hero8.py")
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")
