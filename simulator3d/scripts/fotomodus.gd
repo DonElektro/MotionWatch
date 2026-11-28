@@ -561,7 +561,7 @@ func _size_of(v: Node3D) -> Vector2:
 	var inv := v.global_transform.affine_inverse()
 	for n in v.find_children("*", "VisualInstance3D", true, false):
 		var vi: VisualInstance3D = n
-		if (vi.layers & 1) == 0 or not vi.is_visible_in_tree():
+		if (vi.layers & 1) == 0 or not vi.is_visible_in_tree() or vi.has_meta("kontaktschatten"):
 			continue
 		var b: AABB = (inv * vi.global_transform) * vi.get_aabb()
 		box = b if first else box.merge(b)

@@ -150,7 +150,7 @@ func _meshes(v: Node) -> Array:
 	var out := []
 	for m in v.find_children("*", "MeshInstance3D", true, false):
 		var mi := m as MeshInstance3D
-		if mi.layers & 1 and mi.visible and mi.mesh != null:
+		if mi.layers & 1 and mi.visible and mi.mesh != null and not mi.has_meta("kontaktschatten"):
 			out.append(mi)
 	return out
 
