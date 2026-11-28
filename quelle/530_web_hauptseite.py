@@ -3463,7 +3463,7 @@ function thExtras(d) {
   // three parts: alarm / picture / camera & alignment
   const parts = [["th:alarm", "🚨 " + t("Alarm"), ["thermal_alarm", "thermal_need_motion", "thermal_delta", "thermal_min_area"]],
                  ["th:view", "🎨 " + t("Picture"), ["thermal_on", "thermal_hot", "thermal_map", "thermal_alpha", "thermal_hot_pct"]],
-                 ["th:cam", "📷 " + t("Camera and alignment"), ["thermal_source", "thermal_zoom", "thermal_dx", "thermal_dy"]]];
+                 ["th:cam", "📷 " + t("Camera and alignment"), ["thermal_source", "thermal_rotate", "thermal_mirror", "thermal_zoom", "thermal_dx", "thermal_dy", "senxor_cs", "senxor_rst", "senxor_drdy"]]];
   const rowOf = k => d.querySelector(':scope > [data-key="' + k + '"]');
   parts.forEach(([view, title, keys]) => {
     const S = el("details", "sub thsub"); S.dataset.view = view; S.appendChild(el("summary", "", title));

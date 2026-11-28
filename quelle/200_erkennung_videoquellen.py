@@ -58,6 +58,36 @@ def cam_orient(frame):
     return frame
 
 
+def cam_turn_get(spec=None):
+    """(turned "0" / "90" / "180" / "270" clockwise, mirrored) of ANY camera (Besitzer 28.11.2026, 639zzzzzzd):
+    None / the main camera = cam_rotate / cam_mirror, the thermal camera = thermal_rotate / thermal_mirror,
+    every other camera (wide-angle, USB, network, simulator) = CFG["cam_turn"][spec] = {"rot": "90", "mirror": True}"""
+    sp = "" if spec is None else str(spec)
+    if not sp or sp == str(CFG.get("source") or ""):
+        r, m = CFG.get("cam_rotate", "0"), CFG.get("cam_mirror")
+    elif sp in ("thermal", "sim:thermal") or sp == str(CFG.get("thermal_source") or "-"):
+        r, m = CFG.get("thermal_rotate", "0"), CFG.get("thermal_mirror")
+    else:
+        d = CFG.get("cam_turn") if isinstance(CFG.get("cam_turn"), dict) else {}
+        e = d.get(sp) if isinstance(d.get(sp), dict) else {}
+        r, m = e.get("rot", "0"), e.get("mirror")
+    r = str(r or "0")
+    return (r if r in _ROT else "0", bool(m))
+
+
+def cam_turn_frame(frame, spec=None, turn=None):
+    """the picture of a camera turned / mirrored as set - right after reading it, so everything after sees it upright"""
+    if frame is None:
+        return frame
+    r, m = turn or cam_turn_get(spec)
+    rr = _ROT.get(r)
+    if rr is not None:
+        frame = cv2.rotate(frame, rr)
+    if m:
+        frame = cv2.flip(frame, 1)
+    return frame
+
+
 class CvSource:
     """A camera read through OpenCV (USB webcam or network stream)."""
     def __init__(self, cap, size=None):

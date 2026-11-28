@@ -333,7 +333,7 @@ function apply() { document.documentElement.style.setProperty("--fs", S.big ? "2
   $("b-big").classList.toggle("on", S.big); $("b-theme").textContent = {light: "☾", dark: "◉", red: "☀"}[s]; }
 function body(x) { return x.split("\n\n").map(b => b.split("\n").every(l => l.startsWith("- ")) ? "<ul>" + b.split("\n").map(l => "<li>" + esc(l.slice(2)) + "</li>").join("") + "</ul>" : "<p>" + esc(b).replace(/\n/g, "<br>") + "</p>").join(""); }
 function tipIdx() { const d = new Date(); return (d.getFullYear() * 400 + d.getMonth() * 31 + d.getDate()) % all.length; }
-function go(h) { view++; clearTimeout(timer); window.speechSynthesis && speechSynthesis.cancel(); m.innerHTML = h; scrollTo(0, 0); return view; }
+function go(h) { view++; clearTimeout(timer); window.speechSynthesis && speechSynthesis.cancel(); window.almStop && almStop(); m.innerHTML = h; scrollTo(0, 0); return view; }
 function foot() { return '<p class="mut" style="margin-top:22px">Von MoveEye, offline auf dem Gerät, nur auf Deutsch. Ersetzt keinen Erste-Hilfe-Kurs – im Notfall 112 / 144. Weiterlesen (englisch, gemeinfrei): «US Army Survival Manual FM 21-76».</p>'; }
 function home(q) {
   let h = ""; window.cur = undefined;
@@ -429,8 +429,11 @@ $("b-theme").onclick = () => { const n = {light: "dark", dark: "red", red: "ligh
   fetch("/api/ui", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({set: {"mw-theme": th}})}).catch(() => {});   // like the other pages (guests: refused, no matter)
   apply(); };
 addEventListener("storage", e => { if (e.key === "mw-theme" || e.key === "mw-night") apply(); });   // switched on another page of MoveEye
-$("b-read").onclick = () => { if (!window.speechSynthesis) return; if (window.MW_VOICE && window.MW_VOICE !== "on") return;    if (speechSynthesis.speaking) { speechSynthesis.cancel(); return; }
-  const a = all[window.cur ?? tipIdx()]; const u = new SpeechSynthesisUtterance(a.t + ". " + a.x.replace(/^- /gm, "")); u.lang = "de-CH"; u.rate = 0.95; speechSynthesis.speak(u); };
+// 🔊: the Piper voice («my AI voice») like the reading in the backpack (639zzzzv_vorlesen_almanach: window.almRead); without it the browser voice
+function almBrowser(i, text) { if (!window.speechSynthesis) return false; if (speechSynthesis.speaking) { speechSynthesis.cancel(); return true; }
+  const a = all[i]; const u = new SpeechSynthesisUtterance(text || a.t + ". " + a.x.replace(/^- /gm, "")); u.lang = "de-CH"; u.rate = 0.95; speechSynthesis.speak(u); return true; }
+$("b-read").onclick = () => { if (window.MW_VOICE && window.MW_VOICE !== "on") return;
+  const i = window.cur ?? tipIdx(); if (window.almRead) almRead(i); else almBrowser(i); };
 // ---- the way back (Besitzer: «es fehlt noch eine Taste um zurückzukommen»): one button, always in the head of the page, that goes
 // to the logical parent - article -> chapter -> contents -> MoveEye «Mehr» - and never into an empty history (home-screen app,
 // page opened directly). The own «✕ Zurück» of 340 is not used here (window.__mwExit): it steps through the history, and inside

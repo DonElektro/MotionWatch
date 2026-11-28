@@ -216,7 +216,7 @@ class KwPreview:
                     time.sleep(0.05); continue
                 fails = 0
                 if t0 - last >= 1.0 / KW_VIEW_FPS:
-                    self.frame, self.t, last = fr, time.time(), t0
+                    self.frame, self.t, last = cam_turn_frame(fr, self.spec), time.time(), t0    # 639zzzzzzd: turned as set
                 if not live:
                     time.sleep(max(0.0, 1.0 / KW_VIEW_FPS - (time.time() - t0)))
         except Exception as e:

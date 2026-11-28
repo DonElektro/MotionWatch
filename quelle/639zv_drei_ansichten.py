@@ -122,6 +122,7 @@ _HX_V3 = {   # English (key): Deutsch, Français, Italiano, Rumantsch
                                  "Nagina camera termica tschernida"),
     "No wide-angle camera (overview)": ("Keine Weitwinkel-Kamera (Übersicht)", "Pas de caméra grand angle (vue d’ensemble)",
                                         "Nessuna telecamera grandangolare (panoramica)", "Nagina camera da grond angul (survista)"),
+    "no thermal picture": ("kein Wärmebild", "pas d’image thermique", "nessuna immagine termica", "nagin maletg termic"),
     "Small overview picture": ("Kleines Übersichtsbild", "Petite image d’ensemble", "Piccola immagine panoramica", "Pitschen maletg da survista"),
     "Tap the small picture: swap big and small": ("Kleines Bild antippen: gross und klein tauschen",
                                                   "Toucher la petite image : échanger grande et petite",
@@ -263,6 +264,8 @@ VIEW3_JS = r"""
     if (K && K.retarget) K.retarget(kb ? kb.src : c === "wide" ? "/cam_feed/" + i.wide : "/video_feed");    // one stream: only its address changes
     vimg.dataset.v3 = kb ? "kw" : c;
     TAG.hidden = !kb && c === "head"; TAG.textContent = kb ? kb.ic + " " + kb.lb : IC[c] + " " + T(LB[c]);
+    const ths = String((J().state || {}).thermal || "");      // 4.24.x: thermal view without a thermal picture - say so (the head picture stays)
+    if (!kb && c === "thermal" && ths && ths !== "connected") { TAG.textContent += " · ⚠ " + T("no thermal picture"); TAG.title = ths; } else TAG.title = "";
     if (h && OV.parentNode !== h) h.appendChild(OV);
     if (h && MB.parentNode !== h) h.appendChild(MB);
     const showM = !!h && V.pip && avail("wide") && !sv && !kb;
