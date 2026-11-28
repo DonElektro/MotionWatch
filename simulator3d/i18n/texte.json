@@ -39096,8 +39096,7 @@
   "en": "Roll ring",
   "fr": "Rouler en anneau",
   "it": "Rotolare ad anello",
-  "rm": "Rullar il rintg",
-  "?": "rm: Wortwahl unsicher (Roboter-Labor, 28.11.2026)"
+  "rm": "Rullar en il rintg"
  },
  "Ring rund ums Gerät (8 m)": {
   "en": "Ring around the device (8 m)",
@@ -43063,8 +43062,7 @@
   "en": "Track width",
   "fr": "Voie",
   "it": "Carreggiata",
-  "rm": "Ladezza da la fastizs",
-  "?": "rm: Wortwahl unsicher (Roboter-Labor, 28.11.2026)"
+  "rm": "Ladezza dals pes"
  },
  "Spurbreite beim Gehen (Fuss links bis Fuss rechts)": {
   "en": "Track width when walking (left foot to right foot)",
@@ -46848,8 +46846,7 @@
   "en": "Bottom bar with controls on / off",
   "fr": "Barre inférieure de commande oui / non",
   "it": "Barra inferiore dei comandi on / off",
-  "rm": "Trav sut cun la direcziun en / ora",
-  "?": "rm: Wortwahl unsicher (Roboter-Labor, 28.11.2026)"
+  "rm": "Trav giusut cun il manaschament en / ora"
  },
  "Unterschenkel": {
   "en": "Lower leg",

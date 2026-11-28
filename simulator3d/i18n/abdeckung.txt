@@ -2,7 +2,7 @@ Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von 
 
 Texte gesamt: 8883 (Stellen: 12359)
 Übersetzt: en 8883, fr 8883, it 8883, rm 8883
-Unsicher markiert: 529
+Unsicher markiert: 526
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 556 Stellen
 Nicht mehr im Code (noch in texte.json): 425
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
@@ -725,9 +725,6 @@ Unsicher:
   'Bestes: %s · %.1f s · %.2f Wh · Kipp-Reserve %d %%': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
   'Zu schwer: nach %d Versuchen wird es umgangen': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
   'Letzter Versuch: %s': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
-  'Untere Leiste mit Steuerung ein / aus': rm: Wortwahl unsicher (Roboter-Labor, 28.11.2026)
-  'Ring rollen': rm: Wortwahl unsicher (Roboter-Labor, 28.11.2026)
-  'Spurbreite': rm: Wortwahl unsicher (Roboter-Labor, 28.11.2026)
   '%s: «%s» wird gesendet, steht aber nicht in schnittstelle.json': Entwickler-Meldung (Log) – nicht umhüllen
   '%s: «%s» steht in schnittstelle.json, wird aber nicht gesendet': Entwickler-Meldung (Log) – nicht umhüllen
   'control: MoveEye braucht «%s», main.gd _control kennt es nicht': Entwickler-Meldung (Log) – nicht umhüllen
