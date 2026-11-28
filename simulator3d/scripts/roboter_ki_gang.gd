@@ -264,7 +264,7 @@ func _hindernis(pr: Array, r: int) -> Dictionary:
 				gentle = false
 				break
 			e += 1
-		if gentle and e - r >= 4:
+		if gentle:
 			var drop: float = float(pr[e]["h"])
 			var ng := rad_to_deg(atan2(drop - float(pr[r]["h"]), maxf((e - r) * ZELLE, 0.02)))
 			return {"art": "rampe", "hoehe": drop, "breite": (e - r) * ZELLE, "tiefe": -drop, "neigung": ng, "_bis": e + 1}
@@ -365,7 +365,8 @@ func regel(h: Dictionary) -> Array:
 		"treppe":
 			return ["hoch_steigen", {}]
 		"graben", "luecke":
-			return ["bruecke", {}] if float(h.get("breite", 0.0)) <= 0.4 else ["umgehen", {}]
+			var weit: bool = float(h.get("breite", 0.0)) > 0.4 and bool(h.get("ende_gesehen", true))
+			return ["umgehen", {}] if weit else ["bruecke", {}]
 		"balken":
 			return ["kriechen_drunter", {}] if hh >= 0.10 else ["umgehen", {}]
 		"geroell":
