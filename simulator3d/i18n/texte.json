@@ -7467,6 +7467,18 @@
   "it": "Zampe ripiegate",
   "rm": "Chommas plegadas"
  },
+ "Beine, Servos und Massen wie beim Segment-Roboter (Einheiten «E»). Nach einer Änderung baut das Labor den Roboter neu auf.": {
+  "en": "Legs, servos and masses as on the segment robot (units «E»). After a change the lab builds the robot again.",
+  "fr": "Pattes, servos et masses comme sur le robot à segments (unités «E»). Après une modification, le labo reconstruit le robot.",
+  "it": "Zampe, servo e masse come nel robot a segmenti (unità «E»). Dopo una modifica il laboratorio ricostruisce il robot.",
+  "rm": "Chommas, servos e massas sco tar il robot da segments (unitads «E»). Suenter ina midada construescha il labor il robot da nov."
+ },
+ "Beinpaar %d (1 = vorne)": {
+  "en": "Leg pair %d (1 = front)",
+  "fr": "Paire de pattes %d (1 = avant)",
+  "it": "Coppia di zampe %d (1 = davanti)",
+  "rm": "Pèr da chommas %d (1 = davant)"
+ },
  "Beispiel": {
   "en": "Example",
   "fr": "Exemple",
@@ -22088,6 +22100,12 @@
   "it": "Mezza larghezza della punta",
   "rm": "Mesa ladezza da la piz"
  },
+ "Halbe Höhe des Körpers": {
+  "en": "Half height of the body",
+  "fr": "Demi-hauteur du corps",
+  "it": "Metà altezza del corpo",
+  "rm": "Mesa autezza dal corp"
+ },
  "Hallo": {
   "en": "Hi",
   "fr": "Salut",
@@ -23013,6 +23031,12 @@
   "fr": "Montée aux ruines d'Altstafel",
   "it": "Su alle rovine di Altstafel",
   "rm": "Ensi a la ruina Altstafel"
+ },
+ "Hinlegen": {
+  "en": "Lie down",
+  "fr": "Se coucher",
+  "it": "Sdraiarsi",
+  "rm": "Sa trair giu"
  },
  "Hinlegen und still liegen / aufstehen (Z)": {
   "en": "Lie down and keep still / get up (Z)",
@@ -28653,6 +28677,12 @@
   "it": "Altezza del corpo dal suolo",
   "rm": "Autezza dal corp sur il terren"
  },
+ "Körperlänge": {
+  "en": "Body length",
+  "fr": "Longueur du corps",
+  "it": "Lunghezza del corpo",
+  "rm": "Lunghezza dal corp"
+ },
  "Küche": {
   "en": "Kitchen",
   "fr": "Cuisine",
@@ -29152,6 +29182,12 @@
   "fr": "Cours au brasero et appuie sur A : Maggie aboie et renvoie les loups dans leur tanière.",
   "it": "Corri al braciere e premi A: Maggie abbaia e ricaccia i lupi nella tana.",
   "rm": "Curra tar la cuppa da fieu e smatga A: Maggie bauscha ils lufs en lur tana."
+ },
+ "Laufroboter – Form, Gelenke und Physik ausprobieren": {
+  "en": "Walking robot – try out shape, joints and physics",
+  "fr": "Robot marcheur – essayer la forme, les articulations et la physique",
+  "it": "Robot camminatore – provare forma, articolazioni e fisica",
+  "rm": "Robot chaminader – empruvar furma, artitgels e fisica"
  },
  "laut und oft, drei Jump-Scares pro Nacht": {
   "en": "loud and often, three jump scares per night",
@@ -29678,6 +29714,12 @@
   "fr": "Camionnette (roule)",
   "it": "Furgone (in marcia)",
   "rm": "Camiunet (charra)"
+ },
+ "Liegen": {
+  "en": "Lie",
+  "fr": "Couché",
+  "it": "Sdraiato",
+  "rm": "Giaschair"
  },
  "Liegen lassen": {
   "en": "Leave it",
@@ -30761,6 +30803,12 @@
   "fr": "Masse %.2f kg · centre de gravité à %.0f cm du sol · courant env. %.1f A",
   "it": "Massa %.2f kg · baricentro a %.0f cm dal suolo · corrente circa %.1f A",
   "rm": "Massa %.2f kg · center da gravitad %.0f cm sur il terren · current ca. %.1f A"
+ },
+ "Masse des Körpers": {
+  "en": "Mass of the body",
+  "fr": "Masse du corps",
+  "it": "Massa del corpo",
+  "rm": "Massa dal corp"
  },
  "Masse je Bein": {
   "en": "Mass per leg",
@@ -36446,6 +36494,12 @@
   "it": "Passchanzle Furgga",
   "rm": "Passchanzle Furgga"
  },
+ "Passgang": {
+  "en": "Pace",
+  "fr": "Amble",
+  "it": "Ambio",
+  "rm": "Ambla"
+ },
  "Passhöhe": {
   "en": "Pass summit",
   "fr": "Sommet du col",
@@ -39920,6 +39974,12 @@
   "it": "Intensità dello spavento",
   "rm": "Fermezza da la tschuffergna"
  },
+ "Schritt": {
+  "en": "Walk",
+  "fr": "Pas",
+  "it": "Passo",
+  "rm": "Pass"
+ },
  "Schritt %d von %d": {
   "en": "Step %d of %d",
   "fr": "Étape %d sur %d",
@@ -40355,6 +40415,12 @@
   "fr": "Carte SD (v5.2)",
   "it": "Scheda SD (v5.2)",
   "rm": "Carta SD (v5.2)"
+ },
+ "Sechsbeiner": {
+  "en": "Six-legged",
+  "fr": "Hexapode",
+  "it": "Esapode",
+  "rm": "Robot cun sis chommas"
  },
  "Sechzehn Kilo. Zu viel. Das Fondue-Set hätte ich zu Hause lassen sollen.": {
   "en": "Sixteen kilos. Too much. I should have left the fondue set at home.",
@@ -41240,6 +41306,12 @@
   "fr": "Enregistrer la situation",
   "it": "Salva situazione",
   "rm": "Memorisar la situaziun"
+ },
+ "Sitzen": {
+  "en": "Sit",
+  "fr": "Assis",
+  "it": "Seduto",
+  "rm": "Seser"
  },
  "Sitzkissen": {
   "en": "Seat cushion",
@@ -42427,6 +42499,12 @@
   "it": "Pagina iniziale con riquadro del simulatore",
   "rm": "Pagina da partenza cun platta dal simulatur"
  },
+ "Startwerte": {
+  "en": "Start values",
+  "fr": "Valeurs de départ",
+  "it": "Valori iniziali",
+  "rm": "Valurs da partenza"
+ },
  "Startwerte (modell.json)": {
   "en": "Start values (modell.json)",
   "fr": "Valeurs de départ (modell.json)",
@@ -42564,6 +42642,12 @@
   "fr": "Passerelle réparée",
   "it": "Passerella riparata",
   "rm": "Punt reparada"
+ },
+ "Stehen": {
+  "en": "Stand",
+  "fr": "Debout",
+  "it": "In piedi",
+  "rm": "Star en pe"
  },
  "Steht": {
   "en": "Standing",
@@ -44915,6 +44999,12 @@
   "it": "TowerPro MG90S",
   "rm": "TowerPro MG90S"
  },
+ "Trab": {
+  "en": "Trot",
+  "fr": "Trot",
+  "it": "Trotto",
+  "rm": "Trot"
+ },
  "Trag ihn hoch und lass ihn vor der Kamera «Fallen».": {
   "en": "Carry it up and let it «Fall» in front of the camera.",
   "fr": "Porte-le en haut et laisse-le «Tomber» devant la caméra.",
@@ -46834,6 +46924,12 @@
   "fr": "Quatre saisons. Quatre vallées.",
   "it": "Quattro stagioni. Quattro valli.",
   "rm": "Quatter stagiuns. Quatter vals."
+ },
+ "Vierbeiner": {
+  "en": "Four-legged",
+  "fr": "Quadrupède",
+  "it": "Quadrupede",
+  "rm": "Robot cun quatter chommas"
  },
  "Vignette": {
   "en": "Vignette",

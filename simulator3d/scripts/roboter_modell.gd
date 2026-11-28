@@ -876,3 +876,13 @@ func ground_contacts() -> int:
 		if st != null and st.get_contact_count() > 0:
 			k += 1
 	return k
+
+
+func legs() -> Array:
+	"""all legs (Gang-KI / Steuerung, the same list in roboter_klassisch_modell.gd): [{"i": segment or leg pair, "s": side
+	(−1 links, +1 rechts), "id": "0l" (servo ids hy0l / hp0l / kn0l), "hip": hip in the frame segment_xf(i)}]"""
+	var out := []
+	for i in range(n()):
+		for s in [-1, 1]:
+			out.append({"i": i, "s": s, "id": "%d%s" % [i, "l" if s < 0 else "r"], "hip": Vector3(0, 0, s * u("halbe_breite"))})
+	return out

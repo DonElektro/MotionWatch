@@ -25,11 +25,15 @@ const MODELL = preload("res://scripts/roboter_modell.gd")
 const BEWEGUNG = preload("res://scripts/roboter_bewegung.gd")
 const GELAENDE = preload("res://scripts/roboter_gelaende.gd")
 const ANZEIGE = preload("res://scripts/roboter_anzeige.gd")
+const KL_MODELL = preload("res://scripts/roboter_klassisch_modell.gd")        # Vierbeiner / Sechsbeiner (28.11.2026)
+const KL_BEWEGUNG = preload("res://scripts/roboter_klassisch_bewegung.gd")
 const TICKS := 120
 # Zwei Varianten (Besitzer 22.11.2026 21:33): «8 Segmente» (Ring 8 × 45°) und «4 Segmente» (Ring 4 × 90°, die 45°-Schrägen
 # liegen flach aneinander). Jede Variante hat ihre eigenen Regler, Pose und Gang-Werte (user://roboter_labor.json).
 # Einstieg von aussen (z. B. ?roboter=4 der Startseite): control({"do": "open", "variante": "4"}) - variante_aus() deutet den Wert.
 const VARIANTEN := [["8", "8 Segmente"], ["6", "6 Segmente"], ["4", "4 Segmente"]]   # 6er: Besitzer 21:54 (Ring 6 × 60°)
+# klassische Laufroboter (Besitzer 28.11.2026 14:40): ein Körper mit 4 / 6 Beinen (roboter_klassisch_modell.gd), kein Ring
+const VARIANTEN_K := [["k4", "Vierbeiner"], ["k6", "Sechsbeiner"]]
 const SPEICHER := "user://roboter_labor.json"
 const BEW_KEYS := ["hoehe", "spreiz", "tempo", "schritt_laenge", "schritt_hoehe", "anpassen", "ring_methode", "ring_hoehe", "spur_rollen"]
 # Start-Werte fürs Rollen je Variante (gemessen 22.11.2026, je 3 Versuche über eine ganze Drehung, Median):
@@ -122,8 +126,42 @@ func is_open() -> bool:
 
 static func variante_aus(v) -> String:
 	"""«4» → 4 Segmente, «6» → 6 Segmente, alles andere («1», «8», leer) → 8 Segmente"""
-	var t := str(v).strip_edges()
+	var t := str(v).strip_edges().to_lower()
+	if t in ["k4", "vierbeiner"]:
+		return "k4"
+	if t in ["k6", "sechsbeiner"]:
+		return "k6"
 	return t if t in ["4", "6"] else "8"
+
+
+func klassisch() -> bool:
+	"""Vierbeiner / Sechsbeiner (one body, no ring) instead of the segment robot"""
+	return variante in ["k4", "k6"]
+
+
+func _form() -> Array:
+	return KL_MODELL.FORM_K if klassisch() else FORM
+
+
+func _physik() -> Array:
+	return KL_MODELL.PHYSIK_K if klassisch() else PHYSIK
+
+
+func _grenzen() -> Dictionary:
+	return KL_MODELL.GRENZEN_K if klassisch() else MODELL.GRENZEN
+
+
+func _posen() -> Array:
+	"""the ready poses / gaits / sequences of the robot shown now"""
+	return bew.posen() if klassisch() and bew != null else BEWEGUNG.POSEN
+
+
+func _gaenge() -> Array:
+	return bew.gaenge() if klassisch() and bew != null else BEWEGUNG.GAENGE
+
+
+func _ablaeufe() -> Array:
+	return bew.ablaeufe() if klassisch() and bew != null else BEWEGUNG.ABLAEUFE
 
 
 func open() -> void:
@@ -193,22 +231,26 @@ func _build_world() -> void:
 	cam.near = 0.02
 	cam.far = 120.0
 	world.add_child(cam)
-	model = MODELL.new()
-	model.name = "segmentroboter"
+	model = KL_MODELL.new() if klassisch() else MODELL.new()
+	model.name = "laufroboter" if klassisch() else "segmentroboter"
+	if klassisch():
+		model.setze_beine(6 if variante == "k6" else 4)
 	var sp: Dictionary = (_store.get(variante, {}) as Dictionary).get("p", {})
 	for k in sp:
-		if MODELL.START.has(k):
+		if model.p.has(k) and k != "beine":
 			model.p[k] = sp[k]
-	if variante in ["4", "6"]:
+	if klassisch():
+		pass
+	elif variante in ["4", "6"]:
 		model.p["segmente"] = int(variante)
 	elif int(model.p["segmente"]) in [4, 6]:
 		model.p["segmente"] = 8
-	last_pose = str((_store.get(variante, {}) as Dictionary).get("pose", "gerade"))
+	last_pose = str((_store.get(variante, {}) as Dictionary).get("pose", "stehen" if klassisch() else "gerade"))
 	var an: Dictionary = (_store.get(variante, {}) as Dictionary).get("ansicht", {})
 	pip = bool(an.get("pip", true))
 	info_on = bool(an.get("info", true))
 	world.add_child(model)
-	bew = BEWEGUNG.new()
+	bew = KL_BEWEGUNG.new() if klassisch() else BEWEGUNG.new()
 	bew.m = model
 	var rs0: Dictionary = RUND_START.get(variante, {})
 	for k in rs0:
@@ -677,7 +719,7 @@ func _build_ui() -> void:
 	x.tooltip_text = T.t("Schliessen (Esc)")
 	x.pressed.connect(close)
 	hd.add_child(x)
-	var sub := UI.small(T.t("Segment-Roboter – Form, Gelenke und Physik ausprobieren"))
+	var sub := UI.small(T.t("Laufroboter – Form, Gelenke und Physik ausprobieren") if klassisch() else T.t("Segment-Roboter – Form, Gelenke und Physik ausprobieren"))
 	pv.add_child(sub)
 	var vs := HBoxContainer.new()
 	vs.add_theme_constant_override("separation", 4)
@@ -685,6 +727,14 @@ func _build_ui() -> void:
 	for vv in VARIANTEN:
 		var vid: String = vv[0]
 		var vb := _button(vs, T.t(vv[1]), func(): set_variante.call_deferred(vid))
+		vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_paint_btn(vb, vid == variante)
+	var vk := HBoxContainer.new()                     # second row: the classic walking robots
+	vk.add_theme_constant_override("separation", 4)
+	pv.add_child(vk)
+	for vv in VARIANTEN_K:
+		var vid: String = vv[0]
+		var vb := _button(vk, T.t(vv[1]), func(): set_variante.call_deferred(vid))
 		vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_paint_btn(vb, vid == variante)
 	var tabs := HFlowContainer.new()
@@ -698,6 +748,7 @@ func _build_ui() -> void:
 		b.pressed.connect(set_tab.bind(tb[0]))
 		tabs.add_child(b)
 		_w["tab_" + tb[0]] = b
+		b.visible = not (klassisch() and tb[0] == "rund")    # no ring
 	var sc := ScrollContainer.new()
 	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -886,7 +937,7 @@ func add_child_pip() -> void:
 
 
 func set_tab(t: String) -> void:
-	tab = t if t in TABS.map(func(x): return x[0]) else "form"
+	tab = t if t in TABS.map(func(x): return x[0]) and not (klassisch() and t == "rund") else "form"
 	for tb in TABS:
 		var pg: Control = _w.get("page_" + tb[0])
 		if pg != null:
@@ -959,9 +1010,10 @@ func _button(parent: Control, title: String, cb: Callable, primary := false) -> 
 
 
 func _page_form(pg: VBoxContainer) -> void:
-	pg.add_child(UI.small(T.t("Startwerte aus modell.json (Einheiten der Vorlage, «E»). Nach einer Änderung baut das Labor den Roboter neu auf.")))
-	for f in FORM:
-		var g: Array = MODELL.GRENZEN[f[0]]
+	pg.add_child(UI.small(T.t("Beine, Servos und Massen wie beim Segment-Roboter (Einheiten «E»). Nach einer Änderung baut das Labor den Roboter neu auf.") if klassisch()
+			else T.t("Startwerte aus modell.json (Einheiten der Vorlage, «E»). Nach einer Änderung baut das Labor den Roboter neu auf.")))
+	for f in _form():
+		var g: Array = _grenzen()[f[0]]
 		var key: String = f[0]
 		_w["form_" + key] = _slider(pg, T.t(f[1]), g[0], g[1], f[3], float(model.p[key]), f[2], func(x: float): set_shape(key, x))
 		if key == "segmente" and variante in ["4", "6"]:
@@ -970,12 +1022,15 @@ func _page_form(pg: VBoxContainer) -> void:
 	var info := UI.small("", UI.TXT)
 	pg.add_child(info)
 	_w["form_info"] = info
-	_button(pg, T.t("Startwerte (modell.json)"), func():
-		for k in MODELL.START:
-			model.p[k] = MODELL.START[k]
+	_button(pg, T.t("Startwerte") if klassisch() else T.t("Startwerte (modell.json)"), func():
+		if klassisch():
+			model.setze_beine(6 if variante == "k6" else 4)
+		else:
+			for k in MODELL.START:
+				model.p[k] = MODELL.START[k]
 		if variante in ["4", "6"]:
 			model.p["segmente"] = int(variante)
-		for f in FORM:
+		for f in _form():
 			(_w["form_" + f[0]]["sl"] as HSlider).set_value_no_signal(float(model.p[f[0]]))
 			(_w["form_" + f[0]]["val"] as Label).text = (_w["form_" + f[0]]["fmt"] as Callable).call(float(model.p[f[0]])).strip_edges()
 		_rebuild(true)
@@ -990,7 +1045,9 @@ func _refresh_form_info() -> void:
 	var N: int = model.n()
 	var length: float = model.pitch_len() * N
 	var legs: float = model.u("oberschenkel") + model.u("unterschenkel")
-	var mass: float = float(model.p["masse_segment"]) * N + float(model.p["masse_bein"]) * 2 * N
+	var mass: float = float(model.p["masse_koerper" if klassisch() else "masse_segment"]) * (1 if klassisch() else N) + float(model.p["masse_bein"]) * 2 * N
+	if klassisch():
+		length = model.u("koerper_laenge")
 	l.text = T.t("Länge %.2f m · Breite %.2f m · Bein %.2f m · Masse %.2f kg · %d Antriebe") % [length, model.u("halbe_breite") * 2,
 			legs, mass, model.actuator_count()]
 
@@ -1019,14 +1076,15 @@ func _fill_servo_sliders() -> void:
 	var lt := _toggle(top, T.t("Riegel darf schliessen (Ring)"), model.latch_wanted, func(on: bool):
 		model.latch_wanted = on)
 	_w["latch_ok"] = lt
+	lt.visible = not klassisch()
 	var N: int = model.n()
-	for i in range(N - 1):
+	for i in range(0 if klassisch() else N - 1):
 		var b := UI.sub_fold(pg, T.t("Segmentgelenk %d (zwischen Segment %d und %d)") % [i + 1, i + 1, i + 2], i == 0)
 		(b.get_meta("wrap") as Control).set_meta("servo_ui", true)
 		_servo_slider(b, "sp%d" % i, T.t("hoch / runter"))
 		_servo_slider(b, "sy%d" % i, T.t("links / rechts"))
 	for i in range(N):
-		var b := UI.sub_fold(pg, T.t("Beine an Segment %d") % (i + 1), false)
+		var b := UI.sub_fold(pg, (T.t("Beinpaar %d (1 = vorne)") if klassisch() else T.t("Beine an Segment %d")) % (i + 1), false)
 		(b.get_meta("wrap") as Control).set_meta("servo_ui", true)
 		for sd in ["l", "r"]:
 			var side := T.t("links") if sd == "l" else T.t("rechts")
@@ -1066,7 +1124,7 @@ func _page_posen(pg: VBoxContainer) -> void:
 	gr.add_theme_constant_override("h_separation", 6)
 	gr.add_theme_constant_override("v_separation", 6)
 	pg.add_child(gr)
-	for ps in BEWEGUNG.POSEN:
+	for ps in _posen():
 		var pname: String = ps[0]
 		var b := _button(gr, T.t(ps[1]), func(): apply_pose(pname, snap.button_pressed))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1074,11 +1132,11 @@ func _page_posen(pg: VBoxContainer) -> void:
 	_w["snap"] = snap
 	_slider(pg, T.t("Körperhöhe über dem Boden"), 0.3, 1.8, 0.05, bew.hoehe, "E", func(x: float):
 		bew.hoehe = x
-		if last_pose in ["gerade", "kurve_links", "kurve_rechts", "bogen"]:
+		if last_pose in ["gerade", "kurve_links", "kurve_rechts", "bogen", "stehen", "sitzen"]:
 			apply_pose(last_pose))
 	_slider(pg, T.t("Füsse seitlich"), 0.3, 2.0, 0.05, bew.spreiz, "E", func(x: float):
 		bew.spreiz = x
-		if last_pose in ["gerade", "kurve_links", "kurve_rechts", "bogen"]:
+		if last_pose in ["gerade", "kurve_links", "kurve_rechts", "bogen", "stehen", "sitzen"]:
 			apply_pose(last_pose))
 	_button(pg, T.t("Neu aufstellen (R)"), reset)
 
@@ -1090,7 +1148,7 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 	ga.add_theme_constant_override("h_separation", 6)
 	ga.add_theme_constant_override("v_separation", 6)
 	pg.add_child(ga)
-	for a in BEWEGUNG.ABLAEUFE:
+	for a in _ablaeufe():
 		var an: String = a[0]
 		var b := _button(ga, T.t(a[1]), func(): start_ablauf(an))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1101,7 +1159,7 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 	gg.add_theme_constant_override("h_separation", 6)
 	gg.add_theme_constant_override("v_separation", 6)
 	pg.add_child(gg)
-	for g in BEWEGUNG.GAENGE:
+	for g in _gaenge():
 		var gn: String = g[0]
 		var b := _button(gg, T.t(g[1]), func(): start_gang(gn))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1136,6 +1194,7 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 		bew.start_ring()
 		_paint_gang())
 	_w["ring_btn"] = rb
+	rb.visible = not klassisch()
 	_w["turn_sl"] = _slider(pg, T.t("Kurve (− rechts, + links)"), -1.0, 1.0, 0.05, 0.0, "", func(x: float): manual.z = x)
 	_slider(pg, T.t("Tempo"), 0.01, 0.25, 0.01, bew.tempo, "m/s", func(x: float):
 		bew.tempo = x
@@ -1178,11 +1237,11 @@ func drive_dir(c: Vector3) -> void:
 
 
 func _paint_gang() -> void:
-	for g in BEWEGUNG.GAENGE:
+	for g in _gaenge():
 		var b: Button = _w.get("gang_" + g[0])
 		if b != null:
 			_paint_btn(b, bew.mode == "gang" and bew.gang == g[0])
-	for a in BEWEGUNG.ABLAEUFE:
+	for a in _ablaeufe():
 		var b: Button = _w.get("ab_" + a[0])
 		if b != null:
 			_paint_btn(b, bew.mode == "ablauf" and bew.seq_name == a[0])
@@ -1473,6 +1532,7 @@ func _page_gelaende(pg: VBoxContainer) -> void:
 	ring.focus_mode = Control.FOCUS_NONE
 	pg.add_child(ring)
 	_w["terrain_ring"] = ring
+	ring.visible = not klassisch()
 	for t in GELAENDE.NAMEN:
 		var tn: String = t[0]
 		var h := HBoxContainer.new()
@@ -1499,7 +1559,8 @@ func terrain_start(names: Array, ring := false) -> void:
 	bew.hoehe = 0.9
 	bew.schritt_hoehe = 0.35
 	model.root_xf = starts.get(tn, starts.get("start", Transform3D()))
-	apply_pose("ring" if ring else "gerade", true)
+	ring = ring and not klassisch()
+	apply_pose("stehen" if klassisch() else ("ring" if ring else "gerade"), true)
 	terrain = {"name": tn, "ring": ring, "t": 0.0, "best": -1e9, "last_t": 0.0, "queue": names.slice(1)}
 	terrain_results[tn] = [false, T.t("läuft …")]
 	follow = true
@@ -1571,8 +1632,8 @@ func servo_name(id: String) -> String:
 func _page_physik(pg: VBoxContainer) -> void:
 	pg.add_child(UI.small(T.t("Schwerkraft, Reibung und Servo-Grenzen. Die Servos halten höchstens ihr Moment – mehr Last = sie geben nach (rot).")))
 	_slider(pg, T.t("Schwerkraft"), 0.0, 20.0, 0.1, gravity, "m/s²", set_gravity)
-	for f in PHYSIK:
-		var g: Array = MODELL.GRENZEN[f[0]]
+	for f in _physik():
+		var g: Array = _grenzen()[f[0]]
 		var key: String = f[0]
 		_w["form_" + key] = _slider(pg, T.t(f[1]), g[0], g[1], f[3], float(model.p[key]), f[2], func(x: float): set_shape(key, x))
 	_w["t_pause"] = _toggle(pg, T.t("Physik anhalten (P)"), paused, set_paused)
@@ -1612,7 +1673,7 @@ func _refresh() -> void:
 	var red: int = model.collide.size()
 	var over: Array = model.overloaded()
 	var lines := [T.t("Roboter-Labor") + " · " + (T.t("Physik angehalten") if paused else T.t("Physik läuft")) + (" · " + T.t("festgehalten") if model.hold else ""),
-			str(lstate.get(model.latch["state"], "")) + " · " + (T.t("%d Teile berühren sich (rot)") % red if red > 0 else T.t("keine Kollision")),
+			("" if klassisch() else str(lstate.get(model.latch["state"], "")) + " · ") + (T.t("%d Teile berühren sich (rot)") % red if red > 0 else T.t("keine Kollision")),
 			T.t("Servos: %d · überlastet: %d · Strom ca. %.1f A") % [model.actuator_count(), over.size(), model.total_current],
 			(T.t("KIPPGEFAHR") + " · " if anz.tipping else "") + T.t("Kipp-Reserve %.1f cm") % (anz.margin * 100.0) + " · " + _move_text()]
 	(_w["status"] as Label).text = "\n".join(lines)
@@ -1663,9 +1724,9 @@ func _refresh() -> void:
 
 func _move_text() -> String:
 	var names := {}
-	for g in BEWEGUNG.GAENGE:
+	for g in _gaenge():
 		names[g[0]] = T.t(g[1])
-	for a in BEWEGUNG.ABLAEUFE:
+	for a in _ablaeufe():
 		names[a[0]] = T.t(a[1])
 	var t := T.t("steht")
 	if bew.mode == "gang":
@@ -1714,6 +1775,10 @@ func info() -> Dictionary:
 				"terrain": terrain.get("name", ""), "terrain_results": terrain_results, "adapted": bew.angepasst,
 				"plan": bew.plan, "anpassen": bew.anpassen, "variante": variante, "pip": pip, "info_on": info_on, "panel": _panel_on, "compact": compact() if is_open() else false, "touch": touch, "ring_methode": bew.ring_methode,
 				"rund": rund_summary(), "rund_best": rund_best, "rund_laeuft": not rund_jobs.is_empty() or not rund_job.is_empty()})
+		if klassisch():
+			d["klassisch"] = true
+			d["beine"] = model.n() * 2
+			d["stuetz_fuesse"] = bew.stuetz_fuesse
 	return d
 
 
