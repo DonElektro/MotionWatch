@@ -255,7 +255,8 @@ func _hindernis(pr: Array, r: int) -> Dictionary:
 			e += 1
 		return {"art": "balken", "hoehe": dmin, "breite": (e - r) * ZELLE, "tiefe": 0.0, "neigung": 0.0, "_bis": e}
 	# going down gently (a ramp down): no sharp drop from row to row
-	if not row["leer"] and float(row["h"]) < -0.015 and float(row["h"]) > -0.03:
+	var prev_h := 0.0 if r == 0 else float(pr[r - 1]["h"])
+	if not row["leer"] and float(row["h"]) < -0.015 and prev_h - float(row["h"]) < 0.012:
 		var e := r
 		var gentle := true
 		while e + 1 < NX and not pr[e + 1]["leer"] and float(pr[e + 1]["h"]) < float(pr[e]["h"]) + 0.002:
@@ -750,7 +751,7 @@ func _boden(p: Vector3, span: float) -> float:
 func _boden_ref() -> float:
 	"""the ground the robot stands on now (under the first two segments)"""
 	var best := LEER
-	for i in range(mini(2, m.n())):
+	for i in range(mini(1, m.n())):
 		var o: Vector3 = m.segment_xf(i).origin
 		var y := _boden(o, 0.4)
 		best = maxf(best, y)
