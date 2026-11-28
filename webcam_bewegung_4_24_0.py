@@ -331,7 +331,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_24_0.zip"
-ZD_SHA256 = "a5148611577dd65cc27f790025fa6028500c680d8f31037218596c1ada285dd1"
+ZD_SHA256 = "08c271fbd03fba871331e4ddb3aacfc076d8d6fb99b39e6fc2824a3cff450e3a"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -7640,20 +7640,18 @@ def senxor_explain(step, e, pins=None):
 	low=m.lower()
 	if step=="gpio"and "busy"in low:
 		if "BCM%d"%cs in m or step=="gpio"and getattr(e,"_mw_pin",None)==cs:
-			return(f"GPIO {cs} (CS) is busy - the SPI driver of the Pi holds it: add the line dtoverlay=spi0-0cs below "
-					f"dtparam=spi=on in /boot/firmware/config.txt and restart the Pi ({m[:60]})")
-		return f"a GPIO of the thermal camera is busy (another program or setting uses it): {m[:90]}"
+			return f"GPIO {cs} (CS) busy: the SPI driver holds it - config.txt needs dtoverlay=spi0-0cs below dtparam=spi=on, then restart the Pi"
+		return f"a GPIO of the thermal camera is busy (another program or setting): {m[:80]}"
 	if step=="spi"and("no such file"in low or "errno 2]"in low):
-		return "SPI is off (no /dev/spidev0.0): switch on SPI (raspi-config) and restart the Pi - "+m[:60]
+		return "SPI is off (no /dev/spidev0.0): switch on SPI (raspi-config) and restart the Pi"
 	if step=="spi"and("permission"in low or "errno 13"in low):
-		return "no permission for /dev/spidev0.0: the MoveEye user must be in the group spi - "+m[:60]
+		return "no permission for /dev/spidev0.0: the MoveEye user must be in the group spi"
 	if step=="i2c"and("no such file"in low or "errno 2]"in low):
-		return "I2C is off (no /dev/i2c-1): switch on I2C (raspi-config) and restart the Pi - "+m[:60]
+		return "I2C is off (no /dev/i2c-1): switch on I2C (raspi-config) and restart the Pi"
 	if step=="module"and any(k in low for k in("errno 121","remote i/o","errno 6]","errno 110","timed out")):
-		return(f"no answer on I2C 0x40 - check SDA (GPIO 2), SCL (GPIO 3), power (5 V / 3.3 V) and GND of the thermal camera ({m[:50]})")
+		return f"no answer on I2C 0x40 (errno 121): check SDA (GPIO 2), SCL (GPIO 3), 5 V / 3.3 V and GND of the module"
 	if step=="frame":
-		return(f"the module answers, but no picture comes: DATA READY (GPIO {drdy}) never goes high - check the D_READY cable, "
-				f"nRESET (GPIO {rst}) and CS (GPIO {cs}); MISO / MOSI / CLK = GPIO 9 / 10 / 11")
+		return f"module answers, no picture: DATA READY (GPIO {drdy}) never high - check D_READY, nRESET (GPIO {rst}), CS (GPIO {cs}), MISO 9 / MOSI 10 / CLK 11"
 	return f"{step}: {m[:140]}"
 
 
@@ -106944,6 +106942,12 @@ if 'data-k="thcheck"' not in TOOLS_PAGE and '<a class="tli" data-k="servo"' in T
 	TOOLS_PAGE=TOOLS_PAGE.replace('  <section class="tool" id="c-diag"',TC_SECTION_HTML+'  <section class="tool" id="c-diag"',1)
 	TOOLS_PAGE=TOOLS_PAGE.replace("</body>","<script>Object.assign(I18N.de, "+json.dumps({k:v[0]for k,v in _HX_TC.items()},ensure_ascii=False)
 									+");</script><script>"+TC_PAGE_JS+"</script></body>",1)
+
+
+TC_HELP = _zd('639zzzzzx_waermebild_pruefen/TC_HELP', ())
+for _a, _b in TC_HELP:
+	if _a in HELP_PAGE:
+		HELP_PAGE=HELP_PAGE.replace(_a,_a+_b,1)
 
 
 

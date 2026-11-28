@@ -239,8 +239,9 @@ class MW:
             f.write(m)
 
     def pins(self):
+        """the pins of the thermal camera the fake gpiozero holds open (relays etc. do not count)"""
         try:
-            return json.load(open(self.pinsf))
+            return sorted(p for p in json.load(open(self.pinsf)) if p in (7, 8, 23, 24))
         except (OSError, ValueError):
             return []
 
@@ -360,7 +361,7 @@ def main():
         pruef(fr.get("ok") is True and "Bilder/s" in fr.get("detail", ""), f"5 Prüfung: Wärmebild ✓ mit Bildrate ({fr})")
         pruef(mo.get("ok") is True and "TEST-SN-0001" in mo.get("detail", ""), f"5 Prüfung: Modul-ID ({mo})")
         pruef(step_of(r, "senxor").get("ok") is True, "5 Prüfung: pysenxor ✓")
-        rs = M.post("/api/set", {"key": "senxor_cs", "value": "8"})
+        rs = M.post("/api/text", {"key": "senxor_cs", "value": "8"})
         pruef(rs.get("ok") is not False, f"6 CS auf GPIO 8 gestellt ({rs})")
         s6 = M.warte(lambda: 8 in M.pins() and 7 not in M.pins() and M.state().get("thermal") == "connected", 60)
         pruef(bool(s6), f"6 neu geöffnet mit GPIO 8 ({M.pins()}, {M.state().get('thermal')})")

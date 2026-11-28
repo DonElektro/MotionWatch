@@ -765,6 +765,27 @@ if 'data-k="thcheck"' not in TOOLS_PAGE and '<a class="tli" data-k="servo"' in T
                                     + ");</script><script>" + TC_PAGE_JS + "</script></body>", 1)
 
 
+TC_HELP = (
+    ('<section id="thermal" data-icon="🌡"><h2>Wärmebild</h2>',
+     "<p><b>🩺 Wärmebild prüfen und reparieren</b> (Mehr → Werkzeuge, nur Administrator; im Fenster: Einstellungen → Wärmebild): "
+     "MoveEye prüft der Reihe nach config.txt (SPI, I2C, <code>dtoverlay=spi0-0cs</code>), die Geräte /dev/spidev0.0 und /dev/i2c-1, "
+     "die Gruppen, die I2C-Adressen (0x40 Wärmebild, 0x41 PCA9685, 0x36 X1206), den Treiber pysenxor (auch wenn er nur in einer venv "
+     "liegt), numpy / OpenCV / picamera2, die Pins (CS GPIO 7, nRESET GPIO 23, D_READY GPIO 24 – einstellbar), das Kopfbild und das "
+     "Wärmebild mit Bildrate. Wo es geht, repariert ein Knopf (mit Rückfrage und Rückgängig). Der Bericht lässt sich kopieren und enthält "
+     "keine Passwörter. Kommt kein Wärmebild, läuft das Kopfbild trotzdem weiter; die Ansicht «Wärmebild» zeigt «⚠ kein Wärmebild».</p>"),
+    ('<section id="thermal" data-icon="🌡"><h2>Thermal camera</h2>',
+     "<p><b>🩺 Check and repair the thermal camera</b> (More → Tools, administrator only; in the window: Settings → Thermal camera): "
+     "MoveEye checks config.txt (SPI, I2C, <code>dtoverlay=spi0-0cs</code>), the devices /dev/spidev0.0 and /dev/i2c-1, the groups, the "
+     "I2C addresses (0x40 thermal, 0x41 PCA9685, 0x36 X1206), the driver pysenxor (also when it is only in a venv), numpy / OpenCV / "
+     "picamera2, the pins (CS GPIO 7, nRESET GPIO 23, D_READY GPIO 24 – adjustable), the head picture and the thermal picture with its "
+     "rate. Where possible a button repairs it (with a question and undo). The report can be copied and holds no passwords. Without a "
+     "thermal picture the head picture keeps running; the view «Thermal» shows «⚠ no thermal picture».</p>"),
+)
+for _a, _b in TC_HELP:
+    if _a in HELP_PAGE:
+        HELP_PAGE = HELP_PAGE.replace(_a, _a + _b, 1)
+
+
 # ---- the window (Tkinter): the same check as text, the repairs on the web page ------------------------------------------
 def _tc_tk_win(app):
     win = getattr(app, "_tc_w", None)
