@@ -128,6 +128,14 @@ func abbrechen() -> void:
 	lauf = {}
 
 
+func neu_start() -> void:
+	"""the robot was placed somewhere else: forget the old picture and the legs, see again first"""
+	abbrechen()
+	bild = {}
+	_seh_t = 0.0
+	_bein = {}
+
+
 func neu_aufstellen(hindernis: Dictionary) -> void:
 	"""the robot stands ~0.5 m before the obstacle, looking at it (for the next try)"""
 	abbrechen()
@@ -149,6 +157,8 @@ func neu_aufstellen(hindernis: Dictionary) -> void:
 	else:
 		bew.apply(bew.pose("gerade"))
 		m.place(true)
+	bild = {}
+	_seh_t = 0.0
 	_bein = {}
 	bew.start_gang("ki")
 
@@ -264,7 +274,7 @@ func _hindernis(pr: Array, r: int) -> Dictionary:
 				gentle = false
 				break
 			e += 1
-		if gentle and e - r >= 4:
+		if gentle:
 			var drop: float = float(pr[e]["h"])
 			var ng := rad_to_deg(atan2(drop - float(pr[r]["h"]), maxf((e - r) * ZELLE, 0.02)))
 			return {"art": "rampe", "hoehe": drop, "breite": (e - r) * ZELLE, "tiefe": -drop, "neigung": ng, "_bis": e + 1}
@@ -365,7 +375,8 @@ func regel(h: Dictionary) -> Array:
 		"treppe":
 			return ["hoch_steigen", {}]
 		"graben", "luecke":
-			return ["bruecke", {}] if float(h.get("breite", 0.0)) <= 0.4 else ["umgehen", {}]
+			var weit: bool = float(h.get("breite", 0.0)) > 0.4 and bool(h.get("ende_gesehen", true))
+			return ["umgehen", {}] if weit else ["bruecke", {}]
 		"balken":
 			return ["kriechen_drunter", {}] if hh >= 0.10 else ["umgehen", {}]
 		"geroell":

@@ -1553,7 +1553,7 @@ func terrain_start(names: Array, ring := false, mit_ki := false) -> void:
 		return
 	var tn: String = names[0]
 	stop_all()
-	ki.abbrechen()
+	ki.neu_start()
 	bew.angepasst = false
 	bew.hoehe = 0.9
 	bew.schritt_hoehe = 0.35
