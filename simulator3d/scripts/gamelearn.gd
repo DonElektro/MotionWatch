@@ -292,7 +292,7 @@ func abox(a: Node3D) -> Array:
 	var hi := Vector2(-INF, -INF)
 	for m in a.find_children("*", "MeshInstance3D", true, false):
 		var mi := m as MeshInstance3D
-		if mi.mesh == null or not mi.is_visible_in_tree() or not (mi.layers & 1):
+		if mi.mesh == null or not mi.is_visible_in_tree() or not (mi.layers & 1) or mi.has_meta("kontaktschatten"):
 			continue
 		var ab: AABB = mi.get_aabb()
 		for c in 8:

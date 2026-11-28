@@ -446,7 +446,7 @@ func _cut(v: Node3D, box: Array) -> float:
 	var hi := Vector2(-INF, -INF)
 	for m in v.find_children("*", "MeshInstance3D", true, false):
 		var mi := m as MeshInstance3D
-		if not mi.visible or mi.mesh == null or not (mi.layers & 1):
+		if not mi.visible or mi.mesh == null or not (mi.layers & 1) or mi.has_meta("kontaktschatten"):
 			continue
 		var ab: AABB = mi.get_meta("pose_aabb") if mi.has_meta("pose_aabb") else mi.get_aabb()   # 3D-4.12: skinned figure: its pose
 		for c in 8:
@@ -534,7 +534,7 @@ func _box(v: Node3D) -> Array:
 	var any := false
 	for m in v.find_children("*", "MeshInstance3D", true, false):
 		var mi := m as MeshInstance3D
-		if not mi.visible or mi.mesh == null:
+		if not mi.visible or mi.mesh == null or mi.has_meta("kontaktschatten"):   # (der Schatten am Boden gehört nicht zur Box)
 			continue
 		var ab: AABB = mi.get_meta("pose_aabb") if mi.has_meta("pose_aabb") else mi.get_aabb()   # 3D-4.12: skinned figure: its pose
 		for c in 8:

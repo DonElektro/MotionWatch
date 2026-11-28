@@ -386,25 +386,27 @@ func _dress(p: Dictionary) -> void:
 			if not (src is StandardMaterial3D):
 				continue
 			var mt: StandardMaterial3D = (src as StandardMaterial3D).duplicate()
-			mt.metallic_specular = 0.3
+			mt.metallic_specular = 0.18                                  # «Figuren matt» (Idee #45): kaum Glanz
+			mt.rim_enabled = false
 			var mn := str(src.resource_name)
 			var key := "skin"
 			if mn.begins_with("Bare"):                                    # kleidung.gd: bare legs / arms (short clothes)
 				mt.albedo_color = skin
-				mt.roughness = 0.6
+				mt.roughness = 0.78
 			elif mn.contains("Hair"):
 				key = "hair"
 				mt.albedo_color = _hair_c.lightened(0.1)
+				mt.roughness = 0.75
 			elif mn.contains("Eye"):
 				key = "eye"
 			elif mn.contains("Regular") or mn.contains("Superhero"):
 				mt.albedo_color = Color(clampf(skin_k.r, 0.4, 1.15), clampf(skin_k.g, 0.4, 1.15), clampf(skin_k.b, 0.4, 1.15))
-				mt.roughness = 0.6
+				mt.roughness = 0.78
 			else:
 				key = "trousers" if nm.contains("Legs") else ("shoe" if nm.contains("Feet") else ("belt" if nm.contains("Belt") else "jacket"))
 				var c: Color = p.get(key, Color(0.3, 0.3, 0.3)) if key != "belt" else Color(0.25, 0.17, 0.1)
 				mt.albedo_color = c * 1.25
-				mt.roughness = 0.92
+				mt.roughness = 0.97 if key != "shoe" else 0.85
 			mi3.set_surface_override_material(si, mt)
 			if not _mats.has(key):
 				_mats[key] = []

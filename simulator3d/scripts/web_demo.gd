@@ -451,7 +451,7 @@ func _detect() -> void:
 		var hi := Vector2(-INF, -INF)
 		var any := false
 		for mi in meshes:
-			if not is_instance_valid(mi) or not mi.is_visible_in_tree() or (mi.layers & cam.cull_mask) == 0:
+			if not is_instance_valid(mi) or not mi.is_visible_in_tree() or (mi.layers & cam.cull_mask) == 0 or mi.has_meta("kontaktschatten"):
 				continue
 			var bb: AABB = mi.global_transform * mi.get_aabb()
 			for i in range(8):

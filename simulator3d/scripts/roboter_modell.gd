@@ -83,6 +83,9 @@ var built_ok := false
 func n() -> int:
 	return int(bp["segmente"])
 
+func ring_ok() -> bool:                  # Gelenke ±90°: 3 × 120° / 2 × 180° gehen nicht - der Ring braucht mindestens 4 Segmente
+	return n() >= 4
+
 func u(k: String) -> float:
 	return float(bp[k]) * float(bp["massstab"])
 
@@ -578,7 +581,7 @@ func _loads(_dt: float) -> void:
 		g = Vector3(0, -float(PhysicsServer3D.area_get_param(space_rid, PhysicsServer3D.AREA_PARAM_GRAVITY)), 0)
 	var F := []
 	var M := []
-	var pdt := 1.0 / float(Engine.physics_ticks_per_second)
+	var pdt := get_physics_process_delta_time() if is_inside_tree() else 1.0 / float(Engine.physics_ticks_per_second)   # = the real step (also in a test with Zeitraffer)
 	for b in bodies:
 		var rb: RigidBody3D = b["rb"]
 		var f: Vector3 = g * rb.mass
@@ -720,7 +723,7 @@ func colliding_names() -> Array:
 func coupling_error() -> Array:
 	"""[position error m, angle error °] between segment 0 and where the closed ring wants it"""
 	var N := n()
-	if N < 3 or bodies.is_empty():
+	if N < 4 or bodies.is_empty():
 		return [99.0, 180.0]
 	var P := pitch_len()
 	var rear := frame_of(seg_body[N - 1])
@@ -744,7 +747,7 @@ func _latch_step(dt: float) -> void:
 		if not latch_wanted:
 			unlock()
 		return
-	if not latch_wanted or float(e[0]) > P * 0.25 or float(e[1]) > 25.0:
+	if not latch_wanted or not ring_ok() or float(e[0]) > P * 0.25 or float(e[1]) > 25.0:
 		latch["state"] = "open"
 		if ri >= 0:
 			servos[ri]["target"] = 0.0
@@ -876,3 +879,13 @@ func ground_contacts() -> int:
 		if st != null and st.get_contact_count() > 0:
 			k += 1
 	return k
+
+
+func legs() -> Array:
+	"""all legs (Gang-KI / Steuerung, the same list in roboter_klassisch_modell.gd): [{"i": segment or leg pair, "s": side
+	(−1 links, +1 rechts), "id": "0l" (servo ids hy0l / hp0l / kn0l), "hip": hip in the frame segment_xf(i)}]"""
+	var out := []
+	for i in range(n()):
+		for s in [-1, 1]:
+			out.append({"i": i, "s": s, "id": "%d%s" % [i, "l" if s < 0 else "r"], "hip": Vector3(0, 0, s * u("halbe_breite"))})
+	return out
