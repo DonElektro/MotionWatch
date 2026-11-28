@@ -555,8 +555,8 @@ def vl_voice(book_lang, ui_lang):
     return bl, "No Piper voice loaded - the old voice reads (Settings › Light & sound › Loudspeaker)."
 
 
-def vl_synth(text, lang, speed, out):
-    """(ok, error): one sentence into the WAV file out"""
+def vl_synth(text, lang, speed, out, old=True):
+    """(ok, error): one sentence into the WAV file out (old=False: only Piper, no old voice - the almanac falls back to the browser)"""
     f = VL["synth"]
     if f is not None:                                        # tests: a made-up voice
         return f(text, lang, speed, out)
@@ -565,6 +565,10 @@ def vl_synth(text, lang, speed, out):
         ok, err, _i = piper_synth(text, vid, out, speed)
         if ok:
             return True, ""
+        if not old:
+            return False, err or "Piper failed"
+    if not old:
+        return False, "no voice"
     return _tts_make_639zzb(text, lang, out)
 
 
@@ -1222,6 +1226,7 @@ if GUI_OK:
 VL_PLAYER_JS = r"""
 // «📱 Handy»: the reader of the browser. It runs in the window of mwRadioHost() (the main page, or /vorlesen itself), so it reads on
 // over the other pages; the page /vorlesen only shows it (P.cb). window.mwReadP = {A, S, book, play, pause, resume, stop, seek, speed}
+// The almanac (639zzzzv_vorlesen_almanach) uses the same player: P.play(id, c, s, book, {url: (c, s) => address of the sound, nopoll}) - no bookmark there.
 (function () {
   if (window.mwReadP) return;
   const A = new Audio(); A.preload = "auto";
@@ -1231,11 +1236,11 @@ VL_PLAYER_JS = r"""
   const emit = () => { if (P.cb) try { P.cb(); } catch (e) { P.cb = null; } };
   const post = b => fetch("/api/vorlesen", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: S.lang}, b))})
     .then(r => r.json()).catch(() => ({ok: false}));
-  const url = (c, s) => "/api/vorlesen/audio?id=" + encodeURIComponent(S.id) + "&c=" + c + "&s=" + s + "&lang=" + S.lang;
+  const url = (c, s) => S.url ? S.url(c, s) : "/api/vorlesen/audio?id=" + encodeURIComponent(S.id) + "&c=" + c + "&s=" + s + "&lang=" + S.lang;
   P.next = (c, s, k) => { s += k || 1; while (c < S.n.length && s >= S.n[c]) { s -= S.n[c]; c++; } return c < S.n.length ? [c, s] : null; };
   P.paraEnd = (c, s) => { const ch = P.book && P.book.ch[c]; if (!ch) return true; for (const p of ch.p) { if (s < p.length) return s === p.length - 1; s -= p.length; } return true; };
   let gen = 0, bmT = 0, bad = 0, gap = 0;
-  function bm(now) { if (!S.id) return; if (!now && Date.now() - bmT < 8000) return; bmT = Date.now(); post({action: "bm", id: S.id, c: S.c, s: S.s, now: now ? 1 : 0}); }
+  function bm(now) { if (!S.id || S.url) return; if (!now && Date.now() - bmT < 8000) return; bmT = Date.now(); post({action: "bm", id: S.id, c: S.c, s: S.s, now: now ? 1 : 0}); }
   function say() {                                         // the current sentence
     const g = ++gen; clearTimeout(gap);
     if (!S.on || S.paused || S.hold) { emit(); return; }
@@ -1262,12 +1267,12 @@ VL_PLAYER_JS = r"""
       setTimeout(() => { if (g === gen) say(); }, 1500);
     }).catch(() => { if (g === gen && ++bad <= 2) setTimeout(say, 2500); else if (g === gen) { P.stop(); S.err = tx("No connection to MoveEye."); emit(); } });
   });
-  P.play = function (id, c, s, book) {                      // called in the tap itself (iPhone: sound only after a tap)
+  P.play = function (id, c, s, book, o) {                      // called in the tap itself (iPhone: sound only after a tap)
     try { const R = window.mwRadioP; if (R && R.S && R.S.on) R.stop(); } catch (e) {}   // radio and reading exclude each other
-    Object.assign(S, {on: true, id: id, name: book.title || book.name || "", c: c | 0, s: s | 0, paused: false, hold: "", err: "", n: book.n || []});
+    Object.assign(S, {on: true, id: id, name: book.title || book.name || "", c: c | 0, s: s | 0, paused: false, hold: "", err: "", n: book.n || [], url: (o && o.url) || null, nopoll: !!(o && o.nopoll)});
     P.book = book; S.t0 = Date.now() / 1000; bad = 0;
     say(); P.ms();
-    post({action: "bplay", id: id, c: S.c, s: S.s}).then(j => { if (j && j.t0) S.t0 = j.t0; });
+    if (!S.url) post({action: "bplay", id: id, c: S.c, s: S.s}).then(j => { if (j && j.t0) S.t0 = j.t0; });
   };
   P.pause = () => { if (!S.on) return; S.paused = true; gen++; clearTimeout(gap); A.pause(); S.st = "paused"; bm(true); P.ms(); emit(); };
   P.resume = () => { if (!S.on) return; S.paused = false; say(); P.ms(); };
@@ -1278,6 +1283,7 @@ VL_PLAYER_JS = r"""
   setInterval(async () => {                                // alarms, sounds of MoveEye, the radio: pause / stop
     if (!S.on) return;
     try { const R = window.mwRadioP; if (R && R.S && R.S.on) { P.stop(); return; } } catch (e) {}
+    if (S.nopoll) return;                                  // a guest of the almanac: /api/vorlesen is not open for guests
     let j = null; try { j = await (await fetch("/api/vorlesen?on=1&lang=" + S.lang, {cache: "no-store"})).json(); } catch (e) { return; }
     if (!j || !S.on) return;
     if (j.radio_t && j.radio_t > S.t0 + 1) { P.stop(); return; }
