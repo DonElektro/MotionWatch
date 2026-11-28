@@ -148,6 +148,7 @@ var _ui_t := 0.0
 var _panel_on := true
 var _gruppen := {}                     # group id -> body (UI.fold_card)
 var _panel_w := PANEL_W                # the widest tab (set in _build_ui)
+var _ki_t := 0.0                       # Gang-KI picture: next refresh (s)
 var _such := ""                        # the text in the search field (lower case)
 
 
@@ -931,6 +932,8 @@ func _build_ui() -> void:
 	_page_rund(gruppe("rund"))
 	_page_steuerung()
 	ki.baue_seite(gruppe("ki"), self)                  # Gang-KI (sim-gang-ki-a / -b): group «Gang-KI» in Fahren
+	UI.set_open(gruppe("ki"), false)                    # closed at the start: like the former tab «KI», the picture of what the robot
+	                                                   # sees (sehen() + raster) is made only while someone looks at it
 	_paint_ring()
 	for tb in TABS:                                   # one width for all tabs (the widest), the panel does not jump
 		(_w["page_" + tb[0]] as Control).visible = true
@@ -2235,7 +2238,9 @@ func _refresh() -> void:
 			if l != null and not r.is_empty():
 				l.text = str(r[1])
 				l.add_theme_color_override("font_color", UI.GRN if r[0] else (UI.TXT if str(r[1]) == T.t("läuft …") else UI.RED))
-	if _gruppen.has("ki") and (_gruppen["ki"] as Control).is_visible_in_tree():
+	_ki_t -= 0.2
+	if _ki_t <= 0.0 and _gruppen.has("ki") and (_gruppen["ki"] as Control).is_visible_in_tree():
+		_ki_t = 0.5                                    # the group «Gang-KI» open and on screen: at most 2 × per second
 		ki.auffrischen()
 	if _sichtbar("gang_info") or _sichtbar("ring_btn"):
 		(_w["gang_info"] as Label).text = _move_text()
