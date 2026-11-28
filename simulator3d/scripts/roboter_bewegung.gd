@@ -106,7 +106,7 @@ func apply(d: Dictionary) -> void:
 # Die Füsse rechnen in einem waagrechten Rahmen je Segment (Neigung aus der Physik): auf der Rampe bleiben die Beine
 # senkrecht, eine Welle im Rücken hebt die Füsse nicht vom Boden.
 const ANZ = preload("res://scripts/roboter_anzeige.gd")
-const GAENGE := [["welle", "Wellengang"], ["dreifuss", "Dreifuss"], ["raupe", "Raupengang"], ["auto", "Automatisch"]]
+const GAENGE := [["welle", "Wellengang"], ["dreifuss", "Dreifuss"], ["raupe", "Raupengang"], ["auto", "Automatisch"], ["ki", "KI"]]
 const ABLAEUFE := [["raupenwelle", "Raupenwelle"], ["schlange", "Kurve (Schlange)"], ["einrollen", "Einrollen und öffnen"],
 		["aufstehen", "Aufstehen"]]
 const BETA := {"welle": 0.75, "dreifuss": 0.55, "raupe": 0.8}
@@ -139,6 +139,7 @@ var traveled := 0.0                    # metres the front segment went (gait tes
 var angepasst := false                 # «auto» raised the steps and the body because it got stuck
 var _prog_t := 0.0
 var _prog_p := Vector3.ZERO
+var ki = null                          # roboter_ki_gang.gd (Gangart «KI»: Trittpunkte, Gangart)
 
 
 func start_gang(g: String) -> void:
@@ -244,6 +245,8 @@ func _gang_step(dt: float) -> void:
 			if not str(id).begins_with("s"):
 				over_leg = true
 		gang_now = "dreifuss" if speed > 0.1 and not over_leg else "welle"
+	elif gang == "ki" and ki != null:
+		gang_now = ki.gangart
 	if gang == "auto" and speed > 0.01 and absf(vx) > 0.5 * speed:
 		_prog_t += dt
 		if _prog_t >= 3.0:
@@ -305,8 +308,9 @@ func _gang_step(dt: float) -> void:
 				var qs := q * q * (3.0 - 2.0 * q)
 				off = a2 * (-1.0 + 2.0 * qs)
 				y = lift * sin(PI * q)
-			f.x += off.x
-			f.z += off.y
+			var kd: Vector3 = ki.tritt(i, s, u, beta, a2, xf, lvl[i], lift) if ki != null and gang == "ki" else Vector3.ZERO
+			f.x += off.x + kd.x
+			f.z += off.y + kd.z
 			if anpassen:
 				var fw: Vector3 = xf.origin + (lvl[i] as Basis) * Vector3(f.x, 0.0, f.z)
 				var gf := _ground_at(fw, xf.origin.y + 0.3, float(ydes[i]) - hh)
@@ -316,6 +320,7 @@ func _gang_step(dt: float) -> void:
 					f.y = maxf(f.y, meas.y - float(ydes[i]))
 			else:
 				f.y += y
+			f.y += kd.y
 			var fs: Vector3 = xf.basis.orthonormalized().inverse() * ((lvl[i] as Basis) * f) if anpassen else level_foot(i, s, f)
 			var a := leg_ik(s, fs)
 			var sd := "l" if s < 0 else "r"

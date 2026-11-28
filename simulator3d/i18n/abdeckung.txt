@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8729 (Stellen: 12105)
-Übersetzt: en 8729, fr 8729, it 8729, rm 8729
-Unsicher markiert: 540
+Texte gesamt: 8768 (Stellen: 12180)
+Übersetzt: en 8768, fr 8768, it 8768, rm 8768
+Unsicher markiert: 526
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 555 Stellen
 Nicht mehr im Code (noch in texte.json): 416
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 32033, schlüssel 24907, keine Wörter 16030, index 11388, technisch 4102, doc 2839, einheit 369, log 206, englisch 151, pfad 130, stringname 107, html 69, klasse 48, shader 6
+Übersprungen (Grund: Anzahl): kennung 32223, schlüssel 25154, keine Wörter 16094, index 11539, technisch 4125, doc 2864, einheit 371, log 206, englisch 151, pfad 130, stringname 107, html 69, klasse 48, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -19,7 +19,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_abenteuer_daten.gd   197     0
   bergtal.gd               190     5
   bergtal_horror.gd        160     3
-  roboter_labor.gd         146     0
+  roboter_labor.gd         148     0
   abenteuer_raetsel.gd     145     2
   maggie_story.gd          114     2
   zwei_bausteine.gd        113     2
@@ -68,6 +68,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   handy.gd                  56     2
   quick.gd                  55     2
   bergtal_erleben_b.gd      55     0
+  roboter_ki_gang.gd        51     0
   erkunden_gestalten.gd     50     3
   karte.gd                  49    10
   abenteuer_rucksack.gd     48     3
@@ -140,6 +141,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   patrol.gd                 20     0
   trailer.gd                19     7
   erkunden_figur.gd         19     1
+  roboter_bewegung.gd       19     0
   tv.gd                     19     8
   surprise.gd               19     1
   kompakt_dorf.gd           18     0
@@ -149,7 +151,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   kit_k3.gd                 18     0
   thermsensor.gd            18     0
   gamelearn.gd              18     0
-  roboter_bewegung.gd       18     0
   grafik_hoch.gd            18     1
   quality.gd                17     1
   kompakt_hof.gd            17     0
@@ -161,6 +162,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   main_start.gd             16     2
   menschen.gd               16     0
   gamesneak.gd              15     0
+  roboter_gelaende.gd       15     0
   abenteuer_blinki.gd       14     0
   home_editor.gd            14     3
   kit_k4.gd                 14     0
@@ -200,7 +202,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   tiere.gd                   7     0
   gamexp.gd                  7     0
   nachtlauf.gd               7     0
-  roboter_gelaende.gd        7     0
   fenster_waechter.gd        6     2
   kopf.gd                    6     2
   devtool_extra.gd           6     0
@@ -709,23 +710,9 @@ Unsicher:
   '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n': technisch (HTTP) – nicht umhüllen
   '&vo=1': technisch – nicht umhüllen
   'Browser (WebGL 2)': rm automatisch
-  'gestürzt': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
   'kein Fortschritt': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
   'zu schwer': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
-  'Normal gehen': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
-  'Hoch steigen': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
-  'Vorne aufrichten': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
-  'Brücke bilden': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
-  'Umgehen': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
-  'Einrollen und rollen': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
-  'Drunter durch kriechen': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
   'Geländestufe': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
-  'Graben': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
-  'Lücke': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
-  'Geröll': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
-  'Rampe': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
-  'Rohr': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
-  'Balken': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
   'Lernen: aus': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
   'Lernen: wartet auf ein Hindernis': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
   '%d gemerkt': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)

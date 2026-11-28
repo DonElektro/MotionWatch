@@ -146,9 +146,9 @@ static func abstand(a: Dictionary, b: Dictionary) -> float:
 func raum() -> Dictionary:
 	if ki != null and ki.get_script() != null:
 		var cm: Dictionary = ki.get_script().get_script_constant_map()
-		for n in ["PARAM_RAUM", "PARAM"]:
-			if typeof(cm.get(n)) == TYPE_DICTIONARY and not (cm[n] as Dictionary).is_empty():
-				return cm[n]
+		var pr = cm.get("PARAM_RAUM", cm.get("PARAM"))   # A calls it PARAM: {name: [lo, hi, default]}
+		if typeof(pr) == TYPE_DICTIONARY and not (pr as Dictionary).is_empty():
+			return pr
 	return PARAM_RAUM
 
 
@@ -599,7 +599,7 @@ static func strategie_text(s: String) -> String:
 		"aufrichten_vorne":
 			return T.t("Vorne aufrichten")
 		"bruecke":
-			return T.t("Brücke bilden")
+			return T.t("Brücke")
 		"umgehen":
 			return T.t("Umgehen")
 		"einrollen_rollen":
