@@ -35,7 +35,7 @@ const STILE := [["schnell", "Schnell"], ["sparsam", "Sparsam"], ["sicher", "Sich
 const PARAM := {"schritt_hoehe": [0.2, 1.2, 0.35], "koerper_hoehe": [0.4, 1.6, 0.9], "neigung": [0.0, 40.0, 0.0],
 		"tempo": [0.02, 0.15, 0.06], "segment_hub": [0.0, 15.0, 0.0], "anlauf": [0.0, 0.5, 0.15], "seitwaerts": [0.3, 1.5, 1.1],
 		"spreiz": [0.8, 1.8, 1.25]}
-const ZEIT_MAX := 90.0               # s for one strategy
+const ZEIT_MAX := 120.0              # s for one strategy
 const STILL_MAX := 12.0              # s without 3 cm progress = stuck
 
 var m                                # roboter_modell.gd
@@ -254,6 +254,19 @@ func _hindernis(pr: Array, r: int) -> Dictionary:
 			dmin = minf(dmin, float(pr[e]["dk"]))
 			e += 1
 		return {"art": "balken", "hoehe": dmin, "breite": (e - r) * ZELLE, "tiefe": 0.0, "neigung": 0.0, "_bis": e}
+	# going down gently (a ramp down): no sharp drop from row to row
+	if not row["leer"] and float(row["h"]) < -0.015 and float(row["h"]) > -0.03:
+		var e := r
+		var gentle := true
+		while e + 1 < NX and not pr[e + 1]["leer"] and float(pr[e + 1]["h"]) < float(pr[e]["h"]) + 0.002:
+			if float(pr[e]["h"]) - float(pr[e + 1]["h"]) > 0.012:
+				gentle = false
+				break
+			e += 1
+		if gentle and e - r >= 4:
+			var drop: float = float(pr[e]["h"])
+			var ng := rad_to_deg(atan2(drop - float(pr[r]["h"]), maxf((e - r) * ZELLE, 0.02)))
+			return {"art": "rampe", "hoehe": drop, "breite": (e - r) * ZELLE, "tiefe": -drop, "neigung": ng, "_bis": e + 1}
 	# hole: ditch (bottom seen) or gap (no ground)
 	if row["leer"] or float(row["h"]) < -0.015:
 		var e := r
@@ -319,9 +332,10 @@ func _hindernis(pr: Array, r: int) -> Dictionary:
 	if jumps.size() == 1 and steep < 5:
 		return {"art": "stufe", "hoehe": float(jumps[0][1]), "breite": 0.0, "tiefe": 0.0, "neigung": 90.0, "_bis": k}
 	# ramp: fit the rise
-	var run := float(end_rise - r + 1) * ZELLE
+	var run := float(end_rise - r) * ZELLE
 	var rise: float = pr[end_rise]["h"]
-	return {"art": "rampe", "hoehe": rise, "breite": run, "tiefe": 0.0, "neigung": rad_to_deg(atan2(rise, maxf(run, 0.02))), "_bis": k}
+	var ng := rad_to_deg(atan2(rise - float(pr[r]["h"]), maxf(run, 0.02)))
+	return {"art": "rampe", "hoehe": rise, "breite": run + float(pr[r]["h"]) / maxf(tan(deg_to_rad(ng)), 0.05), "tiefe": 0.0, "neigung": ng, "_bis": k}
 
 
 func _quer(hoehe: PackedFloat32Array, decke: PackedFloat32Array, r0: int, r1: int) -> float:
@@ -356,7 +370,7 @@ func regel(h: Dictionary) -> Array:
 		"geroell":
 			return ["hoch_steigen", {}]
 		"rampe":
-			return ["normal", {}] if float(h.get("neigung", 0.0)) < 25.0 else ["hoch_steigen", {}]
+			return ["normal", {}] if absf(float(h.get("neigung", 0.0))) < 25.0 else ["hoch_steigen", {}]
 	return ["normal", {}]
 
 
@@ -365,7 +379,7 @@ func _vorschlag(name: String, k: String, h) -> float:
 	var sc: float = m.bp["massstab"]
 	var hh := float((h as Dictionary).get("hoehe", 0.0)) if h is Dictionary else 0.0
 	var d: float = PARAM[k][2]
-	var tempo: float = {"schnell": 0.10, "sparsam": 0.06, "sicher": 0.05}.get(stil, 0.06)
+	var tempo: float = {"schnell": 0.12, "sparsam": 0.08, "sicher": 0.07}.get(stil, 0.07)
 	match k:
 		"tempo":
 			d = tempo if name == "normal" else tempo * 0.8
@@ -429,7 +443,7 @@ func step(dt: float) -> void:
 		sehen()
 	if lauf.is_empty():
 		gangart = "dreifuss" if stil == "schnell" and _naechstes().is_empty() else "welle"
-		var lernt: bool = lernen != null and bool(lernen.get("an"))
+		var lernt: bool = lernen != null and lernen.get("an") == true
 		var h := _naechstes()
 		if not lernt and befehl.x > 0.3 and not h.is_empty() and float(h["abstand"]) < 0.45:
 			var w := regel(h)
@@ -517,7 +531,7 @@ func vorne_neigen() -> void:
 			var id := "sp%d" % j
 			var si: int = m.servo_index(id)
 			if si >= 0:
-				m.set_target(id, float(m.servos[si]["target"]) - ng * (1.0 if j == 0 else 0.5))
+				m.set_target(id, float(m.servos[si]["target"]) + ng * (1.0 if j == 0 else 0.5))
 	if hub > 0.0:
 		for j in range(m.n() - 1):
 			var id := "sp%d" % j
@@ -546,6 +560,8 @@ func _rueckkopplung(dt: float) -> void:
 	"""tilting or slipping: lower, wider, slower for 3 s"""
 	if _korr_t > 0.0:
 		_korr_t -= dt
+		if _korr_t <= 0.0 and not lauf.is_empty():
+			_param_setzen(lauf["param"])          # back to the values of the strategy
 		return
 	if bew.mode != "gang":
 		return
@@ -566,9 +582,10 @@ func _rueckkopplung(dt: float) -> void:
 	korrektur_grund = grund
 	if not lauf.is_empty():
 		lauf["korrekturen"] = int(lauf["korrekturen"]) + 1
-	bew.hoehe = maxf(0.5, bew.hoehe - 0.15)
-	bew.spreiz = minf(1.7, bew.spreiz + 0.15)
-	bew.tempo = maxf(0.02, bew.tempo * 0.7)
+	var base: Dictionary = lauf["param"] if not lauf.is_empty() else {"koerper_hoehe": bew.hoehe, "spreiz": bew.spreiz, "tempo": bew.tempo}
+	bew.hoehe = maxf(0.5, float(base["koerper_hoehe"]) - 0.15)
+	bew.spreiz = minf(1.7, float(base["spreiz"]) + 0.15)
+	bew.tempo = maxf(0.02, float(base["tempo"]) * 0.7)
 	_korr_t = 3.0
 
 
@@ -621,7 +638,7 @@ func tritt(i: int, s: int, u: float, beta: float, a2: Vector2, xf: Transform3D, 
 		var dx := 0.0
 		while dx <= 2.5 * amax + 1e-4:
 			for sg in ([1.0] if dx == 0.0 else [-1.0, 1.0]):
-				var cand := dx * sg
+				var cand: float = dx * sg
 				if cand > amax * 1.2 or best < 900.0:
 					continue
 				if _sicher(land + fx * cand):
@@ -859,7 +876,7 @@ var _w := {}
 func baue_seite(pg: VBoxContainer, lab) -> void:
 	_w = {}
 	pg.add_child(UI.small(T.t("Gang-KI: du gibst nur Richtung und Stil vor. Der Roboter sieht das Gelände vor sich (Höhenraster 1.5 × 1 m), erkennt Hindernisse, wählt eine Strategie und setzt jeden Fuss auf sicheren Boden.")))
-	var st := lab._button(pg, T.t("Mit der KI gehen"), func():
+	var st: Button = lab._button(pg, T.t("Mit der KI gehen"), func():
 		lab.start_gang("ki"), true)
 	_w["start"] = st
 	pg.add_child(UI.small(T.t("Stil")))
