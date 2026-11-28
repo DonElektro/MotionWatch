@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8706 (Stellen: 12076)
-Übersetzt: en 8706, fr 8706, it 8706, rm 8706
-Unsicher markiert: 514
-Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 555 Stellen
-Nicht mehr im Code (noch in texte.json): 416
+Texte gesamt: 8883 (Stellen: 12359)
+Übersetzt: en 8883, fr 8883, it 8883, rm 8883
+Unsicher markiert: 526
+Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 556 Stellen
+Nicht mehr im Code (noch in texte.json): 425
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 31966, schlüssel 24806, keine Wörter 15975, index 11294, technisch 4091, doc 2832, einheit 366, log 206, englisch 151, pfad 130, stringname 107, html 69, klasse 48, shader 6
+Übersprungen (Grund: Anzahl): kennung 32626, schlüssel 25371, keine Wörter 16270, index 11724, technisch 4184, doc 2929, einheit 378, log 206, englisch 151, pfad 130, stringname 107, html 69, klasse 48, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -18,8 +18,8 @@ Pro Datei (Texte / davon dynamische Stellen):
   game.gd                  211    32
   bergtal_abenteuer_daten.gd   197     0
   bergtal.gd               190     5
+  roboter_labor.gd         178     1
   bergtal_horror.gd        160     3
-  roboter_labor.gd         149     0
   abenteuer_raetsel.gd     145     2
   maggie_story.gd          114     2
   zwei_bausteine.gd        113     2
@@ -28,6 +28,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   bib_objekte.gd           108     0
   kit_k2_daten.gd          107     0
   main_menues.gd           106     2
+  roboter_steuerung.gd     104     0
   einbruch.gd              102     0
   spieltest.gd              99    20
   kit_k3_daten.gd           96     0
@@ -68,6 +69,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   handy.gd                  56     2
   quick.gd                  55     2
   bergtal_erleben_b.gd      55     0
+  roboter_ki_gang.gd        51     0
   erkunden_gestalten.gd     50     3
   karte.gd                  49    10
   abenteuer_rucksack.gd     48     3
@@ -112,6 +114,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_wegweiser.gd      30     0
   b3d.gd                    29     5
   zwilling.gd               29     3
+  roboter_ki_lernen.gd      29     0
   gamemission.gd            29     0
   news.gd                   29     1
   padmap.gd                 28    19
@@ -139,6 +142,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   patrol.gd                 20     0
   trailer.gd                19     7
   erkunden_figur.gd         19     1
+  roboter_bewegung.gd       19     0
   tv.gd                     19     8
   surprise.gd               19     1
   kompakt_dorf.gd           18     0
@@ -148,7 +152,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   kit_k3.gd                 18     0
   thermsensor.gd            18     0
   gamelearn.gd              18     0
-  roboter_bewegung.gd       18     0
   grafik_hoch.gd            18     1
   quality.gd                17     1
   kompakt_hof.gd            17     0
@@ -160,6 +163,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   main_start.gd             16     2
   menschen.gd               16     0
   gamesneak.gd              15     0
+  roboter_gelaende.gd       15     0
   abenteuer_blinki.gd       14     0
   home_editor.gd            14     3
   kit_k4.gd                 14     0
@@ -168,6 +172,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   bedienleiste.gd           13     0
   life.gd                   13     0
   fahrzeuge.gd              13     1
+  roboter_klassisch_bewegung.gd    13     0
   explore_person.gd         13     0
   gamekihilfe.gd            13     4
   gameturm.gd               13     0
@@ -175,6 +180,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   devtool_kontakt.gd        12     0
   maggie_modell.gd          12     3
   geschichten_faden.gd      12     0
+  roboter_klassisch_modell.gd    12     0
   replay.gd                 11     1
   bergtal_ziele.gd          11     0
   objekte_plus.gd           11     0
@@ -199,7 +205,6 @@ Pro Datei (Texte / davon dynamische Stellen):
   tiere.gd                   7     0
   gamexp.gd                  7     0
   nachtlauf.gd               7     0
-  roboter_gelaende.gd        7     0
   fenster_waechter.gd        6     2
   kopf.gd                    6     2
   devtool_extra.gd           6     0
@@ -708,6 +713,18 @@ Unsicher:
   '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n': technisch (HTTP) – nicht umhüllen
   '&vo=1': technisch – nicht umhüllen
   'Browser (WebGL 2)': rm automatisch
+  'kein Fortschritt': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'zu schwer': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Geländestufe': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Lernen: aus': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Lernen: wartet auf ein Hindernis': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  '%d gemerkt': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Versuch %d': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'neu aufstellen': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Bestes: noch kein Erfolg': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Bestes: %s · %.1f s · %.2f Wh · Kipp-Reserve %d %%': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Zu schwer: nach %d Versuchen wird es umgangen': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Letzter Versuch: %s': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
   '%s: «%s» wird gesendet, steht aber nicht in schnittstelle.json': Entwickler-Meldung (Log) – nicht umhüllen
   '%s: «%s» steht in schnittstelle.json, wird aber nicht gesendet': Entwickler-Meldung (Log) – nicht umhüllen
   'control: MoveEye braucht «%s», main.gd _control kennt es nicht': Entwickler-Meldung (Log) – nicht umhüllen
@@ -1085,6 +1102,7 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   explore.gd:991  'W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Höhe der Kamera · C Beobachter · J Mitspieler · Esc'
   fahrzeuge.gd:90  'nie'
   jahreszeiten.gd:52  'nie'
+  roboter_labor.gd:1405  'nie'
   feedback.gd:386  ' · TESTMODUS: geht nur an '
   feedback.gd:402  '\nLetzter Fehler · %s: %s'
   feedback.gd:437  '\n\nPaket: %s (%s) · Preis auf Anfrage'
@@ -1110,9 +1128,9 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   figur_paket.gd:123  'Paket lässt sich nicht öffnen: '
   figur_paket.gd:141  'Datei im Paket kaputt: '
   figur_paket.gd:207  'Skeleton3D:'
-  figur_paket.gd:916  ' – Fehler: '
-  figur_paket.gd:920  ' – Fehler: '
-  figur_paket.gd:946  '%s ist schon da: '
+  figur_paket.gd:918  ' – Fehler: '
+  figur_paket.gd:922  ' – Fehler: '
+  figur_paket.gd:948  '%s ist schon da: '
   game.gd:1462  ' · 🏆 alle gefunden'
   game.gd:1466  'Wächter · '
   game.gd:1492  ' · 🦆 %d s beobachtet'

@@ -398,8 +398,8 @@ func _commit(main) -> void:
 		_mat_v.vertex_color_use_as_albedo = true
 		_mat_v.vertex_color_is_srgb = true
 		_mat_v.albedo_color = Color.WHITE
-		_mat_v.roughness = 0.88
-		_mat_v.metallic_specular = 0.35
+		_mat_v.roughness = 0.92                                # «Figuren matt» (Idee #45): matt, wenig Glanz
+		_mat_v.metallic_specular = 0.2
 		_mat_t = ShaderMaterial.new()
 		_mat_t.shader = load("res://shaders/thermal_vc.gdshader")
 		_mat_t.set_shader_parameter("spread", 0.6)

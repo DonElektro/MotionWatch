@@ -123,12 +123,15 @@ var _lie_k := 0.0             # 3D-4.4: 0 standing … 1 lying (deer bedded down
 # ---- 3D-4.12 «Figuren»: a real figure with a skeleton (figur.gd) on «mittel» and better, the old one on «einfach» ----
 const Figur = preload("res://scripts/figur.gd")
 const FigurPaket = preload("res://scripts/figur_paket.gd")
+const Kontakt = preload("res://scripts/kontaktschatten.gd")   # «Figuren matt»: weicher Schatten unter den Füssen (Menschen)
 const FigurMensch = preload("res://scripts/figur_mensch.gd")   # «Figuren menschlicher»: MakeHuman-Körper (Menschen-Paket)
 const MenschStil = preload("res://scripts/menschen_stil.gd")   # «Figuren menschlicher»: Vielfalt pro Szene
 const Kleidung = preload("res://scripts/kleidung.gd")   # «Kleidung nach Jahreszeit» (31.10.2026)
 const Quality = preload("res://scripts/quality.gd")
 const Flora = preload("res://scripts/flora.gd")            # «Flora und Fauna» Phase 1
 const TierModell = preload("res://scripts/tier_modell.gd") # Tier als Modell mit Skelett (zuerst der Fuchs)
+var kontakt: MeshInstance3D = null   # kontaktschatten.gd: die Scheibe unter den Füssen (Menschen, nicht in der Vorschau)
+var _kontakt_t := 0.0
 var fig = null                # the figure with a skeleton (null = built from shapes)
 var demo := -1.0              # tests (figur.gd «row»): walks on the spot at this speed
 var tag_p = null              # players: the dictionary of game.gd (name, role, team above the head)
@@ -174,6 +177,8 @@ func setup(m, k: String, from: Vector3, to: Vector3, spd: float) -> void:
 		"person":
 			_build_person()
 			radius = 0.3
+			if not preview:
+				kontakt = Kontakt.bauen(self)
 		"car":
 			_build_car()
 			radius = 1.2 if variant != "moto" else 0.6
@@ -1335,6 +1340,11 @@ func _process(dt: float) -> void:
 					l.emission_energy_multiplier = base * f
 	if main != null and main.hilly() and not preview and is_inside_tree():
 		position.y = main.ground_y(position.x, position.z)   # a real place (from 3D-3.4): on the hills
+	if kontakt != null:
+		_kontakt_t -= dt
+		if _kontakt_t <= 0.0:
+			_kontakt_t = 0.25
+			Kontakt.tick(self, kontakt)                      # kontaktschatten.gd: schräg wie der Boden, länger beim Liegen
 	if anim != null:
 		anim.vor_sync(dt)                                    # anim_mensch.gd: up onto a step
 	if fig != null:

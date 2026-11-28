@@ -1,20 +1,56 @@
 extends RefCounted
 ## Roboter-Labor: der Boden mit Raster und die Prüfstrecken (Besitzer 22.11.2026: Rampe, Stufe, Kies, Graben).
 ## Alles in echten Metern (der Roboter misst bei Massstab 0.10 rund 1.3 m). Start in der Mitte (Fahrspur z = 0, Blick +X);
-## jede Prüfstrecke hat ihre eigene Spur parallel dazu, sie beginnt bei x = 2.5:
+## jede Prüfstrecke hat ihre eigene Spur parallel dazu, sie beginnt bei x = 2.5 (Ost) bzw. x = −8 (West):
 ##   Rampe 15° (z = +3) · Stufe 6 cm (z = −3) · Kies (z = +6) · Graben 20 cm breit, 15 cm tief (z = −6, quer über die Spur).
+## Gang-KI (28.11.2026, Besitzer 14:36: mehrere Grössen): Stufe 10 cm (z = +9) · Lücke 30 cm ohne Boden (z = −9) · West:
+##   Treppe 3 × 4 cm (z = +3) · Lücke 15 cm (z = −3) · Rohr Ø 6 cm (z = +6) · Balken 16 cm über dem Boden (drunter durch,
+##   z = −6) · Geröll 3 – 6 cm (z = +9) · Rohr Ø 10 cm (z = −9).
 ## Ebene 1 (LAYER_GELAENDE), der Roboter stösst nur daran.
 
 const T = preload("res://scripts/i18n.gd")
 const START_X := 2.5
-const SPUREN := {"start": 0.0, "rampe": 3.0, "stufe": -3.0, "kies": 6.0, "graben": -6.0}
+const WEST_X := -8.0
+const SPUREN := {"start": 0.0, "rampe": 3.0, "stufe": -3.0, "kies": 6.0, "graben": -6.0,
+		"stufe_hoch": 9.0, "luecke_breit": -9.0, "treppe": 3.0, "luecke": -3.0, "rohr": 6.0, "balken": -6.0,
+		"geroell": 9.0, "rohr_dick": -9.0}
+const WEST := ["treppe", "luecke", "rohr", "balken", "geroell", "rohr_dick"]
 const RAMPE_GRAD := 15.0
 const STUFE_H := 0.06
+const STUFE_HOCH_H := 0.10
 const GRABEN_B := 0.20
 const GRABEN_T := 0.15
+const LUECKE_B := 0.15
+const LUECKE_BREIT_B := 0.30
+const TREPPE_N := 3
+const TREPPE_H := 0.04
+const TREPPE_A := 0.25           # Auftritt (m)
+const ROHR_D := 0.06
+const ROHR_DICK_D := 0.10
+const BALKEN_H := 0.16           # lichte Höhe unter dem Balken
+const BALKEN_D := 0.05
+const HINDERNIS_AB := 0.5        # Graben, Lücke, Rohr, Balken: so weit nach dem Anfang der Spur
 # Gelände-Test: geschafft, wenn das hinterste Segment (im Ring: die Ringmitte) diese x-Lage erreicht
-const ENDE := {"rampe": START_X + 3.9, "stufe": START_X + 0.25, "kies": START_X + 2.6, "graben": START_X + 0.5 + GRABEN_B + 0.15}
-const NAMEN := [["rampe", "Rampe 15°"], ["stufe", "Stufe 6 cm"], ["kies", "Kies"], ["graben", "Graben 20 cm"]]
+const ENDE := {"rampe": START_X + 3.9, "stufe": START_X + 0.25, "kies": START_X + 2.6, "graben": START_X + 0.5 + GRABEN_B + 0.15,
+		"stufe_hoch": START_X + 0.25, "luecke_breit": START_X + 0.5 + LUECKE_BREIT_B + 0.15,
+		"treppe": WEST_X + TREPPE_N * TREPPE_A + 0.1, "luecke": WEST_X + 0.5 + LUECKE_B + 0.15, "rohr": WEST_X + 0.5 + ROHR_D + 0.15,
+		"balken": WEST_X + 0.5 + BALKEN_D + 0.15, "geroell": WEST_X + 2.6, "rohr_dick": WEST_X + 0.5 + ROHR_DICK_D + 0.15}
+const NAMEN := [["rampe", "Rampe 15°"], ["stufe", "Stufe 6 cm"], ["kies", "Kies"], ["graben", "Graben 20 cm"],
+		["stufe_hoch", "Stufe 10 cm"], ["treppe", "Treppe 3 × 4 cm"], ["luecke", "Lücke 15 cm"], ["luecke_breit", "Lücke 30 cm"],
+		["rohr", "Rohr 6 cm"], ["rohr_dick", "Rohr 10 cm"], ["balken", "Balken 16 cm hoch"], ["geroell", "Geröll"]]
+# what the lane holds (for tests and the KI): art + measures (m, °) - the same words as roboter_ki_gang.gd sehen()
+const SOLL := {"rampe": {"art": "rampe", "hoehe": 0.375, "neigung": 15.0}, "stufe": {"art": "stufe", "hoehe": STUFE_H},
+		"kies": {"art": "geroell"}, "graben": {"art": "graben", "breite": GRABEN_B, "tiefe": GRABEN_T},
+		"stufe_hoch": {"art": "stufe", "hoehe": STUFE_HOCH_H}, "luecke_breit": {"art": "luecke", "breite": LUECKE_BREIT_B},
+		"treppe": {"art": "treppe", "hoehe": TREPPE_N * TREPPE_H, "stufen": TREPPE_N}, "luecke": {"art": "luecke", "breite": LUECKE_B},
+		"rohr": {"art": "rohr", "hoehe": ROHR_D, "breite": ROHR_D}, "rohr_dick": {"art": "rohr", "hoehe": ROHR_DICK_D, "breite": ROHR_DICK_D},
+		"balken": {"art": "balken", "hoehe": BALKEN_H}, "geroell": {"art": "geroell"}}
+
+
+static func lane_x(k: String) -> float:
+	"""where the lane begins (x)"""
+	return WEST_X if k in WEST else START_X
+
 
 const GRID_SHADER := """
 shader_type spatial;
@@ -40,18 +76,41 @@ static func build(world: Node3D) -> Dictionary:
 	var sh := Shader.new()
 	sh.code = GRID_SHADER
 	mat.shader = sh
-	var gx0 := float(SPUREN["graben"]) - 1.0
-	var gx1 := float(SPUREN["graben"]) + 1.0
-	var dx0 := START_X + 0.5
-	var dx1 := dx0 + GRABEN_B
-	# floor (top at y = 0), the ditch is a gap across the lane of the ditch
-	_box(world, Vector3(-10, -0.5, gx1), Vector3(10, 0.0, 10), mat, 1.0, "boden")
-	_box(world, Vector3(-10, -0.5, -10), Vector3(10, 0.0, gx0), mat, 1.0, "boden_sued")
-	_box(world, Vector3(-10, -0.5, gx0), Vector3(dx0, 0.0, gx1), mat, 1.0, "boden_vor_graben")
-	_box(world, Vector3(dx1, -0.5, gx0), Vector3(10, 0.0, gx1), mat, 1.0, "boden_nach_graben")
-	_box(world, Vector3(dx0, -0.5, gx0), Vector3(dx1, -GRABEN_T, gx1), _plain(Color("#6d5a45")), 1.0, "grabensohle")
+	var z := 0.0
+	# floor (top at y = 0) with holes: the ditch (with a bottom) and the two gaps (none: the ray finds nothing)
+	var holes := []
+	for k in ["graben", "luecke_breit", "luecke"]:
+		var hx := lane_x(k) + HINDERNIS_AB
+		var hb: float = {"graben": GRABEN_B, "luecke_breit": LUECKE_BREIT_B, "luecke": LUECKE_B}[k]
+		holes.append(Rect2(hx, float(SPUREN[k]) - 1.0, hb, 2.0))
+	_floor(world, Rect2(-10, -10, 20, 20), holes, mat)
+	var dx0 := START_X + HINDERNIS_AB
+	var gz := float(SPUREN["graben"])
+	_box(world, Vector3(dx0, -0.5, gz - 1.0), Vector3(dx0 + GRABEN_B, -GRABEN_T, gz + 1.0), _plain(Color("#6d5a45")), 1.0, "grabensohle")
+	var stone_col := _plain(Color("#8f8a80"))
+	# a higher step
+	z = float(SPUREN["stufe_hoch"])
+	_box(world, Vector3(START_X, 0.0, z - 0.8), Vector3(START_X + 2.5, STUFE_HOCH_H, z + 0.8), stone_col, 1.0, "stufe_hoch")
+	# stairs: TREPPE_N steps up, then the top
+	z = float(SPUREN["treppe"])
+	for i in range(TREPPE_N):
+		var x0 := WEST_X + i * TREPPE_A
+		_box(world, Vector3(x0, 0.0, z - 0.8), Vector3(WEST_X + TREPPE_N * TREPPE_A + 1.2, (i + 1) * TREPPE_H, z + 0.8), stone_col, 1.0, "treppe_%d" % i)
+	# pipes lying across the lane
+	for k in ["rohr", "rohr_dick"]:
+		var d: float = ROHR_D if k == "rohr" else ROHR_DICK_D
+		_pipe(world, Vector3(WEST_X + HINDERNIS_AB + d * 0.5, d * 0.5, float(SPUREN[k])), d * 0.5, 1.6, k)
+	# beam above the lane on two posts (crawl under it)
+	z = float(SPUREN["balken"])
+	var bx := WEST_X + HINDERNIS_AB
+	var wood := _plain(Color("#8a6a48"))
+	_box(world, Vector3(bx, BALKEN_H, z - 0.9), Vector3(bx + BALKEN_D, BALKEN_H + 0.04, z + 0.9), wood, 1.0, "balken")
+	for sz in [-1.0, 1.0]:
+		_box(world, Vector3(bx, 0.0, z + sz * 0.9 - 0.03), Vector3(bx + BALKEN_D, BALKEN_H, z + sz * 0.9 + 0.03), wood, 1.0, "balken_pfosten")
+	# rubble: bigger stones than the gravel
+	_stones(world, "geroell", WEST_X, float(SPUREN["geroell"]), 140, 0.015, 0.03, 0.6, 2811)
 	# step
-	var z := float(SPUREN["stufe"])
+	z = float(SPUREN["stufe"])
 	_box(world, Vector3(START_X, 0.0, z - 0.8), Vector3(START_X + 2.5, STUFE_H, z + 0.8), _plain(Color("#8f8a80")), 1.0, "stufe")
 	# ramp up 15°, plateau, down again
 	z = float(SPUREN["rampe"])
@@ -61,9 +120,51 @@ static func build(world: Node3D) -> Dictionary:
 	_box(world, Vector3(START_X + ln, 0.0, z - 0.8), Vector3(START_X + ln + 1.0, rise, z + 0.8), _plain(Color("#8f8a80")), 1.0, "rampe_oben")
 	_slab(world, Vector3(START_X + ln + 1.0, 0, z), ln, rise, 1.6, true)
 	# gravel: one static body with many small stones
-	z = float(SPUREN["kies"])
+	_stones(world, "kies", START_X, float(SPUREN["kies"]), 520, 0.012, 0.03, 0.35, 2211)
+	# signs
+	_sign(world, Vector3(START_X - 0.3, 0.45, SPUREN["rampe"]), T.t("Rampe %d°") % int(RAMPE_GRAD))
+	_sign(world, Vector3(START_X - 0.3, 0.45, SPUREN["stufe"]), T.t("Stufe %d cm") % int(round(STUFE_H * 100)))
+	_sign(world, Vector3(START_X - 0.3, 0.45, SPUREN["kies"]), T.t("Kies"))
+	_sign(world, Vector3(START_X - 0.3, 0.45, SPUREN["graben"]), T.t("Graben %d cm") % int(round(GRABEN_B * 100)))
+	for nm in NAMEN.slice(4):
+		_sign(world, Vector3(lane_x(nm[0]) - 0.3, 0.45, SPUREN[nm[0]]), T.t(nm[1]))
+	var out := {}
+	for k in SPUREN:
+		out[k] = Transform3D(Basis(), Vector3(0.6 if k == "start" else lane_x(k) - 0.35, 0.0, float(SPUREN[k])))
+	return out
+
+
+static func _floor(world: Node3D, area: Rect2, holes: Array, mat: Material) -> void:
+	"""the floor slab (top y = 0, 0.5 m thick) over «area» without the «holes» (Rect2 in x / z): split in bands along z"""
+	var zs := [area.position.y, area.end.y]
+	for h in holes:
+		zs.append((h as Rect2).position.y)
+		zs.append((h as Rect2).end.y)
+	zs.sort()
+	var k := 0
+	for bi in range(zs.size() - 1):
+		var z0: float = zs[bi]
+		var z1: float = zs[bi + 1]
+		if z1 - z0 < 1e-4:
+			continue
+		var xs := [area.position.x]
+		for h in holes:
+			var r := h as Rect2
+			if r.position.y < z1 - 1e-4 and r.end.y > z0 + 1e-4:
+				xs.append(r.position.x)
+				xs.append(r.end.x)
+		xs.append(area.end.x)
+		xs.sort()
+		for i in range(0, xs.size() - 1, 2):
+			if float(xs[i + 1]) - float(xs[i]) > 1e-4:
+				_box(world, Vector3(xs[i], -0.5, z0), Vector3(xs[i + 1], 0.0, z1), mat, 1.0, "boden_%d" % k)
+				k += 1
+
+
+static func _stones(world: Node3D, nm: String, x0: float, z: float, count: int, r0: float, r1: float, sink: float, sd: int) -> void:
+	"""one static body with many stones (spheres) on the lane from x0 over 2.5 m"""
 	var gb := StaticBody3D.new()
-	gb.name = "kies"
+	gb.name = nm
 	gb.collision_layer = 1
 	gb.collision_mask = 0
 	var gpm := PhysicsMaterial.new()
@@ -71,7 +172,7 @@ static func build(world: Node3D) -> Dictionary:
 	gb.physics_material_override = gpm
 	world.add_child(gb)
 	var rng := RandomNumberGenerator.new()
-	rng.seed = 2211
+	rng.seed = sd
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	var stone := SphereMesh.new()
@@ -80,11 +181,10 @@ static func build(world: Node3D) -> Dictionary:
 	stone.radial_segments = 6
 	stone.rings = 3
 	mm.mesh = stone
-	var count := 520
 	mm.instance_count = count
 	for i in range(count):
-		var r := rng.randf_range(0.012, 0.03)
-		var pos := Vector3(rng.randf_range(START_X, START_X + 2.5), r * 0.35, z + rng.randf_range(-0.8, 0.8))
+		var r := rng.randf_range(r0, r1)
+		var pos := Vector3(rng.randf_range(x0, x0 + 2.5), r * sink, z + rng.randf_range(-0.8, 0.8))
 		var cs := CollisionShape3D.new()
 		var ss := SphereShape3D.new()
 		ss.radius = r
@@ -97,15 +197,31 @@ static func build(world: Node3D) -> Dictionary:
 	mmi.multimesh = mm
 	mmi.material_override = _plain(Color("#9a948a"))
 	world.add_child(mmi)
-	# signs
-	_sign(world, Vector3(START_X - 0.3, 0.45, SPUREN["rampe"]), T.t("Rampe %d°") % int(RAMPE_GRAD))
-	_sign(world, Vector3(START_X - 0.3, 0.45, SPUREN["stufe"]), T.t("Stufe %d cm") % int(round(STUFE_H * 100)))
-	_sign(world, Vector3(START_X - 0.3, 0.45, SPUREN["kies"]), T.t("Kies"))
-	_sign(world, Vector3(START_X - 0.3, 0.45, SPUREN["graben"]), T.t("Graben %d cm") % int(round(GRABEN_B * 100)))
-	var out := {}
-	for k in SPUREN:
-		out[k] = Transform3D(Basis(), Vector3(0.6 if k == "start" else START_X - 0.35, 0.0, float(SPUREN[k])))
-	return out
+
+
+static func _pipe(world: Node3D, c: Vector3, r: float, ln: float, nm: String) -> void:
+	"""a pipe lying across the lane (axis along z)"""
+	var sb := StaticBody3D.new()
+	sb.name = nm
+	sb.collision_layer = 1
+	sb.collision_mask = 0
+	sb.position = c
+	sb.rotation_degrees = Vector3(90, 0, 0)
+	world.add_child(sb)
+	var cs := CollisionShape3D.new()
+	var cy := CylinderShape3D.new()
+	cy.radius = r
+	cy.height = ln
+	cs.shape = cy
+	sb.add_child(cs)
+	var mi := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = r
+	cm.bottom_radius = r
+	cm.height = ln
+	mi.mesh = cm
+	mi.material_override = _plain(Color("#6f7f8c"))
+	sb.add_child(mi)
 
 
 static func _plain(c: Color) -> StandardMaterial3D:

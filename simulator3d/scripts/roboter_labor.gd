@@ -25,11 +25,23 @@ const MODELL = preload("res://scripts/roboter_modell.gd")
 const BEWEGUNG = preload("res://scripts/roboter_bewegung.gd")
 const GELAENDE = preload("res://scripts/roboter_gelaende.gd")
 const ANZEIGE = preload("res://scripts/roboter_anzeige.gd")
+const STEUERUNG = preload("res://scripts/roboter_steuerung.gd")
+const STICK = preload("res://scripts/roboter_stick.gd")   # Tastatur, Controller, Maus, Körper verschieben (28.11.2026)
+const KI = preload("res://scripts/roboter_ki_gang.gd")
+const KI_LERNEN := "res://scripts/roboter_ki_lernen.gd"   # Stufe 3 (Helfer B), nur wenn vorhanden
+const KL_MODELL = preload("res://scripts/roboter_klassisch_modell.gd")        # Vierbeiner / Sechsbeiner (28.11.2026)
+const KL_BEWEGUNG = preload("res://scripts/roboter_klassisch_bewegung.gd")
 const TICKS := 120
 # Zwei Varianten (Besitzer 22.11.2026 21:33): «8 Segmente» (Ring 8 × 45°) und «4 Segmente» (Ring 4 × 90°, die 45°-Schrägen
 # liegen flach aneinander). Jede Variante hat ihre eigenen Regler, Pose und Gang-Werte (user://roboter_labor.json).
 # Einstieg von aussen (z. B. ?roboter=4 der Startseite): control({"do": "open", "variante": "4"}) - variante_aus() deutet den Wert.
-const VARIANTEN := [["8", "8 Segmente"], ["6", "6 Segmente"], ["4", "4 Segmente"]]   # 6er: Besitzer 21:54 (Ring 6 × 60°)
+const VARIANTEN := [["8", "8 Segmente"], ["6", "6 Segmente"], ["4", "4 Segmente"], ["3", "3 Segmente"], ["2", "2 Segmente"]]   # 6er: Besitzer 21:54 (Ring 6 × 60°)
+# 3 und 2 Segmente (Besitzer 28.11.2026 14:40): 6 bzw. 4 Beine, gleiche Masse wie der 8er; kein Ring (Gelenke ±90°:
+# 3 × 120° / 2 × 180° gehen nicht) - Ring-Knöpfe, Pose «Ring», «Einrollen» und «Rund rollen» sind dort gesperrt, der Riegel bleibt offen.
+const FEST := ["6", "4", "3", "2"]     # Varianten mit fester Segmentzahl (alle ausser dem 8er)
+const RING_HINWEIS := "Ring braucht mindestens 4 Segmente"
+# klassische Laufroboter (Besitzer 28.11.2026 14:40): ein Körper mit 4 / 6 Beinen (roboter_klassisch_modell.gd), kein Ring
+const VARIANTEN_K := [["k4", "Vierbeiner"], ["k6", "Sechsbeiner"]]
 const SPEICHER := "user://roboter_labor.json"
 const BEW_KEYS := ["hoehe", "spreiz", "tempo", "schritt_laenge", "schritt_hoehe", "anpassen", "ring_methode", "ring_hoehe", "spur_rollen"]
 # Start-Werte fürs Rollen je Variante (gemessen 22.11.2026, je 3 Versuche über eine ganze Drehung, Median):
@@ -46,8 +58,25 @@ const RUND_START := {"8": {"ring_methode": "c", "ring_hoehe": 0.0, "spur_rollen"
 const RUND_VERSUCHE := 3
 const RUND_MAX := 40.0                 # s for one full turn, else «zu langsam»
 const PANEL_W := 380.0
-const TABS := [["form", "Form"], ["gelenke", "Gelenke"], ["posen", "Posen"], ["bewegen", "Bewegen"], ["anzeigen", "Anzeigen"],
-		["rund", "Rund rollen"], ["gelaende", "Gelände"], ["physik", "Physik"], ["ansicht", "Ansicht"]]
+# Menü aufgeräumt (Besitzer, Fragebogen 28.11.2026 14:49): 5 Reiter statt 9, darin aufklappbare Gruppen wie im Simulator
+# (Suchfeld, «Alle zuklappen · Nur Gruppen · Alle aufklappen»); nichts entfernt, nur umsortiert. [id, Name, Symbol]
+const TABS := [["fahren", "Fahren"], ["haltung", "Haltung"], ["bauen", "Labor|Bauen"], ["welt", "Welt"], ["messen", "Messen"]]
+# die früheren 9 Reiter (/control «tab», ältere Tests, Haken anderer Zweige) -> [neuer Reiter, Gruppe]
+const TAB_ALT := {"form": ["bauen", "form"], "gelenke": ["bauen", "gelenke"], "posen": ["haltung", "posen"],
+		"bewegen": ["fahren", "gang"], "anzeigen": ["messen", "anzeigen"], "rund": ["messen", "rund"],
+		"gelaende": ["welt", "gelaende"], "physik": ["welt", "physik"], "ansicht": ["welt", "ansicht"],
+		"ki": ["fahren", "ki"]}
+# die Gruppen in den Reitern, in dieser Reihenfolge: [id, Titel, Reiter]
+const GRUPPEN := [["gang", "Gangart", "fahren"], ["richtung", "Richtung", "fahren"], ["tempo", "Tempo und Schritt", "fahren"],
+		["ring", "Im Ring rollen", "fahren"], ["ki", "Gang-KI", "fahren"], ["steuerung", "Steuerung", "fahren"],
+		["posen", "Posen", "haltung"], ["ablaeufe", "Ganze Abläufe", "haltung"], ["koerper", "Körper verschieben", "haltung"],
+		["form", "Form", "bauen"], ["gelenke", "Gelenke", "bauen"],
+		["gelaende", "Gelände", "welt"], ["physik", "Physik", "welt"], ["ansicht", "Ansicht", "welt"],
+		["anzeigen", "Anzeigen", "messen"], ["rund", "Rund rollen", "messen"]]
+# Auswahlliste «Modell»: die Reihenfolge; was (noch) nicht in VARIANTEN steht, ist grau
+const MODELLE := [["8", "8 Segmente"], ["6", "6 Segmente"], ["4", "4 Segmente"], ["3", "3 Segmente"], ["2", "2 Segmente"],
+		["k4", "Vierbeiner"], ["k6", "Sechsbeiner"]]
+const AKZENT := Color("#ef9f27")       # Kopf und Logo: Orange wie die Kupplung (roboter_modell.gd FARBE["kupplung"])
 const VIEWS := [["frei", "Frei"], ["seite", "Seite"], ["oben", "Oben"], ["roboter", "Roboter-Kamera"]]
 const FORM := [   # [key, name, unit, step]
 	["segmente", "Segmente", "", 1.0], ["halbe_breite", "Halbe Breite", "E", 0.01], ["halbe_breite_spitze", "Halbe Breite Spitze", "E", 0.01],
@@ -72,6 +101,9 @@ var pip_box: Control
 var model                              # roboter_modell.gd
 var bew                                # roboter_bewegung.gd
 var anz                                # roboter_anzeige.gd
+var steu                               # roboter_steuerung.gd
+var ki                                 # roboter_ki_gang.gd (Gang-KI Stufe 1 + 2)
+var ki_lernen = null                   # roboter_ki_lernen.gd (Stufe 3), null wenn es die Datei nicht gibt
 var manual := Vector3.ZERO             # Bewegen: x = seitwärts (+ links), y = vor / zurück, z = drehen / Kurve (+ links)
 var speed := 0.0                       # measured, m/s (smooth)
 var _last_com := Vector3.ZERO
@@ -88,7 +120,7 @@ const TERRAIN_MAX := 150.0             # s
 const TERRAIN_STILL := 15.0            # s without 3 cm progress = stuck
 var starts := {}                       # lane -> Transform3D (roboter_gelaende.gd)
 var view := "frei"
-var tab := "form"
+var tab := "fahren"
 var paused := false
 var pip := true
 var info_on := true                    # the info field top left (status lines)
@@ -114,6 +146,10 @@ var _drag := 0
 var _rebuild_t := -1.0
 var _ui_t := 0.0
 var _panel_on := true
+var _gruppen := {}                     # group id -> body (UI.fold_card)
+var _panel_w := PANEL_W                # the widest tab (set in _build_ui)
+var _ki_t := 0.0                       # Gang-KI picture: next refresh (s)
+var _such := ""                        # the text in the search field (lower case)
 
 
 func is_open() -> bool:
@@ -121,9 +157,43 @@ func is_open() -> bool:
 
 
 static func variante_aus(v) -> String:
-	"""«4» → 4 Segmente, «6» → 6 Segmente, alles andere («1», «8», leer) → 8 Segmente"""
-	var t := str(v).strip_edges()
-	return t if t in ["4", "6"] else "8"
+	"""«6» / «4» / «3» / «2» → so viele Segmente, «k4» / «vierbeiner», «k6» / «sechsbeiner» → Laufroboter, sonst 8 Segmente"""
+	var t := str(v).strip_edges().to_lower()
+	if t in ["k4", "vierbeiner"]:
+		return "k4"
+	if t in ["k6", "sechsbeiner"]:
+		return "k6"
+	return t if t in FEST else "8"
+
+
+func klassisch() -> bool:
+	"""Vierbeiner / Sechsbeiner (one body, no ring) instead of the segment robot"""
+	return variante in ["k4", "k6"]
+
+
+func _form() -> Array:
+	return KL_MODELL.FORM_K if klassisch() else FORM
+
+
+func _physik() -> Array:
+	return KL_MODELL.PHYSIK_K if klassisch() else PHYSIK
+
+
+func _grenzen() -> Dictionary:
+	return KL_MODELL.GRENZEN_K if klassisch() else MODELL.GRENZEN
+
+
+func _posen() -> Array:
+	"""the ready poses / gaits / sequences of the robot shown now"""
+	return bew.posen() if klassisch() and bew != null else BEWEGUNG.POSEN
+
+
+func _gaenge() -> Array:
+	return bew.gaenge() if klassisch() and bew != null else BEWEGUNG.GAENGE
+
+
+func _ablaeufe() -> Array:
+	return bew.ablaeufe() if klassisch() and bew != null else BEWEGUNG.ABLAEUFE
 
 
 func open() -> void:
@@ -142,7 +212,11 @@ func open() -> void:
 	_old_3d = get_viewport().disable_3d
 	get_viewport().disable_3d = true                  # the window shows only the lab: the world of MoveEye is not drawn meanwhile
 	_build_world()
+	steu = STEUERUNG.new()
+	steu.lab = self
+	steu.laden()
 	_build_ui()
+	steu.build(_w["area"])
 	_start_physics()
 	set_view(view)
 	set_tab(tab)
@@ -151,6 +225,9 @@ func open() -> void:
 func close() -> void:
 	if not is_open():
 		return
+	if steu != null:
+		steu.close()
+		steu = null
 	layer.queue_free()
 	layer = null
 	win = null
@@ -193,22 +270,26 @@ func _build_world() -> void:
 	cam.near = 0.02
 	cam.far = 120.0
 	world.add_child(cam)
-	model = MODELL.new()
-	model.name = "segmentroboter"
+	model = KL_MODELL.new() if klassisch() else MODELL.new()
+	model.name = "laufroboter" if klassisch() else "segmentroboter"
+	if klassisch():
+		model.setze_beine(6 if variante == "k6" else 4)
 	var sp: Dictionary = (_store.get(variante, {}) as Dictionary).get("p", {})
 	for k in sp:
-		if MODELL.START.has(k):
+		if model.p.has(k) and k != "beine":
 			model.p[k] = sp[k]
-	if variante in ["4", "6"]:
+	if klassisch():
+		pass
+	elif variante in FEST:
 		model.p["segmente"] = int(variante)
-	elif int(model.p["segmente"]) in [4, 6]:
+	elif str(int(model.p["segmente"])) in FEST:
 		model.p["segmente"] = 8
-	last_pose = str((_store.get(variante, {}) as Dictionary).get("pose", "gerade"))
+	last_pose = str((_store.get(variante, {}) as Dictionary).get("pose", "stehen" if klassisch() else "gerade"))
 	var an: Dictionary = (_store.get(variante, {}) as Dictionary).get("ansicht", {})
 	pip = bool(an.get("pip", true))
 	info_on = bool(an.get("info", true))
 	world.add_child(model)
-	bew = BEWEGUNG.new()
+	bew = KL_BEWEGUNG.new() if klassisch() else BEWEGUNG.new()
 	bew.m = model
 	var rs0: Dictionary = RUND_START.get(variante, {})
 	for k in rs0:
@@ -221,6 +302,17 @@ func _build_world() -> void:
 	anz.name = "anzeige"
 	anz.m = model
 	world.add_child(anz)
+	ki = KI.new()
+	ki.m = model
+	ki.bew = bew
+	ki.anz = anz
+	ki.labor = self
+	bew.ki = ki
+	if ResourceLoader.exists(KI_LERNEN):
+		ki_lernen = load(KI_LERNEN).new()
+		ki_lernen.set("ki", ki)
+		ki_lernen.set("labor", self)
+		ki.lernen = ki_lernen
 
 
 func _load_store() -> void:
@@ -292,23 +384,31 @@ func _rebuild(new_pose: bool) -> void:
 		bew.apply(keep)
 	model.place(true)
 	_fill_servo_sliders()
+	_paint_ring()
 
 
 func _physics_process(dt: float) -> void:
 	if not is_open() or model == null or paused:
 		return
-	var wasd := Vector3(float(Input.is_key_pressed(KEY_A)) - float(Input.is_key_pressed(KEY_D)),
-			float(Input.is_key_pressed(KEY_W)) - float(Input.is_key_pressed(KEY_S)),
-			float(Input.is_key_pressed(KEY_Q)) - float(Input.is_key_pressed(KEY_E)))
-	if wasd != Vector3.ZERO and bew.mode not in ["gang", "ring"]:
-		if model.latch["state"] == "locked":
-			bew.start_ring()
-		else:
-			bew.start_gang(bew.gang)
-	var c := wasd if wasd != Vector3.ZERO else manual
-	bew.cmd = c
-	bew.keys = Vector2(clampf(c.z + c.x, -1.0, 1.0), c.y)       # in the ring: A / D and Q / E both steer
-	bew.step(dt)
+	# keyboard, controller and mouse joystick (roboter_steuerung.gd): smooth [strafe + links, forward, turn + links]
+	var wasd: Vector3 = steu.tick(dt) if steu != null else Vector3.ZERO
+	if steu != null and steu.koerper:
+		steu.koerper_step(dt)                            # «Körper verschieben»: the feet stand, the body moves
+	else:
+		if wasd != Vector3.ZERO and bew.mode not in ["gang", "ring"]:
+			if model.latch["state"] == "locked":
+				bew.start_ring()
+			else:
+				bew.start_gang(bew.gang)
+		var c := wasd if wasd != Vector3.ZERO else manual
+		bew.cmd = c
+		bew.keys = Vector2(clampf(c.z + c.x, -1.0, 1.0), c.y)       # in the ring: A / D and Q / E both steer
+		ki.setze_befehl(Vector3(c.y, c.x, c.z))                  # Gang-KI: the drive command (also from the stick / controller)
+		ki.step(dt)
+		if ki_lernen != null:
+			ki_lernen.tick(dt)
+		bew.step(dt)
+		ki.vorne_neigen()
 	model.step(dt)
 	if not terrain.is_empty():
 		_terrain_step(dt)
@@ -330,6 +430,8 @@ func _process(dt: float) -> void:
 			_refresh_form_info()
 	_camera(dt)
 	_layout_overlay()
+	if steu != null:
+		steu.process(dt)
 	_anz_t -= dt
 	if _anz_t <= 0.0 and anz != null:
 		_anz_t = 0.1
@@ -476,7 +578,15 @@ func zoom(dir: int) -> void:
 	dist = clampf(dist * (0.88 if dir > 0 else 1.0 / 0.88), 0.3, 25.0)
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and steu != null:
+		steu.loslassen()                                 # nothing stays held when the window loses the focus
+
+
 func _input(ev: InputEvent) -> void:
+	if is_open() and steu != null and steu.input(ev):    # bindings of the profile (roboter_steuerung.gd) first
+		get_viewport().set_input_as_handled()
+		return
 	if not is_open() or not (ev is InputEventKey):
 		return
 	var k := ev as InputEventKey
@@ -494,10 +604,6 @@ func _input(ev: InputEvent) -> void:
 			set_view("oben")
 		KEY_4:
 			set_view("roboter")
-		KEY_R:
-			reset()
-		KEY_SPACE:
-			stop_all()
 		KEY_G:
 			if bew.mode == "gang":
 				stop_all()
@@ -588,7 +694,13 @@ func reset() -> void:
 	_paint_toggles()
 
 
+func ring_ok() -> bool:
+	return model != null and model.ring_ok()
+
+
 func apply_pose(name: String, snap := false) -> void:
+	if name == "ring" and not ring_ok():
+		return                                       # 2 / 3 Segmente: kein Ring
 	if name != "ring" and not snap and model.latch["state"] != "open":
 		ring_oeffnen(name)                                 # never straighten against the closed latch: open it first
 		return
@@ -625,8 +737,8 @@ func set_gravity(g: float) -> void:
 
 
 func set_shape(key: String, v: float) -> void:
-	if key == "segmente" and variante in ["4", "6"]:
-		v = float(variante)                          # the 4- and 6-segment variants keep their number
+	if key == "segmente" and variante in FEST:
+		v = float(variante)                          # the 6-, 4-, 3- and 2-segment variants keep their number
 	model.set_param(key, v)
 	mark_dirty()
 	var d: Dictionary = _w.get("form_" + key, {})
@@ -682,65 +794,150 @@ func _build_ui() -> void:
 	var pv := VBoxContainer.new()
 	pv.add_theme_constant_override("separation", 8)
 	panel.add_child(pv)
+	# Kopf (Besitzer 28.11.2026): eigenes Roboter-Symbol und Name in Orange (wie die Kupplung), rechts die Nummer des Simulators
 	var hd := HBoxContainer.new()
+	hd.add_theme_constant_override("separation", 8)
 	pv.add_child(hd)
+	var logo := _icon("roboter", AKZENT, Vector2(26, 26))
+	logo.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	hd.add_child(logo)
 	var tl := Label.new()
 	tl.text = T.t("Roboter-Labor")
 	tl.add_theme_font_override("font", UI.heading_font())
 	tl.add_theme_font_size_override("font_size", 17)
+	tl.add_theme_color_override("font_color", AKZENT)
 	tl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hd.add_child(tl)
-	var x := Button.new()
-	x.text = "✕"
-	x.flat = true
-	x.tooltip_text = T.t("Schliessen (Esc)")
-	x.pressed.connect(close)
+	_w["titel"] = tl
+	var ver := UI.small(T.t("Sim %s") % sim_version())
+	ver.autowrap_mode = TextServer.AUTOWRAP_OFF
+	ver.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	hd.add_child(ver)
+	_w["version"] = ver
+	var x := _close_btn(UI.TXT, T.t("Schliessen (Esc)"), close)
+	x.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	hd.add_child(x)
-	var sub := UI.small(T.t("Segment-Roboter – Form, Gelenke und Physik ausprobieren"))
+	var akz := ColorRect.new()                        # a thin orange line under the head: the lab at a glance
+	akz.color = AKZENT
+	akz.custom_minimum_size = Vector2(0, 2)
+	pv.add_child(akz)
+	var sub := UI.small(T.t("Laufroboter – Form, Gelenke und Physik ausprobieren") if klassisch() else T.t("Segment-Roboter – Form, Gelenke und Physik ausprobieren"))
 	pv.add_child(sub)
-	var vs := HBoxContainer.new()
-	vs.add_theme_constant_override("separation", 4)
-	pv.add_child(vs)
-	for vv in VARIANTEN:
-		var vid: String = vv[0]
-		var vb := _button(vs, T.t(vv[1]), func(): set_variante.call_deferred(vid))
-		vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		_paint_btn(vb, vid == variante)
-	var tabs := HFlowContainer.new()
-	tabs.add_theme_constant_override("h_separation", 4)
-	tabs.add_theme_constant_override("v_separation", 4)
+	# Modell: one list with a small picture of each model (before: 3 buttons)
+	var mr := HBoxContainer.new()
+	mr.add_theme_constant_override("separation", 8)
+	pv.add_child(mr)
+	var ml := Label.new()
+	ml.text = T.t("Modell")
+	mr.add_child(ml)
+	var ob := OptionButton.new()
+	ob.focus_mode = Control.FOCUS_NONE
+	ob.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ob.custom_minimum_size = Vector2(0, 36)
+	ob.expand_icon = false
+	var ids := (VARIANTEN + VARIANTEN_K).map(func(x): return x[0])
+	var liste := []
+	for mm in MODELLE:
+		liste.append(mm)
+	for vv in VARIANTEN + VARIANTEN_K:                # a variant that MODELLE does not know yet comes at the end
+		if not MODELLE.any(func(x): return x[0] == vv[0]):
+			liste.append(vv)
+	for i in liste.size():
+		var mid: String = liste[i][0]
+		ob.add_icon_item(modell_bild(mid), T.t(liste[i][1]), i)
+		ob.set_item_metadata(i, mid)
+		ob.set_item_disabled(i, not mid in ids)
+		if mid == variante:
+			ob.select(i)
+	ob.item_selected.connect(func(i: int): set_variante.call_deferred(str(ob.get_item_metadata(i))))
+	mr.add_child(ob)
+	_w["modell"] = ob
+	# 5 tabs, each with a drawn symbol (the font has no emoji)
+	var tabs := HBoxContainer.new()
+	tabs.add_theme_constant_override("separation", 4)
 	pv.add_child(tabs)
 	for tb in TABS:
 		var b := Button.new()
-		b.text = T.t(tb[1])
 		b.focus_mode = Control.FOCUS_NONE
+		b.custom_minimum_size = Vector2(0, 50)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.tooltip_text = tx(tb[1])
 		b.pressed.connect(set_tab.bind(tb[0]))
+		var bv := VBoxContainer.new()
+		bv.set_anchors_preset(Control.PRESET_FULL_RECT)
+		bv.alignment = BoxContainer.ALIGNMENT_CENTER
+		bv.add_theme_constant_override("separation", 1)
+		bv.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		b.add_child(bv)
+		var ic := _icon("tab_" + tb[0], UI.TXT, Vector2(22, 22))
+		ic.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		bv.add_child(ic)
+		var lb := Label.new()
+		lb.text = tx(tb[1])
+		lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lb.add_theme_font_size_override("font_size", 12)
+		lb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bv.add_child(lb)
+		b.set_meta("icon", ic)
+		b.set_meta("label", lb)
 		tabs.add_child(b)
 		_w["tab_" + tb[0]] = b
+	# search and the three fold buttons, the same parts as in the menu of the simulator (ui_style.gd)
+	var tbar := HBoxContainer.new()
+	tbar.add_theme_constant_override("separation", 4)
+	pv.add_child(tbar)
+	var se := UI.search_field(T.t("Einstellung suchen …"))
+	se.custom_minimum_size = Vector2(0, 36)
+	se.text_changed.connect(suche)
+	tbar.add_child(se)
+	_w["suche"] = se
+	for fk in [["close", "Alle zuklappen"], ["groups", "Nur Gruppen"], ["open", "Alle aufklappen"]]:
+		var how: String = fk[0]
+		var fb := UI.icon_button(how, T.t(fk[1]))
+		fb.custom_minimum_size = Vector2(36, 36)
+		fb.pressed.connect(func(): fold_all(how))
+		tbar.add_child(fb)
+		_w["fold_" + how] = fb
 	var sc := ScrollContainer.new()
 	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	sc.set_meta("rad_scroll", true)
 	pv.add_child(sc)
+	_w["scroll"] = sc
 	var body := VBoxContainer.new()
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body.add_theme_constant_override("separation", 8)
 	sc.add_child(body)
+	var none := UI.small(T.t("Kein Treffer"))
+	none.visible = false
+	body.add_child(none)
+	_w["kein_treffer"] = none
 	for tb in TABS:
 		var v := VBoxContainer.new()
-		v.add_theme_constant_override("separation", 6)
+		v.add_theme_constant_override("separation", 8)
 		v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		body.add_child(v)
 		_w["page_" + tb[0]] = v
-	_page_form(_w["page_form"])
-	_page_gelenke(_w["page_gelenke"])
-	_page_posen(_w["page_posen"])
-	_page_physik(_w["page_physik"])
-	_page_bewegen(_w["page_bewegen"])
-	_page_anzeigen(_w["page_anzeigen"])
-	_page_gelaende(_w["page_gelaende"])
-	_page_rund(_w["page_rund"])
-	_page_ansicht(_w["page_ansicht"])
+	_gruppen = {}
+	for g in GRUPPEN:
+		gruppe(g[0], g[1], g[2])
+	_page_bewegen(gruppe("gang"))
+	_page_posen(gruppe("posen"))
+	_page_form(gruppe("form"))
+	_page_gelenke(gruppe("gelenke"))
+	_page_gelaende(gruppe("gelaende"))
+	_page_physik(gruppe("physik"))
+	_page_ansicht(gruppe("ansicht"))
+	_page_anzeigen(gruppe("anzeigen"))
+	_page_rund(gruppe("rund"))
+	_page_steuerung()
+	ki.baue_seite(gruppe("ki"), self)                  # Gang-KI (sim-gang-ki-a / -b): group «Gang-KI» in Fahren
+	UI.set_open(gruppe("ki"), false)                    # closed at the start: like the former tab «KI», the picture of what the robot
+	                                                   # sees (sehen() + raster) is made only while someone looks at it
+	_paint_ring()
+	for tb in TABS:                                   # one width for all tabs (the widest), the panel does not jump
+		(_w["page_" + tb[0]] as Control).visible = true
+	_panel_w = maxf(PANEL_W, panel.get_combined_minimum_size().x)
 	var keys := UI.small(T.t("W / S vor / zurück · A / D seitwärts · Q / E drehen · Leertaste Stopp · G Gehen · 1 – 4 Ansicht · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · I Info · H Bedienfeld · Esc schliessen"))
 	pv.add_child(keys)
 
@@ -853,18 +1050,240 @@ func _overlay(area: Control) -> void:
 
 
 func _close_btn(col: Color, tip: String, cb: Callable) -> Button:
-	"""a small ✕ to hide a field (bigger for a finger on touch screens)"""
+	"""a small drawn cross to hide a field (the font has no «✕»; bigger for a finger on touch screens)"""
 	var b := Button.new()
-	b.text = "✕"
 	b.flat = true
 	b.tooltip_text = tip
 	b.focus_mode = Control.FOCUS_NONE
 	b.mouse_filter = Control.MOUSE_FILTER_STOP
-	b.add_theme_color_override("font_color", col)
-	b.add_theme_font_size_override("font_size", 16 if touch else 13)
 	b.custom_minimum_size = Vector2(36, 32) if touch else Vector2(22, 20)
+	var d := _icon("kreuz", col, Vector2.ZERO)
+	d.set_anchors_preset(Control.PRESET_FULL_RECT)
+	b.add_child(d)
 	b.pressed.connect(cb)
 	return b
+
+
+static func tx(de: String) -> String:
+	"""T.t with a context for a word that means something else elsewhere: «Labor|Bauen» = «Bauen» here (en «Build»,
+	not «Build yourself» of Mehr → Bauen); in German the part before «|» is dropped"""
+	var s := T.t(de)
+	return s.substr(s.find("|") + 1) if s.begins_with("Labor|") else s
+
+
+func sim_version() -> String:
+	"""the number of the simulator (main.gd VERSION) for the head of the lab"""
+	var s: Script = main.get_script() if main != null else null
+	if s == null:
+		s = load("res://scripts/main.gd")
+	return str(s.get_script_constant_map().get("VERSION", "")) if s != null else ""
+
+
+func _icon(kind: String, col: Color, sz: Vector2) -> Control:
+	"""a drawn symbol (no font needed - the same on every PC); col in meta «col», redraw after a change"""
+	var d := Control.new()
+	d.custom_minimum_size = sz
+	d.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	d.set_meta("col", col)
+	d.draw.connect(func(): draw_icon(d, kind, d.get_meta("col")))
+	return d
+
+
+static func draw_icon(d: Control, kind: String, col: Color) -> void:
+	var c := d.size / 2.0
+	var s := minf(d.size.x, d.size.y) / 22.0              # drawn for 22 px
+	var w := 2.0 * maxf(0.8, s)
+	match kind:
+		"roboter":                                       # the logo: head with two eyes and an antenna, the body as a segment chain
+			d.draw_rect(Rect2(c + Vector2(-7, -6) * s, Vector2(14, 9) * s), col, false, w)
+			d.draw_circle(c + Vector2(-3, -1.5) * s, 1.6 * s, col)
+			d.draw_circle(c + Vector2(3, -1.5) * s, 1.6 * s, col)
+			d.draw_line(c + Vector2(0, -6) * s, c + Vector2(0, -9.5) * s, col, w)
+			d.draw_circle(c + Vector2(0, -10) * s, 1.5 * s, col)
+			for i in 3:
+				d.draw_rect(Rect2(c + Vector2(-8.5 + i * 6.0, 5) * s, Vector2(5, 4) * s), col)
+			d.draw_line(c + Vector2(-9, 9) * s, c + Vector2(-10.5, 11) * s, col, w * 0.7)
+			d.draw_line(c + Vector2(9, 9) * s, c + Vector2(10.5, 11) * s, col, w * 0.7)
+		"kreuz":
+			d.draw_line(c + Vector2(-4, -4) * s, c + Vector2(4, 4) * s, col, w, true)
+			d.draw_line(c + Vector2(-4, 4) * s, c + Vector2(4, -4) * s, col, w, true)
+		"tab_fahren":                                    # joystick: base, stick, knob
+			d.draw_rect(Rect2(c + Vector2(-8, 5) * s, Vector2(16, 4) * s), col, false, w)
+			d.draw_line(c + Vector2(0, 5) * s, c + Vector2(2.5, -3) * s, col, w)
+			d.draw_circle(c + Vector2(3, -5) * s, 3.2 * s, col)
+		"tab_haltung":                                   # a standing person
+			d.draw_circle(c + Vector2(0, -7.5) * s, 2.6 * s, col)
+			d.draw_line(c + Vector2(0, -4) * s, c + Vector2(0, 3) * s, col, w)
+			d.draw_line(c + Vector2(-6, -1.5) * s, c + Vector2(6, -1.5) * s, col, w)
+			d.draw_line(c + Vector2(0, 3) * s, c + Vector2(-4, 10) * s, col, w)
+			d.draw_line(c + Vector2(0, 3) * s, c + Vector2(4, 10) * s, col, w)
+		"tab_bauen":                                     # a wrench
+			d.draw_line(c + Vector2(-7, 7) * s, c + Vector2(2, -2) * s, col, w * 1.5, true)
+			d.draw_arc(c + Vector2(4.5, -4.5) * s, 4.4 * s, -PI / 4.0 + 0.95, -PI / 4.0 + TAU - 0.95, 16, col, w * 1.1, true)
+		"tab_welt":                                      # a globe
+			d.draw_arc(c, 8.5 * s, 0, TAU, 32, col, w, true)
+			d.draw_line(c + Vector2(-8.5, 0) * s, c + Vector2(8.5, 0) * s, col, w * 0.7)
+			var pts := PackedVector2Array()
+			for i in 17:
+				var a := -PI / 2.0 + PI * i / 16.0
+				pts.append(c + Vector2(cos(a) * 4.0, sin(a) * 8.5) * s)
+			d.draw_polyline(pts, col, w * 0.7, true)
+			var pts2 := PackedVector2Array()
+			for p in pts:
+				pts2.append(Vector2(2.0 * c.x - p.x, p.y))
+			d.draw_polyline(pts2, col, w * 0.7, true)
+		"tab_messen":                                    # bar chart
+			d.draw_line(c + Vector2(-9, 9) * s, c + Vector2(9, 9) * s, col, w * 0.7)
+			for e in [[-7.0, 6.0], [-2.0, 11.0], [3.0, 16.0]]:
+				d.draw_rect(Rect2(c + Vector2(e[0], 8.0 - e[1]) * s, Vector2(4, e[1]) * s), col)
+		"stopp":
+			d.draw_rect(Rect2(c - Vector2(5, 5) * s, Vector2(10, 10) * s), col)
+		"dreh_l", "dreh_r":                              # turn on the spot: an arc with an arrow head (clockwise = right)
+			var mx := -1.0 if kind == "dreh_l" else 1.0          # left = the mirror picture
+			var pts := PackedVector2Array()
+			var a0 := -PI * 0.85
+			var a1 := PI * 0.45
+			for k in 21:
+				var a := lerpf(a0, a1, k / 20.0)
+				pts.append(c + Vector2(cos(a) * mx, sin(a)) * 6.5 * s)
+			d.draw_polyline(pts, col, w, true)
+			var endp := c + Vector2(cos(a1) * mx, sin(a1)) * 6.5 * s
+			var tang := Vector2(-sin(a1) * mx, cos(a1))
+			var nrm := Vector2(-tang.y, tang.x)
+			d.draw_colored_polygon(PackedVector2Array([endp + tang * 4.0 * s, endp + nrm * 3.2 * s, endp - nrm * 3.2 * s]), col)
+		_:
+			if kind.begins_with("pfeil"):                # «pfeil<grad>»: 0 = up, 90 = right ...
+				var a := deg_to_rad(float(kind.substr(5)))
+				var dir := Vector2(sin(a), -cos(a))
+				var nrm := Vector2(-dir.y, dir.x)
+				d.draw_line(c - dir * 6.5 * s, c + dir * 2.0 * s, col, w, true)
+				d.draw_colored_polygon(PackedVector2Array([c + dir * 7.5 * s, c + dir * 1.0 * s + nrm * 5.0 * s,
+						c + dir * 1.0 * s - nrm * 5.0 * s]), col)
+
+
+static func modell_bild(id: String) -> ImageTexture:
+	"""a small picture of a model for the list «Modell» (seen from above: segments in orange, legs grey)"""
+	var w := 44
+	var h := 22
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var seg := Color("#ef9f27")
+	var leg := Color("#8a9bb0")
+	if id.is_valid_int():
+		var n := int(id)
+		var sw := mini(9, int(floor(40.0 / n)) - 1)
+		var x0 := int((w - n * (sw + 1)) / 2.0)
+		for i in n:
+			var x := x0 + i * (sw + 1)
+			img.fill_rect(Rect2i(x + int(sw / 2.0), 2, 1, 4), leg)
+			img.fill_rect(Rect2i(x + int(sw / 2.0), h - 6, 1, 4), leg)
+			img.fill_rect(Rect2i(x, 6, sw, h - 12), seg)
+	else:
+		var legs := 3 if id in ["k6", "sechs"] else 2
+		img.fill_rect(Rect2i(8, 7, 28, 8), seg)
+		img.fill_rect(Rect2i(34, 8, 6, 6), seg.darkened(0.25))   # head
+		for i in legs:
+			var x := 11 + int(i * 20.0 / maxf(1.0, legs - 1))
+			img.fill_rect(Rect2i(x, 1, 2, 6), leg)
+			img.fill_rect(Rect2i(x, h - 7, 2, 6), leg)
+	return ImageTexture.create_from_image(img)
+
+
+func gruppe(id: String, title := "", tab_id := "") -> VBoxContainer:
+	"""the body of a group (a fold card like in the simulator); made the first time with title and tab"""
+	if _gruppen.has(id):
+		return _gruppen[id]
+	if tab_id == "":
+		for g in GRUPPEN:
+			if g[0] == id:
+				title = g[1]
+				tab_id = g[2]
+		if tab_id == "":
+			tab_id = "fahren"
+	var pg: VBoxContainer = _w["page_" + tab_id]
+	var b := UI.fold_card(pg, T.t(title if title != "" else id), true)
+	b.set_meta("gruppe", id)
+	b.set_meta("reiter", tab_id)
+	_gruppen[id] = b
+	return b
+
+
+func gruppe_reiter(id: String) -> String:
+	var b: Control = _gruppen.get(id)
+	return str(b.get_meta("reiter", "")) if b != null else ""
+
+
+func fold_all(how: String) -> void:
+	"""«close» = all groups shut, «groups» = groups open and their parts shut, «open» = everything open (as in the simulator)"""
+	for id in _gruppen:
+		var b: Control = _gruppen[id]
+		UI.set_open(b, how != "close")
+		for sb in _sub_folds(b):
+			UI.set_sub_open(sb, how == "open")
+
+
+func _sub_folds(n: Node) -> Array:
+	var out := []
+	for ch in n.get_children():
+		if ch is Control and (ch as Control).has_meta("fold") and (ch as Control).has_meta("paint"):
+			out.append(ch)
+		out.append_array(_sub_folds(ch))
+	return out
+
+
+static func texte(n: Node) -> String:
+	"""every visible word inside a node (labels, buttons, switches, tooltips) - for the search"""
+	var t := ""
+	if n is Label:
+		t += (n as Label).text + " "
+	elif n is Button:
+		t += (n as Button).text + " "
+	if n is Control:
+		t += (n as Control).tooltip_text + " "
+	for ch in n.get_children():
+		t += texte(ch)
+	return t
+
+
+func suche(q: String) -> void:
+	"""type into the search field: the matching rows of every tab stay, their groups open; empty = as before"""
+	q = q.strip_edges().to_lower()
+	_such = q
+	var any := false
+	for id in _gruppen:
+		var b: Control = _gruppen[id]
+		var card: Control = b.get_meta("card")
+		var title_hit := q != "" and str(b.get_meta("title", "")).to_lower().contains(q)
+		var hit := false
+		for row in b.get_children():
+			if not row is Control:
+				continue
+			var r := row as Control
+			if q == "":
+				if r.has_meta("such_aus"):
+					r.visible = true
+					r.remove_meta("such_aus")
+				continue
+			var ok := title_hit or texte(r).to_lower().contains(q)
+			if ok:
+				hit = true
+				if r.has_meta("such_aus"):
+					r.visible = true
+					r.remove_meta("such_aus")
+				for sb in _sub_folds(r):
+					if texte(sb).to_lower().contains(q):
+						UI.set_sub_open(sb, true)
+			elif r.visible:
+				r.visible = false
+				r.set_meta("such_aus", true)
+		card.visible = (q == "" or hit) and not card.has_meta("nie")
+		if hit:
+			any = true
+			UI.set_open(b, true)
+	var none: Control = _w.get("kein_treffer")
+	if none != null:
+		none.visible = q != "" and not any
+	set_tab(tab)
 
 
 func compact() -> bool:
@@ -881,14 +1300,18 @@ func _layout_overlay() -> void:
 		return
 	var p: Control = _w.get("panel")
 	if p != null:                                     # phone across: a narrower panel, more of the view
-		var pw := 320.0 if get_viewport().get_visible_rect().size.x < 1000.0 else PANEL_W
+		var pw := 320.0 if get_viewport().get_visible_rect().size.x < 1000.0 else _panel_w
 		if p.custom_minimum_size.x != pw:
 			p.custom_minimum_size = Vector2(pw, 0)
 	var sz := Vector2(176, 110) if compact() else Vector2(320, 200)
 	if tr.custom_minimum_size != sz:
 		tr.custom_minimum_size = sz
 		pip_box.reset_size()
-	pip_box.offset_bottom = -(vb.size.y + 18.0)
+	var up: float = steu.lift() if steu != null else 0.0      # above the drive bar (roboter_steuerung.gd)
+	if vb.offset_bottom != -10.0 - up:
+		vb.offset_bottom = -10.0 - up
+		vb.offset_top = -10.0 - up
+	pip_box.offset_bottom = -(vb.size.y + 18.0 + up)
 	pip_box.offset_top = pip_box.offset_bottom
 	pip_box.offset_left = pip_box.offset_right
 
@@ -905,15 +1328,95 @@ func add_child_pip() -> void:
 
 
 func set_tab(t: String) -> void:
-	tab = t if t in TABS.map(func(x): return x[0]) else "form"
+	"""one of the 5 tabs; an old name (form, posen, bewegen …) opens its new tab and its group"""
+	var grp := ""
+	if TAB_ALT.has(t):
+		grp = TAB_ALT[t][1]
+		t = TAB_ALT[t][0]
+	tab = t if t in TABS.map(func(x): return x[0]) else "fahren"
+	if klassisch() and grp in ["rund", "ring"]:
+		grp = ""                                       # no ring on the walking robots
 	for tb in TABS:
 		var pg: Control = _w.get("page_" + tb[0])
 		if pg != null:
-			pg.visible = tb[0] == tab
+			pg.visible = tb[0] == tab or _such != ""      # while searching: the hits of every tab
 		var b: Button = _w.get("tab_" + tb[0])
 		if b != null:
-			_paint_btn(b, tb[0] == tab)
+			_paint_tab(b, tb[0] == tab and _such == "")
+	if grp != "" and _gruppen.has(grp):
+		UI.set_open(_gruppen[grp], true)
 	_sync_servo_sliders()
+
+
+func _paint_tab(b: Button, on: bool) -> void:
+	"""a tab: blue when active (like the active states in the simulator), symbol and name white"""
+	_paint_btn(b, on)
+	var col := Color.WHITE if on else UI.TXT
+	var ic: Control = b.get_meta("icon", null)
+	if ic != null:
+		ic.set_meta("col", col)
+		ic.queue_redraw()
+	var lb: Label = b.get_meta("label", null)
+	if lb != null:
+		lb.add_theme_color_override("font_color", col)
+
+
+func _ring_need(c: Control) -> void:
+	"""a control that needs the ring (≥ 4 segments): greyed out with a short hint at 2 / 3 segments"""
+	if not _w.has("ring_need"):
+		_w["ring_need"] = []
+	_w["ring_need"].append(c)
+
+
+func _ring_hint(pg: Control) -> void:
+	var l := UI.small(T.t("Ring braucht mindestens 4 Segmente"), UI.ORG)
+	pg.add_child(l)
+	if not _w.has("ring_hints"):
+		_w["ring_hints"] = []
+	_w["ring_hints"].append(l)
+
+
+func _paint_ring() -> void:
+	"""Ring-Knöpfe nach der Segmentzahl sperren / freigeben, Namen der Gangarten (4 Beine: Trab)"""
+	var ok := ring_ok()
+	for c in _w.get("ring_need", []):
+		if not is_instance_valid(c):
+			continue
+		if c is BaseButton:
+			(c as BaseButton).disabled = not ok
+		elif c is Range:
+			(c as Range).editable = ok
+		if not (c as Control).has_meta("tip0"):
+			(c as Control).set_meta("tip0", (c as Control).tooltip_text)     # keep an own tooltip (e.g. «Ring öffnen»)
+		(c as Control).tooltip_text = str((c as Control).get_meta("tip0")) if ok else T.t("Ring braucht mindestens 4 Segmente")
+	for l in _w.get("ring_hints", []):
+		if is_instance_valid(l):
+			(l as Control).visible = not ok and not klassisch()
+	var tr: CheckButton = _w.get("terrain_ring")
+	if tr != null and not ok:
+		tr.set_pressed_no_signal(false)
+	for g in _gaenge():
+		var b: Button = _w.get("gang_" + g[0])
+		if b != null:
+			b.text = gang_name(g[0])
+	for gid in ["ring", "rund"]:                     # Vierbeiner / Sechsbeiner: no ring at all - these groups are not shown
+		if _gruppen.has(gid):
+			var card: Control = (_gruppen[gid] as Control).get_meta("card")
+			if klassisch():
+				card.set_meta("nie", true)
+			elif card.has_meta("nie"):
+				card.remove_meta("nie")
+			card.visible = not klassisch()
+
+
+func gang_name(g: String) -> String:
+	"""shown name of a gait: with 4 legs (2 segments) the «Dreifuss» is a trot"""
+	if g == "dreifuss" and model != null and model.n() == 2:
+		return T.t("Trab (diagonal)")
+	for e in _gaenge():
+		if e[0] == g:
+			return T.t(e[1])
+	return g
 
 
 func _paint_btn(b: Button, on: bool) -> void:
@@ -978,23 +1481,27 @@ func _button(parent: Control, title: String, cb: Callable, primary := false) -> 
 
 
 func _page_form(pg: VBoxContainer) -> void:
-	pg.add_child(UI.small(T.t("Startwerte aus modell.json (Einheiten der Vorlage, «E»). Nach einer Änderung baut das Labor den Roboter neu auf.")))
-	for f in FORM:
-		var g: Array = MODELL.GRENZEN[f[0]]
+	pg.add_child(UI.small(T.t("Beine, Servos und Massen wie beim Segment-Roboter (Einheiten «E»). Nach einer Änderung baut das Labor den Roboter neu auf.") if klassisch()
+			else T.t("Startwerte aus modell.json (Einheiten der Vorlage, «E»). Nach einer Änderung baut das Labor den Roboter neu auf.")))
+	for f in _form():
+		var g: Array = _grenzen()[f[0]]
 		var key: String = f[0]
 		_w["form_" + key] = _slider(pg, T.t(f[1]), g[0], g[1], f[3], float(model.p[key]), f[2], func(x: float): set_shape(key, x))
-		if key == "segmente" and variante in ["4", "6"]:
+		if key == "segmente" and variante in FEST:
 			(_w["form_" + key]["sl"] as HSlider).editable = false
 			(_w["form_" + key]["title"] as Label).text = T.t("Segmente (fest bei dieser Variante)")
 	var info := UI.small("", UI.TXT)
 	pg.add_child(info)
 	_w["form_info"] = info
-	_button(pg, T.t("Startwerte (modell.json)"), func():
-		for k in MODELL.START:
-			model.p[k] = MODELL.START[k]
-		if variante in ["4", "6"]:
+	_button(pg, T.t("Startwerte") if klassisch() else T.t("Startwerte (modell.json)"), func():
+		if klassisch():
+			model.setze_beine(6 if variante == "k6" else 4)
+		else:
+			for k in MODELL.START:
+				model.p[k] = MODELL.START[k]
+		if variante in FEST:
 			model.p["segmente"] = int(variante)
-		for f in FORM:
+		for f in _form():
 			(_w["form_" + f[0]]["sl"] as HSlider).set_value_no_signal(float(model.p[f[0]]))
 			(_w["form_" + f[0]]["val"] as Label).text = (_w["form_" + f[0]]["fmt"] as Callable).call(float(model.p[f[0]])).strip_edges()
 		_rebuild(true)
@@ -1009,7 +1516,9 @@ func _refresh_form_info() -> void:
 	var N: int = model.n()
 	var length: float = model.pitch_len() * N
 	var legs: float = model.u("oberschenkel") + model.u("unterschenkel")
-	var mass: float = float(model.p["masse_segment"]) * N + float(model.p["masse_bein"]) * 2 * N
+	var mass: float = float(model.p["masse_koerper" if klassisch() else "masse_segment"]) * (1 if klassisch() else N) + float(model.p["masse_bein"]) * 2 * N
+	if klassisch():
+		length = model.u("koerper_laenge")
 	l.text = T.t("Länge %.2f m · Breite %.2f m · Bein %.2f m · Masse %.2f kg · %d Antriebe") % [length, model.u("halbe_breite") * 2,
 			legs, mass, model.actuator_count()]
 
@@ -1041,14 +1550,15 @@ func _fill_servo_sliders() -> void:
 		else:
 			model.latch_wanted = on)
 	_w["latch_ok"] = lt
+	lt.visible = not klassisch()
 	var N: int = model.n()
-	for i in range(N - 1):
+	for i in range(0 if klassisch() else N - 1):
 		var b := UI.sub_fold(pg, T.t("Segmentgelenk %d (zwischen Segment %d und %d)") % [i + 1, i + 1, i + 2], i == 0)
 		(b.get_meta("wrap") as Control).set_meta("servo_ui", true)
 		_servo_slider(b, "sp%d" % i, T.t("hoch / runter"))
 		_servo_slider(b, "sy%d" % i, T.t("links / rechts"))
 	for i in range(N):
-		var b := UI.sub_fold(pg, T.t("Beine an Segment %d") % (i + 1), false)
+		var b := UI.sub_fold(pg, (T.t("Beinpaar %d (1 = vorne)") if klassisch() else T.t("Beine an Segment %d")) % (i + 1), false)
 		(b.get_meta("wrap") as Control).set_meta("servo_ui", true)
 		for sd in ["l", "r"]:
 			var side := T.t("links") if sd == "l" else T.t("rechts")
@@ -1088,103 +1598,118 @@ func _page_posen(pg: VBoxContainer) -> void:
 	gr.add_theme_constant_override("h_separation", 6)
 	gr.add_theme_constant_override("v_separation", 6)
 	pg.add_child(gr)
-	for ps in BEWEGUNG.POSEN:
+	for ps in _posen():
 		var pname: String = ps[0]
 		var b := _button(gr, T.t(ps[1]), func(): apply_pose(pname, snap.button_pressed))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_w["pose_" + pname] = b
+		if pname == "ring":
+			_ring_need(b)
+	_ring_hint(pg)
 	pg.add_child(snap)
 	_w["snap"] = snap
 	var ob := _button(pg, T.t("Ring öffnen (gerade)"), func(): ring_oeffnen("gerade"))
 	ob.tooltip_text = T.t("Der Ring rollt den Riegel nach oben, öffnet ihn und streckt sich weich in die Haltung «Gerade». Bei geschlossenem Ring nehmen alle Haltungen ausser «Ring» diesen Weg.")
 	_w["oeffnen_btn_posen"] = ob
+	_ring_need(ob)
 	_slider(pg, T.t("Körperhöhe über dem Boden"), 0.3, 1.8, 0.05, bew.hoehe, "E", func(x: float):
 		bew.hoehe = x
-		if last_pose in ["gerade", "kurve_links", "kurve_rechts", "bogen"]:
+		if last_pose in ["gerade", "kurve_links", "kurve_rechts", "bogen", "stehen", "sitzen"]:
 			apply_pose(last_pose))
 	_slider(pg, T.t("Füsse seitlich"), 0.3, 2.0, 0.05, bew.spreiz, "E", func(x: float):
 		bew.spreiz = x
-		if last_pose in ["gerade", "kurve_links", "kurve_rechts", "bogen"]:
+		if last_pose in ["gerade", "kurve_links", "kurve_rechts", "bogen", "stehen", "sitzen"]:
 			apply_pose(last_pose))
 	_button(pg, T.t("Neu aufstellen (R)"), reset)
 
 
 func _page_bewegen(pg: VBoxContainer) -> void:
-	pg.add_child(UI.small(T.t("Ganze Abläufe")))
+	"""the former tab «Bewegen», now in groups: Gangart · Richtung · Tempo und Schritt · Im Ring rollen (Fahren) and Ganze
+	Abläufe (Haltung); pg = the group «Gangart»"""
+	var gab := gruppe("ablaeufe")
 	var ga := GridContainer.new()
 	ga.columns = 2
 	ga.add_theme_constant_override("h_separation", 6)
 	ga.add_theme_constant_override("v_separation", 6)
-	pg.add_child(ga)
-	for a in BEWEGUNG.ABLAEUFE:
+	gab.add_child(ga)
+	for a in _ablaeufe():
 		var an: String = a[0]
 		var b := _button(ga, T.t(a[1]), func(): start_ablauf(an))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_w["ab_" + an] = b
+		if an == "einrollen":
+			_ring_need(b)
 	pg.add_child(UI.small(T.t("Gangarten – mit Körperhöhe, Tempo und Kurven (vorwärts + Regler «Kurve» oder Q / E). Ein kurzer Klick in die Welt setzt ein Ziel: der Roboter plant selbst – Kurve, seitwärts bei kleinem Versatz, an Ort drehen, wenn das Ziel hinten liegt.")))
 	var gg := GridContainer.new()
 	gg.columns = 2
 	gg.add_theme_constant_override("h_separation", 6)
 	gg.add_theme_constant_override("v_separation", 6)
 	pg.add_child(gg)
-	for g in BEWEGUNG.GAENGE:
+	for g in _gaenge():
 		var gn: String = g[0]
-		var b := _button(gg, T.t(g[1]), func(): start_gang(gn))
+		var b := _button(gg, gang_name(gn), func(): start_gang(gn))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_w["gang_" + gn] = b
-	pg.add_child(UI.small(T.t("In alle Richtungen (W A S D, schräg = zwei Tasten, Q / E an Ort drehen):")))
-	var pad := GridContainer.new()
-	pad.columns = 3
-	pad.add_theme_constant_override("h_separation", 4)
-	pad.add_theme_constant_override("v_separation", 4)
-	pg.add_child(pad)
-	# [symbol, strafe (+ links), vor, Hinweis]
-	for e in [["↖", 1.0, 1.0, "vorne links"], ["↑", 0.0, 1.0, "Vorwärts"], ["↗", -1.0, 1.0, "vorne rechts"],
-			["←", 1.0, 0.0, "seitwärts links"], ["■", 0.0, 0.0, "Stopp"], ["→", -1.0, 0.0, "seitwärts rechts"],
-			["↙", 1.0, -1.0, "hinten links"], ["↓", 0.0, -1.0, "Rückwärts"], ["↘", -1.0, -1.0, "hinten rechts"]]:
-		var sx: float = e[1]
-		var fy: float = e[2]
-		var b := _button(pad, e[0], func(): drive_dir(Vector3(sx, fy, 0.0)))
-		b.tooltip_text = T.t(e[3])
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.custom_minimum_size = Vector2(0, 34)
-	var rot := HBoxContainer.new()
-	rot.add_theme_constant_override("separation", 6)
-	pg.add_child(rot)
-	for e in [["⟲ " + T.t("an Ort drehen links") + " (Q)", 1.0], [T.t("an Ort drehen rechts") + " (E) ⟳", -1.0]]:
-		var rz: float = e[1]
-		var b := _button(rot, e[0], func(): drive_dir(Vector3(0.0, 0.0, rz)))
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_toggle(pg, T.t("Körper passt sich dem Untergrund an"), bew.anpassen, func(on: bool): bew.anpassen = on)
-	var rb := _button(pg, T.t("Im Ring rollen (die Füsse stossen, Kurve = Ring neigen)"), func():
+	var gi := UI.small("", UI.TXT)
+	pg.add_child(gi)
+	_w["gang_info"] = gi
+	var gr := gruppe("richtung")
+	# Besitzer 28.11.2026 14:47: ein virtueller Stick statt der Richtungsknöpfe (roboter_stick.gd, wie in der Leiste unten)
+	gr.add_child(UI.small(T.t("Stick ziehen: hoch = vorwärts, zur Seite = seitwärts, schräg geht auch; der Regler daneben dreht an Ort. Loslassen = Stopp. Tasten: W A S D, Q / E.")))
+	gr.add_child(steu.sticks())
+	var gring := gruppe("ring")
+	var rb := _button(gring, T.t("Im Ring rollen (die Füsse stossen, Kurve = Ring neigen)"), func():
 		if model.latch["state"] != "locked":
 			apply_pose("ring", true)
 		bew.start_ring()
 		_paint_gang())
 	_w["ring_btn"] = rb
-	var ob := _button(pg, T.t("Ring öffnen (gerade)"), func(): ring_oeffnen("gerade"))
+	_ring_need(rb)
+	var ob := _button(gring, T.t("Ring öffnen (gerade)"), func(): ring_oeffnen("gerade"))
 	ob.tooltip_text = T.t("Der Ring rollt den Riegel nach oben, öffnet ihn und streckt sich weich in die Haltung «Gerade». Bei geschlossenem Ring nehmen alle Haltungen ausser «Ring» diesen Weg.")
 	_w["oeffnen_btn"] = ob
-	_w["turn_sl"] = _slider(pg, T.t("Kurve (− rechts, + links)"), -1.0, 1.0, 0.05, 0.0, "", func(x: float): manual.z = x)
-	_slider(pg, T.t("Tempo"), 0.01, 0.25, 0.01, bew.tempo, "m/s", func(x: float):
+	_ring_need(ob)
+	rb.visible = not klassisch()
+	ob.visible = not klassisch()
+	_ring_hint(gring)
+	_w["turn_sl"] = _slider(gr, T.t("Kurve (− rechts, + links)"), -1.0, 1.0, 0.05, 0.0, "", func(x: float): manual.z = x)
+	var gt := gruppe("tempo")
+	_slider(gt, T.t("Tempo"), 0.01, 0.25, 0.01, bew.tempo, "m/s", func(x: float):
 		bew.tempo = x
 		mark_dirty())
-	_slider(pg, T.t("Körperhöhe über dem Boden"), 0.3, 1.8, 0.05, bew.hoehe, "E", func(x: float):
+	_slider(gt, T.t("Körperhöhe über dem Boden"), 0.3, 1.8, 0.05, bew.hoehe, "E", func(x: float):
 		bew.hoehe = x
 		mark_dirty())
-	_slider(pg, T.t("Spurbreite beim Gehen (Fuss links bis Fuss rechts)"), model.u("halbe_breite") * 200.0 + 2.0,
+	_slider(gt, T.t("Spurbreite beim Gehen (Fuss links bis Fuss rechts)"), model.u("halbe_breite") * 200.0 + 2.0,
 			(model.u("halbe_breite") + (model.u("oberschenkel") + model.u("unterschenkel")) * 0.95) * 200.0, 0.5, bew.spur_gehen() * 100.0, "cm",
 			func(x: float):
 		bew.set_spur_gehen(x / 100.0)
 		mark_dirty())
-	_slider(pg, T.t("Schrittlänge"), 0.2, 1.4, 0.05, bew.schritt_laenge, "E", func(x: float):
+	_slider(gt, T.t("Schrittlänge"), 0.2, 1.4, 0.05, bew.schritt_laenge, "E", func(x: float):
 		bew.schritt_laenge = x
 		mark_dirty())
-	_slider(pg, T.t("Schritthöhe"), 0.1, 0.9, 0.05, bew.schritt_hoehe, "E", func(x: float):
+	_slider(gt, T.t("Schritthöhe"), 0.1, 0.9, 0.05, bew.schritt_hoehe, "E", func(x: float):
 		bew.schritt_hoehe = x
 		mark_dirty())
-	var gi := UI.small("", UI.TXT)
-	pg.add_child(gi)
-	_w["gang_info"] = gi
+
+
+func _page_steuerung() -> void:
+	"""sim-robo-steuerung in the panel: «Steuerung» (Fahren: drive bar, key / controller map) and «Körper verschieben» (Haltung);
+	the drive bar under the view stays as it is"""
+	if steu == null:
+		return
+	var gs := gruppe("steuerung")
+	_w["t_leiste"] = _toggle(gs, T.t("Untere Leiste mit Steuerung ein / aus"), steu.leiste, func(on: bool): steu.set_leiste(on))
+	var bl := _button(gs, T.t("Belegung …"), func(): steu.open_map())
+	bl.tooltip_text = T.t("Tasten und Controller frei belegen, Profile")
+	var gk := gruppe("koerper")
+	gk.add_child(UI.small(T.t("Auf der Stelle stehen, die Fahr-Eingaben verschieben den Körper (V / Back)")))
+	var kb := _button(gk, T.t("Körper verschieben"), func(): steu.aktion("koerper"))
+	_w["koerper_btn"] = kb
+	_w["t_zur_mitte"] = _toggle(gk, T.t("Loslassen = zur Mitte"), steu.zur_mitte, func(on: bool):
+		steu.zur_mitte = on
+		steu.speichern())
 
 
 func drive_dir(c: Vector3) -> void:
@@ -1206,11 +1731,11 @@ func drive_dir(c: Vector3) -> void:
 
 
 func _paint_gang() -> void:
-	for g in BEWEGUNG.GAENGE:
+	for g in _gaenge():
 		var b: Button = _w.get("gang_" + g[0])
 		if b != null:
 			_paint_btn(b, bew.mode == "gang" and bew.gang == g[0])
-	for a in BEWEGUNG.ABLAEUFE:
+	for a in _ablaeufe():
 		var b: Button = _w.get("ab_" + a[0])
 		if b != null:
 			_paint_btn(b, bew.mode == "ablauf" and bew.seq_name == a[0])
@@ -1224,7 +1749,7 @@ func _paint_gang() -> void:
 
 
 func _page_anzeigen(pg: VBoxContainer) -> void:
-	_toggle(pg, T.t("Servo-Last an den Gelenken (grün → rot)"), anz.show_load, func(on: bool): anz.show_load = on)
+	_toggle(pg, T.t("Servo-Last an den Gelenken (grün bis rot)"), anz.show_load, func(on: bool): anz.show_load = on)
 	_toggle(pg, T.t("Schwerpunkt und Stützfläche"), anz.show_support, func(on: bool): anz.show_support = on)
 	var tip := Label.new()
 	tip.add_theme_font_size_override("font_size", 14)
@@ -1258,6 +1783,7 @@ func _page_anzeigen(pg: VBoxContainer) -> void:
 
 # ---- Rund rollen (Besitzer 22.11.2026 21:33 – 21:40) -----------------------------------------------------------------------
 func _page_rund(pg: VBoxContainer) -> void:
+	_ring_hint(pg)
 	pg.add_child(UI.small(T.t("Wie rund rollt der Ring? Gemessen über eine ganze Drehung: Schwankung der Mittenhöhe, des Tempos, Zahl der Bodenkontakte (Ziel: immer mindestens 3) und Kipp-Reserve. Je Einstellung 3 Versuche.")))
 	var gm := GridContainer.new()
 	gm.columns = 1
@@ -1271,11 +1797,13 @@ func _page_rund(pg: VBoxContainer) -> void:
 			_paint_rund())
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_w["rm_" + mn] = b
+		_ring_need(b)
 	var hmax: float = bew.ring_height_max() * 100.0 if model.built_ok else 30.0
 	_w["rund_h"] = _slider(pg, T.t("Höhe über Boden (0 = auf den Ecken, mehr = auf Stelzen)"), 0.0, maxf(0.5, hmax), 0.5,
 			clampf(bew.ring_hoehe * 100.0, 0.0, hmax), "cm", func(x: float):
 		bew.ring_hoehe = x / 100.0
 		mark_dirty())
+	_ring_need(_w["rund_h"]["sl"])
 	var reach: float = model.u("oberschenkel") + model.u("unterschenkel")
 	var smin: float = model.u("halbe_breite") * 200.0
 	var smax: float = (model.u("halbe_breite") + reach * 0.6) * 200.0
@@ -1283,6 +1811,7 @@ func _page_rund(pg: VBoxContainer) -> void:
 			clampf(bew.spur_rollen * 100.0, smin, smax), "cm", func(x: float):
 		bew.spur_rollen = x / 100.0
 		mark_dirty())
+	_ring_need(_w["rund_s"]["sl"])
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	pg.add_child(row)
@@ -1293,6 +1822,7 @@ func _page_rund(pg: VBoxContainer) -> void:
 		manual = Vector3(0.0, 1.0, 0.0)
 		_paint_gang())
 	go.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_ring_need(go)
 	var st := _button(row, T.t("Stopp"), func():
 		rund_jobs = []
 		rund_job = {}
@@ -1310,8 +1840,10 @@ func _page_rund(pg: VBoxContainer) -> void:
 		var what: String = e[1]
 		var b := _button(gb, T.t(e[0]), func(): rund_start(what))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_ring_need(b)
 	var ab := _toggle(pg, T.t("Beste Methode als Standard übernehmen"), auto_best, func(on: bool): auto_best = on)
 	_w["rund_auto"] = ab
+	_ring_need(ab)
 	var res := UI.small("", UI.TXT)
 	res.add_theme_font_override("font", UI.heading_font())
 	pg.add_child(res)
@@ -1327,6 +1859,8 @@ func _paint_rund() -> void:
 
 func rund_start(what: String) -> void:
 	"""queue measurements: eine | alle | hoehe | spur (3 trials each)"""
+	if not ring_ok():
+		return
 	var cfgs := []
 	var h: float = bew.ring_hoehe
 	var sp: float = bew.spur_rollen
@@ -1469,7 +2003,7 @@ func _rund_text() -> String:
 		names[rm[0]] = T.t(rm[1])
 	var t := ""
 	for l in rund_summary():
-		t += ("★ " if l["key"] == rund_best else "") + str(names.get(l["methode"], l["methode"])) + "  ·  " + T.t("Höhe %.1f cm · Spur %.1f cm") % [l["hoehe"], l["spur"]] + "\n"
+		t += (T.t("Beste") + " · " if l["key"] == rund_best else "") + str(names.get(l["methode"], l["methode"])) + "  ·  " + T.t("Höhe %.1f cm · Spur %.1f cm") % [l["hoehe"], l["spur"]] + "\n"
 		if int(l["ok"]) == 0:
 			var gr := {"umgefallen": T.t("umgefallen"), "zu langsam": T.t("zu langsam")}
 			t += "   " + T.t("nicht geschafft") + " (" + str(gr.get(str(l.get("grund", "")), "")) + ")\n"
@@ -1505,6 +2039,14 @@ func _page_gelaende(pg: VBoxContainer) -> void:
 	ring.focus_mode = Control.FOCUS_NONE
 	pg.add_child(ring)
 	_w["terrain_ring"] = ring
+	_ring_need(ring)
+	_ring_hint(pg)
+	ring.visible = not klassisch()
+	var mit_ki := CheckButton.new()
+	mit_ki.text = T.t("Mit der Gang-KI gehen")
+	mit_ki.focus_mode = Control.FOCUS_NONE
+	pg.add_child(mit_ki)
+	_w["terrain_ki"] = mit_ki
 	for t in GELAENDE.NAMEN:
 		var tn: String = t[0]
 		var h := HBoxContainer.new()
@@ -1522,16 +2064,19 @@ func _page_gelaende(pg: VBoxContainer) -> void:
 		stop_all())
 
 
-func terrain_start(names: Array, ring := false) -> void:
+func terrain_start(names: Array, ring := false, mit_ki := false) -> void:
 	if names.is_empty():
 		return
 	var tn: String = names[0]
+	ring = ring and ring_ok()
 	stop_all()
+	ki.neu_start()
 	bew.angepasst = false
 	bew.hoehe = 0.9
 	bew.schritt_hoehe = 0.35
 	model.root_xf = starts.get(tn, starts.get("start", Transform3D()))
-	apply_pose("ring" if ring else "gerade", true)
+	ring = ring and not klassisch()
+	apply_pose("stehen" if klassisch() else ("ring" if ring else "gerade"), true)
 	terrain = {"name": tn, "ring": ring, "t": 0.0, "best": -1e9, "last_t": 0.0, "queue": names.slice(1)}
 	terrain_results[tn] = [false, T.t("läuft …")]
 	follow = true
@@ -1539,7 +2084,10 @@ func terrain_start(names: Array, ring := false) -> void:
 		bew.start_ring()
 		manual = Vector3(0.0, 1.0, 0.0)
 	else:
-		bew.start_gang("auto")
+		var tk: CheckButton = _w.get("terrain_ki")
+		mit_ki = mit_ki or (tk != null and tk.button_pressed)
+		terrain["ki"] = mit_ki
+		bew.start_gang("ki" if mit_ki else "auto")
 		manual = Vector3(0.0, 1.0, 0.0)
 	_paint_gang()
 
@@ -1574,11 +2122,12 @@ func _terrain_step(dt: float) -> void:
 	terrain_results[tn] = res
 	var q: Array = terrain["queue"]
 	var ring: bool = terrain["ring"]
+	var mit_ki: bool = terrain.get("ki", false)
 	terrain = {}
 	bew.stop()
 	manual = Vector3.ZERO
 	if not q.is_empty():
-		terrain_start(q, ring)
+		terrain_start(q, ring, mit_ki)
 
 
 func _tipped() -> bool:
@@ -1603,8 +2152,8 @@ func servo_name(id: String) -> String:
 func _page_physik(pg: VBoxContainer) -> void:
 	pg.add_child(UI.small(T.t("Schwerkraft, Reibung und Servo-Grenzen. Die Servos halten höchstens ihr Moment – mehr Last = sie geben nach (rot).")))
 	_slider(pg, T.t("Schwerkraft"), 0.0, 20.0, 0.1, gravity, "m/s²", set_gravity)
-	for f in PHYSIK:
-		var g: Array = MODELL.GRENZEN[f[0]]
+	for f in _physik():
+		var g: Array = _grenzen()[f[0]]
 		var key: String = f[0]
 		_w["form_" + key] = _slider(pg, T.t(f[1]), g[0], g[1], f[3], float(model.p[key]), f[2], func(x: float): set_shape(key, x))
 	_w["t_pause"] = _toggle(pg, T.t("Physik anhalten (P)"), paused, set_paused)
@@ -1644,7 +2193,7 @@ func _refresh() -> void:
 	var red: int = model.collide.size()
 	var over: Array = model.overloaded()
 	var lines := [T.t("Roboter-Labor") + " · " + (T.t("Physik angehalten") if paused else T.t("Physik läuft")) + (" · " + T.t("festgehalten") if model.hold else ""),
-			str(lstate.get(model.latch["state"], "")) + " · " + (T.t("%d Teile berühren sich (rot)") % red if red > 0 else T.t("keine Kollision")),
+			("" if klassisch() else str(lstate.get(model.latch["state"], "")) + " · ") + (T.t("%d Teile berühren sich (rot)") % red if red > 0 else T.t("keine Kollision")),
 			T.t("Servos: %d · überlastet: %d · Strom ca. %.1f A") % [model.actuator_count(), over.size(), model.total_current],
 			(T.t("KIPPGEFAHR") + " · " if anz.tipping else "") + T.t("Kipp-Reserve %.1f cm") % (anz.margin * 100.0) + " · " + _move_text()]
 	(_w["status"] as Label).text = "\n".join(lines)
@@ -1652,12 +2201,18 @@ func _refresh() -> void:
 		var o: Button = _w.get(k)
 		if o != null:
 			_paint_btn(o, bew.mode == "ablauf" and bew.seq_name == "oeffnen")
+	var kb: Button = _w.get("koerper_btn")
+	if kb != null and steu != null:
+		_paint_btn(kb, bool(steu.koerper))
+	var tlb: CheckButton = _w.get("t_leiste")
+	if tlb != null and steu != null and tlb.button_pressed != bool(steu.leiste):
+		tlb.set_pressed_no_signal(bool(steu.leiste))
 	var pi: Label = _w.get("phys_info")
 	if pi != null and pi.is_visible_in_tree():
 		var c: Vector3 = model.com()
 		pi.text = T.t("Masse %.2f kg · Schwerpunkt %.0f cm über dem Boden · Strom ca. %.1f A") % [model.total_mass, c.y * 100.0, model.total_current] \
 				+ ("\n" + T.t("Überlastet: %s") % ", ".join(over) if not over.is_empty() else "")
-	if tab == "anzeigen":
+	if _sichtbar("tip"):
 		var tl: Label = _w["tip"]
 		tl.text = (T.t("KIPPGEFAHR") + " – " if anz.tipping else "") + T.t("Kipp-Reserve %.1f cm") % (anz.margin * 100.0)
 		tl.add_theme_color_override("font_color", UI.RED if anz.tipping else UI.GRN)
@@ -1670,23 +2225,27 @@ func _refresh() -> void:
 				(pr[0] as Label).text = "%s  %.2f N·m" % [servo_name(tops[i][0]), absf(tops[i][2])]
 				(pr[1] as ProgressBar).value = minf(1.5, tops[i][1])
 				(pr[1] as ProgressBar).modulate = ANZEIGE.load_color(tops[i][1])
-	if tab == "rund":
+	if _sichtbar("rund_res"):
 		_paint_rund()
 		var rs: Dictionary = bew.ring_state() if model.latch["state"] == "locked" else {}
 		(_w["rund_live"] as Label).text = (T.t("Mitte %.1f cm über Boden · %d Kontakte · Neigung %d° · %.1f cm/s") % [
 				((rs["c"] as Vector3).y - float(rs["gy"])) * 100.0, model.ground_contacts(), int(round(bew.ring_lean)), absf(bew._ring_v) * 100.0]) if not rs.is_empty() else T.t("Ring nicht verriegelt")
 		(_w["rund_res"] as Label).text = _rund_text()
-	if tab == "gelaende":
+	if _sichtbar("terrain_ring"):
 		for t in GELAENDE.NAMEN:
 			var l: Label = _w.get("terrain_" + t[0])
 			var r: Array = terrain_results.get(t[0], [])
 			if l != null and not r.is_empty():
 				l.text = str(r[1])
 				l.add_theme_color_override("font_color", UI.GRN if r[0] else (UI.TXT if str(r[1]) == T.t("läuft …") else UI.RED))
-	if tab == "bewegen":
+	_ki_t -= 0.2
+	if _ki_t <= 0.0 and _gruppen.has("ki") and (_gruppen["ki"] as Control).is_visible_in_tree():
+		_ki_t = 0.5                                    # the group «Gang-KI» open and on screen: at most 2 × per second
+		ki.auffrischen()
+	if _sichtbar("gang_info") or _sichtbar("ring_btn"):
 		(_w["gang_info"] as Label).text = _move_text()
 		_paint_gang()
-	if tab == "gelenke":
+	if _sichtbar("latch_ok"):
 		for id in _sl:
 			var si: int = model.servo_index(id)
 			if si < 0:
@@ -1697,11 +2256,17 @@ func _refresh() -> void:
 			(d["val"] as Label).add_theme_color_override("font_color", UI.RED if float(sv["load"]) > 1.0 else (UI.ORG if float(sv["load"]) > 0.7 else UI.MUT))
 
 
+func _sichtbar(key: String) -> bool:
+	"""a widget of the panel is on the screen (its tab shown, its group open): only then the panel refreshes it"""
+	var c = _w.get(key)
+	return c is Control and is_instance_valid(c) and (c as Control).is_visible_in_tree()
+
+
 func _move_text() -> String:
 	var names := {}
-	for g in BEWEGUNG.GAENGE:
-		names[g[0]] = T.t(g[1])
-	for a in BEWEGUNG.ABLAEUFE:
+	for g in _gaenge():
+		names[g[0]] = gang_name(g[0])
+	for a in _ablaeufe():
 		names[a[0]] = T.t(a[1])
 	names["oeffnen"] = T.t("Ring öffnen")
 	var t := T.t("steht")
@@ -1742,7 +2307,7 @@ func _dir_text(c: Vector3) -> String:
 func info() -> Dictionary:
 	var d := {"ok": true, "open": is_open()}
 	if is_open() and model != null and model.built_ok:
-		d.merge({"segments": model.n(), "servos": model.servos.size(), "actuators": model.actuator_count(), "view": view, "tab": tab,
+		d.merge({"segments": model.n(), "ring_ok": ring_ok(), "servos": model.servos.size(), "actuators": model.actuator_count(), "view": view, "tab": tab,
 				"paused": paused, "hold": model.hold, "latch": model.latch["state"], "latch_wanted": model.latch_wanted, "latch_wait": bew.latch_wait, "com": [model.com().x, model.com().y, model.com().z],
 				"mass": model.total_mass, "current": model.total_current, "overloaded": model.overloaded(),
 				"collide": model.colliding_names(), "pose": last_pose, "ticks": Engine.physics_ticks_per_second,
@@ -1750,7 +2315,13 @@ func info() -> Dictionary:
 				"tipping": anz.tipping, "goal_reached": bew.goal_reached, "ring_lean": bew.ring_lean,
 				"terrain": terrain.get("name", ""), "terrain_results": terrain_results, "adapted": bew.angepasst,
 				"plan": bew.plan, "anpassen": bew.anpassen, "variante": variante, "pip": pip, "info_on": info_on, "panel": _panel_on, "compact": compact() if is_open() else false, "touch": touch, "ring_methode": bew.ring_methode,
-				"rund": rund_summary(), "rund_best": rund_best, "rund_laeuft": not rund_jobs.is_empty() or not rund_job.is_empty()})
+				"rund": rund_summary(), "rund_best": rund_best, "ki": ki.info(), "rund_laeuft": not rund_jobs.is_empty() or not rund_job.is_empty()})
+		if steu != null:
+			d["steuerung"] = steu.info()
+		if klassisch():
+			d["klassisch"] = true
+			d["beine"] = model.n() * 2
+			d["stuetz_fuesse"] = bew.stuetz_fuesse
 	return d
 
 
@@ -1808,6 +2379,11 @@ func control(d: Dictionary) -> Dictionary:
 		"stop":
 			stop_all()
 		"ring":
+			if not ring_ok():
+				var r := info()
+				r["ok"] = false
+				r["error"] = RING_HINWEIS
+				return r
 			if model.latch["state"] != "locked":
 				apply_pose("ring", true)
 			bew.start_ring()
@@ -1823,7 +2399,11 @@ func control(d: Dictionary) -> Dictionary:
 				bew.spur_rollen = float(d["spur"])
 			if d.has("messen"):
 				rund_start(str(d["messen"]))
+		"koerper", "steuerung":
+			steu.control(d)
 		"gelaende":
 			var names = d.get("name", "stufe")
-			terrain_start(names if names is Array else [str(names)], bool(d.get("ring", false)))
+			terrain_start(names if names is Array else [str(names)], bool(d.get("ring", false)), bool(d.get("ki", false)))
+		"ki":
+			ki.steuern(d)
 	return info()
