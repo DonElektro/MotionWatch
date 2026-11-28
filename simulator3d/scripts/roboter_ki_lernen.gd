@@ -513,6 +513,18 @@ func tick(dt: float) -> void:
 			lauf = {"phase": "ruhe", "h": h, "t": 0.0, "aufstell": lauf["aufstell"], "d0": lauf["d0"]}
 
 
+func nochmal() -> bool:
+	"""üben: das zuletzt gemeldete Hindernis gleich nochmals - abbrechen, davor neu aufstellen, nächster Versuch"""
+	var h: Dictionary = letzte.get("h", {})
+	if h.is_empty() or ki == null:
+		return false
+	ki.abbrechen()
+	var a = lauf.get("aufstell", null)
+	lauf = {"phase": "ruhe", "h": h, "t": 0.0, "aufstell": a, "d0": float(h.get("abstand", 0.5)) + float(h.get("breite", 0.2)) + 0.3}
+	_neu_aufstellen(h)
+	return true
+
+
 func _naechstes() -> Dictionary:
 	var sicht: Dictionary = ki.sehen()
 	var best := {}
