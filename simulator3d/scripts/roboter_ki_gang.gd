@@ -671,7 +671,7 @@ func tritt(i: int, s: int, u: float, beta: float, a2: Vector2, xf: Transform3D, 
 		if int(st["pruef"]) == 0:
 			tritte += 1
 			var fw: Vector3 = m.foot_world(i, s)
-			if _boden(fw + Vector3(0, 0.03, 0), 0.09) == LEER:
+			if _boden(fw + Vector3(0, 0.03, 0), 0.3) == LEER:     # no ground within 27 cm below the foot = into nothing
 				tritte_leer += 1
 	st["u"] = u
 	var sh := float(st["neu"])
