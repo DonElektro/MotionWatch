@@ -1,0 +1,3 @@
+godot werkzeuge/roboter_ki_lernen_test.gd
+godot werkzeuge/roboter_ki_gang_test.gd
+godot werkzeuge/roboter_test.gd
