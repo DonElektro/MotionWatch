@@ -1,22 +1,39 @@
 {
  "app": "Motion Watch",
- "generated": "2026-11-23 21:04",
+ "generated": "2026-11-28 13:03",
  "versions": [
+  {
+   "version": "4.24.0",
+   "file": "webcam_bewegung_4_24_0.py",
+   "url": "",
+   "sha256": "692fd93736a6607ce278b9f54775981b7f63e2b669d7b3e4da1eac38ef2286de",
+   "date": "2026-11-28 13:03",
+   "notes": "Schweizer Karte in 3D: Schalter «2D | 3D» auf der Karte (Mehr → Karte), Gelände zum Neigen und Drehen, auch im Vollbild; Höhen aus dem Relief der Topo-Karte oder aus den Höhendaten Schweiz (MoveEye rechnet die Höhen-Kacheln selbst und speichert höchstens 256 MB).",
+   "size": 3622994,
+   "sig": "ed1b7a5067a7402091f32fc04fd985160a9b1393be75ccfcdf35c2da60d540a975bb4f24e3eb0ae5a0198fdbce637ffaaf17665ce0c17850a7676242aa64260a",
+   "data": {
+    "file": "moveeye_daten_4_24_0.zip",
+    "url": "",
+    "sha256": "134dba702ffe2abf87b2c557b8b74709711dcd68f13a96721cb598b252e10acd",
+    "size": 18284432,
+    "sig": "e13cb92265f08bb917a0560a5b0ea397a7194f9dee22e7a892acb686a35d2f5c7dddd498dac50cb3bdf3d7fc7ccd60430ecd9857ab7860008a7c5a9af22e4200"
+   }
+  },
   {
    "version": "4.23.1",
    "file": "webcam_bewegung_4_23_1.py",
    "url": "",
-   "sha256": "da4c2075e0c8ce05375ab94d9146cfc4e174e21f1b4326726e558c3a54a73674",
-   "date": "2026-11-23 21:04",
+   "sha256": "8067235b4ebaf21341e89720b4718e733b7015cdd6ea458f5252677c6337b3bd",
+   "date": "2026-11-28 11:59",
    "notes": "Besucherseite /info/: Die Push-Nachricht in «Ein Blick in die App» erscheint jetzt beim Bild «Nachts am Zelt» – «MoveEye · Fuchs beim Zelt, 23:36». Hast du dort ein eigenes Bild mit einer beschrifteten Markierung, nennt die Nachricht diesen Text statt «Fuchs».",
-   "size": 3623021,
-   "sig": "2f7b90b4621cff76844cb0e0cbcf513e8d4910e12e963c95fede3ef3b55f9f82516a1c7db2c0f19990f1c7577f12d34a0947c7bb2deb839b6316bb5090abb209",
+   "size": 3623132,
+   "sig": "331b583721f78975ec9f4ba40c1a3fcfd171a2b93ba0de5504a69276c74f6a20ba94084a7d0a461179509230635b933de60594f6c2a37e799eee3980bce9320c",
    "data": {
     "file": "moveeye_daten_4_23_1.zip",
     "url": "",
-    "sha256": "3645323be15743cd20bdde3191a54c3ab86ae0091f9249f6098a9a9b98304a91",
-    "size": 18252461,
-    "sig": "295d2bdb88798e851b1ab084eb9ed4915cfa38c53b98a6ffa6011b58d52f9dd5a17e01110917d9ef35fd2fbd9fa2686623eca4055f23923b1f72827be4e59f04"
+    "sha256": "ad4202776906736dfdf62da53d03d9d5ff9720414b7f116b4486ee78d5b87383",
+    "size": 18284276,
+    "sig": "15276eca8c9431fdd77cb8a7bc685b9a9051ae814a665c946edca16aea22cbf302ea352f4c1ae4fa6423d09565e341402dd4f7eec1b1399fa8e17d25e5d13103"
    }
   },
   {
@@ -24,7 +41,7 @@
    "file": "webcam_bewegung_4_22_0.py",
    "url": "",
    "sha256": "f71a3a930b213ae970c1731ffc0d51e0bf8d3f836479a87673d11f8e6f442c98",
-   "date": "2026-11-23 07:33",
+   "date": "2026-11-28 00:41",
    "notes": "Besucherseite /info/ neu gestaltet – feine Radar-Ringe mit langsamem Strahl im Hintergrund, Erkennungs-Ecken, Abschnittsleiste am PC, hell oder dunkel wie das Gerät. «Alle Funktionen» mit Suchfeld (Name und Satz, mit Anzahl) und einer Kachel mit der Anzahl Funktionen. Schwenkbereich ±135°. «Eine Nacht» spielt jeden Zeitpunkt ganz ab. Akku: Geekworm X1206 V2.0 als Standard, Waveshare UPS HAT (E) auch möglich. Die Fussnote nennt die Nummer dieser MoveEye.",
    "size": 3622208,
    "sig": "eb7dcd66de0644637a6e07c73ee921b680c1d1ec2085eb0f7c9ceb3d314b581f55d1163eb628197b940119deb10727263075eb69d5f584d01249371de10bbb0f",
@@ -41,7 +58,7 @@
    "file": "webcam_bewegung_4_21_0.py",
    "url": "",
    "sha256": "6334190e9cf076e9fb354e544117d0d99feb21bd9826cc09d5bb787d92bad862",
-   "date": "2026-11-22 19:39",
+   "date": "2026-11-28 00:41",
    "notes": "Startseite der Homepage: Titel, Auge, Satz und alle Kacheln passen ohne Scrollen auf Laptop, iPad und Handy. ‹Die Karte des Grossvaters› hat jetzt ‹▶ Ganzes Spiel› und je einen Knopf pro Kapitel. Neue Kachel ‹ℹ️ Besucherseite›: MoveEye lädt die Produktseite als Info/ auf den Webspace (Schalter ‹Besucherseite (Info/)›, ab Werk an; dort ohne ‹✕›, ‹Senden› kopiert die Anfrage).",
    "size": 4040648,
    "sig": "666ef5a2d50611ece6533e9b58d009cc0f0a4ca256aa4b2b229d3dbaa8df7a6e14080cb3cebe0f3c0e16adf2254126b23161c4e1f70967ed247bf258bb416701",
@@ -58,7 +75,7 @@
    "file": "webcam_bewegung_4_20_1.py",
    "url": "",
    "sha256": "5b199294deae1c0b7eaac8c574269df95a16fd4db974a612436bfb6b63653b4a",
-   "date": "2026-11-22 16:01",
+   "date": "2026-11-28 00:41",
    "notes": "«systemctl stop» endet sauber mit Exit-Code 0 – auch während MoveEye noch lädt (systemd zeigte sonst «failed»); Selbsttest der Servo-Bewegung: der letzte Schritt bremst nie stärker als erlaubt, Zufallsschritte mit festem Startwert. CI: Integration prüft nach Regeln statt immer alles (vollständig mit «[voll]» oder bei CI-Änderungen), main bei jedem Push und jede Nacht alles; Gruppe «kern» geteilt (rund 20 statt 31 Minuten); wackelnde Tests behoben; der HP installiert ffmpeg, Node.js und Chromium-Bibliotheken selbst.",
    "size": 4037045,
    "sig": "62b2f62995c439e23bed8a4c8ea2a09a8cf1835f620e33c7a6fd42519b24d06ec88f9e8501260ac356c71074702340aeb30352f046c589c01a359d118e6f7105",
@@ -75,7 +92,7 @@
    "file": "webcam_bewegung_4_18_1.py",
    "url": "",
    "sha256": "d04f879664e0b21f2cd537b8ef1324b85dc3a55cb9efdaeb2d5f22e5d49df3dd",
-   "date": "2026-11-22 08:00",
+   "date": "2026-11-28 00:41",
    "notes": "Aufnahmen dürfen bis 8 GB brauchen (vorher 2 GB, höchstens die Hälfte des Laufwerks; beim Update 2 → 8 GB ab 16 GB mit Hinweis); Verlauf: Chip «⏪ bis …» (älteste Aufnahme, Tippen = älteste zuerst), Chip «… MB / … GB» führt zur Einstellung; Suche in den Einstellungen findet «Aufnahmeordner», «Zeitraffer-Ordner» und «Tagen löschen» (auch in «Einfach»)",
    "size": 4025336,
    "sig": "2cb3ddb4a2fc5f6f946d4efa40188cd8ec13cca539cd8eb499f1cdba081662705138c61890cbbb4a24ee2f836bb91389794a75786f44fff01faa3148f3cf4b0f",
@@ -92,7 +109,7 @@
    "file": "webcam_bewegung_4_17_1.py",
    "url": "",
    "sha256": "022c5a07ffa40c837a269b4d8aa6080cf4cb6da2ed34020ce4e870f819ab77d5",
-   "date": "2026-11-22 01:39",
+   "date": "2026-11-28 00:41",
    "notes": "Verlauf: «Zeitraffer» mit «Videos / Fotos», Hinweis ohne Video · Simulator verbinden / trennen ist kein Stromausfall (keine Push, kein Sabotage-Alarm), Schalter «keine Push, solange der Simulator verbunden ist»",
    "size": 4040696,
    "sig": "52c8cbdd682d56f0463910b6485b855768fe5ed71b5a9d7973b95c10e0ee2a14a50f9f79086912fa67ed5d715591437fa2724271f67c817a25da0e825ed97f0b",
@@ -109,7 +126,7 @@
    "file": "webcam_bewegung_4_16_1.py",
    "url": "",
    "sha256": "53e8719a9845a2b57372efdeb831d3cac766a3d3ed0efded6a154226860124be",
-   "date": "2026-11-21 22:04",
+   "date": "2026-11-28 00:41",
    "notes": "OpenCV bleibt bei 4.x (opencv-python-headless>=4.8,<5 in requirements.txt, CI, Prüfsatz, HP und Einrichtung): OpenCV 5 kann das KI-Modell nicht lesen – klare Meldung «OpenCV 5.x cannot read this model» mit Hinweis pip install \"opencv-python-headless<5\" in der Fehlerhilfe",
    "size": 4037653,
    "sig": "6e3922696dfac9124b5d0087b927485751cc6fa5f741c9b573cfd240ca01a8a75d1782e470dbb1dad9635baeadfc7e0c94419bfa08ec9f6d184cf37b5764a500",
@@ -126,7 +143,7 @@
    "file": "webcam_bewegung_4_15_1.py",
    "url": "",
    "sha256": "aaa204ccec8a5f4bcf6e307f399f9269116b0557a8a15c475d670b142418ed49",
-   "date": "2026-11-17 18:49",
+   "date": "2026-11-28 00:41",
    "notes": "Beim Host: das Bild des Simulators kommt als Einzelbilder durch die Leitung (kein Stau mehr, kein «Simulator nicht erreichbar»), Hinweis auf den Simulator der Homepage · Spiele beim Host: Spielesammlung, Amazon Queen und die anderen fertigen Spiele lassen sich laden (nur von GitHub, mit Prüfsumme, bis 400 MB)",
    "size": 4036222,
    "sig": "97e687131886477db66dbc7d7e3c134e2d6f9f9a72c570fb715b0530b11394aab191102c83123622c1d8694d46dd8df3b19a7ed0426738968ee041345135fb07",
@@ -139,28 +156,11 @@
    }
   },
   {
-   "version": "4.14.0",
-   "file": "webcam_bewegung_4_14_0.py",
-   "url": "",
-   "sha256": "893c86d62b3a3b5e13b97ddeb964c771343175abb150642f6ab4b926b228a90c",
-   "date": "2026-11-16 20:32",
-   "notes": "💬 Plaudern mit Blinki: frei fragen, was man will (getippt oder gesprochen), mit kurzem Verlauf nur im Speicher; der Auslöser am Gerät fragt ab Werk «Plaudern»",
-   "size": 4036511,
-   "sig": "b2ae4bdb62cb787ee83448d1985de2bfc22cba2edb63f6aa73fcde90cfa925b3ad975065abe9b353be29f757896f98f3f133efdede0e3463dcd55490e26a0109",
-   "data": {
-    "file": "moveeye_daten_4_14_0.zip",
-    "url": "",
-    "sha256": "7c9ef6b5288d89d3c3871bc486e72c6e427c0e0e47b0d4f2ba4ff6d002f68cc4",
-    "size": 14270212,
-    "sig": "c2b8dc7d5062c03a69ee4bd7db7b6bedae6ca81d156af538b066eba16ed2f75e7b626b3a11d8e4230ecfe915a2d049d97060b452ab8d2dfd6b12d0c5fb0b1b0f"
-   }
-  },
-  {
    "version": "3.80.0",
    "file": "webcam_bewegung_3_80_0.py",
    "url": "",
    "sha256": "0166b09d68dc1b67a93cab448a57935c572e83be3cc97f27e06a7b4555a3a0fb",
-   "date": "2026-11-15 15:14",
+   "date": "2026-11-28 00:41",
    "notes": "Neu (Versuch, ab Werk aus): QR-Befehls-Karten. Eine gedruckte Karte vor die Kamera halten löst einen Befehl aus: Push mit eigenem Text (auch mit Foto), Text vorlesen, Notiz im Verlauf, Aufnahme starten, Licht/Relais, Kopf auf eine Position, Profil wechseln. Karten erstellst du in der «Karten-Werkstatt» unter Mehr; es gelten nur Karten von deinem MoveEye; Ausschalten per Karte geht nicht. Einschalten: Einstellungen → Kameras & Kopf → «QR-Befehls-Karten». Reichweite etwa 80 cm bei Postkartengrösse, etwa 2 m bei A4 (geschätzt, nicht an der echten Kamera gemessen).",
    "size": 3980994,
    "sig": "4b7a17f6283e7d701b7e9c1f723de2eba0e193a6c4d28dc7d9f3138a76c0a5d259f02cbbba42d64fcb43f1d6de26f80fad19f30dbd2e2ca2a50a7e6baf799c0c",
@@ -177,7 +177,7 @@
    "file": "webcam_bewegung_3_0_2.py",
    "url": "",
    "sha256": "0409d855abf83cdfe9ea06bc535d09ed5df56c7b2fa7af6f2fd9bab4fb1ac460",
-   "date": "2026-11-15 15:14",
+   "date": "2026-11-28 00:41",
    "notes": "Simulator: «Nur Gruppen» wie in MoveEye (Gruppen offen, Themen zu); Anna ist die Betreuerin der Hütte; Sepp spricht passend zur Jahreszeit.",
    "size": 7672293,
    "sig": "f88dc49ba510c1a8d70bf0d3bf12f431945591b66074181237bca78dc3fe2e704d52cb2dc5496931174a1fc1eac9a38cbdb2c73c48ac17de05696e6744b1e302",
@@ -202,14 +202,6 @@
    "size": 48471196,
    "sha256": "fa02a9c4733950a97c7ede0b6c86743118ee3461bd38b9545d6564ba2ac70b45",
    "sig": "3c0d6ad76326d81ce324c8914ca35b61596ef189eb0e83e04238c5088ad5e2954914805461e7194f7648bb37117d49454eb7d207ff54d89893e10667b26ea80a"
-  },
-  "pi": {
-   "ver": "3.80.1",
-   "file": "simulator3d/MoveEyeSim3D_Pi.zip",
-   "size": 44511127,
-   "sha256": "97076a7c073ed2786e726f25539cce4d44d93a88774d8d2204b58caeec34774f",
-   "url": "https://github.com/DonElektro/MotionWatch/releases/download/sim-3.80.1/MoveEyeSim3D_Pi.zip",
-   "sig": "a4a0caed49b4c106adc69ed2746e7dce3db012e4e3717071f8080f0b426148fbf67321a455b17578fc9a7fed591b07d3d2aaf6fa133fab5cc9cda3b899754708"
   },
   "anhang": {
    "ver": "3.80.1",
