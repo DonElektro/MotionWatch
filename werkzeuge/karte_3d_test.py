@@ -370,9 +370,21 @@ def teil_b(datei, web, bilder):
                 pg.evaluate("() => document.querySelector('#kq-map .kq-sw:not(.kq-3d) button[data-v=topo]').click()")
                 pg.wait_for_function("() => KQMAP.getTerrain() && KQMAP.getTerrain().source === 'relief' && !KQMAP.getLayer('kq-hill')", timeout=60000)
                 ok(True, f"{name}: zurück auf «Topo»: Gelände wieder aus «relief»")
-                # full screen
-                tap("#kq-full")
-                pg.wait_for_function("() => document.getElementById('kq-map').classList.contains('kq-fs')", timeout=10000)
+                # full screen: under CI load (software WebGL, 3D terrain) the page is busy drawing, so wait until the map
+                # is quiet before the tap and give the full-screen change as long as the other 3D steps (was 10 s: red twice in CI)
+                def vollbild(an):
+                    try:
+                        pg.wait_for_function("() => KQMAP.loaded() && !KQMAP.isMoving() && KQMAP.areTilesLoaded()", timeout=60000)
+                    except Exception:
+                        pass
+                    tap("#kq-full")
+                    soll = "" if an else "!"
+                    try:
+                        pg.wait_for_function(f"() => {soll}document.getElementById('kq-map').classList.contains('kq-fs')", timeout=60000)
+                    except Exception:
+                        zu = pg.evaluate("() => ({cls: document.getElementById('kq-map').className, fs: !!document.fullscreenElement, btn: (document.getElementById('kq-full') || {}).textContent})")
+                        raise AssertionError(f"{name}: Vollbild {'an' if an else 'aus'} kam nicht – {zu}")
+                vollbild(True)
                 pg.wait_for_timeout(600)
                 vis = pg.evaluate("() => { const r = document.querySelector('.kq-3d').getBoundingClientRect(); return r.top >= 0 && r.bottom < innerHeight && r.width > 40; }")
                 tap("#kq-2d")
@@ -383,8 +395,7 @@ def teil_b(datei, web, bilder):
                 if bilder:
                     pg.screenshot(path=os.path.join(bilder, f"karte3d_vollbild_{name}.png"), timeout=90000)
                 ok(vis, f"{name}: im Vollbild «⛶» ist «2D | 3D» da und schaltet")
-                tap("#kq-full")
-                pg.wait_for_function("() => !document.getElementById('kq-map').classList.contains('kq-fs')", timeout=10000)
+                vollbild(False)
                 tap("#kq-2d")
                 ok(not errs, f"{name}: keine JS-Fehler" + (" – " + "; ".join(errs[:3]) if errs else ""))
                 ctx.close()
