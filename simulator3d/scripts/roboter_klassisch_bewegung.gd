@@ -24,8 +24,8 @@ const POSEN_K := [["stehen", "Stehen"], ["sitzen", "Sitzen"], ["liegen", "Liegen
 const GAENGE_4 := [["schritt", "Schritt"], ["trab", "Trab"], ["pass", "Passgang"], ["auto", "Automatisch"]]
 const GAENGE_6 := [["dreifuss", "Dreifuss"], ["welle", "Wellengang"], ["raupe", "Raupengang"], ["auto", "Automatisch"]]
 const ABLAEUFE_K := [["aufstehen", "Aufstehen"], ["hinlegen", "Hinlegen"]]
-const BETA_K := {"schritt": 0.8, "trab": 0.55, "pass": 0.55, "dreifuss": 0.55, "welle": 0.84, "raupe": 0.72}
-const SCHIEBEN_K := {"schritt": 0.9, "pass": 0.7, "welle": 0.6, "raupe": 0.35}   # body shift over the standing feet (share; pass = sway to the side)
+const BETA_K := {"schritt": 0.8, "trab": 0.55, "pass": 0.6, "dreifuss": 0.55, "welle": 0.84, "raupe": 0.72}
+const SCHIEBEN_K := {"schritt": 0.9, "pass": 1.0, "welle": 0.6, "raupe": 0.35}   # body shift over the standing feet (share; pass = sway to the side)
 
 var schieben := Vector2.ZERO           # body shift now (m, x vor, y = z rechts) - for tests and the display
 var stuetz_fuesse := 0                 # feet on the ground in the plan right now
