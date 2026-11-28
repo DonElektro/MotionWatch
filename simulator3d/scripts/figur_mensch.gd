@@ -1,8 +1,8 @@
 extends "res://scripts/figur_paket.gd"
 ## «Figuren menschlicher» (01.11.2026): Menschen aus dem Menschen-Paket (MakeHuman / MPFB2, CC0) für Grafik mittel / hoch.
 ## Echte Proportionen (Mann, Frau, schlank, kräftig, Ältere, Kinder), Gesicht mit Augen, Brauen, Wimpern, Lippen, Haare
-## (kurz, lang, Dutt, Kranz), Kleider mit Stoffstruktur, Saum und Sohle, Haut mit Rand-Licht (Rim) und - in Forward+ -
-## leichter Streuung (Subsurface). Das Paket (menschen_v1.zip, ~5 MB, werkzeuge/menschen_paket.py) ist NICHT im
+## (kurz, lang, Dutt, Kranz), Kleider mit Stoffstruktur, Saum und Sohle, Haut matt (ab 28.11.2026 ohne Rand-Licht) und -
+## in Forward+ - leichter Streuung (Subsurface). Das Paket (menschen_v1.zip, ~5 MB, werkzeuge/menschen_paket.py) ist NICHT im
 ## Simulator-ZIP: neben der .exe, in user:// («Menschen-Paket laden», System → Grafik) oder simulator3d/pakete/ (Tests).
 ##
 ## Gleiche Schnittstelle und gleiche Bewegungen wie figur_paket.gd (davon abgeleitet): das Skelett hat die Knochen und die
@@ -30,6 +30,21 @@ static var mlast_error := ""
 static var _meshes := {}                   # composed meshes (shared by all figures with the same body / clothes / hair)
 static var _tex := {}                      # generated textures: weave, strands, pores
 static var lods := true                    # tests: LOD meshes
+# «Figuren matt» (Idee #45, 28.11.2026): Haut und Kleider matt statt «Plastik» - kein Rand-Licht (Rim), wenig Glanz
+const SKIN_ROUGH := 0.75
+const SKIN_SPEC := 0.22
+# Stoff je Kleidungsstil (menschen_stil.gd) und Teil: [Rauheit, Glanz (metallic_specular)]
+#   wandern = Softshell / Trekkinghose, freizeit = Fleece / Jeans, arbeit = Baumwolle / Arbeitshose, regen = Regenjacke (glatter)
+const STOFF := {
+	"jacke": {"wandern": [0.9, 0.25], "freizeit": [1.0, 0.15], "arbeit": [0.95, 0.2], "regen": [0.62, 0.35], "": [0.95, 0.2]},
+	"hose": {"wandern": [0.9, 0.22], "freizeit": [0.96, 0.18], "arbeit": [0.97, 0.18], "regen": [0.72, 0.3], "": [0.95, 0.2]},
+	"schuh": {"": [0.8, 0.25]}}
+
+
+static func stoff(stil: String, teil: String) -> Array:
+	"""[Rauheit, Glanz] eines Kleidungsteils (jacke / hose / schuh) für den Stil der Figur"""
+	var t: Dictionary = STOFF.get(teil, STOFF["jacke"])
+	return t.get(stil, t[""])
 
 var body_key := ""
 var hair_key := ""
@@ -369,14 +384,11 @@ func _dress(p: Dictionary) -> void:
 			"skin", "skin_hand", "bare_arm", "bare_leg":
 				key = "skin"
 				mt.albedo_color = Color(skin.r / 0.8, skin.g / 0.8, skin.b / 0.8)
-				mt.roughness = 0.55
-				mt.metallic_specular = 0.35
-				mt.rim_enabled = true
-				mt.rim = 0.25
-				mt.rim_tint = 0.6
+				mt.roughness = SKIN_ROUGH                          # «Figuren matt» (Idee #45): matt, kaum Glanz, kein Rand-Licht
+				mt.metallic_specular = SKIN_SPEC
 				if hq:
 					mt.subsurf_scatter_enabled = true                # Forward+ only (Mobile / Compatibility: ignored)
-					mt.subsurf_scatter_strength = 0.3
+					mt.subsurf_scatter_strength = 0.2              # weniger Streuung: nicht wachsig
 					mt.subsurf_scatter_skin_mode = true
 					mt.normal_enabled = true
 					mt.normal_texture = _pores()
@@ -385,11 +397,8 @@ func _dress(p: Dictionary) -> void:
 			"hair":
 				key = "hair"
 				mt.albedo_color = Color(_hair_c.r / 0.8, _hair_c.g / 0.8, _hair_c.b / 0.8)
-				mt.roughness = 0.55
-				mt.metallic_specular = 0.45
-				mt.rim_enabled = true
-				mt.rim = 0.3
-				mt.rim_tint = 0.3
+				mt.roughness = 0.72
+				mt.metallic_specular = 0.3
 				mt.normal_enabled = true
 				mt.normal_texture = _strands()
 				mt.normal_scale = 0.7
@@ -403,7 +412,9 @@ func _dress(p: Dictionary) -> void:
 				key = {"jacke": "jacket", "hose": "trousers", "schuh": "shoe"}[nm]
 				var c: Color = p.get(key, Color(0.3, 0.3, 0.3))
 				mt.albedo_color = Color(c.r / 0.8, c.g / 0.8, c.b / 0.8)
-				mt.roughness = 0.42 if (rain and nm == "jacke") else (0.6 if nm == "schuh" else 0.9)
+				var st: Array = stoff(str(p.get("stil", "")), nm)    # «Figuren matt»: Rauheit / Glanz je Stoff
+				mt.roughness = st[0]
+				mt.metallic_specular = st[1]
 				if nm != "schuh":
 					mt.normal_enabled = true
 					mt.normal_texture = _weave()
