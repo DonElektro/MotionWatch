@@ -332,7 +332,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_23_1.zip"
-ZD_SHA256 = "3645323be15743cd20bdde3191a54c3ab86ae0091f9249f6098a9a9b98304a91"
+ZD_SHA256 = "f079700c0a2422eead4d61c6666bf237bf3575615c7958a2bbc48a23aabe4160"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -106118,6 +106118,29 @@ WC_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"
 WC_FILE = {"name": "wildcamp-ch-1.zip", "size": 2425742, "sha256": "3cf1b73ea72ebdefe342ff0a1b9bd54b97b555a0a084fc3bfe5522dd6f2ecd1e", "unpacked": 10886755, "datum": "2026-11-22"}
 WC_PY = _zd('639zzzzzw_wildcamp/WC_PY', "")
 zd_exec(WC_PY, "639zzzzzw_wildcamp.py")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+K3_PY = _zd('639zzzzzz_karte_ch_3d/K3_PY', "")
+zd_exec(K3_PY, "639zzzzzz_karte_ch_3d.py")
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")
