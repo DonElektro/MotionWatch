@@ -255,7 +255,8 @@ func _hindernis(pr: Array, r: int) -> Dictionary:
 			e += 1
 		return {"art": "balken", "hoehe": dmin, "breite": (e - r) * ZELLE, "tiefe": 0.0, "neigung": 0.0, "_bis": e}
 	# going down gently (a ramp down): no sharp drop from row to row
-	if not row["leer"] and float(row["h"]) < -0.015 and float(row["h"]) > -0.03:
+	var prev_h := 0.0 if r == 0 else float(pr[r - 1]["h"])
+	if not row["leer"] and float(row["h"]) < -0.015 and prev_h - float(row["h"]) < 0.012:
 		var e := r
 		var gentle := true
 		while e + 1 < NX and not pr[e + 1]["leer"] and float(pr[e + 1]["h"]) < float(pr[e]["h"]) + 0.002:
@@ -395,8 +396,8 @@ func _vorschlag(name: String, k: String, h) -> float:
 				d = clampf(0.9 + hh / sc * 0.5, 0.9, 1.4)
 			elif name == "kriechen_drunter":
 				d = 0.5
-			elif stil == "sicher":
-				d = 0.8
+			elif h is Dictionary and str((h as Dictionary).get("art", "")) in ["rampe", "geroell"]:
+				d = 1.0
 		"neigung":
 			d = 25.0 if name == "aufrichten_vorne" else 0.0
 		"spreiz":
@@ -685,21 +686,20 @@ func zaehle_frei() -> void:
 
 
 func _sicher(p: Vector3) -> bool:
-	"""ground under p and around it (±2.5 cm), no edge (max − min ≤ 1.2 cm)"""
+	"""ground under p and around it (±2.5 cm), not on an edge: a slope is fine (ramp up to 35°), a kink is not"""
 	var fx := _vorne()
 	var lat := Vector3.UP.cross(fx)
 	var y0 := _boden(p, 0.35)
 	if y0 == LEER:
 		return false
-	var lo := y0
-	var hi := y0
-	for d in [fx * 0.025, -fx * 0.025, lat * 0.025, -lat * 0.025]:
-		var y := _boden(p + d, 0.35)
-		if y == LEER:
+	for d in [fx * 0.025, lat * 0.025]:
+		var ya := _boden(p + d, 0.35)
+		var yb := _boden(p - d, 0.35)
+		if ya == LEER or yb == LEER:
 			return false
-		lo = minf(lo, y)
-		hi = maxf(hi, y)
-	return hi - lo <= 0.012
+		if absf(ya + yb - 2.0 * y0) > 0.008 or absf(ya - yb) > 0.05 * 0.7:
+			return false
+	return true
 
 
 # ==== Hilfen ================================================================================================================
@@ -751,7 +751,7 @@ func _boden(p: Vector3, span: float) -> float:
 func _boden_ref() -> float:
 	"""the ground the robot stands on now (under the first two segments)"""
 	var best := LEER
-	for i in range(mini(2, m.n())):
+	for i in range(mini(1, m.n())):
 		var o: Vector3 = m.segment_xf(i).origin
 		var y := _boden(o, 0.4)
 		best = maxf(best, y)
