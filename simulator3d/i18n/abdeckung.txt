@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8703 (Stellen: 12071)
-Übersetzt: en 8703, fr 8703, it 8703, rm 8703
-Unsicher markiert: 514
+Texte gesamt: 8780 (Stellen: 12172)
+Übersetzt: en 8780, fr 8780, it 8780, rm 8780
+Unsicher markiert: 517
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 555 Stellen
-Nicht mehr im Code (noch in texte.json): 416
+Nicht mehr im Code (noch in texte.json): 414
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 31943, schlüssel 24795, keine Wörter 15970, index 11284, technisch 4086, doc 2827, einheit 366, log 206, englisch 151, pfad 130, stringname 107, html 69, klasse 48, shader 6
+Übersprungen (Grund: Anzahl): kennung 32103, schlüssel 24891, keine Wörter 16084, index 11410, technisch 4103, doc 2849, einheit 372, log 206, englisch 151, pfad 130, stringname 107, html 69, klasse 48, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -34,6 +34,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_aussicht.gd       96     4
   testrun.gd                94     3
   templates.gd              94     6
+  roboter_steuerung.gd      92     0
   toolbar.gd                89     3
   ferienpark.gd             89     0
   maggie_hund.gd            85     0
@@ -708,6 +709,9 @@ Unsicher:
   '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n': technisch (HTTP) – nicht umhüllen
   '&vo=1': technisch – nicht umhüllen
   'Browser (WebGL 2)': rm automatisch
+  'Ring rollen': rm: Wortwahl unsicher (Roboter-Labor, 28.11.2026)
+  'Spurbreite': rm: Wortwahl unsicher (Roboter-Labor, 28.11.2026)
+  'Untere Leiste mit Steuerung ein / aus': rm: Wortwahl unsicher (Roboter-Labor, 28.11.2026)
   '%s: «%s» wird gesendet, steht aber nicht in schnittstelle.json': Entwickler-Meldung (Log) – nicht umhüllen
   '%s: «%s» steht in schnittstelle.json, wird aber nicht gesendet': Entwickler-Meldung (Log) – nicht umhüllen
   'control: MoveEye braucht «%s», main.gd _control kennt es nicht': Entwickler-Meldung (Log) – nicht umhüllen

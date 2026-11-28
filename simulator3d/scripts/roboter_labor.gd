@@ -25,6 +25,7 @@ const MODELL = preload("res://scripts/roboter_modell.gd")
 const BEWEGUNG = preload("res://scripts/roboter_bewegung.gd")
 const GELAENDE = preload("res://scripts/roboter_gelaende.gd")
 const ANZEIGE = preload("res://scripts/roboter_anzeige.gd")
+const STEUERUNG = preload("res://scripts/roboter_steuerung.gd")   # Tastatur, Controller, Maus, Körper verschieben (28.11.2026)
 const TICKS := 120
 # Zwei Varianten (Besitzer 22.11.2026 21:33): «8 Segmente» (Ring 8 × 45°) und «4 Segmente» (Ring 4 × 90°, die 45°-Schrägen
 # liegen flach aneinander). Jede Variante hat ihre eigenen Regler, Pose und Gang-Werte (user://roboter_labor.json).
@@ -72,6 +73,7 @@ var pip_box: Control
 var model                              # roboter_modell.gd
 var bew                                # roboter_bewegung.gd
 var anz                                # roboter_anzeige.gd
+var steu                               # roboter_steuerung.gd
 var manual := Vector3.ZERO             # Bewegen: x = seitwärts (+ links), y = vor / zurück, z = drehen / Kurve (+ links)
 var speed := 0.0                       # measured, m/s (smooth)
 var _last_com := Vector3.ZERO
@@ -143,6 +145,10 @@ func open() -> void:
 	get_viewport().disable_3d = true                  # the window shows only the lab: the world of MoveEye is not drawn meanwhile
 	_build_world()
 	_build_ui()
+	steu = STEUERUNG.new()
+	steu.lab = self
+	steu.laden()
+	steu.build(_w["area"])
 	_start_physics()
 	set_view(view)
 	set_tab(tab)
@@ -151,6 +157,9 @@ func open() -> void:
 func close() -> void:
 	if not is_open():
 		return
+	if steu != null:
+		steu.close()
+		steu = null
 	layer.queue_free()
 	layer = null
 	win = null
@@ -297,18 +306,20 @@ func _rebuild(new_pose: bool) -> void:
 func _physics_process(dt: float) -> void:
 	if not is_open() or model == null or paused:
 		return
-	var wasd := Vector3(float(Input.is_key_pressed(KEY_A)) - float(Input.is_key_pressed(KEY_D)),
-			float(Input.is_key_pressed(KEY_W)) - float(Input.is_key_pressed(KEY_S)),
-			float(Input.is_key_pressed(KEY_Q)) - float(Input.is_key_pressed(KEY_E)))
-	if wasd != Vector3.ZERO and bew.mode not in ["gang", "ring"]:
-		if model.latch["state"] == "locked":
-			bew.start_ring()
-		else:
-			bew.start_gang(bew.gang)
-	var c := wasd if wasd != Vector3.ZERO else manual
-	bew.cmd = c
-	bew.keys = Vector2(clampf(c.z + c.x, -1.0, 1.0), c.y)       # in the ring: A / D and Q / E both steer
-	bew.step(dt)
+	# keyboard, controller and mouse joystick (roboter_steuerung.gd): smooth [strafe + links, forward, turn + links]
+	var wasd: Vector3 = steu.tick(dt) if steu != null else Vector3.ZERO
+	if steu != null and steu.koerper:
+		steu.koerper_step(dt)                            # «Körper verschieben»: the feet stand, the body moves
+	else:
+		if wasd != Vector3.ZERO and bew.mode not in ["gang", "ring"]:
+			if model.latch["state"] == "locked":
+				bew.start_ring()
+			else:
+				bew.start_gang(bew.gang)
+		var c := wasd if wasd != Vector3.ZERO else manual
+		bew.cmd = c
+		bew.keys = Vector2(clampf(c.z + c.x, -1.0, 1.0), c.y)       # in the ring: A / D and Q / E both steer
+		bew.step(dt)
 	model.step(dt)
 	if not terrain.is_empty():
 		_terrain_step(dt)
@@ -330,6 +341,8 @@ func _process(dt: float) -> void:
 			_refresh_form_info()
 	_camera(dt)
 	_layout_overlay()
+	if steu != null:
+		steu.process(dt)
 	_anz_t -= dt
 	if _anz_t <= 0.0 and anz != null:
 		_anz_t = 0.1
@@ -476,7 +489,15 @@ func zoom(dir: int) -> void:
 	dist = clampf(dist * (0.88 if dir > 0 else 1.0 / 0.88), 0.3, 25.0)
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and steu != null:
+		steu.loslassen()                                 # nothing stays held when the window loses the focus
+
+
 func _input(ev: InputEvent) -> void:
+	if is_open() and steu != null and steu.input(ev):    # bindings of the profile (roboter_steuerung.gd) first
+		get_viewport().set_input_as_handled()
+		return
 	if not is_open() or not (ev is InputEventKey):
 		return
 	var k := ev as InputEventKey
@@ -494,10 +515,6 @@ func _input(ev: InputEvent) -> void:
 			set_view("oben")
 		KEY_4:
 			set_view("roboter")
-		KEY_R:
-			reset()
-		KEY_SPACE:
-			stop_all()
 		KEY_G:
 			if bew.mode == "gang":
 				stop_all()
@@ -869,7 +886,11 @@ func _layout_overlay() -> void:
 	if tr.custom_minimum_size != sz:
 		tr.custom_minimum_size = sz
 		pip_box.reset_size()
-	pip_box.offset_bottom = -(vb.size.y + 18.0)
+	var up: float = steu.lift() if steu != null else 0.0      # above the drive bar (roboter_steuerung.gd)
+	if vb.offset_bottom != -10.0 - up:
+		vb.offset_bottom = -10.0 - up
+		vb.offset_top = -10.0 - up
+	pip_box.offset_bottom = -(vb.size.y + 18.0 + up)
 	pip_box.offset_top = pip_box.offset_bottom
 	pip_box.offset_left = pip_box.offset_right
 
@@ -1714,6 +1735,8 @@ func info() -> Dictionary:
 				"terrain": terrain.get("name", ""), "terrain_results": terrain_results, "adapted": bew.angepasst,
 				"plan": bew.plan, "anpassen": bew.anpassen, "variante": variante, "pip": pip, "info_on": info_on, "panel": _panel_on, "compact": compact() if is_open() else false, "touch": touch, "ring_methode": bew.ring_methode,
 				"rund": rund_summary(), "rund_best": rund_best, "rund_laeuft": not rund_jobs.is_empty() or not rund_job.is_empty()})
+		if steu != null:
+			d["steuerung"] = steu.info()
 	return d
 
 
@@ -1784,6 +1807,8 @@ func control(d: Dictionary) -> Dictionary:
 				bew.spur_rollen = float(d["spur"])
 			if d.has("messen"):
 				rund_start(str(d["messen"]))
+		"koerper", "steuerung":
+			steu.control(d)
 		"gelaende":
 			var names = d.get("name", "stufe")
 			terrain_start(names if names is Array else [str(names)], bool(d.get("ring", false)))
