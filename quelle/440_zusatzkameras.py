@@ -61,6 +61,7 @@ class ExtraCam:
                             break
                         time.sleep(0.05); continue
                     fails = 0
+                    frame = self._turn(frame, bg)          # 639zzzzzzd: turned / mirrored as set, before everything else
                     self._process(frame, bg)
             except Exception as e:
                 log_event("sys", f"Camera {self.label}: {e}")
@@ -68,6 +69,25 @@ class ExtraCam:
                 src.release(); self._stop_rec()
             if not self.stop and not toolmode_on():
                 self.status = "connection lost - reconnecting"; self.motion = False; self._sleep(2.0)
+
+    def _turn(self, frame, bg):
+        """639zzzzzzd (Besitzer 28.11.2026): every camera can be turned / mirrored (CFG["cam_turn"], 200 cam_turn_get).
+        At a change: a new scene (background learned anew, no movement for a moment, a running clip ends - its size changes)."""
+        o = cam_turn_get(self.spec)
+        frame = cam_turn_frame(frame, turn=o)
+        if o != getattr(self, "_orient", None):
+            if getattr(self, "_orient", None) is not None:
+                self._stop_rec(); self.n = 0; self.boxes = []; self.motion = False; self.streak = 0
+                log_event("sys", f"Camera {self.label}: picture turned {o[0]}°" + (", mirrored" if o[1] else ""))
+            self._orient = o
+            H, W = frame.shape[:2]
+            self.res = f"{W}x{H}"
+            try:
+                g_ = cv2.GaussianBlur(cv2.cvtColor(cv2.resize(frame, (320, max(1, int(H * 320 / W)))), cv2.COLOR_BGR2GRAY), (5, 5), 0)
+                bg.apply(g_, learningRate=1.0)
+            except cv2.error:
+                pass
+        return frame
 
     def _process(self, frame, bg):
         t0 = time.time()
