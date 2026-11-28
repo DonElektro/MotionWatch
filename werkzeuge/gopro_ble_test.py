@@ -462,6 +462,9 @@ ok(d["zustand"] == "connected" and not cam.sleeping, "Ein: Kamera wach")
 # --- G3 interface
 c3 = ns["gopro_ble_client"](cam.addr)
 ok(c3.connect(5) and c3.write("0072", b"\x3c")[:2] == b"\x3c\x00" and c3.read("0002") == b"GP12345678" and c3.write("0002", b"x") == b"", "G3-Schnittstelle gopro_ble_client: connect / write / read")
+n0 = len(cam.log)
+r3 = c3.write("0072", b"\x03\x17\x01\x01", frame=False)
+ok(r3 == b"\x17\x00" and [m for m in cam.log[n0:] if m[0] == "0072"] == [("0072", b"\x17\x01\x01")], "G3: write(frame=False) – eigener 5-bit-Kopf unverändert in einem Paket, Antwort aus 0073 (%s)" % r3)
 c3.close()
 ok(not c3.connected, "G3: close")
 # --- restart of MoveEye: the pairing is still there
