@@ -281,10 +281,14 @@ GOPRO_ZUSTAENDE = {"new": "new", "waiting": "waiting for the GoPro", "streaming"
 GOPRO_MODELLE = [("hero8", "HERO8 Black"), ("hero9", "HERO9 Black"), ("hero10", "HERO10 Black"), ("hero11", "HERO11 Black"),
                  ("hero12", "HERO12 Black"), ("hero13", "HERO13 Black")]
 GOPRO_RES = {"480": "S", "720": "M", "1080": "L"}
-# mediamtx: fixed version; the checksums of the packages are pinned here as soon as they are measured (werkzeuge/gopro_test.py
-# --mtx-pruefsummen), until then the checksum list of the same release (https, github.com) is used - never an unchecked file
+# mediamtx: fixed version, the SHA-256 of the packages fixed here (checksums.sha256 of the release v1.21.4, the amd64 package
+# downloaded and recalculated by werkzeuge/gopro_test.py on 28.11.2026); a package without a pin: the checksum list of the same
+# release (https, github.com) - never an unchecked file
 MTX = {"version": "v1.21.4", "url": "https://github.com/bluenviron/mediamtx/releases/download/",
-       "pins": {"arm64": None, "armv7": None, "amd64": None}, "max": 80 * 1048576}
+       "pins": {"arm64": {"sha256": "47784081da54c0608ea4dc359f5cfb19880209434769c532b3ed3a67ea99c29d", "size": None},
+                "armv7": {"sha256": "48a067993e28e409478463dc71d2ee8a82511acebc4956f685ecfeda2b0bd9ae", "size": None},
+                "amd64": {"sha256": "be0c05d9c8af8338116977e7f1c3fcb409fbf882075e5ab075cf8baad76a59d2", "size": None}},
+       "max": 80 * 1048576}
 RX = {"proc": None, "art": "", "paths": [], "fehler": "", "t_start": 0.0, "fails": 0, "api": {}, "t_api": 0.0, "ff_dev": "",
       "ff_in": False, "version": "", "install": {"running": False, "msg": "", "done": False, "got": 0, "total": 0}}
 _GP_W = {"thread": None}
@@ -788,7 +792,7 @@ def rx_conf_text(paths):
         "api": True, "apiAddress": f"127.0.0.1:{api}", "metrics": False, "pprof": False, "playback": False,
         "rtsp": True, "rtspTransports": ["tcp"], "rtspAddress": f"127.0.0.1:{rtsp}",
         "rtmp": True, "rtmpAddress": f":{rtmp}",
-        "hls": False, "webrtc": False, "srt": False,
+        "hls": False, "webrtc": False, "srt": False, "moq": False,
         "paths": {p: {} for p in paths},
     }
     return json.dumps(conf, indent=1)
@@ -809,7 +813,7 @@ def rx_stop():
             p.terminate(); p.wait(5)
         except Exception:
             try:
-                p.kill()
+                p.kill(); p.wait(3)                       # the port must be free before the next receiver binds it
             except Exception:
                 pass
 
@@ -825,12 +829,16 @@ def _rx_manage():
             rx_stop(); log_event("sys", "GoPro receiver stopped (no GoPro on)")
         RX["paths"] = []; return
     exe = rx_mtx_exe()
+    if RX["fails"] >= 3 and time.time() - RX["t_start"] > 120:
+        RX["fails"] = 2                                   # mediamtx failed 3 times: try it again every 2 minutes
     art = "mediamtx" if exe and RX["fails"] < 3 else ("ffmpeg" if shutil.which("ffmpeg") else "")
     p = RX.get("proc")
     alive = p is not None and p.poll() is None
     if alive and art == RX["art"] and paths == RX["paths"]:
         if art == "mediamtx":
             _rx_api()
+            if RX["fails"] and time.time() - RX["t_start"] > 30:
+                RX["fails"] = 0; RX["fehler"] = ""        # runs fine for 30 s: the old failures are forgotten
         return
     if p is not None and not alive and time.time() - RX["t_start"] < 4.0 and RX["art"] == "mediamtx":
         RX["fails"] += 1; RX["fehler"] = "the receiver stopped right after the start" + _rx_log_tail()
@@ -868,7 +876,7 @@ def _rx_popen(cmd):
         pass
     _radio_prctl()
     return subprocess.Popen(cmd, stdout=logf, stderr=subprocess.STDOUT if "ffmpeg" not in os.path.basename(cmd[0]) else subprocess.PIPE,
-                            stdin=subprocess.DEVNULL, preexec_fn=_radio_pre, close_fds=True)
+                            stdin=subprocess.DEVNULL, preexec_fn=_radio_pre, close_fds=True, cwd=_rx_dir())
 
 
 def _rx_start_mtx(exe, paths):
@@ -980,7 +988,7 @@ def _rx_install_run(arch):
     try:
         pin = MTX["pins"].get(arch)
         if not pin:                                       # not pinned yet: the checksum list of the same release
-            with urllib.request.urlopen(_upd_request(base + "checksums.sha256"), timeout=30) as r:
+            with urllib.request.urlopen(_gp_req(base + "checksums.sha256"), timeout=30) as r:
                 lst = r.read(65536).decode(errors="replace")
             m = re.search(r"^([0-9a-f]{64})\s+\*?" + re.escape(name) + r"\s*$", lst, re.M)
             if not m:
@@ -1011,9 +1019,14 @@ def _rx_install_run(arch):
         I["running"] = False
 
 
+def _gp_req(url):
+    """a plain request (no key of the update source - this is not our repository)"""
+    return urllib.request.Request(url, headers={"User-Agent": "MoveEye/" + APP_VERSION})
+
+
 def _rx_fetch(url, dest, pin):
     h = hashlib.sha256(); n = 0
-    with urllib.request.urlopen(_upd_request(url), timeout=60) as r, open(dest + ".part", "wb") as f:
+    with urllib.request.urlopen(_gp_req(url), timeout=60) as r, open(dest + ".part", "wb") as f:
         RX["install"]["total"] = int(r.headers.get("Content-Length") or 0)
         while True:
             b = r.read(1 << 16)
@@ -1412,7 +1425,7 @@ def gopro_selftest():
         c = json.loads(rx_conf_text([gopro_rtmp_path(gopro_dev(gid))]))
         assert c["rtmpAddress"] == ":19350" and c["rtspAddress"] == "127.0.0.1:19351" and c["apiAddress"] == "127.0.0.1:19352"
         assert "100.64.0.0/10" not in c["authInternalUsers"][0]["ips"] and c["authInternalUsers"][1]["ips"] == ["127.0.0.1/32", "::1/128"]
-        assert [p["action"] for p in c["authInternalUsers"][1]["permissions"]] == ["read", "api"] and not c["hls"] and not c["webrtc"]
+        assert [p["action"] for p in c["authInternalUsers"][1]["permissions"]] == ["read", "api"] and not any(c[k] for k in ("hls", "webrtc", "srt", "moq", "metrics", "pprof", "playback"))
         # a way of G2 / G3: register, the source address, the state machine with a drop-out
         S_ = {"on": False}
         gopro_register_weg("selftest", start=lambda d: "udp://@:8554", stop=lambda d: None,
@@ -1438,6 +1451,21 @@ def gopro_selftest():
             globals()["gopro_meldung"] = _m; globals()["_rx_manage"] = _rxm
             GOPRO_WEGE.pop("selftest", None)
         assert gopro_remove(gid)[0] and not gopro_cfg_dev(gid) and "gopro:" + gid not in CFG["extra_cams"]
+        # the download of mediamtx: a wrong checksum is never used (file:// instead of GitHub)
+        td = tempfile.mkdtemp(prefix="gp_st_")
+        try:
+            src_ = os.path.join(td, "pkg"); open(src_, "wb").write(b"mediamtx-package")
+            good = hashlib.sha256(b"mediamtx-package").hexdigest()
+            try:
+                _rx_fetch("file://" + src_, os.path.join(td, "out"), {"sha256": "0" * 64, "size": None}); raise AssertionError("wrong checksum taken")
+            except ValueError:
+                pass
+            assert not os.path.exists(os.path.join(td, "out")) and not os.path.exists(os.path.join(td, "out.part"))
+            _rx_fetch("file://" + src_, os.path.join(td, "out"), {"sha256": good, "size": None})
+            assert open(os.path.join(td, "out"), "rb").read() == b"mediamtx-package"
+        finally:
+            shutil.rmtree(td, ignore_errors=True)
+        assert all(re.fullmatch(r"[0-9a-f]{64}", (MTX["pins"][a_] or {}).get("sha256", "")) for a_ in ("arm64", "armv7", "amd64")), "pinned"
         assert all(TRX[L].get(k) for L in ("fr", "it", "rm") for k in _HX_GP), "texts fr / it / rm"
         assert HELP_PAGE.count('id="gp-help"') == 2 and all('id="gp-help"' in HELP_X.get(L, 'id="gp-help"') for L in ("fr", "it", "rm"))
         assert 'href="/gopro"' in CAMS_PAGE and '"Add GoPro": "GoPro hinzufügen"' in CAMS_PAGE and "/*GPDE*/" not in GOPRO_PAGE
