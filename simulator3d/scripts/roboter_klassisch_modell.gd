@@ -22,6 +22,7 @@ const START_K := {
 	"masse_koerper": 0.60,          # kg (Segment-Roboter: 0.30 kg je Beinpaar)
 	"masse_bein": 0.15, "moment_bein": 1.5, "moment_koerper": 3.5, "tempo_servo": 300.0, "reibung": 0.9,
 	"strom_stall": 2.5, "strom_ruhe": 0.01,
+	"halbe_breite_spitze": 0.10, "laenge_mittelteil": 0.80, "abstand_gelenk": 0.12,   # nur für die geerbten Bein-Teile
 }
 const START_6 := {"beine": 6, "koerper_laenge": 4.0, "masse_koerper": 0.90}
 const GRENZEN_K := {
