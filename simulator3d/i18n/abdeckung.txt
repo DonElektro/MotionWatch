@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8718 (Stellen: 12099)
-Übersetzt: en 8718, fr 8718, it 8718, rm 8718
-Unsicher markiert: 514
+Texte gesamt: 8791 (Stellen: 12203)
+Übersetzt: en 8791, fr 8791, it 8791, rm 8791
+Unsicher markiert: 517
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 555 Stellen
-Nicht mehr im Code (noch in texte.json): 418
+Nicht mehr im Code (noch in texte.json): 422
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 32073, schlüssel 24819, keine Wörter 15993, index 11295, technisch 4102, doc 2844, einheit 366, log 206, englisch 151, pfad 130, stringname 107, html 69, klasse 48, shader 6
+Übersprungen (Grund: Anzahl): kennung 32241, schlüssel 24926, keine Wörter 16114, index 11426, technisch 4117, doc 2876, einheit 372, log 206, englisch 151, pfad 130, stringname 107, html 69, klasse 48, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -18,7 +18,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   game.gd                  211    32
   bergtal_abenteuer_daten.gd   197     0
   bergtal.gd               190     5
-  roboter_labor.gd         168     0
+  roboter_labor.gd         169     0
   bergtal_horror.gd        160     3
   abenteuer_raetsel.gd     145     2
   maggie_story.gd          114     2
@@ -33,6 +33,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   kit_k3_daten.gd           96     0
   bergtal_aussicht.gd       96     4
   testrun.gd                94     3
+  roboter_steuerung.gd      94     0
   templates.gd              94     6
   toolbar.gd                89     3
   ferienpark.gd             89     0
@@ -708,6 +709,9 @@ Unsicher:
   '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n': technisch (HTTP) – nicht umhüllen
   '&vo=1': technisch – nicht umhüllen
   'Browser (WebGL 2)': rm automatisch
+  'Untere Leiste mit Steuerung ein / aus': rm: Wortwahl unsicher (Roboter-Labor, 28.11.2026)
+  'Ring rollen': rm: Wortwahl unsicher (Roboter-Labor, 28.11.2026)
+  'Spurbreite': rm: Wortwahl unsicher (Roboter-Labor, 28.11.2026)
   '%s: «%s» wird gesendet, steht aber nicht in schnittstelle.json': Entwickler-Meldung (Log) – nicht umhüllen
   '%s: «%s» steht in schnittstelle.json, wird aber nicht gesendet': Entwickler-Meldung (Log) – nicht umhüllen
   'control: MoveEye braucht «%s», main.gd _control kennt es nicht': Entwickler-Meldung (Log) – nicht umhüllen
@@ -1110,9 +1114,9 @@ Dynamische Stellen (Datei:Zeile Text) – in Phase 2 zu einer Vorlage mit %s / {
   figur_paket.gd:123  'Paket lässt sich nicht öffnen: '
   figur_paket.gd:141  'Datei im Paket kaputt: '
   figur_paket.gd:207  'Skeleton3D:'
-  figur_paket.gd:916  ' – Fehler: '
-  figur_paket.gd:920  ' – Fehler: '
-  figur_paket.gd:946  '%s ist schon da: '
+  figur_paket.gd:918  ' – Fehler: '
+  figur_paket.gd:922  ' – Fehler: '
+  figur_paket.gd:948  '%s ist schon da: '
   game.gd:1462  ' · 🏆 alle gefunden'
   game.gd:1466  'Wächter · '
   game.gd:1492  ' · 🦆 %d s beobachtet'

@@ -25,6 +25,8 @@ const MODELL = preload("res://scripts/roboter_modell.gd")
 const BEWEGUNG = preload("res://scripts/roboter_bewegung.gd")
 const GELAENDE = preload("res://scripts/roboter_gelaende.gd")
 const ANZEIGE = preload("res://scripts/roboter_anzeige.gd")
+const STEUERUNG = preload("res://scripts/roboter_steuerung.gd")
+const STICK = preload("res://scripts/roboter_stick.gd")   # Tastatur, Controller, Maus, Körper verschieben (28.11.2026)
 const TICKS := 120
 # Zwei Varianten (Besitzer 22.11.2026 21:33): «8 Segmente» (Ring 8 × 45°) und «4 Segmente» (Ring 4 × 90°, die 45°-Schrägen
 # liegen flach aneinander). Jede Variante hat ihre eigenen Regler, Pose und Gang-Werte (user://roboter_labor.json).
@@ -55,8 +57,8 @@ const TAB_ALT := {"form": ["bauen", "form"], "gelenke": ["bauen", "gelenke"], "p
 		"gelaende": ["welt", "gelaende"], "physik": ["welt", "physik"], "ansicht": ["welt", "ansicht"]}
 # die Gruppen in den Reitern, in dieser Reihenfolge: [id, Titel, Reiter]
 const GRUPPEN := [["gang", "Gangart", "fahren"], ["richtung", "Richtung", "fahren"], ["tempo", "Tempo und Schritt", "fahren"],
-		["ring", "Im Ring rollen", "fahren"],
-		["posen", "Posen", "haltung"], ["ablaeufe", "Ganze Abläufe", "haltung"],
+		["ring", "Im Ring rollen", "fahren"], ["steuerung", "Steuerung", "fahren"],
+		["posen", "Posen", "haltung"], ["ablaeufe", "Ganze Abläufe", "haltung"], ["koerper", "Körper verschieben", "haltung"],
 		["form", "Form", "bauen"], ["gelenke", "Gelenke", "bauen"],
 		["gelaende", "Gelände", "welt"], ["physik", "Physik", "welt"], ["ansicht", "Ansicht", "welt"],
 		["anzeigen", "Anzeigen", "messen"], ["rund", "Rund rollen", "messen"]]
@@ -88,6 +90,7 @@ var pip_box: Control
 var model                              # roboter_modell.gd
 var bew                                # roboter_bewegung.gd
 var anz                                # roboter_anzeige.gd
+var steu                               # roboter_steuerung.gd
 var manual := Vector3.ZERO             # Bewegen: x = seitwärts (+ links), y = vor / zurück, z = drehen / Kurve (+ links)
 var speed := 0.0                       # measured, m/s (smooth)
 var _last_com := Vector3.ZERO
@@ -161,7 +164,11 @@ func open() -> void:
 	_old_3d = get_viewport().disable_3d
 	get_viewport().disable_3d = true                  # the window shows only the lab: the world of MoveEye is not drawn meanwhile
 	_build_world()
+	steu = STEUERUNG.new()
+	steu.lab = self
+	steu.laden()
 	_build_ui()
+	steu.build(_w["area"])
 	_start_physics()
 	set_view(view)
 	set_tab(tab)
@@ -170,6 +177,9 @@ func open() -> void:
 func close() -> void:
 	if not is_open():
 		return
+	if steu != null:
+		steu.close()
+		steu = null
 	layer.queue_free()
 	layer = null
 	win = null
@@ -316,18 +326,20 @@ func _rebuild(new_pose: bool) -> void:
 func _physics_process(dt: float) -> void:
 	if not is_open() or model == null or paused:
 		return
-	var wasd := Vector3(float(Input.is_key_pressed(KEY_A)) - float(Input.is_key_pressed(KEY_D)),
-			float(Input.is_key_pressed(KEY_W)) - float(Input.is_key_pressed(KEY_S)),
-			float(Input.is_key_pressed(KEY_Q)) - float(Input.is_key_pressed(KEY_E)))
-	if wasd != Vector3.ZERO and bew.mode not in ["gang", "ring"]:
-		if model.latch["state"] == "locked":
-			bew.start_ring()
-		else:
-			bew.start_gang(bew.gang)
-	var c := wasd if wasd != Vector3.ZERO else manual
-	bew.cmd = c
-	bew.keys = Vector2(clampf(c.z + c.x, -1.0, 1.0), c.y)       # in the ring: A / D and Q / E both steer
-	bew.step(dt)
+	# keyboard, controller and mouse joystick (roboter_steuerung.gd): smooth [strafe + links, forward, turn + links]
+	var wasd: Vector3 = steu.tick(dt) if steu != null else Vector3.ZERO
+	if steu != null and steu.koerper:
+		steu.koerper_step(dt)                            # «Körper verschieben»: the feet stand, the body moves
+	else:
+		if wasd != Vector3.ZERO and bew.mode not in ["gang", "ring"]:
+			if model.latch["state"] == "locked":
+				bew.start_ring()
+			else:
+				bew.start_gang(bew.gang)
+		var c := wasd if wasd != Vector3.ZERO else manual
+		bew.cmd = c
+		bew.keys = Vector2(clampf(c.z + c.x, -1.0, 1.0), c.y)       # in the ring: A / D and Q / E both steer
+		bew.step(dt)
 	model.step(dt)
 	if not terrain.is_empty():
 		_terrain_step(dt)
@@ -349,6 +361,8 @@ func _process(dt: float) -> void:
 			_refresh_form_info()
 	_camera(dt)
 	_layout_overlay()
+	if steu != null:
+		steu.process(dt)
 	_anz_t -= dt
 	if _anz_t <= 0.0 and anz != null:
 		_anz_t = 0.1
@@ -495,7 +509,15 @@ func zoom(dir: int) -> void:
 	dist = clampf(dist * (0.88 if dir > 0 else 1.0 / 0.88), 0.3, 25.0)
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and steu != null:
+		steu.loslassen()                                 # nothing stays held when the window loses the focus
+
+
 func _input(ev: InputEvent) -> void:
+	if is_open() and steu != null and steu.input(ev):    # bindings of the profile (roboter_steuerung.gd) first
+		get_viewport().set_input_as_handled()
+		return
 	if not is_open() or not (ev is InputEventKey):
 		return
 	var k := ev as InputEventKey
@@ -513,10 +535,6 @@ func _input(ev: InputEvent) -> void:
 			set_view("oben")
 		KEY_4:
 			set_view("roboter")
-		KEY_R:
-			reset()
-		KEY_SPACE:
-			stop_all()
 		KEY_G:
 			if bew.mode == "gang":
 				stop_all()
@@ -837,6 +855,7 @@ func _build_ui() -> void:
 	_page_ansicht(gruppe("ansicht"))
 	_page_anzeigen(gruppe("anzeigen"))
 	_page_rund(gruppe("rund"))
+	_page_steuerung()
 	for tb in TABS:                                   # one width for all tabs (the widest), the panel does not jump
 		(_w["page_" + tb[0]] as Control).visible = true
 	_panel_w = maxf(PANEL_W, panel.get_combined_minimum_size().x)
@@ -1209,7 +1228,11 @@ func _layout_overlay() -> void:
 	if tr.custom_minimum_size != sz:
 		tr.custom_minimum_size = sz
 		pip_box.reset_size()
-	pip_box.offset_bottom = -(vb.size.y + 18.0)
+	var up: float = steu.lift() if steu != null else 0.0      # above the drive bar (roboter_steuerung.gd)
+	if vb.offset_bottom != -10.0 - up:
+		vb.offset_bottom = -10.0 - up
+		vb.offset_top = -10.0 - up
+	pip_box.offset_bottom = -(vb.size.y + 18.0 + up)
 	pip_box.offset_top = pip_box.offset_bottom
 	pip_box.offset_left = pip_box.offset_right
 
@@ -1479,42 +1502,9 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 	pg.add_child(gi)
 	_w["gang_info"] = gi
 	var gr := gruppe("richtung")
-	gr.add_child(UI.small(T.t("In alle Richtungen (W A S D, schräg = zwei Tasten, Q / E an Ort drehen):")))
-	var pad := GridContainer.new()
-	pad.columns = 3
-	pad.add_theme_constant_override("h_separation", 4)
-	pad.add_theme_constant_override("v_separation", 4)
-	gr.add_child(pad)
-	# [symbol (drawn: the font has no arrows), strafe (+ links), vor, Hinweis]
-	for e in [["pfeil315", 1.0, 1.0, "vorne links"], ["pfeil0", 0.0, 1.0, "Vorwärts"], ["pfeil45", -1.0, 1.0, "vorne rechts"],
-			["pfeil270", 1.0, 0.0, "seitwärts links"], ["stopp", 0.0, 0.0, "Stopp"], ["pfeil90", -1.0, 0.0, "seitwärts rechts"],
-			["pfeil225", 1.0, -1.0, "hinten links"], ["pfeil180", 0.0, -1.0, "Rückwärts"], ["pfeil135", -1.0, -1.0, "hinten rechts"]]:
-		var sx: float = e[1]
-		var fy: float = e[2]
-		var b := _button(pad, "", func(): drive_dir(Vector3(sx, fy, 0.0)))
-		b.tooltip_text = T.t(e[3])
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.custom_minimum_size = Vector2(0, 34)
-		var ic := _icon(e[0], UI.TXT, Vector2.ZERO)
-		ic.set_anchors_preset(Control.PRESET_FULL_RECT)
-		b.add_child(ic)
-		_w["pad_" + str(e[0])] = b
-	var rot := HBoxContainer.new()
-	rot.add_theme_constant_override("separation", 6)
-	gr.add_child(rot)
-	for e in [[T.t("an Ort drehen links") + " (Q)", 1.0, "dreh_l"], [T.t("an Ort drehen rechts") + " (E)", -1.0, "dreh_r"]]:
-		var rz: float = e[1]
-		var b := _button(rot, e[0], func(): drive_dir(Vector3(0.0, 0.0, rz)))
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.clip_text = true
-		b.add_theme_font_size_override("font_size", 13)
-		for st in ["normal", "hover", "pressed"]:          # room for the drawn arrow on the left
-			var sb := (b.get_theme_stylebox(st) as StyleBox).duplicate() as StyleBox
-			sb.content_margin_left = 26
-			b.add_theme_stylebox_override(st, sb)
-		var ic := _icon(str(e[2]), UI.TXT, Vector2(20, 20))
-		ic.position = Vector2(5, 7)
-		b.add_child(ic)
+	# Besitzer 28.11.2026 14:47: ein virtueller Stick statt der Richtungsknöpfe (roboter_stick.gd, wie in der Leiste unten)
+	gr.add_child(UI.small(T.t("Stick ziehen: hoch = vorwärts, zur Seite = seitwärts, schräg geht auch; der Regler daneben dreht an Ort. Loslassen = Stopp. Tasten: W A S D, Q / E.")))
+	gr.add_child(steu.sticks())
 	var gring := gruppe("ring")
 	var rb := _button(gring, T.t("Im Ring rollen (die Füsse stossen, Kurve = Ring neigen)"), func():
 		if model.latch["state"] != "locked":
@@ -1544,6 +1534,24 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 	_slider(gt, T.t("Schritthöhe"), 0.1, 0.9, 0.05, bew.schritt_hoehe, "E", func(x: float):
 		bew.schritt_hoehe = x
 		mark_dirty())
+
+
+func _page_steuerung() -> void:
+	"""sim-robo-steuerung in the panel: «Steuerung» (Fahren: drive bar, key / controller map) and «Körper verschieben» (Haltung);
+	the drive bar under the view stays as it is"""
+	if steu == null:
+		return
+	var gs := gruppe("steuerung")
+	_w["t_leiste"] = _toggle(gs, T.t("Untere Leiste mit Steuerung ein / aus"), steu.leiste, func(on: bool): steu.set_leiste(on))
+	var bl := _button(gs, T.t("Belegung …"), func(): steu.open_map())
+	bl.tooltip_text = T.t("Tasten und Controller frei belegen, Profile")
+	var gk := gruppe("koerper")
+	gk.add_child(UI.small(T.t("Auf der Stelle stehen, die Fahr-Eingaben verschieben den Körper (V / Back)")))
+	var kb := _button(gk, T.t("Körper verschieben"), func(): steu.aktion("koerper"))
+	_w["koerper_btn"] = kb
+	_w["t_zur_mitte"] = _toggle(gk, T.t("Loslassen = zur Mitte"), steu.zur_mitte, func(on: bool):
+		steu.zur_mitte = on
+		steu.speichern())
 
 
 func drive_dir(c: Vector3) -> void:
@@ -2011,6 +2019,12 @@ func _refresh() -> void:
 		var o: Button = _w.get(k)
 		if o != null:
 			_paint_btn(o, bew.mode == "ablauf" and bew.seq_name == "oeffnen")
+	var kb: Button = _w.get("koerper_btn")
+	if kb != null and steu != null:
+		_paint_btn(kb, bool(steu.koerper))
+	var tlb: CheckButton = _w.get("t_leiste")
+	if tlb != null and steu != null and tlb.button_pressed != bool(steu.leiste):
+		tlb.set_pressed_no_signal(bool(steu.leiste))
 	var pi: Label = _w.get("phys_info")
 	if pi != null and pi.is_visible_in_tree():
 		var c: Vector3 = model.com()
@@ -2116,6 +2130,8 @@ func info() -> Dictionary:
 				"terrain": terrain.get("name", ""), "terrain_results": terrain_results, "adapted": bew.angepasst,
 				"plan": bew.plan, "anpassen": bew.anpassen, "variante": variante, "pip": pip, "info_on": info_on, "panel": _panel_on, "compact": compact() if is_open() else false, "touch": touch, "ring_methode": bew.ring_methode,
 				"rund": rund_summary(), "rund_best": rund_best, "rund_laeuft": not rund_jobs.is_empty() or not rund_job.is_empty()})
+		if steu != null:
+			d["steuerung"] = steu.info()
 	return d
 
 
@@ -2188,6 +2204,8 @@ func control(d: Dictionary) -> Dictionary:
 				bew.spur_rollen = float(d["spur"])
 			if d.has("messen"):
 				rund_start(str(d["messen"]))
+		"koerper", "steuerung":
+			steu.control(d)
 		"gelaende":
 			var names = d.get("name", "stufe")
 			terrain_start(names if names is Array else [str(names)], bool(d.get("ring", false)))

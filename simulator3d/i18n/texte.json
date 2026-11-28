@@ -3772,6 +3772,18 @@
   "it": "Bivio Wyssgletscher",
   "rm": "Spartiziun Wyssgletscher"
  },
+ "Achse %d": {
+  "en": "Axis %d",
+  "fr": "Axe %d",
+  "it": "Asse %d",
+  "rm": "Axa %d"
+ },
+ "Achsen umkehren (Balken = Ausschlag jetzt)": {
+  "en": "Invert axes (bar = current deflection)",
+  "fr": "Inverser les axes (barre = débattement actuel)",
+  "it": "Inverti assi (barra = escursione attuale)",
+  "rm": "Invertir las axas (barra = deviaziun actuala)"
+ },
  "Achtung": {
   "en": "Attention",
   "fr": "Attention",
@@ -5927,6 +5939,12 @@
   "it": "Sul Tschingelspitz accanto alla croce c'è un libro. Chi ci ha scritto?",
   "rm": "Sin il Tschingelspitz è i in cudesch sper la crusch. Tgi è s'inscrit là?"
  },
+ "Auf den Beinen gehen (öffnet den Ring)": {
+  "en": "Walk on the legs (opens the ring)",
+  "fr": "Marcher sur les pattes (ouvre l’anneau)",
+  "it": "Camminare sulle gambe (apre l’anello)",
+  "rm": "Ir sin las chommas (avra il rintg)"
+ },
  "Auf den kleinen See hinter dem Grat": {
   "en": "On the small lake behind the ridge",
   "fr": "Sur le petit lac derrière l'arête",
@@ -6010,6 +6028,12 @@
   "fr": "Sur la carte au trésor, une croix au point de vue – juste à côté de la plateforme.",
   "it": "Sulla mappa del tesoro c’è una croce al belvedere – proprio accanto alla piattaforma.",
   "rm": "Sin la charta da stgazi è ina crusch al punct panoramic – directamain sper la plattafurma."
+ },
+ "Auf der Stelle stehen, die Fahr-Eingaben verschieben den Körper (V / Back)": {
+  "en": "Stand in place, the drive inputs shift the body (V / Back)",
+  "fr": "Rester sur place, les commandes de déplacement décalent le corps (V / Back)",
+  "it": "Restare sul posto, i comandi di guida spostano il corpo (V / Back)",
+  "rm": "Star en plaz, ils cumonds da viagiar spostan il corp (V / Back)"
  },
  "Auf der Wohnmobil-Terrasse kichert es hinter den Hecken.": {
   "en": "On the motorhome terrace someone giggles behind the hedges.",
@@ -6749,6 +6773,12 @@
   "fr": "Pierre de gué",
   "it": "Pietra del ruscello",
   "rm": "Crap dal ual"
+ },
+ "Back": {
+  "en": "Back",
+  "fr": "Back",
+  "it": "Back",
+  "rm": "Back"
  },
  "BackLowerLeg.": {
   "en": "BackLowerLeg.",
@@ -7490,6 +7520,18 @@
   "fr": "Camping animé – beaucoup de monde",
   "it": "Campeggio animato – tanta gente",
   "rm": "Plaz da campadi animà – bler glieud"
+ },
+ "Belegung …": {
+  "en": "Bindings …",
+  "fr": "Affectation …",
+  "it": "Assegnazione …",
+  "rm": "Occupaziun …"
+ },
+ "Belegung: Tastatur und Controller": {
+  "en": "Bindings: keyboard and controller",
+  "fr": "Affectation : clavier et manette",
+  "it": "Assegnazione: tastiera e controller",
+  "rm": "Occupaziun: tastatura e controller"
  },
  "Benachrichtigungen testen (Test-Kanal)": {
   "en": "Test notifications (test channel)",
@@ -9216,6 +9258,12 @@
   "it": "Assegnare i controller",
   "rm": "Attribuir controllers"
  },
+ "Controller-Knopf oder Achse zuweisen": {
+  "en": "Assign a controller button or axis",
+  "fr": "Affecter un bouton ou un axe de la manette",
+  "it": "Assegna un tasto o un asse del controller",
+  "rm": "Attribuir in buttun u ina axa dal controller"
+ },
  "Controller-Test (Klick = schliessen)": {
   "en": "Controller test (click = close)",
   "fr": "Test de manette (clic = fermer)",
@@ -9233,6 +9281,12 @@
   "fr": "Manettes : %d attribuées",
   "it": "Controller: %d assegnati",
   "rm": "Controllers: %d attribuids"
+ },
+ "Controller: %s": {
+  "en": "Controller: %s",
+  "fr": "Manette : %s",
+  "it": "Controller: %s",
+  "rm": "Controller: %s"
  },
  "Controller: jeder macht alles": {
   "en": "Controllers: everyone does everything",
@@ -13617,6 +13671,12 @@
   "it": "Ciambella",
   "rm": "Donut"
  },
+ "doppelt belegt mit: %s": {
+  "en": "also bound to: %s",
+  "fr": "aussi affecté à : %s",
+  "it": "assegnato anche a: %s",
+  "rm": "era occupà cun: %s"
+ },
  "doppelter Boden": {
   "en": "double floor",
   "fr": "double fond",
@@ -14008,6 +14068,24 @@
   "fr": "tourner (15°)",
   "it": "girare (15°)",
   "rm": "volver (15°)"
+ },
+ "Drehen (Q / E)": {
+  "en": "Turn (Q / E)",
+  "fr": "Tourner (Q / E)",
+  "it": "Girare (Q / E)",
+  "rm": "Volver (Q / E)"
+ },
+ "Drehen links": {
+  "en": "Turn left",
+  "fr": "Tourner à gauche",
+  "it": "Girare a sinistra",
+  "rm": "Volver a sanestra"
+ },
+ "Drehen rechts": {
+  "en": "Turn right",
+  "fr": "Tourner à droite",
+  "it": "Girare a destra",
+  "rm": "Volver a dretga"
  },
  "Drehlager (Kugeln)": {
   "en": "Turntable bearing (BBs)",
@@ -14846,6 +14924,12 @@
   "fr": "Paquet séparé «L'Hospice» - plus tard, avec mot de passe.",
   "it": "Pacchetto a parte «L'Ospizio» - arriva più tardi, con password.",
   "rm": "Agen pachet «L'Ospizi» - vegn pli tard, cun pled-clav."
+ },
+ "Eigenes Profil": {
+  "en": "Own profile",
+  "fr": "Profil personnel",
+  "it": "Profilo personale",
+  "rm": "Agen profil"
  },
  "Eigenes Zelt": {
   "en": "Own tent",
@@ -17184,6 +17268,12 @@
   "it": "Esc = pausa (più luce, più silenzio)",
   "rm": "Esc = pausa (pli cler, pli quiet)"
  },
+ "Esc abbrechen · Entf leert": {
+  "en": "Esc cancels · Del clears",
+  "fr": "Échap annule · Suppr efface",
+  "it": "Esc annulla · Canc svuota",
+  "rm": "Esc interrumpa · Del svida"
+ },
  "Esc hält jederzeit an: dann wird es heller und leiser, und die Zeit steht still. Mit dem Regler «Schreck-Stärke» stellst du Lautstärke und Häufigkeit der Schreckmomente ein.": {
   "en": "Esc stops at any time: it gets brighter and quieter, and time stands still. With the slider «Scare strength» you set the volume and how often the scares come.",
   "fr": "Échap arrête à tout moment : tout devient plus clair et plus calme, et le temps s'arrête. Avec le curseur «Intensité de la peur», tu règles le volume et la fréquence des sursauts.",
@@ -17853,6 +17943,12 @@
   "fr": "Champ",
   "it": "Campo",
   "rm": "Champ"
+ },
+ "Feld anklicken, dann Taste drücken oder Knopf / Stick bewegen · Esc abbrechen · Entf leert": {
+  "en": "Click a field, then press a key or move a button / stick · Esc cancels · Del clears",
+  "fr": "Cliquer sur un champ, puis appuyer sur une touche ou actionner un bouton / stick · Échap annule · Suppr efface",
+  "it": "Clicca un campo, poi premi un tasto o muovi un pulsante / stick · Esc annulla · Canc svuota",
+  "rm": "Cliccar sin in champ, lura smatgar ina tasta u mover in buttun / stick · Esc interrumpa · Del svida"
  },
  "Feldstecher": {
   "en": "Binoculars",
@@ -19565,6 +19661,18 @@
   "it": "Andatura",
   "rm": "Moda da chaminar"
  },
+ "Gangart wechseln (N, Schultertasten LB / RB)": {
+  "en": "Change gait (N, shoulder buttons LB / RB)",
+  "fr": "Changer d’allure (N, gâchettes LB / RB)",
+  "it": "Cambia andatura (N, tasti dorsali LB / RB)",
+  "rm": "Midar la moda da chaminar (N, buttuns da spatla LB / RB)"
+ },
+ "Gangart: %s": {
+  "en": "Gait: %s",
+  "fr": "Allure : %s",
+  "it": "Andatura: %s",
+  "rm": "Moda da chaminar: %s"
+ },
  "Gangarten nacheinander vor der Kamera (gehen, eilen, rennen, schleichen, kriechen)": {
   "en": "Gaits one after another in front of the camera (walk, hurry, run, sneak, crawl)",
   "fr": "Allures l’une après l’autre devant la caméra (marcher, se presser, courir, se faufiler, ramper)",
@@ -20080,6 +20188,12 @@
   "fr": "Mystérieux",
   "it": "Misterioso",
   "rm": "Misterius"
+ },
+ "Gehen": {
+  "en": "Walk",
+  "fr": "Marcher",
+  "it": "Camminare",
+  "rm": "Ir"
  },
  "Gehen: W A S D oder Pfeiltasten · Shift = rennen · Maus ziehen = umschauen · Esc = Pause": {
   "en": "Walk: W A S D or arrow keys · Shift = run · drag the mouse = look around · Esc = pause",
@@ -21478,6 +21592,12 @@
   "rm": "Tschiffa!",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
+ "Grenze erreicht (Reichweite, Servo oder Kipp-Reserve)": {
+  "en": "Limit reached (reach, servo or tipping margin)",
+  "fr": "Limite atteinte (portée, servo ou réserve de basculement)",
+  "it": "Limite raggiunto (portata, servo o riserva di ribaltamento)",
+  "rm": "Cunfin cuntanschì (portada, servo u reserva da sfundrar)"
+ },
  "Griff": {
   "en": "Grab",
   "fr": "Vol",
@@ -21815,6 +21935,12 @@
   "fr": "Stick vert en bas à droite : marcher (au bord = courir) · à gauche : posture, sauter, s’asseoir, s’allonger, vue",
   "it": "Stick verde in basso a destra: camminare (al bordo = correre) · a sinistra: postura, saltare, sedersi, sdraiarsi, vista",
   "rm": "Stick verd sut a dretga: ir (a l’ur = currer) · a sanestra: posiziun, siglir, seser, giaschair, vista"
+ },
+ "Guide": {
+  "en": "Guide",
+  "fr": "Guide",
+  "it": "Guide",
+  "rm": "Guide"
  },
  "Gummistiefel": {
   "en": "Rubber boot",
@@ -23936,6 +24062,12 @@
   "it": "Velocità massima del mover",
   "rm": "Sveltezza maximala dal mover"
  },
+ "Höhe": {
+  "en": "Height",
+  "fr": "Hauteur",
+  "it": "Altezza",
+  "rm": "Autezza"
+ },
  "Höhe %.1f cm · Spur %.1f cm": {
   "en": "Height %.1f cm · track %.1f cm",
   "fr": "Hauteur %.1f cm · voie %.1f cm",
@@ -24544,6 +24676,18 @@
   "fr": "Rouler en anneau au lieu de marcher",
   "it": "Rotolare ad anello invece di camminare",
   "rm": "Rullar en il rintg empè da chaminar"
+ },
+ "Im Ring rollen – links / rechts kippt den Ring (Kurve)": {
+  "en": "Roll in the ring – left / right tilts the ring (curve)",
+  "fr": "Rouler en anneau – gauche / droite incline l’anneau (virage)",
+  "it": "Rotolare ad anello – sinistra / destra inclina l’anello (curva)",
+  "rm": "Rullar en il rintg – sanestra / dretga pendenta il rintg (curva)"
+ },
+ "Im Ring wirken «Seitwärts links / rechts» als Kurve (Ring kippen). Beim Körper verschieben: vor / zurück / seitwärts verschieben, drehen = gieren, höher / tiefer = heben / senken.": {
+  "en": "In the ring, «Sideways left / right» act as a curve (tilt the ring). When shifting the body: forward / back / sideways shift it, turn = yaw, higher / lower = raise / lower.",
+  "fr": "En anneau, « De côté gauche / droite » agit comme virage (incliner l’anneau). En décalant le corps : avant / arrière / de côté le décalent, tourner = lacet, plus haut / plus bas = lever / abaisser.",
+  "it": "Nell’anello «Laterale sinistra / destra» agisce come curva (inclinare l’anello). Spostando il corpo: avanti / indietro / laterale lo spostano, girare = imbardata, più alto / più basso = alzare / abbassare.",
+  "rm": "En il rintg funcziuneschan «Da la vart sanestra / dretga» sco curva (pendentar il rintg). Cun spustar il corp: enavant / enavos / da la vart spustan el, volver = girar, pli aut / pli bass = auzar / sbassar."
  },
  "Im Rucksack: %s": {
   "en": "In the backpack: %s",
@@ -26934,6 +27078,12 @@
   "it": "Nessun controller trovato – collegare via USB o Bluetooth.",
   "rm": "Nagin controller chattà – colliar cun USB u Bluetooth."
  },
+ "Kein Controller verbunden": {
+  "en": "No controller connected",
+  "fr": "Aucune manette connectée",
+  "it": "Nessun controller collegato",
+  "rm": "Nagin controller collià"
+ },
  "Kein Controller verbunden (USB oder Bluetooth; im Browser: MoveEye-Seite Simulator).": {
   "en": "No controller connected (USB or Bluetooth; in the browser: MoveEye page Simulator).",
   "fr": "Aucune manette connectée (USB ou Bluetooth ; dans le navigateur : page MoveEye Simulateur).",
@@ -28003,6 +28153,18 @@
   "it": "Pulsante",
   "rm": "Buttun"
  },
+ "Knopf %d": {
+  "en": "Button %d",
+  "fr": "Bouton %d",
+  "it": "Pulsante %d",
+  "rm": "Buttun %d"
+ },
+ "Knopf drücken oder Stick / Trigger bewegen …": {
+  "en": "Press a button or move a stick / trigger …",
+  "fr": "Appuyer sur un bouton ou actionner un stick / une gâchette …",
+  "it": "Premi un pulsante o muovi uno stick / grilletto …",
+  "rm": "Smatgar in buttun u mover in stick / trigger …"
+ },
  "Knopf «Kopf» unten": {
   "en": "button «Head» at the bottom",
   "fr": "bouton «Tête» en bas",
@@ -28086,6 +28248,12 @@
   "fr": "Boussole",
   "it": "Bussola",
   "rm": "Bussola"
+ },
+ "Kompass: Blickrichtung des Roboters (N = −Z der Welt)": {
+  "en": "Compass: heading of the robot (N = −Z of the world)",
+  "fr": "Boussole : direction du robot (N = −Z du monde)",
+  "it": "Bussola: direzione del robot (N = −Z del mondo)",
+  "rm": "Cumpass: direcziun dal robot (N = −Z dal mund)"
  },
  "Konnte die Firewall-Freigabe nicht starten.": {
   "en": "Could not start the firewall rule.",
@@ -28224,6 +28392,12 @@
   "fr": "Copie des anciens réglages :",
   "it": "Copia delle vecchie impostazioni:",
   "rm": "Copia dals vegls parameters:"
+ },
+ "Kopie des Profils unter neuem Namen": {
+  "en": "Copy of the profile under a new name",
+  "fr": "Copie du profil sous un nouveau nom",
+  "it": "Copia del profilo con un nuovo nome",
+  "rm": "Copia dal profil cun in nov num"
  },
  "Kopien der alten Einstellungen": {
   "en": "Copies of the old settings",
@@ -28683,11 +28857,47 @@
   "it": "Forma di formaggio",
   "rm": "Tschantscha da chaschiel"
  },
+ "Körper höher": {
+  "en": "Body higher",
+  "fr": "Corps plus haut",
+  "it": "Corpo più alto",
+  "rm": "Corp pli aut"
+ },
  "Körper passt sich dem Untergrund an": {
   "en": "Body adapts to the ground",
   "fr": "Le corps s’adapte au sol",
   "it": "Il corpo si adatta al terreno",
   "rm": "Il corp s’adatta al terren"
+ },
+ "Körper tiefer": {
+  "en": "Body lower",
+  "fr": "Corps plus bas",
+  "it": "Corpo più basso",
+  "rm": "Corp pli bass"
+ },
+ "Körper verschieben": {
+  "en": "Shift body",
+  "fr": "Décaler le corps",
+  "it": "Spostare il corpo",
+  "rm": "Spustar il corp"
+ },
+ "Körper verschieben ein / aus": {
+  "en": "Shift body on / off",
+  "fr": "Décaler le corps oui / non",
+  "it": "Spostare il corpo on / off",
+  "rm": "Spustar il corp en / ora"
+ },
+ "Körper verschieben geht nur auf den Beinen – zuerst den Ring öffnen": {
+  "en": "Shifting the body only works on the legs – open the ring first",
+  "fr": "Décaler le corps ne fonctionne que sur les pattes – ouvrir d’abord l’anneau",
+  "it": "Spostare il corpo funziona solo sulle gambe – prima aprire l’anello",
+  "rm": "Spustar il corp va mo sin las chommas – avrir l’emprim il rintg"
+ },
+ "Körper verschieben: die Fahr-Eingaben verschieben jetzt den Körper, die Füsse bleiben stehen": {
+  "en": "Shift body: the drive inputs now shift the body, the feet stay in place",
+  "fr": "Décaler le corps : les commandes de déplacement décalent maintenant le corps, les pieds restent en place",
+  "it": "Spostare il corpo: i comandi di guida ora spostano il corpo, i piedi restano fermi",
+  "rm": "Spustar il corp: ils cumonds da viagiar spostan ussa il corp, ils pes restan en plaz"
  },
  "Körperhöhe über dem Boden": {
   "en": "Body height above the ground",
@@ -29122,6 +29332,12 @@
   "it": "Lentamente attraverso l’immagine",
   "rm": "Plaun traversond il maletg"
  },
+ "Langsamer (halten)": {
+  "en": "Slower (hold)",
+  "fr": "Plus lent (maintenir)",
+  "it": "Più lento (tenere)",
+  "rm": "Pli plaun (tegnair)"
+ },
  "Laptop": {
   "en": "Laptop",
   "fr": "Ordinateur portable",
@@ -29339,6 +29555,12 @@
   "fr": "Vide %.1f kg · confortable jusqu'à %d kg",
   "it": "Vuoto %.1f kg · comodo fino a %d kg",
   "rm": "Vid %.1f kg · comed fin %d kg"
+ },
+ "Leeren": {
+  "en": "Clear",
+  "fr": "Effacer",
+  "it": "Svuota",
+  "rm": "Svidar"
  },
  "Leeres Zelt": {
   "en": "Empty tent",
@@ -29788,6 +30010,30 @@
   "it": "Tirare la paratoia sinistra",
   "rm": "Trair la porta sanestra"
  },
+ "Linker Stick": {
+  "en": "Left stick",
+  "fr": "Stick gauche",
+  "it": "Stick sinistro",
+  "rm": "Stick sanester"
+ },
+ "Linker Stick hoch / runter": {
+  "en": "Left stick up / down",
+  "fr": "Stick gauche haut / bas",
+  "it": "Stick sinistro su / giù",
+  "rm": "Stick sanester si / giu"
+ },
+ "Linker Stick links / rechts": {
+  "en": "Left stick left / right",
+  "fr": "Stick gauche gauche / droite",
+  "it": "Stick sinistro sinistra / destra",
+  "rm": "Stick sanester sanestra / dretga"
+ },
+ "Linker Trigger (LT)": {
+  "en": "Left trigger (LT)",
+  "fr": "Gâchette gauche (LT)",
+  "it": "Grilletto sinistro (LT)",
+  "rm": "Trigger sanester (LT)"
+ },
  "links / rechts": {
   "en": "left / right",
   "fr": "gauche / droite",
@@ -30043,11 +30289,23 @@
   "it": "Il telo della tenda allentato e i gagliardetti sventolano al vento (effetto dopo il cambio di scena)",
   "rm": "Tenda lucca e bandierinas sgulatschan en il vent (fa effect suenter la midada da scena)"
  },
+ "Loslassen = zur Mitte": {
+  "en": "Release = back to centre",
+  "fr": "Relâcher = retour au centre",
+  "it": "Rilasciare = ritorno al centro",
+  "rm": "Laschar liber = enavos al center"
+ },
  "Low-Poly-Pakete: Natur, Stadt, Bauernhof, Camping, Tiere und Figuren.": {
   "en": "Low-poly packs: nature, town, farm, camping, animals and figures.",
   "fr": "Packs low-poly : nature, ville, ferme, camping, animaux et personnages.",
   "it": "Pacchetti low-poly: natura, città, fattoria, campeggio, animali e figure.",
   "rm": "Pachets low-poly: natira, citad, bain puril, campadi, animals e figuras."
+ },
+ "LT": {
+  "en": "LT",
+  "fr": "LT",
+  "it": "LT",
+  "rm": "LT"
  },
  "LTE USB Stick": {
   "en": "LTE USB Stick",
@@ -30961,6 +31219,12 @@
   "it": "Mouse, tasti, barra – e le istruzioni di MoveEye",
   "rm": "Mieur, tastas, trav – e las instrucziuns da MoveEye"
  },
+ "Maus-Joystick: ziehen = fahren (hoch = vorwärts, zur Seite = seitwärts)": {
+  "en": "Mouse joystick: drag = drive (up = forward, to the side = sideways)",
+  "fr": "Joystick souris : glisser = rouler (haut = avant, sur le côté = de côté)",
+  "it": "Joystick mouse: trascinare = guidare (su = avanti, di lato = laterale)",
+  "rm": "Joystick da mieur: trair = viagiar (si = enavant, da la vart = da la vart)"
+ },
  "Maus: links ziehen = verschieben · rechts ziehen = drehen · Rad = zoomen (Shift + Rad: Tempo von W A S D) · mittlere Taste oder Alt + rechts = umschauen · Doppelklick = hinfliegen · Besucher anklicken = auswählen, ziehen = tragen.  Tasten: W A S D Q E fliegen (Shift schneller) · 1 / 2 Kamera · 3 Wärmebild · 0 frei · F folgen · Entf entfernen · Esc abwählen · H Bedienfeld · P Handy / Tablet · K Karte · G Gewehr (Linksklick = Schuss)": {
   "en": "Mouse: drag left = move · drag right = turn · wheel = zoom (Shift + wheel: speed of W A S D) · middle button or Alt + right = look around · double click = fly there · click visitor = select, drag = carry.  Keys: W A S D Q E fly (Shift faster) · 1 / 2 camera · 3 thermal image · 0 free · F follow · Del remove · Esc deselect · H control panel · P phone / tablet · K map · G rifle (left click = shot)",
   "fr": "Souris : glisser à gauche = déplacer · glisser à droite = tourner · molette = zoomer (Shift + molette : vitesse de W A S D) · bouton du milieu ou Alt + droite = regarder autour · double-clic = y voler · cliquer un visiteur = sélectionner, glisser = porter.  Touches : W A S D Q E voler (Shift plus vite) · 1 / 2 caméra · 3 image thermique · 0 libre · F suivre · Suppr enlever · Esc désélectionner · H panneau · P téléphone / tablette · K carte · G fusil (clic gauche = tir)",
@@ -31526,6 +31790,12 @@
   "it": "minuti al riparo, più vicino, attende ancora, ruba",
   "rm": "minutas en la zuppada, pli datiers, spetga anc ina giada, tschiffa"
  },
+ "Misc": {
+  "en": "Misc",
+  "fr": "Misc",
+  "it": "Misc",
+  "rm": "Misc"
+ },
  "Mischpult": {
   "en": "Mixing desk",
   "fr": "Table de mixage",
@@ -32013,6 +32283,18 @@
   "fr": "Modules sur les parois",
   "it": "Moduli sulle pareti",
   "rm": "Moduls vi da las paraids"
+ },
+ "Modus": {
+  "en": "Mode",
+  "fr": "Mode",
+  "it": "Modalità",
+  "rm": "Modus"
+ },
+ "Modus Gehen / Ring": {
+  "en": "Mode walk / ring",
+  "fr": "Mode marche / anneau",
+  "it": "Modalità camminare / anello",
+  "rm": "Modus ir / rintg"
  },
  "Molicel P45B; 4 gleiche Zellen aus einer Lieferung": {
   "en": "Molicel P45B; 4 equal cells from one delivery",
@@ -34475,6 +34757,12 @@
   "it": "Inclinazione",
   "rm": "Inclinaziun"
  },
+ "Neigen": {
+  "en": "Tilt",
+  "fr": "Incliner",
+  "it": "Inclinare",
+  "rm": "Pendentar"
+ },
  "Neigen klemmt": {
   "en": "Tilt stuck",
   "fr": "Inclinaison coincée",
@@ -34582,6 +34870,12 @@
   "fr": "Réorganiser",
   "it": "Riordina",
   "rm": "Reordinar"
+ },
+ "Neu aufstellen": {
+  "en": "Set up again",
+  "fr": "Remettre en place",
+  "it": "Rimettere in piedi",
+  "rm": "Metter si da nov"
  },
  "Neu aufstellen (R)": {
   "en": "Set up again (R)",
@@ -34748,6 +35042,12 @@
   "fr": "Nouveau mot de passe",
   "it": "Nuova password",
   "rm": "Nov pled-clav"
+ },
+ "Neues Profil «%s» angelegt – Standard bleibt, wie er ist": {
+  "en": "New profile «%s» created – Standard stays as it is",
+  "fr": "Nouveau profil « %s » créé – Standard reste tel quel",
+  "it": "Nuovo profilo «%s» creato – Standard resta com’è",
+  "rm": "Nov profil «%s» creà – Standard resta sco ch’el è"
  },
  "Neues Turnier": {
   "en": "New tournament",
@@ -35698,6 +35998,12 @@
   "fr": "Seulement pendant une manche",
   "it": "Solo durante un turno",
   "rm": "Mo durant ina runda"
+ },
+ "Nächste Gangart": {
+  "en": "Next gait",
+  "fr": "Allure suivante",
+  "it": "Andatura successiva",
+  "rm": "Proxima moda da chaminar"
  },
  "Nächstes Kapitel": {
   "en": "Next chapter",
@@ -37377,6 +37683,12 @@
   "it": "Profilo",
   "rm": "Profil"
  },
+ "Profil: %s": {
+  "en": "Profile: %s",
+  "fr": "Profil : %s",
+  "it": "Profilo: %s",
+  "rm": "Profil: %s"
+ },
  "Profis": {
   "en": "Pros",
   "fr": "Pros",
@@ -37929,6 +38241,12 @@
   "it": "Tirare la paratoia destra",
   "rm": "Trair la porta dretga"
  },
+ "Rechter Stick": {
+  "en": "Right stick",
+  "fr": "Stick droit",
+  "it": "Stick destro",
+  "rm": "Stick dretg"
+ },
  "Rechter Stick = gehen, linker Stick = umschauen, R2 = rennen, Start = Menü (wie beim Spiel am PC).": {
   "en": "Right stick = walk, left stick = look round, R2 = run, Start = menu (like the game at the PC).",
   "fr": "Stick droit = marcher, stick gauche = regarder, R2 = courir, Start = menu (comme le jeu sur le PC).",
@@ -37952,6 +38270,24 @@
   "fr": "stick droit marcher · ✚ ↑ sauter · ✚ ↓ posture · ✚ ← s’asseoir · ✚ → s’allonger · R1 + stick droit regarder autour · R3 vue · Select ⏱ mover",
   "it": "stick destro camminare · ✚ ↑ saltare · ✚ ↓ postura · ✚ ← sedersi · ✚ → sdraiarsi · R1 + stick destro guardarsi intorno · R3 vista · Select ⏱ mover",
   "rm": "stick dretg ir · ✚ ↑ siglir · ✚ ↓ posiziun · ✚ ← seser · ✚ → giaschair · R1 + stick dretg guardar enturn · R3 vista · Select ⏱ mover"
+ },
+ "Rechter Stick hoch / runter": {
+  "en": "Right stick up / down",
+  "fr": "Stick droit haut / bas",
+  "it": "Stick destro su / giù",
+  "rm": "Stick dretg si / giu"
+ },
+ "Rechter Stick links / rechts": {
+  "en": "Right stick left / right",
+  "fr": "Stick droit gauche / droite",
+  "it": "Stick destro sinistra / destra",
+  "rm": "Stick dretg sanestra / dretga"
+ },
+ "Rechter Trigger (RT)": {
+  "en": "Right trigger (RT)",
+  "fr": "Gâchette droite (RT)",
+  "it": "Grilletto destro (RT)",
+  "rm": "Trigger dretg (RT)"
  },
  "rechts an jeder Liste: mit der Maus ziehen": {
   "en": "on the right of every list: drag with the mouse",
@@ -38345,6 +38681,13 @@
   "it": "Anello non bloccato",
   "rm": "Rintg betg serrà"
  },
+ "Ring rollen": {
+  "en": "Roll ring",
+  "fr": "Rouler en anneau",
+  "it": "Rotolare ad anello",
+  "rm": "Rullar il rintg",
+  "?": "rm: Wortwahl unsicher (Roboter-Labor, 28.11.2026)"
+ },
  "Ring rund ums Gerät (8 m)": {
   "en": "Ring around the device (8 m)",
   "fr": "Anneau autour de l’appareil (8 m)",
@@ -38608,6 +38951,12 @@
   "fr": "Rover : poursuit la patrouille",
   "it": "Rover: continua la pattuglia",
   "rm": "Rover: vinavant cun la patrulla"
+ },
+ "RT": {
+  "en": "RT",
+  "fr": "RT",
+  "it": "RT",
+  "rm": "RT"
  },
  "Ruckeln bei «%s»: %d s unter %d Bilder/s (tiefste %d, in %d Runden)": {
   "en": "Judder at «%s»: %d s below %d frames/s (lowest %d, in %d rounds)",
@@ -39852,6 +40201,12 @@
   "it": "Presto, presto! Passa un jogger.",
   "rm": "Svelt, svelt! In currider curra speravia."
  },
+ "Schneller (halten)": {
+  "en": "Faster (hold)",
+  "fr": "Plus rapide (maintenir)",
+  "it": "Più veloce (tenere)",
+  "rm": "Pli svelt (tegnair)"
+ },
  "Schnelllauf beim Erkunden (Figur rennt bis 40 m/s, zum Testen)": {
   "en": "Fast run while exploring (the figure runs up to 40 m/s, for testing)",
   "fr": "Course rapide en exploration (le personnage court jusqu’à 40 m/s, pour les tests)",
@@ -40676,11 +41031,23 @@
   "it": "di lato a sinistra",
   "rm": "da la vart a sanestra"
  },
+ "Seitwärts links (Ring: Kurve links)": {
+  "en": "Sideways left (ring: curve left)",
+  "fr": "De côté à gauche (anneau : virage à gauche)",
+  "it": "Laterale a sinistra (anello: curva a sinistra)",
+  "rm": "Da la vart sanestra (rintg: curva a sanestra)"
+ },
  "seitwärts rechts": {
   "en": "sideways right",
   "fr": "de côté à droite",
   "it": "di lato a destra",
   "rm": "da la vart a dretga"
+ },
+ "Seitwärts rechts (Ring: Kurve rechts)": {
+  "en": "Sideways right (ring: curve right)",
+  "fr": "De côté à droite (anneau : virage à droite)",
+  "it": "Laterale a destra (anello: curva a destra)",
+  "rm": "Da la vart dretga (rintg: curva a dretga)"
  },
  "Selbst gebaut im Haus-Editor": {
   "en": "Self-built in the house editor",
@@ -42215,6 +42582,13 @@
   "rm": "Fastiz pers! Smatga acziun – Maggie sniffla da nov.",
   "?": "rm: Neubau-Texte 22.11.2026 (Korrekturlesen)"
  },
+ "Spurbreite": {
+  "en": "Track width",
+  "fr": "Voie",
+  "it": "Carreggiata",
+  "rm": "Ladezza da la fastizs",
+  "?": "rm: Wortwahl unsicher (Roboter-Labor, 28.11.2026)"
+ },
  "Spurbreite beim Gehen (Fuss links bis Fuss rechts)": {
   "en": "Track width when walking (left foot to right foot)",
   "fr": "Largeur de voie en marchant (pied gauche à pied droit)",
@@ -42385,6 +42759,12 @@
   "it": "stato MoveEye %s",
   "rm": "stadi MoveEye %s"
  },
+ "Standard": {
+  "en": "Standard",
+  "fr": "Standard",
+  "it": "Standard",
+  "rm": "Standard"
+ },
  "Standard (an, bis das Projekt veröffentlicht ist)": {
   "en": "default (on until the project is published)",
   "fr": "par défaut (activé tant que le projet n’est pas publié)",
@@ -42396,6 +42776,12 @@
   "fr": "Standard (jour, vent, nuit, pluie · environ 5 min)",
   "it": "Standard (giorno, vento, notte, pioggia · circa 5 min)",
   "rm": "Standard (di, vent, notg, plievgia · circa 5 min.)"
+ },
+ "Standard wiederherstellen": {
+  "en": "Restore standard",
+  "fr": "Rétablir le standard",
+  "it": "Ripristina standard",
+  "rm": "Restabilir il standard"
  },
  "Standort": {
   "en": "Position",
@@ -42444,6 +42830,12 @@
   "fr": "forte (25 mm/h)",
   "it": "forte (25 mm/h)",
   "rm": "ferm (25 mm/h)"
+ },
+ "Start": {
+  "en": "Start",
+  "fr": "Start",
+  "it": "Start",
+  "rm": "Start"
  },
  "Start (Controller) · mit dem Mover herumfahren – Tastatur, Maus, Touch oder Controller": {
   "en": "Start (controller) · drive around with the mover – keyboard, mouse, touch or controller",
@@ -42986,6 +43378,18 @@
   "it": "Comandi",
   "rm": "Manaschament",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
+ },
+ "Stick ziehen = fahren (hoch = vorwärts, zur Seite = seitwärts), loslassen = Stopp": {
+  "en": "Drag the stick = drive (up = forward, to the side = sideways), release = stop",
+  "fr": "Tirer le stick = rouler (haut = avant, sur le côté = de côté), relâcher = arrêt",
+  "it": "Trascinare lo stick = guidare (su = avanti, di lato = laterale), rilasciare = stop",
+  "rm": "Trair il stick = viagiar (si = enavant, da la vart = da la vart), laschar liber = stop"
+ },
+ "Stick ziehen: hoch = vorwärts, zur Seite = seitwärts, schräg geht auch; der Regler daneben dreht an Ort. Loslassen = Stopp. Tasten: W A S D, Q / E.": {
+  "en": "Drag the stick: up = forward, to the side = sideways, diagonal works too; the slider next to it turns on the spot. Release = stop. Keys: W A S D, Q / E.",
+  "fr": "Tirer le stick : haut = avant, sur le côté = de côté, en diagonale aussi ; le curseur à côté tourne sur place. Relâcher = arrêt. Touches : W A S D, Q / E.",
+  "it": "Trascinare lo stick: su = avanti, di lato = laterale, anche in diagonale; il cursore accanto gira sul posto. Rilasciare = stop. Tasti: W A S D, Q / E.",
+  "rm": "Trair il stick: si = enavant, da la vart = da la vart, era en diagonala; il regulatur sper quai volva en plaz. Laschar liber = stop. Tastas: W A S D, Q / E."
  },
  "Stick-Drift selbst lernen (ein Stick, der 3 s genau gleich steht, gilt als Ruhelage)": {
   "en": "Learn stick drift by itself (a stick that stays exactly the same for 3 s counts as rest position)",
@@ -44052,6 +44456,18 @@
   "it": "Premere tasto (test)",
   "rm": "Smatgar buttun (test)"
  },
+ "Taste drücken …": {
+  "en": "Press a key …",
+  "fr": "Appuyer sur une touche …",
+  "it": "Premi un tasto …",
+  "rm": "Smatgar ina tasta …"
+ },
+ "Taste zuweisen": {
+  "en": "Assign a key",
+  "fr": "Affecter une touche",
+  "it": "Assegna un tasto",
+  "rm": "Attribuir ina tasta"
+ },
  "Tasten": {
   "en": "Keys",
   "fr": "Touches",
@@ -44069,6 +44485,12 @@
   "fr": "Touches sans molette (F1)",
   "it": "Tasti senza rotellina (F1)",
   "rm": "Tastas senza rodella (F1)"
+ },
+ "Tasten und Controller frei belegen, Profile": {
+  "en": "Freely bind keys and controller, profiles",
+  "fr": "Affecter librement touches et manette, profils",
+  "it": "Assegnare liberamente tasti e controller, profili",
+  "rm": "Occupar liberamain tastas e controller, profils"
  },
  "Taster 12 mm, IP67": {
   "en": "Push button 12 mm, IP67",
@@ -44981,11 +45403,23 @@
   "it": "Zona morta degli stick (più alta = meno deriva, ma più lento)",
   "rm": "Zona morta dals sticks (pli auta = main drift, ma pli plaun)"
  },
+ "Totzone der Sticks: %d %%": {
+  "en": "Stick dead zone: %d %%",
+  "fr": "Zone morte des sticks : %d %%",
+  "it": "Zona morta degli stick: %d %%",
+  "rm": "Zona morta dals sticks: %d %%"
+ },
  "Touch": {
   "en": "Touch",
   "fr": "Tactile",
   "it": "Touch",
   "rm": "Touch"
+ },
+ "Touchpad": {
+  "en": "Touchpad",
+  "fr": "Touchpad",
+  "it": "Touchpad",
+  "rm": "Touchpad"
  },
  "Tour im Sim:": {
   "en": "Tour in the simulator:",
@@ -45507,6 +45941,12 @@
   "it": "Alle quattro la figura è rimasta ferma accanto alla tenda, a lungo. Poi su all'ospizio ha suonato la campana, e nell'immagine termica si è raffreddata lentamente fino a scomparire.",
   "rm": "Allas quatter steva la figura salda sper il tschalet, ditg. Lura ha tunà si tar l'ospizi la stgella, ed en il maletg termic è ella daventada plaunsieu fraida, fin ch'ella è svanida."
  },
+ "Umbenennen": {
+  "en": "Rename",
+  "fr": "Renommer",
+  "it": "Rinomina",
+  "rm": "Renumnar"
+ },
  "Umgebung": {
   "en": "Surroundings",
   "fr": "Environnement",
@@ -45866,6 +46306,13 @@
   "fr": "Sous une dalle inclinée se trouve une vieille caisse en bois, avec l’inscription pâlie : CAFFÈ. Vide – depuis longtemps.",
   "it": "Sotto una lastra di pietra inclinata c’è una vecchia cassa di legno, con la scritta sbiadita: CAFFÈ. Vuota – da tanto tempo.",
   "rm": "Sut ina platta da crap sbiechia stat ina veglia chista da lain, sin quella smarvida: CAFFÈ. Vida – gia daditg."
+ },
+ "Untere Leiste mit Steuerung ein / aus": {
+  "en": "Bottom bar with controls on / off",
+  "fr": "Barre inférieure de commande oui / non",
+  "it": "Barra inferiore dei comandi on / off",
+  "rm": "Trav sut cun la direcziun en / ora",
+  "?": "rm: Wortwahl unsicher (Roboter-Labor, 28.11.2026)"
  },
  "Unterschenkel": {
   "en": "Lower leg",
@@ -47250,6 +47697,12 @@
   "fr": "La sauvegarde de l’état actuel a échoué – rien n’a été modifié.",
   "it": "Il backup dello stato attuale non è riuscito – nulla è stato modificato.",
   "rm": "La copia da segirezza dal stadi actual n’è betg reussida – nagut midà."
+ },
+ "Vorherige Gangart": {
+  "en": "Previous gait",
+  "fr": "Allure précédente",
+  "it": "Andatura precedente",
+  "rm": "Moda da chaminar precedenta"
  },
  "Vorlage für den Besuch (stellt «Von selbst» passend ein)": {
   "en": "Template for the visitors (sets «By themselves» to match)",
@@ -50414,6 +50867,12 @@
   "it": "Tira una paratoia e corri subito all'altra - regge solo poco.",
   "rm": "Trai ina porta e curra immediatamain tar l'autra - ella tegna mo curt."
  },
+ "Ziehen = drehen (links / rechts), loslassen = zurück auf 0": {
+  "en": "Drag = turn (left / right), release = back to 0",
+  "fr": "Tirer = tourner (gauche / droite), relâcher = retour à 0",
+  "it": "Trascinare = girare (sinistra / destra), rilasciare = ritorno a 0",
+  "rm": "Trair = volver (sanestra / dretga), laschar liber = enavos sin 0"
+ },
  "ziehen = drehen · rechts ziehen = verschieben · Rad = zoomen": {
   "en": "drag = turn · right drag = move · wheel = zoom",
   "fr": "glisser = tourner · glisser à droite = déplacer · molette = zoom",
@@ -51755,6 +52214,12 @@
   "fr": "«Belle soirée. Ne dors pas trop près de la route du col.»",
   "it": "«Bella serata. Non dormire troppo vicino alla strada del passo.»",
   "rm": "«Bella saira. Na pernotta betg memia datiers da la via dal pass.»"
+ },
+ "«Standard» bleibt fest – eine Änderung legt zuerst ein eigenes Profil an.": {
+  "en": "«Standard» stays fixed – a change first creates an own profile.",
+  "fr": "« Standard » reste fixe – une modification crée d’abord un profil personnel.",
+  "it": "«Standard» resta fisso – una modifica crea prima un profilo personale.",
+  "rm": "«Standard» resta fix – ina midada creescha l’emprim in agen profil."
  },
  "«Steinmänner lesen: der flache Stein obenauf, die Kerbe zeigt den Weg. Auch im Nebel.»": {
   "en": "«Reading cairns: the flat stone on top, the notch shows the way. Even in fog.»",

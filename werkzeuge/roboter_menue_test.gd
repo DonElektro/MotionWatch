@@ -35,9 +35,8 @@ const VORHER := [
 	["Körper passt sich dem Untergrund an", "=", 1], ["Im Ring rollen (die Füsse stossen, Kurve = Ring neigen)", "=", 1],
 	["Kurve (− rechts, + links)", "=", 1], ["Tempo", "=", 1], ["Spurbreite beim Gehen (Fuss links bis Fuss rechts)", "=", 1],
 	["Schrittlänge", "=", 1], ["Schritthöhe", "=", 1],
-	["vorne links", "tip", 1], ["Vorwärts", "tip", 1], ["vorne rechts", "tip", 1], ["seitwärts links", "tip", 1], ["Stopp", "tip", 1],
-	["seitwärts rechts", "tip", 1], ["hinten links", "tip", 1], ["Rückwärts", "tip", 1], ["hinten rechts", "tip", 1],
-	["an Ort drehen links", "~", 1], ["an Ort drehen rechts", "~", 1],
+	# (die 9 Richtungsknöpfe und «an Ort drehen links / rechts» ersetzt der Besitzer am 28.11.2026 14:47 durch einen Stick mit
+	#  Dreh-Regler, sim-robo-steuerung: geprüft unten unter «Stick in der Gruppe Richtung»)
 	# Anzeigen
 	["Servo-Last an den Gelenken (grün bis rot)", "=", 1], ["Schwerpunkt und Stützfläche", "=", 1],
 	# Rund rollen
@@ -53,6 +52,9 @@ const VORHER := [
 	["Kamerabild klein einblenden (K)", "=", 1], ["Info-Feld oben links einblenden (I)", "=", 1], ["Ansicht folgt dem Roboter", "=", 1],
 	# Kopf
 	["Schliessen (Esc)", "tip", 1],
+	# sim-robo-steuerung (28.11.2026): im Bedienfeld
+	["Untere Leiste mit Steuerung ein / aus", "=", 1], ["Belegung …", "=", 1], ["Körper verschieben", "=", 1],
+	["Loslassen = zur Mitte", "=", 1],
 ]
 
 var main
@@ -197,6 +199,12 @@ func _process(_dt: float) -> bool:
 						break
 			check("Jede frühere Bedienfunktion ist im neuen Menü (%d Einträge)" % vorher().size(), fehlt.is_empty(), ", ".join(fehlt))
 			check("… und erreichbar (Reiter gewählt, Gruppen offen → sichtbar)", weg.is_empty(), ", ".join(weg))
+			var stick_ok := false
+			lab.set_tab("fahren")
+			for c in controls(lab._gruppen["richtung"], []):
+				if c.get_script() == load("res://scripts/roboter_stick.gd") and (c as Control).is_visible_in_tree():
+					stick_ok = true
+			check("Stick in der Gruppe «Richtung» (Reiter Fahren)", stick_ok)
 			# zuklappen / Nur Gruppen / aufklappen
 			(lab._w["fold_close"] as Button).pressed.emit()
 			var zu: bool = lab._gruppen.values().all(func(b): return not (b as Control).visible)
