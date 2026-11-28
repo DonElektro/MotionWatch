@@ -201,13 +201,14 @@ func phase_of(g: String, i: int, s: int) -> float:
 	var N: int = m.n()
 	if N == 2:
 		# 4 Beine (Besitzer 28.11.2026): Wellengang = Schritt hinten links, vorne links, hinten rechts, vorne rechts - immer
-		# nur ein Bein in der Luft (statisch stabil); «Dreifuss» = Trab (diagonale Paare); Raupe = vorne / hinten im Wechsel
+		# nur ein Bein in der Luft (statisch stabil); «Dreifuss» = Trab (diagonale Paare); Raupe = erst die beiden hinteren,
+		# dann die beiden vorderen Beine, auch hier eines nach dem anderen (ein Paar zugleich kippt über die Querachse)
 		var r := 1 if s > 0 else 0
 		match g:
 			"dreifuss":
 				return 0.5 * float((i + r) % 2)
 			"raupe":
-				return 0.5 * float(i)
+				return fposmod(-0.5 * float(1 - i) - 0.25 * float(r), 1.0)
 		return fposmod(-0.25 * float(1 - i) - 0.5 * float(r), 1.0)   # Abheben der Reihe nach: HL, VL, HR, VR
 	match g:
 		"dreifuss":

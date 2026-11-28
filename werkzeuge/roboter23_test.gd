@@ -36,6 +36,9 @@ func _initialize() -> void:
 	root.add_child(main)
 	current_scene = main
 	t_start = Time.get_ticks_msec() / 1000.0
+	var a := OS.get_cmdline_user_args()
+	if "--nur" in a:                                    # lokal: nur eine Variante (-- --nur 2)
+		vari = [a[a.find("--nur") + 1]]
 
 
 func check(name: String, ok: bool, detail := "") -> void:
@@ -148,15 +151,21 @@ func _process(_dt: float) -> bool:
 			lab.control({"do": "gang", "name": GAENGE[gi], "drive": 1.0})
 			set_meta("c0", centre())
 			set_meta("tip", false)
+			set_meta("tilt", 1.0)
 			next_step()
 		4:
 			if lab._tipped():
 				set_meta("tip", true)
+			if frames() > 120:
+				for k in range(N):
+					set_meta("tilt", minf(float(get_meta("tilt")), m.segment_xf(k).basis.y.y))
 			if frames() < int(120 * GANG_S):
 				return false
 			var rel: Vector3 = centre() - (get_meta("c0") as Vector3)
-			check("%ser %s vorwärts (%d s) ohne Sturz" % [v, GAENGE[gi], int(GANG_S)], rel.x > MIN_WEG and sane() and not bool(get_meta("tip")),
-					"%.2f m, Gang %s, Höhe %.1f cm" % [rel.x, lab.bew.gang_now, lowest_body() * 100.0])
+			var tilt_deg := rad_to_deg(acos(clampf(float(get_meta("tilt")), -1.0, 1.0)))
+			check("%ser %s vorwärts (%d s) ohne Sturz, höchstens 25° geneigt" % [v, GAENGE[gi], int(GANG_S)], rel.x > MIN_WEG and sane()
+					and not bool(get_meta("tip")) and tilt_deg < 25.0,
+					"%.2f m, Gang %s, Höhe %.1f cm, Neigung bis %.0f°" % [rel.x, lab.bew.gang_now, lowest_body() * 100.0, tilt_deg])
 			gi += 1
 			if gi < GAENGE.size():
 				next_step(3)
