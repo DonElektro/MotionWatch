@@ -954,7 +954,9 @@ func _paint_ring() -> void:
 			(c as BaseButton).disabled = not ok
 		elif c is Range:
 			(c as Range).editable = ok
-		(c as Control).tooltip_text = "" if ok else T.t("Ring braucht mindestens 4 Segmente")
+		if not (c as Control).has_meta("tip0"):
+			(c as Control).set_meta("tip0", (c as Control).tooltip_text)     # keep an own tooltip (e.g. «Ring öffnen»)
+		(c as Control).tooltip_text = str((c as Control).get_meta("tip0")) if ok else T.t("Ring braucht mindestens 4 Segmente")
 	for l in _w.get("ring_hints", []):
 		if is_instance_valid(l):
 			(l as Control).visible = not ok
