@@ -41,6 +41,8 @@ class FakeKi:
 			laeuft = false
 
 	func strategie_status() -> Dictionary:
+		if not laeuft:
+			return {"laeuft": false, "fertig": false}
 		t += 1
 		if t < 20:
 			return {"laeuft": true, "fertig": false}
@@ -252,7 +254,7 @@ func _initialize() -> void:
 
 # ---- mit dem echten Labor (Stufe 1 + 2 von Helfer A) --------------------------------------------------------------------
 const GANG := "res://scripts/roboter_ki_gang.gd"
-const STRECKE := "stufe_hoch"       # Stufe 10 cm (28.11.: meist schon beim 1. Mal geschafft, 30 … 45 s pro Versuch)
+const STRECKE := "graben"           # Graben 20 cm: HP 28.11. «Brücke» nicht geschafft → nach Versuchen «normal» geschafft (die Physik streut: lokal nie)
 var main
 var lab
 

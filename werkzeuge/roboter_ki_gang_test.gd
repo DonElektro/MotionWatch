@@ -61,6 +61,12 @@ func lauf(lane: String) -> Array:
 	return [bool(r[0]), str(r[1]), (Engine.get_physics_frames() - t0) / 120.0, tip]
 
 
+func ohne_lernen() -> void:
+	"""Stufe 2 allein prüfen: das Lernen im Hintergrund (Stufe 3, roboter_ki_lernen.gd) aus - es hat einen eigenen Test"""
+	if lab.get("ki_lernen") != null:
+		lab.ki_lernen.an = false
+
+
 func nah(a: float, b: float, tol: float) -> bool:
 	return absf(a - b) <= tol
 
@@ -70,6 +76,7 @@ func _run() -> void:
 	main.control({"action": "roboter", "do": "open"})
 	lab = main.roboter
 	await warte(1.0)
+	ohne_lernen()
 	var ki = lab.ki
 	check("Labor offen, Gang-KI angelegt", lab.is_open() and ki != null and lab.bew.ki == ki and "ki" in lab.bew.GAENGE.map(func(x): return x[0]))
 	check("Schnittstelle A → B: Strategien und Funktionen", KI.STRATEGIEN == ["normal", "hoch_steigen", "aufrichten_vorne", "bruecke", "umgehen", "einrollen_rollen", "kriechen_drunter"]
@@ -135,6 +142,7 @@ func _run() -> void:
 	for v in ["6", "4"]:
 		lab.control({"do": "info", "variante": v})
 		lab = main.roboter
+		ohne_lernen()
 		await warte(1.0)
 		lab.ki.tritte_leer = 0
 		var r := await lauf("stufe")

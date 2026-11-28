@@ -468,6 +468,8 @@ func tick(dt: float) -> void:
 		_seh_t = 0.5
 		if ki.has_method("aktiv") and not ki.aktiv():
 			return
+		if bool(ki.strategie_status().get("laeuft", false)):
+			return                                        # a strategy started by someone else (knob in the KI tab, a test) runs
 		var h := _naechstes()
 		if not h.is_empty():
 			_versuch(h, true)
