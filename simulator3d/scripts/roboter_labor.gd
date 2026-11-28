@@ -600,6 +600,11 @@ func ring_ok() -> bool:
 func apply_pose(name: String, snap := false) -> void:
 	if name == "ring" and not ring_ok():
 		return                                       # 2 / 3 Segmente: kein Ring
+	if name != "ring" and not snap and model.latch["state"] != "open":
+		ring_oeffnen(name)                                 # never straighten against the closed latch: open it first
+		return
+	if name == "ring":
+		bew.latch_restore()
 	last_pose = name
 	mark_dirty()
 	bew.mode = ""
@@ -607,6 +612,20 @@ func apply_pose(name: String, snap := false) -> void:
 	bew.apply(bew.pose(name))
 	if snap:
 		model.place(true)
+	_sync_servo_sliders()
+
+
+func ring_oeffnen(to := "gerade") -> void:
+	"""Knopf «Ring öffnen (gerade)» (Besitzer 28.11.2026): Bewegung stoppen, Riegel auf, in 4.5 s weich in die Haltung `to`;
+	«Riegel darf schliessen (Ring)» gilt wieder, sobald die Enden weit genug auseinander sind (roboter_bewegung.gd)"""
+	manual = Vector3.ZERO
+	var ts: Dictionary = _w.get("turn_sl", {})
+	if not ts.is_empty():
+		(ts["sl"] as HSlider).set_value_no_signal(0.0)
+	last_pose = to
+	mark_dirty()
+	bew.start_oeffnen(to)
+	_paint_gang()
 	_sync_servo_sliders()
 
 
@@ -1077,8 +1096,11 @@ func _fill_servo_sliders() -> void:
 	top.set_meta("servo_ui", true)
 	pg.add_child(top)
 	_servo_slider(top, "pan", T.t("Kamera schwenken"))
-	var lt := _toggle(top, T.t("Riegel darf schliessen (Ring)"), model.latch_wanted, func(on: bool):
-		model.latch_wanted = on)
+	var lt := _toggle(top, T.t("Riegel darf schliessen (Ring)"), model.latch_wanted if not bew.latch_wait else bew.latch_back, func(on: bool):
+		if bew.latch_wait:
+			bew.latch_back = on                            # the ring is opening: the switch counts once the ends are apart
+		else:
+			model.latch_wanted = on)
 	_w["latch_ok"] = lt
 	var N: int = model.n()
 	for i in range(N - 1):
@@ -1137,6 +1159,10 @@ func _page_posen(pg: VBoxContainer) -> void:
 	_ring_hint(pg)
 	pg.add_child(snap)
 	_w["snap"] = snap
+	var ob := _button(pg, T.t("Ring öffnen (gerade)"), func(): ring_oeffnen("gerade"))
+	ob.tooltip_text = T.t("Der Ring rollt den Riegel nach oben, öffnet ihn und streckt sich weich in die Haltung «Gerade». Bei geschlossenem Ring nehmen alle Haltungen ausser «Ring» diesen Weg.")
+	_w["oeffnen_btn_posen"] = ob
+	_ring_need(ob)
 	_slider(pg, T.t("Körperhöhe über dem Boden"), 0.3, 1.8, 0.05, bew.hoehe, "E", func(x: float):
 		bew.hoehe = x
 		if last_pose in ["gerade", "kurve_links", "kurve_rechts", "bogen"]:
@@ -1204,6 +1230,10 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 		_paint_gang())
 	_w["ring_btn"] = rb
 	_ring_need(rb)
+	var ob := _button(pg, T.t("Ring öffnen (gerade)"), func(): ring_oeffnen("gerade"))
+	ob.tooltip_text = T.t("Der Ring rollt den Riegel nach oben, öffnet ihn und streckt sich weich in die Haltung «Gerade». Bei geschlossenem Ring nehmen alle Haltungen ausser «Ring» diesen Weg.")
+	_w["oeffnen_btn"] = ob
+	_ring_need(ob)
 	_ring_hint(pg)
 	_w["turn_sl"] = _slider(pg, T.t("Kurve (− rechts, + links)"), -1.0, 1.0, 0.05, 0.0, "", func(x: float): manual.z = x)
 	_slider(pg, T.t("Tempo"), 0.01, 0.25, 0.01, bew.tempo, "m/s", func(x: float):
@@ -1258,6 +1288,10 @@ func _paint_gang() -> void:
 	var r: Button = _w.get("ring_btn")
 	if r != null:
 		_paint_btn(r, bew.mode == "ring")
+	for k in ["oeffnen_btn", "oeffnen_btn_posen"]:
+		var o: Button = _w.get(k)
+		if o != null:
+			_paint_btn(o, bew.mode == "ablauf" and bew.seq_name == "oeffnen")
 
 
 func _page_anzeigen(pg: VBoxContainer) -> void:
@@ -1697,6 +1731,10 @@ func _refresh() -> void:
 			T.t("Servos: %d · überlastet: %d · Strom ca. %.1f A") % [model.actuator_count(), over.size(), model.total_current],
 			(T.t("KIPPGEFAHR") + " · " if anz.tipping else "") + T.t("Kipp-Reserve %.1f cm") % (anz.margin * 100.0) + " · " + _move_text()]
 	(_w["status"] as Label).text = "\n".join(lines)
+	for k in ["oeffnen_btn", "oeffnen_btn_posen"]:                 # «Ring öffnen» blue while it opens, then off again
+		var o: Button = _w.get(k)
+		if o != null:
+			_paint_btn(o, bew.mode == "ablauf" and bew.seq_name == "oeffnen")
 	var pi: Label = _w.get("phys_info")
 	if pi != null and pi.is_visible_in_tree():
 		var c: Vector3 = model.com()
@@ -1748,6 +1786,7 @@ func _move_text() -> String:
 		names[g[0]] = gang_name(g[0])
 	for a in BEWEGUNG.ABLAEUFE:
 		names[a[0]] = T.t(a[1])
+	names["oeffnen"] = T.t("Ring öffnen")
 	var t := T.t("steht")
 	if bew.mode == "gang":
 		t = str(names.get(bew.gang_now, bew.gang_now)) + (" (" + T.t("automatisch") + ")" if bew.gang == "auto" else "")
@@ -1787,7 +1826,7 @@ func info() -> Dictionary:
 	var d := {"ok": true, "open": is_open()}
 	if is_open() and model != null and model.built_ok:
 		d.merge({"segments": model.n(), "ring_ok": ring_ok(), "servos": model.servos.size(), "actuators": model.actuator_count(), "view": view, "tab": tab,
-				"paused": paused, "hold": model.hold, "latch": model.latch["state"], "com": [model.com().x, model.com().y, model.com().z],
+				"paused": paused, "hold": model.hold, "latch": model.latch["state"], "latch_wanted": model.latch_wanted, "latch_wait": bew.latch_wait, "com": [model.com().x, model.com().y, model.com().z],
 				"mass": model.total_mass, "current": model.total_current, "overloaded": model.overloaded(),
 				"collide": model.colliding_names(), "pose": last_pose, "ticks": Engine.physics_ticks_per_second,
 				"mode": bew.mode, "gait": bew.gang_now, "sequence": bew.seq_name, "speed": speed, "tip_margin": anz.margin,
@@ -1813,6 +1852,8 @@ func control(d: Dictionary) -> Dictionary:
 	match do:
 		"pose":
 			apply_pose(str(d.get("name", "gerade")), bool(d.get("snap", false)))
+		"oeffnen":
+			ring_oeffnen(str(d.get("name", "gerade")))
 		"set":
 			model.set_target(str(d.get("id", "")), float(d.get("value", 0.0)))
 			_sync_servo_sliders()
