@@ -86,8 +86,8 @@ class ThermalCam:
         while True:
             try:
                 want = self.wanted()
-                if self.src is not None and (want != self.spec):
-                    self._close()
+                if self.src is not None and (want != self.spec or getattr(self.src, "pins", None) not in (None, senxor_pins())):
+                    self._close()                              # 4.24.x: other pins chosen for the Thermal-90 -> open again
                 if self.src is None:
                     if not want:
                         STATE["thermal"] = "off" if not (CFG["thermal_on"] or CFG["thermal_alarm"]) else ("same camera as the main picture" if CFG["thermal_source"] else "no thermal camera selected")
@@ -103,10 +103,12 @@ class ThermalCam:
                 if w_ is not None and w_.eco_slow:
                     time.sleep(max(0.0, 1.0 / max(1.0, float(CFG["eco_fps"])) - 0.05))     # power saving
                 if ok and fr is not None:
-                    self.frame = fr; self.t = time.time(); self.fails = 0
+                    self.frame = fr; self.t = time.time(); self.fails = 0; self.n = getattr(self, "n", 0) + 1
                     STATE["thermal"] = "connected"
                 else:
                     self.fails += 1
+                    if self.fails == 5 and getattr(self.src, "read_err", ""):
+                        STATE["thermal"] = "no picture: " + str(self.src.read_err)[:100]     # 4.24.x: say why, not «connected»
                     if self.fails >= 30:
                         STATE["thermal"] = "connection lost - reconnecting"
                         self._close(); self.retry_at = time.time() + 3.0
@@ -205,6 +207,17 @@ class ThermalCam:
         return col, gray
 
     def detect(self):
+        """4.24.x: an error in the thermal picture never stops the camera loop (no warm bodies this time, logged once)"""
+        try:
+            return self._detect()
+        except Exception as e:
+            if getattr(self, "_det_err", None) != type(e).__name__:
+                self._det_err = type(e).__name__
+                log_event("sys", f"Thermal detection skipped: {type(e).__name__}: {e}"[:160])
+            self.boxes = []
+            return []
+
+    def _detect(self):
         """Warm bodies in the thermal picture: clearly warmer than the scene (thermal_delta), moving (unless switched off,
         so sun-warmed stones or an engine do not alarm), big enough, inside the zones, seen in 3 of the last 5 pictures."""
         fr, t = self.frame, self.t
@@ -272,7 +285,10 @@ class ThermalCam:
                 m = cv2.GaussianBlur((gray > thr).astype(np.float32), (0, 0), max(2.0, W / 200.0))[:, :, None] * a
                 return (frame * (1.0 - m) + col * m).astype(np.uint8)
             return cv2.addWeighted(frame, 1.0 - a, col, a, 0)
-        except cv2.error:
+        except Exception as e:                       # 4.24.x: a thermal picture never stops the head picture (only cv2.error before)
+            if getattr(self, "_ov_err", None) != type(e).__name__:
+                self._ov_err = type(e).__name__
+                log_event("sys", f"Thermal overlay skipped: {type(e).__name__}: {e}"[:160])
             return frame
 
 

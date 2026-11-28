@@ -5,72 +5,189 @@
 #   Thermal_Camera_Hat.zip -> pysenxor-master -> pip install -e ./). /boot/firmware/config.txt: dtparam=spi=on +
 #   dtoverlay=spi0-0cs, I2C on. The picture is the temperature in degrees per pixel (float).
 # ----------------------------------------------------------------------------
+SENXOR_PIN_DEF = {"senxor_cs": "7", "senxor_rst": "23", "senxor_drdy": "24"}     # Waveshare wiki (HAT and single module)
+SENXOR_LAST = {"step": "", "err": "", "t": 0.0, "fw": "", "id": "", "frames": 0, "read_err": "", "pins": None}
+
+
+def senxor_pins():
+    """(cs, reset, data ready) as BCM numbers: settings senxor_cs / senxor_rst / senxor_drdy (default 7 / 23 / 24)"""
+    out = []
+    for k, d in SENXOR_PIN_DEF.items():
+        try:
+            v = int(str(CFG.get(k, d)).strip())
+            out.append(v if 0 <= v <= 27 else int(d))
+        except (TypeError, ValueError):
+            out.append(int(d))
+    return tuple(out)
+
+
+def senxor_explain(step, e, pins=None):
+    """an error of the Thermal-90 start -> a clear sentence (English key text, translated where it is shown)"""
+    cs, rst, drdy = pins or senxor_pins()
+    m = f"{type(e).__name__}: {e}" if not isinstance(e, str) else e
+    low = m.lower()
+    if step == "gpio" and "busy" in low:
+        if "BCM%d" % cs in m or step == "gpio" and getattr(e, "_mw_pin", None) == cs:
+            return f"GPIO {cs} (CS) busy: the SPI driver holds it - config.txt needs dtoverlay=spi0-0cs below dtparam=spi=on, then restart the Pi"
+        return f"a GPIO of the thermal camera is busy (another program or setting): {m[:80]}"
+    if step == "spi" and ("no such file" in low or "errno 2]" in low):
+        return "SPI is off (no /dev/spidev0.0): switch on SPI (raspi-config) and restart the Pi"
+    if step == "spi" and ("permission" in low or "errno 13" in low):
+        return "no permission for /dev/spidev0.0: the MoveEye user must be in the group spi"
+    if step == "i2c" and ("no such file" in low or "errno 2]" in low):
+        return "I2C is off (no /dev/i2c-1): switch on I2C (raspi-config) and restart the Pi"
+    if step == "module" and any(k in low for k in ("errno 121", "remote i/o", "errno 6]", "errno 110", "timed out")):
+        return f"no answer on I2C 0x40 (errno 121): check SDA (GPIO 2), SCL (GPIO 3), 5 V / 3.3 V and GND of the module"
+    if step == "frame":
+        return f"module answers, no picture: DATA READY (GPIO {drdy}) never high - check D_READY, nRESET (GPIO {rst}), CS (GPIO {cs}), MISO 9 / MOSI 10 / CLK 11"
+    return f"{step}: {m[:140]}"
+
+
 class SenxorSource:
+    """Waveshare Thermal-90 / 44 (HAT or single module) after the example stream_spi.py of Waveshare (pysenxor). 4.24.x
+    (Besitzer, first real module on a Pi 5): every step is checked and named (driver, SPI, I2C, GPIO, module, first picture);
+    when a step fails everything opened so far is closed again - before, the GPIO / SPI handles stayed open and every new try
+    after 5 s failed with «GPIO busy», even after the cause was gone."""
     size = (80, 62)
 
     def __init__(self, i2c_addr=0x40, fps=15):
+        self._open = []                                   # what must be closed again (in this order, backwards)
+        self.mi48 = None; self.pins = senxor_pins(); self.frames = 0; self.read_err = ""
+        cs, rst, drdy = self.pins
+        SENXOR_LAST.update(step="", err="", t=time.time(), pins=self.pins)
+        step = "driver"
         try:
-            from senxor.mi48 import MI48
-            from senxor.interfaces import SPI_Interface, I2C_Interface
-            from senxor.utils import data_to_frame
-        except ImportError:
-            raise RuntimeError("Waveshare driver missing: Thermal_Camera_Hat.zip from the Waveshare wiki, "
-                               "then in pysenxor-master: pip install -e ./")
-        try:
-            from smbus import SMBus
-        except ImportError:
-            from smbus2 import SMBus
-        from spidev import SpiDev
-        from gpiozero import DigitalInputDevice, DigitalOutputDevice
-        self._to_frame = data_to_frame
-        self.cs = DigitalOutputDevice("BCM7", active_high=False, initial_value=False)
-        self.ready = DigitalInputDevice("BCM24", pull_up=False)
-        self.rst = DigitalOutputDevice("BCM23", active_high=False, initial_value=True)
-        spi = SPI_Interface(SpiDev(0, 0), xfer_size=160)
-        spi.device.mode = 0b00; spi.device.lsbfirst = False; spi.device.bits_per_word = 8
-        spi.device.max_speed_hz = 31200000; spi.device.cshigh = True
-        i2c = I2C_Interface(SMBus(1), i2c_addr)
-        rst = self.rst
+            try:
+                from senxor.mi48 import MI48
+                from senxor.interfaces import SPI_Interface, I2C_Interface
+                from senxor.utils import data_to_frame
+            except ImportError as e:
+                raise RuntimeError("Waveshare driver missing (pysenxor): MoveEye's Python does not find it (" + str(e)[:60] + ") - "
+                                   "Tools → «Check the thermal camera» shows the way") from None
+            try:
+                from spidev import SpiDev
+            except ImportError:
+                raise RuntimeError("python3-spidev missing (sudo apt install python3-spidev)") from None
+            try:
+                from smbus import SMBus
+            except ImportError:
+                try:
+                    from smbus2 import SMBus
+                except ImportError:
+                    raise RuntimeError("python3-smbus missing (sudo apt install python3-smbus2)") from None
+            try:
+                from gpiozero import DigitalInputDevice, DigitalOutputDevice
+            except ImportError:
+                raise RuntimeError("python3-gpiozero missing (sudo apt install python3-gpiozero)") from None
+            self._to_frame = data_to_frame
+            step = "spi"
+            devd = os.environ.get("MW_TEST_DEV_DIR") or "/dev"          # tests: a folder with made-up device files
+            if sys.platform.startswith("linux") and os.path.isdir(devd) and not os.path.exists(os.path.join(devd, "spidev0.0")):
+                raise FileNotFoundError(2, "No such file or directory", "/dev/spidev0.0")
+            step = "i2c"
+            if sys.platform.startswith("linux") and os.path.isdir(devd) and not os.path.exists(os.path.join(devd, "i2c-1")):
+                raise FileNotFoundError(2, "No such file or directory", "/dev/i2c-1")
+            step = "gpio"
+            for pin, attr, mk in ((cs, "cs", lambda p: DigitalOutputDevice("BCM%d" % p, active_high=False, initial_value=False)),
+                                  (drdy, "ready", lambda p: DigitalInputDevice("BCM%d" % p, pull_up=False)),
+                                  (rst, "rst", lambda p: DigitalOutputDevice("BCM%d" % p, active_high=False, initial_value=True))):
+                try:
+                    dev = mk(pin)
+                except Exception as e:
+                    try:
+                        e._mw_pin = pin
+                    except Exception:
+                        pass
+                    raise RuntimeError(f"GPIO {pin}: {type(e).__name__}: {e}"[:160] if "busy" not in str(e).lower()
+                                       else f"BCM{pin} busy: {e}"[:160]) from None
+                setattr(self, attr, dev); self._open.append(dev.close)
+            step = "spi"
+            dev_ = SpiDev(0, 0); self._open.append(dev_.close)
+            spi = SPI_Interface(dev_, xfer_size=160)
+            spi.device.mode = 0b00; spi.device.lsbfirst = False; spi.device.bits_per_word = 8
+            spi.device.max_speed_hz = 31200000; spi.device.cshigh = True
+            step = "i2c"
+            bus = SMBus(1); self._open.append(getattr(bus, "close", lambda: None))
+            i2c = I2C_Interface(bus, i2c_addr)
+            rdev = self.rst
 
-        def reset():
-            rst.on(); time.sleep(0.000035); rst.off(); time.sleep(0.05)
-        self.mi48 = MI48([i2c, spi], data_ready=self.ready, reset_handler=reset)
-        try:
-            self.mi48.set_fps(fps)
-        except Exception:
-            pass
-        try:
-            if int(str(self.mi48.fw_version[0])) >= 2:
-                self.mi48.enable_filter(f1=True, f2=True, f3=False)
-                self.mi48.set_offset_corr(0.0)
-        except Exception:
-            pass
-        self.mi48.start(stream=True, with_header=True)
-        self.shape = getattr(self.mi48, "fpa_shape", (80, 62))
+            def reset():
+                rdev.on(); time.sleep(0.000035); rdev.off(); time.sleep(0.05)
+            step = "module"
+            self.mi48 = MI48([i2c, spi], data_ready=self.ready, reset_handler=reset)
+            try:
+                self.mi48.set_fps(fps)
+            except Exception:
+                pass
+            fw = getattr(self.mi48, "fw_version", None)
+            try:
+                if int(str(fw[0])) >= 2:
+                    self.mi48.enable_filter(f1=True, f2=True, f3=False)
+                    self.mi48.set_offset_corr(0.0)
+            except Exception:
+                pass
+            ident = ""
+            for a in ("camera_id_hexsn", "sn", "camera_id", "name"):
+                v = getattr(self.mi48, a, None)
+                if v and not callable(v):
+                    ident = str(v)[:40]; break
+            SENXOR_LAST.update(fw=".".join(str(x) for x in fw) if isinstance(fw, (tuple, list)) else str(fw or ""), id=ident)
+            self.mi48.start(stream=True, with_header=True)
+            self._open.append(self.mi48.stop)
+            self.shape = getattr(self.mi48, "fpa_shape", (80, 62))
+            step = "frame"                                # the first picture within 3 s - else DATA READY / wiring
+            ok, fr = False, None
+            end = time.time() + 3.0
+            while time.time() < end and not ok:
+                ok, fr = self.read()
+            if not ok:
+                raise RuntimeError(self.read_err or "no DATA READY")
+            self._first = fr
+        except Exception as e:
+            self.release()
+            msg = senxor_explain(step, e, self.pins) if step != "driver" else str(e)
+            SENXOR_LAST.update(step=step, err=msg, t=time.time())
+            raise RuntimeError(msg) from None
+        SENXOR_LAST.update(step="ok", err="", t=time.time())
 
     def read(self):
+        fr0 = getattr(self, "_first", None)
+        if fr0 is not None:
+            self._first = None
+            return True, fr0
         try:
             if not self.ready.wait_for_active(timeout=1.0):
+                self.read_err = "no DATA READY"
                 return False, None
             self.cs.on(); time.sleep(0.0001)
             data, _header = self.mi48.read()
             time.sleep(0.0001); self.cs.off()
-        except Exception:
+        except Exception as e:
+            self.read_err = f"{type(e).__name__}: {e}"[:120]
             try:
                 self.cs.off()
             except Exception:
                 pass
             return False, None
         if data is None:
+            self.read_err = "empty picture (CRC / SPI)"
             return False, None
-        fr = np.asarray(self._to_frame(data, self.shape), dtype=np.float32)
+        try:
+            fr = np.asarray(self._to_frame(data, self.shape), dtype=np.float32)
+            if fr.ndim != 2:
+                fr = fr.reshape(62, 80)
+        except Exception as e:
+            self.read_err = f"picture shape: {e}"[:120]
+            return False, None
         if fr.size and float(np.median(fr)) > 200:          # deci-Kelvin -> degrees Celsius (older driver versions)
             fr = fr / 10.0 - 273.15
+        self.frames += 1; SENXOR_LAST["frames"] = SENXOR_LAST.get("frames", 0) + 1; self.read_err = ""
         STATE["thermal_max"] = round(float(np.max(fr)), 1)
         return True, fr
 
     def release(self):
-        for f in (lambda: self.mi48.stop(), self.cs.close, self.ready.close, self.rst.close):
+        todo, self._open = list(getattr(self, "_open", [])), []
+        for f in reversed(todo):
             try:
                 f()
             except Exception:
