@@ -61,6 +61,8 @@ func pose(name: String) -> Dictionary:
 	var N: int = m.n()
 	var sy := 0.0
 	var sp := 0.0
+	if name == "ring" and not m.ring_ok():
+		name = "gerade"                        # 2 / 3 Segmente: kein Ring (Gelenke ±90°), stehen bleiben
 	match name:
 		"kurve_links":
 			sy = -15.0
@@ -110,6 +112,7 @@ const GAENGE := [["welle", "Wellengang"], ["dreifuss", "Dreifuss"], ["raupe", "R
 const ABLAEUFE := [["raupenwelle", "Raupenwelle"], ["schlange", "Kurve (Schlange)"], ["einrollen", "Einrollen und öffnen"],
 		["aufstehen", "Aufstehen"]]
 const BETA := {"welle": 0.75, "dreifuss": 0.55, "raupe": 0.8}
+const BETA_2 := {"welle": 0.8, "raupe": 0.85, "dreifuss": 0.7}   # 2 Segmente: längere Standzeit (Pausen mit 4 Füssen am Boden)
 
 var mode := ""                         # "" (von Hand / Pose) | "gang" | "ablauf"
 var gang := "auto"
@@ -203,6 +206,15 @@ func _legs_level_targets(d: Dictionary, h_units: float) -> void:
 
 func phase_of(g: String, i: int, s: int) -> float:
 	var N: int = m.n()
+	if N == 2:
+		# 4 Beine (Besitzer 28.11.2026): Wellengang = Schritt hinten links, vorne links, hinten rechts, vorne rechts - immer
+		# nur ein Bein in der Luft (statisch stabil); «Dreifuss» = Trab (diagonale Paare). Raupe: ein Paar zugleich kippt
+		# über die Querachse, beide hinteren nacheinander schaukeln quer (gemessen bis 38° / 83°) - darum dieselbe Reihenfolge
+		# wie der Schritt, nur mit längerer Standzeit (BETA_2) und ohne Welle im Rücken
+		var r := 1 if s > 0 else 0
+		if g == "dreifuss":
+			return 0.5 * float((i + r) % 2)
+		return fposmod(-0.25 * float(1 - i) - 0.5 * float(r), 1.0)   # Abheben der Reihe nach: HL, VL, HR, VR
 	match g:
 		"dreifuss":
 			return 0.5 * float((i + (1 if s > 0 else 0)) % 2)
@@ -251,7 +263,7 @@ func _gang_step(dt: float) -> void:
 		for id in m.overloaded():
 			if not str(id).begins_with("s"):
 				over_leg = true
-		gang_now = "dreifuss" if speed > 0.1 and not over_leg else "welle"
+		gang_now = "dreifuss" if speed > 0.1 and not over_leg and N > 2 else "welle"   # 4 Beine: immer der Schritt
 	elif gang == "ki" and ki != null:
 		gang_now = ki.gangart
 	if gang == "auto" and speed > 0.01 and absf(vx) > 0.5 * speed:
@@ -265,6 +277,8 @@ func _gang_step(dt: float) -> void:
 			_prog_t = 0.0
 			_prog_p = pnow
 	var beta: float = BETA.get(gang_now, 0.75)
+	if N == 2:
+		beta = BETA_2.get(gang_now, beta)
 	var amax := schritt_laenge * sc * 0.5
 	var moving := speed > 0.002
 	_amp = move_toward(_amp, amax if moving else 0.0, dt * amax * 2.0)
@@ -352,7 +366,7 @@ func _gang_step(dt: float) -> void:
 		var sp := 0.0
 		if anpassen:
 			sp = clampf(float(alpha[i]) - float(alpha[i + 1]), -40.0, 40.0)
-		if gang_now == "raupe" and _amp > 0.001:
+		if gang_now == "raupe" and _amp > 0.001 and N > 2:          # 2 Segmente: keine Welle im Rücken (kippt)
 			sp += 8.0 * sin(TAU * (2.0 * phase - float(i) / maxf(1.0, N - 1)))
 		d["sp%d" % i] = sp
 	apply(d)
@@ -391,6 +405,8 @@ func _plan_goal() -> Vector3:
 # ---- ganze Abläufe -------------------------------------------------------------------------------------------------------
 func start_ablauf(name: String) -> void:
 	var N: int = m.n()
+	if name == "einrollen" and not m.ring_ok():
+		return                                 # 2 / 3 Segmente: kein Ring
 	var ring_legs := {}
 	for i in range(N):
 		for sd in ["l", "r"]:
@@ -613,6 +629,8 @@ var spoke_turn := 0.08                 # b: one side longer for curves
 
 func ring_height_max() -> float:
 	"""the most clearance the legs can carry: the hips of the bottom segment must still reach the ground"""
+	if not m.ring_ok():
+		return 0.0
 	var a: float = m.pitch_len() * 0.5 / tan(PI / m.n())
 	var reach: float = (m.u("oberschenkel") + m.u("unterschenkel")) * 0.85
 	return maxf(0.0, a + reach - corner_height())
@@ -994,6 +1012,8 @@ func _ground_at(p: Vector3, from_y: float, fallback: float) -> float:
 
 
 func start_ring() -> void:
+	if not m.ring_ok():
+		return                                 # 2 / 3 Segmente: kein Ring
 	latch_restore()
 	mode = "ring"
 	seq = []

@@ -33,7 +33,11 @@ const TICKS := 120
 # Zwei Varianten (Besitzer 22.11.2026 21:33): «8 Segmente» (Ring 8 × 45°) und «4 Segmente» (Ring 4 × 90°, die 45°-Schrägen
 # liegen flach aneinander). Jede Variante hat ihre eigenen Regler, Pose und Gang-Werte (user://roboter_labor.json).
 # Einstieg von aussen (z. B. ?roboter=4 der Startseite): control({"do": "open", "variante": "4"}) - variante_aus() deutet den Wert.
-const VARIANTEN := [["8", "8 Segmente"], ["6", "6 Segmente"], ["4", "4 Segmente"]]   # 6er: Besitzer 21:54 (Ring 6 × 60°)
+const VARIANTEN := [["8", "8 Segmente"], ["6", "6 Segmente"], ["4", "4 Segmente"], ["3", "3 Segmente"], ["2", "2 Segmente"]]   # 6er: Besitzer 21:54 (Ring 6 × 60°)
+# 3 und 2 Segmente (Besitzer 28.11.2026 14:40): 6 bzw. 4 Beine, gleiche Masse wie der 8er; kein Ring (Gelenke ±90°:
+# 3 × 120° / 2 × 180° gehen nicht) - Ring-Knöpfe, Pose «Ring», «Einrollen» und «Rund rollen» sind dort gesperrt, der Riegel bleibt offen.
+const FEST := ["6", "4", "3", "2"]     # Varianten mit fester Segmentzahl (alle ausser dem 8er)
+const RING_HINWEIS := "Ring braucht mindestens 4 Segmente"
 const SPEICHER := "user://roboter_labor.json"
 const BEW_KEYS := ["hoehe", "spreiz", "tempo", "schritt_laenge", "schritt_hoehe", "anpassen", "ring_methode", "ring_hoehe", "spur_rollen"]
 # Start-Werte fürs Rollen je Variante (gemessen 22.11.2026, je 3 Versuche über eine ganze Drehung, Median):
@@ -148,9 +152,9 @@ func is_open() -> bool:
 
 
 static func variante_aus(v) -> String:
-	"""«4» → 4 Segmente, «6» → 6 Segmente, alles andere («1», «8», leer) → 8 Segmente"""
+	"""«6» / «4» / «3» / «2» → so viele Segmente, alles andere («1», «8», leer) → 8 Segmente"""
 	var t := str(v).strip_edges()
-	return t if t in ["4", "6"] else "8"
+	return t if t in FEST else "8"
 
 
 func open() -> void:
@@ -233,9 +237,9 @@ func _build_world() -> void:
 	for k in sp:
 		if MODELL.START.has(k):
 			model.p[k] = sp[k]
-	if variante in ["4", "6"]:
+	if variante in FEST:
 		model.p["segmente"] = int(variante)
-	elif int(model.p["segmente"]) in [4, 6]:
+	elif str(int(model.p["segmente"])) in FEST:
 		model.p["segmente"] = 8
 	last_pose = str((_store.get(variante, {}) as Dictionary).get("pose", "gerade"))
 	var an: Dictionary = (_store.get(variante, {}) as Dictionary).get("ansicht", {})
@@ -337,6 +341,7 @@ func _rebuild(new_pose: bool) -> void:
 		bew.apply(keep)
 	model.place(true)
 	_fill_servo_sliders()
+	_paint_ring()
 
 
 func _physics_process(dt: float) -> void:
@@ -646,7 +651,13 @@ func reset() -> void:
 	_paint_toggles()
 
 
+func ring_ok() -> bool:
+	return model != null and model.ring_ok()
+
+
 func apply_pose(name: String, snap := false) -> void:
+	if name == "ring" and not ring_ok():
+		return                                       # 2 / 3 Segmente: kein Ring
 	if name != "ring" and not snap and model.latch["state"] != "open":
 		ring_oeffnen(name)                                 # never straighten against the closed latch: open it first
 		return
@@ -683,8 +694,8 @@ func set_gravity(g: float) -> void:
 
 
 func set_shape(key: String, v: float) -> void:
-	if key == "segmente" and variante in ["4", "6"]:
-		v = float(variante)                          # the 4- and 6-segment variants keep their number
+	if key == "segmente" and variante in FEST:
+		v = float(variante)                          # the 6-, 4-, 3- and 2-segment variants keep their number
 	model.set_param(key, v)
 	mark_dirty()
 	var d: Dictionary = _w.get("form_" + key, {})
@@ -878,6 +889,7 @@ func _build_ui() -> void:
 	_page_rund(gruppe("rund"))
 	_page_steuerung()
 	ki.baue_seite(gruppe("ki"), self)                  # Gang-KI (sim-gang-ki-a / -b): group «Gang-KI» in Fahren
+	_paint_ring()
 	for tb in TABS:                                   # one width for all tabs (the widest), the panel does not jump
 		(_w["page_" + tb[0]] as Control).visible = true
 	_panel_w = maxf(PANEL_W, panel.get_combined_minimum_size().x)
@@ -1302,6 +1314,56 @@ func _paint_tab(b: Button, on: bool) -> void:
 		lb.add_theme_color_override("font_color", col)
 
 
+func _ring_need(c: Control) -> void:
+	"""a control that needs the ring (≥ 4 segments): greyed out with a short hint at 2 / 3 segments"""
+	if not _w.has("ring_need"):
+		_w["ring_need"] = []
+	_w["ring_need"].append(c)
+
+
+func _ring_hint(pg: Control) -> void:
+	var l := UI.small(T.t("Ring braucht mindestens 4 Segmente"), UI.ORG)
+	pg.add_child(l)
+	if not _w.has("ring_hints"):
+		_w["ring_hints"] = []
+	_w["ring_hints"].append(l)
+
+
+func _paint_ring() -> void:
+	"""Ring-Knöpfe nach der Segmentzahl sperren / freigeben, Namen der Gangarten (4 Beine: Trab)"""
+	var ok := ring_ok()
+	for c in _w.get("ring_need", []):
+		if not is_instance_valid(c):
+			continue
+		if c is BaseButton:
+			(c as BaseButton).disabled = not ok
+		elif c is Range:
+			(c as Range).editable = ok
+		if not (c as Control).has_meta("tip0"):
+			(c as Control).set_meta("tip0", (c as Control).tooltip_text)     # keep an own tooltip (e.g. «Ring öffnen»)
+		(c as Control).tooltip_text = str((c as Control).get_meta("tip0")) if ok else T.t("Ring braucht mindestens 4 Segmente")
+	for l in _w.get("ring_hints", []):
+		if is_instance_valid(l):
+			(l as Control).visible = not ok
+	var tr: CheckButton = _w.get("terrain_ring")
+	if tr != null and not ok:
+		tr.set_pressed_no_signal(false)
+	for g in BEWEGUNG.GAENGE:
+		var b: Button = _w.get("gang_" + g[0])
+		if b != null:
+			b.text = gang_name(g[0])
+
+
+func gang_name(g: String) -> String:
+	"""shown name of a gait: with 4 legs (2 segments) the «Dreifuss» is a trot"""
+	if g == "dreifuss" and model != null and model.n() == 2:
+		return T.t("Trab (diagonal)")
+	for e in BEWEGUNG.GAENGE:
+		if e[0] == g:
+			return T.t(e[1])
+	return g
+
+
 func _paint_btn(b: Button, on: bool) -> void:
 	for st in ["normal", "hover", "pressed", "focus"]:
 		b.add_theme_stylebox_override(st, UI.box(UI.ACC if on else UI.FIELD, UI.ACC if on else UI.LINE, 8, 6, 1))
@@ -1369,7 +1431,7 @@ func _page_form(pg: VBoxContainer) -> void:
 		var g: Array = MODELL.GRENZEN[f[0]]
 		var key: String = f[0]
 		_w["form_" + key] = _slider(pg, T.t(f[1]), g[0], g[1], f[3], float(model.p[key]), f[2], func(x: float): set_shape(key, x))
-		if key == "segmente" and variante in ["4", "6"]:
+		if key == "segmente" and variante in FEST:
 			(_w["form_" + key]["sl"] as HSlider).editable = false
 			(_w["form_" + key]["title"] as Label).text = T.t("Segmente (fest bei dieser Variante)")
 	var info := UI.small("", UI.TXT)
@@ -1378,7 +1440,7 @@ func _page_form(pg: VBoxContainer) -> void:
 	_button(pg, T.t("Startwerte (modell.json)"), func():
 		for k in MODELL.START:
 			model.p[k] = MODELL.START[k]
-		if variante in ["4", "6"]:
+		if variante in FEST:
 			model.p["segmente"] = int(variante)
 		for f in FORM:
 			(_w["form_" + f[0]]["sl"] as HSlider).set_value_no_signal(float(model.p[f[0]]))
@@ -1478,11 +1540,16 @@ func _page_posen(pg: VBoxContainer) -> void:
 		var pname: String = ps[0]
 		var b := _button(gr, T.t(ps[1]), func(): apply_pose(pname, snap.button_pressed))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_w["pose_" + pname] = b
+		if pname == "ring":
+			_ring_need(b)
+	_ring_hint(pg)
 	pg.add_child(snap)
 	_w["snap"] = snap
 	var ob := _button(pg, T.t("Ring öffnen (gerade)"), func(): ring_oeffnen("gerade"))
 	ob.tooltip_text = T.t("Der Ring rollt den Riegel nach oben, öffnet ihn und streckt sich weich in die Haltung «Gerade». Bei geschlossenem Ring nehmen alle Haltungen ausser «Ring» diesen Weg.")
 	_w["oeffnen_btn_posen"] = ob
+	_ring_need(ob)
 	_slider(pg, T.t("Körperhöhe über dem Boden"), 0.3, 1.8, 0.05, bew.hoehe, "E", func(x: float):
 		bew.hoehe = x
 		if last_pose in ["gerade", "kurve_links", "kurve_rechts", "bogen"]:
@@ -1508,6 +1575,8 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 		var b := _button(ga, T.t(a[1]), func(): start_ablauf(an))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_w["ab_" + an] = b
+		if an == "einrollen":
+			_ring_need(b)
 	pg.add_child(UI.small(T.t("Gangarten – mit Körperhöhe, Tempo und Kurven (vorwärts + Regler «Kurve» oder Q / E). Ein kurzer Klick in die Welt setzt ein Ziel: der Roboter plant selbst – Kurve, seitwärts bei kleinem Versatz, an Ort drehen, wenn das Ziel hinten liegt.")))
 	var gg := GridContainer.new()
 	gg.columns = 2
@@ -1516,7 +1585,7 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 	pg.add_child(gg)
 	for g in BEWEGUNG.GAENGE:
 		var gn: String = g[0]
-		var b := _button(gg, T.t(g[1]), func(): start_gang(gn))
+		var b := _button(gg, gang_name(gn), func(): start_gang(gn))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_w["gang_" + gn] = b
 	_toggle(pg, T.t("Körper passt sich dem Untergrund an"), bew.anpassen, func(on: bool): bew.anpassen = on)
@@ -1534,9 +1603,12 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 		bew.start_ring()
 		_paint_gang())
 	_w["ring_btn"] = rb
+	_ring_need(rb)
 	var ob := _button(gring, T.t("Ring öffnen (gerade)"), func(): ring_oeffnen("gerade"))
 	ob.tooltip_text = T.t("Der Ring rollt den Riegel nach oben, öffnet ihn und streckt sich weich in die Haltung «Gerade». Bei geschlossenem Ring nehmen alle Haltungen ausser «Ring» diesen Weg.")
 	_w["oeffnen_btn"] = ob
+	_ring_need(ob)
+	_ring_hint(gring)
 	_w["turn_sl"] = _slider(gr, T.t("Kurve (− rechts, + links)"), -1.0, 1.0, 0.05, 0.0, "", func(x: float): manual.z = x)
 	var gt := gruppe("tempo")
 	_slider(gt, T.t("Tempo"), 0.01, 0.25, 0.01, bew.tempo, "m/s", func(x: float):
@@ -1647,6 +1719,7 @@ func _page_anzeigen(pg: VBoxContainer) -> void:
 
 # ---- Rund rollen (Besitzer 22.11.2026 21:33 – 21:40) -----------------------------------------------------------------------
 func _page_rund(pg: VBoxContainer) -> void:
+	_ring_hint(pg)
 	pg.add_child(UI.small(T.t("Wie rund rollt der Ring? Gemessen über eine ganze Drehung: Schwankung der Mittenhöhe, des Tempos, Zahl der Bodenkontakte (Ziel: immer mindestens 3) und Kipp-Reserve. Je Einstellung 3 Versuche.")))
 	var gm := GridContainer.new()
 	gm.columns = 1
@@ -1660,11 +1733,13 @@ func _page_rund(pg: VBoxContainer) -> void:
 			_paint_rund())
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_w["rm_" + mn] = b
+		_ring_need(b)
 	var hmax: float = bew.ring_height_max() * 100.0 if model.built_ok else 30.0
 	_w["rund_h"] = _slider(pg, T.t("Höhe über Boden (0 = auf den Ecken, mehr = auf Stelzen)"), 0.0, maxf(0.5, hmax), 0.5,
 			clampf(bew.ring_hoehe * 100.0, 0.0, hmax), "cm", func(x: float):
 		bew.ring_hoehe = x / 100.0
 		mark_dirty())
+	_ring_need(_w["rund_h"]["sl"])
 	var reach: float = model.u("oberschenkel") + model.u("unterschenkel")
 	var smin: float = model.u("halbe_breite") * 200.0
 	var smax: float = (model.u("halbe_breite") + reach * 0.6) * 200.0
@@ -1672,6 +1747,7 @@ func _page_rund(pg: VBoxContainer) -> void:
 			clampf(bew.spur_rollen * 100.0, smin, smax), "cm", func(x: float):
 		bew.spur_rollen = x / 100.0
 		mark_dirty())
+	_ring_need(_w["rund_s"]["sl"])
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	pg.add_child(row)
@@ -1682,6 +1758,7 @@ func _page_rund(pg: VBoxContainer) -> void:
 		manual = Vector3(0.0, 1.0, 0.0)
 		_paint_gang())
 	go.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_ring_need(go)
 	var st := _button(row, T.t("Stopp"), func():
 		rund_jobs = []
 		rund_job = {}
@@ -1699,8 +1776,10 @@ func _page_rund(pg: VBoxContainer) -> void:
 		var what: String = e[1]
 		var b := _button(gb, T.t(e[0]), func(): rund_start(what))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_ring_need(b)
 	var ab := _toggle(pg, T.t("Beste Methode als Standard übernehmen"), auto_best, func(on: bool): auto_best = on)
 	_w["rund_auto"] = ab
+	_ring_need(ab)
 	var res := UI.small("", UI.TXT)
 	res.add_theme_font_override("font", UI.heading_font())
 	pg.add_child(res)
@@ -1716,6 +1795,8 @@ func _paint_rund() -> void:
 
 func rund_start(what: String) -> void:
 	"""queue measurements: eine | alle | hoehe | spur (3 trials each)"""
+	if not ring_ok():
+		return
 	var cfgs := []
 	var h: float = bew.ring_hoehe
 	var sp: float = bew.spur_rollen
@@ -1894,6 +1975,8 @@ func _page_gelaende(pg: VBoxContainer) -> void:
 	ring.focus_mode = Control.FOCUS_NONE
 	pg.add_child(ring)
 	_w["terrain_ring"] = ring
+	_ring_need(ring)
+	_ring_hint(pg)
 	var mit_ki := CheckButton.new()
 	mit_ki.text = T.t("Mit der Gang-KI gehen")
 	mit_ki.focus_mode = Control.FOCUS_NONE
@@ -1920,6 +2003,7 @@ func terrain_start(names: Array, ring := false, mit_ki := false) -> void:
 	if names.is_empty():
 		return
 	var tn: String = names[0]
+	ring = ring and ring_ok()
 	stop_all()
 	ki.neu_start()
 	bew.angepasst = false
@@ -2113,7 +2197,7 @@ func _sichtbar(key: String) -> bool:
 func _move_text() -> String:
 	var names := {}
 	for g in BEWEGUNG.GAENGE:
-		names[g[0]] = T.t(g[1])
+		names[g[0]] = gang_name(g[0])
 	for a in BEWEGUNG.ABLAEUFE:
 		names[a[0]] = T.t(a[1])
 	names["oeffnen"] = T.t("Ring öffnen")
@@ -2155,7 +2239,7 @@ func _dir_text(c: Vector3) -> String:
 func info() -> Dictionary:
 	var d := {"ok": true, "open": is_open()}
 	if is_open() and model != null and model.built_ok:
-		d.merge({"segments": model.n(), "servos": model.servos.size(), "actuators": model.actuator_count(), "view": view, "tab": tab,
+		d.merge({"segments": model.n(), "ring_ok": ring_ok(), "servos": model.servos.size(), "actuators": model.actuator_count(), "view": view, "tab": tab,
 				"paused": paused, "hold": model.hold, "latch": model.latch["state"], "latch_wanted": model.latch_wanted, "latch_wait": bew.latch_wait, "com": [model.com().x, model.com().y, model.com().z],
 				"mass": model.total_mass, "current": model.total_current, "overloaded": model.overloaded(),
 				"collide": model.colliding_names(), "pose": last_pose, "ticks": Engine.physics_ticks_per_second,
@@ -2223,6 +2307,11 @@ func control(d: Dictionary) -> Dictionary:
 		"stop":
 			stop_all()
 		"ring":
+			if not ring_ok():
+				var r := info()
+				r["ok"] = false
+				r["error"] = RING_HINWEIS
+				return r
 			if model.latch["state"] != "locked":
 				apply_pose("ring", true)
 			bew.start_ring()

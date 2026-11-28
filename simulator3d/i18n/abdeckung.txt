@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8867 (Stellen: 12320)
-Übersetzt: en 8867, fr 8867, it 8867, rm 8867
+Texte gesamt: 8869 (Stellen: 12326)
+Übersetzt: en 8869, fr 8869, it 8869, rm 8869
 Unsicher markiert: 529
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 555 Stellen
 Nicht mehr im Code (noch in texte.json): 425
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 32541, schlüssel 25290, keine Wörter 16237, index 11682, technisch 4156, doc 2916, einheit 377, log 206, englisch 151, pfad 130, stringname 107, html 69, klasse 48, shader 6
+Übersprungen (Grund: Anzahl): kennung 32555, schlüssel 25297, keine Wörter 16233, index 11693, technisch 4156, doc 2919, einheit 377, log 206, englisch 151, pfad 130, stringname 107, html 69, klasse 48, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -18,7 +18,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   game.gd                  211    32
   bergtal_abenteuer_daten.gd   197     0
   bergtal.gd               190     5
-  roboter_labor.gd         171     0
+  roboter_labor.gd         173     0
   bergtal_horror.gd        160     3
   abenteuer_raetsel.gd     145     2
   maggie_story.gd          114     2
