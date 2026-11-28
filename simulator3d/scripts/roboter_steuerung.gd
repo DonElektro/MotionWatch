@@ -885,7 +885,7 @@ func build(area: Control) -> void:
 	cv.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	fl.add_child(cv)
 	var cl := UI.small("", UI.TXT)
-	cl.custom_minimum_size = Vector2(150, 0)
+	cl.custom_minimum_size = Vector2(210, 0)
 	cl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	cv.add_child(cl)
 	_ui["pad"] = cl
@@ -895,7 +895,7 @@ func build(area: Control) -> void:
 	_ui["belegung"] = _knopf(bh, T.t("Belegung …"), func(): open_map(), T.t("Tasten und Controller frei belegen, Profile"))
 	var ml := UI.small("", UI.ORG)
 	ml.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	ml.custom_minimum_size = Vector2(150, 0)
+	ml.custom_minimum_size = Vector2(210, 0)
 	cv.add_child(ml)
 	_ui["meldung"] = ml
 	# chip «Steuerung» in the bar of the lab (views / camera / info): the drive bar on / off
