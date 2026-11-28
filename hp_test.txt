@@ -1,0 +1,3 @@
+godot werkzeuge/roboter23_test.gd
+godot werkzeuge/roboter4_test.gd
+godot werkzeuge/roboter_test.gd
