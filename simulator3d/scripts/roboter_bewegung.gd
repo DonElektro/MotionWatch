@@ -112,10 +112,7 @@ const GAENGE := [["welle", "Wellengang"], ["dreifuss", "Dreifuss"], ["raupe", "R
 const ABLAEUFE := [["raupenwelle", "Raupenwelle"], ["schlange", "Kurve (Schlange)"], ["einrollen", "Einrollen und öffnen"],
 		["aufstehen", "Aufstehen"]]
 const BETA := {"welle": 0.75, "dreifuss": 0.55, "raupe": 0.8}
-const SWAY_K := 0.4                    # 2 Segmente: Körper um 0.4 × (Hüfte des abhebenden Beins) verschieben (Stützdreieck: 1/3)
-const SWAY_VOR := 0.1                  # Phase vor dem Abheben, in der er hinüberschiebt (= die Pause mit 4 Füssen am Boden)
-const SWAY_NACH := 0.1                 # Phase nach dem Aufsetzen, in der er zurückgeht (zugleich zum nächsten Bein)
-const BETA_2 := {"welle": 0.85, "raupe": 0.85, "dreifuss": 0.7}   # 2 Segmente: längere Standzeit, Pausen zum Verschieben
+const BETA_2 := {"welle": 0.8, "raupe": 0.85, "dreifuss": 0.7}   # 2 Segmente: längere Standzeit (Pausen mit 4 Füssen am Boden)
 
 var mode := ""                         # "" (von Hand / Pose) | "gang" | "ablauf"
 var gang := "auto"
@@ -210,14 +207,12 @@ func phase_of(g: String, i: int, s: int) -> float:
 	var N: int = m.n()
 	if N == 2:
 		# 4 Beine (Besitzer 28.11.2026): Wellengang = Schritt hinten links, vorne links, hinten rechts, vorne rechts - immer
-		# nur ein Bein in der Luft (statisch stabil); «Dreifuss» = Trab (diagonale Paare); Raupe = erst die beiden hinteren,
-		# dann die beiden vorderen Beine, auch hier eines nach dem anderen (ein Paar zugleich kippt über die Querachse)
+		# nur ein Bein in der Luft (statisch stabil); «Dreifuss» = Trab (diagonale Paare). Raupe: ein Paar zugleich kippt
+		# über die Querachse, beide hinteren nacheinander schaukeln quer (gemessen bis 38° / 83°) - darum dieselbe Reihenfolge
+		# wie der Schritt, nur mit längerer Standzeit (BETA_2) und ohne Welle im Rücken
 		var r := 1 if s > 0 else 0
-		match g:
-			"dreifuss":
-				return 0.5 * float((i + r) % 2)
-			"raupe":
-				return fposmod(-0.5 * float(1 - i) - 0.25 * float(r), 1.0)
+		if g == "dreifuss":
+			return 0.5 * float((i + r) % 2)
 		return fposmod(-0.25 * float(1 - i) - 0.5 * float(r), 1.0)   # Abheben der Reihe nach: HL, VL, HR, VR
 	match g:
 		"dreifuss":
@@ -308,30 +303,12 @@ func _gang_step(dt: float) -> void:
 			ydes.append(g + hh)
 		else:
 			ydes.append(xf.origin.y)
-	# 4 Beine (2 Segmente): bei symmetrischem Stand liegt der Schwerpunkt genau auf der Diagonale der drei Standbeine -
-	# vor jedem Schritt den Körper vom Bein weg schieben, das gleich abhebt (die Füsse rücken relativ zum Körper hin), so
-	# liegt der Schwerpunkt im Stützdreieck (statisch stabil)
-	var sway := Vector2.ZERO
-	if N == 2 and gang_now != "dreifuss" and _amp > 0.0005:
-		for i in range(N):
-			for s in [-1, 1]:
-				var u0 := fposmod(phase + phase_of(gang_now, i, s), 1.0)
-				var wgt := 0.0
-				if u0 >= beta:
-					wgt = 1.0
-				elif u0 > beta - SWAY_VOR:
-					wgt = smoothstep(beta - SWAY_VOR, beta, u0)
-				elif u0 < SWAY_NACH:
-					wgt = 1.0 - smoothstep(0.0, SWAY_NACH, u0)
-				sway += Vector2((0.5 - i) * P, stand_foot(s).z) * wgt * SWAY_K * kamp
 	var d := {}
 	for i in range(N):
 		var xf: Transform3D = m.segment_xf(i)
 		var xi := (float(N - 1) * 0.5 - i) * P
 		for s in [-1, 1]:
 			var f := stand_foot(s)
-			f.x += sway.x
-			f.z += sway.y
 			var vf := Vector2(vx, vz) if arc else Vector2(vx + om * f.z, vz - om * xi)
 			var a2 := vf * beta * T * 0.5
 			if a2.length() > amax:

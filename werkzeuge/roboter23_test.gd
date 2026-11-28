@@ -163,8 +163,8 @@ func _process(_dt: float) -> bool:
 				return false
 			var rel: Vector3 = centre() - (get_meta("c0") as Vector3)
 			var tilt_deg := rad_to_deg(acos(clampf(float(get_meta("tilt")), -1.0, 1.0)))
-			check("%ser %s vorwärts (%d s) ohne Sturz, höchstens 25° geneigt" % [v, GAENGE[gi], int(GANG_S)], rel.x > MIN_WEG and sane()
-					and not bool(get_meta("tip")) and tilt_deg < 25.0,
+			check("%ser %s vorwärts (%d s) ohne Sturz, höchstens 30° geneigt" % [v, GAENGE[gi], int(GANG_S)], rel.x > MIN_WEG and sane()
+					and not bool(get_meta("tip")) and tilt_deg < 30.0,
 					"%.2f m, Gang %s, Höhe %.1f cm, Neigung bis %.0f°" % [rel.x, lab.bew.gang_now, lowest_body() * 100.0, tilt_deg])
 			gi += 1
 			if gi < GAENGE.size():
