@@ -606,13 +606,14 @@ def teil_b(datei, browser, bilder):
                     break
                 time.sleep(0.25)
             ok(dv.get("modell") == "HERO11 Black" and dv.get("akku") == 87 and not dv.get("cohn_ok"), "Koppeln über HTTP: %s · Akku %s" % (dv.get("modell"), dv.get("akku")))
-            q = api("/api/gopro", {"action": "start", "id": gid, "lang": "de"})
+            # (in the demo every source is the demo picture, so G1's camera thread never asks start(); that path is in part A)
+            q = api("/api/gopro/ble", {"action": "stream", "id": gid, "on": True, "net": "hotspot", "lang": "de"})
             for _i in range(40):
                 dv = next((x for x in (api("/api/gopro/ble?lang=de").get("state") or {}).get("devices", []) if x["id"] == gid), {})
                 if dv.get("fehler"):
                     break
                 time.sleep(0.25)
-            ok("WLAN" in dv.get("fehler", "") and dv.get("zustand") == "connected", "G1 Start, MoveEye-WLAN aus: deutsche Meldung (%s)" % dv.get("fehler"))
+            ok("WLAN" in dv.get("fehler", "") and dv.get("zustand") == "connected", "Strom starten, MoveEye-WLAN aus: deutsche Meldung (%s)" % dv.get("fehler"))
             api("/api/gopro", {"action": "stop", "id": gid, "lang": "de"})
         if browser:
             web(base, bilder)
