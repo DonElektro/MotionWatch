@@ -7,9 +7,10 @@
 #   usb:<n>   USB / V4L2 webcams (/dev/video<n>)        pi:<n>   Raspberry Pi CSI cameras (picamera2)
 #   url:<id>  network cameras: RTSP / HTTP-MJPEG (IP cams, Wi-Fi cams) saved in the settings
 #   auto      first working USB camera (the behaviour of the older versions)
+#   gopro:<id> a GoPro (639zzzzzze: its live stream, the address comes from its way - gopro_quelle)
 # Every source object offers read() -> (ok, BGR frame) and release(), so the main loop does not care where the picture comes from.
 # ----------------------------------------------------------------------------
-SRC_RE = re.compile(r"^(auto|demo|usb:\d{1,2}|pi:\d{1,2}|url:[0-9a-f]{8}|senxor:0|sim:\d|sim:thermal)$")
+SRC_RE = re.compile(r"^(auto|demo|usb:\d{1,2}|pi:\d{1,2}|url:[0-9a-f]{8}|gopro:[0-9a-f]{8}|senxor:0|sim:\d|sim:thermal)$")
 MAX_IP_SOURCES = 16
 V4L_SKIP = ("bcm2835-codec", "bcm2835-isp", "rpivid", "pispbe", "rp1-cfe", "hevc", "-decoder", "-encoder")   # Pi internal nodes, no cameras
 SOURCES = {"items": [], "time": 0.0, "scanning": False, "hints": []}      # result of the last scan

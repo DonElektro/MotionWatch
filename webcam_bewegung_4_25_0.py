@@ -336,7 +336,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_25_0.zip"
-ZD_SHA256 = "29db15ba323a77a20bb091e256deaf62c5687ad2cfa30b9ad97c5c1a67f4f6f4"
+ZD_SHA256 = "1d04f7bab53ef1d6b26f3c684c9f40419b41dd0ae420b95f5347e5a9f90daf32"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -19803,7 +19803,8 @@ def kidata_tk_build(app, parent):
 
 
 
-SRC_RE = re.compile(r"^(auto|demo|usb:\d{1,2}|pi:\d{1,2}|url:[0-9a-f]{8}|senxor:0|sim:\d|sim:thermal)$")
+
+SRC_RE = re.compile(r"^(auto|demo|usb:\d{1,2}|pi:\d{1,2}|url:[0-9a-f]{8}|gopro:[0-9a-f]{8}|senxor:0|sim:\d|sim:thermal)$")
 MAX_IP_SOURCES = 16
 V4L_SKIP = ("bcm2835-codec", "bcm2835-isp", "rpivid", "pispbe", "rp1-cfe", "hevc", "-decoder", "-encoder")
 SOURCES = {"items": [], "time": 0.0, "scanning": False, "hints": []}
@@ -107693,6 +107694,83 @@ SELFTEST_EXTRA.append(("Turn the picture of every camera (639zzzzzzd)", cam_turn
 
 
 
+for _k, _v in {"gopro_devs": [], "gopro_rtmp_port": 19350, "gopro_mtx": ""}.items():
+	CFG.setdefault(_k,_v)
+	DEFAULTS.setdefault(_k,_v)
+USER_SETTINGS_DENY.update({"gopro_devs", "gopro_rtmp_port", "gopro_mtx"})
+ADMIN_GET = tuple(ADMIN_GET) + ("/gopro", "/api/gopro")
+
+
+def gopro_cfg_dev(spec_or_id):
+	""
+	gid=str(spec_or_id or "").partition(":")[2]if str(spec_or_id or "").startswith("gopro:")else str(spec_or_id or "")
+	return next((x for x in CFG.get("gopro_devs")or[]if isinstance(x,dict)and str(x.get("id"))==gid),None)
+
+
+_open_source_gopro_base = open_source
+
+
+
+def open_source(spec, thermal=False):
+	if str(spec).startswith("gopro:")and not thermal and not DEMO["on"]and not HOST["on"]:
+		try:
+			return gopro_open(str(spec))
+		except NameError:
+			return None,spec,source_label(spec),"GoPro: additional data missing - update MoveEye"
+		except Exception as e:
+			return None,spec,source_label(spec),("GoPro: "+type(e).__name__+": "+str(e))[:160]
+	return _open_source_gopro_base(spec,thermal)
+
+
+_source_label_gopro_base = source_label
+
+
+
+def source_label(spec):
+	if str(spec).startswith("gopro:"):
+		d=gopro_cfg_dev(spec)
+		return("GoPro "+str((d or{}).get("name")or "")[:30]).strip()
+	return _source_label_gopro_base(spec)
+
+
+GOPRO_PAGE = _zd('639zzzzzze_gopro_kern/GOPRO_PAGE', ZD_PAGE)
+
+
+GOPRO_KERN_PY = _zd('639zzzzzze_gopro_kern/GOPRO_KERN_PY', "")
+zd_exec(GOPRO_KERN_PY, '639zzzzzze_gopro_kern.py')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 GOPRO_BLE_PY = _zd('639zzzzzzf_gopro_ble/GOPRO_BLE_PY', "")
@@ -107702,6 +107780,14 @@ zd_exec(GOPRO_BLE_PY, '639zzzzzzf_gopro_ble.py')
 GPB_ZUSTAND = {"off": "off", "connecting": "connecting …", "connected": "connected", "asleep": "asleep", "starting": "starting …",
 			   "streaming": "streaming", "reconnecting": "reconnecting …", "error": "error"}
 _HX_GPB = _zd('639zzzzzzf_gopro_ble/HX_GPB', _zd_hx_en((
+	'HERO9 and newer: Bluetooth (Open GoPro)',
+	'Bluetooth (Open GoPro)',
+	'pairing …',
+	'Forget pairing',
+	'Bring the GoPro into the WLAN',
+	'not paired yet - search and pair first',
+	'waiting for the GoPro stream',
+	'stopped',
 	'GoPro over Bluetooth (Hero 9 and newer)',
 	'GoPro (Bluetooth)',
 	'Bluetooth search',
@@ -107788,8 +107874,8 @@ GPB_KEYS = [k for k in _HX_GPB if k not in ("Close",)]
 
 
 GOPRO_BLE_JS = _zd('639zzzzzzf_gopro_ble/GOPRO_BLE_JS', "")
-CAMS_PAGE = CAMS_PAGE.replace("</body>", GOPRO_BLE_JS.replace("/*GPBDE*/{}", json.dumps({k: DE.get(k, k) for k in GPB_KEYS}, ensure_ascii=False), 1)
-							  .replace("/*GPBZ*/{}", json.dumps(GPB_ZUSTAND, ensure_ascii=False), 1) + "</body>", 1)
+GOPRO_PAGE = GOPRO_PAGE.replace("/*ALERTS*/\n</script></body>", "/*ALERTS*/\n</script>" + GOPRO_BLE_JS.replace("/*GPBDE*/{}", json.dumps({k: DE.get(k, k) for k in GPB_KEYS}, ensure_ascii=False), 1)
+								.replace("/*GPBZ*/{}", json.dumps(GPB_ZUSTAND, ensure_ascii=False), 1) + "</body>", 1)
 
 
 

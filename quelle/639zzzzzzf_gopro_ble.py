@@ -55,16 +55,16 @@ GPB_FATAL = {"bleak missing - install it on this page", "no Bluetooth adapter", 
              "the GoPro does not know this WLAN yet - enter the password once", "MoveEye's own WLAN is off - switch it on first",
              "the camera WLAN needs a second WLAN adapter (it would cut off your phone)", "live stream not possible with the current lens setting",
              "unknown device", "pairing failed - put the GoPro into pairing mode"}
-GPB_ID_RE = re.compile(r"^ble-[0-9a-f]{8}$")
+GPB_ID_RE = re.compile(r"^[0-9a-f]{8}$")
 GPB_ADDR_RE = re.compile(r"^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}$|^[0-9A-Fa-f-]{36}$")   # Linux MAC, macOS UUID
 
-for _k, _v in {"gopro_ble_res": "720", "gopro_ble_ap_iface": "wlan1"}.items():
+for _k, _v in {"gopro_ble_ap_iface": "wlan1"}.items():
     CFG.setdefault(_k, _v); DEFAULTS.setdefault(_k, _v)
     if "FACTORY_CFG" in globals():
         FACTORY_CFG.setdefault(_k, _v)
-USER_SETTINGS_DENY.update({"gopro_ble_res", "gopro_ble_ap_iface"})
+USER_SETTINGS_DENY.update({"gopro_ble_ap_iface"})
 
-GPB = {"lock": threading.Lock(), "loop": None, "bleak": None, "dev": {}, "wd": None, "scan": {"running": False, "found": [], "err": "", "t": 0.0},
+GPB = {"lock": threading.Lock(), "loop": None, "bleak": None, "dev": {}, "wd": None, "pairing": "", "last_pair": "", "scan": {"running": False, "found": [], "err": "", "t": 0.0},
        "install": {"running": False, "msg": "", "ok": None}, "secrets": []}
 
 
@@ -72,18 +72,19 @@ class GpbError(Exception):
     pass
 
 
-# ---- shared interface of G1 (stub until the core of G1 is there: never overwrites its names) -----------------------------------
-def _gpb_stub_register(name, *, start, stop, status, faehig):
-    globals().setdefault("GOPRO_WEGE", {})[name] = {"start": start, "stop": stop, "status": status, "faehig": faehig}
+# ---- G1 (639zzzzzze_gopro_kern): GOPRO, gopro_add / gopro_dev / gopro_start / gopro_stop, the receiver -----------------------
+GPB_MODELLE = ["hero9", "hero10", "hero11", "hero12", "hero13"]
+_gpb_rx_paths_before = _rx_paths
 
 
-def _gpb_stub_quelle(dev_id):
-    return "rtmp://127.0.0.1:1935/gopro/%s" % dev_id
-
-
-globals().setdefault("GOPRO", {})
-globals().setdefault("gopro_register_weg", _gpb_stub_register)
-globals().setdefault("gopro_quelle", _gpb_stub_quelle)
+# wraps: _rx_paths (G1: the receiver takes only the paths of the way «rtmp»; Bluetooth GoPros send there too)
+def _rx_paths():
+    p = set(_gpb_rx_paths_before())
+    for gid, d in list(GPB["dev"].items()):
+        g = GOPRO.get(gid)
+        if g and g.get("weg") == "ble" and g.get("aktiv") and d["net"] != "ap":
+            p.add(gopro_rtmp_path(g))
+    return sorted(p)
 
 
 # ---- packets (Open GoPro data protocol) ----------------------------------------------------------------------------------------
@@ -474,10 +475,6 @@ def gpb_save():
         _gpb_log("GoPro: could not save the pairing file (%s)" % type(e).__name__)
 
 
-def gpb_id(addr):
-    return "ble-" + hashlib.sha1(str(addr).upper().encode()).hexdigest()[:8]
-
-
 def gpb_model_no(name):
     m = re.search(r"HERO\s*(\d+)", str(name or ""), re.I)
     if m:
@@ -492,35 +489,28 @@ def _gpb_new(rec):
             "ap_con": ""}
 
 
-def _gpb_pub(i):
-    """the device as G1 sees it (GOPRO[id])"""
-    d = GPB["dev"].get(i)
-    if d is None:
-        return
-    g = GOPRO.setdefault(i, {})
-    g.update(name=d["rec"].get("name") or "GoPro", modell=d["rec"].get("modell") or "", weg="ble", zustand=d["zustand"],
-             akku=d["akku"], fehler=d["fehler"], quelle=d["quelle"])
-
-
 for _i, _r in gpb_load().items():
     if GPB_ID_RE.match(_i) and isinstance(_r, dict) and GPB_ADDR_RE.match(str(_r.get("addr") or "")):
         GPB["dev"][_i] = _gpb_new(_r)
-        _gpb_pub(_i)
 
 
 # ---- one camera ----------------------------------------------------------------------------------------------------------------
-def _gpb_dev(i):
-    d = GPB["dev"].get(str(i or ""))
+def _gpb_dev(i, paired=True):
+    """the Bluetooth part of a GoPro of G1 with the way «ble» (created on first use)"""
+    i = str(i or "")
+    d = GPB["dev"].get(i)
     if d is None:
-        raise GpbError("unknown device")
+        g = gopro_dev(i) if GPB_ID_RE.match(i) else None
+        if not g or g.get("weg") != "ble":
+            raise GpbError("unknown device")
+        d = GPB["dev"][i] = _gpb_new({})
+    if paired and not d["rec"].get("addr"):
+        raise GpbError("not paired yet - search and pair first")
     return d
 
 
 def _gpb_set(d, **kw):
     d.update(kw)
-    for i, x in GPB["dev"].items():
-        if x is d:
-            _gpb_pub(i)
 
 
 def _gpb_notify(d):
@@ -602,32 +592,50 @@ def gpb_hwinfo(c):
 
 
 def gpb_status(dev):
-    """G1: {"verbunden", "akku", "streamt", "fehler"} (from the last values; the watch refreshes them)"""
+    """G1: {"verbunden", "akku", "streamt", "fehler"}; «streamt» only when the camera streams AND the receiver has the picture"""
     i = dev.get("id") if isinstance(dev, dict) else dev
     d = GPB["dev"].get(str(i or ""))
-    if d is None:
-        return {"verbunden": False, "akku": None, "streamt": False, "fehler": "unknown device"}
+    if d is None or not d["rec"].get("addr"):
+        return {"verbunden": False, "akku": None, "streamt": False, "fehler": "not paired yet - search and pair first"}
     c = d["client"]
-    return {"verbunden": bool(c is not None and c.connected), "akku": d["akku"], "streamt": d["zustand"] == "streaming", "fehler": d["fehler"]}
+    on = d["zustand"] == "streaming"
+    if on and d["net"] != "ap" and isinstance(dev, dict) and callable(globals().get("_rtmp_status")):
+        try:
+            on = bool(_rtmp_status(dev).get("streamt"))
+        except Exception:
+            on = False
+    f = d["fehler"] or ("" if on or d["zustand"] != "streaming" else "waiting for the GoPro stream")
+    return {"verbunden": bool(c is not None and c.connected), "akku": d["akku"], "streamt": on, "fehler": f}
 
 
-def gpb_faehig(dev=None):
-    """G1: can this way be used here? {"ok", "warum", "modelle"}"""
-    why = "" if gpb_bleak() is not None else "bleak missing - install it on this page"
-    if not why and not gpb_adapter():
-        why = "no Bluetooth adapter"
-    return {"ok": not why, "warum": why, "modelle": "HERO9 Black … HERO13 Black, MAX 2"}
+def gpb_faehig_ok():
+    """can Bluetooth be used here? (ok, english reason)"""
+    if gpb_bleak() is None:
+        return False, "bleak missing - install it on this page"
+    if not gpb_adapter():
+        return False, "no Bluetooth adapter"
+    return True, ""
 
 
-def gpb_pair(addr, name=""):
-    """first connection: pair (the GoPro must be in pairing mode), check the model, keep the pairing data"""
+GPB_FAEHIG = {"titel": "HERO9 and newer: Bluetooth (Open GoPro)", "modelle": list(GPB_MODELLE), "akku": True, "steuern": True}
+
+
+def gpb_model_id(name):
+    n = gpb_model_no(name)
+    ids = [m for m, _n in GOPRO_MODELLE]
+    return "hero%d" % n if "hero%d" % n in ids else ids[-1]
+
+
+def gpb_pair(addr, name="", gid=None):
+    """first connection: pair (the GoPro must be in pairing mode), check the model, keep the pairing data; gid = the GoPro of G1
+    with the way «ble» (none: a new one is added). Returns the id."""
     addr = str(addr or "").strip()
     if not GPB_ADDR_RE.match(addr):
         raise GpbError("unknown device")
-    i = gpb_id(addr)
-    d = GPB["dev"].get(i) or _gpb_new({"addr": addr, "name": str(name or "GoPro")[:40], "known": [], "t": int(time.time())})
+    if gid:
+        _gpb_dev(gid, paired=False)
+    d = _gpb_new({"addr": addr, "name": str(name or "GoPro")[:40], "known": [], "t": int(time.time())})
     with d["lock"]:
-        _gpb_set(d, zustand="connecting", step="pair", fehler="")
         try:
             c = _gpb_conn(d, pair=True, timeout=25.0)
             hw = gpb_hwinfo(c)
@@ -635,30 +643,43 @@ def gpb_pair(addr, name=""):
                 c.close(); d["client"] = None
                 raise GpbError("not a Hero 9 or newer - for a Hero 8 use the Hero 8 way")
             d["rec"].update(modell=hw["modell"], fw=hw["fw"], name=d["rec"].get("name") or hw["ap_ssid"] or "GoPro")
-            GPB["dev"][i] = d
+            if not gid:
+                ok_, err, gid = gopro_add(d["rec"]["name"], gpb_model_id(hw["modell"]), "ble")
+                if not ok_:
+                    c.close(); d["client"] = None
+                    raise GpbError(err)
+            old = GPB["dev"].get(gid)
+            if old is not None and old["client"] is not None and old["client"] is not c:
+                old["client"].close()
+            if old is not None:
+                d["net"] = old["net"]; d["rec"]["net"] = old["rec"].get("net") or old["net"]
+            GPB["dev"][gid] = d
             gpb_save()
             d["awake"] = True
-            _gpb_set(d, zustand="connected", step="")
+            _gpb_set(d, zustand="connected", step="", fehler="")
             _gpb_refresh(d)
             _gpb_log("GoPro %s (%s, %s): paired over Bluetooth" % (d["rec"]["name"], hw["modell"], hw["fw"]))
             gpb_watch()
-            return i
-        except GpbError as e:
-            _gpb_set(d, zustand="error" if i in GPB["dev"] else "off", step="", fehler=str(e))
+            return gid
+        except GpbError:
+            c = d["client"]
+            if c is not None:
+                c.close()
             raise
 
 
 def gpb_forget(i):
-    d = _gpb_dev(i)
-    try:
-        gpb_stop(i)
-    except Exception:
-        pass
+    """only the Bluetooth pairing (the GoPro itself stays at G1 until «Remove»)"""
+    d = GPB["dev"].get(str(i or ""))
+    if d is None:
+        return
+    d["want"] = d["awake"] = False
     c = d["client"]
     if c is not None:
+        if c.connected and d["zustand"] == "streaming":
+            c.write("0072", b"\x01\x01\x00", 4.0)
         c.close()
     GPB["dev"].pop(i, None)
-    GOPRO.pop(i, None)
     gpb_save()
     _gpb_log("GoPro %s: pairing data removed" % (d["rec"].get("name") or "?"))
 
@@ -754,21 +775,33 @@ def _gpb_join(d, c, ssid, pw):
         gpb_save()
 
 
-def gpb_push_url(i, host):
-    f = globals().get("gopro_rtmp_push")                     # G1 may give the address its receiver listens on
-    if callable(f):
-        try:
-            u = f(i, host)
-            if u:
-                return u
-        except Exception:
-            pass
-    return "rtmp://%s:1935/gopro/%s" % (host, i)
+def gpb_push_url(gid, host):
+    """where the GoPro sends its picture: the receiver of G1 (port and path with the key of this GoPro)"""
+    g = gopro_dev(gid)
+    if not g:
+        raise GpbError("unknown device")
+    return gopro_rtmp_url(g, host)
 
 
-def gpb_start(dev, net=None, ssid="", password=""):
-    """G1: start the stream; returns the video source for open_source ('' and dev["fehler"] if it did not work). Blocks up to ~2 min."""
+def gpb_start(dev):
+    """G1 (gopro_quelle, from the camera thread): never blocks. Streaming -> the address; otherwise the start runs in the
+    background (once, with pauses after errors) and "" comes back - G1 asks again."""
     i = dev.get("id") if isinstance(dev, dict) else dev
+    try:
+        d = _gpb_dev(i)
+    except GpbError:
+        return ""
+    if d["zustand"] == "streaming" and d["quelle"]:
+        return d["quelle"]
+    d["want"] = d["awake"] = True
+    if not d["job"] and time.time() >= d["next"]:
+        _gpb_job(i, lambda: gpb_start_now(i))
+    gpb_watch()
+    return ""
+
+
+def gpb_start_now(i, net=None, ssid="", password=""):
+    """start the stream now (blocks up to ~2 min); the video source or '' (the reason in fehler)"""
     d = _gpb_dev(i)
     net = net if net in ("hotspot", "home", "ap") else d["net"]
     with d["lock"]:
@@ -779,12 +812,19 @@ def gpb_start(dev, net=None, ssid="", password=""):
             d["rec"]["home_ssid"] = str(ssid)[:32]; gpb_save()
         _gpb_set(d, zustand="starting", fehler="", step="connect")
         try:
-            src = _gpb_start_ap(d) if net == "ap" else _gpb_start_rtmp(d, net, password)
+            src = _gpb_start_ap(d) if net == "ap" else _gpb_start_rtmp(d, i, net, password)
+            password = None
+            if not d["want"]:                                # «stop» came meanwhile
+                raise GpbError("stopped")
             _gpb_set(d, zustand="streaming", quelle=src, step="", retry=0)
             _gpb_log("GoPro %s: stream started (%s)" % (d["rec"].get("name") or "?", {"hotspot": "MoveEye WLAN", "home": "home WLAN", "ap": "camera WLAN"}[net]))
             gpb_watch()
             return src
         except GpbError as e:
+            password = None
+            if str(e) == "stopped":
+                _gpb_halt(d)
+                return ""
             if str(e) in GPB_FATAL:                          # needs the user (password, WLAN, adapter): no retry
                 d["want"] = False
             d["next"] = time.time() + GPB_BACKOFF[min(d["retry"], len(GPB_BACKOFF) - 1)]
@@ -793,11 +833,36 @@ def gpb_start(dev, net=None, ssid="", password=""):
             _gpb_log("GoPro %s: stream not started - %s" % (d["rec"].get("name") or "?", e))
             gpb_watch()
             return ""
-        finally:
+
+
+def gpb_wlan(i, net, ssid="", password=""):
+    """bring the GoPro into a WLAN now (the password goes to the camera once, never saved); afterwards «Start» needs no password"""
+    d = _gpb_dev(i)
+    with d["lock"]:
+        _gpb_set(d, step="wlan", fehler="")
+        try:
+            c = _gpb_conn(d)
+            if net == "hotspot":
+                _gpb_host("hotspot")
+                ssid, password = CFG.get("hotspot_ssid") or "MoveEye", hotspot_password()
+            ssid = str(ssid or d["rec"].get("home_ssid") or "")[:32]
+            if not ssid:
+                raise GpbError("enter the WLAN name")
+            if net == "home":
+                d["rec"]["home_ssid"] = ssid
+            d["net"] = d["rec"]["net"] = net if net in ("hotspot", "home") else d["net"]
+            _gpb_secret(password)
+            _gpb_join(d, c, ssid, password or "")
             password = None
+            c.write("0091", bytes([0x02, 0x78]), 5.0)          # leave it again until the stream starts
+            gpb_save()
+            _gpb_set(d, step="", fehler="")
+            _gpb_log("GoPro %s: knows the WLAN «%s» now" % (d["rec"].get("name") or "?", ssid))
+        except GpbError as e:
+            _gpb_set(d, step="", fehler=str(e)); raise
 
 
-def _gpb_start_rtmp(d, net, password):
+def _gpb_start_rtmp(d, i, net, password):
     c = _gpb_conn(d)
     if net == "hotspot":
         ssid, pw = CFG.get("hotspot_ssid") or "MoveEye", hotspot_password()
@@ -806,20 +871,24 @@ def _gpb_start_rtmp(d, net, password):
         if not ssid:
             raise GpbError("enter the WLAN name")
     host = _gpb_host(net)
+    url = gpb_push_url(i, host)
+    g = gopro_dev(i) or {}
     d["step"] = "wlan"; _gpb_set(d)
     _gpb_join(d, c, ssid, pw)
     pw = None
+    if not d["want"]:
+        raise GpbError("stopped")
     d["step"] = "config"; d["ls"] = None; _gpb_set(d)
     p = _gpb_pb(c, "0076", 0xF5, 0x74, pb_enc([(1, "v", 1), (1, "v", 2)]))
     d["ls"] = _pb1(p, 1, d["ls"])
-    res = GPB_RES.get(str(CFG.get("gopro_ble_res")), 7)
-    p = _gpb_pb(c, "0072", 0xF1, 0x79, pb_enc([(1, "s", gpb_push_url(_gpb_key(d), host)), (2, "v", 0), (3, "v", res),
+    res = GPB_RES.get(str(g.get("res") or "720"), 7)
+    p = _gpb_pb(c, "0072", 0xF1, 0x79, pb_enc([(1, "s", url), (2, "v", 1 if g.get("copy") else 0), (3, "v", res),
                                                 (7, "v", 800), (8, "v", 4000), (9, "v", 2500)]), 10.0)
     if _pb1(p, 1) not in (None, 1):
         raise GpbError("the GoPro did not get ready for the stream")
 
     def ready():
-        if d["ls"] in (2, 3):
+        if d["ls"] in (2, 3) or not d["want"]:
             return True
         q = c.write("0076", bytes([0xF5, 0x74]), 4.0)
         if q:
@@ -827,6 +896,8 @@ def _gpb_start_rtmp(d, net, password):
             d["ls"], d["ls_err"] = _pb1(x, 1, d["ls"]), _pb1(x, 2, 0)
         return d["ls"] in (2, 3, 5, 7)
     _gpb_wait(ready, 40, 1.0)
+    if not d["want"]:
+        raise GpbError("stopped")
     if d["ls"] == 7:
         raise GpbError("live stream not possible with the current lens setting")
     if d["ls"] not in (2, 3):
@@ -837,14 +908,7 @@ def _gpb_start_rtmp(d, net, password):
     _gpb_wait(lambda: d["ls"] in (3, 5), 25, 0.5)
     if d["ls"] == 5:
         raise GpbError("live stream failed on the GoPro")
-    return gopro_quelle(_gpb_key(d))
-
-
-def _gpb_key(d):
-    for i, x in GPB["dev"].items():
-        if x is d:
-            return i
-    return gpb_id(d["rec"]["addr"])
+    return _rx_local_url(g) if g else ""
 
 
 def _gpb_start_ap(d):
@@ -896,28 +960,39 @@ def _gpb_http(url, timeout=5.0):
         return False
 
 
+def _gpb_halt(d):
+    """stop the stream on the camera (lock held)"""
+    c = d["client"]
+    if c is not None and c.connected:
+        if d["net"] == "ap":
+            _gpb_http("http://10.5.5.9:8080/gopro/camera/stream/stop")
+            c.write("0072", b"\x17\x01\x00", 5.0)
+        else:
+            c.write("0072", b"\x01\x01\x00", 5.0)
+            c.write("0091", bytes([0x02, 0x78]), 5.0)        # RequestReleaseNetwork: the camera leaves the WLAN
+    if d["ap_con"] and not callable(GPB.get("nm_join")) and shutil.which("nmcli"):
+        try:
+            subprocess.run(["nmcli", "connection", "down", "id", d["ap_con"]], capture_output=True, timeout=20)
+        except (OSError, subprocess.SubprocessError):
+            pass
+    d["ap_con"] = ""
+    _gpb_set(d, zustand="connected" if (c is not None and c.connected) else "off", quelle="", fehler="", step="")
+
+
 def gpb_stop(dev):
-    """G1: stop the stream (the camera stays connected and awake)"""
+    """G1: stop the stream (the camera stays connected and awake). Never waits long: a running start sees «want» and stops."""
     i = dev.get("id") if isinstance(dev, dict) else dev
-    d = _gpb_dev(i)
-    with d["lock"]:
-        d["want"] = False
-        c = d["client"]
-        if c is not None and c.connected:
-            if d["net"] == "ap":
-                _gpb_http("http://10.5.5.9:8080/gopro/camera/stream/stop")
-                c.write("0072", b"\x17\x01\x00", 5.0)
-            else:
-                c.write("0072", b"\x01\x01\x00", 5.0)
-                c.write("0091", bytes([0x02, 0x78]), 5.0)        # RequestReleaseNetwork: the camera leaves the WLAN
-        if d["ap_con"] and not callable(GPB.get("nm_join")) and shutil.which("nmcli"):
-            try:
-                subprocess.run(["nmcli", "connection", "down", "id", d["ap_con"]], capture_output=True, timeout=20)
-            except (OSError, subprocess.SubprocessError):
-                pass
-        d["ap_con"] = ""
-        _gpb_set(d, zustand="connected" if (c is not None and c.connected) else "off", quelle="", fehler="", step="")
-        _gpb_log("GoPro %s: stream stopped" % (d["rec"].get("name") or "?"))
+    d = GPB["dev"].get(str(i or ""))
+    if d is None:
+        return
+    d["want"] = False
+    if not d["lock"].acquire(timeout=3.0):
+        return
+    try:
+        _gpb_halt(d)
+    finally:
+        d["lock"].release()
+    _gpb_log("GoPro %s: stream stopped" % (d["rec"].get("name") or "?"))
 
 
 # ---- COHN (camera on the home network, Hero 12 and newer): certificate + access only in the pairing file ------------------------
@@ -1004,10 +1079,10 @@ def _gpb_watch_loop():
 
 
 def _gpb_watch_one(i, d):
-    if not (d["awake"] or d["want"]):
+    if not (d["awake"] or d["want"]) or not d["rec"].get("addr"):
         return False
     now = time.time()
-    if not d["lock"].acquire(blocking=False):                # a start / stop is running
+    if d["job"] or not d["lock"].acquire(blocking=False):    # a start / stop is running
         return True
     try:
         c = d["client"]
@@ -1018,11 +1093,11 @@ def _gpb_watch_one(i, d):
             if now - d["t_stat"] >= GPB_STATUS_S:
                 _gpb_refresh(d)
             lost = d["want"] and d["zustand"] == "streaming" and d["net"] != "ap" and d["ls"] in (4, 5, 7)
-            if not lost and not (d["want"] and d["zustand"] in ("error", "reconnecting")):
+            if not lost and not (d["want"] and d["zustand"] in ("error", "reconnecting", "connected")):
                 return True
             if lost and d["fehler"] != "stream lost - restarting":
                 _gpb_log("GoPro %s: stream lost - restarting" % (d["rec"].get("name") or "?"))
-                _gpb_set(d, zustand="reconnecting", fehler="stream lost - restarting", next=now + GPB_BACKOFF[0], retry=0)
+                _gpb_set(d, zustand="reconnecting", quelle="", fehler="stream lost - restarting", next=now + GPB_BACKOFF[0], retry=0)
                 return True
         else:
             if d["rec"].get("cohn") and now - d["t_stat"] >= GPB_STATUS_S:   # out of Bluetooth range: battery over COHN
@@ -1039,28 +1114,24 @@ def _gpb_watch_one(i, d):
         n = d["retry"]
         d["retry"], d["next"] = n + 1, now + GPB_BACKOFF[min(n, len(GPB_BACKOFF) - 1)]
         if d["zustand"] != "reconnecting":
-            _gpb_set(d, zustand="reconnecting")
+            _gpb_set(d, zustand="reconnecting", quelle="" if d["want"] else d["quelle"])
     finally:
         d["lock"].release()
-    if d["want"]:                                            # outside the lock: gpb_start takes it
+    if d["want"]:
         _gpb_log("GoPro %s: restarting the stream (try %d)" % (d["rec"].get("name") or "?", d["retry"]))
-        src = gpb_start(i)
-        if src:
-            f = globals().get("gopro_neue_quelle")             # G1 may want to know (the address is normally the same)
-            if callable(f):
-                try:
-                    f(i, src)
-                except Exception:
-                    pass
-        else:
-            _gpb_set(d, zustand="reconnecting")
+        g = GOPRO.get(i)
+        if g is not None:
+            g["quelle"] = ""                                 # G1 asks gpb_start again for the address
+        _gpb_job(i, lambda: gpb_start_now(i))
     else:
-        try:
-            with d["lock"]:
-                _gpb_conn(d)
-                _gpb_refresh(d)
-        except GpbError as e:
-            _gpb_set(d, zustand="reconnecting", fehler=str(e))
+        def again():
+            try:
+                with d["lock"]:
+                    _gpb_conn(d)
+                    _gpb_refresh(d)
+            except GpbError as e:
+                _gpb_set(d, zustand="reconnecting", fehler=str(e))
+        _gpb_job(i, again)
     return True
 
 
@@ -1112,17 +1183,15 @@ def gpb_scan_start():
     s = GPB["scan"]
     if s["running"]:
         return True, ""
-    if gpb_bleak() is None:
-        return False, "bleak missing - install it on this page"
-    if not gpb_adapter():
-        return False, "no Bluetooth adapter"
+    ok_, why = gpb_faehig_ok()
+    if not ok_:
+        return False, why
     s.update(running=True, err="")
 
     def run():
         try:
             found = gopro_ble_scan(8.0)
-            known = {d["rec"]["addr"].upper() for d in GPB["dev"].values()}
-            s["found"] = [dict(f, known=f["addr"].upper() in known) for f in found][:12]
+            s["found"] = found[:12]
             s["err"] = "" if found else "no GoPro found - is it in pairing mode and near?"
         except Exception as e:
             s["found"], s["err"] = [], str(e) if str(e) in GPB_TXT_ERRS else "Bluetooth search failed"
@@ -1134,26 +1203,33 @@ def gpb_scan_start():
 def gpb_state(lang=None):
     L = norm_lang(lang)
     T = lambda s: tr_err(s, L) if s else ""
+    gopro_sync()
+    for gid in [k for k, d in GPB["dev"].items() if (GOPRO.get(k) or {}).get("weg") != "ble"]:   # removed at G1: forget the pairing
+        gpb_forget(gid)
     devs = []
-    for i, d in GPB["dev"].items():
+    for gid, g in GOPRO.items():
+        if g.get("weg") != "ble":
+            continue
+        d = GPB["dev"].get(gid) or _gpb_new({})
         r = d["rec"]
-        devs.append({"id": i, "name": r.get("name") or "GoPro", "modell": r.get("modell") or "", "fw": r.get("fw") or "", "zustand": d["zustand"],
-                     "akku": d["akku"], "bars": d["bars"], "hot": d["hot"], "busy": d["busy"], "fehler": T(d["fehler"]), "quelle": d["quelle"],
-                     "net": d["net"], "home_ssid": r.get("home_ssid") or "", "step": d["step"], "want": d["want"], "job": d["job"],
+        devs.append({"id": gid, "name": g.get("name") or "GoPro", "paired": bool(r.get("addr")), "bt_name": r.get("name") or "",
+                     "modell": r.get("modell") or "", "fw": r.get("fw") or "", "zustand": d["zustand"], "akku": d["akku"], "bars": d["bars"],
+                     "hot": d["hot"], "fehler": T(d["fehler"]), "net": d["net"], "home_ssid": r.get("home_ssid") or "", "step": d["step"],
+                     "want": d["want"], "job": d["job"], "aktiv": bool(g.get("aktiv")),
                      "cohn_ok": gpb_model_no(r.get("modell")) >= 12, "cohn": bool(r.get("cohn")), "cohn_ip": (r.get("cohn") or {}).get("ip", ""),
                      "known": list(r.get("known") or [])})
     s = GPB["scan"]
-    known = {d["rec"]["addr"].upper() for d in GPB["dev"].values() if d["rec"].get("modell")}
+    known = {d["rec"]["addr"].upper() for d in GPB["dev"].values() if d["rec"].get("addr")}
     hs = STATE.get("hotspot") if isinstance(STATE.get("hotspot"), dict) else {}
-    return {"bleak": gpb_bleak() is not None, "adapter": gpb_adapter(), "install": dict(GPB["install"], msg=T(GPB["install"]["msg"])),
-            "scan": {"running": s["running"], "found": [dict(f, known=f["addr"].upper() in known) for f in s["found"]], "err": T(s["err"])}, "devices": devs,
-            "hotspot": {"on": bool(hs.get("on")), "ssid": CFG.get("hotspot_ssid") or ""}, "res": str(CFG.get("gopro_ble_res") or "720"),
-            "g1": "gopro_start" in globals()}
+    ok_, why = gpb_faehig_ok()
+    return {"bleak": gpb_bleak() is not None, "adapter": gpb_adapter(), "ok": ok_, "why": T(why), "install": dict(GPB["install"], msg=T(GPB["install"]["msg"])),
+            "scan": {"running": s["running"], "found": [dict(f, known=f["addr"].upper() in known) for f in s["found"]], "err": T(s["err"])},
+            "devices": devs, "pairing": bool(GPB["pairing"]), "hotspot": {"on": bool(hs.get("on")), "ssid": CFG.get("hotspot_ssid") or ""}}
 
 
 def _gpb_job(i, fn):
     """long actions run in the background, the page follows the state"""
-    d = _gpb_dev(i)
+    d = _gpb_dev(i, paired=False)
     if d["job"]:
         return False, "the GoPro is busy - try again in a moment"
     d["job"] = True
@@ -1179,26 +1255,34 @@ def gpb_action(a, d):
         return gpb_install(d.get("confirm") is True)
     if a == "scan":
         return gpb_scan_start()
-    if a == "pair":
+    if a == "pair":                                           # with id: this GoPro of G1; without: a new GoPro is added
         addr = str(d.get("addr") or "")
         if not GPB_ADDR_RE.match(addr):
             return False, "unknown device"
-        if gpb_id(addr) not in GPB["dev"]:
-            GPB["dev"][gpb_id(addr)] = _gpb_new({"addr": addr, "name": str(d.get("name") or "GoPro")[:40], "known": [], "t": int(time.time())})
-            _gpb_pub(gpb_id(addr))
+        if i:
+            _gpb_dev(i, paired=False)
+        if GPB["pairing"]:
+            return False, "the GoPro is busy - try again in a moment"
+        GPB["pairing"] = addr
+        GPB["scan"]["err"] = ""
 
         def pair():
             try:
-                gpb_pair(addr, d.get("name"))
-            except GpbError:
-                x = GPB["dev"].get(gpb_id(addr))
-                if x is not None and not x["rec"].get("modell"):             # never paired: not a device of the list
-                    GPB["scan"]["err"] = x["fehler"]
-                    GPB["dev"].pop(gpb_id(addr), None); GOPRO.pop(gpb_id(addr), None)
-                raise
-        return _gpb_job(gpb_id(addr), pair)
-    if i not in GPB["dev"]:
-        return False, "unknown device"
+                gid = gpb_pair(addr, d.get("name"), i or None)
+                GPB["scan"]["found"] = [f for f in GPB["scan"]["found"] if f["addr"].upper() != addr.upper()]
+                GPB["last_pair"] = gid
+            except GpbError as e:
+                GPB["scan"]["err"] = str(e)
+                if i and i in GPB["dev"]:
+                    _gpb_set(GPB["dev"][i], fehler=str(e))
+            finally:
+                GPB["pairing"] = ""
+        threading.Thread(target=pair, name="gopro-ble-pair", daemon=True).start()
+        return True, ""
+    try:
+        x = _gpb_dev(i, paired=a not in ("forget", "net"))
+    except GpbError as e:
+        return False, str(e)
     if a == "forget":
         gpb_forget(i); return True, ""
     if a == "power":
@@ -1208,27 +1292,28 @@ def gpb_action(a, d):
         net = d.get("net")
         if net not in ("hotspot", "home", "ap"):
             return False, "invalid value"
-        x = GPB["dev"][i]; x["net"] = x["rec"]["net"] = net
+        x["net"] = x["rec"]["net"] = net
         if d.get("ssid") is not None:
             x["rec"]["home_ssid"] = str(d.get("ssid") or "")[:32]
-        gpb_save(); _gpb_set(x)
+        if x["rec"].get("addr"):
+            gpb_save()
         return True, ""
-    if a == "stream":
+    if a == "wlan":
+        net, ssid, pw = d.get("net") or x["net"], str(d.get("ssid") or "")[:32], str(d.get("password") or "")[:63]
+        d["password"] = None
+        _gpb_secret(pw)
+        return _gpb_job(i, lambda: gpb_wlan(i, net, ssid, pw))
+    if a == "stream":                                         # the window: start / stop through G1 (extra camera)
         if d.get("on") is not True:
-            g1 = globals().get("gopro_stop")
-            return _gpb_job(i, lambda: g1(i) if callable(g1) else gpb_stop(i))
+            return gopro_stop(i)
         net, ssid, pw = d.get("net"), str(d.get("ssid") or "")[:32], str(d.get("password") or "")[:63]
         d["password"] = None
         _gpb_secret(pw)
-        x = GPB["dev"][i]
-        if net in ("hotspot", "home", "ap"):
-            x["net"] = net
-        if ssid:
-            x["rec"]["home_ssid"] = ssid
-        g1 = globals().get("gopro_start")                     # G1: registers the extra camera with the source
-        if callable(g1) and not pw:
-            return _gpb_job(i, lambda: g1(i))
-        return _gpb_job(i, lambda: gpb_start(i, net, ssid, pw))
+
+        def go():
+            gopro_start(i)
+            gpb_start_now(i, net, ssid, pw)
+        return _gpb_job(i, go)
     if a == "cohn":
         ssid, pw = str(d.get("ssid") or "")[:32], str(d.get("password") or "")[:63]
         d["password"] = None
@@ -1237,9 +1322,7 @@ def gpb_action(a, d):
     return False, "unknown action"
 
 
-gopro_register_weg("ble", start=gpb_start, stop=gpb_stop, status=gpb_status, faehig=gpb_faehig)
-if any(x["rec"].get("modell") for x in GPB["dev"].values()):
-    pass                                                     # nothing at start: the watch begins with the first action
+gopro_register_weg("ble", start=gpb_start, stop=gpb_stop, status=gpb_status, faehig=GPB_FAEHIG)
 
 
 # ---- web: /api/gopro/ble (administrator only; never with an app key, not in operator mode) ------------------------------------
@@ -1312,6 +1395,9 @@ if GUI_OK:
                     return
                 f = GPB["scan"]["found"][int(sid[5:])]
                 kw.update(addr=f["addr"], name=f["name"])
+                free = [x["id"] for x in gpb_state()["devices"] if not x["paired"]]
+                if free:
+                    kw["id"] = free[0]                        # a GoPro added on /gopro without pairing yet
             elif sid:
                 kw["id"] = sid
             if a == "stream" and kw.get("on"):
@@ -1408,6 +1494,17 @@ zd_exec(GOPRO_BLE_PY, '639zzzzzzf_gopro_ble.py')
 GPB_ZUSTAND = {"off": "off", "connecting": "connecting …", "connected": "connected", "asleep": "asleep", "starting": "starting …",
                "streaming": "streaming", "reconnecting": "reconnecting …", "error": "error"}
 _HX_GPB = {
+    "HERO9 and newer: Bluetooth (Open GoPro)": ("HERO9 und neuer: Bluetooth (Open GoPro)", "HERO9 et plus récente : Bluetooth (Open GoPro)",
+                                                "HERO9 e successive: Bluetooth (Open GoPro)", "HERO9 e pli nov: Bluetooth (Open GoPro)"),
+    "Bluetooth (Open GoPro)": ("Bluetooth (Open GoPro)", "Bluetooth (Open GoPro)", "Bluetooth (Open GoPro)", "Bluetooth (Open GoPro)"),
+    "pairing …": ("koppelt …", "appairage …", "associazione …", "cuppla …"),
+    "Forget pairing": ("Kopplung vergessen", "Oublier l'appairage", "Dimentica l'associazione", "Emblidar la cuppladura"),
+    "Bring the GoPro into the WLAN": ("GoPro ins WLAN bringen", "Connecter la GoPro au Wi-Fi", "Connetti la GoPro al Wi-Fi", "Colliar la GoPro cun il WLAN"),
+    "not paired yet - search and pair first": ("noch nicht gekoppelt – zuerst suchen und koppeln", "pas encore appairée – d'abord rechercher et appairer",
+                                               "non ancora associata – prima cerca e associa", "anc betg cupplada – l'emprim tschertgar e cupplar"),
+    "waiting for the GoPro stream": ("wartet auf den Strom der GoPro", "attente du flux de la GoPro", "in attesa dello stream della GoPro",
+                                     "spetga il flux da la GoPro"),
+    "stopped": ("gestoppt", "arrêté", "fermato", "fermà"),
     "GoPro over Bluetooth (Hero 9 and newer)": ("GoPro über Bluetooth (Hero 9 und neuer)", "GoPro par Bluetooth (Hero 9 et plus récente)",
                                                 "GoPro via Bluetooth (Hero 9 e successive)", "GoPro via Bluetooth (Hero 9 e pli nov)"),
     "GoPro (Bluetooth)": ("GoPro (Bluetooth)", "GoPro (Bluetooth)", "GoPro (Bluetooth)", "GoPro (Bluetooth)"),
@@ -1553,8 +1650,8 @@ for _k, _v in _HX_GPB.items():
 GPB_TXT_ERRS = {k for k in _HX_GPB if k[:1].islower()}
 GPB_KEYS = [k for k in _HX_GPB if k not in ("Close",)]
 
-# ---- web: the Bluetooth box. On G1's page «GoPro hinzufügen» in the element #gopro-weg-ble (or MWGoProBle.mount(el));
-#      until that page exists: its own card on the page Kameras. Only the administrator sees it (/api/gopro/ble answers 403 else).
+# ---- web: on G1's page /gopro («GoPro hinzufügen») a step box in the card of every GoPro with the way «ble»: Bluetooth search,
+#      pair, on / off, WLAN for the stream, COHN, battery. Start / Stop / Remove stay G1's buttons. Only the administrator.
 GOPRO_BLE_JS = r"""
 <script>
 Object.assign(I18N.de, /*GPBDE*/{});
@@ -1563,8 +1660,8 @@ Object.assign(I18N.de, /*GPBDE*/{});
   const T = s => (typeof t === "function" ? t(s) : s);
   const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
   const LG = () => (typeof LANG !== "undefined" && LANG) || "en";
-  let S = null, root = null, own = false;
-  const F = {};                                            // per device: WLAN name / password typed so far (only in this page)
+  let S = null;
+  const F = {};                                            // per GoPro: WLAN name / password typed so far (only in this page)
   async function get() {
     try { const r = await fetch("/api/gopro/ble?lang=" + LG(), {cache: "no-store"}); if (!r.ok && r.status !== 400) return null; return (await r.json()).state || null; }
     catch (e) { return null; }
@@ -1575,135 +1672,127 @@ Object.assign(I18N.de, /*GPBDE*/{});
     if (!q || !q.ok) toast("⚠ " + ((q && q.error) || T("error")));
     draw(true); return q;
   }
-  function btn(txt, cls, fn, dis) { const b = E("button", cls || "sec", txt); b.type = "button"; b.disabled = !!dis; b.onclick = fn; b.style.margin = "4px 6px 0 0"; return b; }
-  function host() {
-    let h = document.getElementById("gopro-weg-ble");
-    if (h) return h;
-    const main = document.querySelector("main"); if (!main) return null;
-    h = document.getElementById("gpb-card");
-    if (!h) {
-      h = E("section", "card"); h.id = "gpb-card"; h.style.marginTop = "16px"; own = true;
-      const fc = document.getElementById("fleet-card"); if (fc) fc.before(h); else main.appendChild(h);
-    }
-    return h;
-  }
-  function busy() { const a = document.activeElement; return root && a && root.contains(a) && /^(INPUT|SELECT)$/.test(a.tagName); }
-  function dev(x) {
+  function btn(txt, cls, fn, dis) { const b = E("button", cls || "sec", txt); b.type = "button"; b.disabled = !!dis; b.onclick = fn; return b; }
+  function row() { return E("div", "gp-row"); }
+  function box(x) {
     const f = F[x.id] = F[x.id] || {ssid: x.home_ssid || "", pw: ""};
-    const c = E("div"); c.className = "gpb-dev"; c.dataset.id = x.id;
-    c.style.cssText = "border:1px solid var(--line,#3a4660);border-radius:10px;padding:10px;margin-top:10px";
-    c.appendChild(E("b", "", "📷 " + x.name + (x.modell && x.modell !== x.name ? " · " + x.modell : "")));
-    const st = [T(Z[x.zustand] || x.zustand)];
+    const c = E("div", "gp-step gpb-box"); c.dataset.id = x.id;
+    c.appendChild(E("b", "", "📶 " + T("Bluetooth (Open GoPro)")));
+    if (!S.bleak) {
+      c.appendChild(E("p", "", T("For Bluetooth MoveEye needs the package «bleak» (apt python3-bleak, otherwise pip).")));
+      const r = row(); r.appendChild(btn("⬇ " + T("Install «bleak»"), "sec", () => { if (confirm(T("Install the Bluetooth package «bleak» now?"))) act("install", {confirm: true}); }, S.install.running));
+      c.appendChild(r);
+      if (S.install.msg) c.appendChild(E("div", S.install.ok === false ? "gp-warn" : "gp-sec", S.install.msg));
+      return c;
+    }
+    if (!S.adapter) c.appendChild(E("div", "gp-warn", "⚠ " + T("no Bluetooth adapter")));
+    if (!x.paired) {
+      const ol = E("ol");
+      ol.append(E("li", "", T("On the GoPro: Preferences → Wireless connections → Connect device → GoPro Quik app (pairing mode).")),
+                E("li", "", T("Search, then pair. MoveEye keeps the camera awake and restarts a lost stream by itself.")));
+      c.appendChild(ol);
+      const r = row(); r.appendChild(btn("🔍 " + (S.scan.running ? T("searching …") : T("Bluetooth search")), "sec", () => act("scan"), S.scan.running || !S.adapter));
+      c.appendChild(r);
+      (S.scan.found || []).filter(g => !g.known).forEach(g => {
+        const r2 = row(); r2.className = "gp-row gpb-found";
+        r2.append(E("span", "", "📡 " + (g.name || "GoPro") + (g.rssi != null ? " (" + g.rssi + " dBm)" : "")), btn("🔗 " + T("Pair"), "", () => act("pair", {id: x.id, addr: g.addr, name: g.name}), !!S.pairing));
+        c.appendChild(r2);
+      });
+      if (S.pairing) c.appendChild(E("div", "gp-sec", "🔗 " + T("pairing …")));
+      if (S.scan.err) c.appendChild(E("div", "gp-warn", "⚠ " + S.scan.err));
+      return c;
+    }
+    const st = [T(Z[x.zustand] || x.zustand), x.modell];
     if (x.akku != null) st.push("🔋 " + T("Battery") + " " + x.akku + " %");
     if (x.hot) st.push("🔥 " + T("too hot"));
     if (x.cohn) st.push("🏠 " + T("COHN ready") + (x.cohn_ip ? " · " + x.cohn_ip : ""));
-    const sl = E("div", "mut", st.join(" · ")); sl.className = "mut gpb-st"; c.appendChild(sl);
-    if (x.fehler) { const e = E("div", "err", "⚠ " + x.fehler); e.style.display = "block"; c.appendChild(e); }
-    if (x.zustand === "streaming" && x.quelle) c.appendChild(E("div", "mut", T("Source") + ": " + x.quelle));
-    const lab = E("label", "mut", T("Network for the stream")); lab.style.cssText = "display:block;margin-top:8px";
-    const s = E("select"); s.style.width = "100%"; s.setAttribute("aria-label", T("Network for the stream") + " – " + x.name);
+    c.appendChild(E("div", "gp-sec gpb-st", st.filter(Boolean).join(" · ")));
+    if (x.fehler) c.appendChild(E("div", "gp-warn", "⚠ " + x.fehler));
+    const s = E("select"); s.setAttribute("aria-label", T("Network for the stream"));
     [["hotspot", T("MoveEye's own WLAN")], ["home", T("Home WLAN")], ["ap", T("Camera WLAN (second WLAN adapter)")]]
       .forEach(([k, n]) => { const o = E("option", "", n); o.value = k; s.appendChild(o); });
     s.value = x.net; s.onchange = () => act("net", {id: x.id, net: s.value});
-    c.append(lab, s);
+    const r1 = row(); r1.append(E("span", "mut", T("Network for the stream")), s); c.appendChild(r1);
     if (x.net === "home" || x.cohn_ok) {
-      const w = E("div"); w.style.marginTop = "6px"; w.hidden = x.net !== "home" && !x.cohn_ok;
       const a = E("input"); a.type = "text"; a.maxLength = 32; a.placeholder = T("WLAN name"); a.value = f.ssid; a.autocomplete = "off";
       a.setAttribute("aria-label", T("WLAN name")); a.oninput = () => { f.ssid = a.value; };
       const p = E("input"); p.type = "password"; p.maxLength = 63; p.placeholder = T("WLAN password"); p.value = f.pw; p.autocomplete = "new-password";
       p.setAttribute("aria-label", T("WLAN password")); p.oninput = () => { f.pw = p.value; };
-      a.style.cssText = p.style.cssText = "width:100%;margin-top:4px";
-      w.append(a, p, E("div", "mut", T("The password goes to the camera only once and is never saved."))); c.appendChild(w);
+      const r2 = row(); r2.append(a, p); c.appendChild(r2);
+      c.appendChild(E("div", "gp-sec", T("The password goes to the camera only once and is never saved.") +
+                    (x.known.length ? " · " + T("known WLANs") + ": " + x.known.join(", ") : "")));
     }
-    const b = E("div", "btns");
-    const off = ["off", "asleep", "error"].includes(x.zustand);
-    b.appendChild(btn(off ? "⏻ " + T("On") : "⏾ " + T("Off"), "sec", () => act("power", {id: x.id, on: off}), x.job));
-    b.appendChild(x.want || x.zustand === "streaming"
-      ? btn("⏹ " + T("Stop stream"), "sec", () => act("stream", {id: x.id, on: false}), x.job)
-      : btn("▶ " + T("Start stream"), "", () => { const pw = f.pw; f.pw = ""; act("stream", {id: x.id, on: true, net: x.net, ssid: f.ssid, password: pw}); }, x.job));
-    b.appendChild(btn("🔄 " + T("Reconnect"), "sec", () => act("power", {id: x.id, on: true}), x.job));
-    if (x.cohn_ok) b.appendChild(btn("🏠 " + T("Set up COHN (home network, Hero 12+)"), "sec", () => { const pw = f.pw; f.pw = ""; act("cohn", {id: x.id, ssid: f.ssid, password: pw}); }, x.job));
-    b.appendChild(btn("🗑 " + T("Forget"), "sec", () => { if (confirm(T("Forget this GoPro? It must be paired again afterwards."))) act("forget", {id: x.id}); }, x.job));
-    c.appendChild(b);
+    const off = ["off", "asleep"].includes(x.zustand);
+    const r3 = row();
+    r3.appendChild(btn(off ? "⏻ " + T("On") : "⏾ " + T("Off"), "sec", () => act("power", {id: x.id, on: off}), x.job));
+    if (x.net !== "ap") r3.appendChild(btn("📶 " + T("Bring the GoPro into the WLAN"), "sec", () => { const pw = f.pw; f.pw = ""; act("wlan", {id: x.id, net: x.net, ssid: f.ssid, password: pw}); }, x.job));
+    r3.appendChild(btn("🔄 " + T("Reconnect"), "sec", () => act("power", {id: x.id, on: true}), x.job));
+    if (x.cohn_ok) r3.appendChild(btn("🏠 " + T("Set up COHN (home network, Hero 12+)"), "sec", () => { const pw = f.pw; f.pw = ""; act("cohn", {id: x.id, ssid: f.ssid, password: pw}); }, x.job));
+    r3.appendChild(btn("✂ " + T("Forget pairing"), "sec", () => { if (confirm(T("Forget this GoPro? It must be paired again afterwards."))) act("forget", {id: x.id}); }, x.job));
+    c.appendChild(r3);
     return c;
   }
+  function busy(c) { const a = document.activeElement; return c && a && c.contains(a) && /^(INPUT|SELECT)$/.test(a.tagName); }
   function draw(force) {
     if (!S) return;
-    root = root || host(); if (!root) return;
-    if (!force && busy()) return;
-    root.innerHTML = ""; root.dataset.gpb = "1";
-    const h = E(own ? "h2" : "b", "", "📷 " + T("GoPro over Bluetooth (Hero 9 and newer)")); if (own) h.style.cssText = "margin:0 0 6px;font-size:17px";
-    root.appendChild(h);
-    if (!S.bleak) {
-      root.appendChild(E("div", "mut", T("For Bluetooth MoveEye needs the package «bleak» (apt python3-bleak, otherwise pip).")));
-      root.appendChild(btn("⬇ " + T("Install «bleak»"), "", () => { if (confirm(T("Install the Bluetooth package «bleak» now?"))) act("install", {confirm: true}); }, S.install.running));
-      if (S.install.msg) root.appendChild(E("div", S.install.ok === false ? "err" : "mut", S.install.msg));
-      return;
-    }
-    if (!S.adapter) { const e = E("div", "err", "⚠ " + T("no Bluetooth adapter")); e.style.display = "block"; root.appendChild(e); }
-    const ol = E("ol", "mut"); ol.style.cssText = "margin:6px 0;padding-left:20px";
-    ol.append(E("li", "", T("On the GoPro: Preferences → Wireless connections → Connect device → GoPro Quik app (pairing mode).")),
-              E("li", "", T("Search, then pair. MoveEye keeps the camera awake and restarts a lost stream by itself.")));
-    root.appendChild(ol);
-    root.appendChild(btn(S.scan.running ? "🔍 " + T("searching …") : "🔍 " + T("Bluetooth search"), "", () => act("scan"), S.scan.running || !S.adapter));
-    (S.scan.found || []).filter(f => !f.known).forEach(f => {
-      const r = E("div"); r.className = "gpb-found"; r.style.marginTop = "6px";
-      r.append(E("span", "", "📡 " + (f.name || "GoPro") + (f.rssi != null ? " (" + f.rssi + " dBm) " : " ")), btn("🔗 " + T("Pair"), "", () => act("pair", {addr: f.addr, name: f.name})));
-      root.appendChild(r);
+    S.devices.forEach(x => {
+      const card = document.querySelector('.gp-card[data-id="' + x.id + '"]'); if (!card) return;
+      const old = card.querySelector(".gpb-box");
+      if (old && !force && busy(old)) return;
+      const nb = box(x);
+      if (old) old.replaceWith(nb);
+      else { const rows = card.querySelectorAll(":scope > .gp-row"); const last = rows[rows.length - 1]; if (last) card.insertBefore(nb, last); else card.appendChild(nb); }
     });
-    if (S.scan.err) { const e = E("div", "err", "⚠ " + S.scan.err); e.style.display = "block"; root.appendChild(e); }
-    if (!S.devices.length) root.appendChild(E("div", "mut", T("No GoPro paired yet.")));
-    S.devices.forEach(x => root.appendChild(dev(x)));
   }
   async function tick() {
     if (!document.hidden) { const s = await get(); if (s) { S = s; draw(false); } }
-    setTimeout(tick, S && (S.scan.running || S.devices.some(d => d.job || /ing/.test(d.zustand))) ? 1200 : 3000);
+    setTimeout(tick, S && (S.scan.running || S.pairing || S.devices.some(d => d.job || /ing$/.test(d.zustand))) ? 1000 : 2000);
   }
-  window.MWGoProBle = {mount(el) { root = el; own = false; draw(true); }, refresh: tick};
-  setTimeout(tick, 500);
+  new MutationObserver(() => { if (S) draw(false); }).observe(document.getElementById("gp-devs") || document.body, {childList: true});
+  setTimeout(tick, 300);
 })();
 </script>
 """
-CAMS_PAGE = CAMS_PAGE.replace("</body>", GOPRO_BLE_JS.replace("/*GPBDE*/{}", json.dumps({k: DE.get(k, k) for k in GPB_KEYS}, ensure_ascii=False), 1)
-                              .replace("/*GPBZ*/{}", json.dumps(GPB_ZUSTAND, ensure_ascii=False), 1) + "</body>", 1)
+GOPRO_PAGE = GOPRO_PAGE.replace("/*ALERTS*/\n</script></body>", "/*ALERTS*/\n</script>" + GOPRO_BLE_JS.replace("/*GPBDE*/{}", json.dumps({k: DE.get(k, k) for k in GPB_KEYS}, ensure_ascii=False), 1)
+                                .replace("/*GPBZ*/{}", json.dumps(GPB_ZUSTAND, ensure_ascii=False), 1) + "</body>", 1)
 
 
 # ---- manual (HELP_PAGE de / en, HELP_X fr / it / rm): end of the section «Kamera & Servos» ------------------------------------
 HELP_GPB = {
-    "de": '<p id="gpb-help"><b>📷 GoPro über Bluetooth (Hero 9 und neuer, Open GoPro):</b> Seite <i>Kameras</i> → «GoPro über Bluetooth» (nur '
-          'Administrator). Einmal «bleak» installieren (MoveEye fragt vorher). An der GoPro <i>Einstellungen → Drahtlosverbindungen → Gerät '
-          'verbinden → GoPro Quik</i>, dann «Bluetooth-Suche» und «Koppeln». Danach: ⏻ Ein / ⏾ Aus (schlafen), 🔋 Akku, ▶ Strom starten: die '
+    "de": '<p id="gpb-help"><b>📷 GoPro über Bluetooth (Hero 9 und neuer, Open GoPro):</b> <i>Kameras → GoPro hinzufügen</i>, Weg «HERO9 und neuer: '
+          'Bluetooth (Open GoPro)» (nur Administrator). Einmal «bleak» installieren (MoveEye fragt vorher). An der GoPro <i>Einstellungen → Drahtlosverbindungen → Gerät '
+          'verbinden → GoPro Quik</i>, dann «Bluetooth-Suche» und «Koppeln» im Kasten «Bluetooth» der Karte. Danach: ⏻ Ein / ⏾ Aus (schlafen), 🔋 Akku, «GoPro ins WLAN bringen», ▶ Start: die '
           'GoPro geht ins <b>eigene WLAN von MoveEye</b> oder ins <b>Heim-WLAN</b> und schickt ihr Bild per RTMP an MoveEye – es erscheint wie '
           'eine weitere Kamera. Das WLAN-Passwort geht nur einmal an die Kamera und wird nie gespeichert. <b>Kamera-WLAN</b> (Vorschau-Strom) '
           'nur mit einem zweiten WLAN-Stick. Ab Hero 12: «COHN einrichten» – die Kamera bleibt im Heimnetz, Zertifikat und Zugang liegen nur '
           'in <code>~/.config/motionwatch/gopro_ble.json</code> (Rechte 600). MoveEye hält die Kamera wach (alle 3 s) und startet einen '
           'abgebrochenen Strom oder eine verlorene Verbindung selbst neu (stille Meldung im Protokoll, kein Alarm).</p>',
-    "en": '<p id="gpb-help"><b>📷 GoPro over Bluetooth (Hero 9 and newer, Open GoPro):</b> page <i>Cameras</i> → «GoPro over Bluetooth» '
-          '(administrator only). Install «bleak» once (MoveEye asks first). On the GoPro <i>Preferences → Wireless connections → Connect device '
-          '→ GoPro Quik</i>, then «Bluetooth search» and «Pair». Then: ⏻ On / ⏾ Off (sleep), 🔋 battery, ▶ Start stream: the GoPro joins '
+    "en": '<p id="gpb-help"><b>📷 GoPro over Bluetooth (Hero 9 and newer, Open GoPro):</b> <i>Cameras → Add GoPro</i>, way «HERO9 and newer: Bluetooth '
+          '(Open GoPro)» (administrator only). Install «bleak» once (MoveEye asks first). On the GoPro <i>Preferences → Wireless connections → Connect device '
+          '→ GoPro Quik</i>, then «Bluetooth search» and «Pair» in the box «Bluetooth» of the card. Then: ⏻ On / ⏾ Off (sleep), 🔋 battery, «Bring the GoPro into the WLAN», ▶ Start: the GoPro joins '
           '<b>MoveEye\'s own WLAN</b> or the <b>home WLAN</b> and sends its picture to MoveEye over RTMP – it appears like another camera. '
           'The WLAN password goes to the camera only once and is never saved. <b>Camera WLAN</b> (preview stream) only with a second WLAN '
           'adapter. From Hero 12: «Set up COHN» – the camera stays on the home network, certificate and access are kept only in '
           '<code>~/.config/motionwatch/gopro_ble.json</code> (rights 600). MoveEye keeps the camera awake (every 3 s) and restarts a lost '
           'stream or connection by itself (quiet note in the log, no alarm).</p>',
-    "fr": '<p id="gpb-help"><b>📷 GoPro par Bluetooth (Hero 9 et plus récente, Open GoPro) :</b> page <i>Caméras</i> → « GoPro par Bluetooth » '
-          '(administrateur seulement). Installer une fois « bleak » (MoveEye demande avant). Sur la GoPro <i>Préférences → Connexions sans fil → '
+    "fr": '<p id="gpb-help"><b>📷 GoPro par Bluetooth (Hero 9 et plus récente, Open GoPro) :</b> <i>Caméras → Ajouter une GoPro</i>, voie « HERO9 et plus '
+          'récente : Bluetooth (Open GoPro) » (administrateur seulement). Installer une fois « bleak » (MoveEye demande avant). Sur la GoPro <i>Préférences → Connexions sans fil → '
           'Connecter un appareil → GoPro Quik</i>, puis « Recherche Bluetooth » et « Appairer ». Ensuite : ⏻ allumer / ⏾ éteindre (veille), '
           '🔋 batterie, ▶ démarrer le flux : la GoPro rejoint le <b>Wi-Fi propre de MoveEye</b> ou le <b>Wi-Fi de la maison</b> et envoie son '
           'image en RTMP – elle apparaît comme une autre caméra. Le mot de passe Wi-Fi n\'est envoyé qu\'une fois et n\'est jamais enregistré. '
           '<b>Wi-Fi de la caméra</b> seulement avec un deuxième adaptateur Wi-Fi. Dès la Hero 12 : « Configurer COHN » (certificat et accès '
           'seulement dans <code>~/.config/motionwatch/gopro_ble.json</code>, droits 600). MoveEye garde la caméra éveillée et relance tout seul '
           'un flux ou une connexion perdus (note discrète dans le journal, pas d\'alarme).</p>',
-    "it": '<p id="gpb-help"><b>📷 GoPro via Bluetooth (Hero 9 e successive, Open GoPro):</b> pagina <i>Telecamere</i> → «GoPro via Bluetooth» '
-          '(solo amministratore). Installa una volta «bleak» (MoveEye chiede prima). Sulla GoPro <i>Preferenze → Connessioni wireless → '
+    "it": '<p id="gpb-help"><b>📷 GoPro via Bluetooth (Hero 9 e successive, Open GoPro):</b> <i>Telecamere → Aggiungi GoPro</i>, via «HERO9 e successive: '
+          'Bluetooth (Open GoPro)» (solo amministratore). Installa una volta «bleak» (MoveEye chiede prima). Sulla GoPro <i>Preferenze → Connessioni wireless → '
           'Connetti dispositivo → GoPro Quik</i>, poi «Ricerca Bluetooth» e «Associa». Poi: ⏻ accendi / ⏾ spegni (standby), 🔋 batteria, '
           '▶ avvia lo stream: la GoPro entra nel <b>Wi-Fi proprio di MoveEye</b> o nel <b>Wi-Fi di casa</b> e invia l\'immagine via RTMP – '
           'appare come un\'altra telecamera. La password del Wi-Fi va alla telecamera una sola volta e non viene mai salvata. <b>Wi-Fi della '
           'telecamera</b> solo con un secondo adattatore Wi-Fi. Dalla Hero 12: «Configura COHN» (certificato e accesso solo in '
           '<code>~/.config/motionwatch/gopro_ble.json</code>, permessi 600). MoveEye tiene sveglia la telecamera e riavvia da solo uno stream '
           'o una connessione persi (nota discreta nel registro, nessun allarme).</p>',
-    "rm": '<p id="gpb-help"><b>📷 GoPro via Bluetooth (Hero 9 e pli nov, Open GoPro):</b> pagina <i>Cameras</i> → «GoPro via Bluetooth» '
-          '(mo administratur). Installar ina giada «bleak» (MoveEye dumonda avant). Sin la GoPro <i>Preferenzas → Colliaziuns senza fil → '
+    "rm": '<p id="gpb-help"><b>📷 GoPro via Bluetooth (Hero 9 e pli nov, Open GoPro):</b> <i>Cameras → Agiuntar ina GoPro</i>, via «HERO9 e pli nov: '
+          'Bluetooth (Open GoPro)» (mo administratur). Installar ina giada «bleak» (MoveEye dumonda avant). Sin la GoPro <i>Preferenzas → Colliaziuns senza fil → '
           'Colliar in apparat → GoPro Quik</i>, lura «Tschertga Bluetooth» e «Cupplar». Suenter: ⏻ en / ⏾ ora (durmir), 🔋 accu, ▶ cumenzar '
           'il flux: la GoPro entra en il <b>WLAN agen da MoveEye</b> u en il <b>WLAN da chasa</b> e trametta ses maletg via RTMP – el cumpara '
           'sco ina ulteriura camera. Il pled-clav dal WLAN va mo ina giada a la camera e na vegn mai memorisà. <b>WLAN da la camera</b> mo cun '
