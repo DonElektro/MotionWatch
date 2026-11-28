@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3.80.2 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3.81.0 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -493,6 +493,27 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
 - 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3.81.0
+3.81.0: Roboter-Labor aufgeräumt: fünf Reiter (Fahren, Haltung, Bauen, Welt, Messen) mit aufklappbaren Gruppen und Suche wie
+im Simulator, Modellwahl als Liste mit Bildern, Versionsnummer oben rechts.
+Das Roboter-Labor lässt sich jetzt mit Tastatur, Controller oder einem virtuellen Stick stufenlos steuern; die Belegung ist
+frei wählbar (Profile, Achsen umkehren, Totzone). Neu kann der Roboter auch an Ort stehen und den Körper verschieben, heben,
+drehen und neigen, während die Füsse am Boden bleiben.
+Gangart «KI»: der Roboter tastet das Gelände vor sich ab, erkennt Stufe, Treppe, Graben, Lücke, Geröll, Rampe, Rohr und Balken
+samt Massen, wählt eine Strategie und setzt jeden Fuss auf sicheren Boden; neue Prüfstrecken (Stufe 10 cm, Treppe, Lücke 15 /
+30 cm, Rohr 6 / 10 cm, Balken, Geröll).
+Die Gang-KI lernt im Hintergrund: pro Hindernis probiert sie Strategien aus, merkt sich das Beste und nimmt es beim nächsten
+gleichen oder ähnlichen Hindernis gleich wieder; nach 12 Fehlschlägen umgeht sie es; «Vergessen» löscht das Gelernte.
+Neue Modelle: Segment-Roboter mit 3 Segmenten (6 Beine) und 2 Segmenten (4 Beine, Ring gesperrt) sowie die klassischen
+Laufroboter Vierbeiner (Schritt, Trab, Passgang) und Sechsbeiner (Dreifuss, Wellengang, Raupengang).
+Menschliche Figuren wirken matter und natürlicher (weniger Glanz, kein Randlicht, Stoffe je nach Kleidung) und haben einen
+weichen Kontaktschatten unter den Füssen.
+So testest du: am PC Mehr → Roboter öffnen und die fünf Reiter durchklicken (Gruppen auf- und zuklappen, Suche). Im Reiter
+«Fahren» die Gangart «KI» wählen und mit Tastatur, Controller oder dem virtuellen Stick auf die Prüfstrecke «Treppe»
+zufahren – der Roboter steigt Stufe für Stufe; beim zweiten Mal nimmt er gleich das Gelernte, «Vergessen» löscht es.
+In der Modellwahl «Vierbeiner» oder «Sechsbeiner» wählen und eine ihrer Gangarten fahren. In einer Szene mit Personen die
+matteren Figuren und den Schatten unter den Füssen ansehen.
 
 NEU IN 3.80.2
 3.80.2: Im Roboter-Labor öffnet der neue Knopf «Ring öffnen (gerade)» den geschlossenen Ring: Der Roboter rollt den Riegel
