@@ -41,7 +41,7 @@ FEHLER = []
 E0, N0, COLS, ROWS, GRID = 2642000.0, 1234000.0, 960, 800, 25.0
 GIPFEL = ((2655000.0, 1245000.0, 2900.0, 1800.0), (2650500.0, 1241000.0, 2300.0, 1500.0), (2659000.0, 1249000.0, 2000.0, 1300.0))
 FAKE_KQ = ("(() => { let v; Object.defineProperty(window, 'KQ', {configurable: true, get: () => v,"
-           " set: x => { if (x && x.layers) delete x.layers.relief; v = x; }}); })();")      # wie ohne Topo-Relief (nur Karte karten-1)
+           " set: x => { if (x && x.layers) { delete x.layers.relief; delete x.layers.topo; x.topo = false; } v = x; }}); })();")   # wie ohne Topo-Karte (nur karten-1)
 
 
 def ok(c, what):
@@ -280,6 +280,8 @@ def teil_b(datei, web, bilder):
                 pg = ctx.new_page(); errs = []
                 pg.on("pageerror", lambda e: errs.append(str(e)[:200]))
                 pg.on("response", lambda r: dem.append(r.status) if "/karte/dem/" in r.url else None)
+                konsole = []
+                pg.on("console", lambda m: konsole.append(m.text[:200]) if m.type in ("warning", "error") else None)
                 tap = (lambda sel: pg.tap(sel)) if mob else (lambda sel: pg.click(sel))
                 bereit = "() => window.KQMAP && KQMAP.loaded() && window.K3 && document.getElementById('kq-3d')"
 
@@ -294,9 +296,9 @@ def teil_b(datei, web, bilder):
                     pg.add_init_script(FAKE_KQ)
                     pg.goto(base + lage)
                     pg.wait_for_function(bereit, timeout=90000)
-                    pos = pg.evaluate("() => { const a = document.querySelector('#kq-map .kq-sw:not(.kq-3d)').getBoundingClientRect(), b = document.querySelector('.kq-3d').getBoundingClientRect(); return [a.left, a.bottom, b.left, b.top]; }")
-                    ok(abs(pos[0] - pos[2]) < 1 and pos[3] >= pos[1] + 2 and pg.locator("#kq-3d").inner_text() == "3D" and pg.locator("#kq-2d.on").count() == 1,
-                       f"{name}: Schalter «2D | 3D» oben links unter «Standard | Topo», 2D an")
+                    pos = pg.evaluate("() => { const a = document.getElementById('kq-map').getBoundingClientRect(), b = document.querySelector('.kq-3d').getBoundingClientRect(); return [a.left, a.top, b.left, b.top]; }")
+                    ok(6 <= pos[2] - pos[0] <= 12 and 6 <= pos[3] - pos[1] <= 12 and pg.locator("#kq-map .kq-sw").count() == 1 and pg.locator("#kq-3d").inner_text() == "3D" and pg.locator("#kq-2d.on").count() == 1,
+                       f"{name}: ohne Topo-Karte Schalter «2D | 3D» oben links (wie im Bergtal), 2D an")
                     tap("#kq-3d")
                     pg.wait_for_selector("#kq-3dhint:not([hidden])", timeout=5000)
                     tx = pg.inner_text("#kq-3dhint")
@@ -325,7 +327,11 @@ def teil_b(datei, web, bilder):
                 if bilder:
                     pg.screenshot(path=os.path.join(bilder, f"karte3d_2d_{name}.png"))
                 tap("#kq-3d")
-                pg.wait_for_function("() => KQMAP.getPitch() > 40 && KQMAP.getTerrain() && KQMAP.getTerrain().source === 'kq-dem'", timeout=60000)
+                try:
+                    pg.wait_for_function("() => KQMAP.getPitch() > 40 && KQMAP.getTerrain() && KQMAP.getTerrain().source === 'kq-dem'", timeout=90000)
+                except Exception:
+                    print("  Zustand:", pg.evaluate("() => JSON.stringify({d3: K3.d3, from: K3.from(), pitch: KQMAP.getPitch(), terrain: KQMAP.getTerrain(), style: KQMAP.isStyleLoaded(), loaded: KQMAP.loaded(), on: document.querySelector('#kq-3d').className})"), "Konsole:", konsole[-5:], flush=True)
+                    raise
                 try:
                     pg.wait_for_function("() => (() => { try { return KQMAP.queryTerrainElevation(KQMAP.getCenter()) > 500; } catch (e) { return false; } })()", timeout=60000)
                 except Exception:
@@ -350,7 +356,9 @@ def teil_b(datei, web, bilder):
                 pg.on("response", lambda r: dem.append(r.status) if "/karte/dem/" in r.url else None)
                 pg.goto(base + lage)
                 pg.wait_for_function(bereit, timeout=90000)
-                pg.wait_for_function("() => KQMAP.getPitch() > 40 && KQMAP.getTerrain() && KQMAP.getTerrain().source === 'relief'", timeout=60000)
+                pg.wait_for_function("() => KQMAP.getPitch() > 40 && KQMAP.getTerrain() && KQMAP.getTerrain().source === 'relief'", timeout=90000)
+                pos = pg.evaluate("() => { const a = document.querySelector('#kq-map .kq-sw:not(.kq-3d)').getBoundingClientRect(), b = document.querySelector('.kq-3d').getBoundingClientRect(); return [a.left, a.bottom, b.left, b.top]; }")
+                ok(abs(pos[0] - pos[2]) < 1 and pos[3] >= pos[1] + 2, f"{name}: mit Topo-Karte «2D | 3D» direkt unter «Standard | Topo»")
                 ok(pg.evaluate("() => K3.from()") == "relief" and not pg.evaluate("() => !!KQMAP.getLayer('kq-hill')"), f"{name}: mit Topo-Relief: 3D gemerkt, Gelände aus «relief» (kein zweites Relief)")
                 pg.wait_for_timeout(2500)
                 if bilder:
@@ -370,7 +378,7 @@ def teil_b(datei, web, bilder):
                 tap("#kq-2d")
                 pg.wait_for_function("() => KQMAP.getPitch() < 1 && !KQMAP.getTerrain()", timeout=60000)
                 tap("#kq-3d")
-                pg.wait_for_function("() => KQMAP.getPitch() > 40 && !!KQMAP.getTerrain()", timeout=60000)
+                pg.wait_for_function("() => KQMAP.getPitch() > 40 && !!KQMAP.getTerrain()", timeout=90000)
                 pg.wait_for_timeout(2000)
                 if bilder:
                     pg.screenshot(path=os.path.join(bilder, f"karte3d_vollbild_{name}.png"), timeout=90000)

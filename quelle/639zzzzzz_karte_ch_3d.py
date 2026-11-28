@@ -405,8 +405,9 @@ K3_JS = r"""
       let n = 0;
       const elev = () => { try { return map.queryTerrainElevation(map.getCenter()) || 0; } catch (e) { return 0; } };
       const tilt = () => map.easeTo({pitch: 60, bearing: map.getBearing() || -20, zoom: Math.max(map.getZoom(), 9), duration: quick ? 0 : 700});
-      nudgeT = setInterval(() => { if (!K3.d3 || !map.getTerrain()) { clearInterval(nudgeT); return; }
-        n++; if (elev() > 0 || n > 12) { clearInterval(nudgeT); tilt();
+      nudgeT = setInterval(() => { if (!K3.d3) { clearInterval(nudgeT); return; }
+        n++; if (!map.getTerrain()) { if (n > 60) clearInterval(nudgeT); else apply(); return; }   // the style was still loading: again
+        if (elev() > 0 || n > 12) { clearInterval(nudgeT); tilt();
           map.once("moveend", () => { if (K3.d3) { const c = map.getCenter(); map.jumpTo({center: [c.lng + 2e-5, c.lat]}); } }); return; }
         if (n % 3 === 0) { const c = map.getCenter(); map.jumpTo({center: [c.lng + (n % 2 ? 2e-5 : -2e-5), c.lat]}); } }, 500);
     } else {
