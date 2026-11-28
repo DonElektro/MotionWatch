@@ -331,7 +331,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_24_0.zip"
-ZD_SHA256 = "64d95a997b5c08d8f44197c5a3584b22eddd1c3e7909d300fcf5db9c9aaff6bf"
+ZD_SHA256 = "134dba702ffe2abf87b2c557b8b74709711dcd68f13a96721cb598b252e10acd"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -104276,7 +104276,7 @@ def vl_voice(book_lang, ui_lang):
 	return bl,"No Piper voice loaded - the old voice reads (Settings › Light & sound › Loudspeaker)."
 
 
-def vl_synth(text, lang, speed, out, old=True):
+def vl_synth(text, lang, speed, out):
 	""
 	f=VL["synth"]
 	if f is not None:
@@ -104286,10 +104286,6 @@ def vl_synth(text, lang, speed, out, old=True):
 		ok,err,_i=piper_synth(text,vid,out,speed)
 		if ok:
 			return True,""
-		if not old:
-			return False,err or "Piper failed"
-	if not old:
-		return False,"no voice"
 	return _tts_make_639zzb(text,lang,out)
 
 
@@ -105089,266 +105085,6 @@ vorlesen_selftest = _zd_fn('639zzzzv_vorlesen/vorlesen_selftest()')
 
 
 SELFTEST_EXTRA.append(("Read aloud and file view in the Digital backpack (639zzzzv)", vorlesen_selftest))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-ALM_VL = {"books": {}, "lock": threading.Lock(), "q": deque(), "run": False}
-ALM_VL_N, ALM_VL_MB = 1500, 120
-ALM_VL_LANG = "de"
-
-
-def alm_vl_arts():
-	return[(a[0],a[1])for c in ALMANAC for a in c[3]]
-
-
-def alm_vl_book(i):
-	""
-	arts=alm_vl_arts()
-	if not 0<=int(i)<len(arts):
-		raise LookupError("unknown article")
-	t,x=arts[int(i)]
-	with ALM_VL["lock"]:
-		b=ALM_VL["books"].get(t)
-		if b is not None:
-			return b
-	ps=[vl_saetze(t)]
-	for blk in str(x).split("\n\n"):
-		ls=blk.split("\n")
-		if all(l_.startswith("- ")for l_ in ls):
-			ps+=[vl_saetze(l_[2:])for l_ in ls]
-		else:
-			ps.append(vl_saetze(" ".join(ls)))
-	ps=[p for p in ps if p]
-	b={"title":t,"lang":ALM_VL_LANG,"ch":[{"t":t,"p":ps}],"n":[sum(len(p)for p in ps)]}
-	with ALM_VL["lock"]:
-		if len(ALM_VL["books"])>400:
-			ALM_VL["books"].clear()
-		ALM_VL["books"][t]=b
-	return b
-
-
-def alm_vl_ready(lang):
-	return VL["synth"]is not None or piper_ready(lang)
-
-
-def alm_vl_dir():
-	return os.path.join(piper_dir(),"almanach")
-
-
-def alm_vl_trim(d):
-	try:
-		fs=sorted((e.stat().st_mtime,e.stat().st_size,e.path)for e in os.scandir(d)if e.name.endswith(".wav"))
-	except OSError:
-		return
-	tot=sum(x[1]for x in fs)
-	while fs and(len(fs)>ALM_VL_N or tot>ALM_VL_MB*1024*1024):
-		_t,sz,p_=fs.pop(0)
-		try:
-			os.remove(p_);tot-=sz
-		except OSError:
-			pass
-
-
-def alm_vl_ton(i, s, lang):
-	""
-	b=alm_vl_book(i)
-	text,_end=vl_sentence(b,0,int(s))if 0<=int(s)<b["n"][0]else("",True)
-	if not text:
-		return "","unknown sentence"
-	if not alm_vl_ready(lang):
-		return "","no voice"
-	d=alm_vl_dir()
-	p_=os.path.join(d,piper_key("alm",piper_voice_for(lang)if VL["synth"]is None else "test",1.0,lang+"|"+text)+".wav")
-	if os.path.isfile(p_)and os.path.getsize(p_)>100:
-		return p_,""
-	tmp=p_+f".{threading.get_ident()}.tmp.wav"
-	try:
-		os.makedirs(d,exist_ok=True)
-		ok,err=vl_synth(re.sub(r"[\x00-\x1f]"," ",text),lang,1.0,tmp,old=False)
-		if not ok or not os.path.isfile(tmp)or os.path.getsize(tmp)<=100:
-			return "",err or "no voice"
-		os.replace(tmp,p_)
-	except OSError as e:
-		return "",str(e)[:120]
-	finally:
-		try:
-			os.remove(tmp)
-		except OSError:
-			pass
-	alm_vl_trim(d)
-	return p_,""
-
-
-def alm_vl_ahead(i, s, lang, n=2):
-	""
-	b=alm_vl_book(i)
-	with ALM_VL["lock"]:
-		for k in range(1,n+1):
-			if s+k<b["n"][0]and(i,s+k,lang)not in ALM_VL["q"]:
-				ALM_VL["q"].append((i,s+k,lang))
-		while len(ALM_VL["q"])>6:
-			ALM_VL["q"].popleft()
-		if ALM_VL["run"]or not ALM_VL["q"]:
-			return
-		ALM_VL["run"]=True
-
-	def work():
-		try:
-			while True:
-				with ALM_VL["lock"]:
-					if not ALM_VL["q"]:
-						return
-					job=ALM_VL["q"].popleft()
-				try:
-					alm_vl_ton(*job)
-				except Exception:
-					pass
-		finally:
-			ALM_VL["run"]=False
-	threading.Thread(target=work,daemon=True,name="alm-vl-ahead").start()
-
-
-_ALM_VL_TX = ("Read aloud", "Pause", "Stop", "loading …", "My AI voice", "Browser voice", "No AI voice loaded - the browser voice reads.",
-			  "The AI voice does not answer - the browser voice reads on.")
-
-
-def alm_vl_info(i, lang, ui):
-	d={"ok":True,"tx":{k:tr(k,ui)for k in _ALM_VL_TX}}
-	if i is None:
-		return d
-	b=alm_vl_book(i)
-	ready=alm_vl_ready(lang)
-	if ready:
-		piper_warm(lang)
-	d.update(i=int(i),title=b["title"],lang=lang,ch=b["ch"],n=b["n"],piper=ready,
-			 hint=""if ready else tr("No AI voice loaded - the browser voice reads.",ui))
-	return d
-
-
-_smalltv_routes_almvl = smalltv_routes
-
-
-
-def smalltv_routes(app, reply, body):
-	_smalltv_routes_almvl(app,reply,body)
-	from flask import request,send_file
-
-	def args():
-		a=request.args
-		return norm_lang(a.get("lang")or ALM_VL_LANG),norm_lang(CFG.get("lang"))
-
-	@app.route("/almanach/vorlesen")
-	def alm_vl_route():
-		L,ui=args()
-		try:
-			i=request.args.get("i")
-			r=reply(alm_vl_info(None if i in(None,"")else int(i),L,ui))
-		except(TypeError,ValueError,LookupError):
-			return reply({"ok":False,"error":tr("invalid value",ui)},400)
-		r.headers["Cache-Control"]="no-store"
-		return r
-
-	@app.route("/almanach/vorlesen/ton")
-	def alm_vl_ton_route():
-		L,ui=args()
-		try:
-			i,s=int(request.args.get("i")or 0),int(request.args.get("s")or 0)
-			p_,err=alm_vl_ton(i,s,L)
-		except(TypeError,ValueError,LookupError):
-			return reply({"ok":False,"error":tr("invalid value",ui)},400)
-		if not p_:
-			return reply({"ok":False,"fallback":True,"error":tr("The AI voice does not answer - the browser voice reads on.",ui)},503)
-		try:
-			alm_vl_ahead(i,s,L)
-		except Exception:
-			pass
-		r=send_file(p_,mimetype="audio/wav",conditional=True,max_age=0)
-		r.headers["Cache-Control"]="private, max-age=3600"
-		r.headers["X-Content-Type-Options"]="nosniff"
-		r.headers["Cross-Origin-Resource-Policy"]="same-origin"
-		return r
-
-
-
-ALM_VL_JS = _zd('639zzzzv_vorlesen_almanach/ALM_VL_JS', "")
-
-ALM_PAGE = ALM_PAGE.replace("</body>", ALM_VL_JS.replace("/*VLPLAYER*/", VL_PLAYER_JS, 1) + "</body>", 1)
-
-
-_HX_ALMVL = _zd('639zzzzv_vorlesen_almanach/HX_ALMVL', _zd_hx_en((
-	'My AI voice',
-	'Browser voice',
-	'No AI voice loaded - the browser voice reads.',
-	'The AI voice does not answer - the browser voice reads on.',
-)))
-for _k, _v in _HX_ALMVL.items():
-	DE.setdefault(_k,_v[0])
-	for _i,_L in enumerate(("fr","it","rm")):
-		TRX[_L].setdefault(_k,_v[_i+1])
-
-
-_HELP_ALMVL = {
-	"de": "<li><b>Almanach:</b> 🔊 im Überlebens-Almanach liest den Artikel mit derselben Piper-Stimme (Leiste unten: ⏸ / ▶, ⏹ Stopp). "
-		  "Ist keine deutsche Piper-Stimme geladen oder antwortet sie nicht, liest die Browser-Stimme (mit Hinweis).</li>",
-	"en": "<li><b>Almanac:</b> 🔊 in the survival almanac reads the article with the same Piper voice (bar at the bottom: ⏸ / ▶, ⏹ Stop). "
-		  "Without a German Piper voice, or when it does not answer, the browser voice reads (with a hint).</li>",
-	"fr": "<li><b>Almanach :</b> 🔊 dans l’almanach de survie lit l’article avec la même voix Piper (barre en bas : ⏸ / ▶, ⏹ Stop). "
-		  "Sans voix Piper allemande, ou si elle ne répond pas, la voix du navigateur lit (avec un avis).</li>",
-	"it": "<li><b>Almanacco:</b> 🔊 nell’almanacco di sopravvivenza legge l’articolo con la stessa voce Piper (barra in basso: ⏸ / ▶, ⏹ Stop). "
-		  "Senza una voce Piper tedesca, o se non risponde, legge la voce del browser (con un avviso).</li>",
-	"rm": "<li><b>Almanac:</b> 🔊 en l’almanac da survivenza legia l’artitgel cun la medema vusch Piper (trav sutvart: ⏸ / ▶, ⏹ Stop). "
-		  "Senza vusch Piper tudestga, u sch’ella na respunda betg, legia la vusch dal navigatur (cun ina indicaziun).</li>",
-}
-
-
-def _help_almvl(doc, lang):
-	i=doc.find('<section id="vorlesen"')
-	if i<0 or "<b>Almanach:</b>"in doc or "<b>Almanac:</b>"in doc or "<b>Almanach :</b>"in doc or "<b>Almanacco:</b>"in doc:
-		return doc
-	j=doc.find("</ul></section>",i)
-	return doc[:j]+_HELP_ALMVL[lang]+doc[j:]if j>0 else doc
-
-
-_hp_en_almvl = HELP_PAGE.find('<div lang="en">')
-if _hp_en_almvl > 0:
-	HELP_PAGE=_help_almvl(HELP_PAGE[:_hp_en_almvl],"de")+_help_almvl(HELP_PAGE[_hp_en_almvl:],"en")
-for _L in ("fr", "it", "rm"):
-	if HELP_X.get(_L):
-		HELP_X[_L]=_help_almvl(HELP_X[_L],_L)
-
-
-alm_vl_selftest = _zd_fn('639zzzzv_vorlesen_almanach/alm_vl_selftest()')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-SELFTEST_EXTRA.append(("Almanac reads aloud with the Piper voice, browser voice as fallback (639zzzzv_vorlesen_almanach)", alm_vl_selftest))
 
 
 

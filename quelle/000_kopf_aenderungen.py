@@ -656,7 +656,10 @@ Features
     läuft immer weiter. Pins CS, nRESET und D_READY sind einstellbar.
   * 4.25.0: Das Bild lässt sich jetzt bei jeder Kamera drehen und spiegeln – auch bei der Weitwinkel-Kamera, weiteren Kameras
     und der Wärmebildkamera.
-  * 4.24.0:Schweizer Karte in 3D: Schalter «2D | 3D» auf der Karte (Mehr → Karte), Gelände zum Neigen und Drehen, auch im
+  * 4.25.0: Der 🔊-Knopf im Überlebens-Almanach liest jetzt mit der Piper-Stimme wie das Vorlesen im Digitalen Rucksack
+    (Leiste mit Laden-Anzeige, Pause und Stopp); fehlt die Stimme oder antwortet sie nicht, liest die Browser-Stimme mit kurzem
+    Hinweis.
+  * 4.24.0: Schweizer Karte in 3D: Schalter «2D | 3D» auf der Karte (Mehr → Karte), Gelände zum Neigen und Drehen, auch im
     Vollbild; Höhen aus dem Relief der Topo-Karte oder aus den Höhendaten Schweiz (MoveEye rechnet die Höhen-Kacheln selbst und
     speichert höchstens 256 MB).
   * 4.23.1: Besucherseite /info/: Die Push-Nachricht in «Ein Blick in die App» erscheint jetzt beim Bild «Nachts am Zelt» –
