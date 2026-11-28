@@ -32,8 +32,8 @@
 # BLE: die Grundfunktionen von G2 (gopro_ble_client / gopro_ble_scan, Teil 639zzzzzzf), wenn vorhanden; sonst ein kleiner
 #   Rückfall mit bleak (nur wenn installiert). Tests: H8["ble_factory"].
 # Rechte: Steuern nur der Administrator (nacht_may, nicht im Bedienermodus). /api/gopro/hero8 (GET Stand, POST do=…).
-# Bedienung: G1s Seite «GoPro hinzufügen» (Einstellungen → Kameras); dieser Teil liefert dafür window.goproH8.render(el, id)
-#   (H8_JS) und den Hilfe-Absatz (DE / EN). Test: werkzeuge/gopro_hero8_test.py (Fake-BLE, erfundenes nmcli / ip, UDP-Strom
+# Bedienung: G1s Seite /gopro («GoPro hinzufügen», Einstellungen → Kameras): in jeder Karte einer GoPro mit dem Weg
+#   «hero8_ble» erscheint die Schritt-Karte dieses Teils (H8_JS, window.goproH8.render), dazu der Hilfe-Absatz (DE / EN). Test: werkzeuge/gopro_hero8_test.py (Fake-BLE, erfundenes nmcli / ip, UDP-Strom
 #   mit ffmpeg testsrc).
 # ----------------------------------------------------------------------------
 # Programmtext in der ZIP (wie 639zzzzk / 639n): der Teil gehört nicht zu Start, Schutz, Alarm, Update oder Reparatur – ohne
@@ -62,6 +62,8 @@ import select as _h8_select
 
 # ---- texts (5 languages: key = English, then de, fr, it, rm) -----------------------------------------------------------------
 _HX_H8 = {
+    "HERO8: Bluetooth + 2nd Wi-Fi stick (unofficial)": ("HERO8: Bluetooth + 2. WLAN-Stick (inoffiziell)", "HERO8 : Bluetooth + 2e clé Wi-Fi (non officiel)",
+                                                        "HERO8: Bluetooth + 2ª chiavetta Wi-Fi (non ufficiale)", "HERO8: Bluetooth + 2. stick WLAN (betg uffizial)"),
     "Hero 8 over Bluetooth (unofficial)": ("Hero 8 über Bluetooth (inoffiziell)", "Hero 8 par Bluetooth (non officiel)",
                                            "Hero 8 via Bluetooth (non ufficiale)", "Hero 8 via Bluetooth (betg uffizial)"),
     "Unofficial: GoPro does not support this way for the Hero 8 (Open GoPro starts with the Hero 9). It uses older Bluetooth and Wi-Fi commands and may stop working after a GoPro firmware update.":
@@ -127,7 +129,7 @@ _HX_H8 = {
     "picture running": ("Bild läuft", "image en cours", "immagine attiva", "il maletg cuorra"),
     "picture interrupted - restarting …": ("Bild unterbrochen – Neustart …", "image interrompue – redémarrage …", "immagine interrotta – riavvio …",
                                            "maletg interrut – nova partenza …"),
-    "stopped": ("gestoppt", "arrêté", "fermato", "fermà"),
+    "Bluetooth link: off": ("Bluetooth-Verbindung: aus", "Liaison Bluetooth : arrêtée", "Collegamento Bluetooth: spento", "Colliaziun Bluetooth: dismessa"),
     "Bluetooth: no connection to the GoPro.": ("Bluetooth: keine Verbindung zur GoPro.", "Bluetooth : pas de connexion à la GoPro.",
                                                "Bluetooth: nessuna connessione alla GoPro.", "Bluetooth: nagina colliaziun cun la GoPro."),
     "No Wi-Fi name or password from the GoPro - type the password.": ("Kein WLAN-Name oder Passwort von der GoPro – bitte das Passwort eintippen.",
@@ -440,7 +442,8 @@ def h8_ble_session(dev_id, cmds=(), want_wifi=False):
 def h8_addr(dev_id):
     d = (CFG.get("gopro_h8") or {}).get(str(dev_id)) or {}
     g = (globals().get("GOPRO") or {}).get(dev_id) or {}
-    return str(d.get("addr") or g.get("addr") or g.get("ble_addr") or "")
+    x = g.get("x") if isinstance(g.get("x"), dict) else {}
+    return str(d.get("addr") or x.get("addr") or g.get("addr") or "")
 
 
 def h8_cmd(dev_id, cmd):
@@ -483,7 +486,7 @@ def _h8_free_port():
 
 def _h8_dev(dev_id):
     with H8["lock"]:
-        return H8["devs"].setdefault(dev_id, {"id": dev_id, "zustand": "stopped", "fehler": "", "stick": "", "streamt": False,
+        return H8["devs"].setdefault(dev_id, {"id": dev_id, "zustand": "Bluetooth link: off", "fehler": "", "stick": "", "streamt": False,
                                               "verbunden": False, "akku": None, "pkts": 0, "bytes": 0, "last_pkt": 0.0, "ka": 0,
                                               "neustarts": 0, "port": 0, "stop": None, "thread": None, "sock": None})
 
@@ -614,6 +617,12 @@ def h8_start(dev):
     with H8["lock"]:
         if d.get("thread") and d["thread"].is_alive():
             return h8_source(did)
+        _st, serr = h8_stick()                            # cheap: always checked, so a stick plugged in counts at once
+        if serr:
+            _h8_set(d, "Bluetooth link: off", serr, verbunden=False)
+            raise RuntimeError(serr)
+        if time.monotonic() < d.get("retry_t", 0.0) and d.get("fehler"):
+            raise RuntimeError(d["fehler"])               # open_source asks often: Bluetooth / Wi-Fi only after a pause
     _h8_set(d, "waking the camera …", "", streamt=False, neustarts=0, pkts=0, bytes=0, last_pkt=0.0, ka=0)
     err = _h8_connect(d, wake=True)
     if not err:
@@ -622,9 +631,12 @@ def h8_start(dev):
         except OSError:
             err = "UDP port 8554 is busy."
     if err:
-        _h8_set(d, "stopped", err, verbunden=False)
+        d["fails"] = d.get("fails", 0) + 1
+        d["retry_t"] = time.monotonic() + H8_BACKOFF[min(d["fails"] - 1, len(H8_BACKOFF) - 1)] * H8.get("retry_mal", 2.0)
+        _h8_set(d, "Bluetooth link: off", err, verbunden=False)
         _h8_log(err, did)
         raise RuntimeError(err)
+    d["fails"] = 0; d["retry_t"] = 0.0
     d["port"] = d.get("port") or _h8_free_port()
     stop = threading.Event()
     d["stop"] = stop
@@ -657,7 +669,7 @@ def h8_stop(dev, sleep=True):
         h8_wifi_down(did)
     if sleep and h8_addr(did):
         h8_ble_session(did, ("wifi_off", "sleep"))            # save the GoPro's battery (best effort)
-    _h8_set(d, "stopped", "", streamt=False, verbunden=False)
+    _h8_set(d, "Bluetooth link: off", "", streamt=False, verbunden=False, retry_t=0.0, fails=0)
 
 
 def h8_status(dev):
@@ -668,7 +680,7 @@ def h8_status(dev):
             "pw_im_speicher": bool((H8_SECRET.get(did) or {}).get("pw")), "addr": h8_addr(did), "inoffiziell": True}
 
 
-def h8_faehig(dev=None):
+def h8_bereit(dev=None):
     """can this way work here? -> {ok, grund (English), hinweise}"""
     stick, err = h8_stick()
     if not err and not h8_ble_ok():
@@ -678,14 +690,9 @@ def h8_faehig(dev=None):
                          "Needs a second Wi-Fi stick (wlan1): the GoPro makes its own Wi-Fi, the home Wi-Fi stays on wlan0."]}
 
 
-# ---- registration with the core (G1, 639zzzzzze); until it exists a small stand-in -------------------------------------------
-def _h8_reg_stub(name, *, start, stop, status, faehig):
-    globals().setdefault("GOPRO_WEGE", {})[name] = {"start": start, "stop": stop, "status": status, "faehig": faehig}
-
-
-globals().setdefault("GOPRO", {})
-globals().setdefault("gopro_register_weg", _h8_reg_stub)
-gopro_register_weg(H8_WEG, start=h8_start, stop=h8_stop, status=h8_status, faehig=h8_faehig)
+# ---- registration with the core (G1, 639zzzzzze: GOPRO, gopro_register_weg; it comes first) ----------------------------------
+H8_FAEHIG = {"titel": "HERO8: Bluetooth + 2nd Wi-Fi stick (unofficial)", "modelle": ["hero8"], "akku": True, "steuern": True}
+gopro_register_weg(H8_WEG, start=h8_start, stop=h8_stop, status=h8_status, faehig=H8_FAEHIG)
 
 
 # ---- web: /api/gopro/hero8 (administrator only) -----------------------------------------------------------------------------
@@ -697,8 +704,10 @@ def h8_api(d, method, role="admin"):
     T = lambda x: tr(x, L)
     if method == "GET":
         ads, free = h8_sticks()
-        f = h8_faehig()
-        devs = {k: h8_status(k) for k in set(H8["devs"]) | set((CFG.get("gopro_h8") or {}))}
+        f = h8_bereit()
+        ids = set(H8["devs"]) | set((CFG.get("gopro_h8") or {}))
+        ids |= {k for k, v in (globals().get("GOPRO") or {}).items() if isinstance(v, dict) and v.get("weg") == H8_WEG}
+        devs = {k: h8_status(k) for k in ids}
         for v in devs.values():
             v["zustand_text"] = T(v["zustand"]); v["fehler_text"] = T(v["fehler"]) if v["fehler"] else ""
         return {"ok": True, "faehig": f["ok"], "grund": T(f["grund"]) if f["grund"] else "", "stick": f["stick"],
@@ -771,31 +780,31 @@ H8_JS = r"""
     body: JSON.stringify(Object.assign({lang: L()}, o))})).json(); } catch (e) { return {ok: false, error: String(e)}; } };
   const say = m => { if (typeof toast === "function") toast(m); };
   async function render(el, id) {
-    el.textContent = ""; const bx = E("div", "auxbox"); bx.id = "h8-box"; el.appendChild(bx);
+    el.textContent = ""; const bx = E("div", "auxbox h8-box"); bx.id = "h8-box-" + id; el.appendChild(bx);
     let F = null; try { F = await (await fetch("/api/gopro/hero8?lang=" + L(), {cache: "no-store"})).json(); } catch (e) {}
     if (!F || !F.ok) { bx.appendChild(E("div", "mut", "⚠ " + ((F && F.error) || "error"))); return; }
     bx.appendChild(E("b", "", "🎥 " + T("Hero 8 over Bluetooth (unofficial)")));
     (F.hinweise || []).forEach(h => { const w = E("div", "mut", "⚠ " + h); w.style.marginTop = "4px"; bx.appendChild(w); });
     const st = E("div", "", F.faehig ? "📶 " + T("Wi-Fi stick for the GoPro: {s}").replace("{s}", F.stick) : "⛔ " + F.grund);
-    st.id = "h8-stick"; st.style.marginTop = "8px"; bx.appendChild(st);
+    st.className = "h8-stick"; st.style.marginTop = "8px"; bx.appendChild(st);
     const S = (F.devs || {})[id] || {};
     const row = E("div"); row.style.cssText = "margin-top:8px;display:flex;flex-wrap:wrap;gap:6px";
-    const sb = E("button", "btn", "🔍 " + T("Search GoPro (Bluetooth)")); row.appendChild(sb); bx.appendChild(row);
+    const sb = E("button", "", "🔍 " + T("Search GoPro (Bluetooth)")); sb.type = "button"; row.appendChild(sb); bx.appendChild(row);
     bx.appendChild(E("div", "mut", T("Pair the GoPro first: on the camera Preferences → Connections → Connect device → GoPro App, then search here.")));
-    const found = E("div"); found.id = "h8-found"; bx.appendChild(found);
+    const found = E("div"); found.className = "h8-found"; bx.appendChild(found);
     if (S.addr) bx.appendChild(E("div", "mut", T("Bluetooth: {s}").replace("{s}", S.addr)));
     sb.onclick = async () => {
       sb.disabled = true; found.textContent = "…"; const q = await P({do: "scan"}); sb.disabled = false; found.textContent = "";
       if (!q.ok) { found.appendChild(E("div", "mut", "⚠ " + (q.error || ""))); return; }
-      q.found.forEach(g => { const b = E("button", "btn", T("Choose") + ": " + g.name + " (" + g.addr + ")"); b.style.marginTop = "4px";
+      q.found.forEach(g => { const b = E("button", "sec", T("Choose") + ": " + g.name + " (" + g.addr + ")"); b.style.marginTop = "4px";
         b.onclick = async () => { const r = await P({do: "addr", id: id, addr: g.addr, name: g.name}); say(r.ok ? "✓" : "⚠ " + (r.error || "")); render(el, id); };
         found.appendChild(b); });
     };
     const pw = E("div"); pw.style.marginTop = "10px";
     pw.appendChild(E("label", "", T("GoPro Wi-Fi password")));
-    const inp = E("input"); inp.type = "password"; inp.autocomplete = "off"; inp.id = "h8-pw"; inp.maxLength = 63; inp.style.width = "100%";
+    const inp = E("input"); inp.type = "password"; inp.autocomplete = "off"; inp.className = "h8-pw"; inp.maxLength = 63; inp.style.width = "100%";
     inp.setAttribute("aria-label", T("GoPro Wi-Fi password"));
-    const kb = E("button", "btn", T("Keep in memory")), fb = E("button", "btn", T("Forget"));
+    const kb = E("button", "sec", T("Keep in memory")), fb = E("button", "sec", T("Forget")); kb.type = fb.type = "button";
     const r2 = E("div"); r2.style.cssText = "margin-top:4px;display:flex;flex-wrap:wrap;gap:6px"; r2.append(kb, fb);
     pw.append(inp, r2, E("div", "mut", T("Normally the Hero 8 sends it over Bluetooth. Type it only if that fails (camera: Preferences → Connections → Camera Info). It is kept in memory only and never saved.")));
     if (S.pw_im_speicher) pw.appendChild(E("div", "", "🔑 " + T("Password: in memory (not saved)")));
@@ -805,22 +814,45 @@ H8_JS = r"""
     const cm = E("div"); cm.style.cssText = "margin-top:10px;display:flex;flex-wrap:wrap;gap:6px";
     [["rec_on", "⏺ " + T("Start recording")], ["rec_off", "⏹ " + T("Stop recording")], ["mode_video", "🎬 " + T("Video mode")],
      ["mode_photo", "📷 " + T("Photo mode")], ["locate_on", "🔔 " + T("Locate (beep)")]].forEach(([c, n]) => {
-      const b = E("button", "btn", n); b.dataset.cmd = c;
+      const b = E("button", "sec", n); b.type = "button"; b.dataset.cmd = c;
       b.onclick = async () => { b.disabled = true; const r = await P({do: "cmd", id: id, cmd: c}); b.disabled = false; say(r.ok ? "✓" : "⚠ " + (r.error || "")); };
       cm.appendChild(b); });
     bx.appendChild(cm);
     const z = E("div", "mut", (S.zustand_text || "") + (S.fehler_text ? " · ⚠ " + S.fehler_text : "") + (S.akku != null ? " · 🔋 " + S.akku + " %" : ""));
-    z.id = "h8-state"; z.style.marginTop = "8px"; bx.appendChild(z);
+    z.className = "mut h8-state"; z.style.marginTop = "8px"; bx.appendChild(z);
+    clearInterval(el._h8t);
+    el._h8t = setInterval(async () => {
+      if (!document.body.contains(bx)) { clearInterval(el._h8t); return; }
+      let G = null; try { G = await (await fetch("/api/gopro/hero8?lang=" + L(), {cache: "no-store"})).json(); } catch (e) {}
+      const s2 = G && G.ok && (G.devs || {})[id]; if (!s2) return;
+      z.textContent = (s2.zustand_text || "") + (s2.fehler_text ? " · ⚠ " + s2.fehler_text : "") + (s2.akku != null ? " · 🔋 " + s2.akku + " %" : "");
+    }, 3000);
+  }
+  // the page «GoPro hinzufügen» (/gopro, 639zzzzzze): a step card in every card of a GoPro with the way «hero8_ble»
+  function cards() {
+    const box = document.getElementById("gp-devs"); if (!box) return;
+    let devs = null;
+    try { devs = (typeof S !== "undefined" && S && S.devs) ? S.devs : null; } catch (e) { devs = null; }
+    if (!devs) return;
+    devs.filter(d => d.weg === "hero8_ble").forEach(d => {
+      const c = box.querySelector('.gp-card[data-id="' + d.id + '"]'); if (!c || c.querySelector(".h8-slot")) return;
+      const slot = E("div", "gp-step h8-slot"); const rows = c.querySelectorAll(":scope > .gp-row");
+      const last = rows.length ? rows[rows.length - 1] : null;
+      if (last) c.insertBefore(slot, last); else c.appendChild(slot);
+      render(slot, d.id);
+    });
   }
   window.goproH8 = {render: render};
+  setInterval(() => { try { cards(); } catch (e) {} }, 1000);
 })();
 </script>
 """
 H8_KEYS = list(_HX_H8)
-WEB_PAGE = WEB_PAGE.replace("</body>", H8_JS.replace("/*H8DE*/{}", json.dumps({k: DE.get(k, k) for k in H8_KEYS}, ensure_ascii=False), 1) + "</body>", 1)
+if "GOPRO_PAGE" in globals():                             # the page of the core (639zzzzzze)
+    GOPRO_PAGE = GOPRO_PAGE.replace("</script></body>", "</script>" + H8_JS.replace("/*H8DE*/{}", json.dumps({k: DE.get(k, k) for k in H8_KEYS}, ensure_ascii=False), 1) + "</body>", 1)
 
 
-# ---- manual (DE / EN): in the GoPro section of the core, else under «Camera & Servos» ---------------------------------------
+# ---- manual (DE / EN, fr / it / rm in HELP_X): in the GoPro section of the core, else under «Camera & Servos» ---------------------------------------
 HELP_H8 = {
     "de": '<p id="h8-help"><b>🎥 GoPro Hero 8 über Bluetooth (inoffiziell):</b> MoveEye weckt die Hero 8 über Bluetooth, schaltet ihr '
           'WLAN ein, liest WLAN-Name und Passwort und holt das Vorschaubild über das GoPro-WLAN (Kamera 10.5.5.9, Strom über UDP '
@@ -838,6 +870,24 @@ HELP_H8 = {
           '(type it by hand if needed). Start / stop recording, video / photo mode and beeping work over Bluetooth too. If the picture '
           'breaks off, MoveEye restarts it by itself. <b>Unofficial:</b> GoPro does not support this way for the Hero 8 (Open GoPro '
           'starts with the Hero 9); a GoPro firmware update may break it at any time.</p>',
+    "fr": '<p id="h8-help"><b>🎥 GoPro Hero 8 par Bluetooth (non officiel) :</b> MoveEye réveille la Hero 8 par Bluetooth, allume son Wi-Fi, '
+          'lit le nom et le mot de passe du Wi-Fi et récupère l\'aperçu par le Wi-Fi de la GoPro (caméra 10.5.5.9, flux UDP 8554). Il faut '
+          'une <b>deuxième clé Wi-Fi</b> (wlan1) : seule elle rejoint la GoPro, le Wi-Fi de la maison reste sur wlan0. Appairer une fois '
+          '(caméra : <i>Préférences → Connexions → Connecter un appareil → App GoPro</i>), puis <i>Chercher la GoPro</i> sur la page '
+          '« Ajouter une GoPro ». Le mot de passe reste seulement en mémoire et n\'est jamais enregistré. <b>Non officiel :</b> une mise à '
+          'jour du firmware de la GoPro peut le casser à tout moment.</p>',
+    "it": '<p id="h8-help"><b>🎥 GoPro Hero 8 via Bluetooth (non ufficiale):</b> MoveEye risveglia la Hero 8 via Bluetooth, accende il suo '
+          'Wi-Fi, legge nome e password del Wi-Fi e prende l\'anteprima dal Wi-Fi della GoPro (telecamera 10.5.5.9, flusso UDP 8554). Serve '
+          'una <b>seconda chiavetta Wi-Fi</b> (wlan1): solo lei si collega alla GoPro, il Wi-Fi di casa resta su wlan0. Abbinare una volta '
+          '(telecamera: <i>Preferenze → Connessioni → Connetti dispositivo → App GoPro</i>), poi <i>Cerca GoPro</i> nella pagina «Aggiungi '
+          'GoPro». La password resta solo in memoria e non viene mai salvata. <b>Non ufficiale:</b> un aggiornamento del firmware della '
+          'GoPro può romperlo in ogni momento.</p>',
+    "rm": '<p id="h8-help"><b>🎥 GoPro Hero 8 via Bluetooth (betg uffizial):</b> MoveEye dasda la Hero 8 via Bluetooth, envida ses WLAN, '
+          'legia il num ed il pled-clav dal WLAN e prenda la prevista via il WLAN da la GoPro (camera 10.5.5.9, flux UDP 8554). I basegna '
+          'in <b>segund stick WLAN</b> (wlan1): mo el sa collia cun la GoPro, il WLAN da chasa resta sin wlan0. Accumplir ina giada (camera: '
+          '<i>Preferenzas → Colliaziuns → Colliar apparat → App GoPro</i>), lura <i>Tschertgar la GoPro</i> sin la pagina «Agiuntar ina '
+          'GoPro». Il pled-clav resta mo en la memoria e na vegn mai memorisà. <b>Betg uffizial:</b> in update dal firmware da la GoPro '
+          'po al rumper da tut temp.</p>',
 }
 
 
@@ -856,6 +906,9 @@ def _help_h8(doc, lang):
 _hp_en_h8 = HELP_PAGE.find('<div lang="en">')
 if _hp_en_h8 > 0:
     HELP_PAGE = _help_h8(HELP_PAGE[:_hp_en_h8], "de") + _help_h8(HELP_PAGE[_hp_en_h8:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_h8(HELP_X[_L], _L)
 
 
 # ---- self-test ----------------------------------------------------------------------------------------------------------------
@@ -871,9 +924,10 @@ def h8_selftest():
         H8_SECRET.pop("_t", None)
     for k in _HX_H8:
         assert all(TRX[L].get(k) for L in ("fr", "it", "rm")) and DE.get(k), "texts " + k
-    assert H8_WEG in (globals().get("GOPRO_WEGE") or {}) or globals().get("gopro_register_weg") is not _h8_reg_stub, "registered"
+    assert H8_WEG in (globals().get("GOPRO_WEGE") or {}), "registered"
     assert HELP_PAGE.count('id="h8-help"') == 2, "manual de / en"
-    assert "window.goproH8" in WEB_PAGE, "panel"
+    assert "window.goproH8" in GOPRO_PAGE, "panel on /gopro"
+    assert GOPRO_WEGE[H8_WEG]["faehig"]["modelle"] == ["hero8"], "only HERO8"
     r, c = h8_api({}, "GET", "user")
     assert c == 403, "admin only"
 

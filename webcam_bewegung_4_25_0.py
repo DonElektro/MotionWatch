@@ -336,7 +336,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_25_0.zip"
-ZD_SHA256 = "ba8af42035f525394713fa7f6c9ec6b9ce59ca88adcee92168da48afdce5f113"
+ZD_SHA256 = "e74494ebee34e51720013b9f0c7db82f8c3f5db760cf691bd164492dd09660a8"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -107738,6 +107738,64 @@ GOPRO_PAGE = _zd('639zzzzzze_gopro_kern/GOPRO_PAGE', ZD_PAGE)
 
 GOPRO_KERN_PY = _zd('639zzzzzze_gopro_kern/GOPRO_KERN_PY', "")
 zd_exec(GOPRO_KERN_PY, '639zzzzzze_gopro_kern.py')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+for _k, _v in {"gopro_h8": {}}.items():
+	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v)
+USER_SETTINGS_DENY.add("gopro_h8")
+LOCK_DENY_KEYS.add("gopro_h8")
+
+if "zd_exec" not in globals():
+
+	def zd_exec(src,name):
+		""
+		if not src:
+			return False
+		import linecache
+		linecache.cache[name]=(len(src),None,src.splitlines(True),name)
+		exec(compile(src,name,"exec"),globals())
+		return True
+
+
+H8_PY = _zd('639zzzzzzg_gopro_hero8/H8_PY', "")
+zd_exec(H8_PY and "\n" * 57 + H8_PY, "639zzzzzzg_gopro_hero8.py")
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")

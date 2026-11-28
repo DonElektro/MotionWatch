@@ -106,7 +106,8 @@ def ff_start():
     ff_stop()
     CAM["ff"] = subprocess.Popen(["ffmpeg", "-loglevel", "error", "-re", "-f", "lavfi", "-i", "testsrc=size=320x240:rate=10",
                                   "-c:v", "libx264", "-preset", "ultrafast", "-tune", "zerolatency", "-g", "10", "-f", "mpegts",
-                                  "udp://127.0.0.1:%d?pkt_size=1316" % NET["rx_port"]], stdin=subprocess.DEVNULL)
+                                  "udp://127.0.0.1:%d?pkt_size=1316" % NET["rx_port"]], stdin=subprocess.DEVNULL,
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def ff_stop():
     p = CAM.get("ff")
@@ -182,7 +183,7 @@ ns["wifi_adapters"] = lambda: [dict(AD[0])]
 try:
     ns["h8_start"]({"id": "g1"}); out["nostick"] = ["started?!"]
 except RuntimeError as e:
-    out["nostick"] = [str(e), {L: tr(str(e), L) for L in ("de", "fr", "it", "rm", "en")}, ns["h8_faehig"]()["ok"], ns["h8_status"]("g1")["fehler"]]
+    out["nostick"] = [str(e), {L: tr(str(e), L) for L in ("de", "fr", "it", "rm", "en")}, ns["h8_bereit"]()["ok"], ns["h8_status"]("g1")["fehler"]]
 out["nostick_calls"] = [c["argv"][:3] for c in net()["calls"]]
 # 2) the stick belongs to the repeater
 ns["wifi_adapters"] = lambda: [dict(a) for a in AD]
@@ -269,6 +270,28 @@ FakeBle.fail = False
 # 9) the default route never moves to the stick
 st_ = net(); st_["default_dev"] = "wlan1"; json.dump(st_, open(P, "w"))
 out["route_guard"] = ns["h8_route_ok"]("wlan1")
+# 10) through the core (639zzzzzze): way only for HERO8, gopro_add -> gopro_quelle -> start, gopro_open -> picture
+st_ = net(); st_["default_dev"] = "wlan0"; json.dump(st_, open(P, "w"))
+ns["H8_SECRET"].clear(); FakeBle.log.clear()
+ns["_rx_manage"] = lambda *a, **k: None          # the RTMP receiver of the core is not part of this test
+out["weg_ok"] = [ns["_gp_weg_ok"]("hero8_ble", "hero8"), ns["_gp_weg_ok"]("hero8_ble", "hero9"),
+                 ns["_gp_weg_info"]("hero8_ble")["titel"], tr(ns["_gp_weg_info"]("hero8_ble")["titel"], "de")]
+try:
+    okk, err, gid = ns["gopro_add"]("Hero 8 Zelt", "hero8", "hero8_ble", addr="AA:BB:CC:DD:EE:02")
+    out["core_add"] = [okk, err]
+    if okk:
+        q = ns["gopro_quelle"](gid)
+        for _i in range(40):
+            if ns["gopro_status"](gid)["streamt"]: break
+            time.sleep(0.5)
+        so = ns["gopro_open"]("gopro:" + gid)
+        fr_ = so[0].read() if so[0] is not None else None
+        out["core"] = [q.startswith("udp://127.0.0.1:"), ns["gopro_status"](gid), so[3], None if fr_ is None else (list(fr_[1].shape) if isinstance(fr_, tuple) else list(fr_.shape)),
+                       "connect AA:BB:CC:DD:EE:02" in FakeBle.log]
+        ns["gopro_stop"](gid)
+        out["core_stop"] = ns["h8_status"](gid)["zustand"]
+except Exception as e:
+    out["core_add"] = [False, "%s: %s" % (type(e).__name__, e)]
 # password nowhere
 calls = net()["calls"]
 out["pw_argv"] = any(PW in " ".join(x["argv"]) for x in calls)
@@ -278,7 +301,7 @@ out["pw_api"] = PW in out.pop("api_json")
 out["logs"] = logs[-12:]
 ns["h8_selftest"]()
 out["selftest"] = True
-ff_stop()
+ff_stop(); time.sleep(0.5); ff_stop()
 print("ERG " + json.dumps(out, ensure_ascii=False, default=str))
 sys.stdout.flush()
 os._exit(0)
@@ -333,7 +356,7 @@ def teil_a(datei, tmp):
     ok(e["api_get"][0] == 200 and e["api_get"][1] is True and e["api_get"][2] == "Bild läuft", "API GET: %s" % e["api_get"])
     ok(e["api_cmd"] is True and e["api_badcmd"] is False and e["api_badaddr"] == 400, "API: Aufnahme-Befehl ja, unbekannter Befehl / Adresse nein")
     st = e["stop"]
-    ok(st[0] >= 1 and "w 0072 03170100" in st[1] and "w 0072 0105" in st[1] and st[2] == "stopped" and not st[3],
+    ok(st[0] >= 1 and "w 0072 03170100" in st[1] and "w 0072 0105" in st[1] and st[2] == "Bluetooth link: off" and not st[3],
        "Stopp: WLAN getrennt, GoPro-WLAN aus, GoPro schläft (%s)" % st[1])
     ok(e["typed_pw"] is True and e["typed_frame"] is True, "BLE geht nicht, Passwort getippt → Bild (%s)" % e["typed_frame"])
     ok(e["no_ble_no_pw"] == "Bluetooth: no connection to the GoPro.", "BLE geht nicht, kein Passwort: «%s»" % e["no_ble_no_pw"])
@@ -341,6 +364,14 @@ def teil_a(datei, tmp):
     ok(not e["pw_argv"] and e["pw_stdin_only_up"], "Passwort nie in argv, nur in stdin von «connection up»")
     ok(not e["pw_log"], "kein Passwort im Protokoll (%d Zeilen)" % len(e["logs"]))
     ok(not e["pw_api"], "kein Passwort in der API-Antwort")
+    w = e["weg_ok"]
+    ok(w[0] is True and w[1] is False and w[3] == "HERO8: Bluetooth + 2. WLAN-Stick (inoffiziell)", "Kern: Weg nur für HERO8, Titel «%s»" % w[3])
+    ok(e["core_add"][0] is True, "Kern: gopro_add mit Weg hero8_ble (%s)" % e["core_add"])
+    if e.get("core"):
+        c = e["core"]
+        ok(c[0] and c[1]["streamt"] and c[1]["akku"] == 77 and c[2] == "" and c[3] and c[4],
+           "Kern: gopro_quelle → Start über BLE, gopro_open liefert Bild %s (%s)" % (c[3], c[1]))
+        ok(e["core_stop"] == "Bluetooth link: off", "Kern: gopro_stop stoppt den Weg")
     ok(e["selftest"] is True, "Selbsttest-Funktion h8_selftest")
 
 
@@ -354,7 +385,7 @@ WEB_PW = "h8-test-web-1"
 
 
 def teil_b(datei, tmp, bilder):
-    print("B) Feld «Hero 8 über Bluetooth» (window.goproH8) 390 px dunkel + PC (MoveEye Demo)", flush=True)
+    print("B) Schritt-Karte «HERO8 über Bluetooth» auf /gopro, 390 px dunkel + PC (MoveEye Demo)", flush=True)
     from playwright.sync_api import sync_playwright
     os.makedirs(bilder, exist_ok=True)
     tb = os.path.join(tmp, "b"); os.makedirs(tb)
@@ -385,6 +416,12 @@ def teil_b(datei, tmp, bilder):
         with op.open(r, timeout=30) as x:
             g = json.loads(x.read())
         ok(g.get("ok") and g.get("faehig") is False and "WLAN-Stick" in g.get("grund", ""), "API im Demo-Betrieb: «%s»" % g.get("grund"))
+        r = urllib.request.Request(base + "/api/gopro", data=json.dumps({"action": "add", "name": "Hero 8 Zelt", "modell": "hero8", "weg": "hero8_ble", "lang": "de"}).encode(),
+                                   headers={"Content-Type": "application/json", "Authorization": "Basic " + base64.b64encode(("admin:" + WEB_PW).encode()).decode()})
+        with op.open(r, timeout=30) as x:
+            q = json.loads(x.read())
+        gid = q.get("id") or next((d["id"] for d in q.get("devs", []) if d.get("weg") == "hero8_ble"), "")
+        ok(q.get("ok") and gid, "GoPro mit Weg hero8_ble angelegt (%s)" % {k: q.get(k) for k in ("ok", "error")})
         with sync_playwright() as pw:
             br = pw.chromium.launch(args=["--no-proxy-server"])
             for name, vp, mob in (("handy", {"width": 390, "height": 844}, True), ("pc", {"width": 1280, "height": 900}, False)):
@@ -393,20 +430,22 @@ def teil_b(datei, tmp, bilder):
                 pg = ctx.new_page()
                 errs = []
                 pg.on("pageerror", lambda e_: errs.append(str(e_)))
-                pg.goto(base + "/settings", wait_until="domcontentloaded")
-                pg.wait_for_function("() => window.goproH8 && typeof window.goproH8.render === 'function'", timeout=30000)
-                pg.evaluate("""async () => { const d = document.createElement('div'); d.id = 'h8-test';
-                    d.style.cssText = 'position:fixed;inset:0;z-index:99999;overflow:auto;padding:12px;background:var(--bg,#111)';
-                    document.body.appendChild(d); await window.goproH8.render(d, 'g1'); }""")
-                pg.wait_for_selector("#h8-box #h8-state", state="attached", timeout=20000)
-                txt = pg.locator("#h8-box").inner_text()
+                pg.goto(base + "/gopro", wait_until="domcontentloaded")
+                pg.wait_for_selector(".h8-slot .h8-box .h8-state", state="attached", timeout=30000)
+                txt = pg.locator(".h8-slot").first.inner_text()
                 ok("Hero 8 über Bluetooth (inoffiziell)" in txt and "Firmware-Update" in txt and "Ein 2. WLAN-Stick ist nötig" in txt
                    and "nie gespeichert" in txt, "%s: Feld mit Hinweisen (inoffiziell, Firmware, 2. Stick, Passwort)" % name)
-                ok(pg.locator("#h8-pw").get_attribute("type") == "password", "%s: Passwort-Feld verdeckt" % name)
-                w = pg.evaluate("() => document.getElementById('h8-test').scrollWidth")
+                ok(pg.locator(".h8-pw").first.get_attribute("type") == "password", "%s: Passwort-Feld verdeckt" % name)
+                w = pg.evaluate("() => document.documentElement.scrollWidth")
                 ok(w <= vp["width"], "%s: keine waagrechte Bildlaufleiste (%d)" % (name, w))
+                info = pg.locator('.gp-card[data-id="%s"] .gp-sec' % gid).first.inner_text()
+                ok("HERO8: Bluetooth + 2. WLAN-Stick (inoffiziell)" in info, "%s: Karte nennt den Weg («%s»)" % (name, info))
                 pg.wait_for_timeout(300)
-                pg.locator("#h8-test").screenshot(path=os.path.join(bilder, "gopro_hero8_%s.png" % name))
+                card = pg.locator('.gp-card[data-id="%s"]' % gid)
+                card.scroll_into_view_if_needed()
+                card.screenshot(path=os.path.join(bilder, "gopro_hero8_%s.png" % name))
+                if name == "handy":
+                    pg.screenshot(path=os.path.join(bilder, "gopro_hero8_%s_seite.png" % name), full_page=True)
                 ok(not errs, "%s: keine JS-Fehler %s" % (name, errs[:3]))
                 ctx.close()
             br.close()
