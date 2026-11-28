@@ -336,7 +336,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_25_0.zip"
-ZD_SHA256 = "57eceaee3ec1f13d364a6fb7b45916a8729b49d29c4f9863584857799f2a8748"
+ZD_SHA256 = "ba8af42035f525394713fa7f6c9ec6b9ce59ca88adcee92168da48afdce5f113"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -19803,7 +19803,8 @@ def kidata_tk_build(app, parent):
 
 
 
-SRC_RE = re.compile(r"^(auto|demo|usb:\d{1,2}|pi:\d{1,2}|url:[0-9a-f]{8}|senxor:0|sim:\d|sim:thermal)$")
+
+SRC_RE = re.compile(r"^(auto|demo|usb:\d{1,2}|pi:\d{1,2}|url:[0-9a-f]{8}|gopro:[0-9a-f]{8}|senxor:0|sim:\d|sim:thermal)$")
 MAX_IP_SOURCES = 16
 V4L_SKIP = ("bcm2835-codec", "bcm2835-isp", "rpivid", "pispbe", "rp1-cfe", "hevc", "-decoder", "-encoder")
 SOURCES = {"items": [], "time": 0.0, "scanning": False, "hints": []}
@@ -107660,6 +107661,83 @@ cam_turn_selftest = _zd_fn('639zzzzzzd_kamera_drehen/cam_turn_selftest()')
 
 
 SELFTEST_EXTRA.append(("Turn the picture of every camera (639zzzzzzd)", cam_turn_selftest))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+for _k, _v in {"gopro_devs": [], "gopro_rtmp_port": 19350, "gopro_mtx": ""}.items():
+	CFG.setdefault(_k,_v)
+	DEFAULTS.setdefault(_k,_v)
+USER_SETTINGS_DENY.update({"gopro_devs", "gopro_rtmp_port", "gopro_mtx"})
+ADMIN_GET = tuple(ADMIN_GET) + ("/gopro", "/api/gopro")
+
+
+def gopro_cfg_dev(spec_or_id):
+	""
+	gid=str(spec_or_id or "").partition(":")[2]if str(spec_or_id or "").startswith("gopro:")else str(spec_or_id or "")
+	return next((x for x in CFG.get("gopro_devs")or[]if isinstance(x,dict)and str(x.get("id"))==gid),None)
+
+
+_open_source_gopro_base = open_source
+
+
+
+def open_source(spec, thermal=False):
+	if str(spec).startswith("gopro:")and not thermal and not DEMO["on"]and not HOST["on"]:
+		try:
+			return gopro_open(str(spec))
+		except NameError:
+			return None,spec,source_label(spec),"GoPro: additional data missing - update MoveEye"
+		except Exception as e:
+			return None,spec,source_label(spec),("GoPro: "+type(e).__name__+": "+str(e))[:160]
+	return _open_source_gopro_base(spec,thermal)
+
+
+_source_label_gopro_base = source_label
+
+
+
+def source_label(spec):
+	if str(spec).startswith("gopro:"):
+		d=gopro_cfg_dev(spec)
+		return("GoPro "+str((d or{}).get("name")or "")[:30]).strip()
+	return _source_label_gopro_base(spec)
+
+
+GOPRO_PAGE = _zd('639zzzzzze_gopro_kern/GOPRO_PAGE', ZD_PAGE)
+
+
+GOPRO_KERN_PY = _zd('639zzzzzze_gopro_kern/GOPRO_KERN_PY', "")
+zd_exec(GOPRO_KERN_PY, '639zzzzzze_gopro_kern.py')
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")
