@@ -28761,6 +28761,12 @@
   "it": "L ◉ (controller) · girare la testa di MoveEye, luce accesa / spenta",
   "rm": "L ◉ (controller) · volver il chau da MoveEye, glisch en / or"
  },
+ "Labor|Bauen": {
+  "en": "Build",
+  "fr": "Construire",
+  "it": "Costruire",
+  "rm": "Construir"
+ },
  "Lade %s …": {
   "en": "Loading %s …",
   "fr": "Chargement de %s …",

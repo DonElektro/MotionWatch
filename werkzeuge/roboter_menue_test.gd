@@ -151,6 +151,9 @@ func _process(_dt: float) -> bool:
 					and L.AKZENT.is_equal_approx(MODELL.FARBE["kupplung"]))
 			# Reiter
 			check("5 Reiter: Fahren, Haltung, Bauen, Welt, Messen", L.TABS.map(func(x): return x[0]) == ["fahren", "haltung", "bauen", "welt", "messen"])
+			var bl: Label = (lab._w["tab_bauen"] as Button).get_meta("label")
+			check("Reiter «Bauen» mit eigenem Schlüssel «Labor|Bauen» (en «Build»), angezeigt ohne «Labor|»",
+					bl.text == L.tx("Labor|Bauen") and not bl.text.contains("|") and T.lookup("Labor|Bauen", "en") == "Build", bl.text)
 			var alt_ok := true
 			var alt_det := []
 			for alt in ["form", "gelenke", "posen", "bewegen", "anzeigen", "rund", "gelaende", "physik", "ansicht"]:

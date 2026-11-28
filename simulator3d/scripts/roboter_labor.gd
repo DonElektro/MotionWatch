@@ -48,7 +48,7 @@ const RUND_MAX := 40.0                 # s for one full turn, else «zu langsam�
 const PANEL_W := 380.0
 # Menü aufgeräumt (Besitzer, Fragebogen 28.11.2026 14:49): 5 Reiter statt 9, darin aufklappbare Gruppen wie im Simulator
 # (Suchfeld, «Alle zuklappen · Nur Gruppen · Alle aufklappen»); nichts entfernt, nur umsortiert. [id, Name, Symbol]
-const TABS := [["fahren", "Fahren"], ["haltung", "Haltung"], ["bauen", "Bauen"], ["welt", "Welt"], ["messen", "Messen"]]
+const TABS := [["fahren", "Fahren"], ["haltung", "Haltung"], ["bauen", "Labor|Bauen"], ["welt", "Welt"], ["messen", "Messen"]]
 # die früheren 9 Reiter (/control «tab», ältere Tests, Haken anderer Zweige) -> [neuer Reiter, Gruppe]
 const TAB_ALT := {"form": ["bauen", "form"], "gelenke": ["bauen", "gelenke"], "posen": ["haltung", "posen"],
 		"bewegen": ["fahren", "gang"], "anzeigen": ["messen", "anzeigen"], "rund": ["messen", "rund"],
@@ -768,7 +768,7 @@ func _build_ui() -> void:
 		b.focus_mode = Control.FOCUS_NONE
 		b.custom_minimum_size = Vector2(0, 50)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.tooltip_text = T.t(tb[1])
+		b.tooltip_text = tx(tb[1])
 		b.pressed.connect(set_tab.bind(tb[0]))
 		var bv := VBoxContainer.new()
 		bv.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -780,7 +780,7 @@ func _build_ui() -> void:
 		ic.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		bv.add_child(ic)
 		var lb := Label.new()
-		lb.text = T.t(tb[1])
+		lb.text = tx(tb[1])
 		lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lb.add_theme_font_size_override("font_size", 12)
 		lb.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -964,6 +964,13 @@ func _close_btn(col: Color, tip: String, cb: Callable) -> Button:
 	b.add_child(d)
 	b.pressed.connect(cb)
 	return b
+
+
+static func tx(de: String) -> String:
+	"""T.t with a context for a word that means something else elsewhere: «Labor|Bauen» = «Bauen» here (en «Build»,
+	not «Build yourself» of Mehr → Bauen); in German the part before «|» is dropped"""
+	var s := T.t(de)
+	return s.substr(s.find("|") + 1) if s.begins_with("Labor|") else s
 
 
 func sim_version() -> String:
