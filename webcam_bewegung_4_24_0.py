@@ -331,7 +331,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_24_0.zip"
-ZD_SHA256 = "134dba702ffe2abf87b2c557b8b74709711dcd68f13a96721cb598b252e10acd"
+ZD_SHA256 = "a5148611577dd65cc27f790025fa6028500c680d8f31037218596c1ada285dd1"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -6513,7 +6513,7 @@ def light_out_pairs(name):
 
 def thermal_gpios():
 	""
-	return(23,24,7)if str(CFG.get("thermal_source","")).startswith("senxor")else()
+	return tuple(senxor_pins())[::-1]if str(CFG.get("thermal_source","")).startswith("senxor")else()
 
 
 
@@ -7617,72 +7617,191 @@ teach_selftest = _zd_fn('076_teach_punkte/teach_selftest()')
 
 
 
+SENXOR_PIN_DEF = {"senxor_cs": "7", "senxor_rst": "23", "senxor_drdy": "24"}
+SENXOR_LAST = {"step": "", "err": "", "t": 0.0, "fw": "", "id": "", "frames": 0, "read_err": "", "pins": None}
+
+
+def senxor_pins():
+	""
+	out=[]
+	for k,d in SENXOR_PIN_DEF.items():
+		try:
+			v=int(str(CFG.get(k,d)).strip())
+			out.append(v if 0<=v<=27 else int(d))
+		except(TypeError,ValueError):
+			out.append(int(d))
+	return tuple(out)
+
+
+def senxor_explain(step, e, pins=None):
+	""
+	cs,rst,drdy=pins or senxor_pins()
+	m=f"{type(e).__name__}: {e}"if not isinstance(e,str)else e
+	low=m.lower()
+	if step=="gpio"and "busy"in low:
+		if "BCM%d"%cs in m or step=="gpio"and getattr(e,"_mw_pin",None)==cs:
+			return(f"GPIO {cs} (CS) is busy - the SPI driver of the Pi holds it: add the line dtoverlay=spi0-0cs below "
+					f"dtparam=spi=on in /boot/firmware/config.txt and restart the Pi ({m[:60]})")
+		return f"a GPIO of the thermal camera is busy (another program or setting uses it): {m[:90]}"
+	if step=="spi"and("no such file"in low or "errno 2]"in low):
+		return "SPI is off (no /dev/spidev0.0): switch on SPI (raspi-config) and restart the Pi - "+m[:60]
+	if step=="spi"and("permission"in low or "errno 13"in low):
+		return "no permission for /dev/spidev0.0: the MoveEye user must be in the group spi - "+m[:60]
+	if step=="i2c"and("no such file"in low or "errno 2]"in low):
+		return "I2C is off (no /dev/i2c-1): switch on I2C (raspi-config) and restart the Pi - "+m[:60]
+	if step=="module"and any(k in low for k in("errno 121","remote i/o","errno 6]","errno 110","timed out")):
+		return(f"no answer on I2C 0x40 - check SDA (GPIO 2), SCL (GPIO 3), power (5 V / 3.3 V) and GND of the thermal camera ({m[:50]})")
+	if step=="frame":
+		return(f"the module answers, but no picture comes: DATA READY (GPIO {drdy}) never goes high - check the D_READY cable, "
+				f"nRESET (GPIO {rst}) and CS (GPIO {cs}); MISO / MOSI / CLK = GPIO 9 / 10 / 11")
+	return f"{step}: {m[:140]}"
+
+
 class SenxorSource:
+	"""
+
+
+"""
 	size=(80,62)
 
 	def __init__(self,i2c_addr=0x40,fps=15):
+		self._open=[]
+		self.mi48=None;self.pins=senxor_pins();self.frames=0;self.read_err=""
+		cs,rst,drdy=self.pins
+		SENXOR_LAST.update(step="",err="",t=time.time(),pins=self.pins)
+		step="driver"
 		try:
-			from senxor.mi48 import MI48
-			from senxor.interfaces import SPI_Interface,I2C_Interface
-			from senxor.utils import data_to_frame
-		except ImportError:
-			raise RuntimeError("Waveshare driver missing: Thermal_Camera_Hat.zip from the Waveshare wiki, "
-							   "then in pysenxor-master: pip install -e ./")
-		try:
-			from smbus import SMBus
-		except ImportError:
-			from smbus2 import SMBus
-		from spidev import SpiDev
-		from gpiozero import DigitalInputDevice,DigitalOutputDevice
-		self._to_frame=data_to_frame
-		self.cs=DigitalOutputDevice("BCM7",active_high=False,initial_value=False)
-		self.ready=DigitalInputDevice("BCM24",pull_up=False)
-		self.rst=DigitalOutputDevice("BCM23",active_high=False,initial_value=True)
-		spi=SPI_Interface(SpiDev(0,0),xfer_size=160)
-		spi.device.mode=0b00;spi.device.lsbfirst=False;spi.device.bits_per_word=8
-		spi.device.max_speed_hz=31200000;spi.device.cshigh=True
-		i2c=I2C_Interface(SMBus(1),i2c_addr)
-		rst=self.rst
+			try:
+				from senxor.mi48 import MI48
+				from senxor.interfaces import SPI_Interface,I2C_Interface
+				from senxor.utils import data_to_frame
+			except ImportError as e:
+				raise RuntimeError("Waveshare driver missing (pysenxor): MoveEye's Python does not find it ("+str(e)[:60]+") - "
+								   "Tools → «Check the thermal camera» shows the way")from None
+			try:
+				from spidev import SpiDev
+			except ImportError:
+				raise RuntimeError("python3-spidev missing (sudo apt install python3-spidev)")from None
+			try:
+				from smbus import SMBus
+			except ImportError:
+				try:
+					from smbus2 import SMBus
+				except ImportError:
+					raise RuntimeError("python3-smbus missing (sudo apt install python3-smbus2)")from None
+			try:
+				from gpiozero import DigitalInputDevice,DigitalOutputDevice
+			except ImportError:
+				raise RuntimeError("python3-gpiozero missing (sudo apt install python3-gpiozero)")from None
+			self._to_frame=data_to_frame
+			step="spi"
+			devd=os.environ.get("MW_TEST_DEV_DIR")or "/dev"
+			if sys.platform.startswith("linux")and os.path.isdir(devd)and not os.path.exists(os.path.join(devd,"spidev0.0")):
+				raise FileNotFoundError(2,"No such file or directory","/dev/spidev0.0")
+			step="i2c"
+			if sys.platform.startswith("linux")and os.path.isdir(devd)and not os.path.exists(os.path.join(devd,"i2c-1")):
+				raise FileNotFoundError(2,"No such file or directory","/dev/i2c-1")
+			step="gpio"
+			for pin,attr,mk in((cs,"cs",lambda p:DigitalOutputDevice("BCM%d"%p,active_high=False,initial_value=False)),
+								  (drdy,"ready",lambda p:DigitalInputDevice("BCM%d"%p,pull_up=False)),
+								  (rst,"rst",lambda p:DigitalOutputDevice("BCM%d"%p,active_high=False,initial_value=True))):
+				try:
+					dev=mk(pin)
+				except Exception as e:
+					try:
+						e._mw_pin=pin
+					except Exception:
+						pass
+					raise RuntimeError(f"GPIO {pin}: {type(e).__name__}: {e}"[:160]if "busy"not in str(e).lower()
+									   else f"BCM{pin} busy: {e}"[:160])from None
+				setattr(self,attr,dev);self._open.append(dev.close)
+			step="spi"
+			dev_=SpiDev(0,0);self._open.append(dev_.close)
+			spi=SPI_Interface(dev_,xfer_size=160)
+			spi.device.mode=0b00;spi.device.lsbfirst=False;spi.device.bits_per_word=8
+			spi.device.max_speed_hz=31200000;spi.device.cshigh=True
+			step="i2c"
+			bus=SMBus(1);self._open.append(getattr(bus,"close",lambda:None))
+			i2c=I2C_Interface(bus,i2c_addr)
+			rdev=self.rst
 
-		def reset():
-			rst.on();time.sleep(0.000035);rst.off();time.sleep(0.05)
-		self.mi48=MI48([i2c,spi],data_ready=self.ready,reset_handler=reset)
-		try:
-			self.mi48.set_fps(fps)
-		except Exception:
-			pass
-		try:
-			if int(str(self.mi48.fw_version[0]))>=2:
-				self.mi48.enable_filter(f1=True,f2=True,f3=False)
-				self.mi48.set_offset_corr(0.0)
-		except Exception:
-			pass
-		self.mi48.start(stream=True,with_header=True)
-		self.shape=getattr(self.mi48,"fpa_shape",(80,62))
+			def reset():
+				rdev.on();time.sleep(0.000035);rdev.off();time.sleep(0.05)
+			step="module"
+			self.mi48=MI48([i2c,spi],data_ready=self.ready,reset_handler=reset)
+			try:
+				self.mi48.set_fps(fps)
+			except Exception:
+				pass
+			fw=getattr(self.mi48,"fw_version",None)
+			try:
+				if int(str(fw[0]))>=2:
+					self.mi48.enable_filter(f1=True,f2=True,f3=False)
+					self.mi48.set_offset_corr(0.0)
+			except Exception:
+				pass
+			ident=""
+			for a in("camera_id_hexsn","sn","camera_id","name"):
+				v=getattr(self.mi48,a,None)
+				if v and not callable(v):
+					ident=str(v)[:40];break
+			SENXOR_LAST.update(fw=".".join(str(x)for x in fw)if isinstance(fw,(tuple,list))else str(fw or ""),id=ident)
+			self.mi48.start(stream=True,with_header=True)
+			self._open.append(self.mi48.stop)
+			self.shape=getattr(self.mi48,"fpa_shape",(80,62))
+			step="frame"
+			ok,fr=False,None
+			end=time.time()+3.0
+			while time.time()<end and not ok:
+				ok,fr=self.read()
+			if not ok:
+				raise RuntimeError(self.read_err or "no DATA READY")
+			self._first=fr
+		except Exception as e:
+			self.release()
+			msg=senxor_explain(step,e,self.pins)if step!="driver"else str(e)
+			SENXOR_LAST.update(step=step,err=msg,t=time.time())
+			raise RuntimeError(msg)from None
+		SENXOR_LAST.update(step="ok",err="",t=time.time())
 
 	def read(self):
+		fr0=getattr(self,"_first",None)
+		if fr0 is not None:
+			self._first=None
+			return True,fr0
 		try:
 			if not self.ready.wait_for_active(timeout=1.0):
+				self.read_err="no DATA READY"
 				return False,None
 			self.cs.on();time.sleep(0.0001)
 			data,_header=self.mi48.read()
 			time.sleep(0.0001);self.cs.off()
-		except Exception:
+		except Exception as e:
+			self.read_err=f"{type(e).__name__}: {e}"[:120]
 			try:
 				self.cs.off()
 			except Exception:
 				pass
 			return False,None
 		if data is None:
+			self.read_err="empty picture (CRC / SPI)"
 			return False,None
-		fr=np.asarray(self._to_frame(data,self.shape),dtype=np.float32)
+		try:
+			fr=np.asarray(self._to_frame(data,self.shape),dtype=np.float32)
+			if fr.ndim!=2:
+				fr=fr.reshape(62,80)
+		except Exception as e:
+			self.read_err=f"picture shape: {e}"[:120]
+			return False,None
 		if fr.size and float(np.median(fr))>200:
 			fr=fr/10.0-273.15
+		self.frames+=1;SENXOR_LAST["frames"]=SENXOR_LAST.get("frames",0)+1;self.read_err=""
 		STATE["thermal_max"]=round(float(np.max(fr)),1)
 		return True,fr
 
 	def release(self):
-		for f in(lambda:self.mi48.stop(),self.cs.close,self.ready.close,self.rst.close):
+		todo,self._open=list(getattr(self,"_open",[])),[]
+		for f in reversed(todo):
 			try:
 				f()
 			except Exception:
@@ -20433,7 +20552,7 @@ class ThermalCam:
 		while True:
 			try:
 				want=self.wanted()
-				if self.src is not None and(want!=self.spec):
+				if self.src is not None and(want!=self.spec or getattr(self.src,"pins",None)not in(None,senxor_pins())):
 					self._close()
 				if self.src is None:
 					if not want:
@@ -20450,10 +20569,12 @@ class ThermalCam:
 				if w_ is not None and w_.eco_slow:
 					time.sleep(max(0.0,1.0/max(1.0,float(CFG["eco_fps"]))-0.05))
 				if ok and fr is not None:
-					self.frame=fr;self.t=time.time();self.fails=0
+					self.frame=fr;self.t=time.time();self.fails=0;self.n=getattr(self,"n",0)+1
 					STATE["thermal"]="connected"
 				else:
 					self.fails+=1
+					if self.fails==5 and getattr(self.src,"read_err",""):
+						STATE["thermal"]="no picture: "+str(self.src.read_err)[:100]
 					if self.fails>=30:
 						STATE["thermal"]="connection lost - reconnecting"
 						self._close();self.retry_at=time.time()+3.0
@@ -20552,6 +20673,17 @@ class ThermalCam:
 		return col,gray
 
 	def detect(self):
+		""
+		try:
+			return self._detect()
+		except Exception as e:
+			if getattr(self,"_det_err",None)!=type(e).__name__:
+				self._det_err=type(e).__name__
+				log_event("sys",f"Thermal detection skipped: {type(e).__name__}: {e}"[:160])
+			self.boxes=[]
+			return[]
+
+	def _detect(self):
 		"""
 """
 		fr,t=self.frame,self.t
@@ -20619,7 +20751,10 @@ class ThermalCam:
 				m=cv2.GaussianBlur((gray>thr).astype(np.float32),(0,0),max(2.0,W/200.0))[:,:,None]*a
 				return(frame*(1.0-m)+col*m).astype(np.uint8)
 			return cv2.addWeighted(frame,1.0-a,col,a,0)
-		except cv2.error:
+		except Exception as e:
+			if getattr(self,"_ov_err",None)!=type(e).__name__:
+				self._ov_err=type(e).__name__
+				log_event("sys",f"Thermal overlay skipped: {type(e).__name__}: {e}"[:160])
 			return frame
 
 
@@ -77787,6 +77922,7 @@ _HX_V3 = _zd('639zv_drei_ansichten/HX_V3', _zd_hx_en((
 	'The overview camera - the frame shows where the head looks',
 	'No thermal camera chosen',
 	'No wide-angle camera (overview)',
+	'no thermal picture',
 	'Small overview picture',
 	'Tap the small picture: swap big and small',
 	'Where the head looks',
@@ -106117,6 +106253,797 @@ WC_BASE = {"url": "https://github.com/DonElektro/MotionWatch/releases/download/"
 WC_FILE = {"name": "wildcamp-ch-1.zip", "size": 2425742, "sha256": "3cf1b73ea72ebdefe342ff0a1b9bd54b97b555a0a084fc3bfe5522dd6f2ecd1e", "unpacked": 10886755, "datum": "2026-11-22"}
 WC_PY = _zd('639zzzzzw_wildcamp/WC_PY', "")
 zd_exec(WC_PY, "639zzzzzw_wildcamp.py")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+for _k, _v in SENXOR_PIN_DEF.items():
+	CFG.setdefault(_k,_v);DEFAULTS.setdefault(_k,_v);FACTORY_CFG.setdefault(_k,_v)
+TC_GPIO_CHOICES = (4, 5, 7, 8, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27)
+for _k, _lb in (("senxor_cs", "Thermal-90: CS / SS (chip select) GPIO"), ("senxor_rst", "Thermal-90: nRESET GPIO"),
+				("senxor_drdy", "Thermal-90: D_READY (data ready) GPIO")):
+	if not any(t_[1]==_k for t_ in TEXTS):
+		TEXTS.append(("Thermal camera",_k,_lb,"enum","senxor_gpio"))
+	TEXT_SPECS[_k]=("enum","senxor_gpio")
+_tc_text_choice_pairs_base = text_choice_pairs
+
+
+def text_choice_pairs(key):
+	if(TEXT_SPECS.get(key)or(None,None))[1]!="senxor_gpio":
+		return _tc_text_choice_pairs_base(key)
+	try:
+		bad=ups_x12_pins()
+	except Exception:
+		bad=set()
+	cur=str(CFG.get(key)or "")
+	gs=[g for g in TC_GPIO_CHOICES if g not in bad]+([int(cur)]if cur.isdigit()else[])
+	std={"senxor_cs":7,"senxor_rst":23,"senxor_drdy":24}.get(key)
+	return[(str(g),f"GPIO {g}"+(" ("+tr("standard")+")"if g==std else ""))for g in sorted(set(gs))]
+
+
+TC = {"busy": False, "last": None}
+TC_PTH = "moveeye-pysenxor.pth"
+TC_PROBE = r'''
+import json, sys
+out = {}
+for n in ("numpy", "cv2", "picamera2", "simplejpeg", "senxor", "spidev", "smbus", "smbus2", "gpiozero", "lgpio", "crcmod"):
+    try:
+        m = __import__(n)
+        if n == "senxor":
+            __import__("senxor.mi48"); __import__("senxor.interfaces"); __import__("senxor.utils")
+        out[n] = {"ok": True, "ver": str(getattr(m, "__version__", "") or ""), "file": str(getattr(m, "__file__", "") or "")}
+    except BaseException as e:
+        out[n] = {"ok": False, "err": (type(e).__name__ + ": " + str(e))[:160]}
+print(json.dumps(out))
+'''
+
+
+def _tc_run(cmd, timeout=60):
+	try:
+		p=subprocess.run(cmd,capture_output=True,text=True,timeout=timeout)
+		return p.returncode,(p.stdout or ""),(p.stderr or "")
+	except FileNotFoundError:
+		return 127,"","not installed: "+str(cmd[0])
+	except subprocess.TimeoutExpired:
+		return 124,"","timeout"
+	except Exception as e:
+		return 1,"",str(e)[:160]
+
+
+def _tc_root(cmd):
+	""
+	return list(cmd)if hasattr(os,"geteuid")and os.geteuid()==0 else["sudo","-n"]+list(cmd)
+
+
+def tc_config_path():
+	for p in("/boot/firmware/config.txt","/boot/config.txt"):
+		if os.path.isfile(p):
+			return p
+	return ""
+
+
+def tc_config_flags(text):
+	""
+	spi=i2c=cs0=False
+	for ln in str(text or "").splitlines():
+		s=ln.split("#",1)[0].strip().replace(" ","")
+		if not s:
+			continue
+		if re.match(r"^dtparam=(.*,)?spi(=on)?(,|$)",s):
+			spi=True
+		if re.match(r"^dtparam=(.*,)?i2c(_arm)?(=on)?(,|$)",s):
+			i2c=True
+		if s.startswith("dtoverlay=spi0-0cs"):
+			cs0=True
+	return{"spi":spi,"i2c":i2c,"spi0_0cs":cs0}
+
+
+def tc_config_fixed(text):
+	""
+	f=tc_config_flags(text)
+	if f["spi"]and f["i2c"]and f["spi0_0cs"]:
+		return None
+	lines=str(text or "").splitlines()
+	add_spi=[]if f["spi"]else["dtparam=spi=on"]
+	add_cs=[]if f["spi0_0cs"]else["dtoverlay=spi0-0cs"]
+	add_i2c=[]if f["i2c"]else["dtparam=i2c_arm=on"]
+	at=None
+	for i,ln in enumerate(lines):
+		if re.match(r"^\s*dtparam=(.*,)?spi(=on)?(,|$)",ln.split("#",1)[0].replace(" ","")):
+			at=i
+			break
+	if at is not None and add_cs:
+		lines.insert(at+1,"dtoverlay=spi0-0cs   # MoveEye: GPIO 7 for the thermal camera (Waveshare)")
+		add_cs=[]
+	rest=add_spi+add_cs+add_i2c
+	if rest:
+		lines+=["","[all]","# MoveEye: thermal camera (Waveshare Thermal-90 / 44)"]+rest
+	return "\n".join(lines)+"\n"
+
+
+def _tc_kind(path):
+	p=str(path or "")
+	if not p:
+		return ""
+	try:
+		import site
+		us=site.getusersitepackages()
+	except Exception:
+		us=""
+	if us and p.startswith(us)or "/.local/lib/"in p:
+		return "pip-user"
+	if p.startswith("/usr/local/lib/"):
+		return "pip-system"
+	if p.startswith("/usr/lib/python3/dist-packages/"):
+		return "apt"
+	if "/site-packages/"in p and "/lib/python3"in p:
+		return "venv"
+	return "other"
+
+
+def tc_probe():
+	""
+	rc,out,err=_tc_run([sys.executable,"-c",TC_PROBE],60)
+	try:
+		return json.loads(out.strip().splitlines()[-1])
+	except Exception:
+		return{"_err":(err or out or str(rc))[-200:]}
+
+
+def tc_find_senxor():
+	"""
+"""
+	home=os.path.expanduser("~");found=[]
+	pats=[os.path.join(home,"*","lib","python3*","site-packages"),os.path.join(home,"*","*","lib","python3*","site-packages"),
+			os.path.join(home,"*pysenxor*"),os.path.join(home,"*","*pysenxor*"),os.path.join(home,"*","*","*pysenxor*")]
+	for pat in pats:
+		for d in sorted(glob.glob(pat))[:40]:
+			if os.path.isfile(os.path.join(d,"senxor","__init__.py"))and os.path.isfile(os.path.join(d,"senxor","mi48.py")):
+				if d not in found:
+					found.append(d)
+			if d.endswith("site-packages"):
+				for pth in glob.glob(os.path.join(d,"*.pth"))+glob.glob(os.path.join(d,"*.egg-link")):
+					try:
+						for ln in open(pth,errors="replace").read().splitlines()[:5]:
+							ln=ln.strip()
+							if ln and not ln.startswith(("import","#"))and os.path.isfile(os.path.join(ln,"senxor","mi48.py"))and ln not in found:
+								found.append(ln)
+					except OSError:
+						pass
+	return found[:5]
+
+
+def tc_i2c_scan(addrs=(0x2d, 0x36, 0x40, 0x41, 0x42, 0x44)):
+	try:
+		try:
+			from smbus import SMBus
+		except ImportError:
+			from smbus2 import SMBus
+	except ImportError:
+		return None,"python3-smbus missing"
+	try:
+		bus=SMBus(1)
+	except Exception as e:
+		return None,f"{type(e).__name__}: {e}"[:120]
+	seen=[]
+	try:
+		for a in addrs:
+			try:
+				bus.read_byte(a);seen.append(a)
+			except Exception:
+				pass
+	finally:
+		try:
+			bus.close()
+		except Exception:
+			pass
+	return seen,""
+
+
+def tc_pin_conflicts(pins=None):
+	""
+	cs,rst,drdy=pins or senxor_pins()
+	own={}
+	try:
+		for g_ in ups_x12_pins():
+			own[g_]="Geekworm X1206"
+	except Exception:
+		pass
+	for k,v in CFG.items():
+		if(k.startswith("btn_gpio")or k in("charge_led_gpio","wind_gpio","led_gpio"))and str(v or "").isdigit():
+			own.setdefault(int(v),k)
+	for r in RELAYS:
+		own.setdefault(int(r.get("gpio",-1)),"relay")
+	for k in("light_white_out","light_ir_out"):
+		v=str(CFG.get(k,""))
+		if v.startswith("gpio:")and v[5:].isdigit():
+			own.setdefault(int(v[5:]),k)
+	if str(STATE.get("servo_backend")or "").startswith(("gpiozero","pigpio")):
+		own.setdefault(GPIO_PAN,"servo pan");own.setdefault(GPIO_TILT,"servo tilt")
+	for g_,n in((2,"I2C SDA"),(3,"I2C SCL"),(9,"SPI MISO"),(10,"SPI MOSI"),(11,"SPI CLK")):
+		own[g_]=n
+	out=[]
+	for nm,p in(("CS",cs),("nRESET",rst),("D_READY",drdy)):
+		if p in own:
+			out.append(f"{nm} GPIO {p} = {own[p]}")
+	if len({cs,rst,drdy})<3:
+		out.append("two functions on the same GPIO")
+	return out
+
+
+def tc_pinctrl(pins):
+	""
+	if not shutil.which("pinctrl"):
+		return{}
+	out={}
+	for p in pins:
+		rc,o,_e=_tc_run(["pinctrl","get",str(p)],5)
+		if rc==0 and o.strip():
+			out[p]=o.strip().splitlines()[0][:80]
+	return out
+
+
+def _tc_groups():
+	try:
+		import grp
+		import pwd
+		u=pwd.getpwuid(os.getuid()).pw_name
+		gs={grp.getgrgid(x).gr_name for x in os.getgroups()}|{grp.getgrgid(os.getgid()).gr_name}
+		return u,gs
+	except Exception:
+		return "",set()
+
+
+def _tc_step(steps, sid, ok, title, detail="", fix=None, lang=None):
+	steps.append({"id":sid,"ok":ok,"title":tr(title,lang),"detail":str(detail or "")[:400],"fix":fix})
+
+
+def thermal_check(lang=None, wait=2.0):
+	""
+	steps=[]
+	spec=str(CFG.get("thermal_source")or "")
+	senx=spec.startswith("senxor")
+	pins=senxor_pins()
+	devd=os.environ.get("MW_TEST_DEV_DIR")or "/dev"
+	linux=sys.platform.startswith("linux")and os.path.isdir(devd)
+	model=""
+	try:
+		model=open("/proc/device-tree/model",errors="replace").read().strip("\x00\n ")[:60]
+	except OSError:
+		pass
+	_tc_step(steps,"source",bool(spec),"Thermal camera chosen",
+			 (source_label(spec)if spec else tr("none",lang))+(" · "+model if model else "")
+			 +(" · "+tr("on",lang)if CFG.get("thermal_on")else ""),lang=lang)
+
+	cp=tc_config_path()
+	if cp:
+		try:
+			flags=tc_config_flags(open(cp,errors="replace").read())
+		except OSError as e:
+			flags=None
+			_tc_step(steps,"config",False,"config.txt",f"{cp}: {e}"[:160],lang=lang)
+		if flags is not None:
+			miss=[n for n,k in(("dtparam=spi=on","spi"),("dtparam=i2c_arm=on","i2c"),("dtoverlay=spi0-0cs","spi0_0cs"))if not flags[k]]
+			_tc_step(steps,"config",not miss,"config.txt: SPI, I2C and dtoverlay=spi0-0cs",
+					 cp+(" · "+tr("missing",lang)+": "+", ".join(miss)if miss else " · ok"),
+					 fix="overlay"if miss else None,lang=lang)
+	else:
+		_tc_step(steps,"config",None,"config.txt: SPI, I2C and dtoverlay=spi0-0cs",tr("not found (not a Raspberry Pi?)",lang),lang=lang)
+
+	spis=sorted("/dev/"+os.path.basename(x)for x in glob.glob(os.path.join(devd,"spidev*")))if linux else[]
+	_tc_step(steps,"spidev","/dev/spidev0.0"in spis,"SPI device /dev/spidev0.0",", ".join(spis)or tr("none",lang),lang=lang)
+	if "/dev/spidev0.1"in spis and pins[0]==7:
+		_tc_step(steps,"spice1",False,"GPIO 7 belongs to the SPI driver",
+				 "/dev/spidev0.1 = CE1 = GPIO 7 · dtoverlay=spi0-0cs",fix="overlay"if cp else None,lang=lang)
+	_tc_step(steps,"i2cdev",os.path.exists(os.path.join(devd,"i2c-1"))if linux else False,"I2C bus /dev/i2c-1",
+			 "ok"if linux and os.path.exists(os.path.join(devd,"i2c-1"))else tr("missing",lang),lang=lang)
+	u,gs=_tc_groups()
+	need=[x for x in("spi","i2c","gpio")if x not in gs]
+	_tc_step(steps,"groups",(not need)or u=="root","Groups of the MoveEye user",
+			 (u or "?")+": "+(", ".join(sorted(g_ for g_ in gs if g_ in("spi","i2c","gpio","video","root")))or "-")
+			 +(" · "+tr("missing",lang)+": "+", ".join(need)if need and u!="root"else ""),lang=lang)
+
+	seen,err=tc_i2c_scan()
+	if seen is None:
+		_tc_step(steps,"i2c",False,"I2C scan",err,lang=lang)
+	else:
+		names={0x40:"0x40 "+tr("thermal camera",lang),0x41:"0x41 PCA9685",0x36:"0x36 X1206",0x2d:"0x2D UPS HAT (E)",
+				 0x42:"0x42 INA219",0x44:"0x44 INA219 Solar"}
+		th_drv=STATE.get("thermal")=="connected"and senx
+		_tc_step(steps,"i2c",(0x40 in seen)or th_drv,"I2C scan: thermal camera on 0x40",
+				 ", ".join(names.get(a,hex(a))for a in seen)or tr("nothing answers",lang),lang=lang)
+
+	pr=tc_probe()
+	if "_err"in pr:
+		_tc_step(steps,"python",False,"Python packages",pr["_err"],lang=lang)
+		pr={}
+	bad_pip=[]
+	for n in("numpy","cv2","picamera2","simplejpeg"):
+		x=pr.get(n)or{}
+		k=_tc_kind(x.get("file"))
+		if x.get("ok")and n in("numpy","cv2")and k in("pip-user","pip-system")and os.path.isdir("/usr/lib/python3/dist-packages/"+n):
+			bad_pip.append((n,x.get("ver",""),k))
+	broken=[n for n in("numpy","cv2","picamera2")if pr and not(pr.get(n)or{}).get("ok")]
+	det=" · ".join(f"{n} {(pr.get(n) or {}).get('ver', '')} ({_tc_kind((pr.get(n) or {}).get('file')) or tr('missing', lang)})".replace(" ()","")
+					 for n in("numpy","cv2","picamera2")if pr)
+	if broken:
+		det+=" · "+"; ".join(f"{n}: {(pr.get(n) or {}).get('err', '')[:90]}"for n in broken)
+	_tc_step(steps,"python",(not broken and not bad_pip)if pr else None,"numpy, OpenCV and picamera2 (own process)",
+			 det+(" · "+tr("pip packages cover the system packages",lang)+": "+", ".join(f"{n} {v} ({k})"for n,v,k in bad_pip)if bad_pip else ""),
+			 fix="pip"if bad_pip else None,lang=lang)
+	sx=pr.get("senxor")or{}
+	venvs=[]if sx.get("ok")else tc_find_senxor()
+	if sx.get("ok"):
+		_tc_step(steps,"senxor",True,"Driver pysenxor for MoveEye's Python",(sx.get("file")or "")[:120],lang=lang)
+	else:
+		_tc_step(steps,"senxor",False if senx else None,"Driver pysenxor for MoveEye's Python",
+				 (sx.get("err")or "")[:120]+(" · "+tr("found, but only in",lang)+": "+", ".join(venvs)if venvs else
+												" · "+tr("not found in the home folder",lang)),
+				 fix="senxor"if venvs else None,lang=lang)
+	miss_apt=[p for n,p in(("spidev","python3-spidev"),("crcmod","python3-crcmod"),("gpiozero","python3-gpiozero"),("lgpio","python3-lgpio"))
+				if pr and not(pr.get(n)or{}).get("ok")]
+	if pr and not((pr.get("smbus")or{}).get("ok")or(pr.get("smbus2")or{}).get("ok")):
+		miss_apt.append("python3-smbus2")
+	if pr:
+		_tc_step(steps,"apt",not miss_apt,"System packages spidev, smbus, crcmod, gpiozero, lgpio",
+				 (tr("missing",lang)+": "+", ".join(miss_apt))if miss_apt else "ok",fix="apt"if miss_apt else None,lang=lang)
+
+	conf=tc_pin_conflicts(pins)
+	pc=tc_pinctrl(pins)if linux else{}
+	held=[f"GPIO {p}: {v}"for p,v in pc.items()if "SPI0"in v.upper()or "CE"in v.upper().split("//")[-1]]
+	_tc_step(steps,"pins",not conf and not held,"Pins CS / nRESET / D_READY",
+			 f"CS GPIO {pins[0]} · nRESET GPIO {pins[1]} · D_READY GPIO {pins[2]}"+(" · "+"; ".join(conf+held)if conf or held else ""),
+			 fix="overlay"if held and cp else None,lang=lang)
+
+	if senx:
+		L=SENXOR_LAST
+		if L.get("step")=="ok":
+			_tc_step(steps,"module",True,"Module answers (ID, firmware)",
+					 " · ".join(x for x in(L.get("id"),("FW "+L["fw"])if L.get("fw")else "")if x)or "ok",lang=lang)
+		elif L.get("err"):
+			_tc_step(steps,"module",False,"Module answers (ID, firmware)",f"{L.get('step')}: {L.get('err')}",lang=lang)
+		else:
+			_tc_step(steps,"module",None,"Module answers (ID, firmware)",tr("not tried yet",lang),lang=lang)
+	w_=WATCH_REF.get("w")
+	hb=time.time()-float(HEART.get("t")or 0)
+	head_ok=STATE.get("source_status")=="connected"and hb<5.0
+	_tc_step(steps,"head",head_ok,"Head camera delivers pictures",
+			 f"{STATE.get('source_label', '')}: {STATE.get('source_status', '')} · "+tr("loop",lang)+f" {hb:.1f} s",lang=lang)
+	th=THERMAL
+	n0=getattr(th,"n",0)if th is not None else 0
+	if wait:
+		time.sleep(wait)
+	n1=getattr(th,"n",0)if th is not None else 0
+	fps=(n1-n0)/wait if wait else 0.0
+	st=str(STATE.get("thermal")or "")
+	age=time.time()-th.t if th is not None and th.t else None
+	_tc_step(steps,"frame",st=="connected"and fps>0,"Thermal picture arrives (picture rate)",
+			 st+(f" · {fps:.1f} "+tr("pictures/s",lang)if fps or st=="connected"else "")
+			 +(f" · {STATE.get('thermal_res', '')}"if STATE.get("thermal_res")else "")
+			 +(f" · max {STATE.get('thermal_max')} °C"if st=="connected"and STATE.get("thermal_max")is not None else "")
+			 +(f" · "+tr("last picture",lang)+f" {age:.0f} s"if age is not None and age>3 else ""),lang=lang)
+	logs=[f"{e.get('t', '')} {e.get('text', '')}"[:200]for e in list(STATE.get("events")or[])
+			if re.search(r"camera|thermal|video source|wärme",str(e.get("text","")),re.I)][:20]
+	undo=tc_undo_list()
+	res={"ok":True,"steps":steps,"log":logs,"undo":undo,"admin_fix":True,
+		   "pins":{"cs":pins[0],"rst":pins[1],"drdy":pins[2]},"t":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+	res["report"]=tc_report(res,lang)
+	TC["last"]=res
+	return res
+
+
+def tc_report(res, lang=None):
+	""
+	ic={True:"✓",False:"✗",None:"!"}
+	out=[f"MoveEye {APP_VERSION} · "+tr("Check the thermal camera",lang)+" · "+res.get("t","")]
+	for s in res.get("steps",[]):
+		out.append(f"{ic.get(s['ok'], '?')} {s['title']}: {s['detail']}")
+	if res.get("log"):
+		out.append("")
+		out.append(tr("Log (camera / thermal)",lang)+":")
+		out+=["  "+x for x in res["log"]]
+	return "\n".join(out)
+
+
+
+def _tc_undo_load():
+	try:
+		with open(os.path.join(DATA_DIR,"thermal_fix_undo.json"))as f:
+			d=json.load(f)
+		return d if isinstance(d,dict)else{}
+	except(OSError,ValueError):
+		return{}
+
+
+def _tc_undo_save(d):
+	try:
+		with open(os.path.join(DATA_DIR,"thermal_fix_undo.json")+".tmp","w")as f:
+			json.dump(d,f)
+		os.replace(os.path.join(DATA_DIR,"thermal_fix_undo.json.tmp"),os.path.join(DATA_DIR,"thermal_fix_undo.json"))
+	except OSError:
+		pass
+
+
+def tc_undo_list():
+	d=_tc_undo_load()
+	return[k for k in("overlay","senxor","pip")if d.get(k)]
+
+
+def _tc_user_site():
+	import site
+	if not getattr(site,"ENABLE_USER_SITE",True):
+		return ""
+	return site.getusersitepackages()
+
+
+def tc_fix(action, lang=None):
+	""
+	d=_tc_undo_load()
+	if action=="overlay":
+		cp=tc_config_path()
+		if not cp:
+			return False,tr("config.txt not found",lang)
+		try:
+			text=open(cp,errors="replace").read()
+		except OSError as e:
+			return False,str(e)[:160]
+		new=tc_config_fixed(text)
+		if new is None:
+			return True,tr("nothing to do",lang)
+		bak=cp+".moveeye-"+datetime.now().strftime("%Y%m%d-%H%M%S")
+		rc,_o,e=_tc_run(_tc_root(["cp","-p",cp,bak]),20)
+		if rc!=0:
+			return False,tr("no permission (sudo)",lang)+": "+(e.strip()or str(rc))[:120]
+		fd,tmp=tempfile.mkstemp(prefix="moveeye-config-",suffix=".txt")
+		try:
+			with os.fdopen(fd,"w")as f:
+				f.write(new)
+			rc,_o,e=_tc_run(_tc_root(["cp",tmp,cp]),20)
+		finally:
+			try:
+				os.remove(tmp)
+			except OSError:
+				pass
+		if rc!=0:
+			return False,tr("no permission (sudo)",lang)+": "+(e.strip()or str(rc))[:120]
+		d["overlay"]={"file":cp,"backup":bak};_tc_undo_save(d)
+		log_event("sys",f"Thermal camera check: config.txt completed (backup {os.path.basename(bak)}) - restart the Pi")
+		return True,tr("config.txt completed - restart the Pi so that it takes effect",lang)+" · "+os.path.basename(bak)
+	if action=="senxor":
+		src=tc_find_senxor()
+		us=_tc_user_site()
+		if not src:
+			return False,tr("pysenxor not found in the home folder",lang)
+		if not us:
+			return False,tr("the user folder of Python is switched off",lang)
+		link_dir=os.path.join(DATA_DIR,"pysenxor")
+		try:
+			os.makedirs(us,exist_ok=True);os.makedirs(link_dir,exist_ok=True)
+			ln=os.path.join(link_dir,"senxor")
+			if os.path.islink(ln):
+				os.remove(ln)
+			if not os.path.exists(ln):
+				os.symlink(os.path.join(src[0],"senxor"),ln)
+			with open(os.path.join(us,TC_PTH),"w")as f:
+				f.write(link_dir+"\n")
+		except OSError as e:
+			return False,str(e)[:160]
+		d["senxor"]={"pth":os.path.join(us,TC_PTH),"link":os.path.join(link_dir,"senxor"),"from":src[0]};_tc_undo_save(d)
+		log_event("sys",f"Thermal camera check: pysenxor taken over from {src[0]} - restart MoveEye")
+		return True,tr("pysenxor is now visible for MoveEye - restart MoveEye",lang)
+	if action=="apt":
+		pr=tc_probe()
+		pk=[p for n,p in(("spidev","python3-spidev"),("crcmod","python3-crcmod"),("gpiozero","python3-gpiozero"),("lgpio","python3-lgpio"))
+			  if not(pr.get(n)or{}).get("ok")]
+		if not((pr.get("smbus")or{}).get("ok")or(pr.get("smbus2")or{}).get("ok")):
+			pk.append("python3-smbus2")
+		if not pk:
+			return True,tr("nothing to do",lang)
+		rc,o,e=_tc_run(_tc_root(["apt-get","install","-y","--no-install-recommends"]+pk),600)
+		log_event("sys",f"Thermal camera check: apt install {' '.join(pk)} -> {rc}")
+		return rc==0,("ok: "+", ".join(pk))if rc==0 else(tr("no permission (sudo)",lang)if "sudo"in e else "")+(e or o)[-160:]
+	if action=="pip":
+		pr=tc_probe();done=[]
+		names={"numpy":["numpy"],"cv2":["opencv-python","opencv-contrib-python","opencv-python-headless","opencv-contrib-python-headless"]}
+		for n in("numpy","cv2"):
+			x=pr.get(n)or{}
+			k=_tc_kind(x.get("file"))
+			if not(x.get("ok")and k in("pip-user","pip-system")and os.path.isdir("/usr/lib/python3/dist-packages/"+n)):
+				continue
+			cmd=[sys.executable,"-m","pip","uninstall","-y","--break-system-packages"]+names[n]
+			rc,o,e=_tc_run(_tc_root(cmd)if k=="pip-system"else cmd,300)
+			if rc!=0:
+				return False,f"pip uninstall {n}: "+(e or o)[-160:]
+			done.append([names[n][0]if n=="numpy"else "opencv-python",x.get("ver",""),k])
+		if not done:
+			return True,tr("nothing to do",lang)
+		d["pip"]=(d.get("pip")or[])+done;_tc_undo_save(d)
+		log_event("sys","Thermal camera check: pip packages removed: "+", ".join(f"{a} {b}"for a,b,_c in done)+" - restart MoveEye")
+		return True,tr("removed - the system packages apply again; restart MoveEye",lang)+": "+", ".join(f"{a} {b}"for a,b,_c in done)
+	if action=="reboot":
+		try:
+			ok,msg=power_action("reboot",source="thermal check")
+			return ok,msg or tr("the Pi restarts",lang)
+		except Exception as e:
+			return False,str(e)[:160]
+	if action=="restart":
+		ok=selfheal_restart("thermal","thermal camera check: restart by hand")
+		return ok,tr("MoveEye restarts",lang)if ok else tr("busy - please wait",lang)
+	if action.startswith("undo:"):
+		what=action[5:]
+		x=d.get(what)
+		if not x:
+			return False,tr("nothing to undo",lang)
+		if what=="overlay":
+			rc,_o,e=_tc_run(_tc_root(["cp","-p",x["backup"],x["file"]]),20)
+			if rc!=0:
+				return False,tr("no permission (sudo)",lang)+": "+(e.strip()or str(rc))[:120]
+		elif what=="senxor":
+			for p in(x.get("pth"),x.get("link")):
+				try:
+					if p and(os.path.islink(p)or os.path.exists(p)):
+						os.remove(p)
+				except OSError as e:
+					return False,str(e)[:160]
+		elif what=="pip":
+			for name,ver,k in x:
+				cmd=[sys.executable,"-m","pip","install","--break-system-packages"]+(["--user"]if k=="pip-user"else[])+[f"{name}=={ver}"if ver else name]
+				rc,o,e=_tc_run(_tc_root(cmd)if k=="pip-system"else cmd,900)
+				if rc!=0:
+					return False,f"pip install {name}: "+(e or o)[-160:]
+		d.pop(what,None);_tc_undo_save(d)
+		log_event("sys",f"Thermal camera check: undone ({what})")
+		return True,tr("undone - restart so that it takes effect",lang)
+	return False,"unknown action"
+
+
+TC_ACTIONS = ("overlay", "senxor", "apt", "pip", "reboot", "restart", "undo:overlay", "undo:senxor", "undo:pip")
+
+
+def thermal_check_routes(app, reply, body):
+	from flask import request,g
+
+	@app.route("/api/thermal_check",methods=["GET","POST"])
+	def api_thermal_check():
+		if getattr(g,"role","admin")!="admin":
+			return reply({"ok":False,"error":"not allowed"},403)
+		lang=norm_lang(request.args.get("lang")or CFG.get("lang"))
+		if request.method=="POST":
+			d=body();lang=norm_lang(d.get("lang")or lang);a=str(d.get("action")or "")
+			if a not in TC_ACTIONS:
+				return reply({"ok":False,"error":"unknown action"},400)
+			if TC["busy"]:
+				return reply({"ok":False,"error":tr("busy - please wait",lang)},409)
+			TC["busy"]=True
+			try:
+				ok,msg=tc_fix(a,lang)
+			finally:
+				TC["busy"]=False
+			return reply({"ok":bool(ok),"msg":msg,"error":""if ok else msg})
+		return reply(thermal_check(lang))
+
+
+_servo_routes_tc = servo_routes
+
+
+def servo_routes(app, reply, body):
+	_servo_routes_tc(app,reply,body)
+	thermal_check_routes(app,reply,body)
+
+
+
+TC_TOOL_HTML = ('<button type="button" class="tli" data-k="thcheck" onclick="pick(\'thcheck\')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true">'
+				'<path d="M10 14V5a2 2 0 0 1 4 0v9a4 4 0 1 1-4 0z"/><path d="M12 9v7"/><path d="M17 4l3 3M20 4l-3 3"/></svg>'
+				'<span class="tln"><b data-i18n="Check the thermal camera">Check the thermal camera</b><span class="tsum" data-i18n="and repair: SPI, I2C, driver, pins">and repair: SPI, I2C, driver, pins</span></span><i class="tdot" id="d-thcheck"></i></button>\n  ')
+TC_SECTION_HTML = _zd('639zzzzzx_waermebild_pruefen/TC_SECTION_HTML', ZD_PAGE)
+TC_PAGE_JS = _zd('639zzzzzx_waermebild_pruefen/TC_PAGE_JS', "")
+_HX_TC = _zd('639zzzzzx_waermebild_pruefen/HX_TC', _zd_hx_en((
+	'Check the thermal camera',
+	'and repair: SPI, I2C, driver, pins',
+	'Check',
+	'tc-note',
+	'Log (camera / thermal)',
+	'Copy the report',
+	'Share',
+	'Restart MoveEye',
+	'Restart the Pi',
+	'Add the missing lines to config.txt (a backup is kept)',
+	'Make pysenxor visible for MoveEye',
+	'Install the missing system packages',
+	'Remove the pip packages that cover the system',
+	'Undo: config.txt back',
+	'Undo: pysenxor link away',
+	'Undo: pip packages back',
+	'tc-q-overlay',
+	'tc-q-senxor',
+	'tc-q-apt',
+	'tc-q-pip',
+	'tc-q-undo',
+	'tc-q-restart',
+	'tc-q-reboot',
+	'working…',
+	'problems found',
+	'everything fine',
+	'checking… (about 5 s)',
+	'Report copied',
+	'Thermal camera chosen',
+	'config.txt: SPI, I2C and dtoverlay=spi0-0cs',
+	'not found (not a Raspberry Pi?)',
+	'SPI device /dev/spidev0.0',
+	'GPIO 7 belongs to the SPI driver',
+	'I2C bus /dev/i2c-1',
+	'Groups of the MoveEye user',
+	'I2C scan',
+	'I2C scan: thermal camera on 0x40',
+	'thermal camera',
+	'nothing answers',
+	'Python packages',
+	'numpy, OpenCV and picamera2 (own process)',
+	'pip packages cover the system packages',
+	"Driver pysenxor for MoveEye's Python",
+	'found, but only in',
+	'not found in the home folder',
+	'System packages spidev, smbus, crcmod, gpiozero, lgpio',
+	'missing',
+	'Pins CS / nRESET / D_READY',
+	'Module answers (ID, firmware)',
+	'not tried yet',
+	'Head camera delivers pictures',
+	'loop',
+	'Thermal picture arrives (picture rate)',
+	'pictures/s',
+	'last picture',
+	'config.txt not found',
+	'nothing to do',
+	'no permission (sudo)',
+	'config.txt completed - restart the Pi so that it takes effect',
+	'pysenxor not found in the home folder',
+	'the user folder of Python is switched off',
+	'pysenxor is now visible for MoveEye - restart MoveEye',
+	'removed - the system packages apply again; restart MoveEye',
+	'the Pi restarts',
+	'MoveEye restarts',
+	'nothing to undo',
+	'undone - restart so that it takes effect',
+	'busy - please wait',
+	'standard',
+	'Thermal-90: CS / SS (chip select) GPIO',
+	'Thermal-90: nRESET GPIO',
+	'Thermal-90: D_READY (data ready) GPIO',
+	'Check the thermal camera …',
+	'no thermal picture',
+)))
+for _k, _v in _HX_TC.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+SET_HELP["senxor_cs"] = ("Where SS / CS of the Waveshare thermal camera is wired. Waveshare (HAT and single module): GPIO 7 (pin 26) - "
+						 "then config.txt needs dtoverlay=spi0-0cs. nRESET: GPIO 23 (pin 16), D_READY: GPIO 24 (pin 18).", "GPIO 7.")
+_HX_TC_HELP = _zd_hxk('639zzzzzx_waermebild_pruefen/HX_TC_HELP', [
+	(SET_HELP['senxor_cs'][0], 'Wo SS / CS der Waveshare-Wärmebildkamera angeschlossen ist. Waveshare (HAT und Einzelmodul): GPIO 7 (Pin 26) – dann braucht config.txt dtoverlay=spi0-0cs. nRESET: GPIO 23 (Pin 16), D_READY: GPIO 24 (Pin 18).'),
+	('GPIO 7.', 'GPIO 7.'),
+])
+for _k, _v in _HX_TC_HELP.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+if 'data-k="thcheck"' not in TOOLS_PAGE and '<a class="tli" data-k="servo"' in TOOLS_PAGE:
+	TOOLS_PAGE=TOOLS_PAGE.replace('<a class="tli" data-k="servo"',TC_TOOL_HTML+'<a class="tli" data-k="servo"',1)
+	TOOLS_PAGE=TOOLS_PAGE.replace('  <section class="tool" id="c-diag"',TC_SECTION_HTML+'  <section class="tool" id="c-diag"',1)
+	TOOLS_PAGE=TOOLS_PAGE.replace("</body>","<script>Object.assign(I18N.de, "+json.dumps({k:v[0]for k,v in _HX_TC.items()},ensure_ascii=False)
+									+");</script><script>"+TC_PAGE_JS+"</script></body>",1)
+
+
+
+def _tc_tk_win(app):
+	win=getattr(app,"_tc_w",None)
+	try:
+		if win is not None and win.winfo_exists():
+			win.lift();return
+	except Exception:
+		pass
+	win=tk.Toplevel(app.root);app._tc_w=win
+	win.title("MoveEye – "+tr("Check the thermal camera"));win.geometry("640x560")
+	txt=tk.Text(win,wrap="word");txt.pack(fill="both",expand=True,padx=8,pady=8)
+	bar=ttk.Frame(win);bar.pack(fill="x",padx=8,pady=(0,8))
+
+	def show(s):
+		try:
+			txt.delete("1.0","end");txt.insert("1.0",s)
+		except Exception:
+			pass
+
+	def run():
+		show(tr("checking… (about 5 s)"))
+
+		def work():
+			try:
+				r=thermal_check()
+				s=r["report"]+"\n\n"+tr("Repairs: More → Tools → «Check the thermal camera» on the web page.")
+			except Exception as e:
+				s=f"{type(e).__name__}: {e}"
+			try:
+				win.after(0,lambda:show(s))
+			except Exception:
+				pass
+		threading.Thread(target=work,daemon=True).start()
+
+	def copy():
+		try:
+			win.clipboard_clear();win.clipboard_append(txt.get("1.0","end"))
+		except Exception:
+			pass
+	ttk.Button(bar,text=tr("Check"),command=run).pack(side="left")
+	ttk.Button(bar,text=tr("Copy the report"),command=copy).pack(side="left",padx=6)
+	run()
+
+
+_HX_TC["Repairs: More → Tools → «Check the thermal camera» on the web page."] = (
+	"Reparaturen: auf der Webseite Mehr → Werkzeuge → «Wärmebild prüfen und reparieren».",
+	"Réparations : sur la page web Plus → Outils → «Vérifier et réparer la caméra thermique».",
+	"Riparazioni: sulla pagina web Altro → Strumenti → «Controllare e riparare la termocamera».",
+	"Reparaturas: sin la pagina web Dapli → Utensils → «Controllar e reparar la camera termica».")
+for _k in ("Repairs: More → Tools → «Check the thermal camera» on the web page.",):
+	DE.setdefault(_k,_HX_TC[_k][0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_HX_TC[_k][_i+1])
+_tc_tk_build_section_base = App._build_section
+
+
+def _tc_tk_build_section(self, sec, sbody, settings_parent=None):
+	_tc_tk_build_section_base(self,sec,sbody,settings_parent)
+	if sec=="Thermal camera":
+		try:
+			ttk.Button(sbody,text="🩺 "+tr("Check the thermal camera …"),command=lambda:_tc_tk_win(self)).pack(fill="x",pady=(6,0))
+		except Exception as e:
+			log_event("sys",f"Window: thermal check button: {e}"[:160])
+
+
+
+App._build_section = _tc_tk_build_section
+
+
+thermal_check_selftest = _zd_fn('639zzzzzx_waermebild_pruefen/thermal_check_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Thermal camera check: config.txt, start errors in clear words, pins, tools page (639zzzzzx)", thermal_check_selftest))
 
 
 

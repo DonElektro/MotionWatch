@@ -439,6 +439,6 @@ def light_out_pairs(name):
 
 def thermal_gpios():
     """GPIOs of the Waveshare thermal camera (reset, data ready, chip select) while it is selected."""
-    return (23, 24, 7) if str(CFG.get("thermal_source", "")).startswith("senxor") else ()
+    return tuple(senxor_pins())[::-1] if str(CFG.get("thermal_source", "")).startswith("senxor") else ()   # 4.24.x: settings
 
 
