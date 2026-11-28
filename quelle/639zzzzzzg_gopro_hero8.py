@@ -29,8 +29,9 @@
 # Passwort (Koordinator 28.11.2026: so machen): nur im Speicher (H8_SECRET). Die NetworkManager-Verbindung hat psk-flags=2
 #   («nicht speichern»), das Passwort geht bei jedem Verbinden über stdin (passwd-file /dev/stdin) an nmcli – nie in
 #   argv, nie in eine Datei, nie ins Protokoll, nie an den Browser (h8_scrub über jede Meldung).
-# BLE: die Grundfunktionen von G2 (gopro_ble_client / gopro_ble_scan, Teil 639zzzzzzf), wenn vorhanden; sonst ein kleiner
-#   Rückfall mit bleak (nur wenn installiert). Tests: H8["ble_factory"].
+# BLE: die Grundfunktionen von G2 (gopro_ble_client / gopro_ble_scan, Teil 639zzzzzzf) – das Senden aber nur, wenn G2s write()
+#   «frame=False» kennt (G2 setzt sonst seinen 13-bit-Kopf vor unsere Bytes mit 5-bit-Kopf; ob die HERO8 das versteht, ist
+#   unbekannt); sonst ein kleiner Rückfall mit bleak (rohe Pakete wie dokumentiert). Tests: H8["ble_factory"].
 # Rechte: Steuern nur der Administrator (nacht_may, nicht im Bedienermodus). /api/gopro/hero8 (GET Stand, POST do=…).
 # Bedienung: G1s Seite /gopro («GoPro hinzufügen», Einstellungen → Kameras): in jeder Karte einer GoPro mit dem Weg
 #   «hero8_ble» erscheint die Schritt-Karte dieses Teils (H8_JS, window.goproH8.render), dazu der Hilfe-Absatz (DE / EN). Test: werkzeuge/gopro_hero8_test.py (Fake-BLE, erfundenes nmcli / ip, UDP-Strom
@@ -353,7 +354,7 @@ class _H8Bleak:
 
 
 def h8_ble_ok():
-    if H8.get("ble_factory") or "gopro_ble_client" in globals():
+    if H8.get("ble_factory"):
         return True
     try:
         import importlib.util
@@ -362,10 +363,44 @@ def h8_ble_ok():
         return False
 
 
+class _H8G2:
+    """G2's client (639zzzzzzf) with the HERO8 bytes as they are: write(..., frame=False) = the 5-bit header stays ours"""
+
+    def __init__(self, cl):
+        self.cl = cl
+
+    def connect(self, timeout=20.0):
+        if self.cl.connect(timeout) is False:
+            raise OSError(getattr(self.cl, "last_err", "") or "no connection")
+
+    def write(self, short, data, wait=3.0):
+        return self.cl.write(short, bytes(data), wait, frame=False)
+
+    def read(self, short):
+        r = self.cl.read(short)
+        if r is None:
+            raise OSError("read failed")
+        return r
+
+    def close(self):
+        self.cl.close()
+
+
+def _h8_g2_ok():
+    """G2's client can send our packets unframed (frame=False)? Otherwise its 13-bit header would wrap our 5-bit one."""
+    try:
+        import inspect
+        f = globals().get("GoProBleClient")
+        return f is not None and "frame" in inspect.signature(f.write).parameters
+    except Exception:
+        return False
+
+
 def h8_ble(addr):
-    f = H8.get("ble_factory") or globals().get("gopro_ble_client")
-    if f:
-        return f(addr)
+    if H8.get("ble_factory"):
+        return H8["ble_factory"](addr)
+    if "gopro_ble_client" in globals() and _h8_g2_ok():
+        return _H8G2(globals()["gopro_ble_client"](addr))
     if not h8_ble_ok():
         raise RuntimeError("Bluetooth library missing (python3-bleak).")
     return _H8Bleak(addr)
@@ -376,7 +411,10 @@ def h8_scan(timeout=8.0):
     if H8.get("scan_factory"):
         res = H8["scan_factory"](timeout)
     elif "gopro_ble_scan" in globals():
-        res = globals()["gopro_ble_scan"](timeout)
+        try:
+            res = globals()["gopro_ble_scan"](timeout)
+        except Exception as e:
+            return [], ("Bluetooth library missing (python3-bleak)." if "bleak" in str(e) else "Bluetooth: " + str(e)[:120])
     elif h8_ble_ok():
         import bleak
 
@@ -399,7 +437,12 @@ def h8_scan(timeout=8.0):
 
 
 def _h8_resp_ok(r):
-    return r is None or len(r) < 3 or r[2] == 0          # [len, cmd, status]; no answer = sent (older firmware)
+    """[len, cmd, status] (raw packet) or [cmd, status] (G2: header removed); no answer = sent (older firmware)"""
+    if not r or len(r) < 2:
+        return True
+    if len(r) >= 3 and r[0] == len(r) - 1:
+        return r[2] == 0
+    return r[1] == 0
 
 
 def h8_ble_session(dev_id, cmds=(), want_wifi=False):
@@ -849,7 +892,9 @@ H8_JS = r"""
 """
 H8_KEYS = list(_HX_H8)
 if "GOPRO_PAGE" in globals():                             # the page of the core (639zzzzzze)
-    GOPRO_PAGE = GOPRO_PAGE.replace("</script></body>", "</script>" + H8_JS.replace("/*H8DE*/{}", json.dumps({k: DE.get(k, k) for k in H8_KEYS}, ensure_ascii=False), 1) + "</body>", 1)
+    _i_h8 = GOPRO_PAGE.rfind("</body>")                   # after the scripts of the core (639zzzzzze) and of G2 (639zzzzzzf)
+    if _i_h8 > 0:
+        GOPRO_PAGE = GOPRO_PAGE[:_i_h8] + H8_JS.replace("/*H8DE*/{}", json.dumps({k: DE.get(k, k) for k in H8_KEYS}, ensure_ascii=False), 1) + GOPRO_PAGE[_i_h8:]
 
 
 # ---- manual (DE / EN, fr / it / rm in HELP_X): in the GoPro section of the core, else under «Camera & Servos» ---------------------------------------

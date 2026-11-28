@@ -336,7 +336,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_25_0.zip"
-ZD_SHA256 = "e74494ebee34e51720013b9f0c7db82f8c3f5db760cf691bd164492dd09660a8"
+ZD_SHA256 = "00db8db17a4bc3fea026dca2a87322b11605d97322f91c0152d3a4dbad432809"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -107738,6 +107738,165 @@ GOPRO_PAGE = _zd('639zzzzzze_gopro_kern/GOPRO_PAGE', ZD_PAGE)
 
 GOPRO_KERN_PY = _zd('639zzzzzze_gopro_kern/GOPRO_KERN_PY', "")
 zd_exec(GOPRO_KERN_PY, '639zzzzzze_gopro_kern.py')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GOPRO_BLE_PY = _zd('639zzzzzzf_gopro_ble/GOPRO_BLE_PY', "")
+zd_exec(GOPRO_BLE_PY, '639zzzzzzf_gopro_ble.py')
+
+
+GPB_ZUSTAND = {"off": "off", "connecting": "connecting …", "connected": "connected", "asleep": "asleep", "starting": "starting …",
+			   "streaming": "streaming", "reconnecting": "reconnecting …", "error": "error"}
+_HX_GPB = _zd('639zzzzzzf_gopro_ble/HX_GPB', _zd_hx_en((
+	'HERO9 and newer: Bluetooth (Open GoPro)',
+	'Bluetooth (Open GoPro)',
+	'pairing …',
+	'Forget pairing',
+	'Bring the GoPro into the WLAN',
+	'not paired yet - search and pair first',
+	'waiting for the GoPro stream',
+	'stopped',
+	'GoPro over Bluetooth (Hero 9 and newer)',
+	'GoPro (Bluetooth)',
+	'Bluetooth search',
+	'searching …',
+	'Pair',
+	'On',
+	'Off',
+	'Start stream',
+	'Stop stream',
+	'Reconnect',
+	'Forget',
+	'Forget this GoPro? It must be paired again afterwards.',
+	'Install «bleak»',
+	'Install the Bluetooth package «bleak» now?',
+	'For Bluetooth MoveEye needs the package «bleak» (apt python3-bleak, otherwise pip).',
+	'On the GoPro: Preferences → Wireless connections → Connect device → GoPro Quik app (pairing mode).',
+	'Search, then pair. MoveEye keeps the camera awake and restarts a lost stream by itself.',
+	'Network for the stream',
+	"MoveEye's own WLAN",
+	'Home WLAN',
+	'Camera WLAN (second WLAN adapter)',
+	'WLAN name',
+	'WLAN password',
+	'The password goes to the camera only once and is never saved.',
+	'Set up COHN (home network, Hero 12+)',
+	'COHN ready',
+	'Resolution',
+	'Battery',
+	'too hot',
+	'Source',
+	'known WLANs',
+	'No GoPro paired yet.',
+	'off',
+	'connecting …',
+	'connected',
+	'asleep',
+	'starting …',
+	'streaming',
+	'reconnecting …',
+	'error',
+	'bleak missing - install it on this page',
+	'no Bluetooth adapter',
+	'GoPro not found - is it switched on and near?',
+	'pairing failed - put the GoPro into pairing mode',
+	'not a Hero 9 or newer - for a Hero 8 use the Hero 8 way',
+	'no answer from the GoPro',
+	'the GoPro refused the command',
+	"MoveEye's own WLAN is off - switch it on first",
+	'MoveEye has no address in this WLAN',
+	'enter the WLAN name',
+	'the GoPro does not know this WLAN yet - enter the password once',
+	'the GoPro could not join the WLAN',
+	'wrong WLAN password',
+	'the GoPro did not get ready for the stream',
+	'live stream failed on the GoPro',
+	'live stream not possible with the current lens setting',
+	'the camera WLAN needs a second WLAN adapter (it would cut off your phone)',
+	'could not join the camera WLAN',
+	'preview stream did not start',
+	'COHN needs a Hero 12 or newer',
+	'COHN setup failed',
+	'install refused - confirm first',
+	'installing …',
+	'installed',
+	'installation failed: ',
+	'the GoPro is busy - try again in a moment',
+	'unknown device',
+	'unknown action',
+	'connection lost - reconnecting',
+	'stream lost - restarting',
+	'no GoPro found - is it in pairing mode and near?',
+	'Bluetooth search failed',
+	'not allowed',
+	'invalid value',
+	'Close',
+)))
+for _k, _v in _HX_GPB.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+GPB_TXT_ERRS = {k for k in _HX_GPB if k[:1].islower()}
+GPB_KEYS = [k for k in _HX_GPB if k not in ("Close",)]
+
+
+
+GOPRO_BLE_JS = _zd('639zzzzzzf_gopro_ble/GOPRO_BLE_JS', "")
+GOPRO_PAGE = GOPRO_PAGE.replace("/*ALERTS*/\n</script></body>", "/*ALERTS*/\n</script>" + GOPRO_BLE_JS.replace("/*GPBDE*/{}", json.dumps({k: DE.get(k, k) for k in GPB_KEYS}, ensure_ascii=False), 1)
+								.replace("/*GPBZ*/{}", json.dumps(GPB_ZUSTAND, ensure_ascii=False), 1) + "</body>", 1)
+
+
+
+HELP_GPB = _zd('639zzzzzzf_gopro_ble/HELP_GPB', _ZDDict())
+
+
+def _help_gpb(doc, lang):
+	i=doc.find('<section id="camera"')
+	if i<0 or 'id="gpb-help"'in doc:
+		return doc
+	j=doc.find("</section>",i)
+	return doc[:j]+HELP_GPB[lang]+doc[j:]if j>=0 else doc
+
+
+_hp_en_gpb = HELP_PAGE.find('<div lang="en">') if isinstance(HELP_PAGE, str) else -1
+if _hp_en_gpb > 0:
+	HELP_PAGE=_help_gpb(HELP_PAGE[:_hp_en_gpb],"de")+_help_gpb(HELP_PAGE[_hp_en_gpb:],"en")
+for _L in ("fr", "it", "rm"):
+	if isinstance(HELP_X,dict)and HELP_X.get(_L):
+		HELP_X[_L]=_help_gpb(HELP_X[_L],_L)
+
 
 
 

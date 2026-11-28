@@ -292,6 +292,16 @@ try:
         out["core_stop"] = ns["h8_status"](gid)["zustand"]
 except Exception as e:
     out["core_add"] = [False, "%s: %s" % (type(e).__name__, e)]
+# 11) G2's client (639zzzzzzf): only unframed (frame=False), answers with or without the length byte
+class G2Fake:
+    def __init__(self, addr): self.sent = []
+    def connect(self, timeout=20.0, pair=True): return True
+    def write(self, u, payload, timeout=8.0, frame=True): self.sent.append((u, payload.hex(), frame)); return bytes([payload[1], 0])
+    def read(self, u, timeout=8.0): return b"x"
+    def close(self): pass
+w2 = ns["_H8G2"](G2Fake("AA")); w2.connect(); w2.write("0072", ns["H8_CMD"]["wifi_on"])
+ro = ns["_h8_resp_ok"]
+out["g2"] = [w2.cl.sent, ns["_h8_g2_ok"](), ro(bytes([2, 0x17, 0])), ro(bytes([0x17, 0])), ro(bytes([0x17, 2])), ro(bytes([2, 0x17, 1])), ro(None)]
 # password nowhere
 calls = net()["calls"]
 out["pw_argv"] = any(PW in " ".join(x["argv"]) for x in calls)
@@ -372,6 +382,9 @@ def teil_a(datei, tmp):
         ok(c[0] and c[1]["streamt"] and c[1]["akku"] == 77 and c[2] == "" and c[3] and c[4],
            "Kern: gopro_quelle → Start über BLE, gopro_open liefert Bild %s (%s)" % (c[3], c[1]))
         ok(e["core_stop"] == "Bluetooth link: off", "Kern: gopro_stop stoppt den Weg")
+    g2 = e["g2"]
+    ok(g2[0] == [["0072", "03170101", False]] and g2[2:] == [True, True, False, False, True],
+       "G2-Client: Bytes unverändert mit frame=False, Antworten mit / ohne Längen-Byte (G2 kennt frame: %s)" % g2[1])
     ok(e["selftest"] is True, "Selbsttest-Funktion h8_selftest")
 
 
