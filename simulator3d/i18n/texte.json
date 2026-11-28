@@ -1201,6 +1201,13 @@
   "it": "%d segnalati · %d mancati · %d fuori dall'immagine",
   "rm": "%d annunziads · %d manchentads · %d betg en il maletg"
  },
+ "%d gemerkt": {
+  "en": "%d remembered",
+  "fr": "%d mémorisés",
+  "it": "%d memorizzati",
+  "rm": "%d memorisads",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
  "%d High-Fives": {
   "en": "%d high fives",
   "fr": "%d high fives",
@@ -6776,6 +6783,13 @@
   "rm": "Balantschar",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
+ "Balken": {
+  "en": "Beam",
+  "fr": "Poutre",
+  "it": "Trave",
+  "rm": "Travà",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
  "Ball": {
   "en": "Ball",
   "fr": "Ballon",
@@ -7736,6 +7750,20 @@
   "fr": "meilleure place",
   "it": "posto migliore",
   "rm": "meglier plaz"
+ },
+ "Bestes: %s · %.1f s · %.2f Wh · Kipp-Reserve %d %%": {
+  "en": "Best: %s · %.1f s · %.2f Wh · tipping margin %d %%",
+  "fr": "Meilleur : %s · %.1f s · %.2f Wh · marge de basculement %d %%",
+  "it": "Migliore: %s · %.1f s · %.2f Wh · margine di ribaltamento %d %%",
+  "rm": "Il meglier: %s · %.1f s · %.2f Wh · reserva da sa sturnar %d %%",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
+ "Bestes: noch kein Erfolg": {
+  "en": "Best: no success yet",
+  "fr": "Meilleur : pas encore de réussite",
+  "it": "Migliore: ancora nessun successo",
+  "rm": "Il meglier: anc nagin success",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "Besuch": {
   "en": "Visit",
@@ -8766,6 +8794,13 @@
   "fr": "Bassin de fontaine",
   "it": "Vasca della fontana",
   "rm": "Bigl"
+ },
+ "Brücke bilden": {
+  "en": "Form a bridge",
+  "fr": "Former un pont",
+  "it": "Formare un ponte",
+  "rm": "Furmar ina punt",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "Brücken, die schwanken.": {
   "en": "Bridges that sway.",
@@ -14127,6 +14162,13 @@
   "it": "Tempo di stampa: stima, controllare nello slicer.",
   "rm": "Temp da stampa: stimaziun, guardar en il slicer."
  },
+ "Drunter durch kriechen": {
+  "en": "Crawl underneath",
+  "fr": "Ramper dessous",
+  "it": "Strisciare sotto",
+  "rm": "Sa strair sutvart",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
  "Drüben!": {
   "en": "Across!",
   "fr": "De l'autre côté !",
@@ -16249,6 +16291,13 @@
   "fr": "L'emporter et retourner au chemin",
   "it": "Metterla via e tornare al sentiero",
   "rm": "Pachetar e turnar a la senda"
+ },
+ "Einrollen und rollen": {
+  "en": "Curl up and roll",
+  "fr": "S’enrouler et rouler",
+  "it": "Arrotolarsi e rotolare",
+  "rm": "Sa rudlar en e rudlar",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "Einrollen und öffnen": {
   "en": "Roll up and open",
@@ -20171,6 +20220,13 @@
   "it": "Terreno: leggere colline e avvallamenti invece di un suolo piatto (campeggio; ricostruisce la scena)",
   "rm": "Terren: collinas e foppas levas empè d’in terren plat (camping; construescha la scena da nov)"
  },
+ "Geländestufe": {
+  "en": "Step",
+  "fr": "Marche",
+  "it": "Gradino",
+  "rm": "Grad dal terren",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
  "gelöscht, dampft noch": {
   "en": "put out, still steaming",
   "fr": "éteint, fume encore",
@@ -20429,6 +20485,13 @@
   "it": "Rumori del mondo al microfono di MoveEye",
   "rm": "Canera dal mund al microfon da MoveEye"
  },
+ "Geröll": {
+  "en": "Scree",
+  "fr": "Éboulis",
+  "it": "Ghiaione",
+  "rm": "Crappa",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
  "Geröll versperrt eine kleine Nische. Etwas schaut heraus.": {
   "en": "Loose rocks block a small niche. Something is sticking out.",
   "fr": "Des cailloux bloquent une petite niche. Quelque chose dépasse.",
@@ -20633,6 +20696,13 @@
   "fr": "Hier, un parapente a atterri au milieu du pâturage. Les vaches étaient ravies.",
   "it": "Ieri un parapendio è atterrato in mezzo al pascolo delle mucche. Le mucche erano entusiaste.",
   "rm": "Ier è in parapendist atterrà amez la pastira da las vatgas. Las vatgas eran entusiasmadas."
+ },
+ "gestürzt": {
+  "en": "fell over",
+  "fr": "tombé",
+  "it": "caduto",
+  "rm": "crudà",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "Getauscht": {
   "en": "Traded",
@@ -21260,6 +21330,13 @@
   "fr": "GPS : remettre",
   "it": "GPS: rimettere",
   "rm": "GPS: metter enavos"
+ },
+ "Graben": {
+  "en": "Ditch",
+  "fr": "Fossé",
+  "it": "Fossato",
+  "rm": "Foss",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "Graben %d cm": {
   "en": "Ditch %d cm",
@@ -23266,6 +23343,13 @@
   "fr": "Tout là-haut, des pierres chaudes – et des vipères.",
   "it": "In alto, pietre calde – e vipere.",
   "rm": "Ad aut, craps chauds – e vipras."
+ },
+ "Hoch steigen": {
+  "en": "Step up high",
+  "fr": "Monter haut",
+  "it": "Salire in alto",
+  "rm": "Ir ad aut",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "Hoch über dem Gumpisee zieht ein schmaler Grat nach Süden.": {
   "en": "High above the Gumpisee a narrow ridge runs south.",
@@ -26934,6 +27018,13 @@
   "it": "Non fare il fuoco",
   "rm": "Betg far fieu"
  },
+ "kein Fortschritt": {
+  "en": "no progress",
+  "fr": "aucun progrès",
+  "it": "nessun progresso",
+  "rm": "nagin progress",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
  "kein Foto": {
   "en": "no photo",
   "fr": "pas de photo",
@@ -29426,6 +29517,20 @@
   "it": "Imparare",
   "rm": "Emprender"
  },
+ "Lernen: aus": {
+  "en": "Learning: off",
+  "fr": "Apprentissage : désactivé",
+  "it": "Apprendimento: disattivato",
+  "rm": "Emprender: deactivà",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
+ "Lernen: wartet auf ein Hindernis": {
+  "en": "Learning: waiting for an obstacle",
+  "fr": "Apprentissage : attend un obstacle",
+  "it": "Apprendimento: in attesa di un ostacolo",
+  "rm": "Emprender: spetga in impediment",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
  "letzte Meldung: %s": {
   "en": "last message: %s",
   "fr": "dernier message : %s",
@@ -29461,6 +29566,13 @@
   "fr": "Dernier passage : %s",
   "it": "Ultimo passaggio: %s",
   "rm": "Ultim passagi: %s"
+ },
+ "Letzter Versuch: %s": {
+  "en": "Last attempt: %s",
+  "fr": "Dernier essai : %s",
+  "it": "Ultimo tentativo: %s",
+  "rm": "Ultim emprova: %s",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "Letztes Foto weg": {
   "en": "Remove last photo",
@@ -30230,6 +30342,13 @@
   "fr": "Fer à souder régulé, étain (sans plomb), support",
   "it": "Saldatore regolabile, stagno (senza piombo), supporto",
   "rm": "Fier da lotar regulabel, stagn (senza plum), suport"
+ },
+ "Lücke": {
+  "en": "Gap",
+  "fr": "Trou",
+  "it": "Varco",
+  "rm": "Fora",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "Lückenfinder": {
   "en": "Gap finder",
@@ -34523,6 +34642,13 @@
   "it": "Riordina",
   "rm": "Reordinar"
  },
+ "neu aufstellen": {
+  "en": "setting up again",
+  "fr": "remise en place",
+  "it": "riposizionamento",
+  "rm": "metter si da nov",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
  "Neu aufstellen (R)": {
   "en": "Set up again (R)",
   "fr": "Remettre en place (R)",
@@ -35301,6 +35427,13 @@
   "fr": "Normal (comme avant)",
   "it": "Normale (come prima)",
   "rm": "Normal (sco fin ussa)"
+ },
+ "Normal gehen": {
+  "en": "Walk normally",
+  "fr": "Marcher normalement",
+  "it": "Camminare normalmente",
+  "rm": "Ir normal",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "Normales Bergwetter, Tiere in der Nacht, nur Kompass.": {
   "en": "Normal mountain weather, animals at night, compass only.",
@@ -37652,6 +37785,13 @@
   "it": "Riquadri di MoveEye sulle figure: verde rilevato, rosso falso allarme, arancione mancato",
   "rm": "Roms da MoveEye sur las figuras: verd identifitgà, cotschen fauss alarm, oransch surveis"
  },
+ "Rampe": {
+  "en": "Ramp",
+  "fr": "Rampe",
+  "it": "Rampa",
+  "rm": "Rampa",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
  "Rampe %d°": {
   "en": "Ramp %d°",
   "fr": "Rampe %d°",
@@ -38326,6 +38466,13 @@
   "fr": "Données brutes (un fichier JSON par partie) et le rapport avec les suggestions (Markdown) dans un fichier ZIP",
   "it": "Dati grezzi (un file JSON per partita) e il rapporto con i suggerimenti (Markdown) in un file ZIP",
   "rm": "Datas brutas (ina datoteca JSON per runda) ed il rapport cun las propostas (Markdown) en ina datoteca ZIP"
+ },
+ "Rohr": {
+  "en": "Pipe",
+  "fr": "Tuyau",
+  "it": "Tubo",
+  "rm": "Bischen",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "Rollen": {
   "en": "Roles",
@@ -45447,6 +45594,13 @@
   "it": "caduto dopo %d s",
   "rm": "dà enturn suenter %d s"
  },
+ "Umgehen": {
+  "en": "Go around",
+  "fr": "Contourner",
+  "it": "Aggirare",
+  "rm": "Ir enturn",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
  "Umgehängt. Weiter.": {
   "en": "Clipped over. Onwards.",
   "fr": "Changé de mousqueton. On continue.",
@@ -46732,6 +46886,13 @@
   "it": "Modulo amplificatore PAM8403",
   "rm": "Modul amplificatur PAM8403"
  },
+ "Versuch %d": {
+  "en": "Attempt %d",
+  "fr": "Essai %d",
+  "it": "Tentativo %d",
+  "rm": "Emprova %d",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
  "Versunkenes Boot": {
   "en": "Sunken boat",
   "fr": "Bateau coulé",
@@ -47178,6 +47339,13 @@
   "fr": "Arrêter la lecture",
   "it": "Interrompi la lettura",
   "rm": "Fermar la lectura"
+ },
+ "Vorne aufrichten": {
+  "en": "Raise the front",
+  "fr": "Redresser l’avant",
+  "it": "Sollevare la parte anteriore",
+  "rm": "Auzar davant",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "Vorne malen": {
   "en": "Paint in front",
@@ -50589,6 +50757,20 @@
   "fr": "Trop près de : %s",
   "it": "Troppo vicino a: %s",
   "rm": "Memia datiers da: %s"
+ },
+ "zu schwer": {
+  "en": "too difficult",
+  "fr": "trop difficile",
+  "it": "troppo difficile",
+  "rm": "memia grev",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
+ },
+ "Zu schwer: nach %d Versuchen wird es umgangen": {
+  "en": "Too difficult: after %d attempts it is avoided",
+  "fr": "Trop difficile : après %d essais, il est contourné",
+  "it": "Troppo difficile: dopo %d tentativi viene aggirato",
+  "rm": "Memia grev: suenter %d emprovas vegn el evità",
+  "?": "rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)"
  },
  "zu spät auf dem Gipfel": {
   "en": "too late on the summit",

@@ -1,12 +1,12 @@
 Abdeckung der Simulator-Texte (erzeugt von werkzeuge/sim_texte.py – nicht von Hand ändern)
 
-Texte gesamt: 8703 (Stellen: 12071)
-Übersetzt: en 8703, fr 8703, it 8703, rm 8703
-Unsicher markiert: 514
+Texte gesamt: 8729 (Stellen: 12105)
+Übersetzt: en 8729, fr 8729, it 8729, rm 8729
+Unsicher markiert: 540
 Dynamisch (zusammengesetzt, Phase 2 von Hand umbauen): 555 Stellen
 Nicht mehr im Code (noch in texte.json): 416
 HTML/JS-Texte der Handy-Seiten (nicht gesammelt): 69 Stellen in wizpics.gd 21, devtool_kontakt.gd 10, wordmark.gd 10, testrun.gd 9, einbruch.gd 8, smalltv.gd 3, game.gd 2, dataset.gd 1, devtool_notizen.gd 1, main_kamera.gd 1, phone.gd 1, spieltest.gd 1, web_moveeye.gd 1
-Übersprungen (Grund: Anzahl): kennung 31943, schlüssel 24795, keine Wörter 15970, index 11284, technisch 4086, doc 2827, einheit 366, log 206, englisch 151, pfad 130, stringname 107, html 69, klasse 48, shader 6
+Übersprungen (Grund: Anzahl): kennung 32033, schlüssel 24907, keine Wörter 16030, index 11388, technisch 4102, doc 2839, einheit 369, log 206, englisch 151, pfad 130, stringname 107, html 69, klasse 48, shader 6
 
 Pro Datei (Texte / davon dynamische Stellen):
   werkstatt_daten.gd       543     4
@@ -112,6 +112,7 @@ Pro Datei (Texte / davon dynamische Stellen):
   bergtal_wegweiser.gd      30     0
   b3d.gd                    29     5
   zwilling.gd               29     3
+  roboter_ki_lernen.gd      29     0
   gamemission.gd            29     0
   news.gd                   29     1
   padmap.gd                 28    19
@@ -708,6 +709,32 @@ Unsicher:
   '--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n': technisch (HTTP) – nicht umhüllen
   '&vo=1': technisch – nicht umhüllen
   'Browser (WebGL 2)': rm automatisch
+  'gestürzt': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'kein Fortschritt': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'zu schwer': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Normal gehen': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Hoch steigen': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Vorne aufrichten': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Brücke bilden': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Umgehen': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Einrollen und rollen': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Drunter durch kriechen': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Geländestufe': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Graben': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Lücke': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Geröll': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Rampe': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Rohr': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Balken': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Lernen: aus': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Lernen: wartet auf ein Hindernis': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  '%d gemerkt': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Versuch %d': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'neu aufstellen': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Bestes: noch kein Erfolg': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Bestes: %s · %.1f s · %.2f Wh · Kipp-Reserve %d %%': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Zu schwer: nach %d Versuchen wird es umgangen': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
+  'Letzter Versuch: %s': rm: Gang-KI lernen 28.11.2026 (Korrekturlesen)
   '%s: «%s» wird gesendet, steht aber nicht in schnittstelle.json': Entwickler-Meldung (Log) – nicht umhüllen
   '%s: «%s» steht in schnittstelle.json, wird aber nicht gesendet': Entwickler-Meldung (Log) – nicht umhüllen
   'control: MoveEye braucht «%s», main.gd _control kennt es nicht': Entwickler-Meldung (Log) – nicht umhüllen
