@@ -86,6 +86,18 @@ _HX_H8 = {
          "La deuxième clé Wi-Fi est déjà utilisée (répéteur ou Wi-Fi propre) – éteins le répéteur ou branche une autre clé.",
          "La seconda chiavetta Wi-Fi è già in uso (ripetitore o Wi-Fi proprio) – spegni il ripetitore o inserisci un'altra chiavetta.",
          "Il segund stick WLAN è gia occupà (repeater u agen WLAN) – stizzar il repeater u tacar in ulteriur stick."),
+    "Wi-Fi adapters found": ("Gefundene WLAN-Adapter", "Adaptateurs Wi-Fi trouvés", "Adattatori Wi-Fi trovati", "Adapters WLAN chattads"),
+    "built in": ("eingebaut", "intégré", "integrato", "integrà"),
+    "only 2.4 GHz": ("nur 2.4 GHz", "seulement 2.4 GHz", "solo 2.4 GHz", "mo 2.4 GHz"),
+    "MoveEye's network": ("Netz von MoveEye", "réseau de MoveEye", "rete di MoveEye", "rait da MoveEye"),
+    "repeater": ("Repeater", "répéteur", "ripetitore", "repeater"),
+    "free": ("frei", "libre", "libero", "liber"),
+    "for the GoPro": ("für die GoPro", "pour la GoPro", "per la GoPro", "per la GoPro"),
+    "This stick has only 2.4 GHz: set the GoPro to 2.4 GHz (camera: Preferences → Connections → Wi-Fi Band).":
+        ("Dieser Stick kann nur 2.4 GHz: die GoPro auf 2.4 GHz stellen (Kamera: Einstellungen → Verbindungen → WLAN-Band).",
+         "Cette clé ne connaît que 2.4 GHz : règle la GoPro sur 2.4 GHz (caméra : Préférences → Connexions → Bande Wi-Fi).",
+         "Questa chiavetta ha solo 2.4 GHz: imposta la GoPro su 2.4 GHz (telecamera: Preferenze → Connessioni → Banda Wi-Fi).",
+         "Quest stick enconuscha mo 2.4 GHz: metter la GoPro sin 2.4 GHz (camera: Preferenzas → Colliaziuns → Banda WLAN)."),
     "The GoPro Wi-Fi needs NetworkManager.": ("Das GoPro-WLAN braucht NetworkManager.", "Le Wi-Fi de la GoPro nécessite NetworkManager.",
                                               "Il Wi-Fi della GoPro richiede NetworkManager.", "Il WLAN da la GoPro basegna NetworkManager."),
     "Wi-Fi stick for the GoPro: {s}": ("WLAN-Stick für die GoPro: {s}", "Clé Wi-Fi pour la GoPro : {s}", "Chiavetta Wi-Fi per la GoPro: {s}",
@@ -599,7 +611,9 @@ def h8_start(dev):
     d["stop"] = stop
     d["thread"] = threading.Thread(target=_h8_loop, args=(d, stop), daemon=True, name="h8-" + did)
     d["thread"].start()
-    _h8_log("started (Wi-Fi on %s, preview on 127.0.0.1:%d)" % (d["stick"], d["port"]), did)
+    a_ = next((a for a in h8_sticks()[0] if a["iface"] == d["stick"]), {})
+    _h8_log("started (Wi-Fi on %s: %s %s %s, preview on 127.0.0.1:%d)" % (d["stick"], "USB" if a_.get("usb") else "built in",
+                                                                           a_.get("chip", "?"), a_.get("driver", ""), d["port"]), did)
     return h8_source(did)
 
 
@@ -667,8 +681,19 @@ def h8_api(d, method, role="admin"):
         devs = {k: h8_status(k) for k in ids}
         for v in devs.values():
             v["zustand_text"] = T(v["zustand"]); v["fehler_text"] = T(v["fehler"]) if v["fehler"] else ""
+        fr_ = {a["iface"] for a in free}
+        dual = {DUAL.get("ap"), DUAL.get("up")} if DUAL.get("on") else set()
+
+        def rolle(a):
+            if a["iface"] == f["stick"]:
+                return "for the GoPro"
+            if a["iface"] in dual:
+                return "repeater"
+            return "free" if a["iface"] in fr_ else "MoveEye's network"
         return {"ok": True, "faehig": f["ok"], "grund": T(f["grund"]) if f["grund"] else "", "stick": f["stick"],
-                "sticks": [{"iface": a["iface"], "usb": a.get("usb"), "chip": a.get("chip", "")} for a in ads],
+                "sticks": [{"iface": a["iface"], "usb": bool(a.get("usb")), "chip": str(a.get("chip") or ""), "driver": str(a.get("driver") or ""),
+                            "product": str(a.get("product") or ""), "usb_id": str(a.get("usb_id") or ""), "five": bool(a.get("five")),
+                            "ap": a.get("ap"), "rolle": T(rolle(a)), "gopro": a["iface"] == f["stick"]} for a in ads],
                 "frei": [a["iface"] for a in free], "ble": h8_ble_ok(), "hinweise": [T(x) for x in f["hinweise"]], "devs": devs}, 200
     do = str(d.get("do") or "")
     did = re.sub(r"[^A-Za-z0-9_-]", "", str(d.get("id") or ""))[:40]
@@ -744,6 +769,17 @@ H8_JS = r"""
     (F.hinweise || []).forEach(h => { const w = E("div", "mut", "⚠ " + h); w.style.marginTop = "4px"; bx.appendChild(w); });
     const st = E("div", "", F.faehig ? "📶 " + T("Wi-Fi stick for the GoPro: {s}").replace("{s}", F.stick) : "⛔ " + F.grund);
     st.className = "h8-stick"; st.style.marginTop = "8px"; bx.appendChild(st);
+    if ((F.sticks || []).length) {                   // which adapters were found (the owner plugged in a stick of unknown model)
+      const ad = E("div", "mut h8-ads"); ad.style.marginTop = "4px"; ad.appendChild(E("div", "", T("Wi-Fi adapters found") + ":"));
+      F.sticks.forEach(a => {
+        const parts = [a.iface, a.usb ? "USB" : T("built in"), a.chip + (a.driver && a.chip.indexOf(a.driver) < 0 ? " (" + a.driver + ")" : ""),
+                       a.usb_id, a.five ? "2.4 + 5 GHz" : T("only 2.4 GHz")].filter(Boolean);
+        const r = E("div", "", (a.gopro ? "➜ " : "• ") + parts.join(" · ") + " – " + a.rolle); if (a.gopro) r.style.fontWeight = "600";
+        r.dataset.iface = a.iface; ad.appendChild(r);
+        if (a.gopro && !a.five) { const w = E("div", "", "⚠ " + T("This stick has only 2.4 GHz: set the GoPro to 2.4 GHz (camera: Preferences → Connections → Wi-Fi Band).")); ad.appendChild(w); }
+      });
+      bx.appendChild(ad);
+    }
     const S = (F.devs || {})[id] || {};
     const row = E("div"); row.style.cssText = "margin-top:8px;display:flex;flex-wrap:wrap;gap:6px";
     const sb = E("button", "", "🔍 " + T("Search GoPro (Bluetooth)")); sb.type = "button"; row.appendChild(sb); bx.appendChild(row);

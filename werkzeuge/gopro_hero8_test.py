@@ -169,7 +169,8 @@ class FakeBle:
     def close(self): FakeBle.log.append("close")
 H8["ble_factory"] = FakeBle
 
-AD = [{"iface": "wlan0", "usb": False, "chip": "Broadcom (built in)"}, {"iface": "wlan1", "usb": True, "chip": "MediaTek MT7612U"}]
+AD = [{"iface": "wlan0", "usb": False, "chip": "Broadcom (built in)", "driver": "brcmfmac", "five": True, "ap": True},
+      {"iface": "wlan1", "usb": True, "chip": "MediaTek MT7612U", "driver": "mt76x2u", "usb_id": "0e8d:7612", "five": True, "ap": True}]
 ns["wifi_adapters"] = lambda: [dict(a) for a in AD]
 ns["wifi_backend"] = lambda: "nm"
 ns["WIFI"]["iface"] = "wlan0"
@@ -238,6 +239,7 @@ out["api_locked"] = ns["h8_api"]({}, "GET", "admin")[1]
 ns["CFG"]["lock_on"] = False
 g, code = ns["h8_api"]({"lang": "de"}, "GET", "admin")
 out["api_get"] = [code, g["devs"]["g1"]["pw_im_speicher"], g["devs"]["g1"]["zustand_text"]]
+out["api_sticks"] = [[a["iface"], a["usb"], a["chip"], a["driver"], a["usb_id"], a["five"], a["rolle"], a["gopro"]] for a in g["sticks"]]
 out["api_json"] = json.dumps(g, ensure_ascii=False)
 out["api_cmd"] = ns["h8_api"]({"do": "cmd", "id": "g1", "cmd": "rec_on"}, "POST", "admin")[0]["ok"]
 out["api_badcmd"] = ns["h8_api"]({"do": "cmd", "id": "g1", "cmd": "format_sd"}, "POST", "admin")[0]["ok"]
@@ -310,6 +312,7 @@ out["pw_stdin_only_up"] = all(("connection" in x["argv"] and "up" in x["argv"]) 
 out["pw_log"] = any(PW in x for x in logs)
 out["pw_api"] = PW in out.pop("api_json")
 out["logs"] = logs[-12:]
+out["logs_all"] = list(logs)
 ns["h8_selftest"]()
 out["selftest"] = True
 ff_stop(); time.sleep(0.5); ff_stop()
@@ -365,6 +368,11 @@ def teil_a(datei, tmp):
     ok(e["frame_after"], "nach dem Neustart wieder ein Bild")
     ok(e["api_user"] == 403 and e["api_locked"] == 403, "API: nur Administrator, nicht im Bedienermodus")
     ok(e["api_get"][0] == 200 and e["api_get"][1] is True and e["api_get"][2] == "Bild läuft", "API GET: %s" % e["api_get"])
+    sk = e["api_sticks"]
+    ok(sk == [["wlan0", False, "Broadcom (built in)", "brcmfmac", "", True, "Netz von MoveEye", False],
+              ["wlan1", True, "MediaTek MT7612U", "mt76x2u", "0e8d:7612", True, "für die GoPro", True]],
+       "API zeigt die gefundenen Adapter (Schnittstelle, USB, Chip, Treiber, USB-ID, 5 GHz, Rolle): %s" % sk)
+    ok(any("Wi-Fi on wlan1: USB MediaTek MT7612U mt76x2u" in x for x in e["logs_all"]), "Protokoll nennt den Stick beim Start")
     ok(e["api_cmd"] is True and e["api_badcmd"] is False and e["api_badaddr"] == 400, "API: Aufnahme-Befehl ja, unbekannter Befehl / Adresse nein")
     st = e["stop"]
     ok(st[0] >= 1 and "w 0072 03170100" in st[1] and "w 0072 0105" in st[1] and st[2] == "Bluetooth link: off" and not st[3],
@@ -460,6 +468,25 @@ def teil_b(datei, tmp, bilder):
                 card.screenshot(path=os.path.join(bilder, "gopro_hero8_%s.png" % name))
                 if name == "handy":
                     pg.screenshot(path=os.path.join(bilder, "gopro_hero8_%s_seite.png" % name), full_page=True)
+                if name == "handy":                  # a stick plugged in (made-up answer of the API): which one was found
+                    def fake(route):
+                        if route.request.method != "GET":
+                            return route.continue_()
+                        r_ = route.fetch(); j = r_.json()
+                        j.update(faehig=True, grund="", stick="wlan1", sticks=[
+                            {"iface": "wlan0", "usb": False, "chip": "Broadcom (built in)", "driver": "brcmfmac", "product": "", "usb_id": "",
+                             "five": True, "ap": True, "rolle": "Netz von MoveEye", "gopro": False},
+                            {"iface": "wlan1", "usb": True, "chip": "Realtek RTL8188EU", "driver": "r8188eu", "product": "", "usb_id": "0bda:8179",
+                             "five": False, "ap": True, "rolle": "für die GoPro", "gopro": True}])
+                        route.fulfill(response=r_, json=j)
+                    pg.route("**/api/gopro/hero8?*", fake)
+                    pg.reload(wait_until="domcontentloaded")
+                    pg.wait_for_selector(".h8-slot .h8-ads", timeout=30000)
+                    ads = pg.locator(".h8-slot .h8-ads").first.inner_text()
+                    ok("➜ wlan1 · USB · Realtek RTL8188EU (r8188eu) · 0bda:8179 · nur 2.4 GHz – für die GoPro" in ads and "WLAN-Band" in ads
+                       and "wlan0 · eingebaut" in ads, "handy: gefundener Stick klar angezeigt («%s»)" % ads.replace("\n", " | ")[:200])
+                    pg.locator(".h8-slot").first.scroll_into_view_if_needed(); pg.wait_for_timeout(300)
+                    pg.locator(".h8-slot").first.screenshot(path=os.path.join(bilder, "gopro_hero8_stick_handy.png"))
                 ok(not errs, "%s: keine JS-Fehler %s" % (name, errs[:3]))
                 ctx.close()
             br.close()
