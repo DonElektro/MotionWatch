@@ -46,8 +46,24 @@ const RUND_START := {"8": {"ring_methode": "c", "ring_hoehe": 0.0, "spur_rollen"
 const RUND_VERSUCHE := 3
 const RUND_MAX := 40.0                 # s for one full turn, else «zu langsam»
 const PANEL_W := 380.0
-const TABS := [["form", "Form"], ["gelenke", "Gelenke"], ["posen", "Posen"], ["bewegen", "Bewegen"], ["anzeigen", "Anzeigen"],
-		["rund", "Rund rollen"], ["gelaende", "Gelände"], ["physik", "Physik"], ["ansicht", "Ansicht"]]
+# Menü aufgeräumt (Besitzer, Fragebogen 28.11.2026 14:49): 5 Reiter statt 9, darin aufklappbare Gruppen wie im Simulator
+# (Suchfeld, «Alle zuklappen · Nur Gruppen · Alle aufklappen»); nichts entfernt, nur umsortiert. [id, Name, Symbol]
+const TABS := [["fahren", "Fahren"], ["haltung", "Haltung"], ["bauen", "Bauen"], ["welt", "Welt"], ["messen", "Messen"]]
+# die früheren 9 Reiter (/control «tab», ältere Tests, Haken anderer Zweige) -> [neuer Reiter, Gruppe]
+const TAB_ALT := {"form": ["bauen", "form"], "gelenke": ["bauen", "gelenke"], "posen": ["haltung", "posen"],
+		"bewegen": ["fahren", "gang"], "anzeigen": ["messen", "anzeigen"], "rund": ["messen", "rund"],
+		"gelaende": ["welt", "gelaende"], "physik": ["welt", "physik"], "ansicht": ["welt", "ansicht"]}
+# die Gruppen in den Reitern, in dieser Reihenfolge: [id, Titel, Reiter]
+const GRUPPEN := [["gang", "Gangart", "fahren"], ["richtung", "Richtung", "fahren"], ["tempo", "Tempo und Schritt", "fahren"],
+		["ring", "Im Ring rollen", "fahren"],
+		["posen", "Posen", "haltung"], ["ablaeufe", "Ganze Abläufe", "haltung"],
+		["form", "Form", "bauen"], ["gelenke", "Gelenke", "bauen"],
+		["gelaende", "Gelände", "welt"], ["physik", "Physik", "welt"], ["ansicht", "Ansicht", "welt"],
+		["anzeigen", "Anzeigen", "messen"], ["rund", "Rund rollen", "messen"]]
+# Auswahlliste «Modell»: die Reihenfolge; was (noch) nicht in VARIANTEN steht, ist grau
+const MODELLE := [["8", "8 Segmente"], ["6", "6 Segmente"], ["4", "4 Segmente"], ["3", "3 Segmente"], ["2", "2 Segmente"],
+		["vier", "Vierbeiner"], ["sechs", "Sechsbeiner"]]
+const AKZENT := Color("#ef9f27")       # Kopf und Logo: Orange wie die Kupplung (roboter_modell.gd FARBE["kupplung"])
 const VIEWS := [["frei", "Frei"], ["seite", "Seite"], ["oben", "Oben"], ["roboter", "Roboter-Kamera"]]
 const FORM := [   # [key, name, unit, step]
 	["segmente", "Segmente", "", 1.0], ["halbe_breite", "Halbe Breite", "E", 0.01], ["halbe_breite_spitze", "Halbe Breite Spitze", "E", 0.01],
@@ -88,7 +104,7 @@ const TERRAIN_MAX := 150.0             # s
 const TERRAIN_STILL := 15.0            # s without 3 cm progress = stuck
 var starts := {}                       # lane -> Transform3D (roboter_gelaende.gd)
 var view := "frei"
-var tab := "form"
+var tab := "fahren"
 var paused := false
 var pip := true
 var info_on := true                    # the info field top left (status lines)
@@ -114,6 +130,8 @@ var _drag := 0
 var _rebuild_t := -1.0
 var _ui_t := 0.0
 var _panel_on := true
+var _gruppen := {}                     # group id -> body (UI.fold_card)
+var _such := ""                        # the text in the search field (lower case)
 
 
 func is_open() -> bool:
@@ -682,65 +700,141 @@ func _build_ui() -> void:
 	var pv := VBoxContainer.new()
 	pv.add_theme_constant_override("separation", 8)
 	panel.add_child(pv)
+	# Kopf (Besitzer 28.11.2026): eigenes Roboter-Symbol und Name in Orange (wie die Kupplung), rechts die Nummer des Simulators
 	var hd := HBoxContainer.new()
+	hd.add_theme_constant_override("separation", 8)
 	pv.add_child(hd)
+	var logo := _icon("roboter", AKZENT, Vector2(26, 26))
+	logo.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	hd.add_child(logo)
 	var tl := Label.new()
 	tl.text = T.t("Roboter-Labor")
 	tl.add_theme_font_override("font", UI.heading_font())
 	tl.add_theme_font_size_override("font_size", 17)
+	tl.add_theme_color_override("font_color", AKZENT)
 	tl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hd.add_child(tl)
-	var x := Button.new()
-	x.text = "✕"
-	x.flat = true
-	x.tooltip_text = T.t("Schliessen (Esc)")
-	x.pressed.connect(close)
+	_w["titel"] = tl
+	var ver := UI.small(T.t("Sim %s") % sim_version())
+	ver.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	hd.add_child(ver)
+	_w["version"] = ver
+	var x := _close_btn(UI.TXT, T.t("Schliessen (Esc)"), close)
+	x.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	hd.add_child(x)
+	var akz := ColorRect.new()                        # a thin orange line under the head: the lab at a glance
+	akz.color = AKZENT
+	akz.custom_minimum_size = Vector2(0, 2)
+	pv.add_child(akz)
 	var sub := UI.small(T.t("Segment-Roboter – Form, Gelenke und Physik ausprobieren"))
 	pv.add_child(sub)
-	var vs := HBoxContainer.new()
-	vs.add_theme_constant_override("separation", 4)
-	pv.add_child(vs)
-	for vv in VARIANTEN:
-		var vid: String = vv[0]
-		var vb := _button(vs, T.t(vv[1]), func(): set_variante.call_deferred(vid))
-		vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		_paint_btn(vb, vid == variante)
-	var tabs := HFlowContainer.new()
-	tabs.add_theme_constant_override("h_separation", 4)
-	tabs.add_theme_constant_override("v_separation", 4)
+	# Modell: one list with a small picture of each model (before: 3 buttons)
+	var mr := HBoxContainer.new()
+	mr.add_theme_constant_override("separation", 8)
+	pv.add_child(mr)
+	var ml := Label.new()
+	ml.text = T.t("Modell")
+	mr.add_child(ml)
+	var ob := OptionButton.new()
+	ob.focus_mode = Control.FOCUS_NONE
+	ob.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ob.custom_minimum_size = Vector2(0, 36)
+	ob.expand_icon = false
+	var ids := VARIANTEN.map(func(x): return x[0])
+	var liste := []
+	for mm in MODELLE:
+		liste.append(mm)
+	for vv in VARIANTEN:                              # a variant that MODELLE does not know yet comes at the end
+		if not MODELLE.any(func(x): return x[0] == vv[0]):
+			liste.append(vv)
+	for i in liste.size():
+		var mid: String = liste[i][0]
+		ob.add_icon_item(modell_bild(mid), T.t(liste[i][1]), i)
+		ob.set_item_metadata(i, mid)
+		ob.set_item_disabled(i, not mid in ids)
+		if mid == variante:
+			ob.select(i)
+	ob.item_selected.connect(func(i: int): set_variante.call_deferred(str(ob.get_item_metadata(i))))
+	mr.add_child(ob)
+	_w["modell"] = ob
+	# 5 tabs, each with a drawn symbol (the font has no emoji)
+	var tabs := HBoxContainer.new()
+	tabs.add_theme_constant_override("separation", 4)
 	pv.add_child(tabs)
 	for tb in TABS:
 		var b := Button.new()
-		b.text = T.t(tb[1])
 		b.focus_mode = Control.FOCUS_NONE
+		b.custom_minimum_size = Vector2(0, 50)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.tooltip_text = T.t(tb[1])
 		b.pressed.connect(set_tab.bind(tb[0]))
+		var bv := VBoxContainer.new()
+		bv.set_anchors_preset(Control.PRESET_FULL_RECT)
+		bv.alignment = BoxContainer.ALIGNMENT_CENTER
+		bv.add_theme_constant_override("separation", 1)
+		bv.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		b.add_child(bv)
+		var ic := _icon("tab_" + tb[0], UI.TXT, Vector2(22, 22))
+		ic.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		bv.add_child(ic)
+		var lb := Label.new()
+		lb.text = T.t(tb[1])
+		lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lb.add_theme_font_size_override("font_size", 12)
+		lb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bv.add_child(lb)
+		b.set_meta("icon", ic)
+		b.set_meta("label", lb)
 		tabs.add_child(b)
 		_w["tab_" + tb[0]] = b
+	# search and the three fold buttons, the same parts as in the menu of the simulator (ui_style.gd)
+	var tbar := HBoxContainer.new()
+	tbar.add_theme_constant_override("separation", 4)
+	pv.add_child(tbar)
+	var se := UI.search_field(T.t("Einstellung suchen …"))
+	se.custom_minimum_size = Vector2(0, 36)
+	se.text_changed.connect(suche)
+	tbar.add_child(se)
+	_w["suche"] = se
+	for fk in [["close", "Alle zuklappen"], ["groups", "Nur Gruppen"], ["open", "Alle aufklappen"]]:
+		var how: String = fk[0]
+		var fb := UI.icon_button(how, T.t(fk[1]))
+		fb.custom_minimum_size = Vector2(36, 36)
+		fb.pressed.connect(func(): fold_all(how))
+		tbar.add_child(fb)
+		_w["fold_" + how] = fb
 	var sc := ScrollContainer.new()
 	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	sc.set_meta("rad_scroll", true)
 	pv.add_child(sc)
+	_w["scroll"] = sc
 	var body := VBoxContainer.new()
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body.add_theme_constant_override("separation", 8)
 	sc.add_child(body)
+	var none := UI.small(T.t("Kein Treffer"))
+	none.visible = false
+	body.add_child(none)
+	_w["kein_treffer"] = none
 	for tb in TABS:
 		var v := VBoxContainer.new()
-		v.add_theme_constant_override("separation", 6)
+		v.add_theme_constant_override("separation", 8)
 		v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		body.add_child(v)
 		_w["page_" + tb[0]] = v
-	_page_form(_w["page_form"])
-	_page_gelenke(_w["page_gelenke"])
-	_page_posen(_w["page_posen"])
-	_page_physik(_w["page_physik"])
-	_page_bewegen(_w["page_bewegen"])
-	_page_anzeigen(_w["page_anzeigen"])
-	_page_gelaende(_w["page_gelaende"])
-	_page_rund(_w["page_rund"])
-	_page_ansicht(_w["page_ansicht"])
+	_gruppen = {}
+	for g in GRUPPEN:
+		gruppe(g[0], g[1], g[2])
+	_page_bewegen(gruppe("gang"))
+	_page_posen(gruppe("posen"))
+	_page_form(gruppe("form"))
+	_page_gelenke(gruppe("gelenke"))
+	_page_gelaende(gruppe("gelaende"))
+	_page_physik(gruppe("physik"))
+	_page_ansicht(gruppe("ansicht"))
+	_page_anzeigen(gruppe("anzeigen"))
+	_page_rund(gruppe("rund"))
 	var keys := UI.small(T.t("W / S vor / zurück · A / D seitwärts · Q / E drehen · Leertaste Stopp · G Gehen · 1 – 4 Ansicht · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · I Info · H Bedienfeld · Esc schliessen"))
 	pv.add_child(keys)
 
@@ -853,18 +947,229 @@ func _overlay(area: Control) -> void:
 
 
 func _close_btn(col: Color, tip: String, cb: Callable) -> Button:
-	"""a small ✕ to hide a field (bigger for a finger on touch screens)"""
+	"""a small drawn cross to hide a field (the font has no «✕»; bigger for a finger on touch screens)"""
 	var b := Button.new()
-	b.text = "✕"
 	b.flat = true
 	b.tooltip_text = tip
 	b.focus_mode = Control.FOCUS_NONE
 	b.mouse_filter = Control.MOUSE_FILTER_STOP
-	b.add_theme_color_override("font_color", col)
-	b.add_theme_font_size_override("font_size", 16 if touch else 13)
 	b.custom_minimum_size = Vector2(36, 32) if touch else Vector2(22, 20)
+	var d := _icon("kreuz", col, Vector2.ZERO)
+	d.set_anchors_preset(Control.PRESET_FULL_RECT)
+	b.add_child(d)
 	b.pressed.connect(cb)
 	return b
+
+
+func sim_version() -> String:
+	"""the number of the simulator (main.gd VERSION) for the head of the lab"""
+	var s: Script = main.get_script() if main != null else null
+	if s == null:
+		s = load("res://scripts/main.gd")
+	return str(s.get_script_constant_map().get("VERSION", "")) if s != null else ""
+
+
+func _icon(kind: String, col: Color, sz: Vector2) -> Control:
+	"""a drawn symbol (no font needed - the same on every PC); col in meta «col», redraw after a change"""
+	var d := Control.new()
+	d.custom_minimum_size = sz
+	d.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	d.set_meta("col", col)
+	d.draw.connect(func(): draw_icon(d, kind, d.get_meta("col")))
+	return d
+
+
+static func draw_icon(d: Control, kind: String, col: Color) -> void:
+	var c := d.size / 2.0
+	var s := minf(d.size.x, d.size.y) / 22.0              # drawn for 22 px
+	var w := 2.0 * maxf(0.8, s)
+	match kind:
+		"roboter":                                       # the logo: head with two eyes and an antenna, the body as a segment chain
+			d.draw_rect(Rect2(c + Vector2(-7, -6) * s, Vector2(14, 9) * s), col, false, w)
+			d.draw_circle(c + Vector2(-3, -1.5) * s, 1.6 * s, col)
+			d.draw_circle(c + Vector2(3, -1.5) * s, 1.6 * s, col)
+			d.draw_line(c + Vector2(0, -6) * s, c + Vector2(0, -9.5) * s, col, w)
+			d.draw_circle(c + Vector2(0, -10) * s, 1.5 * s, col)
+			for i in 3:
+				d.draw_rect(Rect2(c + Vector2(-8.5 + i * 6.0, 5) * s, Vector2(5, 4) * s), col)
+			d.draw_line(c + Vector2(-9, 9) * s, c + Vector2(-10.5, 11) * s, col, w * 0.7)
+			d.draw_line(c + Vector2(9, 9) * s, c + Vector2(10.5, 11) * s, col, w * 0.7)
+		"kreuz":
+			d.draw_line(c + Vector2(-4, -4) * s, c + Vector2(4, 4) * s, col, w, true)
+			d.draw_line(c + Vector2(-4, 4) * s, c + Vector2(4, -4) * s, col, w, true)
+		"tab_fahren":                                    # joystick: base, stick, knob
+			d.draw_rect(Rect2(c + Vector2(-8, 5) * s, Vector2(16, 4) * s), col, false, w)
+			d.draw_line(c + Vector2(0, 5) * s, c + Vector2(2.5, -3) * s, col, w)
+			d.draw_circle(c + Vector2(3, -5) * s, 3.2 * s, col)
+		"tab_haltung":                                   # a standing person
+			d.draw_circle(c + Vector2(0, -7.5) * s, 2.6 * s, col)
+			d.draw_line(c + Vector2(0, -4) * s, c + Vector2(0, 3) * s, col, w)
+			d.draw_line(c + Vector2(-6, -1.5) * s, c + Vector2(6, -1.5) * s, col, w)
+			d.draw_line(c + Vector2(0, 3) * s, c + Vector2(-4, 10) * s, col, w)
+			d.draw_line(c + Vector2(0, 3) * s, c + Vector2(4, 10) * s, col, w)
+		"tab_bauen":                                     # a wrench
+			d.draw_line(c + Vector2(-7, 7) * s, c + Vector2(2, -2) * s, col, w * 1.5, true)
+			d.draw_arc(c + Vector2(4.5, -4.5) * s, 4.4 * s, -PI / 4.0 + 0.95, -PI / 4.0 + TAU - 0.95, 16, col, w * 1.1, true)
+		"tab_welt":                                      # a globe
+			d.draw_arc(c, 8.5 * s, 0, TAU, 32, col, w, true)
+			d.draw_line(c + Vector2(-8.5, 0) * s, c + Vector2(8.5, 0) * s, col, w * 0.7)
+			var pts := PackedVector2Array()
+			for i in 17:
+				var a := -PI / 2.0 + PI * i / 16.0
+				pts.append(c + Vector2(cos(a) * 4.0, sin(a) * 8.5) * s)
+			d.draw_polyline(pts, col, w * 0.7, true)
+			var pts2 := PackedVector2Array()
+			for p in pts:
+				pts2.append(Vector2(2.0 * c.x - p.x, p.y))
+			d.draw_polyline(pts2, col, w * 0.7, true)
+		"tab_messen":                                    # bar chart
+			d.draw_line(c + Vector2(-9, 9) * s, c + Vector2(9, 9) * s, col, w * 0.7)
+			for e in [[-7.0, 6.0], [-2.0, 11.0], [3.0, 16.0]]:
+				d.draw_rect(Rect2(c + Vector2(e[0], 8.0 - e[1]) * s, Vector2(4, e[1]) * s), col)
+		"stopp":
+			d.draw_rect(Rect2(c - Vector2(5, 5) * s, Vector2(10, 10) * s), col)
+		"dreh_l", "dreh_r":                              # turn on the spot: an arc with an arrow head
+			var sg := 1.0 if kind == "dreh_r" else -1.0
+			var a0 := -PI * 0.75
+			var a1 := PI * 0.6
+			d.draw_arc(c, 6.5 * s, a0, a1, 24, col, w, true)
+			var endp := c + Vector2(cos(a1 if sg > 0 else a0), sin(a1 if sg > 0 else a0)) * 6.5 * s
+			var tang := Vector2(-sin(a1), cos(a1)) if sg > 0 else -Vector2(-sin(a0), cos(a0))
+			var nrm := Vector2(-tang.y, tang.x)
+			d.draw_colored_polygon(PackedVector2Array([endp + tang * 4.0 * s, endp + nrm * 3.2 * s, endp - nrm * 3.2 * s]), col)
+		_:
+			if kind.begins_with("pfeil"):                # «pfeil<grad>»: 0 = up, 90 = right ...
+				var a := deg_to_rad(float(kind.substr(5)))
+				var dir := Vector2(sin(a), -cos(a))
+				var nrm := Vector2(-dir.y, dir.x)
+				d.draw_line(c - dir * 6.5 * s, c + dir * 2.0 * s, col, w, true)
+				d.draw_colored_polygon(PackedVector2Array([c + dir * 7.5 * s, c + dir * 1.0 * s + nrm * 5.0 * s,
+						c + dir * 1.0 * s - nrm * 5.0 * s]), col)
+
+
+static func modell_bild(id: String) -> ImageTexture:
+	"""a small picture of a model for the list «Modell» (seen from above: segments in orange, legs grey)"""
+	var w := 44
+	var h := 22
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var seg := Color("#ef9f27")
+	var leg := Color("#8a9bb0")
+	if id.is_valid_int():
+		var n := int(id)
+		var sw := mini(9, int(floor(40.0 / n)) - 1)
+		var x0 := int((w - n * (sw + 1)) / 2.0)
+		for i in n:
+			var x := x0 + i * (sw + 1)
+			img.fill_rect(Rect2i(x + int(sw / 2.0), 2, 1, 4), leg)
+			img.fill_rect(Rect2i(x + int(sw / 2.0), h - 6, 1, 4), leg)
+			img.fill_rect(Rect2i(x, 6, sw, h - 12), seg)
+	else:
+		var legs := 3 if id == "sechs" else 2
+		img.fill_rect(Rect2i(8, 7, 28, 8), seg)
+		img.fill_rect(Rect2i(34, 8, 6, 6), seg.darkened(0.25))   # head
+		for i in legs:
+			var x := 11 + int(i * 20.0 / maxf(1.0, legs - 1))
+			img.fill_rect(Rect2i(x, 1, 2, 6), leg)
+			img.fill_rect(Rect2i(x, h - 7, 2, 6), leg)
+	return ImageTexture.create_from_image(img)
+
+
+func gruppe(id: String, title := "", tab_id := "") -> VBoxContainer:
+	"""the body of a group (a fold card like in the simulator); made the first time with title and tab"""
+	if _gruppen.has(id):
+		return _gruppen[id]
+	if tab_id == "":
+		for g in GRUPPEN:
+			if g[0] == id:
+				title = g[1]
+				tab_id = g[2]
+		if tab_id == "":
+			tab_id = "fahren"
+	var pg: VBoxContainer = _w["page_" + tab_id]
+	var b := UI.fold_card(pg, T.t(title if title != "" else id), true)
+	b.set_meta("gruppe", id)
+	b.set_meta("reiter", tab_id)
+	_gruppen[id] = b
+	return b
+
+
+func gruppe_reiter(id: String) -> String:
+	var b: Control = _gruppen.get(id)
+	return str(b.get_meta("reiter", "")) if b != null else ""
+
+
+func fold_all(how: String) -> void:
+	"""«close» = all groups shut, «groups» = groups open and their parts shut, «open» = everything open (as in the simulator)"""
+	for id in _gruppen:
+		var b: Control = _gruppen[id]
+		UI.set_open(b, how != "close")
+		for sb in _sub_folds(b):
+			UI.set_sub_open(sb, how == "open")
+
+
+func _sub_folds(n: Node) -> Array:
+	var out := []
+	for ch in n.get_children():
+		if ch is Control and (ch as Control).has_meta("fold") and (ch as Control).has_meta("paint"):
+			out.append(ch)
+		out.append_array(_sub_folds(ch))
+	return out
+
+
+static func texte(n: Node) -> String:
+	"""every visible word inside a node (labels, buttons, switches, tooltips) - for the search"""
+	var t := ""
+	if n is Label:
+		t += (n as Label).text + " "
+	elif n is Button:
+		t += (n as Button).text + " "
+	if n is Control:
+		t += (n as Control).tooltip_text + " "
+	for ch in n.get_children():
+		t += texte(ch)
+	return t
+
+
+func suche(q: String) -> void:
+	"""type into the search field: the matching rows of every tab stay, their groups open; empty = as before"""
+	q = q.strip_edges().to_lower()
+	_such = q
+	var any := false
+	for id in _gruppen:
+		var b: Control = _gruppen[id]
+		var card: Control = b.get_meta("card")
+		var title_hit := q != "" and str(b.get_meta("title", "")).to_lower().contains(q)
+		var hit := false
+		for row in b.get_children():
+			if not row is Control:
+				continue
+			var r := row as Control
+			if q == "":
+				if r.has_meta("such_aus"):
+					r.visible = true
+					r.remove_meta("such_aus")
+				continue
+			var ok := title_hit or texte(r).to_lower().contains(q)
+			if ok:
+				hit = true
+				if r.has_meta("such_aus"):
+					r.visible = true
+					r.remove_meta("such_aus")
+				for sb in _sub_folds(r):
+					if texte(sb).to_lower().contains(q):
+						UI.set_sub_open(sb, true)
+			elif r.visible:
+				r.visible = false
+				r.set_meta("such_aus", true)
+		card.visible = q == "" or hit
+		if hit:
+			any = true
+			UI.set_open(b, true)
+	var none: Control = _w.get("kein_treffer")
+	if none != null:
+		none.visible = q != "" and not any
+	set_tab(tab)
 
 
 func compact() -> bool:
@@ -905,15 +1210,35 @@ func add_child_pip() -> void:
 
 
 func set_tab(t: String) -> void:
-	tab = t if t in TABS.map(func(x): return x[0]) else "form"
+	"""one of the 5 tabs; an old name (form, posen, bewegen …) opens its new tab and its group"""
+	var grp := ""
+	if TAB_ALT.has(t):
+		grp = TAB_ALT[t][1]
+		t = TAB_ALT[t][0]
+	tab = t if t in TABS.map(func(x): return x[0]) else "fahren"
 	for tb in TABS:
 		var pg: Control = _w.get("page_" + tb[0])
 		if pg != null:
-			pg.visible = tb[0] == tab
+			pg.visible = tb[0] == tab or _such != ""      # while searching: the hits of every tab
 		var b: Button = _w.get("tab_" + tb[0])
 		if b != null:
-			_paint_btn(b, tb[0] == tab)
+			_paint_tab(b, tb[0] == tab and _such == "")
+	if grp != "" and _gruppen.has(grp):
+		UI.set_open(_gruppen[grp], true)
 	_sync_servo_sliders()
+
+
+func _paint_tab(b: Button, on: bool) -> void:
+	"""a tab: blue when active (like the active states in the simulator), symbol and name white"""
+	_paint_btn(b, on)
+	var col := Color.WHITE if on else UI.TXT
+	var ic: Control = b.get_meta("icon", null)
+	if ic != null:
+		ic.set_meta("col", col)
+		ic.queue_redraw()
+	var lb: Label = b.get_meta("label", null)
+	if lb != null:
+		lb.add_theme_color_override("font_color", col)
 
 
 func _paint_btn(b: Button, on: bool) -> void:
@@ -1109,12 +1434,14 @@ func _page_posen(pg: VBoxContainer) -> void:
 
 
 func _page_bewegen(pg: VBoxContainer) -> void:
-	pg.add_child(UI.small(T.t("Ganze Abläufe")))
+	"""the former tab «Bewegen», now in groups: Gangart · Richtung · Tempo und Schritt · Im Ring rollen (Fahren) and Ganze
+	Abläufe (Haltung); pg = the group «Gangart»"""
+	var gab := gruppe("ablaeufe")
 	var ga := GridContainer.new()
 	ga.columns = 2
 	ga.add_theme_constant_override("h_separation", 6)
 	ga.add_theme_constant_override("v_separation", 6)
-	pg.add_child(ga)
+	gab.add_child(ga)
 	for a in BEWEGUNG.ABLAEUFE:
 		var an: String = a[0]
 		var b := _button(ga, T.t(a[1]), func(): start_ablauf(an))
@@ -1131,60 +1458,76 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 		var b := _button(gg, T.t(g[1]), func(): start_gang(gn))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_w["gang_" + gn] = b
-	pg.add_child(UI.small(T.t("In alle Richtungen (W A S D, schräg = zwei Tasten, Q / E an Ort drehen):")))
+	_toggle(pg, T.t("Körper passt sich dem Untergrund an"), bew.anpassen, func(on: bool): bew.anpassen = on)
+	var gi := UI.small("", UI.TXT)
+	pg.add_child(gi)
+	_w["gang_info"] = gi
+	var gr := gruppe("richtung")
+	gr.add_child(UI.small(T.t("In alle Richtungen (W A S D, schräg = zwei Tasten, Q / E an Ort drehen):")))
 	var pad := GridContainer.new()
 	pad.columns = 3
 	pad.add_theme_constant_override("h_separation", 4)
 	pad.add_theme_constant_override("v_separation", 4)
-	pg.add_child(pad)
-	# [symbol, strafe (+ links), vor, Hinweis]
-	for e in [["↖", 1.0, 1.0, "vorne links"], ["↑", 0.0, 1.0, "Vorwärts"], ["↗", -1.0, 1.0, "vorne rechts"],
-			["←", 1.0, 0.0, "seitwärts links"], ["■", 0.0, 0.0, "Stopp"], ["→", -1.0, 0.0, "seitwärts rechts"],
-			["↙", 1.0, -1.0, "hinten links"], ["↓", 0.0, -1.0, "Rückwärts"], ["↘", -1.0, -1.0, "hinten rechts"]]:
+	gr.add_child(pad)
+	# [symbol (drawn: the font has no arrows), strafe (+ links), vor, Hinweis]
+	for e in [["pfeil315", 1.0, 1.0, "vorne links"], ["pfeil0", 0.0, 1.0, "Vorwärts"], ["pfeil45", -1.0, 1.0, "vorne rechts"],
+			["pfeil270", 1.0, 0.0, "seitwärts links"], ["stopp", 0.0, 0.0, "Stopp"], ["pfeil90", -1.0, 0.0, "seitwärts rechts"],
+			["pfeil225", 1.0, -1.0, "hinten links"], ["pfeil180", 0.0, -1.0, "Rückwärts"], ["pfeil135", -1.0, -1.0, "hinten rechts"]]:
 		var sx: float = e[1]
 		var fy: float = e[2]
-		var b := _button(pad, e[0], func(): drive_dir(Vector3(sx, fy, 0.0)))
+		var b := _button(pad, "", func(): drive_dir(Vector3(sx, fy, 0.0)))
 		b.tooltip_text = T.t(e[3])
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.custom_minimum_size = Vector2(0, 34)
+		var ic := _icon(e[0], UI.TXT, Vector2.ZERO)
+		ic.set_anchors_preset(Control.PRESET_FULL_RECT)
+		b.add_child(ic)
+		_w["pad_" + str(e[0])] = b
 	var rot := HBoxContainer.new()
 	rot.add_theme_constant_override("separation", 6)
-	pg.add_child(rot)
-	for e in [["⟲ " + T.t("an Ort drehen links") + " (Q)", 1.0], [T.t("an Ort drehen rechts") + " (E) ⟳", -1.0]]:
+	gr.add_child(rot)
+	for e in [[T.t("an Ort drehen links") + " (Q)", 1.0, "dreh_l"], [T.t("an Ort drehen rechts") + " (E)", -1.0, "dreh_r"]]:
 		var rz: float = e[1]
 		var b := _button(rot, e[0], func(): drive_dir(Vector3(0.0, 0.0, rz)))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_toggle(pg, T.t("Körper passt sich dem Untergrund an"), bew.anpassen, func(on: bool): bew.anpassen = on)
-	var rb := _button(pg, T.t("Im Ring rollen (die Füsse stossen, Kurve = Ring neigen)"), func():
+		b.clip_text = true
+		b.add_theme_font_size_override("font_size", 13)
+		for st in ["normal", "hover", "pressed"]:          # room for the drawn arrow on the left
+			var sb := (b.get_theme_stylebox(st) as StyleBox).duplicate() as StyleBox
+			sb.content_margin_left = 26
+			b.add_theme_stylebox_override(st, sb)
+		var ic := _icon(str(e[2]), UI.TXT, Vector2(20, 20))
+		ic.position = Vector2(5, 7)
+		b.add_child(ic)
+	var gring := gruppe("ring")
+	var rb := _button(gring, T.t("Im Ring rollen (die Füsse stossen, Kurve = Ring neigen)"), func():
 		if model.latch["state"] != "locked":
 			apply_pose("ring", true)
 		bew.start_ring()
 		_paint_gang())
 	_w["ring_btn"] = rb
-	var ob := _button(pg, T.t("Ring öffnen (gerade)"), func(): ring_oeffnen("gerade"))
+	var ob := _button(gring, T.t("Ring öffnen (gerade)"), func(): ring_oeffnen("gerade"))
 	ob.tooltip_text = T.t("Der Ring rollt den Riegel nach oben, öffnet ihn und streckt sich weich in die Haltung «Gerade». Bei geschlossenem Ring nehmen alle Haltungen ausser «Ring» diesen Weg.")
 	_w["oeffnen_btn"] = ob
-	_w["turn_sl"] = _slider(pg, T.t("Kurve (− rechts, + links)"), -1.0, 1.0, 0.05, 0.0, "", func(x: float): manual.z = x)
-	_slider(pg, T.t("Tempo"), 0.01, 0.25, 0.01, bew.tempo, "m/s", func(x: float):
+	_w["turn_sl"] = _slider(gr, T.t("Kurve (− rechts, + links)"), -1.0, 1.0, 0.05, 0.0, "", func(x: float): manual.z = x)
+	var gt := gruppe("tempo")
+	_slider(gt, T.t("Tempo"), 0.01, 0.25, 0.01, bew.tempo, "m/s", func(x: float):
 		bew.tempo = x
 		mark_dirty())
-	_slider(pg, T.t("Körperhöhe über dem Boden"), 0.3, 1.8, 0.05, bew.hoehe, "E", func(x: float):
+	_slider(gt, T.t("Körperhöhe über dem Boden"), 0.3, 1.8, 0.05, bew.hoehe, "E", func(x: float):
 		bew.hoehe = x
 		mark_dirty())
-	_slider(pg, T.t("Spurbreite beim Gehen (Fuss links bis Fuss rechts)"), model.u("halbe_breite") * 200.0 + 2.0,
+	_slider(gt, T.t("Spurbreite beim Gehen (Fuss links bis Fuss rechts)"), model.u("halbe_breite") * 200.0 + 2.0,
 			(model.u("halbe_breite") + (model.u("oberschenkel") + model.u("unterschenkel")) * 0.95) * 200.0, 0.5, bew.spur_gehen() * 100.0, "cm",
 			func(x: float):
 		bew.set_spur_gehen(x / 100.0)
 		mark_dirty())
-	_slider(pg, T.t("Schrittlänge"), 0.2, 1.4, 0.05, bew.schritt_laenge, "E", func(x: float):
+	_slider(gt, T.t("Schrittlänge"), 0.2, 1.4, 0.05, bew.schritt_laenge, "E", func(x: float):
 		bew.schritt_laenge = x
 		mark_dirty())
-	_slider(pg, T.t("Schritthöhe"), 0.1, 0.9, 0.05, bew.schritt_hoehe, "E", func(x: float):
+	_slider(gt, T.t("Schritthöhe"), 0.1, 0.9, 0.05, bew.schritt_hoehe, "E", func(x: float):
 		bew.schritt_hoehe = x
 		mark_dirty())
-	var gi := UI.small("", UI.TXT)
-	pg.add_child(gi)
-	_w["gang_info"] = gi
 
 
 func drive_dir(c: Vector3) -> void:
@@ -1224,7 +1567,7 @@ func _paint_gang() -> void:
 
 
 func _page_anzeigen(pg: VBoxContainer) -> void:
-	_toggle(pg, T.t("Servo-Last an den Gelenken (grün → rot)"), anz.show_load, func(on: bool): anz.show_load = on)
+	_toggle(pg, T.t("Servo-Last an den Gelenken (grün bis rot)"), anz.show_load, func(on: bool): anz.show_load = on)
 	_toggle(pg, T.t("Schwerpunkt und Stützfläche"), anz.show_support, func(on: bool): anz.show_support = on)
 	var tip := Label.new()
 	tip.add_theme_font_size_override("font_size", 14)
@@ -1469,7 +1812,7 @@ func _rund_text() -> String:
 		names[rm[0]] = T.t(rm[1])
 	var t := ""
 	for l in rund_summary():
-		t += ("★ " if l["key"] == rund_best else "") + str(names.get(l["methode"], l["methode"])) + "  ·  " + T.t("Höhe %.1f cm · Spur %.1f cm") % [l["hoehe"], l["spur"]] + "\n"
+		t += (T.t("Beste") + " · " if l["key"] == rund_best else "") + str(names.get(l["methode"], l["methode"])) + "  ·  " + T.t("Höhe %.1f cm · Spur %.1f cm") % [l["hoehe"], l["spur"]] + "\n"
 		if int(l["ok"]) == 0:
 			var gr := {"umgefallen": T.t("umgefallen"), "zu langsam": T.t("zu langsam")}
 			t += "   " + T.t("nicht geschafft") + " (" + str(gr.get(str(l.get("grund", "")), "")) + ")\n"
@@ -1657,7 +2000,7 @@ func _refresh() -> void:
 		var c: Vector3 = model.com()
 		pi.text = T.t("Masse %.2f kg · Schwerpunkt %.0f cm über dem Boden · Strom ca. %.1f A") % [model.total_mass, c.y * 100.0, model.total_current] \
 				+ ("\n" + T.t("Überlastet: %s") % ", ".join(over) if not over.is_empty() else "")
-	if tab == "anzeigen":
+	if _sichtbar("tip"):
 		var tl: Label = _w["tip"]
 		tl.text = (T.t("KIPPGEFAHR") + " – " if anz.tipping else "") + T.t("Kipp-Reserve %.1f cm") % (anz.margin * 100.0)
 		tl.add_theme_color_override("font_color", UI.RED if anz.tipping else UI.GRN)
@@ -1670,23 +2013,23 @@ func _refresh() -> void:
 				(pr[0] as Label).text = "%s  %.2f N·m" % [servo_name(tops[i][0]), absf(tops[i][2])]
 				(pr[1] as ProgressBar).value = minf(1.5, tops[i][1])
 				(pr[1] as ProgressBar).modulate = ANZEIGE.load_color(tops[i][1])
-	if tab == "rund":
+	if _sichtbar("rund_res"):
 		_paint_rund()
 		var rs: Dictionary = bew.ring_state() if model.latch["state"] == "locked" else {}
 		(_w["rund_live"] as Label).text = (T.t("Mitte %.1f cm über Boden · %d Kontakte · Neigung %d° · %.1f cm/s") % [
 				((rs["c"] as Vector3).y - float(rs["gy"])) * 100.0, model.ground_contacts(), int(round(bew.ring_lean)), absf(bew._ring_v) * 100.0]) if not rs.is_empty() else T.t("Ring nicht verriegelt")
 		(_w["rund_res"] as Label).text = _rund_text()
-	if tab == "gelaende":
+	if _sichtbar("terrain_ring"):
 		for t in GELAENDE.NAMEN:
 			var l: Label = _w.get("terrain_" + t[0])
 			var r: Array = terrain_results.get(t[0], [])
 			if l != null and not r.is_empty():
 				l.text = str(r[1])
 				l.add_theme_color_override("font_color", UI.GRN if r[0] else (UI.TXT if str(r[1]) == T.t("läuft …") else UI.RED))
-	if tab == "bewegen":
+	if _sichtbar("gang_info") or _sichtbar("ring_btn"):
 		(_w["gang_info"] as Label).text = _move_text()
 		_paint_gang()
-	if tab == "gelenke":
+	if _sichtbar("latch_ok"):
 		for id in _sl:
 			var si: int = model.servo_index(id)
 			if si < 0:
@@ -1695,6 +2038,12 @@ func _refresh() -> void:
 			var d: Dictionary = _sl[id]
 			(d["val"] as Label).text = "%d° · %d°" % [int(round(sv["target"])), int(round(sv["angle"]))]
 			(d["val"] as Label).add_theme_color_override("font_color", UI.RED if float(sv["load"]) > 1.0 else (UI.ORG if float(sv["load"]) > 0.7 else UI.MUT))
+
+
+func _sichtbar(key: String) -> bool:
+	"""a widget of the panel is on the screen (its tab shown, its group open): only then the panel refreshes it"""
+	var c = _w.get(key)
+	return c is Control and is_instance_valid(c) and (c as Control).is_visible_in_tree()
 
 
 func _move_text() -> String:

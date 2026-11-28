@@ -2898,6 +2898,12 @@
   "it": "2 bot",
   "rm": "2 bots"
  },
+ "2 Segmente": {
+  "en": "2 segments",
+  "fr": "2 segments",
+  "it": "2 segmenti",
+  "rm": "2 segments"
+ },
  "2 Spieler": {
   "en": "2 players",
   "fr": "2 joueurs",
@@ -3017,6 +3023,12 @@
   "fr": "3 nuits, environ 10 min chacune",
   "it": "3 notti, circa 10 min ciascuna",
   "rm": "3 notgs, mintgina var 10 min."
+ },
+ "3 Segmente": {
+  "en": "3 segments",
+  "fr": "3 segments",
+  "it": "3 segmenti",
+  "rm": "3 segments"
  },
  "3,3 V Pin 1 · GND Pin 6 · SDA Pin 3 (GPIO 2) · SCL Pin 5 (GPIO 3) · I2C 0x41 (Lötbrücke A0)": {
   "en": "3.3 V pin 1 · GND pin 6 · SDA pin 3 (GPIO 2) · SCL pin 5 (GPIO 3) · I2C 0x41 (solder bridge A0)",
@@ -7682,6 +7694,12 @@
   "fr": "Objectif embué (rosée le matin, voile laiteux)",
   "it": "Obiettivo appannato (rugiada al mattino, velo lattiginoso)",
   "rm": "Lentilla bagnada (rusada la damaun, vel da latg)"
+ },
+ "Beste": {
+  "en": "Best",
+  "fr": "Meilleur",
+  "it": "Migliore",
+  "rm": "Il meglier"
  },
  "Beste Methode als Standard übernehmen": {
   "en": "Use the best method as default",
@@ -17389,6 +17407,12 @@
   "it": "Sali dall'alpe con la teleferica di servizio.",
   "rm": "Va cun la funiculara da material da l'alp ensi."
  },
+ "Fahren": {
+  "en": "Drive",
+  "fr": "Conduire",
+  "it": "Guidare",
+  "rm": "Manischar"
+ },
  "Fahrersicht": {
   "en": "Driver's view",
   "fr": "Vue du conducteur",
@@ -19534,6 +19558,12 @@
   "fr": "Aller aux WC / à la douche (la nuit avec une lampe de poche)",
   "it": "Andare al WC / alla doccia (di notte con la torcia)",
   "rm": "Ir al WC / a la duscha (la notg cun ina lampa da giaglioffa)"
+ },
+ "Gangart": {
+  "en": "Gait",
+  "fr": "Allure",
+  "it": "Andatura",
+  "rm": "Moda da chaminar"
  },
  "Gangarten nacheinander vor der Kamera (gehen, eilen, rennen, schleichen, kriechen)": {
   "en": "Gaits one after another in front of the camera (walk, hurry, run, sneak, crawl)",
@@ -22204,6 +22234,12 @@
   "fr": "Support : la sangle 25 mm passe dans les fentes 4 × 28 mm, vis murales Ø 5",
   "it": "Supporto: la cinghia 25 mm passa nelle fessure 4 × 28 mm, viti a muro Ø 5",
   "rm": "Tegnider: la tschinta 25 mm passa tras las fessas 4 × 28 mm, scrauvs da paraid Ø 5"
+ },
+ "Haltung": {
+  "en": "Posture",
+  "fr": "Posture",
+  "it": "Postura",
+  "rm": "Posiziun"
  },
  "Haltung wechseln (C): stehen → geduckt → kriechen": {
   "en": "Change posture (C): stand → crouch → crawl",
@@ -31244,6 +31280,12 @@
   "it": "Message: ",
   "rm": "Message: "
  },
+ "Messen": {
+  "en": "Measure",
+  "fr": "Mesurer",
+  "it": "Misurare",
+  "rm": "Mesirar"
+ },
  "Messen (diese Methode)": {
   "en": "Measure (this method)",
   "fr": "Mesurer (cette méthode)",
@@ -31923,6 +31965,12 @@
   "fr": "Cercle de tir moyen, 100 ⚡ d’énergie (0.4 ⚡ par seconde).",
   "it": "Cerchio di tiro medio, 100 ⚡ di energia (0.4 ⚡ al secondo).",
   "rm": "Rintg da tutgar mesaun, 100 ⚡ energia (0.4 ⚡ per secunda)."
+ },
+ "Modell": {
+  "en": "Model",
+  "fr": "Modèle",
+  "it": "Modello",
+  "rm": "Model"
  },
  "Modell fehlt: ": {
   "en": "Model missing: ",
@@ -40374,6 +40422,12 @@
   "it": "Scheda SD (v5.2)",
   "rm": "Carta SD (v5.2)"
  },
+ "Sechsbeiner": {
+  "en": "Six-legged",
+  "fr": "Hexapode",
+  "it": "Esapode",
+  "rm": "Sis chommas"
+ },
  "Sechzehn Kilo. Zu viel. Das Fondue-Set hätte ich zu Hause lassen sollen.": {
   "en": "Sixteen kilos. Too much. I should have left the fondue set at home.",
   "fr": "Seize kilos. Trop. J'aurais dû laisser le caquelon à la maison.",
@@ -40814,6 +40868,12 @@
   "it": "Servo di nuovo libero",
   "rm": "Servo puspè liber"
  },
+ "Servo-Last an den Gelenken (grün bis rot)": {
+  "en": "Servo load at the joints (green to red)",
+  "fr": "Charge des servos aux articulations (du vert au rouge)",
+  "it": "Carico dei servo ai giunti (dal verde al rosso)",
+  "rm": "Chargia dals servos vi dals artitgels (da verd fin cotschen)"
+ },
  "Servo-Last an den Gelenken (grün → rot)": {
   "en": "Servo load at the joints (green → red)",
   "fr": "Charge des servos aux articulations (vert → rouge)",
@@ -41144,6 +41204,12 @@
   "fr": "Sim %d %%",
   "it": "Sim %d %%",
   "rm": "Sim %d %%"
+ },
+ "Sim %s": {
+  "en": "Sim %s",
+  "fr": "Sim %s",
+  "it": "Sim %s",
+  "rm": "Sim %s"
  },
  "Sim-PC": {
   "en": "Sim PC",
@@ -44244,6 +44310,12 @@
   "it": "Velocità del Mover: %s m/s",
   "rm": "Tempo dal Mover: %s m/s"
  },
+ "Tempo und Schritt": {
+  "en": "Speed and step",
+  "fr": "Vitesse et pas",
+  "it": "Velocità e passo",
+  "rm": "Svelt e pass"
+ },
  "Tempo: %s m/s ›": {
   "en": "Speed: %s m/s ›",
   "fr": "Vitesse : %s m/s ›",
@@ -46852,6 +46924,12 @@
   "fr": "Quatre saisons. Quatre vallées.",
   "it": "Quattro stagioni. Quattro valli.",
   "rm": "Quatter stagiuns. Quatter vals."
+ },
+ "Vierbeiner": {
+  "en": "Four-legged",
+  "fr": "Quadrupède",
+  "it": "Quadrupede",
+  "rm": "Quatter chommas"
  },
  "Vignette": {
   "en": "Vignette",
