@@ -1,0 +1,3 @@
+godot werkzeuge/roboter_steuerung_test.gd
+godot werkzeuge/roboter4_test.gd
+godot werkzeuge/roboter_test.gd
