@@ -25,7 +25,7 @@ const GAENGE_4 := [["schritt", "Schritt"], ["trab", "Trab"], ["pass", "Passgang"
 const GAENGE_6 := [["dreifuss", "Dreifuss"], ["welle", "Wellengang"], ["raupe", "Raupengang"], ["auto", "Automatisch"]]
 const ABLAEUFE_K := [["aufstehen", "Aufstehen"], ["hinlegen", "Hinlegen"]]
 const BETA_K := {"schritt": 0.8, "trab": 0.55, "pass": 0.55, "dreifuss": 0.55, "welle": 0.84, "raupe": 0.72}
-const SCHIEBEN_K := {"schritt": 0.9, "welle": 0.6, "raupe": 0.35}     # body shift over the standing feet (share)
+const SCHIEBEN_K := {"schritt": 0.9, "pass": 0.7, "welle": 0.6, "raupe": 0.35}   # body shift over the standing feet (share; pass = sway to the side)
 
 var schieben := Vector2.ZERO           # body shift now (m, x vor, y = z rechts) - for tests and the display
 var stuetz_fuesse := 0                 # feet on the ground in the plan right now
@@ -160,7 +160,7 @@ func _gang_step(dt: float) -> void:
 		T = clampf(2.0 * amax / (beta * maxf(speed, 0.01)), 0.4, 6.0)
 		phase = fposmod(phase + dt / T, 1.0)
 	var kamp := clampf(_amp / maxf(amax, 1e-4), 0.0, 1.0)
-	var lift := schritt_hoehe * sc * kamp
+	var lift := schritt_hoehe * sc * kamp * (1.4 if gang_now == "pass" else 1.0)
 	var hh: float = hoehe * sc
 	var bx: Transform3D = m.body_xf()
 	var fx := bx.basis.x

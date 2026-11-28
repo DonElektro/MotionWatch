@@ -40,6 +40,11 @@ func _initialize() -> void:
 	t_start = Time.get_ticks_msec() / 1000.0
 	for v in ["k4", "k6"]:
 		_plan(v)
+	var a := OS.get_cmdline_user_args()
+	var ni := a.find("--nur")                        # e.g. --nur pass: only the jobs with this in the name (+ open / stand)
+	if ni >= 0 and ni + 1 < a.size():
+		var w: String = a[ni + 1]
+		jobs = jobs.filter(func(j): return str(j["name"]).contains(w) or str(j["name"]).ends_with("öffnen") or str(j["name"]).ends_with("steht"))
 
 
 func check(name: String, ok: bool, detail := "") -> void:
