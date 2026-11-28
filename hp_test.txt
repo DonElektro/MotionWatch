@@ -1,0 +1,2 @@
+TEST_KI_STRECKEN=stufe_hoch,treppe,rohr_dick TEST_KI_VERSUCHE=5 godot werkzeuge/roboter_ki_lernen_test.gd
+TEST_KI_STRECKEN=balken,luecke_breit,graben TEST_KI_VERSUCHE=5 godot werkzeuge/roboter_ki_lernen_test.gd
