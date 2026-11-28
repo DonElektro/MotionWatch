@@ -6,7 +6,7 @@ extends SceneTree
 ##   · Schnittstelle für Stufe 3: STRATEGIEN, strategie_ausfuehren / strategie_status / abbrechen / neu_aufstellen
 ##   · Setzen: mit der Gangart «KI» schafft der 8er Stufe 6 cm, Rampe 15° und Kies ohne Sturz; kein Fuss setzt ins Leere
 ##     (auch an der Lücke 15 cm); der 6er und der 4er schaffen die Stufe 6 cm mit der KI
-##   Mit --alle (nach dem Skriptnamen): zusätzlich alle anderen Strecken mit dem 8er (nur gemeldet).
+##   Mit --alle (nach dem Skriptnamen): zusätzlich alle anderen Strecken mit dem 8er (nur gemeldet); --varianten: nur 6er / 4er.
 ##   cd simulator3d && <godot> --headless --path . -s "$PWD/../werkzeuge/roboter_ki_gang_test.gd"   (absoluter Pfad nötig)
 ## Ende: «Gang-KI-Test OK» oder «SCRIPT ERROR: Gang-KI-Test: …» (Exit-Code 0 / 1).
 
@@ -119,14 +119,16 @@ func _run() -> void:
 	# ---- Setzen: gehen mit der KI ----
 	ki.tritte = 0
 	ki.tritte_leer = 0
-	for lane in ["stufe", "rampe", "kies", "luecke"]:
+	var nur_v := "--varianten" in OS.get_cmdline_user_args()      # (only for local runs: skip the 8er walks)
+	for lane in ([] if nur_v else ["stufe", "rampe", "kies", "luecke"]):
 		var r := await lauf(lane)
 		if lane == "luecke":
 			notes.append("luecke: %s" % r[1])
 			print("  info Lücke 15 cm mit KI: %s (%.0f s)" % [r[1], r[2]])
 		else:
 			check("KI 8 Segmente: %s geschafft, nicht gestürzt" % lane, bool(r[0]) and not bool(r[3]), "%s, %.0f s" % [r[1], r[2]])
-	check("Trittpunkte nie ins Leere (8er, %d Tritte geprüft)" % ki.tritte, ki.tritte > 50 and ki.tritte_leer == 0, "%d ins Leere, %d versetzt" % [ki.tritte_leer, ki.tritte_versetzt])
+	if not nur_v:
+		check("Trittpunkte nie ins Leere (8er, %d Tritte geprüft)" % ki.tritte, ki.tritte > 50 and ki.tritte_leer == 0, "%d ins Leere, %d versetzt" % [ki.tritte_leer, ki.tritte_versetzt])
 	if "--alle" in OS.get_cmdline_user_args() or "--alle" in OS.get_cmdline_args():
 		for lane in ["graben", "stufe_hoch", "treppe", "luecke_breit", "rohr", "rohr_dick", "balken", "geroell"]:
 			var r := await lauf(lane)
