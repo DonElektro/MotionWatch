@@ -25,7 +25,8 @@ const MODELL = preload("res://scripts/roboter_modell.gd")
 const BEWEGUNG = preload("res://scripts/roboter_bewegung.gd")
 const GELAENDE = preload("res://scripts/roboter_gelaende.gd")
 const ANZEIGE = preload("res://scripts/roboter_anzeige.gd")
-const STEUERUNG = preload("res://scripts/roboter_steuerung.gd")   # Tastatur, Controller, Maus, Körper verschieben (28.11.2026)
+const STEUERUNG = preload("res://scripts/roboter_steuerung.gd")
+const STICK = preload("res://scripts/roboter_stick.gd")   # Tastatur, Controller, Maus, Körper verschieben (28.11.2026)
 const TICKS := 120
 # Zwei Varianten (Besitzer 22.11.2026 21:33): «8 Segmente» (Ring 8 × 45°) und «4 Segmente» (Ring 4 × 90°, die 45°-Schrägen
 # liegen flach aneinander). Jede Variante hat ihre eigenen Regler, Pose und Gang-Werte (user://roboter_labor.json).
@@ -144,10 +145,10 @@ func open() -> void:
 	_old_3d = get_viewport().disable_3d
 	get_viewport().disable_3d = true                  # the window shows only the lab: the world of MoveEye is not drawn meanwhile
 	_build_world()
-	_build_ui()
 	steu = STEUERUNG.new()
 	steu.lab = self
 	steu.laden()
+	_build_ui()
 	steu.build(_w["area"])
 	_start_physics()
 	set_view(view)
@@ -689,9 +690,10 @@ func _build_ui() -> void:
 	tl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hd.add_child(tl)
 	var x := Button.new()
-	x.text = "✕"
 	x.flat = true
 	x.tooltip_text = T.t("Schliessen (Esc)")
+	x.custom_minimum_size = Vector2(32, 32)
+	STICK.x_symbol(x, UI.TXT, 6.0)                   # drawn: the font of the simulator has no ✕ everywhere (web)
 	x.pressed.connect(close)
 	hd.add_child(x)
 	var sub := UI.small(T.t("Segment-Roboter – Form, Gelenke und Physik ausprobieren"))
@@ -853,7 +855,6 @@ func _overlay(area: Control) -> void:
 func _close_btn(col: Color, tip: String, cb: Callable) -> Button:
 	"""a small ✕ to hide a field (bigger for a finger on touch screens)"""
 	var b := Button.new()
-	b.text = "✕"
 	b.flat = true
 	b.tooltip_text = tip
 	b.focus_mode = Control.FOCUS_NONE
@@ -861,6 +862,7 @@ func _close_btn(col: Color, tip: String, cb: Callable) -> Button:
 	b.add_theme_color_override("font_color", col)
 	b.add_theme_font_size_override("font_size", 16 if touch else 13)
 	b.custom_minimum_size = Vector2(36, 32) if touch else Vector2(22, 20)
+	STICK.x_symbol(b, col, 6.0 if touch else 4.5)
 	b.pressed.connect(cb)
 	return b
 
@@ -1127,29 +1129,9 @@ func _page_bewegen(pg: VBoxContainer) -> void:
 		var b := _button(gg, T.t(g[1]), func(): start_gang(gn))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_w["gang_" + gn] = b
-	pg.add_child(UI.small(T.t("In alle Richtungen (W A S D, schräg = zwei Tasten, Q / E an Ort drehen):")))
-	var pad := GridContainer.new()
-	pad.columns = 3
-	pad.add_theme_constant_override("h_separation", 4)
-	pad.add_theme_constant_override("v_separation", 4)
-	pg.add_child(pad)
-	# [symbol, strafe (+ links), vor, Hinweis]
-	for e in [["↖", 1.0, 1.0, "vorne links"], ["↑", 0.0, 1.0, "Vorwärts"], ["↗", -1.0, 1.0, "vorne rechts"],
-			["←", 1.0, 0.0, "seitwärts links"], ["■", 0.0, 0.0, "Stopp"], ["→", -1.0, 0.0, "seitwärts rechts"],
-			["↙", 1.0, -1.0, "hinten links"], ["↓", 0.0, -1.0, "Rückwärts"], ["↘", -1.0, -1.0, "hinten rechts"]]:
-		var sx: float = e[1]
-		var fy: float = e[2]
-		var b := _button(pad, e[0], func(): drive_dir(Vector3(sx, fy, 0.0)))
-		b.tooltip_text = T.t(e[3])
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.custom_minimum_size = Vector2(0, 34)
-	var rot := HBoxContainer.new()
-	rot.add_theme_constant_override("separation", 6)
-	pg.add_child(rot)
-	for e in [["⟲ " + T.t("an Ort drehen links") + " (Q)", 1.0], [T.t("an Ort drehen rechts") + " (E) ⟳", -1.0]]:
-		var rz: float = e[1]
-		var b := _button(rot, e[0], func(): drive_dir(Vector3(0.0, 0.0, rz)))
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Besitzer 28.11.2026 14:47: ein virtueller Stick statt der Richtungsknöpfe (roboter_stick.gd, wie in der Leiste unten)
+	pg.add_child(UI.small(T.t("Stick ziehen: hoch = vorwärts, zur Seite = seitwärts, schräg geht auch; der Regler daneben dreht an Ort. Loslassen = Stopp. Tasten: W A S D, Q / E.")))
+	pg.add_child(steu.sticks())
 	_toggle(pg, T.t("Körper passt sich dem Untergrund an"), bew.anpassen, func(on: bool): bew.anpassen = on)
 	var rb := _button(pg, T.t("Im Ring rollen (die Füsse stossen, Kurve = Ring neigen)"), func():
 		if model.latch["state"] != "locked":

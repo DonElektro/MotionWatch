@@ -162,10 +162,28 @@ func _process(_dt: float) -> bool:
 			lab.bew.gang = "auto"
 			next_step()
 		7:
-			if frames() < 240:
-				return false
-			_koerper_start()
-			next_step()
+			if vi == 0 and not has_meta("p0") and frames() >= 240:
+				set_meta("p0", true)
+				st._ui["page_joy"].ziehen(Vector2(0.0, 1.0))        # virtual stick on the page «Bewegen»: up
+				set_meta("pf", frames())
+			elif vi == 0 and has_meta("p0") and not has_meta("p1") and frames() - int(get_meta("pf")) >= 120:
+				set_meta("p1", true)
+				check("virtueller Stick ↑ (Seite «Bewegen»): vorwärts", lab.bew.cmd.y > 0.99 and lab.bew.mode == "gang", str(lab.bew.cmd))
+				st._ui["page_joy"].loslassen()
+				st._ui["page_dreh"].ziehen(Vector2(1.0, 0.0))       # turn slider: right
+				set_meta("pf", frames())
+			elif vi == 0 and has_meta("p1") and not has_meta("p2") and frames() - int(get_meta("pf")) >= 120:
+				set_meta("p2", true)
+				check("Stick los + Dreh-Regler rechts: an Ort drehen rechts", lab.bew.cmd.z < -0.99 and absf(lab.bew.cmd.y) < 1e-3, str(lab.bew.cmd))
+				st._ui["page_dreh"].loslassen()
+				check("Dreh-Regler los: Stopp (kein Fahrbefehl der Knöpfe bleibt)", lab.manual == Vector3.ZERO and st.maus_dreh == 0.0, str(lab.manual))
+				set_meta("pf", frames())
+			elif (vi > 0 and frames() >= 240) or (has_meta("p2") and frames() - int(get_meta("pf")) >= 120):
+				if vi == 0:
+					check("Dreh-Regler los: Befehl 0", lab.bew.cmd == Vector3.ZERO, str(lab.bew.cmd))
+				_koerper_start()
+				next_step()
+			return false
 		8:
 			if frames() < 120 * 3:
 				return false
@@ -222,6 +240,14 @@ func _process(_dt: float) -> bool:
 func _profile_tests() -> void:
 	check("Standard: W = vorwärts, linker Stick ↑ = vorwärts, A = Stopp", st.aktiv == "Standard" and int(st.prof()["tasten"]["vor"]) == KEY_W
 			and st.prof()["pad"]["vor"] == {"t": "achse", "i": JOY_AXIS_LEFT_Y, "d": -1} and st.prof()["pad"]["stopp"] == {"t": "knopf", "i": JOY_BUTTON_A}, "")
+	var glyphs := []
+	for n in lab.win.find_children("*", "Button", true, false):
+		for g in ["✕", "⟲", "⟳"]:
+			if (n as Button).text.contains(g):
+				glyphs.append((n as Button).text)
+	check("keine Zeichen ✕ ⟲ ⟳ im Labor (gezeichnet statt Schrift)", glyphs.is_empty(), str(glyphs))
+	check("Seite «Bewegen»: virtueller Stick und Dreh-Regler statt Richtungsknöpfe", st._ui.has("page_joy") and st._ui.has("page_dreh")
+			and (st._ui["page_joy"] as Control).is_inside_tree(), "")
 	check("Standard: keine Doppelbelegung", st.doppelt().is_empty(), str(st.doppelt()))
 	st.open_map()
 	check("Fenster «Belegung» offen", st.map_open() and (st._ui["map_body"] as Control).get_child_count() > 20, "")

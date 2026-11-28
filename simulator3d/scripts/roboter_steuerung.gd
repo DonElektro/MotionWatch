@@ -17,6 +17,7 @@ const UI = preload("res://scripts/ui_style.gd")
 const T = preload("res://scripts/i18n.gd")
 const BEWEGUNG = preload("res://scripts/roboter_bewegung.gd")
 const ANZEIGE = preload("res://scripts/roboter_anzeige.gd")
+const STICK = preload("res://scripts/roboter_stick.gd")        # virtueller Stick (Leiste und Seite «Bewegen»)
 const SPEICHER := "user://roboter_steuerung.json"
 const STANDARD := "Standard"
 const RAMPE_AUF := 2.5                 # 1/s: so schnell steigt ein Fahrbefehl (0 → 1 in 0.4 s)
@@ -47,7 +48,9 @@ var zur_mitte := true                  # Körper verschieben: loslassen = sanft 
 var out := Vector3.ZERO                # sanfter Fahrbefehl (x seitwärts + links, y vor, z drehen + links)
 var roh := Vector3.ZERO                # ungeglättet, ohne Tempo-Faktor
 var tempo_k := 1.0                     # Shift / Ctrl, Trigger
-var maus := Vector2.ZERO               # Maus-Joystick: x + = rechts, y + = vor
+var maus := Vector2.ZERO               # virtueller Stick (Maus / Touch): x + = rechts, y + = vor
+var maus_dreh := 0.0                   # virtueller Dreh-Regler: + = rechts drehen
+var _sticks := []                      # all virtual sticks (redraw, release)
 var capture := {}                      # «Taste drücken …»: {akt, art: taste | pad}
 var meldung := ""
 var _meldung_t := 0.0
@@ -325,7 +328,7 @@ static func pad_text(b: Dictionary) -> String:
 			return "LT"
 		JOY_AXIS_TRIGGER_RIGHT:
 			return "RT"
-	return T.t("Achse %d") % i + (" +" if d > 0 else " −")
+	return T.t("Achse %d") % i + (" +" if d > 0 else " -")
 
 
 # ==== Eingaben ==============================================================================================================
@@ -421,6 +424,7 @@ func loslassen() -> void:
 	_axes = {}
 	_axis_on = {}
 	maus = Vector2.ZERO
+	maus_dreh = 0.0
 
 
 func start_capture(akt: String, art: String) -> void:
@@ -474,7 +478,7 @@ func tick(dt: float) -> Vector3:
 			if not Input.is_key_pressed(code) and not Input.is_physical_key_pressed(code):
 				_keys.erase(code)
 	var r := Vector3(wert("links") - wert("rechts") - maus.x, wert("vor") - wert("zurueck") + maus.y,
-			wert("drehen_links") - wert("drehen_rechts"))
+			wert("drehen_links") - wert("drehen_rechts") - maus_dreh)
 	if not _k_cmd.is_empty():
 		r = Vector3(float(_k_cmd.get("x", 0.0)), float(_k_cmd.get("y", 0.0)), float(_k_cmd.get("z", 0.0)))
 	r = r.clamp(-Vector3.ONE, Vector3.ONE)
@@ -864,12 +868,7 @@ func build(area: Control) -> void:
 	fl.add_child(zm)
 	_ui["zur_mitte"] = zm
 	# Maus-Joystick und Kompass
-	var js := Control.new()
-	js.custom_minimum_size = Vector2(64, 64)
-	js.mouse_filter = Control.MOUSE_FILTER_STOP
-	js.tooltip_text = T.t("Maus-Joystick: ziehen = fahren (hoch = vorwärts, zur Seite = seitwärts)")
-	js.draw.connect(func(): _draw_joystick(js))
-	js.gui_input.connect(func(ev: InputEvent): _joystick_input(js, ev))
+	var js := fahr_stick(Vector2(64, 64))
 	fl.add_child(js)
 	_ui["joy"] = js
 	var ko := Control.new()
@@ -923,6 +922,7 @@ func close() -> void:
 		Input.joy_connection_changed.disconnect(_joy_changed)
 	speichern()
 	_ui = {}
+	_sticks = []
 	_map = null
 	capture = {}
 	_k_ende()
@@ -1074,7 +1074,9 @@ func process(dt: float) -> void:
 		_meldung_t -= dt
 	if _ui.is_empty():
 		return
-	(_ui["joy"] as Control).queue_redraw()
+	for s in _sticks:
+		if is_instance_valid(s):
+			(s as Control).queue_redraw()
 	(_ui["kompass"] as Control).queue_redraw()
 	_ui_t -= dt
 	if _ui_t <= 0.0:
@@ -1087,42 +1089,56 @@ func process(dt: float) -> void:
 			_map_live()
 
 
-func _draw_joystick(c: Control) -> void:
-	var sz := c.size
-	var mid := sz * 0.5
-	var rad := minf(sz.x, sz.y) * 0.5 - 2.0
-	c.draw_circle(mid, rad, UI.FIELD)
-	c.draw_arc(mid, rad, 0.0, TAU, 40, UI.LINE, 1.5)
-	c.draw_line(mid - Vector2(rad * 0.6, 0), mid + Vector2(rad * 0.6, 0), UI.LINE, 1.0)
-	c.draw_line(mid - Vector2(0, rad * 0.6), mid + Vector2(0, rad * 0.6), UI.LINE, 1.0)
-	var v := Vector2(-out.x, -out.y)                       # what the robot gets now (all inputs, smooth)
-	if v.length() > 1.0:
-		v = v.normalized()
-	c.draw_circle(mid + v * (rad - 9.0), 9.0, UI.ACC if v.length() > 0.02 or maus != Vector2.ZERO else UI.BTN2)
-	c.draw_arc(mid + v * (rad - 9.0), 9.0, 0.0, TAU, 20, UI.TXT if maus != Vector2.ZERO else UI.LINE, 1.0)
+func fahr_stick(groesse: Vector2) -> Control:
+	"""a virtual stick for driving (vor / seitwärts, stufenlos); loslassen = Stopp"""
+	var js = STICK.neu("xy", groesse, T.t("Stick ziehen = fahren (hoch = vorwärts, zur Seite = seitwärts), loslassen = Stopp"))
+	js.anzeige = func() -> Vector2: return Vector2(-out.x, out.y)
+	js.bewegt.connect(func(v: Vector2): maus = v)
+	js.losgelassen.connect(_stick_los)
+	_sticks.append(js)
+	return js
 
 
-func _joystick_input(c: Control, ev: InputEvent) -> void:
-	var pos := Vector2.ZERO
-	var on := false
-	if ev is InputEventMouseButton and (ev as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
-		on = (ev as InputEventMouseButton).pressed
-		pos = (ev as InputEventMouseButton).position
-		if not on:
-			maus = Vector2.ZERO
-			return
-	elif ev is InputEventMouseMotion and ((ev as InputEventMouseMotion).button_mask & MOUSE_BUTTON_MASK_LEFT) != 0:
-		on = true
-		pos = (ev as InputEventMouseMotion).position
-	else:
-		return
-	var mid := c.size * 0.5
-	var rad := minf(c.size.x, c.size.y) * 0.5 - 9.0
-	var v := (pos - mid) / maxf(rad, 1.0)
-	if v.length() > 1.0:
-		v = v.normalized()
-	maus = Vector2(v.x, -v.y)
-	c.accept_event()
+func dreh_stick(breite: float) -> Control:
+	"""a virtual slider for turning (stufenlos, zurück auf 0)"""
+	var ds = STICK.neu("x", Vector2(breite, 40), T.t("Ziehen = drehen (links / rechts), loslassen = zurück auf 0"))
+	ds.anzeige = func() -> Vector2: return Vector2(-out.z, 0.0)
+	ds.bewegt.connect(func(v: Vector2): maus_dreh = v.x)
+	ds.losgelassen.connect(_stick_los)
+	_sticks.append(ds)
+	return ds
+
+
+func _stick_los() -> void:
+	"""a virtual stick let go: stop (also the drive of the buttons / the curve slider, so the robot really stands)"""
+	maus = Vector2.ZERO
+	maus_dreh = 0.0
+	if lab != null and lab.model != null:
+		lab.manual = Vector3.ZERO
+		var ts: Dictionary = lab._w.get("turn_sl", {})
+		if not ts.is_empty():
+			(ts["sl"] as HSlider).set_value_no_signal(0.0)
+
+
+func sticks() -> Control:
+	"""for the page «Bewegen»: the drive stick and the turn slider side by side (a component that can move elsewhere)"""
+	var h := HBoxContainer.new()
+	h.add_theme_constant_override("separation", 14)
+	h.alignment = BoxContainer.ALIGNMENT_CENTER
+	var js := fahr_stick(Vector2(120, 120))
+	h.add_child(js)
+	_ui["page_joy"] = js
+	var v := VBoxContainer.new()
+	v.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	v.add_theme_constant_override("separation", 4)
+	h.add_child(v)
+	v.add_child(UI.small(T.t("Drehen (Q / E)")))
+	var ds := dreh_stick(170.0)
+	ds.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	v.add_child(ds)
+	_ui["page_dreh"] = ds
+	return h
 
 
 func _draw_kompass(c: Control) -> void:
@@ -1184,10 +1200,11 @@ func open_map() -> void:
 	tl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hd.add_child(tl)
 	var x := Button.new()
-	x.text = "✕"
 	x.flat = true
 	x.focus_mode = Control.FOCUS_NONE
 	x.tooltip_text = T.t("Schliessen")
+	x.custom_minimum_size = Vector2(32, 32)
+	STICK.x_symbol(x, UI.TXT, 6.0)
 	x.pressed.connect(close_map)
 	hd.add_child(x)
 	var pl := UI.small("", UI.TXT)

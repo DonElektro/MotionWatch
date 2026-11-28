@@ -14045,6 +14045,12 @@
   "it": "girare (15°)",
   "rm": "volver (15°)"
  },
+ "Drehen (Q / E)": {
+  "en": "Turn (Q / E)",
+  "fr": "Tourner (Q / E)",
+  "it": "Girare (Q / E)",
+  "rm": "Volver (Q / E)"
+ },
  "Drehen links": {
   "en": "Turn left",
   "fr": "Tourner à gauche",
@@ -43295,6 +43301,18 @@
   "rm": "Manaschament",
   "?": "rm: Neubau-Texte 21.11.2026 (Korrekturlesen)"
  },
+ "Stick ziehen = fahren (hoch = vorwärts, zur Seite = seitwärts), loslassen = Stopp": {
+  "en": "Drag the stick = drive (up = forward, to the side = sideways), release = stop",
+  "fr": "Tirer le stick = rouler (haut = avant, sur le côté = de côté), relâcher = arrêt",
+  "it": "Trascinare lo stick = guidare (su = avanti, di lato = laterale), rilasciare = stop",
+  "rm": "Trair il stick = viagiar (si = enavant, da la vart = da la vart), laschar liber = stop"
+ },
+ "Stick ziehen: hoch = vorwärts, zur Seite = seitwärts, schräg geht auch; der Regler daneben dreht an Ort. Loslassen = Stopp. Tasten: W A S D, Q / E.": {
+  "en": "Drag the stick: up = forward, to the side = sideways, diagonal works too; the slider next to it turns on the spot. Release = stop. Keys: W A S D, Q / E.",
+  "fr": "Tirer le stick : haut = avant, sur le côté = de côté, en diagonale aussi ; le curseur à côté tourne sur place. Relâcher = arrêt. Touches : W A S D, Q / E.",
+  "it": "Trascinare lo stick: su = avanti, di lato = laterale, anche in diagonale; il cursore accanto gira sul posto. Rilasciare = stop. Tasti: W A S D, Q / E.",
+  "rm": "Trair il stick: si = enavant, da la vart = da la vart, era en diagonala; il regulatur sper quai volva en plaz. Laschar liber = stop. Tastas: W A S D, Q / E."
+ },
  "Stick-Drift selbst lernen (ein Stick, der 3 s genau gleich steht, gilt als Ruhelage)": {
   "en": "Learn stick drift by itself (a stick that stays exactly the same for 3 s counts as rest position)",
   "fr": "Apprendre la dérive tout seul (un stick qui reste exactement pareil 3 s compte comme position de repos)",
@@ -50758,6 +50776,12 @@
   "fr": "Tire une vanne et cours tout de suite à l'autre - elle ne tient que peu de temps.",
   "it": "Tira una paratoia e corri subito all'altra - regge solo poco.",
   "rm": "Trai ina porta e curra immediatamain tar l'autra - ella tegna mo curt."
+ },
+ "Ziehen = drehen (links / rechts), loslassen = zurück auf 0": {
+  "en": "Drag = turn (left / right), release = back to 0",
+  "fr": "Tirer = tourner (gauche / droite), relâcher = retour à 0",
+  "it": "Trascinare = girare (sinistra / destra), rilasciare = ritorno a 0",
+  "rm": "Trair = volver (sanestra / dretga), laschar liber = enavos sin 0"
  },
  "ziehen = drehen · rechts ziehen = verschieben · Rad = zoomen": {
   "en": "drag = turn · right drag = move · wheel = zoom",
