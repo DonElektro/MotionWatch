@@ -131,6 +131,7 @@ var _rebuild_t := -1.0
 var _ui_t := 0.0
 var _panel_on := true
 var _gruppen := {}                     # group id -> body (UI.fold_card)
+var _panel_w := PANEL_W                # the widest tab (set in _build_ui)
 var _such := ""                        # the text in the search field (lower case)
 
 
@@ -716,6 +717,7 @@ func _build_ui() -> void:
 	hd.add_child(tl)
 	_w["titel"] = tl
 	var ver := UI.small(T.t("Sim %s") % sim_version())
+	ver.autowrap_mode = TextServer.AUTOWRAP_OFF
 	ver.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	hd.add_child(ver)
 	_w["version"] = ver
@@ -835,6 +837,9 @@ func _build_ui() -> void:
 	_page_ansicht(gruppe("ansicht"))
 	_page_anzeigen(gruppe("anzeigen"))
 	_page_rund(gruppe("rund"))
+	for tb in TABS:                                   # one width for all tabs (the widest), the panel does not jump
+		(_w["page_" + tb[0]] as Control).visible = true
+	_panel_w = maxf(PANEL_W, panel.get_combined_minimum_size().x)
 	var keys := UI.small(T.t("W / S vor / zurück · A / D seitwärts · Q / E drehen · Leertaste Stopp · G Gehen · 1 – 4 Ansicht · R neu aufstellen · P anhalten · F festhalten · K Kamerabild · I Info · H Bedienfeld · Esc schliessen"))
 	pv.add_child(keys)
 
@@ -1028,13 +1033,17 @@ static func draw_icon(d: Control, kind: String, col: Color) -> void:
 				d.draw_rect(Rect2(c + Vector2(e[0], 8.0 - e[1]) * s, Vector2(4, e[1]) * s), col)
 		"stopp":
 			d.draw_rect(Rect2(c - Vector2(5, 5) * s, Vector2(10, 10) * s), col)
-		"dreh_l", "dreh_r":                              # turn on the spot: an arc with an arrow head
-			var sg := 1.0 if kind == "dreh_r" else -1.0
-			var a0 := -PI * 0.75
-			var a1 := PI * 0.6
-			d.draw_arc(c, 6.5 * s, a0, a1, 24, col, w, true)
-			var endp := c + Vector2(cos(a1 if sg > 0 else a0), sin(a1 if sg > 0 else a0)) * 6.5 * s
-			var tang := Vector2(-sin(a1), cos(a1)) if sg > 0 else -Vector2(-sin(a0), cos(a0))
+		"dreh_l", "dreh_r":                              # turn on the spot: an arc with an arrow head (clockwise = right)
+			var mx := -1.0 if kind == "dreh_l" else 1.0          # left = the mirror picture
+			var pts := PackedVector2Array()
+			var a0 := -PI * 0.85
+			var a1 := PI * 0.45
+			for k in 21:
+				var a := lerpf(a0, a1, k / 20.0)
+				pts.append(c + Vector2(cos(a) * mx, sin(a)) * 6.5 * s)
+			d.draw_polyline(pts, col, w, true)
+			var endp := c + Vector2(cos(a1) * mx, sin(a1)) * 6.5 * s
+			var tang := Vector2(-sin(a1) * mx, cos(a1))
 			var nrm := Vector2(-tang.y, tang.x)
 			d.draw_colored_polygon(PackedVector2Array([endp + tang * 4.0 * s, endp + nrm * 3.2 * s, endp - nrm * 3.2 * s]), col)
 		_:
@@ -1186,7 +1195,7 @@ func _layout_overlay() -> void:
 		return
 	var p: Control = _w.get("panel")
 	if p != null:                                     # phone across: a narrower panel, more of the view
-		var pw := 320.0 if get_viewport().get_visible_rect().size.x < 1000.0 else PANEL_W
+		var pw := 320.0 if get_viewport().get_visible_rect().size.x < 1000.0 else _panel_w
 		if p.custom_minimum_size.x != pw:
 			p.custom_minimum_size = Vector2(pw, 0)
 	var sz := Vector2(176, 110) if compact() else Vector2(320, 200)
