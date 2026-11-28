@@ -55,6 +55,8 @@ const VORHER := [
 	# sim-robo-steuerung (28.11.2026): im Bedienfeld
 	["Untere Leiste mit Steuerung ein / aus", "=", 1], ["Belegung …", "=", 1], ["Körper verschieben", "=", 1],
 	["Loslassen = zur Mitte", "=", 1],
+	# sim-gang-ki-a / -b: Gruppe «Gang-KI» (Fahren) und der Schalter im Gelände-Test
+	["Mit der KI gehen", "=", 1], ["Mit der Gang-KI gehen", "=", 1],
 ]
 
 var main
@@ -174,7 +176,7 @@ func _process(_dt: float) -> bool:
 				if not ob.is_item_disabled(i):
 					ids.append(str(ob.get_item_metadata(i)))
 				pics = pics and ob.get_item_icon(i) != null
-			var want_ids: Array = L.VARIANTEN.map(func(x): return x[0])
+			var want_ids: Array = (L.VARIANTEN + L.VARIANTEN_K).map(func(x): return x[0])
 			var all_in := want_ids.all(func(v): return v in ids)
 			check("Auswahlliste «Modell»: jede Variante wählbar, mit Bild, aktive ausgewählt", all_in and pics
 					and str(ob.get_item_metadata(ob.selected)) == lab.variante, "%s / %s" % [ids, want_ids])
@@ -259,9 +261,43 @@ func _process(_dt: float) -> bool:
 			var ob2: OptionButton = lab._w.get("modell")
 			check("Modell «4 Segmente» aus der Liste gewählt", lab.variante == "4" and lab.model.n() == 4 and str(ob2.get_item_metadata(ob2.selected)) == "4",
 					"%s / %d" % [lab.variante, lab.model.n()])
+			_pick(ob2, "2")
+			t0 = now()
+			step = 3
+		3:
+			if now() - t0 < 1.5:
+				return false
+			lab = main.roboter
+			var hint_ok := false
+			lab.set_tab("fahren")
+			for c in controls(lab._gruppen["ring"], []):
+				if passt(c, T.t("Ring braucht mindestens 4 Segmente"), "=") and c.is_visible_in_tree():
+					hint_ok = true
+			check("2 Segmente: Ring-Knopf gesperrt, Hinweis «Ring braucht mindestens 4 Segmente» in «Im Ring rollen»",
+					lab.model.n() == 2 and hint_ok and (lab._w["ring_btn"] as Button).disabled)
+			_pick(lab._w["modell"], "k4")
+			t0 = now()
+			step = 4
+		4:
+			if now() - t0 < 1.5:
+				return false
+			lab = main.roboter
+			lab.set_tab("messen")
+			var rund_card: Control = lab._gruppen["rund"].get_meta("card")
+			var ring_card: Control = lab._gruppen["ring"].get_meta("card")
+			lab.suche("")
+			check("Vierbeiner: Gruppen «Rund rollen» und «Im Ring rollen» ausgeblendet (auch nach der Suche)",
+					lab.variante == "k4" and not rund_card.visible and not ring_card.visible, lab.variante)
 			main.roboter.control({"do": "close"})
 			return _end()
 	return false
+
+
+func _pick(ob: OptionButton, id: String) -> void:
+	for i in ob.item_count:
+		if str(ob.get_item_metadata(i)) == id:
+			ob.select(i)
+			ob.item_selected.emit(i)
 
 
 func _end() -> bool:
