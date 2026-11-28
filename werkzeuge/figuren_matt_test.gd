@@ -3,7 +3,7 @@ extends SceneTree
 ##   cd simulator3d && HOME=<test-home> <godot> --headless --path . -s "$PWD/../werkzeuge/figuren_matt_test.gd" -- --no-update --no-tour
 ## Prüft:
 ##   1. Stoffe (figur_mensch.gd stoff): Kleider Rauheit 0,9–1,0, Regenjacke glatter, Glanz höchstens 0,35.
-##   2. Kontaktschatten (kontaktschatten.gd): jede Person hat ihn (Ebene 1, kein Schatten, multiplizieren, ohne Licht / Nebel,
+##   2. Kontaktschatten (kontaktschatten.gd): jede Person hat ihn (Ebene 1, kein Schatten, schwarz + Alpha, ohne Licht / Nebel,
 ##      Merkmal für Boxen), ein Tier nicht; er folgt der Figur; am Hang liegt er schräg wie der Boden; Kriechen = länger.
 ##   3. Box der Person (dataset.gd _box) ist mit und ohne Schatten gleich (die Scheibe gehört nicht zur Box).
 ##   4. Menschen-Paket (figur_mensch.gd, erzwungen): Haut matt (Rauheit ≥ 0,7, Glanz ≤ 0,25, kein Rim), Haare ohne Rim,
@@ -75,12 +75,13 @@ func _run() -> void:
 	if k != null:
 		var mt := k.material_override as StandardMaterial3D
 		ok("Ebene 1 (nicht im Wärmebild), wirft keinen Schatten", k.layers == 1 and k.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
-		ok("Material: multiplizieren, ohne Licht, ohne Nebel", mt != null and mt.blend_mode == BaseMaterial3D.BLEND_MODE_MUL
+		ok("Material: schwarz mit Alpha (nicht MUL), ohne Licht, ohne Nebel", mt != null and mt.blend_mode == BaseMaterial3D.BLEND_MODE_MIX
+				and mt.transparency == BaseMaterial3D.TRANSPARENCY_ALPHA and mt.albedo_color.r == 0.0
 				and mt.shading_mode == BaseMaterial3D.SHADING_MODE_UNSHADED and mt.disable_fog)
 		var img: Image = mt.albedo_texture.get_image()
 		var c0: Color = img.get_pixel(32, 32)
 		var c1: Color = img.get_pixel(0, 0)
-		ok("Verlauf: Mitte dunkler, Rand = Boden unverändert (nie heller)", c0.r < 0.7 and c1.r > 0.97 and c0.r >= K.MITTE - 0.05)
+		ok("Verlauf: Mitte dunkler, Rand = Boden unverändert (nie heller)", c0.a > 0.3 and c1.a < 0.03 and c0.a <= 1.0 - K.MITTE + 0.05 and c0.r == 0.0)
 		ok("folgt der Figur (Kind der Figur, an den Füssen)", k.get_parent() == p and absf(k.position.y - K.HOEHE) < 0.01)
 		# am Hang: eine schräge Fläche (10 %) als eigener Boden
 		var old_fn: Callable = main.ground_fn

@@ -1,8 +1,9 @@
 extends RefCounted
 ## «Figuren matt» (Idee #45, 28.11.2026): ein weicher Kontaktschatten unter den Füssen jeder menschlichen Figur
 ## (Besucher, Held, Erkunden-Figur; Tiere nicht). Billig für jede Grafikstufe (auch Lite / Pi): eine flache Scheibe mit
-## einem runden Verlauf, die den Boden darunter nur abdunkelt (Mischart «multiplizieren», ohne Licht, ohne Nebel, wirft
+## einem runden Verlauf, die den Boden darunter nur abdunkelt (schwarz mit weichem Alpha, ohne Licht, ohne Nebel, wirft
 ## keinen Schatten, nicht im Wärmebild). Nachts bleibt dunkler Boden dunkel - die Scheibe leuchtet nie.
+## (Nicht «multiplizieren» (BLEND_MODE_MUL): im Compatibility-Renderer mit Glow wird daraus ein dunkles Viereck.)
 ## Auf Hügeln (main.hilly) legt sie sich alle ~0,25 s schräg wie der Boden; liegt die Figur (Kriechen), wird sie länger.
 ## Texturen und Material sind einmal gemacht und von allen Figuren geteilt.
 
@@ -17,15 +18,15 @@ static var _mesh: PlaneMesh = null
 
 static func _textur() -> Texture2D:
 	var n := 64
-	var img := Image.create(n, n, false, Image.FORMAT_RGB8)
+	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
 	for y in range(n):
 		for x in range(n):
 			var dx := (x + 0.5) / n * 2.0 - 1.0
 			var dy := (y + 0.5) / n * 2.0 - 1.0
 			var r := sqrt(dx * dx + dy * dy)
 			var f := 1.0 - smoothstep(0.0, 1.0, r)                   # 1 in der Mitte, 0 am Rand
-			var v := lerpf(1.0, MITTE, pow(f, 1.6))
-			img.set_pixel(x, y, Color(v, v, v))
+			var v := lerpf(1.0, MITTE, pow(f, 1.6))                  # so viel Boden bleibt
+			img.set_pixel(x, y, Color(0, 0, 0, 1.0 - v))
 	img.generate_mipmaps()
 	return ImageTexture.create_from_image(img)
 
@@ -35,7 +36,8 @@ static func material() -> StandardMaterial3D:
 		_mat = StandardMaterial3D.new()
 		_mat.resource_name = "kontaktschatten"
 		_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		_mat.blend_mode = BaseMaterial3D.BLEND_MODE_MUL
+		_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_mat.albedo_color = Color(0, 0, 0, 1)
 		_mat.albedo_texture = _textur()
 		_mat.disable_fog = true
 		_mat.disable_receive_shadows = true
