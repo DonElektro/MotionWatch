@@ -103,7 +103,7 @@ class ThermalCam:
                 if w_ is not None and w_.eco_slow:
                     time.sleep(max(0.0, 1.0 / max(1.0, float(CFG["eco_fps"])) - 0.05))     # power saving
                 if ok and fr is not None:
-                    self.frame = fr; self.t = time.time(); self.fails = 0
+                    self.frame = cam_turn_frame(fr, "thermal"); self.t = time.time(); self.fails = 0   # 639zzzzzzd: turned / mirrored as set
                     STATE["thermal"] = "connected"
                 else:
                     self.fails += 1

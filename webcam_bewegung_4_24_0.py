@@ -331,7 +331,7 @@ def prepare_settings_file():
 
 
 ZD_FILE = "moveeye_daten_4_24_0.zip"
-ZD_SHA256 = "134dba702ffe2abf87b2c557b8b74709711dcd68f13a96721cb598b252e10acd"
+ZD_SHA256 = "5566ce3a106cf38cbe8b6950ef74d5b21e8d00248d628274c3a227b8919d9c3f"
 ZD = {"ok": False, "err": "", "path": "", "data": None, "miss": [], "used": 0}
 
 
@@ -19730,6 +19730,36 @@ def cam_orient(frame):
 	return frame
 
 
+def cam_turn_get(spec=None):
+	"""
+
+"""
+	sp=""if spec is None else str(spec)
+	if not sp or sp==str(CFG.get("source")or ""):
+		r,m=CFG.get("cam_rotate","0"),CFG.get("cam_mirror")
+	elif sp in("thermal","sim:thermal")or sp==str(CFG.get("thermal_source")or "-"):
+		r,m=CFG.get("thermal_rotate","0"),CFG.get("thermal_mirror")
+	else:
+		d=CFG.get("cam_turn")if isinstance(CFG.get("cam_turn"),dict)else{}
+		e=d.get(sp)if isinstance(d.get(sp),dict)else{}
+		r,m=e.get("rot","0"),e.get("mirror")
+	r=str(r or "0")
+	return(r if r in _ROT else "0",bool(m))
+
+
+def cam_turn_frame(frame, spec=None, turn=None):
+	""
+	if frame is None:
+		return frame
+	r,m=turn or cam_turn_get(spec)
+	rr=_ROT.get(r)
+	if rr is not None:
+		frame=cv2.rotate(frame,rr)
+	if m:
+		frame=cv2.flip(frame,1)
+	return frame
+
+
 class CvSource:
 	""
 	def __init__(self,cap,size=None):
@@ -20450,7 +20480,7 @@ class ThermalCam:
 				if w_ is not None and w_.eco_slow:
 					time.sleep(max(0.0,1.0/max(1.0,float(CFG["eco_fps"]))-0.05))
 				if ok and fr is not None:
-					self.frame=fr;self.t=time.time();self.fails=0
+					self.frame=cam_turn_frame(fr,"thermal");self.t=time.time();self.fails=0
 					STATE["thermal"]="connected"
 				else:
 					self.fails+=1
@@ -40163,6 +40193,7 @@ class ExtraCam:
 							break
 						time.sleep(0.05);continue
 					fails=0
+					frame=self._turn(frame,bg)
 					self._process(frame,bg)
 			except Exception as e:
 				log_event("sys",f"Camera {self.label}: {e}")
@@ -40170,6 +40201,25 @@ class ExtraCam:
 				src.release();self._stop_rec()
 			if not self.stop and not toolmode_on():
 				self.status="connection lost - reconnecting";self.motion=False;self._sleep(2.0)
+
+	def _turn(self,frame,bg):
+		"""
+"""
+		o=cam_turn_get(self.spec)
+		frame=cam_turn_frame(frame,turn=o)
+		if o!=getattr(self,"_orient",None):
+			if getattr(self,"_orient",None)is not None:
+				self._stop_rec();self.n=0;self.boxes=[];self.motion=False;self.streak=0
+				log_event("sys",f"Camera {self.label}: picture turned {o[0]}°"+(", mirrored"if o[1]else ""))
+			self._orient=o
+			H,W=frame.shape[:2]
+			self.res=f"{W}x{H}"
+			try:
+				g_=cv2.GaussianBlur(cv2.cvtColor(cv2.resize(frame,(320,max(1,int(H*320/W)))),cv2.COLOR_BGR2GRAY),(5,5),0)
+				bg.apply(g_,learningRate=1.0)
+			except cv2.error:
+				pass
+		return frame
 
 	def _process(self,frame,bg):
 		t0=time.time()
@@ -87541,7 +87591,7 @@ class KwPreview:
 					time.sleep(0.05);continue
 				fails=0
 				if t0-last>=1.0/KW_VIEW_FPS:
-					self.frame,self.t,last=fr,time.time(),t0
+					self.frame,self.t,last=cam_turn_frame(fr,self.spec),time.time(),t0
 				if not live:
 					time.sleep(max(0.0,1.0/KW_VIEW_FPS-(time.time()-t0)))
 		except Exception as e:
@@ -106140,6 +106190,276 @@ zd_exec(WC_PY, "639zzzzzw_wildcamp.py")
 
 K3_PY = _zd('639zzzzzz_karte_ch_3d/K3_PY', "")
 zd_exec(K3_PY, "639zzzzzz_karte_ch_3d.py")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+for _k, _v in {"cam_turn": {}, "thermal_rotate": "0", "thermal_mirror": False}.items():
+	CFG.setdefault(_k,_v)
+	DEFAULTS.setdefault(_k,_v)
+
+_HX_CT = _zd('639zzzzzzd_kamera_drehen/HX_CT', _zd_hx_en((
+	'Turn picture: other cameras',
+	'Camera mounted on its side or upside down? Everything after it (detection, zones, recordings, the head steered by the overview) uses the upright picture.',
+	'Zones drawn on this picture before turning no longer fit - check them.',
+	'No extra camera - add one on the Cameras page.',
+	'Mirror thermal picture (left ↔ right)',
+	'Turn thermal picture',
+	'invalid value',
+)))
+for _k, _v in _HX_CT.items():
+	DE.setdefault(_k,_v[0])
+	for _i,_L in enumerate(("fr","it","rm")):
+		TRX[_L].setdefault(_k,_v[_i+1])
+
+TEXTS.append(("Thermal camera", "thermal_rotate", "Turn thermal picture", "enum", "cam_rotate"))
+TEXT_SPECS["thermal_rotate"] = ("enum", "cam_rotate")
+TOGGLES.append(("Thermal camera", "thermal_mirror", "Mirror thermal picture (left ↔ right)"))
+SIMPLE_KEYS.update({"thermal_rotate", "thermal_mirror"})
+SET_HELP["thermal_rotate"] = ("Turns the thermal picture when the thermal camera is mounted upside down or on its side - the overlay, "
+							  "the thermal alarm and the alignment then use the upright picture.", "Look at the thermal picture and choose what is upright.")
+SET_HELP["thermal_mirror"] = ("Mirrors the thermal picture left ↔ right (e.g. a camera that delivers it mirrored).", "Off.")
+
+
+
+_cam_fov_hv_318 = cam_fov_hv
+
+
+
+def cam_fov_hv(spec=None):
+	"""
+"""
+	h,v,src=_cam_fov_hv_318(spec)
+	if cam_turn_get(spec)[0]in("90","270"):
+		return v,h,src
+	return h,v,src
+
+
+_sim_geom_230 = ThermalCam.sim_geom
+
+
+def _ct_sim_geom():
+	""
+	g=_sim_geom_230()
+	if g is None or(cam_turn_get(None)[0]not in("90","270")and cam_turn_get("thermal")[0]not in("90","270")):
+		return g
+	try:
+		th_h,th_v,_s=cam_fov_hv("thermal")
+		c_h,c_v,_s2=cam_fov_hv(None)
+		t_=math.tan
+		return(t_(math.radians(th_h)/2)/t_(math.radians(c_h)/2),t_(math.radians(th_v)/2)/t_(math.radians(c_v)/2))
+	except(TypeError,ValueError,ZeroDivisionError):
+		return g
+
+
+
+ThermalCam.sim_geom = staticmethod(_ct_sim_geom)
+
+
+
+def cam_turn_set(spec, rot, mirror):
+	""
+	spec=str(spec or "")
+	rot=str(rot if rot is not None else "0")
+	if not re.fullmatch(r"[A-Za-z0-9:_./\-@]{1,200}",spec)or rot not in("0","90","180","270"):
+		return False,"invalid value"
+	mirror=bool(mirror)
+	if spec==str(CFG.get("source")or ""):
+		CFG["cam_rotate"],CFG["cam_mirror"]=rot,mirror
+	elif spec in("thermal","sim:thermal")or spec==str(CFG.get("thermal_source")or "-"):
+		CFG["thermal_rotate"],CFG["thermal_mirror"]=rot,mirror
+	else:
+		d=dict(CFG.get("cam_turn")or{})if isinstance(CFG.get("cam_turn"),dict)else{}
+		d.pop(spec,None)
+		if rot!="0"or mirror:
+			d[spec]={"rot":rot,"mirror":mirror}
+		CFG["cam_turn"]=dict(list(d.items())[-12:])
+	save_settings()
+	log_event("sys",f"Picture of {source_label(spec) if spec not in ('thermal',) else 'thermal camera'}: turned {rot}°"+(", mirrored"if mirror else ""))
+	return True,""
+
+
+def cam_turn_zones(spec):
+	""
+	if str(CFG.get("kopf_ov")or "")!=str(spec):
+		return False
+	sets=CFG.get("kopf_ov_zone_sets")
+	return bool(CFG.get("kopf_ov_zones"))or(isinstance(sets,dict)and any(bool(v)for v in sets.values()))
+
+
+def cam_turn_list(lang=None):
+	""
+	main=str(CFG.get("source")or "")
+	out=[]
+	for s in dict.fromkeys(str(x)for x in(CFG.get("extra_cams")or[])if x):
+		if s==main:
+			continue
+		r,m=cam_turn_get(s)
+		out.append({"spec":s,"label":source_label(s),"rot":r,"mirror":m,"zones":cam_turn_zones(s),
+					"ov":str(CFG.get("kopf_ov")or "")==s})
+	ch=[("0","not turned"),("90","90° to the right"),("180","upside down (180°)"),("270","90° to the left")]
+	return{"cams":out,"choices":[[k,tr(n,lang)]for k,n in ch]}
+
+
+_ct_sx_routes_before = sx_routes
+
+
+def sx_routes(app, watch, reply, body):
+	_ct_sx_routes_before(app,watch,reply,body)
+	from flask import request,g as g_
+
+	@app.route("/api/camturn",methods=["GET","POST"])
+	def api_camturn():
+		lang=norm_lang(request.args.get("lang")or CFG.get("lang"))
+		if request.method=="POST":
+			if getattr(g_,"role","admin")!="admin":
+				return reply({"ok":False,"error":"not allowed"},403)
+			d=body();lang=norm_lang(d.get("lang")or lang)
+			ok,err=cam_turn_set(d.get("spec"),d.get("rot"),d.get("mirror"))
+			if not ok:
+				return reply({"ok":False,"error":tr(err,lang)},400)
+		return reply(dict(cam_turn_list(lang),ok=True))
+
+
+
+CT_JS = _zd('639zzzzzzd_kamera_drehen/CT_JS', "")
+CT_KEYS = ["Turn picture: other cameras", "Extra camera", "Turn picture", "Mirror picture (left ↔ right)",
+		   "Camera mounted on its side or upside down? Everything after it (detection, zones, recordings, the head steered by the overview) uses the upright picture.",
+		   "Zones drawn on this picture before turning no longer fit - check them.", "No extra camera - add one on the Cameras page."]
+WEB_PAGE = WEB_PAGE.replace("</body>", CT_JS.replace("/*CTDE*/{}", json.dumps({k: DE.get(k, k) for k in CT_KEYS}, ensure_ascii=False), 1) + "</body>", 1)
+
+
+
+_ct_fov_box_582 = App._fov_box
+
+
+def _ct_app_fov_box(self, parent):
+	_ct_fov_box_582(self,parent)
+	try:
+		_ct_tk_box(parent)
+	except Exception as e:
+		print(f"turn picture box: {e}")
+
+
+def _ct_tk_box(parent):
+	box=ttk.Frame(parent);box.pack(fill="x",pady=(8,0))
+	ttk.Label(box,text="🔄 "+tr("Turn picture: other cameras")).pack(anchor="w")
+	ttk.Label(box,text=tr("Camera mounted on its side or upside down? Everything after it (detection, zones, recordings, the head steered by the overview) uses the upright picture."),
+			  style="Mut.TLabel",wraplength=380,justify="left").pack(anchor="w")
+	F=cam_turn_list()
+	names=[n for _k,n in F["choices"]];keys=[k for k,_n in F["choices"]]
+	if not F["cams"]:
+		ttk.Label(box,text=tr("No extra camera - add one on the Cameras page."),style="Mut.TLabel").pack(anchor="w")
+	for c in F["cams"]:
+		r=ttk.Frame(box);r.pack(fill="x",pady=(4,0))
+		ttk.Label(r,text=tr("Extra camera")+": "+str(c["label"]),style="Mut.TLabel").pack(anchor="w")
+		cb=ttk.Combobox(r,values=names,state="readonly",width=34)
+		cb.current(keys.index(c["rot"])if c["rot"]in keys else 0);cb.pack(anchor="w")
+		v_m=tk.BooleanVar(r,bool(c["mirror"]))
+		info=ttk.Label(r,text="",style="Mut.TLabel",wraplength=380,justify="left")
+
+		def send(*_a,c=c,cb=cb,v_m=v_m,info=info):
+			ok,err=cam_turn_set(c["spec"],keys[cb.current()],v_m.get())
+			info.config(text=("⚠ "+tr("Zones drawn on this picture before turning no longer fit - check them."))if ok and c["zones"]
+						else(""if ok else "⚠ "+tr(err)))
+		cb.bind("<<ComboboxSelected>>",send)
+		ttk.Checkbutton(r,variable=v_m,text=tr("Mirror picture (left ↔ right)"),command=send).pack(anchor="w")
+		info.pack(anchor="w")
+
+
+App._fov_box = _ct_app_fov_box
+
+
+
+HELP_CT = _zd('639zzzzzzd_kamera_drehen/HELP_CT', _ZDDict())
+
+
+def _help_ct(doc, lang):
+	i=doc.find('<section id="camera"')
+	if i<0 or 'id="ct-help"'in doc:
+		return doc
+	j=doc.find("</section>",i)
+	return doc[:j]+HELP_CT[lang]+doc[j:]if j>=0 else doc
+
+
+_hp_en_ct = HELP_PAGE.find('<div lang="en">')
+if _hp_en_ct > 0:
+	HELP_PAGE=_help_ct(HELP_PAGE[:_hp_en_ct],"de")+_help_ct(HELP_PAGE[_hp_en_ct:],"en")
+for _L in ("fr", "it", "rm"):
+	if HELP_X.get(_L):
+		HELP_X[_L]=_help_ct(HELP_X[_L],_L)
+
+
+
+cam_turn_selftest = _zd_fn('639zzzzzzd_kamera_drehen/cam_turn_selftest()')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELFTEST_EXTRA.append(("Turn the picture of every camera (639zzzzzzd)", cam_turn_selftest))
 if __name__ == "__main__":
 	ap=argparse.ArgumentParser()
 	ap.add_argument("--cam",type=int,default=None,help="USB camera number (same as --source usb:N)")
