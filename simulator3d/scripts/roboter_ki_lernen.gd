@@ -37,6 +37,7 @@ const GEWICHTE := {"schnell": {"zeit": 0.6, "energie": 0.2, "kipp": 0.2},
 # direction (span of a ditch, diameter of a pipe), tiefe = downwards
 const RASTER := {"hoehe": 0.02, "breite": 0.05, "tiefe": 0.05, "neigung": 5.0, "stufen": 1.0}
 const SKALA := {"hoehe": 0.04, "breite": 0.1, "tiefe": 0.1, "neigung": 8.0, "stufen": 1.0}
+const EINRASTEN := 0.4            # a measurement this close to a known obstacle counts as the same one (sehen() is ± 1.5 cm)
 const AEHNLICH := 3.0             # distance (in SKALA units) up to which an experience counts as «ähnlich»
 # the numbers B varies: [lowest, highest, start] (if the KI brings its own PARAM_RAUM, that one wins)
 const PARAM_RAUM := {"schritt_hoehe": [0.1, 1.0, 0.35], "koerper_hoehe": [0.5, 1.4, 0.9], "neigung": [-30.0, 30.0, 0.0],
@@ -59,6 +60,7 @@ var labor = null                  # roboter_labor.gd (fallback for «neu aufstel
 var lauf := {}                    # the running try: {phase, h, strategie, param, t, best_d, last_t, aufstell}
 var vorbei := []                  # positions of obstacles already passed (no new try there)
 var letzte := {}                  # the last finished try for the field: {key, strategie, erfolg, score, grund}
+var meldungen := 0                # finished tries since the start (for the field and tests)
 var _seh_t := 0.0
 var _geladen := false             # the store of the lab's variant is read at the first tick
 
@@ -161,8 +163,26 @@ func strategien_fuer(art: String) -> Array:
 	return alle
 
 
-func _eintrag(h: Dictionary) -> Dictionary:
+func key(h: Dictionary) -> String:
+	"""the key of the obstacle; a slightly different measurement of a known one snaps to it (no split of the experience)"""
 	var k := schluessel(h)
+	if daten.has(k):
+		return k
+	var m := masse(h)
+	var best := k
+	var bd := EINRASTEN
+	for kk in daten:
+		var e: Dictionary = daten[kk]
+		if str(e.get("art")) == str(h.get("art", "?")):
+			var d := abstand(m, e["masse"])
+			if d <= bd:
+				bd = d
+				best = kk
+	return best
+
+
+func _eintrag(h: Dictionary) -> Dictionary:
+	var k := key(h)
 	if not daten.has(k):
 		daten[k] = {"art": str(h.get("art", "?")), "masse": masse(h), "versuche": 0, "erfolge": 0, "aufgegeben": false,
 				"strategien": {}, "best": {}, "start": _von_nachbarn(h)}
@@ -173,7 +193,7 @@ func nachbarn(h: Dictionary, n := 2) -> Array:
 	"""the nearest learned obstacles of the same art with a success: [[distance, entry], …] (nearest first)"""
 	var art := str(h.get("art", "?"))
 	var m := masse(h)
-	var own := schluessel(h)
+	var own := key(h)
 	var l := []
 	for k in daten:
 		var e: Dictionary = daten[k]
@@ -405,6 +425,7 @@ func melde(h: Dictionary, strategie: String, param: Dictionary, status: Dictiona
 		return
 	var e := _eintrag(h)
 	e["versuche"] = int(e["versuche"]) + 1
+	meldungen += 1
 	var st := _roh(status)
 	var ok := bool(st.get("erfolg", false))
 	if ok:
@@ -420,12 +441,12 @@ func melde(h: Dictionary, strategie: String, param: Dictionary, status: Dictiona
 	_neu_bester(e)
 	if int(e["erfolge"]) == 0 and int(e["versuche"]) >= VERSUCHE_MAX:
 		e["aufgegeben"] = true
-	letzte = {"key": schluessel(h), "strategie": strategie, "erfolg": ok, "score": bewerte(st)}
+	letzte = {"key": key(h), "strategie": strategie, "erfolg": ok, "score": bewerte(st), "h": h}
 	speichern()
 
 
 func eintrag(h: Dictionary) -> Dictionary:
-	return daten.get(schluessel(h), {})
+	return daten.get(key(h), {})
 
 
 # ---- Ablauf im Hintergrund ----------------------------------------------------------------------------------------------
@@ -520,7 +541,7 @@ func _versuch(h: Dictionary, erst: bool) -> void:
 	lauf["best_d"] = _rest()
 	if w[0] == "umgehen":
 		vorbei.append(h.get("pos", Vector3.ZERO))         # the KI walks around it; no more tries here (hint in the field)
-		letzte = {"key": schluessel(h), "strategie": "umgehen", "erfolg": false, "grund": "zu schwer"}
+		letzte = {"key": key(h), "strategie": "umgehen", "erfolg": false, "grund": "zu schwer"}
 	var pk: Dictionary = (w[1] as Dictionary).duplicate()
 	pk["hindernis"] = h                                   # the KI aims at exactly this obstacle
 	ki.strategie_ausfuehren(w[0], pk)
@@ -672,4 +693,4 @@ func anzeige_zeilen() -> PackedStringArray:
 func info() -> Dictionary:
 	"""für /control und Tests"""
 	return {"an": an, "stil": stil, "variante": variante, "gemerkt": daten.size(), "phase": str(lauf.get("phase", "")),
-			"strategie": str(lauf.get("strategie", "")), "letzte": letzte, "zeilen": Array(anzeige_zeilen())}
+			"strategie": str(lauf.get("strategie", "")), "letzte": {"key": letzte.get("key", ""), "strategie": letzte.get("strategie", ""), "erfolg": letzte.get("erfolg", false), "grund": letzte.get("grund", "")}, "zeilen": Array(anzeige_zeilen())}

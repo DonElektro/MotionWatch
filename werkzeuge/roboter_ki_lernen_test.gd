@@ -235,6 +235,111 @@ func _initialize() -> void:
 	check("Hintergrund: ein geschafftes Hindernis startet keinen neuen Versuch", lt.lauf.is_empty())
 	lt.an = false
 	check("Schalter aus: Anzeige «aus»", "aus" in lt.anzeige_zeilen()[0])
+	var le = neu(15)
+	le.melde(h12, "hoch_steigen", pb, FakeKi.ergebnis(h12, "hoch_steigen", pb))
+	var h12b := h12.duplicate()
+	h12b["hoehe"] = 0.129
+	check("leicht andere Messung (12.9 statt 12 cm) = dasselbe Hindernis", le.key(h12b) == L.schluessel(h12) and le.key(h10) != L.schluessel(h12), le.key(h12b))
+	if ResourceLoader.exists(GANG) and OS.get_environment("TEST_KI_OHNE_LABOR") == "":
+		main = load("res://main.tscn").instantiate()
+		root.add_child(main)
+		current_scene = main
+		_echt()
+	else:
+		print("  info ohne das echte Labor (TEST_KI_OHNE_LABOR oder roboter_ki_gang.gd fehlt)")
+		_ende()
+
+
+# ---- mit dem echten Labor (Stufe 1 + 2 von Helfer A) --------------------------------------------------------------------
+const GANG := "res://scripts/roboter_ki_gang.gd"
+const STRECKE := "stufe_hoch"       # what the KI does by itself at first does not work here (see the report of the test)
+var main
+var lab
+
+
+func warte(sek: float) -> void:
+	var f := Engine.get_physics_frames() + int(sek * Engine.physics_ticks_per_second)
+	while Engine.get_physics_frames() < f:
+		await physics_frame
+
+
+func lerne_echt(lane: String, max_versuche: int, max_s: float, bis_erfolg_plus: int) -> Array:
+	"""the robot walks (Gangart KI) towards the lane; Stufe 3 runs in the background as in the lab: [{strategie, erfolg, zeit,
+	energie, kipp_min, grund, score}, …] per try"""
+	var le = lab.ki_lernen
+	lab.stop_all()
+	lab.ki.abbrechen()
+	le.lauf = {}
+	le.vorbei = []
+	lab.model.root_xf = lab.starts[lane]
+	lab.apply_pose("gerade", true)
+	await warte(1.0)
+	lab.bew.start_gang("ki")
+	lab.manual = Vector3(0, 1, 0)
+	var res := []
+	var f0 := Engine.get_physics_frames()
+	var erfolg_bei := -1
+	var last: int = le.meldungen
+	while Engine.get_physics_frames() - f0 < int(max_s * 120.0):
+		await physics_frame
+		if le.meldungen != last:
+			last = le.meldungen
+			var st: Dictionary = lab.ki.strategie_status()
+			var r := {"strategie": str(le.letzte.get("strategie", "")), "erfolg": bool(le.letzte.get("erfolg", false)),
+					"score": float(le.letzte.get("score", 0.0)), "zeit": float(st.get("zeit", 0.0)), "energie": float(st.get("energie", 0.0)),
+					"kipp_min": float(st.get("kipp_min", 0.0)), "grund": str(st.get("grund", "")), "key": str(le.letzte.get("key", "")),
+					"t": (Engine.get_physics_frames() - f0) / 120.0}
+			res.append(r)
+			print("     %s Versuch %d (%.0f s): %s %s · %.1f s · %.3f Wh · Kipp %.2f · Wertung %.2f · %s" % [lane, res.size(), r["t"], r["strategie"],
+					"geschafft" if r["erfolg"] else "nicht geschafft", r["zeit"], r["energie"], r["kipp_min"], r["score"], r["grund"]])
+			if r["erfolg"] and erfolg_bei < 0:
+				erfolg_bei = res.size()
+			if erfolg_bei >= 0 and res.size() >= erfolg_bei + bis_erfolg_plus or res.size() >= max_versuche:
+				break
+			if r["erfolg"]:
+				await warte(0.5)                           # once over it: back in front of the same obstacle for the next try
+				le.vorbei = []
+				lab.ki.neu_aufstellen(le.letzte.get("h", {}))
+				lab.manual = Vector3(0, 1, 0)
+	lab.manual = Vector3.ZERO
+	lab.stop_all()
+	return res
+
+
+func _echt() -> void:
+	await create_timer(2.0).timeout
+	main.control({"action": "roboter", "do": "open"})
+	lab = main.roboter
+	await warte(1.0)
+	var le = lab.ki_lernen
+	check("Labor: Stufe 3 angehängt (ki.lernen, tick)", le != null and lab.ki.lernen == le and le.ki == lab.ki and le.an)
+	if le == null:
+		_ende()
+		return
+	le.pfad = "user://roboter_ki_test_echt.json"
+	le.vergessen()
+	le.laden()
+	var strecken: Array = [STRECKE]
+	var env := OS.get_environment("TEST_KI_STRECKEN")
+	if env != "":
+		strecken = Array(env.split(","))
+	var nmax := int(OS.get_environment("TEST_KI_VERSUCHE")) if OS.get_environment("TEST_KI_VERSUCHE") != "" else 8
+	for lane in strecken:
+		var r := await lerne_echt(lane, nmax, 120.0 * nmax, 2)
+		var erst: Dictionary = r[0] if not r.is_empty() else {}
+		var best := {}
+		for x in r:
+			if best.is_empty() or float(x["score"]) > float(best["score"]):
+				best = x
+		var besser: bool = not erst.is_empty() and float(best.get("score", -9.0)) > float(erst["score"]) + 0.02 and bool(best.get("erfolg", false))
+		var txt := "Anfang: %s %s · Bestes nach %d Versuchen: %s %s %.1f s %.3f Wh" % [erst.get("strategie", "-"), "ok" if erst.get("erfolg", false) else "nein",
+				r.size(), best.get("strategie", "-"), "ok" if best.get("erfolg", false) else "nein", float(best.get("zeit", 0)), float(best.get("energie", 0))]
+		if env == "":
+			check("echtes Labor, %s: nach einigen Versuchen geschafft, was am Anfang nicht ging (oder schneller / sparsamer)" % lane, besser, txt)
+		else:
+			print("  info %s: %s" % [lane, txt])
+	le.vergessen()
+	main.roboter.control({"do": "close"})
 	_ende()
 
 
